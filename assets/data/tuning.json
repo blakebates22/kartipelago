@@ -56,6 +56,12 @@
     "pickupColor": "#ff4d6d",
     "padColor": "#ffd166"
   },
+  "track": {
+    "sampleSpacing": 2,
+    "wallHeight": 1.2,
+    "roadColor": "#d6d6d6",
+    "wallColor": "#e63946"
+  },
   "world": {
     "skyColor": "#8ecae6",
     "groundColor": "#2a9d8f"
