@@ -5,9 +5,14 @@
  * - heading: where the nose points
  * - velAngle: where the kart is actually travelling
  *
- * Grip is how quickly velAngle swings round to match heading. Normal driving has high
- * grip, so the kart goes where it points. Drifting drops to low grip, so the body slides
- * wide while the nose points into the turn. See docs/milestones/M1-drive-a-box.md.
+ * Normal driving: grip swings velAngle round to match heading quickly, so the kart goes
+ * where it points.
+ *
+ * Drifting flips that around. The stick steers the travel direction directly, over a
+ * range that crosses zero (into the drift curves hard, countersteer bends the path the
+ * other way), and the nose is held at an angle into the drift. So drifting right and
+ * countersteering left moves the kart left while the nose still points right.
+ * See docs/milestones/M1-drive-a-box.md.
  *
  * Angles are radians around +Y. Forward is (sin h, cos h) on the X/Z plane, so h = 0
  * faces +Z. Positive steer is "right" from the driver's seat, which lowers heading.
@@ -25,14 +30,27 @@ export interface KartConfig {
   turnRateAtTop: number;
   turnFullSpeed: number;
   grip: number;
-  driftGrip: number;
+  /** Travel turn rate with full steer into the drift, rad/s. */
   driftTurnTight: number;
-  driftTurnLoose: number;
+  /** Travel turn rate with the stick centred, rad/s. */
+  driftTurnNeutral: number;
+  /** Travel turn rate at full countersteer, rad/s. Negative bends the path the other way. */
+  driftTurnCounter: number;
+  /** Nose angle into the drift with full steer in, degrees. */
+  driftNoseTightDeg: number;
+  /** Nose angle into the drift at full countersteer, degrees. */
+  driftNoseCounterDeg: number;
+  /** How fast the nose swings to its drift angle, per second. */
+  driftNoseRate: number;
   driftMinSpeed: number;
   driftStartSteer: number;
   driftStartWindow: number;
   /** Top speed multiplier while drifting, e.g. 1.15 = 15% faster. */
   driftSpeedMult: number;
+  /** Top speed multiplier while a boost pad's effect lasts. */
+  padSpeedMult: number;
+  /** How long a boost pad's effect lasts after leaving it, seconds. */
+  padBoostSec: number;
 }
 
 export interface KartState {
@@ -48,6 +66,8 @@ export interface KartState {
   driftTime: number;
   /** Seconds since the drift button was pressed; Infinity while released. */
   driftPressAge: number;
+  /** Seconds of boost-pad effect left. */
+  boostTime: number;
 }
 
 /** Below this forward speed, holding brake reverses instead of braking. */
@@ -65,6 +85,7 @@ export function createKartState(x = 0, z = 0, heading = 0): KartState {
     driftDir: 0,
     driftTime: 0,
     driftPressAge: Infinity,
+    boostTime: 0,
   };
 }
 
@@ -72,6 +93,9 @@ export const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 const moveToward = (v: number, target: number, maxDelta: number) =>
   Math.abs(target - v) <= maxDelta ? target : v + Math.sign(target - v) * maxDelta;
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const DEG = Math.PI / 180;
 
 /** Angle between where the nose points and where the kart is going. */
 export const slipAngle = (s: KartState) => wrapAngle(s.heading - s.velAngle);
@@ -104,13 +128,21 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
   }
 }
 
+/** Driving over a boost pad: jump to boosted speed and hold it for a moment. */
+export function applyPadBoost(s: KartState, cfg: KartConfig) {
+  s.boostTime = cfg.padBoostSec;
+  s.speed = Math.max(s.speed, cfg.topSpeed * cfg.padSpeedMult);
+}
+
 /** Advance one fixed step. Mutates and returns s. */
 export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: number): KartState {
   updateDrift(s, input, cfg, dt);
   const drifting = s.driftDir !== 0;
-  // Drifting is the fast way round: it raises top speed. After the drift, the extra
-  // speed bleeds off at the drag rate rather than vanishing.
-  const cap = drifting ? cfg.topSpeed * cfg.driftSpeedMult : cfg.topSpeed;
+  // Drifting is the fast way round: it raises top speed, and so does a boost pad. When
+  // either ends, the extra speed bleeds off at the drag rate rather than vanishing.
+  const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? cfg.padSpeedMult : 1);
+  const cap = cfg.topSpeed * mult;
+  s.boostTime = Math.max(0, s.boostTime - dt);
 
   // Longitudinal: throttle, brake, reverse, coast.
   if (input.brake > 0 && s.speed > REVERSE_BELOW) {
@@ -118,7 +150,7 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   } else if (input.brake > input.throttle) {
     s.speed = moveToward(s.speed, -cfg.reverseSpeed, cfg.reverseAccel * input.brake * dt);
   } else if (input.throttle > 0) {
-    // Above the cap (just left a drift) bleeds back down rather than snapping.
+    // Above the cap (a drift or boost just ended) bleeds back down rather than snapping.
     s.speed =
       s.speed < cap
         ? Math.min(cap, s.speed + cfg.accel * input.throttle * dt)
@@ -128,12 +160,22 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   }
 
   if (drifting) {
-    // The stick no longer steers left/right. It picks the arc: into the drift is
-    // tight, countersteer is loose, but the kart always keeps turning the locked way.
-    const into = input.steer * s.driftDir; // -1 full countersteer .. 1 full into the drift
-    const t = (into + 1) / 2;
-    const rate = cfg.driftTurnLoose + (cfg.driftTurnTight - cfg.driftTurnLoose) * t;
-    s.heading = wrapAngle(s.heading - s.driftDir * rate * dt);
+    // into: -1 full countersteer, 0 stick centred, 1 full steer into the drift.
+    const into = input.steer * s.driftDir;
+    const turn =
+      into >= 0
+        ? lerp(cfg.driftTurnNeutral, cfg.driftTurnTight, into)
+        : lerp(cfg.driftTurnNeutral, cfg.driftTurnCounter, -into);
+    // The nose is held into the drift, deeper when steering in. Easing the angle
+    // relative to travel (not the absolute heading) means it settles exactly on target
+    // instead of trailing behind a turning path.
+    const nose = lerp(cfg.driftNoseCounterDeg, cfg.driftNoseTightDeg, (into + 1) / 2) * DEG;
+    const offset = slipAngle(s);
+    const swing = 1 - Math.exp(-cfg.driftNoseRate * dt);
+    const nextOffset = offset + (-s.driftDir * nose - offset) * swing;
+    // The stick steers where the kart goes, and the nose rides along with it.
+    s.velAngle = wrapAngle(s.velAngle - s.driftDir * turn * dt);
+    s.heading = wrapAngle(s.velAngle + nextOffset);
     s.driftTime += dt;
   } else {
     // Sharp at low speed, steadier at top speed, and none at a standstill.
@@ -145,11 +187,12 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     s.heading = wrapAngle(s.heading - input.steer * rate * Math.sign(s.speed) * dt);
   }
 
-  // Grip: swing the travel direction toward the nose. Low grip while drifting is what
-  // makes the kart slide wide of where it points. Exponential, so it's the same at any
-  // physics rate.
-  const pull = 1 - Math.exp(-(drifting ? cfg.driftGrip : cfg.grip) * dt);
-  s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
+  if (!drifting) {
+    // Grip: swing the travel direction toward the nose. Exponential, so it's the same at
+    // any physics rate.
+    const pull = 1 - Math.exp(-cfg.grip * dt);
+    s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
+  }
 
   s.x += Math.sin(s.velAngle) * s.speed * dt;
   s.z += Math.cos(s.velAngle) * s.speed * dt;

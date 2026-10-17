@@ -19,13 +19,18 @@ const cfg: KartConfig = {
   turnRateAtTop: 1.5,
   turnFullSpeed: 4,
   grip: 18,
-  driftGrip: 4,
-  driftTurnTight: 2.6,
-  driftTurnLoose: 0.8,
+  driftTurnTight: 1.2,
+  driftTurnNeutral: 0.9,
+  driftTurnCounter: -0.4,
+  driftNoseTightDeg: 40,
+  driftNoseCounterDeg: 12,
+  driftNoseRate: 8,
   driftMinSpeed: 8,
   driftStartSteer: 0.3,
   driftStartWindow: 0.25,
   driftSpeedMult: 1.15,
+  padSpeedMult: 1.35,
+  padBoostSec: 1.2,
 };
 const dt = 1 / 120;
 
@@ -103,26 +108,39 @@ describe("drifting", () => {
     expect(s.driftDir).toBe(0);
   });
 
-  it("locks direction: full countersteer still turns the drift's way", () => {
+  it("locks direction: countersteer doesn't flip it to a left drift", () => {
     const s = drifting();
     expect(s.driftDir).toBe(1);
-    const before = s.heading;
     run(0.5, { throttle: 1, steer: -1, drift: true }, s);
     expect(s.driftDir).toBe(1);
-    expect(s.heading).toBeLessThan(before); // still turning right
   });
 
-  it("countersteer widens the arc, steering in tightens it", () => {
+  it("drift right, countersteer left: the path bends left", () => {
+    const s = drifting();
+    const before = s.velAngle;
+    run(1, { throttle: 1, steer: -1, drift: true }, s);
+    // Heading/velAngle go up when turning left (see the convention in kart.ts).
+    expect(s.velAngle).toBeGreaterThan(before);
+  });
+
+  it("...while the nose still points right of travel", () => {
+    const s = run(1, { throttle: 1, steer: -1, drift: true }, drifting());
+    const deg = (slipAngle(s) * 180) / Math.PI;
+    expect(deg).toBeCloseTo(-cfg.driftNoseCounterDeg, 0);
+  });
+
+  it("steering into the drift curves harder and swings the nose deeper", () => {
     const tight = run(1, { throttle: 1, steer: 1, drift: true }, drifting());
-    const loose = run(1, { throttle: 1, steer: -1, drift: true }, drifting());
-    const turned = (s: KartState) => Math.abs(s.velAngle);
-    expect(turned(tight)).toBeGreaterThan(turned(loose) * 2);
+    const neutral = run(1, { throttle: 1, steer: 0, drift: true }, drifting());
+    expect(tight.velAngle).toBeLessThan(neutral.velAngle);
+    expect(neutral.velAngle).toBeLessThan(0); // centred stick still curves right
+    expect((slipAngle(tight) * 180) / Math.PI).toBeCloseTo(-cfg.driftNoseTightDeg, 0);
   });
 
-  it("slides: much more slip than a normal grippy turn", () => {
-    const normal = run(1, { throttle: 1, steer: 1 }, run(2, { throttle: 1 }));
-    const drift = run(1, { throttle: 1, steer: 1, drift: true }, drifting());
-    expect(Math.abs(slipAngle(drift))).toBeGreaterThan(Math.abs(slipAngle(normal)) * 3);
+  it("goes back to grippy driving on release", () => {
+    const s = run(1, { throttle: 1, steer: 1, drift: true }, drifting());
+    run(0.5, { throttle: 1 }, s);
+    expect(Math.abs(slipAngle(s))).toBeLessThan(0.01);
   });
 
   it("is faster while drifting, then settles back after", () => {

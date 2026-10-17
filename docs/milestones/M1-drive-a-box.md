@@ -14,11 +14,14 @@ drift should reward mastery.
 - [ ] A chase camera with smoothing and slight look-ahead.
 - [ ] Every handling value lives in a `vehicle` section of `tuning.json`.
 - [ ] The overlay shows speed, drift state, slip angle and grip.
+- [ ] A practice course of pickups and boost pads tests whether you can drift onto a
+      chosen line.
 - [ ] Ten minutes of driving in circles is enjoyable.
 
 ## Not in this milestone
 
-Hills, collision, tracks, other racers, sound, boosts of any kind (M4).
+Hills, collision, tracks, other racers, sound, items. Boost pads exist only as a
+practice-course aid; their real design comes in M4.
 
 ## Decisions
 
@@ -33,48 +36,60 @@ playtesting says so.
 The kart tracks two directions separately:
 
 1. **Heading**: where the nose points.
-2. **Velocity direction**: where the kart is actually travelling.
+2. **Travel direction**: where the kart is actually going.
 
-When not drifting, velocity catches up to heading very quickly (high grip). When
-drifting, it catches up slowly, so the body slides wide while the nose points into the
-turn.
+When not drifting, grip swings the travel direction round to the nose very quickly, so
+the kart goes where it points.
 
-How a drift works:
+Drifting works the other way round. The stick steers the **travel direction** directly,
+and the **nose** is held at an angle into the drift.
 
 - **Start:** press drift while steering. The drift direction (left or right) locks to the
   steering side at that moment. Pressing drift with no steering does nothing for now.
-- **Hold:** the stick no longer steers normally. It picks the arc between
-  `driftTurnLoose` (full countersteer) and `driftTurnTight` (full into the drift). The
-  kart always keeps turning in the locked direction, even at full countersteer.
+- **Steering the path:** the stick sets how the travel direction turns, over a range that
+  crosses zero:
+  - full into the drift: `driftTurnTight` (a hard curve the drift's way)
+  - stick centred: `driftTurnNeutral` (a gentler curve the drift's way)
+  - full countersteer: `driftTurnCounter` (negative, so the path bends the _other_ way)
+- **Nose angle:** held into the drift, from `driftNoseCounterDeg` (full countersteer) to
+  `driftNoseTightDeg` (full in), easing at `driftNoseRate`. It shows what the kart is
+  doing and doesn't change the path.
 - **Speed:** while drifting, top speed rises to `driftSpeedMult` × `topSpeed` (about
-  15% faster). Drifting is the fast way round corners. There is **no** boost for
-  releasing; after the drift, the extra speed bleeds off.
-- **Release:** grip returns and normal steering resumes.
+  15% faster). There is **no** boost for releasing; after the drift, the extra speed
+  bleeds off.
+- **Release:** normal grip returns, so the kart straightens up toward where the nose is
+  pointing.
 - **Cancel:** dropping below `driftMinSpeed` or braking ends the drift.
 
-The skill this creates: because the kart slides along an arc outside where the nose
-points, reaching something on the _outside_ of the turn means steering _away_ from it
-(countersteer). Players who learn this take tight, fast lines; newcomers still get round
-corners. This behaviour falls out of the model and should not be special-cased.
+The skill this creates: drift right and countersteer left, and the kart slides left
+while its nose still points right. Reaching a pickup or pad on the _outside_ of the turn
+means steering _away_ from the turn.
+
+The first version of this model (drift = low grip, stick only picks the arc size) could
+never bend the path against the drift, so this skill was impossible. Playtesting caught
+it.
 
 ### Tuning keys (first pass)
 
 All in `vehicle` in `tuning.json`. Names may change during implementation.
 
-| Key              | Meaning                                                 |
-| ---------------- | ------------------------------------------------------- |
-| `accel`, `brake` | Forward acceleration and braking, m/s²                  |
-| `topSpeed`       | Top speed on throttle, m/s                              |
-| `reverseSpeed`   | Top reverse speed, m/s                                  |
-| `drag`           | Coasting slowdown                                       |
-| `turnRate`       | Max yaw rate at low speed, rad/s                        |
-| `turnRateAtTop`  | Max yaw rate at top speed (lower = steadier at speed)   |
-| `grip`           | How fast velocity aligns to heading when not drifting   |
-| `driftGrip`      | Same, while drifting (much lower)                       |
-| `driftTurnTight` | Yaw rate with full steer into the drift                 |
-| `driftTurnLoose` | Yaw rate at full countersteer                           |
-| `driftMinSpeed`  | Below this, a drift can't start and ends if active      |
-| `driftSpeedMult` | Top speed multiplier while drifting (1.15 = 15% faster) |
+| Key                   | Meaning                                                              |
+| --------------------- | -------------------------------------------------------------------- |
+| `accel`, `brake`      | Forward acceleration and braking, m/s²                               |
+| `topSpeed`            | Top speed on throttle, m/s                                           |
+| `reverseSpeed`        | Top reverse speed, m/s                                               |
+| `drag`                | Coasting slowdown                                                    |
+| `turnRate`            | Max yaw rate at low speed, rad/s                                     |
+| `turnRateAtTop`       | Max yaw rate at top speed (lower = steadier at speed)                |
+| `grip`                | How fast velocity aligns to heading when not drifting                |
+| `driftTurnTight`      | Travel turn rate, full steer into the drift                          |
+| `driftTurnNeutral`    | Travel turn rate, stick centred                                      |
+| `driftTurnCounter`    | Travel turn rate, full countersteer (negative = bends the other way) |
+| `driftNoseTightDeg`   | Nose angle into the drift, full steer in                             |
+| `driftNoseCounterDeg` | Nose angle into the drift, full countersteer                         |
+| `driftNoseRate`       | How fast the nose swings to its drift angle                          |
+| `driftMinSpeed`       | Below this, a drift can't start and ends if active                   |
+| `driftSpeedMult`      | Top speed multiplier while drifting (1.15 = 15% faster)              |
 
 Input feel lives in a separate `input` section (deadzone, keyboard steering ramp).
 

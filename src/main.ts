@@ -5,10 +5,14 @@ import { createLoop } from "./core/loop";
 import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
+import courseData from "../assets/data/course.json";
 import { createChaseCamera } from "./render/chaseCamera";
+import { createCourseView } from "./render/courseView";
+import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
-// M1: drive a box around a big flat plane, with drifting and a chase camera.
+// M1: drive a box around a big flat plane, with drifting, a chase camera and a small
+// practice course of pickups and boost pads. Press R to reset to the start.
 
 const GROUND_SIZE = 600;
 const GROUND_TILE = 5; // metres per grid square
@@ -58,17 +62,40 @@ nose.position.set(0, 0.2, 1.2);
 kart.add(nose);
 stage.scene.add(ground, kart);
 
+const course = createCourse(courseData);
+const courseView = createCourseView(stage.scene, course, tuning.course);
+
+// Always-on readout so you can judge a line without opening the debug tools.
+const hud = document.createElement("div");
+hud.className = "hud";
+document.body.appendChild(hud);
+
 // Simulation state lives apart from the meshes so rendering can interpolate.
-const state = createKartState();
+const { start } = courseData;
+const state = createKartState(start.x, start.z, start.heading);
 const prev = { x: 0, z: 0, heading: 0, velAngle: 0 };
+let simTime = 0;
+
+// Reset is requested from a key event but applied on the fixed step, like all gameplay.
+let resetRequested = false;
+window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyR") resetRequested = true;
+});
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   update(dt) {
+    if (resetRequested) {
+      resetRequested = false;
+      Object.assign(state, createKartState(start.x, start.z, start.heading));
+      resetCourse(course);
+    }
     prev.x = state.x;
     prev.z = state.z;
     prev.heading = state.heading;
     prev.velAngle = state.velAngle;
     stepKart(state, input.sample(dt), tuning.vehicle, dt);
+    stepCourse(course, state, tuning.course, tuning.vehicle, dt);
+    simTime += dt;
   },
   render(alpha, frameSeconds) {
     const { camera, world, vehicle } = tuning;
@@ -91,6 +118,9 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       camera,
       frameSeconds,
     );
+
+    courseView.render(simTime, tuning.course);
+    hud.textContent = `Pickups ${course.collected}  ·  ${state.speed.toFixed(0)} m/s  ·  R to reset`;
 
     debug.overlay.set("speed", `${state.speed.toFixed(1)} m/s`);
     debug.overlay.set("slip", `${((slipAngle(state) * 180) / Math.PI).toFixed(1)}°`);
