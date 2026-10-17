@@ -20,14 +20,23 @@
     "turnRateAtTop": 1.6,
     "turnFullSpeed": 4,
     "grip": 18,
-    "driftGrip": 4,
-    "driftTurnTight": 2.6,
-    "driftTurnLoose": 0.8,
+    "driftTurnTight": 1.2,
+    "driftTurnNeutral": 0.9,
+    "driftTurnCounter": -0.4,
+    "driftNoseTightDeg": 40,
+    "driftNoseCounterDeg": 12,
+    "driftNoseRate": 8,
     "driftMinSpeed": 8,
     "driftStartSteer": 0.3,
     "driftStartWindow": 0.25,
     "driftSpeedMult": 1.15,
-    "color": "#ffb703"
+    "padSpeedMult": 1.35,
+    "padBoostSec": 1.2
+  },
+  "stats": {
+    "topSpeedPerPoint": 0.05,
+    "accelPerPoint": 0.15,
+    "handlingPerPoint": 0.12
   },
   "camera": {
     "fov": 65,
@@ -38,6 +47,14 @@
     "followTravel": 0.6,
     "yawFollow": 6,
     "posFollow": 10
+  },
+  "course": {
+    "pickupRadius": 1.8,
+    "pickupRespawnSec": 5,
+    "padLength": 6,
+    "padWidth": 4,
+    "pickupColor": "#ff4d6d",
+    "padColor": "#ffd166"
   },
   "world": {
     "skyColor": "#8ecae6",
