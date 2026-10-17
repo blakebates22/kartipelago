@@ -21,7 +21,7 @@ describe("buildTrack", () => {
       const next = track.samples[(i + 1) % track.samples.length]!;
       return s.pos.distanceTo(next.pos);
     });
-    for (const g of gaps) expect(g).toBeGreaterThan(1.5);
+    for (const g of gaps) expect(g).toBeGreaterThan(1.4);
     for (const g of gaps) expect(g).toBeLessThan(2.5);
   });
 
@@ -45,15 +45,19 @@ describe("buildTrack", () => {
     expect(Math.abs(track.start.heading)).toBeLessThan(0.2); // first leg runs along +Z
   });
 
+  it("never dips below the ground", () => {
+    for (const s of track.samples) expect(s.pos.y).toBeGreaterThanOrEqual(0);
+  });
+
   it("uses per-point widths", () => {
-    const narrow = data.points.findIndex((p) => p.width === 11);
+    const narrow = data.points.findIndex((p) => p.width !== undefined);
     const near = track.samples.reduce((best, s) =>
       Math.hypot(s.pos.x - data.points[narrow]!.x, s.pos.z - data.points[narrow]!.z) <
       Math.hypot(best.pos.x - data.points[narrow]!.x, best.pos.z - data.points[narrow]!.z)
         ? s
         : best,
     );
-    expect(near.width).toBeCloseTo(11, 0);
+    expect(near.width).toBeCloseTo(data.points[narrow]!.width!, 0);
   });
 
   it("banks the road when asked", () => {

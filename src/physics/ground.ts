@@ -12,6 +12,20 @@ export interface Surface {
   ny: number;
   nz: number;
   onRoad: boolean;
+  /** Present near a track: where the kart is across the road, for walls. */
+  road?: RoadSpot;
+}
+
+export interface RoadSpot {
+  /** Signed distance from the centre line toward the right edge, metres (horizontal). */
+  across: number;
+  halfWidth: number;
+  /** Unit horizontal vector toward the right edge. */
+  rx: number;
+  rz: number;
+  /** Road height at the centre line, and its rise per metre toward the right. */
+  centreY: number;
+  rise: number;
 }
 
 export interface GroundQuery {
@@ -81,8 +95,16 @@ export function createTrackGround(track: Track): GroundQuery {
     const width = lerp(a.width, b.width);
     // How far across the road, measured horizontally; banking raises or lowers it.
     const rh = Math.hypot(rx, rz);
-    const across = ((x - cx) * rx + (z - cz) * rz) / (rh * rh);
-    if (Math.abs(across * rh) > width / 2) return { ...FLAT };
+    const across = ((x - cx) * rx + (z - cz) * rz) / rh;
+    const road: RoadSpot = {
+      across,
+      halfWidth: width / 2,
+      rx: rx / rh,
+      rz: rz / rh,
+      centreY: cy,
+      rise: ry / rh,
+    };
+    if (Math.abs(across) > width / 2) return { ...FLAT, road };
     // Normal = right × forward.
     let nx = ry * fz - rz * fy;
     let ny = rz * fx - rx * fz;
@@ -91,7 +113,7 @@ export function createTrackGround(track: Track): GroundQuery {
     nx /= nl;
     ny /= nl;
     nz /= nl;
-    return { height: cy + across * ry, nx, ny, nz, onRoad: true };
+    return { height: cy + across * road.rise, nx, ny, nz, onRoad: true, road };
   };
 
   return {
