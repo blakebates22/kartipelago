@@ -20,13 +20,24 @@
     "turnRateAtTop": 1.6,
     "turnFullSpeed": 4,
     "grip": 18,
+    "driftGrip": 4,
+    "driftTurnTight": 2.6,
+    "driftTurnLoose": 0.8,
+    "driftMinSpeed": 8,
+    "driftStartSteer": 0.3,
+    "driftStartWindow": 0.25,
+    "driftSpeedMult": 1.15,
     "color": "#ffb703"
   },
   "camera": {
     "fov": 65,
     "distance": 7,
     "height": 3,
-    "lookHeight": 1
+    "lookHeight": 1,
+    "lookAhead": 4,
+    "followTravel": 0.6,
+    "yawFollow": 6,
+    "posFollow": 10
   },
   "world": {
     "skyColor": "#8ecae6",
