@@ -17,6 +17,8 @@ export interface ChaseConfig {
 
 export interface ChaseTarget {
   x: number;
+  /** Height of the kart's base. */
+  y: number;
   z: number;
   heading: number;
   velAngle: number;
@@ -49,14 +51,18 @@ export function createChaseCamera(camera: THREE.PerspectiveCamera) {
       const travelYaw = t.heading + wrapAngle(t.velAngle - t.heading) * cfg.followTravel;
       yaw = ready ? dampAngle(yaw, travelYaw, cfg.yawFollow, dt) : travelYaw;
 
-      want.set(t.x - Math.sin(yaw) * cfg.distance, cfg.height, t.z - Math.cos(yaw) * cfg.distance);
+      want.set(
+        t.x - Math.sin(yaw) * cfg.distance,
+        t.y + cfg.height,
+        t.z - Math.cos(yaw) * cfg.distance,
+      );
       if (ready) pos.lerp(want, follow(cfg.posFollow, dt));
       else pos.copy(want);
 
       const ahead = cfg.lookAhead * Math.max(0, t.speedFrac);
       want.set(
         t.x + Math.sin(t.velAngle) * ahead,
-        cfg.lookHeight,
+        t.y + cfg.lookHeight,
         t.z + Math.cos(t.velAngle) * ahead,
       );
       if (ready) look.lerp(want, follow(cfg.posFollow, dt));

@@ -31,6 +31,8 @@ const cfg: KartConfig = {
   driftSpeedMult: 1.15,
   padSpeedMult: 1.35,
   padBoostSec: 1.2,
+  airSteer: 0.12,
+  slopeSpeed: 12,
 };
 const dt = 1 / 120;
 
