@@ -45,6 +45,16 @@ describe("buildTrack", () => {
     expect(Math.abs(track.start.heading)).toBeLessThan(0.2); // first leg runs along +Z
   });
 
+<<<<<<< Updated upstream
+=======
+  it("never dips below the ground, even at the low edge of a banked corner", () => {
+    for (const s of track.samples) {
+      expect(acrossRoad(s, -1).y).toBeGreaterThanOrEqual(-1e-9);
+      expect(acrossRoad(s, 1).y).toBeGreaterThanOrEqual(-1e-9);
+    }
+  });
+
+>>>>>>> Stashed changes
   it("uses per-point widths", () => {
     const narrow = data.points.findIndex((p) => p.width === 11);
     const near = track.samples.reduce((best, s) =>

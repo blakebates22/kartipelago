@@ -29,6 +29,8 @@ const cfg: KartConfig = {
   driftStartSteer: 0.3,
   driftStartWindow: 0.25,
   driftSpeedMult: 1.15,
+  driftRecoverRate: 5,
+  driftRecoverTurn: 0.25,
   padSpeedMult: 1.35,
   padBoostSec: 1.2,
   airSteer: 0.12,
@@ -139,10 +141,23 @@ describe("drifting", () => {
     expect((slipAngle(tight) * 180) / Math.PI).toBeCloseTo(-cfg.driftNoseTightDeg, 0);
   });
 
-  it("goes back to grippy driving on release", () => {
+  it("eases out of a drift instead of snapping, mostly keeping its line", () => {
     const s = run(1, { throttle: 1, steer: 1, drift: true }, drifting());
-    run(0.5, { throttle: 1 }, s);
-    expect(Math.abs(slipAngle(s))).toBeLessThan(0.01);
+    const travel = s.velAngle;
+    const slipBefore = Math.abs(slipAngle(s));
+    run(dt, { throttle: 1 }, s);
+    // One step after release: still most of the slide angle left (no snap)...
+    expect(Math.abs(slipAngle(s))).toBeGreaterThan(slipBefore * 0.9);
+    run(1.5, { throttle: 1 }, s);
+    // ...then it's gone, and the path turned by only part of the old slide angle.
+    expect(Math.abs(slipAngle(s))).toBeLessThan(0.02);
+    expect(Math.abs(s.velAngle - travel)).toBeLessThan(slipBefore * 0.4);
+  });
+
+  it("goes back to grippy driving after easing out", () => {
+    const s = run(1, { throttle: 1, steer: 1, drift: true }, drifting());
+    run(2, { throttle: 1 }, s);
+    expect(s.recovering).toBe(false);
   });
 
   it("is faster while drifting, then settles back after", () => {

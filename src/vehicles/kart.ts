@@ -51,6 +51,13 @@ export interface KartConfig {
   padSpeedMult: number;
   /** How long a boost pad's effect lasts after leaving it, seconds. */
   padBoostSec: number;
+  /** After a drift, how fast the leftover slide angle eases out, per second. */
+  driftRecoverRate: number;
+  /**
+   * Share of that easing that turns your path toward the nose (0..1). The rest turns
+   * the nose back toward your path. Low = smooth exit that keeps your line.
+   */
+  driftRecoverTurn: number;
   /** Fraction of normal steering available in the air (small: line up a landing only). */
   airSteer: number;
   /** Top speed change per unit of slope, m/s: lower uphill, higher downhill. */
@@ -70,8 +77,12 @@ export interface KartState {
   driftTime: number;
   /** Seconds since the drift button was pressed; Infinity while released. */
   driftPressAge: number;
-  /** Seconds of boost-pad effect left. */
+  /** Seconds of boost effect left (boost pads, start boost). */
   boostTime: number;
+  /** Top speed multiplier while boostTime lasts. */
+  boostMult: number;
+  /** Easing out of a drift: the slide angle is being smoothed away. */
+  recovering: boolean;
   // Vertical state, owned by physics/vertical.ts.
   y: number;
   vy: number;
@@ -86,6 +97,8 @@ export interface KartState {
 
 /** Below this forward speed, holding brake reverses instead of braking. */
 const REVERSE_BELOW = 0.5;
+/** Slide angle (radians) below which a drift exit counts as finished. */
+const RECOVERED = 0.01;
 /** Brake input above this cancels a drift. */
 const BRAKE_CANCELS_DRIFT = 0.5;
 
@@ -100,6 +113,8 @@ export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
     driftTime: 0,
     driftPressAge: Infinity,
     boostTime: 0,
+    boostMult: 1,
+    recovering: false,
     y,
     vy: 0,
     grounded: true,
@@ -132,6 +147,7 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
   if (s.driftDir !== 0) {
     if (released || s.speed < cfg.driftMinSpeed || input.brake > BRAKE_CANCELS_DRIFT) {
       s.driftDir = 0;
+      s.recovering = true;
     }
     return;
   }
@@ -147,13 +163,20 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
   if (canStart) {
     s.driftDir = Math.sign(input.steer);
     s.driftTime = 0;
+    s.recovering = false;
   }
 }
 
-/** Driving over a boost pad: jump to boosted speed and hold it for a moment. */
+/** Boost: jump to a multiple of top speed and hold that cap for a while. */
+export function applyBoost(s: KartState, cfg: KartConfig, mult: number, seconds: number) {
+  s.boostMult = s.boostTime > 0 ? Math.max(s.boostMult, mult) : mult;
+  s.boostTime = Math.max(s.boostTime, seconds);
+  s.speed = Math.max(s.speed, cfg.topSpeed * mult);
+}
+
+/** Driving over a boost pad. */
 export function applyPadBoost(s: KartState, cfg: KartConfig) {
-  s.boostTime = cfg.padBoostSec;
-  s.speed = Math.max(s.speed, cfg.topSpeed * cfg.padSpeedMult);
+  applyBoost(s, cfg, cfg.padSpeedMult, cfg.padBoostSec);
 }
 
 /** Advance one fixed step. Mutates and returns s. */
@@ -162,7 +185,7 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   const drifting = s.driftDir !== 0;
   // Drifting is the fast way round: it raises top speed, and so does a boost pad. When
   // either ends, the extra speed bleeds off at the drag rate rather than vanishing.
-  const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? cfg.padSpeedMult : 1);
+  const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
   const cap = Math.max(0, cfg.topSpeed * mult - s.slope * cfg.slopeSpeed);
   s.boostTime = Math.max(0, s.boostTime - dt);
 
@@ -217,10 +240,20 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   }
 
   if (!drifting && s.grounded) {
-    // Grip: swing the travel direction toward the nose. Exponential, so it's the same at
-    // any physics rate.
-    const pull = 1 - Math.exp(-cfg.grip * dt);
-    s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
+    if (s.recovering) {
+      // Just left a drift: ease the leftover slide angle away, mostly by bringing the
+      // nose round to the path, so the exit is smooth instead of a sudden snap.
+      const offset = slipAngle(s);
+      const ease = offset * (1 - Math.exp(-cfg.driftRecoverRate * dt));
+      s.velAngle = wrapAngle(s.velAngle + ease * cfg.driftRecoverTurn);
+      s.heading = wrapAngle(s.heading - ease * (1 - cfg.driftRecoverTurn));
+      if (Math.abs(slipAngle(s)) < RECOVERED) s.recovering = false;
+    } else {
+      // Grip: swing the travel direction toward the nose. Exponential, so it's the same
+      // at any physics rate.
+      const pull = 1 - Math.exp(-cfg.grip * dt);
+      s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
+    }
   }
 
   s.x += Math.sin(s.velAngle) * s.speed * dt;

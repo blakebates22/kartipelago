@@ -96,7 +96,15 @@ function strip(
 
 /** Road, walls and start line. Purely visual; collision comes from the track samples. */
 export function createTrackView(scene: THREE.Scene, track: Track, look: TrackLook) {
-  const roadMat = new THREE.MeshStandardMaterial({ map: roadTexture(), roughness: 0.9 });
+  // Polygon offset makes the road win depth ties with the ground plane where it lies
+  // nearly flat on it (no flickering grass showing through).
+  const roadMat = new THREE.MeshStandardMaterial({
+    map: roadTexture(),
+    roughness: 0.9,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -4,
+  });
   const road = new THREE.Mesh(
     strip(
       track,
@@ -136,7 +144,12 @@ export function createTrackView(scene: THREE.Scene, track: Track, look: TrackLoo
   const first = track.samples[0]!;
   const startLine = new THREE.Mesh(
     new THREE.PlaneGeometry(first.width, 2).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ map: checkerTexture() }),
+    new THREE.MeshStandardMaterial({
+      map: checkerTexture(),
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      polygonOffsetUnits: -8,
+    }),
   );
   startLine.position.copy(first.pos).y += LIFT * 2;
   startLine.rotation.y = track.start.heading;
