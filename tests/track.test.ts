@@ -26,7 +26,8 @@ describe("buildTrack", () => {
   });
 
   it("puts right at right angles to travel, and level when unbanked", () => {
-    for (const s of track.samples) {
+    const flat = buildTrack({ ...data, points: data.points.map((p) => ({ ...p, bank: 0 })) }, 2);
+    for (const s of flat.samples) {
       expect(Math.abs(s.right.dot(s.forward))).toBeLessThan(0.05);
       expect(Math.abs(s.right.y)).toBeLessThan(1e-9);
     }

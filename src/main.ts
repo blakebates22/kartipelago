@@ -13,6 +13,8 @@ import { createCourseView } from "./render/courseView";
 import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
+import { createTrackGround, flatGround } from "./physics/ground";
+import { stepVertical } from "./physics/vertical";
 import { applyCharacter, type Character } from "./vehicles/character";
 import { createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
@@ -83,10 +85,33 @@ const hud = document.createElement("div");
 hud.className = "hud";
 document.body.appendChild(hud);
 
+// Visual tilt: sit flat on the surface when grounded; in the air, pitch with the arc of
+// the jump. Smoothed, so bumps and landings don't snap the mesh.
+const tilt = { up: new THREE.Vector3(), fwd: new THREE.Vector3(), right: new THREE.Vector3() };
+const tiltBasis = new THREE.Matrix4();
+const tiltTarget = new THREE.Quaternion();
+function tiltKart(heading: number, frameSeconds: number) {
+  const { up, fwd, right } = tilt;
+  fwd.set(Math.sin(heading), 0, Math.cos(heading));
+  if (state.grounded) up.set(state.nx, state.ny, state.nz);
+  else
+    up.set(0, 1, 0)
+      .addScaledVector(fwd, -state.vy / Math.max(8, Math.abs(state.speed)))
+      .normalize();
+  right.crossVectors(up, fwd).normalize();
+  fwd.crossVectors(right, up).normalize();
+  tiltBasis.makeBasis(right, up, fwd);
+  tiltTarget.setFromRotationMatrix(tiltBasis);
+  kart.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
+}
+
 // Simulation state lives apart from the meshes so rendering can interpolate.
+const surface = track ? createTrackGround(track) : flatGround;
 const start = track ? track.start : courseData.start;
-const state = createKartState(start.x, start.z, start.heading);
-const prev = { x: 0, z: 0, heading: 0, velAngle: 0 };
+const spawn = () =>
+  createKartState(start.x, start.z, start.heading, surface.at(start.x, start.z).height);
+const state = spawn();
+const prev = { x: state.x, y: state.y, z: state.z, heading: 0, velAngle: 0 };
 let simTime = 0;
 
 // Reset is requested from a key event but applied on the fixed step, like all gameplay.
@@ -103,10 +128,11 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   update(dt) {
     if (resetRequested) {
       resetRequested = false;
-      Object.assign(state, createKartState(start.x, start.z, start.heading));
+      Object.assign(state, spawn());
       if (course) resetCourse(course);
     }
     prev.x = state.x;
+    prev.y = state.y;
     prev.z = state.z;
     prev.heading = state.heading;
     prev.velAngle = state.velAngle;
@@ -117,17 +143,19 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     // Rebuilt each step so live tuning edits to the base kart apply immediately.
     const kartCfg = applyCharacter(tuning.vehicle, character, tuning.stats);
     stepKart(state, input.sample(dt), kartCfg, dt);
+    stepVertical(state, surface, tuning.physics, dt);
     if (course) stepCourse(course, state, tuning.course, kartCfg, dt);
     simTime += dt;
   },
   render(alpha, frameSeconds) {
     const { camera, world, vehicle } = tuning;
     const x = prev.x + (state.x - prev.x) * alpha;
+    const y = prev.y + (state.y - prev.y) * alpha;
     const z = prev.z + (state.z - prev.z) * alpha;
     const heading = prev.heading + wrapAngle(state.heading - prev.heading) * alpha;
 
-    kart.position.set(x, 0.4, z);
-    kart.rotation.y = heading;
+    kart.position.set(x, y + 0.4, z);
+    tiltKart(heading, frameSeconds);
     kartMat.color.set(character.color);
     groundMat.color.set(world.groundColor);
     stage.scene.background = new THREE.Color(world.skyColor);
@@ -137,7 +165,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     stage.camera.updateProjectionMatrix();
     const velAngle = prev.velAngle + wrapAngle(state.velAngle - prev.velAngle) * alpha;
     chase.update(
-      { x, z, heading, velAngle, speedFrac: state.speed / vehicle.topSpeed },
+      { x, y, z, heading, velAngle, speedFrac: state.speed / vehicle.topSpeed },
       camera,
       frameSeconds,
     );
@@ -154,6 +182,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     debug.overlay.set("thr", input.state.throttle);
     debug.overlay.set("brk", input.state.brake);
     debug.overlay.set("steer", input.state.steer);
+    debug.overlay.set("air", state.grounded ? "-" : `${state.y.toFixed(1)} m`);
     debug.overlay.set(
       "drift",
       state.driftDir === 0

@@ -31,12 +31,18 @@
     "driftStartWindow": 0.25,
     "driftSpeedMult": 1.15,
     "padSpeedMult": 1.35,
-    "padBoostSec": 1.2
+    "padBoostSec": 1.2,
+    "airSteer": 0.12,
+    "slopeSpeed": 12
   },
   "stats": {
     "topSpeedPerPoint": 0.05,
     "accelPerPoint": 0.15,
     "handlingPerPoint": 0.12
+  },
+  "physics": {
+    "gravity": 30,
+    "groundStick": 10
   },
   "camera": {
     "fov": 65,

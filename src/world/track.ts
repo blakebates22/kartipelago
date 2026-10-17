@@ -77,7 +77,10 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     samples.push({ pos, forward, right, width, dist: u * length });
   }
 
+  // Face down the road a few metres ahead rather than along the tangent at the start
+  // point, which the spline leans toward the previous corner.
   const first = samples[0]!;
+  const ahead = samples[Math.min(3, count - 1)]!;
   return {
     data,
     samples,
@@ -85,7 +88,7 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     start: {
       x: first.pos.x,
       z: first.pos.z,
-      heading: Math.atan2(first.forward.x, first.forward.z),
+      heading: Math.atan2(ahead.pos.x - first.pos.x, ahead.pos.z - first.pos.z),
     },
   };
 }

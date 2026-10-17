@@ -117,7 +117,8 @@ export function createTrackView(scene: THREE.Scene, track: Track, look: TrackLoo
     new THREE.Mesh(
       strip(
         track,
-        (i) => acrossRoad(track.samples[i]!, side, 0),
+        // Down to the ground plane, so raised road sits on solid sides.
+        (i) => acrossRoad(track.samples[i]!, side, 0).setY(0),
         (i) => acrossRoad(track.samples[i]!, side, look.wallHeight),
         4,
       ),

@@ -62,13 +62,14 @@ height `y` and vertical speed `vy`, plus a `grounded` flag.
 
 - Gravity pulls `vy` down (`airGravity`). There is no rolling drag, so horizontal speed,
   including drift and boost-pad speed, carries through the jump.
-- Limited air steering (`airTurnRate`, much lower than on the ground), so you can line
-  up a landing but not turn corners in mid-air.
-- A drift in progress stays locked while airborne and resumes on landing (to confirm).
+- Barely any air steering (`airSteer`, a small fraction of ground steering), so you can
+  line up a landing but not turn corners in mid-air.
+- A drift in progress stays locked while airborne and continues on landing if the
+  button is still held. A new drift can't start in the air.
 
 **Landing:**
 
-- Drop the vertical speed, keep the horizontal speed.
+- Drop the vertical speed, keep the horizontal speed. Landing **never** costs speed.
 - Re-project the travel direction onto the new surface, so landing on a downslope feels
   smooth and landing flat after a big drop gives a small bump.
 
@@ -98,9 +99,11 @@ you; a head-on hit nearly stops you.
 5. **Laps.** Checkpoints, lap counter, timer, three-lap race, respawn.
 6. **Playtest pass.**
 
+## Answered
+
+- Air steering: barely. Landing: never costs speed. Hop button: not yet.
+
 ## Open questions
 
-- In the air, can you steer at all, and does a drift continue on landing?
-- Should landing ever cost speed (a hard flat landing), or never?
-- One big jump on the first track, or several small hops?
-- Should there be a deliberate hop button, or only ramps?
+- One big jump on the first track, or several small hops? (Starting with one, on the
+  opening straight.)

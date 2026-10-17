@@ -51,6 +51,10 @@ export interface KartConfig {
   padSpeedMult: number;
   /** How long a boost pad's effect lasts after leaving it, seconds. */
   padBoostSec: number;
+  /** Fraction of normal steering available in the air (small: line up a landing only). */
+  airSteer: number;
+  /** Top speed change per unit of slope, m/s: lower uphill, higher downhill. */
+  slopeSpeed: number;
 }
 
 export interface KartState {
@@ -68,6 +72,16 @@ export interface KartState {
   driftPressAge: number;
   /** Seconds of boost-pad effect left. */
   boostTime: number;
+  // Vertical state, owned by physics/vertical.ts.
+  y: number;
+  vy: number;
+  grounded: boolean;
+  /** Rise per metre along the travel direction; 0 in the air. */
+  slope: number;
+  /** Normal of the surface last touched, for tilting the mesh. */
+  nx: number;
+  ny: number;
+  nz: number;
 }
 
 /** Below this forward speed, holding brake reverses instead of braking. */
@@ -75,7 +89,7 @@ const REVERSE_BELOW = 0.5;
 /** Brake input above this cancels a drift. */
 const BRAKE_CANCELS_DRIFT = 0.5;
 
-export function createKartState(x = 0, z = 0, heading = 0): KartState {
+export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
   return {
     x,
     z,
@@ -86,6 +100,13 @@ export function createKartState(x = 0, z = 0, heading = 0): KartState {
     driftTime: 0,
     driftPressAge: Infinity,
     boostTime: 0,
+    y,
+    vy: 0,
+    grounded: true,
+    slope: 0,
+    nx: 0,
+    ny: 1,
+    nz: 0,
   };
 }
 
@@ -121,7 +142,8 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
     input.drift &&
     s.driftPressAge <= cfg.driftStartWindow &&
     Math.abs(input.steer) >= cfg.driftStartSteer &&
-    s.speed >= cfg.driftMinSpeed;
+    s.speed >= cfg.driftMinSpeed &&
+    s.grounded;
   if (canStart) {
     s.driftDir = Math.sign(input.steer);
     s.driftTime = 0;
@@ -141,11 +163,15 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   // Drifting is the fast way round: it raises top speed, and so does a boost pad. When
   // either ends, the extra speed bleeds off at the drag rate rather than vanishing.
   const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? cfg.padSpeedMult : 1);
-  const cap = cfg.topSpeed * mult;
+  const cap = Math.max(0, cfg.topSpeed * mult - s.slope * cfg.slopeSpeed);
   s.boostTime = Math.max(0, s.boostTime - dt);
 
-  // Longitudinal: throttle, brake, reverse, coast.
-  if (input.brake > 0 && s.speed > REVERSE_BELOW) {
+  // Longitudinal: throttle, brake, reverse, coast. None of it applies in the air:
+  // speed (including drift and boost speed) carries through a jump untouched.
+  const steer = s.grounded ? 1 : cfg.airSteer;
+  if (!s.grounded) {
+    // no change
+  } else if (input.brake > 0 && s.speed > REVERSE_BELOW) {
     s.speed = moveToward(s.speed, 0, cfg.brake * input.brake * dt);
   } else if (input.brake > input.throttle) {
     s.speed = moveToward(s.speed, -cfg.reverseSpeed, cfg.reverseAccel * input.brake * dt);
@@ -174,7 +200,7 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     const swing = 1 - Math.exp(-cfg.driftNoseRate * dt);
     const nextOffset = offset + (-s.driftDir * nose - offset) * swing;
     // The stick steers where the kart goes, and the nose rides along with it.
-    s.velAngle = wrapAngle(s.velAngle - s.driftDir * turn * dt);
+    s.velAngle = wrapAngle(s.velAngle - s.driftDir * turn * steer * dt);
     s.heading = wrapAngle(s.velAngle + nextOffset);
     s.driftTime += dt;
   } else {
@@ -184,10 +210,13 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     const rolling = Math.min(1, abs / cfg.turnFullSpeed);
     const rate = (cfg.turnRate + (cfg.turnRateAtTop - cfg.turnRate) * atSpeed) * rolling;
     // Reversing flips steering, as in a real car.
-    s.heading = wrapAngle(s.heading - input.steer * rate * Math.sign(s.speed) * dt);
+    const turn = input.steer * rate * Math.sign(s.speed) * steer * dt;
+    s.heading = wrapAngle(s.heading - turn);
+    // In the air there's no grip; a little steering turns kart and path together.
+    if (!s.grounded) s.velAngle = wrapAngle(s.velAngle - turn);
   }
 
-  if (!drifting) {
+  if (!drifting && s.grounded) {
     // Grip: swing the travel direction toward the nose. Exponential, so it's the same at
     // any physics rate.
     const pull = 1 - Math.exp(-cfg.grip * dt);
