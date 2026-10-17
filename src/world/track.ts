@@ -78,6 +78,8 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     const bank = valueAt(data.points, t, (p) => p.bank ?? 0);
     right.applyAxisAngle(flat, (bank * Math.PI) / 180);
     const width = valueAt(data.points, t, (p) => p.width ?? data.defaultWidth);
+    // Banking lowers one edge; lift the road so that edge never sinks under the ground.
+    pos.y = Math.max(pos.y, (Math.abs(right.y) * width) / 2);
     samples.push({ pos, forward, right, width, dist: u * length });
   }
 

@@ -45,8 +45,11 @@ describe("buildTrack", () => {
     expect(Math.abs(track.start.heading)).toBeLessThan(0.2); // first leg runs along +Z
   });
 
-  it("never dips below the ground", () => {
-    for (const s of track.samples) expect(s.pos.y).toBeGreaterThanOrEqual(0);
+  it("never dips below the ground, even at the low edge of a banked corner", () => {
+    for (const s of track.samples) {
+      expect(acrossRoad(s, -1).y).toBeGreaterThanOrEqual(-1e-9);
+      expect(acrossRoad(s, 1).y).toBeGreaterThanOrEqual(-1e-9);
+    }
   });
 
   it("uses per-point widths", () => {

@@ -53,3 +53,87 @@ body {
   border-radius: 6px;
   pointer-events: none;
 }
+
+.banner {
+  position: fixed;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 22px;
+  font:
+    800 28px/1.35 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  color: #ffffff;
+  text-align: center;
+  white-space: pre;
+  background: rgb(0 0 0 / 0.45);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.start-meter {
+  position: fixed;
+  left: 50%;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  padding: 10px 12px 8px;
+  font:
+    12px/1.4 ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+  color: #f1faee;
+  background: rgb(0 0 0 / 0.55);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.sm-bar {
+  position: relative;
+  height: 18px;
+  background: rgb(255 255 255 / 0.12);
+  border-radius: 4px;
+}
+
+.sm-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.sm-good {
+  background: #f4a261;
+}
+
+.sm-perfect {
+  background: #2ec4b6;
+}
+
+.sm-tick {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+}
+
+.sm-go {
+  background: #ffffff;
+}
+
+.sm-press {
+  background: #ff006e;
+  width: 4px;
+  margin-left: -2px;
+}
+
+.sm-now {
+  background: #ffd166;
+}
+
+.sm-text {
+  margin-top: 6px;
+  text-align: center;
+}

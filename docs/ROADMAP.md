@@ -13,6 +13,7 @@ milestone gets detailed planning; later ones stay rough on purpose.
 | M5  | Water and sky    | Hovercraft and plane controllers on the shared vehicle interface  | Planned |
 | M6  | Menus            | Title, character select, track select, HUD                        | Planned |
 | M7  | Adventure        | A small hub island where doors start races; progress is saved     | Planned |
+| M7b | Track builder    | An in-browser editor to lay out, shape and test tracks            | Ideas   |
 | M8  | Beyond           | More tracks, bosses, challenges, split-screen, audio polish       | Ideas   |
 
 ## How a milestone runs

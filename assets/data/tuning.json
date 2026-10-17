@@ -30,6 +30,8 @@
     "driftStartSteer": 0.3,
     "driftStartWindow": 0.25,
     "driftSpeedMult": 1.15,
+    "driftRecoverRate": 5,
+    "driftRecoverTurn": 0.25,
     "padSpeedMult": 1.35,
     "padBoostSec": 1.2,
     "airSteer": 0.12,
@@ -69,6 +71,20 @@
     "wallHeight": 1.2,
     "roadColor": "#d6d6d6",
     "wallColor": "#e63946"
+  },
+  "race": {
+    "laps": 3,
+    "checkpointSpacing": 60,
+    "respawnAfterSec": 0.6,
+    "readySec": 1.5,
+    "startTargetFrac": 0.5,
+    "perfectWindowSec": 0.2,
+    "earlyWindowSec": 0.3,
+    "goShowSec": 0.8,
+    "startPerfectMult": 2,
+    "startPerfectSec": 2,
+    "startGoodMult": 1.2,
+    "startGoodSec": 0.8
   },
   "world": {
     "skyColor": "#8ecae6",
