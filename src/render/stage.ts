@@ -14,7 +14,14 @@ export function createStage(container: HTMLElement) {
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.set(8, 14, 6);
   sun.castShadow = true;
-  scene.add(sun, new THREE.HemisphereLight(0xdff6ff, 0x335533, 1.1));
+  scene.add(sun, sun.target, new THREE.HemisphereLight(0xdff6ff, 0x335533, 1.1));
+  const sunOffset = sun.position.clone();
+
+  /** Keep the sun's small shadow area centred on the action. */
+  const followSun = (x: number, z: number) => {
+    sun.position.set(x + sunOffset.x, sunOffset.y, z + sunOffset.z);
+    sun.target.position.set(x, 0, z);
+  };
 
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = container;
@@ -25,7 +32,7 @@ export function createStage(container: HTMLElement) {
   window.addEventListener("resize", resize);
   resize();
 
-  return { renderer, scene, camera, render: () => renderer.render(scene, camera) };
+  return { renderer, scene, camera, followSun, render: () => renderer.render(scene, camera) };
 }
 
 export type Stage = ReturnType<typeof createStage>;

@@ -9,16 +9,24 @@
     "keySteerRate": 6,
     "keySteerReturn": 10
   },
-  "camera": {
-    "fov": 60,
-    "distance": 6,
-    "height": 3
-  },
-  "m0Cube": {
-    "spinSpeed": 1.2,
-    "bobHeight": 0.25,
-    "bobSpeed": 2,
+  "vehicle": {
+    "accel": 18,
+    "brake": 40,
+    "reverseAccel": 10,
+    "topSpeed": 22,
+    "reverseSpeed": 7,
+    "drag": 6,
+    "turnRate": 2.6,
+    "turnRateAtTop": 1.6,
+    "turnFullSpeed": 4,
+    "grip": 18,
     "color": "#ffb703"
+  },
+  "camera": {
+    "fov": 65,
+    "distance": 7,
+    "height": 3,
+    "lookHeight": 1
   },
   "world": {
     "skyColor": "#8ecae6",
