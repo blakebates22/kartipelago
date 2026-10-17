@@ -1,0 +1,37 @@
+{
+  "default": "speedster",
+  "characters": [
+    {
+      "id": "speedster",
+      "name": "Speedster",
+      "color": "#ffb703",
+      "speed": 5,
+      "accel": 5,
+      "handling": 2.5
+    },
+    {
+      "id": "allrounder",
+      "name": "All-rounder",
+      "color": "#8338ec",
+      "speed": 3,
+      "accel": 3,
+      "handling": 3
+    },
+    {
+      "id": "nimble",
+      "name": "Nimble",
+      "color": "#06d6a0",
+      "speed": 3,
+      "accel": 4.5,
+      "handling": 4.5
+    },
+    {
+      "id": "heavy",
+      "name": "Heavy",
+      "color": "#ef476f",
+      "speed": 4.5,
+      "accel": 1.5,
+      "handling": 2
+    }
+  ]
+}

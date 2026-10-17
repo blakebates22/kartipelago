@@ -69,6 +69,18 @@ The first version of this model (drift = low grip, stick only picks the arc size
 never bend the path against the drift, so this skill was impossible. Playtesting caught
 it.
 
+### Character stats (early)
+
+Characters rate **speed**, **acceleration** and **handling** from 1 to 5. A rating of 3
+is the base kart in `tuning.json`; each point away from 3 scales the base values by the
+`stats` section (top speed ±5%, acceleration ±15%, handling ±12% per point). Handling
+scales every turn rate, including drift turn rates. The roster is data in
+`assets/data/characters.json`, with original names and looks.
+
+The default is **Speedster**, modelled on the speedrunner's favourite archetype: top
+marks for speed and acceleration, below-average handling (5 / 5 / 2.5). Other
+archetypes trade speed for sharper handling. Number keys switch character for testing.
+
 ### Tuning keys (first pass)
 
 All in `vehicle` in `tuning.json`. Names may change during implementation.

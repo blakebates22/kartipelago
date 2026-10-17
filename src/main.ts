@@ -6,9 +6,11 @@ import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 import courseData from "../assets/data/course.json";
+import roster from "../assets/data/characters.json";
 import { createChaseCamera } from "./render/chaseCamera";
 import { createCourseView } from "./render/courseView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
+import { applyCharacter, type Character } from "./vehicles/character";
 import { createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
 // M1: drive a box around a big flat plane, with drifting, a chase camera and a small
@@ -50,7 +52,10 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE),
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 
-const kartMat = new THREE.MeshStandardMaterial({ color: tuning.vehicle.color, flatShading: true });
+const characters = roster.characters as Character[];
+let character = characters.find((c) => c.id === roster.default) ?? characters[0]!;
+
+const kartMat = new THREE.MeshStandardMaterial({ color: character.color, flatShading: true });
 const kart = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 2.4), kartMat);
 kart.castShadow = true;
 // A darker nose so you can tell which way is forward.
@@ -78,8 +83,12 @@ let simTime = 0;
 
 // Reset is requested from a key event but applied on the fixed step, like all gameplay.
 let resetRequested = false;
+// Number keys pick a character (1 = first in characters.json, and so on).
+let pickRequested: Character | undefined;
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyR") resetRequested = true;
+  const n = /^Digit([1-9])$/.exec(e.code);
+  if (n) pickRequested = characters[Number(n[1]) - 1];
 });
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
@@ -93,8 +102,14 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     prev.z = state.z;
     prev.heading = state.heading;
     prev.velAngle = state.velAngle;
-    stepKart(state, input.sample(dt), tuning.vehicle, dt);
-    stepCourse(course, state, tuning.course, tuning.vehicle, dt);
+    if (pickRequested) {
+      character = pickRequested;
+      pickRequested = undefined;
+    }
+    // Rebuilt each step so live tuning edits to the base kart apply immediately.
+    const kartCfg = applyCharacter(tuning.vehicle, character, tuning.stats);
+    stepKart(state, input.sample(dt), kartCfg, dt);
+    stepCourse(course, state, tuning.course, kartCfg, dt);
     simTime += dt;
   },
   render(alpha, frameSeconds) {
@@ -105,7 +120,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
 
     kart.position.set(x, 0.4, z);
     kart.rotation.y = heading;
-    kartMat.color.set(vehicle.color);
+    kartMat.color.set(character.color);
     groundMat.color.set(world.groundColor);
     stage.scene.background = new THREE.Color(world.skyColor);
     stage.followSun(x, z);
@@ -120,7 +135,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     );
 
     courseView.render(simTime, tuning.course);
-    hud.textContent = `Pickups ${course.collected}  ·  ${state.speed.toFixed(0)} m/s  ·  R to reset`;
+    hud.textContent = `${character.name}  ·  Pickups ${course.collected}  ·  ${state.speed.toFixed(0)} m/s  ·  1–${characters.length} character  ·  R reset`;
 
     debug.overlay.set("speed", `${state.speed.toFixed(1)} m/s`);
     debug.overlay.set("slip", `${((slipAngle(state) * 180) / Math.PI).toFixed(1)}°`);
