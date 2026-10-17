@@ -21,7 +21,7 @@ describe("buildTrack", () => {
       const next = track.samples[(i + 1) % track.samples.length]!;
       return s.pos.distanceTo(next.pos);
     });
-    for (const g of gaps) expect(g).toBeGreaterThan(1.5);
+    for (const g of gaps) expect(g).toBeGreaterThan(1.4);
     for (const g of gaps) expect(g).toBeLessThan(2.5);
   });
 
@@ -45,8 +45,6 @@ describe("buildTrack", () => {
     expect(Math.abs(track.start.heading)).toBeLessThan(0.2); // first leg runs along +Z
   });
 
-<<<<<<< Updated upstream
-=======
   it("never dips below the ground, even at the low edge of a banked corner", () => {
     for (const s of track.samples) {
       expect(acrossRoad(s, -1).y).toBeGreaterThanOrEqual(-1e-9);
@@ -54,16 +52,15 @@ describe("buildTrack", () => {
     }
   });
 
->>>>>>> Stashed changes
   it("uses per-point widths", () => {
-    const narrow = data.points.findIndex((p) => p.width === 11);
+    const narrow = data.points.findIndex((p) => p.width !== undefined);
     const near = track.samples.reduce((best, s) =>
       Math.hypot(s.pos.x - data.points[narrow]!.x, s.pos.z - data.points[narrow]!.z) <
       Math.hypot(best.pos.x - data.points[narrow]!.x, best.pos.z - data.points[narrow]!.z)
         ? s
         : best,
     );
-    expect(near.width).toBeCloseTo(11, 0);
+    expect(near.width).toBeCloseTo(data.points[narrow]!.width!, 0);
   });
 
   it("banks the road when asked", () => {

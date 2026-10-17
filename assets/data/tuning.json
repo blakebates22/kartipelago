@@ -44,7 +44,9 @@
   },
   "physics": {
     "gravity": 30,
-    "groundStick": 10
+    "groundStick": 10,
+    "kartRadius": 0.9,
+    "wallAlign": 6
   },
   "camera": {
     "fov": 65,

@@ -59,6 +59,8 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     true,
     "centripetal",
   );
+  // Fine enough distance table that samples come out evenly spaced on long tracks.
+  curve.arcLengthDivisions = Math.max(200, data.points.length * 40);
   const length = curve.getLength();
   const count = Math.max(8, Math.round(length / spacing));
   const samples: TrackSample[] = [];
@@ -67,6 +69,8 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     const u = i / count; // fraction of the way round by distance
     const t = curve.getUtoTmapping(u, 0); // curve parameter at that distance
     const pos = curve.getPoint(t);
+    // The spline can overshoot slightly below its points; never sink under the ground.
+    pos.y = Math.max(0, pos.y);
     const forward = curve.getTangent(t).normalize();
     // Right is horizontal and perpendicular to travel, then tilted by the bank angle.
     const flat = new THREE.Vector3(forward.x, 0, forward.z).normalize();

@@ -16,12 +16,9 @@ import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
 import { createTrackGround, flatGround } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
-<<<<<<< Updated upstream
-=======
 import { stepWalls } from "./physics/walls";
 import { NEUTRAL } from "./core/input";
 import { canDrive, createRace, formatTime, lapClock, stepRace } from "./race/race";
->>>>>>> Stashed changes
 import { applyCharacter, type Character } from "./vehicles/character";
 import { applyBoost, createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
@@ -184,14 +181,10 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     }
     // Rebuilt each step so live tuning edits to the base kart apply immediately.
     const kartCfg = applyCharacter(tuning.vehicle, character, tuning.stats);
-<<<<<<< Updated upstream
-    stepKart(state, input.sample(dt), kartCfg, dt);
-=======
     const held = input.sample(dt);
     // During the countdown the kart sits on the line.
     stepKart(state, !race || canDrive(race) ? held : NEUTRAL, kartCfg, dt);
     stepWalls(state, surface, { ...tuning.physics, wallHeight: tuning.track.wallHeight }, dt);
->>>>>>> Stashed changes
     stepVertical(state, surface, tuning.physics, dt);
     if (course) stepCourse(course, state, tuning.course, kartCfg, dt);
     if (race) {

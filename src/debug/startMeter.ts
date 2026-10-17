@@ -1,10 +1,10 @@
 import { startTarget, type Race, type RaceConfig } from "../race/race";
 
 /**
- * Start-boost timing bar, a tuning tool shown only with ?timing in the URL. Shows the countdown as a timeline from
- * "Get ready!" to just after GO, with the good (early) and perfect windows, a moving
- * cursor for now, and a mark where you pressed. Tune the windows live in the tuning
- * panel's `race` folder, then copy the JSON.
+ * Start-boost timing bar: a tuning tool, shown only with ?timing in the URL. Shows the
+ * countdown as a timeline from "Get ready!" to just after GO, with the good (early) and
+ * perfect windows, a moving cursor for now, and a mark where you pressed. Tune the
+ * windows live in the tuning panel's `race` folder, then copy the JSON.
  */
 export function createStartMeter(parent: HTMLElement) {
   const el = document.createElement("div");
