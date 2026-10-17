@@ -1,6 +1,6 @@
 # M2: First track
 
-> Draft. Refine this together before starting.
+Status: **done**.
 
 ## Goal
 
@@ -10,23 +10,54 @@ it.
 
 ## Done when
 
-- [ ] The kart follows the track surface: up and down hills, tilting to match slopes.
-- [ ] Slopes matter: uphill slows you a little, downhill speeds you up.
-- [ ] The kart leaves the ground at crests and ramps, flies, and lands without losing
+- [x] The kart follows the track surface: up and down hills, tilting to match slopes.
+- [x] Slopes matter: uphill slows you a little, downhill speeds you up.
+- [x] The kart leaves the ground at crests and ramps, flies, and lands without losing
       its horizontal speed.
-- [ ] Speed from drifting and boost pads carries through the air.
-- [ ] Walls stop you leaving the track; glancing hits slide along, head-on hits slow you.
-- [ ] Checkpoints in order make a lap; skipping one doesn't count.
-- [ ] A lap timer, best lap and a three-lap race with a finish.
-- [ ] Falling off the track respawns you at the last checkpoint.
-- [ ] Every new feel value lives in `tuning.json`.
-- [ ] A full race on the track is fun.
+- [x] Speed from drifting and boost pads carries through the air.
+- [x] Walls stop you leaving the track; glancing hits slide along, head-on hits slow you.
+- [x] Checkpoints in order make a lap; skipping one doesn't count.
+- [x] A lap timer, best lap and a three-lap race with a finish.
+- [x] Ending up off the track respawns you at the last checkpoint.
+- [x] Every new feel value lives in `tuning.json`.
+- [x] A full race on the track is fun.
+
+## Also shipped
+
+Added during the milestone after playtesting:
+
+- **Start boost.** "Get ready!" then "GO!", with the perfect moment halfway between.
+  A press within ±0.2 s of it is a perfect start (2× top speed for 2 s); up to 0.3 s
+  earlier is a good start (1.2× for 0.8 s). Holding the throttle from the start, or
+  letting go before GO, earns nothing.
+- **Start timing tool.** A timeline bar showing the windows and where you pressed, in
+  milliseconds. Shown only with `?timing` in the URL.
+- **Smoother drift exit.** Releasing a drift eases the slide angle away (mostly by
+  turning the nose toward the path) instead of snapping the path to the nose.
+- **Best-ever lap record**, saved in the browser.
+
+## Playtest notes
+
+- The first track's corners didn't suit the drift: the median corner radius was 87 m
+  (far gentler than a drift's 20 to 33 m arc) and the tightest was 10.5 m (too tight
+  for anything). The track was rebuilt from straights and arcs sized to the drift, and
+  widened to 22 m. **Rule for future tracks: size corners to the drift arc, not the
+  other way round.** Speedster at drift speed (about 28 m/s): full-in about 20 m,
+  neutral about 33 m.
+- Releasing a drift felt too snappy and awkward; fixed with the drift exit above.
+- The 3-2-1 countdown was replaced with "Get ready!" / "GO!" and tuned using the timing
+  tool: `readySec` 1.5, `perfectWindowSec` 0.2, perfect boost 2× for 2 s.
+- Air: barely any steering, speed never lost on landing, no hop button.
+- Bugs caught along the way: road dipping under the ground (spline overshoot and the
+  low edge of banked corners), uneven track sampling on long tracks, a start heading
+  that leaned toward the previous corner, and karts pinned against walls.
+- Next for tracks: a track builder tool (roadmap M7b) for more control over layouts.
 
 ## Not in this milestone
 
 Other racers, items, water, sound, menus, more than one track.
 
-## Decisions (proposed)
+## Decisions
 
 ### No physics engine
 
