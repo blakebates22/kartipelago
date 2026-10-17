@@ -1,5 +1,7 @@
 # M1: Drive a box
 
+Status: **done**.
+
 ## Goal
 
 A box you can drive around a large flat plane, and it already feels fun. Above all, the
@@ -7,16 +9,27 @@ drift should reward mastery.
 
 ## Done when
 
-- [ ] Keyboard and gamepad input go through one input module (`core/input.ts`).
-- [ ] Throttle, brake/reverse and steering, with speed-dependent steering.
-- [ ] A drift button that slides the car, and drifting is faster than normal driving.
-- [ ] Steering during a drift sets the arc: into the drift tightens, countersteer widens.
-- [ ] A chase camera with smoothing and slight look-ahead.
-- [ ] Every handling value lives in a `vehicle` section of `tuning.json`.
-- [ ] The overlay shows speed, drift state, slip angle and grip.
-- [ ] A practice course of pickups and boost pads tests whether you can drift onto a
+- [x] Keyboard and gamepad input go through one input module (`core/input.ts`).
+- [x] Throttle, brake/reverse and steering, with speed-dependent steering.
+- [x] A drift button that slides the car, and drifting is faster than normal driving.
+- [x] Steering during a drift steers the path: into the drift tightens, countersteer
+      bends it the other way.
+- [x] A chase camera with smoothing and slight look-ahead.
+- [x] Every handling value lives in a `vehicle` section of `tuning.json`.
+- [x] The overlay shows speed, drift state and slip angle.
+- [x] A practice course of pickups and boost pads tests whether you can drift onto a
       chosen line.
-- [ ] Ten minutes of driving in circles is enjoyable.
+- [x] Ten minutes of driving in circles is enjoyable.
+
+## Playtest notes
+
+- The first drift model (low grip, stick only sized the arc) felt wrong: it could never
+  bend the path against the drift. Replaced by the drift-angle model below.
+- A release boost felt wrong for this style of racer. Replaced by a top-speed bonus
+  while drifting.
+- After tuning, Blake's defaults: `driftTurnTight` 1.5, `driftNoseTightDeg` 65 (a very
+  sideways nose on tight drifts), the rest as shipped.
+- The flat plane only tells us so much. Revisit drift tuning on the M2 track.
 
 ## Not in this milestone
 
