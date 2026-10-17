@@ -1,0 +1,21 @@
+name: Idea or feature request
+description: Suggest something for a future milestone
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it would make the game better
+  - type: checkboxes
+    id: original
+    attributes:
+      label: Originality
+      options:
+        - label: This idea doesn't rely on names, characters or assets from an existing game.
+          required: true

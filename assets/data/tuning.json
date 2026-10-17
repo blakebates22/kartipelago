@@ -1,0 +1,21 @@
+{
+  "loop": {
+    "physicsHz": 120,
+    "maxStepsPerFrame": 8
+  },
+  "camera": {
+    "fov": 60,
+    "distance": 6,
+    "height": 3
+  },
+  "m0Cube": {
+    "spinSpeed": 1.2,
+    "bobHeight": 0.25,
+    "bobSpeed": 2,
+    "color": "#ffb703"
+  },
+  "world": {
+    "skyColor": "#8ecae6",
+    "groundColor": "#2a9d8f"
+  }
+}
