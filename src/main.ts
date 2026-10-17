@@ -5,10 +5,10 @@ import { createLoop } from "./core/loop";
 import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
+import { createChaseCamera } from "./render/chaseCamera";
 import { createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
-// M1: drive a box around a big flat plane. The camera is a plain rigid follow for now;
-// smoothing and look-ahead come in the chase-camera PR.
+// M1: drive a box around a big flat plane, with drifting and a chase camera.
 
 const GROUND_SIZE = 600;
 const GROUND_TILE = 5; // metres per grid square
@@ -17,6 +17,7 @@ const app = document.getElementById("app")!;
 const stage = createStage(app);
 const debug = createDebug(document.body);
 const input = createInput();
+const chase = createChaseCamera(stage.camera);
 
 // Tiled lines on the ground give the eye something to judge speed and turning against.
 function groundTexture() {
@@ -59,13 +60,14 @@ stage.scene.add(ground, kart);
 
 // Simulation state lives apart from the meshes so rendering can interpolate.
 const state = createKartState();
-const prev = { x: 0, z: 0, heading: 0 };
+const prev = { x: 0, z: 0, heading: 0, velAngle: 0 };
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   update(dt) {
     prev.x = state.x;
     prev.z = state.z;
     prev.heading = state.heading;
+    prev.velAngle = state.velAngle;
     stepKart(state, input.sample(dt), tuning.vehicle, dt);
   },
   render(alpha, frameSeconds) {
@@ -83,19 +85,24 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
 
     stage.camera.fov = camera.fov;
     stage.camera.updateProjectionMatrix();
-    stage.camera.position.set(
-      x - Math.sin(heading) * camera.distance,
-      camera.height,
-      z - Math.cos(heading) * camera.distance,
+    const velAngle = prev.velAngle + wrapAngle(state.velAngle - prev.velAngle) * alpha;
+    chase.update(
+      { x, z, heading, velAngle, speedFrac: state.speed / vehicle.topSpeed },
+      camera,
+      frameSeconds,
     );
-    stage.camera.lookAt(x, camera.lookHeight, z);
 
     debug.overlay.set("speed", `${state.speed.toFixed(1)} m/s`);
     debug.overlay.set("slip", `${((slipAngle(state) * 180) / Math.PI).toFixed(1)}°`);
     debug.overlay.set("thr", input.state.throttle);
     debug.overlay.set("brk", input.state.brake);
     debug.overlay.set("steer", input.state.steer);
-    debug.overlay.set("drift", input.state.drift ? "on" : "off");
+    debug.overlay.set(
+      "drift",
+      state.driftDir === 0
+        ? "-"
+        : `${state.driftDir > 0 ? "R" : "L"} ${state.driftTime.toFixed(1)}s`,
+    );
     debug.overlay.frame(frameSeconds);
     stage.render();
   },

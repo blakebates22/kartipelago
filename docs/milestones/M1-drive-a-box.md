@@ -9,7 +9,7 @@ drift should reward mastery.
 
 - [ ] Keyboard and gamepad input go through one input module (`core/input.ts`).
 - [ ] Throttle, brake/reverse and steering, with speed-dependent steering.
-- [ ] A drift button that slides the car and gives a small boost on release.
+- [ ] A drift button that slides the car, and drifting is faster than normal driving.
 - [ ] Steering during a drift sets the arc: into the drift tightens, countersteer widens.
 - [ ] A chase camera with smoothing and slight look-ahead.
 - [ ] Every handling value lives in a `vehicle` section of `tuning.json`.
@@ -18,7 +18,7 @@ drift should reward mastery.
 
 ## Not in this milestone
 
-Hills, collision, tracks, other racers, sound, drift charge levels.
+Hills, collision, tracks, other racers, sound, boosts of any kind (M4).
 
 ## Decisions
 
@@ -46,9 +46,11 @@ How a drift works:
 - **Hold:** the stick no longer steers normally. It picks the arc between
   `driftTurnLoose` (full countersteer) and `driftTurnTight` (full into the drift). The
   kart always keeps turning in the locked direction, even at full countersteer.
-- **Release:** grip returns and the kart gets a short boost, scaled by how long the
-  drift lasted (up to a cap).
-- **Cancel:** dropping below `driftMinSpeed` or braking ends the drift with no boost.
+- **Speed:** while drifting, top speed rises to `driftSpeedMult` × `topSpeed` (about
+  15% faster). Drifting is the fast way round corners. There is **no** boost for
+  releasing; after the drift, the extra speed bleeds off.
+- **Release:** grip returns and normal steering resumes.
+- **Cancel:** dropping below `driftMinSpeed` or braking ends the drift.
 
 The skill this creates: because the kart slides along an arc outside where the nose
 points, reaching something on the _outside_ of the turn means steering _away_ from it
@@ -59,22 +61,20 @@ corners. This behaviour falls out of the model and should not be special-cased.
 
 All in `vehicle` in `tuning.json`. Names may change during implementation.
 
-| Key                   | Meaning                                               |
-| --------------------- | ----------------------------------------------------- |
-| `accel`, `brake`      | Forward acceleration and braking, m/s²                |
-| `topSpeed`            | Top speed on throttle, m/s                            |
-| `reverseSpeed`        | Top reverse speed, m/s                                |
-| `drag`                | Coasting slowdown                                     |
-| `turnRate`            | Max yaw rate at low speed, rad/s                      |
-| `turnRateAtTop`       | Max yaw rate at top speed (lower = steadier at speed) |
-| `grip`                | How fast velocity aligns to heading when not drifting |
-| `driftGrip`           | Same, while drifting (much lower)                     |
-| `driftTurnTight`      | Yaw rate with full steer into the drift               |
-| `driftTurnLoose`      | Yaw rate at full countersteer                         |
-| `driftMinSpeed`       | Below this, a drift can't start and ends if active    |
-| `driftBoostSpeed`     | Extra speed from a full-length drift                  |
-| `driftBoostChargeSec` | Drift time needed for the full boost                  |
-| `driftBoostDecay`     | How fast boost speed bleeds off                       |
+| Key              | Meaning                                                 |
+| ---------------- | ------------------------------------------------------- |
+| `accel`, `brake` | Forward acceleration and braking, m/s²                  |
+| `topSpeed`       | Top speed on throttle, m/s                              |
+| `reverseSpeed`   | Top reverse speed, m/s                                  |
+| `drag`           | Coasting slowdown                                       |
+| `turnRate`       | Max yaw rate at low speed, rad/s                        |
+| `turnRateAtTop`  | Max yaw rate at top speed (lower = steadier at speed)   |
+| `grip`           | How fast velocity aligns to heading when not drifting   |
+| `driftGrip`      | Same, while drifting (much lower)                       |
+| `driftTurnTight` | Yaw rate with full steer into the drift                 |
+| `driftTurnLoose` | Yaw rate at full countersteer                           |
+| `driftMinSpeed`  | Below this, a drift can't start and ends if active      |
+| `driftSpeedMult` | Top speed multiplier while drifting (1.15 = 15% faster) |
 
 Input feel lives in a separate `input` section (deadzone, keyboard steering ramp).
 
@@ -85,7 +85,7 @@ One small PR each, `main` playable after every merge:
 1. **Input module.** Keyboard and gamepad merged into one state; shown on the overlay.
 2. **Basic driving.** Throttle, brake/reverse, speed-dependent steering, grippy model.
 3. **Chase camera.** Smoothed follow with look-ahead.
-4. **Drift and boost.** The model above, plus overlay readouts.
+4. **Drift.** The model above, plus overlay readouts.
 5. **Playtest pass.** Tune values on the deployed build and record notes here.
 
 ## Controls
@@ -100,4 +100,3 @@ One small PR each, `main` playable after every merge:
 ## Open questions
 
 - Should drift ever start with no steering input (a straight hop)?
-- Drift charge levels (longer drift, bigger boost): revisit after the M1 playtest.
