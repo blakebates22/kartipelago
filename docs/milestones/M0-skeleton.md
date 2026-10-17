@@ -11,8 +11,8 @@ Prove the whole toolchain works end to end before writing any gameplay.
 - [x] Values come from `assets/data/tuning.json` and hot-reload in dev.
 - [x] Backtick toggles the debug overlay and tuning panel; `?debug` opens them on load.
 - [x] Unit tests run with `npm test`.
-- [ ] CI passes on a pull request.
-- [ ] Merging to `main` deploys to GitHub Pages and the game loads from the public URL.
+- [x] CI passes on a pull request.
+- [x] Merging to `main` deploys to GitHub Pages and the game loads from the public URL.
 
 ## Not in this milestone
 
