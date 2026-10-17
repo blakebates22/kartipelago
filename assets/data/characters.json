@@ -33,5 +33,42 @@
       "accel": 1.5,
       "handling": 2
     }
+  ],
+  "rivals": [
+    {
+      "name": "Bolt",
+      "character": "speedster",
+      "color": "#fb5607"
+    },
+    {
+      "name": "Juniper",
+      "character": "nimble",
+      "color": "#3a86ff"
+    },
+    {
+      "name": "Tank",
+      "character": "heavy",
+      "color": "#6a994e"
+    },
+    {
+      "name": "Pebble",
+      "character": "allrounder",
+      "color": "#ff99c8"
+    },
+    {
+      "name": "Comet",
+      "character": "speedster",
+      "color": "#00b4d8"
+    },
+    {
+      "name": "Bramble",
+      "character": "nimble",
+      "color": "#9b5de5"
+    },
+    {
+      "name": "Rook",
+      "character": "heavy",
+      "color": "#495057"
+    }
   ]
 }

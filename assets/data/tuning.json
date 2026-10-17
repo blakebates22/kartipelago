@@ -46,7 +46,8 @@
     "gravity": 30,
     "groundStick": 10,
     "kartRadius": 0.9,
-    "wallAlign": 6
+    "wallAlign": 6,
+    "kartBump": 1.1
   },
   "camera": {
     "fov": 65,
@@ -85,6 +86,19 @@
     "startPerfectSec": 2,
     "startGoodMult": 1.2,
     "startGoodSec": 0.8
+  },
+  "ai": {
+    "speedMult": 1,
+    "drift": 1,
+    "lookAhead": 6,
+    "lookAheadPerSpeed": 0.35,
+    "driftEnterRadius": 45,
+    "driftExitRadius": 70,
+    "driftScan": 30,
+    "startSpread": 0.25,
+    "lineMargin": 4.5,
+    "lineSpan": 14,
+    "lineIterations": 200
   },
   "world": {
     "skyColor": "#8ecae6",

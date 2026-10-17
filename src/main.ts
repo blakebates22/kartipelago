@@ -2,7 +2,7 @@ import * as THREE from "three";
 import "./styles.css";
 import { tuning } from "./core/tuning";
 import { createLoop } from "./core/loop";
-import { createInput } from "./core/input";
+import { createInput, NEUTRAL } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 import { createStartMeter } from "./debug/startMeter";
@@ -14,19 +14,40 @@ import { createCourseView } from "./render/courseView";
 import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
-import { createTrackGround, flatGround } from "./physics/ground";
+import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
 import { stepWalls } from "./physics/walls";
-import { NEUTRAL } from "./core/input";
-import { canDrive, createRace, formatTime, lapClock, stepRace } from "./race/race";
+import { bumpKarts } from "./physics/bump";
+import { buildRacingLine } from "./ai/racingLine";
+import { createDriver, driveAi, type Driver } from "./ai/driver";
+import {
+  canDrive,
+  createRace,
+  formatTime,
+  lapClock,
+  standings,
+  startTarget,
+  stepRacer,
+  tickRace,
+} from "./race/race";
+import { gridSlot } from "./race/grid";
 import { applyCharacter, type Character } from "./vehicles/character";
-import { applyBoost, createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
+import {
+  applyBoost,
+  createKartState,
+  slipAngle,
+  stepKart,
+  wrapAngle,
+  type KartState,
+} from "./vehicles/kart";
 
-// Two scenes: the first track (default) and the M1 practice course of pickups and boost
-// pads (open with ?scene=practice). Press R to reset to the start.
+// Two scenes: the first track with seven AI rivals (default) and the M1 practice course
+// of pickups and boost pads (open with ?scene=practice). Press R to restart.
 
-const SCENE =
-  new URLSearchParams(location.search).get("scene") === "practice" ? "practice" : "track";
+const PARAMS = new URLSearchParams(location.search);
+const SCENE = PARAMS.get("scene") === "practice" ? "practice" : "track";
+// The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
+const SHOW_TIMING = PARAMS.has("timing");
 const GROUND_SIZE = 1200;
 const GROUND_TILE = 5; // metres per grid square
 
@@ -62,69 +83,97 @@ const groundMat = new THREE.MeshStandardMaterial({
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
-
-const characters = roster.characters as Character[];
-let character = characters.find((c) => c.id === roster.default) ?? characters[0]!;
-
-const kartMat = new THREE.MeshStandardMaterial({ color: character.color, flatShading: true });
-const kart = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 2.4), kartMat);
-kart.castShadow = true;
-// A darker nose so you can tell which way is forward.
-const nose = new THREE.Mesh(
-  new THREE.BoxGeometry(1.2, 0.3, 0.4),
-  new THREE.MeshStandardMaterial({ color: "#333333", flatShading: true }),
-);
-nose.position.set(0, 0.2, 1.2);
-kart.add(nose);
-stage.scene.add(ground, kart);
+stage.scene.add(ground);
 
 const course = SCENE === "practice" ? createCourse(courseData) : undefined;
 const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
 const track =
   SCENE === "track" ? buildTrack(trackData as TrackData, tuning.track.sampleSpacing) : undefined;
 const trackView = track ? createTrackView(stage.scene, track, tuning.track) : undefined;
+const line = track
+  ? buildRacingLine(track, {
+      margin: tuning.ai.lineMargin,
+      span: tuning.ai.lineSpan,
+      iterations: tuning.ai.lineIterations,
+    })
+  : undefined;
 
-// Always-on readout so you can judge a line without opening the debug tools.
+const characters = roster.characters as Character[];
+const findCharacter = (id: string) => characters.find((c) => c.id === id) ?? characters[0]!;
+
+/** A box kart with a darker nose, so you can tell which way is forward. */
+function makeKartMesh() {
+  const mat = new THREE.MeshStandardMaterial({ flatShading: true });
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 2.4), mat);
+  mesh.castShadow = true;
+  const nose = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 0.3, 0.4),
+    new THREE.MeshStandardMaterial({ color: "#333333", flatShading: true }),
+  );
+  nose.position.set(0, 0.2, 1.2);
+  mesh.add(nose);
+  stage.scene.add(mesh);
+  return { mesh, mat };
+}
+
+interface Entrant {
+  name: string;
+  character: Character;
+  color: string;
+  state: KartState;
+  /** State at the previous step, for smooth rendering between steps. */
+  prev: { x: number; y: number; z: number; heading: number; velAngle: number };
+  mesh: THREE.Mesh;
+  mat: THREE.MeshStandardMaterial;
+  /** Each kart keeps its own ground lookup (it remembers where on the track it was). */
+  ground: GroundQuery;
+  driver?: Driver;
+}
+
+const player = findCharacter(roster.default);
+const rivals = track ? roster.rivals : [];
+const entrants: Entrant[] = [
+  { name: "You", character: player, color: player.color },
+  ...rivals.map((r) => ({ name: r.name, character: findCharacter(r.character), color: r.color })),
+].map((e, i) => {
+  const { mesh, mat } = makeKartMesh();
+  const state = createKartState();
+  return {
+    ...e,
+    state,
+    prev: { x: 0, y: 0, z: 0, heading: 0, velAngle: 0 },
+    mesh,
+    mat,
+    ground: track ? createTrackGround(track) : flatGround,
+    driver: i > 0 && line ? createDriver(line, i, tuning.ai) : undefined,
+  };
+});
+const you = entrants[0]!;
+
+/** Put every kart in its starting spot. The player starts at the back of the grid. */
+function placeKarts() {
+  entrants.forEach((e, i) => {
+    let spot = { x: courseData.start.x, y: 0, z: courseData.start.z, heading: 0 };
+    if (track) spot = gridSlot(track, i === 0 ? entrants.length - 1 : i - 1);
+    Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
+    e.state.y = e.ground.at(spot.x, spot.z).height;
+    snapPrev(e);
+    if (e.driver) e.driver.driftHeld = false;
+  });
+}
+function snapPrev(e: Entrant) {
+  const s = e.state;
+  Object.assign(e.prev, { x: s.x, y: s.y, z: s.z, heading: s.heading, velAngle: s.velAngle });
+}
+
+const newRace = () => (track ? createRace(track, tuning.race, entrants.length) : undefined);
+let race = newRace();
+placeKarts();
+
+// Always-on readout, plus big centred text for the start and the finish.
 const hud = document.createElement("div");
 hud.className = "hud";
 document.body.appendChild(hud);
-
-// Visual tilt: sit flat on the surface when grounded; in the air, pitch with the arc of
-// the jump. Smoothed, so bumps and landings don't snap the mesh.
-const tilt = { up: new THREE.Vector3(), fwd: new THREE.Vector3(), right: new THREE.Vector3() };
-const tiltBasis = new THREE.Matrix4();
-const tiltTarget = new THREE.Quaternion();
-function tiltKart(heading: number, frameSeconds: number) {
-  const { up, fwd, right } = tilt;
-  fwd.set(Math.sin(heading), 0, Math.cos(heading));
-  if (state.grounded) up.set(state.nx, state.ny, state.nz);
-  else
-    up.set(0, 1, 0)
-      .addScaledVector(fwd, -state.vy / Math.max(8, Math.abs(state.speed)))
-      .normalize();
-  right.crossVectors(up, fwd).normalize();
-  fwd.crossVectors(right, up).normalize();
-  tiltBasis.makeBasis(right, up, fwd);
-  tiltTarget.setFromRotationMatrix(tiltBasis);
-  kart.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
-}
-
-// Simulation state lives apart from the meshes so rendering can interpolate.
-const surface = track ? createTrackGround(track) : flatGround;
-const start = track ? track.start : courseData.start;
-const spawn = () =>
-  createKartState(start.x, start.z, start.heading, surface.at(start.x, start.z).height);
-const state = spawn();
-const prev = { x: state.x, y: state.y, z: state.z, heading: 0, velAngle: 0 };
-let simTime = 0;
-
-// The race (track scene only): countdown, checkpoints, laps, finish, respawn.
-const newRace = () => (track ? createRace(track, tuning.race) : undefined);
-let race = newRace();
-
-// Big centred text for the countdown and the finish.
-// The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
-const SHOW_TIMING = new URLSearchParams(location.search).has("timing");
 const startMeter = createStartMeter(document.body);
 const banner = document.createElement("div");
 banner.className = "banner";
@@ -152,9 +201,9 @@ function saveBest(time: number) {
   }
 }
 
-// Reset is requested from a key event but applied on the fixed step, like all gameplay.
+// Key events only request changes; they're applied on the fixed step, like all gameplay.
 let resetRequested = false;
-// Number keys pick a character (1 = first in characters.json, and so on).
+// Number keys pick your character (1 = first in characters.json, and so on).
 let pickRequested: Character | undefined;
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyR") resetRequested = true;
@@ -166,109 +215,168 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   update(dt) {
     if (resetRequested) {
       resetRequested = false;
-      Object.assign(state, spawn());
-      if (course) resetCourse(course);
       race = newRace();
+      placeKarts();
+      if (course) resetCourse(course);
     }
-    prev.x = state.x;
-    prev.y = state.y;
-    prev.z = state.z;
-    prev.heading = state.heading;
-    prev.velAngle = state.velAngle;
     if (pickRequested) {
-      character = pickRequested;
+      you.character = pickRequested;
+      you.color = pickRequested.color;
       pickRequested = undefined;
     }
-    // Rebuilt each step so live tuning edits to the base kart apply immediately.
-    const kartCfg = applyCharacter(tuning.vehicle, character, tuning.stats);
+    for (const e of entrants) snapPrev(e);
+    if (race) tickRace(race, dt);
+
     const held = input.sample(dt);
-    // During the countdown the kart sits on the line.
-    stepKart(state, !race || canDrive(race) ? held : NEUTRAL, kartCfg, dt);
-    stepWalls(state, surface, { ...tuning.physics, wallHeight: tuning.track.wallHeight }, dt);
-    stepVertical(state, surface, tuning.physics, dt);
-    if (course) stepCourse(course, state, tuning.course, kartCfg, dt);
-    if (race) {
-      const laps = race.lapTimes.length;
-      const onRoad = surface.at(state.x, state.z).onRoad;
-      const events = stepRace(race, state, onRoad, held.throttle, tuning.race, dt);
-      if (race.lapTimes.length > laps) saveBest(race.lapTimes.at(-1)!);
-      if (events.boost) applyBoost(state, kartCfg, events.boost.mult, events.boost.seconds);
-      const respawnAt = events.respawn;
-      if (respawnAt) {
-        Object.assign(
-          state,
-          createKartState(respawnAt.x, respawnAt.z, respawnAt.heading, respawnAt.y),
-        );
-        Object.assign(prev, { x: state.x, y: state.y, z: state.z, heading: state.heading });
+    const moment = race && {
+      countdown: race.phase === "countdown",
+      clock: race.clock,
+      startTarget: startTarget(tuning.race),
+    };
+    const walls = { ...tuning.physics, wallHeight: tuning.track.wallHeight };
+
+    entrants.forEach((e, i) => {
+      // Rebuilt each step so live tuning edits apply immediately.
+      let cfg = applyCharacter(tuning.vehicle, e.character, tuning.stats);
+      if (e.driver) cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
+      const want = e.driver && moment ? driveAi(e.driver, e.state, cfg, tuning.ai, moment) : held;
+      // During the countdown every kart sits on the line.
+      stepKart(e.state, !race || canDrive(race) ? want : NEUTRAL, cfg, dt);
+      stepWalls(e.state, e.ground, walls, dt);
+      stepVertical(e.state, e.ground, tuning.physics, dt);
+      if (course && i === 0) stepCourse(course, e.state, tuning.course, cfg, dt);
+      if (!race) return;
+
+      const laps = race.racers[i]!.lapTimes.length;
+      const onRoad = e.ground.at(e.state.x, e.state.z).onRoad;
+      const events = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
+      if (i === 0 && race.racers[0]!.lapTimes.length > laps)
+        saveBest(race.racers[0]!.lapTimes.at(-1)!);
+      if (events.boost) applyBoost(e.state, cfg, events.boost.mult, events.boost.seconds);
+      if (events.respawn) {
+        const g = events.respawn;
+        Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
+        snapPrev(e);
       }
-    }
-    simTime += dt;
+    });
+    bumpKarts(
+      entrants.map((e) => e.state),
+      tuning.physics.kartBump,
+    );
   },
+
   render(alpha, frameSeconds) {
     const { camera, world, vehicle } = tuning;
-    const x = prev.x + (state.x - prev.x) * alpha;
-    const y = prev.y + (state.y - prev.y) * alpha;
-    const z = prev.z + (state.z - prev.z) * alpha;
-    const heading = prev.heading + wrapAngle(state.heading - prev.heading) * alpha;
-
-    kart.position.set(x, y + 0.4, z);
-    tiltKart(heading, frameSeconds);
-    kartMat.color.set(character.color);
+    for (const e of entrants) renderKart(e, alpha, frameSeconds);
     groundMat.color.set(world.groundColor);
     stage.scene.background = new THREE.Color(world.skyColor);
-    stage.followSun(x, z);
 
+    const s = you.state;
+    const p = you.prev;
+    const x = p.x + (s.x - p.x) * alpha;
+    const y = p.y + (s.y - p.y) * alpha;
+    const z = p.z + (s.z - p.z) * alpha;
+    const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
+    const velAngle = p.velAngle + wrapAngle(s.velAngle - p.velAngle) * alpha;
+    stage.followSun(x, z);
     stage.camera.fov = camera.fov;
     stage.camera.updateProjectionMatrix();
-    const velAngle = prev.velAngle + wrapAngle(state.velAngle - prev.velAngle) * alpha;
     chase.update(
-      { x, y, z, heading, velAngle, speedFrac: state.speed / vehicle.topSpeed },
+      { x, y, z, heading, velAngle, speedFrac: s.speed / vehicle.topSpeed },
       camera,
       frameSeconds,
     );
 
-    courseView?.render(simTime, tuning.course);
+    courseView?.render(performance.now() / 1000, tuning.course);
     trackView?.render(tuning.track);
-    const parts = [character.name, `${state.speed.toFixed(0)} m/s`];
-    if (course) parts.push(`Pickups ${course.collected}`);
-    if (race) {
-      parts.push(`Lap ${Math.min(race.lap, tuning.race.laps)}/${tuning.race.laps}`);
-      parts.push(formatTime(lapClock(race)));
-      if (race.bestLap !== undefined) parts.push(`Best ${formatTime(race.bestLap)}`);
-      if (bestEver !== undefined) parts.push(`Record ${formatTime(bestEver)}`);
-    }
-    parts.push(`1–${characters.length} character`, "R restart");
-    hud.textContent = parts.join("  ·  ");
-
-    let message = "";
-    if (race?.phase === "countdown") message = "Get ready!";
-    else if (race?.phase === "racing" && race.clock < tuning.race.goShowSec) {
-      const tier = race.start?.tier;
-      message =
-        tier === "perfect" ? "GO!\nPerfect start!" : tier === "good" ? "GO!\nGood start" : "GO!";
-    } else if (race?.phase === "finished") {
-      const laps = race.lapTimes.map((t, i) => `Lap ${i + 1}  ${formatTime(t)}`).join("\n");
-      message = `Finished  ${formatTime(race.totalTime ?? 0)}\n${laps}\nR to race again`;
-    }
-    banner.textContent = message;
-    banner.hidden = message === "";
+    renderHud();
     startMeter.render(race, tuning.race, SHOW_TIMING);
 
-    debug.overlay.set("speed", `${state.speed.toFixed(1)} m/s`);
-    debug.overlay.set("slip", `${((slipAngle(state) * 180) / Math.PI).toFixed(1)}°`);
+    debug.overlay.set("speed", `${s.speed.toFixed(1)} m/s`);
+    debug.overlay.set("slip", `${((slipAngle(s) * 180) / Math.PI).toFixed(1)}°`);
     debug.overlay.set("thr", input.state.throttle);
     debug.overlay.set("brk", input.state.brake);
     debug.overlay.set("steer", input.state.steer);
-    debug.overlay.set("air", state.grounded ? "-" : `${state.y.toFixed(1)} m`);
+    debug.overlay.set("air", s.grounded ? "-" : `${s.y.toFixed(1)} m`);
     debug.overlay.set(
       "drift",
-      state.driftDir === 0
-        ? "-"
-        : `${state.driftDir > 0 ? "R" : "L"} ${state.driftTime.toFixed(1)}s`,
+      s.driftDir === 0 ? "-" : `${s.driftDir > 0 ? "R" : "L"} ${s.driftTime.toFixed(1)}s`,
     );
     debug.overlay.frame(frameSeconds);
     stage.render();
   },
 });
+
+// Visual tilt: sit flat on the surface when grounded; in the air, pitch with the arc of
+// the jump. Smoothed, so bumps and landings don't snap the mesh.
+const tilt = { up: new THREE.Vector3(), fwd: new THREE.Vector3(), right: new THREE.Vector3() };
+const tiltBasis = new THREE.Matrix4();
+const tiltTarget = new THREE.Quaternion();
+function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
+  const { state: s, prev: p, mesh } = e;
+  const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
+  mesh.position.set(
+    p.x + (s.x - p.x) * alpha,
+    p.y + (s.y - p.y) * alpha + 0.4,
+    p.z + (s.z - p.z) * alpha,
+  );
+  const { up, fwd, right } = tilt;
+  fwd.set(Math.sin(heading), 0, Math.cos(heading));
+  if (s.grounded) up.set(s.nx, s.ny, s.nz);
+  else
+    up.set(0, 1, 0)
+      .addScaledVector(fwd, -s.vy / Math.max(8, Math.abs(s.speed)))
+      .normalize();
+  right.crossVectors(up, fwd).normalize();
+  fwd.crossVectors(right, up).normalize();
+  tiltBasis.makeBasis(right, up, fwd);
+  tiltTarget.setFromRotationMatrix(tiltBasis);
+  mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
+  e.mat.color.set(e.color);
+}
+
+const ordinal = (n: number) =>
+  `${n}${["th", "st", "nd", "rd"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
+
+function renderHud() {
+  const s = you.state;
+  const parts = [you.character.name, `${s.speed.toFixed(0)} m/s`];
+  if (course) parts.push(`Pickups ${course.collected}`);
+  let order: number[] = [];
+  if (race) {
+    const r = race.racers[0]!;
+    order = standings(
+      race,
+      entrants.map((e) => e.state),
+    );
+    parts.unshift(`${ordinal(order.indexOf(0) + 1)} / ${entrants.length}`);
+    parts.push(`Lap ${Math.min(r.lap, tuning.race.laps)}/${tuning.race.laps}`);
+    parts.push(formatTime(lapClock(race, 0)));
+    if (r.bestLap !== undefined) parts.push(`Best ${formatTime(r.bestLap)}`);
+    if (bestEver !== undefined) parts.push(`Record ${formatTime(bestEver)}`);
+  }
+  parts.push(`1–${characters.length} character`, "R restart");
+  hud.textContent = parts.join("  ·  ");
+
+  let message = "";
+  const r = race?.racers[0];
+  if (race?.phase === "countdown") message = "Get ready!";
+  else if (race && r?.finished) {
+    // Finished racers keep their order; anyone still racing is listed by position.
+    const rows = order.map((i, place) => {
+      const racer = race!.racers[i]!;
+      const time = racer.finished ? formatTime(racer.totalTime ?? 0) : "racing";
+      return `${ordinal(place + 1).padEnd(4)} ${entrants[i]!.name.padEnd(8)} ${time}`;
+    });
+    message = `Finished ${ordinal(order.indexOf(0) + 1)}!\n${rows.join("\n")}\nR to race again`;
+  } else if (race && race.clock < tuning.race.goShowSec) {
+    const tier = r?.start?.tier;
+    message =
+      tier === "perfect" ? "GO!\nPerfect start!" : tier === "good" ? "GO!\nGood start" : "GO!";
+  }
+  banner.textContent = message;
+  banner.hidden = message === "";
+  banner.classList.toggle("standings", Boolean(r?.finished));
+}
 
 loop.start();

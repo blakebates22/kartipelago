@@ -48,17 +48,18 @@ export function createStartMeter(parent: HTMLElement) {
       perfect.style.width = pct(t0 + cfg.perfectWindowSec * 2);
       go.style.left = pct(0);
       now.style.left = pct(Math.min(race.clock, AFTER));
-      press.hidden = race.pressAt === undefined;
-      if (race.pressAt !== undefined) press.style.left = pct(race.pressAt);
+      const you = race.racers[0]!;
+      press.hidden = you.pressAt === undefined;
+      if (you.pressAt !== undefined) press.style.left = pct(you.pressAt);
 
       const ms = (s: number) => `${s >= 0 ? "+" : ""}${Math.round(s * 1000)} ms`;
-      if (race.start) {
-        const off = race.start.offset;
-        text.textContent = `${race.start.tier.toUpperCase()}${off !== undefined ? `  ·  ${ms(off)} from perfect` : ""}`;
+      if (you.start) {
+        const off = you.start.offset;
+        text.textContent = `${you.start.tier.toUpperCase()}${off !== undefined ? `  ·  ${ms(off)} from perfect` : ""}`;
       } else {
         text.textContent =
-          race.pressAt !== undefined
-            ? `pressed ${ms(race.pressAt - target)} from perfect`
+          you.pressAt !== undefined
+            ? `pressed ${ms(you.pressAt - target)} from perfect`
             : "press the throttle in the green window";
       }
     },

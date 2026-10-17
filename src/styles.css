@@ -137,3 +137,12 @@ body {
   margin-top: 6px;
   text-align: center;
 }
+
+.banner.standings {
+  font:
+    700 16px/1.5 ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+  text-align: left;
+}

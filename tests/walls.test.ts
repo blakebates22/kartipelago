@@ -71,6 +71,28 @@ describe("walls", () => {
     expect(s.speed).toBeGreaterThan(15);
   });
 
+  it("still apply on the outside of a bend, between road segments", () => {
+    // Regression: points far out on the outside of a corner used to fall in gaps
+    // between segments and count as off the road, with no walls.
+    const bend = buildTrack(
+      {
+        name: "bend",
+        defaultWidth: 22,
+        points: Array.from({ length: 24 }, (_, i) => ({
+          x: 40 * Math.sin((i / 24) * Math.PI * 2),
+          z: 40 * Math.cos((i / 24) * Math.PI * 2),
+        })),
+      },
+      2,
+    );
+    const ground = createTrackGround(bend);
+    for (let a = 0; a < Math.PI * 2; a += 0.01) {
+      // 10 m outside the centre line (radius 50 on a 40 m loop), still on the road.
+      const q = ground.at(50 * Math.sin(a), 50 * Math.cos(a));
+      expect(q.road).toBeDefined();
+    }
+  });
+
   it("are cleared by a kart flying high enough", () => {
     const s = aimed(60);
     s.x = 9;
