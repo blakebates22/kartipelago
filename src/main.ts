@@ -6,17 +6,22 @@ import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 import courseData from "../assets/data/course.json";
+import trackData from "../assets/data/track.json";
 import roster from "../assets/data/characters.json";
 import { createChaseCamera } from "./render/chaseCamera";
 import { createCourseView } from "./render/courseView";
+import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
+import { buildTrack, type TrackData } from "./world/track";
 import { applyCharacter, type Character } from "./vehicles/character";
 import { createKartState, slipAngle, stepKart, wrapAngle } from "./vehicles/kart";
 
-// M1: drive a box around a big flat plane, with drifting, a chase camera and a small
-// practice course of pickups and boost pads. Press R to reset to the start.
+// Two scenes: the first track (default) and the M1 practice course of pickups and boost
+// pads (open with ?scene=practice). Press R to reset to the start.
 
-const GROUND_SIZE = 600;
+const SCENE =
+  new URLSearchParams(location.search).get("scene") === "practice" ? "practice" : "track";
+const GROUND_SIZE = 1200;
 const GROUND_TILE = 5; // metres per grid square
 
 const app = document.getElementById("app")!;
@@ -67,8 +72,11 @@ nose.position.set(0, 0.2, 1.2);
 kart.add(nose);
 stage.scene.add(ground, kart);
 
-const course = createCourse(courseData);
-const courseView = createCourseView(stage.scene, course, tuning.course);
+const course = SCENE === "practice" ? createCourse(courseData) : undefined;
+const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
+const track =
+  SCENE === "track" ? buildTrack(trackData as TrackData, tuning.track.sampleSpacing) : undefined;
+const trackView = track ? createTrackView(stage.scene, track, tuning.track) : undefined;
 
 // Always-on readout so you can judge a line without opening the debug tools.
 const hud = document.createElement("div");
@@ -76,7 +84,7 @@ hud.className = "hud";
 document.body.appendChild(hud);
 
 // Simulation state lives apart from the meshes so rendering can interpolate.
-const { start } = courseData;
+const start = track ? track.start : courseData.start;
 const state = createKartState(start.x, start.z, start.heading);
 const prev = { x: 0, z: 0, heading: 0, velAngle: 0 };
 let simTime = 0;
@@ -96,7 +104,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     if (resetRequested) {
       resetRequested = false;
       Object.assign(state, createKartState(start.x, start.z, start.heading));
-      resetCourse(course);
+      if (course) resetCourse(course);
     }
     prev.x = state.x;
     prev.z = state.z;
@@ -109,7 +117,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     // Rebuilt each step so live tuning edits to the base kart apply immediately.
     const kartCfg = applyCharacter(tuning.vehicle, character, tuning.stats);
     stepKart(state, input.sample(dt), kartCfg, dt);
-    stepCourse(course, state, tuning.course, kartCfg, dt);
+    if (course) stepCourse(course, state, tuning.course, kartCfg, dt);
     simTime += dt;
   },
   render(alpha, frameSeconds) {
@@ -134,8 +142,12 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       frameSeconds,
     );
 
-    courseView.render(simTime, tuning.course);
-    hud.textContent = `${character.name}  ·  Pickups ${course.collected}  ·  ${state.speed.toFixed(0)} m/s  ·  1–${characters.length} character  ·  R reset`;
+    courseView?.render(simTime, tuning.course);
+    trackView?.render(tuning.track);
+    const parts = [character.name, `${state.speed.toFixed(0)} m/s`];
+    if (course) parts.push(`Pickups ${course.collected}`);
+    parts.push(`1–${characters.length} character`, "R reset");
+    hud.textContent = parts.join("  ·  ");
 
     debug.overlay.set("speed", `${state.speed.toFixed(1)} m/s`);
     debug.overlay.set("slip", `${((slipAngle(state) * 180) / Math.PI).toFixed(1)}°`);
