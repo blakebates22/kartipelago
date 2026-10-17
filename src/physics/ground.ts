@@ -73,15 +73,20 @@ export function createTrackGround(track: Track): GroundQuery {
     return hint;
   };
 
-  /** Project onto the segment from sample i to i+1; null if outside it. */
-  const onSegment = (i: number, x: number, z: number): Surface | null => {
+  /**
+   * Project onto the segment from sample i to i+1; null if outside it. With `clamp`,
+   * points beyond the ends snap to the nearest end instead. That covers the thin wedges
+   * on the outside of a bend, which neither neighbouring segment reaches.
+   */
+  const onSegment = (i: number, x: number, z: number, clamp = false): Surface | null => {
     const a = s[i]!;
     const b = s[(i + 1) % n]!;
     const dx = b.pos.x - a.pos.x;
     const dz = b.pos.z - a.pos.z;
     const len2 = dx * dx + dz * dz;
-    const t = ((x - a.pos.x) * dx + (z - a.pos.z) * dz) / len2;
-    if (t < -0.01 || t > 1.01) return null;
+    let t = ((x - a.pos.x) * dx + (z - a.pos.z) * dz) / len2;
+    if (clamp) t = Math.min(1, Math.max(0, t));
+    else if (t < -0.01 || t > 1.01) return null;
     const lerp = (p: number, q: number) => p + (q - p) * t;
     const cx = lerp(a.pos.x, b.pos.x);
     const cy = lerp(a.pos.y, b.pos.y);
@@ -119,7 +124,8 @@ export function createTrackGround(track: Track): GroundQuery {
   return {
     at(x, z) {
       const i = nearest(x, z);
-      return onSegment(i, x, z) ?? onSegment((i - 1 + n) % n, x, z) ?? { ...FLAT };
+      const before = (i - 1 + n) % n;
+      return onSegment(i, x, z) ?? onSegment(before, x, z) ?? onSegment(i, x, z, true)!;
     },
   };
 }

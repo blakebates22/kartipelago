@@ -1,11 +1,13 @@
 /**
- * Race rules: "Get ready!" then "GO!" with a start boost for good timing, checkpoints
- * that must be passed in order, laps, lap times, a finish, and respawning at the last
- * checkpoint if you end up off the track.
+ * Race rules for every kart in a race: "Get ready!" then "GO!" with a start boost for
+ * good timing, checkpoints passed in order, laps, lap times, finishing order, race
+ * positions, and respawning at the last checkpoint if a kart ends up off the track.
  *
  * Checkpoints are gates spaced evenly along the track, derived from its samples. Gate 0
  * is the start/finish line. A gate counts when the kart crosses its line going forward
  * while inside the road's width, so skipping a section of track doesn't count.
+ *
+ * Racer 0 is the player.
  */
 import type { KartState } from "../vehicles/kart";
 import type { Track } from "../world/track";
@@ -43,7 +45,7 @@ export interface Gate {
   halfWidth: number;
 }
 
-export type Phase = "countdown" | "racing" | "finished";
+export type Phase = "countdown" | "racing";
 
 export type StartTier = "perfect" | "good" | "early" | "late" | "none";
 
@@ -53,21 +55,21 @@ export interface StartResult {
   offset?: number;
 }
 
-export interface Race {
-  gates: Gate[];
-  phase: Phase;
-  /** Seconds since GO; negative during the countdown. */
-  clock: number;
+/** One kart's progress through the race. */
+export interface Racer {
   /** Current lap, 1-based. */
   lap: number;
   /** Index of the next gate to pass. */
   next: number;
   /** Last gate passed: where a respawn puts you. */
   last: number;
+  /** Gates passed in total since the start (for positions). */
+  passed: number;
   lapStart: number;
   lapTimes: number[];
   bestLap?: number;
   totalTime?: number;
+  finished: boolean;
   offRoadFor: number;
   /** Kart position at the end of the previous step, for crossing tests. */
   px: number;
@@ -78,6 +80,18 @@ export interface Race {
   throttleWas?: boolean;
   /** How the start went, once GO has happened. */
   start?: StartResult;
+}
+
+export interface Race {
+  gates: Gate[];
+  phase: Phase;
+  /** Seconds since GO; negative during the countdown. */
+  clock: number;
+  /** True only on the step where GO happens. */
+  goThisStep: boolean;
+  racers: Racer[];
+  /** Racer indices in the order they finished. */
+  finishOrder: number[];
 }
 
 export interface RaceEvents {
@@ -110,20 +124,30 @@ export function makeGates(track: Track, spacing: number): Gate[] {
   return gates;
 }
 
-export function createRace(track: Track, cfg: RaceConfig): Race {
+function newRacer(start: Gate): Racer {
+  return {
+    lap: 1,
+    next: 1,
+    last: 0,
+    passed: 0,
+    lapStart: 0,
+    lapTimes: [],
+    finished: false,
+    offRoadFor: 0,
+    px: start.x,
+    pz: start.z,
+  };
+}
+
+export function createRace(track: Track, cfg: RaceConfig, racers = 1): Race {
   const gates = makeGates(track, cfg.checkpointSpacing);
   return {
     gates,
     phase: "countdown",
     clock: -cfg.readySec,
-    lap: 1,
-    next: 1,
-    last: 0,
-    lapStart: 0,
-    lapTimes: [],
-    offRoadFor: 0,
-    px: gates[0]!.x,
-    pz: gates[0]!.z,
+    goThisStep: false,
+    racers: Array.from({ length: racers }, () => newRacer(gates[0]!)),
+    finishOrder: [],
   };
 }
 
@@ -159,71 +183,113 @@ export function crossed(g: Gate, px: number, pz: number, x: number, z: number): 
 
 export const canDrive = (race: Race) => race.phase !== "countdown";
 
-/** Advance the race by one fixed step, after the kart has moved. */
-export function stepRace(
+/** Advance the shared race clock. Call once per step, before stepRacer. */
+export function tickRace(race: Race, dt: number) {
+  race.clock += dt;
+  race.goThisStep = false;
+  if (race.phase === "countdown" && race.clock >= 0) {
+    race.phase = "racing";
+    race.goThisStep = true;
+  }
+}
+
+/** Advance one racer by a step, after its kart has moved. */
+export function stepRacer(
   race: Race,
+  index: number,
   kart: KartState,
   onRoad: boolean,
   throttle: number,
   cfg: RaceConfig,
   dt: number,
 ): RaceEvents {
+  const r = race.racers[index]!;
   const events: RaceEvents = {};
   const pressed = throttle > 0.5;
-  race.clock += dt;
 
-  if (race.phase === "countdown") {
+  if (race.phase === "countdown" || race.goThisStep) {
     // A press is the moment the throttle goes down. One already held when the race
     // (re)starts doesn't count: on the first step we only note its state.
-    if (race.throttleWas === false && pressed) race.pressAt = race.clock;
-    race.throttleWas = pressed;
-    if (race.clock >= 0) {
-      race.phase = "racing";
-      race.start = judgeStart(race.pressAt, pressed, cfg);
-      if (race.start.tier === "perfect") {
+    if (race.phase === "countdown" && r.throttleWas === false && pressed) {
+      r.pressAt = race.clock;
+    }
+    r.throttleWas = pressed;
+    if (race.goThisStep) {
+      r.start = judgeStart(r.pressAt, pressed, cfg);
+      if (r.start.tier === "perfect") {
         events.boost = { mult: cfg.startPerfectMult, seconds: cfg.startPerfectSec };
-      } else if (race.start.tier === "good") {
+      } else if (r.start.tier === "good") {
         events.boost = { mult: cfg.startGoodMult, seconds: cfg.startGoodSec };
       }
     }
-    race.px = kart.x;
-    race.pz = kart.z;
+    r.px = kart.x;
+    r.pz = kart.z;
     return events;
   }
 
-  if (race.phase === "racing") {
-    const gate = race.gates[race.next]!;
-    if (crossed(gate, race.px, race.pz, kart.x, kart.z)) {
-      race.last = race.next;
-      if (race.next === 0) {
-        const time = race.clock - race.lapStart;
-        race.lapTimes.push(time);
-        race.bestLap = Math.min(race.bestLap ?? Infinity, time);
-        race.lapStart = race.clock;
-        if (race.lap >= cfg.laps) {
-          race.phase = "finished";
-          race.totalTime = race.clock;
+  if (!r.finished) {
+    const gate = race.gates[r.next]!;
+    if (crossed(gate, r.px, r.pz, kart.x, kart.z)) {
+      r.last = r.next;
+      r.passed++;
+      if (r.next === 0) {
+        const time = race.clock - r.lapStart;
+        r.lapTimes.push(time);
+        r.bestLap = Math.min(r.bestLap ?? Infinity, time);
+        r.lapStart = race.clock;
+        if (r.lap >= cfg.laps) {
+          r.finished = true;
+          r.totalTime = race.clock;
+          race.finishOrder.push(index);
         } else {
-          race.lap++;
+          r.lap++;
         }
       }
-      race.next = (race.next + 1) % race.gates.length;
+      r.next = (r.next + 1) % race.gates.length;
     }
   }
-  race.px = kart.x;
-  race.pz = kart.z;
+  r.px = kart.x;
+  r.pz = kart.z;
 
-  race.offRoadFor = !onRoad && kart.grounded ? race.offRoadFor + dt : 0;
-  if (race.offRoadFor > cfg.respawnAfterSec) {
-    race.offRoadFor = 0;
-    events.respawn = race.gates[race.last];
+  r.offRoadFor = !onRoad && kart.grounded ? r.offRoadFor + dt : 0;
+  if (r.offRoadFor > cfg.respawnAfterSec) {
+    r.offRoadFor = 0;
+    events.respawn = race.gates[r.last];
   }
   return events;
 }
 
-/** Current lap's running time, or 0 before the start. */
-export const lapClock = (race: Race) =>
-  race.phase === "racing" ? race.clock - race.lapStart : (race.lapTimes.at(-1) ?? 0);
+/** How far round the race a racer is, in gates (fractions between gates). */
+export function progress(race: Race, index: number, x: number, z: number): number {
+  const r = race.racers[index]!;
+  const a = race.gates[r.last]!;
+  const b = race.gates[r.next]!;
+  const gap = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+  const along = ((x - a.x) * (b.x - a.x) + (z - a.z) * (b.z - a.z)) / (gap * gap);
+  // Negative before the start line, so the grid ranks front to back before GO.
+  return r.passed + Math.min(0.999, Math.max(-0.999, along));
+}
+
+/** Racer indices from first place to last. Finished racers keep their finishing order. */
+export function standings(race: Race, positions: { x: number; z: number }[]): number[] {
+  const done = race.finishOrder;
+  const rest = race.racers
+    .map((_, i) => i)
+    .filter((i) => !race.racers[i]!.finished)
+    .sort(
+      (a, b) =>
+        progress(race, b, positions[b]!.x, positions[b]!.z) -
+        progress(race, a, positions[a]!.x, positions[a]!.z),
+    );
+  return [...done, ...rest];
+}
+
+/** A racer's current lap time, or their last lap's once finished. */
+export function lapClock(race: Race, index: number): number {
+  const r = race.racers[index]!;
+  if (race.phase === "countdown") return 0;
+  return r.finished ? (r.lapTimes.at(-1) ?? 0) : race.clock - r.lapStart;
+}
 
 /** 83.456 → "1:23.45" */
 export function formatTime(seconds: number): string {
