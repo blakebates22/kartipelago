@@ -3,6 +3,12 @@
     "physicsHz": 120,
     "maxStepsPerFrame": 8
   },
+  "input": {
+    "stickDeadzone": 0.15,
+    "stickCurve": 1.5,
+    "keySteerRate": 6,
+    "keySteerReturn": 10
+  },
   "camera": {
     "fov": 60,
     "distance": 6,

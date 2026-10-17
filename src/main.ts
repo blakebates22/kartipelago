@@ -2,6 +2,7 @@ import * as THREE from "three";
 import "./styles.css";
 import { tuning } from "./core/tuning";
 import { createLoop } from "./core/loop";
+import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 
@@ -11,6 +12,7 @@ import { createDebug } from "./debug";
 const app = document.getElementById("app")!;
 const stage = createStage(app);
 const debug = createDebug(document.body);
+const input = createInput();
 
 const ground = new THREE.Mesh(
   new THREE.CircleGeometry(30, 48),
@@ -31,6 +33,7 @@ const state = { angle: 0, prevAngle: 0, time: 0 };
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   update(dt) {
+    input.sample(dt);
     state.prevAngle = state.angle;
     state.angle += tuning.m0Cube.spinSpeed * dt;
     state.time += dt;
@@ -49,6 +52,10 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     stage.camera.lookAt(0, 0.6, 0);
 
     debug.overlay.set("tick", loop.clock.tick);
+    debug.overlay.set("thr", input.state.throttle);
+    debug.overlay.set("brk", input.state.brake);
+    debug.overlay.set("steer", input.state.steer);
+    debug.overlay.set("drift", input.state.drift ? "on" : "off");
     debug.overlay.frame(frameSeconds);
     stage.render();
   },
