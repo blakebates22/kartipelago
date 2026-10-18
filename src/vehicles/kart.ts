@@ -8,11 +8,18 @@
  * Normal driving: grip swings velAngle round to match heading quickly, so the kart goes
  * where it points.
  *
- * Drifting flips that around. The stick steers the travel direction directly, over a
- * range that crosses zero (into the drift curves hard, countersteer bends the path the
- * other way), and the nose is held at an angle into the drift. So drifting right and
- * countersteering left moves the kart left while the nose still points right.
- * See docs/milestones/M1-drive-a-box.md.
+ * Drifting has two models, chosen by `driftModel` so they can be compared live:
+ *
+ * - 0 (legacy, M1): the stick steers the travel direction directly, and the nose angle
+ *   follows the stick.
+ * - 1 (offset model): the stick steers the body, smoothed, as a curvature with an
+ *   assisted shape (a natural inward turn hands-off, diminishing extra turn into the
+ *   drift, widening on countersteer). The path is the body direction plus a drift
+ *   offset that builds gradually to a fixed angle and doesn't follow the stick. On
+ *   release the offset eases back to zero, so the path settles onto where the nose
+ *   points. Sustained hard countersteer can spin the kart out (optional).
+ *
+ * See docs/milestones/M1-drive-a-box.md and docs/drift-model.md.
  *
  * Angles are radians around +Y. Forward is (sin h, cos h) on the X/Z plane, so h = 0
  * faces +Z. Positive steer is "right" from the driver's seat, which lowers heading.
@@ -58,6 +65,41 @@ export interface KartConfig {
    * the nose back toward your path. Low = smooth exit that keeps your line.
    */
   driftRecoverTurn: number;
+  /** 0 = legacy drift (stick steers the path), 1 = offset model (stick steers the body). */
+  driftModel: number;
+  /** Offset model: smoothing time for the steering command, seconds. */
+  driftSteerSmooth: number;
+  /** Offset model: arc radius with the stick centred (the natural inward turn), m. */
+  driftRadiusNeutral: number;
+  /** Offset model: tightest arc, at full steer into the drift (the limit), m. */
+  driftRadiusTight: number;
+  /** Offset model: arc at full countersteer, m. Large = still slightly inward; negative = bends outward. */
+  driftRadiusCounter: number;
+  /** Offset model: >1 makes early steer into the drift count most, extra steer less. */
+  driftInCurve: number;
+  /** Offset model: >1 gives finer widening near centre, stronger at full countersteer. */
+  driftCounterCurve: number;
+  /** Offset model: angle between body and path the drift builds to, degrees. */
+  driftOffsetDeg: number;
+  /** Offset model: how fast the offset builds on entry, per second. */
+  driftOffsetRate: number;
+  /** Offset model: how fast the offset eases back to zero after release, per second. */
+  driftOffsetReturnRate: number;
+  /**
+   * Offset model: share of normal steering available the instant a drift is released,
+   * rising to full as the offset eases out. 1 = full steering throughout.
+   */
+  driftRecoverSteer: number;
+  /** Countersteer beyond this (0..1) counts toward a spin-out. */
+  spinThreshold: number;
+  /** Seconds of sustained hard countersteer before a spin-out; 0 turns spin-outs off. */
+  spinOutAfterSec: number;
+  /** How long a spin-out lasts, seconds. */
+  spinSec: number;
+  /** Fraction of speed kept by a spin-out. */
+  spinSpeedKeep: number;
+  /** Fraction of steering available while spinning. */
+  spinSteer: number;
   /** Fraction of normal steering available in the air (small: line up a landing only). */
   airSteer: number;
   /** Top speed change per unit of slope, m/s: lower uphill, higher downhill. */
@@ -83,6 +125,15 @@ export interface KartState {
   boostMult: number;
   /** Easing out of a drift: the slide angle is being smoothed away. */
   recovering: boolean;
+  /** Offset model: smoothed steering command, -1..1. */
+  steerSmooth: number;
+  /** Offset model: path direction minus body direction, radians. */
+  driftOffset: number;
+  /** Seconds of sustained hard countersteer in the current drift. */
+  counterTime: number;
+  /** Seconds of spin-out left, and which way it spins (+1 / -1). */
+  spinTime: number;
+  spinDir: number;
   // Vertical state, owned by physics/vertical.ts.
   y: number;
   vy: number;
@@ -115,6 +166,11 @@ export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
     boostTime: 0,
     boostMult: 1,
     recovering: false,
+    steerSmooth: 0,
+    driftOffset: 0,
+    counterTime: 0,
+    spinTime: 0,
+    spinDir: 0,
     y,
     vy: 0,
     grounded: true,
@@ -159,11 +215,15 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
     s.driftPressAge <= cfg.driftStartWindow &&
     Math.abs(input.steer) >= cfg.driftStartSteer &&
     s.speed >= cfg.driftMinSpeed &&
-    s.grounded;
+    s.grounded &&
+    s.spinTime <= 0;
   if (canStart) {
     s.driftDir = Math.sign(input.steer);
     s.driftTime = 0;
     s.recovering = false;
+    s.counterTime = 0;
+    // Start from whatever slide there already is, so entry is continuous.
+    s.driftOffset = wrapAngle(s.velAngle - s.heading);
   }
 }
 
@@ -172,6 +232,36 @@ export function applyBoost(s: KartState, cfg: KartConfig, mult: number, seconds:
   s.boostMult = s.boostTime > 0 ? Math.max(s.boostMult, mult) : mult;
   s.boostTime = Math.max(s.boostTime, seconds);
   s.speed = Math.max(s.speed, cfg.topSpeed * mult);
+}
+
+/**
+ * Offset model: arc curvature (1/m, positive = into the drift) for a steer amount
+ * `into` (-1 full countersteer .. 0 centred .. 1 full into the drift).
+ *
+ * Into the drift: 1 - (1 - u)^q rises fast at first and flattens toward the tight
+ * limit, so the first bit of steer does most of the work and full lock can't
+ * over-rotate. Countersteer: |u|^p widens gently near centre, more at full lock.
+ */
+export function driftCurvature(into: number, cfg: KartConfig): number {
+  const kn = 1 / cfg.driftRadiusNeutral;
+  const kt = 1 / cfg.driftRadiusTight;
+  const kc = 1 / cfg.driftRadiusCounter;
+  const u = Math.max(-1, Math.min(1, into));
+  if (u >= 0) return kn + (kt - kn) * (1 - Math.pow(1 - u, cfg.driftInCurve));
+  return kn - (kn - kc) * Math.pow(-u, cfg.driftCounterCurve);
+}
+
+/** The steer amount (into the drift) that gives a curvature: inverse of driftCurvature. */
+export function driftSteerFor(curvature: number, cfg: KartConfig): number {
+  const kn = 1 / cfg.driftRadiusNeutral;
+  const kt = 1 / cfg.driftRadiusTight;
+  const kc = 1 / cfg.driftRadiusCounter;
+  if (curvature >= kn) {
+    const r = Math.min(1, (curvature - kn) / (kt - kn));
+    return 1 - Math.pow(1 - r, 1 / cfg.driftInCurve);
+  }
+  const r = Math.min(1, (kn - curvature) / (kn - kc));
+  return -Math.pow(r, 1 / cfg.driftCounterCurve);
 }
 
 /** Driving over a boost pad. */
@@ -188,6 +278,10 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
   const cap = Math.max(0, cfg.topSpeed * mult - s.slope * cfg.slopeSpeed);
   s.boostTime = Math.max(0, s.boostTime - dt);
+
+  // Smoothed steering command (offset model): small nudges blend instead of jolting.
+  s.steerSmooth +=
+    (input.steer - s.steerSmooth) * (1 - Math.exp(-dt / Math.max(1e-3, cfg.driftSteerSmooth)));
 
   // Longitudinal: throttle, brake, reverse, coast. None of it applies in the air:
   // speed (including drift and boost speed) carries through a jump untouched.
@@ -208,7 +302,30 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     s.speed = moveToward(s.speed, 0, cfg.drag * dt);
   }
 
-  if (drifting) {
+  const offsetModel = cfg.driftModel >= 1;
+  if (drifting && offsetModel) {
+    // The stick steers the body, as a curvature, so a given stick position carves the
+    // same arc at any speed.
+    const into = s.steerSmooth * s.driftDir;
+    const bodyRate = -s.driftDir * Math.abs(s.speed) * driftCurvature(into, cfg);
+    s.heading = wrapAngle(s.heading + bodyRate * steer * dt);
+    // The path is the body plus an offset that builds to a fixed angle, independent of
+    // the stick, so steering doesn't swing the kart's visible angle around.
+    const target = s.driftDir * cfg.driftOffsetDeg * DEG;
+    s.driftOffset += (target - s.driftOffset) * (1 - Math.exp(-cfg.driftOffsetRate * dt));
+    s.velAngle = wrapAngle(s.heading + s.driftOffset);
+    s.driftTime += dt;
+    // Sustained hard countersteer spins you out; easing off resets the count.
+    s.counterTime = into < -cfg.spinThreshold ? s.counterTime + dt : 0;
+    if (cfg.spinOutAfterSec > 0 && s.counterTime >= cfg.spinOutAfterSec) {
+      s.driftDir = 0;
+      s.recovering = true;
+      s.counterTime = 0;
+      s.spinTime = cfg.spinSec;
+      s.spinDir = -Math.sign(target); // spins the way the countersteer was pulling
+      s.speed *= cfg.spinSpeedKeep;
+    }
+  } else if (drifting) {
     // into: -1 full countersteer, 0 stick centred, 1 full steer into the drift.
     const into = input.steer * s.driftDir;
     const turn =
@@ -232,14 +349,36 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     const atSpeed = Math.min(1, abs / cfg.topSpeed);
     const rolling = Math.min(1, abs / cfg.turnFullSpeed);
     const rate = (cfg.turnRate + (cfg.turnRateAtTop - cfg.turnRate) * atSpeed) * rolling;
+    // After an offset-model drift, normal steering can optionally fade back in as the
+    // offset goes (driftRecoverSteer < 1); a spin-out restricts it further.
+    let authority = 1;
+    if (offsetModel && s.recovering) {
+      const left = Math.min(1, Math.abs(s.driftOffset) / (cfg.driftOffsetDeg * DEG));
+      authority = 1 - left * (1 - cfg.driftRecoverSteer);
+    }
+    if (s.spinTime > 0) authority = Math.min(authority, cfg.spinSteer);
     // Reversing flips steering, as in a real car.
-    const turn = input.steer * rate * Math.sign(s.speed) * steer * dt;
+    const turn = input.steer * rate * Math.sign(s.speed) * steer * authority * dt;
     s.heading = wrapAngle(s.heading - turn);
     // In the air there's no grip; a little steering turns kart and path together.
     if (!s.grounded) s.velAngle = wrapAngle(s.velAngle - turn);
   }
 
-  if (!drifting && s.grounded) {
+  if (s.spinTime > 0) {
+    // Spinning: the body whirls round while the kart slides on along its path.
+    s.spinTime = Math.max(0, s.spinTime - dt);
+    s.heading = wrapAngle(s.heading + s.spinDir * ((2 * Math.PI) / cfg.spinSec) * dt);
+    s.driftOffset = wrapAngle(s.velAngle - s.heading);
+  } else if (!drifting && s.grounded && offsetModel && s.recovering) {
+    // Released: the offset eases back to zero, so the path settles smoothly onto where
+    // the nose points. No snap, and no pendulum swing of the body.
+    s.driftOffset *= Math.exp(-cfg.driftOffsetReturnRate * dt);
+    s.velAngle = wrapAngle(s.heading + s.driftOffset);
+    if (Math.abs(s.driftOffset) < RECOVERED) {
+      s.recovering = false;
+      s.driftOffset = 0;
+    }
+  } else if (!drifting && s.grounded) {
     if (s.recovering) {
       // Just left a drift: ease the leftover slide angle away, mostly by bringing the
       // nose round to the path, so the exit is smooth instead of a sudden snap.

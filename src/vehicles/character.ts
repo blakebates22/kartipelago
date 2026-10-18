@@ -41,5 +41,9 @@ export function applyCharacter(base: KartConfig, ch: Character, scale: StatScale
     driftTurnTight: base.driftTurnTight * handling,
     driftTurnNeutral: base.driftTurnNeutral * handling,
     driftTurnCounter: base.driftTurnCounter * handling,
+    // Offset model works in arc radii: better handling = tighter arcs.
+    driftRadiusNeutral: base.driftRadiusNeutral / handling,
+    driftRadiusTight: base.driftRadiusTight / handling,
+    driftRadiusCounter: base.driftRadiusCounter / handling,
   };
 }
