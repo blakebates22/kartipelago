@@ -47,7 +47,8 @@ One folder per track, served from `public/tracks/<id>/`:
 | `track.json`    | us (and later the editor) | Gameplay metadata. Blender creates it once and then never touches it again. |
 | `route.json`    | the Blender exporter      | The race route: points sampled from the curve marked as the route           |
 | `collision.glb` | the Blender exporter      | What you drive on and hit. Materials carry `kp_surface`; no textures        |
-| `visual.glb`    | the Blender exporter      | What you see                                                                |
+| `visual.glb`    | the Blender exporter      | What you see: textures, vertex paint, water/lava animation (see materials)  |
+| `look.json`     | the Blender exporter      | Sky, sun, ambient light and fog (the **Sky & Fog** panel). Optional         |
 
 Source `.blend` files live in `tracks-src/`. They're the real source of a track's
 geometry.
@@ -142,12 +143,14 @@ the add-on's **Set Surface** button sets it). They're defined in
 
 | id        | Effect                                      |
 | --------- | ------------------------------------------- |
-| `asphalt` | ×1 everything: the tuned physics, unchanged |
+| `road`    | ×1 everything: the tuned physics, unchanged |
+| `asphalt` | the same as `road` (older tracks use it)    |
 | `dirt`    | slightly slower                             |
 | `grass`   | off-road: slower, less acceleration         |
 | `sand`    | much slower                                 |
 | `ice`     | low grip                                    |
 | `water`   | very slow                                   |
+| `lava`    | touching it puts you back on the track      |
 | `boost`   | driving onto it starts a zipper boost       |
 | `wall`    | always collides as a wall                   |
 
@@ -183,7 +186,10 @@ Then, in the 3D view's sidebar (N) ▸ **Kartipelago**:
 - **Set as Route:** the active curve becomes the race route. Exactly one main route.
 - **Role:** Visual + Collision (default for roads), Visual only (decoration), or
   Collision only (invisible walls, simplified collision).
-- **Set Surface:** tags the active material.
+- **Set Surface:** tags the active material (for a library material, swaps in the
+  version of it with that surface).
+- **Materials**, **Water & Lava**, **Vertex Paint**, **Sky & Fog:** painting the track
+  with the N64-style texture library. See [materials.md](materials.md).
 - **Export Track:** writes the package to **Export To**/**Track ID**/. The default is
   `//../public/tracks/`, which is right for a `.blend` saved in `tracks-src/`.
 
@@ -198,6 +204,8 @@ Iteration loop:
 `tools/blender/build_bridge_test.py` builds the sample track from a script (run it with
 `blender --background --python tools/blender/build_bridge_test.py`). It's a worked
 example of making roads, terrain, a bridge deck, pillars and props in code.
+`tools/blender/build_dino_demo.py` builds **Dino Demo** (`?track=dino_demo`) the same
+way, textured entirely from the material library.
 
 ## Dependencies and licences
 

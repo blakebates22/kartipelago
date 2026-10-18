@@ -1,9 +1,9 @@
 schema_version = "1.0.0"
 
 id = "kartipelago_tools"
-version = "0.1.0"
+version = "0.2.0"
 name = "Kartipelago Track Tools"
-tagline = "Spline roads and one-click track export for Kartipelago"
+tagline = "Spline roads, N64-style materials and one-click track export"
 maintainer = "Kartipelago contributors"
 type = "add-on"
 blender_version_min = "4.2.0"

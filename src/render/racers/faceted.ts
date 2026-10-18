@@ -219,6 +219,10 @@ export function paintedFace(
     return t;
   };
   const mat = decalMaterial(get("smile/open"));
+  // Freeing the material frees every expression painted for it (only one is on it).
+  mat.addEventListener("dispose", () => {
+    for (const t of cache.values()) t.dispose();
+  });
   head.add(new THREE.Mesh(decalOn(headGeo, "front", rect, 0.12), mat));
   let current = "smile/open";
   return (key: string) => {

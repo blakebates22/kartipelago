@@ -20,17 +20,19 @@ import math
 import bpy
 
 GROUP_NAME = "KP Road"
-GROUP_VERSION = 3
+GROUP_VERSION = 5
 
 # Semantic surface ids, matching assets/data/surfaces.json in the game.
 SURFACES = [
-    ("asphalt", "Asphalt", "Driveable road"),
+    ("road", "Road", "Driveable road, full grip (whatever it looks like)"),
+    ("asphalt", "Asphalt", "Driveable road (same as Road)"),
     ("dirt", "Dirt", "Driveable, a little slower"),
     ("grass", "Grass", "Off-road: slower"),
     ("sand", "Sand", "Off-road: much slower"),
     ("ice", "Ice", "Slippery"),
     ("water", "Water", "Shallow water: very slow"),
     ("boost", "Boost", "Driving onto it gives a boost"),
+    ("lava", "Lava", "Touching it puts you back on the track"),
     ("wall", "Wall", "Solid: always collides as a wall"),
 ]
 
@@ -149,6 +151,8 @@ def default_materials():
         "barrier": surface_material("KP Barrier", "wall", "wall"),
         "grass": surface_material("KP Grass", "grass", "grass"),
         "rock": surface_material("KP Rock", "wall", "rock"),
+        # Stone: steep sides collide as walls, flat tops can be driven on.
+        "stone": surface_material("KP Stone", "dirt", color="#8a8278"),
     }
 
 
@@ -181,11 +185,59 @@ def _math(ng, op, a, b=None):
 
 
 def build_road_group():
-    """Create (or rebuild) the "KP Road" Geometry Nodes group."""
+    """
+    Create the "KP Road" Geometry Nodes group, or upgrade an older one in place. Every
+    road's settings (width, materials...) are kept across an upgrade.
+    """
     old = bpy.data.node_groups.get(GROUP_NAME)
     if old is not None and old.get("kp_version") == GROUP_VERSION:
         return old
+    users = []
+    if old is not None:
+        for ob in bpy.data.objects:
+            for mod in ob.modifiers:
+                if mod.type == "NODES" and mod.node_group is old:
+                    names = [i.name for i in old.interface.items_tree if i.item_type == "SOCKET" and i.in_out == "INPUT"]
+                    vals = {}
+                    for n in names:
+                        try:
+                            vals[n] = get_input(mod, n)
+                        except (KeyError, TypeError, AttributeError):
+                            pass
+                    users.append((ob, mod, vals))
     ng = old or bpy.data.node_groups.new(GROUP_NAME, "GeometryNodeTree")
+    _build_road_nodes(ng)
+    for ob, mod, vals in users:
+        mod.node_group = ng
+        for n, v in vals.items():
+            try:
+                set_input(mod, n, v)
+            except (KeyError, TypeError, AttributeError):
+                pass
+        _fill_materials(ob, mod)
+    return ng
+
+
+def _fill_materials(ob, mod):
+    """Default any empty material inputs, and list the road's materials in the object's
+    slots (the glTF exporter takes materials from there)."""
+    mats = default_materials()
+    defaults = {
+        "Road Material": mats["road"],
+        "Shoulder Material": mats["shoulder"],
+        "Barrier Material": mats["barrier"],
+        "Deck Material": mats["stone"],
+    }
+    for name, m in defaults.items():
+        if get_input(mod, name) is None:
+            set_input(mod, name, m)
+        if ob.type == "CURVE":
+            v = get_input(mod, name)
+            if v is not None and v.name not in ob.data.materials:
+                ob.data.materials.append(v)
+
+
+def _build_road_nodes(ng):
     ng.nodes.clear()
     ng.interface.clear()
     ng["kp_version"] = GROUP_VERSION
@@ -197,7 +249,17 @@ def build_road_group():
     _socket(ng, "Barrier Thickness", "NodeSocketFloat", 0.6, 0.1, 5.0, "m")
     _socket(ng, "Segment Length", "NodeSocketFloat", 1.5, 0.25, 10.0, "Mesh density along the road, m")
     _socket(ng, "Across Segments", "NodeSocketInt", 4, 1, 32, "Mesh density across the road")
-    _socket(ng, "Texture Repeat", "NodeSocketFloat", 8.0, 1.0, 100.0, "Road texture length, m")
+    _socket(ng, "Texture Repeat", "NodeSocketFloat", 8.0, 0.25, 100.0, "Length of one texture repeat along the road, m")
+    _socket(
+        ng,
+        "Texture Width",
+        "NodeSocketFloat",
+        0.0,
+        0.0,
+        100.0,
+        "Width of one texture repeat across the road, m. 0 = stretch one copy across each part",
+    )
+    _socket(ng, "Turn Texture", "NodeSocketBool", False, desc="Turn the texture a quarter turn")
     _socket(
         ng,
         "Allow Loops",
@@ -208,6 +270,26 @@ def build_road_group():
     _socket(ng, "Road Material", "NodeSocketMaterial")
     _socket(ng, "Shoulder Material", "NodeSocketMaterial")
     _socket(ng, "Barrier Material", "NodeSocketMaterial")
+    _socket(
+        ng,
+        "Deck Depth",
+        "NodeSocketFloat",
+        0.0,
+        0.0,
+        20.0,
+        "A solid underside this deep, following the road (bridges, raised sections). 0 = none, m",
+    )
+    _socket(ng, "Deck Material", "NodeSocketMaterial")
+    _socket(
+        ng,
+        "Shade Strength",
+        "NodeSocketFloat",
+        0.0,
+        0.0,
+        1.0,
+        "Darken the road where something is above it (tunnels, bridges). 0 = off",
+    )
+    _socket(ng, "Shade Casters", "NodeSocketCollection", desc="What can shade the road from above")
 
     N = ng.nodes
     L = ng.links
@@ -241,7 +323,14 @@ def build_road_group():
     store_v.inputs["Name"].default_value = "kp_v"
     L.new(sw.outputs[0], store_v.inputs["Geometry"])
     L.new(sp.outputs["Length"], store_v.inputs["Value"])
-    path = store_v.outputs[0]
+    # Point radius scales the cross-section; kept to measure the texture across.
+    store_r = N.new("GeometryNodeStoreNamedAttribute")
+    store_r.data_type = "FLOAT"
+    store_r.domain = "POINT"
+    store_r.inputs["Name"].default_value = "kp_r"
+    L.new(store_v.outputs[0], store_r.inputs["Geometry"])
+    L.new(N.new("GeometryNodeInputRadius").outputs[0], store_r.inputs["Value"])
+    path = store_r.outputs[0]
 
     half = _math(ng, "MULTIPLY", I["Road Width"], 0.5)
     neg_half = _math(ng, "MULTIPLY", I["Road Width"], -0.5)
@@ -272,16 +361,24 @@ def build_road_group():
         return out
 
     def sweep(profile, material, smooth):
-        # Keep each profile point's 0..1 position round the profile, for the texture's U.
+        # Keep each profile point's position round the profile, for the texture's U:
+        # 0..1 (kp_u) and in metres (kp_ul).
         store_u = N.new("GeometryNodeStoreNamedAttribute")
         store_u.data_type = "FLOAT"
         store_u.domain = "POINT"
         store_u.inputs["Name"].default_value = "kp_u"
         L.new(profile, store_u.inputs["Geometry"])
-        L.new(N.new("GeometryNodeSplineParameter").outputs["Factor"], store_u.inputs["Value"])
+        psp = N.new("GeometryNodeSplineParameter")
+        L.new(psp.outputs["Factor"], store_u.inputs["Value"])
+        store_ul = N.new("GeometryNodeStoreNamedAttribute")
+        store_ul.data_type = "FLOAT"
+        store_ul.domain = "POINT"
+        store_ul.inputs["Name"].default_value = "kp_ul"
+        L.new(store_u.outputs[0], store_ul.inputs["Geometry"])
+        L.new(psp.outputs["Length"], store_ul.inputs["Value"])
         c2m = N.new("GeometryNodeCurveToMesh")
         L.new(path, c2m.inputs["Curve"])
-        L.new(store_u.outputs[0], c2m.inputs["Profile Curve"])
+        L.new(store_ul.outputs[0], c2m.inputs["Profile Curve"])
         # Point Radius scales the cross-section.
         L.new(N.new("GeometryNodeInputRadius").outputs[0], c2m.inputs["Scale"])
         mat = N.new("GeometryNodeSetMaterial")
@@ -325,8 +422,27 @@ def build_road_group():
     L.new(has_barrier, bsw.inputs["Switch"])
     L.new(barriers.outputs[0], bsw.inputs["True"])
 
+    # The deck: a solid slab under the whole cross-section, just below the surface, so
+    # a raised road is a bridge and never a floating ribbon.
+    dq = N.new("GeometryNodeCurvePrimitiveQuadrilateral")
+    dq.mode = "RECTANGLE"
+    deck_half = _math(ng, "ADD", edge, I["Barrier Thickness"])
+    L.new(_math(ng, "MULTIPLY", deck_half, 2.0), dq.inputs["Width"])
+    L.new(I["Deck Depth"], dq.inputs["Height"])
+    dt = N.new("GeometryNodeTransform")
+    L.new(dq.outputs[0], dt.inputs["Geometry"])
+    dc = N.new("ShaderNodeCombineXYZ")
+    # Profile Y points down: the slab's top sits 0.15 m under the road surface.
+    L.new(_math(ng, "ADD", 0.15, _math(ng, "MULTIPLY", I["Deck Depth"], 0.5)), dc.inputs["Y"])
+    L.new(dc.outputs[0], dt.inputs["Translation"])
+    deck = sweep(dt.outputs[0], I["Deck Material"], False)
+    dsw = N.new("GeometryNodeSwitch")
+    dsw.input_type = "GEOMETRY"
+    L.new(_math(ng, "GREATER_THAN", I["Deck Depth"], 0.001), dsw.inputs["Switch"])
+    L.new(deck, dsw.inputs["True"])
+
     join = N.new("GeometryNodeJoinGeometry")
-    for g in (road, shoulder_l, shoulder_r, bsw.outputs[0]):
+    for g in (road, shoulder_l, shoulder_r, bsw.outputs[0], dsw.outputs[0]):
         L.new(g, join.inputs[0])
 
     # UVs: U across, V along. On a closed road the last ring of faces wraps from the end
@@ -351,24 +467,82 @@ def build_road_group():
     v = _math(ng, "ADD", nv.outputs["Attribute"], _math(ng, "MULTIPLY", wraps, length))
     repeats = _math(ng, "MAXIMUM", _math(ng, "ROUND", _math(ng, "DIVIDE", length, I["Texture Repeat"])), 1)
     v_tex = _math(ng, "DIVIDE", _math(ng, "MULTIPLY", v, repeats), length)
+    # U: with a Texture Width, metres across (scaled by the point radius) per repeat, so
+    # density matches along and across; without, one copy stretched across each part.
+    def named(name):
+        n = N.new("GeometryNodeInputNamedAttribute")
+        n.data_type = "FLOAT"
+        n.inputs["Name"].default_value = name
+        return n.outputs["Attribute"]
+
+    u_metric = _math(
+        ng,
+        "DIVIDE",
+        _math(ng, "MULTIPLY", named("kp_ul"), named("kp_r")),
+        _math(ng, "MAXIMUM", I["Texture Width"], 0.001),
+    )
+    usw = N.new("GeometryNodeSwitch")
+    usw.input_type = "FLOAT"
+    L.new(_math(ng, "GREATER_THAN", I["Texture Width"], 0.0001), usw.inputs["Switch"])
+    L.new(nu.outputs["Attribute"], usw.inputs["False"])
+    L.new(u_metric, usw.inputs["True"])
     uv = N.new("ShaderNodeCombineXYZ")
-    L.new(nu.outputs["Attribute"], uv.inputs["X"])
+    L.new(usw.outputs[0], uv.inputs["X"])
     L.new(v_tex, uv.inputs["Y"])
+    uv_turn = N.new("ShaderNodeCombineXYZ")
+    L.new(v_tex, uv_turn.inputs["X"])
+    L.new(usw.outputs[0], uv_turn.inputs["Y"])
+    tsw = N.new("GeometryNodeSwitch")
+    tsw.input_type = "VECTOR"
+    L.new(I["Turn Texture"], tsw.inputs["Switch"])
+    L.new(uv.outputs[0], tsw.inputs["False"])
+    L.new(uv_turn.outputs[0], tsw.inputs["True"])
     store_uv = N.new("GeometryNodeStoreNamedAttribute")
     store_uv.data_type = "FLOAT2"
     store_uv.domain = "CORNER"
     store_uv.inputs["Name"].default_value = "UVMap"
     L.new(join.outputs[0], store_uv.inputs["Geometry"])
-    L.new(uv.outputs[0], store_uv.inputs["Value"])
+    L.new(tsw.outputs[0], store_uv.inputs["Value"])
+
+    # Vertex colour "Col" (multiplied into library materials): white, darkened where a
+    # shade caster is above (a ray straight up hits it).
+    casters = N.new("GeometryNodeCollectionInfo")
+    casters.transform_space = "RELATIVE"
+    L.new(I["Shade Casters"], casters.inputs["Collection"])
+    real = N.new("GeometryNodeRealizeInstances")
+    L.new(casters.outputs[0], real.inputs[0])
+    csw = N.new("GeometryNodeSwitch")
+    csw.input_type = "GEOMETRY"
+    L.new(_math(ng, "GREATER_THAN", I["Shade Strength"], 0.0), csw.inputs["Switch"])
+    L.new(real.outputs[0], csw.inputs["True"])
+    ray = N.new("GeometryNodeRaycast")
+    L.new(csw.outputs[0], ray.inputs["Target Geometry"])
+    src = N.new("ShaderNodeVectorMath")
+    src.operation = "ADD"
+    L.new(N.new("GeometryNodeInputPosition").outputs[0], src.inputs[0])
+    src.inputs[1].default_value = (0.0, 0.0, 0.3)
+    L.new(src.outputs[0], ray.inputs["Source Position"])
+    ray.inputs["Ray Direction"].default_value = (0.0, 0.0, 1.0)
+    ray.inputs["Ray Length"].default_value = 60.0
+    shade = _math(ng, "SUBTRACT", 1.0, _math(ng, "MULTIPLY", ray.outputs["Is Hit"], I["Shade Strength"]))
+    col = N.new("FunctionNodeCombineColor")
+    for k in ("Red", "Green", "Blue"):
+        L.new(shade, col.inputs[k])
+    store_col = N.new("GeometryNodeStoreNamedAttribute")
+    store_col.data_type = "BYTE_COLOR"
+    store_col.domain = "POINT"
+    store_col.inputs["Name"].default_value = "Col"
+    L.new(store_uv.outputs[0], store_col.inputs["Geometry"])
+    L.new(col.outputs[0], store_col.inputs["Value"])
 
     # The helper attributes aren't needed in the exported mesh.
-    rm = N.new("GeometryNodeRemoveAttribute")
-    rm.inputs["Name"].default_value = "kp_v"
-    L.new(store_uv.outputs[0], rm.inputs["Geometry"])
-    rm2 = N.new("GeometryNodeRemoveAttribute")
-    rm2.inputs["Name"].default_value = "kp_u"
-    L.new(rm.outputs[0], rm2.inputs["Geometry"])
-    L.new(rm2.outputs[0], go.inputs["Road"])
+    last = store_col.outputs[0]
+    for name in ("kp_v", "kp_u", "kp_ul", "kp_r"):
+        rm = N.new("GeometryNodeRemoveAttribute")
+        rm.inputs["Name"].default_value = name
+        L.new(last, rm.inputs["Geometry"])
+        last = rm.outputs[0]
+    L.new(last, go.inputs["Road"])
 
     # Tidy layout (purely cosmetic in the node editor).
     for i, n in enumerate(N):
@@ -388,6 +562,8 @@ def set_input(mod, name, value):
         getattr(props.inputs, ident).value = value  # Blender 5.2+
     else:
         mod[ident] = value  # earlier versions keep inputs as ID properties
+    # Re-evaluate the object (5.2 doesn't always notice a new collection/object input).
+    mod.id_data.update_tag()
 
 
 def get_input(mod, name):
@@ -422,7 +598,7 @@ def make_road(name, points, closed=True, width=12.0, barrier=1.0, collection=Non
     return ob
 
 
-def attach_road(ob, width=12.0, barrier=1.0):
+def attach_road(ob, width=12.0, barrier=1.0, deck=0.0):
     """Give a curve object the KP Road modifier and make it the route if none is set."""
     mats = default_materials()
     mod = ob.modifiers.get("KP Road") or ob.modifiers.new("KP Road", "NODES")
@@ -432,11 +608,9 @@ def attach_road(ob, width=12.0, barrier=1.0):
     set_input(mod, "Road Material", mats["road"])
     set_input(mod, "Shoulder Material", mats["shoulder"])
     set_input(mod, "Barrier Material", mats["barrier"])
-    # The exporter takes materials from the object's slots, so list them there too.
-    if ob.type == "CURVE":
-        for m in (mats["road"], mats["shoulder"], mats["barrier"]):
-            if m.name not in ob.data.materials:
-                ob.data.materials.append(m)
+    set_input(mod, "Deck Depth", deck)
+    set_input(mod, "Deck Material", mats["stone"])
+    _fill_materials(ob, mod)
     ob["kp_role"] = "both"
     if not any(o.get("kp_route") for o in bpy.data.objects):
         ob["kp_route"] = True

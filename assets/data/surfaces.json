@@ -1,13 +1,15 @@
 {
   "schemaVersion": 1,
-  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost.",
+  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. A surface is chosen separately from the texture: the same picture can be road in one place and grass in another. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost. respawn: touching it puts you back at the last checkpoint.",
   "surfaces": {
+    "road": { "road": true, "speed": 1, "accel": 1, "grip": 1 },
     "asphalt": { "road": true, "speed": 1, "accel": 1, "grip": 1 },
     "dirt": { "road": true, "speed": 0.94, "accel": 0.92, "grip": 0.92 },
     "grass": { "road": false, "speed": 0.72, "accel": 0.78, "grip": 0.88 },
     "sand": { "road": false, "speed": 0.58, "accel": 0.62, "grip": 0.75 },
     "ice": { "road": true, "speed": 1, "accel": 0.6, "grip": 0.3 },
     "water": { "road": false, "speed": 0.55, "accel": 0.6, "grip": 0.7 },
+    "lava": { "road": false, "speed": 0.5, "accel": 0.5, "grip": 0.6, "respawn": true },
     "boost": { "road": true, "speed": 1, "accel": 1, "grip": 1, "boost": true },
     "wall": { "road": false, "wall": true }
   }

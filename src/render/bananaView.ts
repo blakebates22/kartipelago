@@ -32,7 +32,7 @@ function bananaMesh(body: THREE.Material, tip: THREE.Material) {
   return group;
 }
 
-export function createBananaView(scene: THREE.Scene, look: BananaLook) {
+export function createBananaView(scene: THREE.Object3D, look: BananaLook) {
   const body = new THREE.MeshStandardMaterial({
     color: look.color,
     emissive: new THREE.Color(look.color),

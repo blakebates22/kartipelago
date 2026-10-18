@@ -29,7 +29,7 @@ function chevronTexture() {
 }
 
 /** Meshes for the practice course. Reads course state each frame; never changes it. */
-export function createCourseView(scene: THREE.Scene, course: Course, cfg: CourseConfig) {
+export function createCourseView(scene: THREE.Object3D, course: Course, cfg: CourseConfig) {
   const padMat = new THREE.MeshStandardMaterial({ map: chevronTexture(), roughness: 0.6 });
   const padGeo = new THREE.PlaneGeometry(cfg.padWidth, cfg.padLength).rotateX(-Math.PI / 2);
   for (const pad of course.data.pads) {

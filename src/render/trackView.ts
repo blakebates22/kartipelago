@@ -120,7 +120,7 @@ function strip(
 /** Road, walls (not on open tracks) and start line. Purely visual; collision comes from
  * the track samples. */
 export function createTrackView(
-  scene: THREE.Scene,
+  scene: THREE.Object3D,
   track: Track,
   look: TrackLook,
   zippers: ZipperPad[] = [],

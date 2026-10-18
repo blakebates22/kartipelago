@@ -20,7 +20,7 @@ const hash = (n: number) => {
 };
 
 export function createSceneryView(
-  scene: THREE.Scene,
+  scene: THREE.Object3D,
   solids: Solid[],
   tunnels: Tunnel[],
   look: SceneryLook,

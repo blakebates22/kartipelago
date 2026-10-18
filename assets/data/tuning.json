@@ -260,7 +260,6 @@
     "speedoDialMax": 180
   },
   "look": {
-    "resolutionScale": 0.75,
     "fogNear": 160,
     "fogFar": 700
   },

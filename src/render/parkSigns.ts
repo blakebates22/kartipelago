@@ -34,7 +34,7 @@ function signTexture(number: string, name: string, detail: string) {
 
 const DETAIL = { plain: "drift it all", bananas: "+ bananas", zipper: "+ zipper" } as const;
 
-export function createParkSigns(scene: THREE.Scene, park: DriftPark) {
+export function createParkSigns(scene: THREE.Object3D, park: DriftPark) {
   const group = new THREE.Group();
   const postMat = new THREE.MeshLambertMaterial({ color: "#5c3618" });
   const postGeo = new THREE.CylinderGeometry(0.18, 0.22, 3.2, 6);

@@ -29,7 +29,7 @@ const BLAST_COLORS: Record<string, string> = {
 };
 
 /** A pool of meshes that grows on demand; unused ones are hidden. */
-function pool(make: () => THREE.Object3D, scene: THREE.Scene) {
+function pool(make: () => THREE.Object3D, scene: THREE.Object3D) {
   const items: THREE.Object3D[] = [];
   return {
     get(i: number) {
@@ -48,7 +48,7 @@ function pool(make: () => THREE.Object3D, scene: THREE.Scene) {
   };
 }
 
-export function createItemView(scene: THREE.Scene) {
+export function createItemView(scene: THREE.Object3D) {
   const rainbowMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
     emissive: "#ffffff",

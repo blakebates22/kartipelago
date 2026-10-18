@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "about": "The Kartipelago material library, shown in Blender's Material Browser. Each material is a small repeating image plus a suggested driving surface. The surface is only a default: in Blender you can give the same image any surface (see docs/materials.md). Textures are original prototypes made for this project (starter_manifest.json), MIT like the rest of the repo.",
+  "surfaceIds": "Surfaces are the game's ids from assets/data/surfaces.json (road, dirt, grass, sand, water, lava, wall...).",
+  "themes": [
+    {
+      "id": "ancient_lake",
+      "name": "Ancient Lake",
+      "description": "Golden dirt roads, bright grass, warm layered cliffs, clear blue-green water",
+      "environment": {
+        "sky": "#8fd3ff",
+        "fog": { "enabled": true, "color": "#c4e7fa", "near": 150, "far": 680 },
+        "sun": { "color": "#fff0d2", "intensity": 2.3, "direction": [0.55, 0.75, 0.35] },
+        "ambient": { "sky": "#e2f4ff", "ground": "#5d7a3a", "intensity": 1.15 }
+      }
+    },
+    {
+      "id": "fossil_canyon",
+      "name": "Fossil Canyon",
+      "description": "Reddish clay roads, striped sandstone cliffs, scree and dry clay",
+      "environment": {
+        "sky": "#a9d6f2",
+        "fog": { "enabled": true, "color": "#ebcfa8", "near": 130, "far": 600 },
+        "sun": { "color": "#ffe1b8", "intensity": 2.4, "direction": [0.35, 0.8, -0.45] },
+        "ambient": { "sky": "#f6e2c6", "ground": "#8a4f30", "intensity": 1.1 }
+      }
+    },
+    {
+      "id": "jungle_falls",
+      "name": "Jungle Falls",
+      "description": "Mossy stone, old masonry, leafy ground and soft green light",
+      "environment": {
+        "sky": "#a4dccd",
+        "fog": { "enabled": true, "color": "#b4dcc4", "near": 90, "far": 460 },
+        "sun": { "color": "#f2ffe2", "intensity": 1.9, "direction": [-0.4, 0.85, 0.3] },
+        "ambient": { "sky": "#d6f2e2", "ground": "#2f5a2c", "intensity": 1.25 }
+      }
+    },
+    {
+      "id": "hot_top_volcano",
+      "name": "Hot Top Volcano",
+      "description": "Dark ash roads, basalt walls, glowing lava, scorched slag",
+      "environment": {
+        "sky": "#4a2a35",
+        "fog": { "enabled": true, "color": "#6a3328", "near": 70, "far": 430 },
+        "sun": { "color": "#ffb47a", "intensity": 1.7, "direction": [0.2, 0.7, 0.6] },
+        "ambient": { "sky": "#c46a4a", "ground": "#2a1210", "intensity": 1.0 }
+      }
+    }
+  ],
+  "materials": [
+    {
+      "id": "ancient_road",
+      "name": "Ancient Road",
+      "theme": "ancient_lake",
+      "surface": "road",
+      "image": "ancient_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "ancient_grass",
+      "name": "Ancient Grass",
+      "theme": "ancient_lake",
+      "surface": "grass",
+      "image": "ancient_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ancient_cliff",
+      "name": "Ancient Cliff",
+      "theme": "ancient_lake",
+      "surface": "wall",
+      "image": "ancient_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "ancient_water",
+      "name": "Ancient Water",
+      "theme": "ancient_lake",
+      "surface": "water",
+      "image": "ancient_water.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": { "scrollU": 0.03, "scrollV": 0.015, "wave": 0.04, "wavePeriod": 4, "opacity": 0.85 }
+    },
+    {
+      "id": "fossil_road",
+      "name": "Fossil Road",
+      "theme": "fossil_canyon",
+      "surface": "road",
+      "image": "fossil_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "fossil_strata",
+      "name": "Fossil Strata",
+      "theme": "fossil_canyon",
+      "surface": "wall",
+      "image": "fossil_strata.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "fossil_scree",
+      "name": "Fossil Scree",
+      "theme": "fossil_canyon",
+      "surface": "sand",
+      "image": "fossil_scree.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "fossil_dry_clay",
+      "name": "Fossil Dry Clay",
+      "theme": "fossil_canyon",
+      "surface": "sand",
+      "image": "fossil_dry_clay.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "jungle_temple",
+      "name": "Jungle Temple",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "jungle_temple.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "jungle_mossstone",
+      "name": "Jungle Moss Stone",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "jungle_mossstone.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "jungle_leafcover",
+      "name": "Jungle Leaf Cover",
+      "theme": "jungle_falls",
+      "surface": "grass",
+      "image": "jungle_leafcover.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "jungle_path",
+      "name": "Jungle Path",
+      "theme": "jungle_falls",
+      "surface": "road",
+      "image": "jungle_path.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "volcano_ashroad",
+      "name": "Volcano Ash Road",
+      "theme": "hot_top_volcano",
+      "surface": "road",
+      "image": "volcano_ashroad.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "volcano_basalt",
+      "name": "Volcano Basalt",
+      "theme": "hot_top_volcano",
+      "surface": "wall",
+      "image": "volcano_basalt.png",
+      "wrap": "repeat",
+      "tileMetres": 7
+    },
+    {
+      "id": "volcano_lava",
+      "name": "Volcano Lava",
+      "theme": "hot_top_volcano",
+      "surface": "lava",
+      "image": "volcano_lava.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": { "scrollU": 0.012, "scrollV": 0.035, "wave": 0.02, "wavePeriod": 6, "glow": 0.85 }
+    },
+    {
+      "id": "volcano_slag",
+      "name": "Volcano Slag",
+      "theme": "hot_top_volcano",
+      "surface": "sand",
+      "image": "volcano_slag.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    }
+  ]
+}

@@ -6,6 +6,7 @@ One-click export of a track package into the game's public/tracks/<id>/ folder:
     visual.glb     what you see: every visible object whose role is "both" or "visual"
     collision.glb  what you drive on and hit: role "both" or "collision"
     route.json     the race route, sampled from the curve(s) marked as the route
+    look.json      sky, sun and fog (the Sky & Fog panel's environment preset)
     track.json     gameplay metadata. Written only if it doesn't exist yet: re-exporting
                    geometry never touches placements made in the game's editor.
 
@@ -19,7 +20,7 @@ import math
 import os
 
 import bpy
-from . import road
+from . import materials, road
 
 ROUTE_SCHEMA = 1
 TRACK_SCHEMA = 1
@@ -96,8 +97,13 @@ def _export_glb(path, objects, images=True):
         o.select_set(False)
     for o in objects:
         o.select_set(True)
+    # Vertex paint: the "Col" attribute that library materials multiply in (the
+    # collision mesh needs none).
+    opts = {"export_vertex_color": "MATERIAL" if images else "NONE"}
+    if not images:
+        opts["export_texcoords"] = False
     try:
-        bpy.ops.export_scene.gltf(
+        _gltf(
             filepath=path,
             export_format="GLB",
             use_selection=True,
@@ -110,6 +116,7 @@ def _export_glb(path, objects, images=True):
             export_cameras=False,
             export_lights=False,
             export_animations=False,
+            **opts,
         )
     finally:
         for o in view.objects:
@@ -119,6 +126,15 @@ def _export_glb(path, objects, images=True):
         view.objects.active = prev_active
         for o in hidden:
             o.hide_set(True)
+
+
+def _gltf(**kw):
+    """The glTF exporter, dropping options this Blender's exporter doesn't have."""
+    try:
+        bpy.ops.export_scene.gltf(**kw)
+    except TypeError:
+        kw.pop("export_vertex_color", None)
+        bpy.ops.export_scene.gltf(**kw)
 
 
 def check_surfaces(objects):
@@ -147,11 +163,15 @@ def export_track(folder, track_id, name=None):
     # "Export To" pointing at the track's own folder already: don't nest another inside.
     out_dir = base if os.path.basename(base) == track_id else os.path.join(base, track_id)
     os.makedirs(out_dir, exist_ok=True)
+    # Bring every road up to the add-on's current road generator (settings are kept),
+    # re-project library UVs on edited meshes, refresh road shading.
+    road.build_road_group()
+    notes = materials.prepare_export()
     scene_objs = [o for o in bpy.context.scene.objects if o.type in DRIVEABLE_TYPES]
     visual = [o for o in scene_objs if role_of(o) in ("both", "visual") and o.visible_get()]
     collision = [o for o in scene_objs if role_of(o) in ("both", "collision")]
     routes = [o for o in scene_objs if o.get("kp_route") and o.type == "CURVE"]
-    report = {"folder": out_dir, "visual": len(visual), "collision": len(collision), "warnings": []}
+    report = {"folder": out_dir, "visual": len(visual), "collision": len(collision), "warnings": [], "notes": notes}
     if not routes:
         raise RuntimeError("No route: select the main road curve and press 'Set as Route'.")
     if not collision:
@@ -169,6 +189,12 @@ def export_track(folder, track_id, name=None):
         "up": "+y",
         "routes": [{"id": "main" if o is main else o.name, **sample_route(o)} for o in [main] + [r for r in routes if r is not main]],
     }
+    # The environment first: route.json is written last, which is what the game's dev
+    # server watches to reload the track.
+    look = materials.environment(bpy.context.scene)
+    with open(os.path.join(out_dir, "look.json"), "w") as f:
+        json.dump(look, f, indent=2)
+        f.write("\n")
     with open(os.path.join(out_dir, "route.json"), "w") as f:
         json.dump(route, f, separators=(",", ":"))
         f.write("\n")
@@ -181,7 +207,12 @@ def export_track(folder, track_id, name=None):
                     "schemaVersion": TRACK_SCHEMA,
                     "id": track_id,
                     "name": name or track_id.replace("_", " ").title(),
-                    "geometry": {"visual": "visual.glb", "collision": "collision.glb", "route": "route.json"},
+                    "geometry": {
+                        "visual": "visual.glb",
+                        "collision": "collision.glb",
+                        "route": "route.json",
+                        "look": "look.json",
+                    },
                     "race": {"laps": 3},
                     "entities": [],
                 },

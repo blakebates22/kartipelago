@@ -180,7 +180,7 @@ export class Racer {
   }
 
   /** Remove from the scene and free the geometry. */
-  dispose(scene: THREE.Scene) {
+  dispose(scene: THREE.Object3D) {
     scene.remove(this.root, this.shadow);
     this.root.traverse((o) => {
       if (o instanceof THREE.Mesh) o.geometry.dispose();

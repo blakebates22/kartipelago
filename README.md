@@ -3,13 +3,33 @@
 An original adventure kart racer you can play in your browser. Drive, hover and fly
 across a chain of islands, race rivals, and unlock new worlds.
 
-> **Status:** Milestone 0 (skeleton). There's no racing yet, just the foundations.
-> See the [roadmap](docs/ROADMAP.md).
+> **Status:** playable from boot to finish line: title screen, four racers, Tracks mode
+> on six tracks (racing seven AI rivals, or solo time trials), pause, results, records,
+> options and an original soundtrack. Adventure mode is coming. See the
+> [roadmap](docs/ROADMAP.md).
 
 ## Play
 
 The latest build of `main` is deployed automatically to GitHub Pages:
 `https://blakebates22.github.io/kartipelago/`
+
+## How to play
+
+Start the game, press **Enter** (or click, or press **Start** on a gamepad), pick
+**Play**, choose your racer, then **Tracks**, a track and a race type.
+
+| Action             | Keyboard           | Gamepad      |
+| ------------------ | ------------------ | ------------ |
+| Accelerate         | W or ▲             | A or RT      |
+| Brake / reverse    | S or ▼             | X or LT      |
+| Steer              | A D or ◀ ▶         | Stick, d-pad |
+| Drift              | Space or Shift     | RB or LB     |
+| Use item (release) | E or F             | B or Y       |
+| Pause              | Esc or P           | Start        |
+| Menus              | Arrows, Enter, Esc | D-pad, A, B  |
+
+Settings and personal bests are saved in your browser. How the menus, music and
+screens fit together: [docs/frontend.md](docs/frontend.md).
 
 ## Run it locally
 
@@ -45,8 +65,14 @@ In dev, saving `tuning.json` hot-reloads the values without restarting the game.
 
 ```
 src/
+  app/       screen manager, menu input, settings, records
+  screens/   title, racer select, modes, tracks, loading, race HUD and pause, options...
+  game/      the race session and the track list
+  ui/        pixel font, menu textures, the UI canvas
+  audio/     audio engine, synthesized instruments, the soundtrack
   core/      game loop, fixed timestep, tuning data
-  render/    Three.js renderer, scene and camera
+  render/    Three.js renderer, racers, track views
+  physics/, vehicles/, race/, ai/, items/, world/   the game itself
   debug/     overlay and tuning panel
 assets/
   data/      tuning.json and other game data
@@ -54,8 +80,7 @@ docs/        design doc, architecture, roadmap, milestone specs
 tests/       unit tests (Vitest)
 ```
 
-More folders (`physics/`, `vehicles/`, `race/`, `ai/`, `items/`, `world/`, `ui/`, `audio/`)
-are added as the milestones that need them begin. See [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Contributing
 

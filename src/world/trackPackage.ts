@@ -6,6 +6,7 @@
  *   visual.glb     what you see
  *   collision.glb  what you drive on and hit (semantic surfaces in material extras)
  *   route.json     the race route sampled from the Blender curve (exporter-owned)
+ *   look.json      sky, sun and fog (exporter-owned; optional)
  *
  * Loading turns them into the pieces the game already uses: the route becomes an
  * ordinary centre-line TrackData (so checkpoints, the grid, the AI racing line and
@@ -16,6 +17,11 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import surfacesFile from "../../assets/data/surfaces.json";
+import {
+  prepareTrackMaterials,
+  type LookMode,
+  type TrackMaterials,
+} from "../render/trackMaterials";
 import { buildCollisionMesh, type CollisionMesh, type SurfaceTable } from "./collisionMesh";
 import type { TrackData } from "./track";
 
@@ -26,7 +32,7 @@ export interface TrackMeta {
   schemaVersion: number;
   id: string;
   name: string;
-  geometry: { visual: string; collision: string; route: string };
+  geometry: { visual: string; collision: string; route: string; look?: string };
   race?: { laps?: number };
   /** Gameplay entities with stable ids (Milestone 2). */
   entities?: unknown[];
@@ -46,6 +52,15 @@ export interface RouteFile {
   routes: { id: string; closed: boolean; points: RoutePoint[] }[];
 }
 
+/** A track's sky, light and fog (look.json). Anything missing uses the game's default. */
+export interface TrackLook {
+  theme?: string;
+  sky?: string;
+  fog?: { enabled: boolean; color: string; near: number; far: number };
+  sun?: { color: string; intensity: number; direction: [number, number, number] };
+  ambient?: { sky: string; ground: string; intensity: number };
+}
+
 export interface TrackPackage {
   meta: TrackMeta;
   route: RouteFile;
@@ -53,6 +68,9 @@ export interface TrackPackage {
   trackData: TrackData;
   visual: THREE.Object3D;
   collision: CollisionMesh;
+  /** The visual's materials: texture look and water/lava animation. */
+  materials: TrackMaterials;
+  look: TrackLook;
   /** Falling below this height puts you back on the track. */
   killY: number;
   /** Non-fatal problems worth showing the track's author. */
@@ -121,6 +139,70 @@ export function routeToTrackData(meta: TrackMeta, route: RouteFile): TrackData {
   };
 }
 
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * Check look.json. Bad parts are dropped (the game's default is used for them) with a
+ * warning, never fatal: a typo in the sky colour shouldn't stop a track loading.
+ */
+export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
+  if (!isObj(json)) {
+    warnings.push("look.json: not a JSON object");
+    return {};
+  }
+  const look: TrackLook = {};
+  const bad = (what: string) => warnings.push(`look.json: bad ${what}, using the default`);
+  if (typeof json.theme === "string") look.theme = json.theme;
+  if (json.sky !== undefined) {
+    if (typeof json.sky === "string" && HEX.test(json.sky)) look.sky = json.sky;
+    else bad("sky");
+  }
+  const f = json.fog;
+  if (f !== undefined) {
+    if (
+      isObj(f) &&
+      typeof f.enabled === "boolean" &&
+      typeof f.color === "string" &&
+      HEX.test(f.color) &&
+      finite(f.near) &&
+      finite(f.far) &&
+      (f.far as number) > (f.near as number)
+    )
+      look.fog = f as TrackLook["fog"];
+    else bad("fog");
+  }
+  const sun = json.sun;
+  if (sun !== undefined) {
+    const d = isObj(sun) ? sun.direction : undefined;
+    if (
+      isObj(sun) &&
+      typeof sun.color === "string" &&
+      HEX.test(sun.color) &&
+      finite(sun.intensity) &&
+      Array.isArray(d) &&
+      d.length === 3 &&
+      d.every(finite) &&
+      (d[1] as number) > 0
+    )
+      look.sun = sun as TrackLook["sun"];
+    else bad("sun");
+  }
+  const a = json.ambient;
+  if (a !== undefined) {
+    if (
+      isObj(a) &&
+      typeof a.sky === "string" &&
+      HEX.test(a.sky) &&
+      typeof a.ground === "string" &&
+      HEX.test(a.ground) &&
+      finite(a.intensity)
+    )
+      look.ambient = a as TrackLook["ambient"];
+    else bad("ambient");
+  }
+  return look;
+}
+
 /** Reads one file of a package (fetch in the browser, the file system in tests). */
 export type PackageReader = (file: string) => Promise<ArrayBuffer>;
 
@@ -150,13 +232,16 @@ export const SURFACES = surfacesFile.surfaces as SurfaceTable;
 /** Load and check a whole package. Throws a TrackError for anything fatal. */
 export async function loadTrackPackage(
   read: PackageReader,
-  opts: { visual?: boolean } = {},
+  opts: { visual?: boolean; mode?: LookMode } = {},
 ): Promise<TrackPackage> {
   const meta = parseTrackMeta(JSON.parse(text(await read("track.json"))));
-  const [routeBuf, colBuf, visBuf] = await Promise.all([
+  // look.json is optional: tracks exported before it existed don't list it.
+  const lookFile = meta.geometry.look ?? "look.json";
+  const [routeBuf, colBuf, visBuf, lookBuf] = await Promise.all([
     read(meta.geometry.route),
     read(meta.geometry.collision),
     opts.visual === false ? Promise.resolve(undefined) : read(meta.geometry.visual),
+    read(lookFile).catch(() => undefined),
   ]);
   const route = parseRoute(JSON.parse(text(routeBuf)));
   const colScene = await parseGlb(colBuf, meta.geometry.collision);
@@ -164,22 +249,17 @@ export async function loadTrackPackage(
   disposeObject(colScene); // only its triangles are kept
   if (collision.floors.count === 0)
     throw new TrackError(`${meta.geometry.collision}: nothing to drive on (no floor triangles)`);
+  let look: TrackLook = {};
+  if (lookBuf) {
+    try {
+      look = parseLook(JSON.parse(text(lookBuf)), warnings);
+    } catch {
+      if (meta.geometry.look) warnings.push(`${lookFile}: not valid JSON, using the default look`);
+    }
+  } else if (meta.geometry.look) warnings.push(`${lookFile}: missing, using the default look`);
   const visual = visBuf ? await parseGlb(visBuf, meta.geometry.visual) : new THREE.Group();
   visual.name = `track:${meta.id}`;
-  visual.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
-    m.castShadow = true;
-    m.receiveShadow = true;
-    // Crisp texels up close (the exporter's nearest filter), smooth in the distance:
-    // no shimmering on far-off road and grass.
-    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
-      const map = (mat as THREE.MeshStandardMaterial).map;
-      if (!map) continue;
-      map.minFilter = THREE.LinearMipmapLinearFilter;
-      map.anisotropy = 8;
-    }
-  });
+  const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic");
   const trackData = routeToTrackData(meta, route);
   // Sanity check: the route should lie on the collision surface.
   const b = collision.bounds;
@@ -193,6 +273,8 @@ export async function loadTrackPackage(
     trackData,
     visual,
     collision,
+    materials,
+    look,
     killY: b.minY - 15,
     warnings,
   };
@@ -224,6 +306,8 @@ export function swapPackage(scene: THREE.Object3D, current: TrackPackage, next: 
   scene.add(next.visual);
   Object.assign(current.collision, next.collision);
   current.visual = next.visual;
+  current.materials = next.materials;
+  current.look = next.look;
   current.meta = next.meta;
   current.route = next.route;
   current.trackData = next.trackData;

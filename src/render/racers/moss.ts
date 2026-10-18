@@ -293,6 +293,10 @@ export function buildMoss(grips: [THREE.Vector3, THREE.Vector3]): CharacterRig {
     for (const eyes of ["open", "closed", "wide", "determined"] as Eyes[])
       faces.set(`${mouth}/${eyes}`, paintFace(mouth, eyes));
   const faceMat = decalMaterial(faces.get("smile/open")!);
+  // Freeing the material frees all the expressions painted for it.
+  faceMat.addEventListener("dispose", () => {
+    for (const t of faces.values()) t.dispose();
+  });
   head.add(new THREE.Mesh(faceGeo, faceMat));
   let current = "";
   const setFace = (mouth: Mouth, eyes: "open" | "closed" | "wide" | "sleepy") => {

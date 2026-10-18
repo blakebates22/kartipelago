@@ -1,22 +1,12 @@
 /**
- * Tiny synthesized sound effects (no audio files). Browsers only allow sound after the
- * player has pressed something, so the audio context starts on the first key or click.
+ * Tiny synthesized sound effects (no audio files), played on the audio engine's SFX
+ * bus. Until the browser allows sound (the first key or click) they're silent.
  */
-export function createSfx() {
-  let ctx: AudioContext | undefined;
-  const start = () => {
-    if (ctx) {
-      if (ctx.state === "suspended") void ctx.resume();
-      return;
-    }
-    try {
-      ctx = new AudioContext();
-    } catch {
-      ctx = undefined; // no audio available; effects stay silent
-    }
-  };
-  window.addEventListener("keydown", start);
-  window.addEventListener("pointerdown", start);
+import type { AudioEngine } from "./engine";
+
+export function createSfx(engine: AudioEngine) {
+  const out = () => engine.bus("sfx")!;
+  const ctx: AudioContext | undefined = engine.context;
 
   /** One short note: a frequency glide with a quick fade. */
   const note = (
@@ -36,7 +26,7 @@ export function createSfx() {
     osc.frequency.exponentialRampToValueAtTime(to, t + length);
     gain.gain.setValueAtTime(volume, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + length);
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(out());
     osc.start(t);
     osc.stop(t + length + 0.02);
   };
@@ -58,7 +48,7 @@ export function createSfx() {
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(volume, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + length);
-    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.connect(filter).connect(gain).connect(out());
     src.start(t);
     src.stop(t + length + 0.02);
   };
@@ -145,3 +135,4 @@ export function createSfx() {
     },
   };
 }
+export type Sfx = ReturnType<typeof createSfx>;

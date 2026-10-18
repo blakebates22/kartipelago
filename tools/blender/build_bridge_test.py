@@ -9,6 +9,10 @@
 # It saves tracks-src/bridge_test.blend (open it to keep editing by hand) and exports
 # public/tracks/bridge_test/. Re-running it overwrites the .blend and the geometry, but
 # never public/tracks/bridge_test/track.json.
+#
+#   KP_TRACKS_DIR=tests/fixtures python tools/blender/build_bridge_test.py
+#
+# makes the tests' untouched reference copy instead (tests/fixtures/bridge_test/).
 
 import math
 import os
@@ -162,10 +166,13 @@ def main():
         t["kp_role"] = "both"
         trees += 1
 
-    os.makedirs(os.path.join(REPO, "tracks-src"), exist_ok=True)
-    blend = os.path.join(REPO, "tracks-src", "bridge_test.blend")
-    bpy.ops.wm.save_as_mainfile(filepath=blend)
-    rep = export.export_track(os.path.join(REPO, "public", "tracks"), "bridge_test", "Bridge Test")
+    # KP_TRACKS_DIR exports somewhere else (the tests' reference copy) and keeps the .blend.
+    out = os.environ.get("KP_TRACKS_DIR")
+    if not out:
+        os.makedirs(os.path.join(REPO, "tracks-src"), exist_ok=True)
+        blend = os.path.join(REPO, "tracks-src", "bridge_test.blend")
+        bpy.ops.wm.save_as_mainfile(filepath=blend)
+    rep = export.export_track(out or os.path.join(REPO, "public", "tracks"), "bridge_test", "Bridge Test")
     print("EXPORTED", rep)
 
 

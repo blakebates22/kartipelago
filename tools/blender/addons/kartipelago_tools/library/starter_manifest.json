@@ -1,0 +1,206 @@
+{
+  "version": "0.1",
+  "license": "Original starter textures generated for this project; not extracted from DKR",
+  "texture_style": "N64-inspired low-resolution, manually configurable",
+  "notes": [
+    "These are original procedural prototypes, not DKR ROM textures.",
+    "Material surface category is distinct from its image.",
+    "Each tile is 64x32 RGB PNG and tiles seamlessly at its repeat boundaries.",
+    "UV scale is a starting suggestion, tune to your world coordinate conventions.",
+    "Use original higher-resolution sources later if preferred; use optional filtered/nearest sampler toggle."
+  ],
+  "materials": [
+    {
+      "id": "ancient_road",
+      "group": "Ancient Lake",
+      "surface": "road",
+      "image": "ancient_road.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "ancient_grass",
+      "group": "Ancient Lake",
+      "surface": "grass",
+      "image": "ancient_grass.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "ancient_cliff",
+      "group": "Ancient Lake",
+      "surface": "solid",
+      "image": "ancient_cliff.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "ancient_water",
+      "group": "Ancient Lake",
+      "surface": "water",
+      "image": "ancient_water.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "fossil_road",
+      "group": "Fossil Canyon",
+      "surface": "road",
+      "image": "fossil_road.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "fossil_strata",
+      "group": "Fossil Canyon",
+      "surface": "solid",
+      "image": "fossil_strata.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "fossil_scree",
+      "group": "Fossil Canyon",
+      "surface": "sand",
+      "image": "fossil_scree.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "fossil_dry_clay",
+      "group": "Fossil Canyon",
+      "surface": "sand",
+      "image": "fossil_dry_clay.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "jungle_temple",
+      "group": "Jungle Falls",
+      "surface": "solid",
+      "image": "jungle_temple.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "jungle_mossstone",
+      "group": "Jungle Falls",
+      "surface": "solid",
+      "image": "jungle_mossstone.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "jungle_leafcover",
+      "group": "Jungle Falls",
+      "surface": "grass",
+      "image": "jungle_leafcover.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "jungle_path",
+      "group": "Jungle Falls",
+      "surface": "road",
+      "image": "jungle_path.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "volcano_ashroad",
+      "group": "Hot Top Volcano",
+      "surface": "road",
+      "image": "volcano_ashroad.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "volcano_basalt",
+      "group": "Hot Top Volcano",
+      "surface": "solid",
+      "image": "volcano_basalt.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "volcano_lava",
+      "group": "Hot Top Volcano",
+      "surface": "lava",
+      "image": "volcano_lava.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    },
+    {
+      "id": "volcano_slag",
+      "group": "Hot Top Volcano",
+      "surface": "sand",
+      "image": "volcano_slag.png",
+      "size": [
+        64,
+        32
+      ],
+      "wrap": "repeat",
+      "uv_meters_per_tile": 2.5
+    }
+  ]
+}

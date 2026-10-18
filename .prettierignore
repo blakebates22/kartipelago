@@ -4,3 +4,8 @@ coverage
 package-lock.json
 # Written by the Blender exporter (tools/blender), not by hand.
 public/tracks/**/route.json
+public/tracks/**/look.json
+# The starter texture pack's manifest, kept exactly as supplied.
+tools/blender/addons/kartipelago_tools/library/starter_manifest.json
+# Exporter output kept as a reference for the tests.
+tests/fixtures/**

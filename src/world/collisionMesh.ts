@@ -24,6 +24,8 @@ export interface SurfaceDef {
   wall?: boolean;
   /** Driving onto it starts a zipper boost. */
   boost?: boolean;
+  /** Touching it puts you back on the track (lava). */
+  respawn?: boolean;
   /** Multipliers on the kart's top speed, acceleration and grip. */
   speed?: number;
   accel?: number;
