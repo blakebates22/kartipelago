@@ -65,6 +65,8 @@ import {
   tickRace,
 } from "./race/race";
 import { gridSlot } from "./race/grid";
+import { createSpeedometer } from "./render/speedometer";
+import { boostChevrons, needleDeg, speedoValue } from "./render/speedo";
 import { applyCharacter, type Character } from "./vehicles/character";
 import {
   applyBoost,
@@ -267,6 +269,8 @@ const hud = document.createElement("div");
 hud.className = "hud";
 document.body.appendChild(hud);
 const startMeter = createStartMeter(document.body);
+// Bottom right: the speedometer (unitless; see render/speedo.ts for the scale).
+const speedometer = createSpeedometer(document.body);
 const banner = document.createElement("div");
 banner.className = "banner";
 document.body.appendChild(banner);
@@ -524,6 +528,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     boostLab.render(debug.overlay.visible);
     if (!toast.hidden && performance.now() > toastUntil) toast.hidden = true;
     renderHud();
+    renderSpeedometer();
     startMeter.render(race, tuning.race, SHOW_TIMING);
 
     debug.overlay.set("speed", `${s.speed.toFixed(1)} m/s`);
@@ -763,11 +768,26 @@ function gotBananas(i: number, n: number) {
 const ordinal = (n: number) =>
   `${n}${["th", "st", "nd", "rd"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
 
+function renderSpeedometer() {
+  const s = you.state;
+  const value = speedoValue(s.speed, tuning.hud, tuning.vehicle);
+  const dialMax = tuning.hud.speedoDialMax;
+  const pushing = s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING;
+  speedometer.update({
+    value,
+    needleDeg: needleDeg(value, dialMax),
+    dialMax,
+    chevrons: boostChevrons(pushing, s.zipTime, s.zipTotal),
+    color: FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!,
+    rainbow: s.zipPhase === ZIP.ENDING,
+    enhanced: pushing && s.zipEnhanced,
+  });
+}
+
 function renderHud() {
   const s = you.state;
   const parts = [
     you.character.name,
-    `${s.speed.toFixed(0)} m/s`,
     `Bananas ${s.bananas}`,
     `Item ${heldLabel(you.items.held)} (E)`,
   ];

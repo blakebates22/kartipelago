@@ -250,6 +250,10 @@
     "trunkColor": "#6b4a2b",
     "hillColor": "#58953f"
   },
+  "hud": {
+    "speedoFastest": 150,
+    "speedoDialMax": 180
+  },
   "look": {
     "resolutionScale": 0.75,
     "fogNear": 160,
