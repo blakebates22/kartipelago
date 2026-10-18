@@ -16,6 +16,7 @@ import {
   collectBananas,
   createBananaField,
   dropBananas,
+  resetBananaField,
   stepBananaField,
 } from "../src/world/bananas";
 
@@ -292,7 +293,7 @@ describe("losing bananas", () => {
 describe("banana pickups", () => {
   const make = () => createBananaField(undefined, [], () => flatGround);
 
-  it("are collected once, then respawn later", () => {
+  it("are collected once and stay gone (respawnSec 0)", () => {
     const f = make();
     f.bananas.push({
       x: 0,
@@ -308,11 +309,37 @@ describe("banana pickups", () => {
       respawnIn: 0,
     });
     const kart = kartWith(0);
-    expect(collectBananas(f, 0, kart, field)).toHaveLength(1);
-    expect(collectBananas(f, 0, kart, field)).toHaveLength(0);
+    const once = { ...field, respawnSec: 0 };
+    expect(collectBananas(f, 0, kart, once)).toHaveLength(1);
+    for (let t = 0; t < 60; t += 0.1) stepBananaField(f, once, 0.1);
+    expect(collectBananas(f, 0, kart, once)).toHaveLength(0);
     expect(kart.bananas).toBe(1);
-    for (let t = 0; t < field.respawnSec + 0.1; t += dt) stepBananaField(f, field, dt);
-    expect(collectBananas(f, 0, kart, field)).toHaveLength(1);
+    resetBananaField(f);
+    expect(collectBananas(f, 0, kart, once)).toHaveLength(1);
+  });
+
+  it("can respawn instead, if respawnSec is above zero", () => {
+    const respawning = { ...field, respawnSec: 10 };
+    const f = make();
+    f.bananas.push({
+      x: 0,
+      y: 0,
+      z: 0,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      settled: true,
+      active: true,
+      placed: true,
+      age: 0,
+      respawnIn: 0,
+    });
+    const kart = kartWith(0);
+    expect(collectBananas(f, 0, kart, respawning)).toHaveLength(1);
+    expect(collectBananas(f, 0, kart, respawning)).toHaveLength(0);
+    expect(kart.bananas).toBe(1);
+    for (let t = 0; t < respawning.respawnSec + 0.1; t += dt) stepBananaField(f, respawning, dt);
+    expect(collectBananas(f, 0, kart, respawning)).toHaveLength(1);
     expect(kart.bananas).toBe(2);
   });
 
