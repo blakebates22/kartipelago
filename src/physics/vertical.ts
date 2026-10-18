@@ -10,6 +10,9 @@
 import type { KartState } from "../vehicles/kart";
 import type { GroundQuery } from "./ground";
 
+/** How far below the falling kart the road can be and still count as touching, m. */
+const HOVER = 0.03;
+
 export interface VerticalConfig {
   /** Downward acceleration in the air, m/s². Arcade-strong, so jumps feel snappy. */
   gravity: number;
@@ -30,8 +33,13 @@ export function stepVertical(s: KartState, ground: GroundQuery, cfg: VerticalCon
   const follow = s.speed * slope;
 
   if (s.grounded) {
-    const needed = (follow - s.vy) / dt; // vertical acceleration to keep following
-    if (needed >= -(cfg.gravity + cfg.groundStick)) {
+    // Where the kart would be if the ground let go this step, falling as hard as
+    // gravity plus stickiness allow. If the road is no lower than that (within a few
+    // centimetres), stay on it. Judging by heights, not by surface normals, avoids
+    // false take-offs from the small steps in normal between road segments on banked,
+    // rolling sections.
+    const pulled = s.y + s.vy * dt - 0.5 * (cfg.gravity + cfg.groundStick) * dt * dt;
+    if (surf.height >= pulled - HOVER) {
       s.y = surf.height;
       s.vy = follow;
       s.slope = slope;
