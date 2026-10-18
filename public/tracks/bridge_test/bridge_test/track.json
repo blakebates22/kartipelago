@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "bridge_test",
+  "name": "Bridge Test",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": []
+}

@@ -376,6 +376,29 @@ def build_road_group():
     return ng
 
 
+def _input_ids(mod):
+    return {i.name: i.identifier for i in mod.node_group.interface.items_tree if i.item_type == "SOCKET"}
+
+
+def set_input(mod, name, value):
+    """Set a Geometry Nodes modifier input by its name (Blender 4.2 to 5.2+)."""
+    ident = _input_ids(mod)[name]
+    props = getattr(mod, "properties", None)
+    if props is not None and hasattr(getattr(props, "inputs", None), ident):
+        getattr(props.inputs, ident).value = value  # Blender 5.2+
+    else:
+        mod[ident] = value  # earlier versions keep inputs as ID properties
+
+
+def get_input(mod, name):
+    """Read a Geometry Nodes modifier input by its name (Blender 4.2 to 5.2+)."""
+    ident = _input_ids(mod)[name]
+    props = getattr(mod, "properties", None)
+    if props is not None and hasattr(getattr(props, "inputs", None), ident):
+        return getattr(props.inputs, ident).value
+    return mod[ident]
+
+
 def make_road(name, points, closed=True, width=12.0, barrier=1.0, collection=None):
     """
     A road from a list of (x, y, z, tilt_degrees[, radius]) control points, with smooth
@@ -404,12 +427,11 @@ def attach_road(ob, width=12.0, barrier=1.0):
     mats = default_materials()
     mod = ob.modifiers.get("KP Road") or ob.modifiers.new("KP Road", "NODES")
     mod.node_group = build_road_group()
-    ids = {item.name: item.identifier for item in mod.node_group.interface.items_tree if item.item_type == "SOCKET"}
-    mod[ids["Road Width"]] = width
-    mod[ids["Barrier Height"]] = barrier
-    mod[ids["Road Material"]] = mats["road"]
-    mod[ids["Shoulder Material"]] = mats["shoulder"]
-    mod[ids["Barrier Material"]] = mats["barrier"]
+    set_input(mod, "Road Width", width)
+    set_input(mod, "Barrier Height", barrier)
+    set_input(mod, "Road Material", mats["road"])
+    set_input(mod, "Shoulder Material", mats["shoulder"])
+    set_input(mod, "Barrier Material", mats["barrier"])
     # The exporter takes materials from the object's slots, so list them there too.
     if ob.type == "CURVE":
         for m in (mats["road"], mats["shoulder"], mats["barrier"]):
@@ -426,5 +448,4 @@ def road_settings(ob):
     mod = ob.modifiers.get("KP Road")
     if mod is None or mod.node_group is None:
         return None
-    ids = {item.name: item.identifier for item in mod.node_group.interface.items_tree if item.item_type == "SOCKET"}
-    return {"width": float(mod[ids["Road Width"]]), "shoulder": float(mod[ids["Shoulder Width"]])}
+    return {"width": float(get_input(mod, "Road Width")), "shoulder": float(get_input(mod, "Shoulder Width"))}
