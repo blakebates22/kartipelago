@@ -15,7 +15,7 @@ import { createChaseCamera } from "./render/chaseCamera";
 import { createCourseView } from "./render/courseView";
 import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
-import { buildTrack, type TrackData } from "./world/track";
+import { buildTrack, type Track, type TrackData } from "./world/track";
 import { buildZippers, enteredZipper } from "./world/zippers";
 import { BOOST_SOURCE, ZIP, startZipper } from "./vehicles/zipper";
 import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "./items/effects";
@@ -66,6 +66,17 @@ import {
 } from "./race/race";
 import { gridSlot } from "./race/grid";
 import { createSpeedometer } from "./render/speedometer";
+import { createParkSigns } from "./render/parkSigns";
+import {
+  buildDriftPark,
+  createLocator,
+  createParkGround,
+  createStreak,
+  distanceToRoad,
+  loopStart,
+  stepStreak,
+  streakLaps,
+} from "./world/driftPark";
 import { boostChevrons, needleDeg, speedoValue } from "./render/speedo";
 import { applyCharacter, type Character } from "./vehicles/character";
 import {
@@ -77,18 +88,21 @@ import {
   type KartState,
 } from "./vehicles/kart";
 
-// Two scenes: a race on a track with seven AI rivals (default; pick the track with
-// ?track=1 or ?track=2) and the M1 practice course of pickups and boost pads (open with
-// ?scene=practice). Press R to restart.
+// Three scenes: a race on a track with seven AI rivals (default; pick the track with
+// ?track=1, 2 or 3), the M1 practice course of pickups and boost pads (?scene=practice),
+// and the Drift Park of practice loops (?scene=drift). Press R to restart.
 
 const PARAMS = new URLSearchParams(location.search);
-const SCENE = PARAMS.get("scene") === "practice" ? "practice" : "track";
+const SCENES = ["track", "practice", "drift"] as const;
+const SCENE = SCENES.find((v) => v === PARAMS.get("scene")) ?? "track";
 // The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
 const SHOW_TIMING = PARAMS.has("timing");
 // Tracks: ?track=1 (Drift Loop, the default), ?track=2 (Ribbon Ridge) or ?track=3
 // (Meadow Run, an open track).
 const TRACKS = [driftLoop, ribbonRidge, meadowRun] as TrackData[];
 const trackData = TRACKS[Number(PARAMS.get("track") ?? 1) - 1] ?? TRACKS[0]!;
+/** Meadow grass under the Drift Park. */
+const PARK_GROUND = "#6fae4b";
 const GROUND_SIZE = 1200;
 const GROUND_TILE = 5; // metres per grid square
 
@@ -129,12 +143,43 @@ stage.scene.add(ground);
 const course = SCENE === "practice" ? createCourse(courseData) : undefined;
 const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
 const track = SCENE === "track" ? buildTrack(trackData, tuning.track.sampleSpacing) : undefined;
-const zippers = track ? buildZippers(track, trackData.zippers ?? [], tuning.track) : [];
+// The Drift Park: isolated loops sized from the drift's own radii (see world/driftPark.ts).
+const park =
+  SCENE === "drift"
+    ? buildDriftPark(tuning.vehicle, tuning.driftPark, tuning.track.sampleSpacing)
+    : undefined;
+const parkPads = (park?.loops ?? []).map((l) =>
+  buildZippers(l.track, l.track.data.zippers ?? [], tuning.track),
+);
+const zippers = track
+  ? buildZippers(track, trackData.zippers ?? [], tuning.track)
+  : parkPads.flat();
 const trackView = track ? createTrackView(stage.scene, track, tuning.track, zippers) : undefined;
+const parkViews = (park?.loops ?? []).map((l, i) =>
+  createTrackView(stage.scene, l.track, tuning.track, parkPads[i]),
+);
+if (park) createParkSigns(stage.scene, park);
+/** A fresh ground lookup (each kart and falling banana keeps its own). */
+const makeGround = (): GroundQuery =>
+  track ? createTrackGround(track) : park ? createParkGround(park) : flatGround;
 // Open tracks: no road walls; tunnels, the map boundary and trees are what you can hit.
-const OPEN = Boolean(track && trackData.open);
+const OPEN = Boolean(track && trackData.open) || Boolean(park);
 const tunnels = track && OPEN ? (trackData.tunnels ?? []).map((t) => buildTunnel(track, t)) : [];
 const solids = (() => {
+  if (park) {
+    // A boundary round the whole park, and trees between and inside the loops.
+    const all = { samples: park.loops.flatMap((l) => l.track.samples) } as Track;
+    const fixed = boundarySolids(all, tuning.scenery.boundaryMargin);
+    const trees = park.loops.flatMap((l, i) =>
+      placeTrees(l.track, { ...tuning.scenery, trees: 10, seed: tuning.scenery.seed + i }, fixed),
+    );
+    const kept = trees.filter(
+      (t, i) =>
+        distanceToRoad(park, t.x, t.z) >= tuning.scenery.treeClearance &&
+        !trees.slice(0, i).some((o) => Math.hypot(o.x - t.x, o.z - t.z) < 7),
+    );
+    return [...fixed, ...kept];
+  }
   if (!track || !OPEN) return [];
   const fixed = [
     ...tunnels.flatMap(tunnelSolids),
@@ -145,23 +190,16 @@ const solids = (() => {
 const sceneryView = OPEN
   ? createSceneryView(stage.scene, solids, tunnels, tuning.scenery)
   : undefined;
-const bananaField = createBananaField(
-  track,
-  trackData.bananas ?? [],
-  () => (track ? createTrackGround(track) : flatGround),
-  !OPEN,
-);
+const bananaField = createBananaField(track, trackData.bananas ?? [], makeGround, !OPEN);
+for (const l of park?.loops ?? [])
+  bananaField.bananas.push(
+    ...createBananaField(l.track, l.track.data.bananas ?? [], makeGround, false).bananas,
+  );
 const bananaView = createBananaView(stage.scene, tuning.bananas);
 const sfx = createSfx();
 const itemsCfg = tuning.items as ItemsConfig;
 // Balloons and weapons: pickups, missiles and traps live in the item world.
-const itemWorld = createItemWorld(
-  track,
-  trackData.balloons ?? [],
-  () => (track ? createTrackGround(track) : flatGround),
-  solids,
-  !OPEN,
-);
+const itemWorld = createItemWorld(track, trackData.balloons ?? [], makeGround, solids, !OPEN);
 const itemView = createItemView(stage.scene);
 const boostLab = createBoostLab(debug.panel, document.body, () => debug.overlay.visible);
 /** Collected this step, for the render to show (effects run at frame rate). */
@@ -237,17 +275,44 @@ const entrants: Entrant[] = [
     racer,
     mesh: racer.root,
     items: racerItems(),
-    ground: track ? createTrackGround(track) : flatGround,
+    ground: makeGround(),
     driver: i > 0 && line ? createDriver(line, i, tuning.ai) : undefined,
   };
 });
 const you = entrants[0]!;
+
+// Drift Park: which loop you start on ([ and ] step through them, ?loop= picks one),
+// which way round (F flips), and your drift streak.
+let parkLoop = park
+  ? Math.min(park.loops.length, Math.max(1, Number(PARAMS.get("loop") ?? 1) || 1)) - 1
+  : 0;
+let parkReverse = false;
+const streak = park ? createStreak(park) : undefined;
+const streakLocator = park ? createLocator(park) : undefined;
+const parkBestKey = (i: number) =>
+  `kartipelago.driftBest.${park!.loops[i]!.size.id}.${park!.loops[i]!.variant}`;
+if (park && streak)
+  park.loops.forEach((_, i) => {
+    try {
+      streak.best[i] = Number(localStorage.getItem(parkBestKey(i))) || 0;
+    } catch {
+      // no storage: bests last for this visit only
+    }
+  });
+function saveParkBest(i: number) {
+  try {
+    localStorage.setItem(parkBestKey(i), String(streak!.best[i]));
+  } catch {
+    // not saved
+  }
+}
 
 /** Put every kart in its starting spot. The player starts at the front of the grid. */
 function placeKarts() {
   entrants.forEach((e, i) => {
     let spot = { x: courseData.start.x, y: 0, z: courseData.start.z, heading: 0 };
     if (track) spot = gridSlot(track, i);
+    if (park) spot = loopStart(park.loops[parkLoop]!, parkReverse);
     Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
     e.state.y = e.ground.at(spot.x, spot.z).height;
     Object.assign(e.items, racerItems());
@@ -355,6 +420,15 @@ let bananaLossRequested = false;
 let bananaAddRequested = 0;
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyR") resetRequested = true;
+  if (park && (e.code === "BracketLeft" || e.code === "BracketRight")) {
+    const n = park.loops.length;
+    parkLoop = (parkLoop + (e.code === "BracketRight" ? 1 : -1) + n) % n;
+    resetRequested = true;
+  }
+  if (park && e.code === "KeyF") {
+    parkReverse = !parkReverse;
+    resetRequested = true;
+  }
   if (debug.overlay.visible && e.code === "KeyL") bananaLossRequested = true;
   if (debug.overlay.visible && e.code === "KeyK") bananaAddRequested++;
   // M flips between the legacy and offset drift models, for side-by-side comparison.
@@ -478,6 +552,22 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       entrants.map((e) => bumpMass(e.items, itemsCfg)),
     );
     stepEffects(racers, itemsCfg, dt);
+    if (park && streak && streakLocator) {
+      // Drift streak: distance round the loop in one unbroken drift, on the road.
+      const k = you.state;
+      const before = streak.loop;
+      const bestBefore = before >= 0 ? streak.best[before]! : 0;
+      const laps = stepStreak(
+        streak,
+        park,
+        streakLocator.at(k.x, k.z),
+        k.driftDir !== 0 && k.spinTime <= 0,
+      );
+      if (laps)
+        showToast(laps === 1 ? "A whole lap in one drift!" : `${laps} laps in one drift!`, 1.6);
+      if (before >= 0 && streak.best[before]! > bestBefore && (laps || streak.held === 0))
+        saveParkBest(before);
+    }
     events.push(
       ...collectBalloons(itemWorld, racers, itemsCfg, (j) => j === 0 || itemsCfg.aiCollect),
       ...stepItemWorld(itemWorld, racers, itemsCfg, tuning.bananas, dt, progressOf),
@@ -495,7 +585,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   render(alpha, frameSeconds) {
     const { camera, world, vehicle } = tuning;
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
-    groundMat.color.set(trackData.groundColor ?? world.groundColor);
+    groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
     sceneryView?.render(tuning.scenery);
     (stage.scene.background as THREE.Color).set(world.skyColor);
 
@@ -517,6 +607,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
 
     courseView?.render(performance.now() / 1000, tuning.course);
     trackView?.render(tuning.track);
+    for (const v of parkViews) v.render(tuning.track);
     for (const p of pickupsToShow.splice(0)) bananaView.burst(p);
     bananaView.render(bananaField, tuning.bananas, performance.now() / 1000, frameSeconds);
     itemView.render(
@@ -792,6 +883,17 @@ function renderHud() {
     `Item ${heldLabel(you.items.held)} (E)`,
   ];
   if (course) parts.push(`Pickups ${course.collected}`);
+  if (park && streak) {
+    const on = streak.loop >= 0 ? streak.loop : parkLoop;
+    const now = streakLaps(streak, park);
+    parts.unshift("Drift Park", park.loops[on]!.name);
+    parts.push(
+      `Drift ${now.toFixed(2)} laps`,
+      `Best ${streak.best[on]!.toFixed(2)}`,
+      "[ ] loop",
+      `F flip (turning ${parkReverse ? "right" : "left"})`,
+    );
+  }
   let order: number[] = [];
   if (race) {
     const r = race.racers[0]!;

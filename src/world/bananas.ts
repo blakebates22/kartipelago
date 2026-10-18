@@ -23,6 +23,8 @@ export interface BananaSpot {
   count?: number;
   /** ...this many metres apart (default 4). */
   gap?: number;
+  /** Seconds until each comes back once taken; overrides the field's respawnSec. */
+  respawn?: number;
 }
 
 export interface Banana {
@@ -43,6 +45,8 @@ export interface Banana {
   age: number;
   /** Seconds until a collected placed banana comes back. */
   respawnIn: number;
+  /** Its own respawn time, seconds (from the spot); otherwise the config's. */
+  respawnSec?: number;
   /** Ground lookup while falling (dropped bananas only). */
   ground?: GroundQuery;
 }
@@ -102,6 +106,7 @@ export function createBananaField(
           y: s.pos.y + s.right.y * (across / rh),
           z: s.pos.z + (s.right.z / rh) * across,
           placed: true,
+          ...(spot.respawn !== undefined && { respawnSec: spot.respawn }),
         });
       }
     }
@@ -247,7 +252,8 @@ export function collectBananas(
   for (const b of field.bananas) {
     if (!canCollect(b, kart, cfg)) continue;
     b.active = false;
-    b.respawnIn = cfg.respawnSec > 0 ? cfg.respawnSec : Infinity;
+    const respawn = b.respawnSec ?? cfg.respawnSec;
+    b.respawnIn = respawn > 0 ? respawn : Infinity;
     addBananas(kart, 1);
     got.push({ kart: kartIndex, x: b.x, y: b.y, z: b.z });
   }

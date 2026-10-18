@@ -3,6 +3,8 @@
 Kartipelago's drift is an original model, designed from gameplay observations of
 classic kart racers (what the player feels), not from any other game's code.
 
+To practise and tune it, use the [Drift Park](drift-park.md) (`?scene=drift`).
+
 ## The idea
 
 The kart has two directions: where the **body** points and where the **path** goes.

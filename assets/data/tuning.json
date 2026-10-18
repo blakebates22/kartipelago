@@ -250,6 +250,11 @@
     "trunkColor": "#6b4a2b",
     "hillColor": "#58953f"
   },
+  "driftPark": {
+    "loopWidth": 12,
+    "loopGap": 30,
+    "bananaRespawnSec": 3
+  },
   "hud": {
     "speedoFastest": 150,
     "speedoDialMax": 180
