@@ -8,7 +8,7 @@ three looks in turn; repeats get alternate paint.
 | Racer   | Species  | Kart                             | Seen from behind                      |
 | ------- | -------- | -------------------------------- | ------------------------------------- |
 | Moss    | axolotl  | sunflower yellow, turquoise trim | fans of coral gills, a tail fin       |
-| Bramble | pangolin | leaf green, gold trim            | a swooping quiff, a big bushy tail    |
+| Bramble | squirrel | leaf green, gold trim            | a swooping quiff, a big bushy tail    |
 | Poppy   | moth     | cherry red, cream trim           | long striped club-tipped antennae     |
 | Otto    | capybara | royal blue, orange trim          | big round back, small ears, an orange |
 

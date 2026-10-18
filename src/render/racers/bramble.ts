@@ -1,5 +1,5 @@
 /**
- * Bramble and Bramble's kart, in the faceted, pixel-textured style (like Moss):
+ * Bramble the squirrel and his kart, in the faceted, pixel-textured style (like Moss):
  * a chestnut faceted head with a cream face mask, a swooping quiff, round ears and a
  * big bushy tail; and a rounded green kart with a cartoon face on its nose, a yellow
  * "beak" bumper, green fenders and chunky octagonal tyres.
