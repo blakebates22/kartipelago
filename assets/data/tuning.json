@@ -184,6 +184,18 @@
     "lineSpan": 14,
     "lineIterations": 200
   },
+  "scenery": {
+    "trees": 140,
+    "seed": 7,
+    "treeClearance": 6,
+    "treeSpread": 45,
+    "treeRadius": 0.8,
+    "boundaryMargin": 70,
+    "rockColor": "#8a7f72",
+    "treeColor": "#2f7d32",
+    "trunkColor": "#6b4a2b",
+    "hillColor": "#58953f"
+  },
   "world": {
     "skyColor": "#8ecae6",
     "groundColor": "#2a9d8f"

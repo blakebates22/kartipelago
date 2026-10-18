@@ -117,7 +117,8 @@ function strip(
   return geo;
 }
 
-/** Road, walls and start line. Purely visual; collision comes from the track samples. */
+/** Road, walls (not on open tracks) and start line. Purely visual; collision comes from
+ * the track samples. */
 export function createTrackView(
   scene: THREE.Scene,
   track: Track,
@@ -160,7 +161,8 @@ export function createTrackView(
       ),
       wallMat,
     );
-  const walls = [wall(-1), wall(1)];
+  // Open tracks have no walls along the road.
+  const walls = track.data.open ? [] : [wall(-1), wall(1)];
   for (const w of walls) {
     w.castShadow = true;
     w.receiveShadow = true;

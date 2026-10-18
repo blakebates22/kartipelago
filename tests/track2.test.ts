@@ -67,7 +67,7 @@ describe("Ribbon Ridge", () => {
     }
   });
 
-  it("ranks the grid front to back, with the player's back slot last", () => {
+  it("ranks the grid front to back", () => {
     const race = createRace(track, tuning.race, 8);
     const spots = Array.from({ length: 8 }, (_, i) => gridSlot(track, i));
     expect(standings(race, spots)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
