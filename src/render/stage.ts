@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { tuning } from "../core/tuning";
+import { applyRetroLook } from "./retro";
 
 /** Owns the renderer, scene and camera, and keeps them sized to the window. */
 export function createStage(container: HTMLElement) {
@@ -23,8 +24,22 @@ export function createStage(container: HTMLElement) {
     sun.target.position.set(x, 0, z);
   };
 
+  // The soft late-90s look: a little below full resolution, smoothed up, with fog.
+  scene.background = new THREE.Color(tuning.world.skyColor);
+  let lookKey = "";
+  const updateLook = () => {
+    const l = tuning.look;
+    const key = `${l.resolutionScale}|${l.fogNear}|${l.fogFar}|${tuning.world.skyColor}`;
+    if (key === lookKey) return false;
+    lookKey = key;
+    (scene.background as THREE.Color).set(tuning.world.skyColor);
+    applyRetroLook(renderer, scene, l);
+    return true;
+  };
+
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = container;
+    updateLook();
     renderer.setSize(w, h, false);
     camera.aspect = w / Math.max(h, 1);
     camera.updateProjectionMatrix();
@@ -32,7 +47,17 @@ export function createStage(container: HTMLElement) {
   window.addEventListener("resize", resize);
   resize();
 
-  return { renderer, scene, camera, followSun, render: () => renderer.render(scene, camera) };
+  return {
+    renderer,
+    scene,
+    camera,
+    followSun,
+    render: () => {
+      // Live tuning edits to the look apply at once.
+      if (updateLook()) resize();
+      renderer.render(scene, camera);
+    },
+  };
 }
 
 export type Stage = ReturnType<typeof createStage>;
