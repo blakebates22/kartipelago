@@ -21,12 +21,14 @@ import {
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart, type KartState } from "../src/vehicles/kart";
 import { startZipper } from "../src/vehicles/zipper";
+import { collectBananas, createBananaField, stepBananaField } from "../src/world/bananas";
 import { buildZippers, enteredZipper } from "../src/world/zippers";
 import { buildTrack, type TrackData } from "../src/world/track";
 
 const dt = 1 / 120;
 const track = buildTrack(trackData as TrackData, tuning.track.sampleSpacing);
 const pads = buildZippers(track, (trackData as TrackData).zippers ?? [], tuning.track);
+const bananaSpots = (trackData as TrackData).bananas ?? [];
 const ai = tuning.ai;
 const line = buildRacingLine(track, {
   margin: ai.lineMargin,
@@ -63,6 +65,7 @@ function aiRace(ids: string[], seconds = 200) {
     karts.push(createKartState(g.x, g.z, g.heading, g.y));
   });
   const stats = { wallSteps: 0, driftSteps: 0, steps: 0, respawns: 0 };
+  const field = createBananaField(track, bananaSpots, () => createTrackGround(track));
   for (let t = 0; t < seconds && race.finishOrder.length < ids.length; t += dt) {
     tickRace(race, dt);
     const moment = {
@@ -77,6 +80,7 @@ function aiRace(ids: string[], seconds = 200) {
       stepImpacts(k, tuning.collision, dt);
       stepKart(k, canDrive(race) ? want : NEUTRAL, cfg, dt);
       if (enteredZipper(k, pads)) startZipper(k, want.throttle, cfg);
+      collectBananas(field, 0, k, tuning.bananas);
       if (
         stepWalls(
           k,
@@ -101,6 +105,7 @@ function aiRace(ids: string[], seconds = 200) {
       stats.steps++;
     });
     bumpKarts(karts, tuning.physics.kartBump);
+    stepBananaField(field, tuning.bananas, dt);
   }
   return { race, karts, stats };
 }

@@ -25,6 +25,7 @@
  * faces +Z. Positive steer is "right" from the driver's seat, which lowers heading.
  */
 import type { InputState } from "../core/input";
+import { bananaScales, type BananaConfig } from "./bananas";
 import {
   ZIP,
   crashZipper,
@@ -35,7 +36,7 @@ import {
   type ZipperState,
 } from "./zipper";
 
-export interface KartConfig extends ZipperConfig {
+export interface KartConfig extends ZipperConfig, BananaConfig {
   accel: number;
   brake: number;
   reverseAccel: number;
@@ -138,6 +139,8 @@ export interface KartConfig extends ZipperConfig {
 }
 
 export interface KartState extends ZipperState {
+  /** Bananas held (see bananas.ts: only some of them add speed). */
+  bananas: number;
   x: number;
   z: number;
   heading: number;
@@ -210,6 +213,7 @@ const BRAKE_CANCELS_DRIFT = 0.5;
 export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
   return {
     ...zipperState(),
+    bananas: 0,
     x,
     z,
     heading,
@@ -370,16 +374,24 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
   // Tapping stacks on top of drifting and boosts.
   const tapMult = 1 + cfg.tapBonus * s.tapCharge;
-  const baseCap = Math.max(0, cfg.topSpeed * mult * tapMult - s.slope * cfg.slopeSpeed);
+  // Bananas raise the throttle's top speed and acceleration (never a zipper's push).
+  const banana = bananaScales(s.bananas, cfg);
+  const normalTop = cfg.topSpeed * banana.top;
+  const baseCap = Math.max(
+    0,
+    cfg.topSpeed * banana.top * mult * tapMult - s.slope * cfg.slopeSpeed,
+  );
   s.boostTime = Math.max(0, s.boostTime - dt);
   // Zippers: while pushing, drive toward the zipper's target; during recovery the cap
   // decays from the boosted speed back to normal.
   if (s.zipCrashed) {
     s.zipCrashed = false;
-    crashZipper(s, cfg.topSpeed, cfg);
+    crashZipper(s, normalTop, cfg);
   }
-  const zipTarget = stepZipper(s, input.throttle, cfg.topSpeed, cfg, dt);
-  const cap = Math.max(baseCap, zipperRecoveryCap(s, cfg.topSpeed));
+  // The push itself ignores bananas; afterwards speed settles to the kart's own normal
+  // top speed, bananas included.
+  const zipTarget = stepZipper(s, input.throttle, cfg.topSpeed, cfg, dt, normalTop);
+  const cap = Math.max(baseCap, zipperRecoveryCap(s, normalTop));
 
   // Smoothed steering command (offset model): small nudges blend instead of jolting.
   s.steerSmooth +=
@@ -408,15 +420,15 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     // After a zipper the cap itself is the smooth decay curve, so speed follows it.
     s.speed =
       s.speed < cap
-        ? Math.min(cap, s.speed + cfg.accel * input.throttle * dt)
+        ? Math.min(cap, s.speed + cfg.accel * banana.accel * input.throttle * dt)
         : s.zipPhase === ZIP.RECOVERY
           ? cap
           : moveToward(s.speed, cap, cfg.drag * dt);
   } else if (s.tapCharge > 0 && s.releasedFor <= cfg.tapMaxGap) {
     // The short lift between well-timed taps doesn't cost speed: momentum carries you.
-  } else if (s.zipPhase === ZIP.RECOVERY && s.speed > cfg.topSpeed) {
+  } else if (s.zipPhase === ZIP.RECOVERY && s.speed > normalTop) {
     // Coasting above top speed after a boost costs speed quickly: resume the throttle.
-    s.speed = Math.min(cap, moveToward(s.speed, cfg.topSpeed, cfg.zipCoastDrag * dt));
+    s.speed = Math.min(cap, moveToward(s.speed, normalTop, cfg.zipCoastDrag * dt));
   } else {
     s.speed = moveToward(s.speed, 0, cfg.drag * dt);
   }

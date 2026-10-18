@@ -144,3 +144,49 @@ you were released at contact or pressed early, acceleration and lateral speed.
 
 `tests/zipper.test.ts` compares ten scenarios from identical starts. Print the table with
 `ZIP_REPORT=1 npx vitest run tests/zipper.test.ts --disableConsoleIntercept`.
+
+## Bananas
+
+Bananas lie on the track in rows (`bananas: [{ at, across, count, gap }]` in each
+track's JSON) and come back `respawnSec` after being taken. Drive through one to collect
+it. Every kart collects them (the AI has no banana strategy; it just drives over them).
+
+The code is in `src/vehicles/bananas.ts` (count and speed), `src/world/bananas.ts`
+(pickups, drops) and `src/render/bananaView.ts`.
+
+**Held vs effective.** A kart counts every banana it holds, but only up to
+`bananaMaxEffective` (10) of them add speed. The rest are a reserve: drop two from 12
+and you still have the full bonus.
+
+**Speed.** The banana multiplier is `1 + bananaStep × effective` (1.125 at five, 1.25 at
+ten). It isn't applied to the current speed. It feeds the normal driving model:
+
+- acceleration under throttle × (1 + extra × `bananaAccelShare`), so ten bananas = 25%
+  more acceleration;
+- the throttle's top speed × (1 + extra × `bananaTopShare`), so ten bananas = 15% more
+  top speed (22 → 25.3 m/s for the base kart).
+
+The kart accelerates naturally to its new top speed; losing bananas lets the extra bleed
+off at the normal drag rate. Steering, grip and the drift line are unchanged. Drift's
+own speed bonus and tapping stack on top as before.
+
+**Zippers.** The push itself (target, acceleration, timing, the released-throttle
+enhanced boost) ignores bananas. Afterwards, speed settles back to the kart's own normal
+top speed, bananas included, so bananas help before and after the boost. Collecting a
+banana never touches the boost timer.
+
+**Losing bananas.** `loseBananas(kart, event, cfg)` removes up to `lossWeapon` (2),
+`lossSpin` (0), `lossSquash` (0) or `lossDebug` (2) bananas, never below zero, and
+returns how many were lost. Walls never cost bananas. The lost ones are thrown out of the
+kart (`dropBananas`): outward and up, falling, sliding to a stop on the road. They can be
+collected only once they've settled (and at least `dropPickupDelay` after the drop).
+Dropped bananas don't respawn.
+
+**Debug.** With the overlay showing (`?debug` or backtick): L loses two bananas as a hit
+would, K adds one. The overlay shows held/effective count, the multiplier, the resulting
+top speed and acceleration scale, actual speed, acceleration and boost state.
+
+`tests/bananas.test.ts` measures 0, 1, 5, 9, 10, 11 and 12 bananas (acceleration, speed
+at 3 and 5 s, top speed, distance, an identical zipper, an identical drift) and losing two
+at different counts. Print the table with
+`BANANA_REPORT=1 npx vitest run tests/bananas.test.ts --disableConsoleIntercept`.

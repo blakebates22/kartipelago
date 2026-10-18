@@ -339,5 +339,47 @@
     {
       "at": 475
     }
+  ],
+  "bananas": [
+    {
+      "at": 40,
+      "across": 6.4,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 200,
+      "across": -6
+    },
+    {
+      "at": 200,
+      "across": -2
+    },
+    {
+      "at": 200,
+      "across": 2
+    },
+    {
+      "at": 200,
+      "across": 6
+    },
+    {
+      "at": 378,
+      "across": -5,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 520,
+      "across": 0,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 655,
+      "across": -4,
+      "count": 3,
+      "gap": 5
+    }
   ]
 }
