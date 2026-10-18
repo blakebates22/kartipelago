@@ -66,6 +66,8 @@ export interface BananaField {
   bananas: Banana[];
   /** A fresh ground lookup, for each dropped banana while it falls. */
   makeGround: () => GroundQuery;
+  /** Keep dropped bananas on the road (walled tracks); off on open tracks. */
+  keepOnRoad: boolean;
 }
 
 /** Where a banana was collected, and by which kart (for effects and sound). */
@@ -83,6 +85,7 @@ export function createBananaField(
   track: Track | undefined,
   spots: BananaSpot[],
   makeGround: () => GroundQuery,
+  keepOnRoad = true,
 ): BananaField {
   const bananas: Banana[] = [];
   if (track) {
@@ -103,7 +106,7 @@ export function createBananaField(
       }
     }
   }
-  return { bananas, makeGround };
+  return { bananas, makeGround, keepOnRoad };
 }
 
 const still = () => ({
@@ -184,7 +187,7 @@ export function stepBananaField(field: BananaField, cfg: BananaFieldConfig, dt: 
     const surface = b.ground.at(b.x, b.z);
     // Stay on the road: push back inside the edge and bounce off it.
     const road = surface.road;
-    if (road) {
+    if (road && field.keepOnRoad) {
       const out = Math.abs(road.across) - (road.halfWidth - EDGE_MARGIN);
       if (out > 0) {
         const side = Math.sign(road.across);

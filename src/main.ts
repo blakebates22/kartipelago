@@ -9,6 +9,7 @@ import { createStartMeter } from "./debug/startMeter";
 import courseData from "../assets/data/course.json";
 import driftLoop from "../assets/data/track.json";
 import ribbonRidge from "../assets/data/track2.json";
+import meadowRun from "../assets/data/track3.json";
 import roster from "../assets/data/characters.json";
 import { createChaseCamera } from "./render/chaseCamera";
 import { createCourseView } from "./render/courseView";
@@ -30,7 +31,9 @@ import { createBananaView } from "./render/bananaView";
 import { createSfx } from "./audio/sfx";
 import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
-import { stepImpacts, stepWalls } from "./physics/walls";
+import { stepImpacts, stepSolids, stepWalls } from "./physics/walls";
+import { boundarySolids, buildTunnel, placeTrees, tunnelSolids } from "./world/solids";
+import { createSceneryView } from "./render/sceneryView";
 import { bumpKarts } from "./physics/bump";
 import { buildRacingLine } from "./ai/racingLine";
 import { createDriver, driveAi, type Driver } from "./ai/driver";
@@ -63,8 +66,9 @@ const PARAMS = new URLSearchParams(location.search);
 const SCENE = PARAMS.get("scene") === "practice" ? "practice" : "track";
 // The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
 const SHOW_TIMING = PARAMS.has("timing");
-// Tracks: ?track=1 (Drift Loop, the default) or ?track=2 (Ribbon Ridge).
-const TRACKS = [driftLoop, ribbonRidge] as TrackData[];
+// Tracks: ?track=1 (Drift Loop, the default), ?track=2 (Ribbon Ridge) or ?track=3
+// (Meadow Run, an open track).
+const TRACKS = [driftLoop, ribbonRidge, meadowRun] as TrackData[];
 const trackData = TRACKS[Number(PARAMS.get("track") ?? 1) - 1] ?? TRACKS[0]!;
 const GROUND_SIZE = 1200;
 const GROUND_TILE = 5; // metres per grid square
@@ -108,8 +112,25 @@ const courseView = course ? createCourseView(stage.scene, course, tuning.course)
 const track = SCENE === "track" ? buildTrack(trackData, tuning.track.sampleSpacing) : undefined;
 const zippers = track ? buildZippers(track, trackData.zippers ?? [], tuning.track) : [];
 const trackView = track ? createTrackView(stage.scene, track, tuning.track, zippers) : undefined;
-const bananaField = createBananaField(track, trackData.bananas ?? [], () =>
-  track ? createTrackGround(track) : flatGround,
+// Open tracks: no road walls; tunnels, the map boundary and trees are what you can hit.
+const OPEN = Boolean(track && trackData.open);
+const tunnels = track && OPEN ? (trackData.tunnels ?? []).map((t) => buildTunnel(track, t)) : [];
+const solids = (() => {
+  if (!track || !OPEN) return [];
+  const fixed = [
+    ...tunnels.flatMap(tunnelSolids),
+    ...boundarySolids(track, tuning.scenery.boundaryMargin),
+  ];
+  return [...fixed, ...placeTrees(track, tuning.scenery, fixed)];
+})();
+const sceneryView = OPEN
+  ? createSceneryView(stage.scene, solids, tunnels, tuning.scenery)
+  : undefined;
+const bananaField = createBananaField(
+  track,
+  trackData.bananas ?? [],
+  () => (track ? createTrackGround(track) : flatGround),
+  !OPEN,
 );
 const bananaView = createBananaView(stage.scene, tuning.bananas);
 const sfx = createSfx();
@@ -117,7 +138,7 @@ const sfx = createSfx();
 const pickupsToShow: BananaPickup[] = [];
 const line = track
   ? buildRacingLine(track, {
-      margin: tuning.ai.lineMargin,
+      margin: trackData.aiLineMargin ?? tuning.ai.lineMargin,
       span: tuning.ai.lineSpan,
       iterations: tuning.ai.lineIterations,
     })
@@ -319,7 +340,8 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       stepImpacts(e.state, tuning.collision, dt);
       stepKart(e.state, !race || canDrive(race) ? want : NEUTRAL, cfg, dt);
       if (enteredZipper(e.state, zippers)) startZipper(e.state, want.throttle, cfg);
-      stepWalls(e.state, e.ground, walls, dt);
+      if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
+      stepSolids(e.state, solids, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
       const before = e.state.bananas;
       const got = collectBananas(bananaField, i, e.state, tuning.bananas);
@@ -359,7 +381,8 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
   render(alpha, frameSeconds) {
     const { camera, world, vehicle } = tuning;
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
-    groundMat.color.set(world.groundColor);
+    groundMat.color.set(trackData.groundColor ?? world.groundColor);
+    sceneryView?.render(tuning.scenery);
     stage.scene.background = new THREE.Color(world.skyColor);
 
     const s = you.state;
