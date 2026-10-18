@@ -143,7 +143,9 @@ def check_surfaces(objects):
 
 def export_track(folder, track_id, name=None):
     """Write the package for `track_id` into `folder`/<track_id>/. Returns a report dict."""
-    out_dir = os.path.join(bpy.path.abspath(folder), track_id)
+    base = os.path.normpath(bpy.path.abspath(folder))
+    # "Export To" pointing at the track's own folder already: don't nest another inside.
+    out_dir = base if os.path.basename(base) == track_id else os.path.join(base, track_id)
     os.makedirs(out_dir, exist_ok=True)
     scene_objs = [o for o in bpy.context.scene.objects if o.type in DRIVEABLE_TYPES]
     visual = [o for o in scene_objs if role_of(o) in ("both", "visual") and o.visible_get()]
