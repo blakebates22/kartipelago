@@ -15,6 +15,8 @@ export interface InputState {
   /** -1 (left) .. 1 (right) */
   steer: number;
   drift: boolean;
+  /** Item button (fires the held balloon weapon when released). */
+  item: boolean;
 }
 
 /** Raw readings from one device, before any smoothing. */
@@ -24,6 +26,7 @@ export interface DeviceReading {
   /** Target steering, -1..1. */
   steer: number;
   drift: boolean;
+  item: boolean;
 }
 
 export interface InputConfig {
@@ -45,7 +48,13 @@ export interface InputConfig {
   driftKeyReverse: number;
 }
 
-export const NEUTRAL: Readonly<DeviceReading> = { throttle: 0, brake: 0, steer: 0, drift: false };
+export const NEUTRAL: Readonly<DeviceReading> = {
+  throttle: 0,
+  brake: 0,
+  steer: 0,
+  drift: false,
+  item: false,
+};
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -90,6 +99,7 @@ export function mergeReadings(a: DeviceReading, b: DeviceReading): DeviceReading
     brake: Math.max(a.brake, b.brake),
     steer: Math.abs(b.steer) > Math.abs(a.steer) ? b.steer : a.steer,
     drift: a.drift || b.drift,
+    item: a.item || b.item,
   };
 }
 
@@ -99,12 +109,13 @@ const KEYS = {
   left: ["KeyA", "ArrowLeft"],
   right: ["KeyD", "ArrowRight"],
   drift: ["Space", "ShiftLeft", "ShiftRight"],
+  item: ["KeyE", "KeyF"],
 } as const;
 
 const GAME_KEYS = new Set<string>(Object.values(KEYS).flat());
 
 /** Standard Gamepad API button indices. */
-const PAD = { a: 0, b: 1, x: 2, lb: 4, rb: 5, lt: 6, rt: 7, left: 14, right: 15 } as const;
+const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, left: 14, right: 15 } as const;
 
 export function readGamepad(pad: Gamepad, cfg: InputConfig): DeviceReading {
   const value = (i: number) => pad.buttons[i]?.value ?? 0;
@@ -116,6 +127,7 @@ export function readGamepad(pad: Gamepad, cfg: InputConfig): DeviceReading {
     brake: Math.max(value(PAD.lt), pressed(PAD.x) ? 1 : 0),
     steer: dpad !== 0 ? dpad : stick,
     drift: pressed(PAD.rb) || pressed(PAD.lb),
+    item: pressed(PAD.b) || pressed(PAD.y),
   };
 }
 
@@ -152,6 +164,7 @@ export function createInput(target: Window = window) {
         brake: any(KEYS.brake) ? 1 : 0,
         steer: keySteer,
         drift: any(KEYS.drift),
+        item: any(KEYS.item),
       };
       for (const pad of navigator.getGamepads?.() ?? []) {
         if (pad?.connected) merged = mergeReadings(merged, readGamepad(pad, cfg));

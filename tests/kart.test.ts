@@ -64,6 +64,8 @@ const cfg: KartConfig = {
   zipAccel: 55,
   zipEarlyPenalty: 0.6,
   zipRainbowSec: 0.35,
+  zipRainbowMaxShare: 0.5,
+  boostOverlap: 0,
   zipCarrySec: 1.8,
   zipRecoverSec: 0.6,
   zipCoastDrag: 22,

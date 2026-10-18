@@ -61,7 +61,13 @@ describe("rampKeySteer while drifting", () => {
 describe("mergeReadings", () => {
   it("takes the stronger steering input and ORs buttons", () => {
     const keys = { ...NEUTRAL, steer: 0.3, drift: true };
-    const pad = { ...NEUTRAL, steer: -0.8, throttle: 0.6 };
-    expect(mergeReadings(keys, pad)).toEqual({ throttle: 0.6, brake: 0, steer: -0.8, drift: true });
+    const pad = { ...NEUTRAL, steer: -0.8, throttle: 0.6, item: true };
+    expect(mergeReadings(keys, pad)).toEqual({
+      throttle: 0.6,
+      brake: 0,
+      steer: -0.8,
+      drift: true,
+      item: true,
+    });
   });
 });

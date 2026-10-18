@@ -3,18 +3,18 @@
 Each milestone ends with something playable on the deployed site. Only the current
 milestone gets detailed planning; later ones stay rough on purpose.
 
-| #   | Milestone        | Playable result                                                   | Status  |
-| --- | ---------------- | ----------------------------------------------------------------- | ------- |
-| M0  | Skeleton         | A box renders; CI and Pages deploy work; debug tools toggle       | Done    |
-| M1  | Drive a box      | Drive a box on a flat plane with steering, drift and chase camera | Done    |
-| M2  | First track      | One track with ground following, walls, checkpoints, laps, timer  | Done    |
-| M3  | Rivals           | AI racers follow a racing line; positions and a finish screen     | Done    |
-| M4  | Items and boosts | Pickups, a few items, boost pads, drift and start boosts          | Next    |
-| M5  | Water and sky    | Hovercraft and plane controllers on the shared vehicle interface  | Planned |
-| M6  | Menus            | Title, character select, track select, HUD                        | Planned |
-| M7  | Adventure        | A small hub island where doors start races; progress is saved     | Planned |
-| M7b | Track builder    | An in-browser editor to lay out, shape and test tracks            | Ideas   |
-| M8  | Beyond           | More tracks, bosses, challenges, split-screen, audio polish       | Ideas   |
+| #   | Milestone        | Playable result                                                   | Status                                                                                         |
+| --- | ---------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| M0  | Skeleton         | A box renders; CI and Pages deploy work; debug tools toggle       | Done                                                                                           |
+| M1  | Drive a box      | Drive a box on a flat plane with steering, drift and chase camera | Done                                                                                           |
+| M2  | First track      | One track with ground following, walls, checkpoints, laps, timer  | Done                                                                                           |
+| M3  | Rivals           | AI racers follow a racing line; positions and a finish screen     | Done                                                                                           |
+| M4  | Items and boosts | Pickups, a few items, boost pads, drift and start boosts          | In progress: zippers, bananas, all five balloons for cars (docs/balloons.md); AI item use next |
+| M5  | Water and sky    | Hovercraft and plane controllers on the shared vehicle interface  | Planned                                                                                        |
+| M6  | Menus            | Title, character select, track select, HUD                        | Planned                                                                                        |
+| M7  | Adventure        | A small hub island where doors start races; progress is saved     | Planned                                                                                        |
+| M7b | Track builder    | An in-browser editor to lay out, shape and test tracks            | Ideas                                                                                          |
+| M8  | Beyond           | More tracks, bosses, challenges, split-screen, audio polish       | Ideas                                                                                          |
 
 ## How a milestone runs
 

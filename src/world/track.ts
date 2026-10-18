@@ -25,6 +25,12 @@ export interface TrackData {
   zippers?: { at: number; across?: number }[];
   /** Banana rows: distance along the lap, offset across, how many and how far apart. */
   bananas?: { at: number; across?: number; count?: number; gap?: number }[];
+  /** Balloons: distance along the lap, offset across, colour. */
+  balloons?: {
+    at: number;
+    across?: number;
+    color: "red" | "blue" | "green" | "yellow" | "rainbow";
+  }[];
   /**
    * Open track: no walls along the road and no respawn for leaving it. You can drive on
    * the grass; only tunnels, trees and the map boundary stop you.

@@ -163,3 +163,13 @@ body {
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
   pointer-events: none;
 }
+
+.speed-graph {
+  position: fixed;
+  right: 262px; /* left of the tuning panel */
+  bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+  width: 420px;
+  max-width: calc(100vw - 24px);
+  border-radius: 6px;
+  pointer-events: none;
+}

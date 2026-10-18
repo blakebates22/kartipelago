@@ -1,6 +1,108 @@
 {
   "name": "Drift Loop",
   "defaultWidth": 22,
+  "zippers": [
+    {
+      "at": 95
+    },
+    {
+      "at": 475
+    }
+  ],
+  "bananas": [
+    {
+      "at": 40,
+      "across": 6.4,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 200,
+      "across": -6
+    },
+    {
+      "at": 200,
+      "across": -2
+    },
+    {
+      "at": 200,
+      "across": 2
+    },
+    {
+      "at": 200,
+      "across": 6
+    },
+    {
+      "at": 378,
+      "across": -5,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 520,
+      "across": 0,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 655,
+      "across": -4,
+      "count": 3,
+      "gap": 5
+    }
+  ],
+  "balloons": [
+    {
+      "at": 130,
+      "across": -6,
+      "color": "red"
+    },
+    {
+      "at": 130,
+      "across": -2,
+      "color": "blue"
+    },
+    {
+      "at": 130,
+      "across": 2,
+      "color": "green"
+    },
+    {
+      "at": 130,
+      "across": 6,
+      "color": "yellow"
+    },
+    {
+      "at": 300,
+      "across": -4,
+      "color": "blue"
+    },
+    {
+      "at": 300,
+      "across": 4,
+      "color": "rainbow"
+    },
+    {
+      "at": 600,
+      "across": -6,
+      "color": "red"
+    },
+    {
+      "at": 600,
+      "across": -2,
+      "color": "blue"
+    },
+    {
+      "at": 600,
+      "across": 2,
+      "color": "yellow"
+    },
+    {
+      "at": 600,
+      "across": 6,
+      "color": "green"
+    }
+  ],
   "points": [
     {
       "x": 0,
@@ -330,56 +432,6 @@
       "x": -0.95,
       "z": -7.72,
       "bank": 3.5
-    }
-  ],
-  "zippers": [
-    {
-      "at": 95
-    },
-    {
-      "at": 475
-    }
-  ],
-  "bananas": [
-    {
-      "at": 40,
-      "across": 6.4,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 200,
-      "across": -6
-    },
-    {
-      "at": 200,
-      "across": -2
-    },
-    {
-      "at": 200,
-      "across": 2
-    },
-    {
-      "at": 200,
-      "across": 6
-    },
-    {
-      "at": 378,
-      "across": -5,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 520,
-      "across": 0,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 655,
-      "across": -4,
-      "count": 3,
-      "gap": 5
     }
   ]
 }
