@@ -12,6 +12,9 @@ import { buildCharacter, type CharacterRig } from "./characters";
 import { DESIGNS, type RacerId } from "./designs";
 import { buildKart, type KartModel } from "./kart";
 import { buildMoss, buildMossKart } from "./moss";
+import { buildBramble, buildBrambleKart } from "./bramble";
+import { buildPoppy, buildPoppyKart } from "./poppy";
+import { buildOtto, buildOttoKart } from "./otto";
 import { atDetail } from "./geo";
 import { shadowTexture } from "./paint";
 
@@ -38,6 +41,21 @@ export interface RacerMotion {
 
 /** Distance beyond which the cheap version is drawn, metres. */
 export const LOD_DISTANCE = 45;
+
+const FACETED: Partial<
+  Record<
+    RacerId,
+    {
+      kart: (detail: 0 | 1) => KartModel;
+      rig: (grips: [THREE.Vector3, THREE.Vector3]) => CharacterRig;
+    }
+  >
+> = {
+  moss: { kart: buildMossKart, rig: buildMoss },
+  bramble: { kart: buildBrambleKart, rig: buildBramble },
+  poppy: { kart: buildPoppyKart, rig: buildPoppy },
+  otto: { kart: buildOttoKart, rig: buildOtto },
+};
 
 /** Characters are big for their karts, like toys. */
 const CHARACTER_SCALE = 1.2;
@@ -103,10 +121,11 @@ export class Racer {
     this.blinkIn = 1 + this.rand() * 2;
     this.glanceIn = 3 + this.rand() * 4;
 
-    // Moss uses the faceted, pixel-textured style (and its own kart).
-    const faceted = id === "moss" && !opts.alt;
-    this.kart = faceted ? buildMossKart(0) : buildKart(id, paint, 0);
-    this.rig = faceted ? buildMoss(this.kart.grips) : buildCharacter(id, this.kart.grips);
+    // Every racer now uses the faceted, pixel-textured style with their own kart
+    // (alternate-paint copies for repeated rivals keep the earlier style for now).
+    const faceted = !opts.alt ? FACETED[id] : undefined;
+    this.kart = faceted ? faceted.kart(0) : buildKart(id, paint, 0);
+    this.rig = faceted ? faceted.rig(this.kart.grips) : buildCharacter(id, this.kart.grips);
     this.rig.root.position.copy(this.kart.seat);
     this.rig.root.scale.setScalar(CHARACTER_SCALE);
     this.kart.body.add(this.rig.root);
@@ -114,7 +133,7 @@ export class Racer {
     this.high.add(this.kart.root);
 
     // Far away: a cheap kart and a one-piece character, no rig.
-    const lowKart = faceted ? buildMossKart(1) : atDetail(0.5, () => buildKart(id, paint, 1));
+    const lowKart = faceted ? faceted.kart(1) : atDetail(0.5, () => buildKart(id, paint, 1));
     lowKart.steering.visible = false;
     this.rig.low.position.copy(lowKart.seat);
     this.rig.low.scale.setScalar(CHARACTER_SCALE);
@@ -345,7 +364,7 @@ export class Racer {
           break;
         case "orange":
           o.rotation.z = Math.sin(this.t * 1.3) * 0.05 - this.lean * 0.5;
-          o.position.y = 0.56 + Math.max(0, (this.squash - 1) * 0.6);
+          o.position.y = (o.userData.baseY ??= o.position.y) + Math.max(0, (this.squash - 1) * 0.6);
           break;
       }
     }

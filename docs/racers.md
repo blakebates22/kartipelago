@@ -5,21 +5,21 @@ driving stats: pick a look with the menu at the bottom left (or `?racer=moss`, `
 `poppy`, `otto`), and pick stats with the 1-4 keys as before. The rivals take the other
 three looks in turn; repeats get alternate paint.
 
-| Racer   | Species  | Kart                             | Seen from behind                        |
-| ------- | -------- | -------------------------------- | --------------------------------------- |
-| Moss    | axolotl  | sunflower yellow, turquoise trim | fans of coral gills, a tail fin         |
-| Bramble | pangolin | leaf green, gold trim            | armour plates, a curled armoured tail   |
-| Poppy   | moth     | cherry red, cream trim           | feathery antennae, folded spotted wings |
-| Otto    | capybara | royal blue, orange trim          | big round back, small ears, an orange   |
+| Racer   | Species  | Kart                             | Seen from behind                      |
+| ------- | -------- | -------------------------------- | ------------------------------------- |
+| Moss    | axolotl  | sunflower yellow, turquoise trim | fans of coral gills, a tail fin       |
+| Bramble | pangolin | leaf green, gold trim            | a swooping quiff, a big bushy tail    |
+| Poppy   | moth     | cherry red, cream trim           | long striped club-tipped antennae     |
+| Otto    | capybara | royal blue, orange trim          | big round back, small ears, an orange |
 
 Everything is visual. The racers follow the kart's physics state and add motion through
 child transforms. Nothing writes back to the physics, and the collision shape is the same
 circle as before.
 
-## Moss's faceted style
+## The faceted style
 
-Moss is the first racer in the faceted, pixel-textured style (`moss.ts`, `faceted.ts`).
-The aim is the reference look Blake picked:
+All four racers use the faceted, pixel-textured style (`faceted.ts`), from the
+reference looks Blake picked:
 
 - flat-shaded low-poly shapes (icospheres, chamfered boxes, octagonal tyres);
 - a 16x16 grain texture sampled nearest-neighbour, so texels show as soft pixel blocks;
@@ -29,7 +29,22 @@ The face texture swaps for expressions: a cheerful toothy smile, a determined gr
 slanted lids when drifting or boosting, a wide-eyed "oh!" for hits and jumps, and closed
 eyes to blink. Moss has his own angular formula kart, with a wedge nose and a cream crown
 on it, chunky teal pods over the wheels, a roll hoop, and dark octagonal tyres with cream
-hubs and green caps. The other three racers still use the earlier smooth style.
+hubs and green caps.
+
+Bramble, Poppy and Otto share a rounder toy kart (`toykart.ts`) in their own colours: a
+tapered tub with big goggly 3D eyes on the nose, a thick rounded bill bumper, fenders, a
+roll hoop and octagonal tyres. Each character has a painted face that swaps the same way
+(`paintedFace` in `faceted.ts`):
+
+- Bramble (`bramble.ts`): chestnut head with a cream mask, blush, round ears, a quiff and
+  a bushy tail. Determined lids come out a lot.
+- Poppy (`poppy.ts`): round lavender head with huge eyes, a pink nose, a cream bib and
+  striped club antennae that twitch.
+- Otto (`otto.ts`): big caramel head and snout, tiny ears, nostrils, an orange with a
+  leaf balanced on top. Sleepy lids normally, determined when racing.
+
+The earlier smooth style (`kart.ts`, `characters.ts`) is still used for alternate paint
+on repeated rivals.
 
 ## How it's built
 
