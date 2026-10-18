@@ -91,3 +91,19 @@ so scraping along a wall never keeps cancelling a drift.
 While drifting, the wall's deflection goes into the drift offset rather than the body, so
 the path follows the wall at once and the body only turns gradually. Settings are in the
 `collision` section of `tuning.json`; with `?debug`, the overlay shows the last hit.
+
+## Throttle tapping
+
+Tapping the throttle at a steady, moderate rhythm builds a **tap charge** that raises top
+speed by up to `tapBonus` (10%). It stacks with the drift speed bonus.
+
+- A tap counts when you press again between `tapMinInterval` and `tapMaxInterval`
+  seconds after the last press (about 2.5 to 6.5 taps a second; 3 to 5 is the sweet
+  spot), having let go for no longer than `tapMaxGap`. Mashing faster or tapping slower
+  doesn't count.
+- Each good tap adds `tapGain` charge. The short lifts between good taps don't cost
+  speed.
+- Once you stop tapping, the charge fades at `tapDecay` per second, so the extra speed
+  bleeds away over a second or two.
+
+With `?debug`, the overlay shows the tap charge.
