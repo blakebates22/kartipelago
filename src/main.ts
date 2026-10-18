@@ -17,7 +17,7 @@ import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
 import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
-import { stepWalls } from "./physics/walls";
+import { stepImpacts, stepWalls } from "./physics/walls";
 import { bumpKarts } from "./physics/bump";
 import { buildRacingLine } from "./ai/racingLine";
 import { createDriver, driveAi, type Driver } from "./ai/driver";
@@ -243,7 +243,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       clock: race.clock,
       startTarget: startTarget(tuning.race),
     };
-    const walls = { ...tuning.physics, wallHeight: tuning.track.wallHeight };
+    const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
 
     entrants.forEach((e, i) => {
       // Rebuilt each step so live tuning edits apply immediately.
@@ -251,6 +251,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       if (e.driver) cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
       const want = e.driver && moment ? driveAi(e.driver, e.state, cfg, tuning.ai, moment) : held;
       // During the countdown every kart sits on the line.
+      stepImpacts(e.state, tuning.collision, dt);
       stepKart(e.state, !race || canDrive(race) ? want : NEUTRAL, cfg, dt);
       stepWalls(e.state, e.ground, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
@@ -321,6 +322,11 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     );
     debug.overlay.set("offs", `${((s.driftOffset * 180) / Math.PI).toFixed(0)}°`);
     debug.overlay.set("spin", s.spinTime > 0 ? "SPIN" : `${s.counterTime.toFixed(2)}s`);
+    const tiers = ["-", "light", "moderate", "CRASH"];
+    debug.overlay.set(
+      "hit",
+      s.lastImpactTier ? `${tiers[s.lastImpactTier]} ${s.lastImpactSpeed.toFixed(1)} m/s` : "-",
+    );
     debug.overlay.set(
       "drift",
       s.driftDir === 0 ? "-" : `${s.driftDir > 0 ? "R" : "L"} ${s.driftTime.toFixed(1)}s`,

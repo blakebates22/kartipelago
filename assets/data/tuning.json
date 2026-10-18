@@ -63,7 +63,21 @@
     "groundStick": 10,
     "kartRadius": 0.9,
     "wallAlign": 6,
+    "wallAlignMaxRate": 3,
     "kartBump": 1.1
+  },
+  "collision": {
+    "scrapeSpeed": 4,
+    "crashSpeed": 12,
+    "kickPerSpeed": 0.12,
+    "kickMax": 2.5,
+    "kickDamp": 6,
+    "driftBreakDeg": 20,
+    "contactReset": 0.2,
+    "crashSec": 0.8,
+    "crashSteer": 0.35,
+    "crashGrip": 0.35,
+    "crashSpinKeep": 0.4
   },
   "camera": {
     "fov": 65,

@@ -3,12 +3,12 @@ import tuning from "../assets/data/tuning.json";
 import { NEUTRAL, type InputState } from "../src/core/input";
 import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
-import { stepWalls } from "../src/physics/walls";
+import { stepImpacts, stepWalls } from "../src/physics/walls";
 import { createKartState, stepKart, type KartState } from "../src/vehicles/kart";
 import { buildTrack, type TrackData } from "../src/world/track";
 
 const dt = 1 / 120;
-const walls = { ...tuning.physics, wallHeight: tuning.track.wallHeight };
+const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
 
 // A long straight along +Z, 20 m wide: walls at x = ±10.
 const straight: TrackData = {
@@ -28,6 +28,7 @@ function drive(s: KartState, seconds: number, input: Partial<InputState>) {
   const ground = createTrackGround(track);
   let hits = 0;
   for (let t = 0; t < seconds; t += dt) {
+    stepImpacts(s, tuning.collision, dt);
     stepKart(s, { ...NEUTRAL, ...input }, tuning.vehicle, dt);
     if (stepWalls(s, ground, walls, dt)) hits++;
     stepVertical(s, ground, tuning.physics, dt);
@@ -101,6 +102,6 @@ describe("walls", () => {
     s.vy = 0;
     const ground = createTrackGround(track);
     stepKart(s, NEUTRAL, tuning.vehicle, dt);
-    expect(stepWalls(s, ground, walls, dt)).toBe(false);
+    expect(stepWalls(s, ground, walls, dt)).toBeNull();
   });
 });

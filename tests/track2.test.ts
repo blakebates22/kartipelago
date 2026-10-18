@@ -7,7 +7,7 @@ import { createDriver, driveAi } from "../src/ai/driver";
 import { buildRacingLine } from "../src/ai/racingLine";
 import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
-import { stepWalls } from "../src/physics/walls";
+import { stepImpacts, stepWalls } from "../src/physics/walls";
 import { gridSlot } from "../src/race/grid";
 import {
   canDrive,
@@ -88,8 +88,9 @@ describe("Ribbon Ridge", () => {
         startTarget: startTarget(tuning.race),
       };
       const want = driveAi(driver, kart, cfg, tuning.ai, moment);
+      stepImpacts(kart, tuning.collision, dt);
       stepKart(kart, canDrive(race) ? want : NEUTRAL, cfg, dt);
-      const walls = { ...tuning.physics, wallHeight: tuning.track.wallHeight };
+      const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
       if (stepWalls(kart, ground, walls, dt)) stats.wall++;
       stepVertical(kart, ground, tuning.physics, dt);
       const onRoad = ground.at(kart.x, kart.z).onRoad;
