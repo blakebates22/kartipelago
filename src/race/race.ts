@@ -84,6 +84,8 @@ export interface Racer {
 
 export interface Race {
   gates: Gate[];
+  /** Track samples near the end of the lap (x, z, metres before the line), for ranking the grid. */
+  approach: { x: number; z: number; before: number }[];
   phase: Phase;
   /** Seconds since GO; negative during the countdown. */
   clock: number;
@@ -141,8 +143,13 @@ function newRacer(start: Gate): Racer {
 
 export function createRace(track: Track, cfg: RaceConfig, racers = 1): Race {
   const gates = makeGates(track, cfg.checkpointSpacing);
+  // The last stretch of road before the start line, where the grid sits.
+  const approach = track.samples
+    .filter((p) => track.length - p.dist < 80)
+    .map((p) => ({ x: p.pos.x, z: p.pos.z, before: track.length - p.dist }));
   return {
     gates,
+    approach,
     phase: "countdown",
     clock: -cfg.readySec,
     goThisStep: false,
@@ -266,8 +273,21 @@ export function progress(race: Race, index: number, x: number, z: number): numbe
   const b = race.gates[r.next]!;
   const gap = Math.hypot(b.x - a.x, b.z - a.z) || 1;
   const along = ((x - a.x) * (b.x - a.x) + (z - a.z) * (b.z - a.z)) / (gap * gap);
-  // Negative before the start line, so the grid ranks front to back before GO.
-  return r.passed + Math.min(0.999, Math.max(-0.999, along));
+  if (r.passed === 0 && along < 0 && race.approach.length > 0) {
+    // Still behind the start line (on the grid): rank by distance along the road to the
+    // line, which stays right when the grid sits on the curve leading onto it.
+    let best = race.approach[0]!;
+    let bestD = Infinity;
+    for (const p of race.approach) {
+      const dd = (p.x - x) ** 2 + (p.z - z) ** 2;
+      if (dd < bestD) {
+        bestD = dd;
+        best = p;
+      }
+    }
+    return -Math.min(0.999, best.before / 100);
+  }
+  return r.passed + Math.min(0.999, Math.max(0, along));
 }
 
 /** Racer indices from first place to last. Finished racers keep their finishing order. */

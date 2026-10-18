@@ -7,7 +7,8 @@ import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 import { createStartMeter } from "./debug/startMeter";
 import courseData from "../assets/data/course.json";
-import trackData from "../assets/data/track.json";
+import driftLoop from "../assets/data/track.json";
+import ribbonRidge from "../assets/data/track2.json";
 import roster from "../assets/data/characters.json";
 import { createChaseCamera } from "./render/chaseCamera";
 import { createCourseView } from "./render/courseView";
@@ -41,13 +42,17 @@ import {
   type KartState,
 } from "./vehicles/kart";
 
-// Two scenes: the first track with seven AI rivals (default) and the M1 practice course
-// of pickups and boost pads (open with ?scene=practice). Press R to restart.
+// Two scenes: a race on a track with seven AI rivals (default; pick the track with
+// ?track=1 or ?track=2) and the M1 practice course of pickups and boost pads (open with
+// ?scene=practice). Press R to restart.
 
 const PARAMS = new URLSearchParams(location.search);
 const SCENE = PARAMS.get("scene") === "practice" ? "practice" : "track";
 // The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
 const SHOW_TIMING = PARAMS.has("timing");
+// Tracks: ?track=1 (Drift Loop, the default) or ?track=2 (Ribbon Ridge).
+const TRACKS = [driftLoop, ribbonRidge] as TrackData[];
+const trackData = TRACKS[Number(PARAMS.get("track") ?? 1) - 1] ?? TRACKS[0]!;
 const GROUND_SIZE = 1200;
 const GROUND_TILE = 5; // metres per grid square
 
@@ -87,8 +92,7 @@ stage.scene.add(ground);
 
 const course = SCENE === "practice" ? createCourse(courseData) : undefined;
 const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
-const track =
-  SCENE === "track" ? buildTrack(trackData as TrackData, tuning.track.sampleSpacing) : undefined;
+const track = SCENE === "track" ? buildTrack(trackData, tuning.track.sampleSpacing) : undefined;
 const trackView = track ? createTrackView(stage.scene, track, tuning.track) : undefined;
 const line = track
   ? buildRacingLine(track, {
@@ -372,6 +376,7 @@ function renderHud() {
     parts.push(`Lap ${Math.min(r.lap, tuning.race.laps)}/${tuning.race.laps}`);
     parts.push(formatTime(lapClock(race, 0)));
     if (r.bestLap !== undefined) parts.push(`Best ${formatTime(r.bestLap)}`);
+    parts.unshift(trackData.name);
     if (bestEver !== undefined) parts.push(`Record ${formatTime(bestEver)}`);
   }
   parts.push(`1–${characters.length} character`, "R restart");
