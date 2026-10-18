@@ -31,6 +31,8 @@ import {
 } from "./items/world";
 import type { ItemsConfig } from "./items/config";
 import { createItemView } from "./render/itemView";
+import { Racer as RacerView, motionOf } from "./render/racers/racer";
+import { DESIGNS, RACER_IDS, type RacerId } from "./render/racers/designs";
 import { createBoostLab } from "./debug/boostLab";
 import { bananaMult, bananaScales, effectiveBananas, loseBananas } from "./vehicles/bananas";
 import {
@@ -173,37 +175,31 @@ const line = track
 const characters = roster.characters as Character[];
 const findCharacter = (id: string) => characters.find((c) => c.id === id) ?? characters[0]!;
 
-/** A box kart with a darker nose, so you can tell which way is forward. */
-function makeKartMesh() {
-  const mat = new THREE.MeshStandardMaterial({ flatShading: true });
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 2.4), mat);
-  mesh.castShadow = true;
-  const nose = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, 0.3, 0.4),
-    new THREE.MeshStandardMaterial({ color: "#333333", flatShading: true }),
-  );
-  nose.position.set(0, 0.2, 1.2);
-  mesh.add(nose);
-  // Exhaust flame at the back: shows zipper boosts, and turns rainbow at the moment to
-  // press the throttle again after an enhanced boost.
-  const flameMat = new THREE.MeshBasicMaterial({ color: "#ff8c1a", transparent: true });
-  const flame = new THREE.Mesh(
-    new THREE.ConeGeometry(0.35, 1.4, 10).rotateX(-Math.PI / 2),
-    flameMat,
-  );
-  flame.position.set(0, 0, -1.9);
-  flame.visible = false;
-  mesh.add(flame);
-  // A green core inside the flame shows an enhanced (released-throttle) boost.
-  const core = new THREE.Mesh(
-    new THREE.ConeGeometry(0.18, 1.1, 8).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: "#3ddc84" }),
-  );
-  core.position.set(0, 0, -1.75);
-  core.visible = false;
-  mesh.add(core);
-  stage.scene.add(mesh);
-  return { mesh, mat, flame, flameMat, core };
+// Racer looks are separate from driving stats: pick one with the menu (top left) or
+// ?racer=moss|bramble|poppy|otto. Rivals get the others in turn.
+const LOOK_KEY = "kartipelago.racer";
+function savedLook(): RacerId {
+  const fromUrl = PARAMS.get("racer");
+  if (fromUrl && (RACER_IDS as string[]).includes(fromUrl)) return fromUrl as RacerId;
+  try {
+    const v = localStorage.getItem(LOOK_KEY);
+    if (v && (RACER_IDS as string[]).includes(v)) return v as RacerId;
+  } catch {
+    // no storage: use the default
+  }
+  return "moss";
+}
+let playerLook = savedLook();
+/** Rival i's look: the other three designs in turn; repeats get the alternate paint. */
+function rivalLook(i: number): { id: RacerId; alt: boolean } {
+  const others = RACER_IDS.filter((id) => id !== playerLook);
+  return { id: others[(i - 1) % others.length]!, alt: i > others.length };
+}
+function makeRacer(i: number): RacerView {
+  const look = i === 0 ? { id: playerLook, alt: false } : rivalLook(i);
+  const r = new RacerView(look.id, { alt: look.alt, seed: i * 17 + 5 });
+  stage.scene.add(r.root, r.shadow);
+  return r;
 }
 
 interface Entrant {
@@ -213,11 +209,10 @@ interface Entrant {
   state: KartState;
   /** State at the previous step, for smooth rendering between steps. */
   prev: { x: number; y: number; z: number; heading: number; velAngle: number };
-  mesh: THREE.Mesh;
-  mat: THREE.MeshStandardMaterial;
-  flame: THREE.Mesh;
-  flameMat: THREE.MeshBasicMaterial;
-  core: THREE.Mesh;
+  /** What you see: kart, character, exhaust flame and shadow (visual only). */
+  racer: RacerView;
+  /** The racer's root: follows the kart's position and tilt. */
+  mesh: THREE.Object3D;
   /** Held balloon and timed item effects. */
   items: RacerItems;
   /** Each kart keeps its own ground lookup (it remembers where on the track it was). */
@@ -231,17 +226,14 @@ const entrants: Entrant[] = [
   { name: "You", character: player, color: player.color },
   ...rivals.map((r) => ({ name: r.name, character: findCharacter(r.character), color: r.color })),
 ].map((e, i) => {
-  const { mesh, mat, flame, flameMat, core } = makeKartMesh();
+  const racer = makeRacer(i);
   const state = createKartState();
   return {
     ...e,
     state,
     prev: { x: 0, y: 0, z: 0, heading: 0, velAngle: 0 },
-    mesh,
-    mat,
-    flame,
-    flameMat,
-    core,
+    racer,
+    mesh: racer.root,
     items: racerItems(),
     ground: track ? createTrackGround(track) : flatGround,
     driver: i > 0 && line ? createDriver(line, i, tuning.ai) : undefined,
@@ -284,6 +276,41 @@ toast.className = "toast";
 toast.hidden = true;
 document.body.appendChild(toast);
 let toastUntil = 0;
+
+// Temporary racer picker (looks only; driving stats are the 1-4 keys).
+const picker = document.createElement("select");
+picker.className = "racer-pick";
+picker.title = "Racer";
+for (const id of RACER_IDS) {
+  const o = document.createElement("option");
+  o.value = id;
+  o.textContent = `${DESIGNS[id].name} the ${DESIGNS[id].species}`;
+  picker.appendChild(o);
+}
+picker.value = playerLook;
+picker.addEventListener("change", () => {
+  playerLook = picker.value as RacerId;
+  try {
+    localStorage.setItem(LOOK_KEY, playerLook);
+  } catch {
+    // not saved
+  }
+  // Rebuild every racer so the rivals take the other looks.
+  entrants.forEach((e, i) => {
+    e.racer.dispose(stage.scene);
+    e.racer = makeRacer(i);
+    e.mesh = e.racer.root;
+  });
+  picker.blur(); // give the keys back to driving
+});
+document.body.appendChild(picker);
+// The racer preview page (rotate, inspect and trigger animations).
+const previewLink = document.createElement("a");
+previewLink.className = "racer-preview-link";
+previewLink.href = `garage.html?racer=${playerLook}`;
+previewLink.textContent = "Racer preview";
+picker.addEventListener("change", () => (previewLink.href = `garage.html?racer=${playerLook}`));
+document.body.appendChild(previewLink);
 function showToast(text: string, seconds: number) {
   toast.textContent = text;
   toast.hidden = false;
@@ -466,7 +493,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
     groundMat.color.set(trackData.groundColor ?? world.groundColor);
     sceneryView?.render(tuning.scenery);
-    stage.scene.background = new THREE.Color(world.skyColor);
+    (stage.scene.background as THREE.Color).set(world.skyColor);
 
     const s = you.state;
     const p = you.prev;
@@ -605,7 +632,19 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   tiltBasis.makeBasis(right, up, fwd);
   tiltTarget.setFromRotationMatrix(tiltBasis);
   mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
-  e.mat.color.set(e.color);
+
+  // The blob shadow stays on the ground under the kart, smaller the higher it flies.
+  const r = e.racer;
+  const groundY = e.ground.at(mesh.position.x, mesh.position.z).height;
+  r.placeShadow(
+    mesh.position.x,
+    groundY,
+    mesh.position.z,
+    heading,
+    mesh.position.y - 0.4 - groundY,
+  );
+  // Character and kart animation: a visual layer on top of the physics state.
+  r.animate(frameSeconds, motionOf(s), nearestRival(e));
 
   // Exhaust: the colour says which boost (zipper amber; blue balloons orange / blue /
   // purple by level), a green core says the enhanced boost took, rainbow says "press the
@@ -613,13 +652,13 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   const z = s.zipPhase;
   const color = FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!;
   const pushing = z === ZIP.ACTIVE || z === ZIP.ENDING;
-  e.flame.visible = z !== ZIP.NORMAL;
-  e.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
+  e.racer.flame.visible = z !== ZIP.NORMAL;
+  e.racer.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
   if (z === ZIP.ENDING) {
-    e.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
-    e.flame.scale.setScalar(1.5);
+    e.racer.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
+    e.racer.flame.scale.setScalar(1.5);
   } else if (z === ZIP.ACTIVE) {
-    e.flameMat.color.set(color);
+    e.racer.flameMat.color.set(color);
     let size = s.zipEnhanced ? 1.35 : 1;
     // Level 3 blue: the flame builds while its sound charges (the push already started).
     const sinceStart = s.zipTotal - s.zipTime;
@@ -627,12 +666,31 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
       const f = sinceStart / itemsCfg.blue3ChargeSec;
       size *= 0.4 + 0.6 * f + 0.1 * Math.sin(performance.now() / 20);
     }
-    e.flame.scale.setScalar(size);
+    e.racer.flame.scale.setScalar(size);
   } else if (z === ZIP.RECOVERY) {
-    e.flameMat.color.set(color);
-    e.flame.scale.setScalar(0.55);
+    e.racer.flameMat.color.set(color);
+    e.racer.flame.scale.setScalar(0.55);
   }
-  e.flameMat.opacity = z === ZIP.RECOVERY ? 0.45 : 0.9;
+  e.racer.flameMat.opacity = z === ZIP.RECOVERY ? 0.45 : 0.9;
+}
+
+/** The nearest other racer within glancing distance, in this racer's local frame. */
+function nearestRival(e: Entrant): { x: number; z: number } | null {
+  const s = e.state;
+  let best: { x: number; z: number } | null = null;
+  let bestD = 15;
+  for (const o of entrants) {
+    if (o === e) continue;
+    const dx = o.state.x - s.x;
+    const dz = o.state.z - s.z;
+    const d = Math.hypot(dx, dz);
+    if (d >= bestD) continue;
+    bestD = d;
+    const c = Math.cos(s.heading);
+    const sn = Math.sin(s.heading);
+    best = { x: dx * c - dz * sn, z: dx * sn + dz * c };
+  }
+  return best;
 }
 
 /** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */

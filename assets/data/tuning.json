@@ -250,6 +250,11 @@
     "trunkColor": "#6b4a2b",
     "hillColor": "#58953f"
   },
+  "look": {
+    "resolutionScale": 0.75,
+    "fogNear": 160,
+    "fogFar": 700
+  },
   "world": {
     "skyColor": "#8ecae6",
     "groundColor": "#2a9d8f"
