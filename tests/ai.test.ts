@@ -20,10 +20,13 @@ import {
 } from "../src/race/race";
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart, type KartState } from "../src/vehicles/kart";
+import { startZipper } from "../src/vehicles/zipper";
+import { buildZippers, enteredZipper } from "../src/world/zippers";
 import { buildTrack, type TrackData } from "../src/world/track";
 
 const dt = 1 / 120;
 const track = buildTrack(trackData as TrackData, tuning.track.sampleSpacing);
+const pads = buildZippers(track, (trackData as TrackData).zippers ?? [], tuning.track);
 const ai = tuning.ai;
 const line = buildRacingLine(track, {
   margin: ai.lineMargin,
@@ -73,6 +76,7 @@ function aiRace(ids: string[], seconds = 200) {
       const want = driveAi(drivers[i]!, k, cfg, ai, moment);
       stepImpacts(k, tuning.collision, dt);
       stepKart(k, canDrive(race) ? want : NEUTRAL, cfg, dt);
+      if (enteredZipper(k, pads)) startZipper(k, want.throttle, cfg);
       if (
         stepWalls(
           k,

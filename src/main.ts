@@ -15,6 +15,8 @@ import { createCourseView } from "./render/courseView";
 import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
+import { buildZippers, enteredZipper } from "./world/zippers";
+import { ZIP, startZipper } from "./vehicles/zipper";
 import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
 import { stepImpacts, stepWalls } from "./physics/walls";
@@ -93,7 +95,8 @@ stage.scene.add(ground);
 const course = SCENE === "practice" ? createCourse(courseData) : undefined;
 const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
 const track = SCENE === "track" ? buildTrack(trackData, tuning.track.sampleSpacing) : undefined;
-const trackView = track ? createTrackView(stage.scene, track, tuning.track) : undefined;
+const zippers = track ? buildZippers(track, trackData.zippers ?? [], tuning.track) : [];
+const trackView = track ? createTrackView(stage.scene, track, tuning.track, zippers) : undefined;
 const line = track
   ? buildRacingLine(track, {
       margin: tuning.ai.lineMargin,
@@ -116,8 +119,18 @@ function makeKartMesh() {
   );
   nose.position.set(0, 0.2, 1.2);
   mesh.add(nose);
+  // Exhaust flame at the back: shows zipper boosts, and turns rainbow at the moment to
+  // press the throttle again after an enhanced boost.
+  const flameMat = new THREE.MeshBasicMaterial({ color: "#ff8c1a", transparent: true });
+  const flame = new THREE.Mesh(
+    new THREE.ConeGeometry(0.35, 1.4, 10).rotateX(-Math.PI / 2),
+    flameMat,
+  );
+  flame.position.set(0, 0, -1.9);
+  flame.visible = false;
+  mesh.add(flame);
   stage.scene.add(mesh);
-  return { mesh, mat };
+  return { mesh, mat, flame, flameMat };
 }
 
 interface Entrant {
@@ -129,6 +142,8 @@ interface Entrant {
   prev: { x: number; y: number; z: number; heading: number; velAngle: number };
   mesh: THREE.Mesh;
   mat: THREE.MeshStandardMaterial;
+  flame: THREE.Mesh;
+  flameMat: THREE.MeshBasicMaterial;
   /** Each kart keeps its own ground lookup (it remembers where on the track it was). */
   ground: GroundQuery;
   driver?: Driver;
@@ -140,7 +155,7 @@ const entrants: Entrant[] = [
   { name: "You", character: player, color: player.color },
   ...rivals.map((r) => ({ name: r.name, character: findCharacter(r.character), color: r.color })),
 ].map((e, i) => {
-  const { mesh, mat } = makeKartMesh();
+  const { mesh, mat, flame, flameMat } = makeKartMesh();
   const state = createKartState();
   return {
     ...e,
@@ -148,6 +163,8 @@ const entrants: Entrant[] = [
     prev: { x: 0, y: 0, z: 0, heading: 0, velAngle: 0 },
     mesh,
     mat,
+    flame,
+    flameMat,
     ground: track ? createTrackGround(track) : flatGround,
     driver: i > 0 && line ? createDriver(line, i, tuning.ai) : undefined,
   };
@@ -206,6 +223,7 @@ function saveBest(time: number) {
 }
 
 let pathCurvature = 0;
+let youAccel = 0;
 
 // Key events only request changes; they're applied on the fixed step, like all gameplay.
 let resetRequested = false;
@@ -234,6 +252,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     }
     for (const e of entrants) snapPrev(e);
     const pathBefore = you.state.velAngle;
+    const speedBefore = you.state.speed;
     const posBefore = { x: you.state.x, z: you.state.z };
     if (race) tickRace(race, dt);
 
@@ -254,6 +273,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       // During the countdown every kart sits on the line.
       stepImpacts(e.state, tuning.collision, dt);
       stepKart(e.state, !race || canDrive(race) ? want : NEUTRAL, cfg, dt);
+      if (enteredZipper(e.state, zippers)) startZipper(e.state, want.throttle, cfg);
       stepWalls(e.state, e.ground, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
       if (course && i === 0) stepCourse(course, e.state, tuning.course, cfg, dt);
@@ -278,6 +298,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
     const moved = Math.hypot(you.state.x - posBefore.x, you.state.z - posBefore.z);
     if (moved > 1e-3) pathCurvature = wrapAngle(you.state.velAngle - pathBefore) / moved;
+    youAccel = (you.state.speed - speedBefore) / dt;
   },
 
   render(alpha, frameSeconds) {
@@ -314,6 +335,28 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     debug.overlay.set("steer", input.state.steer);
     debug.overlay.set("air", s.grounded ? "-" : `${s.y.toFixed(1)} m`);
     debug.overlay.set("tap", `${Math.round(s.tapCharge * 100)}%`);
+    const phases = ["normal", "ACTIVE", "ENDING (rainbow)", "recovery"];
+    const youCfg = applyCharacter(tuning.vehicle, you.character, tuning.stats);
+    debug.overlay.set("max", `${youCfg.topSpeed.toFixed(1)} m/s`);
+    debug.overlay.set(
+      "zip",
+      s.zipPhase ? `${phases[s.zipPhase]} ${s.zipEnhanced ? "enhanced" : "ordinary"}` : "-",
+    );
+    debug.overlay.set(
+      "zipT",
+      s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING
+        ? `${s.zipTime.toFixed(2)}s left`
+        : "-",
+    );
+    debug.overlay.set(
+      "zipPw",
+      `${Math.round(s.zipPower * 100)}%  released ${s.zipReleasedAtStart ? "yes" : "no"}  early ${s.zipPressedEarly ? "yes" : "no"}`,
+    );
+    debug.overlay.set("accel", `${youAccel.toFixed(1)} m/s²`);
+    debug.overlay.set(
+      "lat",
+      `${(Math.abs(s.speed) * Math.sin(Math.abs(slipAngle(s)))).toFixed(1)} m/s`,
+    );
     const model = tuning.vehicle.driftModel >= 1 ? "offset" : "legacy";
     debug.overlay.set("model", `${model} (M)`);
     debug.overlay.set("stick", s.steerSmooth.toFixed(2));
@@ -364,6 +407,21 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   tiltTarget.setFromRotationMatrix(tiltBasis);
   mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
   e.mat.color.set(e.color);
+
+  const z = s.zipPhase;
+  e.flame.visible = z !== ZIP.NORMAL;
+  if (z === ZIP.ENDING) {
+    // Rainbow: the cue to press the throttle again.
+    e.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
+    e.flame.scale.setScalar(1.5);
+  } else if (z === ZIP.ACTIVE) {
+    e.flameMat.color.set(s.zipEnhanced ? "#ffd166" : "#ff8c1a");
+    e.flame.scale.setScalar(s.zipEnhanced ? 1.3 : 1);
+  } else if (z === ZIP.RECOVERY) {
+    e.flameMat.color.set("#ff8c1a");
+    e.flame.scale.setScalar(0.6);
+  }
+  e.flameMat.opacity = z === ZIP.RECOVERY ? 0.5 : 0.9;
 }
 
 const ordinal = (n: number) =>

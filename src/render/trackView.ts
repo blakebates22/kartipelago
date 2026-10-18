@@ -1,10 +1,12 @@
 import * as THREE from "three";
 import { acrossRoad, type Track } from "../world/track";
+import type { ZipperPad } from "../world/zippers";
 
 export interface TrackLook {
   wallHeight: number;
   roadColor: string;
   wallColor: string;
+  zipperColor: string;
 }
 
 /** Metres of road per repeat of the road texture. */
@@ -61,6 +63,27 @@ function checkerTexture() {
   return tex;
 }
 
+/** Bright chevrons pointing along the pad (toward +Z once laid flat). */
+function zipperTexture() {
+  return canvasTexture(64, 128, (g) => {
+    // Tinted by the material colour: the white becomes the pad colour, the chevrons a
+    // darker shade of it.
+    g.fillStyle = "#ffffff";
+    g.fillRect(0, 0, 64, 128);
+    g.strokeStyle = "#7a3a10";
+    g.lineWidth = 10;
+    g.lineJoin = "round";
+    for (let i = 0; i < 3; i++) {
+      const y = 16 + i * 38;
+      g.beginPath();
+      g.moveTo(8, y);
+      g.lineTo(32, y + 24);
+      g.lineTo(56, y);
+      g.stroke();
+    }
+  });
+}
+
 /** One strip of quads between two rows of points per sample, closed into a loop. */
 function strip(
   track: Track,
@@ -95,7 +118,12 @@ function strip(
 }
 
 /** Road, walls and start line. Purely visual; collision comes from the track samples. */
-export function createTrackView(scene: THREE.Scene, track: Track, look: TrackLook) {
+export function createTrackView(
+  scene: THREE.Scene,
+  track: Track,
+  look: TrackLook,
+  zippers: ZipperPad[] = [],
+) {
   // Polygon offset makes the road win depth ties with the ground plane where it lies
   // nearly flat on it (no flickering grass showing through).
   const roadMat = new THREE.MeshStandardMaterial({
@@ -154,12 +182,31 @@ export function createTrackView(scene: THREE.Scene, track: Track, look: TrackLoo
   startLine.position.copy(first.pos).y += LIFT * 2;
   startLine.rotation.y = track.start.heading;
 
-  scene.add(road, ...walls, startLine);
+  const zipMat = new THREE.MeshStandardMaterial({
+    map: zipperTexture(),
+    emissive: new THREE.Color(look.zipperColor),
+    emissiveIntensity: 0.15,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -8,
+  });
+  const zipMeshes = zippers.map((z) => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(z.halfWidth * 2, z.halfLength * 2).rotateX(-Math.PI / 2),
+      zipMat,
+    );
+    mesh.position.set(z.x, z.y + LIFT * 2, z.z);
+    mesh.rotation.y = z.heading;
+    return mesh;
+  });
+
+  scene.add(road, ...walls, startLine, ...zipMeshes);
 
   return {
-    render(colors: Pick<TrackLook, "roadColor" | "wallColor">) {
+    render(colors: Pick<TrackLook, "roadColor" | "wallColor" | "zipperColor">) {
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
+      zipMat.color.set(colors.zipperColor);
     },
   };
 }
