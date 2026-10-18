@@ -189,11 +189,11 @@ const entrants: Entrant[] = [
 });
 const you = entrants[0]!;
 
-/** Put every kart in its starting spot. The player starts at the back of the grid. */
+/** Put every kart in its starting spot. The player starts at the front of the grid. */
 function placeKarts() {
   entrants.forEach((e, i) => {
     let spot = { x: courseData.start.x, y: 0, z: courseData.start.z, heading: 0 };
-    if (track) spot = gridSlot(track, i === 0 ? entrants.length - 1 : i - 1);
+    if (track) spot = gridSlot(track, i);
     Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
     e.state.y = e.ground.at(spot.x, spot.z).height;
     snapPrev(e);

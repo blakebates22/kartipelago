@@ -148,8 +148,10 @@ you were released at contact or pressed early, acceleration and lateral speed.
 ## Bananas
 
 Bananas lie on the track in rows (`bananas: [{ at, across, count, gap }]` in each
-track's JSON) and come back `respawnSec` after being taken. Drive through one to collect
-it. Every kart collects them (the AI has no banana strategy; it just drives over them).
+track's JSON). Each one can be taken once per race (R puts them all back); set
+`respawnSec` above zero to have them come back that many seconds after being taken.
+Drive through one to collect it. Every kart collects them (the AI has no banana
+strategy; it just drives over them).
 
 The code is in `src/vehicles/bananas.ts` (count and speed), `src/world/bananas.ts`
 (pickups, drops) and `src/render/bananaView.ts`.

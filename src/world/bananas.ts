@@ -1,8 +1,9 @@
 /**
  * Bananas lying on the track, to drive through and collect.
  *
- * Placed bananas come from the track's JSON (rows along the lap) and come back
- * `respawnSec` after being collected. Dropped bananas are thrown out of a kart that
+ * Placed bananas come from the track's JSON (rows along the lap). Once collected they're
+ * gone for the rest of the race, unless `respawnSec` is above zero (then they come back
+ * that many seconds later). Dropped bananas are thrown out of a kart that
  * loses some: they fly outward and up, fall under gravity, slide to a stop on the road,
  * and only then become ordinary pickups (so the kart that dropped them can't scoop them
  * straight back up mid-air). Once collected, a dropped banana is gone for good.
@@ -243,7 +244,7 @@ export function collectBananas(
   for (const b of field.bananas) {
     if (!canCollect(b, kart, cfg)) continue;
     b.active = false;
-    b.respawnIn = cfg.respawnSec;
+    b.respawnIn = cfg.respawnSec > 0 ? cfg.respawnSec : Infinity;
     addBananas(kart, 1);
     got.push({ kart: kartIndex, x: b.x, y: b.y, z: b.z });
   }
