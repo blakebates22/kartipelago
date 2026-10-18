@@ -9,7 +9,7 @@ across a chain of islands, race rivals, and unlock new worlds.
 ## Play
 
 The latest build of `main` is deployed automatically to GitHub Pages:
-`https://<your-username>.github.io/kartipelago/`
+`https://blakebates22.github.io/kartipelago/`
 
 ## Run it locally
 
