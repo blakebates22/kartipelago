@@ -201,12 +201,16 @@ function saveBest(time: number) {
   }
 }
 
+let pathCurvature = 0;
+
 // Key events only request changes; they're applied on the fixed step, like all gameplay.
 let resetRequested = false;
 // Number keys pick your character (1 = first in characters.json, and so on).
 let pickRequested: Character | undefined;
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyR") resetRequested = true;
+  // M flips between the legacy and offset drift models, for side-by-side comparison.
+  if (e.code === "KeyM") tuning.vehicle.driftModel = tuning.vehicle.driftModel >= 1 ? 0 : 1;
   const n = /^Digit([1-9])$/.exec(e.code);
   if (n) pickRequested = characters[Number(n[1]) - 1];
 });
@@ -225,6 +229,8 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       pickRequested = undefined;
     }
     for (const e of entrants) snapPrev(e);
+    const pathBefore = you.state.velAngle;
+    const posBefore = { x: you.state.x, z: you.state.z };
     if (race) tickRace(race, dt);
 
     const held = input.sample(dt);
@@ -263,6 +269,9 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       entrants.map((e) => e.state),
       tuning.physics.kartBump,
     );
+    // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
+    const moved = Math.hypot(you.state.x - posBefore.x, you.state.z - posBefore.z);
+    if (moved > 1e-3) pathCurvature = wrapAngle(you.state.velAngle - pathBefore) / moved;
   },
 
   render(alpha, frameSeconds) {
@@ -298,6 +307,16 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     debug.overlay.set("brk", input.state.brake);
     debug.overlay.set("steer", input.state.steer);
     debug.overlay.set("air", s.grounded ? "-" : `${s.y.toFixed(1)} m`);
+    const model = tuning.vehicle.driftModel >= 1 ? "offset" : "legacy";
+    debug.overlay.set("model", `${model} (M)`);
+    debug.overlay.set("stick", s.steerSmooth.toFixed(2));
+    const pathRate = Math.abs(s.speed) * Math.abs(pathCurvature);
+    debug.overlay.set(
+      "arc",
+      pathRate > 0.02 ? `${(Math.abs(s.speed) / pathRate).toFixed(0)} m` : "-",
+    );
+    debug.overlay.set("offs", `${((s.driftOffset * 180) / Math.PI).toFixed(0)}°`);
+    debug.overlay.set("spin", s.spinTime > 0 ? "SPIN" : `${s.counterTime.toFixed(2)}s`);
     debug.overlay.set(
       "drift",
       s.driftDir === 0 ? "-" : `${s.driftDir > 0 ? "R" : "L"} ${s.driftTime.toFixed(1)}s`,

@@ -4,7 +4,7 @@
  * The kart model treats it the same as the player's input.
  */
 import type { InputState } from "../core/input";
-import type { KartConfig, KartState } from "../vehicles/kart";
+import { driftSteerFor, type KartConfig, type KartState } from "../vehicles/kart";
 import type { RacingLine } from "./racingLine";
 
 export interface AiConfig {
@@ -131,8 +131,21 @@ export function driveAi(
     const sameWay = (now < 0 ? 1 : -1) === kart.driftDir;
     input.drift = sameWay && nowRadius < cfg.driftExitRadius;
     if (input.drift) {
-      // Pick the stick position whose drift turn rate matches what the line needs,
-      // inverting the kart's tight / neutral / counter mapping.
+      if (kartCfg.driftModel >= 1) {
+        // Offset model: the stick sets the body's curvature, and the path is the body
+        // plus an offset that is still building (on entry it carries the kart wide). So
+        // ask the body for the turn the line needs minus what the offset is adding,
+        // staying short of the spin-out zone on countersteer.
+        const target = (kart.driftDir * kartCfg.driftOffsetDeg * Math.PI) / 180;
+        const offsetRate = (target - kart.driftOffset) * kartCfg.driftOffsetRate;
+        const curvature = (-kart.driftDir * (wantRate - offsetRate)) / speed;
+        const into = Math.max(-kartCfg.spinThreshold * 0.9, driftSteerFor(curvature, kartCfg));
+        input.steer = clamp(into, -1, 1) * kart.driftDir;
+        d.driftHeld = true;
+        return input;
+      }
+      // Legacy model: pick the stick position whose drift turn rate matches what the
+      // line needs, inverting the kart's tight / neutral / counter mapping.
       const turn = -kart.driftDir * wantRate;
       const into =
         turn >= kartCfg.driftTurnNeutral

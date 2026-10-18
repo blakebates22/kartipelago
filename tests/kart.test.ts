@@ -25,6 +25,22 @@ const cfg: KartConfig = {
   driftNoseTightDeg: 40,
   driftNoseCounterDeg: 12,
   driftNoseRate: 8,
+  driftModel: 0,
+  driftSteerSmooth: 0.06,
+  driftRadiusNeutral: 33,
+  driftRadiusTight: 20,
+  driftRadiusCounter: 120,
+  driftInCurve: 2,
+  driftCounterCurve: 1.3,
+  driftOffsetDeg: 40,
+  driftOffsetRate: 4,
+  driftOffsetReturnRate: 4,
+  driftRecoverSteer: 1,
+  spinThreshold: 0.6,
+  spinOutAfterSec: 1.5,
+  spinSec: 0.8,
+  spinSpeedKeep: 0.5,
+  spinSteer: 0.3,
   driftMinSpeed: 8,
   driftStartSteer: 0.3,
   driftStartWindow: 0.25,
@@ -50,6 +66,8 @@ function drifting(): KartState {
   return run(0.1, { throttle: 1, steer: 1, drift: true }, s);
 }
 
+// These tests cover the legacy drift model (driftModel 0); the offset model has its own
+// tests in drift.test.ts.
 describe("driving", () => {
   it("accelerates to top speed and no further", () => {
     const s = run(3, { throttle: 1 });
