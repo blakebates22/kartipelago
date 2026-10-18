@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { mergeReadings, NEUTRAL, rampKeySteer, shapeStick } from "../src/core/input";
 
-const cfg = { stickDeadzone: 0.15, stickCurve: 1, keySteerRate: 5, keySteerReturn: 10 };
+const cfg = {
+  stickDeadzone: 0.15,
+  stickCurve: 1,
+  keySteerRate: 5,
+  keySteerReturn: 10,
+  driftKeyRate: 3,
+  driftKeyReturn: 6,
+  driftKeyReverse: 14,
+};
 
 describe("shapeStick", () => {
   it("ignores small movements inside the deadzone", () => {
@@ -32,6 +40,21 @@ describe("rampKeySteer", () => {
 
   it("swings through centre at the return rate when switching direction", () => {
     expect(rampKeySteer(0.5, -1, 0.05, cfg)).toBeCloseTo(0);
+  });
+});
+
+describe("rampKeySteer while drifting", () => {
+  it("builds more slowly, so a short tap is a small nudge", () => {
+    expect(rampKeySteer(0, 1, 0.1, cfg, true)).toBeCloseTo(0.3);
+    expect(rampKeySteer(0, 1, 0.1, cfg, false)).toBeCloseTo(0.5);
+  });
+
+  it("eases back to centre at its own rate when released", () => {
+    expect(rampKeySteer(0.6, 0, 0.05, cfg, true)).toBeCloseTo(0.3);
+  });
+
+  it("swings through centre quickly when you switch direction", () => {
+    expect(rampKeySteer(0.7, -1, 0.05, cfg, true)).toBeCloseTo(0);
   });
 });
 

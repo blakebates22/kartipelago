@@ -90,6 +90,10 @@ export interface KartConfig {
    * rising to full as the offset eases out. 1 = full steering throughout.
    */
   driftRecoverSteer: number;
+  /** Offset model: extra arc curvature at full brake while drifting (0.35 = 35% tighter). */
+  driftBrakeTighten: number;
+  /** Offset model: share of normal braking applied while drifting, so a dab doesn't kill the drift. */
+  driftBrakeDecel: number;
   /** Countersteer beyond this (0..1) counts toward a spin-out. */
   spinThreshold: number;
   /** Seconds of sustained hard countersteer before a spin-out; 0 turns spin-outs off. */
@@ -224,7 +228,9 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
     : Infinity;
 
   if (s.driftDir !== 0) {
-    if (released || s.speed < cfg.driftMinSpeed || input.brake > BRAKE_CANCELS_DRIFT) {
+    // In the legacy model braking cancels a drift; in the offset model it tightens it.
+    const brakeCancels = cfg.driftModel < 1 && input.brake > BRAKE_CANCELS_DRIFT;
+    if (released || s.speed < cfg.driftMinSpeed || brakeCancels) {
       s.driftDir = 0;
       s.recovering = true;
     }
@@ -314,7 +320,9 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   if (!s.grounded) {
     // no change
   } else if (input.brake > 0 && s.speed > REVERSE_BELOW) {
-    s.speed = moveToward(s.speed, 0, cfg.brake * input.brake * dt);
+    // Braking mid-drift (offset model) is gentler: it's for tightening the line.
+    const share = drifting && cfg.driftModel >= 1 ? cfg.driftBrakeDecel : 1;
+    s.speed = moveToward(s.speed, 0, cfg.brake * input.brake * share * dt);
   } else if (input.brake > input.throttle) {
     s.speed = moveToward(s.speed, -cfg.reverseSpeed, cfg.reverseAccel * input.brake * dt);
   } else if (input.throttle > 0) {
@@ -332,7 +340,9 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     // The stick steers the body, as a curvature, so a given stick position carves the
     // same arc at any speed.
     const into = s.steerSmooth * s.driftDir;
-    const bodyRate = -s.driftDir * Math.abs(s.speed) * driftCurvature(into, cfg);
+    // Braking tightens the arc on top of the stick, for extra bite when you need it.
+    const tighten = 1 + cfg.driftBrakeTighten * input.brake;
+    const bodyRate = -s.driftDir * Math.abs(s.speed) * driftCurvature(into, cfg) * tighten;
     s.heading = wrapAngle(s.heading + bodyRate * steer * dt);
     // The path is the body plus an offset that builds to a fixed angle, independent of
     // the stick, so steering doesn't swing the kart's visible angle around.

@@ -33,6 +33,15 @@ countersteer   (u <  0):  k = kNeutral - (kNeutral - kCounter) * |u|^p
   `driftRadiusCounter` keeps a slight inward pull; a negative one bends outward.
 - Character handling scales all three radii.
 
+## Braking and keyboard control
+
+- **Brake while drifting** tightens the arc (up to `driftBrakeTighten` more curvature at
+  full brake) and slows you only gently (`driftBrakeDecel` of normal braking), so a dab
+  of brake adds bite without ending the drift. In the legacy model braking cancels it.
+- **Keyboard steering while drifting** builds more slowly (`input.driftKeyRate`), eases
+  back at `driftKeyReturn`, and swings through centre fast (`driftKeyReverse`) when you
+  switch direction. A short tap nudges the arc; holding commits to it.
+
 ## Countersteer spin-out (optional)
 
 Holding countersteer beyond `spinThreshold` for `spinOutAfterSec` spins the kart out:

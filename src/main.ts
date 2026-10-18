@@ -237,7 +237,8 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     const posBefore = { x: you.state.x, z: you.state.z };
     if (race) tickRace(race, dt);
 
-    const held = input.sample(dt);
+    // Keyboard steering responds differently while you're drifting (finer taps).
+    const held = input.sample(dt, you.state.driftDir !== 0);
     const moment = race && {
       countdown: race.phase === "countdown",
       clock: race.clock,
