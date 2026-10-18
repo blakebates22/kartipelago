@@ -313,6 +313,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     debug.overlay.set("brk", input.state.brake);
     debug.overlay.set("steer", input.state.steer);
     debug.overlay.set("air", s.grounded ? "-" : `${s.y.toFixed(1)} m`);
+    debug.overlay.set("tap", `${Math.round(s.tapCharge * 100)}%`);
     const model = tuning.vehicle.driftModel >= 1 ? "offset" : "legacy";
     debug.overlay.set("model", `${model} (M)`);
     debug.overlay.set("stick", s.steerSmooth.toFixed(2));

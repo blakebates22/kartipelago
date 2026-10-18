@@ -90,6 +90,17 @@ export interface KartConfig {
    * rising to full as the offset eases out. 1 = full steering throughout.
    */
   driftRecoverSteer: number;
+  /** Throttle tapping: top speed bonus at full tap charge (0.1 = 10% faster). */
+  tapBonus: number;
+  /** Charge gained per well-timed tap (0..1). */
+  tapGain: number;
+  /** Fastest and slowest press-to-press interval that counts as a tap, seconds. */
+  tapMinInterval: number;
+  tapMaxInterval: number;
+  /** Longest release between presses that still counts as a tap, seconds. */
+  tapMaxGap: number;
+  /** How fast tap charge fades once you stop tapping, per second. */
+  tapDecay: number;
   /** Offset model: extra arc curvature at full brake while drifting (0.35 = 35% tighter). */
   driftBrakeTighten: number;
   /** Offset model: share of normal braking applied while drifting, so a dab doesn't kill the drift. */
@@ -138,6 +149,14 @@ export interface KartState {
   /** Seconds of spin-out left, and which way it spins (+1 / -1). */
   spinTime: number;
   spinDir: number;
+  // Throttle tapping.
+  /** 0..1: how much of the tapping bonus is built up. */
+  tapCharge: number;
+  /** Whether the throttle was down last step. */
+  throttleOn: boolean;
+  /** Seconds since the throttle was last pressed, and since it was last released. */
+  sincePress: number;
+  releasedFor: number;
   // Wall impacts, owned by physics/walls.ts.
   /** Yaw rate from a wall hit, rad/s; fades out. */
   yawKick: number;
@@ -190,6 +209,10 @@ export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
     counterTime: 0,
     spinTime: 0,
     spinDir: 0,
+    tapCharge: 0,
+    throttleOn: false,
+    sincePress: Infinity,
+    releasedFor: 0,
     yawKick: 0,
     crashTime: 0,
     wallContactAge: Infinity,
@@ -299,14 +322,38 @@ export function applyPadBoost(s: KartState, cfg: KartConfig) {
   applyBoost(s, cfg, cfg.padSpeedMult, cfg.padBoostSec);
 }
 
+/**
+ * Throttle tapping: pressing the throttle again shortly after letting go, at a steady
+ * moderate rhythm, builds a tap charge that raises top speed (it stacks with the drift
+ * bonus). Mashing too fast or tapping too slowly doesn't count. Once you stop tapping
+ * the charge fades, so the extra speed bleeds away gradually.
+ */
+export function updateTapping(s: KartState, input: InputState, cfg: KartConfig, dt: number) {
+  const on = input.throttle > 0.5;
+  if (on && !s.throttleOn) {
+    const rhythm = s.sincePress >= cfg.tapMinInterval && s.sincePress <= cfg.tapMaxInterval;
+    if (rhythm && s.releasedFor <= cfg.tapMaxGap)
+      s.tapCharge = Math.min(1, s.tapCharge + cfg.tapGain);
+    s.sincePress = 0;
+  } else {
+    s.sincePress += dt;
+  }
+  s.releasedFor = on ? 0 : s.releasedFor + dt;
+  s.throttleOn = on;
+  if (s.sincePress > cfg.tapMaxInterval) s.tapCharge = Math.max(0, s.tapCharge - cfg.tapDecay * dt);
+}
+
 /** Advance one fixed step. Mutates and returns s. */
 export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: number): KartState {
   updateDrift(s, input, cfg, dt);
+  updateTapping(s, input, cfg, dt);
   const drifting = s.driftDir !== 0;
   // Drifting is the fast way round: it raises top speed, and so does a boost pad. When
   // either ends, the extra speed bleeds off at the drag rate rather than vanishing.
   const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
-  const cap = Math.max(0, cfg.topSpeed * mult - s.slope * cfg.slopeSpeed);
+  // Tapping stacks on top of drifting and boosts.
+  const tapMult = 1 + cfg.tapBonus * s.tapCharge;
+  const cap = Math.max(0, cfg.topSpeed * mult * tapMult - s.slope * cfg.slopeSpeed);
   s.boostTime = Math.max(0, s.boostTime - dt);
 
   // Smoothed steering command (offset model): small nudges blend instead of jolting.
@@ -331,6 +378,8 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
       s.speed < cap
         ? Math.min(cap, s.speed + cfg.accel * input.throttle * dt)
         : moveToward(s.speed, cap, cfg.drag * dt);
+  } else if (s.tapCharge > 0 && s.releasedFor <= cfg.tapMaxGap) {
+    // The short lift between well-timed taps doesn't cost speed: momentum carries you.
   } else {
     s.speed = moveToward(s.speed, 0, cfg.drag * dt);
   }
