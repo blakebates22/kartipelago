@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { buildCharacter, type CharacterRig } from "./characters";
 import { DESIGNS, type RacerId } from "./designs";
 import { buildKart, type KartModel } from "./kart";
+import { buildMoss, buildMossKart } from "./moss";
 import { atDetail } from "./geo";
 import { shadowTexture } from "./paint";
 
@@ -102,8 +103,10 @@ export class Racer {
     this.blinkIn = 1 + this.rand() * 2;
     this.glanceIn = 3 + this.rand() * 4;
 
-    this.kart = buildKart(id, paint, 0);
-    this.rig = buildCharacter(id, this.kart.grips);
+    // Moss uses the faceted, pixel-textured style (and its own kart).
+    const faceted = id === "moss" && !opts.alt;
+    this.kart = faceted ? buildMossKart(0) : buildKart(id, paint, 0);
+    this.rig = faceted ? buildMoss(this.kart.grips) : buildCharacter(id, this.kart.grips);
     this.rig.root.position.copy(this.kart.seat);
     this.rig.root.scale.setScalar(CHARACTER_SCALE);
     this.kart.body.add(this.rig.root);
@@ -111,7 +114,7 @@ export class Racer {
     this.high.add(this.kart.root);
 
     // Far away: a cheap kart and a one-piece character, no rig.
-    const lowKart = atDetail(0.5, () => buildKart(id, paint, 1));
+    const lowKart = faceted ? buildMossKart(1) : atDetail(0.5, () => buildKart(id, paint, 1));
     lowKart.steering.visible = false;
     this.rig.low.position.copy(lowKart.seat);
     this.rig.low.scale.setScalar(CHARACTER_SCALE);
@@ -300,9 +303,16 @@ export class Racer {
           : drifting
             ? "grin"
             : "smile";
-    rig.mouths.smile.visible = face === "smile";
-    rig.mouths.open.visible = face === "open";
-    rig.mouths.grin.visible = face === "grin";
+    if (rig.setFace) {
+      rig.setFace(
+        face,
+        eyeY < 0.5 ? "closed" : eyeY > 1.05 ? "wide" : eyeY < 0.9 ? "sleepy" : "open",
+      );
+    } else {
+      rig.mouths.smile.visible = face === "smile";
+      rig.mouths.open.visible = face === "open";
+      rig.mouths.grin.visible = face === "grin";
+    }
     if (rig.brows) rig.brows.position.y = boosting || drifting ? -0.025 : 0;
 
     // --- Little personal motions: gills, antennae, tails, wings, scarf, the orange.
