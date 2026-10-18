@@ -267,7 +267,7 @@ function moss(): Built {
   };
 }
 
-// ------------------------------------------------------------- Bramble, pangolin
+// ------------------------------------- Bramble (the older pangolin-style model)
 function bramble(): Built {
   const scale = PALETTE.rust;
   const scaleDark = shade(PALETTE.rust, 0.78);

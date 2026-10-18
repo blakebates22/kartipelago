@@ -200,3 +200,31 @@ export class PixelArt {
     return t;
   }
 }
+
+/**
+ * A painted face on a head: a decal on the head's front facets whose texture is
+ * swapped by key (e.g. "grin/determined"). Textures are painted on first use and kept.
+ * Returns the function that shows a given face.
+ */
+export function paintedFace(
+  head: THREE.Object3D,
+  headGeo: THREE.BufferGeometry,
+  rect: [number, number, number, number],
+  paint: (key: string) => THREE.Texture,
+) {
+  const cache = new Map<string, THREE.Texture>();
+  const get = (key: string) => {
+    let t = cache.get(key);
+    if (!t) cache.set(key, (t = paint(key)));
+    return t;
+  };
+  const mat = decalMaterial(get("smile/open"));
+  head.add(new THREE.Mesh(decalOn(headGeo, "front", rect, 0.12), mat));
+  let current = "smile/open";
+  return (key: string) => {
+    if (key === current) return;
+    current = key;
+    mat.map = get(key);
+    mat.needsUpdate = true;
+  };
+}

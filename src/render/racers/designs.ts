@@ -53,7 +53,7 @@ export const DESIGNS: Record<RacerId, RacerDesign> = {
   bramble: {
     id: "bramble",
     name: "Bramble",
-    species: "pangolin",
+    species: "squirrel",
     kart: { body: PALETTE.leaf, trim: PALETTE.gold, tire: PALETTE.chestnut, hub: PALETTE.gold },
     altKart: { body: PALETTE.gold, trim: PALETTE.leaf, tire: PALETTE.chestnut, hub: PALETTE.cream },
   },
