@@ -61,6 +61,20 @@
     "driftRecoverTurn": 0.25,
     "padSpeedMult": 1.35,
     "padBoostSec": 1.2,
+    "zipOrdinaryMult": 1.6,
+    "zipOrdinarySec": 1.0,
+    "zipEnhancedMult": 2.4,
+    "zipEnhancedSec": 1.5,
+    "zipAccel": 55,
+    "zipEarlyPenalty": 0.6,
+    "zipRainbowSec": 0.35,
+    "zipCarrySec": 1.8,
+    "zipRecoverSec": 0.6,
+    "zipCoastDrag": 22,
+    "zipCrashKeep": 0.3,
+    "zipTurnBleed": 0.01,
+    "turnScrubFree": 45,
+    "turnScrub": 0.12,
     "airSteer": 0.12,
     "slopeSpeed": 12
   },
@@ -112,7 +126,10 @@
     "sampleSpacing": 2,
     "wallHeight": 1.2,
     "roadColor": "#d6d6d6",
-    "wallColor": "#e63946"
+    "wallColor": "#e63946",
+    "zipperLength": 6,
+    "zipperWidth": 7,
+    "zipperColor": "#ff7b00"
   },
   "race": {
     "laps": 3,

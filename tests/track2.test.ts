@@ -19,11 +19,14 @@ import {
 } from "../src/race/race";
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart } from "../src/vehicles/kart";
+import { startZipper } from "../src/vehicles/zipper";
+import { buildZippers, enteredZipper } from "../src/world/zippers";
 import { acrossRoad, buildTrack, type TrackData } from "../src/world/track";
 
 // Ribbon Ridge: the second track, built around long linked drifts and direction changes.
 const dt = 1 / 120;
 const track = buildTrack(ribbon as TrackData, tuning.track.sampleSpacing);
+const pads = buildZippers(track, (ribbon as TrackData).zippers ?? [], tuning.track);
 const line = buildRacingLine(track, {
   margin: tuning.ai.lineMargin,
   span: tuning.ai.lineSpan,
@@ -90,6 +93,7 @@ describe("Ribbon Ridge", () => {
       const want = driveAi(driver, kart, cfg, tuning.ai, moment);
       stepImpacts(kart, tuning.collision, dt);
       stepKart(kart, canDrive(race) ? want : NEUTRAL, cfg, dt);
+      if (enteredZipper(kart, pads)) startZipper(kart, want.throttle, cfg);
       const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
       if (stepWalls(kart, ground, walls, dt)) stats.wall++;
       stepVertical(kart, ground, tuning.physics, dt);

@@ -25,8 +25,17 @@
  * faces +Z. Positive steer is "right" from the driver's seat, which lowers heading.
  */
 import type { InputState } from "../core/input";
+import {
+  ZIP,
+  crashZipper,
+  stepZipper,
+  zipperRecoveryCap,
+  zipperState,
+  type ZipperConfig,
+  type ZipperState,
+} from "./zipper";
 
-export interface KartConfig {
+export interface KartConfig extends ZipperConfig {
   accel: number;
   brake: number;
   reverseAccel: number;
@@ -90,6 +99,13 @@ export interface KartConfig {
    * rising to full as the offset eases out. 1 = full steering throughout.
    */
   driftRecoverSteer: number;
+  /**
+   * Turn scrub: sideways force (m/s²) the kart can carry for free. Normal driving and
+   * drifting stay well under it; only zipper-speed turns go over and lose speed.
+   */
+  turnScrubFree: number;
+  /** Speed lost per second per m/s² of sideways force above turnScrubFree. */
+  turnScrub: number;
   /** Throttle tapping: top speed bonus at full tap charge (0.1 = 10% faster). */
   tapBonus: number;
   /** Charge gained per well-timed tap (0..1). */
@@ -121,7 +137,7 @@ export interface KartConfig {
   slopeSpeed: number;
 }
 
-export interface KartState {
+export interface KartState extends ZipperState {
   x: number;
   z: number;
   heading: number;
@@ -193,6 +209,7 @@ const BRAKE_CANCELS_DRIFT = 0.5;
 
 export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
   return {
+    ...zipperState(),
     x,
     z,
     heading,
@@ -353,8 +370,16 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
   // Tapping stacks on top of drifting and boosts.
   const tapMult = 1 + cfg.tapBonus * s.tapCharge;
-  const cap = Math.max(0, cfg.topSpeed * mult * tapMult - s.slope * cfg.slopeSpeed);
+  const baseCap = Math.max(0, cfg.topSpeed * mult * tapMult - s.slope * cfg.slopeSpeed);
   s.boostTime = Math.max(0, s.boostTime - dt);
+  // Zippers: while pushing, drive toward the zipper's target; during recovery the cap
+  // decays from the boosted speed back to normal.
+  if (s.zipCrashed) {
+    s.zipCrashed = false;
+    crashZipper(s, cfg.topSpeed, cfg);
+  }
+  const zipTarget = stepZipper(s, input.throttle, cfg.topSpeed, cfg, dt);
+  const cap = Math.max(baseCap, zipperRecoveryCap(s, cfg.topSpeed));
 
   // Smoothed steering command (offset model): small nudges blend instead of jolting.
   s.steerSmooth +=
@@ -372,17 +397,30 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     s.speed = moveToward(s.speed, 0, cfg.brake * input.brake * share * dt);
   } else if (input.brake > input.throttle) {
     s.speed = moveToward(s.speed, -cfg.reverseSpeed, cfg.reverseAccel * input.brake * dt);
+  } else if (zipTarget !== undefined) {
+    // The zipper pushes, throttle or not. Above its target, ease down at drag.
+    s.speed =
+      s.speed < zipTarget
+        ? Math.min(zipTarget, s.speed + cfg.zipAccel * dt)
+        : moveToward(s.speed, zipTarget, cfg.drag * dt);
   } else if (input.throttle > 0) {
     // Above the cap (a drift or boost just ended) bleeds back down rather than snapping.
+    // After a zipper the cap itself is the smooth decay curve, so speed follows it.
     s.speed =
       s.speed < cap
         ? Math.min(cap, s.speed + cfg.accel * input.throttle * dt)
-        : moveToward(s.speed, cap, cfg.drag * dt);
+        : s.zipPhase === ZIP.RECOVERY
+          ? cap
+          : moveToward(s.speed, cap, cfg.drag * dt);
   } else if (s.tapCharge > 0 && s.releasedFor <= cfg.tapMaxGap) {
     // The short lift between well-timed taps doesn't cost speed: momentum carries you.
+  } else if (s.zipPhase === ZIP.RECOVERY && s.speed > cfg.topSpeed) {
+    // Coasting above top speed after a boost costs speed quickly: resume the throttle.
+    s.speed = Math.min(cap, moveToward(s.speed, cfg.topSpeed, cfg.zipCoastDrag * dt));
   } else {
     s.speed = moveToward(s.speed, 0, cfg.drag * dt);
   }
+  const pathBefore = s.velAngle;
 
   const offsetModel = cfg.driftModel >= 1;
   if (drifting && offsetModel) {
@@ -476,6 +514,19 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
       // at any physics rate.
       const pull = 1 - Math.exp(-cfg.grip * s.gripScale * dt);
       s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
+    }
+  }
+
+  // Turn scrub: very hard turning (far beyond normal driving, i.e. at zipper speeds)
+  // costs speed, and bleeds an enhanced boost. Drifting itself isn't penalised.
+  if (s.grounded) {
+    const sideways = (Math.abs(wrapAngle(s.velAngle - pathBefore)) / dt) * Math.abs(s.speed);
+    const excess = Math.max(0, sideways - cfg.turnScrubFree);
+    if (excess > 0) {
+      s.speed = moveToward(s.speed, 0, cfg.turnScrub * excess * dt);
+      if (s.zipEnhanced && (s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING)) {
+        s.zipPower = Math.max(0, s.zipPower - cfg.zipTurnBleed * excess * dt);
+      }
     }
   }
 

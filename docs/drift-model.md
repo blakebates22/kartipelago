@@ -107,3 +107,40 @@ speed by up to `tapBonus` (10%). It stacks with the drift speed bonus.
   bleeds away over a second or two.
 
 With `?debug`, the overlay shows the tap charge.
+
+## Zippers
+
+Zipper pads on the road give a speed boost in the direction you're travelling. They
+fire once when you drive onto one; staying on the pad doesn't fire it again. The code
+is in `src/vehicles/zipper.ts` (phases), `src/vehicles/kart.ts` (speed) and
+`src/world/zippers.ts` (pads). Pads are listed per track as `zippers: [{ at, across }]`
+(metres along the lap, metres right of centre).
+
+| Phase    | What happens                                                                          |
+| -------- | ------------------------------------------------------------------------------------- |
+| ACTIVE   | The zipper pushes speed toward its target at `zipAccel` (fast, but not instant).      |
+| ENDING   | Enhanced boosts only: the last `zipRainbowSec`. The exhaust turns rainbow: press now. |
+| RECOVERY | The push is over; the extra speed decays back to normal top speed.                    |
+
+- **Ordinary boost** (throttle held when you touch the pad): `zipOrdinaryMult` × top
+  speed for `zipOrdinarySec`.
+- **Enhanced boost** (throttle released at contact): up to `zipEnhancedMult` × top speed
+  for `zipEnhancedSec`, as long as you stay off the throttle.
+- **Pressing early** (before the rainbow) cuts the remaining enhanced bonus by
+  `zipEarlyPenalty` × the share of the boost still left. It's a gentle cost, not a
+  slowdown: you keep at least the ordinary boost.
+- **Pressing at the rainbow** carries the speed out: it decays over `zipCarrySec`
+  instead of `zipRecoverSec`. Coasting with the throttle off after the push loses speed
+  at `zipCoastDrag`.
+- **Turning**: drifting is allowed throughout. Turning far harder than normal driving
+  (sideways force above `turnScrubFree`) scrubs speed at `turnScrub`, and during an
+  enhanced boost also drains the bonus at `zipTurnBleed`. At zipper speeds, a drift
+  started right away turns hard and wastes speed; waiting a moment wastes less.
+- **Walls**: a light scrape keeps the boost. A severe crash ends it and keeps only
+  `zipCrashKeep` of the extra speed. Braking works as normal.
+
+With `?debug`, the overlay shows the phase, time left, remaining enhanced power, whether
+you were released at contact or pressed early, acceleration and lateral speed.
+
+`tests/zipper.test.ts` compares ten scenarios from identical starts. Print the table with
+`ZIP_REPORT=1 npx vitest run tests/zipper.test.ts --disableConsoleIntercept`.

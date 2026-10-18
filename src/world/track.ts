@@ -21,6 +21,8 @@ export interface TrackData {
   name: string;
   defaultWidth: number;
   points: TrackPoint[];
+  /** Zipper pads: distance along the lap and offset across the road, metres. */
+  zippers?: { at: number; across?: number }[];
 }
 
 export interface TrackSample {

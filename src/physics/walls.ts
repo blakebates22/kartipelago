@@ -14,8 +14,8 @@
  * - Moderate: a yaw kick turns the nose away from the wall and fades out. The drift
  *   survives unless the total rotation the kick will cause passes `driftBreakDeg`.
  * - Severe (above `crashSpeed`, or a kick big enough to break the drift): the drift is
- *   cancelled, the kick is damped, and steering and grip drop, then return smoothly
- *   over `crashSec`.
+ *   cancelled, the kick is damped, any zipper boost ends, and steering and grip drop,
+ *   then return smoothly over `crashSec`.
  */
 import type { KartState } from "../vehicles/kart";
 import type { GroundQuery } from "./ground";
@@ -174,6 +174,8 @@ export function stepWalls(
       }
       s.yawKick *= cfg.crashSpinKeep;
       s.crashTime = cfg.crashSec;
+      // A crash also ends any zipper boost, keeping only part of its benefit.
+      s.zipCrashed = true;
     }
     s.lastImpactSpeed = into;
     s.lastImpactTier = tier;
