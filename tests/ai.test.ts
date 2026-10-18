@@ -8,7 +8,7 @@ import { buildRacingLine } from "../src/ai/racingLine";
 import { bumpKarts } from "../src/physics/bump";
 import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
-import { stepWalls } from "../src/physics/walls";
+import { stepImpacts, stepWalls } from "../src/physics/walls";
 import { gridSlot } from "../src/race/grid";
 import {
   canDrive,
@@ -71,8 +71,16 @@ function aiRace(ids: string[], seconds = 200) {
       const k = karts[i]!;
       const cfg = applyCharacter(tuning.vehicle, find(id), tuning.stats);
       const want = driveAi(drivers[i]!, k, cfg, ai, moment);
+      stepImpacts(k, tuning.collision, dt);
       stepKart(k, canDrive(race) ? want : NEUTRAL, cfg, dt);
-      if (stepWalls(k, grounds[i]!, { ...tuning.physics, wallHeight: tuning.track.wallHeight }, dt))
+      if (
+        stepWalls(
+          k,
+          grounds[i]!,
+          { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight },
+          dt,
+        )
+      )
         stats.wallSteps++;
       stepVertical(k, grounds[i]!, tuning.physics, dt);
       const ev = stepRacer(

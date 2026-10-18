@@ -134,6 +134,21 @@ export interface KartState {
   /** Seconds of spin-out left, and which way it spins (+1 / -1). */
   spinTime: number;
   spinDir: number;
+  // Wall impacts, owned by physics/walls.ts.
+  /** Yaw rate from a wall hit, rad/s; fades out. */
+  yawKick: number;
+  /** Seconds of crash disruption left. */
+  crashTime: number;
+  /** Seconds since last touching a wall. */
+  wallContactAge: number;
+  /** Hardest into-wall speed judged during the current contact, m/s. */
+  impactPeak: number;
+  /** Last judged impact, for the debug readout. */
+  lastImpactSpeed: number;
+  lastImpactTier: number;
+  /** Steering and grip scales set by crash recovery (1 = normal). */
+  controlScale: number;
+  gripScale: number;
   // Vertical state, owned by physics/vertical.ts.
   y: number;
   vy: number;
@@ -171,6 +186,14 @@ export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
     counterTime: 0,
     spinTime: 0,
     spinDir: 0,
+    yawKick: 0,
+    crashTime: 0,
+    wallContactAge: Infinity,
+    impactPeak: 0,
+    lastImpactSpeed: 0,
+    lastImpactTier: 0,
+    controlScale: 1,
+    gripScale: 1,
     y,
     vy: 0,
     grounded: true,
@@ -216,7 +239,8 @@ function updateDrift(s: KartState, input: InputState, cfg: KartConfig, dt: numbe
     Math.abs(input.steer) >= cfg.driftStartSteer &&
     s.speed >= cfg.driftMinSpeed &&
     s.grounded &&
-    s.spinTime <= 0;
+    s.spinTime <= 0 &&
+    s.crashTime <= 0;
   if (canStart) {
     s.driftDir = Math.sign(input.steer);
     s.driftTime = 0;
@@ -285,7 +309,8 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
 
   // Longitudinal: throttle, brake, reverse, coast. None of it applies in the air:
   // speed (including drift and boost speed) carries through a jump untouched.
-  const steer = s.grounded ? 1 : cfg.airSteer;
+  // Air allows only a little steering; a crash takes some away until it wears off.
+  const steer = (s.grounded ? 1 : cfg.airSteer) * s.controlScale;
   if (!s.grounded) {
     // no change
   } else if (input.brake > 0 && s.speed > REVERSE_BELOW) {
@@ -390,7 +415,7 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     } else {
       // Grip: swing the travel direction toward the nose. Exponential, so it's the same
       // at any physics rate.
-      const pull = 1 - Math.exp(-cfg.grip * dt);
+      const pull = 1 - Math.exp(-cfg.grip * s.gripScale * dt);
       s.velAngle = wrapAngle(s.velAngle + slipAngle(s) * pull);
     }
   }

@@ -66,3 +66,19 @@ and the spin-out counter.
 | `spinSec`               | 0.8     | Spin duration, s                                       |
 | `spinSpeedKeep`         | 0.5     | Speed kept by a spin-out                               |
 | `spinSteer`             | 0.3     | Steering available while spinning                      |
+
+## Wall impacts
+
+How hard a wall hit is depends on the kart's speed _into_ the wall when contact starts.
+Each contact is judged once (a clearly harder hit during the same contact counts again),
+so scraping along a wall never keeps cancelling a drift.
+
+| Tier     | When                                                          | Effect                                                                       |
+| -------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Light    | below `scrapeSpeed`                                           | No rotation. A drift carries on along the wall.                              |
+| Moderate | between the two                                               | A yaw kick turns the nose away from the wall and fades. The drift survives.  |
+| Severe   | above `crashSpeed`, or a kick that would pass `driftBreakDeg` | Drift cancelled, kick damped, steering and grip drop, then recover smoothly. |
+
+While drifting, the wall's deflection goes into the drift offset rather than the body, so
+the path follows the wall at once and the body only turns gradually. Settings are in the
+`collision` section of `tuning.json`; with `?debug`, the overlay shows the last hit.
