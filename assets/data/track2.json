@@ -1,6 +1,114 @@
 {
   "name": "Ribbon Ridge",
   "defaultWidth": 22,
+  "zippers": [
+    {
+      "at": 40
+    },
+    {
+      "at": 290
+    }
+  ],
+  "bananas": [
+    {
+      "at": 60,
+      "across": 6.3,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 240,
+      "across": -8,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 340,
+      "across": -6
+    },
+    {
+      "at": 340,
+      "across": -2
+    },
+    {
+      "at": 340,
+      "across": 2
+    },
+    {
+      "at": 340,
+      "across": 6
+    },
+    {
+      "at": 430,
+      "across": 7.5,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 560,
+      "across": -8,
+      "count": 3,
+      "gap": 5
+    },
+    {
+      "at": 650,
+      "across": 0,
+      "count": 4,
+      "gap": 5
+    }
+  ],
+  "balloons": [
+    {
+      "at": 120,
+      "across": -6,
+      "color": "red"
+    },
+    {
+      "at": 120,
+      "across": -2,
+      "color": "blue"
+    },
+    {
+      "at": 120,
+      "across": 2,
+      "color": "green"
+    },
+    {
+      "at": 120,
+      "across": 6,
+      "color": "yellow"
+    },
+    {
+      "at": 380,
+      "across": -3,
+      "color": "blue"
+    },
+    {
+      "at": 380,
+      "across": 3,
+      "color": "rainbow"
+    },
+    {
+      "at": 610,
+      "across": -6,
+      "color": "red"
+    },
+    {
+      "at": 610,
+      "across": -2,
+      "color": "blue"
+    },
+    {
+      "at": 610,
+      "across": 2,
+      "color": "yellow"
+    },
+    {
+      "at": 610,
+      "across": 6,
+      "color": "green"
+    }
+  ],
   "points": [
     {
       "x": 0.0,
@@ -366,62 +474,6 @@
       "x": -1.68,
       "z": -12.19,
       "bank": 2.5
-    }
-  ],
-  "zippers": [
-    {
-      "at": 40
-    },
-    {
-      "at": 290
-    }
-  ],
-  "bananas": [
-    {
-      "at": 60,
-      "across": 6.3,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 240,
-      "across": -8,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 340,
-      "across": -6
-    },
-    {
-      "at": 340,
-      "across": -2
-    },
-    {
-      "at": 340,
-      "across": 2
-    },
-    {
-      "at": 340,
-      "across": 6
-    },
-    {
-      "at": 430,
-      "across": 7.5,
-      "count": 4,
-      "gap": 5
-    },
-    {
-      "at": 560,
-      "across": -8,
-      "count": 3,
-      "gap": 5
-    },
-    {
-      "at": 650,
-      "across": 0,
-      "count": 4,
-      "gap": 5
     }
   ]
 }

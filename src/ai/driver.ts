@@ -104,7 +104,7 @@ export function driveAi(
   cfg: AiConfig,
   moment: RaceMoment,
 ): InputState {
-  const input: InputState = { throttle: 0, brake: 0, steer: 0, drift: false };
+  const input: InputState = { throttle: 0, brake: 0, steer: 0, drift: false, item: false };
   if (moment.countdown) {
     input.throttle = moment.clock >= moment.startTarget + d.startOffset ? 1 : 0;
     return input;

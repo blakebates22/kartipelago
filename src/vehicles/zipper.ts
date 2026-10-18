@@ -17,8 +17,16 @@
  *
  * Steering and drifting stay fully available; hard turning at boosted speed costs speed
  * through the kart's general turn scrub, and bleeds an enhanced boost's power.
+ *
+ * The same boost state serves every boost source: zipper pads and blue balloons (see
+ * items/boosts.ts). They share one acceleration model and differ only in how long they
+ * push (and how they look). One boost at a time: starting a new one replaces the active
+ * timer (or, with boostOverlap = 1, keeps whichever has longer left).
  */
 export const ZIP = { NORMAL: 0, ACTIVE: 1, ENDING: 2, RECOVERY: 3 } as const;
+
+/** Where the active boost came from: a zipper pad, or a blue balloon of level 1-3. */
+export const BOOST_SOURCE = { ZIPPER: 0, BLUE1: 1, BLUE2: 2, BLUE3: 3 } as const;
 
 export interface ZipperConfig {
   /** Ordinary boost: target speed as a multiple of top speed, and duration (s). */
@@ -33,6 +41,10 @@ export interface ZipperConfig {
   zipEarlyPenalty: number;
   /** Length of the rainbow window at the end of an enhanced boost, s. */
   zipRainbowSec: number;
+  /** The rainbow window never takes more than this share of a (short) boost. */
+  zipRainbowMaxShare: number;
+  /** Starting a boost while one is active: 0 = replace its timer, 1 = keep the longer. */
+  boostOverlap: number;
   /** Recovery time constant after a well-timed press in the rainbow window, s. */
   zipCarrySec: number;
   /** Recovery time constant otherwise, s. */
@@ -62,6 +74,9 @@ export interface ZipperState {
   zipOnPad: boolean;
   /** Set by a severe wall crash; handled on the kart's next step. */
   zipCrashed: boolean;
+  /** Which kind of boost this is (BOOST_SOURCE), and how long it pushes in total, s. */
+  zipSource: number;
+  zipTotal: number;
 }
 
 export function zipperState(): ZipperState {
@@ -77,19 +92,48 @@ export function zipperState(): ZipperState {
     zipTau: 1,
     zipOnPad: false,
     zipCrashed: false,
+    zipSource: BOOST_SOURCE.ZIPPER,
+    zipTotal: 0,
   };
 }
 
 /** Activation: called on the step a kart enters a zipper pad. */
 export function startZipper(s: ZipperState, throttle: number, cfg: ZipperConfig) {
+  return startBoost(s, throttle, cfg, BOOST_SOURCE.ZIPPER, cfg.zipOrdinarySec, cfg.zipEnhancedSec);
+}
+
+/**
+ * Start a boost of any source. Throttle released at this moment = enhanced. Returns
+ * false if an active boost was kept instead (boostOverlap = 1 and it has longer left).
+ * The kart's speed is never changed here: the boost accelerates it from where it is.
+ */
+export function startBoost(
+  s: ZipperState,
+  throttle: number,
+  cfg: ZipperConfig,
+  source: number,
+  ordinarySec: number,
+  enhancedSec: number,
+): boolean {
   const released = throttle <= 0.5;
+  const seconds = released ? enhancedSec : ordinarySec;
+  const active = s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING;
+  if (active && cfg.boostOverlap >= 1 && s.zipTime >= seconds) return false;
   s.zipPhase = ZIP.ACTIVE;
   s.zipEnhanced = released;
   s.zipReleasedAtStart = released;
-  s.zipTime = released ? cfg.zipEnhancedSec : cfg.zipOrdinarySec;
+  s.zipTime = seconds;
+  s.zipTotal = seconds;
+  s.zipSource = source;
   s.zipPower = 1;
   s.zipPressedEarly = false;
   s.zipPressedInRainbow = false;
+  return true;
+}
+
+/** Length of the rainbow window for the active boost, s. */
+export function rainbowWindow(s: ZipperState, cfg: ZipperConfig): number {
+  return Math.min(cfg.zipRainbowSec, s.zipTotal * cfg.zipRainbowMaxShare);
 }
 
 /** The speed the zipper is pushing toward right now. */
@@ -119,11 +163,11 @@ export function stepZipper(
       // Pressed before the rainbow: lose part of the remaining enhanced benefit, more
       // the earlier it was.
       s.zipPressedEarly = true;
-      const left = Math.min(1, s.zipTime / cfg.zipEnhancedSec);
+      const left = Math.min(1, s.zipTime / Math.max(1e-6, s.zipTotal));
       s.zipPower *= 1 - cfg.zipEarlyPenalty * left;
     }
     s.zipTime -= dt;
-    if (s.zipEnhanced && s.zipTime <= cfg.zipRainbowSec) s.zipPhase = ZIP.ENDING;
+    if (s.zipEnhanced && s.zipTime <= rainbowWindow(s, cfg)) s.zipPhase = ZIP.ENDING;
     if (s.zipTime <= 0) {
       s.zipPhase = ZIP.RECOVERY;
       s.zipExitSpeed = s.speed;

@@ -1,7 +1,8 @@
 /**
  * Kart-to-kart contact: karts are circles on the ground plane. Overlapping karts are
- * pushed apart equally, and the part of their velocities moving into each other is
- * shared out (equal masses), so a kart that rams another slows and pushes it along.
+ * pushed apart, and the part of their velocities moving into each other is shared out
+ * by mass (equal by default), so a kart that rams another slows and pushes it along. A
+ * heavier kart (e.g. one with a shield up) moves less and shoves the other more.
  */
 import type { KartState } from "../vehicles/kart";
 
@@ -9,7 +10,7 @@ import type { KartState } from "../vehicles/kart";
 const VERTICAL_CLEAR = 1.5;
 
 /** Separate every overlapping pair. Returns how many pairs touched. */
-export function bumpKarts(karts: KartState[], radius: number): number {
+export function bumpKarts(karts: KartState[], radius: number, masses?: number[]): number {
   let touches = 0;
   for (let i = 0; i < karts.length; i++) {
     for (let j = i + 1; j < karts.length; j++) {
@@ -24,11 +25,16 @@ export function bumpKarts(karts: KartState[], radius: number): number {
       touches++;
       const nx = dx / dist;
       const nz = dz / dist;
-      const push = (min - dist) / 2;
-      a.x -= nx * push;
-      a.z -= nz * push;
-      b.x += nx * push;
-      b.z += nz * push;
+      const ma = masses?.[i] ?? 1;
+      const mb = masses?.[j] ?? 1;
+      // Share of the separation and of the closing speed each takes: the lighter moves more.
+      const sa = mb / (ma + mb);
+      const sb = ma / (ma + mb);
+      const overlap = min - dist;
+      a.x -= nx * overlap * sa;
+      a.z -= nz * overlap * sa;
+      b.x += nx * overlap * sb;
+      b.z += nz * overlap * sb;
 
       const avx = Math.sin(a.velAngle) * a.speed;
       const avz = Math.cos(a.velAngle) * a.speed;
@@ -36,9 +42,8 @@ export function bumpKarts(karts: KartState[], radius: number): number {
       const bvz = Math.cos(b.velAngle) * b.speed;
       const closing = (avx - bvx) * nx + (avz - bvz) * nz;
       if (closing <= 0) continue; // already separating
-      const share = closing / 2;
-      setVelocity(a, avx - nx * share, avz - nz * share);
-      setVelocity(b, bvx + nx * share, bvz + nz * share);
+      setVelocity(a, avx - nx * closing * sa, avz - nz * closing * sa);
+      setVelocity(b, bvx + nx * closing * sb, bvz + nz * closing * sb);
     }
   }
   return touches;

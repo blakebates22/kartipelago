@@ -17,7 +17,21 @@ import { createTrackView } from "./render/trackView";
 import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
 import { buildZippers, enteredZipper } from "./world/zippers";
-import { ZIP, startZipper } from "./vehicles/zipper";
+import { BOOST_SOURCE, ZIP, startZipper } from "./vehicles/zipper";
+import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "./items/effects";
+import { heldLabel } from "./items/inventory";
+import {
+  collectBalloons,
+  createItemWorld,
+  fireItem,
+  itemReleased,
+  resetItemWorld,
+  stepItemWorld,
+  type ItemEvent,
+} from "./items/world";
+import type { ItemsConfig } from "./items/config";
+import { createItemView } from "./render/itemView";
+import { createBoostLab } from "./debug/boostLab";
 import { bananaMult, bananaScales, effectiveBananas, loseBananas } from "./vehicles/bananas";
 import {
   collectBananas,
@@ -42,6 +56,7 @@ import {
   createRace,
   formatTime,
   lapClock,
+  progress,
   standings,
   startTarget,
   stepRacer,
@@ -134,6 +149,17 @@ const bananaField = createBananaField(
 );
 const bananaView = createBananaView(stage.scene, tuning.bananas);
 const sfx = createSfx();
+const itemsCfg = tuning.items as ItemsConfig;
+// Balloons and weapons: pickups, missiles and traps live in the item world.
+const itemWorld = createItemWorld(
+  track,
+  trackData.balloons ?? [],
+  () => (track ? createTrackGround(track) : flatGround),
+  solids,
+  !OPEN,
+);
+const itemView = createItemView(stage.scene);
+const boostLab = createBoostLab(debug.panel, document.body, () => debug.overlay.visible);
 /** Collected this step, for the render to show (effects run at frame rate). */
 const pickupsToShow: BananaPickup[] = [];
 const line = track
@@ -168,8 +194,16 @@ function makeKartMesh() {
   flame.position.set(0, 0, -1.9);
   flame.visible = false;
   mesh.add(flame);
+  // A green core inside the flame shows an enhanced (released-throttle) boost.
+  const core = new THREE.Mesh(
+    new THREE.ConeGeometry(0.18, 1.1, 8).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: "#3ddc84" }),
+  );
+  core.position.set(0, 0, -1.75);
+  core.visible = false;
+  mesh.add(core);
   stage.scene.add(mesh);
-  return { mesh, mat, flame, flameMat };
+  return { mesh, mat, flame, flameMat, core };
 }
 
 interface Entrant {
@@ -183,6 +217,9 @@ interface Entrant {
   mat: THREE.MeshStandardMaterial;
   flame: THREE.Mesh;
   flameMat: THREE.MeshBasicMaterial;
+  core: THREE.Mesh;
+  /** Held balloon and timed item effects. */
+  items: RacerItems;
   /** Each kart keeps its own ground lookup (it remembers where on the track it was). */
   ground: GroundQuery;
   driver?: Driver;
@@ -194,7 +231,7 @@ const entrants: Entrant[] = [
   { name: "You", character: player, color: player.color },
   ...rivals.map((r) => ({ name: r.name, character: findCharacter(r.character), color: r.color })),
 ].map((e, i) => {
-  const { mesh, mat, flame, flameMat } = makeKartMesh();
+  const { mesh, mat, flame, flameMat, core } = makeKartMesh();
   const state = createKartState();
   return {
     ...e,
@@ -204,6 +241,8 @@ const entrants: Entrant[] = [
     mat,
     flame,
     flameMat,
+    core,
+    items: racerItems(),
     ground: track ? createTrackGround(track) : flatGround,
     driver: i > 0 && line ? createDriver(line, i, tuning.ai) : undefined,
   };
@@ -217,6 +256,7 @@ function placeKarts() {
     if (track) spot = gridSlot(track, i);
     Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
     e.state.y = e.ground.at(spot.x, spot.z).height;
+    Object.assign(e.items, racerItems());
     snapPrev(e);
     if (e.driver) e.driver.driftHeld = false;
   });
@@ -299,6 +339,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       race = newRace();
       placeKarts();
       resetBananaField(bananaField);
+      resetItemWorld(itemWorld);
       if (course) resetCourse(course);
     }
     if (bananaAddRequested) {
@@ -330,16 +371,48 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       startTarget: startTarget(tuning.race),
     };
     const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
-
-    entrants.forEach((e, i) => {
-      // Rebuilt each step so live tuning edits apply immediately.
+    // Rebuilt each step so live tuning edits apply immediately.
+    const racers: Racer[] = entrants.map((e) => {
       let cfg = applyCharacter(tuning.vehicle, e.character, tuning.stats);
       if (e.driver) cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
-      const want = e.driver && moment ? driveAi(e.driver, e.state, cfg, tuning.ai, moment) : held;
+      return { kart: e.state, items: e.items, cfg };
+    });
+    const progressOf = (j: number) =>
+      race ? progress(race, j, entrants[j]!.state.x, entrants[j]!.state.z) : 0;
+    const events: ItemEvent[] = [];
+    if (boostLab.equip(you.items.held)) sfx.balloon(itemsCfg.volume, "new");
+    const canGo = !race || canDrive(race);
+
+    entrants.forEach((e, i) => {
+      const { cfg } = racers[i]!;
+      let want = e.driver && moment ? driveAi(e.driver, e.state, cfg, tuning.ai, moment) : held;
+      if (i === 0) {
+        // The debug boost lab can script the throttle for a few seconds after a boost.
+        const scripted = boostLab.throttle(e.state.zipPhase);
+        if (scripted !== undefined) want = { ...want, throttle: scripted };
+        // Items fire when the button is released, with the throttle as it is right then.
+        if (itemReleased(racers[0]!, want.item) && canGo) {
+          if (e.items.held.color === "blue") {
+            boostLab.started(`Blue ${e.items.held.level}`, e.state.speed, normalTop(cfg, e.state));
+            want = { ...want, throttle: boostLab.throttle(ZIP.ACTIVE) ?? want.throttle };
+          }
+          const ev = fireItem(itemWorld, racers, 0, want.throttle, itemsCfg, progressOf);
+          if (ev) events.push(ev);
+        }
+      }
+      // Trapped in a bubble: no control until it pops.
+      if (e.items.bubbleTime > 0) want = { ...NEUTRAL };
       // During the countdown every kart sits on the line.
       stepImpacts(e.state, tuning.collision, dt);
-      stepKart(e.state, !race || canDrive(race) ? want : NEUTRAL, cfg, dt);
-      if (enteredZipper(e.state, zippers)) startZipper(e.state, want.throttle, cfg);
+      stepKart(e.state, canGo ? want : NEUTRAL, cfg, dt);
+      if (enteredZipper(e.state, zippers)) {
+        let throttle = want.throttle;
+        if (i === 0) {
+          boostLab.started("Zipper", e.state.speed, normalTop(cfg, e.state));
+          throttle = boostLab.throttle(ZIP.ACTIVE) ?? throttle;
+        }
+        startZipper(e.state, throttle, cfg);
+      }
       if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
       stepSolids(e.state, solids, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
@@ -355,12 +428,13 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
 
       const laps = race.racers[i]!.lapTimes.length;
       const onRoad = e.ground.at(e.state.x, e.state.z).onRoad;
-      const events = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
+      const raceEvents = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
       if (i === 0 && race.racers[0]!.lapTimes.length > laps)
         saveBest(race.racers[0]!.lapTimes.at(-1)!);
-      if (events.boost) applyBoost(e.state, cfg, events.boost.mult, events.boost.seconds);
-      if (events.respawn) {
-        const g = events.respawn;
+      if (raceEvents.boost)
+        applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
+      if (raceEvents.respawn) {
+        const g = raceEvents.respawn;
         const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
         e.state.bananas = bananas;
@@ -370,12 +444,21 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     bumpKarts(
       entrants.map((e) => e.state),
       tuning.physics.kartBump,
+      entrants.map((e) => bumpMass(e.items, itemsCfg)),
     );
+    stepEffects(racers, itemsCfg, dt);
+    events.push(
+      ...collectBalloons(itemWorld, racers, itemsCfg, (j) => j === 0 || itemsCfg.aiCollect),
+      ...stepItemWorld(itemWorld, racers, itemsCfg, tuning.bananas, dt, progressOf),
+    );
+    for (const ev of events) itemFeedback(ev);
     stepBananaField(bananaField, tuning.bananas, dt);
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
     const moved = Math.hypot(you.state.x - posBefore.x, you.state.z - posBefore.z);
     if (moved > 1e-3) pathCurvature = wrapAngle(you.state.velAngle - pathBefore) / moved;
     youAccel = (you.state.speed - speedBefore) / dt;
+    boostLab.record(dt, you.state.speed, moved, you.state.zipPhase);
+    boostCues();
   },
 
   render(alpha, frameSeconds) {
@@ -405,6 +488,13 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     trackView?.render(tuning.track);
     for (const p of pickupsToShow.splice(0)) bananaView.burst(p);
     bananaView.render(bananaField, tuning.bananas, performance.now() / 1000, frameSeconds);
+    itemView.render(
+      itemWorld,
+      entrants.map((e) => e.mesh.position),
+      entrants.map((e) => e.items),
+      performance.now() / 1000,
+    );
+    boostLab.render(debug.overlay.visible);
     if (!toast.hidden && performance.now() > toastUntil) toast.hidden = true;
     renderHud();
     startMeter.render(race, tuning.race, SHOW_TIMING);
@@ -443,10 +533,21 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       "banTop",
       `${(youCfg.topSpeed * bs.top).toFixed(1)} m/s top, accel ×${bs.accel.toFixed(3)}`,
     );
+    const it = you.items;
+    debug.overlay.set(
+      "item",
+      `${heldLabel(it.held)}  shield ${it.shieldTime > 0 ? `L${it.shieldLevel} ${it.shieldTime.toFixed(1)}s` : "-"}  (B equip test)`,
+    );
+    debug.overlay.set(
+      "boostT",
+      s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING
+        ? `${["zipper", "blue 1", "blue 2", "blue 3"][s.zipSource]} ${s.zipTime.toFixed(2)}/${s.zipTotal.toFixed(2)}s ${s.zipEnhanced ? "ENHANCED" : "ordinary"}`
+        : "-",
+    );
     debug.overlay.set(
       "boost",
       s.zipPhase
-        ? `zipper ${phases[s.zipPhase]}`
+        ? `${["zipper", "blue 1", "blue 2", "blue 3"][s.zipSource]} ${phases[s.zipPhase]}`
         : s.boostTime > 0
           ? `boost ×${s.boostMult.toFixed(2)} ${s.boostTime.toFixed(1)}s`
           : "-",
@@ -489,7 +590,7 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
   mesh.position.set(
     p.x + (s.x - p.x) * alpha,
-    p.y + (s.y - p.y) * alpha + 0.4,
+    p.y + (s.y - p.y) * alpha + 0.4 + (e.items.bubbleTime > 0 ? 0.8 : 0),
     p.z + (s.z - p.z) * alpha,
   );
   const { up, fwd, right } = tilt;
@@ -506,20 +607,85 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
   e.mat.color.set(e.color);
 
+  // Exhaust: the colour says which boost (zipper amber; blue balloons orange / blue /
+  // purple by level), a green core says the enhanced boost took, rainbow says "press the
+  // throttle now", and a small dim flame means the push has ended.
   const z = s.zipPhase;
+  const color = FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!;
+  const pushing = z === ZIP.ACTIVE || z === ZIP.ENDING;
   e.flame.visible = z !== ZIP.NORMAL;
+  e.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
   if (z === ZIP.ENDING) {
-    // Rainbow: the cue to press the throttle again.
     e.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
     e.flame.scale.setScalar(1.5);
   } else if (z === ZIP.ACTIVE) {
-    e.flameMat.color.set(s.zipEnhanced ? "#ffd166" : "#ff8c1a");
-    e.flame.scale.setScalar(s.zipEnhanced ? 1.3 : 1);
+    e.flameMat.color.set(color);
+    let size = s.zipEnhanced ? 1.35 : 1;
+    // Level 3 blue: the flame builds while its sound charges (the push already started).
+    const sinceStart = s.zipTotal - s.zipTime;
+    if (s.zipSource === BOOST_SOURCE.BLUE3 && sinceStart < itemsCfg.blue3ChargeSec) {
+      const f = sinceStart / itemsCfg.blue3ChargeSec;
+      size *= 0.4 + 0.6 * f + 0.1 * Math.sin(performance.now() / 20);
+    }
+    e.flame.scale.setScalar(size);
   } else if (z === ZIP.RECOVERY) {
-    e.flameMat.color.set("#ff8c1a");
-    e.flame.scale.setScalar(0.6);
+    e.flameMat.color.set(color);
+    e.flame.scale.setScalar(0.55);
   }
-  e.flameMat.opacity = z === ZIP.RECOVERY ? 0.5 : 0.9;
+  e.flameMat.opacity = z === ZIP.RECOVERY ? 0.45 : 0.9;
+}
+
+/** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */
+const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5"];
+
+/** The kart's normal top speed right now, bananas included. */
+function normalTop(cfg: { topSpeed: number } & Parameters<typeof bananaScales>[1], k: KartState) {
+  return cfg.topSpeed * bananaScales(k.bananas, cfg).top;
+}
+
+/** Sound and messages for item events. Hits are heard when they're near you. */
+function itemFeedback(ev: ItemEvent) {
+  const vol = itemsCfg.volume;
+  const me = you.state;
+  const near = (j: number) => {
+    const k = entrants[j]!.state;
+    return j === 0 || Math.hypot(k.x - me.x, k.z - me.z) < 60;
+  };
+  if (ev.type === "pickup") {
+    if (ev.racer === 0) sfx.balloon(vol, ev.result);
+  } else if (ev.type === "noTarget") {
+    sfx.fizz(vol);
+    showToast("No target in range", 1);
+  } else if (ev.type === "fire") {
+    if (ev.racer !== 0) return;
+    if (ev.color === "blue") {
+      sfx.blueBoost(vol, ev.level, itemsCfg.blue3ChargeSec);
+      if (ev.enhanced) sfx.enhanced(vol);
+    } else if (ev.color === "red") sfx.missile(vol);
+    else if (ev.color === "green") sfx.drop(vol);
+    else if (ev.color === "yellow") sfx.shield(vol);
+    else sfx.magnet(vol);
+  } else if (ev.type === "hit") {
+    const k = entrants[ev.racer]!.state;
+    if (ev.lost) dropBananas(bananaField, k, ev.lost, tuning.bananas);
+    if (!near(ev.racer)) return;
+    if (ev.blocked) sfx.shieldBlock(vol);
+    else if (ev.kind === "oil") sfx.oil(vol);
+    else if (ev.kind === "bubble") sfx.bubble(vol);
+    else sfx.explosion(vol);
+    if (ev.racer === 0 && ev.lost) sfx.bananaLost(tuning.bananas.volume);
+  }
+}
+
+/** The player's boost cues: a blip as the rainbow window opens, a puff as the push ends. */
+let lastPhase: number = ZIP.NORMAL;
+function boostCues() {
+  const phase = you.state.zipPhase;
+  const vol = itemsCfg.volume;
+  if (phase === ZIP.ENDING && lastPhase !== ZIP.ENDING) sfx.rainbow(vol);
+  const wasPushing = lastPhase === ZIP.ACTIVE || lastPhase === ZIP.ENDING;
+  if (wasPushing && (phase === ZIP.RECOVERY || phase === ZIP.NORMAL)) sfx.boostEnd(vol);
+  lastPhase = phase;
 }
 
 /** Count collected bananas; the player hears each one, and a fanfare at the cap. */
@@ -541,7 +707,12 @@ const ordinal = (n: number) =>
 
 function renderHud() {
   const s = you.state;
-  const parts = [you.character.name, `${s.speed.toFixed(0)} m/s`, `Bananas ${s.bananas}`];
+  const parts = [
+    you.character.name,
+    `${s.speed.toFixed(0)} m/s`,
+    `Bananas ${s.bananas}`,
+    `Item ${heldLabel(you.items.held)} (E)`,
+  ];
   if (course) parts.push(`Pickups ${course.collected}`);
   let order: number[] = [];
   if (race) {

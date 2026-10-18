@@ -77,6 +77,73 @@
       "across": 9
     }
   ],
+  "balloons": [
+    {
+      "at": 90,
+      "across": -9,
+      "color": "red"
+    },
+    {
+      "at": 90,
+      "across": -3,
+      "color": "blue"
+    },
+    {
+      "at": 90,
+      "across": 3,
+      "color": "green"
+    },
+    {
+      "at": 90,
+      "across": 9,
+      "color": "yellow"
+    },
+    {
+      "at": 290,
+      "across": -6,
+      "color": "blue"
+    },
+    {
+      "at": 290,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "at": 290,
+      "across": 6,
+      "color": "blue"
+    },
+    {
+      "at": 520,
+      "across": -9,
+      "color": "red"
+    },
+    {
+      "at": 520,
+      "across": -3,
+      "color": "blue"
+    },
+    {
+      "at": 520,
+      "across": 3,
+      "color": "yellow"
+    },
+    {
+      "at": 520,
+      "across": 9,
+      "color": "green"
+    },
+    {
+      "at": 660,
+      "across": -5,
+      "color": "blue"
+    },
+    {
+      "at": 660,
+      "across": 5,
+      "color": "rainbow"
+    }
+  ],
   "points": [
     {
       "x": 0.0,
