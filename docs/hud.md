@@ -4,7 +4,9 @@
 
 The speedometer sits in the bottom-right corner (`src/render/speedometer.ts`): a
 wooden barrel dial with metal bands and a palm leaf, a red star needle, a digital
-readout and a wooden BOOST sign.
+readout and a wooden BOOST sign. It's pixel art: every pixel is set by hand on a
+124 × 96 canvas that's scaled up by a whole number (2× on a laptop, 3–4× on big
+screens) with no smoothing, so the pixels stay square and crisp.
 
 - **Unitless and true to the physics.** The number is the kart's real ground speed
   times one fixed scale, with no smoothing (`src/render/speedo.ts`). The scale is set so

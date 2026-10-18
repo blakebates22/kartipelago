@@ -43,7 +43,7 @@ body {
   position: fixed;
   left: 12px;
   /* leave room for the speedometer */
-  max-width: calc(100vw - clamp(150px, 24vw, 270px) - 40px);
+  max-width: calc(100vw - max(260px, 27vw) - 30px);
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   padding: 6px 10px;
   font:
@@ -207,40 +207,9 @@ body {
   position: fixed;
   right: 10px;
   bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  width: clamp(150px, 24vw, 270px);
-  height: auto;
+  /* Width and height are set in whole-pixel multiples by the speedometer. */
+  image-rendering: pixelated;
   pointer-events: none;
-  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.35));
+  filter: drop-shadow(0 4px 0 rgb(0 0 0 / 0.3));
   user-select: none;
-}
-
-.speedo text {
-  font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Verdana", ui-rounded, sans-serif;
-  font-weight: 900;
-  text-anchor: middle;
-}
-
-.speedo .speedo-num {
-  font-size: 13.5px;
-  fill: #2a3550;
-}
-
-.speedo .speedo-readout {
-  font-size: 23px;
-  fill: #ffd23f;
-  font-variant-numeric: tabular-nums;
-}
-
-.speedo .speedo-boost {
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  fill: #26304c;
-  stroke: #f1d39a;
-  stroke-width: 3px;
-  paint-order: stroke;
-}
-
-.speedo .speedo-boost.lit {
-  fill: #ffd23f;
-  stroke: #3a2210;
 }
