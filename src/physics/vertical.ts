@@ -27,7 +27,7 @@ function slopeAlong(nx: number, ny: number, nz: number, velAngle: number) {
 
 /** Call after stepKart has moved the kart horizontally for this step. */
 export function stepVertical(s: KartState, ground: GroundQuery, cfg: VerticalConfig, dt: number) {
-  const surf = ground.at(s.x, s.z);
+  const surf = ground.at(s.x, s.z, s.y);
   const slope = slopeAlong(surf.nx, surf.ny, surf.nz, s.velAngle);
   // Vertical speed the kart would need to stay glued to the surface here.
   const follow = s.speed * slope;

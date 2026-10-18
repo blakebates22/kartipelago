@@ -44,6 +44,8 @@ export interface Gate {
   heading: number;
   /** Half the road width plus the margin that still counts as passing. */
   halfWidth: number;
+  /** Layered tracks: only counts within this height of the road (bridges), m. */
+  height?: number;
 }
 
 export type Phase = "countdown" | "racing";
@@ -124,6 +126,7 @@ export function makeGates(track: Track, spacing: number): Gate[] {
       fz,
       heading: Math.atan2(fx, fz),
       halfWidth: s.width / 2 + (track.data.gateMargin ?? GATE_MARGIN),
+      ...(track.data.gateHeight !== undefined && { height: track.data.gateHeight }),
     });
   }
   return gates;
@@ -240,7 +243,8 @@ export function stepRacer(
 
   if (!r.finished) {
     const gate = race.gates[r.next]!;
-    if (crossed(gate, r.px, r.pz, kart.x, kart.z)) {
+    const level = gate.height === undefined || Math.abs(kart.y - gate.y) <= gate.height;
+    if (level && crossed(gate, r.px, r.pz, kart.x, kart.z)) {
       r.last = r.next;
       r.passed++;
       if (r.next === 0) {

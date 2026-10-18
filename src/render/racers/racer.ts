@@ -242,10 +242,15 @@ export class Racer {
 
     // --- Springs: squash and stretch, boost kick.
     const squashTarget = !m.grounded && this.airTime > 0.08 ? 1.07 : 1;
-    this.squashV += (-(this.squash - squashTarget) * 180 - this.squashV * 14) * dt;
-    this.squash += this.squashV * dt;
-    this.kickV += (-this.kick * 60 - this.kickV * 9) * dt;
-    this.kick += this.kickV * dt;
+    // Stiff springs: step them in small slices so a slow frame can't make them blow up.
+    const slices = Math.ceil(dt / (1 / 120));
+    const h = dt / slices;
+    for (let i = 0; i < slices; i++) {
+      this.squashV += (-(this.squash - squashTarget) * 180 - this.squashV * 14) * h;
+      this.squash += this.squashV * h;
+      this.kickV += (-this.kick * 60 - this.kickV * 9) * h;
+      this.kick += this.kickV * h;
+    }
     this.recoil = Math.max(0, this.recoil - dt * 2.5);
     this.surprise = Math.max(0, this.surprise - dt);
 

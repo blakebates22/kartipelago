@@ -20,6 +20,7 @@
 import type { KartState } from "../vehicles/kart";
 import type { GroundQuery } from "./ground";
 import type { Solid } from "../world/solids";
+import { deepestWall, type CollisionMesh } from "../world/collisionMesh";
 
 export interface WallConfig {
   /** Half the kart's width, metres: how close its centre can get to a wall. */
@@ -270,6 +271,28 @@ export function stepSolids(
       nz = nu * fz - nv * fx;
     }
     const hit = hitWall(s, -nx, -nz, out, cfg, dt);
+    if (!worst || hit.into > worst.into) worst = hit;
+  }
+  return worst;
+}
+
+/**
+ * Collide with the walls of an imported track's collision mesh (barriers, cliffs,
+ * pillars, tunnel sides). Each overlap goes through the same hitWall as every other
+ * wall, so impacts, drift handling and alignment behave exactly as on built-in tracks.
+ */
+export function stepMeshWalls(
+  s: KartState,
+  mesh: CollisionMesh,
+  cfg: WallConfig & ImpactConfig,
+  dt: number,
+): WallHit | null {
+  let worst: WallHit | null = null;
+  // A few passes resolve corners where two walls meet.
+  for (let i = 0; i < 3; i++) {
+    const c = deepestWall(mesh, s.x, s.y, s.z, cfg.kartRadius);
+    if (!c || c.out < 1e-6) break;
+    const hit = hitWall(s, c.wx, c.wz, c.out, cfg, dt);
     if (!worst || hit.into > worst.into) worst = hit;
   }
   return worst;

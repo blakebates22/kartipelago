@@ -1,0 +1,11 @@
+schema_version = "1.0.0"
+
+id = "kartipelago_tools"
+version = "0.1.0"
+name = "Kartipelago Track Tools"
+tagline = "Spline roads and one-click track export for Kartipelago"
+maintainer = "Kartipelago contributors"
+type = "add-on"
+blender_version_min = "4.2.0"
+license = ["SPDX:MIT"]
+tags = ["Game Engine", "Import-Export", "Modeling"]

@@ -124,6 +124,8 @@ export function createTrackView(
   track: Track,
   look: TrackLook,
   zippers: ZipperPad[] = [],
+  /** false: skip the road and walls (an imported track brings its own geometry). */
+  opts: { surface?: boolean } = {},
 ) {
   // Polygon offset makes the road win depth ties with the ground plane where it lies
   // nearly flat on it (no flickering grass showing through).
@@ -202,9 +204,22 @@ export function createTrackView(
     return mesh;
   });
 
-  scene.add(road, ...walls, startLine, ...zipMeshes);
+  const surface = opts.surface ?? true;
+  const parts = [...(surface ? [road, ...walls] : []), startLine, ...zipMeshes];
+  scene.add(...parts);
 
   return {
+    /** Remove everything this view added and free its GPU resources. */
+    dispose() {
+      for (const m of [road, ...walls, startLine, ...zipMeshes]) {
+        scene.remove(m);
+        m.geometry.dispose();
+      }
+      for (const mat of [roadMat, wallMat, zipMat, startLine.material as THREE.Material]) {
+        (mat as THREE.MeshStandardMaterial).map?.dispose();
+        mat.dispose();
+      }
+    },
     render(colors: Pick<TrackLook, "roadColor" | "wallColor" | "zipperColor">) {
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);

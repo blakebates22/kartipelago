@@ -12,6 +12,8 @@ export interface Surface {
   ny: number;
   nz: number;
   onRoad: boolean;
+  /** Imported tracks: the semantic surface id (see assets/data/surfaces.json). */
+  surface?: string;
   /** Present near a track: where the kart is across the road, for walls. */
   road?: RoadSpot;
 }
@@ -29,7 +31,12 @@ export interface RoadSpot {
 }
 
 export interface GroundQuery {
-  at(x: number, z: number): Surface;
+  /**
+   * The surface under (x, z). `y` is the asker's own height: where surfaces overlap
+   * (bridges, tunnels) it picks the one at or just below it. Ignored on centre-line
+   * tracks, which never overlap.
+   */
+  at(x: number, z: number, y?: number): Surface;
 }
 
 const FLAT: Surface = { height: 0, nx: 0, ny: 1, nz: 0, onRoad: false };

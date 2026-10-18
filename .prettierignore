@@ -2,3 +2,5 @@ dist
 node_modules
 coverage
 package-lock.json
+# Written by the Blender exporter (tools/blender), not by hand.
+public/tracks/**/route.json

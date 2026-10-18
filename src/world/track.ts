@@ -47,6 +47,13 @@ export interface TrackData {
   aiLineMargin?: number;
   /** Colour of the ground around the track, overriding world.groundColor. */
   groundColor?: string;
+  /**
+   * Imported from Blender: heights are exact (no clamping above y = 0), the road and
+   * walls come from the track's own geometry, and the surface can overlap itself.
+   */
+  imported?: boolean;
+  /** Checkpoints only count within this height of the road (layered tracks), m. */
+  gateHeight?: number;
 }
 
 export interface TrackSample {
@@ -95,8 +102,9 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     const u = i / count; // fraction of the way round by distance
     const t = curve.getUtoTmapping(u, 0); // curve parameter at that distance
     const pos = curve.getPoint(t);
-    // The spline can overshoot slightly below its points; never sink under the ground.
-    pos.y = Math.max(0, pos.y);
+    // The spline can overshoot slightly below its points; never sink under the ground
+    // (imported tracks bring their own ground, so their heights are kept as they are).
+    if (!data.imported) pos.y = Math.max(0, pos.y);
     const forward = curve.getTangent(t).normalize();
     // Right is horizontal and perpendicular to travel, then tilted by the bank angle.
     const flat = new THREE.Vector3(forward.x, 0, forward.z).normalize();
@@ -105,7 +113,7 @@ export function buildTrack(data: TrackData, spacing: number): Track {
     right.applyAxisAngle(flat, (bank * Math.PI) / 180);
     const width = valueAt(data.points, t, (p) => p.width ?? data.defaultWidth);
     // Banking lowers one edge; lift the road so that edge never sinks under the ground.
-    pos.y = Math.max(pos.y, (Math.abs(right.y) * width) / 2);
+    if (!data.imported) pos.y = Math.max(pos.y, (Math.abs(right.y) * width) / 2);
     samples.push({ pos, forward, right, width, dist: u * length });
   }
 

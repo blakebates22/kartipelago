@@ -47,7 +47,7 @@ import { createBananaView } from "./render/bananaView";
 import { createSfx } from "./audio/sfx";
 import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
-import { stepImpacts, stepSolids, stepWalls } from "./physics/walls";
+import { stepImpacts, stepMeshWalls, stepSolids, stepWalls } from "./physics/walls";
 import { boundarySolids, buildTunnel, placeTrees, tunnelSolids } from "./world/solids";
 import { createSceneryView } from "./render/sceneryView";
 import { bumpKarts } from "./physics/bump";
@@ -67,6 +67,14 @@ import {
 import { gridSlot } from "./race/grid";
 import { createSpeedometer } from "./render/speedometer";
 import { createParkSigns } from "./render/parkSigns";
+import { applySurface, createMeshGround } from "./world/collisionMesh";
+import {
+  loadTrackPackage,
+  SURFACES,
+  swapPackage,
+  urlReader,
+  type TrackPackage,
+} from "./world/trackPackage";
 import {
   buildDriftPark,
   createLocator,
@@ -98,9 +106,23 @@ const SCENE = SCENES.find((v) => v === PARAMS.get("scene")) ?? "track";
 // The start-boost timing bar is a tuning tool: only shown with ?timing in the URL.
 const SHOW_TIMING = PARAMS.has("timing");
 // Tracks: ?track=1 (Drift Loop, the default), ?track=2 (Ribbon Ridge) or ?track=3
-// (Meadow Run, an open track).
+// (Meadow Run, an open track), or ?track=<id> for a track made in Blender and exported
+// to public/tracks/<id>/ (see docs/track-pipeline.md).
 const TRACKS = [driftLoop, ribbonRidge, meadowRun] as TrackData[];
-const trackData = TRACKS[Number(PARAMS.get("track") ?? 1) - 1] ?? TRACKS[0]!;
+const TRACK_PARAM = PARAMS.get("track") ?? "1";
+const PACKAGE_ID = SCENE === "track" && !/^\d+$/.test(TRACK_PARAM) ? TRACK_PARAM : undefined;
+const packageBase = (id: string) => `tracks/${encodeURIComponent(id)}/`;
+/** Why an imported track couldn't load (the built-in Drift Loop is used instead). */
+let packageError: string | undefined;
+const pkg: TrackPackage | undefined = PACKAGE_ID
+  ? await loadTrackPackage(urlReader(packageBase(PACKAGE_ID))).catch((err: Error) => {
+      packageError = `Couldn't load track "${PACKAGE_ID}": ${err.message}`;
+      console.error(err);
+      return undefined;
+    })
+  : undefined;
+for (const w of pkg?.warnings ?? []) console.warn(`[track] ${w}`);
+const trackData: TrackData = pkg ? pkg.trackData : (TRACKS[Number(TRACK_PARAM) - 1] ?? TRACKS[0]!);
 /** Meadow grass under the Drift Park. */
 const PARK_GROUND = "#6fae4b";
 const GROUND_SIZE = 1200;
@@ -139,6 +161,11 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE),
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 stage.scene.add(ground);
+// An imported track brings its own terrain.
+if (pkg) {
+  ground.visible = false;
+  stage.scene.add(pkg.visual);
+}
 
 const course = SCENE === "practice" ? createCourse(courseData) : undefined;
 const courseView = course ? createCourseView(stage.scene, course, tuning.course) : undefined;
@@ -154,18 +181,28 @@ const parkPads = (park?.loops ?? []).map((l) =>
 const zippers = track
   ? buildZippers(track, trackData.zippers ?? [], tuning.track)
   : parkPads.flat();
-const trackView = track ? createTrackView(stage.scene, track, tuning.track, zippers) : undefined;
+let trackView = track
+  ? createTrackView(stage.scene, track, tuning.track, zippers, { surface: !pkg })
+  : undefined;
 const parkViews = (park?.loops ?? []).map((l, i) =>
   createTrackView(stage.scene, l.track, tuning.track, parkPads[i]),
 );
 if (park) createParkSigns(stage.scene, park);
 /** A fresh ground lookup (each kart and falling banana keeps its own). */
 const makeGround = (): GroundQuery =>
-  track ? createTrackGround(track) : park ? createParkGround(park) : flatGround;
+  pkg
+    ? createMeshGround(pkg.collision)
+    : track
+      ? createTrackGround(track)
+      : park
+        ? createParkGround(park)
+        : flatGround;
 // Open tracks: no road walls; tunnels, the map boundary and trees are what you can hit.
 const OPEN = Boolean(track && trackData.open) || Boolean(park);
 const tunnels = track && OPEN ? (trackData.tunnels ?? []).map((t) => buildTunnel(track, t)) : [];
 const solids = (() => {
+  // Imported tracks: walls, rocks and trees are all in the collision mesh.
+  if (pkg) return [];
   if (park) {
     // A boundary round the whole park, and trees between and inside the loops.
     const all = { samples: park.loops.flatMap((l) => l.track.samples) } as Track;
@@ -187,9 +224,8 @@ const solids = (() => {
   ];
   return [...fixed, ...placeTrees(track, tuning.scenery, fixed)];
 })();
-const sceneryView = OPEN
-  ? createSceneryView(stage.scene, solids, tunnels, tuning.scenery)
-  : undefined;
+const sceneryView =
+  OPEN && !pkg ? createSceneryView(stage.scene, solids, tunnels, tuning.scenery) : undefined;
 const bananaField = createBananaField(track, trackData.bananas ?? [], makeGround, !OPEN);
 for (const l of park?.loops ?? [])
   bananaField.bananas.push(
@@ -257,6 +293,8 @@ interface Entrant {
   items: RacerItems;
   /** Each kart keeps its own ground lookup (it remembers where on the track it was). */
   ground: GroundQuery;
+  /** On a boost surface last step (imported tracks), so it fires once per visit. */
+  onBoost?: boolean;
   driver?: Driver;
 }
 
@@ -314,7 +352,7 @@ function placeKarts() {
     if (track) spot = gridSlot(track, i);
     if (park) spot = loopStart(park.loops[parkLoop]!, parkReverse);
     Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
-    e.state.y = e.ground.at(spot.x, spot.z).height;
+    e.state.y = e.ground.at(spot.x, spot.z, spot.y + 0.5).height;
     Object.assign(e.items, racerItems());
     snapPrev(e);
     if (e.driver) e.driver.driftHeld = false;
@@ -480,6 +518,11 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     const racers: Racer[] = entrants.map((e) => {
       let cfg = applyCharacter(tuning.vehicle, e.character, tuning.stats);
       if (e.driver) cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
+      // Imported tracks: the surface under the wheels scales speed, acceleration and grip.
+      if (pkg && e.state.grounded) {
+        const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
+        cfg = applySurface(cfg, surface ? SURFACES[surface] : undefined);
+      }
       return { kart: e.state, items: e.items, cfg };
     });
     const progressOf = (j: number) =>
@@ -519,8 +562,16 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
         startZipper(e.state, throttle, cfg);
       }
       if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
+      if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt);
       stepSolids(e.state, solids, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
+      if (pkg) {
+        // Boost surfaces fire a zipper boost when you drive onto them.
+        const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
+        const onBoost = Boolean(e.state.grounded && surface && SURFACES[surface]?.boost);
+        if (onBoost && !e.onBoost) startZipper(e.state, want.throttle, cfg);
+        e.onBoost = onBoost;
+      }
       const before = e.state.bananas;
       const got = collectBananas(bananaField, i, e.state, tuning.bananas);
       if (got.length) {
@@ -532,14 +583,16 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       if (!race) return;
 
       const laps = race.racers[i]!.lapTimes.length;
-      const onRoad = e.ground.at(e.state.x, e.state.z).onRoad;
+      const onRoad = e.ground.at(e.state.x, e.state.z, e.state.y).onRoad;
       const raceEvents = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
       if (i === 0 && race.racers[0]!.lapTimes.length > laps)
         saveBest(race.racers[0]!.lapTimes.at(-1)!);
       if (raceEvents.boost)
         applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
-      if (raceEvents.respawn) {
-        const g = raceEvents.respawn;
+      // Fell off an imported track's geometry: back to the last checkpoint.
+      const fell = pkg && e.state.y < pkg.killY ? race.gates[race.racers[i]!.last] : undefined;
+      if (raceEvents.respawn || fell) {
+        const g = (raceEvents.respawn ?? fell)!;
         const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
         e.state.bananas = bananas;
@@ -731,7 +784,7 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
 
   // The blob shadow stays on the ground under the kart, smaller the higher it flies.
   const r = e.racer;
-  const groundY = e.ground.at(mesh.position.x, mesh.position.z).height;
+  const groundY = e.ground.at(mesh.position.x, mesh.position.z, mesh.position.y).height;
   r.placeShadow(
     mesh.position.x,
     groundY,
@@ -931,5 +984,57 @@ function renderHud() {
   banner.hidden = message === "";
   banner.classList.toggle("standings", Boolean(r?.finished));
 }
+
+// Imported tracks reload live: T, or automatically when the Blender add-on exports
+// while `npm run dev` is running (the dev server announces changed track files).
+let reloading = false;
+async function reloadTrack() {
+  if (!pkg || !PACKAGE_ID || !track || reloading) return;
+  reloading = true;
+  try {
+    const next = await loadTrackPackage(urlReader(packageBase(PACKAGE_ID), String(Date.now())));
+    swapPackage(stage.scene, pkg, next);
+    // Everything built from the route: the centre line, start line, AI racing line.
+    Object.assign(trackData, next.trackData);
+    Object.assign(track, buildTrack(trackData, tuning.track.sampleSpacing));
+    trackView?.dispose();
+    trackView = createTrackView(stage.scene, track, tuning.track, zippers, { surface: false });
+    const newLine = buildRacingLine(track, {
+      margin: trackData.aiLineMargin ?? tuning.ai.lineMargin,
+      span: tuning.ai.lineSpan,
+      iterations: tuning.ai.lineIterations,
+    });
+    for (const e of entrants) {
+      if (!e.driver) continue;
+      e.driver.line = newLine;
+      e.driver.index = 0;
+    }
+    for (const w of next.warnings) console.warn(`[track] ${w}`);
+    resetRequested = true; // restart the race on the new geometry
+    showToast(
+      next.warnings.length
+        ? `Track reloaded (${next.warnings.length} warnings: see the console)`
+        : "Track reloaded",
+      2,
+    );
+  } catch (err) {
+    console.error(err);
+    showToast(`Reload failed: ${(err as Error).message}`, 5);
+  } finally {
+    reloading = false;
+  }
+}
+window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyT" && pkg) void reloadTrack();
+});
+if (import.meta.hot)
+  import.meta.hot.on("kp:track-changed", (data: { id: string }) => {
+    if (data.id === PACKAGE_ID) void reloadTrack();
+  });
+// For poking at the game from the browser console while debugging.
+if (PARAMS.has("debug")) Object.assign(window, { kp: { entrants, stage, pkg, tuning } });
+if (packageError) showToast(packageError, 8);
+else if (pkg?.warnings.length)
+  showToast(`${pkg.warnings.length} track warnings: see the console`, 4);
 
 loop.start();
