@@ -25,6 +25,19 @@ export interface TrackData {
   zippers?: { at: number; across?: number }[];
   /** Banana rows: distance along the lap, offset across, how many and how far apart. */
   bananas?: { at: number; across?: number; count?: number; gap?: number }[];
+  /**
+   * Open track: no walls along the road and no respawn for leaving it. You can drive on
+   * the grass; only tunnels, trees and the map boundary stop you.
+   */
+  open?: boolean;
+  /** Tunnels (open tracks): straight stretches, metres along the lap, through rock. */
+  tunnels?: { from: number; to: number; thickness?: number; height?: number }[];
+  /** How far beside the road (metres) still counts as passing a checkpoint. Default 2. */
+  gateMargin?: number;
+  /** How far the AI's racing line stays from the road edge, overriding ai.lineMargin. */
+  aiLineMargin?: number;
+  /** Colour of the ground around the track, overriding world.groundColor. */
+  groundColor?: string;
 }
 
 export interface TrackSample {

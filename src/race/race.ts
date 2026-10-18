@@ -42,6 +42,7 @@ export interface Gate {
   fx: number;
   fz: number;
   heading: number;
+  /** Half the road width plus the margin that still counts as passing. */
   halfWidth: number;
 }
 
@@ -83,6 +84,8 @@ export interface Racer {
 }
 
 export interface Race {
+  /** Open track: leaving the road never respawns you. */
+  open: boolean;
   gates: Gate[];
   /** Track samples near the end of the lap (x, z, metres before the line), for ranking the grid. */
   approach: { x: number; z: number; before: number }[];
@@ -102,7 +105,7 @@ export interface RaceEvents {
   boost?: { mult: number; seconds: number };
 }
 
-/** Extra width either side of the road that still counts as passing a gate. */
+/** Extra width either side of the road that still counts as passing a gate (default). */
 const GATE_MARGIN = 2;
 
 export function makeGates(track: Track, spacing: number): Gate[] {
@@ -120,7 +123,7 @@ export function makeGates(track: Track, spacing: number): Gate[] {
       fx,
       fz,
       heading: Math.atan2(fx, fz),
-      halfWidth: s.width / 2,
+      halfWidth: s.width / 2 + (track.data.gateMargin ?? GATE_MARGIN),
     });
   }
   return gates;
@@ -148,6 +151,7 @@ export function createRace(track: Track, cfg: RaceConfig, racers = 1): Race {
     .filter((p) => track.length - p.dist < 80)
     .map((p) => ({ x: p.pos.x, z: p.pos.z, before: track.length - p.dist }));
   return {
+    open: Boolean(track.data.open),
     gates,
     approach,
     phase: "countdown",
@@ -185,7 +189,7 @@ export function crossed(g: Gate, px: number, pz: number, x: number, z: number): 
   const after = (x - g.x) * g.fx + (z - g.z) * g.fz;
   // Right is (-fz, fx); how far across the road the crossing happened.
   const across = (x - g.x) * -g.fz + (z - g.z) * g.fx;
-  return before < 0 && after >= 0 && Math.abs(across) <= g.halfWidth + GATE_MARGIN;
+  return before < 0 && after >= 0 && Math.abs(across) <= g.halfWidth;
 }
 
 export const canDrive = (race: Race) => race.phase !== "countdown";
@@ -258,7 +262,7 @@ export function stepRacer(
   r.px = kart.x;
   r.pz = kart.z;
 
-  r.offRoadFor = !onRoad && kart.grounded ? r.offRoadFor + dt : 0;
+  r.offRoadFor = !onRoad && !race.open && kart.grounded ? r.offRoadFor + dt : 0;
   if (r.offRoadFor > cfg.respawnAfterSec) {
     r.offRoadFor = 0;
     events.respawn = race.gates[r.last];
