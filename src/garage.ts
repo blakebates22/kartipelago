@@ -104,6 +104,8 @@ const VIEWS: Record<string, [number, number, number, number]> = {
   // The race camera: 7 m behind, 3 m up, looking just ahead.
   gameplay: [0, 3, -7, 1],
   far: [0, 6, -60, 1],
+  top: [0, 5, 1.5, 0],
+  hero: [-1.7, 0.85, 3.3, 0.95],
   face: [0, 1.75, 2.4, 1.7],
 };
 function setView(name: string) {

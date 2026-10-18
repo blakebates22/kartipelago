@@ -16,6 +16,21 @@ Everything is visual. The racers follow the kart's physics state and add motion 
 child transforms. Nothing writes back to the physics, and the collision shape is the same
 circle as before.
 
+## Moss's faceted style
+
+Moss is the first racer in the faceted, pixel-textured style (`moss.ts`, `faceted.ts`).
+The aim is the reference look Blake picked:
+
+- flat-shaded low-poly shapes (icospheres, chamfered boxes, octagonal tyres);
+- a 16x16 grain texture sampled nearest-neighbour, so texels show as soft pixel blocks;
+- a face painted as 64x40 pixel art and laid on the head's own facets as a decal.
+
+The face texture swaps for expressions: a cheerful toothy smile, a determined grin with
+slanted lids when drifting or boosting, a wide-eyed "oh!" for hits and jumps, and closed
+eyes to blink. Moss has his own angular formula kart, with a wedge nose and a cream crown
+on it, chunky teal pods over the wheels, a roll hoop, and dark octagonal tyres with cream
+hubs and green caps. The other three racers still use the earlier smooth style.
+
 ## How it's built
 
 `src/render/racers/`:

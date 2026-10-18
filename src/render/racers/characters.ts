@@ -48,6 +48,11 @@ export interface CharacterRig {
   /** A cheap one-mesh version for far away. */
   low: THREE.Mesh;
   personality: Personality;
+  /**
+   * Optional: a painted (texture) face. When present the animator calls this instead
+   * of showing and hiding mouth meshes and squashing the eyes.
+   */
+  setFace?: (mouth: "smile" | "open" | "grin", eyes: "open" | "closed" | "wide" | "sleepy") => void;
 }
 
 type V3 = [number, number, number];
