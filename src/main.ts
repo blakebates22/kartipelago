@@ -17,6 +17,17 @@ import { createCourse, resetCourse, stepCourse } from "./world/course";
 import { buildTrack, type TrackData } from "./world/track";
 import { buildZippers, enteredZipper } from "./world/zippers";
 import { ZIP, startZipper } from "./vehicles/zipper";
+import { bananaMult, bananaScales, effectiveBananas, loseBananas } from "./vehicles/bananas";
+import {
+  collectBananas,
+  createBananaField,
+  dropBananas,
+  resetBananaField,
+  stepBananaField,
+  type BananaPickup,
+} from "./world/bananas";
+import { createBananaView } from "./render/bananaView";
+import { createSfx } from "./audio/sfx";
 import { createTrackGround, flatGround, type GroundQuery } from "./physics/ground";
 import { stepVertical } from "./physics/vertical";
 import { stepImpacts, stepWalls } from "./physics/walls";
@@ -97,6 +108,13 @@ const courseView = course ? createCourseView(stage.scene, course, tuning.course)
 const track = SCENE === "track" ? buildTrack(trackData, tuning.track.sampleSpacing) : undefined;
 const zippers = track ? buildZippers(track, trackData.zippers ?? [], tuning.track) : [];
 const trackView = track ? createTrackView(stage.scene, track, tuning.track, zippers) : undefined;
+const bananaField = createBananaField(track, trackData.bananas ?? [], () =>
+  track ? createTrackGround(track) : flatGround,
+);
+const bananaView = createBananaView(stage.scene, tuning.bananas);
+const sfx = createSfx();
+/** Collected this step, for the render to show (effects run at frame rate). */
+const pickupsToShow: BananaPickup[] = [];
 const line = track
   ? buildRacingLine(track, {
       margin: tuning.ai.lineMargin,
@@ -199,6 +217,17 @@ const startMeter = createStartMeter(document.body);
 const banner = document.createElement("div");
 banner.className = "banner";
 document.body.appendChild(banner);
+// Short message when your banana speed bonus is full.
+const toast = document.createElement("div");
+toast.className = "toast";
+toast.hidden = true;
+document.body.appendChild(toast);
+let toastUntil = 0;
+function showToast(text: string, seconds: number) {
+  toast.textContent = text;
+  toast.hidden = false;
+  toastUntil = performance.now() + seconds * 1000;
+}
 
 // Best lap ever on this track, kept in this browser only. Storage can be unavailable
 // (private windows, blocked site data), so every access is guarded.
@@ -229,8 +258,13 @@ let youAccel = 0;
 let resetRequested = false;
 // Number keys pick your character (1 = first in characters.json, and so on).
 let pickRequested: Character | undefined;
+// Debug only (overlay showing): L loses two bananas as a hit would, K adds one.
+let bananaLossRequested = false;
+let bananaAddRequested = 0;
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyR") resetRequested = true;
+  if (debug.overlay.visible && e.code === "KeyL") bananaLossRequested = true;
+  if (debug.overlay.visible && e.code === "KeyK") bananaAddRequested++;
   // M flips between the legacy and offset drift models, for side-by-side comparison.
   if (e.code === "KeyM") tuning.vehicle.driftModel = tuning.vehicle.driftModel >= 1 ? 0 : 1;
   const n = /^Digit([1-9])$/.exec(e.code);
@@ -243,7 +277,18 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       resetRequested = false;
       race = newRace();
       placeKarts();
+      resetBananaField(bananaField);
       if (course) resetCourse(course);
+    }
+    if (bananaAddRequested) {
+      gotBananas(0, bananaAddRequested);
+      bananaAddRequested = 0;
+    }
+    if (bananaLossRequested) {
+      bananaLossRequested = false;
+      const lost = loseBananas(you.state, "debug", tuning.bananas);
+      dropBananas(bananaField, you.state, lost, tuning.bananas);
+      if (lost) sfx.bananaLost(tuning.bananas.volume);
     }
     if (pickRequested) {
       you.character = pickRequested;
@@ -276,6 +321,13 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       if (enteredZipper(e.state, zippers)) startZipper(e.state, want.throttle, cfg);
       stepWalls(e.state, e.ground, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
+      const before = e.state.bananas;
+      const got = collectBananas(bananaField, i, e.state, tuning.bananas);
+      if (got.length) {
+        pickupsToShow.push(...got);
+        e.state.bananas = before;
+        gotBananas(i, got.length);
+      }
       if (course && i === 0) stepCourse(course, e.state, tuning.course, cfg, dt);
       if (!race) return;
 
@@ -287,7 +339,9 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       if (events.boost) applyBoost(e.state, cfg, events.boost.mult, events.boost.seconds);
       if (events.respawn) {
         const g = events.respawn;
+        const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
+        e.state.bananas = bananas;
         snapPrev(e);
       }
     });
@@ -295,6 +349,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       entrants.map((e) => e.state),
       tuning.physics.kartBump,
     );
+    stepBananaField(bananaField, tuning.bananas, dt);
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
     const moved = Math.hypot(you.state.x - posBefore.x, you.state.z - posBefore.z);
     if (moved > 1e-3) pathCurvature = wrapAngle(you.state.velAngle - pathBefore) / moved;
@@ -325,6 +380,9 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
 
     courseView?.render(performance.now() / 1000, tuning.course);
     trackView?.render(tuning.track);
+    for (const p of pickupsToShow.splice(0)) bananaView.burst(p);
+    bananaView.render(bananaField, tuning.bananas, performance.now() / 1000, frameSeconds);
+    if (!toast.hidden && performance.now() > toastUntil) toast.hidden = true;
     renderHud();
     startMeter.render(race, tuning.race, SHOW_TIMING);
 
@@ -353,6 +411,23 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
       `${Math.round(s.zipPower * 100)}%  released ${s.zipReleasedAtStart ? "yes" : "no"}  early ${s.zipPressedEarly ? "yes" : "no"}`,
     );
     debug.overlay.set("accel", `${youAccel.toFixed(1)} m/s²`);
+    const bs = bananaScales(s.bananas, tuning.vehicle);
+    debug.overlay.set(
+      "banana",
+      `${s.bananas} held, ${effectiveBananas(s.bananas, tuning.vehicle)} effective, ×${bananaMult(s.bananas, tuning.vehicle).toFixed(3)}  (L lose 2, K add 1)`,
+    );
+    debug.overlay.set(
+      "banTop",
+      `${(youCfg.topSpeed * bs.top).toFixed(1)} m/s top, accel ×${bs.accel.toFixed(3)}`,
+    );
+    debug.overlay.set(
+      "boost",
+      s.zipPhase
+        ? `zipper ${phases[s.zipPhase]}`
+        : s.boostTime > 0
+          ? `boost ×${s.boostMult.toFixed(2)} ${s.boostTime.toFixed(1)}s`
+          : "-",
+    );
     debug.overlay.set(
       "lat",
       `${(Math.abs(s.speed) * Math.sin(Math.abs(slipAngle(s)))).toFixed(1)} m/s`,
@@ -424,12 +499,26 @@ function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
   e.flameMat.opacity = z === ZIP.RECOVERY ? 0.5 : 0.9;
 }
 
+/** Count collected bananas; the player hears each one, and a fanfare at the cap. */
+function gotBananas(i: number, n: number) {
+  const s = entrants[i]!.state;
+  const full = tuning.vehicle.bananaMaxEffective;
+  const before = s.bananas;
+  s.bananas += n;
+  if (i !== 0) return;
+  sfx.banana(tuning.bananas.volume);
+  if (before < full && s.bananas >= full) {
+    sfx.bananaMilestone(tuning.bananas.volume);
+    showToast(`${full} bananas! Full speed bonus`, 1.6);
+  }
+}
+
 const ordinal = (n: number) =>
   `${n}${["th", "st", "nd", "rd"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
 
 function renderHud() {
   const s = you.state;
-  const parts = [you.character.name, `${s.speed.toFixed(0)} m/s`];
+  const parts = [you.character.name, `${s.speed.toFixed(0)} m/s`, `Bananas ${s.bananas}`];
   if (course) parts.push(`Pickups ${course.collected}`);
   let order: number[] = [];
   if (race) {

@@ -375,5 +375,53 @@
     {
       "at": 290
     }
+  ],
+  "bananas": [
+    {
+      "at": 60,
+      "across": 6.3,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 240,
+      "across": -8,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 340,
+      "across": -6
+    },
+    {
+      "at": 340,
+      "across": -2
+    },
+    {
+      "at": 340,
+      "across": 2
+    },
+    {
+      "at": 340,
+      "across": 6
+    },
+    {
+      "at": 430,
+      "across": 7.5,
+      "count": 4,
+      "gap": 5
+    },
+    {
+      "at": 560,
+      "across": -8,
+      "count": 3,
+      "gap": 5
+    },
+    {
+      "at": 650,
+      "across": 0,
+      "count": 4,
+      "gap": 5
+    }
   ]
 }

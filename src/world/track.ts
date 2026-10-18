@@ -23,6 +23,8 @@ export interface TrackData {
   points: TrackPoint[];
   /** Zipper pads: distance along the lap and offset across the road, metres. */
   zippers?: { at: number; across?: number }[];
+  /** Banana rows: distance along the lap, offset across, how many and how far apart. */
+  bananas?: { at: number; across?: number; count?: number; gap?: number }[];
 }
 
 export interface TrackSample {

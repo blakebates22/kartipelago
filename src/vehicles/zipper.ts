@@ -109,6 +109,8 @@ export function stepZipper(
   topSpeed: number,
   cfg: ZipperConfig,
   dt: number,
+  /** Normal top speed to settle back to afterwards (top speed with bananas). */
+  normalTop = topSpeed,
 ): number | undefined {
   const pressed = throttle > 0.5;
   if (s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING) {
@@ -133,7 +135,7 @@ export function stepZipper(
   }
   if (s.zipPhase === ZIP.RECOVERY) {
     s.zipTime += dt;
-    if (s.speed <= topSpeed + 0.05 || zipperRecoveryCap(s, topSpeed) <= topSpeed + 0.05) {
+    if (s.speed <= normalTop + 0.05 || zipperRecoveryCap(s, normalTop) <= normalTop + 0.05) {
       s.zipPhase = ZIP.NORMAL;
     }
   }

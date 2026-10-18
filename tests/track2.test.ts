@@ -20,6 +20,7 @@ import {
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart } from "../src/vehicles/kart";
 import { startZipper } from "../src/vehicles/zipper";
+import { collectBananas, createBananaField, stepBananaField } from "../src/world/bananas";
 import { buildZippers, enteredZipper } from "../src/world/zippers";
 import { acrossRoad, buildTrack, type TrackData } from "../src/world/track";
 
@@ -27,6 +28,7 @@ import { acrossRoad, buildTrack, type TrackData } from "../src/world/track";
 const dt = 1 / 120;
 const track = buildTrack(ribbon as TrackData, tuning.track.sampleSpacing);
 const pads = buildZippers(track, (ribbon as TrackData).zippers ?? [], tuning.track);
+const bananaSpots = (ribbon as TrackData).bananas ?? [];
 const line = buildRacingLine(track, {
   margin: tuning.ai.lineMargin,
   span: tuning.ai.lineSpan,
@@ -71,7 +73,7 @@ describe("Ribbon Ridge", () => {
     expect(standings(race, spots)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
   });
 
-  it("lets an AI Speedster race three clean laps of 25-30 s, mostly drifting", () => {
+  it("lets an AI Speedster race three clean laps of 25-30 s (less with bananas), mostly drifting", () => {
     const cfg = applyCharacter(
       tuning.vehicle,
       roster.characters.find((c) => c.id === "speedster") as Character,
@@ -83,6 +85,7 @@ describe("Ribbon Ridge", () => {
     const race = createRace(track, tuning.race, 1);
     const driver = createDriver(line, 1, tuning.ai);
     const stats = { wall: 0, drift: 0, air: 0, steps: 0, respawns: 0 };
+    const field = createBananaField(track, bananaSpots, () => createTrackGround(track));
     for (let t = 0; t < 150 && !race.racers[0]!.finished; t += dt) {
       tickRace(race, dt);
       const moment = {
@@ -94,6 +97,8 @@ describe("Ribbon Ridge", () => {
       stepImpacts(kart, tuning.collision, dt);
       stepKart(kart, canDrive(race) ? want : NEUTRAL, cfg, dt);
       if (enteredZipper(kart, pads)) startZipper(kart, want.throttle, cfg);
+      collectBananas(field, 0, kart, tuning.bananas);
+      stepBananaField(field, tuning.bananas, dt);
       const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
       if (stepWalls(kart, ground, walls, dt)) stats.wall++;
       stepVertical(kart, ground, tuning.physics, dt);
@@ -106,8 +111,9 @@ describe("Ribbon Ridge", () => {
     }
     const r = race.racers[0]!;
     expect(r.finished).toBe(true);
+    // 25-30 s at normal speed; holding ten bananas (it collects them) takes ~2 s off.
     for (const lap of r.lapTimes.slice(1)) {
-      expect(lap).toBeGreaterThan(25);
+      expect(lap).toBeGreaterThan(21);
       expect(lap).toBeLessThan(30);
     }
     expect(stats.respawns).toBe(0);
