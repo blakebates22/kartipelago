@@ -1,7 +1,7 @@
 /**
  * One input state for the whole game, merged from keyboard and gamepad.
  *
- * Gameplay code never reads devices directly. It calls input.sample(dt) once per fixed
+ * Gameplay code never reads devices directly. It calls input.sample(dt, drifting) once per fixed
  * step and reads the result, so keyboard and gamepad behave identically and the
  * simulation stays deterministic for a given input sequence.
  */
@@ -34,6 +34,15 @@ export interface InputConfig {
   keySteerRate: number;
   /** Keyboard steering ramp back to centre (and through it when reversing), per second. */
   keySteerReturn: number;
+  /**
+   * While drifting, keys build steering more slowly, so tap length gives fine control:
+   * a short tap nudges the arc, holding commits to it.
+   */
+  driftKeyRate: number;
+  /** While drifting, how fast released keys ease steering back to centre, per second. */
+  driftKeyReturn: number;
+  /** While drifting, how fast steering swings through centre to the other side, per second. */
+  driftKeyReverse: number;
 }
 
 export const NEUTRAL: Readonly<DeviceReading> = { throttle: 0, brake: 0, steer: 0, drift: false };
@@ -51,15 +60,24 @@ export function shapeStick(x: number, deadzone: number, curve: number): number {
 /**
  * Keys are digital, so steering ramps instead of snapping. This makes small corrections
  * possible on a keyboard. Releasing or switching direction recentres at the return rate.
+ * While drifting, a separate, slower build-up makes tap length the fine control, with a
+ * fast swing through centre so changes of direction stay responsive.
  */
 export function rampKeySteer(
   current: number,
   target: number,
   dt: number,
   cfg: InputConfig,
+  drifting = false,
 ): number {
-  const returning = target === 0 || Math.sign(target) !== Math.sign(current);
-  const rate = returning && current !== 0 ? cfg.keySteerReturn : cfg.keySteerRate;
+  const reversing = target !== 0 && current !== 0 && Math.sign(target) !== Math.sign(current);
+  const releasing = target === 0 && current !== 0;
+  let rate: number;
+  if (drifting) {
+    rate = reversing ? cfg.driftKeyReverse : releasing ? cfg.driftKeyReturn : cfg.driftKeyRate;
+  } else {
+    rate = reversing || releasing ? cfg.keySteerReturn : cfg.keySteerRate;
+  }
   const step = rate * dt;
   if (Math.abs(target - current) <= step) return target;
   return current + Math.sign(target - current) * step;
@@ -124,10 +142,10 @@ export function createInput(target: Window = window) {
     state: state as Readonly<InputState>,
 
     /** Read all devices and update state. Call once per fixed step. */
-    sample(dt: number): Readonly<InputState> {
+    sample(dt: number, drifting = false): Readonly<InputState> {
       const cfg = tuning.input;
       const steerTarget = (any(KEYS.right) ? 1 : 0) - (any(KEYS.left) ? 1 : 0);
-      keySteer = rampKeySteer(keySteer, steerTarget, dt, cfg);
+      keySteer = rampKeySteer(keySteer, steerTarget, dt, cfg, drifting);
 
       let merged: DeviceReading = {
         throttle: any(KEYS.throttle) ? 1 : 0,

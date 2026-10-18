@@ -36,6 +36,8 @@ const cfg: KartConfig = {
   driftOffsetRate: 4,
   driftOffsetReturnRate: 4,
   driftRecoverSteer: 1,
+  driftBrakeTighten: 0.35,
+  driftBrakeDecel: 0.35,
   spinThreshold: 0.6,
   spinOutAfterSec: 1.5,
   spinSec: 0.8,

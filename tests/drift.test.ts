@@ -123,6 +123,27 @@ describe("offset drift: trajectory", () => {
   });
 });
 
+describe("offset drift: braking", () => {
+  it("tightens the arc instead of cancelling the drift", () => {
+    const loose = arcRadius(run(drifting(), 1, { throttle: 1, drift: true }), 0.3, {
+      throttle: 1,
+      drift: true,
+    });
+    const s = run(drifting(), 1, { throttle: 1, drift: true });
+    const braking = arcRadius(s, 0.3, { throttle: 1, drift: true, brake: 1 });
+    expect(s.driftDir).toBe(1);
+    expect(braking).toBeLessThan(loose * 0.85);
+  });
+
+  it("slows the kart only gently, so a dab of brake keeps the drift alive", () => {
+    const s = run(drifting(), 1, { throttle: 1, drift: true });
+    const before = s.speed;
+    run(s, 0.25, { drift: true, brake: 1 });
+    expect(s.driftDir).toBe(1);
+    expect(s.speed).toBeGreaterThan(before - cfg.brake * 0.25 * 0.5);
+  });
+});
+
 describe("offset drift: countersteer spin-out", () => {
   it("spins out after sustained hard countersteer", () => {
     const s = drifting();

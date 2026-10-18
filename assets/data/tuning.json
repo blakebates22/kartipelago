@@ -7,7 +7,10 @@
     "stickDeadzone": 0.15,
     "stickCurve": 1.5,
     "keySteerRate": 6,
-    "keySteerReturn": 10
+    "keySteerReturn": 10,
+    "driftKeyRate": 3,
+    "driftKeyReturn": 6,
+    "driftKeyReverse": 14
   },
   "vehicle": {
     "accel": 18,
@@ -37,6 +40,8 @@
     "driftOffsetRate": 4,
     "driftOffsetReturnRate": 4,
     "driftRecoverSteer": 1,
+    "driftBrakeTighten": 0.35,
+    "driftBrakeDecel": 0.35,
     "spinThreshold": 0.6,
     "spinOutAfterSec": 1.5,
     "spinSec": 0.8,

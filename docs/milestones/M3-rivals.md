@@ -1,5 +1,7 @@
 # M3: Rivals
 
+Status: **done**.
+
 ## Goal
 
 Seven AI rivals race you on any track, drifting like skilled players, so a race is a
@@ -7,14 +9,42 @@ real contest. They must work on future tracks without hand-authoring anything.
 
 ## Done when
 
-- [ ] A racing line is computed automatically from a track's data.
-- [ ] AI karts drive with the same inputs and physics as the player.
-- [ ] AI karts drift through corners that suit the drift, and follow the line.
-- [ ] Seven rivals start on a grid behind the line, with original names and colours.
-- [ ] Karts bump each other instead of driving through each other.
-- [ ] The HUD shows your race position; the finish screen shows the standings.
-- [ ] A difficulty setting can make rivals slower or stop them drifting.
-- [ ] A race against seven rivals on Drift Loop is fun and close.
+- [x] A racing line is computed automatically from a track's data.
+- [x] AI karts drive with the same inputs and physics as the player.
+- [x] AI karts drift through corners that suit the drift, and follow the line.
+- [x] Seven rivals start on a grid behind the line, with original names and colours.
+- [x] Karts bump each other instead of driving through each other.
+- [x] The HUD shows your race position; the finish screen shows the standings.
+- [x] A difficulty setting can make rivals slower or stop them drifting.
+- [x] A race against seven rivals is fun and close.
+
+## Also shipped
+
+Added during the milestone after playtesting:
+
+- **Offset drift model** (`driftModel` 1, see `docs/drift-model.md`): the stick steers
+  the body as an arc curvature with an assisted shape, the path is the body plus a drift
+  offset that builds and eases over about half a second, and sustained hard
+  countersteer can spin you out. Braking tightens a drift; keyboard steering builds more
+  slowly while drifting, so tap length gives fine control. **M** flips to the old model.
+- **Ribbon Ridge**, a second track built for linked drifts and direction changes, with
+  track selection (`?track=1`, `?track=2`) and per-track lap records.
+- **Wall impact severity**: light scrapes keep the drift, moderate hits knock the kart but
+  the drift survives, crashes cancel it and briefly disrupt control.
+- Fixes: ground-lookup gaps on the outside of bends, false take-offs on banked road, a
+  crest that launched karts at a corner, and grid ranking on curved approaches.
+
+## Playtest notes
+
+- Rivals feel good as they are. Revisit difficulty once items arrive.
+- The new drift model "feels much better" than the old one.
+- Wall impacts feel good; the light/moderate/severe bands are `scrapeSpeed` 4 and
+  `crashSpeed` 12 m/s.
+- AI settings that work on both tracks: line margin 4.5 m, drift when a corner ahead is
+  tighter than 45 m, look 20 m ahead for corners.
+- Track design rules learned: no corner tighter than a full-in drift (about 20 m);
+  direction changes need room (wider, unbanked); ease height changes; avoid flipping the
+  bank on raised road.
 
 ## Not in this milestone
 
