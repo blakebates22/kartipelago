@@ -22,7 +22,12 @@ export interface SkyDomeSpec {
   top?: string;
   horizon?: string;
   bottom?: string;
-  sun?: { color?: string; size?: number; glow?: string };
+  /**
+   * The sun's disc. `elevation` (degrees above the horizon) can put it lower in the
+   * sky than the light really comes from, so you see it while racing; its compass
+   * direction always matches the light.
+   */
+  sun?: { color?: string; size?: number; glow?: string; elevation?: number };
   clouds?: {
     count?: number;
     color?: string;
@@ -151,6 +156,11 @@ export function createSkyDome(
 
   // The sun, where the light comes from.
   const sd = new THREE.Vector3(...sunDirection).normalize();
+  if (spec.sun?.elevation !== undefined) {
+    const flat = Math.hypot(sd.x, sd.z) || 1;
+    const el = (spec.sun.elevation * Math.PI) / 180;
+    sd.set((sd.x / flat) * Math.cos(el), Math.sin(el), (sd.z / flat) * Math.cos(el));
+  }
   const sunTex = sunTexture(spec.sun?.color ?? "#fff4c2", spec.sun?.glow ?? "#ffe58a");
   const sunMat = new THREE.SpriteMaterial({
     map: sunTex,
@@ -182,7 +192,7 @@ export function createSkyDome(
   disposables.push(cloudGeo);
   for (let i = 0; i < count; i++) {
     const az = (i / count) * Math.PI * 2 + (r() - 0.5) * 0.4;
-    const el = ((low + (high - low) * Math.pow(r(), 1.6)) * Math.PI) / 180;
+    const el = ((low + (high - low) * Math.pow(r(), 1.2)) * Math.PI) / 180;
     // Keep clouds from covering the sun.
     const p = new THREE.Vector3(
       Math.cos(az) * Math.cos(el),
@@ -200,7 +210,7 @@ export function createSkyDome(
     });
     disposables.push(mat);
     const m = new THREE.Mesh(cloudGeo, mat);
-    const w = 160 + r() * 260;
+    const w = 220 + r() * 300;
     m.scale.set(w, w, 1);
     m.position.copy(p).multiplyScalar(RADIUS * 0.85);
     m.lookAt(0, m.position.y * 0.6, 0);

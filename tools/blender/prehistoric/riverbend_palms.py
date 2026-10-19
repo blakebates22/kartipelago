@@ -32,7 +32,15 @@ FALLS_Y, FALLS_TOP = 228.5, 17.5
 
 
 def river_x(y):
-    return 10 * math.sin(y / 48) + 5 * math.sin(y / 19 + 1.3)
+    """The river's centre line. v2.1 adds big meanders north of the bridge and south of
+    the ford, where the road never goes, and an S between them (the crossings are
+    unchanged)."""
+    x = 10 * math.sin(y / 48) + 5 * math.sin(y / 19 + 1.3)
+    x += 24 * math.sin((y - 115) / 24) * smooth((y - 112) / 22) * (1 - smooth((y - 205) / 18))
+    x += 26 * math.sin((y + 138) / 22) * smooth((-y - 135) / 22) * (1 - smooth((-y - 235) / 12))
+    # And a gentler S through the middle of the valley, between the two crossings.
+    x += 14 * math.sin((y + 65) / 22) * smooth((y + 85) / 15) * (1 - smooth((y - 60) / 15))
+    return x
 
 
 # The layout, as straights and arcs ("L"/"R", radius m, degrees), counter-clockwise from
@@ -120,8 +128,6 @@ def off_dino_path(x, y, margin=8.0):
     return all(math.hypot(x - (-75 + 42 * math.cos(a)), y - (-28 + 88 * math.sin(a))) > margin for a in [k * math.tau / 96 for k in range(96)])
 
 
-VILLAGE = [(112, -72), (88, -82), (132, -108), (110, -160), (140, -162), (78, -150)]
-TOTEMS = [(92, -90), (128, -80), (124, -150)]
 # The dirt shortcut through the village: off the end of the ford road, rejoining the
 # final straight.
 SHORTCUT = [(72, -104), (96, -99), (120, -90), (147, -70)]
@@ -233,47 +239,111 @@ def water_flowers(c, ter):
     return n
 
 
+# Where the huts cluster round their campfires: the village south of the ford road,
+# and little hamlets round the valley ((centre), huts, ring radius).
+HAMLETS = [((60, -150), 7, 14.0), ((110, -172), 5, 12.0), ((100, -72), 3, 8.5), ((82, 150), 5, 11.0), ((-75, 140), 6, 12.0), ((48, -190), 4, 10.0), ((-182, -8), 3, 9.0)]
+
+
+def settle(c, ter):
+    """Huts in rings round each campfire, with a totem or two; returns the spots used
+    (so trees keep clear)."""
+    hut, totem, fire = props.hut(c), props.totem(c), props.campfire(c)
+    taken = []
+    for h, ((cx, cy), count, radius) in enumerate(HAMLETS):
+        z = c.ground_z(cx, cy, ter)
+        if z is None or not props.clear_of_road(c, cx, cy, 6) or z < WATER_Z + 0.5:
+            continue
+        c.place(fire, cx, cy, z - 0.05, rot=h * 0.9, coll="Village", role="visual")
+        gx, gy, gz = c.game(cx, cy, z)
+        c.entity("campfire", x=gx, y=gy, z=gz)
+        taken.append((cx, cy, 5.0))
+        placed = 0
+        for k in range(count * 3):
+            if placed >= count:
+                break
+            a = (k / count) * math.tau + h * 0.7 + 0.35 * (kit.rnd(k * 3.1 + h) - 0.5)
+            r = radius * (0.9 + 0.3 * kit.rnd(k * 5.7 + h * 2))
+            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+            zz = c.ground_z(x, y, ter)
+            if zz is None or zz < WATER_Z + 0.5 or not props.clear_of_road(c, x, y, 6):
+                continue
+            if any(math.hypot(x - tx, y - ty) < tr + 4.5 for tx, ty, tr in taken):
+                continue
+            # Doorways face the fire.
+            c.place(hut, x, y, zz - 0.1, rot=a + math.pi, scale=0.85 + 0.35 * kit.rnd(k + h * 7), coll="Village")
+            taken.append((x, y, 4.5))
+            placed += 1
+        for k in range(1 + (count > 4)):
+            a = h * 1.3 + k * math.pi + 0.8
+            x, y = cx + radius * 0.55 * math.cos(a), cy + radius * 0.55 * math.sin(a)
+            zz = c.ground_z(x, y, ter)
+            if zz is not None and props.clear_of_road(c, x, y, 3) and all(math.hypot(x - tx, y - ty) > tr + 1.5 for tx, ty, tr in taken):
+                c.place(totem, x, y, zz - 0.2, rot=a, coll="Village")
+                taken.append((x, y, 1.5))
+    return taken
+
+
+def river_cattails(c, ter):
+    """Clumps of cattails in the shallows along both banks."""
+    clumps = [props.cattails(c, v) for v in range(3)]
+    n = 0
+    for k in range(260):
+        y = -245 + (FALLS_Y - 30 + 245) * kit.rnd(k * 2.9 + 7)
+        if abs(y - FORD_Y) < 34:
+            continue
+        side = -1 if kit.rnd(k * 1.3 + 2) < 0.5 else 1
+        x = river_x(y) + side * (20 + 10 * kit.rnd(k * 4.3 + 1))
+        g = c.ground_z(x, y, ter)
+        if g is None or not (WATER_Z - 1.8 < g < WATER_Z + 0.5) or not props.clear_of_road(c, x, y, 4):
+            continue
+        c.place(clumps[k % 3], x, y, max(g, WATER_Z - 0.4), rot=kit.rnd(k * 6.1) * math.tau, scale=0.8 + 0.6 * kit.rnd(k * 9.7), coll="Water", role="visual")
+        n += 1
+    return n
+
+
 def scenery(c):
     ter = list(c.coll("Terrain").objects)
     for piece in c.pieces:
         if "bridge" in piece.name:
             props.piers(c, piece, every=10, mat=("palm_bark", "wall"), size=0.55, terrain=ter)
-    palms = [props.palm(c, 8.5 + v, 1.2 + 0.5 * v, v) for v in range(3)]
+    taken = settle(c, ter)
+    palms = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
     trees = [props.jungle_tree(c, v) for v in range(2)]
+    grand = [props.grand_tree(c, v) for v in range(3)]
+    bushes = [props.bush(c, v) for v in range(2)]
     fern = props.fern(c)
     flowers = props.flowers(c)
     rocks = [props.boulder(c, "valley_cliff", v) for v in range(3)]
-    hut, totem = props.hut(c), props.totem(c)
 
     def dry(x, y, z):
         return z > WATER_Z + 0.3
 
-    def beside(m0, m1):
+    def clear(x, y, m=3.0):
+        return all(math.hypot(x - tx, y - ty) > tr + m for tx, ty, tr in taken)
+
+    def beside(m0, m1, room=3.0):
         def ok(x, y, z):
             smp, d = c.nearest(x, y)
-            return dry(x, y, z) and smp.w / 2 + m0 < d < smp.w / 2 + m1 and z < 12 and off_dino_path(x, y)
+            return dry(x, y, z) and smp.w / 2 + m0 < d < smp.w / 2 + m1 and z < 12 and off_dino_path(x, y) and clear(x, y, room)
         return ok
 
-    # Palms lining the road and the river banks; trees and rocks further out.
+    # Grand canopy trees first (the landmarks), then palms lining the road and the
+    # river banks, jungle trees further out, and bushes, ferns and flowers everywhere.
+    for v, t in enumerate(grand):
+        for x, y in props.scatter(c, t, 7, (-210, 210, -210, 210), beside(22, 95, 10.0), ter, seed=60 + v, scale=(1.2, 1.6)):
+            taken.append((x, y, 7.0))
     for v, p in enumerate(palms):
-        props.scatter(c, p, 34, (-200, 200, -200, 200), beside(4, 22), ter, seed=10 + v)
-        props.scatter(c, p, 10, (-60, 60, -200, 200),
-                      lambda x, y, z: dry(x, y, z) and off_dino_path(x, y) and 26 < abs(x - river_x(y)) < 40 and kit.Vector((x, y)).length < 200 and props.clear_of_road(c, x, y, 5), ter, seed=20 + v)
+        props.scatter(c, p, 44, (-200, 200, -200, 200), beside(4, 24), ter, seed=10 + v)
+        props.scatter(c, p, 14, (-80, 80, -230, 230),
+                      lambda x, y, z: dry(x, y, z) and off_dino_path(x, y) and clear(x, y) and 26 < abs(x - river_x(y)) < 42 and kit.Vector((x, y)).length < 205 and props.clear_of_road(c, x, y, 5), ter, seed=20 + v)
     for v, t in enumerate(trees):
-        props.scatter(c, t, 16, (-210, 210, -210, 210), beside(16, 70), ter, seed=30 + v)
-    props.scatter(c, fern, 70, (-200, 200, -200, 200), beside(3, 40), ter, seed=40, role="visual")
-    props.scatter(c, flowers, 95, (-200, 200, -200, 200), beside(2.5, 30), ter, seed=41, role="visual", sink=0.1)
+        props.scatter(c, t, 30, (-210, 210, -210, 210), beside(14, 80, 4.0), ter, seed=30 + v, scale=(1.0, 1.6))
+    for v, b in enumerate(bushes):
+        props.scatter(c, b, 55, (-205, 205, -205, 205), beside(3.5, 60), ter, seed=70 + v, role="visual", scale=(0.7, 1.5))
+    props.scatter(c, fern, 120, (-200, 200, -200, 200), beside(3, 50), ter, seed=40, role="visual")
+    props.scatter(c, flowers, 170, (-200, 200, -200, 200), beside(2.5, 45), ter, seed=41, role="visual", sink=0.1)
     for v, r in enumerate(rocks):
         props.scatter(c, r, 9, (-220, 220, -220, 220), beside(8, 60), ter, seed=50 + v, scale=(1.2, 3.2))
-    # The village: huts and totems inside the last bend.
-    for i, (x, y) in enumerate(VILLAGE):
-        z = c.ground_z(x, y, ter)
-        if z is not None and props.clear_of_road(c, x, y, 6):
-            c.place(hut, x, y, z - 0.1, rot=i * 1.3, scale=1.0 + 0.15 * (i % 2), coll="Village")
-    for i, (x, y) in enumerate(TOTEMS):
-        z = c.ground_z(x, y, ter)
-        if z is not None and props.clear_of_road(c, x, y, 3):
-            c.place(totem, x, y, z - 0.2, rot=i * 2.1 + 0.5, coll="Village")
     # Sandstone stacks: landmarks you can see across the valley.
     for i, (x, y, h) in enumerate(((-60, 40, 22), (60, 10, 16), (-100, -10, 26), (40, -60, 14), (-190, 120, 30))):
         if props.clear_of_road(c, x, y, 12):
@@ -281,6 +351,7 @@ def scenery(c):
             c.paint_rock(rock, ("valley_cliff", "wall"), ("valley_grass", "grass"))
     waterfall(c, ter)
     water_flowers(c, ter)
+    river_cattails(c, ter)
     # A smoking volcano far beyond the walls: a hint of Ember Peak.
     bm = bmesh.new()
     rings = [props.ring(bm, (-360, 380), r, z, 16) for r, z in ((170, -5), (120, 50), (55, 105), (40, 112))]

@@ -13,6 +13,55 @@
   },
   "entities": [
     {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 60,
+      "y": 0.72,
+      "z": 150
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 110,
+      "y": -0.21,
+      "z": 172
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 100,
+      "y": 0.87,
+      "z": 72
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 82,
+      "y": 0.5,
+      "z": -150
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -75,
+      "y": 0.86,
+      "z": -140
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 48,
+      "y": 1.26,
+      "z": 190
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -182,
+      "y": 10.88,
+      "z": 8
+    },
+    {
       "id": "zip_01",
       "type": "zipper",
       "at": 997.6,

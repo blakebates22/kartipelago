@@ -354,7 +354,12 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
         top: hex(d.top),
         horizon: hex(d.horizon),
         bottom: hex(d.bottom),
-        sun: { color: hex(sd.color), size: num(sd.size), glow: hex(sd.glow) },
+        sun: {
+          color: hex(sd.color),
+          size: num(sd.size),
+          glow: hex(sd.glow),
+          elevation: num(sd.elevation),
+        },
         clouds: {
           count: num(cl.count),
           color: hex(cl.color),

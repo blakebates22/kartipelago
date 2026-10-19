@@ -145,6 +145,131 @@ def flowers(c):
     return c.proto(name, build) and name
 
 
+def cattails(c, variant=0):
+    """A clump of cattails: long arching blades and stalks topped with brown heads."""
+    name = "Cattails %d" % variant
+
+    def build(bm):
+        for i in range(12):
+            a = rnd(i * 4.1 + variant * 9) * math.tau
+            r = 0.6 * rnd(i * 2.3 + variant)
+            x, y = r * math.cos(a), r * math.sin(a)
+            h = 1.7 + 1.0 * rnd(i * 6.7 + variant * 3)
+            out = Vector((math.cos(a), math.sin(a), 0))
+            w = 0.11
+            side = Vector((-math.sin(a), math.cos(a), 0)) * w
+            base = Vector((x, y, -0.3))
+            mid = base + Vector((0, 0, h * 0.6)) + out * 0.25
+            tip = base + Vector((0, 0, h)) + out * (0.55 + 0.4 * rnd(i + variant))
+            v = [bm.verts.new(base - side), bm.verts.new(base + side), bm.verts.new(mid + side * 0.8), bm.verts.new(mid - side * 0.8)]
+            bm.faces.new(v)
+            bm.faces.new((v[3], v[2], bm.verts.new(tip)))
+        blades = _faces(bm, 0)
+        k0 = len(bm.faces)
+        heads = []
+        for i in range(5):
+            a = rnd(i * 3.7 + variant * 5 + 1) * math.tau
+            r = 0.45 * rnd(i * 1.9 + variant * 2)
+            x, y = r * math.cos(a), r * math.sin(a)
+            h = 2.1 + 0.8 * rnd(i * 8.1 + variant)
+            lean = 0.12 * h
+            tube(bm, [(x, y, -0.3), (x + lean * math.cos(a), y + lean * math.sin(a), h + 0.45)], 0.035, n=4)
+            heads.append((x + lean * 0.8 * math.cos(a), y + lean * 0.8 * math.sin(a), h))
+        stalks = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for x, y, h in heads:
+            tube(bm, [(x, y, h - 0.35), (x, y, h - 0.25), (x, y, h + 0.2), (x, y, h + 0.3)], [0.07, 0.12, 0.12, 0.06], n=6)
+        brown = _faces(bm, k1)
+        return [(c.lib("cattail_leaf"), blades + stalks), (c.lib("cattail_head"), brown)]
+
+    return c.proto(name, build) and name
+
+
+def grand_tree(c, variant=0):
+    """A towering canopy tree: a thick trunk on buttress roots, spreading limbs and a
+    huge layered crown. The landmark trees of the valley."""
+    name = "Grand Tree %d" % variant
+
+    def build(bm):
+        h = 13.0 + 2.5 * variant
+        tube(bm, [(0, 0, -0.5), (0.2, 0.1, h * 0.35), (-0.1, 0.3, h * 0.7), (0.1, 0.2, h)], [1.35, 1.0, 0.8, 0.6], n=9)
+        # Buttress roots: fins flaring out round the foot.
+        for i in range(6):
+            a = i * math.tau / 6 + variant
+            ca, sa = math.cos(a), math.sin(a)
+            fin = [(0.6 * ca, 0.6 * sa, 3.2), (2.6 * ca, 2.6 * sa, -0.3), (0.6 * ca, 0.6 * sa, -0.3)]
+            off = Vector((-sa, ca, 0)) * 0.22
+            vs = [bm.verts.new(Vector(q) + off) for q in fin] + [bm.verts.new(Vector(q) - off) for q in fin]
+            bm.faces.new((vs[0], vs[1], vs[2]))
+            bm.faces.new((vs[5], vs[4], vs[3]))
+            bm.faces.new((vs[0], vs[3], vs[4], vs[1]))
+        # Limbs reaching out to the crown.
+        limbs = []
+        for i in range(4):
+            a = i * math.tau / 4 + 0.6 + variant * 0.7
+            reach = 4.5 + 1.5 * rnd(i + variant * 4)
+            end = (reach * math.cos(a), reach * math.sin(a), h * (0.8 + 0.12 * rnd(i * 3 + variant)))
+            tube(bm, [(0, 0.2, h * 0.62), (end[0] * 0.5, end[1] * 0.5, end[2] - 0.6), end], [0.5, 0.36, 0.25], n=6)
+            limbs.append(end)
+        trunk = _faces(bm, 0)
+        k0 = len(bm.faces)
+        crown = [(0, 0, h + 2.4, 5.2)] + [(x, y, z + 1.0, 3.6 + 0.8 * rnd(k + variant)) for k, (x, y, z) in enumerate(limbs)]
+        for x, y, z, r in crown:
+            blob(bm, (x, y, z), r, sz=0.62, subdiv=2)
+        top = _faces(bm, k0)
+        k1 = len(bm.faces)
+        # A darker under-layer, so the crown has depth.
+        for x, y, z, r in crown[1:]:
+            blob(bm, (x * 0.8, y * 0.8, z - 1.4), r * 0.85, sz=0.45, subdiv=1)
+        under = _faces(bm, k1)
+        return [(c.lib("palm_bark"), trunk), (c.lib("canopy_bright"), top), (c.lib("jungle_leafcover"), under)]
+
+    return c.proto(name, build) and name
+
+
+def bush(c, variant=0):
+    """A round leafy bush."""
+    name = "Bush %d" % variant
+
+    def build(bm):
+        for i in range(4):
+            a = i * 2.1 + variant
+            r = 0.7 * (i > 0)
+            blob(bm, (r * math.cos(a), r * math.sin(a), 0.7 - 0.15 * (i > 0)), 1.0 - 0.18 * (i > 0), sz=0.8, subdiv=1)
+        return [(c.lib("canopy_bright" if variant % 2 else "jungle_leafcover"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def campfire(c):
+    """A little bonfire: a ring of stones, crossed logs and glowing flame tongues."""
+    name = "Campfire"
+
+    def build(bm):
+        for i in range(9):
+            a = i * math.tau / 9
+            blob(bm, (1.25 * math.cos(a), 1.25 * math.sin(a), 0.12), 0.32, sx=1.2, sz=0.75, subdiv=1)
+        stones = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for i in range(4):
+            a = i * math.tau / 4 + 0.4
+            ca, sa = math.cos(a), math.sin(a)
+            tube(bm, [(0.95 * ca, 0.95 * sa, 0.15), (0.1 * ca, 0.1 * sa, 0.75)], 0.13, n=6)
+        logs = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for i, (r, h, w) in enumerate(((0.0, 1.9, 0.42), (0.35, 1.3, 0.3), (0.35, 1.45, 0.3), (0.35, 1.2, 0.28), (0.3, 1.1, 0.26))):
+            a = i * 2.3
+            cx, cy = r * math.cos(a), r * math.sin(a)
+            base = [bm.verts.new((cx + w * math.cos(k * math.tau / 5 + a), cy + w * math.sin(k * math.tau / 5 + a), 0.25)) for k in range(5)]
+            tip = bm.verts.new((cx + 0.15 * math.cos(a + 1), cy + 0.15 * math.sin(a + 1), 0.25 + h))
+            for k in range(5):
+                bm.faces.new((base[k], base[(k + 1) % 5], tip))
+        flames = _faces(bm, k1)
+        return [(c.lib("valley_cliff"), stones), (c.lib("palm_bark"), logs), (c.lib("campfire_flame"), flames)]
+
+    return c.proto(name, build) and name
+
+
 def lily_pad(c, variant=0):
     """A floating lily pad (a disc with a notch), at the water's surface."""
     name = "Lily Pad %d" % variant

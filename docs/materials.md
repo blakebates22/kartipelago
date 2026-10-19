@@ -201,7 +201,8 @@ How it's read:
 - Tracks exported before `look.json` existed simply don't have one.
 - An environment can also ask for a **painted sky** with `skyDome`: a gradient dome
   (`top`, `horizon`, `bottom`), a glowing sun where the sunlight comes from
-  (`sun: { color, size, glow }`, size in degrees), and cartoon clouds round the horizon
+  (`sun: { color, size, glow, elevation }`, size in degrees; `elevation` puts the disc
+  lower than the light really comes from, so it shows while racing), and cartoon clouds round the horizon
   (`clouds: { count, color, shade, seed, low, high, drift }`, heights in degrees above
   the horizon, drift in radians per second). Every field is optional. River Valley
   uses one (Riverbend Palms); without it the sky is the flat `sky` colour. The code is

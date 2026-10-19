@@ -556,6 +556,53 @@ def falls_foam():
     return paint(f)
 
 
+def cattail_leaf():
+    # Long blades: vertical green streaks with a pale midrib now and then.
+    pal = ["#3c7a26", "#4f9330", "#62a83a", "#7cbd48", "#9bcf5a"]
+    a = noise(16, 2, 381)
+
+    def f(x, y):
+        if x % 8 == 3:
+            return "#a9cf6a"
+        return pick(pal, 0.25 + a(x, y) * 0.55 + 0.15 * math.sin(x * 0.9))
+
+    return paint(f)
+
+
+def cattail_head():
+    # The velvety brown seed head.
+    pal = ["#5a3417", "#6e4220", "#83522a", "#99633a"]
+    a, b = noise(8, 4, 391), noise(16, 8, 392)
+
+    def f(x, y):
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def campfire_flame():
+    # Flame tongues: white-yellow at the root to deep orange at the tips (V runs up).
+    cols = ["#fff6c8", "#ffe070", "#ffb63a", "#ff8a24", "#f2561a"]
+    a = noise(8, 2, 401)
+
+    def f(x, y):
+        return pick(cols, 1 - y / H + (a(x, y) - 0.5) * 0.35)
+
+    return paint(f)
+
+
+def canopy_bright():
+    # A sunnier leaf canopy for the grand trees: clumps of light and mid greens.
+    pal = ["#2f7d2c", "#3f9634", "#55ad3c", "#72c44a", "#95d75c"]
+    a, b = noise(8, 4, 411), noise(16, 8, 412)
+
+    def f(x, y):
+        clump = 0.5 + 0.5 * math.sin(x * 0.7 + 2 * math.sin(y * 0.5))
+        return pick(pal, 0.15 + a(x, y) * 0.4 + b(x, y) * 0.25 + clump * 0.2)
+
+    return paint(f)
+
+
 def rainbow():
     # Soft rainbow bands across V, for the mist under the waterfall.
     bands = ["#ff5a5a", "#ff9d42", "#ffe24a", "#6fe05a", "#4ab6ff", "#8a6dff"]
@@ -580,8 +627,8 @@ THEMES = [
                 "top": "#1f7fe0",
                 "horizon": "#c2eaff",
                 "bottom": "#a8dcff",
-                "sun": {"color": "#fff9dc", "size": 6, "glow": "#ffe27a"},
-                "clouds": {"count": 26, "color": "#ffffff", "shade": "#d2e8ff", "seed": 5, "low": 2, "high": 22, "drift": 0.004},
+                "sun": {"color": "#fff9dc", "size": 7, "glow": "#ffe27a", "elevation": 15},
+                "clouds": {"count": 40, "color": "#ffffff", "shade": "#d2e8ff", "seed": 5, "low": 8, "high": 24, "drift": 0.006},
             },
         },
     },
@@ -634,6 +681,10 @@ MATERIALS = [
     ("tribal_paint", "Painted Wood", "river_valley", "wall", tribal_paint, 3, None),
     ("start_checker", "Start Checker", "river_valley", "road", start_checker, 2, None),
     ("blossom", "Blossom", "river_valley", "grass", blossom, 2, None),
+    ("cattail_leaf", "Cattail Leaf", "river_valley", "grass", cattail_leaf, 2, None),
+    ("cattail_head", "Cattail Head", "river_valley", "wall", cattail_head, 1, None),
+    ("campfire_flame", "Campfire Flame", "river_valley", "wall", campfire_flame, 1.5, {"scrollU": 0.15, "scrollV": -1.2, "wave": 0.08, "wavePeriod": 0.6, "glow": 1.0}),
+    ("canopy_bright", "Bright Canopy", "river_valley", "grass", canopy_bright, 4, None),
     ("lily_pad", "Lily Pad", "river_valley", "grass", lily_pad, 4, None),
     ("lotus", "Lotus Petal", "river_valley", "wall", lotus, 1, {"scrollU": 0, "scrollV": 0, "glow": 0.45}),
     ("rainbow", "Rainbow", "river_valley", "wall", rainbow, 8, {"scrollU": 0, "scrollV": 0, "glow": 0.6, "opacity": 0.32}),

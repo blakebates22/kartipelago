@@ -20,6 +20,8 @@
  *               nudges karts aside (it never traps them) and never jumps about.
  *   waterfall   { "type": "waterfall", "x", "y", "z", "top", "width", "heading" }:
  *               spray at its foot and its roar nearby; driving through it splashes.
+ *   campfire    { "type": "campfire", "x", "y", "z" }: smoke and embers rising from a
+ *               little bonfire (the fire itself is scenery). Purely visual.
  *
  * Nothing here changes how the kart drives: it only reacts to where the kart is, the
  * way an item hit does (a vertical kick, a slower speed, a respawn).
@@ -90,6 +92,14 @@ interface Dino {
   view?: DinoView;
   callIn: number;
   stepIn: number;
+}
+
+interface Campfire {
+  x: number;
+  y: number;
+  z: number;
+  /** Time banked towards the next puff. */
+  acc: number;
 }
 
 interface Fall {
@@ -177,11 +187,14 @@ export function createHazards(opts: {
   const zones: { from: number; to: number; at: number }[] = [];
   const dinos: Dino[] = [];
   const falls: Fall[] = [];
+  const fires: Campfire[] = [];
   const ground = opts.makeGround();
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
     if (e.type === "respawn")
       zones.push({ from: num(e.from, 0), to: num(e.to, 0), at: num(e.at, 0) });
+    else if (e.type === "campfire")
+      fires.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
     else if (e.type === "waterfall")
       falls.push({
         x: num(e.x, 0),
@@ -507,6 +520,35 @@ export function createHazards(opts: {
             ? (1 - nearest / cfg.waterfallRadius) * cfg.volume * 0.5
             : 0,
         );
+      }
+      // Smoke and embers over the campfires you're near.
+      for (const f of fires) {
+        if (!smoke || Math.hypot(listener.x - f.x, listener.z - f.z) > 140) continue;
+        f.acc = Math.min(1, f.acc + dt);
+        for (; f.acc > 0.16; f.acc -= 0.16) {
+          const j = () => Math.random() - 0.5;
+          smoke.emit(
+            f.x + j() * 0.6,
+            f.y + 1.8,
+            f.z + j() * 0.6,
+            j() * 0.5,
+            1 + Math.random(),
+            j() * 0.5,
+            2.4,
+            0xd2ccc4,
+          );
+          if (Math.random() < 0.7)
+            sparks?.emit(
+              f.x + j() * 0.8,
+              f.y + 0.9,
+              f.z + j() * 0.8,
+              j() * 1.4,
+              3.2 + Math.random() * 2.5,
+              j() * 1.4,
+              0.8,
+              Math.random() < 0.5 ? 0xffc040 : 0xff6a20,
+            );
+        }
       }
       spray?.step(dt);
       smoke?.step(dt);

@@ -127,17 +127,18 @@
           "bottom": "#a8dcff",
           "sun": {
             "color": "#fff9dc",
-            "size": 6,
-            "glow": "#ffe27a"
+            "size": 7,
+            "glow": "#ffe27a",
+            "elevation": 15
           },
           "clouds": {
-            "count": 26,
+            "count": 40,
             "color": "#ffffff",
             "shade": "#d2e8ff",
             "seed": 5,
-            "low": 2,
-            "high": 22,
-            "drift": 0.004
+            "low": 8,
+            "high": 24,
+            "drift": 0.006
           }
         }
       }
@@ -464,6 +465,49 @@
       "image": "blossom.png",
       "wrap": "repeat",
       "tileMetres": 2
+    },
+    {
+      "id": "cattail_leaf",
+      "name": "Cattail Leaf",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "cattail_leaf.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cattail_head",
+      "name": "Cattail Head",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "cattail_head.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "campfire_flame",
+      "name": "Campfire Flame",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "campfire_flame.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5,
+      "fx": {
+        "scrollU": 0.15,
+        "scrollV": -1.2,
+        "wave": 0.08,
+        "wavePeriod": 0.6,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "canopy_bright",
+      "name": "Bright Canopy",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "canopy_bright.png",
+      "wrap": "repeat",
+      "tileMetres": 4
     },
     {
       "id": "lily_pad",

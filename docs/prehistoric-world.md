@@ -74,20 +74,30 @@ the east bank, then west over the river on an arched wooden bridge with rope rai
 
 There's a **shortcut**: a narrow dirt track through the village cuts the last bend.
 
-**Scenery:**
+**Scenery** (v2.1 made it busier and more alive):
 
-- a bright blue painted sky all round, with a sun and puffy cartoon clouds drifting by
-  (the track's `skyDome` look, `src/render/skyDome.ts`);
-- palms, jungle trees, ferns, lots of flowers and sandstone stacks;
-- a blue river with lily pads and pink lotus flowers floating along its edges;
+- a bright blue painted sky all round, with a sun low enough to see while racing and
+  puffy cartoon clouds drifting along the top of the valley walls (the track's
+  `skyDome` look, `src/render/skyDome.ts`);
+- a winding blue river: big meanders north of the bridge and south of the ford, and an
+  S through the middle (the crossings never move);
+- lily pads, pink lotus flowers and clumps of cattails along the river's edges;
 - a waterfall pouring off a ledge through a notch in the valley wall: a curved sheet
   with fast white veils, framing rocks, a churning foam pool, spray and a rainbow;
-- a smooth, friendly long-neck dinosaur strolling beside the river;
+- grand canopy trees on buttress roots (the valley's landmarks), taller palms, jungle
+  trees, bushes, ferns, lots of flowers and sandstone stacks;
+- a village of thatched huts round a campfire south of the ford road, and six little
+  hamlets round the valley, each with its own campfire (smoke and embers rise from
+  them: the `campfire` entity) and painted totems;
+- a friendly long-neck dinosaur strolling round the west meadow (one smooth skin,
+  lofted round a spine that sways as it walks; trees are kept off its path);
 - a smoking volcano far away (a hint of Ember Peak).
 
 #### Going back to Riverbend v1
 
-v1 is tagged `riverbend-v1` in git. Each part of v2 can be undone on its own:
+v1 is tagged `riverbend-v1` in git, and v2 (before the busier v2.1 scenery, river,
+clouds and dinosaur) is `riverbend-v2`; use either tag in the commands below. Each
+part can be undone on its own:
 
 | To restore           | Do this                                                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -102,6 +112,9 @@ gives the plain sky.)
 
 **The long-neck:** a friendly dinosaur strolls round the west meadow and crosses the
 road near the ford.
+
+**Campfires:** `{ "type": "campfire", "x", "y", "z" }` in track.json puts smoke and
+embers over a fire (the fire itself is a scenery prop). Purely visual.
 
 ### Cascade Caverns
 
@@ -228,7 +241,8 @@ There are 25 new textures, all 64×32:
   palm bark and fronds; thatch; painted wood; a start checker; blossom.
 - **Fossil Swamp:** mud, swamp water, moss, bone, paving, glowing caps, pyramid steps.
 - **Jungle Falls additions:** waterfall, foam, fern.
-- **Riverbend v2 additions (River Valley):** lily pad, lotus petal, rainbow, and the
+- **Riverbend v2 additions (River Valley):** cattail leaf and head, campfire flame,
+  bright canopy, lily pad, lotus petal, rainbow, and the
   falls' sheet, veil and foam (brighter and bluer than Cascade's, which keep the
   Jungle Falls ones). Valley water is bluer than in v1.
 - **Hot Top Volcano additions:** volcano crust (glowing cracks), ember road, smoke.

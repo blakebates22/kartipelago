@@ -28,17 +28,18 @@
     "bottom": "#a8dcff",
     "sun": {
       "color": "#fff9dc",
-      "size": 6,
-      "glow": "#ffe27a"
+      "size": 7,
+      "glow": "#ffe27a",
+      "elevation": 15
     },
     "clouds": {
-      "count": 26,
+      "count": 40,
       "color": "#ffffff",
       "shade": "#d2e8ff",
       "seed": 5,
-      "low": 2,
-      "high": 22,
-      "drift": 0.004
+      "low": 8,
+      "high": 24,
+      "drift": 0.006
     }
   }
 }
