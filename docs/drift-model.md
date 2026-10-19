@@ -31,9 +31,15 @@ countersteer   (u <  0):  k = kNeutral - (kNeutral - kCounter) * |u|^p
 - Hands-off keeps a natural inward turn (`driftRadiusNeutral`).
 - Steering in tightens, with diminishing returns (`driftInCurve` = q), up to a hard
   limit (`driftRadiusTight`), so full lock can't over-rotate.
-- Countersteering widens the arc (`driftCounterCurve` = p). A large positive
-  `driftRadiusCounter` keeps a slight inward pull; a negative one bends outward.
-- Character handling scales all three radii.
+- **Countersteering really steers out** (`driftCounterOut`, on by default). Drifting
+  left and pushing right sends the kart right, while it still looks angled left: the
+  path bends the other way, down to `driftRadiusCounterOut` at full countersteer
+  (`driftCounterOutCurve` = p). That's how late-90s kart racers handle it, and it lets
+  you hold a drift through an S-bend or straighten out of one without letting go.
+- With `driftCounterOut` off you get the original feel: countersteering only widens
+  the arc (`driftCounterCurve` = p). A large positive `driftRadiusCounter` keeps a
+  slight inward pull; a negative one bends outward.
+- Character handling scales all the radii.
 
 ## Braking and keyboard control
 
@@ -68,6 +74,9 @@ and the spin-out counter.
 | `driftRadiusCounter`    | 120     | Arc at full countersteer, m                            |
 | `driftInCurve`          | 2       | Diminishing returns steering in                        |
 | `driftCounterCurve`     | 1.3     | Finer widening near centre                             |
+| `driftCounterOut`       | true    | Countersteer bends the path outward (false = classic)  |
+| `driftRadiusCounterOut` | 34      | Outward arc at full countersteer, m                    |
+| `driftCounterOutCurve`  | 1       | How countersteer builds towards that arc               |
 | `driftOffsetDeg`        | 40      | Body-to-path angle the drift builds to                 |
 | `driftOffsetRate`       | 4       | Entry build-up, per s (about 86% in 0.5 s)             |
 | `driftOffsetReturnRate` | 4       | Release ease-out, per s                                |

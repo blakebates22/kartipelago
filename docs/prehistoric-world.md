@@ -38,7 +38,7 @@ The mouse works too.
 
 | Course          | Id                | Length  | Theme                                       | Music            |
 | --------------- | ----------------- | ------- | ------------------------------------------- | ---------------- |
-| Riverbend Palms | `riverbend_palms` | ~950 m  | sunny river valley, palms, a tribal village | C major, 132 BPM |
+| Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village | F major, 138 BPM |
 | Cascade Caverns | `cascade_caverns` | ~1100 m | jungle canyon, waterfalls, caves            | D minor, 142 BPM |
 | Bonebog Pyramid | `bonebog_pyramid` | ~1140 m | misty fossil swamp, a stepped pyramid       | E minor, 116 BPM |
 | Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                  | A minor, 158 BPM |
@@ -56,22 +56,49 @@ All four share the same basics:
 
 ### Riverbend Palms
 
-The road runs north up the east bank and crosses the river on an arched wooden bridge
-with rope rails.
+Version 2 is laid out for drifting: real 30–40 m arcs you can hold a drift through
+(and earn a boost), linked so one drift flows into the next. The road runs north up
+the east bank, then west over the river on an arched wooden bridge with rope rails.
 
-1. Riverside S-bends lead up a ridge with a view of the valley.
-2. A long sweeping descent drops to a stone ford, where you can splash through the
-   shallows.
-3. The road winds through the village, with thatched huts and painted totems.
-4. The final straight has a zipper.
+1. A long left sweeper in the north-east corner and a right flick line you up for the
+   bridge.
+2. Over the river, a three-bend S-chain (left, right, left) climbs the west ridge, with
+   a view of the valley.
+3. Along the ridge (with a zipper), then a right into a hairpin left at the south-west
+   corner.
+4. A quick left-right wiggle drops to the stone ford, where you can splash through the
+   shallows; a zipper waits on the far side.
+5. A right and a long left wind through the village, with thatched huts and painted
+   totems.
+6. The final straight has a zipper, right out of the last drift.
 
 There's a **shortcut**: a narrow dirt track through the village cuts the last bend.
 
 **Scenery:**
 
-- palms, jungle trees, ferns, flowers and sandstone stacks;
-- a waterfall pouring through a notch in the valley wall;
+- a bright blue painted sky all round, with a sun and puffy cartoon clouds drifting by
+  (the track's `skyDome` look, `src/render/skyDome.ts`);
+- palms, jungle trees, ferns, lots of flowers and sandstone stacks;
+- a blue river with lily pads and pink lotus flowers floating along its edges;
+- a waterfall pouring off a ledge through a notch in the valley wall: a curved sheet
+  with fast white veils, framing rocks, a churning foam pool, spray and a rainbow;
+- a smooth, friendly long-neck dinosaur strolling beside the river;
 - a smoking volcano far away (a hint of Ember Peak).
+
+#### Going back to Riverbend v1
+
+v1 is tagged `riverbend-v1` in git. Each part of v2 can be undone on its own:
+
+| To restore           | Do this                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| The whole course     | `git checkout riverbend-v1 -- tools/blender/prehistoric/riverbend_palms.py public/tracks/riverbend_palms tracks-src/riverbend_palms.blend` |
+| The old music        | set Riverbend's `music` to `"riverbend_classic"` in `src/game/tracks.ts`                                                                   |
+| The old countersteer | set `vehicle.driftCounterOut` to `false` in `assets/data/tuning.json` (or in the debug tuning panel)                                       |
+| The old dinosaur     | `git checkout riverbend-v1 -- src/render/dinosaur.ts`                                                                                      |
+
+The sky, water colour, lilies and waterfall are part of the course files, so restoring
+the course brings back the old ones too. (The old look.json has no `skyDome`, which
+gives the plain sky.)
 
 **The long-neck:** a friendly dinosaur strolls round the west meadow and crosses the
 road near the ford.
@@ -201,6 +228,9 @@ There are 25 new textures, all 64×32:
   palm bark and fronds; thatch; painted wood; a start checker; blossom.
 - **Fossil Swamp:** mud, swamp water, moss, bone, paving, glowing caps, pyramid steps.
 - **Jungle Falls additions:** waterfall, foam, fern.
+- **Riverbend v2 additions (River Valley):** lily pad, lotus petal, rainbow, and the
+  falls' sheet, veil and foam (brighter and bluer than Cascade's, which keep the
+  Jungle Falls ones). Valley water is bluer than in v1.
 - **Hot Top Volcano additions:** volcano crust (glowing cracks), ember road, smoke.
 
 There are also two new driving surfaces: `mud` and `deep_water`.
@@ -291,14 +321,15 @@ metres to the right of centre.
 ## Music
 
 Each course has its own original piece in `src/audio/songs.ts`. Each track's registry
-entry names its music. The music player lists all four.
+entry names its music. The music player lists them all, plus Riverbend's v1 theme.
 
-| Piece           | Feel                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------- |
-| Riverbend Palms | steel pan lead, marimba, flute, island bass, bongos, shaker, clave, brass stabs         |
-| Cascade Caverns | flute and xylophone over running pizzicato, woodblocks, hand drums, bells, strings      |
-| Bonebog Pyramid | clarinet and bassoon over a low marimba groove, plucks, toms, chimes, surprise chords   |
-| Ember Peak      | strings and low brass over a galloping bass, fast marimba, square-wave stabs, big drums |
+| Piece                     | Feel                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Riverbend Palms           | a beach party: steel pan lead, strummed marimba, brass hits, whistling flute, soca bass, congas, shaker |
+| Riverbend Palms (Classic) | the gentler v1 theme: steel pan, marimba, flute, island bass, bongos, clave                             |
+| Cascade Caverns           | flute and xylophone over running pizzicato, woodblocks, hand drums, bells, strings                      |
+| Bonebog Pyramid           | clarinet and bassoon over a low marimba groove, plucks, toms, chimes, surprise chords                   |
+| Ember Peak                | strings and low brass over a galloping bass, fast marimba, square-wave stabs, big drums                 |
 
 There are four new synthesized instruments: steel pan, bell, bowed strings and tom.
 

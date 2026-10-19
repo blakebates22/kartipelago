@@ -89,6 +89,17 @@ export interface KartConfig extends ZipperConfig, BananaConfig {
   driftInCurve: number;
   /** Offset model: >1 gives finer widening near centre, stronger at full countersteer. */
   driftCounterCurve: number;
+  /**
+   * Offset model: countersteer really steers you out of the drift. Drifting left and
+   * steering right, the kart's path bends right (while the body stays angled into the
+   * drift), so a drift started at a bad angle can be corrected. Off = the original
+   * shape, where full countersteer only widens the arc (driftRadiusCounter).
+   */
+  driftCounterOut: boolean;
+  /** Countersteer out: the arc at full countersteer, bending away from the drift, m. */
+  driftRadiusCounterOut: number;
+  /** Countersteer out: 1 = even response; >1 = gentler near centre. */
+  driftCounterOutCurve: number;
   /** Offset model: angle between body and path the drift builds to, degrees. */
   driftOffsetDeg: number;
   /** Offset model: how fast the offset builds on entry, per second. */
@@ -316,26 +327,35 @@ export function applyBoost(s: KartState, cfg: KartConfig, mult: number, seconds:
  * limit, so the first bit of steer does most of the work and full lock can't
  * over-rotate. Countersteer: |u|^p widens gently near centre, more at full lock.
  */
+/** The countersteer end of the curve: curvature at full countersteer, and its shape. */
+function counterShape(cfg: KartConfig) {
+  return cfg.driftCounterOut
+    ? { kc: -1 / cfg.driftRadiusCounterOut, p: cfg.driftCounterOutCurve }
+    : { kc: 1 / cfg.driftRadiusCounter, p: cfg.driftCounterCurve };
+}
+
 export function driftCurvature(into: number, cfg: KartConfig): number {
   const kn = 1 / cfg.driftRadiusNeutral;
   const kt = 1 / cfg.driftRadiusTight;
-  const kc = 1 / cfg.driftRadiusCounter;
+  const { kc, p } = counterShape(cfg);
   const u = Math.max(-1, Math.min(1, into));
   if (u >= 0) return kn + (kt - kn) * (1 - Math.pow(1 - u, cfg.driftInCurve));
-  return kn - (kn - kc) * Math.pow(-u, cfg.driftCounterCurve);
+  // Countersteer: the arc widens, and (driftCounterOut) past about halfway it bends
+  // the other way: you steer out of the drift.
+  return kn - (kn - kc) * Math.pow(-u, p);
 }
 
 /** The steer amount (into the drift) that gives a curvature: inverse of driftCurvature. */
 export function driftSteerFor(curvature: number, cfg: KartConfig): number {
   const kn = 1 / cfg.driftRadiusNeutral;
   const kt = 1 / cfg.driftRadiusTight;
-  const kc = 1 / cfg.driftRadiusCounter;
+  const { kc, p } = counterShape(cfg);
   if (curvature >= kn) {
     const r = Math.min(1, (curvature - kn) / (kt - kn));
     return 1 - Math.pow(1 - r, 1 / cfg.driftInCurve);
   }
   const r = Math.min(1, (kn - curvature) / (kn - kc));
-  return -Math.pow(r, 1 / cfg.driftCounterCurve);
+  return -Math.pow(r, 1 / p);
 }
 
 /** Driving over a boost pad. */

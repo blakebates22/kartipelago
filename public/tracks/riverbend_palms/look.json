@@ -1,25 +1,44 @@
 {
   "schemaVersion": 1,
   "theme": "river_valley",
-  "sky": "#6cc4f6",
+  "sky": "#3aa2f2",
   "fog": {
     "enabled": true,
-    "color": "#bfe6fb",
-    "near": 180,
-    "far": 760
+    "color": "#c6ebff",
+    "near": 220,
+    "far": 900
   },
   "sun": {
-    "color": "#fff1cc",
-    "intensity": 2.5,
+    "color": "#fff3d2",
+    "intensity": 2.6,
     "direction": [
-      0.5,
-      0.8,
-      0.3
+      -0.45,
+      0.6,
+      -0.66
     ]
   },
   "ambient": {
     "sky": "#e6f6ff",
     "ground": "#5d8a3a",
-    "intensity": 1.2
+    "intensity": 1.25
+  },
+  "skyDome": {
+    "top": "#1f7fe0",
+    "horizon": "#c2eaff",
+    "bottom": "#a8dcff",
+    "sun": {
+      "color": "#fff9dc",
+      "size": 6,
+      "glow": "#ffe27a"
+    },
+    "clouds": {
+      "count": 26,
+      "color": "#ffffff",
+      "shade": "#d2e8ff",
+      "seed": 5,
+      "low": 2,
+      "high": 22,
+      "drift": 0.004
+    }
   }
 }

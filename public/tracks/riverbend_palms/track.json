@@ -15,20 +15,20 @@
     {
       "id": "zip_01",
       "type": "zipper",
-      "at": 862.4,
+      "at": 997.6,
       "across": 0
     },
     {
       "id": "zip_02",
       "type": "zipper",
-      "at": 295.8,
-      "across": -3
+      "at": 490.5,
+      "across": 2
     },
     {
       "id": "zip_03",
       "type": "zipper",
-      "at": 483.9,
-      "across": 3
+      "at": 858.1,
+      "across": -3
     },
     {
       "id": "ban_01",
@@ -41,7 +41,7 @@
     {
       "id": "ban_02",
       "type": "bananas",
-      "at": 150,
+      "at": 213.3,
       "across": 3,
       "count": 5,
       "gap": 2.6
@@ -49,7 +49,7 @@
     {
       "id": "ban_03",
       "type": "bananas",
-      "at": 404.7,
+      "at": 460.1,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -57,16 +57,16 @@
     {
       "id": "ban_04",
       "type": "bananas",
-      "at": 631.7,
-      "across": -2,
+      "at": 888.1,
+      "across": 2,
       "count": 5,
       "gap": 2.6
     },
     {
       "id": "ban_05",
       "type": "bananas",
-      "at": 787.4,
-      "across": 2,
+      "at": 1015.6,
+      "across": 3,
       "count": 5,
       "gap": 2.6
     },
@@ -87,21 +87,21 @@
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 444.9,
+      "at": 381.9,
       "across": 0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 682.1,
-      "across": -3,
+      "at": 520.4,
+      "across": 0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 811.6,
+      "at": 748.0,
       "across": 3,
       "color": "rainbow"
     },
@@ -116,11 +116,11 @@
     {
       "id": "waterfall_01",
       "type": "waterfall",
-      "x": -7.06,
+      "x": -6.54,
       "y": -1.0,
-      "z": -224,
+      "z": -221.0,
       "top": 17.5,
-      "width": 28,
+      "width": 30,
       "heading": 0
     }
   ],

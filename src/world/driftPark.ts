@@ -70,7 +70,9 @@ export interface DriftPark {
 
 /** The widest radius a drift can hold indefinitely (just under the spin-out steer). */
 export function spinRadius(r: DriftRadii) {
-  return 1 / driftCurvature(-r.spinThreshold, r as KartConfig);
+  // The park's loops are sized on the original countersteer shape (where countersteer
+  // only widens the arc), whichever shape is in use.
+  return 1 / driftCurvature(-r.spinThreshold, { ...r, driftCounterOut: false } as KartConfig);
 }
 
 /**

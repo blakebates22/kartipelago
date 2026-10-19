@@ -867,3 +867,69 @@ def runs(course, label):
         else:
             merged.append(r)
     return [tuple(r) for r in merged]
+
+
+# ---------------------------------------------------------------- arc-and-straight layouts
+
+
+def turtle(segs, start, head, step=1.0):
+    """
+    Walk a layout made of straights and arcs: ("S", length), ("L", radius, degrees) or
+    ("R", radius, degrees), from start (x, y) facing head (degrees, 90 = north). Returns
+    dense points [(x, y, heading_degrees, segment_index)]. Arcs of a known radius make
+    corners you can hold one drift through.
+    """
+    x, y = start
+    h = head
+    pts = [(x, y, h, 0)]
+    for i, sg in enumerate(segs):
+        if sg[0] == "S":
+            n = max(1, int(sg[1] / step))
+            for _ in range(n):
+                x += math.cos(math.radians(h)) * sg[1] / n
+                y += math.sin(math.radians(h)) * sg[1] / n
+                pts.append((x, y, h, i))
+        else:
+            r, deg = sg[1], sg[2]
+            sgn = 1 if sg[0] == "L" else -1
+            n = max(2, int(r * math.radians(deg) / step))
+            for _ in range(n):
+                dh = sgn * deg / n
+                chord = 2 * r * math.sin(math.radians(abs(dh)) / 2)
+                x += math.cos(math.radians(h + dh / 2)) * chord
+                y += math.sin(math.radians(h + dh / 2)) * chord
+                h += dh
+                pts.append((x, y, h, i))
+    return pts
+
+
+def close_turtle(segs, a, b, start, head):
+    """Lengthen or shorten straights a and b (not parallel) so the layout closes."""
+    segs = list(segs)
+    for _ in range(40):
+        p = turtle(segs, start, head)
+        ex, ey = p[-1][0] - p[0][0], p[-1][1] - p[0][1]
+        if math.hypot(ex, ey) < 1e-4:
+            break
+        ha = next(q[2] for q in p if q[3] == a)
+        hb = next(q[2] for q in p if q[3] == b)
+        ua = (math.cos(math.radians(ha)), math.sin(math.radians(ha)))
+        ub = (math.cos(math.radians(hb)), math.sin(math.radians(hb)))
+        det = ua[0] * ub[1] - ua[1] * ub[0]
+        segs[a] = ("S", segs[a][1] + (-ex * ub[1] + ey * ub[0]) / det)
+        segs[b] = ("S", segs[b][1] + (-ua[0] * ey + ua[1] * ex) / det)
+    return segs, turtle(segs, start, head)
+
+
+def route_points(pts, z, every=14.0):
+    """Control points (x, y, z) every so many metres along a dense turtle path."""
+    out = []
+    d = 0.0
+    next_at = 0.0
+    for i, (x, y, _, _) in enumerate(pts[:-1]):
+        if i:
+            d += math.hypot(x - pts[i - 1][0], y - pts[i - 1][1])
+        if d >= next_at:
+            out.append((round(x, 2), round(y, 2), round(z(x, y), 2)))
+            next_at += every
+    return out

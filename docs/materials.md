@@ -199,6 +199,13 @@ How it's read:
 - Anything missing, or malformed, falls back to the game's default, with a warning in
   the console.
 - Tracks exported before `look.json` existed simply don't have one.
+- An environment can also ask for a **painted sky** with `skyDome`: a gradient dome
+  (`top`, `horizon`, `bottom`), a glowing sun where the sunlight comes from
+  (`sun: { color, size, glow }`, size in degrees), and cartoon clouds round the horizon
+  (`clouds: { count, color, shade, seed, low, high, drift }`, heights in degrees above
+  the horizon, drift in radians per second). Every field is optional. River Valley
+  uses one (Riverbend Palms); without it the sky is the flat `sky` colour. The code is
+  `src/render/skyDome.ts`.
 
 Re-exporting never touches `track.json`. Placements, checkpoint order and physics are
 unaffected by anything on this page.

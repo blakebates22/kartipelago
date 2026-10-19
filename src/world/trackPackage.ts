@@ -27,6 +27,7 @@ import {
 import { buildCollisionMesh, type CollisionMesh, type SurfaceTable } from "./collisionMesh";
 import type { TrackData } from "./track";
 import type { CheckpointGate } from "../race/checkpoints";
+import type { SkyDomeSpec } from "../render/skyDome";
 
 export const TRACK_SCHEMA = 1;
 export const ROUTE_SCHEMA = 1;
@@ -62,6 +63,8 @@ export interface TrackLook {
   fog?: { enabled: boolean; color: string; near: number; far: number };
   sun?: { color: string; intensity: number; direction: [number, number, number] };
   ambient?: { sky: string; ground: string; intensity: number };
+  /** A painted sky dome with sun and clouds (render/skyDome.ts). */
+  skyDome?: SkyDomeSpec;
 }
 
 export const CHECKPOINT_SCHEMA = 1;
@@ -337,6 +340,32 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
     )
       look.ambient = a as TrackLook["ambient"];
     else bad("ambient");
+  }
+  const d = json.skyDome;
+  if (d !== undefined) {
+    if (!isObj(d)) bad("skyDome");
+    else {
+      // Keep only well-formed fields; anything else falls back to the dome's default.
+      const hex = (v: unknown) => (typeof v === "string" && HEX.test(v) ? v : undefined);
+      const num = (v: unknown) => (finite(v) ? (v as number) : undefined);
+      const sd = isObj(d.sun) ? d.sun : {};
+      const cl = isObj(d.clouds) ? d.clouds : {};
+      look.skyDome = {
+        top: hex(d.top),
+        horizon: hex(d.horizon),
+        bottom: hex(d.bottom),
+        sun: { color: hex(sd.color), size: num(sd.size), glow: hex(sd.glow) },
+        clouds: {
+          count: num(cl.count),
+          color: hex(cl.color),
+          shade: hex(cl.shade),
+          seed: num(cl.seed),
+          low: num(cl.low),
+          high: num(cl.high),
+          drift: num(cl.drift),
+        },
+      };
+    }
   }
   return look;
 }

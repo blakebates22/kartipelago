@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { tuning } from "../core/tuning";
 import type { TrackLook } from "../world/trackPackage";
 import { applyRetroLook } from "./retro";
+import { createSkyDome, type SkyDome } from "./skyDome";
 
 /**
  * Render resolution: a fixed number of lines (the soft, low-resolution picture of the
@@ -48,6 +49,8 @@ export function createStage(container: HTMLElement) {
 
   let lines = 360;
   let env: TrackLook = {};
+  let dome: SkyDome | undefined;
+  let lastFrame = performance.now();
 
   /** A track's sky, sun and fog; an empty look is the game's default. */
   const applyEnvironment = () => {
@@ -64,6 +67,13 @@ export function createStage(container: HTMLElement) {
     hemi.color.set(a ? a.sky : defaults.hemiSky);
     hemi.groundColor.set(a ? a.ground : defaults.hemiGround);
     hemi.intensity = a ? a.intensity : defaults.hemiIntensity;
+    // A painted sky (sun and clouds) if the track has one.
+    dome?.dispose();
+    dome = undefined;
+    if (env.skyDome) {
+      dome = createSkyDome(env.skyDome, s?.direction);
+      scene.add(dome.group);
+    }
   };
 
   // The late-90s look: authentic or enhanced resolution, sky colour and distance fog.
@@ -132,6 +142,9 @@ export function createStage(container: HTMLElement) {
     render: () => {
       // Live tuning edits to the look apply at once.
       if (updateLook()) resize();
+      const now = performance.now();
+      dome?.update(camera, Math.min(0.1, (now - lastFrame) / 1000));
+      lastFrame = now;
       renderer.render(scene, camera);
     },
   };

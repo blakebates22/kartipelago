@@ -128,7 +128,8 @@ def valley_sand():
 
 
 def valley_water():
-    pal = ["#0f7f95", "#169bab", "#22b5bd", "#3ccac8", "#7fe3da"]
+    # v2: bluer (v1 was a turquoise #0f7f95..#7fe3da).
+    pal = ["#0d5ea8", "#1476c2", "#1f92d6", "#38ade6", "#7fd3f5"]
     a, b = noise(4, 2, 131), noise(8, 4, 132)
     glints = speckle(133, 9)
 
@@ -490,16 +491,98 @@ def smoke():
     return paint(f)
 
 
+def lily_pad():
+    # Round green pads with a notch and veins, on clear water (cut out by the mesh).
+    pal = ["#2f8a2a", "#3fa332", "#56bb3c", "#74cf4a"]
+    a = noise(4, 2, 341)
+
+    def f(x, y):
+        cx, cy = (x // 32) * 32 + 16, 16
+        dx, dy = x - cx, y - cy
+        ang = math.atan2(dy, dx)
+        if abs(ang) < 0.1 and dx > 0:
+            return "#2a6a2a"  # the notch's edge
+        vein = abs(math.sin(ang * 5)) < 0.12
+        d = math.hypot(dx, dy)
+        v = 0.3 + a(x, y) * 0.4 + (0.25 if d < 4 else 0) - (0.3 if vein else 0) - d / 60
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def lotus():
+    # Pink-to-white petals for floating water flowers.
+    def f(x, y):
+        t = y / H
+        cols = ["#ff6fa8", "#ff8fbc", "#ffb0cf", "#ffd2e4", "#fff2f7"]
+        streak = 0.1 * math.sin(x * 0.8)
+        return pick(cols, t + streak)
+
+    return paint(f)
+
+
+def falls_sheet():
+    # Riverbend's waterfall: deep blue with bright streaks (matches the bluer river).
+    pal = ["#1f74c4", "#3b97da", "#6fbdec", "#b4e2f7", "#ffffff"]
+    a, b = noise(16, 2, 351), noise(8, 4, 352)
+
+    def f(x, y):
+        streak = 0.5 + 0.5 * math.sin(x * 1.1 + a(x, y) * 8)
+        return pick(pal, 0.05 + streak * 0.6 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def falls_veil():
+    # A thin, fast white veil over the sheet: mostly white streaks.
+    pal = ["#9ed6f2", "#d2eefa", "#f2fbff", "#ffffff"]
+    a = noise(16, 2, 361)
+
+    def f(x, y):
+        streak = 0.5 + 0.5 * math.sin(x * 2.3 + a(x, y) * 9)
+        return pick(pal, streak * 0.8 + 0.2 * a(x, y))
+
+    return paint(f)
+
+
+def falls_foam():
+    # Bright churning white water at the waterfall's foot.
+    pal = ["#bfe6f7", "#e4f6fd", "#ffffff", "#ffffff"]
+    a, b = noise(8, 4, 371), noise(16, 8, 372)
+
+    def f(x, y):
+        return pick(pal, 0.15 + a(x, y) * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def rainbow():
+    # Soft rainbow bands across V, for the mist under the waterfall.
+    bands = ["#ff5a5a", "#ff9d42", "#ffe24a", "#6fe05a", "#4ab6ff", "#8a6dff"]
+
+    def f(x, y):
+        return bands[min(len(bands) - 1, int(y / H * len(bands)))]
+
+    return paint(f)
+
+
 THEMES = [
     {
         "id": "river_valley",
         "name": "River Valley",
-        "description": "Sunny orange dirt roads, bright grass, turquoise water, palms and wooden bridges",
+        "description": "Sunny orange dirt roads, bright grass, blue water, palms and wooden bridges, under a sunny painted sky",
         "environment": {
-            "sky": "#6cc4f6",
-            "fog": {"enabled": True, "color": "#bfe6fb", "near": 180, "far": 760},
-            "sun": {"color": "#fff1cc", "intensity": 2.5, "direction": [0.5, 0.8, 0.3]},
-            "ambient": {"sky": "#e6f6ff", "ground": "#5d8a3a", "intensity": 1.2},
+            "sky": "#3aa2f2",
+            "fog": {"enabled": True, "color": "#c6ebff", "near": 220, "far": 900},
+            "sun": {"color": "#fff3d2", "intensity": 2.6, "direction": [-0.45, 0.6, -0.66]},
+            "ambient": {"sky": "#e6f6ff", "ground": "#5d8a3a", "intensity": 1.25},
+            "skyDome": {
+                "top": "#1f7fe0",
+                "horizon": "#c2eaff",
+                "bottom": "#a8dcff",
+                "sun": {"color": "#fff9dc", "size": 6, "glow": "#ffe27a"},
+                "clouds": {"count": 26, "color": "#ffffff", "shade": "#d2e8ff", "seed": 5, "low": 2, "high": 22, "drift": 0.004},
+            },
         },
     },
     {
@@ -551,6 +634,12 @@ MATERIALS = [
     ("tribal_paint", "Painted Wood", "river_valley", "wall", tribal_paint, 3, None),
     ("start_checker", "Start Checker", "river_valley", "road", start_checker, 2, None),
     ("blossom", "Blossom", "river_valley", "grass", blossom, 2, None),
+    ("lily_pad", "Lily Pad", "river_valley", "grass", lily_pad, 4, None),
+    ("lotus", "Lotus Petal", "river_valley", "wall", lotus, 1, {"scrollU": 0, "scrollV": 0, "glow": 0.45}),
+    ("rainbow", "Rainbow", "river_valley", "wall", rainbow, 8, {"scrollU": 0, "scrollV": 0, "glow": 0.6, "opacity": 0.32}),
+    ("falls_sheet", "Falls Sheet", "river_valley", "water", falls_sheet, 6, {"scrollU": 0.0, "scrollV": 1.1, "wave": 0.02, "wavePeriod": 1.4, "opacity": 0.92, "glow": 0.22}),
+    ("falls_veil", "Falls Veil", "river_valley", "water", falls_veil, 4, {"scrollU": 0.0, "scrollV": 2.1, "wave": 0.04, "wavePeriod": 0.9, "opacity": 0.5, "glow": 0.3}),
+    ("falls_foam", "Falls Foam", "river_valley", "water", falls_foam, 4, {"scrollU": 0.06, "scrollV": 0.2, "wave": 0.07, "wavePeriod": 1.8, "opacity": 0.85, "glow": 0.25}),
     (
         "waterfall",
         "Waterfall",

@@ -102,24 +102,43 @@
     {
       "id": "river_valley",
       "name": "River Valley",
-      "description": "Sunny orange dirt roads, bright grass, turquoise water, palms and wooden bridges",
+      "description": "Sunny orange dirt roads, bright grass, blue water, palms and wooden bridges, under a sunny painted sky",
       "environment": {
-        "sky": "#6cc4f6",
+        "sky": "#3aa2f2",
         "fog": {
           "enabled": true,
-          "color": "#bfe6fb",
-          "near": 180,
-          "far": 760
+          "color": "#c6ebff",
+          "near": 220,
+          "far": 900
         },
         "sun": {
-          "color": "#fff1cc",
-          "intensity": 2.5,
-          "direction": [0.5, 0.8, 0.3]
+          "color": "#fff3d2",
+          "intensity": 2.6,
+          "direction": [-0.45, 0.6, -0.66]
         },
         "ambient": {
           "sky": "#e6f6ff",
           "ground": "#5d8a3a",
-          "intensity": 1.2
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#1f7fe0",
+          "horizon": "#c2eaff",
+          "bottom": "#a8dcff",
+          "sun": {
+            "color": "#fff9dc",
+            "size": 6,
+            "glow": "#ffe27a"
+          },
+          "clouds": {
+            "count": 26,
+            "color": "#ffffff",
+            "shade": "#d2e8ff",
+            "seed": 5,
+            "low": 2,
+            "high": 22,
+            "drift": 0.004
+          }
         }
       }
     },
@@ -445,6 +464,95 @@
       "image": "blossom.png",
       "wrap": "repeat",
       "tileMetres": 2
+    },
+    {
+      "id": "lily_pad",
+      "name": "Lily Pad",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "lily_pad.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "lotus",
+      "name": "Lotus Petal",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "lotus.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.45
+      }
+    },
+    {
+      "id": "rainbow",
+      "name": "Rainbow",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "rainbow.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.6,
+        "opacity": 0.32
+      }
+    },
+    {
+      "id": "falls_sheet",
+      "name": "Falls Sheet",
+      "theme": "river_valley",
+      "surface": "water",
+      "image": "falls_sheet.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.1,
+        "wave": 0.02,
+        "wavePeriod": 1.4,
+        "opacity": 0.92,
+        "glow": 0.22
+      }
+    },
+    {
+      "id": "falls_veil",
+      "name": "Falls Veil",
+      "theme": "river_valley",
+      "surface": "water",
+      "image": "falls_veil.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 2.1,
+        "wave": 0.04,
+        "wavePeriod": 0.9,
+        "opacity": 0.5,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "falls_foam",
+      "name": "Falls Foam",
+      "theme": "river_valley",
+      "surface": "water",
+      "image": "falls_foam.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0.06,
+        "scrollV": 0.2,
+        "wave": 0.07,
+        "wavePeriod": 1.8,
+        "opacity": 0.85,
+        "glow": 0.25
+      }
     },
     {
       "id": "waterfall",

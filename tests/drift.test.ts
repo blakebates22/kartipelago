@@ -49,10 +49,19 @@ function arcRadius(s: KartState, seconds: number, input: Partial<InputState>, c 
 
 describe("offset drift: steering shape", () => {
   it("turns inward hands-off, tightens to a limit, and widens on countersteer", () => {
+    const classic = { ...cfg, driftCounterOut: false };
     expect(1 / driftCurvature(0, cfg)).toBeCloseTo(cfg.driftRadiusNeutral);
     expect(1 / driftCurvature(1, cfg)).toBeCloseTo(cfg.driftRadiusTight);
-    expect(1 / driftCurvature(-1, cfg)).toBeCloseTo(cfg.driftRadiusCounter);
+    expect(1 / driftCurvature(-1, classic)).toBeCloseTo(cfg.driftRadiusCounter);
     expect(driftCurvature(1, cfg)).toBeGreaterThan(driftCurvature(0.5, cfg));
+  });
+
+  it("countersteers out of the drift: full countersteer bends the other way", () => {
+    expect(cfg.driftCounterOut).toBe(true);
+    expect(1 / driftCurvature(-1, cfg)).toBeCloseTo(-cfg.driftRadiusCounterOut);
+    // Somewhere in the middle of the countersteer the path runs straight.
+    expect(driftCurvature(-0.3, cfg)).toBeGreaterThan(0);
+    expect(driftCurvature(-0.8, cfg)).toBeLessThan(0);
   });
 
   it("gives most of the extra turn early, less as you push further in", () => {
@@ -97,6 +106,31 @@ describe("offset drift: trajectory", () => {
     expect(counter).toBeGreaterThan(neutral * 1.5);
     // Path still points outward of the nose: the offset doesn't follow the stick.
     expect(s.driftOffset * DEG).toBeGreaterThan(cfg.driftOffsetDeg * 0.9);
+  });
+
+  it("drift left, countersteer right: the kart really goes right, still angled left", () => {
+    // Up to speed, start a LEFT drift, settle it, then hold full right.
+    const s = run(createKartState(), 2, { throttle: 1 });
+    run(s, dt, { throttle: 1, steer: -1, drift: true });
+    run(s, 0.8, { throttle: 1, drift: true });
+    expect(s.driftDir).toBe(-1);
+    const path0 = s.velAngle;
+    run(s, 0.6, { throttle: 1, drift: true, steer: 1 });
+    // Positive steer lowers the angle: the path has swung right...
+    expect(wrapAngle(s.velAngle - path0)).toBeLessThan(-0.15);
+    // ...while the body is still angled into the left drift, and the drift goes on.
+    expect(s.driftDir).toBe(-1);
+    expect(s.driftOffset * DEG).toBeLessThan(-cfg.driftOffsetDeg * 0.8);
+  });
+
+  it("with the switch off, full countersteer only widens the arc (the original feel)", () => {
+    const classic = { ...cfg, driftCounterOut: false };
+    const s = run(createKartState(), 2, { throttle: 1 }, classic);
+    run(s, dt, { throttle: 1, steer: -1, drift: true }, classic);
+    run(s, 0.8, { throttle: 1, drift: true }, classic);
+    const path0 = s.velAngle;
+    run(s, 0.6, { throttle: 1, drift: true, steer: 1 }, classic);
+    expect(wrapAngle(s.velAngle - path0)).toBeGreaterThan(0); // still turning left
   });
 
   it("builds the offset over about half a second on entry", () => {

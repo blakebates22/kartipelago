@@ -4,7 +4,7 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
-import { crossGate, type CheckpointGate } from "../src/race/checkpoints";
+import { crossGate, planeDist, type CheckpointGate } from "../src/race/checkpoints";
 import {
   createRace,
   respawnSpot,
@@ -94,6 +94,7 @@ function drive(
   return p;
 }
 
+/** Distance round the lap where the route crosses gate idx's plane. */
 const gateDist = (race: Race, idx: number) => {
   const g = race.gates[idx]!;
   let best = 0;
@@ -105,7 +106,15 @@ const gateDist = (race: Race, idx: number) => {
       best = s.dist;
     }
   }
-  return best;
+  // Refine to the plane itself.
+  let lo = best - 4;
+  let hi = best + 4;
+  for (let k = 0; k < 30; k++) {
+    const mid = (lo + hi) / 2;
+    if (planeDist(g, at(mid)) < 0) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
 };
 
 describe("checkpoint progression (acceptance)", () => {
@@ -356,7 +365,10 @@ describe("checkpoint progression (acceptance)", () => {
     const g1 = gateDist(race, 1);
     drive(race, -6, g1 - 2);
     for (let k = 0; k < 20; k++) drive(race, g1 + (k % 2 ? -0.5 : 0.5), g1 + (k % 2 ? 0.5 : -0.5));
-    expect(race.racers[0]!.passed).toBe(1);
+    expect(
+      race.racers[0]!.passed,
+      JSON.stringify({ g1, ev: race.racers[0]!.lastEvent, next: race.racers[0]!.next }),
+    ).toBe(1);
   });
 
   it("takes the shortcut gate as the checkpoint it stands for", () => {

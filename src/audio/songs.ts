@@ -12,7 +12,12 @@
  *
  * And a theme per Prehistoric World course:
  *
- *   riverbend   "Riverbend Palms"   C major, 132: steel pan, marimba, flute, bongos
+ *   riverbend   "Riverbend Palms"   F major, 138: a beach party. Steel pan lead, strummed
+ *                                   marimba off-beats, brass hits, a whistling flute,
+ *                                   a bouncing bass, four-on-the-floor kick, busy congas
+ *                                   (bongos), shaker, tambourine and a cowbell-ish clave
+ *   riverbend_classic  "Riverbend Palms (Classic)"  C major, 132: the gentler v1 theme
+ *                                   (steel pan, marimba, flute, bongos)
  *   cascade     "Cascade Caverns"   D minor, 142: flute over pizzicato, wood, bells
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
@@ -433,8 +438,104 @@ function race(): Song {
 }
 
 // ---------------------------------------------------------------- "Riverbend Palms"
+// A beach party: calypso-style 3+3+2 phrases on the steel pan, everything bouncing.
 
 export const RIVERBEND_MELODY = bars(
+  "F5:.5 A5:.5 C6:.5 A5:1 C6:.5 F6:1",
+  "F6:.5 D6:.5 Bb5:1 D6:.5 F6:1 D6:.5",
+  "E6:.5 C6:.5 G5:.5 E5:1 G5:.5 C6:1",
+  "A5:1.5 C6:1.5 F5:1",
+  "D6:.5 F6:.5 A6:.5 F6:1 D6:.5 A5:1",
+  "Bb5:.5 D6:.5 F6:.5 D6:1 C6:.5 Bb5:1",
+  "C6:.5 E6:.5 G6:.5 E6:1 D6:.5 C6:1",
+  "G6:.5 F6:.5 E6:.5 D6:.5 C6:.5 Bb5:.5 G5:1",
+  "D6:1 r:.5 D6:.5 F6:.5 D6:.5 Bb5:1",
+  "E6:1 r:.5 E6:.5 G6:.5 E6:.5 C6:1",
+  "C6:.5 E6:.5 A6:1 G6:.5 E6:.5 C6:1",
+  "D6:.5 F6:.5 A6:1 F6:.5 E6:.5 D6:1",
+  "F6:.5 F6:.5 D6:.5 Bb5:1 C6:.5 D6:1",
+  "E6:.5 G6:.5 Bb6:.5 G6:1 E6:.5 C6:1",
+  "A6:.5 G6:.5 F6:.5 C6:1 A5:.5 C6:.5 D6:.5",
+  "F6:2! r:1 C6:.5 D6:.5",
+);
+export const RIVERBEND_CHORDS =
+  "F:4 Bb:4 C:4 F:4 Dm:4 Bb:4 C:4 C7:4 Bb:4 C:4 Am:4 Dm:4 Bb:4 C7:4 F:4 F:4";
+
+function riverbend(): Song {
+  const ch = chart(RIVERBEND_CHORDS);
+  const mel = seq(RIVERBEND_MELODY, 0, 0.86);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  // Soca bass: bouncing between root and octave on the off-beats, a walk into each chord.
+  const bounce: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "5"],
+    [2.5, 0.5, "8"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  // The flute's whistle: a high answer at the end of every other bar.
+  const whistle = seq(
+    bars(
+      "r:4",
+      "r:2 F6:.25 G6:.25 A6:.5 r:1",
+      "r:4",
+      "r:2 C7:.25 A6:.25 F6:.5 r:1",
+      "r:4",
+      "r:2 F6:.25 G6:.25 A6:.5 r:1",
+      "r:4",
+      "r:2 E6:.25 F6:.25 G6:.5 r:1",
+    ),
+    0,
+    0.7,
+  );
+  return {
+    id: "riverbend",
+    title: "Riverbend Palms",
+    role: "Prehistoric World",
+    bpm: 138,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("steelpan", "base", 1, mel),
+      part("xylophone", "base", 0.3, shift(b, 0, 12)),
+      part("flute", "base", 0.5, [...whistle, ...shift(whistle, 32)]),
+      // A strummed off-beat "skank" on the marimba, and a lower arpeggio under it.
+      part("marimba", "base", 0.55, stabs(ch, [0.5, 1.5, 2.5, 3.5], 62, 0.2, 0.6)),
+      part("marimba", "base", 0.35, arpeggio(ch, 0.5, [0, 2, 1, 2], 53, 0.35, 0.5)),
+      // Brass hits on the push before beats 3 and 1.
+      part("brass", "base", 0.5, stabs(ch, [1.5, 3.5], 60, 0.22, 0.7)),
+      part(
+        "pad",
+        "base",
+        0.35,
+        pads(
+          ch.filter((c) => c.t >= 32),
+          57,
+          4,
+          0.45,
+        ),
+      ),
+      part("bass", "base", 1, bassLine(ch, bounce, 34, 0.9)),
+      ...drumParts("base", 0.85, drums("K...K...K...K...", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("....s.......s..s", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("hhHhhhHhhhHhhhHh", KIT, 0.25, T)),
+      ...drumParts("base", 0.45, drums("..t...t...t...t.", KIT, 0.25, T)),
+      ...drumParts("base", 0.55, drums("w..w..w...w.w...", KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("b.bbB.b.b.bbB.bb", KIT, 0.25, T)),
+      ...drumParts("base", 0.8, drums("C", KIT, 32, 2)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Riverbend Palms (Classic)"
+// The original (v1) Riverbend theme, kept in the music player. To put it back on the
+// course, set the track's music to "riverbend_classic" in src/game/tracks.ts.
+
+export const RIVERBEND_CLASSIC_MELODY = bars(
   "E5:.5 G5:.5 C6:1 G5:.5 E5:.5 G5:1",
   "A5:.5 C6:.5 A5:1 F5:.5 A5:.5 C6:1",
   "B5:.5 D6:.5 G5:1 B5:.5 A5:.5 G5:1",
@@ -452,12 +553,12 @@ export const RIVERBEND_MELODY = bars(
   "C6:.5 D6:.5 E6:1 G6:1 E6:1",
   "C6:3 r:1",
 );
-export const RIVERBEND_CHORDS =
+export const RIVERBEND_CLASSIC_CHORDS =
   "C:4 F:4 G:4 C:4 Am:4 F:4 G:4 G7:4 F:4 G:4 Em:4 Am:4 F:4 G:4 C:4 C:4";
 
-function riverbend(): Song {
-  const ch = chart(RIVERBEND_CHORDS);
-  const mel = seq(RIVERBEND_MELODY, 0, 0.85);
+function riverbendClassic(): Song {
+  const ch = chart(RIVERBEND_CLASSIC_CHORDS);
+  const mel = seq(RIVERBEND_CLASSIC_MELODY, 0, 0.85);
   const b = mel.filter((n) => n.t >= 32);
   const T = 16;
   // A bouncy island bass: root, a push on the "and" of two, the fifth, an approach.
@@ -469,8 +570,8 @@ function riverbend(): Song {
     [3.5, 0.5, "A"],
   ];
   return {
-    id: "riverbend",
-    title: "Riverbend Palms",
+    id: "riverbend_classic",
+    title: "Riverbend Palms (Classic)",
     role: "Prehistoric World",
     bpm: 132,
     beats: 64,
@@ -758,6 +859,7 @@ export const SONGS: Record<string, Song> = {
   race: race(),
   fanfare: fanfare(),
   riverbend: riverbend(),
+  riverbend_classic: riverbendClassic(),
   cascade: cascade(),
   bonebog: bonebog(),
   ember: ember(),

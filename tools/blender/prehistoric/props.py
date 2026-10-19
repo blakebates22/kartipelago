@@ -145,6 +145,55 @@ def flowers(c):
     return c.proto(name, build) and name
 
 
+def lily_pad(c, variant=0):
+    """A floating lily pad (a disc with a notch), at the water's surface."""
+    name = "Lily Pad %d" % variant
+
+    def build(bm):
+        n = 12
+        notch = 0.42 + 0.1 * variant
+        centre = bm.verts.new((0, 0, 0.04))
+        rim = []
+        for i in range(n + 1):
+            a = notch / 2 + (math.tau - notch) * i / n
+            r = 1.0 + 0.06 * math.sin(a * 3 + variant)
+            rim.append(bm.verts.new((r * math.cos(a), r * math.sin(a), 0.07)))
+        for a, b in zip(rim, rim[1:]):
+            bm.faces.new((centre, a, b))
+        return [(c.lib("lily_pad"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def lotus(c):
+    """A pink water flower on its pad: two rings of pointed petals round a pale heart."""
+    name = "Lotus"
+
+    def build(bm):
+        n = 12
+        centre = bm.verts.new((0, 0, 0.04))
+        rim = [bm.verts.new((1.3 * math.cos(0.25 + (math.tau - 0.5) * i / n), 1.3 * math.sin(0.25 + (math.tau - 0.5) * i / n), 0.07)) for i in range(n + 1)]
+        for a, b in zip(rim, rim[1:]):
+            bm.faces.new((centre, a, b))
+        pad = _faces(bm, 0)
+        before = len(bm.faces)
+        for ring_i, (count, length, tilt, width, phase) in enumerate(((7, 0.75, 0.75, 0.32, 0.0), (6, 0.6, 1.15, 0.26, 0.45))):
+            for k in range(count):
+                a = phase + k * math.tau / count
+                ca, sa = math.cos(a), math.sin(a)
+                base = Vector((0.12 * ca, 0.12 * sa, 0.1))
+                out = Vector((ca * math.cos(tilt), sa * math.cos(tilt), math.sin(tilt)))
+                side = Vector((-sa, ca, 0))
+                mid = base + out * (length * 0.5)
+                tip = base + out * length + Vector((0, 0, 0.05))
+                v = [bm.verts.new(base), bm.verts.new(mid + side * width), bm.verts.new(tip), bm.verts.new(mid - side * width)]
+                bm.faces.new(v)
+        blob(bm, (0, 0, 0.22), 0.13, sz=0.7, subdiv=1)
+        return [(c.lib("lily_pad"), pad), (c.lib("lotus"), _faces(bm, before))]
+
+    return c.proto(name, build) and name
+
+
 def boulder(c, mat="valley_cliff", variant=0):
     name = "Boulder %s %d" % (mat, variant)
 
