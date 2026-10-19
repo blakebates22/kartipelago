@@ -3,9 +3,9 @@ import trackData from "../assets/data/track.json";
 import tuning from "../assets/data/tuning.json";
 import { createKartState } from "../src/vehicles/kart";
 import { buildTrack, type TrackData } from "../src/world/track";
+import { crossGate } from "../src/race/checkpoints";
 import {
   createRace,
-  crossed,
   formatTime,
   judgeStart,
   makeGates,
@@ -23,17 +23,17 @@ const dt = 1 / 120;
 /** One step for racer 0 with the kart at (x, z). */
 function step(race: Race, x: number, z: number, throttle = 0, onRoad = true, i = 0) {
   tickRace(race, dt);
-  const kart = createKartState(x, z);
+  const kart = createKartState(x, z, 0, 0);
   return stepRacer(race, i, kart, onRoad, throttle, cfg, dt);
 }
 
-/** Teleport racer 0 through a list of gate indices, a little past each. */
+/** Drive racer i through a list of gate indices: from 2 m before each to 2 m past it. */
 function passGates(race: Race, order: number[], i = 0) {
   for (const gi of order) {
     const g = race.gates[gi]!;
-    for (const d of [-1, 1]) {
+    for (const d of [-2, 2]) {
       tickRace(race, dt);
-      stepRacer(race, i, createKartState(g.x + g.fx * d, g.z + g.fz * d), true, 0, cfg, dt);
+      stepRacer(race, i, createKartState(g.x + g.fx * d, g.z + g.fz * d, 0, g.y), true, 0, cfg, dt);
     }
   }
 }
@@ -47,18 +47,34 @@ function started(racers = 1) {
 const lapOrder = (race: Race) => [...race.gates.keys()].slice(1).concat(0);
 
 describe("gates", () => {
-  it("are spaced around the whole track, starting at the start line", () => {
-    const gates = makeGates(track, cfg.checkpointSpacing);
-    expect(gates.length).toBeGreaterThanOrEqual(8);
+  it("are placed round the whole track, starting at the start line", () => {
+    const gates = makeGates(track);
+    expect(gates.length).toBeGreaterThanOrEqual(5);
     expect(gates[0]!.x).toBeCloseTo(track.start.x);
     expect(gates[0]!.z).toBeCloseTo(track.start.z);
   });
 
-  it("count only forward crossings inside the road", () => {
-    const g = { x: 0, y: 0, z: 0, fx: 0, fz: 1, heading: 0, halfWidth: 10 };
-    expect(crossed(g, 0, -1, 0, 1)).toBe(true);
-    expect(crossed(g, 0, 1, 0, -1)).toBe(false); // backwards
-    expect(crossed(g, 20, -1, 20, 1)).toBe(false); // outside the road
+  it("are finite 3D rectangles crossed forward or back", () => {
+    const g = {
+      ...makeGates(track)[0]!,
+      x: 0,
+      y: 0,
+      z: 0,
+      fx: 0,
+      fz: 1,
+      heading: 0,
+      left: 10,
+      right: 10,
+      height: 6,
+      below: 2,
+    };
+    const at = (x: number, y: number, z: number) => ({ x, y, z });
+    expect(crossGate(g, at(0, 0, -1), at(0, 0, 1))).toBe("forward");
+    expect(crossGate(g, at(0, 0, 1), at(0, 0, -2))).toBe("backward");
+    expect(crossGate(g, at(0, 0, 1), at(0, 0, -0.5))).toBeUndefined(); // within the hysteresis
+    expect(crossGate(g, at(20, 0, -1), at(20, 0, 1))).toBeUndefined(); // beside it
+    expect(crossGate(g, at(0, 9, -1), at(0, 9, 1))).toBeUndefined(); // over it
+    expect(crossGate(g, at(0, 5, -1), at(0, 5, 1))).toBe("forward"); // through it, flying
   });
 });
 
@@ -85,14 +101,15 @@ describe("race", () => {
     expect(race.finishOrder).toEqual([0]);
   });
 
-  it("respawns a kart at its last checkpoint after sitting off the road", () => {
+  it("respawns a kart stuck off the road (walled tracks) just past its last checkpoint", () => {
     const race = started();
     passGates(race, [1, 2, 3]);
     let spawn;
     for (let t = 0; t < cfg.respawnAfterSec + 0.1 && !spawn; t += dt) {
       spawn = step(race, 999, 999, 0, false).respawn;
     }
-    expect(spawn).toBe(race.gates[3]);
+    expect(spawn).toEqual(race.gates[3]!.respawn);
+    expect(race.racers[0]!.passed).toBe(3); // progress kept
   });
 
   it("doesn't respawn a kart for flying over the grass", () => {

@@ -7,6 +7,8 @@
  *   collision.glb  what you drive on and hit (semantic surfaces in material extras)
  *   route.json     the race route sampled from the Blender curve (exporter-owned)
  *   look.json      sky, sun and fog (exporter-owned; optional)
+ *   checkpoints.json  the checkpoint gates placed in Blender (exporter-owned; optional:
+ *                  without it they're placed automatically from the route)
  *
  * Loading turns them into the pieces the game already uses: the route becomes an
  * ordinary centre-line TrackData (so checkpoints, the grid, the AI racing line and
@@ -24,6 +26,7 @@ import {
 } from "../render/trackMaterials";
 import { buildCollisionMesh, type CollisionMesh, type SurfaceTable } from "./collisionMesh";
 import type { TrackData } from "./track";
+import type { CheckpointGate } from "../race/checkpoints";
 
 export const TRACK_SCHEMA = 1;
 export const ROUTE_SCHEMA = 1;
@@ -59,6 +62,89 @@ export interface TrackLook {
   fog?: { enabled: boolean; color: string; near: number; far: number };
   sun?: { color: string; intensity: number; direction: [number, number, number] };
   ambient?: { sky: string; ground: string; intensity: number };
+}
+
+export const CHECKPOINT_SCHEMA = 1;
+
+/** checkpoints.json: gates in game coordinates, as the Blender add-on exports them. */
+export interface CheckpointFile {
+  schemaVersion: number;
+  checkpoints: {
+    id: string;
+    index: number;
+    route?: string;
+    position: [number, number, number];
+    heading: number;
+    width?: number;
+    left?: number;
+    right?: number;
+    height: number;
+    below?: number;
+    respawn?: { position: [number, number, number]; heading: number };
+  }[];
+}
+
+/** Check checkpoints.json and turn it into gates, or throw a TrackError. */
+export function parseCheckpoints(json: unknown, warnings: string[] = []): CheckpointGate[] {
+  if (!isObj(json) || !Array.isArray(json.checkpoints))
+    throw new TrackError("checkpoints.json: no checkpoints list");
+  if (!finite(json.schemaVersion) || (json.schemaVersion as number) > CHECKPOINT_SCHEMA)
+    throw new TrackError(
+      `checkpoints.json: unsupported schema version ${String(json.schemaVersion)}`,
+    );
+  const gates: CheckpointGate[] = [];
+  for (const c of json.checkpoints as CheckpointFile["checkpoints"]) {
+    const p = c.position;
+    if (
+      !Array.isArray(p) ||
+      p.length !== 3 ||
+      !p.every(finite) ||
+      !finite(c.index) ||
+      !finite(c.heading)
+    ) {
+      warnings.push(`checkpoints.json: ${String(c.id)} is malformed, skipped`);
+      continue;
+    }
+    const half = finite(c.width) ? c.width! / 2 : 10;
+    const fx = Math.sin(c.heading);
+    const fz = Math.cos(c.heading);
+    const rs = c.respawn;
+    gates.push({
+      id: typeof c.id === "string" ? c.id : `cp${c.index}`,
+      index: c.index,
+      route: typeof c.route === "string" && c.route ? c.route : "main",
+      x: p[0],
+      y: p[1],
+      z: p[2],
+      fx,
+      fz,
+      heading: c.heading,
+      left: finite(c.left) ? c.left! : half,
+      right: finite(c.right) ? c.right! : half,
+      height: finite(c.height) ? c.height : 6,
+      below: finite(c.below) ? c.below! : 3,
+      respawn:
+        rs && Array.isArray(rs.position) && rs.position.every(finite) && finite(rs.heading)
+          ? { x: rs.position[0], y: rs.position[1], z: rs.position[2], heading: rs.heading }
+          : { x: p[0] + fx * 4, y: p[1], z: p[2] + fz * 4, heading: c.heading },
+    });
+  }
+  const idx = [...new Set(gates.filter((g) => g.route === "main").map((g) => g.index))].sort(
+    (a, b) => a - b,
+  );
+  if (!idx.length) throw new TrackError("checkpoints.json: no main-route checkpoints");
+  // An alternate gate stands in for a main checkpoint: without one it means nothing.
+  for (const g of [...gates])
+    if (g.route !== "main" && !idx.includes(g.index)) {
+      warnings.push(`checkpoints.json: ${g.id} has no main checkpoint ${g.index}, skipped`);
+      gates.splice(gates.indexOf(g), 1);
+    }
+  if (idx[0] !== 0) warnings.push("checkpoints.json: there's no checkpoint 0 (the start line)");
+  idx.forEach((v, i) => {
+    if (v !== i)
+      warnings.push(`checkpoints.json: checkpoint numbers skip from ${idx[i - 1]} to ${v}`);
+  });
+  return gates;
 }
 
 export interface TrackPackage {
@@ -289,11 +375,12 @@ export async function loadTrackPackage(
   const meta = parseTrackMeta(JSON.parse(text(await read("track.json"))));
   // look.json is optional: tracks exported before it existed don't list it.
   const lookFile = meta.geometry.look ?? "look.json";
-  const [routeBuf, colBuf, visBuf, lookBuf] = await Promise.all([
+  const [routeBuf, colBuf, visBuf, lookBuf, cpBuf] = await Promise.all([
     read(meta.geometry.route),
     read(meta.geometry.collision),
     opts.visual === false ? Promise.resolve(undefined) : read(meta.geometry.visual),
     read(lookFile).catch(() => undefined),
+    read("checkpoints.json").catch(() => undefined),
   ]);
   const route = parseRoute(JSON.parse(text(routeBuf)));
   const colScene = await parseGlb(colBuf, meta.geometry.collision);
@@ -313,6 +400,17 @@ export async function loadTrackPackage(
   visual.name = `track:${meta.id}`;
   const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic");
   const trackData = routeToTrackData(meta, route, warnings);
+  if (cpBuf) {
+    try {
+      trackData.gates = parseCheckpoints(JSON.parse(text(cpBuf)), warnings);
+    } catch (e) {
+      warnings.push(
+        e instanceof TrackError
+          ? `${e.message}; placing checkpoints automatically`
+          : "checkpoints.json: not valid JSON; placing checkpoints automatically",
+      );
+    }
+  }
   // Sanity check: the route should lie on the collision surface.
   const b = collision.bounds;
   const off = trackData.points.filter(

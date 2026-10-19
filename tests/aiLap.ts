@@ -5,7 +5,7 @@ import { createDriver, driveAi } from "../src/ai/driver";
 import { buildRacingLine } from "../src/ai/racingLine";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepMeshWalls } from "../src/physics/walls";
-import { createRace, stepRacer, tickRace } from "../src/race/race";
+import { createRace, respawnSpot, stepRacer, teleported, tickRace } from "../src/race/race";
 import { createKartState, stepKart, type KartConfig } from "../src/vehicles/kart";
 import { applySurface, createMeshGround } from "../src/world/collisionMesh";
 import { buildTrack } from "../src/world/track";
@@ -75,8 +75,9 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     const under = k.grounded ? ground.at(k.x, k.z, k.y).surface : undefined;
     const fell = k.y < p.killY || (opts.surfaces && under && SURFACES[under]?.respawn);
     if (ev.respawn || fell) {
-      const g = ev.respawn ?? race.gates[race.racers[0]!.last]!;
+      const g = ev.respawn ?? respawnSpot(race, 0);
       Object.assign(k, createKartState(g.x, g.z, g.heading, g.y));
+      teleported(race, 0, k);
       respawns++;
     }
     if (opts.trace && t >= nextTrace) {

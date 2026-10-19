@@ -240,6 +240,10 @@ def main():
     ):
         c.balloon(at, across, col)
 
+    # Checkpoints: out from under the skeleton, off the east causeway, through the mud,
+    # out of the pyramid and off the lagoon causeway.
+    c.checkpoints(extra=[kit.s_near(c, 0, -20) + 10, kit.s_near(c, 168, 70), s1 + 10, kit.s_near(c, -150, 4) + 10])
+
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [pyr], 0.3)
     c.preset("bottoms", [pyr], 0.4)

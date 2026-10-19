@@ -274,6 +274,10 @@ def main():
     os.makedirs(os.path.join(REPO, "tracks-src"), exist_ok=True)
     blend = os.path.join(REPO, "tracks-src", "dino_demo.blend")
     bpy.ops.wm.save_as_mainfile(filepath=blend)
+    # Checkpoint gates, from the add-on's generator (edit them in the Checkpoints panel).
+    from kartipelago_tools import checkpoints
+
+    checkpoints.generate(scene)
     rep = export.export_track(os.path.join(REPO, "public", "tracks"), "dino_demo", "Dino Demo")
     print("EXPORTED", rep)
 

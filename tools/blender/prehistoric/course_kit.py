@@ -35,7 +35,7 @@ import bmesh  # noqa: E402
 from mathutils import Matrix, Vector, kdtree  # noqa: E402
 
 import kartipelago_tools  # noqa: E402
-from kartipelago_tools import export, materials, paint, road  # noqa: E402
+from kartipelago_tools import checkpoints as cpts, export, materials, paint, road  # noqa: E402
 
 TRACKS_DIR = os.environ.get("KP_TRACKS_DIR", os.path.join(REPO, "public", "tracks"))
 
@@ -99,6 +99,7 @@ class Course:
         self.entities = []
         self.prop_count = 0
         self.extra_ground = []
+        self.gaps = []
 
     # -------------------------------------------------------------- scene helpers
 
@@ -346,6 +347,7 @@ class Course:
             if kind is None:
                 for smp in self.span(s0, s1):
                     smp.ground = False
+                self.gaps.append((s0, s1))
                 continue
             opts = dict(self.kinds[kind])
             opts.update(extra)
@@ -739,6 +741,33 @@ class Course:
     def entity(self, kind, **data):
         n = sum(e["type"] == kind for e in self.entities) + 1
         self.entities.append({"id": "%s_%02d" % (kind, n), "type": kind, **data})
+
+    # -------------------------------------------------------------- checkpoints
+
+    def checkpoints(self, extra=(), avoid=(), margin=18.0, height=6.0):
+        """
+        The lap's checkpoint gates, with the add-on's own generator (the same as its
+        Generate from Route button): the start line, after every real turn, the `extra`
+        distances asked for (landmarks, landings), and none inside a jump's gap or a
+        respawn zone. Returns {distance: gate object}.
+        """
+        avoid = list(avoid) + list(self.gaps) + [(e["from"], e["at"] + 6) for e in self.entities if e["type"] == "respawn"]
+        made = cpts.generate(self.scene, avoid=avoid, extra=[d % self.length for d in extra], margin=margin, height=height)
+        samples, length = cpts.route_samples(self.scene)
+        return {cpts.distance_along(samples, g.location): g for g in made}
+
+    def alt_gate(self, main_gate, route, points, width=None, height=6.0):
+        """A gate on an alternate route (a shortcut) that counts the same as main_gate:
+        placed across the middle of a polyline of (x, y, z) points."""
+        a, b = Vector(points[len(points) // 2 - 1]), Vector(points[len(points) // 2])
+        mid = (a + b) / 2
+        f = (b - a)
+        f.z = 0
+        f.normalize()
+        g = cpts.make(self.scene, main_gate["kp_checkpoint"], mid, (f.x, f.y), width or 22.0, height, route=route,
+                      name="CP %02d %s" % (main_gate["kp_checkpoint"], route))
+        cpts.add_respawn(g, mid + f * 4, (f.x, f.y))
+        return g
 
     # -------------------------------------------------------------- finish
 

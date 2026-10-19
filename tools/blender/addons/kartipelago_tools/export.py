@@ -20,7 +20,7 @@ import math
 import os
 
 import bpy
-from . import materials, road
+from . import checkpoints, materials, road
 
 ROUTE_SCHEMA = 1
 TRACK_SCHEMA = 1
@@ -28,9 +28,10 @@ DRIVEABLE_TYPES = {"MESH", "CURVE", "SURFACE", "META", "FONT"}
 
 
 def role_of(ob):
-    """'both' (seen and collided with), 'visual' (decoration) or 'collision' (hidden)."""
+    """'both' (seen and collided with), 'visual' (decoration), 'collision' (hidden), or
+    'checkpoint' / 'editor' (editor-only helpers: never in the GLBs)."""
     r = ob.get("kp_role")
-    if r in ("both", "visual", "collision"):
+    if r in ("both", "visual", "collision", "checkpoint", "editor"):
         return r
     return "visual"
 
@@ -197,6 +198,7 @@ def export_track(folder, track_id, name=None):
     with open(os.path.join(out_dir, "look.json"), "w") as f:
         json.dump(look, f, indent=2)
         f.write("\n")
+    report["checkpoints"] = checkpoints.export(bpy.context.scene, out_dir)
     with open(os.path.join(out_dir, "route.json"), "w") as f:
         json.dump(route, f, separators=(",", ":"))
         f.write("\n")

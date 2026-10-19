@@ -1,0 +1,270 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    -20.0,
+    0.0,
+    40.0
+   ],
+   "heading": 1.50362,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -16.161,
+     -0.011,
+     40.252
+    ],
+    "heading": 2.89825
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    76.118,
+    0.415,
+    37.709
+   ],
+   "heading": 1.72559,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     79.854,
+     0.493,
+     37.058
+    ],
+    "heading": -3.0209
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    150.264,
+    4.385,
+    -14.829
+   ],
+   "heading": 2.89509,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     151.096,
+     4.658,
+     -18.71
+    ],
+    "heading": -1.84381
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    104.0,
+    11.6,
+    -86.0
+   ],
+   "heading": -1.90524,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     100.384,
+     11.815,
+     -87.216
+    ],
+    "heading": -0.37962
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    20.22,
+    14.611,
+    -94.133
+   ],
+   "heading": -1.37759,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     16.223,
+     14.703,
+     -93.224
+    ],
+    "heading": 0.16549
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    -34.829,
+    15.769,
+    -37.484
+   ],
+   "heading": -0.20389,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -35.723,
+     15.793,
+     -33.257
+    ],
+    "heading": -1.69655
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    -47.393,
+    15.3,
+    64.955
+   ],
+   "heading": -0.40794,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -49.224,
+     15.254,
+     68.882
+    ],
+    "heading": -1.95083
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    -114.034,
+    14.507,
+    112.154
+   ],
+   "heading": -1.40805,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -118.388,
+     14.468,
+     112.751
+    ],
+    "heading": -2.95021
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    -187.079,
+    13.814,
+    80.482
+   ],
+   "heading": -2.72962,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -188.58,
+     13.802,
+     76.583
+    ],
+    "heading": 2.00788
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    -185.914,
+    9.38,
+    -27.863
+   ],
+   "heading": 2.86846,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -184.699,
+     9.223,
+     -31.797
+    ],
+    "heading": 1.3262
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    -111.29,
+    2.31,
+    -32.214
+   ],
+   "heading": 0.36407,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -109.903,
+     2.12,
+     -28.196
+    ],
+    "heading": -1.1794
+   }
+  },
+  {
+   "id": "cp11",
+   "index": 11,
+   "route": "main",
+   "position": [
+    -84.505,
+    0.415,
+    27.677
+   ],
+   "heading": 0.89118,
+   "width": 50.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -81.226,
+     0.353,
+     30.064
+    ],
+    "heading": 2.4376
+   }
+  }
+ ]
+}

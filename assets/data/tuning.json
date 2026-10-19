@@ -161,7 +161,6 @@
   },
   "race": {
     "laps": 3,
-    "checkpointSpacing": 60,
     "respawnAfterSec": 0.6,
     "readySec": 1.5,
     "startTargetFrac": 0.5,

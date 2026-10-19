@@ -5,6 +5,7 @@
  * it. Layouts live in assets/data/track.json.
  */
 import * as THREE from "three";
+import type { CheckpointGate } from "../race/checkpoints";
 
 export interface TrackPoint {
   x: number;
@@ -41,7 +42,7 @@ export interface TrackData {
   open?: boolean;
   /** Tunnels (open tracks): straight stretches, metres along the lap, through rock. */
   tunnels?: { from: number; to: number; thickness?: number; height?: number }[];
-  /** How far beside the road (metres) still counts as passing a checkpoint. Default 2. */
+  /** Extra checkpoint gate width beside the road, m (default 18 open, 6 walled). */
   gateMargin?: number;
   /** How far the AI's racing line stays from the road edge, overriding ai.lineMargin. */
   aiLineMargin?: number;
@@ -52,8 +53,16 @@ export interface TrackData {
    * walls come from the track's own geometry, and the surface can overlap itself.
    */
   imported?: boolean;
-  /** Checkpoints only count within this height of the road (layered tracks), m. */
+  /** How high above the road checkpoint gates reach (layered tracks: keep it under the
+   * height between layers), m. */
   gateHeight?: number;
+  /**
+   * Checkpoints by distance along the lap (0 must come first: the start line), with
+   * optional sizes. Without these (or `gates`) they're placed automatically.
+   */
+  checkpoints?: { at: number; left?: number; right?: number; height?: number }[];
+  /** Fully placed checkpoint gates (Blender tracks: checkpoints.json). */
+  gates?: CheckpointGate[];
 }
 
 export interface TrackSample {

@@ -54,6 +54,8 @@ import {
 import { createBananaView } from "../render/bananaView";
 import type { Sfx } from "../audio/sfx";
 import { createHazards, type HazardConfig } from "./hazards";
+import { createCheckpointView, type CheckpointView } from "../render/checkpointView";
+import { segmentProgress } from "../race/checkpoints";
 import { createTrackGround, flatGround, type GroundQuery } from "../physics/ground";
 import { stepVertical } from "../physics/vertical";
 import { stepImpacts, stepMeshWalls, stepSolids, stepWalls } from "../physics/walls";
@@ -67,9 +69,11 @@ import {
   createRace,
   lapClock,
   progress,
+  respawnSpot,
   standings,
   startTarget,
   stepRacer,
+  teleported,
   tickRace,
 } from "../race/race";
 import type { Race } from "../race/race";
@@ -478,6 +482,11 @@ function buildSession(
     track ? createRace(track, tuning.race, entrants.length) : undefined;
   let race = newRace();
   placeKarts();
+  /** The race position on the HUD, smoothed (see hud()). */
+  let shownPlace = { shown: 1, pending: 1, since: 0 };
+  /** Debug: the checkpoint gates drawn in the world (G toggles them). */
+  let gateView: CheckpointView | undefined =
+    race && ctx.devKeys && !demo ? createCheckpointView(root, race.course) : undefined;
 
   // HUD: the speedometer (unitless; see render/speedo.ts) and the debug timing bar.
   const startMeter = createStartMeter(hudRoot);
@@ -519,6 +528,8 @@ function buildSession(
       if (debug.overlay.visible && e.code === "KeyK") bananaAddRequested++;
       // M flips between the legacy and offset drift models, for side-by-side comparison.
       if (e.code === "KeyM") tuning.vehicle.driftModel = tuning.vehicle.driftModel >= 1 ? 0 : 1;
+      // G shows the invisible checkpoint gates (debug).
+      if (e.code === "KeyG" && gateView) gateView.visible = !gateView.visible;
       const n = /^Digit([1-9])$/.exec(e.code);
       if (n) pickRequested = characters[Number(n[1]) - 1];
     });
@@ -600,6 +611,13 @@ function buildSession(
       resetRequested = false;
       race = newRace();
       placeKarts();
+      shownPlace = { shown: 1, pending: 1, since: 0 };
+      if (gateView && race) {
+        const was = gateView.visible;
+        gateView.dispose();
+        gateView = createCheckpointView(root, race.course);
+        gateView.visible = was;
+      }
       resetBananaField(bananaField);
       resetItemWorld(itemWorld);
       if (course) resetCourse(course);
@@ -647,7 +665,9 @@ function buildSession(
       return { kart: e.state, items: e.items, cfg };
     });
     const progressOf = (j: number) =>
-      race ? progress(race, j, entrants[j]!.state.x, entrants[j]!.state.z) : 0;
+      race
+        ? progress(race, j, entrants[j]!.state.x, entrants[j]!.state.z, entrants[j]!.state.y)
+        : 0;
     const events: ItemEvent[] = [];
     if (!demo && boostLab.equip(you.items.held)) sfx.balloon(itemsCfg.volume, "new");
     const canGo = !race || canDrive(race);
@@ -712,12 +732,15 @@ function buildSession(
       // geometry, or onto another respawn surface: back to the last checkpoint (or where
       // a respawn zone says, past a jump's gap).
       const under = pkg ? e.ground.at(e.state.x, e.state.z, e.state.y).surface : undefined;
-      const lastGate = race.gates[race.racers[i]!.last]!;
+      const lastGate = respawnSpot(race, i);
       if (hazards) {
         const hz = hazards.stepKart(i, e.state, under, lastGate, dt);
         if (hz.burnt) e.racer.react("burn");
         if (hz.splashed === "deep") e.racer.react("splash");
-        if (hz.respawned) snapPrev(e);
+        if (hz.respawned) {
+          snapPrev(e);
+          teleported(race, i, e.state);
+        }
       }
       const surfaceDef =
         pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
@@ -731,6 +754,7 @@ function buildSession(
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
         e.state.bananas = bananas;
         snapPrev(e);
+        teleported(race, i, e.state); // a respawn never passes (or un-passes) a gate
       }
     });
     // Over the line: the AI takes the wheel for a lap of honour while the results show.
@@ -927,6 +951,7 @@ function buildSession(
       renderSpeedometer();
       startMeter.render(race, tuning.race, ctx.showTiming);
       if (debug.overlay.visible) debugReadout(frameSeconds);
+      if (race) gateView?.update(race.racers[0]!);
     }
     if (toast && performance.now() > toast.until) toast = undefined;
   }
@@ -949,6 +974,29 @@ function buildSession(
 
   function debugReadout(frameSeconds: number) {
     const s = you.state;
+    if (race) {
+      // Race progression: why you are (or aren't) gaining places.
+      const r = race.racers[0]!;
+      const order = standings(
+        race,
+        entrants.map((e) => e.state),
+      );
+      const n = race.course.length;
+      const ev = r.lastEvent;
+      debug.overlay.set(
+        "race",
+        `lap ${Math.min(r.lap, tuning.race.laps)} (${r.completedLaps} done)  place ${order.indexOf(0) + 1}/${entrants.length}  route ${r.activeRoute}`,
+      );
+      debug.overlay.set(
+        "cp",
+        `next ${race.course[r.next]!.gates[0]!.id}  last ${r.lastGate.id}  passed ${r.passed} (best ${r.best}) of ${n}/lap`,
+      );
+      debug.overlay.set(
+        "seg",
+        `${Math.round(segmentProgress(race.course, r, s) * 100)}% to the next  (G shows gates)`,
+      );
+      debug.overlay.set("cross", ev ? `${ev.kind} ${ev.gate}${ev.why ? `: ${ev.why}` : ""}` : "-");
+    }
     debug.overlay.set("speed", `${s.speed.toFixed(1)} m/s`);
     debug.overlay.set("slip", `${((slipAngle(s) * 180) / Math.PI).toFixed(1)}°`);
     debug.overlay.set("thr", input.state.throttle);
@@ -1060,13 +1108,22 @@ function buildSession(
       race,
       entrants.map((e) => e.state),
     );
+    // The place shown changes only once the new one has held for a moment, so two karts
+    // side by side don't make it flicker.
+    const now = order.indexOf(0) + 1;
+    if (now !== shownPlace.pending) shownPlace = { ...shownPlace, pending: now, since: race.clock };
+    if (
+      now !== shownPlace.shown &&
+      (race.clock - shownPlace.since > 0.25 || r.finished || race.phase === "countdown")
+    )
+      shownPlace.shown = now;
     return {
       ...base,
       phase: race.phase,
       countdown: race.phase === "countdown" ? -race.clock : 0,
       sinceGo: race.phase === "countdown" ? 0 : race.clock,
       startTier: r.start?.tier,
-      position: entrants.length > 1 ? order.indexOf(0) + 1 : undefined,
+      position: entrants.length > 1 ? shownPlace.shown : undefined,
       lap: Math.min(r.lap, tuning.race.laps),
       lapTime: lapClock(race, 0),
       bestLap: r.bestLap,
@@ -1117,6 +1174,7 @@ function buildSession(
       stage.setEnvironment(next.look);
       // Everything built from the route: the centre line, start line, AI racing line.
       Object.assign(trackData, next.trackData);
+      trackData.gates = next.trackData.gates; // checkpoints may have been removed
       Object.assign(track, buildTrack(trackData, tuning.track.sampleSpacing));
       trackView?.dispose();
       trackView = createTrackView(root, track, tuning.track, zippers, { surface: false });
@@ -1157,6 +1215,7 @@ function buildSession(
     disposed = true;
     abort.abort();
     hazards?.dispose();
+    gateView?.dispose();
     stage.scene.remove(root);
     disposeObject(root);
     trackView?.dispose();

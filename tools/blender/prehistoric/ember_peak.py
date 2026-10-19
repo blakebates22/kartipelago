@@ -296,6 +296,10 @@ def main():
     # Falling into the gully: the lava bounces you; give up and you're put down past it.
     c.entity("respawn", **{"from": round(s_lip - 30, 1), "to": round(s_land + 6, 1), "at": round(s_land + 14, 1)})
 
+    # Checkpoints: round the climb, out of the tunnel, at the summit, and just past the
+    # gully's landing (beyond where falling in puts you).
+    c.checkpoints(extra=[s1 + 10, kit.s_near(c, *polar(246, 46, 0)[:2]), s_land + 24])
+
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [rock], 0.35)
     c.preset("bottoms", ter, 0.4)

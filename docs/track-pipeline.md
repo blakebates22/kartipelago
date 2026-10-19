@@ -28,15 +28,15 @@ terrain, bridges,      ──export──▶ collision.glb ▶ CollisionMesh ─
 
 ## What we reuse
 
-| Existing system                                       | How imported tracks use it                                                                                              |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `buildTrack` (centre-line samples)                    | Built from the Blender route, so everything that reads samples keeps working                                            |
-| Checkpoints, laps, positions, respawn (`race.ts`)     | Unchanged. Gates gain an optional height window (`gateHeight`), so a gate on the lower road ignores karts on the bridge |
-| Grid (`grid.ts`), AI racing line and driver           | Unchanged: they follow the route                                                                                        |
-| Kart physics (`kart.ts`), vertical (`vertical.ts`)    | Unchanged. The ground query now takes the kart's height                                                                 |
-| Walls (`hitWall`)                                     | Mesh walls feed the same function, so impacts, drift handling and wall alignment behave as tuned                        |
-| Zippers, bananas, balloons (along-the-lap placements) | Placed as `track.json` entities with ids, by distance along the lap (see prehistoric-world.md)                          |
-| Tuning panel, debug overlay, speedometer, racers      | Unchanged                                                                                                               |
+| Existing system                                       | How imported tracks use it                                                                                                     |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `buildTrack` (centre-line samples)                    | Built from the Blender route, so everything that reads samples keeps working                                                   |
+| Checkpoints, laps, positions, respawn (`race.ts`)     | 3D checkpoint gates from `checkpoints.json` (placed in Blender) or placed from the route; see [checkpoints.md](checkpoints.md) |
+| Grid (`grid.ts`), AI racing line and driver           | Unchanged: they follow the route                                                                                               |
+| Kart physics (`kart.ts`), vertical (`vertical.ts`)    | Unchanged. The ground query now takes the kart's height                                                                        |
+| Walls (`hitWall`)                                     | Mesh walls feed the same function, so impacts, drift handling and wall alignment behave as tuned                               |
+| Zippers, bananas, balloons (along-the-lap placements) | Placed as `track.json` entities with ids, by distance along the lap (see prehistoric-world.md)                                 |
+| Tuning panel, debug overlay, speedometer, racers      | Unchanged                                                                                                                      |
 
 ## Files
 

@@ -1,21 +1,39 @@
 /**
  * Race rules for every kart in a race: "Get ready!" then "GO!" with a start boost for
- * good timing, checkpoints passed in order, laps, lap times, finishing order, race
- * positions, and respawning at the last checkpoint if a kart ends up off the track.
+ * good timing, laps, lap times, finishing order, race positions, and respawning.
  *
- * Checkpoints are gates spaced evenly along the track, derived from its samples. Gate 0
- * is the start/finish line. A gate counts when the kart crosses its line going forward
- * while inside the road's width, so skipping a section of track doesn't count.
+ * Progress round the course is checkpoint progression (checkpoints.ts): invisible 3D
+ * gates crossed in order, wherever you drive between them. Gate 0 is the start/finish
+ * line. The road surface plays no part in it: leaving the road, flying and cutting
+ * corners never cost progress. Only walled tracks (not open ones) still put a kart that
+ * sits grounded off the road for a moment back at its last checkpoint: that's being
+ * stuck outside the walls, not a progress rule.
  *
  * Racer 0 is the player.
  */
 import type { KartState } from "../vehicles/kart";
 import type { Track } from "../world/track";
+import {
+  DEFAULT_GATES,
+  checkpointsFromRoute,
+  gateAt,
+  groupGates,
+  newProgression,
+  planeDist,
+  rankValue,
+  stepProgression,
+  type Checkpoint,
+  type CheckpointGate,
+  type GateOptions,
+  type Progression,
+  type RouteSample,
+  type Spot,
+} from "./checkpoints";
+
+export type { Spot } from "./checkpoints";
 
 export interface RaceConfig {
   laps: number;
-  /** Rough distance between checkpoints, metres. */
-  checkpointSpacing: number;
   /** How long "Get ready!" shows before GO, seconds. */
   readySec: number;
   /** Where the perfect start moment sits between "Get ready!" (0) and GO (1). */
@@ -34,19 +52,8 @@ export interface RaceConfig {
   respawnAfterSec: number;
 }
 
-export interface Gate {
-  x: number;
-  y: number;
-  z: number;
-  /** Unit forward (direction of travel) on the ground plane. */
-  fx: number;
-  fz: number;
-  heading: number;
-  /** Half the road width plus the margin that still counts as passing. */
-  halfWidth: number;
-  /** Layered tracks: only counts within this height of the road (bridges), m. */
-  height?: number;
-}
+/** A checkpoint's main gate (see checkpoints.ts). */
+export type Gate = CheckpointGate;
 
 export type Phase = "countdown" | "racing";
 
@@ -59,15 +66,9 @@ export interface StartResult {
 }
 
 /** One kart's progress through the race. */
-export interface Racer {
+export interface Racer extends Progression {
   /** Current lap, 1-based. */
   lap: number;
-  /** Index of the next gate to pass. */
-  next: number;
-  /** Last gate passed: where a respawn puts you. */
-  last: number;
-  /** Gates passed in total since the start (for positions). */
-  passed: number;
   lapStart: number;
   lapTimes: number[];
   bestLap?: number;
@@ -76,6 +77,7 @@ export interface Racer {
   offRoadFor: number;
   /** Kart position at the end of the previous step, for crossing tests. */
   px: number;
+  py: number;
   pz: number;
   /** Clock time of the latest throttle press during "Get ready!". */
   pressAt?: number;
@@ -88,8 +90,12 @@ export interface Racer {
 export interface Race {
   /** Open track: leaving the road never respawns you. */
   open: boolean;
+  /** The checkpoints, in order (each with one or more gates). */
+  course: Checkpoint[];
+  /** Each checkpoint's main gate, by index. */
   gates: Gate[];
-  /** Track samples near the end of the lap (x, z, metres before the line), for ranking the grid. */
+  /** Track samples on the last 80 m before the line (x, z, metres before it): only for
+   * ranking the starting grid, which can sit on the curve leading onto the line. */
   approach: { x: number; z: number; before: number }[];
   phase: Phase;
   /** Seconds since GO; negative during the countdown. */
@@ -102,67 +108,110 @@ export interface Race {
 }
 
 export interface RaceEvents {
-  respawn?: Gate;
+  /** Put the kart back here (walled tracks: stuck off the road). */
+  respawn?: Spot;
   /** Start boost to apply right now, at GO. */
   boost?: { mult: number; seconds: number };
+  /** A checkpoint was validated, a lap completed, or a checkpoint lost by reversing. */
+  checkpoint?: Gate;
+  lap?: number;
+  reversed?: Gate;
 }
 
-/** Extra width either side of the road that still counts as passing a gate (default). */
-const GATE_MARGIN = 2;
-
-export function makeGates(track: Track, spacing: number): Gate[] {
-  const n = Math.max(3, Math.round(track.length / spacing));
-  const gates: Gate[] = [];
-  for (let g = 0; g < n; g++) {
-    const s = track.samples[Math.floor((g * track.samples.length) / n)]!;
-    const flat = Math.hypot(s.forward.x, s.forward.z);
-    const fx = s.forward.x / flat;
-    const fz = s.forward.z / flat;
-    gates.push({
-      x: s.pos.x,
-      y: s.pos.y,
-      z: s.pos.z,
-      fx,
-      fz,
-      heading: Math.atan2(fx, fz),
-      halfWidth: s.width / 2 + (track.data.gateMargin ?? GATE_MARGIN),
-      ...(track.data.gateHeight !== undefined && { height: track.data.gateHeight }),
-    });
-  }
-  return gates;
+/** The track's route as checkpoint-placement samples (game coordinates). */
+export function routeSamples(track: Track): RouteSample[] {
+  return track.samples.map((p) => ({
+    x: p.pos.x,
+    y: p.pos.y,
+    z: p.pos.z,
+    fx: p.forward.x,
+    fz: p.forward.z,
+    width: p.width,
+    dist: p.dist,
+  }));
 }
 
-function newRacer(start: Gate): Racer {
+/** Gate sizes for a track: generous on open tracks, closer to the road between walls. */
+export function gateOptions(track: Track): GateOptions {
+  const d = track.data;
   return {
+    ...DEFAULT_GATES,
+    margin: d.gateMargin ?? (d.open ? DEFAULT_GATES.margin : 6),
+    height: d.gateHeight ?? DEFAULT_GATES.height,
+  };
+}
+
+/**
+ * The track's checkpoints: Blender's gates (track.data.gates) if it has them, else the
+ * ones listed in its data (track.data.checkpoints, by distance along the lap), else
+ * placed automatically from the route.
+ */
+export function makeCourse(track: Track): Checkpoint[] {
+  const d = track.data;
+  if (d.gates?.length) return groupGates(d.gates);
+  const s = routeSamples(track);
+  const o = gateOptions(track);
+  if (d.checkpoints?.length)
+    return d.checkpoints.map((c, i) => {
+      const g = gateAt(s, track.length, c.at, i, {
+        ...o,
+        ...(c.height !== undefined && { height: c.height }),
+      });
+      if (c.left !== undefined) g.left = c.left;
+      if (c.right !== undefined) g.right = c.right;
+      return { index: i, gates: [g] };
+    });
+  return checkpointsFromRoute(s, track.length, o);
+}
+
+/** Each checkpoint's main gate (kept for older callers and tests). */
+export const makeGates = (track: Track): Gate[] => makeCourse(track).map((c) => c.gates[0]!);
+
+function newRacer(course: Checkpoint[]): Racer {
+  const start = course[0]!.gates[0]!;
+  return {
+    ...newProgression(course),
     lap: 1,
-    next: 1,
-    last: 0,
-    passed: 0,
     lapStart: 0,
     lapTimes: [],
     finished: false,
     offRoadFor: 0,
     px: start.x,
+    py: start.y,
     pz: start.z,
   };
 }
 
-export function createRace(track: Track, cfg: RaceConfig, racers = 1): Race {
-  const gates = makeGates(track, cfg.checkpointSpacing);
-  // The last stretch of road before the start line, where the grid sits.
-  const approach = track.samples
-    .filter((p) => track.length - p.dist < 80)
-    .map((p) => ({ x: p.pos.x, z: p.pos.z, before: track.length - p.dist }));
+export function createRace(
+  track: Track,
+  cfg: RaceConfig,
+  racers = 1,
+  course = makeCourse(track),
+): Race {
   return {
     open: Boolean(track.data.open),
-    gates,
-    approach,
+    course,
+    gates: course.map((c) => c.gates[0]!),
+    approach: track.samples
+      .filter((p) => track.length - p.dist < 80)
+      .map((p) => ({ x: p.pos.x, z: p.pos.z, before: track.length - p.dist })),
     phase: "countdown",
     clock: -cfg.readySec,
     goThisStep: false,
-    racers: Array.from({ length: racers }, () => newRacer(gates[0]!)),
+    racers: Array.from({ length: racers }, () => newRacer(course)),
     finishOrder: [],
   };
+}
+
+/** Where racer i goes if they need putting back: just past their last checkpoint. */
+export const respawnSpot = (race: Race, i: number): Spot => race.racers[i]!.lastGate.respawn;
+
+/** Tell the race a kart was moved (respawned): the jump isn't swept for crossings. */
+export function teleported(race: Race, i: number, kart: { x: number; y: number; z: number }) {
+  const r = race.racers[i]!;
+  r.px = kart.x;
+  r.py = kart.y;
+  r.pz = kart.z;
 }
 
 /** Clock time (negative, before GO) of the perfect start moment. */
@@ -184,15 +233,6 @@ export function judgeStart(
     return { tier: "good", offset };
   }
   return { tier: offset < 0 ? "early" : "late", offset };
-}
-
-/** Has the kart moved from behind this gate's line to on/after it, within its width? */
-export function crossed(g: Gate, px: number, pz: number, x: number, z: number): boolean {
-  const before = (px - g.x) * g.fx + (pz - g.z) * g.fz;
-  const after = (x - g.x) * g.fx + (z - g.z) * g.fz;
-  // Right is (-fz, fx); how far across the road the crossing happened.
-  const across = (x - g.x) * -g.fz + (z - g.z) * g.fx;
-  return before < 0 && after >= 0 && Math.abs(across) <= g.halfWidth;
 }
 
 export const canDrive = (race: Race) => race.phase !== "countdown";
@@ -237,53 +277,57 @@ export function stepRacer(
       }
     }
     r.px = kart.x;
+    r.py = kart.y;
     r.pz = kart.z;
     return events;
   }
 
   if (!r.finished) {
-    const gate = race.gates[r.next]!;
-    const level = gate.height === undefined || Math.abs(kart.y - gate.y) <= gate.height;
-    if (level && crossed(gate, r.px, r.pz, kart.x, kart.z)) {
-      r.last = r.next;
-      r.passed++;
-      if (r.next === 0) {
-        const time = race.clock - r.lapStart;
-        r.lapTimes.push(time);
-        r.bestLap = Math.min(r.bestLap ?? Infinity, time);
-        r.lapStart = race.clock;
-        if (r.lap >= cfg.laps) {
-          r.finished = true;
-          r.totalTime = race.clock;
-          race.finishOrder.push(index);
-        } else {
-          r.lap++;
-        }
+    const step = stepProgression(race.course, r, { x: r.px, y: r.py, z: r.pz }, kart);
+    if (step.passed) events.checkpoint = step.passed;
+    if (step.reversed) events.reversed = step.reversed;
+    if (step.lap) {
+      const time = race.clock - r.lapStart;
+      r.lapTimes.push(time);
+      r.bestLap = Math.min(r.bestLap ?? Infinity, time);
+      r.lapStart = race.clock;
+      events.lap = step.lap;
+      if (step.lap >= cfg.laps) {
+        r.finished = true;
+        r.totalTime = race.clock;
+        race.finishOrder.push(index);
+      } else {
+        r.lap = step.lap + 1;
       }
-      r.next = (r.next + 1) % race.gates.length;
     }
   }
   r.px = kart.x;
+  r.py = kart.y;
   r.pz = kart.z;
 
+  // Walled tracks only: grounded outside the walls for a moment means stuck.
   r.offRoadFor = !onRoad && !race.open && kart.grounded ? r.offRoadFor + dt : 0;
   if (r.offRoadFor > cfg.respawnAfterSec) {
     r.offRoadFor = 0;
-    events.respawn = race.gates[r.last];
+    events.respawn = respawnSpot(race, index);
   }
   return events;
 }
 
-/** How far round the race a racer is, in gates (fractions between gates). */
-export function progress(race: Race, index: number, x: number, z: number): number {
+/**
+ * How far round the race a racer is: checkpoints validated, plus how far from the last
+ * one towards the next (between the two gate planes; negative behind the start line,
+ * on the grid). Never from the nearest road: being off it changes nothing.
+ */
+export function progress(race: Race, index: number, x: number, z: number, y = 0): number {
   const r = race.racers[index]!;
-  const a = race.gates[r.last]!;
-  const b = race.gates[r.next]!;
-  const gap = Math.hypot(b.x - a.x, b.z - a.z) || 1;
-  const along = ((x - a.x) * (b.x - a.x) + (z - a.z) * (b.z - a.z)) / (gap * gap);
-  if (r.passed === 0 && along < 0 && race.approach.length > 0) {
-    // Still behind the start line (on the grid): rank by distance along the road to the
-    // line, which stays right when the grid sits on the curve leading onto it.
+  if (
+    r.passed === 0 &&
+    r.best === 0 &&
+    race.approach.length &&
+    planeDist(r.lastGate, { x, y, z }) < 0
+  ) {
+    // On the grid, behind the line: rank by distance along the road to the line.
     let best = race.approach[0]!;
     let bestD = Infinity;
     for (const p of race.approach) {
@@ -295,20 +339,22 @@ export function progress(race: Race, index: number, x: number, z: number): numbe
     }
     return -Math.min(0.999, best.before / 100);
   }
-  return r.passed + Math.min(0.999, Math.max(0, along));
+  return rankValue(race.course, r, { x, y, z });
 }
 
-/** Racer indices from first place to last. Finished racers keep their finishing order. */
-export function standings(race: Race, positions: { x: number; z: number }[]): number[] {
+/**
+ * Racer indices from first place to last. Finished racers keep their finishing order;
+ * the rest rank by progress, ties by racer index.
+ */
+export function standings(race: Race, positions: { x: number; y?: number; z: number }[]): number[] {
   const done = race.finishOrder;
+  const value = race.racers.map((_, i) =>
+    progress(race, i, positions[i]!.x, positions[i]!.z, positions[i]!.y ?? 0),
+  );
   const rest = race.racers
     .map((_, i) => i)
     .filter((i) => !race.racers[i]!.finished)
-    .sort(
-      (a, b) =>
-        progress(race, b, positions[b]!.x, positions[b]!.z) -
-        progress(race, a, positions[a]!.x, positions[a]!.z),
-    );
+    .sort((a, b) => value[b]! - value[a]! || a - b);
   return [...done, ...rest];
 }
 

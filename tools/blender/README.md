@@ -45,6 +45,12 @@ blender --background --python tools/blender/build_bridge_test.py
 blender --background --python tools/blender/build_dino_demo.py
 ```
 
+## Checkpoints
+
+The **Checkpoints** panel places the invisible gates a lap is made of: Generate from
+Route, Add, Renumber, Next/Previous, Show/Hide. They export to `checkpoints.json` and never
+go into the GLBs. See [docs/checkpoints.md](../../docs/checkpoints.md).
+
 ## Prehistoric World
 
 The four Prehistoric World courses are built by scripts in `prehistoric/`, on a shared

@@ -229,6 +229,18 @@ def main():
     gx, gy, gz = c.game(fx, 224, WATER_Z)
     c.entity("waterfall", x=gx, y=gy, z=gz, top=17.5, width=28, heading=0)
 
+    # Checkpoints: after the bridge, over the ridge, after the ford, and one at the
+    # village bend with a twin gate across the shortcut (either counts).
+    short = [(58, -131, 0.3), (84, -125, 0.5), (106, -115, 0.6), (125, -101, 0.5)]
+    s_in, s_out = kit.s_near(c, 58, -131), kit.s_near(c, 125, -101)
+    apex = (s_in + s_out) / 2
+    gates = c.checkpoints(
+        extra=[river[0][1] + 12, kit.s_near(c, -150, 18), river[1][1] + 12, apex],
+        avoid=[(s_in, apex - 12), (apex + 12, s_out)],
+    )
+    main = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
+    c.alt_gate(main, "village_shortcut", short, width=26)
+
     c.preset("sun", [o for o in c.coll("Terrain").objects], 0.35)
     c.preset("road_edge", [o for o in c.coll("Terrain").objects], 0.4, color=(1.0, 0.86, 0.55), distance=7.0)
     c.finish()

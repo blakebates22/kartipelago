@@ -45,7 +45,8 @@ The mouse works too.
 
 All four share the same basics:
 
-- **Laps:** three, with a checkered start line, a painted grid and ordered checkpoints.
+- **Laps:** three, with a checkered start line, a painted grid and 8–12 wide checkpoint
+  gates ([checkpoints.md](checkpoints.md)), placed after turns, jumps and landmarks.
 - **Road:** 14 m wide (12 m on bridges), roughly seven karts abreast, banked into every
   turn.
 - **Collision:** ground, walls and barriers.

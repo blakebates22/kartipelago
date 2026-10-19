@@ -12,12 +12,14 @@ Sidebar (N) > Kartipelago:
 - Water & Lava: flow, ripple, opacity, glow and tint of the active material.
 - Vertex Paint: one-click shading presets (darken bottoms, warm sunlight, tunnels...).
 - Sky & Fog: the environment preset the game uses for this track.
+- Checkpoints: the invisible gates a lap is made of. Generate them from the route, then
+  move, rotate, scale, duplicate and renumber them (exported to checkpoints.json).
 """
 
 bl_info = {
     "name": "Kartipelago Track Tools",
     "author": "Kartipelago contributors",
-    "version": (0, 2, 0),
+    "version": (0, 3, 0),
     "blender": (4, 2, 0),
     "location": "3D View > Sidebar > Kartipelago",
     "description": "Spline roads, N64-style materials and one-click track export for Kartipelago",
@@ -30,9 +32,10 @@ if "bpy" in locals():
     importlib.reload(road)  # noqa: F821
     importlib.reload(materials)  # noqa: F821
     importlib.reload(paint)  # noqa: F821
+    importlib.reload(checkpoints)  # noqa: F821
     importlib.reload(export)  # noqa: F821
 else:
-    from . import export, materials, paint, road
+    from . import checkpoints, export, materials, paint, road
 
 import math
 
@@ -451,6 +454,143 @@ class KP_PT_panel(bpy.types.Panel):
                 col.operator_menu_enum(KP_OT_set_surface.bl_idname, "surface", text="Set Surface")
 
 
+class KP_OT_cp_generate(bpy.types.Operator):
+    """Place main-route checkpoints along the route: the start line, after every real turn, and enough in between (replaces the existing main-route checkpoints)"""
+
+    bl_idname = "kartipelago.cp_generate"
+    bl_label = "Generate from Route"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        try:
+            made = checkpoints.generate(context.scene, margin=context.scene.kp_cp_margin, height=context.scene.kp_cp_height)
+        except RuntimeError as e:
+            self.report({"ERROR"}, str(e))
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"Placed {len(made)} checkpoints")
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        if any(o.get("kp_cp_route", "main") == "main" for o in checkpoints.checkpoints(context.scene)):
+            return context.window_manager.invoke_confirm(self, event)
+        return self.execute(context)
+
+
+class KP_OT_cp_add(bpy.types.Operator):
+    """Add a checkpoint at the 3D cursor, facing along the route there (use Alternate Route for a shortcut's gate)"""
+
+    bl_idname = "kartipelago.cp_add"
+    bl_label = "Add Checkpoint"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        s = context.scene
+        samples, length = checkpoints.route_samples(s)
+        cur = s.cursor.location.copy()
+        f = (0.0, 1.0)
+        width = 30.0
+        if samples:
+            best = min(samples, key=lambda q: (q[0] - cur).length_squared)
+            f = (best[1].x, best[1].y)
+            width = best[2] + 2 * checkpoints.MARGIN
+        a = context.view_layer.objects.active
+        index = a["kp_checkpoint"] + 1 if checkpoints.is_checkpoint(a) else len(checkpoints.checkpoints(s))
+        route = s.kp_cp_new_route.strip() or "main"
+        ob = checkpoints.make(s, index, cur, f, width, s.kp_cp_height, route=route)
+        for o in context.selected_objects:
+            o.select_set(False)
+        ob.select_set(True)
+        context.view_layer.objects.active = ob
+        if route == "main":
+            checkpoints.renumber(s)
+        return {"FINISHED"}
+
+
+class KP_OT_cp_renumber(bpy.types.Operator):
+    """Number the main-route checkpoints in order round the route (after moving, duplicating or deleting some)"""
+
+    bl_idname = "kartipelago.cp_renumber"
+    bl_label = "Renumber"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        n = checkpoints.renumber(context.scene)
+        self.report({"INFO"}, f"{n} main-route checkpoints in order")
+        return {"FINISHED"}
+
+
+class KP_OT_cp_step(bpy.types.Operator):
+    """Select the next (or previous) checkpoint in the order"""
+
+    bl_idname = "kartipelago.cp_step"
+    bl_label = "Next Checkpoint"
+    direction: bpy.props.IntProperty(default=1)
+
+    def execute(self, context):
+        if checkpoints.step_selection(context, self.direction) is None:
+            return {"CANCELLED"}
+        return {"FINISHED"}
+
+
+class KP_OT_cp_show(bpy.types.Operator):
+    """Show or hide the checkpoints (they're never seen in the game)"""
+
+    bl_idname = "kartipelago.cp_show"
+    bl_label = "Show / Hide Checkpoints"
+
+    def execute(self, context):
+        cps = checkpoints.checkpoints(context.scene)
+        if not cps:
+            return {"CANCELLED"}
+        hide = not cps[0].hide_get()
+        for o in cps:
+            o.hide_set(hide)
+            for ch in o.children:
+                ch.hide_set(hide)
+        line = bpy.data.objects.get(checkpoints.ORDER_NAME)
+        if line:
+            line.hide_set(hide)
+        return {"FINISHED"}
+
+
+class KP_PT_checkpoints(bpy.types.Panel):
+    bl_label = "Checkpoints"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Kartipelago"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        s = context.scene
+        ob = context.active_object
+        cps = checkpoints.checkpoints(s)
+        col = self.layout.column(align=True)
+        main = [o for o in cps if o.get("kp_cp_route", "main") == "main"]
+        col.label(text=f"{len(main)} checkpoints, {len(cps) - len(main)} on alternate routes")
+        row = col.row(align=True)
+        row.prop(s, "kp_cp_margin")
+        row.prop(s, "kp_cp_height")
+        col.operator(KP_OT_cp_generate.bl_idname, icon="FORCE_HARMONIC")
+        col.separator()
+        col.prop(s, "kp_cp_new_route", text="Route")
+        col.operator(KP_OT_cp_add.bl_idname, icon="ADD")
+        col.operator(KP_OT_cp_renumber.bl_idname, icon="SORTSIZE")
+        row = col.row(align=True)
+        row.operator(KP_OT_cp_step.bl_idname, text="Previous", icon="TRIA_LEFT").direction = -1
+        row.operator(KP_OT_cp_step.bl_idname, text="Next", icon="TRIA_RIGHT").direction = 1
+        col.operator(KP_OT_cp_show.bl_idname, icon="HIDE_OFF")
+        if checkpoints.is_checkpoint(ob):
+            box = self.layout.box()
+            box.label(text=ob.name, icon="TRACKING")
+            box.prop(ob, '["kp_checkpoint"]', text="Number")
+            box.prop(ob, '["kp_cp_route"]', text="Route")
+            box.prop(ob, "scale", index=0, text="Width")
+            box.prop(ob, "scale", index=2, text="Height")
+            box.prop(ob, '["kp_cp_below"]', text="Below")
+            box.label(text="Move / rotate / Shift+D / X as usual", icon="INFO")
+        self.layout.label(text="Gold: start   Green: main   Orange: alternate")
+
+
 class KP_PT_materials(bpy.types.Panel):
     bl_label = "Materials"
     bl_space_type = "VIEW_3D"
@@ -603,6 +743,12 @@ CLASSES = (
     KP_PT_effects,
     KP_PT_paint,
     KP_PT_environment,
+    KP_OT_cp_generate,
+    KP_OT_cp_add,
+    KP_OT_cp_renumber,
+    KP_OT_cp_step,
+    KP_OT_cp_show,
+    KP_PT_checkpoints,
 )
 
 SCENE_PROPS = {
@@ -633,6 +779,21 @@ SCENE_PROPS = {
     "kp_road_part": EnumProperty(name="Road Part", items=materials.ROAD_PARTS, default="road"),
     "kp_environment": EnumProperty(name="Sky & Light", items=_env_items, description="The game's sky, sun and fog for this track"),
     "kp_fog": BoolProperty(name="Distance Fog", default=True),
+    "kp_cp_margin": FloatProperty(
+        name="Margin", description="Extra gate width beside the road, each side, m", default=18.0, min=0.0, soft_max=60.0
+    ),
+    "kp_cp_height": FloatProperty(
+        name="Height",
+        description="Gate height above the road, m (keep it under the height between layers on layered tracks)",
+        default=6.0,
+        min=1.0,
+        soft_max=30.0,
+    ),
+    "kp_cp_new_route": StringProperty(
+        name="Route",
+        description="Route for new checkpoints: 'main', or a shortcut's name (its gates count the same as the main gate with their number)",
+        default="main",
+    ),
     "kp_paint_strength": FloatProperty(name="Strength", default=0.4, min=0.0, max=1.0, subtype="FACTOR"),
     "kp_paint_color": FloatVectorProperty(
         name="Tint", subtype="COLOR", size=3, default=(1.0, 0.88, 0.62), min=0.0, max=1.0

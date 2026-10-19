@@ -286,6 +286,10 @@ def main():
         gx, gy, gz = c.game(x, wall_n(x) - 1, WATER_Z)
         c.entity("waterfall", x=gx, y=gy, z=gz, top=30, width=12, heading=0)
 
+    # Checkpoints: up the viaduct, along the ledge, off the high bridge, out of the
+    # tunnel, and just past the landing of the leap (beyond where a missed jump puts you).
+    c.checkpoints(extra=[kit.s_near(c, 104, 86), kit.s_near(c, -44, -56) + 10, s1 + 10, s_land + 24])
+
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [rock], 0.35)
     c.preset("bottoms", ter, 0.45)

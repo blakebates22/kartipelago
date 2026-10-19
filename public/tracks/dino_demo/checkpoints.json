@@ -1,0 +1,160 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    -100.0,
+    0.0,
+    58.0
+   ],
+   "heading": 1.00933,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -96.696,
+     -0.0,
+     59.991
+    ],
+    "heading": 2.54556
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    -4.552,
+    0.034,
+    72.659
+   ],
+   "heading": 1.52854,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -0.518,
+     0.041,
+     72.822
+    ],
+    "heading": 2.91273
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    89.71,
+    0.83,
+    49.983
+   ],
+   "heading": 2.18628,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     92.68,
+     0.893,
+     47.775
+    ],
+    "heading": -2.5578
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    123.106,
+    2.241,
+    -36.592
+   ],
+   "heading": -3.03567,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     122.615,
+     2.245,
+     -40.693
+    ],
+    "heading": -1.50626
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    55.65,
+    1.549,
+    -93.239
+   ],
+   "heading": -1.60214,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     52.141,
+     1.52,
+     -93.341
+    ],
+    "heading": -0.26968
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    -43.541,
+    1.016,
+    -86.832
+   ],
+   "heading": -1.2503,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -47.231,
+     0.992,
+     -85.575
+    ],
+    "heading": 0.24648
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    -121.887,
+    0.268,
+    -29.292
+   ],
+   "heading": -0.51838,
+   "width": 48.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -123.778,
+     0.24,
+     -25.803
+    ],
+    "heading": 1.01977
+   }
+  }
+ ]
+}
