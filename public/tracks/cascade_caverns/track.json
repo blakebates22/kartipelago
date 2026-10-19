@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "id": "cascade_caverns",
+  "name": "Cascade Caverns",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 784.6,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 382.3,
+      "across": -2
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 1027.9,
+      "across": 3
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 50,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 289.0,
+      "across": 2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 510.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 613.0,
+      "across": -2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 935.1,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 110,
+      "across": -3,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 110,
+      "across": 3,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 337.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 729.5,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 891.3,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 768.6,
+      "to": 825.6,
+      "at": 833.6
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -190.0,
+      "y": -1.6,
+      "z": 1.0,
+      "top": 27,
+      "width": 34,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": -120,
+      "y": -1.6,
+      "z": -72.7,
+      "top": 30,
+      "width": 12,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": 30,
+      "y": -1.6,
+      "z": -75.28,
+      "top": 30,
+      "width": 12,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_04",
+      "type": "waterfall",
+      "x": 110,
+      "y": -1.6,
+      "z": -68.54,
+      "top": 30,
+      "width": 12,
+      "heading": 0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/cascade_caverns.py (re-running it rewrites entities)"
+}

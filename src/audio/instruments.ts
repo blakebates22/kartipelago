@@ -21,6 +21,9 @@ export type InstrumentId =
   | "bassoon"
   | "pad"
   | "square"
+  | "steelpan"
+  | "bell"
+  | "strings"
   | "kick"
   | "snare"
   | "hat"
@@ -28,7 +31,8 @@ export type InstrumentId =
   | "woodblock"
   | "bongo"
   | "tamb"
-  | "crash";
+  | "crash"
+  | "tom";
 
 export const DRUMS: ReadonlySet<InstrumentId> = new Set([
   "kick",
@@ -39,6 +43,7 @@ export const DRUMS: ReadonlySet<InstrumentId> = new Set([
   "bongo",
   "tamb",
   "crash",
+  "tom",
 ]);
 
 export const midiToFreq = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
@@ -194,6 +199,11 @@ export function play(
   vel = 0.8,
 ) {
   const v: Voice = { ctx, out, t, dur, freq: midiToFreq(midi), vel };
+  // The newer track-theme instruments live only in the music renderer (dsp.ts); live
+  // sounds use their nearest relative.
+  if (inst === "steelpan" || inst === "bell") inst = "celesta";
+  else if (inst === "strings") inst = "pad";
+  else if (inst === "tom") inst = "bongo";
   switch (inst) {
     case "marimba":
       bar(

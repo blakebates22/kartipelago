@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "theme": "river_valley",
+  "sky": "#6cc4f6",
+  "fog": {
+    "enabled": true,
+    "color": "#bfe6fb",
+    "near": 180,
+    "far": 760
+  },
+  "sun": {
+    "color": "#fff1cc",
+    "intensity": 2.5,
+    "direction": [
+      0.5,
+      0.8,
+      0.3
+    ]
+  },
+  "ambient": {
+    "sky": "#e6f6ff",
+    "ground": "#5d8a3a",
+    "intensity": 1.2
+  }
+}

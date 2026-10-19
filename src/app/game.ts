@@ -17,6 +17,8 @@ import type { TrackMode } from "../game/tracks";
 export interface Selection {
   racer: RacerId;
   trackId: string;
+  /** The world picked on World Select (track select lists its tracks). */
+  worldId?: string;
   mode: TrackMode;
 }
 

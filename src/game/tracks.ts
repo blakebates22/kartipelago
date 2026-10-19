@@ -31,6 +31,52 @@ export interface TrackEntry {
 }
 
 export const TRACKS: TrackEntry[] = [
+  // Prehistoric World (src/game/worlds.ts), built by tools/blender/prehistoric/.
+  {
+    id: "riverbend_palms",
+    name: "Riverbend Palms",
+    description:
+      "Palm-lined S-bends, a wooden bridge, a stone ford and a gentle giant strolling by the river.",
+    preview: "previews/riverbend_palms.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "jungle_falls",
+    music: "riverbend",
+    load: { scene: "track", packageId: "riverbend_palms" },
+  },
+  {
+    id: "cascade_caverns",
+    name: "Cascade Caverns",
+    description:
+      "Leap through a thundering waterfall, roar through the caves and race the high canyon ledges.",
+    preview: "previews/cascade_caverns.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "jungle_falls",
+    music: "cascade",
+    load: { scene: "track", packageId: "cascade_caverns" },
+  },
+  {
+    id: "bonebog_pyramid",
+    name: "Bonebog Pyramid",
+    description:
+      "Slither through slick mud and over wooden causeways, under giant ribs and through a pyramid.",
+    preview: "previews/bonebog_pyramid.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "fossil_canyon",
+    music: "bonebog",
+    load: { scene: "track", packageId: "bonebog_pyramid" },
+  },
+  {
+    id: "ember_peak",
+    name: "Ember Peak",
+    description:
+      "Spiral up a rumbling volcano over rivers of lava, then plunge down the side. Mind the lava!",
+    preview: "previews/ember_peak.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "hot_top_volcano",
+    music: "ember",
+    load: { scene: "track", packageId: "ember_peak" },
+  },
+  // Test World.
   {
     id: "dino_demo",
     name: "Dino Demo",

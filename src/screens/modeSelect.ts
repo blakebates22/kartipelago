@@ -9,7 +9,7 @@ import { landscape, treasureMap } from "../ui/backdrops";
 import { PAL } from "../ui/textures";
 import { hints, titleSign } from "./common";
 import { characterSelect } from "./characterSelect";
-import { trackSelect } from "./trackSelect";
+import { worldSelect } from "./worldSelect";
 
 export function modeSelect(game: Game): Screen {
   let focus = 0;
@@ -17,7 +17,7 @@ export function modeSelect(game: Game): Screen {
   let clicked = -1;
   const pick = (i: number) => {
     game.sounds.confirm();
-    if (i === 0) game.screens.go(trackSelect(game));
+    if (i === 0) game.screens.go(worldSelect(game));
     else game.screens.go(comingSoon(game));
   };
   return {

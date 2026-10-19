@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "id": "ember_peak",
+  "name": "Ember Peak",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 683.6,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 294.3,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 632.8,
+      "across": -2
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 60,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 405.8,
+      "across": 2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 572.9,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 646.2,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 791.9,
+      "across": -2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 130,
+      "across": -3,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 130,
+      "across": 3,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 340.8,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 572.6,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 745.2,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 673.6,
+      "to": 723.2,
+      "at": 731.2
+    }
+  ],
+  "generator": "tools/blender/prehistoric/ember_peak.py (re-running it rewrites entities)"
+}

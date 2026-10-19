@@ -35,7 +35,7 @@ terrain, bridges,      ──export──▶ collision.glb ▶ CollisionMesh ─
 | Grid (`grid.ts`), AI racing line and driver           | Unchanged: they follow the route                                                                                        |
 | Kart physics (`kart.ts`), vertical (`vertical.ts`)    | Unchanged. The ground query now takes the kart's height                                                                 |
 | Walls (`hitWall`)                                     | Mesh walls feed the same function, so impacts, drift handling and wall alignment behave as tuned                        |
-| Zippers, bananas, balloons (along-the-lap placements) | Work on the route today; Milestone 2 adds placed entities with ids in `track.json`                                      |
+| Zippers, bananas, balloons (along-the-lap placements) | Placed as `track.json` entities with ids, by distance along the lap (see prehistoric-world.md)                          |
 | Tuning panel, debug overlay, speedometer, racers      | Unchanged                                                                                                               |
 
 ## Files
@@ -66,7 +66,11 @@ geometry.
 }
 ```
 
-Milestone 2 fills in `entities`. Each one gets a stable `id` (e.g. `"banana-7f3a"`), a
+Entities in use today (docs/prehistoric-world.md): `zipper`, `bananas` and `balloon`
+placed along the lap (`at`, `across`), and `respawn`, `dinosaur` and `waterfall`.
+Unknown types are kept and ignored.
+
+The full Milestone 2 plan goes further. Each entity gets a stable `id` (e.g. `"banana-7f3a"`), a
 `type` (`banana`, `balloon`, `zipper`, `start`, `checkpoint`, `trigger`, `prop`), a
 track-local transform (`position` in metres, `rotation` as a yaw or a quaternion) and
 type-specific settings (balloon colour, zipper size, respawn time…). Planned additions:

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "theme": "fossil_swamp",
+  "sky": "#7b86b4",
+  "fog": {
+    "enabled": true,
+    "color": "#9aa8a4",
+    "near": 70,
+    "far": 420
+  },
+  "sun": {
+    "color": "#ffe2b8",
+    "intensity": 1.6,
+    "direction": [
+      -0.45,
+      0.6,
+      0.55
+    ]
+  },
+  "ambient": {
+    "sky": "#c6c2e6",
+    "ground": "#34482c",
+    "intensity": 1.3
+  }
+}

@@ -9,13 +9,14 @@ import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { loadRecords } from "../app/records";
 import { saveSettings } from "../app/settings";
-import { MODE_LABELS, TRACKS, trackById, type TrackEntry } from "../game/tracks";
+import { MODE_LABELS, trackById, type TrackEntry } from "../game/tracks";
+import { currentWorld, tracksOf } from "../game/worlds";
 import { formatTime } from "../race/race";
 import { tuning } from "../core/tuning";
 import { wrap } from "../ui/font";
 import { ACCENTS, PAL } from "../ui/textures";
 import { hints, titleSign } from "./common";
-import { modeSelect } from "./modeSelect";
+import { worldSelect } from "./worldSelect";
 import { loadingScreen } from "./loading";
 
 const images = new Map<string, HTMLImageElement>();
@@ -31,6 +32,9 @@ export function preview(src: string): HTMLImageElement | undefined {
 }
 
 export function trackSelect(game: Game): Screen {
+  const world = currentWorld(game.selection);
+  game.selection.worldId = world.id;
+  const TRACKS = tracksOf(world);
   let index = Math.max(
     0,
     TRACKS.findIndex((t) => t.id === game.settings.last.track),
@@ -50,6 +54,7 @@ export function trackSelect(game: Game): Screen {
   const moveTrack = (d: number) => {
     index = (index + d + TRACKS.length) % TRACKS.length;
     slide = game.settings.general.reduceMotion ? 0 : d;
+    game.audio.music.prepare(track().music); // ready by the time the race starts
     game.sounds.move();
   };
   const cycleMode = (d: number) => {
@@ -72,7 +77,7 @@ export function trackSelect(game: Game): Screen {
   };
   const back = () => {
     game.sounds.back();
-    game.screens.go(modeSelect(game));
+    game.screens.go(worldSelect(game));
   };
 
   return {
@@ -80,7 +85,7 @@ export function trackSelect(game: Game): Screen {
     seeThrough: false,
     enter() {
       void game.audio.music.play("map", { fade: 1 });
-      game.audio.music.prepare("race");
+      game.audio.music.prepare(track().music);
     },
     frame(dt, actions) {
       t += dt;
@@ -119,7 +124,7 @@ export function trackSelect(game: Game): Screen {
       for (let y = 30; y < ui.H; y += 22)
         for (let x = (y / 22) % 2 ? 10 : 0; x < ui.W; x += 20) ui.rect(x, y, 6, 1, PAL.inkSoft);
       ui.g.globalAlpha = 1;
-      titleSign(ui, "CHOOSE A TRACK", 4);
+      titleSign(ui, world.name.toUpperCase(), 4);
       const tr = track();
       const sx = ui.safeX;
       // The big picture.
@@ -146,17 +151,25 @@ export function trackSelect(game: Game): Screen {
       // Name and details, to the right.
       const ix = px + pw + 12;
       const iw = sx + 312 - ix;
-      ui.text(tr.name.toUpperCase(), ix, py, { scale: 2, color: PAL.coral, outline: PAL.ink });
-      wrap(tr.description.toUpperCase(), iw)
-        .slice(0, 6)
-        .forEach((line, i) => ui.text(line, ix, py + 22 + i * 9, { color: PAL.ink }));
       const rec = records[tr.id];
       const recLines: string[] = [];
       if (rec?.best.race) recLines.push(`BEST RACE ${formatTime(rec.best.race)}`);
       if (rec?.best.timeTrial) recLines.push(`BEST TRIAL ${formatTime(rec.best.timeTrial)}`);
       if (rec?.bestLap) recLines.push(`BEST LAP  ${formatTime(rec.bestLap)}`);
-      recLines.forEach((l, i) =>
-        ui.text(l, ix, py + 80 + i * 9 - (recLines.length - 1) * 9, { color: PAL.inkSoft }),
+      const recTop = py + 92 - recLines.length * 9;
+      recLines.forEach((l, i) => ui.text(l, ix, recTop + i * 9, { color: PAL.inkSoft }));
+      // Long names wrap onto a second line; the description fills what's left.
+      const nameLines = wrap(tr.name.toUpperCase(), Math.floor(iw / 2)).slice(0, 2);
+      nameLines.forEach((line, i) =>
+        ui.text(line, ix, py + i * 16, { scale: 2, color: PAL.coral, outline: PAL.ink }),
+      );
+      const dy = py + 6 + nameLines.length * 16;
+      const room = Math.max(1, Math.floor((recTop - 3 - dy) / 9) + 1);
+      const desc = wrap(tr.description.toUpperCase(), iw);
+      desc.slice(0, room).forEach((line, i) =>
+        ui.text(i === room - 1 && desc.length > room ? `${line}...` : line, ix, dy + i * 9, {
+          color: PAL.ink,
+        }),
       );
       // Tiles for every track.
       const ty = 142;

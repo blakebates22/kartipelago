@@ -23,7 +23,8 @@ export interface SolidBox {
 /** An upright cylinder: a tree trunk. */
 export interface SolidCircle {
   kind: "circle";
-  look: "tree";
+  /** "creature": something that walks about (the course draws it itself). */
+  look: "tree" | "creature";
   x: number;
   z: number;
   radius: number;

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "theme": "volcano_dusk",
+  "sky": "#9a4f4a",
+  "fog": {
+    "enabled": true,
+    "color": "#b0603e",
+    "near": 150,
+    "far": 680
+  },
+  "sun": {
+    "color": "#ffcf98",
+    "intensity": 2.1,
+    "direction": [
+      -0.35,
+      0.65,
+      0.65
+    ]
+  },
+  "ambient": {
+    "sky": "#f0a07a",
+    "ground": "#40201a",
+    "intensity": 1.2
+  }
+}

@@ -435,6 +435,51 @@ export function renderNote(
         release: 0.05,
         level: 0.11,
       });
+    case "steelpan":
+      // A pan's ring: a strong fundamental, its octave and a slightly sharp twelfth,
+      // with the soft "boing" of a quick pitch settle at the start.
+      return bar(
+        c,
+        [
+          [1, 1, 1],
+          [2.005, 0.55, 0.7],
+          [3.02, 0.22, 0.4],
+          [4.1, 0.08, 0.2],
+        ],
+        0.42,
+        0.36,
+      );
+    case "bell":
+      // Small bells and chimes: bright, inharmonic and long.
+      return bar(
+        c,
+        [
+          [1, 1, 1],
+          [2.76, 0.45, 0.6],
+          [5.4, 0.22, 0.35],
+          [8.9, 0.08, 0.2],
+        ],
+        1.1,
+        0.22,
+      );
+    case "strings":
+      return sustained(c, {
+        layers: [
+          { wave: "saw", mult: 1, amp: 0.45, detune: -7 },
+          { wave: "saw", mult: 1, amp: 0.45, detune: 7 },
+          { wave: "saw", mult: 2, amp: 0.12 },
+        ],
+        filter: { from: 700, to: Math.min(3600, c.freq * 4), time: 0.12, q: 0.6 },
+        attack: 0.08,
+        release: 0.16,
+        level: 0.17,
+        vibrato: { delay: 0.2, rate: 5.5, depth: 0.004 },
+      });
+    case "tom": {
+      const f = midi > 0 ? c.freq : 110;
+      thump(c, f * 1.6, f, 0.06, 0.14, 0.75);
+      return noiseHit(c, "lp", 900, 0.7, 0.04, 0.12);
+    }
     case "kick":
       return thump(c, 140, 48, 0.12, 0.06, 0.9);
     case "snare":

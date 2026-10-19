@@ -126,8 +126,59 @@ export function parseRoute(json: unknown): RouteFile {
   return json as unknown as RouteFile;
 }
 
+const BALLOON_COLORS = ["red", "blue", "green", "yellow", "rainbow"] as const;
+type BalloonColor = (typeof BALLOON_COLORS)[number];
+
+/**
+ * Pickups placed along the lap, from track.json's entities (each with a stable id):
+ *
+ *   { "id": "zip_01", "type": "zipper", "at": 120, "across": -3 }
+ *   { "id": "ban_01", "type": "bananas", "at": 40, "across": 0, "count": 5, "gap": 2.5 }
+ *   { "id": "bal_01", "type": "balloon", "at": 95, "across": 4, "color": "blue" }
+ *
+ * `at` is metres along the route from the start line, `across` metres right of its
+ * centre. Entities of other types are left for the systems that understand them;
+ * malformed ones are skipped with a warning.
+ */
+export function placementsFrom(entities: unknown[], warnings: string[] = []) {
+  const zippers: NonNullable<TrackData["zippers"]> = [];
+  const bananas: NonNullable<TrackData["bananas"]> = [];
+  const balloons: NonNullable<TrackData["balloons"]> = [];
+  for (const e of entities) {
+    if (!isObj(e) || typeof e.type !== "string") continue;
+    const id = typeof e.id === "string" ? e.id : "?";
+    if (!["zipper", "bananas", "balloon"].includes(e.type)) continue;
+    if (!finite(e.at)) {
+      warnings.push(`track.json: entity ${id} has no "at"`);
+      continue;
+    }
+    const at = e.at as number;
+    const across = finite(e.across) ? (e.across as number) : 0;
+    if (e.type === "zipper") zippers.push({ at, across });
+    else if (e.type === "bananas")
+      bananas.push({
+        at,
+        across,
+        count: finite(e.count) ? (e.count as number) : undefined,
+        gap: finite(e.gap) ? (e.gap as number) : undefined,
+        respawn: finite(e.respawn) ? (e.respawn as number) : undefined,
+      });
+    else {
+      const color = BALLOON_COLORS.includes(e.color as BalloonColor)
+        ? (e.color as BalloonColor)
+        : "red";
+      balloons.push({ at, across, color });
+    }
+  }
+  return { zippers, bananas, balloons };
+}
+
 /** The main route as centre-line track data for the existing systems. */
-export function routeToTrackData(meta: TrackMeta, route: RouteFile): TrackData {
+export function routeToTrackData(
+  meta: TrackMeta,
+  route: RouteFile,
+  warnings: string[] = [],
+): TrackData {
   const main = route.routes.find((r) => r.id === "main") ?? route.routes[0]!;
   return {
     name: meta.name,
@@ -136,6 +187,7 @@ export function routeToTrackData(meta: TrackMeta, route: RouteFile): TrackData {
     open: true,
     imported: true,
     gateHeight: 6,
+    ...placementsFrom(meta.entities ?? [], warnings),
   };
 }
 
@@ -260,7 +312,7 @@ export async function loadTrackPackage(
   const visual = visBuf ? await parseGlb(visBuf, meta.geometry.visual) : new THREE.Group();
   visual.name = `track:${meta.id}`;
   const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic");
-  const trackData = routeToTrackData(meta, route);
+  const trackData = routeToTrackData(meta, route, warnings);
   // Sanity check: the route should lie on the collision surface.
   const b = collision.bounds;
   const off = trackData.points.filter(

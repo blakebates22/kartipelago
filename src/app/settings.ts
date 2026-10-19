@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   audio: { master: 0.8, music: 0.7, sfx: 0.8, voice: 0.8, musicOn: true, mono: false },
   video: { filtering: "soft", resolution: 360, aspect: "fill", scanlines: false },
   general: { reduceMotion: false },
-  last: { racer: "moss", track: "dino_demo", mode: "race" },
+  last: { racer: "moss", track: "riverbend_palms", mode: "race" },
 };
 
 const KEY = "kartipelago.settings.v1";

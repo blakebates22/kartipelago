@@ -266,5 +266,24 @@
   "world": {
     "skyColor": "#8ecae6",
     "groundColor": "#2a9d8f"
+  },
+  "hazards": {
+    "lavaBounce": 11,
+    "lavaPush": 7,
+    "lavaKeep": 0.45,
+    "lavaImmuneSec": 0.9,
+    "lavaStrikes": 3,
+    "lavaStrikeWindowSec": 8,
+    "lavaPenaltySec": 1.2,
+    "deepWaterSec": 1.1,
+    "deepWaterSink": 0.45,
+    "splashSpeed": 5,
+    "recoverImmuneSec": 2.5,
+    "dinoSpeed": 2.2,
+    "dinoYieldRadius": 16,
+    "dinoBodyRadius": 3.2,
+    "dinoSlow": 0.75,
+    "waterfallRadius": 70,
+    "volume": 0.6
   }
 }

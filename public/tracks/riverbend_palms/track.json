@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "id": "riverbend_palms",
+  "name": "Riverbend Palms",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 862.4,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 295.8,
+      "across": -3
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 483.9,
+      "across": 3
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 40,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 150,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 404.7,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 631.7,
+      "across": -2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 787.4,
+      "across": 2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 95,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 95,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 444.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 682.1,
+      "across": -3,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 811.6,
+      "across": 3,
+      "color": "rainbow"
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Dino Path",
+      "speed": 3.0,
+      "scale": 1.0,
+      "start": 40
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -7.06,
+      "y": -1.0,
+      "z": -224,
+      "top": 17.5,
+      "width": 28,
+      "heading": 0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/riverbend_palms.py (re-running it rewrites entities)"
+}

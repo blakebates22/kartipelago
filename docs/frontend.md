@@ -15,7 +15,7 @@ implementation, art and music.
 ```
 BOOT ─► TITLE ── PRESS START ──► main menu
                                    ├─ PLAY ─► CHARACTER_SELECT ─► MODE_SELECT
-                                   │                                ├─ TRACKS ─► TRACK_SELECT ─► LOADING ─► RACING
+                                   │                                ├─ TRACKS ─► WORLD_SELECT ─► TRACK_SELECT ─► LOADING ─► RACING
                                    │                                └─ ADVENTURE ─► ADVENTURE_COMING_SOON
                                    ├─ OPTIONS ─► AUDIO_SETTINGS (─► MUSIC_PLAYER) / VIDEO_SETTINGS / CONTROLS / GENERAL_SETTINGS
                                    ├─ MUSIC ─► MUSIC_PLAYER
@@ -41,6 +41,7 @@ so the two never disagree.
 | `src/app/records.ts`   | Best lap and best race per track and mode.                           |
 | `src/game/session.ts`  | One race: track, karts, AI, items, race rules, their 3D and HUD.     |
 | `src/game/tracks.ts`   | Every track the menus list (add one here).                           |
+| `src/game/worlds.ts`   | The worlds, and which tracks each holds (docs/prehistoric-world.md). |
 | `src/screens/*.ts`     | The screens.                                                         |
 | `src/ui/`              | The UI canvas, pixel font, textures, backdrops and logo.             |
 | `src/audio/`           | The audio engine, instruments, notation, songs and renderer.         |
@@ -187,6 +188,10 @@ drums("K...k.k.", KIT, 0.5, 24); // a step grid, repeated
 | Course Map      | mode and track select | relaxed, exploring (D major, 98)          |
 | Lakeside Dash   | racing                | quick and bouncy (A minor / C major, 152) |
 | Finish Line!    | results               | a short fanfare                           |
+| Riverbend Palms | Riverbend Palms       | sunny, steel pan and marimba (C, 132)     |
+| Cascade Caverns | Cascade Caverns       | rushing, flute over pizzicato (Dm, 142)   |
+| Bonebog Pyramid | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)       |
+| Ember Peak      | Ember Peak            | frantic, brass and strings (Am, 158)      |
 
 **Pick Your Racer** is one arrangement split into stems that always play in sync. There's
 a base groove, plus a layer per racer playing the same tune in their own instruments:
@@ -217,8 +222,7 @@ How it's produced:
   on-the-beat melody notes mostly sit in their chords, and that every piece renders
   cleanly.
 
-The music player lists every piece, plus the planned ones (four track themes and
-Adventure) as "not composed yet".
+The music player lists every piece, plus Adventure's (planned) as "not composed yet".
 
 ## Temporary stand-ins
 

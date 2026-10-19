@@ -133,6 +133,68 @@ export function createSfx(engine: AudioEngine) {
     bananaLost(volume: number) {
       note(520, 0, 0.25, volume, 220);
     },
+    /** Driving into water: a splash, bigger for deep water or a fast entry. */
+    splash(volume: number, big = false) {
+      noise(0, big ? 0.55 : 0.3, volume * (big ? 0.9 : 0.55), big ? 2600 : 3600, 300);
+      note(big ? 180 : 260, 0.02, 0.18, volume * 0.25, big ? 90 : 140, "sine");
+    },
+    /** Touching lava: a hiss and a yelp-like upward squeak. */
+    sizzle(volume: number) {
+      noise(0, 0.6, volume * 0.8, 7000, 1800);
+      note(500, 0, 0.16, volume * 0.35, 1100, "square");
+    },
+    /** Fished out of deep water or lava: a cheerful bloop back onto the road. */
+    recover(volume: number) {
+      note(330, 0, 0.12, volume * 0.6, 660, "sine");
+      note(660, 0.1, 0.14, volume * 0.5, 990, "sine");
+    },
+    /** The long-neck's friendly hoot: two low, round notes. */
+    dinoCall(volume: number) {
+      note(147, 0, 0.42, volume * 0.7, 165, "sine");
+      note(110, 0.36, 0.6, volume * 0.6, 98, "sine");
+    },
+    /** A heavy, soft footstep. */
+    thud(volume: number) {
+      noise(0, 0.12, volume * 0.5, 400, 80);
+    },
+    /**
+     * A steady rushing noise (waterfalls), looping until stopped. Returns a handle to set
+     * its volume (0..1) every frame.
+     */
+    rush(): { set(volume: number): void; stop(): void } {
+      if (!ctx) return { set() {}, stop() {} };
+      const frames = ctx.sampleRate * 2;
+      const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < frames; i++) {
+        last = last * 0.6 + (Math.random() * 2 - 1) * 0.4;
+        data[i] = last;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 1800;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(filter).connect(gain).connect(out());
+      src.start();
+      let stopped = false;
+      return {
+        set(v: number) {
+          if (!stopped)
+            gain.gain.setTargetAtTime(Math.max(0, Math.min(1, v)), ctx.currentTime, 0.1);
+        },
+        stop() {
+          if (stopped) return;
+          stopped = true;
+          gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+          src.stop(ctx.currentTime + 0.3);
+        },
+      };
+    },
   };
 }
 export type Sfx = ReturnType<typeof createSfx>;

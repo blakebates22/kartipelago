@@ -53,6 +53,7 @@ import {
 } from "../world/bananas";
 import { createBananaView } from "../render/bananaView";
 import type { Sfx } from "../audio/sfx";
+import { createHazards, type HazardConfig } from "./hazards";
 import { createTrackGround, flatGround, type GroundQuery } from "../physics/ground";
 import { stepVertical } from "../physics/vertical";
 import { stepImpacts, stepMeshWalls, stepSolids, stepWalls } from "../physics/walls";
@@ -410,6 +411,21 @@ function buildSession(
     };
   });
   const you = entrants[0]!;
+  // Blender tracks: lava, deep water, creatures and waterfalls from track.json.
+  const hazards =
+    pkg && track
+      ? createHazards({
+          root,
+          track,
+          entities: pkg.meta.entities ?? [],
+          routes: pkg.route.routes,
+          makeGround,
+          sfx,
+          cfg: tuning.hazards as HazardConfig,
+          karts: entrants.length,
+          quiet: demo,
+        })
+      : undefined;
 
   // Drift Park: which loop you start on ([ and ] step through them), which way round
   // (F flips), and your drift streak.
@@ -669,6 +685,7 @@ function buildSession(
       if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
       if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt);
       stepSolids(e.state, solids, walls, dt);
+      if (hazards) stepSolids(e.state, hazards.solids, walls, dt);
       stepVertical(e.state, e.ground, tuning.physics, dt);
       if (pkg) {
         // Boost surfaces fire a zipper boost when you drive onto them.
@@ -691,14 +708,22 @@ function buildSession(
       const raceEvents = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
       if (raceEvents.boost)
         applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
-      // Fell off an imported track's geometry, or touched lava: back to the last checkpoint.
+      // Lava, deep water, waterfalls (hazards.ts), then: fell off an imported track's
+      // geometry, or onto another respawn surface: back to the last checkpoint (or where
+      // a respawn zone says, past a jump's gap).
+      const under = pkg ? e.ground.at(e.state.x, e.state.z, e.state.y).surface : undefined;
+      const lastGate = race.gates[race.racers[i]!.last]!;
+      if (hazards) {
+        const hz = hazards.stepKart(i, e.state, under, lastGate, dt);
+        if (hz.burnt) e.racer.react("burn");
+        if (hz.splashed === "deep") e.racer.react("splash");
+        if (hz.respawned) snapPrev(e);
+      }
       const surfaceDef =
-        pkg && e.state.grounded
-          ? SURFACES[e.ground.at(e.state.x, e.state.z, e.state.y).surface ?? ""]
-          : undefined;
+        pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
       const fell =
         pkg && (e.state.y < pkg.killY || surfaceDef?.respawn)
-          ? race.gates[race.racers[i]!.last]
+          ? (hazards?.respawnSpot(e.state.x, e.state.y, e.state.z) ?? lastGate)
           : undefined;
       if (raceEvents.respawn || fell) {
         const g = (raceEvents.respawn ?? fell)!;
@@ -716,6 +741,10 @@ function buildSession(
         you.driver.index = 0;
       }
     }
+    hazards?.step(
+      entrants.map((e) => e.state),
+      dt,
+    );
     bumpKarts(
       entrants.map((e) => e.state),
       tuning.physics.kartBump,
@@ -762,7 +791,11 @@ function buildSession(
     const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
     mesh.position.set(
       p.x + (s.x - p.x) * alpha,
-      p.y + (s.y - p.y) * alpha + 0.4 + (e.items.bubbleTime > 0 ? 0.8 : 0),
+      p.y +
+        (s.y - p.y) * alpha +
+        0.4 +
+        (e.items.bubbleTime > 0 ? 0.8 : 0) -
+        (hazards?.sinkOf(entrants.indexOf(e)) ?? 0),
       p.z + (s.z - p.z) * alpha,
     );
     const { up, fwd, right } = tilt;
@@ -842,6 +875,7 @@ function buildSession(
   function render(alpha: number, frameSeconds: number) {
     const { camera, world, vehicle } = tuning;
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
+    hazards?.render(fxClock, frameSeconds, you.mesh.position);
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
     sceneryView?.render(tuning.scenery);
     fxClock += frameSeconds;
@@ -1122,6 +1156,7 @@ function buildSession(
     if (disposed) return;
     disposed = true;
     abort.abort();
+    hazards?.dispose();
     stage.scene.remove(root);
     disposeObject(root);
     trackView?.dispose();
@@ -1162,6 +1197,8 @@ function buildSession(
       if (line && !you.driver) you.driver = createDriver(line, 0, tuning.ai);
     },
     /** For tests and debugging (?debug). */
+    /** Course hazards and creatures (Blender tracks), for the debug tools. */
+    hazards,
     entrants,
     root,
     get race() {

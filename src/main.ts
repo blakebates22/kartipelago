@@ -164,7 +164,7 @@ const racerParam = PARAMS.get("racer");
 if (racerParam && (RACER_IDS as string[]).includes(racerParam))
   game.selection.racer = racerParam as RacerId;
 
-/** ?shot=<track>: the title demo on a track with no UI, for making preview pictures. */
+/** ?shot=<track>[&skip=<s>]: the title demo on a track with no UI, for preview pictures. */
 function shotScreen(id: string): Screen {
   let session: Awaited<ReturnType<Game["createSession"]>> | undefined;
   const entry = trackById(id) ?? trackById("drift_loop")!;
@@ -178,7 +178,12 @@ function shotScreen(id: string): Screen {
           racer: game.selection.racer,
           demo: true,
         })
-        .then((s) => (session = s));
+        .then((s) => {
+          // &skip=<seconds>: fast-forward the demo to a better spot for the picture.
+          const skip = Number(PARAMS.get("skip") ?? 0);
+          for (let i = 0; i < skip * 120; i++) s.update(1 / 120);
+          session = s;
+        });
     },
     step: (dt) => session?.update(dt),
     render3d(alpha, fs) {

@@ -4,6 +4,7 @@ import { createMenuInput, type MenuAction } from "../src/app/menuInput";
 import { loadRecords, submitResult } from "../src/app/records";
 import { DEFAULT_SETTINGS, loadSettings, sanitize, saveSettings } from "../src/app/settings";
 import { TRACKS, trackById } from "../src/game/tracks";
+import { WORLDS, currentWorld, tracksOf, worldOfTrack } from "../src/game/worlds";
 import { FONT_CHARS, FONT_ROWS, textWidth, wrap } from "../src/ui/font";
 import type { UiLayer } from "../src/ui/layer";
 import { CATALOG } from "../src/audio/songs";
@@ -183,6 +184,36 @@ describe("tracks", () => {
   });
 });
 
+describe("worlds", () => {
+  it("puts every track in exactly one world, keeping the old ids", () => {
+    expect(new Set(WORLDS.map((w) => w.id)).size).toBe(WORLDS.length);
+    for (const t of TRACKS)
+      expect(WORLDS.filter((w) => w.tracks.includes(t.id)).length, t.id).toBe(1);
+    for (const w of WORLDS) expect(tracksOf(w).length, w.id).toBe(w.tracks.length);
+    expect(worldOfTrack("dino_demo")?.id).toBe("test_world");
+    expect(WORLDS.find((w) => w.id === "test_world")?.tracks).toEqual([
+      "dino_demo",
+      "drift_loop",
+      "ribbon_ridge",
+      "meadow_run",
+      "bridge_test",
+      "drift_park",
+    ]);
+    expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
+      "riverbend_palms",
+      "cascade_caverns",
+      "bonebog_pyramid",
+      "ember_peak",
+    ]);
+  });
+
+  it("opens on the world last picked, else the last track's", () => {
+    expect(currentWorld({ trackId: "meadow_run" }).id).toBe("test_world");
+    expect(currentWorld({ trackId: "meadow_run", worldId: "prehistoric" }).id).toBe("prehistoric");
+    expect(currentWorld({ trackId: "gone", worldId: "gone" }).id).toBe(WORLDS[0]!.id);
+  });
+});
+
 describe("pixel font", () => {
   it("has every glyph 7 rows tall and evenly wide", () => {
     for (const ch of FONT_CHARS) {
@@ -197,6 +228,7 @@ describe("pixel font", () => {
       ...BINDINGS.flat(),
       ...CATALOG.map((c) => c.title.toUpperCase() + c.role.toUpperCase()),
       ...TRACKS.map((t) => t.name.toUpperCase() + t.description.toUpperCase()),
+      ...WORLDS.map((w) => (w.name + w.tagline + w.description).toUpperCase()),
     ].join("");
     const missing = [...new Set(used)].filter(
       (c) => !FONT_CHARS.includes(c) && !FONT_CHARS.includes(c.toUpperCase()),

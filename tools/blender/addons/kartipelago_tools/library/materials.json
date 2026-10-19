@@ -9,9 +9,22 @@
       "description": "Golden dirt roads, bright grass, warm layered cliffs, clear blue-green water",
       "environment": {
         "sky": "#8fd3ff",
-        "fog": { "enabled": true, "color": "#c4e7fa", "near": 150, "far": 680 },
-        "sun": { "color": "#fff0d2", "intensity": 2.3, "direction": [0.55, 0.75, 0.35] },
-        "ambient": { "sky": "#e2f4ff", "ground": "#5d7a3a", "intensity": 1.15 }
+        "fog": {
+          "enabled": true,
+          "color": "#c4e7fa",
+          "near": 150,
+          "far": 680
+        },
+        "sun": {
+          "color": "#fff0d2",
+          "intensity": 2.3,
+          "direction": [0.55, 0.75, 0.35]
+        },
+        "ambient": {
+          "sky": "#e2f4ff",
+          "ground": "#5d7a3a",
+          "intensity": 1.15
+        }
       }
     },
     {
@@ -20,9 +33,22 @@
       "description": "Reddish clay roads, striped sandstone cliffs, scree and dry clay",
       "environment": {
         "sky": "#a9d6f2",
-        "fog": { "enabled": true, "color": "#ebcfa8", "near": 130, "far": 600 },
-        "sun": { "color": "#ffe1b8", "intensity": 2.4, "direction": [0.35, 0.8, -0.45] },
-        "ambient": { "sky": "#f6e2c6", "ground": "#8a4f30", "intensity": 1.1 }
+        "fog": {
+          "enabled": true,
+          "color": "#ebcfa8",
+          "near": 130,
+          "far": 600
+        },
+        "sun": {
+          "color": "#ffe1b8",
+          "intensity": 2.4,
+          "direction": [0.35, 0.8, -0.45]
+        },
+        "ambient": {
+          "sky": "#f6e2c6",
+          "ground": "#8a4f30",
+          "intensity": 1.1
+        }
       }
     },
     {
@@ -31,9 +57,22 @@
       "description": "Mossy stone, old masonry, leafy ground and soft green light",
       "environment": {
         "sky": "#a4dccd",
-        "fog": { "enabled": true, "color": "#b4dcc4", "near": 90, "far": 460 },
-        "sun": { "color": "#f2ffe2", "intensity": 1.9, "direction": [-0.4, 0.85, 0.3] },
-        "ambient": { "sky": "#d6f2e2", "ground": "#2f5a2c", "intensity": 1.25 }
+        "fog": {
+          "enabled": true,
+          "color": "#b4dcc4",
+          "near": 90,
+          "far": 460
+        },
+        "sun": {
+          "color": "#f2ffe2",
+          "intensity": 1.9,
+          "direction": [-0.4, 0.85, 0.3]
+        },
+        "ambient": {
+          "sky": "#d6f2e2",
+          "ground": "#2f5a2c",
+          "intensity": 1.25
+        }
       }
     },
     {
@@ -42,9 +81,94 @@
       "description": "Dark ash roads, basalt walls, glowing lava, scorched slag",
       "environment": {
         "sky": "#4a2a35",
-        "fog": { "enabled": true, "color": "#6a3328", "near": 70, "far": 430 },
-        "sun": { "color": "#ffb47a", "intensity": 1.7, "direction": [0.2, 0.7, 0.6] },
-        "ambient": { "sky": "#c46a4a", "ground": "#2a1210", "intensity": 1.0 }
+        "fog": {
+          "enabled": true,
+          "color": "#6a3328",
+          "near": 70,
+          "far": 430
+        },
+        "sun": {
+          "color": "#ffb47a",
+          "intensity": 1.7,
+          "direction": [0.2, 0.7, 0.6]
+        },
+        "ambient": {
+          "sky": "#c46a4a",
+          "ground": "#2a1210",
+          "intensity": 1.0
+        }
+      }
+    },
+    {
+      "id": "river_valley",
+      "name": "River Valley",
+      "description": "Sunny orange dirt roads, bright grass, turquoise water, palms and wooden bridges",
+      "environment": {
+        "sky": "#6cc4f6",
+        "fog": {
+          "enabled": true,
+          "color": "#bfe6fb",
+          "near": 180,
+          "far": 760
+        },
+        "sun": {
+          "color": "#fff1cc",
+          "intensity": 2.5,
+          "direction": [0.5, 0.8, 0.3]
+        },
+        "ambient": {
+          "sky": "#e6f6ff",
+          "ground": "#5d8a3a",
+          "intensity": 1.2
+        }
+      }
+    },
+    {
+      "id": "fossil_swamp",
+      "name": "Fossil Swamp",
+      "description": "Misty green water, slick mud, old paving, giant bones and glowing caps",
+      "environment": {
+        "sky": "#7b86b4",
+        "fog": {
+          "enabled": true,
+          "color": "#9aa8a4",
+          "near": 70,
+          "far": 420
+        },
+        "sun": {
+          "color": "#ffe2b8",
+          "intensity": 1.6,
+          "direction": [-0.45, 0.6, 0.55]
+        },
+        "ambient": {
+          "sky": "#c6c2e6",
+          "ground": "#34482c",
+          "intensity": 1.3
+        }
+      }
+    },
+    {
+      "id": "volcano_dusk",
+      "name": "Volcano Dusk",
+      "description": "A glowing red-orange evening under a smoking volcano (uses the Hot Top Volcano textures)",
+      "environment": {
+        "sky": "#9a4f4a",
+        "fog": {
+          "enabled": true,
+          "color": "#b0603e",
+          "near": 150,
+          "far": 680
+        },
+        "sun": {
+          "color": "#ffcf98",
+          "intensity": 2.1,
+          "direction": [-0.35, 0.65, 0.65]
+        },
+        "ambient": {
+          "sky": "#f0a07a",
+          "ground": "#40201a",
+          "intensity": 1.2
+        }
       }
     }
   ],
@@ -84,7 +208,13 @@
       "image": "ancient_water.png",
       "wrap": "repeat",
       "tileMetres": 6,
-      "fx": { "scrollU": 0.03, "scrollV": 0.015, "wave": 0.04, "wavePeriod": 4, "opacity": 0.85 }
+      "fx": {
+        "scrollU": 0.03,
+        "scrollV": 0.015,
+        "wave": 0.04,
+        "wavePeriod": 4,
+        "opacity": 0.85
+      }
     },
     {
       "id": "fossil_road",
@@ -184,7 +314,13 @@
       "image": "volcano_lava.png",
       "wrap": "repeat",
       "tileMetres": 6,
-      "fx": { "scrollU": 0.012, "scrollV": 0.035, "wave": 0.02, "wavePeriod": 6, "glow": 0.85 }
+      "fx": {
+        "scrollU": 0.012,
+        "scrollV": 0.035,
+        "wave": 0.02,
+        "wavePeriod": 6,
+        "glow": 0.85
+      }
     },
     {
       "id": "volcano_slag",
@@ -194,6 +330,276 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "valley_road",
+      "name": "Valley Road",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "valley_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "valley_grass",
+      "name": "Valley Grass",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "valley_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "valley_sand",
+      "name": "Valley Sand",
+      "theme": "river_valley",
+      "surface": "sand",
+      "image": "valley_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "valley_water",
+      "name": "Valley Water",
+      "theme": "river_valley",
+      "surface": "water",
+      "image": "valley_water.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.09,
+        "wave": 0.05,
+        "wavePeriod": 3,
+        "opacity": 0.82
+      }
+    },
+    {
+      "id": "valley_cliff",
+      "name": "Valley Cliff",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "valley_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "wood_planks",
+      "name": "Wood Planks",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "wood_planks.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "palm_bark",
+      "name": "Palm Bark",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "palm_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "palm_frond",
+      "name": "Palm Frond",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "palm_frond.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "thatch",
+      "name": "Thatch",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "thatch.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "tribal_paint",
+      "name": "Painted Wood",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "tribal_paint.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "start_checker",
+      "name": "Start Checker",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "start_checker.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "blossom",
+      "name": "Blossom",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "blossom.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "waterfall",
+      "name": "Waterfall",
+      "theme": "jungle_falls",
+      "surface": "water",
+      "image": "waterfall.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.9,
+        "wave": 0.02,
+        "wavePeriod": 1.5,
+        "opacity": 0.8
+      }
+    },
+    {
+      "id": "foam",
+      "name": "Foam",
+      "theme": "jungle_falls",
+      "surface": "water",
+      "image": "foam.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0.05,
+        "scrollV": 0.12,
+        "wave": 0.06,
+        "wavePeriod": 2,
+        "opacity": 0.75
+      }
+    },
+    {
+      "id": "jungle_fern",
+      "name": "Jungle Fern",
+      "theme": "jungle_falls",
+      "surface": "grass",
+      "image": "jungle_fern.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "swamp_mud",
+      "name": "Swamp Mud",
+      "theme": "fossil_swamp",
+      "surface": "mud",
+      "image": "swamp_mud.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "swamp_water",
+      "name": "Swamp Water",
+      "theme": "fossil_swamp",
+      "surface": "water",
+      "image": "swamp_water.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.012,
+        "wave": 0.03,
+        "wavePeriod": 6,
+        "opacity": 0.9
+      }
+    },
+    {
+      "id": "swamp_moss",
+      "name": "Swamp Moss",
+      "theme": "fossil_swamp",
+      "surface": "grass",
+      "image": "swamp_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "bone",
+      "name": "Fossil Bone",
+      "theme": "fossil_swamp",
+      "surface": "wall",
+      "image": "bone.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "swamp_stone",
+      "name": "Swamp Paving",
+      "theme": "fossil_swamp",
+      "surface": "road",
+      "image": "swamp_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "glow_cap",
+      "name": "Glow Cap",
+      "theme": "fossil_swamp",
+      "surface": "wall",
+      "image": "glow_cap.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.6
+      }
+    },
+    {
+      "id": "pyramid_step",
+      "name": "Pyramid Step",
+      "theme": "fossil_swamp",
+      "surface": "wall",
+      "image": "pyramid_step.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "volcano_crust",
+      "name": "Volcano Crust",
+      "theme": "hot_top_volcano",
+      "surface": "wall",
+      "image": "volcano_crust.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "ember_road",
+      "name": "Ember Road",
+      "theme": "hot_top_volcano",
+      "surface": "road",
+      "image": "ember_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "smoke",
+      "name": "Smoke",
+      "theme": "hot_top_volcano",
+      "surface": "wall",
+      "image": "smoke.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": -0.05,
+        "wave": 0.05,
+        "wavePeriod": 5,
+        "opacity": 0.55
+      }
     }
   ]
 }

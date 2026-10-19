@@ -51,16 +51,29 @@ function pngSize(file: URL) {
 }
 
 describe("material library (Blender add-on)", () => {
-  it("has the four starter themes and sixteen materials", () => {
-    expect(library.themes.map((t) => t.id)).toEqual([
-      "ancient_lake",
-      "fossil_canyon",
-      "jungle_falls",
-      "hot_top_volcano",
-    ]);
-    expect(library.materials).toHaveLength(16);
-    for (const t of library.themes)
-      expect(library.materials.filter((m) => m.theme === t.id)).toHaveLength(4);
+  it("keeps the four starter themes and their sixteen materials first", () => {
+    const starter = ["ancient_lake", "fossil_canyon", "jungle_falls", "hot_top_volcano"];
+    expect(library.themes.slice(0, 4).map((t) => t.id)).toEqual(starter);
+    expect(library.materials.slice(0, 16).every((m) => starter.includes(m.theme))).toBe(true);
+    for (const t of starter)
+      expect(library.materials.slice(0, 16).filter((m) => m.theme === t)).toHaveLength(4);
+  });
+
+  it("adds the Prehistoric World textures, each in a known theme with unique ids", () => {
+    const ids = library.materials.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of [
+      "valley_road",
+      "wood_planks",
+      "palm_frond",
+      "waterfall",
+      "swamp_mud",
+      "bone",
+      "volcano_crust",
+    ])
+      expect(ids).toContain(id);
+    const themes = library.themes.map((t) => t.id);
+    for (const m of library.materials) expect(themes, m.id).toContain(m.theme);
   });
 
   it("suggests only surfaces the game knows", () => {

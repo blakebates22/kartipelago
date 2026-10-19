@@ -10,6 +10,15 @@
  *   race        "Lakeside Dash"     racing: quick and bouncy
  *   fanfare     "Finish Line!"      the results jingle (doesn't loop)
  *
+ * And a theme per Prehistoric World course:
+ *
+ *   riverbend   "Riverbend Palms"   C major, 132: steel pan, marimba, flute, bongos
+ *   cascade     "Cascade Caverns"   D minor, 142: flute over pizzicato, wood, bells
+ *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
+ *                                   chimes, with friendly surprise chords (A, Ab, F)
+ *   ember       "Ember Peak"        A minor, 158: driving drums, low brass, fast
+ *                                   marimba, strings, square-wave accents
+ *
  * "Pick Your Racer" is one arrangement split into stems that always play in sync: a
  * base groove, plus a layer per racer playing the same tune in their own instruments
  * (Moss: marimba and woodblocks; Bramble: pizzicato, walking bass and bassoon; Poppy:
@@ -52,6 +61,7 @@ const KIT: Record<string, InstrumentId> = {
   b: "bongo",
   t: "tamb",
   c: "crash",
+  o: "tom",
 };
 
 /** Bars of melody, joined (each bar is its own string so the bar lines stay visible). */
@@ -422,6 +432,288 @@ function race(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Riverbend Palms"
+
+export const RIVERBEND_MELODY = bars(
+  "E5:.5 G5:.5 C6:1 G5:.5 E5:.5 G5:1",
+  "A5:.5 C6:.5 A5:1 F5:.5 A5:.5 C6:1",
+  "B5:.5 D6:.5 G5:1 B5:.5 A5:.5 G5:1",
+  "C6:1.5 G5:.5 E5:1 r:1",
+  "E5:.5 A5:.5 C6:1 A5:.5 B5:.5 C6:1",
+  "C6:.5 D6:.5 C6:1 A5:1 F5:1",
+  "G5:.5 A5:.5 B5:1 D6:1 B5:1",
+  "A5:.5 B5:.5 D6:.5 F6:.5 G6:2",
+  "A5:1 C6:.5 A5:.5 F6:1 C6:1",
+  "B5:1 D6:.5 B5:.5 G6:1 D6:1",
+  "G5:.5 B5:.5 E6:1 D6:.5 B5:.5 G5:1",
+  "A5:.5 C6:.5 E6:1 C6:.5 B5:.5 A5:1",
+  "F6:.5 E6:.5 C6:1 A5:1 C6:1",
+  "D6:.5 C6:.5 B5:1 G5:1 B5:1",
+  "C6:.5 D6:.5 E6:1 G6:1 E6:1",
+  "C6:3 r:1",
+);
+export const RIVERBEND_CHORDS =
+  "C:4 F:4 G:4 C:4 Am:4 F:4 G:4 G7:4 F:4 G:4 Em:4 Am:4 F:4 G:4 C:4 C:4";
+
+function riverbend(): Song {
+  const ch = chart(RIVERBEND_CHORDS);
+  const mel = seq(RIVERBEND_MELODY, 0, 0.85);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  // A bouncy island bass: root, a push on the "and" of two, the fifth, an approach.
+  const bounce: [number, number, string][] = [
+    [0, 1, "R"],
+    [1.5, 0.5, "R"],
+    [2, 1, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "riverbend",
+    title: "Riverbend Palms",
+    role: "Prehistoric World",
+    bpm: 132,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("steelpan", "base", 1, mel),
+      part("flute", "base", 0.55, shift(b, 0, -12)),
+      part("marimba", "base", 0.6, arpeggio(ch, 0.5, [0, 1, 2, 1, 3, 2, 1, 2], 60, 0.4, 0.55)),
+      part("brass", "base", 0.35, stabs(ch, [1.5, 3.5], 60, 0.25, 0.55)),
+      part(
+        "pad",
+        "base",
+        0.5,
+        pads(
+          ch.filter((c) => c.t >= 32),
+          55,
+          4,
+          0.5,
+        ),
+      ),
+      part("bass", "base", 1, bassLine(ch, bounce, 36, 0.85)),
+      ...drumParts("base", 0.8, drums("K..k..K.", KIT, 0.5, T)),
+      ...drumParts("base", 0.55, drums("hhhhhhhh", KIT, 0.5, T)),
+      ...drumParts("base", 0.6, drums("w..w..w...w.w...", KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("..b.Bb.b..b.Bbbb", KIT, 0.25, 8, 32)),
+      ...drumParts("base", 0.8, drums("C", KIT, 32, 2)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Cascade Caverns"
+
+export const CASCADE_MELODY = bars(
+  "D5:.5 F5:.5 A5:.5 D6:.5 A5:.5 C6:.5 A5:1",
+  "D6:.5 C6:.5 Bb5:1 F5:.5 G5:.5 F5:1",
+  "E5:.5 G5:.5 C6:1 E6:.5 D6:.5 C6:1",
+  "D6:1.5 A5:.5 F5:1 r:1",
+  "A5:.5 D6:.5 F6:1 E6:.5 D6:.5 A5:1",
+  "F6:.5 D6:.5 Bb5:1 D6:.5 C6:.5 Bb5:1",
+  "G5:.5 Bb5:.5 D6:1 C6:.5 Bb5:.5 G5:1",
+  "A5:.5 C#6:.5 E6:1 A6:2",
+  "C6:.5 A5:.5 F5:1 A5:.5 C6:.5 F6:1",
+  "E6:.5 D6:.5 C6:1 G5:1 E5:1",
+  "D6:.5 F6:.5 D6:1 Bb5:1 F5:1",
+  "A5:1 C6:1 F6:1.5 r:.5",
+  "G6:.5 F6:.5 D6:1 Bb5:1 G5:1",
+  "A5:.5 B5:.5 C#6:1 E6:1 A6:1",
+  "F6:.5 E6:.5 D6:1 A5:1 F5:1",
+  "E5:.5 G5:.5 A5:1 C#6:1 E6:1",
+);
+export const CASCADE_CHORDS =
+  "Dm:4 Bb:4 C:4 Dm:4 Dm:4 Bb:4 Gm:4 A:4 F:4 C:4 Bb:4 F:4 Gm:4 A:4 Dm:4 A7:4";
+
+function cascade(): Song {
+  const ch = chart(CASCADE_CHORDS);
+  const mel = seq(CASCADE_MELODY, 0, 0.82);
+  const a = mel.filter((n) => n.t < 32);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  const run: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "8"],
+    [1, 0.5, "R"],
+    [1.5, 0.5, "5"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "8"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "cascade",
+    title: "Cascade Caverns",
+    role: "Prehistoric World",
+    bpm: 142,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("flute", "base", 1, mel),
+      part("xylophone", "base", 0.5, shift(b, 0, 0)),
+      part("pizz", "base", 0.8, arpeggio(ch, 0.25, [0, 2, 1, 2, 3, 2, 1, 2], 57, 0.2, 0.6)),
+      part("bell", "base", 0.5, arpeggio(ch, 2, [3, 2], 72, 1.5, 0.45)),
+      part("celesta", "base", 0.5, shift(a, 0, 12)),
+      part(
+        "strings",
+        "base",
+        0.45,
+        pads(
+          ch.filter((c) => c.t >= 32),
+          50,
+          2,
+          0.5,
+        ),
+      ),
+      part("bass", "base", 1, bassLine(ch, run, 33, 0.8)),
+      ...drumParts("base", 0.85, drums("K...k.K.K...k...", KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("w.ww.w.ww.w.w.ww", KIT, 0.25, T)),
+      ...drumParts("base", 0.6, drums("..b...b...b.b.b.", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("....S.......S...", KIT, 0.25, 8, 32)),
+      ...drumParts("base", 0.8, drums("C", KIT, 32, 2)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Bonebog Pyramid"
+
+export const BONEBOG_MELODY = bars(
+  "E4:1 G4:.5 B4:.5 E5:1 B4:.5 D5:.5",
+  "C#5:1 E5:.5 C#5:.5 A4:1 r:1",
+  "B4:.5 A4:.5 G4:1 E4:1 G4:1",
+  "A4:.5 C#5:.5 E5:1 F#5:.5 E5:.5 C#5:1",
+  "G4:.5 C5:.5 E5:1 G5:1 E5:1",
+  "F#5:.5 E5:.5 D5:1 A4:1 F#4:1",
+  "G4:.5 B4:.5 E5:1.5 r:.5 B4:1",
+  "D#5:.5 F#5:.5 A5:1 F#5:1 D#5:1",
+  "E5:1 G5:.5 E5:.5 C5:1 G4:1",
+  "C5:.5 Eb5:.5 Ab5:1 G5:.5 Eb5:.5 C5:1",
+  "B4:.5 E5:.5 G5:1 B5:1 G5:1",
+  "E5:.5 C#5:.5 A4:1 C#5:1 E5:1",
+  "G5:1 E5:.5 G5:.5 C6:1 G5:1",
+  "A5:1 F#5:.5 D5:.5 A4:1 D5:1",
+  "E5:.5 B4:.5 G4:1 F4:.5 A4:.5 C5:1",
+  "E4:3 r:1",
+);
+export const BONEBOG_CHORDS =
+  "Em:4 A:4 Em:4 A:4 C:4 D:4 Em:4 B7:4 C:4 Ab:4 Em:4 A:4 C:4 D:4 Em:2 F:2 Em:4";
+
+function bonebog(): Song {
+  const ch = chart(BONEBOG_CHORDS);
+  const mel = seq(BONEBOG_MELODY, 0, 0.8);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  // A lazy, bouncing groove: root, a ghosted octave, the fifth, a slide in.
+  const groove: [number, number, string][] = [
+    [0, 0.75, "R"],
+    [0.75, 0.25, "8"],
+    [1.5, 0.5, "5"],
+    [2, 0.75, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "bonebog",
+    title: "Bonebog Pyramid",
+    role: "Prehistoric World",
+    bpm: 116,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("clarinet", "base", 1, mel),
+      part("bassoon", "base", 0.45, shift(b, 0, -12)),
+      part("marimba", "base", 0.85, arpeggio(ch, 0.5, [0, 2, 1, 2, 0, 2, 1, 3], 45, 0.45, 0.6)),
+      part("pizz", "base", 0.6, stabs(ch, [0.5, 1.5, 2.5, 3.5], 55, 0.2, 0.45)),
+      part("bell", "base", 0.4, arpeggio(ch, 4, [3, 4], 76, 3, 0.4)),
+      part("pad", "base", 0.5, pads(ch, 52, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, groove, 28, 0.85)),
+      ...drumParts("base", 0.8, drums("K.....k.K.......", KIT, 0.25, T)),
+      ...drumParts("base", 0.75, drums("....o.......o.oo", KIT, 0.25, T)),
+      ...drumParts("base", 0.45, drums("h.hhh.hhh.hhh.hh", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("....w.......w..w", KIT, 0.25, 8, 32)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Ember Peak"
+
+export const EMBER_MELODY = bars(
+  "A4:.5 A4:.5 C5:.5 E5:.5 A5:1 E5:.5 G5:.5",
+  "A5:1.5 G5:.5 E5:1 C5:1",
+  "F5:.5 A5:.5 C6:1 A5:.5 F5:.5 C5:1",
+  "B4:.5 E5:.5 G#5:1 B5:2",
+  "C6:.5 B5:.5 A5:1 E5:1 A5:1",
+  "C6:.5 D6:.5 E6:1 D6:.5 C6:.5 A5:1",
+  "F6:.5 E6:.5 D6:1 A5:1 F5:1",
+  "G#5:.5 A5:.5 B5:1 E6:1.5 r:.5",
+  "A5:.5 C6:.5 F6:1 C6:1 A5:1",
+  "B5:.5 D6:.5 G6:1 D6:1 B5:1",
+  "C6:.5 E6:.5 A6:1 E6:1 C6:1",
+  "B5:.5 G5:.5 E5:1 G5:1 B5:1",
+  "C6:1 A5:.5 C6:.5 F6:1 A6:1",
+  "G6:1 D6:.5 B5:.5 G5:1 D6:1",
+  "E6:.5 D6:.5 B5:1 G#5:1 E5:1",
+  "D6:.5 B5:.5 G#5:.5 E5:.5 D5:2",
+);
+export const EMBER_CHORDS =
+  "Am:4 Am:4 F:4 E:4 Am:4 Am:4 Dm:4 E:4 F:4 G:4 Am:4 Em:4 F:4 G:4 E:4 E7:4";
+
+function ember(): Song {
+  const ch = chart(EMBER_CHORDS);
+  const mel = seq(EMBER_MELODY, 0, 0.85);
+  const a = mel.filter((n) => n.t < 32);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  // A galloping eighth-note bass, pushing into every bar.
+  const gallop: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "R"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "ember",
+    title: "Ember Peak",
+    role: "Prehistoric World",
+    bpm: 158,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("strings", "base", 1, mel),
+      part("horn", "base", 0.6, shift(a, 0, -12)),
+      part("brass", "base", 0.8, b),
+      part("square", "base", 0.25, shift(b, 0, 12)),
+      part("marimba", "base", 0.6, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 57, 0.2, 0.5)),
+      part("horn", "base", 0.55, stabs(ch, [0, 1.5, 3], 45, 0.35, 0.6)),
+      part(
+        "square",
+        "base",
+        0.18,
+        stabs(
+          ch.filter((c) => c.t >= 32),
+          [0.75, 2.75],
+          69,
+          0.15,
+          0.5,
+        ),
+      ),
+      part("bass", "base", 1.1, bassLine(ch, gallop, 33, 0.9)),
+      ...drumParts("base", 1, drums("K.k.K.k.K.k.K.kk", KIT, 0.25, T)),
+      ...drumParts("base", 0.85, drums("....S.......S.S.", KIT, 0.25, T)),
+      ...drumParts("base", 0.55, drums("iiIiiiIiiiIiiiIi", KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("..............oo", KIT, 0.25, T)),
+      ...drumParts("base", 0.85, drums("C", KIT, 16, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Finish Line!"
 
 export const FANFARE_MELODY =
@@ -465,14 +757,14 @@ export const SONGS: Record<string, Song> = {
   map: map(),
   race: race(),
   fanfare: fanfare(),
+  riverbend: riverbend(),
+  cascade: cascade(),
+  bonebog: bonebog(),
+  ember: ember(),
 };
 
 /** The music player's list: composed pieces, then planned ones not written yet. */
 export const CATALOG: { id: string; title: string; role: string; available: boolean }[] = [
   ...Object.values(SONGS).map((s) => ({ id: s.id, title: s.title, role: s.role, available: true })),
-  { id: "ancient_lake", title: "Ancient Lake", role: "Track theme", available: false },
-  { id: "fossil_canyon", title: "Fossil Canyon", role: "Track theme", available: false },
-  { id: "jungle_falls", title: "Jungle Falls", role: "Track theme", available: false },
-  { id: "hot_top_volcano", title: "Hot Top Volcano", role: "Track theme", available: false },
   { id: "adventure", title: "Adventure Map", role: "Adventure mode", available: false },
 ];

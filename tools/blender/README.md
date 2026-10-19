@@ -45,6 +45,22 @@ blender --background --python tools/blender/build_bridge_test.py
 blender --background --python tools/blender/build_dino_demo.py
 ```
 
+## Prehistoric World
+
+The four Prehistoric World courses are built by scripts in `prehistoric/`, on a shared
+toolkit (`course_kit.py`, `props.py`). Each saves `tracks-src/<id>.blend` and exports
+`public/tracks/<id>/`:
+
+```
+blender --background --python tools/blender/prehistoric/riverbend_palms.py
+blender --background --python tools/blender/prehistoric/cascade_caverns.py
+blender --background --python tools/blender/prehistoric/bonebog_pyramid.py
+blender --background --python tools/blender/prehistoric/ember_peak.py
+python3 tools/blender/prehistoric/make_textures.py   # repaints their library textures
+```
+
+See [docs/prehistoric-world.md](../../docs/prehistoric-world.md).
+
 ## Licence
 
 MIT, like the rest of Kartipelago, including the textures in `library/` (original work

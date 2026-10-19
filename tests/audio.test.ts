@@ -30,6 +30,10 @@ const melodies: [string, string, number][] = [
   ["map", S.MAP_MELODY, 64],
   ["race", S.RACE_MELODY, 64],
   ["fanfare", S.FANFARE_MELODY, 12],
+  ["riverbend", S.RIVERBEND_MELODY, 64],
+  ["cascade", S.CASCADE_MELODY, 64],
+  ["bonebog", S.BONEBOG_MELODY, 64],
+  ["ember", S.EMBER_MELODY, 64],
 ];
 const charts: [string, string, number, string][] = [
   [
@@ -41,6 +45,10 @@ const charts: [string, string, number, string][] = [
   ["select", S.SELECT_CHORDS, 64, S.SELECT_MELODY],
   ["map", S.MAP_CHORDS, 64, S.MAP_MELODY],
   ["race", S.RACE_CHORDS, 64, S.RACE_MELODY],
+  ["riverbend", S.RIVERBEND_CHORDS, 64, S.RIVERBEND_MELODY],
+  ["cascade", S.CASCADE_CHORDS, 64, S.CASCADE_MELODY],
+  ["bonebog", S.BONEBOG_CHORDS, 64, S.BONEBOG_MELODY],
+  ["ember", S.EMBER_CHORDS, 64, S.EMBER_MELODY],
 ];
 
 describe("the soundtrack", () => {

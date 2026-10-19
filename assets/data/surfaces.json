@@ -8,7 +8,9 @@
     "grass": { "road": false, "speed": 0.72, "accel": 0.78, "grip": 0.88 },
     "sand": { "road": false, "speed": 0.58, "accel": 0.62, "grip": 0.75 },
     "ice": { "road": true, "speed": 1, "accel": 0.6, "grip": 0.3 },
+    "mud": { "road": true, "speed": 0.92, "accel": 0.85, "grip": 0.55 },
     "water": { "road": false, "speed": 0.55, "accel": 0.6, "grip": 0.7 },
+    "deep_water": { "road": false, "speed": 0.4, "accel": 0.4, "grip": 0.5, "respawn": true },
     "lava": { "road": false, "speed": 0.5, "accel": 0.5, "grip": 0.6, "respawn": true },
     "boost": { "road": true, "speed": 1, "accel": 1, "grip": 1, "boost": true },
     "wall": { "road": false, "wall": true }

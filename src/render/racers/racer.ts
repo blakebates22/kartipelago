@@ -106,6 +106,8 @@ export class Racer {
   private glanceLeft = 0;
   private glanceYaw = 0;
   private surprise = 0;
+  /** A shake from a reaction (a burn), seconds left. */
+  private jolt = 0;
   private wasGrounded = true;
   private airTime = 0;
   private lastBoostLeft = 0;
@@ -192,6 +194,16 @@ export class Racer {
    * Animate for one rendered frame. `rival` is the nearest other racer's position in
    * this racer's local frame (x across, z forward), if one is close enough to glance at.
    */
+  /** React to a course hazard: a yelp and a jolt (burn) or a big-eyed bob (splash). */
+  react(kind: "burn" | "splash") {
+    this.surprise = 1;
+    if (kind === "burn") {
+      this.squashV -= 4;
+      this.recoil = 1;
+      this.jolt = 0.6;
+    } else this.squashV -= 2;
+  }
+
   animate(dt: number, m: RacerMotion, rival: { x: number; z: number } | null) {
     dt = Math.min(dt, 0.1);
     this.t += dt;
@@ -252,6 +264,7 @@ export class Racer {
       this.kick += this.kickV * h;
     }
     this.recoil = Math.max(0, this.recoil - dt * 2.5);
+    this.jolt = Math.max(0, this.jolt - dt);
     this.surprise = Math.max(0, this.surprise - dt);
 
     // --- Lean: into the turn; harder in a drift; countersteer pulls against it.
@@ -293,7 +306,10 @@ export class Racer {
     body.scale.set(1 / Math.sqrt(this.squash), this.squash, 1 / Math.sqrt(this.squash));
 
     rig.root.position.y = this.kart.seat.y + bob;
-    rig.torso.rotation.z = this.lean + Math.sin(this.t * 25) * 0.04 * this.recoil;
+    rig.torso.rotation.z =
+      this.lean +
+      Math.sin(this.t * 25) * 0.04 * this.recoil +
+      Math.sin(this.t * 40) * 0.14 * this.jolt;
     rig.torso.rotation.x =
       -this.kick * 0.32 - this.recoil * 0.2 + (idle ? Math.sin(this.t * 1.1) * 0.03 : 0);
     rig.torso.rotation.y = (drifting ? m.driftDir * -0.12 : 0) + this.headYaw * 0.15;

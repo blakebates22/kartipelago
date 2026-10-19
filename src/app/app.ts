@@ -20,6 +20,7 @@ export type ScreenId =
   | "TITLE"
   | "CHARACTER_SELECT"
   | "MODE_SELECT"
+  | "WORLD_SELECT"
   | "TRACK_SELECT"
   | "LOADING"
   | "LOAD_ERROR"

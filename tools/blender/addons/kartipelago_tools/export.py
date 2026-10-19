@@ -52,7 +52,9 @@ def sample_route(ob, spacing=2.0):
     pts = sp.bezier_points
     n = len(pts)
     seg_count = n if sp.use_cyclic_u else n - 1
-    settings = road.road_settings(ob) or {"width": 12.0, "shoulder": 0.0}
+    # A road curve's width comes from its road; a bare route curve (no road of its own,
+    # e.g. a track built from separate road pieces) can say it with "kp_width".
+    settings = road.road_settings(ob) or {"width": float(ob.get("kp_width", 12.0)), "shoulder": 0.0}
     out = []
     for i in range(seg_count):
         a = pts[i]
