@@ -999,14 +999,50 @@ def _underfloor(self, name, x0, x1, y0, y1, cell, height, mat):
     return ob
 
 
+def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat):
+    """
+    Like underfloor, but every cell is its own flat square at the lowest of its corners:
+    under the steepest cliffs there's still a flat floor (never a steep face, which would
+    count as a wall), so nothing can fall through the world anywhere.
+    """
+    nx = int(round((x1 - x0) / cell))
+    ny = int(round((y1 - y0) / cell))
+    hs = {}
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            hs[i, j] = height(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny)
+    bm = bmesh.new()
+    for j in range(ny):
+        for i in range(nx):
+            q = [hs[k] for k in ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1))]
+            if any(h is None for h in q):
+                continue
+            z = min(q)
+            xa, xb = x0 + (x1 - x0) * i / nx, x0 + (x1 - x0) * (i + 1) / nx
+            ya, yb = y0 + (y1 - y0) * j / ny, y0 + (y1 - y0) * (j + 1) / ny
+            # A hair of overlap, so neighbouring squares never leave a crack.
+            e = 0.02
+            bm.faces.new([bm.verts.new(v) for v in ((xa - e, ya - e, z), (xb + e, ya - e, z), (xb + e, yb + e, z), (xa - e, yb + e, z))])
+    ob = self.mesh_object(name, bm, "Collision", "collision")
+    self.assign(ob, mat)
+    return ob
+
+
 def _glow(self, obs, lights, radius, color, base=1.0, region=None):
     """
-    Hand-painted light: every vertex inside `region(point)` (or everywhere) is darkened
-    to `base`, then lit back up near each light point, tinted `color`, fading out over
-    `radius` metres. For torchlit tunnels.
+    Hand-painted light: every vertex inside `region(point)` (or everywhere) is tinted
+    `base` (a number, or an (r, g, b) tint: a cold moonlit blue, say), then lit back up
+    near each light point, tinted `color`, fading out over `radius` metres. For torchlit
+    tunnels, and firelight on snow.
     """
     from kartipelago_tools import paint as _paint
+    from mathutils import kdtree
 
+    b = tuple(base) if isinstance(base, (tuple, list)) else (base, base, base)
+    tree = kdtree.KDTree(max(1, len(lights)))
+    for i, lp in enumerate(lights):
+        tree.insert(Vector(lp), i)
+    tree.balance()
     for ob in obs:
         t = _paint.Target(ob, None)
         for li, v, _ in t.corners:
@@ -1014,14 +1050,45 @@ def _glow(self, obs, lights, radius, color, base=1.0, region=None):
             if region is not None and not region(w):
                 continue
             k = 0.0
-            for lp in lights:
-                d = (w - Vector(lp)).length
-                k = max(k, 1.0 - d / radius)
-            k = max(0.0, k) ** 1.4
-            t.mul(li, [base + (color[c] - base) * k for c in range(3)])
+            if lights:
+                _, _, d = tree.find(w)
+                if d is not None:
+                    k = max(0.0, 1.0 - d / radius) ** 1.4
+            t.mul(li, [b[c] + (color[c] - b[c]) * k for c in range(3)])
         t.write()
 
 
+def _merge_props(self, colls, cell=160.0):
+    """
+    Join the copies in these collections into one mesh per (collection, role, map
+    square): a few hundred braziers, trees and blocks become a few dozen meshes, so the
+    game draws far fewer things, and each square is still culled when it's off screen.
+    Prop UVs are kept (their faces are marked to keep them); vertex paint carries over.
+    """
+    merged = 0
+    for coll_name in colls:
+        groups = {}
+        for ob in list(self.coll(coll_name).objects):
+            if ob.type != "MESH":
+                continue
+            key = (ob.get("kp_role", "both"), int(math.floor(ob.location.x / cell)), int(math.floor(ob.location.y / cell)))
+            groups.setdefault(key, []).append(ob)
+        for (role, gx, gy), obs in groups.items():
+            if len(obs) < 2:
+                continue
+            for o in obs:
+                if o.data.users > 1:
+                    o.data = o.data.copy()
+            with bpy.context.temp_override(active_object=obs[0], object=obs[0], selected_objects=obs, selected_editable_objects=obs):
+                bpy.ops.object.join()
+            obs[0].name = "%s %s %d %d" % (coll_name, role, gx, gy)
+            obs[0]["kp_role"] = role
+            merged += len(obs) - 1
+    return merged
+
+
 Course.underfloor = _underfloor
+Course.merge_props = _merge_props
+Course.underfloor_flat = _underfloor_flat
 Course.glow = _glow
 

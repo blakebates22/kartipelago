@@ -1,18 +1,110 @@
 {
   "schemaVersion": 1,
-  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. A surface is chosen separately from the texture: the same picture can be road in one place and grass in another. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost. respawn: touching it puts you back at the last checkpoint.",
+  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. A surface is chosen separately from the texture: the same picture can be road in one place and grass in another. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost. respawn: touching it puts you back at the last checkpoint (deep water, lava, and abyss: the invisible floor of a bottomless chasm).",
   "surfaces": {
-    "road": { "road": true, "speed": 1, "accel": 1, "grip": 1 },
-    "asphalt": { "road": true, "speed": 1, "accel": 1, "grip": 1 },
-    "dirt": { "road": true, "speed": 0.94, "accel": 0.92, "grip": 0.92 },
-    "grass": { "road": false, "speed": 0.72, "accel": 0.78, "grip": 0.88 },
-    "sand": { "road": false, "speed": 0.58, "accel": 0.62, "grip": 0.75 },
-    "ice": { "road": true, "speed": 1, "accel": 0.6, "grip": 0.3 },
-    "mud": { "road": true, "speed": 0.92, "accel": 0.85, "grip": 0.55 },
-    "water": { "road": false, "speed": 0.55, "accel": 0.6, "grip": 0.7 },
-    "deep_water": { "road": false, "speed": 0.4, "accel": 0.4, "grip": 0.5, "respawn": true },
-    "lava": { "road": false, "speed": 0.5, "accel": 0.5, "grip": 0.6, "respawn": true },
-    "boost": { "road": true, "speed": 1, "accel": 1, "grip": 1, "boost": true },
-    "wall": { "road": false, "wall": true }
+    "road": {
+      "road": true,
+      "speed": 1,
+      "accel": 1,
+      "grip": 1
+    },
+    "asphalt": {
+      "road": true,
+      "speed": 1,
+      "accel": 1,
+      "grip": 1
+    },
+    "dirt": {
+      "road": true,
+      "speed": 0.94,
+      "accel": 0.92,
+      "grip": 0.92
+    },
+    "grass": {
+      "road": false,
+      "speed": 0.72,
+      "accel": 0.78,
+      "grip": 0.88
+    },
+    "sand": {
+      "road": false,
+      "speed": 0.58,
+      "accel": 0.62,
+      "grip": 0.75
+    },
+    "ice": {
+      "road": true,
+      "speed": 1,
+      "accel": 0.6,
+      "grip": 0.3
+    },
+    "snow_stone": {
+      "road": true,
+      "speed": 1,
+      "accel": 0.97,
+      "grip": 0.92
+    },
+    "icy_stone": {
+      "road": true,
+      "speed": 1,
+      "accel": 0.8,
+      "grip": 0.5
+    },
+    "packed_snow": {
+      "road": true,
+      "speed": 0.95,
+      "accel": 0.9,
+      "grip": 0.82
+    },
+    "deep_snow": {
+      "road": false,
+      "speed": 0.62,
+      "accel": 0.66,
+      "grip": 0.78
+    },
+    "mud": {
+      "road": true,
+      "speed": 0.92,
+      "accel": 0.85,
+      "grip": 0.55
+    },
+    "water": {
+      "road": false,
+      "speed": 0.55,
+      "accel": 0.6,
+      "grip": 0.7
+    },
+    "deep_water": {
+      "road": false,
+      "speed": 0.4,
+      "accel": 0.4,
+      "grip": 0.5,
+      "respawn": true
+    },
+    "lava": {
+      "road": false,
+      "speed": 0.5,
+      "accel": 0.5,
+      "grip": 0.6,
+      "respawn": true
+    },
+    "boost": {
+      "road": true,
+      "speed": 1,
+      "accel": 1,
+      "grip": 1,
+      "boost": true
+    },
+    "wall": {
+      "road": false,
+      "wall": true
+    },
+    "abyss": {
+      "road": false,
+      "speed": 1,
+      "accel": 1,
+      "grip": 1,
+      "respawn": true
+    }
   }
 }

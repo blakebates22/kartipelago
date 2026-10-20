@@ -996,6 +996,282 @@ def dino_scales():
     return paint(f)
 
 
+# ------------------------------------------------------------------ Frost Citadel
+
+
+def snow_ground():
+    # Fresh snow under moonlight: white with lavender-blue hollows and the odd sparkle.
+    pal = ["#b9c4ea", "#cad3f2", "#dbe2f8", "#e9eefc", "#f7f9ff"]
+    a, b = noise(4, 2, 1601), noise(16, 8, 1602)
+    sparkle = speckle(1603, 9)
+
+    def f(x, y):
+        if (x, y) in sparkle:
+            return "#ffffff"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def snow_stone_road():
+    # An old paved road under packed snow: white-lavender snow worn through to the grey
+    # paving here and there, two darker wheel tracks pressed along it.
+    snow = ["#c9cfe8", "#d6dbf0", "#e2e6f6", "#eef0fb"]
+    pave = ["#8d90ab", "#9da1bb", "#aeb2c9"]
+    a, b = noise(4, 2, 1611), noise(16, 8, 1612)
+
+    def f(x, y):
+        rut = x % 32 in (9, 10, 11, 21, 22, 23)
+        worn = a(x, y) * 0.75 + b(x, y) * 0.45
+        if worn < 0.38 and not rut:
+            joint = x % 16 == 0 or (y + (8 if (x // 16) % 2 else 0)) % 16 == 0
+            return "#6c7090" if joint else pick(pave, b(x, y))
+        v = 0.15 + worn * 0.7 - (0.35 if rut else 0)
+        if rut and (y % 6) < 2:
+            v -= 0.1
+        return pick(snow, v)
+
+    return paint(f)
+
+
+def icy_stone_road():
+    pal = ["#5fa7d6", "#76bde4", "#92d2ee", "#b4e4f6"]
+    a = noise(4, 2, 1621)
+    glints = speckle(1622, 14)
+    cracks = speckle(1623, 30)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#ffffff"
+        if (x, y) in cracks or (x + y * 2) % 37 == 0:
+            return "#e6f8ff"
+        joint = x % 16 == 0 or (y + (8 if (x // 16) % 2 else 0)) % 16 == 0
+        if joint:
+            return "#4c87b4"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def packed_snow_road():
+    pal = ["#c2c8e2", "#ced3ea", "#dadff1", "#e6e9f7"]
+    a, b = noise(4, 2, 1631), noise(16, 8, 1632)
+
+    def f(x, y):
+        rut = x % 32 in (8, 9, 10, 22, 23, 24)
+        tread = rut and y % 4 == 0
+        v = 0.25 + a(x, y) * 0.4 + b(x, y) * 0.3 - (0.3 if rut else 0) - (0.15 if tread else 0)
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def frost_rock():
+    pal = ["#5d6283", "#6d7395", "#7e85a7", "#9198b8", "#a6adca"]
+    a, b = noise(4, 2, 1641), noise(16, 8, 1642)
+
+    def f(x, y):
+        v = 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35
+        streak = math.sin(x / W * math.tau * 3 + a(x, y) * 4) > 0.75 and (y % 8) < 3
+        if streak or v > 0.92:
+            return "#e4e9fb"
+        if (x * 7 + y * 3) % 23 == 0:
+            return "#363a56"
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def frost_cliff():
+    # Rock with snow lying on every ledge: bands of white across grey-blue.
+    pal = ["#626887", "#737a9b", "#868dad", "#9aa1c0"]
+    a = noise(4, 2, 1651)
+
+    def f(x, y):
+        ledge = (y + int(a(x, y) * 6)) % 11
+        if ledge < 2:
+            return "#eef1fd" if ledge == 0 else "#cdd4f0"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def citadel_stone():
+    # Warm, weathered sandstone blocks (the concept art's tan-brown masonry).
+    pal = ["#a88e76", "#baa084", "#cbb293", "#d9c2a2", "#e6d1b2"]
+    a = noise(4, 2, 1661)
+
+    def f(x, y):
+        row = y // 8
+        off = 8 if row % 2 else 0
+        if y % 8 == 0 or (x + off) % 16 == 0:
+            return "#6b5848"
+        moss = a(x, y) > 0.78 and y % 8 > 4
+        if moss:
+            return "#7f8c72"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + ((x * 13 + row * 7) % 5) * 0.06)
+
+    return paint(f)
+
+
+def citadel_carved():
+    # Carved panels: spirals, step-frets and little dinosaur skulls, cut into the stone.
+    pal = ["#b49a80", "#c6ab8f", "#d6bc9f"]
+    a = noise(4, 2, 1671)
+
+    def f(x, y):
+        cx, cy = x % 16, y % 16
+        cell = (x // 16 + y // 16) % 3
+        if cx in (0, 15) or cy in (0, 15):
+            return "#6b5848"
+        groove = False
+        if cell == 0:  # a square spiral
+            r = max(abs(cx - 7.5), abs(cy - 7.5))
+            groove = int(r) % 3 == 0 and not (cy == 7 and cx > 7)
+        elif cell == 1:  # a step-fret
+            groove = (cx - 2) == (cy // 2) * 2 or cy == 12 or (cx == 13 and cy > 3)
+        else:  # a skull: eye sockets and teeth
+            groove = (cy in (5, 6) and cx in (4, 5, 10, 11)) or (cy == 10 and 3 <= cx <= 12) or (cy == 11 and cx % 2 == 1 and 3 <= cx <= 12)
+        if groove:
+            return "#5a4636"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def citadel_dark():
+    pal = ["#6a5c52", "#796a5d", "#887869"]
+    a = noise(4, 2, 1681)
+
+    def f(x, y):
+        row = y // 8
+        if y % 8 == 0 or (x + (8 if row % 2 else 0)) % 16 == 0:
+            return "#40362f"
+        return pick(pal, a(x, y))
+
+    return paint(f)
+
+
+def temple_gold():
+    # A golden sun disk emblem (glowing): rays round a ring round a face.
+    def f(x, y):
+        cx, cy = (x % 32) - 15.5, y - 15.5
+        r = math.hypot(cx, cy)
+        a = math.atan2(cy, cx)
+        if r < 5:
+            return "#ffe38a" if not (abs(cy + 1.5) < 1 and abs(abs(cx) - 2) < 1) else "#a8641c"
+        if r < 7:
+            return "#d99a2b"
+        if r < 13 and math.cos(a * 8) > 0.3:
+            return "#f5c242"
+        return "#5a3d22"
+
+    return paint(f)
+
+
+def banner(base, trim, emblem):
+    def make():
+        def f(x, y):
+            cx, cy = (x % 32) - 15.5, (y % 32) - 13.5
+            if x % 32 in (1, 30) or y % 32 in (1,):
+                return trim
+            r = math.hypot(cx, cy)
+            a = math.atan2(cy, cx)
+            if 3 < r < 5 or (r < 9 and r > 6.5 and math.cos(a * 6) > 0.5):
+                return emblem
+            if r < 2:
+                return emblem
+            return base
+
+        return paint(f)
+
+    return make
+
+
+banner_red = banner("#a5282e", "#e8b64a", "#f2c95a")
+banner_teal = banner("#16707a", "#e8b64a", "#f2c95a")
+banner_blue = banner("#2c3f8f", "#d7dcf4", "#e8b64a")
+
+
+def ice():
+    pal = ["#6fd0e6", "#8fe0f0", "#b2ecf7", "#d8f7fc"]
+    a, b = noise(4, 8, 1691), noise(8, 16, 1692)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4 + 0.2 * math.sin(x / W * math.tau * 4)
+        if (x * 5 + y) % 29 == 0:
+            return "#ffffff"
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def frost_falls():
+    pal = ["#2fb6cf", "#59cde0", "#8fe3ef", "#c8f5fb", "#ffffff"]
+    a = noise(8, 2, 1701)
+
+    def f(x, y):
+        streak = math.sin(x * 1.9 + a(x, y) * 6) * 0.5 + 0.5
+        return pick(pal, streak * 0.7 + a(x, y) * 0.4)
+
+    return paint(f)
+
+
+def frost_pool():
+    pal = ["#1d8fae", "#2aa9c4", "#45c3d8", "#7ad9e6"]
+    a, b = noise(4, 2, 1711), noise(8, 4, 1712)
+    floes = speckle(1713, 12)
+
+    def f(x, y):
+        if (x, y) in floes:
+            return "#eaf9ff"
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def fog_sheet():
+    a, b = noise(4, 2, 1721), noise(8, 4, 1722)
+
+    def f(x, y):
+        return pick(["#9fd8e4", "#b9e4ee", "#d3eff6", "#eef9fc"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def pine_snow():
+    # Conifer needles with snow lying on the boughs.
+    a = noise(8, 4, 1731)
+
+    def f(x, y):
+        if y % 8 < 2 and a(x, y) > 0.35:
+            return "#eef2fd" if y % 8 == 0 else "#cfd8f0"
+        return pick(["#1f4a3c", "#285a47", "#326a52", "#3d7a5d"], a(x, y))
+
+    return paint(f)
+
+
+def frond_snow():
+    a = noise(8, 4, 1741)
+
+    def f(x, y):
+        if y < 10 and a(x, y) > 0.3:
+            return "#eef2fd"
+        rib = x % 8 == 0
+        return "#1f5a34" if rib else pick(["#2a6e40", "#357f4b", "#438f57"], a(x, y))
+
+    return paint(f)
+
+
+def window_glow():
+    a = noise(4, 2, 1751)
+
+    def f(x, y):
+        return pick(["#ff9b3a", "#ffb04a", "#ffc766", "#ffdc8f"], 0.2 + a(x, y) * 0.8)
+
+    return paint(f)
+
+
 THEMES = [
     {
         "id": "jungle_falls",
@@ -1083,8 +1359,51 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "frost_citadel",
+        "name": "Frost Citadel",
+        "description": "Moonlit snow and ice, blue-lavender fog and weathered stone ruins lit by golden firelight",
+        "environment": {
+            "sky": "#4b5596",
+            "fog": {"enabled": True, "color": "#9a9fd6", "near": 150, "far": 980},
+            "sun": {"color": "#c4ceff", "intensity": 1.9, "direction": [-0.35, 0.8, 0.48]},
+            "ambient": {"sky": "#aab2f0", "ground": "#4a4472", "intensity": 1.45},
+            "skyDome": {
+                "top": "#1f2766",
+                "horizon": "#a7a0d8",
+                "bottom": "#8e93cc",
+                "sun": {"color": "#f4f6ff", "size": 9, "glow": "#c9d2ff", "elevation": 24},
+                "clouds": {"count": 26, "color": "#c9c6ec", "shade": "#7f80b8", "seed": 17, "low": 8, "high": 26, "drift": 0.003},
+                "hills": {"color": "#6b6fa8", "far": "#a39fd4", "height": 17, "seed": 31, "layers": 3},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("snow_ground", "Snow", "frost_citadel", "deep_snow", snow_ground, 6, None),
+    ("snow_stone_road", "Snowy Stone Road", "frost_citadel", "snow_stone", snow_stone_road, 3.5, None),
+    ("icy_stone_road", "Icy Stone Road", "frost_citadel", "icy_stone", icy_stone_road, 5, None),
+    ("packed_snow_road", "Packed Snow Road", "frost_citadel", "packed_snow", packed_snow_road, 5, None),
+    ("frost_rock", "Frost Rock", "frost_citadel", "wall", frost_rock, 9, None),
+    ("frost_cliff", "Snowy Cliff", "frost_citadel", "wall", frost_cliff, 8, None),
+    ("citadel_stone", "Citadel Stone", "frost_citadel", "wall", citadel_stone, 4, None),
+    ("citadel_carved", "Citadel Carvings", "frost_citadel", "wall", citadel_carved, 3, None),
+    ("citadel_dark", "Citadel Stone (Dark)", "frost_citadel", "wall", citadel_dark, 4, None),
+    ("temple_gold", "Sun Emblem", "frost_citadel", "wall", temple_gold, 4, {"scrollU": 0, "scrollV": 0, "glow": 0.7}),
+    ("banner_red", "Banner (Red)", "frost_citadel", "wall", banner_red, 3, None),
+    ("banner_teal", "Banner (Teal)", "frost_citadel", "wall", banner_teal, 3, None),
+    ("banner_blue", "Banner (Blue)", "frost_citadel", "wall", banner_blue, 3, None),
+    ("ice", "Ice", "frost_citadel", "ice", ice, 4, {"scrollU": 0, "scrollV": 0, "glow": 0.35, "opacity": 0.9}),
+    ("frost_falls", "Glacier Falls", "frost_citadel", "water", frost_falls, 6, {"scrollU": 0.0, "scrollV": 1.0, "wave": 0.03, "wavePeriod": 1.4, "opacity": 0.9, "glow": 0.4}),
+    ("frost_pool", "Glacier Water", "frost_citadel", "water", frost_pool, 8, {"scrollU": 0.01, "scrollV": 0.04, "wave": 0.04, "wavePeriod": 4, "opacity": 0.88, "glow": 0.25}),
+    ("fog_sheet", "Fog", "frost_citadel", "water", fog_sheet, 30, {"scrollU": 0.004, "scrollV": 0.002, "wave": 0.06, "wavePeriod": 9, "opacity": 0.3, "glow": 0.55}),
+    ("fog_thin", "Thin Fog", "frost_citadel", "water", fog_sheet, 40, {"scrollU": -0.003, "scrollV": 0.003, "wave": 0.05, "wavePeriod": 11, "opacity": 0.16, "glow": 0.6}),
+    ("pine_snow", "Snowy Pine", "frost_citadel", "grass", pine_snow, 2, None),
+    ("frond_snow", "Snowy Frond", "frost_citadel", "grass", frond_snow, 3, None),
+    ("window_glow", "Firelit Doorway", "frost_citadel", "wall", window_glow, 2, {"scrollU": 0, "scrollV": 0, "wave": 0.03, "wavePeriod": 0.7, "glow": 1.0}),
     ("beach_sand", "Beach Sand", "beach_party", "sand", beach_sand, 6, None),
     ("beach_road", "Packed Sand Road", "beach_party", "road", beach_road, 4, None),
     ("wet_sand", "Wet Sand", "beach_party", "sand", wet_sand, 5, None),

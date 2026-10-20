@@ -954,13 +954,14 @@ def materials_ensure_paint(me):
     materials.ensure_paint(me)
 
 
-def falls(c, name, cx, lip_y, top, foot, width_top, width_bottom, facing=-1, throw=6.5, bulge=1.4, veils=3, foam=True, foam_r=None, angle=0.0):
+def falls(c, name, cx, lip_y, top, foot, width_top, width_bottom, facing=-1, throw=6.5, bulge=1.4, veils=3, foam=True, foam_r=None, angle=0.0, mats=("falls_sheet", "falls_veil", "falls_foam")):
     """
     A waterfall (the look of Riverbend's): a curved sheet leaving a lip at (cx, lip_y, top)
     and dropping in an arc to `foot`, thrown out toward `facing` (-1: toward -Y, +1: toward
     +Y) by `throw` metres, with fast white veils over it and churning foam at its foot.
     `angle` turns the whole fall about the lip's centre (radians), for walls that don't
-    face north or south. Returns the foot's centre (x, y).
+    face north or south. `mats` are the sheet, veil and foam materials. Returns the
+    foot's centre (x, y).
     """
     drop = top - foot
     ca, sa = math.cos(angle), math.sin(angle)
@@ -989,14 +990,14 @@ def falls(c, name, cx, lip_y, top, foot, width_top, width_bottom, facing=-1, thr
             prev = row
         return rows
 
-    strip(c, name, rows_for(0.0, 10, 1.0, 6.0), c.lib("falls_sheet"))
+    strip(c, name, rows_for(0.0, 10, 1.0, 6.0), c.lib(mats[0]))
     for i in range(veils):
         wscale, off = ((0.36, -0.28), (0.22, 0.2), (0.3, 0.05), (0.25, 0.32))[i % 4]
-        strip(c, "%s Veil %d" % (name, i + 1), rows_for(0.35 + 0.12 * i, 4, wscale, 4.0, wob=0.25, seed=i * 2.0, offset=off), c.lib("falls_veil"))
+        strip(c, "%s Veil %d" % (name, i + 1), rows_for(0.35 + 0.12 * i, 4, wscale, 4.0, wob=0.25, seed=i * 2.0, offset=off), c.lib(mats[1]))
     fx, fy = turn(cx, lip_y + facing * (throw + bulge + 0.6))
     if foam:
         r = foam_r or max(6.0, width_bottom * 0.6)
-        c.disc(name + " Foam", fx, fy, r, foot + 0.05, c.lib("falls_foam"), role="visual", n=20, wobble=0.18)
+        c.disc(name + " Foam", fx, fy, r, foot + 0.05, c.lib(mats[2]), role="visual", n=20, wobble=0.18)
     return fx, fy
 
 

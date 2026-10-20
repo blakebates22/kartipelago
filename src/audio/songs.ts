@@ -24,6 +24,10 @@
  *                                   shakers, and horns for the big moments
  *   cascade_classic  "Cascade Caverns (Classic)"  D minor, 142: the v1 theme (flute
  *                                   over pizzicato, wood, bells)
+ *   frostveil   "Frostveil Citadel" E minor, 138: a journey to a lost mountain citadel.
+ *                                   Celesta and bells in the moonlit first half, then a
+ *                                   wooden flute and warm horns lift it; plucked strings,
+ *                                   a bright marimba, deep toms and a driving bass
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        A minor, 158: driving drums, low brass, fast
@@ -792,6 +796,84 @@ function cascadeClassic(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Frostveil Citadel"
+// Mysterious, then gradually uplifting: the climb to a lost city in the snow. The first
+// half is moonlight (celesta and bells over plucked strings); in the second the wooden
+// flute takes the tune and warm horns swell under it as the citadel comes into view.
+
+export const FROSTVEIL_MELODY = bars(
+  "E5:1 G5:.5 B5:.5 E6:1.5 D6:.5",
+  "C6:1 B5:.5 G5:.5 E5:1 G5:1",
+  "D6:.5 B5:.5 G5:1 B5:1 D6:1",
+  "F#6:1.5 E6:.5 D6:2",
+  "B5:.5 E6:.5 G6:1 F#6:.5 E6:.5 B5:1",
+  "E6:1 G6:1 C7:1 B6:1",
+  "A6:.5 G6:.5 E6:1 C6:1 E6:1",
+  "D#6:1 F#6:1 B6:2!",
+  "G5:.5 C6:.5 E6:1 G6:1.5 E6:.5",
+  "F#6:1 E6:.5 D6:.5 A5:1 D6:1",
+  "B5:.5 D6:.5 G6:1 B6:1 A6:1",
+  "G6:1.5 E6:.5 B5:2",
+  "E6:.5 G6:.5 C7:1 B6:.5 G6:.5 E6:1",
+  "F#6:.5 A6:.5 D7:1 C7:.5 A6:.5 F#6:1",
+  "D#6:.5 F#6:.5 B6:1 A6:1 F#6:1",
+  "B6:1 A6:1 F#6:1 D#6:1",
+);
+export const FROSTVEIL_CHORDS =
+  "Em:4 C:4 G:4 D:4 Em:4 C:4 Am:4 B:4 C:4 D:4 G:4 Em:4 C:4 D:4 B:4 B7:4";
+
+function frostveil(): Song {
+  const ch = chart(FROSTVEIL_CHORDS);
+  const mel = seq(FROSTVEIL_MELODY, 0, 0.82);
+  const a = mel.filter((n) => n.t < 32);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  const drive: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "R"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "5"],
+    [2.5, 0.5, "R"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  const second = ch.filter((c) => c.t >= 32);
+  return {
+    id: "frostveil",
+    title: "Frostveil Citadel",
+    role: "Frostveil Peaks",
+    bpm: 138,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: celesta (doubled by bells an octave down) in the moonlit half, then
+      // the wooden flute with a horn line under it.
+      part("celesta", "base", 1, a),
+      part("bell", "base", 0.35, shift(a, 0, -12)),
+      part("panflute", "base", 1, b),
+      part("horn", "base", 0.45, shift(b, 0, -12)),
+      // Plucked strings all the way, a bright marimba ostinato in the second half.
+      part("pizz", "base", 0.7, arpeggio(ch, 0.5, [0, 1, 2, 1, 3, 2, 1, 2], 52, 0.3, 0.55)),
+      part("marimba", "base", 0.45, arpeggio(second, 0.25, [0, 2, 1, 2, 3, 2, 1, 2], 64, 0.2, 0.5)),
+      // Sparkle at the top of each bar.
+      part("bell", "base", 0.4, arpeggio(ch, 2, [3, 2], 76, 1.5, 0.4)),
+      // Pads: cold strings throughout, warm horns swelling under the second half.
+      part("strings", "base", 0.4, pads(ch, 55, 4, 0.45)),
+      part("horn", "base", 0.3, pads(second, 52, 4, 0.5)),
+      part("bass", "base", 0.95, bassLine(ch, drive, 28, 0.8)),
+      // Deep drums: kick and low toms, hand drums and a shaker.
+      ...drumParts("base", 0.85, drums("K.....k.K.......", KIT, 0.25, T)),
+      ...drumParts("base", 0.65, drums("........o..o.oOo", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("....S.......S...", KIT, 0.25, 8, 32)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("..b...b...b.b..b", KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("C", KIT, 32, 2)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -977,6 +1059,7 @@ export const SONGS: Record<string, Song> = {
   riverbend_classic: riverbendClassic(),
   cascade: cascade(),
   cascade_classic: cascadeClassic(),
+  frostveil: frostveil(),
   bonebog: bonebog(),
   ember: ember(),
 };

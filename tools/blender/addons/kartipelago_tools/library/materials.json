@@ -268,6 +268,57 @@
           }
         }
       }
+    },
+    {
+      "id": "frost_citadel",
+      "name": "Frost Citadel",
+      "description": "Moonlit snow and ice, blue-lavender fog and weathered stone ruins lit by golden firelight",
+      "environment": {
+        "sky": "#4b5596",
+        "fog": {
+          "enabled": true,
+          "color": "#9a9fd6",
+          "near": 150,
+          "far": 980
+        },
+        "sun": {
+          "color": "#c4ceff",
+          "intensity": 1.9,
+          "direction": [-0.35, 0.8, 0.48]
+        },
+        "ambient": {
+          "sky": "#aab2f0",
+          "ground": "#4a4472",
+          "intensity": 1.45
+        },
+        "skyDome": {
+          "top": "#1f2766",
+          "horizon": "#a7a0d8",
+          "bottom": "#8e93cc",
+          "sun": {
+            "color": "#f4f6ff",
+            "size": 9,
+            "glow": "#c9d2ff",
+            "elevation": 24
+          },
+          "clouds": {
+            "count": 26,
+            "color": "#c9c6ec",
+            "shade": "#7f80b8",
+            "seed": 17,
+            "low": 8,
+            "high": 26,
+            "drift": 0.003
+          },
+          "hills": {
+            "color": "#6b6fa8",
+            "far": "#a39fd4",
+            "height": 17,
+            "seed": 31,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -428,6 +479,245 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "snow_ground",
+      "name": "Snow",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "snow_ground.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "snow_stone_road",
+      "name": "Snowy Stone Road",
+      "theme": "frost_citadel",
+      "surface": "snow_stone",
+      "image": "snow_stone_road.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "icy_stone_road",
+      "name": "Icy Stone Road",
+      "theme": "frost_citadel",
+      "surface": "icy_stone",
+      "image": "icy_stone_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "packed_snow_road",
+      "name": "Packed Snow Road",
+      "theme": "frost_citadel",
+      "surface": "packed_snow",
+      "image": "packed_snow_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "frost_rock",
+      "name": "Frost Rock",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "frost_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "frost_cliff",
+      "name": "Snowy Cliff",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "frost_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "citadel_stone",
+      "name": "Citadel Stone",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "citadel_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "citadel_carved",
+      "name": "Citadel Carvings",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "citadel_carved.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "citadel_dark",
+      "name": "Citadel Stone (Dark)",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "citadel_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "temple_gold",
+      "name": "Sun Emblem",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "temple_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.7
+      }
+    },
+    {
+      "id": "banner_red",
+      "name": "Banner (Red)",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "banner_red.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "banner_teal",
+      "name": "Banner (Teal)",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "banner_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "banner_blue",
+      "name": "Banner (Blue)",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "banner_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ice",
+      "name": "Ice",
+      "theme": "frost_citadel",
+      "surface": "ice",
+      "image": "ice.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35,
+        "opacity": 0.9
+      }
+    },
+    {
+      "id": "frost_falls",
+      "name": "Glacier Falls",
+      "theme": "frost_citadel",
+      "surface": "water",
+      "image": "frost_falls.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.0,
+        "wave": 0.03,
+        "wavePeriod": 1.4,
+        "opacity": 0.9,
+        "glow": 0.4
+      }
+    },
+    {
+      "id": "frost_pool",
+      "name": "Glacier Water",
+      "theme": "frost_citadel",
+      "surface": "water",
+      "image": "frost_pool.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": 0.04,
+        "wave": 0.04,
+        "wavePeriod": 4,
+        "opacity": 0.88,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "fog_sheet",
+      "name": "Fog",
+      "theme": "frost_citadel",
+      "surface": "water",
+      "image": "fog_sheet.png",
+      "wrap": "repeat",
+      "tileMetres": 30,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.002,
+        "wave": 0.06,
+        "wavePeriod": 9,
+        "opacity": 0.3,
+        "glow": 0.55
+      }
+    },
+    {
+      "id": "fog_thin",
+      "name": "Thin Fog",
+      "theme": "frost_citadel",
+      "surface": "water",
+      "image": "fog_thin.png",
+      "wrap": "repeat",
+      "tileMetres": 40,
+      "fx": {
+        "scrollU": -0.003,
+        "scrollV": 0.003,
+        "wave": 0.05,
+        "wavePeriod": 11,
+        "opacity": 0.16,
+        "glow": 0.6
+      }
+    },
+    {
+      "id": "pine_snow",
+      "name": "Snowy Pine",
+      "theme": "frost_citadel",
+      "surface": "grass",
+      "image": "pine_snow.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "frond_snow",
+      "name": "Snowy Frond",
+      "theme": "frost_citadel",
+      "surface": "grass",
+      "image": "frond_snow.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "window_glow",
+      "name": "Firelit Doorway",
+      "theme": "frost_citadel",
+      "surface": "wall",
+      "image": "window_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "wave": 0.03,
+        "wavePeriod": 0.7,
+        "glow": 1.0
+      }
     },
     {
       "id": "beach_sand",

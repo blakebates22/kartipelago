@@ -16,6 +16,7 @@ description, a banner colour and its track ids, in menu order:
 | World             | Id            | Tracks                                                                   |
 | ----------------- | ------------- | ------------------------------------------------------------------------ |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak            |
+| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, and three "Coming Soon" slots                         |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Drift Park |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -23,6 +24,8 @@ description, a banner colour and its track ids, in menu order:
 - World Select opens on the world you picked last, otherwise on your last track's world.
   New players start on Prehistoric World.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
+- A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
+  its real tracks (Frostveil Peaks has three). See [frostveil-peaks.md](frostveil-peaks.md).
 
 **World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
 

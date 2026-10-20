@@ -226,9 +226,9 @@ def classify(c, n, info):
 
 
 def underfloor_z(x, y):
-    """The hidden floor: just under the land's own floor, never above the visible land."""
-    if in_tunnel_rock(x, y, 0.86):
-        return None
+    """The hidden floor: just under the land's own floor, never above the visible land.
+    It runs on under the tunnel rock too (below the tunnel's road, hidden in the rock),
+    so there's no crack anywhere round the rock's lumpy foot."""
     return min(base_floor(x, y), natural(x, y)) - 0.35
 
 
@@ -337,7 +337,7 @@ def main():
     s = t0 - 22
     while s <= t1 + 22:
         q = c.at(s)
-        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + 6, q.p.z - 0.25))
+        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + 14, q.p.z - 0.25))
         s += 2.0
     c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("ruin_dark", "road"), coll="Collision", role="collision", steps=4)
 

@@ -10,7 +10,7 @@ import type { Screen } from "../app/app";
 import { loadRecords } from "../app/records";
 import { saveSettings } from "../app/settings";
 import { MODE_LABELS, trackById, type TrackEntry } from "../game/tracks";
-import { currentWorld, tracksOf } from "../game/worlds";
+import { currentWorld, trackTilesOf } from "../game/worlds";
 import { formatTime } from "../race/race";
 import { tuning } from "../core/tuning";
 import { wrap } from "../ui/font";
@@ -34,7 +34,8 @@ export function preview(src: string): HTMLImageElement | undefined {
 export function trackSelect(game: Game): Screen {
   const world = currentWorld(game.selection);
   game.selection.worldId = world.id;
-  const TRACKS = tracksOf(world);
+  // The world's tracks, then any "Coming Soon" tiles (shown, but locked).
+  const TRACKS = trackTilesOf(world);
   let index = Math.max(
     0,
     TRACKS.findIndex((t) => t.id === game.settings.last.track),
@@ -46,7 +47,7 @@ export function trackSelect(game: Game): Screen {
   let slide = 0;
   let clicked: (() => void) | undefined;
   const records = loadRecords();
-  for (const tr of TRACKS) preview(tr.preview);
+  for (const tr of TRACKS) if (tr.preview) preview(tr.preview);
 
   const track = (): TrackEntry => TRACKS[index]!;
   const modeOf = (tr: TrackEntry) =>
@@ -54,7 +55,7 @@ export function trackSelect(game: Game): Screen {
   const moveTrack = (d: number) => {
     index = (index + d + TRACKS.length) % TRACKS.length;
     slide = game.settings.general.reduceMotion ? 0 : d;
-    game.audio.music.prepare(track().music); // ready by the time the race starts
+    if (!track().comingSoon) game.audio.music.prepare(track().music); // ready to race
     game.sounds.move();
   };
   const cycleMode = (d: number) => {
@@ -67,6 +68,7 @@ export function trackSelect(game: Game): Screen {
   };
   const start = () => {
     const tr = track();
+    if (tr.comingSoon) return game.sounds.error();
     game.selection.trackId = tr.id;
     game.selection.mode = modeOf(tr);
     game.settings.last.track = tr.id;
@@ -133,9 +135,23 @@ export function trackSelect(game: Game): Screen {
       const px = sx + 8 + Math.round(slide * 24);
       const py = 32;
       ui.panel(px - 4, py - 4, pw + 8, ph + 8, "wood", "gold");
-      const img = preview(tr.preview);
+      const img = tr.preview ? preview(tr.preview) : undefined;
       if (img) ui.image(img, px, py, pw, ph);
-      else {
+      else if (tr.comingSoon) {
+        // A locked tile: a dark frame and a padlock.
+        ui.rect(px, py, pw, ph, "#1d2238");
+        for (let k = 0; k < 40; k++)
+          ui.rect((px + ((k * 53) % pw)) | 0, (py + ((k * 29) % ph)) | 0, 1, 1, "#9aa4d8", 0.6);
+        ui.rect(px + pw / 2 - 9, py + ph / 2 - 14, 18, 14, PAL.gold);
+        ui.rect(px + pw / 2 - 5, py + ph / 2 - 22, 2, 9, PAL.gold);
+        ui.rect(px + pw / 2 + 3, py + ph / 2 - 22, 2, 9, PAL.gold);
+        ui.rect(px + pw / 2 - 5, py + ph / 2 - 23, 10, 2, PAL.gold);
+        ui.text("COMING SOON", px + pw / 2, py + ph / 2 + 8, {
+          align: "center",
+          color: PAL.cream,
+          outline: PAL.shadow,
+        });
+      } else {
         ui.rect(px, py, pw, ph, ACCENTS[index % ACCENTS.length]!);
         ui.text("NO PICTURE YET", px + pw / 2, py + ph / 2 - 3, {
           align: "center",
@@ -180,9 +196,12 @@ export function trackSelect(game: Game): Screen {
         const x = tx0 + i * (tw + 4);
         const sel = i === index;
         ui.panel(x, ty, tw, 30, "wood", sel ? "gold" : "dark");
-        const im = preview(o.preview);
+        const im = o.preview ? preview(o.preview) : undefined;
         if (im) ui.image(im, x + 3, ty + 3, tw - 6, 24);
-        else ui.rect(x + 3, ty + 3, tw - 6, 24, ACCENTS[i % ACCENTS.length]!);
+        else if (o.comingSoon) {
+          ui.rect(x + 3, ty + 3, tw - 6, 24, "#1d2238");
+          ui.text("?", x + tw / 2 - 2, ty + 11, { color: PAL.gold, outline: PAL.shadow });
+        } else ui.rect(x + 3, ty + 3, tw - 6, 24, ACCENTS[i % ACCENTS.length]!);
         if (sel && row === 0)
           ui.text("▲", x + tw / 2 - 2, ty + 32 + Math.round(Math.sin(t * 6)), {
             color: PAL.coral,
@@ -209,7 +228,7 @@ export function trackSelect(game: Game): Screen {
       }
       // Buttons.
       const by = 206;
-      const s = ui.button(ui.W / 2 - 92, by, 100, 18, "START RACE", {
+      const s = ui.button(ui.W / 2 - 92, by, 100, 18, tr.comingSoon ? "LOCKED" : "START RACE", {
         focused: row === 2 && button === 0,
       });
       const b = ui.button(ui.W / 2 + 16, by, 76, 18, "BACK", {

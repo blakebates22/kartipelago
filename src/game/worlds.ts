@@ -21,6 +21,8 @@ export interface WorldEntry {
   tracks: string[];
   /** Unfinished worlds are labelled as such. */
   testing?: boolean;
+  /** Names of tracks still to come: shown after the real ones as "Coming Soon". */
+  comingSoon?: string[];
 }
 
 export const WORLDS: WorldEntry[] = [
@@ -32,6 +34,17 @@ export const WORLDS: WorldEntry[] = [
       "A lost valley of sunny rivers, roaring waterfalls, misty fossil swamps and a smoking volcano.",
     color: "#e8873a",
     tracks: ["riverbend_palms", "cascade_caverns", "bonebog_pyramid", "ember_peak"],
+  },
+  {
+    id: "frostveil",
+    name: "Frostveil Peaks",
+    tagline: "A lost citadel",
+    description:
+      "Snowbound mountains where an ancient civilization built temples, bridges and fortresses into the peaks.",
+    color: "#6f7fd6",
+    tracks: ["frostveil_citadel"],
+    // Three more courses are planned; rename these once they have names.
+    comingSoon: ["Coming Soon", "Coming Soon", "Coming Soon"],
   },
   {
     id: "test_world",
@@ -53,6 +66,25 @@ export const worldOfTrack = (trackId: string) => WORLDS.find((w) => w.tracks.inc
 /** A world's tracks, in order. */
 export const tracksOf = (w: WorldEntry): TrackEntry[] =>
   w.tracks.map((id) => trackById(id)).filter((t): t is TrackEntry => Boolean(t));
+
+/**
+ * What track select lists for a world: its tracks, then a locked "Coming Soon" tile for
+ * each planned one (not playable: no picture, no package).
+ */
+export const trackTilesOf = (w: WorldEntry): TrackEntry[] => {
+  const tracks = tracksOf(w);
+  const soon = (w.comingSoon ?? []).map((name, i): TrackEntry => ({
+    id: `${w.id}_soon_${i + 1}`,
+    name,
+    description: "Coming soon: still being built.",
+    preview: "",
+    modes: ["race"],
+    music: tracks[0]?.music ?? "map",
+    load: { scene: "track" },
+    comingSoon: true,
+  }));
+  return [...tracks, ...soon];
+};
 
 /** The world the menus should open on: the one last picked, else the last track's. */
 export const currentWorld = (sel: { worldId?: string; trackId: string }): WorldEntry =>

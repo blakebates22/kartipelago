@@ -88,9 +88,10 @@ export function worldSelect(game: Game): Screen {
       landscape(ui.g, ui.W, ui.H, t, calm());
       titleSign(ui, "CHOOSE A WORLD");
       const n = WORLDS.length;
-      const cw = 140;
+      // Cards shrink to fit however many worlds there are.
+      const gap = n > 2 ? 8 : 14;
+      const cw = Math.min(140, Math.floor((ui.W - 16 - (n - 1) * gap) / n));
       const ch = 140;
-      const gap = 14;
       const total = n * cw + (n - 1) * gap;
       const x0 = Math.round(ui.W / 2 - total / 2);
       const y0 = 40;
@@ -151,15 +152,27 @@ function drawCard(
   // A banner in the world's colour.
   ui.rect(x + 5, y + 5, cw - 10, 22, w.color);
   ui.rect(x + 5, y + 26, cw - 10, 1, PAL.shadow);
-  ui.text(w.name.toUpperCase(), x + cw / 2, y + 9, {
-    color: sel ? PAL.cream : "#fff4d6",
-    outline: PAL.shadow,
-    align: "center",
-  });
-  ui.text(w.tagline.toUpperCase(), x + cw / 2, y + 18, {
-    color: PAL.ink,
-    align: "center",
-  });
+  // A long name on a narrow card wraps onto the tagline's line instead.
+  const name = wrap(w.name.toUpperCase(), cw - 12);
+  if (name.length > 1)
+    name.slice(0, 2).forEach((line, k) =>
+      ui.text(line, x + cw / 2, y + 8 + k * 9, {
+        color: sel ? PAL.cream : "#fff4d6",
+        outline: PAL.shadow,
+        align: "center",
+      }),
+    );
+  else {
+    ui.text(w.name.toUpperCase(), x + cw / 2, y + 9, {
+      color: sel ? PAL.cream : "#fff4d6",
+      outline: PAL.shadow,
+      align: "center",
+    });
+    ui.text(w.tagline.toUpperCase(), x + cw / 2, y + 18, {
+      color: PAL.ink,
+      align: "center",
+    });
+  }
   // The thumbnail: a 2×2 mosaic of the world's track pictures.
   const tracks = tracksOf(w);
   const mx = x + 8;
@@ -175,7 +188,11 @@ function drawCard(
     const ty = my + Math.floor(k / 2) * (th + 2);
     const img = tr && preview(tr.preview);
     if (img) ui.image(img, tx, ty, tw, th);
-    else ui.rect(tx, ty, tw, th, ACCENTS[k % ACCENTS.length]!);
+    else if (k < tracks.length + (w.comingSoon?.length ?? 0)) {
+      // A planned track: a dark, locked square.
+      ui.rect(tx, ty, tw, th, "#1d2238");
+      ui.text("?", tx + tw / 2 - 2, ty + th / 2 - 3, { color: PAL.gold, outline: PAL.shadow });
+    } else ui.rect(tx, ty, tw, th, ACCENTS[k % ACCENTS.length]!);
   }
   if (!sel) ui.rect(mx, my, mw, mh, "#1d120a", 0.35);
   // A shine sweeping across the highlighted one.
@@ -191,7 +208,8 @@ function drawCard(
     ui.g.restore();
   }
   // Track count and the track names.
-  const count = `${tracks.length} TRACK${tracks.length === 1 ? "" : "S"}`;
+  const soon = w.comingSoon?.length ?? 0;
+  const count = `${tracks.length} TRACK${tracks.length === 1 ? "" : "S"}${soon ? ` +${soon} SOON` : ""}`;
   ui.text(count, x + cw / 2, my + mh + 6, {
     color: sel ? PAL.gold : PAL.cream,
     outline: PAL.shadow,

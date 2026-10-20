@@ -207,6 +207,8 @@ export function createHazards(opts: {
   const sparks = opts.headless
     ? undefined
     : createParticles(group, { max: 160, size: 0.4, gravity: -6, additive: true });
+  // Snow: created only on tracks that ask for it (see the snowfall entity).
+  let snow: ReturnType<typeof createParticles> | undefined;
 
   // ---------------------------------------------------------------- entities
   const zones: { from: number; to: number; at: number }[] = [];
@@ -214,6 +216,7 @@ export function createHazards(opts: {
   const falls: Fall[] = [];
   const fires: Campfire[] = [];
   const torches: { x: number; y: number; z: number; acc: number }[] = [];
+  let snowfall: { rate: number; radius: number; acc: number } | undefined;
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
   const party: {
@@ -233,6 +236,12 @@ export function createHazards(opts: {
       zones.push({ from: num(e.from, 0), to: num(e.to, 0), at: num(e.at, 0) });
     else if (e.type === "campfire")
       fires.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
+    else if (e.type === "snowfall")
+      snowfall = {
+        rate: Math.max(0, num(e.rate, 100)),
+        radius: Math.max(5, num(e.radius, 40)),
+        acc: 0,
+      };
     else if (e.type === "torch")
       torches.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
     else if (e.type === "partygoer") {
@@ -763,6 +772,24 @@ export function createHazards(opts: {
             );
         }
       }
+      // Snow drifting down round the camera, swaying a little in the wind.
+      if (snowfall && !opts.headless) {
+        snow ??= createParticles(group, { max: 900, size: 0.22, gravity: 0, opacity: 0.95 });
+        snowfall.acc = Math.min(2, snowfall.acc + dt * snowfall.rate);
+        const r = snowfall.radius;
+        for (; snowfall.acc >= 1; snowfall.acc -= 1)
+          snow.emit(
+            listener.x + (Math.random() - 0.5) * 2 * r,
+            listener.y + 6 + Math.random() * 18,
+            listener.z + (Math.random() - 0.5) * 2 * r,
+            0.8 + Math.sin(t * 0.3) * 0.6 + (Math.random() - 0.5) * 0.6,
+            -2.2 - Math.random() * 1.2,
+            0.3 + (Math.random() - 0.5) * 0.6,
+            8,
+            Math.random() < 0.8 ? 0xffffff : 0xdfe6ff,
+          );
+        snow.step(dt);
+      }
       spray?.step(dt);
       smoke?.step(dt);
       sparks?.step(dt);
@@ -773,6 +800,7 @@ export function createHazards(opts: {
       for (const f of flyers) f.view?.dispose();
       for (const p of party) p.view?.dispose();
       spray?.dispose();
+      snow?.dispose();
       smoke?.dispose();
       sparks?.dispose();
       group.removeFromParent();

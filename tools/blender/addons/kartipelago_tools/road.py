@@ -30,11 +30,16 @@ SURFACES = [
     ("grass", "Grass", "Off-road: slower"),
     ("sand", "Sand", "Off-road: much slower"),
     ("ice", "Ice", "Slippery"),
+    ("snow_stone", "Snowy Stone", "Driveable road dusted with snow: a touch less grip"),
+    ("icy_stone", "Icy Stone", "Driveable but icy: much less grip"),
+    ("packed_snow", "Packed Snow", "Driveable, a little slower and looser"),
+    ("deep_snow", "Deep Snow", "Off-road: slow"),
     ("mud", "Mud", "Wet mud: slippery, a little slower"),
     ("water", "Water", "Shallow water: very slow"),
     ("deep_water", "Deep Water", "Too deep to drive: you're fished out at the last checkpoint"),
     ("boost", "Boost", "Driving onto it gives a boost"),
     ("lava", "Lava", "Touching it puts you back on the track"),
+    ("abyss", "Abyss", "The floor of a bottomless drop: touching it puts you back on the track"),
     ("wall", "Wall", "Solid: always collides as a wall"),
 ]
 

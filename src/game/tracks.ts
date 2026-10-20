@@ -28,6 +28,8 @@ export interface TrackEntry {
   load: { scene: SessionScene; trackData?: TrackData; packageId?: string };
   /** Old ?track= numbers that open it directly. */
   legacyNumber?: number;
+  /** A planned track: shown in track select as "Coming Soon", not playable yet. */
+  comingSoon?: boolean;
 }
 
 export const TRACKS: TrackEntry[] = [
@@ -75,6 +77,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "hot_top_volcano",
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
+  },
+  // Frostveil Peaks (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
+  {
+    id: "frostveil_citadel",
+    name: "Frostveil Citadel",
+    description:
+      "Climb to a lost citadel in the moonlit mountains: giant bridges over clouds, a serpent's mouth, a temple of gold and a frozen descent.",
+    preview: "previews/frostveil_citadel.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "frost_citadel",
+    music: "frostveil",
+    load: { scene: "track", packageId: "frostveil_citadel" },
   },
   // Test World.
   {

@@ -22,6 +22,8 @@ export interface LapOptions {
   surfaces?: boolean;
   /** Record the kart's position every this many seconds. */
   trace?: number;
+  /** Give up after this many seconds a lap (default 90). */
+  lapSeconds?: number;
 }
 
 /** Drive one kart round an imported track with the race's own AI driver. */
@@ -46,7 +48,12 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
   let lowest = Infinity;
   let worstAbove = 0;
   let walls = 0;
-  for (let t = 0; t < 90 * laps && race.racers[0]!.lapTimes.length < laps; t += dt) {
+  const wallHits: { x: number; y: number; z: number }[] = [];
+  for (
+    let t = 0;
+    t < (opts.lapSeconds ?? 90) * laps && race.racers[0]!.lapTimes.length < laps;
+    t += dt
+  ) {
     tickRace(race, dt);
     const input = driveAi(driver, k, cfg, tuning.ai, {
       countdown: race.phase === "countdown",
@@ -61,7 +68,10 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
       c = applySurface(cfg, SURFACES[here.surface]);
     }
     stepKart(k, race.phase === "countdown" ? NEUTRAL : input, c, dt);
-    if (stepMeshWalls(k, p.collision, wallCfg, dt)) walls++;
+    if (stepMeshWalls(k, p.collision, wallCfg, dt)) {
+      walls++;
+      wallHits.push({ x: k.x, y: k.y, z: k.z });
+    }
     stepVertical(k, ground, tuning.physics, dt);
     const ev = stepRacer(
       race,
@@ -104,6 +114,8 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     lowest,
     worstAbove,
     walls,
+    /** Where the kart touched a wall. */
+    wallHits,
     killY: p.killY,
     respawns,
     surfaces: visited,

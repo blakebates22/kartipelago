@@ -30,6 +30,11 @@ LOADING ── fails ──► LOAD_ERROR ─► Track select
 Esc (or B on a gamepad) always goes back one step. Mouse hover moves the keyboard focus,
 so the two never disagree.
 
+World Select fits however many worlds there are (the cards narrow, and long names wrap).
+Track Select lists a world's tracks, then a locked "Coming Soon" tile for each of its
+planned ones (`comingSoon` in `src/game/worlds.ts`): they show a padlock, and Start says
+LOCKED.
+
 ## The pieces
 
 | File                   | What it owns                                                         |
@@ -184,17 +189,18 @@ chart("F:4 Am:4 Bb:4 C:4"); // chords, which drive bass lines, arpeggios, pads
 drums("K...k.k.", KIT, 0.5, 24); // a step grid, repeated
 ```
 
-| Piece           | Plays in              | Feel                                       |
-| --------------- | --------------------- | ------------------------------------------ |
-| Kartipelago!    | title and menus       | welcoming, a little heroic (F major, 132)  |
-| Pick Your Racer | character select      | playful, one groove + a layer per racer    |
-| Course Map      | mode and track select | relaxed, exploring (D major, 98)           |
-| Lakeside Dash   | racing                | quick and bouncy (A minor / C major, 152)  |
-| Finish Line!    | results               | a short fanfare                            |
-| Riverbend Palms | Riverbend Palms       | a beach party, steel pan and soca (F, 138) |
-| Cascade Caverns | Cascade Caverns       | rushing, flute over pizzicato (Dm, 142)    |
-| Bonebog Pyramid | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)        |
-| Ember Peak      | Ember Peak            | frantic, brass and strings (Am, 158)       |
+| Piece             | Plays in              | Feel                                                       |
+| ----------------- | --------------------- | ---------------------------------------------------------- |
+| Kartipelago!      | title and menus       | welcoming, a little heroic (F major, 132)                  |
+| Pick Your Racer   | character select      | playful, one groove + a layer per racer                    |
+| Course Map        | mode and track select | relaxed, exploring (D major, 98)                           |
+| Lakeside Dash     | racing                | quick and bouncy (A minor / C major, 152)                  |
+| Finish Line!      | results               | a short fanfare                                            |
+| Riverbend Palms   | Riverbend Palms       | a beach party, steel pan and soca (F, 138)                 |
+| Cascade Caverns   | Cascade Caverns       | jungle temple: pan flute, log drums (Dm, 128)              |
+| Frostveil Citadel | Frostveil Citadel     | mysterious then uplifting: celesta, flute, horns (Em, 138) |
+| Bonebog Pyramid   | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)                        |
+| Ember Peak        | Ember Peak            | frantic, brass and strings (Am, 158)                       |
 
 **Pick Your Racer** is one arrangement split into stems that always play in sync. There's
 a base groove, plus a layer per racer playing the same tune in their own instruments:
