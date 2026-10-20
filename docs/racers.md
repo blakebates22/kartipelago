@@ -1,101 +1,73 @@
 # Racers
 
-Four original racers replace the placeholder boxes. Their looks are separate from
-driving stats: pick a look with the menu at the bottom left (or `?racer=moss`, `bramble`,
-`poppy`, `otto`), and pick stats with the 1-4 keys as before. The rivals take the other
-three looks in turn; repeats get alternate paint.
+The launch roster is four dinosaur racers, built from Blake's finalized concept designs:
 
-| Racer   | Species  | Kart                             | Seen from behind                      |
-| ------- | -------- | -------------------------------- | ------------------------------------- |
-| Moss    | axolotl  | sunflower yellow, turquoise trim | fans of coral gills, a tail fin       |
-| Bramble | squirrel | leaf green, gold trim            | a swooping quiff, a big bushy tail    |
-| Poppy   | moth     | cherry red, cream trim           | long striped club-tipped antennae     |
-| Otto    | capybara | royal blue, orange trim          | big round back, small ears, an orange |
+| Racer  | Species         | Design            | Seen from behind                                  | Kart                                                          |
+| ------ | --------------- | ----------------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| Tiko   | parasaurolophus | Tropical Explorer | the big gold-to-orange crest, backpack and tail   | rounded turquoise explorer, ivory nose, palm emblem, leaves   |
+| Brakka | triceratops     | Rocky Roader      | a broad frill covered in rocky plates             | sandstone and timber roader, stone fenders, footprint emblem  |
+| Pebble | ankylosaurus    | Shoreline Roller  | an armoured dome with ivory spikes, the tail club | low cream-and-blue roller, big turquoise spiral, wooden trim  |
+| Zephyr | pteranodon      | Sky Scout         | a swept crest, goggles and folded orange wings    | red aviation racer, pointed nose, wing emblem, rounded engine |
 
-Everything is visual. The racers follow the kart's physics state and add motion through
-child transforms. Nothing writes back to the physics, and the collision shape is the same
-circle as before.
+Tiko is the mascot (the default racer). Pick a racer on **Select Racer** (or with
+`?racer=tiko`, `brakka`, `pebble`, `zephyr`). Rivals take the other looks in turn;
+repeats get each racer's alternate colours.
 
-## The faceted style
+**Looks never change how a kart drives.** Every racer is the same kart underneath: the
+same physics, collision circle and handling. Driving stats are still chosen separately
+(the 1-4 keys, `characters.json`), and the Select Racer screen shows no stat bars,
+because the looks don't have any.
 
-All four racers use the faceted, pixel-textured style (`faceted.ts`), from the
-reference looks Blake picked:
+## What each racer does
 
-- flat-shaded low-poly shapes (icospheres, chamfered boxes, octagonal tyres);
-- a 16x16 grain texture sampled nearest-neighbour, so texels show as soft pixel blocks;
-- a face painted as 64x40 pixel art and laid on the head's own facets as a decal.
+Everything is visual. The animator reads the kart's physics state and adds motion
+through child transforms. Nothing writes back to the physics.
 
-The face texture swaps for expressions: a cheerful toothy smile, a determined grin with
-slanted lids when drifting or boosting, a wide-eyed "oh!" for hits and jumps, and closed
-eyes to blink. Moss has his own angular formula kart, with a wedge nose and a cream crown
-on it, chunky teal pods over the wheels, a roll hoop, and dark octagonal tyres with cream
-hubs and green caps.
+The states, read from the kart every frame:
 
-Bramble, Poppy and Otto share a rounder toy kart (`toykart.ts`) in their own colours: a
-tapered tub with big goggly 3D eyes on the nose, a thick rounded bill bumper, fenders, a
-roll hoop and octagonal tyres. Each character has a painted face that swaps the same way
-(`paintedFace` in `faceted.ts`):
+`IDLE`, `ACCELERATING`, `BRAKING`, `STEERING_LEFT`, `STEERING_RIGHT`, `DRIFTING_LEFT`,
+`DRIFTING_RIGHT`, `BOOSTING`, `AIRBORNE`, `LANDING`, `COLLISION`, `VICTORY` and `DEFEAT`
+(the last two once the racer has crossed the finish line: the top three celebrate).
 
-- Bramble (`bramble.ts`): chestnut head with a cream mask, blush, round ears, a quiff and
-  a bushy tail. Determined lids come out a lot.
-- Poppy (`poppy.ts`): round lavender head with huge eyes, a pink nose, a cream bib and
-  striped club antennae that twitch.
-- Otto (`otto.ts`): big caramel head and snout, tiny ears, nostrils, an orange with a
-  leaf balanced on top. Sleepy lids normally, determined when racing.
+Each state sets targets for a handful of pose channels (lean, pitch, head turn, jaw, lids,
+brows, wings, hands), and every channel eases toward its target, so nothing ever snaps.
+On top: blinks, glances at nearby rivals, curious head tilts, the seat bob, squash and
+stretch on jumps and landings, a kick back into the seat on boosts, and the little
+extras (crests lag, scarves flutter, packs bounce).
 
-The earlier smooth style (`kart.ts`, `characters.ts`) is still used for alternate paint
-on repeated rivals.
+Personality changes the timing and the style:
 
-## How it's built
+| Racer  | Drives like                                                           | Celebrates               |
+| ------ | --------------------------------------------------------------------- | ------------------------ |
+| Tiko   | eager: leans hard, saws at the wheel, curious head tilts, looks about | both arms up, happy eyes |
+| Brakka | determined: heavy brow, strong lean, shakes his head after a crash    | a proud fist and nods    |
+| Pebble | calm: slow blinks, gentle steering, a big surprised face on a boost   | a friendly wave          |
+| Zephyr | daring: quick head turns, wings out in the air, wings up to boost     | flaps his wings          |
 
-`src/render/racers/`:
+## The character viewer
 
-- `geo.ts`: rounded shapes, each with one vertex colour, merged into one mesh per
-  rigid part. A whole racer is about 17 draw calls up close.
-- `paint.ts`: the shared look. A 64x64 soft painted wash multiplies the vertex colours.
-  Lambert (Gouraud-style) lighting, no shiny modern materials, and blob shadows.
-- `designs.ts`: the palette and each racer's kart paint.
-- `kart.ts`: the shared toy kart. It has a rounded tub, big bright tyres with chunky
-  hubs, mudguards, a steering wheel, a little exhaust and a per-racer decoration.
-- `characters.ts`: the four characters on one rig layout. The hands ride on the
-  steering wheel, and the arms stretch from the shoulders to the hands each frame.
-- `racer.ts`: kart + character + exhaust flame + blob shadow, a far-away version (LOD,
-  one mesh for the kart and one for the character beyond `LOD_DISTANCE`), and the
-  animator.
+`garage.html` (the "Racer preview" link with `?debug`) shows the racers away from the
+race:
 
-The whole picture renders slightly below full resolution and is smoothly scaled up. It
-has distance fog in the sky colour. Both are in `tuning.json` under `look`.
+- **views:** front, side, rear, three-quarter, the race camera, far away, face;
+- **turnaround:** front, three-quarter, side and rear side by side;
+- **all racers:** the four lined up;
+- **animation:** put a racer in any state (drifting, boosting, airborne, victory...);
+- **alternate colours**, a turntable, the render scale (try 0.4 for N64 resolution);
+- **save sheet:** downloads a PNG of front, side, rear, three-quarter and race-camera
+  views.
 
-The procedural shapes can be swapped for modelled assets later: anything that provides
-the same rig parts (torso, head, eyes, mouths, arms, hands, wiggles) works with the
-animator.
+URL options, for screenshots: `garage.html?racer=pebble&view=rear&state=DRIFTING_LEFT`,
+plus `&turnaround`, `&lineup`, `&alt`, `&scale=1`.
 
-## Animation
+## How they're built
 
-- **Idle:** breathing bob, blinks, slow head turns. Each racer has their own touches:
-  Bramble keeps checking around, Otto nods with sleepy eyes, Poppy's antennae twitch,
-  Moss's gills wave.
-- **Steering:** the torso and head lean into the turn, and the steering wheel (with the
-  hands on it) follows the stick. The front wheels steer and every wheel spins with speed.
-- **Drifting:** a stronger lean and a determined face. The head looks along the
-  direction of travel, and countersteering pulls the lean back.
-- **Boosting:** pushed back into the seat, the kart's nose lifts, and the face goes
-  excited or determined. The exhaust flame is the same boost cue as before.
-- **Hits:** recoil, squash and stretch, and a surprised face, scaled by how hard the hit
-  was.
-- **Jumps:** a quick crouch at take-off, stretched and excited in the air, a squash on
-  landing.
-- **Glances:** now and then a racer looks at a nearby rival, then looks back.
+See [racer-pipeline.md](racer-pipeline.md) for changing a racer or adding a new one.
 
-## Racer preview
+In short: each racer is one file in `src/render/racers/roster/`, built from a shared kit
+(`kit/`): low-poly lofted shapes, small painted textures, the shared kart chassis, a
+shared rider rig, and the shared animator.
 
-Open `garage.html`, or use the "Racer preview" link in the game. You can:
-
-- orbit with the mouse
-- show one racer or all four
-- jump to the front, side, rear, gameplay-camera, face or far-away views
-- set speed, steering and drift
-- trigger boosts, wall hits, weapon spins and jumps
-
-Adding `?view=`, `?speed=`, `?steer=`, `?drift=` and `?react=` to the address sets these
-at load.
+Budgets (checked by `tests/racers.test.ts`): 3,000-12,000 triangles up close (kart and
+rider together; the four come to about 7,500-8,500 each), under 3,000 far away (beyond
+45 m), and about 30-35 draw calls each up close.

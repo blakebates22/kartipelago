@@ -40,7 +40,7 @@ export function musicPlayer(game: Game): Screen {
       fade: 0.3,
       restart: true,
       loop,
-      layers: { moss: 1, bramble: 1, poppy: 0.6, otto: 0.6 },
+      layers: { tiko: 1, brakka: 1, zephyr: 0.6, pebble: 0.6 },
       onEnd: () => {
         if (playing === c.id && !loop) next(1);
       },

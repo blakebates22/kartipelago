@@ -7,7 +7,7 @@
  *
  *   ?track=1|2|3 or ?track=<blender id>   race on that track (live reload for Blender tracks)
  *   ?scene=drift | ?scene=practice        the Drift Park or the pickup practice course
- *   ?racer=moss|bramble|poppy|otto        who you drive
+ *   ?racer=tiko|brakka|pebble|zephyr       who you drive
  *   ?solo                                 no AI rivals
  *   ?look=authentic|enhanced              texture look
  *   ?timing                               start-boost timing bar

@@ -43,7 +43,7 @@ describe("settings", () => {
     expect(s.audio.music).toBe(DEFAULT_SETTINGS.audio.music);
     expect(s.audio.mono).toBe(true);
     expect(s.video.resolution).toBe(DEFAULT_SETTINGS.video.resolution);
-    expect(s.last.racer).toBe("moss");
+    expect(s.last.racer).toBe("tiko");
   });
 
   it("survives a reload, and never throws on broken storage", () => {
@@ -51,12 +51,12 @@ describe("settings", () => {
     const s = sanitize(undefined);
     s.audio.music = 0.3;
     s.video.filtering = "sharp";
-    s.last.racer = "otto";
+    s.last.racer = "pebble";
     saveSettings(s, store);
     const back = loadSettings(store);
     expect(back.audio.music).toBe(0.3);
     expect(back.video.filtering).toBe("sharp");
-    expect(back.last.racer).toBe("otto");
+    expect(back.last.racer).toBe("pebble");
     store.setItem("kartipelago.settings.v1", "{not json");
     expect(loadSettings(store)).toEqual(DEFAULT_SETTINGS);
     const broken = {

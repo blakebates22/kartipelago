@@ -2,19 +2,16 @@
  * Menu sounds and racer calls, played live through the audio engine.
  *
  * Each racer has a three-note call in their own instrument from "Pick Your Racer"
- * (Moss marimba, Bramble pizzicato, Poppy flute, Otto clarinet), played on the voice
+ * (Tiko marimba, Brakka bassoon, Pebble clarinet, Zephyr flute; see designs.ts), on the voice
  * bus when you highlight them, and a happier version when you pick them.
  */
 import type { AudioEngine } from "./engine";
 import type { InstrumentId } from "./instruments";
-import type { RacerId } from "../render/racers/designs";
+import { DESIGNS, RACER_IDS, type RacerId } from "../render/racers/designs";
 
-const CALLS: Record<RacerId, { inst: InstrumentId; notes: number[] }> = {
-  moss: { inst: "marimba", notes: [79, 83, 86] },
-  bramble: { inst: "pizz", notes: [67, 71, 74] },
-  poppy: { inst: "flute", notes: [83, 86, 91] },
-  otto: { inst: "clarinet", notes: [62, 66, 69] },
-};
+const CALLS: Record<RacerId, { inst: InstrumentId; notes: number[] }> = Object.fromEntries(
+  RACER_IDS.map((id) => [id, DESIGNS[id].call]),
+) as Record<RacerId, { inst: InstrumentId; notes: number[] }>;
 
 export function createUiSounds(audio: AudioEngine) {
   return {

@@ -896,8 +896,21 @@ function buildSession(
   }
 
   const orbitTarget = new THREE.Vector3();
+  let resultsShown = false;
   function render(alpha: number, frameSeconds: number) {
     const { camera, world, vehicle } = tuning;
+    // Racers who've crossed the line celebrate (a podium) or slump (the rest).
+    const anyDone = race?.racers.some((r) => r.finished) ?? false;
+    if (race && (anyDone || resultsShown)) {
+      const order = standings(
+        race,
+        entrants.map((e) => e.state),
+      );
+      entrants.forEach((e, i) =>
+        e.racer.setResult(race!.racers[i]!.finished ? order.indexOf(i) + 1 : null, entrants.length),
+      );
+      resultsShown = anyDone;
+    }
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));

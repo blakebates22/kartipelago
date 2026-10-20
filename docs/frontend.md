@@ -181,27 +181,27 @@ chart("F:4 Am:4 Bb:4 C:4"); // chords, which drive bass lines, arpeggios, pads
 drums("K...k.k.", KIT, 0.5, 24); // a step grid, repeated
 ```
 
-| Piece           | Plays in              | Feel                                      |
-| --------------- | --------------------- | ----------------------------------------- |
-| Kartipelago!    | title and menus       | welcoming, a little heroic (F major, 132) |
-| Pick Your Racer | character select      | playful, one groove + a layer per racer   |
-| Course Map      | mode and track select | relaxed, exploring (D major, 98)          |
-| Lakeside Dash   | racing                | quick and bouncy (A minor / C major, 152) |
-| Finish Line!    | results               | a short fanfare                           |
-| Riverbend Palms | Riverbend Palms       | sunny, steel pan and marimba (C, 132)     |
-| Cascade Caverns | Cascade Caverns       | rushing, flute over pizzicato (Dm, 142)   |
-| Bonebog Pyramid | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)       |
-| Ember Peak      | Ember Peak            | frantic, brass and strings (Am, 158)      |
+| Piece           | Plays in              | Feel                                       |
+| --------------- | --------------------- | ------------------------------------------ |
+| Kartipelago!    | title and menus       | welcoming, a little heroic (F major, 132)  |
+| Pick Your Racer | character select      | playful, one groove + a layer per racer    |
+| Course Map      | mode and track select | relaxed, exploring (D major, 98)           |
+| Lakeside Dash   | racing                | quick and bouncy (A minor / C major, 152)  |
+| Finish Line!    | results               | a short fanfare                            |
+| Riverbend Palms | Riverbend Palms       | a beach party, steel pan and soca (F, 138) |
+| Cascade Caverns | Cascade Caverns       | rushing, flute over pizzicato (Dm, 142)    |
+| Bonebog Pyramid | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)        |
+| Ember Peak      | Ember Peak            | frantic, brass and strings (Am, 158)       |
 
 **Pick Your Racer** is one arrangement split into stems that always play in sync. There's
 a base groove, plus a layer per racer playing the same tune in their own instruments:
 
-| Racer   | Layer                                        |
-| ------- | -------------------------------------------- |
-| Moss    | marimba and xylophone, woodblocks and bongos |
-| Bramble | pizzicato strings, walking bass and bassoon  |
-| Poppy   | flute, a celesta sparkle and light pizzicato |
-| Otto    | clarinet, soft horns and a lazy marimba      |
+| Racer  | Layer                                        |
+| ------ | -------------------------------------------- |
+| Tiko   | marimba and xylophone, woodblocks and bongos |
+| Brakka | pizzicato strings, walking bass and bassoon  |
+| Zephyr | flute, a celesta sparkle and light pizzicato |
+| Pebble | clarinet, soft horns and a lazy marimba      |
 
 Highlighting a racer fades their layer up and the last one down. The piece never
 restarts.
@@ -231,6 +231,5 @@ These work, but are meant to be replaced or extended:
 - **The music** is synthesized. Real sampled instruments, or a composer, can replace the
   pieces one at a time; the engine just plays buffers.
 - **Track previews** are game screenshots.
-- **Racer select tiles** show an initial, not a portrait.
-- **The racer select island** is simple primitives.
+- **Select Racer** draws its jungle clearing, cliffs and pedestals from simple primitives.
 - **Adventure** is a "coming soon" page only.

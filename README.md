@@ -3,7 +3,7 @@
 An original adventure kart racer you can play in your browser. Drive, hover and fly
 across a chain of islands, race rivals, and unlock new worlds.
 
-> **Status:** playable from boot to finish line: title screen, four racers, Tracks mode
+> **Status:** playable from boot to finish line: title screen, four dinosaur racers, Tracks mode
 > with two worlds (the four-course Prehistoric World, and a Test World of six
 > prototypes), racing seven AI rivals or solo time trials, pause, results, records,
 > options and an original soundtrack. Adventure mode is coming. See the

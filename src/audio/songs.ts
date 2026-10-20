@@ -26,8 +26,8 @@
  *
  * "Pick Your Racer" is one arrangement split into stems that always play in sync: a
  * base groove, plus a layer per racer playing the same tune in their own instruments
- * (Moss: marimba and woodblocks; Bramble: pizzicato, walking bass and bassoon; Poppy:
- * flute, celesta and light pizzicato; Otto: clarinet, soft horns and lazy marimba). The
+ * (Tiko: marimba and woodblocks; Brakka: pizzicato, walking bass and bassoon; Zephyr:
+ * flute, celesta and light pizzicato; Pebble: clarinet, soft horns and lazy marimba). The
  * game fades between racer layers as you browse, without restarting the piece.
  */
 import type { InstrumentId } from "./instruments";
@@ -200,14 +200,14 @@ export const SELECT_CHORDS =
   "G:4 Em:4 C:4 D:4 G:4 Em:4 Am7:2 D7:2 G:4 " + "C:4 D:4 Bm:4 Em:4 C:4 D:4 G/B:2 C:2 D7:4";
 
 /** The racer layers of "Pick Your Racer", by racer id. */
-export const RACER_STEMS = ["moss", "bramble", "poppy", "otto"] as const;
+export const RACER_STEMS = ["tiko", "brakka", "pebble", "zephyr"] as const;
 
 function select(): Song {
   const ch = chart(SELECT_CHORDS);
   const mel = seq(SELECT_MELODY, 0, 0.8);
   const beats = 64;
   const T = 16; // bars
-  // The thirds of each chord, held low: Bramble's bassoon line.
+  // The thirds of each chord, held low: Brakka's bassoon line.
   const thirds: Note[] = ch.map((c) => ({ t: c.t, d: c.d, m: voicing(c, 50)[1]!, v: 0.6 }));
   return {
     id: "select",
@@ -237,17 +237,17 @@ function select(): Song {
       ...drumParts("base", 0.6, drums("K...k...", KIT, 0.5, T)),
       ...drumParts("base", 0.65, drums("hhHhhhHh", KIT, 0.5, T)),
       ...drumParts("base", 0.4, drums("..s...s.", KIT, 0.5, T)),
-      // Moss: marimba and xylophone, bouncy woodblocks and bongos.
-      part("marimba", "moss", 1, mel),
-      part("xylophone", "moss", 0.35, shift(mel, 0, 12)),
-      part("marimba", "moss", 0.45, stabs(ch, [1.5, 3.5], 60, 0.3, 0.5)),
-      ...drumParts("moss", 0.7, drums("..w..w.W", KIT, 0.5, T)),
-      ...drumParts("moss", 0.55, drums("b.b..bB.", KIT, 0.5, T)),
-      // Bramble: pizzicato tune, walking bass, a low bassoon line.
-      part("pizz", "bramble", 1.1, mel),
+      // Tiko: marimba and xylophone, bouncy woodblocks and bongos.
+      part("marimba", "tiko", 1, mel),
+      part("xylophone", "tiko", 0.35, shift(mel, 0, 12)),
+      part("marimba", "tiko", 0.45, stabs(ch, [1.5, 3.5], 60, 0.3, 0.5)),
+      ...drumParts("tiko", 0.7, drums("..w..w.W", KIT, 0.5, T)),
+      ...drumParts("tiko", 0.55, drums("b.b..bB.", KIT, 0.5, T)),
+      // Brakka: pizzicato tune, walking bass, a low bassoon line.
+      part("pizz", "brakka", 1.1, mel),
       part(
         "bass",
-        "bramble",
+        "brakka",
         0.9,
         bassLine(
           ch,
@@ -261,15 +261,15 @@ function select(): Song {
           0.8,
         ),
       ),
-      part("bassoon", "bramble", 0.6, thirds),
-      // Poppy: flute, a celesta sparkle and light pizzicato chords.
-      part("flute", "poppy", 1, mel),
-      part("celesta", "poppy", 0.45, arpeggio(ch, 0.5, [0, 1, 2, 3], 72, 0.5, 0.5)),
-      part("pizz", "poppy", 0.35, stabs(ch, [0.5, 1.5, 2.5, 3.5], 64, 0.25, 0.5)),
-      // Otto: a mellow clarinet an octave down, soft horns, relaxed marimba.
-      part("clarinet", "otto", 1, shift(mel, 0, -12)),
-      part("horn", "otto", 0.55, pads(ch, 55, 4, 0.5)),
-      part("marimba", "otto", 0.5, stabs(ch, [1, 3], 55, 0.4, 0.55)),
+      part("bassoon", "brakka", 0.6, thirds),
+      // Zephyr: flute, a celesta sparkle and light pizzicato chords.
+      part("flute", "zephyr", 1, mel),
+      part("celesta", "zephyr", 0.45, arpeggio(ch, 0.5, [0, 1, 2, 3], 72, 0.5, 0.5)),
+      part("pizz", "zephyr", 0.35, stabs(ch, [0.5, 1.5, 2.5, 3.5], 64, 0.25, 0.5)),
+      // Pebble: a mellow clarinet an octave down, soft horns, relaxed marimba.
+      part("clarinet", "pebble", 1, shift(mel, 0, -12)),
+      part("horn", "pebble", 0.55, pads(ch, 55, 4, 0.5)),
+      part("marimba", "pebble", 0.5, stabs(ch, [1, 3], 55, 0.4, 0.55)),
     ],
   };
 }
