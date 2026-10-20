@@ -174,7 +174,7 @@ function zipperSpots(size: LoopSize): NonNullable<TrackData["zippers"]> {
 const VARIANTS: LoopVariant[] = ["plain", "bananas", "zipper"];
 const VARIANT_LABEL: Record<LoopVariant, string> = {
   plain: "",
-  bananas: " + bananas",
+  bananas: " + eggs",
   zipper: " + zipper",
 };
 

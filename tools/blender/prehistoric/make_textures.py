@@ -613,7 +613,262 @@ def rainbow():
     return paint(f)
 
 
+# ------------------------------------------------------------------ Cascade v2 (jungle ruins)
+
+
+def canyon_rock_grey():
+    # Grey-green layered rock: slanted beds, dark cracks, pale edges.
+    pal = ["#3e4740", "#525c52", "#67705f", "#7d8470", "#9a9c84"]
+    a, b = noise(6, 3, 421), noise(16, 8, 422)
+
+    def f(x, y):
+        bed = math.sin((y + x * 0.25) * 0.55 + a(x, y) * 4)
+        if abs(bed) < 0.08:
+            return "#2c332d"
+        v = 0.35 + bed * 0.18 + a(x, y) * 0.3 + b(x, y) * 0.2
+        if bed > 0.85:
+            v += 0.2
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def canyon_rock_moss():
+    # Dark rock blotched with moss.
+    rock = ["#3a3a34", "#4b4a41", "#5e5b4e", "#716c5b"]
+    moss = ["#2f5a24", "#3d7230", "#4f8a38", "#68a446"]
+    a, b, m = noise(8, 4, 431), noise(16, 8, 432), noise(5, 3, 433)
+
+    def f(x, y):
+        k = m(x, y) + b(x, y) * 0.3
+        if k > 0.72:
+            return pick(moss, (k - 0.72) * 2.2 + a(x, y) * 0.4)
+        crack = abs(math.sin(x * 0.35 + a(x, y) * 6)) < 0.05
+        return "#25241f" if crack else pick(rock, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def canyon_rock_ochre():
+    # Warm ochre sandstone with wavy, uneven bands (not the even fossil strata).
+    pal = ["#6e4a2c", "#8a5f36", "#a8763f", "#c18f52", "#d7aa6a"]
+    a, b = noise(4, 2, 441), noise(16, 8, 442)
+
+    def f(x, y):
+        band = math.sin(y * 0.42 + a(x, y) * 5 + math.sin(x * 0.12) * 1.5)
+        v = 0.45 + band * 0.25 + b(x, y) * 0.3
+        if abs(band) < 0.06:
+            v -= 0.35
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def ruin_stone():
+    # Big weathered blocks, moss in the joints: the ruins and the temple bridge.
+    pal = ["#5d6152", "#6f7461", "#838672", "#999a83", "#adab92"]
+    a, b = noise(8, 4, 451), noise(16, 8, 452)
+
+    def f(x, y):
+        row = y // 16
+        off = 16 if row % 2 else 0
+        bx, by = (x + off) % 32, y % 16
+        if bx < 1 or by < 1:
+            return pick(["#3a5a2a", "#486c32", "#2e3a2a"], a(x, y))
+        chip = b(x, y) > 0.78
+        v = 0.25 + a(x, y) * 0.45 + b(x, y) * 0.25 - (0.25 if chip else 0) + (0.12 if by == 1 or bx == 1 else 0)
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def ruin_glyph():
+    # A carved frieze: square glyph panels with spirals, eyes and steps, worn and mossy.
+    pal = ["#5e6352", "#757a66", "#8d917b", "#a7a891"]
+    a = noise(8, 4, 461)
+
+    def f(x, y):
+        cx, cy = x % 16, y % 16
+        cell = (x // 16 + (y // 16) * 3) % 4
+        edge = cx < 1 or cy < 1 or cx > 14 or cy > 14
+        dx, dy = cx - 7.5, cy - 7.5
+        r = math.hypot(dx, dy)
+        if cell == 0:
+            carved = abs(r - (math.atan2(dy, dx) + math.pi) * 0.9) < 0.9 and r < 6.5
+        elif cell == 1:
+            carved = (4 < r < 6) or r < 1.6
+        elif cell == 2:
+            carved = (cy > 11 - (cx // 3) * 2 and cy < 13 - (cx // 3) * 2) or (2 < cy < 4)
+        else:
+            carved = (abs(dx) < 1 or abs(dy) < 1) and r < 6 or (abs(abs(dx) - 4) < 1 and abs(abs(dy) - 4) < 1)
+        if edge:
+            return "#454a3c"
+        if carved:
+            return "#3c4034"
+        v = 0.3 + a(x, y) * 0.55
+        if a(x, y) > 0.8:
+            return "#4d7a34"
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def ruin_dark():
+    # Soot-darkened stone inside the temple tunnel.
+    pal = ["#24221e", "#302d27", "#3d3930", "#4c463a", "#5a5243"]
+    a, b = noise(8, 4, 471), noise(16, 8, 472)
+
+    def f(x, y):
+        row = y // 16
+        bx, by = (x + (16 if row % 2 else 0)) % 32, y % 16
+        if bx < 1 or by < 1:
+            return "#181612"
+        return pick(pal, 0.15 + a(x, y) * 0.55 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def jungle_bark():
+    # Dark, deeply ridged bark for the giant trees, with moss.
+    pal = ["#3b2a1e", "#4b3524", "#5d432c", "#715336", "#856441"]
+    a, b = noise(16, 2, 481), noise(6, 3, 482)
+
+    def f(x, y):
+        ridge = math.sin(x * 0.9 + a(x, y) * 6)
+        if b(x, y) > 0.74:
+            return pick(["#3e6a2c", "#4f8236", "#64983f"], a(x, y))
+        return pick(pal, 0.4 + ridge * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def canopy_dark():
+    # Deep jungle canopy: dark greens with lighter leaf clumps.
+    pal = ["#163a1c", "#1f4f24", "#2b652c", "#3a7d36", "#4f9442"]
+    a, b = noise(8, 4, 491), noise(16, 8, 492)
+
+    def f(x, y):
+        clump = 0.5 + 0.5 * math.sin(x * 0.8 + 2.2 * math.sin(y * 0.6))
+        return pick(pal, 0.1 + a(x, y) * 0.45 + b(x, y) * 0.25 + clump * 0.2)
+
+    return paint(f)
+
+
+def big_leaf():
+    # Elephant-ear leaves: broad green with a pale midrib and veins (V along the leaf).
+    pal = ["#2f7a2a", "#3c9032", "#4ea83c", "#66bd4a"]
+    a = noise(8, 2, 501)
+
+    def f(x, y):
+        mid = abs(y - 16)
+        if mid < 1.2:
+            return "#b8d872"
+        vein = abs(((x + mid * 1.4) % 8) - 4) < 0.6
+        return pick(pal, 0.55 + a(x, y) * 0.35 - (0.3 if vein else 0) - mid / 50)
+
+    return paint(f)
+
+
+def vine_leaf():
+    # Hanging vines: small overlapping ivy leaves on a dark stem.
+    pal = ["#1f4f1f", "#2d6a28", "#3f8634", "#58a046"]
+    a = noise(8, 4, 511)
+
+    def f(x, y):
+        cx, cy = x % 8, y % 8
+        off = 4 if (y // 8) % 2 else 0
+        d = math.hypot((x + off) % 8 - 4, cy - 4)
+        if d < 3.2:
+            return pick(pal, 0.4 + (3.2 - d) * 0.15 + a(x, y) * 0.2)
+        return "#173a17"
+
+    return paint(f)
+
+
+def frog_skin():
+    # Bright tree-frog green with darker spots and a pale belly band (V down the body).
+    pal = ["#3fae2a", "#58c43a", "#74d84e"]
+    a, b = noise(8, 4, 521), noise(4, 2, 522)
+
+    def f(x, y):
+        if y > 24:
+            return "#e8f0b0"
+        if b(x, y) > 0.72 and a(x, y) > 0.5:
+            return "#1f5a1a"
+        return pick(pal, a(x, y))
+
+    return paint(f)
+
+
+def log_end():
+    # Cut log ends: rings round a pale heart.
+    pal = ["#8a5e32", "#a8763f", "#c49a5e", "#d9b47a"]
+
+    def f(x, y):
+        d = math.hypot((x % 32) - 16, y - 16)
+        if d > 14.5:
+            return "#4b3524"
+        return pick(pal, 0.5 + 0.5 * math.sin(d * 1.3))
+
+    return paint(f)
+
+
+def torch_glow():
+    # A flickering torch flame: hot white-yellow core to orange (scrolls upward).
+    cols = ["#fffbe0", "#ffe58a", "#ffbb3a", "#ff8a22", "#e85a1a"]
+    a = noise(8, 2, 531)
+
+    def f(x, y):
+        return pick(cols, 1 - y / H + (a(x, y) - 0.5) * 0.5)
+
+    return paint(f)
+
+
+def jungle_mud():
+    # Dark, wet riverbank mud with leaf litter.
+    pal = ["#3b2f22", "#4a3b2a", "#5a4832", "#6b563b"]
+    a, b = noise(8, 4, 541), noise(16, 8, 542)
+
+    def f(x, y):
+        if b(x, y) > 0.8:
+            return pick(["#5b7a2a", "#7a8a32", "#8a6a2a"], a(x, y))
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def pterosaur_skin():
+    # Leathery wing and body: rust brown to tan with darker veining.
+    pal = ["#7a3a24", "#94502e", "#ad6a3c", "#c4864e"]
+    a = noise(8, 4, 551)
+
+    def f(x, y):
+        vein = abs(math.sin(x * 0.4 + y * 0.15)) < 0.08
+        return "#5a2a1a" if vein else pick(pal, 0.3 + a(x, y) * 0.6)
+
+    return paint(f)
+
+
 THEMES = [
+    {
+        "id": "jungle_falls",
+        "name": "Jungle Falls",
+        "description": "Mossy stone, old masonry, leafy ground and soft green light, ringed by misty jungle hills",
+        "environment": {
+            "sky": "#8fcfe0",
+            "fog": {"enabled": True, "color": "#a9d6c2", "near": 70, "far": 420},
+            "sun": {"color": "#f6ffe0", "intensity": 2.0, "direction": [-0.4, 0.85, 0.3]},
+            "ambient": {"sky": "#d6f2e2", "ground": "#2f5a2c", "intensity": 1.25},
+            "skyDome": {
+                "top": "#3f9fd6",
+                "horizon": "#c6ead8",
+                "bottom": "#a9d6c2",
+                "sun": {"color": "#fffbe6", "size": 6, "glow": "#fff0a8", "elevation": 34},
+                "clouds": {"count": 22, "color": "#ffffff", "shade": "#d4ece4", "seed": 9, "low": 14, "high": 30, "drift": 0.004},
+                "hills": {"color": "#24502c", "far": "#8dbfa4", "height": 13, "seed": 4, "layers": 3},
+            },
+        },
+    },
     {
         "id": "river_valley",
         "name": "River Valley",
@@ -710,6 +965,21 @@ MATERIALS = [
         {"scrollU": 0.05, "scrollV": 0.12, "wave": 0.06, "wavePeriod": 2, "opacity": 0.75},
     ),
     ("jungle_fern", "Jungle Fern", "jungle_falls", "grass", jungle_fern, 4, None),
+    ("canyon_rock_grey", "Canyon Rock (Grey)", "jungle_falls", "wall", canyon_rock_grey, 9, None),
+    ("canyon_rock_moss", "Canyon Rock (Mossy)", "jungle_falls", "wall", canyon_rock_moss, 8, None),
+    ("canyon_rock_ochre", "Canyon Rock (Ochre)", "jungle_falls", "wall", canyon_rock_ochre, 10, None),
+    ("ruin_stone", "Ruin Stone", "jungle_falls", "wall", ruin_stone, 4, None),
+    ("ruin_glyph", "Ruin Glyphs", "jungle_falls", "wall", ruin_glyph, 3, None),
+    ("ruin_dark", "Ruin Stone (Sooty)", "jungle_falls", "wall", ruin_dark, 4, None),
+    ("jungle_bark", "Jungle Bark", "jungle_falls", "wall", jungle_bark, 3, None),
+    ("canopy_dark", "Deep Canopy", "jungle_falls", "grass", canopy_dark, 5, None),
+    ("big_leaf", "Big Leaf", "jungle_falls", "grass", big_leaf, 2, None),
+    ("vine_leaf", "Vine Leaves", "jungle_falls", "grass", vine_leaf, 1.5, None),
+    ("frog_skin", "Frog Skin", "jungle_falls", "wall", frog_skin, 0.4, None),
+    ("log_end", "Log End", "jungle_falls", "wall", log_end, 1, None),
+    ("torch_glow", "Torch Flame", "jungle_falls", "wall", torch_glow, 1, {"scrollU": 0.2, "scrollV": -1.6, "wave": 0.1, "wavePeriod": 0.4, "glow": 1.0}),
+    ("jungle_mud", "Jungle Mud", "jungle_falls", "mud", jungle_mud, 5, None),
+    ("pterosaur_skin", "Pterosaur Skin", "jungle_falls", "wall", pterosaur_skin, 2, None),
     ("swamp_mud", "Swamp Mud", "fossil_swamp", "mud", swamp_mud, 5, None),
     (
         "swamp_water",
@@ -759,8 +1029,10 @@ def main():
     path = os.path.join(LIB, "materials.json")
     with open(path, encoding="utf-8") as f:
         lib = json.load(f)
-    ids = {t["id"] for t in THEMES}
-    lib["themes"] = [t for t in lib["themes"] if t["id"] not in ids] + THEMES
+    # Replace themes in place (keeping the library's order); add new ones at the end.
+    mine = {t["id"]: t for t in THEMES}
+    known = {t["id"] for t in lib["themes"]}
+    lib["themes"] = [mine.get(t["id"], t) for t in lib["themes"]] + [t for t in THEMES if t["id"] not in known]
     mids = {m[0] for m in MATERIALS}
     lib["materials"] = [m for m in lib["materials"] if m["id"] not in mids]
     for mid, name, theme, surface, painter, tile, fx in MATERIALS:

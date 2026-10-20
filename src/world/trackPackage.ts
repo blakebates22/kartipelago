@@ -350,6 +350,7 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
       const num = (v: unknown) => (finite(v) ? (v as number) : undefined);
       const sd = isObj(d.sun) ? d.sun : {};
       const cl = isObj(d.clouds) ? d.clouds : {};
+      const hl = isObj(d.hills) ? d.hills : undefined;
       look.skyDome = {
         top: hex(d.top),
         horizon: hex(d.horizon),
@@ -368,6 +369,13 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
           low: num(cl.low),
           high: num(cl.high),
           drift: num(cl.drift),
+        },
+        hills: hl && {
+          color: hex(hl.color),
+          far: hex(hl.far),
+          height: num(hl.height),
+          seed: num(hl.seed),
+          layers: num(hl.layers),
         },
       };
     }

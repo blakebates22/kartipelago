@@ -22,6 +22,13 @@
  *               spray at its foot and its roar nearby; driving through it splashes.
  *   campfire    { "type": "campfire", "x", "y", "z" }: smoke and embers rising from a
  *               little bonfire (the fire itself is scenery). Purely visual.
+ *   torch       { "type": "torch", "x", "y", "z" }: a torch flame (the torch is scenery).
+ *               The few torches nearest the camera cast flickering warm light on the
+ *               road, the walls and the karts, and drop the odd ember. Purely visual.
+ *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
+ *               a pterosaur circling high over the course along a route (its height
+ *               comes from the route), flapping and gliding, banking into turns, with
+ *               a cry now and then. Purely visual: it never comes down to the karts.
  *
  * Nothing here changes how the kart drives: it only reacts to where the kart is, the
  * way an item hit does (a vertical kick, a slower speed, a respawn).
@@ -34,6 +41,7 @@ import type { Track } from "../world/track";
 import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
+import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
 import { createParticles } from "../render/particles";
 
 export interface HazardConfig {
@@ -102,6 +110,20 @@ interface Campfire {
   acc: number;
 }
 
+interface Flyer {
+  path: { x: number; y: number; z: number; d: number }[];
+  length: number;
+  d: number;
+  speed: number;
+  heading: number;
+  bank: number;
+  view?: PterosaurView;
+  callIn: number;
+}
+
+/** How many torches light the scene at once (the ones nearest the camera). */
+export const TORCH_LIGHTS = 4;
+
 interface Fall {
   x: number;
   y: number;
@@ -145,6 +167,8 @@ export interface Hazards {
   respawnSpot(x: number, y: number, z: number): Spot | undefined;
   render(t: number, dt: number, listener: { x: number; y: number; z: number }): void;
   readonly dinos: { x: number; y: number; z: number }[];
+  /** Where the flyers are (for tests and the camera). */
+  readonly flyers: { x: number; y: number; z: number }[];
   dispose(): void;
 }
 
@@ -188,6 +212,8 @@ export function createHazards(opts: {
   const dinos: Dino[] = [];
   const falls: Fall[] = [];
   const fires: Campfire[] = [];
+  const torches: { x: number; y: number; z: number; acc: number }[] = [];
+  const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
   const ground = opts.makeGround();
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
@@ -195,7 +221,32 @@ export function createHazards(opts: {
       zones.push({ from: num(e.from, 0), to: num(e.to, 0), at: num(e.at, 0) });
     else if (e.type === "campfire")
       fires.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
-    else if (e.type === "waterfall")
+    else if (e.type === "torch")
+      torches.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
+    else if (e.type === "pterosaur") {
+      const r = opts.routes.find((q) => q.id === e.route);
+      if (!r || r.points.length < 3) continue;
+      let d = 0;
+      const path = r.points.map((p, k) => {
+        if (k) d += Math.hypot(p.x - r.points[k - 1]!.x, p.z - r.points[k - 1]!.z);
+        return { x: p.x, y: p.y, z: p.z, d };
+      });
+      const first = r.points[0]!;
+      const last = r.points[r.points.length - 1]!;
+      flyers.push({
+        path,
+        length: d + Math.hypot(first.x - last.x, first.z - last.z),
+        d: num(e.start, 0),
+        speed: num(e.speed, 12),
+        heading: 0,
+        bank: 0,
+        x: first.x,
+        y: first.y,
+        z: first.z,
+        view: opts.headless ? undefined : createPterosaurView(group, num(e.scale, 1)),
+        callIn: 5,
+      });
+    } else if (e.type === "waterfall")
       falls.push({
         x: num(e.x, 0),
         y: num(e.y, 0),
@@ -282,6 +333,60 @@ export function createHazards(opts: {
     placeDino(d);
   }
 
+  /** A smooth point on a flyer's loop (Catmull-Rom through the route's points). */
+  function flyAt(f: Flyer, d: number) {
+    d = ((d % f.length) + f.length) % f.length;
+    const p = f.path;
+    const n = p.length;
+    let i = n - 1;
+    for (let k = 1; k < n; k++)
+      if (p[k]!.d > d) {
+        i = k - 1;
+        break;
+      }
+    const span = (i + 1 < n ? p[i + 1]!.d : f.length) - p[i]!.d;
+    const u = span > 0 ? (d - p[i]!.d) / span : 0;
+    const P = (k: number) => p[(((i + k) % n) + n) % n]!;
+    const cr = (a: number, b: number, c: number, e: number) =>
+      0.5 *
+      (2 * b +
+        (-a + c) * u +
+        (2 * a - 5 * b + 4 * c - e) * u * u +
+        (-a + 3 * b - 3 * c + e) * u * u * u);
+    const [a, b, c, e] = [P(-1), P(0), P(1), P(2)];
+    return {
+      x: cr(a.x, b.x, c.x, e.x),
+      y: cr(a.y, b.y, c.y, e.y),
+      z: cr(a.z, b.z, c.z, e.z),
+    };
+  }
+  function placeFlyer(f: (typeof flyers)[number], dt: number) {
+    const a = flyAt(f, f.d);
+    const b = flyAt(f, f.d + 4);
+    const heading = Math.atan2(b.x - a.x, b.z - a.z);
+    if (dt > 0) {
+      // Bank into the turn: how fast the heading is changing.
+      const turn = (((heading - f.heading + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) / dt;
+      const want = Math.max(-0.7, Math.min(0.7, turn * 0.9));
+      f.bank += (want - f.bank) * (1 - Math.exp(-2 * dt));
+    }
+    f.heading = heading;
+    f.x = a.x;
+    f.y = a.y;
+    f.z = a.z;
+  }
+  for (const f of flyers) placeFlyer(f, 0);
+
+  // The torchlight: a few warm point lights, moved to the torches nearest the camera.
+  const torchLights: THREE.PointLight[] = [];
+  if (torches.length && !opts.headless)
+    for (let k = 0; k < Math.min(TORCH_LIGHTS, torches.length); k++) {
+      const l = new THREE.PointLight(0xffa04a, 0, 20, 1.4);
+      l.castShadow = false;
+      group.add(l);
+      torchLights.push(l);
+    }
+
   /** The route position `at` metres along the lap, as a respawn spot. */
   function spotAt(at: number): Spot {
     const ss = track.samples;
@@ -334,6 +439,7 @@ export function createHazards(opts: {
   const hazards: Hazards = {
     solids,
     dinos,
+    flyers,
     handles: (surface) => surface === "lava" || surface === "deep_water",
     sinkOf: (i) => per[i]?.sink ?? 0,
     respawnSpot,
@@ -442,6 +548,17 @@ export function createHazards(opts: {
     },
     step(karts, dt) {
       clock += dt;
+      for (const f of flyers) {
+        f.d += f.speed * dt;
+        placeFlyer(f, dt);
+        f.callIn -= dt;
+        if (f.callIn <= 0) {
+          f.callIn = 7 + Math.random() * 6;
+          const k = karts[0];
+          const near = k ? Math.hypot(k.x - f.x, k.y - f.y, k.z - f.z) : Infinity;
+          if (near < 110) opts.sfx?.screech(vol() * Math.max(0.15, 1 - near / 110));
+        }
+      }
       for (const dn of dinos) {
         // Stop for anything close; set off again gently once it's clear.
         let close = Infinity;
@@ -493,6 +610,42 @@ export function createHazards(opts: {
     render(t, dt, listener) {
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
+      for (const f of flyers) {
+        // Flap for a while, then glide: the beat comes and goes along the loop.
+        const flap = Math.max(0, Math.min(1, 0.5 + 1.6 * Math.sin(f.d / 38)));
+        f.view?.update(f.x, f.y, f.z, f.heading, f.bank, flap, t);
+      }
+      if (torchLights.length) {
+        // The nearest torches (a partial sort: there are only a few lights).
+        const near = torches
+          .map((q) => ({
+            q,
+            d: (q.x - listener.x) ** 2 + (q.y - listener.y) ** 2 + (q.z - listener.z) ** 2,
+          }))
+          .sort((a, b) => a.d - b.d)
+          .slice(0, torchLights.length);
+        near.forEach(({ q, d }, k) => {
+          const l = torchLights[k]!;
+          l.position.set(q.x, q.y, q.z);
+          const fade = Math.max(0, Math.min(1, (60 - Math.sqrt(d)) / 20));
+          const flick =
+            0.82 + 0.12 * Math.sin(t * 13 + q.acc * 40) + 0.08 * Math.sin(t * 29 + q.acc * 7);
+          l.intensity = 34 * fade * flick;
+          // The odd ember drifting up from the flame.
+          q.acc = (q.acc + dt * 0.9) % 1e3;
+          if (fade > 0 && Math.random() < dt * 3)
+            sparks?.emit(
+              q.x,
+              q.y + 0.3,
+              q.z,
+              (Math.random() - 0.5) * 0.6,
+              1.5 + Math.random(),
+              (Math.random() - 0.5) * 0.6,
+              0.9,
+              Math.random() < 0.5 ? 0xffc040 : 0xff7a20,
+            );
+        });
+      }
       // Spray at the foot of each waterfall, and its roar when you're near.
       let nearest = Infinity;
       for (const f of falls) {
@@ -559,6 +712,7 @@ export function createHazards(opts: {
     dispose() {
       rush?.stop();
       for (const d of dinos) d.view?.dispose();
+      for (const f of flyers) f.view?.dispose();
       spray?.dispose();
       smoke?.dispose();
       sparks?.dispose();

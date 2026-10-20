@@ -39,6 +39,12 @@ export interface SkyDomeSpec {
     /** How fast the clouds drift round, radians per second. */
     drift?: number;
   };
+  /**
+   * Distant hills all round the horizon (so a track's open ends never look out into
+   * empty sky): rings of jagged silhouettes, the far ones paler. `height` is the
+   * tallest peak, degrees above the horizon.
+   */
+  hills?: { color?: string; far?: string; height?: number; seed?: number; layers?: number };
 }
 
 export interface SkyDome {
@@ -216,6 +222,75 @@ export function createSkyDome(
     m.lookAt(0, m.position.y * 0.6, 0);
     m.renderOrder = -8;
     clouds.add(m);
+  }
+
+  // Hills round the horizon, far (pale) to near (dark), drawn over the low clouds.
+  if (spec.hills) {
+    const hs = spec.hills;
+    const layers = Math.max(1, Math.min(4, hs.layers ?? 2));
+    const hr = rng((hs.seed ?? 7) * 31 + 5);
+    const near = new THREE.Color(hs.color ?? "#2f5a34");
+    const far = new THREE.Color(hs.far ?? spec.horizon ?? "#9cc8b0");
+    const base = new THREE.Color(spec.horizon ?? "#c4ecff");
+    const SEG = 128;
+    for (let l = 0; l < layers; l++) {
+      const k = layers === 1 ? 1 : l / (layers - 1); // 0 far .. 1 near
+      const top = near.clone().lerp(far, 1 - k);
+      const foot = top.clone().lerp(base, 0.55 - 0.25 * k);
+      const r = RADIUS * (0.8 - l * 0.04);
+      const peak = ((hs.height ?? 9) * (0.65 + 0.35 * k) * Math.PI) / 180;
+      // A jagged ridge: a few big peaks plus small bumps, all smooth-ish.
+      const phase = [hr() * 6.28, hr() * 6.28, hr() * 6.28];
+      const lifts = new Float32Array(SEG + 1);
+      for (let i = 0; i <= SEG; i++) {
+        const a = (i / SEG) * Math.PI * 2;
+        const v =
+          0.45 +
+          0.3 * Math.sin(a * 3 + phase[0]!) +
+          0.18 * Math.sin(a * 7 + phase[1]!) +
+          0.1 * Math.sin(a * 17 + phase[2]!) +
+          (hr() - 0.5) * 0.08;
+        lifts[i] = Math.max(0.08, Math.min(1, v));
+      }
+      lifts[SEG] = lifts[0]!;
+      const pos: number[] = [];
+      const col: number[] = [];
+      const idx: number[] = [];
+      for (let i = 0; i <= SEG; i++) {
+        const a = (i / SEG) * Math.PI * 2;
+        const el = peak * lifts[i]!;
+        const cx = Math.cos(a);
+        const cz = Math.sin(a);
+        pos.push(
+          cx * r,
+          -r * 0.05,
+          cz * r,
+          cx * r * Math.cos(el),
+          r * Math.sin(el),
+          cz * r * Math.cos(el),
+        );
+        col.push(foot.r, foot.g, foot.b, top.r, top.g, top.b);
+        if (i < SEG) {
+          const o = i * 2;
+          idx.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+        }
+      }
+      const hg = new THREE.BufferGeometry();
+      hg.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      hg.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+      hg.setIndex(idx);
+      const hm = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+        fog: false,
+        depthWrite: false,
+      });
+      const ring = new THREE.Mesh(hg, hm);
+      ring.renderOrder = -7 + l * 0.1;
+      ring.frustumCulled = false;
+      group.add(ring);
+      disposables.push(hg, hm);
+    }
   }
 
   const drift = cs.drift ?? 0.004;

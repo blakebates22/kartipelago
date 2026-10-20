@@ -204,8 +204,11 @@ How it's read:
   (`sun: { color, size, glow, elevation }`, size in degrees; `elevation` puts the disc
   lower than the light really comes from, so it shows while racing), and cartoon clouds round the horizon
   (`clouds: { count, color, shade, seed, low, high, drift }`, heights in degrees above
-  the horizon, drift in radians per second). Every field is optional. River Valley
-  uses one (Riverbend Palms); without it the sky is the flat `sky` colour. The code is
+  the horizon, drift in radians per second), and rings of distant hills
+  (`hills: { color, far, height, seed, layers }`: `color` is the nearest ring, `far` the
+  farthest, `height` in degrees above the horizon) so a course's edges never open onto
+  empty sky. Every field is optional. River Valley (Riverbend Palms) and Jungle Falls
+  (Cascade Caverns) use one; without it the sky is the flat `sky` colour. The code is
   `src/render/skyDome.ts`.
 
 Re-exporting never touches `track.json`. Placements, checkpoint order and physics are

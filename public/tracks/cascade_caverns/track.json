@@ -15,25 +15,25 @@
     {
       "id": "zip_01",
       "type": "zipper",
-      "at": 784.6,
+      "at": 40,
       "across": 0
     },
     {
       "id": "zip_02",
       "type": "zipper",
-      "at": 382.3,
-      "across": -2
+      "at": 338.3,
+      "across": 0
     },
     {
       "id": "zip_03",
       "type": "zipper",
-      "at": 1027.9,
-      "across": 3
+      "at": 766.8,
+      "across": 0
     },
     {
       "id": "ban_01",
       "type": "bananas",
-      "at": 50,
+      "at": 71.0,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -41,7 +41,7 @@
     {
       "id": "ban_02",
       "type": "bananas",
-      "at": 289.0,
+      "at": 290.0,
       "across": 2,
       "count": 5,
       "gap": 2.6
@@ -49,7 +49,7 @@
     {
       "id": "ban_03",
       "type": "bananas",
-      "at": 510.8,
+      "at": 480.1,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -57,7 +57,7 @@
     {
       "id": "ban_04",
       "type": "bananas",
-      "at": 613.0,
+      "at": 672.2,
       "across": -2,
       "count": 5,
       "gap": 2.6
@@ -65,7 +65,7 @@
     {
       "id": "ban_05",
       "type": "bananas",
-      "at": 935.1,
+      "at": 984.9,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -73,84 +73,268 @@
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 110,
+      "at": 129.1,
       "across": -3,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 110,
+      "at": 129.1,
       "across": 3,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 337.9,
+      "at": 364.9,
       "across": 0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 729.5,
+      "at": 613.6,
       "across": 0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 891.3,
+      "at": 950.2,
       "across": 0,
       "color": "rainbow"
     },
     {
       "id": "respawn_01",
       "type": "respawn",
-      "from": 768.6,
-      "to": 825.6,
-      "at": 833.6
+      "from": 780.8,
+      "to": 844.8,
+      "at": 880.8
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -74.84,
+      "y": 21.63,
+      "z": 103.34
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -88.07,
+      "y": 19.55,
+      "z": 90.51
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -93.85,
+      "y": 21.02,
+      "z": 107.75
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -101.89,
+      "y": 20.38,
+      "z": 91.31
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -109.79,
+      "y": 20.19,
+      "z": 107.88
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -118.86,
+      "y": 21.04,
+      "z": 91.68
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -123.91,
+      "y": 19.65,
+      "z": 109.38
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -136.48,
+      "y": 20.92,
+      "z": 96.03
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -137.01,
+      "y": 20.41,
+      "z": 114.67
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -150.91,
+      "y": 19.53,
+      "z": 102.48
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -154.18,
+      "y": 20.78,
+      "z": 120.54
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -164.3,
+      "y": 19.47,
+      "z": 105.13
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -171.81,
+      "y": 20.15,
+      "z": 122.02
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -179.74,
+      "y": 19.87,
+      "z": 105.31
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -187.73,
+      "y": 19.77,
+      "z": 121.91
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -195.78,
+      "y": 19.72,
+      "z": 105.33
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -203.73,
+      "y": 19.83,
+      "z": 121.9
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": -211.14,
+      "y": 18.92,
+      "z": 105.35
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": -221.76,
+      "y": 20.71,
+      "z": 120.27
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": -223.07,
+      "y": 18.64,
+      "z": 101.89
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": -239.15,
+      "y": 20.64,
+      "z": 110.8
     },
     {
       "id": "waterfall_01",
       "type": "waterfall",
-      "x": -190.0,
+      "x": -245.74,
       "y": -1.6,
-      "z": 1.0,
-      "top": 27,
+      "z": 9.68,
+      "top": 26,
       "width": 34,
       "heading": 0
     },
     {
       "id": "waterfall_02",
       "type": "waterfall",
-      "x": -120,
-      "y": -1.6,
-      "z": -72.7,
-      "top": 30,
-      "width": 12,
+      "x": 40.0,
+      "y": 3.43,
+      "z": 80.66,
+      "top": 29.3,
+      "width": 13.0,
       "heading": 0
     },
     {
       "id": "waterfall_03",
       "type": "waterfall",
-      "x": 30,
-      "y": -1.6,
-      "z": -75.28,
-      "top": 30,
-      "width": 12,
+      "x": 130.0,
+      "y": 2.94,
+      "z": 90.94,
+      "top": 35.9,
+      "width": 13.0,
       "heading": 0
     },
     {
       "id": "waterfall_04",
       "type": "waterfall",
-      "x": 110,
-      "y": -1.6,
-      "z": -68.54,
-      "top": 30,
-      "width": 12,
+      "x": -70.0,
+      "y": 0.14,
+      "z": -82.01,
+      "top": 31.6,
+      "width": 13.0,
       "heading": 0
+    },
+    {
+      "id": "waterfall_05",
+      "type": "waterfall",
+      "x": 100.0,
+      "y": -0.22,
+      "z": -90.11,
+      "top": 27.1,
+      "width": 13.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_06",
+      "type": "waterfall",
+      "x": 187.0,
+      "y": -1.6,
+      "z": -0.17,
+      "top": 36.0,
+      "width": 28.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_07",
+      "type": "waterfall",
+      "x": -274.0,
+      "y": -4.6,
+      "z": 9.0,
+      "top": 30.0,
+      "width": 16.0,
+      "heading": 0
+    },
+    {
+      "id": "pterosaur_01",
+      "type": "pterosaur",
+      "route": "Flyer Path",
+      "speed": 13.0,
+      "scale": 1.6
     }
   ],
   "generator": "tools/blender/prehistoric/cascade_caverns.py (re-running it rewrites entities)"

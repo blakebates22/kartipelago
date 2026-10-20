@@ -146,29 +146,29 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
   return screen;
 }
 
-const BANANA = [
-  "........bb..",
-  ".......#yy#.",
-  "......#yyw#.",
-  ".....#yyyy#.",
-  "...##yyyy#..",
-  ".##yyyyy#...",
-  "#yywyyy#....",
-  "#yyyy##.....",
-  ".####.......",
+// The pickups are dinosaur eggs (the code calls them bananas).
+const EGG = [
+  "...####...",
+  "..#wwww#..",
+  ".#wwwggw#.",
+  ".#wggwww#.",
+  "#wwwwwgg#.",
+  "#wggwwwww#",
+  "#wwwwggww#",
+  ".#wwwwww#.",
+  "..######..",
 ];
-const BANANA_COLORS: Record<string, string> = {
-  "#": "#3a2208",
-  y: "#f7c948",
-  w: "#fff3a8",
-  b: "#6b4a2a",
+const EGG_COLORS: Record<string, string> = {
+  "#": "#3a2a18",
+  w: "#f6ecd2",
+  g: "#3f9e6e",
 };
 
-/** A banana, in pixels. */
+/** A dinosaur egg, in pixels. */
 function banana(ui: UiLayer, x: number, y: number) {
-  BANANA.forEach((row, j) => {
+  EGG.forEach((row, j) => {
     for (let i = 0; i < row.length; i++) {
-      const c = BANANA_COLORS[row[i]!];
+      const c = EGG_COLORS[row[i]!];
       if (c) ui.rect(x + i, y + j, 1, 1, c);
     }
   });
@@ -223,7 +223,7 @@ function drawHud(
       });
   }
 
-  // Bottom left: bananas and the held item.
+  // Bottom left: eggs (bananas, in the code) and the held item.
   if (!practice || h.bananas > 0) {
     banana(ui, 9, ui.H - 42);
     ui.text(`×${h.bananas}`, 24, ui.H - 41, { scale: 2, color: PAL.gold, ...big });

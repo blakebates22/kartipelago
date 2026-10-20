@@ -33,6 +33,7 @@ const melodies: [string, string, number][] = [
   ["riverbend", S.RIVERBEND_MELODY, 64],
   ["riverbend_classic", S.RIVERBEND_CLASSIC_MELODY, 64],
   ["cascade", S.CASCADE_MELODY, 64],
+  ["cascade_classic", S.CASCADE_CLASSIC_MELODY, 64],
   ["bonebog", S.BONEBOG_MELODY, 64],
   ["ember", S.EMBER_MELODY, 64],
 ];
@@ -49,6 +50,7 @@ const charts: [string, string, number, string][] = [
   ["riverbend", S.RIVERBEND_CHORDS, 64, S.RIVERBEND_MELODY],
   ["riverbend_classic", S.RIVERBEND_CLASSIC_CHORDS, 64, S.RIVERBEND_CLASSIC_MELODY],
   ["cascade", S.CASCADE_CHORDS, 64, S.CASCADE_MELODY],
+  ["cascade_classic", S.CASCADE_CLASSIC_CHORDS, 64, S.CASCADE_CLASSIC_MELODY],
   ["bonebog", S.BONEBOG_CHORDS, 64, S.BONEBOG_MELODY],
   ["ember", S.EMBER_CHORDS, 64, S.EMBER_MELODY],
 ];

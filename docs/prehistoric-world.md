@@ -36,12 +36,12 @@ The mouse works too.
 
 ## The courses
 
-| Course          | Id                | Length  | Theme                                       | Music            |
-| --------------- | ----------------- | ------- | ------------------------------------------- | ---------------- |
-| Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village | F major, 138 BPM |
-| Cascade Caverns | `cascade_caverns` | ~1100 m | jungle canyon, waterfalls, caves            | D minor, 142 BPM |
-| Bonebog Pyramid | `bonebog_pyramid` | ~1140 m | misty fossil swamp, a stepped pyramid       | E minor, 116 BPM |
-| Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                  | A minor, 158 BPM |
+| Course          | Id                | Length  | Theme                                         | Music            |
+| --------------- | ----------------- | ------- | --------------------------------------------- | ---------------- |
+| Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village   | F major, 138 BPM |
+| Cascade Caverns | `cascade_caverns` | ~1210 m | lost jungle temple, waterfalls, torchlit hall | D minor, 128 BPM |
+| Bonebog Pyramid | `bonebog_pyramid` | ~1140 m | misty fossil swamp, a stepped pyramid         | E minor, 116 BPM |
+| Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                    | A minor, 158 BPM |
 
 All four share the same basics:
 
@@ -118,16 +118,50 @@ embers over a fire (the fire itself is a scenery prop). Purely visual.
 
 ### Cascade Caverns
 
-1. You start on the canyon floor.
-2. A stone viaduct climbs the east end.
-3. A ledge runs along the north wall.
-4. A **high bridge** crosses the whole canyon, right over the start straight.
-5. A **tunnel** goes through the south wall.
-6. A wooden ramp launches you over the river gorge, **through a waterfall** pouring off
-   an overhang.
-7. The road winds back down over a low stone bridge.
+Version 2: a lost temple deep in the jungle.
 
-More waterfalls tumble down both walls.
+1. You start on the canyon floor, between giant trees and toppled columns.
+2. A carved stone **viaduct** climbs the east end, through a temple gateway.
+3. A **ledge** road winds along the north wall: quick S-bends to drift.
+4. The **temple bridge** crosses the whole canyon, high over the start straight: a
+   stepped Mayan causeway with glyph friezes and a gateway at each end. Its piers stand
+   only where no road runs underneath, so nothing on the road below blocks you.
+5. The **temple hall** goes through the south wall, about 170 m long: a carved face at
+   each mouth, pillars down both walls, roots hanging through the roof and torches
+   every 8 m that throw flickering light on the road and the karts.
+6. The **leap:** a long run-up (with a zipper), a short 16 m gap and a 22 m-wide
+   landing with barriers, through a curtain of water pouring off a rock arch. Miss it
+   and you're put down on the landing.
+7. The road winds back down through more ruins, under a ruined arch, and over a low
+   stone bridge.
+
+**The jungle:** very large trees, dense undergrowth, big-leaf plants, vines spilling
+down the cliffs and off rock ledges, lianas slung over the floor, colossal stone heads,
+steles, stairs and tumbled blocks. The rock mixes grey, mossy and ochre patches so no
+wall repeats.
+
+**The river:** cattails, lily pads, logs, stumps and frogs. Six waterfalls: four down
+the canyon walls, the river's source at the east end and a gorge fall at the west end.
+The ends are closed by cliffs, and hills ring the horizon (`skyDome.hills` in
+look.json), so there's no white void anywhere.
+
+**The pterosaur:** circles high over the canyon, flapping and gliding, and cries now and
+then.
+
+**Checkpoints:** 17 gates, each 50 m wide and 10 m tall, so they count whatever line you
+take, even high over the leap. `tests/cascade.test.ts` drives every line (both edges,
+the middle, and 6.5 m up) for three laps.
+
+#### Going back to Cascade v1
+
+v1 is tagged `cascade-v1` in git:
+
+| To restore       | Do this                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The whole course | `git checkout cascade-v1 -- tools/blender/prehistoric/cascade_caverns.py public/tracks/cascade_caverns tracks-src/cascade_caverns.blend`            |
+| The old music    | set Cascade's `music` to `"cascade_classic"` in `src/game/tracks.ts`                                                                                |
+| Bananas          | `git checkout cascade-v1 -- src/render/bananaView.ts src/screens/race.ts`, and set `bananas.color` back to `"#ffd23f"` in `assets/data/tuning.json` |
+| Balloon strings  | `git checkout cascade-v1 -- src/render/itemView.ts`                                                                                                 |
 
 ### Bonebog Pyramid
 
@@ -246,6 +280,9 @@ There are 25 new textures, all 64×32:
   falls' sheet, veil and foam (brighter and bluer than Cascade's, which keep the
   Jungle Falls ones). Valley water is bluer than in v1.
 - **Hot Top Volcano additions:** volcano crust (glowing cracks), ember road, smoke.
+- **Cascade v2 additions (Jungle Falls):** grey, mossy and ochre canyon rock; ruin
+  stone, carved glyphs and sooty ruin stone; jungle bark; deep canopy; big leaf; vine
+  leaves; frog skin; log end; pterosaur skin; torch flame; jungle mud.
 
 There are also two new driving surfaces: `mud` and `deep_water`.
 
@@ -302,6 +339,25 @@ never sends you back to try again at a crawl.
 - **Looks and sound:** its legs, neck and tail are animated, it casts a round shadow on
   the ground, and it hoots now and then and thuds as it walks.
 
+### Torches
+
+```json
+{ "id": "torch_01", "type": "torch", "x": -90, "y": 20, "z": 95 }
+```
+
+The flame of a wall torch (the torch itself is scenery). The four torches nearest you
+light the road, the walls and the karts with a warm flicker, and drop the odd ember.
+
+### The pterosaur
+
+```json
+{ "id": "pterosaur_01", "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }
+```
+
+It flies smoothly round the `Flyer Path` route (its height comes from the route),
+flapping for a while then gliding, banking into its turns. Purely visual: it has no
+collision and stays high above the road.
+
 ### Waterfalls
 
 ```json
@@ -323,6 +379,11 @@ never sends you back to try again at a crawl.
 
 ### Pickups
 
+The pickups are **dinosaur eggs** (speckled, sitting in little straw nests), on every
+track. They play exactly as bananas did, and the code and track files still call them
+bananas. Balloons hang from squiggly twisted cords with a bone tied on, and carry
+carved markings in their usual colours.
+
 ```json
 { "id": "zip_01", "type": "zipper", "at": 120, "across": -3 }
 { "id": "ban_01", "type": "bananas", "at": 40, "across": 0, "count": 5, "gap": 2.6 }
@@ -335,17 +396,20 @@ metres to the right of centre.
 ## Music
 
 Each course has its own original piece in `src/audio/songs.ts`. Each track's registry
-entry names its music. The music player lists them all, plus Riverbend's v1 theme.
+entry names its music. The music player lists them all, plus Riverbend's and Cascade's
+v1 themes.
 
 | Piece                     | Feel                                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Riverbend Palms           | a beach party: steel pan lead, strummed marimba, brass hits, whistling flute, soca bass, congas, shaker |
 | Riverbend Palms (Classic) | the gentler v1 theme: steel pan, marimba, flute, island bass, bongos, clave                             |
-| Cascade Caverns           | flute and xylophone over running pizzicato, woodblocks, hand drums, bells, strings                      |
+| Cascade Caverns           | the jungle temple: pan flute and bird calls over a log-drum ostinato, a buzzing drone, djembe, horns    |
+| Cascade Caverns (Classic) | the v1 theme: flute and xylophone over running pizzicato, woodblocks, hand drums, bells, strings        |
 | Bonebog Pyramid           | clarinet and bassoon over a low marimba groove, plucks, toms, chimes, surprise chords                   |
 | Ember Peak                | strings and low brass over a galloping bass, fast marimba, square-wave stabs, big drums                 |
 
-There are four new synthesized instruments: steel pan, bell, bowed strings and tom.
+There are eight new synthesized instruments: steel pan, bell, bowed strings, tom, pan
+flute, log drum, drone and djembe.
 
 The pieces behave like the rest of the soundtrack:
 

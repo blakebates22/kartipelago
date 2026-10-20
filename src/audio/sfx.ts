@@ -153,6 +153,11 @@ export function createSfx(engine: AudioEngine) {
       note(147, 0, 0.42, volume * 0.7, 165, "sine");
       note(110, 0.36, 0.6, volume * 0.6, 98, "sine");
     },
+    /** A pterosaur's cry, high overhead: two harsh falling squawks. */
+    screech(volume: number) {
+      note(1250, 0, 0.32, volume * 0.22, 760, "sawtooth");
+      note(1100, 0.38, 0.45, volume * 0.18, 620, "sawtooth");
+    },
     /** A heavy, soft footstep. */
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);

@@ -24,6 +24,10 @@ export type InstrumentId =
   | "steelpan"
   | "bell"
   | "strings"
+  | "panflute"
+  | "logdrum"
+  | "drone"
+  | "djembe"
   | "kick"
   | "snare"
   | "hat"
@@ -35,6 +39,7 @@ export type InstrumentId =
   | "tom";
 
 export const DRUMS: ReadonlySet<InstrumentId> = new Set([
+  "djembe",
   "kick",
   "snare",
   "hat",
@@ -202,8 +207,10 @@ export function play(
   // The newer track-theme instruments live only in the music renderer (dsp.ts); live
   // sounds use their nearest relative.
   if (inst === "steelpan" || inst === "bell") inst = "celesta";
-  else if (inst === "strings") inst = "pad";
-  else if (inst === "tom") inst = "bongo";
+  else if (inst === "strings" || inst === "drone") inst = "pad";
+  else if (inst === "tom" || inst === "djembe") inst = "bongo";
+  else if (inst === "panflute") inst = "flute";
+  else if (inst === "logdrum") inst = "marimba";
   switch (inst) {
     case "marimba":
       bar(

@@ -475,6 +475,60 @@ export function renderNote(
         level: 0.17,
         vibrato: { delay: 0.2, rate: 5.5, depth: 0.004 },
       });
+    case "panflute": {
+      // A wooden pan pipe: a soft, hollow tone with air all through it (not just at the
+      // start), a little scoop up into each note and a slow, shy vibrato.
+      sustained(c, {
+        layers: [
+          { wave: "sine", mult: 1, amp: 1 },
+          { wave: "sine", mult: 2, amp: 0.12 },
+          { wave: "tri", mult: 1, amp: 0.12, detune: -12 },
+        ],
+        filter: { from: 1800, to: 2600, time: 0.06, q: 0.4 },
+        attack: 0.06,
+        release: 0.12,
+        level: 0.3,
+        vibrato: { delay: 0.28, rate: 4.4, depth: 0.005 },
+        breath: 1,
+      });
+      return noiseHit(c, "bp", Math.min(7000, c.freq * 1.01), 9, Math.max(0.25, c.dur), 0.07, 0.04);
+    }
+    case "logdrum":
+      // A hollow log (slit) drum: a woody, quickly-damped tone and a knock.
+      bar(
+        c,
+        [
+          [1, 1, 1],
+          [2.32, 0.3, 0.35],
+          [4.95, 0.08, 0.12],
+        ],
+        0.2,
+        0.5,
+      );
+      return noiseHit(c, "bp", Math.min(5000, c.freq * 3), 1.2, 0.012, 0.14);
+    case "drone": {
+      // A deep, buzzing drone (a long horn blown with the lips): a sawtooth through a
+      // resonant filter that "talks", opening and closing in a slow rhythm.
+      const n = Math.ceil((c.dur + 0.4) * c.rate);
+      const o = new Osc();
+      const o2 = new Osc(0.3);
+      const lp = new Biquad("lp", c.rate);
+      const inc = c.freq / c.rate;
+      for (let i = 0; i < n; i++) {
+        const t = i / c.rate;
+        if (i % 16 === 0) lp.set(380 + 520 * (0.5 + 0.5 * Math.sin(TAU * 2 * t - 1.2)) ** 2, 4.5);
+        const x = o.saw(inc) * 0.7 + o2.saw(inc * 1.004) * 0.4;
+        const e = t < 0.15 ? t / 0.15 : t > c.dur ? Math.exp(-(t - c.dur) / 0.08) : 1;
+        add(c, i, lp.run(x) * e * 0.2 * c.vel);
+      }
+      return;
+    }
+    case "djembe": {
+      // A hand drum: a deep bass tone with a soft palm slap on top.
+      const f = midi > 0 ? c.freq : 92;
+      thump(c, f * 1.5, f, 0.04, 0.11, 0.62);
+      return noiseHit(c, "bp", 1700, 0.9, 0.03, 0.2);
+    }
     case "tom": {
       const f = midi > 0 ? c.freq : 110;
       thump(c, f * 1.6, f, 0.06, 0.14, 0.75);

@@ -598,7 +598,7 @@ function buildSession(
     sfx.banana(tuning.bananas.volume);
     if (before < full && s.bananas >= full) {
       sfx.bananaMilestone(tuning.bananas.volume);
-      showToast(`${full} bananas! Full speed bonus`, 1.6);
+      showToast(`${full} eggs! Full speed bonus`, 1.6);
     }
   }
 

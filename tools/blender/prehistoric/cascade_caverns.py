@@ -1,13 +1,15 @@
-# Cascade Caverns: Prehistoric World, course 2. "Rushing jungle canyon."
+# Cascade Caverns: Prehistoric World, course 2. A lost temple in a jungle canyon.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/cascade_caverns.py      (the bpy module)
 #
-# A deep jungle canyon with a river along its floor. The road starts on the canyon
-# floor, climbs a viaduct at the east end, runs west along a ledge cut into the north
-# wall, crosses the whole canyon on a high bridge (right over the start straight),
-# dives into a tunnel through the south wall, then leaps the river gorge through a
-# waterfall pouring off an overhang, and winds back down to the canyon floor.
+# v2 (v1 is git tag cascade-v1): a deep, overgrown canyon with a river along its floor,
+# giant trees, vines, waterfalls and the ruins of an old temple city. The road starts
+# on the canyon floor, sweeps up a stone viaduct at the east end, runs along a ledge on
+# the north wall, crosses the whole canyon on a great Mayan-style bridge (right over the
+# start), dives into a long torchlit temple tunnel through the south wall, leaps the
+# river gorge through a waterfall at the west end, and winds back down past the ruins.
+# Every corner is a 32-60 m arc you can hold a drift through.
 #
 # Saves tracks-src/cascade_caverns.blend and exports public/tracks/cascade_caverns/.
 
@@ -19,77 +21,165 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import props  # noqa: E402
-from course_kit import bmesh, lerp, smooth  # noqa: E402
+from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
 TRACK_ID = "cascade_caverns"
 WATER_Z = -1.6
-JUMP_X = -190.0
-LIP_Y = -6.0  # the ramp's lip
-LAND_Y = 5.0  # where the landing road starts
-FALL_Y = -1.0  # the waterfall curtain, across the jump
-TUNNEL = ((-117.0, -101.0), 70.0, 36.0)  # rock centre, radii
 
-ROUTE = [
-    (-20, -40, 0.0),  # start / finish: the canyon floor, heading east
-    (40, -40, 0.0),
-    (92, -34, 0.8),
-    (134, -12, 2.6),
-    (152, 26, 5.2),  # up the viaduct at the east end
-    (140, 66, 8.6),
-    (104, 86, 11.6),
-    (56, 94, 13.6),  # the ledge along the north wall
-    (12, 92, 14.8),
-    (-22, 70, 15.4),
-    (-36, 32, 15.8),  # the high bridge, over the river and the start straight
-    (-40, -14, 15.8),
-    (-44, -56, 15.4),
-    (-64, -88, 15.0),  # into the tunnel through the south wall
-    (-104, -110, 14.6),
-    (-148, -110, 14.2),
-    (-178, -94, 13.9),
-    (-192, -62, 13.8),
-    (JUMP_X, -30, 14.0),  # the ramp...
-    (JUMP_X, LIP_Y, 14.6),
-    (JUMP_X + 1, LAND_Y + 9, 10.6),  # ...over the gorge, through the falls
-    (-178, 46, 8.6),
-    (-154, 72, 6.4, 16.0),
-    (-126, 60, 4.2),
-    (-112, 34, 2.4),  # over the river on a low stone bridge
-    (-100, -6, 1.0),
-    (-78, -32, 0.3),
+# ---------------------------------------------------------------- the layout
+
+START = (-40.0, -42.0)
+LAYOUT = [
+    ("S", 60),  # 0  the start straight, east along the canyon floor
+    ("R", 40, 30),  # 1
+    ("L", 45, 60),  # 2
+    ("S", 20),  # 3
+    ("L", 50, 150),  # 4  the viaduct: one long sweeping climb round the east end
+    ("S", 40),  # 5  the ledge along the north wall
+    ("R", 40, 25),  # 6
+    ("L", 40, 25),  # 7
+    ("S", 30),  # 8
+    ("L", 32, 90),  # 9  onto the temple bridge
+    ("S", 95),  # 10 the bridge, over the river and the start
+    ("R", 36, 90),  # 11 into the temple tunnel
+    ("S", 17),  # 12 (closes the loop)
+    ("L", 60, 28),  # 13 an S through the tunnel
+    ("R", 60, 28),  # 14
+    ("S", 42),  # 15
+    ("R", 36, 90),  # 16 out of the tunnel, onto the west plateau
+    ("S", 60),  # 17 the run-up to the leap (a stone ramp at the end)
+    ("S", 16),  # 18 the gap: over the gorge, through the waterfall
+    ("S", 50),  # 19 the landing strip
+    ("R", 34, 90),  # 20
+    ("L", 34, 25),  # 21
+    ("R", 34, 25),  # 22
+    ("S", 45),  # 23 the north road, past the ruins
+    ("R", 38, 90),  # 24
+    ("S", 53),  # 25 over the river on a low stone bridge (closes the loop)
+    ("L", 40, 90),  # 26 under the temple bridge
+    ("S", 20),  # 27
+]
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 12, 25, START, 0.0)
+SEG = kit.segment_starts(PATH)
+LIP = SEG[18]
+LAND = SEG[19]
+
+# Heights at segment starts (the road eases between them).
+HEIGHT = [
+    (0, 0.0),
+    (3, 0.6),
+    (4, 1.0),
+    (5, 12.0),
+    (9, 14.5),
+    (10, 15.5),
+    (11, 15.5),
+    (12, 15.0),
+    (16, 14.2),
+    (17, 14.0),
+    (18, 14.8),
+    (19, 9.4),
+    (20, 7.0),
+    (21, 6.2),
+    (23, 4.8),
+    (24, 3.8),
+    (25, 2.6),
+    (26, 1.4),
+    (27, 0.3),
 ]
 
 
+def road_z(d, seg):
+    if 18 <= seg < 19:
+        return lerp(14.8, 9.4, (d - LIP) / (LAND - LIP))
+    if d >= SEG[27]:
+        return lerp(0.3, 0.0, smooth((d - SEG[27]) / 20))
+    for (s0, z0), (s1, z1) in zip(HEIGHT, HEIGHT[1:]):
+        if s0 <= seg < s1:
+            a, b = SEG[s0], SEG[s1]
+            t = (d - a) / max(1e-6, b - a)
+            # The ramp and the landing are straight slopes; everything else eases.
+            return lerp(z0, z1, t if s0 in (17, 19) else smooth(t))
+    return 0.0
+
+
+def road_w(d, seg):
+    if seg == 19:
+        return 22.0  # a wide landing: wherever you land, you're on the road
+    if seg == 17 and d > SEG[18] - 34:
+        return 18.0
+    return 14.0
+
+
+ROUTE = kit.route_points_by(PATH, road_z, every=12.0, width=road_w)
+
+# ---------------------------------------------------------------- the land
+
+
 def river_y(x):
-    return 2.0 + 3.0 * math.sin(x / 50.0) + 2.0 * math.sin(x / 23.0 + 0.7)
+    y = 2.0 + 3.0 * math.sin(x / 50.0) + 2.0 * math.sin(x / 23.0 + 0.7)
+    # At the west end the river swings south into the gorge under the leap.
+    return lerp(y, -9.0, smooth((-x - 215) / 22))
+
+
+def river_half(x):
+    """Half the river's width: narrow in the gorge."""
+    return lerp(15.0, 6.5, smooth((-x - 225) / 14))
 
 
 def wall_n(x):
-    return 70 + 7 * math.sin(x / 37) + 3 * math.sin(x / 11)
+    w = 72 + 5 * math.sin(x / 37) + 3 * math.sin(x / 11)
+    return w + 34 * smooth((-x - 80) / 45)  # the canyon opens out in the west
 
 
 def wall_s(x):
-    return -70 + 7 * math.sin(x / 29 + 1) + 3 * math.sin(x / 13)
+    return -70 + 6 * math.sin(x / 29 + 1) + 3 * math.sin(x / 13)
+
+
+def plateau(x, y):
+    """The high ground at the west end, cut by the gorge: the run-up on the south side,
+    the landing on the north."""
+    south = 13.0 * smooth((-x - 205) / 22)
+    north = 8.6 * smooth((-x - 200) / 26)
+    k = smooth((y - river_y(x)) / 10 + 0.5)
+    return lerp(south, north, k)
+
+
+# Tiers of the canyon walls: (distance into the wall, rise). Flat shelves between the
+# rises are ledges you can see plants and ruins on.
+TIERS = ((0, 9), (6, 8), (13, 10), (22, 9), (30, 8))
+
+
+def walls(x, y):
+    rise = 0.0
+    for edge, sign, ph in ((wall_n(x), 1, 0.0), (wall_s(x), -1, 2.0)):
+        d = (y - edge) * sign
+        for k, (step, up) in enumerate(TIERS):
+            wob = 1.6 * math.sin(x / (13 + k * 3) + ph + k)
+            rise += up * smooth((d - step - wob) / 2.6)
+    for edge, sign in ((200, 1), (-276, -1)):
+        d = (x - edge) * sign
+        for step, up in ((0, 12), (7, 12), (16, 14), (26, 10)):
+            rise += up * smooth((d - step) / 3.5)
+    return rise
+
+
+def base_floor(x, y):
+    """The land without its walls: canyon floor, plateau and river bed."""
+    h = 0.35 * math.sin(x / 17) * math.cos(y / 13) + plateau(x, y)
+    d = abs(y - river_y(x))
+    hw = river_half(x)
+    if d < hw:
+        bed = -4.0 if x > -205 else -7.0
+        h = lerp(h, bed, smooth((hw - d) / 5.5))
+    return h
 
 
 def natural(x, y):
-    """The canyon: a floor with the river, steep stepped walls, closed at both ends."""
-    h = 0.3 * math.sin(x / 17) * math.cos(y / 13)
-    rise = 0.0
-    for edge, sign in ((wall_n(x), 1), (wall_s(x), -1)):
-        d = (y - edge) * sign
-        for step, up in ((0, 11), (7, 10), (15, 9), (24, 8)):
-            rise += up * smooth((d - step) / 3.5)
-    for edge, sign in ((176, 1), (-212, -1)):
-        d = (x - edge) * sign
-        for step, up in ((0, 12), (8, 12), (18, 14)):
-            rise += up * smooth((d - step) / 4)
-    h += rise
-    d = abs(y - river_y(x))
-    if d < 15:
-        bed = -4.0 if x > -170 else -6.0
-        h = lerp(h, bed, smooth((15 - d) / 6))
-    return h
+    return base_floor(x, y) + walls(x, y)
+
+
+# The rock the temple tunnel runs through, part of the south wall.
+TUNNEL = ((-152.0, -108.0), 88.0, 34.0)
 
 
 def in_tunnel_rock(x, y, shrink=1.0):
@@ -97,205 +187,201 @@ def in_tunnel_rock(x, y, shrink=1.0):
     return ((x - cx) / (rx * shrink)) ** 2 + ((y - cy) / (ry * shrink)) ** 2 < 1
 
 
+def rock_mat(c):
+    """Rock varies across the walls: grey beds, mossy rock and ochre sandstone, in
+    patches and bands, so no stretch of wall repeats."""
+    a = math.sin(c.x / 41 + c.z / 9) + 0.7 * math.sin(c.y / 23 - c.x / 61)
+    if c.z > 26:
+        return "canyon_rock_moss"
+    if a > 0.75:
+        return "canyon_rock_ochre"
+    if a < -0.7:
+        return "canyon_rock_grey"
+    b = math.sin(c.x / 17 - c.y / 13) + 0.6 * math.sin(c.z / 5 + c.x / 29)
+    return "canyon_rock_grey" if b > 0.35 else "canyon_rock_moss"
+
+
+# The stretch of route through the tunnel (set once the route is built), padded.
+TUNNEL_S = [0.0, 0.0]
+
+
 def classify(c, n, info):
-    if in_tunnel_rock(c.x, c.y, 0.94):
-        return None  # the tunnel rock covers it
+    # Inside the tunnel rock (which covers it), and along the tunnel's passage (where the
+    # land would poke through the floor), the land is left out. The rock's lumpy edge
+    # always reaches past 0.86 of its radius, so there's never a gap between them.
+    if in_tunnel_rock(c.x, c.y, 0.86):
+        return None
+    smp = info["sample"]
+    if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 16 and c.z > smp.p.z - 1.0:
+        return None
     if n.z < 0.62:
-        return ("fossil_strata", "wall")
-    if c.z < WATER_Z + 0.4 and abs(c.y - river_y(c.x)) < 18:
-        return ("fossil_scree", "sand")
-    if c.z > 20:
-        return ("jungle_leafcover", "grass")
+        return (rock_mat(c), "wall")
+    if c.z < WATER_Z + 0.5 and abs(c.y - river_y(c.x)) < river_half(c.x) + 3:
+        return ("jungle_mud", "mud")
+    if c.z > 24:
+        return ("canopy_dark" if math.sin(c.x / 9) * math.cos(c.y / 7) > 0.3 else "jungle_leafcover", "grass")
     if info["d"] < 12:
         return ("jungle_path", "dirt")
     return ("jungle_leafcover", "grass")
 
 
-def wall_fall(c, name, x, y_wall, top, side):
-    """A waterfall down a canyon wall: a sheet leaning out from the wall to the river."""
-    out = -side  # towards the canyon floor
-    pts = [(x + o, y_wall) for o in range(-6, 7, 3)]
-    fall = c.ribbon(name, [(px, py, 2.0, 0) for px, py in pts], 2.0, 0, c.lib("waterfall"), role="visual")
-    for v in fall.data.vertices:
-        s = v.co.y - y_wall
-        v.co.y = y_wall + (0 if s > 0 else out * 10)
-        v.co.z = top if s > 0 else WATER_Z
-    fall.data.update()
-    c.disc(name + " Foam", x, y_wall + out * 11, 8, WATER_Z + 0.05, c.lib("foam"), role="visual", n=16, wobble=0.2)
-
-
-def scenery(c, rock):
-    ter = list(c.coll("Terrain").objects)
-    for piece in c.pieces:
-        if "viaduct" in piece.name:
-            props.piers(c, piece, every=14, mat=("jungle_temple", "wall"), size=1.3, terrain=ter, inset=2.0)
-        if "ramp" in piece.name:
-            props.piers(c, piece, every=8, mat=("palm_bark", "wall"), size=0.5, terrain=ter)
-    trees = [props.jungle_tree(c, v) for v in range(3)]
-    palms = [props.palm(c, 8 + v * 1.5, 1.0 + v * 0.6, v) for v in range(2)]
-    fern = props.fern(c)
-    rocks = [props.boulder(c, "jungle_mossstone", v) for v in range(3)]
-
-    def floor_ok(m0, m1):
-        def ok(x, y, z):
-            smp, d = c.nearest(x, y)
-            return z > WATER_Z + 0.5 and smp.w / 2 + m0 < d < smp.w / 2 + m1 and not in_tunnel_rock(x, y, 1.05)
-        return ok
-
-    for v, t in enumerate(trees):
-        props.scatter(c, t, 14, (-210, 175, -64, 64), floor_ok(6, 40), ter, seed=60 + v)
-        props.scatter(c, t, 16, (-235, 205, -150, 150), lambda x, y, z: z > 24 and props.clear_of_road(c, x, y, 10), ter, seed=70 + v, scale=(1.0, 1.6))
-    for v, p in enumerate(palms):
-        props.scatter(c, p, 14, (-210, 175, -64, 64), floor_ok(4, 30), ter, seed=80 + v)
-    props.scatter(c, fern, 80, (-215, 180, -100, 110), floor_ok(2.5, 30), ter, seed=90, role="visual")
-    for v, r in enumerate(rocks):
-        props.scatter(c, r, 8, (-200, 170, -40, 40), lambda x, y, z: abs(y - river_y(x)) < 12 and props.clear_of_road(c, x, y, 6), ter, seed=95 + v, scale=(1.0, 2.6), sink=0.6)
-    # Waterfalls pouring down both canyon walls into the river.
-    for i, x in enumerate((-120, 30, 110)):
-        wall_fall(c, "Wall Falls %d" % (i + 1), x, wall_n(x) + 10, 30, 1)
-    for i, x in enumerate((-60, 80)):
-        wall_fall(c, "South Falls %d" % (i + 1), x, wall_s(x) - 10, 30, -1)
-    c.disc("Jump Falls Foam", JUMP_X, FALL_Y, 12, WATER_Z + 0.05, c.lib("foam"), role="visual", n=18, wobble=0.2)
+def underfloor_z(x, y):
+    """The hidden floor: just under the land's own floor, never above the visible land."""
+    if in_tunnel_rock(x, y, 0.86):
+        return None
+    return min(base_floor(x, y), natural(x, y)) - 0.35
 
 
 def main():
     c = kit.Course(TRACK_ID, "Cascade Caverns", "jungle_falls")
     c.route(ROUTE, width=14.0, bank=7.0)
-    stone = ("jungle_mossstone", "wall")
+    stone = ("ruin_stone", "wall")
     c.kinds = {
-        "path": {"mat": "jungle_path", "shoulder": 1.5, "shoulder_mat": ("jungle_leafcover", "dirt"), "barrier": 0.0},
-        "ledge": {
-            "mat": "jungle_path",
-            "shoulder": 1.0,
-            "shoulder_mat": ("jungle_mossstone", "dirt"),
-            "barrier": 1.1,
-            "barrier_mat": stone,
-        },
+        "path": {"mat": "jungle_path", "shoulder": 1.5, "shoulder_mat": ("jungle_leafcover", "dirt")},
+        "ledge": {"mat": "jungle_path", "shoulder": 1.0, "shoulder_mat": ("jungle_mossstone", "dirt"), "barrier": 1.2, "barrier_mat": stone},
         "viaduct": {
             "mat": "jungle_temple",
             "surface": "road",
             "shoulder": 0.6,
-            "shoulder_mat": ("jungle_mossstone", "road"),
-            "barrier": 1.1,
-            "barrier_mat": stone,
-            "deck": 2.2,
-            "deck_mat": ("jungle_temple", "wall"),
+            "shoulder_mat": ("ruin_stone", "road"),
+            "barrier": 1.3,
+            "barrier_mat": ("ruin_glyph", "wall"),
+            "deck": 3.0,
+            "deck_mat": stone,
             "ground": False,
         },
-        "cave": {"mat": "jungle_path", "shoulder": 1.0, "shoulder_mat": ("fossil_scree", "dirt")},
+        "cave": {"mat": "jungle_temple", "surface": "road", "shoulder": 3.6, "shoulder_mat": ("ruin_dark", "road")},
         "ramp": {
-            "mat": "wood_planks",
+            "mat": "jungle_temple",
             "surface": "road",
-            "shoulder": 0.5,
-            "shoulder_mat": ("wood_planks", "road"),
-            "barrier": 1.0,
-            "barrier_mat": ("palm_bark", "wall"),
-            "deck": 2.0,
-            "deck_mat": ("palm_bark", "wall"),
+            "shoulder": 0.6,
+            "shoulder_mat": ("ruin_stone", "road"),
+            "barrier": 1.2,
+            "barrier_mat": ("ruin_glyph", "wall"),
+            "deck": 6.0,
+            "deck_mat": stone,
+            "ground": False,
+        },
+        "landing": {"mat": "jungle_temple", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("ruin_stone", "road"), "barrier": 1.4, "barrier_mat": stone},
+        "lowbridge": {
+            "mat": "jungle_temple",
+            "surface": "road",
+            "shoulder": 0.6,
+            "shoulder_mat": ("ruin_stone", "road"),
+            "barrier": 1.1,
+            "barrier_mat": ("ruin_glyph", "wall"),
+            "deck": 2.4,
+            "deck_mat": stone,
             "ground": False,
         },
     }
-    s_lip = kit.s_near(c, JUMP_X, LIP_Y)
-    s_land = kit.s_near(c, JUMP_X, LAND_Y)
+
+    def seg_of(s):
+        k = 0
+        for i, d in SEG.items():
+            if d <= s:
+                k = max(k, i)
+        return k
 
     def label(smp):
-        x, y = smp.p.x, smp.p.y
-        if s_lip <= smp.s <= s_land:
+        x, y, s = smp.p.x, smp.p.y, smp.s
+        seg = seg_of(s)
+        if LIP <= s <= LAND:
             return "gap"
-        if s_lip - 34 <= smp.s < s_lip:
+        if seg == 17 and s >= LIP - 34:
             return "ramp"
+        if seg == 19:
+            return "landing"
         if in_tunnel_rock(x, y, 0.98):
             return "cave"
-        if smp.p.z - natural(x, y) > 4.0:
+        above = smp.p.z - natural(x, y)
+        if 9 <= seg <= 11 and above > 3.0:
             return "viaduct"
-        if y > wall_n(x) - 6 or y < wall_s(x) + 6:
+        if seg == 4 and above > 3.0:
+            return "viaduct"
+        if 5 <= seg <= 8:
             return "ledge"
+        if seg == 25 and abs(y - river_y(x)) < river_half(x) + 16:
+            return "lowbridge"
         return "path"
 
-    stretches = kit.runs(c, label)
     specials = []
-    for s0, s1, k in stretches:
+    for s0, s1, k in kit.runs(c, label):
         if k == "gap":
             specials.append((s0, s1, None))
         elif k == "ramp":
-            # A kicker: the last 10 m of the ramp curve up by 1.5 m, steepest at the lip.
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 1.5 * max(0.0, (u - (n - 10)) / 10) ** 2}))
+            # A gentle kicker: the last 10 m of the ramp curve up by 1 m.
+            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 1.0 * max(0.0, (u - (n - 10)) / 10) ** 2}))
         elif k != "path":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "path"))
 
-    c.terrain("Canyon", -240, 210, -150, 150, 3.0, natural, classify, near=8.5, fade=16.0)
-    path = [(x, river_y(x)) for x in range(-236, 211, 6)]
-    c.ribbon("River", path, 30, WATER_Z, c.lib("valley_water", "deep_water"), steps=3)
+    inside = kit.crossings(c, lambda smp: in_tunnel_rock(smp.p.x, smp.p.y, 1.0), margin=0)
+    t0, t1 = max(inside, key=lambda r: r[1] - r[0])
+    TUNNEL_S[:] = [t0 - 16, t1 + 16]
+    c.terrain("Canyon", -300, 225, -165, 165, 3.0, natural, classify, near=8.5, fade=16.0)
+    # A hidden floor under it all: nowhere to fall through the world.
+    c.underfloor("Underfloor", -300, 225, -165, 165, 3.0, underfloor_z, c.lib("jungle_leafcover", "grass"))
+    river = [(x, river_y(x), 2 * river_half(x) + 2) for x in range(-292, 222, 4)]
+    c.ribbon("River", river, 30, WATER_Z, c.lib("valley_water", "deep_water"), steps=3)
 
-    # The tunnel rock, cut through along the route.
+    # The tunnel rock, cut through along the route: a long torchlit temple passage.
     (cx, cy), rx, ry = TUNNEL
-    rock = c.rock_mass("Tunnel Rock", cx, cy, rx, ry, 34.0, z0=-2.0, n=28, seed=3,
-                       bands=[(1.0, 0.0), (1.0, 0.3), (0.95, 0.34), (0.93, 0.62), (0.86, 0.66), (0.82, 1.0)])
-    inside = kit.crossings(c, lambda s: in_tunnel_rock(s.p.x, s.p.y, 1.0), margin=0)
-    s0, s1 = max(inside, key=lambda r: r[1] - r[0])
-    c.tunnel(rock, s0, s1, height=9.0, pad=14.0)
-    c.paint_rock(rock, ("fossil_strata", "wall"), ("jungle_leafcover", "grass"), floor=("fossil_scree", "dirt"), top_z=30, floor_z=17)
-
-    # The overhang the waterfall pours from, and the curtain itself (you drive through
-    # it: it's only seen, never hit).
-    lip = c.at(s_lip)
-    top = 27.0
-    bm = bmesh.new()
-    pts = [(-224, FALL_Y - 9), (JUMP_X + 14, FALL_Y - 7), (JUMP_X + 14, FALL_Y + 5), (-224, FALL_Y + 8)]
-    lo = [bm.verts.new((x, y, top)) for x, y in pts]
-    hi = [bm.verts.new((x, y, top + 4)) for x, y in pts]
-    bm.faces.new(list(reversed(lo)))
-    bm.faces.new(hi)
-    for i in range(4):
-        bm.faces.new((lo[i], lo[(i + 1) % 4], hi[(i + 1) % 4], hi[i]))
-    over = c.mesh_object("Overhang", bm, "Rocks", "visual")
-    c.assign(over, c.lib("fossil_strata", "wall"))
-    over.data.shade_flat()
-    curtain = [(x, FALL_Y) for x in range(-210, int(JUMP_X) + 14, 3)]
-    fall = c.ribbon("Waterfall", [(x, y, 2.0, 0) for x, y in curtain], 2.0, 0, c.lib("waterfall"), role="visual")
-    # Stand the strip up: a vertical sheet from the overhang to the gorge.
-    for v in fall.data.vertices:
-        side = v.co.y - FALL_Y  # -1 or +1
-        v.co.y = FALL_Y + side * 0.15
-        v.co.z = top if side > 0 else WATER_Z
-    fall.data.update()
+    rock = c.rock_mass("Tunnel Rock", cx, cy, rx, ry, 40.0, z0=-2.0, n=32, seed=3,
+                       bands=[(1.0, 0.0), (1.0, 0.3), (0.96, 0.34), (0.94, 0.62), (0.88, 0.66), (0.84, 1.0)])
+    c.tunnel(rock, t0, t1, half=c.width / 2 + 3.6, height=11.0, pad=14.0)
+    c.paint_rock(rock, ("canyon_rock_grey", "wall"), ("canopy_dark", "grass"), floor=("ruin_dark", "road"), top_z=32, floor_z=19)
+    # A hidden floor the full width of the tunnel and out past both mouths, just under
+    # the road: no gaps at the sides or where the mouths were cut.
+    floor = []
+    s = t0 - 22
+    while s <= t1 + 22:
+        q = c.at(s)
+        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + 6, q.p.z - 0.25))
+        s += 2.0
+    c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("ruin_dark", "road"), coll="Collision", role="collision", steps=4)
 
     c.start_line()
-    scenery(c, rock)
     L = c.length
-    c.zipper(s_lip - 24, 0)  # onto the ramp: plenty of speed for the leap
-    c.zipper(kit.s_near(c, 12, 92), -2)
-    c.zipper(L - 70, 3)
-    for at, across in ((50, 0), (kit.s_near(c, 104, 86), 2), (kit.s_near(c, -40, -14), 0), (s0 + 30, -2), (kit.s_near(c, -128, 54), 0)):
+    # Gameplay: a zipper down the start straight, one along the ledge, one onto the
+    # run-up to the leap (so everyone reaches the lip at about the same speed).
+    c.zipper(40, 0)
+    c.zipper(kit.s_near(c, 20, 62), 0)
+    c.zipper(SEG[17] + 6, 0)
+    for at, across in ((SEG[1] + 10, 0), (SEG[5] + 10, 2), (SEG[10] + 45, 0), (SEG[15] + 10, -2), (SEG[23] + 15, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (110, -3, "red"),
-        (110, 3, "blue"),
-        (kit.s_near(c, 56, 94), 0, "green"),
-        (s1 + 6, 0, "yellow"),
-        (kit.s_near(c, -160, 66), 0, "rainbow"),
+        (SEG[3], -3, "red"),
+        (SEG[3], 3, "blue"),
+        (SEG[8] + 10, 0, "green"),
+        (SEG[13] + 10, 0, "yellow"),
+        (SEG[21] + 10, 0, "rainbow"),
     ):
         c.balloon(at, across, col)
 
-    # Missing the leap drops you in the gorge: you're fished out past it, not before it.
-    c.entity("respawn", **{"from": round(s_lip - 40, 1), "to": round(s_land + 6, 1), "at": round(s_land + 14, 1)})
-    gx, gy, gz = c.game(JUMP_X, FALL_Y, WATER_Z)
-    c.entity("waterfall", x=gx, y=gy, z=gz, top=27, width=34, heading=0)
-    for x in (-120, 30, 110):
-        gx, gy, gz = c.game(x, wall_n(x) - 1, WATER_Z)
-        c.entity("waterfall", x=gx, y=gy, z=gz, top=30, width=12, heading=0)
+    # Missing the leap drops you in the gorge: you're fished out at the end of the
+    # landing strip, never before the jump.
+    c.entity("respawn", **{"from": round(LIP - 40, 1), "to": round(LAND + 8, 1), "at": round(LAND + 44, 1)})
 
-    # Checkpoints: up the viaduct, along the ledge, off the high bridge, out of the
-    # tunnel, and just past the landing of the leap (beyond where a missed jump puts you).
-    c.checkpoints(extra=[kit.s_near(c, 104, 86), kit.s_near(c, -44, -56) + 10, s1 + 10, s_land + 24])
+    # Checkpoints: up the viaduct, along the ledge, on the bridge, in and out of the
+    # tunnel, well past the leap's landing, along the north road and over the low bridge.
+    # Tall gates, so nobody can fly over one.
+    c.checkpoints(
+        extra=[SEG[5], SEG[8], SEG[10] + 50, SEG[13], SEG[16] + 30, LAND + 52, SEG[23] + 20, SEG[26]],
+        height=10.0,
+    )
+
+    import cascade_scenery  # noqa: E402
+
+    cascade_scenery.build(c, rock, t0, t1, sys.modules[__name__])
 
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [rock], 0.35)
-    c.preset("bottoms", ter, 0.45)
+    c.preset("bottoms", ter, 0.5)
     c.preset("cover", [rock], 0.6)
-    kit.paint.shade_roads(c.pieces, 0.55)
+    kit.paint.shade_roads(c.pieces, 0.6)
     c.finish()
 
 
-main()
+if __name__ == "__main__":
+    main()

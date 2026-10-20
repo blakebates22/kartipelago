@@ -252,12 +252,16 @@ class Course:
         return out
 
     def nearest(self, x, y):
-        best, bd = None, 1e18
-        for smp in self.S:
-            d = (smp.p.x - x) ** 2 + (smp.p.y - y) ** 2
-            if d < bd:
-                best, bd = smp, d
-        return best, math.sqrt(bd)
+        """The route sample nearest (x, y), ignoring height, and how far away it is."""
+        tree = getattr(self, "_near_tree", None)
+        if tree is None or self._near_n != len(self.S):
+            tree = kdtree.KDTree(len(self.S))
+            for i, smp in enumerate(self.S):
+                tree.insert(Vector((smp.p.x, smp.p.y, 0)), i)
+            tree.balance()
+            self._near_tree, self._near_n = tree, len(self.S)
+        _, i, d = tree.find(Vector((x, y, 0)))
+        return self.S[i], d
 
     # -------------------------------------------------------------- road pieces
 
@@ -933,3 +937,91 @@ def route_points(pts, z, every=14.0):
             out.append((round(x, 2), round(y, 2), round(z(x, y), 2)))
             next_at += every
     return out
+
+
+def route_points_by(pts, z, every=14.0, width=None):
+    """
+    Like route_points, but the height (and optionally the width) come from where along
+    the layout a point is: z(distance, segment_index) and width(distance, segment_index).
+    For layouts that cross over themselves (a bridge over the start straight).
+    """
+    out = []
+    d = 0.0
+    next_at = 0.0
+    for i, (x, y, _, seg) in enumerate(pts[:-1]):
+        if i:
+            d += math.hypot(x - pts[i - 1][0], y - pts[i - 1][1])
+        if d >= next_at:
+            p = (round(x, 2), round(y, 2), round(z(d, seg), 2))
+            if width is not None:
+                p = p + (round(width(d, seg), 2),)
+            out.append(p)
+            next_at += every
+    return out
+
+
+def segment_starts(pts):
+    """Distance along a turtle path where each segment starts."""
+    out = {}
+    d = 0.0
+    for i, (x, y, _, seg) in enumerate(pts):
+        if i:
+            d += math.hypot(x - pts[i - 1][0], y - pts[i - 1][1])
+        out.setdefault(seg, d)
+    return out
+
+
+def _underfloor(self, name, x0, x1, y0, y1, cell, height, mat):
+    """
+    A hidden collision floor under the land, so nowhere can a kart fall through the world:
+    under steep slopes and wall feet (which only count as walls) there's always ground
+    just below. `height(x, y)` returns the floor's height, or None to leave a hole (inside
+    a rock mass, over a deliberate drop).
+    """
+    nx = int(round((x1 - x0) / cell))
+    ny = int(round((y1 - y0) / cell))
+    bm = bmesh.new()
+    grid = {}
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            x = x0 + (x1 - x0) * i / nx
+            y = y0 + (y1 - y0) * j / ny
+            h = height(x, y)
+            if h is not None:
+                grid[i, j] = bm.verts.new((x, y, h))
+    for j in range(ny):
+        for i in range(nx):
+            q = [grid.get(k) for k in ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1))]
+            if all(q):
+                bm.faces.new(q)
+    ob = self.mesh_object(name, bm, "Collision", "collision")
+    self.assign(ob, mat)
+    return ob
+
+
+def _glow(self, obs, lights, radius, color, base=1.0, region=None):
+    """
+    Hand-painted light: every vertex inside `region(point)` (or everywhere) is darkened
+    to `base`, then lit back up near each light point, tinted `color`, fading out over
+    `radius` metres. For torchlit tunnels.
+    """
+    from kartipelago_tools import paint as _paint
+
+    for ob in obs:
+        t = _paint.Target(ob, None)
+        for li, v, _ in t.corners:
+            w = t.world[v]
+            if region is not None and not region(w):
+                continue
+            k = 0.0
+            for lp in lights:
+                d = (w - Vector(lp)).length
+                k = max(k, 1.0 - d / radius)
+            k = max(0.0, k) ** 1.4
+            t.mul(li, [base + (color[c] - base) * k for c in range(3)])
+        t.write()
+
+
+Course.underfloor = _underfloor
+Course.glow = _glow
+

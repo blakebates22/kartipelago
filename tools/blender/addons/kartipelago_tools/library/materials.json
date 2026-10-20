@@ -54,24 +54,51 @@
     {
       "id": "jungle_falls",
       "name": "Jungle Falls",
-      "description": "Mossy stone, old masonry, leafy ground and soft green light",
+      "description": "Mossy stone, old masonry, leafy ground and soft green light, ringed by misty jungle hills",
       "environment": {
-        "sky": "#a4dccd",
+        "sky": "#8fcfe0",
         "fog": {
           "enabled": true,
-          "color": "#b4dcc4",
-          "near": 90,
-          "far": 460
+          "color": "#a9d6c2",
+          "near": 70,
+          "far": 420
         },
         "sun": {
-          "color": "#f2ffe2",
-          "intensity": 1.9,
+          "color": "#f6ffe0",
+          "intensity": 2.0,
           "direction": [-0.4, 0.85, 0.3]
         },
         "ambient": {
           "sky": "#d6f2e2",
           "ground": "#2f5a2c",
           "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#3f9fd6",
+          "horizon": "#c6ead8",
+          "bottom": "#a9d6c2",
+          "sun": {
+            "color": "#fffbe6",
+            "size": 6,
+            "glow": "#fff0a8",
+            "elevation": 34
+          },
+          "clouds": {
+            "count": 22,
+            "color": "#ffffff",
+            "shade": "#d4ece4",
+            "seed": 9,
+            "low": 14,
+            "high": 30,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#24502c",
+            "far": "#8dbfa4",
+            "height": 13,
+            "seed": 4,
+            "layers": 3
+          }
         }
       }
     },
@@ -638,6 +665,148 @@
       "image": "jungle_fern.png",
       "wrap": "repeat",
       "tileMetres": 4
+    },
+    {
+      "id": "canyon_rock_grey",
+      "name": "Canyon Rock (Grey)",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "canyon_rock_grey.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "canyon_rock_moss",
+      "name": "Canyon Rock (Mossy)",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "canyon_rock_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "canyon_rock_ochre",
+      "name": "Canyon Rock (Ochre)",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "canyon_rock_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "ruin_stone",
+      "name": "Ruin Stone",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "ruin_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "ruin_glyph",
+      "name": "Ruin Glyphs",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "ruin_glyph.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ruin_dark",
+      "name": "Ruin Stone (Sooty)",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "ruin_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "jungle_bark",
+      "name": "Jungle Bark",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "jungle_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "canopy_dark",
+      "name": "Deep Canopy",
+      "theme": "jungle_falls",
+      "surface": "grass",
+      "image": "canopy_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "big_leaf",
+      "name": "Big Leaf",
+      "theme": "jungle_falls",
+      "surface": "grass",
+      "image": "big_leaf.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "vine_leaf",
+      "name": "Vine Leaves",
+      "theme": "jungle_falls",
+      "surface": "grass",
+      "image": "vine_leaf.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "frog_skin",
+      "name": "Frog Skin",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "frog_skin.png",
+      "wrap": "repeat",
+      "tileMetres": 0.4
+    },
+    {
+      "id": "log_end",
+      "name": "Log End",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "log_end.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "torch_glow",
+      "name": "Torch Flame",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "torch_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0.2,
+        "scrollV": -1.6,
+        "wave": 0.1,
+        "wavePeriod": 0.4,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "jungle_mud",
+      "name": "Jungle Mud",
+      "theme": "jungle_falls",
+      "surface": "mud",
+      "image": "jungle_mud.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "pterosaur_skin",
+      "name": "Pterosaur Skin",
+      "theme": "jungle_falls",
+      "surface": "wall",
+      "image": "pterosaur_skin.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     },
     {
       "id": "swamp_mud",

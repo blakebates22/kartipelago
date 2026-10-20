@@ -48,10 +48,96 @@ function pool(make: () => THREE.Object3D, scene: THREE.Object3D) {
   };
 }
 
+/**
+ * The balloons' painted markings: a carved-stone, cave-painting look (a zigzag band
+ * round the middle, rows of dots, little triangles near the top). The texture is a
+ * shade of grey that darkens the balloon's own colour, so red stays red.
+ */
+function markingsTexture() {
+  const W = 64;
+  const H = 32;
+  const data = new Uint8Array(W * H * 4);
+  const set = (x: number, y: number, v: number) => {
+    const i = ((((y % H) + H) % H) * W + (((x % W) + W) % W)) * 4;
+    data[i] = data[i + 1] = data[i + 2] = v;
+    data[i + 3] = 255;
+  };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) set(x, y, 255);
+  const ink = 120;
+  // A zigzag band round the middle (v = 0.5 is the equator).
+  for (let x = 0; x < W; x++) {
+    const z = Math.abs((x % 8) - 4);
+    for (let t = 0; t < 2; t++) set(x, 14 + z + t, ink);
+    set(x, 12, 170);
+    set(x, 21, 170);
+  }
+  // Dots above and below.
+  for (let x = 2; x < W; x += 6) {
+    for (const y of [8, 25]) {
+      set(x, y, ink);
+      set(x + 1, y, ink);
+      set(x, y + 1, ink);
+      set(x + 1, y + 1, ink);
+    }
+  }
+  // Little triangles near the top, pointing up.
+  for (let x = 0; x < W; x += 8)
+    for (let r = 0; r < 3; r++) for (let k = -r; k <= r; k++) set(x + 4 + k, 4 - r + 2, 150);
+  const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** A twisted leather-and-vine cord: diagonal stripes in two browns and a green. */
+function cordTexture() {
+  const W = 8;
+  const H = 16;
+  const data = new Uint8Array(W * H * 4);
+  const cols = [
+    [122, 84, 48],
+    [168, 124, 72],
+    [78, 120, 52],
+    [168, 124, 72],
+  ];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const c = cols[Math.floor((x + y) / 2) % cols.length]!;
+      const i = (y * W + x) * 4;
+      data.set([c[0]!, c[1]!, c[2]!, 255], i);
+    }
+  const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(1, 10);
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** The string: a wiggly cord hanging from the knot, `len` metres long, top at y = 0. */
+function cordGeometry(len: number) {
+  const pts: THREE.Vector3[] = [];
+  for (let k = 0; k <= 16; k++) {
+    const t = k / 16;
+    // Squiggles that grow toward the free end, turning round as they go.
+    const a = 0.08 + 0.16 * t;
+    pts.push(new THREE.Vector3(Math.sin(t * 13) * a, -t * len, Math.cos(t * 9 + 0.5) * a * 0.8));
+  }
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.045, 5, false);
+}
+
 export function createItemView(scene: THREE.Object3D) {
+  const markings = markingsTexture();
   const rainbowMat = new THREE.MeshStandardMaterial({
     color: "#ffffff",
+    map: markings,
     emissive: "#ffffff",
+    emissiveMap: markings,
     emissiveIntensity: 0.25,
   });
   const balloonMats = Object.fromEntries(
@@ -59,22 +145,50 @@ export function createItemView(scene: THREE.Object3D) {
       k,
       k === "rainbow"
         ? rainbowMat
-        : new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.2 }),
+        : new THREE.MeshStandardMaterial({
+            color: c,
+            map: markings,
+            emissive: c,
+            emissiveMap: markings,
+            emissiveIntensity: 0.2,
+          }),
     ]),
   ) as Record<BalloonColor, THREE.MeshStandardMaterial>;
   const balloonGeo = new THREE.SphereGeometry(0.9, 16, 12).scale(1, 1.2, 1);
-  const stringMat = new THREE.MeshBasicMaterial({ color: "#eeeeee" });
+  // The string: a squiggly twisted cord, bound at the knot, with a bone bead at the end.
+  const cordMat = new THREE.MeshLambertMaterial({ map: cordTexture() });
+  const boneMat = new THREE.MeshLambertMaterial({ color: "#efe3c4", flatShading: true });
+  const cordGeo = cordGeometry(1.7);
+  const knotGeo = new THREE.ConeGeometry(0.2, 0.32, 6);
+  const wrapGeo = new THREE.TorusGeometry(0.11, 0.045, 4, 8).rotateX(Math.PI / 2);
+  const boneGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 5).rotateZ(Math.PI / 2);
+  const knobGeo = new THREE.SphereGeometry(0.075, 5, 4);
   const balloons = pool(() => {
     const g = new THREE.Group();
     const ball = new THREE.Mesh(balloonGeo, balloonMats.red);
     ball.name = "ball";
     ball.castShadow = true;
-    const knot = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.3, 6), stringMat);
+    const knot = new THREE.Mesh(knotGeo, cordMat);
     knot.position.y = -1.15;
     knot.rotation.x = Math.PI;
-    const string = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2, 4), stringMat);
-    string.position.y = -1.8;
-    g.add(ball, knot, string);
+    const wrap = new THREE.Mesh(wrapGeo, cordMat);
+    wrap.position.y = -1.26;
+    const cord = new THREE.Mesh(cordGeo, cordMat);
+    cord.name = "cord";
+    cord.position.y = -1.3;
+    // A little bone tied on the end.
+    const bone = new THREE.Group();
+    bone.add(new THREE.Mesh(boneGeo, boneMat));
+    for (const s of [-1, 1])
+      for (const z of [-0.04, 0.04]) {
+        const knob = new THREE.Mesh(knobGeo, boneMat);
+        knob.position.set(s * 0.15, 0, z);
+        bone.add(knob);
+      }
+    const end = cordGeo.parameters.path.getPoint(1);
+    bone.position.set(end.x, end.y - 0.04, end.z);
+    cord.add(bone);
+    g.add(ball, knot, wrap, cord);
     return g;
   }, scene);
 
@@ -187,6 +301,10 @@ export function createItemView(scene: THREE.Object3D) {
         (g.getObjectByName("ball") as THREE.Mesh).material = balloonMats[b.color];
         g.position.set(b.x, b.y + 2.6 + Math.sin(seconds * 2 + i) * 0.2, b.z);
         g.rotation.y = seconds + i;
+        // The cord sways a little as the balloon bobs.
+        const cord = g.getObjectByName("cord")!;
+        cord.rotation.x = Math.sin(seconds * 2.3 + i) * 0.08;
+        cord.rotation.z = Math.cos(seconds * 1.9 + i) * 0.08;
         g.scale.setScalar(Math.min(1, 0.2 + b.age * 3));
       });
       balloons.hideFrom(n);

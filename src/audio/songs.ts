@@ -18,7 +18,12 @@
  *                                   (bongos), shaker, tambourine and a cowbell-ish clave
  *   riverbend_classic  "Riverbend Palms (Classic)"  C major, 132: the gentler v1 theme
  *                                   (steel pan, marimba, flute, bongos)
- *   cascade     "Cascade Caverns"   D minor, 142: flute over pizzicato, wood, bells
+ *   cascade     "Cascade Caverns"   D minor, 128: deep in the jungle temple. Pan flute
+ *                                   lead with bird calls, a hollow log-drum ostinato,
+ *                                   a buzzing drone, hand drums (djembe, toms, bongos),
+ *                                   shakers, and horns for the big moments
+ *   cascade_classic  "Cascade Caverns (Classic)"  D minor, 142: the v1 theme (flute
+ *                                   over pizzicato, wood, bells)
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        A minor, 158: driving drums, low brass, fast
@@ -604,8 +609,118 @@ function riverbendClassic(): Song {
 }
 
 // ---------------------------------------------------------------- "Cascade Caverns"
+// Deep in the jungle, exploring the temple: a wooden pan flute over a hollow log-drum
+// ostinato and a buzzing drone, hand drums underneath, birds calling overhead, and
+// horns rising in the second half (the bridge, the leap).
 
 export const CASCADE_MELODY = bars(
+  "D5:1 F5:.5 A5:.5 D6:1.5 C6:.5",
+  "E6:1 D6:.5 C6:.5 G5:1 E5:1",
+  "F5:.5 A5:.5 D6:1 F6:1 E6:.5 D6:.5",
+  "E6:1.5 C6:.5 A5:2",
+  "A5:.5 D6:.5 F6:.5 A6:.5 G6:1 F6:1",
+  "A6:1 F6:.5 C6:.5 A5:1 C6:1",
+  "G5:.5 C6:.5 E6:1 G6:1 E6:.5 C6:.5",
+  "E6:1 C#6:1 A5:2!",
+  "D6:.5 F6:.5 Bb6:1 A6:.5 F6:.5 D6:1",
+  "E6:.5 G6:.5 C7:1 G6:1 E6:1",
+  "F6:1 E6:.5 D6:.5 A5:1 D6:1",
+  "A5:1.5 r:.5 D5:.5 E5:.5 F5:1",
+  "F5:.5 Bb5:.5 D6:1 F6:1 D6:1",
+  "E6:.5 D6:.5 C6:1 G5:1 C6:1",
+  "C#6:.5 D6:.5 E6:1 A6:1 G6:1",
+  "E6:1 C#6:1 A5:1 r:1",
+);
+export const CASCADE_CHORDS =
+  "Dm:4 C:4 Dm:4 Am:4 Dm:4 F:4 C:4 A:4 Bb:4 C:4 Dm:4 Dm:4 Bb:4 C:4 A:4 A7:4";
+
+const JUNGLE_KIT: Record<string, InstrumentId> = {
+  ...KIT,
+  d: "djembe",
+};
+
+function cascade(): Song {
+  const ch = chart(CASCADE_CHORDS);
+  const mel = seq(CASCADE_MELODY, 0, 0.84);
+  const b = mel.filter((n) => n.t >= 32);
+  const T = 16;
+  // Birds calling over the canopy: quick high trills on the pan flute, now and then.
+  const birds = seq(
+    bars(
+      "r:4",
+      "r:3 A6:.25 D7:.25 A6:.25 D7:.25",
+      "r:4",
+      "r:4",
+      "r:4",
+      "r:3 C7:.25 F7:.25 C7:.5",
+      "r:4",
+      "r:4",
+    ),
+    0,
+    0.5,
+  );
+  // The log drum: a 3+3+2 ostinato on the chord, round and round.
+  const logs = arpeggio(ch, 0.5, [0, 1, 0, 2, 0, 1, 2, 1], 50, 0.4, 0.62);
+  // The drone sits on the chord's root, a long blow per bar.
+  const drone = bassLine(ch, [[0, 3.9, "R"]], 38, 0.75);
+  // A walking bass that only joins in the second half.
+  const walk = bassLine(
+    ch.filter((c) => c.t >= 32),
+    [
+      [0, 1, "R"],
+      [1.5, 0.5, "5"],
+      [2, 1, "8"],
+      [3, 0.5, "5"],
+      [3.5, 0.5, "A"],
+    ],
+    33,
+    0.8,
+  );
+  return {
+    id: "cascade",
+    title: "Cascade Caverns",
+    role: "Prehistoric World",
+    bpm: 128,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("panflute", "base", 1, mel),
+      part("panflute", "base", 0.5, [...birds, ...shift(birds, 32)]),
+      part("marimba", "base", 0.35, shift(b, 0, -12)),
+      part("logdrum", "base", 0.9, logs),
+      part("drone", "base", 0.8, drone),
+      part("bass", "base", 0.8, walk),
+      // Horns swell under the second half.
+      part(
+        "horn",
+        "base",
+        0.4,
+        pads(
+          ch.filter((c) => c.t >= 32),
+          53,
+          4,
+          0.5,
+        ),
+      ),
+      part("strings", "base", 0.25, pads(ch, 57, 4, 0.4)),
+      // Hand drums: a djembe groove, toms answering, bongo chatter, kick on the one.
+      ...drumParts("base", 0.85, drums("D..d..D.d.D..d..", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.6, drums("....o.......o.oo", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.55, drums("..b.b..b..b.b.bB", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.7, drums("K.......K.......", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.5, drums("w.....w.....w.w.", JUNGLE_KIT, 0.25, T)),
+      ...drumParts("base", 0.6, drums("C", JUNGLE_KIT, 32, 2)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Cascade Caverns (Classic)"
+// The original (v1) Cascade theme, kept in the music player. To put it back on the
+// course, set the track's music to "cascade_classic" in src/game/tracks.ts.
+
+export const CASCADE_CLASSIC_MELODY = bars(
   "D5:.5 F5:.5 A5:.5 D6:.5 A5:.5 C6:.5 A5:1",
   "D6:.5 C6:.5 Bb5:1 F5:.5 G5:.5 F5:1",
   "E5:.5 G5:.5 C6:1 E6:.5 D6:.5 C6:1",
@@ -623,12 +738,12 @@ export const CASCADE_MELODY = bars(
   "F6:.5 E6:.5 D6:1 A5:1 F5:1",
   "E5:.5 G5:.5 A5:1 C#6:1 E6:1",
 );
-export const CASCADE_CHORDS =
+export const CASCADE_CLASSIC_CHORDS =
   "Dm:4 Bb:4 C:4 Dm:4 Dm:4 Bb:4 Gm:4 A:4 F:4 C:4 Bb:4 F:4 Gm:4 A:4 Dm:4 A7:4";
 
-function cascade(): Song {
-  const ch = chart(CASCADE_CHORDS);
-  const mel = seq(CASCADE_MELODY, 0, 0.82);
+function cascadeClassic(): Song {
+  const ch = chart(CASCADE_CLASSIC_CHORDS);
+  const mel = seq(CASCADE_CLASSIC_MELODY, 0, 0.82);
   const a = mel.filter((n) => n.t < 32);
   const b = mel.filter((n) => n.t >= 32);
   const T = 16;
@@ -643,8 +758,8 @@ function cascade(): Song {
     [3.5, 0.5, "A"],
   ];
   return {
-    id: "cascade",
-    title: "Cascade Caverns",
+    id: "cascade_classic",
+    title: "Cascade Caverns (Classic)",
     role: "Prehistoric World",
     bpm: 142,
     beats: 64,
@@ -861,6 +976,7 @@ export const SONGS: Record<string, Song> = {
   riverbend: riverbend(),
   riverbend_classic: riverbendClassic(),
   cascade: cascade(),
+  cascade_classic: cascadeClassic(),
   bonebog: bonebog(),
   ember: ember(),
 };

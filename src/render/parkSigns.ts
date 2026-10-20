@@ -32,7 +32,7 @@ function signTexture(number: string, name: string, detail: string) {
   return t;
 }
 
-const DETAIL = { plain: "drift it all", bananas: "+ bananas", zipper: "+ zipper" } as const;
+const DETAIL = { plain: "drift it all", bananas: "+ eggs", zipper: "+ zipper" } as const;
 
 export function createParkSigns(scene: THREE.Object3D, park: DriftPark) {
   const group = new THREE.Group();

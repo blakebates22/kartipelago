@@ -8,7 +8,7 @@
 
 import math
 
-from course_kit import Vector, bmesh, rnd
+from course_kit import Matrix, Vector, bmesh, rnd
 
 
 def _faces(bm, before):
@@ -562,8 +562,9 @@ def clear_of_road(c, x, y, margin):
     return all((q.p.x - x) ** 2 + (q.p.y - y) ** 2 > (q.w / 2 + margin) ** 2 for q in c.extra_ground)
 
 
-def piers(c, piece, every=12.0, mat=("palm_bark", "wall"), size=0.8, terrain=(), inset=1.2):
-    """Posts under a bridge piece, down to whatever is below."""
+def piers(c, piece, every=12.0, mat=("palm_bark", "wall"), size=0.8, terrain=(), inset=1.2, avoid=None):
+    """Posts under a bridge piece, down to whatever is below. `avoid(x, y, z_bottom)`
+    can veto a post (e.g. one that would stand on another road)."""
     s0, s1 = piece["kp_from"], piece["kp_to"]
     if s1 < s0:
         s1 += c.length
@@ -578,6 +579,8 @@ def piers(c, piece, every=12.0, mat=("palm_bark", "wall"), size=0.8, terrain=(),
             top = p.z - 0.6
             if top - bottom < 1.0:
                 continue
+            if avoid is not None and avoid(p.x, p.y, bottom):
+                continue
             lo = ring(bm, (p.x, p.y), size, bottom, 4, phase=math.pi / 4)
             hi = ring(bm, (p.x, p.y), size, top, 4, phase=math.pi / 4)
             loft(bm, [lo, hi])
@@ -586,4 +589,432 @@ def piers(c, piece, every=12.0, mat=("palm_bark", "wall"), size=0.8, terrain=(),
         return None
     ob = c.mesh_object(piece.name + " Piers", bm, "Props")
     c.assign(ob, c.lib(*mat))
+    return ob
+
+
+# ------------------------------------------------------------------ jungle ruins (Cascade v2)
+
+
+def cuboid(bm, centre, size, rot=0.0, tilt=(0.0, 0.0)):
+    """A box (w, d, h) centred at centre, turned `rot` about Z and tilted (x, y)."""
+    res = bmesh.ops.create_cube(bm, size=1.0)
+    m = Matrix.Rotation(rot, 3, "Z") @ Matrix.Rotation(tilt[0], 3, "X") @ Matrix.Rotation(tilt[1], 3, "Y")
+    for v in res["verts"]:
+        v.co = Vector(centre) + m @ Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2]))
+    return res
+
+
+def giant_tree(c, variant=0):
+    """A towering jungle giant (35-45 m): a massive trunk on huge buttress roots, great
+    limbs, a vast layered crown and vines hanging from the limbs."""
+    name = "Giant Tree %d" % variant
+
+    def build(bm):
+        h = 34.0 + 4.0 * variant
+        lean = (0.6 * math.sin(variant * 2.1), 0.6 * math.cos(variant * 1.7))
+        tube(bm, [(0, 0, -1.0), (lean[0] * 0.3, lean[1] * 0.3, h * 0.3), (lean[0] * 0.7, lean[1] * 0.7, h * 0.62), (lean[0], lean[1], h)], [2.3, 1.6, 1.3, 0.9], n=10)
+        for i in range(7):
+            a = i * math.tau / 7 + variant * 0.5
+            ca, sa = math.cos(a), math.sin(a)
+            reach = 4.5 + 1.5 * rnd(i + variant * 3)
+            fin = [(1.2 * ca, 1.2 * sa, 6.5 + rnd(i * 2 + variant) * 3), (reach * ca, reach * sa, -0.8), (1.0 * ca, 1.0 * sa, -0.8)]
+            off = Vector((-sa, ca, 0)) * 0.45
+            vs = [bm.verts.new(Vector(q) + off) for q in fin] + [bm.verts.new(Vector(q) - off) for q in fin]
+            bm.faces.new((vs[0], vs[1], vs[2]))
+            bm.faces.new((vs[5], vs[4], vs[3]))
+            bm.faces.new((vs[0], vs[3], vs[4], vs[1]))
+            bm.faces.new((vs[1], vs[4], vs[5], vs[2]))
+        limbs = []
+        for i in range(5):
+            a = i * math.tau / 5 + 0.4 + variant
+            reach = 9.0 + 3.0 * rnd(i * 5 + variant)
+            z0 = h * (0.66 + 0.06 * (i % 3))
+            end = (lean[0] + reach * math.cos(a), lean[1] + reach * math.sin(a), z0 + 4.0 + 2 * rnd(i + 9))
+            tube(bm, [(lean[0] * 0.8, lean[1] * 0.8, z0), ((lean[0] + end[0]) * 0.5, (lean[1] + end[1]) * 0.5, z0 + 3.2), end], [0.9, 0.6, 0.35], n=6)
+            limbs.append(end)
+        trunk = _faces(bm, 0)
+        k0 = len(bm.faces)
+        crown = [(lean[0], lean[1], h + 3.0, 8.5)] + [(x, y, z + 1.5, 6.0 + 1.5 * rnd(k + variant)) for k, (x, y, z) in enumerate(limbs)]
+        for x, y, z, r in crown:
+            blob(bm, (x, y, z), r, sz=0.5, subdiv=2)
+        top = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for x, y, z, r in crown[1:]:
+            blob(bm, (x * 0.85, y * 0.85, z - 2.0), r * 0.85, sz=0.35, subdiv=1)
+        under = _faces(bm, k1)
+        k2 = len(bm.faces)
+        # Vines hanging from the limbs: long thin strands with leafy knots.
+        for k, (x, y, z) in enumerate(limbs):
+            for j in range(3):
+                vx = x * (0.55 + 0.15 * j) + (rnd(k * 7 + j) - 0.5) * 2
+                vy = y * (0.55 + 0.15 * j) + (rnd(k * 11 + j) - 0.5) * 2
+                top_z = z - 1.0 - j * 0.6
+                length = 9.0 + 9.0 * rnd(k * 3 + j * 5 + variant)
+                tube(bm, [(vx, vy, top_z), (vx + 0.3, vy, top_z - length * 0.5), (vx, vy + 0.2, top_z - length)], [0.18, 0.15, 0.1], n=4)
+                for q in range(3):
+                    blob(bm, (vx + 0.2, vy, top_z - length * (0.3 + 0.3 * q)), 0.55, sz=1.3, subdiv=0)
+        vines = _faces(bm, k2)
+        return [(c.lib("jungle_bark"), trunk), (c.lib("canopy_dark"), top), (c.lib("jungle_leafcover"), under), (c.lib("vine_leaf"), vines)]
+
+    return c.proto(name, build) and name
+
+
+def leaf_card(bm, at, angle, size, droop=0.5):
+    """One small leaf: a folded diamond, hanging off a vine at `angle` (round Z)."""
+    d = Vector((math.cos(angle), math.sin(angle), -droop)).normalized()
+    side = Vector((-math.sin(angle), math.cos(angle), 0.0))
+    a = Vector(at)
+    tip = a + d * size
+    mid = a + d * size * 0.45
+    fold = Vector((0, 0, 0.12 * size))
+    v = [bm.verts.new(a), bm.verts.new(mid + side * size * 0.32), bm.verts.new(tip), bm.verts.new(mid - side * size * 0.32), bm.verts.new(mid + fold)]
+    bm.faces.new((v[0], v[1], v[2], v[4]))
+    bm.faces.new((v[0], v[4], v[2], v[3]))
+
+
+def vine_curtain(c, variant=0, length=10.0):
+    """Vines hanging down a cliff or off a ledge: wavy strands strung with small leaves,
+    alternating sides, thinning to a leafy tip (origin at the top)."""
+    name = "Vines %d" % variant
+
+    def build(bm):
+        for k in range(7):
+            x0 = (k - 3) * 0.9 + (rnd(k + variant * 5) - 0.5) * 0.6
+            ln = length * (0.45 + 0.55 * rnd(k * 3 + variant))
+            sway = (rnd(k * 7 + variant) - 0.5) * 0.8
+            ph = rnd(k * 11 + variant) * 6
+            pts = []
+            n = max(4, int(ln / 1.2))
+            for q in range(n + 1):
+                t = q / n
+                pts.append((x0 + sway * t + 0.25 * math.sin(ph + t * 7), 0.12 + 0.3 * t, -ln * t))
+            tube(bm, pts, [0.1 - 0.05 * q / n for q in range(n + 1)], n=4)
+            q = 0.5
+            j = 0
+            while q < ln:
+                t = q / ln
+                x = x0 + sway * t + 0.25 * math.sin(ph + t * 7)
+                ang = (math.pi * 0.5 if j % 2 else -math.pi * 0.5) + (rnd(j + k * 13) - 0.5) * 1.2 + math.pi * 0.5 * (j % 3 == 0)
+                leaf_card(bm, (x, 0.18 + 0.3 * t, -q), ang, 0.55 + 0.35 * rnd(j * 3 + k), droop=0.7)
+                q += 0.42 + 0.3 * rnd(j * 5 + k)
+                j += 1
+            # A tuft at the tip.
+            for a in range(3):
+                leaf_card(bm, pts[-1], a * math.tau / 3 + k, 0.6, droop=1.4)
+        return [(c.lib("vine_leaf"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def hanging_roots(c, variant=0, length=3.0):
+    """Gnarled roots hanging through a cave roof (origin at the top)."""
+    name = "Roots %d" % variant
+
+    def build(bm):
+        for k in range(5):
+            a = k * math.tau / 5 + variant
+            x, y = 0.9 * math.cos(a) * rnd(k + 3), 0.9 * math.sin(a) * rnd(k + 9)
+            ln = length * (0.5 + 0.6 * rnd(k * 7 + variant))
+            pts = [(x + 0.3 * math.sin(q * 1.7 + k), y + 0.3 * math.cos(q * 1.3 + k), 0.4 - ln * q / 4) for q in range(5)]
+            tube(bm, pts, [0.22, 0.16, 0.11, 0.07, 0.03], n=4)
+        k0 = len(bm.faces)
+        for k in range(4):
+            leaf_card(bm, (0.5 * math.cos(k * 2.1), 0.5 * math.sin(k * 2.1), -0.6 - k * 0.5), k * 1.9, 0.6, droop=1.2)
+        return [(c.lib("jungle_bark"), list(range(0, k0))), (c.lib("vine_leaf"), _faces(bm, k0))]
+
+    return c.proto(name, build) and name
+
+
+def big_leaf_plant(c, variant=0):
+    """An elephant-ear clump: broad leaves on long stalks."""
+    name = "Big Leaf %d" % variant
+
+    def build(bm):
+        n = 6 + variant
+        for i in range(n):
+            a = i * math.tau / n + variant * 0.4
+            frond(bm, (0, 0, 0.6 + 0.4 * (i % 2)), a, 2.4 + 0.6 * rnd(i + variant), 1.4, 1.1, segs=4)
+        return [(c.lib("big_leaf"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def ruin_column(c, variant=0):
+    """A broken stone column: stacked drums, the top one snapped and tilted."""
+    name = "Ruin Column %d" % variant
+
+    def build(bm):
+        z = 0.0
+        cuboid(bm, (0, 0, 0.35), (2.4, 2.4, 0.7))
+        z = 0.7
+        drums = 3 + variant % 3
+        for k in range(drums):
+            r = 0.85 - 0.04 * k
+            hgt = 1.3
+            tilt = 0.12 * (k == drums - 1) * (1 if variant % 2 else -1)
+            res = bmesh.ops.create_cone(bm, cap_ends=True, segments=8, radius1=r, radius2=r * 0.97, depth=hgt)
+            m = Matrix.Rotation(tilt, 3, "X")
+            for v in res["verts"]:
+                v.co = Vector((0.04 * k, 0, z + hgt / 2)) + m @ v.co
+            z += hgt
+        if variant % 3 == 0:
+            cuboid(bm, (0, 0, z + 0.3), (2.0, 2.0, 0.6))
+        stone = _faces(bm, 0)
+        return [(c.lib("ruin_stone"), stone)]
+
+    return c.proto(name, build) and name
+
+
+def ruin_blocks(c, variant=0):
+    """Tumbled carved blocks, half sunk in the ground."""
+    name = "Ruin Blocks %d" % variant
+
+    def build(bm):
+        for k in range(3 + variant % 2):
+            a = rnd(k * 3 + variant) * math.tau
+            r = 1.6 * k
+            w = 1.6 + rnd(k + variant * 7) * 0.8
+            cuboid(bm, (r * math.cos(a), r * math.sin(a), 0.45 + (0.9 if k == 3 else 0)), (w, w * 0.8, 1.2), rot=a, tilt=(0.15 * rnd(k), 0.2 * rnd(k + 4)))
+        k0 = len(bm.faces)
+        return [(c.lib("ruin_glyph"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def stele(c, variant=0):
+    """A tall carved stone stele on a plinth."""
+    name = "Stele %d" % variant
+
+    def build(bm):
+        cuboid(bm, (0, 0, 0.3), (2.2, 1.4, 0.6))
+        base = _faces(bm, 0)
+        k0 = len(bm.faces)
+        cuboid(bm, (0, 0, 0.6 + 2.6), (1.5, 0.6, 5.2), tilt=(0.05 * (variant % 2), 0))
+        cuboid(bm, (0, 0, 6.0), (1.8, 0.8, 0.5))
+        carved = _faces(bm, k0)
+        return [(c.lib("ruin_stone"), base), (c.lib("ruin_glyph"), carved)]
+
+    return c.proto(name, build) and name
+
+
+def idol_head(c):
+    """A colossal carved stone head (an original design): a broad face with a heavy brow,
+    deep-set eyes, a flat nose and a wide mouth, under a stepped headdress."""
+    name = "Idol Head"
+
+    def build(bm):
+        cuboid(bm, (0, 0, 2.6), (4.4, 3.6, 5.2))  # the head
+        cuboid(bm, (0, -1.9, 3.6), (4.6, 0.6, 0.7))  # brow ridge
+        cuboid(bm, (0, -2.0, 2.4), (1.0, 0.8, 1.6), tilt=(-0.15, 0))  # nose
+        cuboid(bm, (0, -1.85, 1.0), (2.6, 0.4, 0.5))  # lips
+        for s in (-1, 1):
+            cuboid(bm, (s * 2.45, -0.2, 2.6), (0.5, 1.4, 1.6))  # ear spools
+        cuboid(bm, (0, 0, 5.6), (5.0, 4.0, 0.8))  # headdress tiers
+        cuboid(bm, (0, 0, 6.3), (4.0, 3.2, 0.6))
+        cuboid(bm, (0, -0.3, 7.0), (2.4, 2.2, 0.9))
+        stone = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for s in (-1, 1):
+            cuboid(bm, (s * 1.1, -1.82, 3.05), (1.0, 0.1, 0.55))  # dark eye sockets
+        cuboid(bm, (0, -2.07, 1.0), (1.9, 0.1, 0.18))  # mouth slit
+        dark = _faces(bm, k0)
+        return [(c.lib("ruin_stone"), stone), (c.lib("ruin_dark"), dark)]
+
+    return c.proto(name, build) and name
+
+
+def stairs(c, steps=6, width=6.0, rise=0.5, run=0.9):
+    """A flight of ruined stone steps rising toward +Y."""
+    name = "Stairs %d" % steps
+
+    def build(bm):
+        for k in range(steps):
+            cuboid(bm, (0, k * run + run / 2, (k + 1) * rise / 2), (width - 0.15 * k, run * (steps - k), (k + 1) * rise))
+        return [(c.lib("ruin_stone"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def torch(c):
+    """A wall torch: an iron-black bracket and a wooden haft holding a flame (origin at the
+    wall, pointing out along -Y)."""
+    name = "Torch"
+
+    def build(bm):
+        cuboid(bm, (0, -0.15, 0), (0.25, 0.3, 0.6))
+        tube(bm, [(0, -0.2, -0.2), (0, -0.6, 0.3), (0, -0.75, 0.9)], [0.09, 0.08, 0.07], n=5)
+        res = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.12, radius2=0.22, depth=0.25)
+        for v in res["verts"]:
+            v.co += Vector((0, -0.75, 1.05))
+        haft = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for k, (r, hgt) in enumerate(((0.26, 0.9), (0.17, 0.65))):
+            res = bmesh.ops.create_cone(bm, cap_ends=False, segments=5, radius1=r, radius2=0.0, depth=hgt)
+            for v in res["verts"]:
+                v.co += Vector((0.03 * k, -0.75, 1.15 + hgt / 2))
+        flame = _faces(bm, k0)
+        return [(c.lib("palm_bark"), haft), (c.lib("torch_glow"), flame)]
+
+    return c.proto(name, build) and name
+
+
+def log(c, variant=0):
+    """A fallen mossy log (along X)."""
+    name = "Log %d" % variant
+
+    def build(bm):
+        L = 5.0 + 2.0 * variant
+        r = 0.55 + 0.15 * variant
+        res = bmesh.ops.create_cone(bm, cap_ends=False, segments=8, radius1=r, radius2=r * 0.85, depth=L)
+        for v in res["verts"]:
+            v.co = Vector((v.co.z, v.co.x, v.co.y + r * 0.8))
+        bark = _faces(bm, 0)
+        # A broken branch stub.
+        tube(bm, [(L * 0.15, 0, r * 1.4), (L * 0.2, 0.3, r * 2.6)], [0.18, 0.1], n=5)
+        bark += _faces(bm, len(bark))
+        k0 = len(bm.faces)
+        for s, rr in ((-1, r * 0.85), (1, r)):
+            ring_ = [bm.verts.new((s * L / 2 if s > 0 else -L / 2, rr * math.cos(a), r * 0.8 + rr * math.sin(a))) for a in [k * math.tau / 8 for k in range(8)]]
+            bm.faces.new(ring_ if s > 0 else list(reversed(ring_)))
+        ends = _faces(bm, k0)
+        k1 = len(bm.faces)
+        blob(bm, (0.5, 0, r * 1.6), r * 0.8, sx=2.2, sy=0.9, sz=0.35, subdiv=1)
+        moss = _faces(bm, k1)
+        return [(c.lib("jungle_bark"), bark), (c.lib("log_end"), ends), (c.lib("jungle_leafcover"), moss)]
+
+    return c.proto(name, build) and name
+
+
+def stump(c, variant=0):
+    """An old stump with roots and a ringed top."""
+    name = "Stump %d" % variant
+
+    def build(bm):
+        r = 0.9 + 0.3 * variant
+        h = 1.2 + 0.6 * variant
+        lo = ring(bm, (0, 0), r * 1.25, -0.3, 8)
+        hi = ring(bm, (0, 0), r, h, 8, phase=0.2)
+        loft(bm, [lo, hi], cap_top=False)
+        bark = _faces(bm, 0)
+        for i in range(5):
+            a = i * math.tau / 5 + variant
+            tube(bm, [(r * 0.8 * math.cos(a), r * 0.8 * math.sin(a), 0.6), (r * 1.9 * math.cos(a), r * 1.9 * math.sin(a), -0.1)], [0.3, 0.12], n=5)
+        bark = _faces(bm, 0)
+        k0 = len(bm.faces)
+        bm.faces.new(ring(bm, (0, 0), r, h + 0.01, 8, phase=0.2))
+        top = _faces(bm, k0)
+        return [(c.lib("jungle_bark"), bark), (c.lib("log_end"), top)]
+
+    return c.proto(name, build) and name
+
+
+def frog(c):
+    """A little tree frog (about half a metre), sitting up, facing +Y."""
+    name = "Frog"
+
+    def build(bm):
+        blob(bm, (0, 0, 0.18), 0.22, sx=1.0, sy=1.3, sz=0.8, subdiv=1)  # body
+        blob(bm, (0, 0.25, 0.3), 0.17, sx=1.2, sy=0.9, sz=0.75, subdiv=1)  # head
+        for s in (-1, 1):
+            blob(bm, (s * 0.2, -0.05, 0.08), 0.1, sx=1.0, sy=1.8, sz=0.7, subdiv=0)  # back legs
+            blob(bm, (s * 0.12, 0.25, 0.06), 0.06, sx=1.0, sy=1.4, sz=0.8, subdiv=0)  # front feet
+        skin = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for s in (-1, 1):
+            blob(bm, (s * 0.12, 0.3, 0.42), 0.07, subdiv=1)  # eyes
+        eyes = _faces(bm, k0)
+        return [(c.lib("frog_skin"), skin), (c.lib("ruin_dark"), eyes)]
+
+    return c.proto(name, build) and name
+
+
+# ------------------------------------------------------------------ waterfalls
+
+
+def strip(c, name, rows, mat, coll="Water", role="visual"):
+    """A mesh from rows of (position, u, v) with its own UVs (kept on export)."""
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+    grid = [[(bm.verts.new(p), u, v) for p, u, v in row] for row in rows]
+    for r0, r1 in zip(grid, grid[1:]):
+        for k in range(len(r0) - 1):
+            quad = (r0[k], r0[k + 1], r1[k + 1], r1[k])
+            f = bm.faces.new([q[0] for q in quad])
+            for loop, q in zip(f.loops, quad):
+                loop[uv].uv = (q[1], q[2])
+    ob = c.mesh_object(name, bm, coll, role)
+    ob.data.materials.append(mat)
+    materials_ensure_paint(ob.data)
+    return ob
+
+
+def materials_ensure_paint(me):
+    from kartipelago_tools import materials
+
+    materials.ensure_paint(me)
+
+
+def falls(c, name, cx, lip_y, top, foot, width_top, width_bottom, facing=-1, throw=6.5, bulge=1.4, veils=3, foam=True, foam_r=None, angle=0.0):
+    """
+    A waterfall (the look of Riverbend's): a curved sheet leaving a lip at (cx, lip_y, top)
+    and dropping in an arc to `foot`, thrown out toward `facing` (-1: toward -Y, +1: toward
+    +Y) by `throw` metres, with fast white veils over it and churning foam at its foot.
+    `angle` turns the whole fall about the lip's centre (radians), for walls that don't
+    face north or south. Returns the foot's centre (x, y).
+    """
+    drop = top - foot
+    ca, sa = math.cos(angle), math.sin(angle)
+
+    def turn(x, y):
+        dx, dy = x - cx, y - lip_y
+        return cx + dx * ca - dy * sa, lip_y + dx * sa + dy * ca
+
+    def rows_for(front, cols, wscale, tile, t_rows=12, wob=0.0, seed=0.0, offset=0.0):
+        rows = []
+        along = [0.0] * (cols + 1)
+        prev = None
+        for j in range(t_rows + 1):
+            t = j / t_rows
+            w = (width_top + (width_bottom - width_top) * t) * wscale
+            z = top + 0.05 - drop * t - 0.15
+            row = []
+            for k in range(cols + 1):
+                u = k / cols - 0.5
+                out = 0.3 + throw * math.sqrt(t) + front + bulge * (1 - (2 * u) ** 2) + wob * math.sin(t * 9 + k * 1.7 + seed)
+                p = Vector((*turn(cx + offset * width_top + u * w, lip_y + facing * out), z))
+                if prev is not None:
+                    along[k] += (p - prev[k]).length
+                row.append(p)
+            rows.append([(p, (k / cols - 0.5) * w / tile, -along[k] / tile) for k, p in enumerate(row)])
+            prev = row
+        return rows
+
+    strip(c, name, rows_for(0.0, 10, 1.0, 6.0), c.lib("falls_sheet"))
+    for i in range(veils):
+        wscale, off = ((0.36, -0.28), (0.22, 0.2), (0.3, 0.05), (0.25, 0.32))[i % 4]
+        strip(c, "%s Veil %d" % (name, i + 1), rows_for(0.35 + 0.12 * i, 4, wscale, 4.0, wob=0.25, seed=i * 2.0, offset=off), c.lib("falls_veil"))
+    fx, fy = turn(cx, lip_y + facing * (throw + bulge + 0.6))
+    if foam:
+        r = foam_r or max(6.0, width_bottom * 0.6)
+        c.disc(name + " Foam", fx, fy, r, foot + 0.05, c.lib("falls_foam"), role="visual", n=20, wobble=0.18)
+    return fx, fy
+
+
+def liana(c, name, p0, p1, sag=3.0, r=0.14, coll="Props"):
+    """A vine slung between two points (tree to tree, ledge to ledge), sagging in the middle."""
+    bm = bmesh.new()
+    a, b = Vector(p0), Vector(p1)
+    pts = []
+    for k in range(9):
+        t = k / 8
+        p = a.lerp(b, t)
+        p.z -= sag * 4 * t * (1 - t)
+        pts.append(tuple(p))
+    tube(bm, pts, r, n=5)
+    k0 = len(bm.faces)
+    for k in range(1, 8, 2):
+        blob(bm, pts[k], r * 3.2, sz=0.8, subdiv=0)
+    ob = c.mesh_object(name, bm, coll, "visual")
+    ob.data.materials.append(c.lib("vine_leaf"))
+    c.assign(ob, c.lib("vine_leaf"))
     return ob

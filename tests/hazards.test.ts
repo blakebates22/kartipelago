@@ -134,3 +134,34 @@ describe("dinosaur", () => {
     expect(h.solids.length).toBe(2);
   });
 });
+
+describe("pterosaur", () => {
+  const loop = Array.from({ length: 14 }, (_, i) => ({
+    x: 120 * Math.cos((i / 14) * Math.PI * 2),
+    y: 46,
+    z: 60 * Math.sin((i / 14) * Math.PI * 2),
+    width: 4,
+    bank: 0,
+  }));
+  it("glides smoothly round its loop, high above, and never blocks a kart", () => {
+    const h = world(
+      [{ type: "pterosaur", route: "Flyer Path", speed: 13, scale: 1.6 }],
+      [{ id: "Flyer Path", closed: true, points: loop }],
+    );
+    const f = h.flyers[0]!;
+    const k = createKartState(0, 0, 0, 0);
+    let last = { x: f.x, y: f.y, z: f.z };
+    let travelled = 0;
+    // Two minutes: twice round and then some.
+    for (let n = 0; n < 120 * 120; n++) {
+      h.step([k], 1 / 120);
+      const step = Math.hypot(f.x - last.x, f.z - last.z);
+      expect(step).toBeLessThan(0.2); // no jumps, even where the loop closes
+      expect(f.y).toBeGreaterThan(40);
+      travelled += step;
+      last = { x: f.x, y: f.y, z: f.z };
+    }
+    expect(travelled).toBeGreaterThan(1200);
+    expect(h.solids.length).toBe(0);
+  });
+});
