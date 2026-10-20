@@ -472,6 +472,63 @@
           }
         }
       }
+    },
+    {
+      "id": "hearthglow",
+      "name": "Hearthglow",
+      "description": "A Christmas village on a snowy evening: a purple and blue twilight full of stars, warm golden windows and lanterns, coloured lights, deep snow and frozen water",
+      "environment": {
+        "sky": "#2a2370",
+        "fog": {
+          "enabled": true,
+          "color": "#5a4c9a",
+          "near": 220,
+          "far": 1250
+        },
+        "sun": {
+          "color": "#c8c4ff",
+          "intensity": 1.9,
+          "direction": [-0.38, 0.72, 0.58]
+        },
+        "ambient": {
+          "sky": "#a49ae8",
+          "ground": "#584a88",
+          "intensity": 1.6
+        },
+        "skyDome": {
+          "top": "#120c3a",
+          "horizon": "#c47ac8",
+          "bottom": "#6a58a8",
+          "sun": {
+            "color": "#f6f4ff",
+            "size": 5,
+            "glow": "#b8b0ff",
+            "elevation": 34
+          },
+          "clouds": {
+            "count": 18,
+            "color": "#d49ad8",
+            "shade": "#6a5aa8",
+            "seed": 71,
+            "low": 4,
+            "high": 16,
+            "drift": 0.003
+          },
+          "hills": {
+            "color": "#3a3478",
+            "far": "#8a74c0",
+            "height": 15,
+            "seed": 73,
+            "layers": 3
+          },
+          "stars": {
+            "count": 600,
+            "color": "#ffffff",
+            "seed": 79,
+            "low": 14
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -632,6 +689,268 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "hearth_cobble",
+      "name": "Village Cobbles",
+      "theme": "hearthglow",
+      "surface": "snow_stone",
+      "image": "hearth_cobble.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "icy_cobble",
+      "name": "Icy Cobbles",
+      "theme": "hearthglow",
+      "surface": "icy_stone",
+      "image": "icy_cobble.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "hearth_stone",
+      "name": "Village Stone",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "hearth_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "river_ice",
+      "name": "River Ice",
+      "theme": "hearthglow",
+      "surface": "ice",
+      "image": "river_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "river_ice_road",
+      "name": "River Ice Track",
+      "theme": "hearthglow",
+      "surface": "icy_stone",
+      "image": "river_ice_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "timber_rail",
+      "name": "Fence with Lights",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "timber_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "timber_beam",
+      "name": "Timber",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "timber_beam.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cabin_wall",
+      "name": "Log Wall",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "cabin_wall.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cabin_plaster",
+      "name": "Half-Timbering",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "cabin_plaster.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "window_warm",
+      "name": "Glowing Window",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "window_warm.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "brick",
+      "name": "Chimney Brick",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "brick.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "awning_red",
+      "name": "Awning (Red)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "awning_red.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "awning_green",
+      "name": "Awning (Green)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "awning_green.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "candy_stripe",
+      "name": "Candy Stripe",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "candy_stripe.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "wrap_red",
+      "name": "Gift Wrap (Red)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "wrap_red.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wrap_green",
+      "name": "Gift Wrap (Green)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "wrap_green.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wrap_gold",
+      "name": "Gift Wrap (Gold)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "wrap_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wrap_blue",
+      "name": "Gift Wrap (Blue)",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "wrap_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wreath",
+      "name": "Holly",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "wreath.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "xmas_lights",
+      "name": "Christmas Lights",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "xmas_lights.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0.35,
+        "scrollV": 0,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "banner_tree",
+      "name": "Christmas Banner",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "banner_tree.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "gold_trim",
+      "name": "Gold Trim",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "gold_trim.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.45
+      }
+    },
+    {
+      "id": "star_gold",
+      "name": "Golden Star",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "star_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "wave": 0.02,
+        "wavePeriod": 2,
+        "glow": 1.2
+      }
+    },
+    {
+      "id": "carrot",
+      "name": "Carrot",
+      "theme": "hearthglow",
+      "surface": "wall",
+      "image": "carrot.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "pine_night",
+      "name": "Snow-Laden Pine",
+      "theme": "hearthglow",
+      "surface": "grass",
+      "image": "pine_night.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     },
     {
       "id": "summit_snow",

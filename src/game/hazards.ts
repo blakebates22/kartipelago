@@ -41,6 +41,22 @@
  *   ashfall     { "type": "ashfall", "rate": 60, "radius": 40 }: grey ash drifting down
  *               and embers floating up round the camera. Purely visual.
  *   steam       { "type": "steam", "x", "y", "z" }: a vent puffing steam. Purely visual.
+ *   snowball    { "type": "snowball", ... } (see game/movers.ts): a giant snowball rolling
+ *               across the road on a fixed beat of the race clock. It's solid: hit it and
+ *               you bounce off and slow down, like hitting the long-neck.
+ *   sleigh      { "type": "sleigh", ... } (see game/movers.ts): a sleigh and two reindeer
+ *               crossing the road on a fixed beat, bells jingling first. Solid, likewise.
+ *   present     { "type": "present", "x", "y", "z", "size": 2.4, "variant": 0,
+ *               "heading": 0 }: a big wrapped present by the road. Drive into it and it
+ *               bursts (a little slower for a moment); it's back a while later.
+ *   bell        { "type": "bell", ... } (see game/movers.ts): the bell tower's bell,
+ *               swinging and ringing on a fixed beat. Purely visual (and audible).
+ *   ornament    { "type": "ornament", "x", "y", "z", "r": 1.5, "color": "#d82a3a" }: a
+ *               giant bauble slowly turning and bobbing. Purely visual.
+ *   chimney     { "type": "chimney", "x", "y", "z" }: smoke curling from a chimney.
+ *   lantern     { "type": "lantern", "x", "y", "z" }: like a torch (it lights the scene
+ *               when near), but a steady lantern glow: no embers.
+ *   Snow powder puffs up behind karts driving through deep snow.
  *   geyser      { "type": "geyser", ... } (see game/geyser.ts): a hot spring blowing on a
  *               fixed beat of the race clock. A kart in its column as it blows is thrown
  *               into the air (keeping its speed: a free jump).
@@ -61,6 +77,18 @@ import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createMammothView } from "../render/mammoth";
+import {
+  createBellView,
+  createOrnamentView,
+  createPresentView,
+  createSleighView,
+  createSnowballView,
+  type BellView,
+  type OrnamentView,
+  type PresentView,
+  type SleighView,
+  type SnowballView,
+} from "../render/festive";
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
@@ -84,6 +112,15 @@ import {
   type GeyserConfig,
   type GeyserPhase,
 } from "./geyser";
+import {
+  bellSwing,
+  crossingAt,
+  parseBell,
+  parseCrossing,
+  type BellConfig,
+  type CrossingConfig,
+  type CrossingPhase,
+} from "./movers";
 
 export interface HazardConfig {
   lavaBounce: number;
@@ -126,6 +163,22 @@ interface KartHazard {
   smoking: number;
   /** Just thrown up by a geyser: not again for a moment. */
   lifted: number;
+  /** Just bumped a snowball or the sleigh (for the noise, once per bump). */
+  bumped: number;
+}
+
+interface Mover {
+  cfg: CrossingConfig;
+  sleigh: boolean;
+  x: number;
+  y: number;
+  z: number;
+  heading: number;
+  run: number;
+  phase: CrossingPhase;
+  last: CrossingPhase;
+  solids: SolidCircle[];
+  view?: SnowballView | SleighView;
 }
 
 interface Dino {
@@ -190,6 +243,10 @@ export interface HazardEvents {
   respawned?: Spot;
   /** Thrown into the air by a geyser. */
   launched?: boolean;
+  /** Smashed a present. */
+  smashed?: boolean;
+  /** Bumped into a snowball or the sleigh. */
+  bumped?: boolean;
 }
 
 export interface Hazards {
@@ -245,6 +302,7 @@ export function createHazards(opts: {
     sink: 0,
     smoking: 0,
     lifted: 0,
+    bumped: 0,
   }));
   const group = new THREE.Group();
   group.name = "hazards";
@@ -264,7 +322,7 @@ export function createHazards(opts: {
   const dinos: Dino[] = [];
   const falls: Fall[] = [];
   const fires: Campfire[] = [];
-  const torches: { x: number; y: number; z: number; acc: number }[] = [];
+  const torches: { x: number; y: number; z: number; acc: number; embers: boolean }[] = [];
   let snowfall: { rate: number; radius: number; acc: number } | undefined;
   /** Bubbling pools, and fireflies (see the bubbles and fireflies entities). */
   const pools: { x: number; y: number; z: number; r: number; acc: number; burp: number }[] = [];
@@ -298,6 +356,21 @@ export function createHazards(opts: {
     column?: THREE.Mesh;
   }[] = [];
   let jets: ReturnType<typeof createParticles> | undefined;
+  /** Rolling snowballs and the sleigh (see game/movers.ts). */
+  const movers: Mover[] = [];
+  /** Presents by the road: `down` counts down while one is smashed. */
+  const presents: {
+    x: number;
+    y: number;
+    z: number;
+    size: number;
+    down: number;
+    view?: PresentView;
+  }[] = [];
+  const bells: { cfg: BellConfig; ringing: boolean; view?: BellView }[] = [];
+  const ornaments: OrnamentView[] = [];
+  const chimneys: { x: number; y: number; z: number; acc: number }[] = [];
+  let confetti: ReturnType<typeof createParticles> | undefined;
   let bombs: ReturnType<typeof createParticles> | undefined;
   let ash: ReturnType<typeof createParticles> | undefined;
   let glowing: ReturnType<typeof createParticles> | undefined;
@@ -418,8 +491,94 @@ export function createHazards(opts: {
         acc: 0,
       };
     else if (e.type === "torch")
-      torches.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
-    else if (e.type === "partygoer") {
+      torches.push({
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        acc: Math.random(),
+        embers: true,
+      });
+    else if (e.type === "lantern")
+      torches.push({
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        acc: Math.random(),
+        embers: false,
+      });
+    else if (e.type === "chimney")
+      chimneys.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
+    else if (e.type === "snowball" || e.type === "sleigh") {
+      const sleigh = e.type === "sleigh";
+      const c = parseCrossing(e, sleigh);
+      const parts = sleigh ? 3 : 1;
+      const mover: Mover = {
+        cfg: c,
+        sleigh,
+        x: c.a.x,
+        y: c.a.y,
+        z: c.a.z,
+        heading: 0,
+        run: 0,
+        phase: "idle",
+        last: "idle",
+        solids: Array.from({ length: parts }, () => ({
+          kind: "circle" as const,
+          look: "creature" as const,
+          x: 1e6,
+          z: 1e6,
+          radius: sleigh ? 1.9 : c.r * 0.92,
+          height: -1e6,
+        })),
+      };
+      if (!opts.headless)
+        mover.view = sleigh ? createSleighView(group) : createSnowballView(group, c.r);
+      movers.push(mover);
+    } else if (e.type === "present") {
+      const size = Math.max(0.8, num(e.size, 2.4));
+      const x = num(e.x, 0);
+      const y = num(e.y, 0);
+      const z = num(e.z, 0);
+      presents.push({
+        x,
+        y,
+        z,
+        size,
+        down: 0,
+        view: opts.headless
+          ? undefined
+          : createPresentView(
+              group,
+              x,
+              y,
+              z,
+              size,
+              num(e.variant, presents.length),
+              num(e.heading, 0),
+            ),
+      });
+    } else if (e.type === "bell") {
+      const b = parseBell(e);
+      bells.push({
+        cfg: b,
+        ringing: false,
+        view: opts.headless
+          ? undefined
+          : createBellView(group, b.x, b.y, b.z, b.heading, num(e.scale, 1)),
+      });
+    } else if (e.type === "ornament") {
+      if (!opts.headless)
+        ornaments.push(
+          createOrnamentView(
+            group,
+            num(e.x, 0),
+            num(e.y, 0),
+            num(e.z, 0),
+            Math.max(0.3, num(e.r, 1.5)),
+            typeof e.color === "string" ? e.color : "#d82a3a",
+          ),
+        );
+    } else if (e.type === "partygoer") {
       const dance = (DANCES as readonly string[]).includes(String(e.dance))
         ? (e.dance as Dance)
         : "bounce";
@@ -530,7 +689,40 @@ export function createHazards(opts: {
       dinos.push(dino);
     }
   }
-  const solids: SolidCircle[] = dinos.flatMap((d) => d.solids);
+  const solids: SolidCircle[] = [
+    ...dinos.flatMap((d) => d.solids),
+    ...movers.flatMap((m) => m.solids),
+  ];
+
+  /** Put a snowball or the sleigh where the race clock says, on the ground. */
+  function placeMover(m: Mover) {
+    const c = crossingAt(m.cfg, raceClock());
+    m.phase = c.phase;
+    m.heading = c.heading;
+    const fx = Math.sin(c.heading);
+    const fz = Math.cos(c.heading);
+    if (c.phase !== "crossing") {
+      for (const sd of m.solids) {
+        sd.x = 1e6;
+        sd.z = 1e6;
+        sd.height = -1e6;
+      }
+      m.run = 0;
+      return;
+    }
+    const len = Math.hypot(m.cfg.b.x - m.cfg.a.x, m.cfg.b.z - m.cfg.a.z);
+    m.run = c.u * len;
+    m.x = c.x;
+    m.z = c.z;
+    m.y = ground.at(c.x, c.z, Math.max(c.y, m.y) + 4).height;
+    // Snowball: one circle. Sleigh: the reindeer in front, the sleigh behind.
+    const offs = m.sleigh ? [3.0, 0.0, -3.4] : [0];
+    m.solids.forEach((sd, k) => {
+      sd.x = m.x + fx * offs[k]!;
+      sd.z = m.z + fz * offs[k]!;
+      sd.height = m.y + (m.sleigh ? 3.5 : m.cfg.r * 1.9);
+    });
+  }
 
   function pathAt(dn: Dino, d: number) {
     d = ((d % dn.length) + dn.length) % dn.length;
@@ -756,6 +948,57 @@ export function createHazards(opts: {
             if (i === 0) opts.sfx?.splash(vol(), true);
             break;
           }
+      // ---- presents: drive into one and it bursts
+      for (const p of presents) {
+        if (p.down > 0) continue;
+        if (Math.hypot(s.x - p.x, s.z - p.z) < p.size * 0.75 + 1.1 && s.y < p.y + p.size * 1.3) {
+          p.down = 14;
+          s.speed *= 0.9;
+          ev.smashed = true;
+          confetti?.burst(p.x, p.y + p.size * 0.6, p.z, 40, 6, 7, 1.6, 0xffffff);
+          if (confetti)
+            for (let k = 0; k < 40; k++)
+              confetti.emit(
+                p.x,
+                p.y + p.size * 0.5,
+                p.z,
+                (Math.random() - 0.5) * 9,
+                4 + Math.random() * 6,
+                (Math.random() - 0.5) * 9,
+                1.4 + Math.random(),
+                [0xe8303a, 0x2eaa4a, 0xf6d040, 0x3a7ae8, 0xffffff][k % 5]!,
+              );
+          if (i === 0) opts.sfx?.present(vol());
+        }
+      }
+      // ---- snowballs and the sleigh: a bump that slows you (the solid circles push
+      // you out; this takes some speed, and makes the noise)
+      for (const m of movers) {
+        if (m.phase !== "crossing") continue;
+        for (const c of m.solids)
+          if (Math.hypot(s.x - c.x, s.z - c.z) < c.radius + 1.3 && s.y < c.height) {
+            s.speed *= Math.pow(cfg.dinoSlow, dt * 6);
+            if (h.bumped <= 0) {
+              h.bumped = 0.8;
+              ev.bumped = true;
+              spray?.burst(s.x, s.y + 0.6, s.z, 18, 4, 4, 0.8, 0xf4f8ff);
+              if (i === 0) opts.sfx?.thud(vol());
+            }
+          }
+      }
+      h.bumped = Math.max(0, h.bumped - dt);
+      // ---- deep snow: a spray of powder behind you
+      if (ground === "deep_snow" && Math.abs(s.speed) > 6 && Math.random() < 0.6)
+        spray?.emit(
+          s.x - Math.sin(s.heading) * 1.2,
+          s.y + 0.2,
+          s.z - Math.cos(s.heading) * 1.2,
+          (Math.random() - 0.5) * 2.5,
+          1.5 + Math.random() * 2,
+          (Math.random() - 0.5) * 2.5,
+          0.6,
+          0xf4f8ff,
+        );
       // ---- water
       const wet = ground === "water" || ground === "deep_water";
       if (
@@ -813,6 +1056,8 @@ export function createHazards(opts: {
     },
     step(karts, dt) {
       clock += dt;
+      for (const m of movers) placeMover(m);
+      for (const p of presents) p.down = Math.max(0, p.down - dt);
       for (const f of flyers) {
         f.d += f.speed * dt;
         placeFlyer(f, dt);
@@ -914,7 +1159,7 @@ export function createHazards(opts: {
           l.intensity = 34 * fade * flick;
           // The odd ember drifting up from the flame.
           q.acc = (q.acc + dt * 0.9) % 1e3;
-          if (fade > 0 && Math.random() < dt * 3)
+          if (q.embers && fade > 0 && Math.random() < dt * 3)
             sparks?.emit(
               q.x,
               q.y + 0.3,
@@ -1165,6 +1410,68 @@ export function createHazards(opts: {
         }
         ash.step(dt);
       }
+      // Snowballs rolling and the sleigh crossing (its bells jingling as a warning first),
+      // presents popping back, the bell swinging, baubles turning, chimney smoke.
+      for (const m of movers) {
+        const far = Math.hypot(listener.x - m.x, listener.z - m.z);
+        if (m.phase !== m.last) {
+          const loud = vol() * Math.max(0, 1 - far / 200);
+          if (loud > 0 && m.sleigh && m.phase === "warning") opts.sfx?.jingle(loud);
+          if (loud > 0 && !m.sleigh && m.phase === "crossing") opts.sfx?.rumble(loud * 0.35);
+          m.last = m.phase;
+        }
+        const shown = m.phase === "crossing";
+        if (m.sleigh)
+          (m.view as SleighView | undefined)?.update(m.x, m.y, m.z, m.heading, m.run, shown, t);
+        else (m.view as SnowballView | undefined)?.update(m.x, m.y, m.z, m.heading, m.run, shown);
+        // Snow kicked up as it goes.
+        if (shown && far < 160 && Math.random() < 0.5)
+          spray?.emit(
+            m.x + (Math.random() - 0.5) * 3,
+            m.y + 0.2,
+            m.z + (Math.random() - 0.5) * 3,
+            (Math.random() - 0.5) * 2,
+            2 + Math.random() * 2,
+            (Math.random() - 0.5) * 2,
+            0.7,
+            0xf4f8ff,
+          );
+      }
+      for (const p of presents) {
+        // Popping back up (over half a second) after it's been smashed.
+        const up = p.down > 0 ? (p.down < 0.5 ? 1 - p.down / 0.5 : 0) : 1;
+        p.view?.update(up, t);
+      }
+      if (presents.length && !opts.headless) {
+        confetti ??= createParticles(group, { max: 500, size: 0.5, gravity: -9 });
+        confetti.step(dt);
+      }
+      for (const b of bells) {
+        const sw = bellSwing(b.cfg, raceClock());
+        b.view?.update(sw.angle);
+        if (sw.ringing && !b.ringing) {
+          const far = Math.hypot(listener.x - b.cfg.x, listener.z - b.cfg.z);
+          const loud = vol() * Math.max(0, 1 - far / 450);
+          if (loud > 0) opts.sfx?.bell(loud);
+        }
+        b.ringing = sw.ringing;
+      }
+      for (const o of ornaments) o.update(t);
+      for (const ch of chimneys) {
+        if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
+        ch.acc = Math.min(1, ch.acc + dt);
+        for (; ch.acc > 0.4; ch.acc -= 0.4)
+          smoke.emit(
+            ch.x + (Math.random() - 0.5) * 0.6,
+            ch.y,
+            ch.z + (Math.random() - 0.5) * 0.6,
+            0.5 + Math.random() * 0.4,
+            1.2 + Math.random() * 0.6,
+            (Math.random() - 0.5) * 0.4,
+            3.2,
+            0xcfc6dc,
+          );
+      }
       // Geysers: steam at rest, bubbling and gurgling before they blow, then a roaring
       // column of water and steam.
       if (geysers.length && !opts.headless) {
@@ -1311,6 +1618,11 @@ export function createHazards(opts: {
       bombs?.dispose();
       ash?.dispose();
       jets?.dispose();
+      confetti?.dispose();
+      for (const m of movers) m.view?.dispose();
+      for (const p of presents) p.view?.dispose();
+      for (const b of bells) b.view?.dispose();
+      for (const o of ornaments) o.dispose();
       for (const g of geysers)
         if (g.column) {
           g.column.geometry.dispose();

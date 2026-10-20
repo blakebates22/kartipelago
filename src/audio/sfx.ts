@@ -193,6 +193,31 @@ export function createSfx(engine: AudioEngine) {
       noise(0, 2.2, volume * 0.85, 5200, 700);
       noise(0, 1.2, volume * 0.5, 900, 140);
     },
+    /** Sleigh bells: a bright, jingling shimmer. */
+    jingle(volume: number) {
+      for (let i = 0; i < 10; i++) {
+        const f = [2637, 3136, 2794, 3520][i % 4]!;
+        note(f, i * 0.16, 0.14, volume * 0.12, f * 1.02, "square");
+        noise(i * 0.16, 0.08, volume * 0.12, 9000, 5000);
+      }
+    },
+    /** The bell tower: two deep, ringing bongs. */
+    bell(volume: number) {
+      for (const [at, f] of [
+        [0, 392],
+        [1.1, 330],
+      ] as const) {
+        note(f, at, 2.2, volume * 0.35, f * 0.995, "sine");
+        note(f * 2.4, at, 1.2, volume * 0.12, f * 2.39, "sine");
+        note(f * 0.5, at, 2.6, volume * 0.2, f * 0.5, "triangle");
+      }
+    },
+    /** A present smashed open: a papery rip and a cheerful pop. */
+    present(volume: number) {
+      noise(0, 0.25, volume * 0.6, 6000, 1200);
+      note(520, 0.02, 0.12, volume * 0.35, 1040, "triangle");
+      note(780, 0.1, 0.16, volume * 0.3, 1170, "triangle");
+    },
     /** A heavy, soft footstep. */
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);

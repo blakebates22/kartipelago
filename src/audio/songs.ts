@@ -32,6 +32,10 @@
  *                                   lake. Flute and xylophone, then brass, then strings
  *                                   and bells in the treetops, over a running marimba,
  *                                   a skipping bass, shaker and tambourine
+ *   hearthglow  "Hearthglow Hollow" G major, 160: a Christmas-village gallop. Sleigh bells
+ *                                   throughout; celesta and bells, then flute, then
+ *                                   strings and brass, over plucked strings, a twinkling
+ *                                   glockenspiel and an oom-pah walking bass
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -986,6 +990,104 @@ function summit(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Hearthglow Hollow"
+// A Christmas-village gallop: sleigh bells all the way, celesta and bells on the
+// cobbled streets, a flute through the forest, strings and brass up the mountain, and
+// everyone together down the sleigh run.
+
+export const HEARTHGLOW_MELODY = bars(
+  "D5:1 B4:.5 C5:.5 D5:1 G5:1",
+  "E5:1 G5:1 B5:1.5 A5:.5",
+  "G5:.5 E5:.5 C5:1 E5:1 G5:1",
+  "F#5:1.5 E5:.5 D5:2",
+  "B4:.5 D5:.5 G5:1 B5:1 G5:1",
+  "B5:1 A5:.5 G5:.5 E5:1 G5:1",
+  "C6:1 B5:.5 A5:.5 E5:1 A5:1",
+  "A5:1 F#5:1 D5:1 C5:1",
+  "E5:.5 G5:.5 C6:1 G5:1 E5:1",
+  "F#5:.5 A5:.5 D6:1 A5:1 F#5:1",
+  "D6:1 B5:.5 D6:.5 F#6:1 D6:1",
+  "E6:1.5 D6:.5 B5:2",
+  "C6:.5 D6:.5 E6:1 G6:1 E6:1",
+  "F#6:1 E6:.5 D6:.5 A5:1 D6:1",
+  "G6:1 D6:.5 B5:.5 G5:1 B5:1",
+  "F5:1 G5:1 B5:1 D6:1",
+  "E6:1.5 D6:.5 C6:1 G5:1",
+  "Eb6:1.5 D6:.5 C6:1 G5:1",
+  "D6:1 B5:.5 G5:.5 D5:1 G5:1",
+  "G#5:1 B5:1 E6:1 D6:1",
+  "C6:.5 B5:.5 A5:1 E5:1 A5:1",
+  "D6:1 F#5:.5 A5:.5 D6:1 F#6:1",
+  "G6:1.5 D6:.5 B5:2",
+  "A5:1 C6:1 D6:1 F#6:1",
+  "G6:.5 F#6:.5 G6:1 D6:1 B5:1",
+  "D#6:1 F#6:1 B6:1 A6:1",
+  "G6:1 E6:.5 G6:.5 B6:1 G6:1",
+  "F6:1 D6:1 B5:1 G5:1",
+  "E6:.5 G6:.5 C7:1 G6:1 E6:1",
+  "F#6:.5 A6:.5 D7:1 C7:.5 A6:.5 F#6:1",
+  "G6:2! D6:1 B5:1",
+  "C6:.5 B5:.5 A5:.5 F#5:.5 D5:1 r:1",
+);
+export const HEARTHGLOW_CHORDS =
+  "G:4 Em:4 C:4 D:4 G:4 Em:4 Am:4 D7:4 " +
+  "C:4 D:4 Bm:4 Em:4 C:4 D:4 G:4 G7:4 " +
+  "C:4 Cm:4 G:4 E7:4 Am:4 D:4 G:4 D7:4 " +
+  "G:4 B7:4 Em:4 G7:4 C:4 D:4 G:4 D7:4";
+
+function hearthglow(): Song {
+  const ch = chart(HEARTHGLOW_CHORDS);
+  const mel = seq(HEARTHGLOW_MELODY, 0, 0.84);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const late = ch.filter((c) => c.t >= 64);
+  // An oom-pah walking bass: root, fifth, octave, a step into the next chord.
+  const walk: [number, number, string][] = [
+    [0, 1, "R"],
+    [1, 1, "5"],
+    [2, 1, "8"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "hearthglow",
+    title: "Hearthglow Hollow",
+    role: "Frostveil Peaks",
+    bpm: 160,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: celesta and bells, then flute, then strings and brass, then all.
+      part("celesta", "base", 1, p1),
+      part("bell", "base", 0.45, p1),
+      part("flute", "base", 0.95, p2),
+      part("celesta", "base", 0.35, shift(p2, 0, 12)),
+      part("strings", "base", 1, p3),
+      part("brass", "base", 0.55, p3),
+      part("brass", "base", 0.85, p4),
+      part("flute", "base", 0.6, p4),
+      part("bell", "base", 0.3, shift(p4, 0, 12)),
+      // Plucked strings on the off-beats, a twinkling glockenspiel arpeggio, warm horns.
+      part("pizz", "base", 0.55, stabs(ch, [0.5, 1.5, 2.5, 3.5], 57, 0.2, 0.5)),
+      part("bell", "base", 0.3, arpeggio(ch, 0.5, [0, 1, 2, 3, 2, 1, 2, 3], 79, 0.3, 0.32)),
+      part("horn", "base", 0.4, pads(ch, 52, 4, 0.42)),
+      part("strings", "base", 0.3, pads(late, 60, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, walk, 31, 0.85)),
+      // Sleigh bells (tambourine and shaker) all the way, a light kick and snare, a
+      // woodblock clip-clop, and a crash at the top of each section.
+      ...drumParts("base", 0.6, drums("tttTtttTtttTtttT", KIT, 0.25, 32)),
+      ...drumParts("base", 0.35, drums("h.h.h.h.h.h.h.h.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.8, drums("K.......K.k.....", KIT, 0.25, 32)),
+      ...drumParts("base", 0.65, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.45, drums("w..w..w.w..w..w.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.85, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -1273,6 +1375,7 @@ export const SONGS: Record<string, Song> = {
   cascade_classic: cascadeClassic(),
   frostveil: frostveil(),
   summit: summit(),
+  hearthglow: hearthglow(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

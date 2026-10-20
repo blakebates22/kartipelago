@@ -2286,6 +2286,278 @@ def mammoth_fur():
 
     return paint(f)
 
+# ------------------------------------------------------------------ Hearthglow Hollow
+
+
+def hearth_cobble():
+    # Village cobbles at dusk: lavender-grey setts, snow lying in the joints.
+    pave = ["#8a8298", "#9a92a8", "#aaa2b6", "#bab3c4"]
+    a, b = noise(4, 2, 2601), noise(16, 8, 2602)
+
+    def f(x, y):
+        row = y // 6
+        bx = (x + (5 if row % 2 else 0)) % 10
+        if bx == 0 or y % 6 == 0:
+            return "#eef2fc" if a(x, y) > 0.3 else "#6a6278"
+        if a(x, y) * 0.7 + b(x, y) * 0.5 > 0.95:
+            return "#f4f6ff"
+        return pick(pave, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def icy_cobble():
+    # Cobbles glazed with ice: glossy blue, the setts showing through.
+    pal = ["#7a96d0", "#8ea8dc", "#a4bae6", "#bcd0f0"]
+    a = noise(4, 2, 2611)
+    glints = speckle(2612, 18)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#ffffff"
+        row = y // 6
+        if (x + (5 if row % 2 else 0)) % 10 == 0 or y % 6 == 0:
+            return "#6a80b8"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def hearth_stone():
+    # Warm grey stone blocks for the bridges, walls and the bell tower.
+    pal = ["#857a78", "#958a86", "#a59a94", "#b5aaa2"]
+    a = noise(4, 2, 2621)
+
+    def f(x, y):
+        joint = x % 16 == 0 or (y + (8 if (x // 16) % 2 else 0)) % 8 == 0
+        if joint:
+            return "#f0f2fa" if y % 8 == 0 and a(x, y) > 0.4 else "#5a5058"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def river_ice():
+    # The frozen river: deep blue-violet ice with white cracks and frozen bubbles.
+    pal = ["#4a6ac8", "#5a7ed4", "#6c92de", "#84a8e8", "#a4c2f2"]
+    a, b = noise(4, 2, 2631), noise(8, 4, 2632)
+    bubbles = speckle(2633, 16)
+
+    def f(x, y):
+        if (x, y) in bubbles:
+            return "#e8f2ff"
+        if abs(a(x, y) - 0.5) < 0.018 or abs(b(x, y) - 0.45) < 0.012:
+            return "#f4f8ff"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def river_ice_road():
+    # The shortcut across the river ice: scraped tracks and snow dust.
+    pal = ["#7896d8", "#8aa6e0", "#9eb6e8", "#c4d4f4"]
+    a = noise(4, 2, 2641)
+
+    def f(x, y):
+        scrape = (x + y // 4) % 9 == 0
+        if scrape:
+            return "#e4ecfc"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def timber_rail():
+    # A wooden fence: posts and two rails, snow on top, a string of little bulbs.
+    a = noise(8, 2, 2651)
+
+    def f(x, y):
+        if y < 3:
+            return "#f4f6ff"
+        if x % 16 < 3:
+            return pick(["#6a4022", "#7a4c2a"], a(x, y))
+        if 6 <= y <= 10 or 20 <= y <= 24:
+            return pick(["#8a5832", "#9a6438"], a(x, y))
+        if y == 4 and x % 8 == 4:
+            return ["#ffd060", "#ff5050", "#60e070", "#60a0ff"][(x // 8) % 4]
+        return "#3a2a3a"
+
+    return paint(f)
+
+
+def timber_beam():
+    pal = ["#4e3424", "#5a3c2a", "#664430", "#724c36"]
+    a = noise(16, 2, 2661)
+
+    def f(x, y):
+        if y % 16 == 0:
+            return "#2e1e16"
+        return pick(pal, 0.4 + math.sin(y * 0.9 + a(x, y) * 6) * 0.25 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def cabin_wall():
+    # Log-cabin walls: warm brown logs with dark gaps.
+    pal = ["#8a5634", "#9a643c", "#a87044", "#b67c4c"]
+    a = noise(16, 4, 2671)
+
+    def f(x, y):
+        if y % 8 in (0, 7):
+            return "#4a2a1a"
+        return pick(pal, 0.3 + a(x, y) * 0.5 + (y % 8 in (3, 4)) * 0.15)
+
+    return paint(f)
+
+
+def cabin_plaster():
+    # Alpine half-timbering: cream plaster between dark beams.
+    a = noise(4, 2, 2681)
+
+    def f(x, y):
+        if x % 32 < 3 or y % 32 < 3 or abs((x % 32) - (y % 32)) < 2:
+            return "#5a3624"
+        return pick(["#e2d2b8", "#ead9c0", "#f2e2ca"], a(x, y))
+
+    return paint(f)
+
+
+def window_warm():
+    # A glowing window: golden light behind a cross of glazing bars.
+    a = noise(4, 2, 2691)
+
+    def f(x, y):
+        if x % 32 in (0, 1, 15, 16) or y % 16 in (0, 1, 8):
+            return "#6a3a1c"
+        return pick(["#ffb848", "#ffc860", "#ffd878", "#ffe8a0"], 0.2 + a(x, y) * 0.8)
+
+    return paint(f)
+
+
+def brick():
+    a = noise(4, 2, 2701)
+
+    def f(x, y):
+        if y % 4 == 0 or (x + (4 if (y // 4) % 2 else 0)) % 8 == 0:
+            return "#d8d0dc"
+        return pick(["#8a3a2e", "#9a4434", "#aa4e3a"], a(x, y))
+
+    return paint(f)
+
+
+def awning_red():
+    def f(x, y):
+        return "#d82a34" if (x // 8) % 2 == 0 else "#f6f0ea"
+
+    return paint(f)
+
+
+def awning_green():
+    def f(x, y):
+        return "#2a8a48" if (x // 8) % 2 == 0 else "#f6f0ea"
+
+    return paint(f)
+
+
+def candy_stripe():
+    def f(x, y):
+        return "#e0263a" if ((x + y) // 6) % 2 == 0 else "#fbf6f2"
+
+    return paint(f)
+
+
+def wrap(base, dark, ribbon, seed):
+    a = noise(4, 2, seed)
+
+    def f(x, y):
+        if 28 <= x % 64 <= 35 or 13 <= y <= 18:
+            return ribbon
+        if (x // 4 + y // 4) % 5 == 0:
+            return dark
+        return pick([base, base, dark], a(x, y) * 0.9)
+
+    return paint(f)
+
+
+def wreath():
+    # Holly: dark glossy leaves, red berries.
+    a = noise(8, 4, 2711)
+    berries = speckle(2712, 26)
+
+    def f(x, y):
+        if (x, y) in berries:
+            return "#f02a2a"
+        return pick(["#1a5a2c", "#226a34", "#2e7c40", "#3a8e4c"], a(x, y))
+
+    return paint(f)
+
+
+def xmas_lights():
+    # A string of coloured bulbs (U runs along the string). The pattern scrolls along, so
+    # the bulbs chase and twinkle: every other bulb is dimmer.
+    cols = [("#ff3a3a", "#9a2020"), ("#ffd040", "#9a7a20"), ("#3aff6a", "#209a40"), ("#4a9aff", "#24509a"), ("#ff7aff", "#9a409a")]
+
+    def f(x, y):
+        k = x // 8
+        u = x % 8
+        if abs(u - 3.5) < 2.6 and 8 <= y <= 23:
+            on, off = cols[k % 5]
+            return on if k % 2 == 0 else off
+        return "#2a2034"
+
+    return paint(f)
+
+
+def banner_tree():
+    # A red banner with a golden tree.
+    def f(x, y):
+        cx = x % 32
+        if cx < 2 or cx > 29:
+            return "#f2c040"
+        tree = y > 4 and abs(cx - 16) < (y - 4) * 0.45 and y < 26
+        if tree or (y >= 26 and abs(cx - 16) < 2):
+            return "#f6c848"
+        return "#c0202c"
+
+    return paint(f)
+
+
+def gold_trim():
+    a = noise(4, 2, 2721)
+
+    def f(x, y):
+        return pick(["#c8902a", "#e0aa38", "#f2c44a", "#fde070"], a(x, y))
+
+    return paint(f)
+
+
+def star_gold():
+    a = noise(4, 2, 2731)
+
+    def f(x, y):
+        return pick(["#ffe060", "#fff090", "#fffbd0"], 0.3 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def carrot():
+    def f(x, y):
+        return "#f08a2a" if y % 6 else "#c86a1a"
+
+    return paint(f)
+
+
+def pine_night():
+    # Snow-laden pines (a deep blue-green under the twilight, heavy snow on the boughs).
+    a = noise(8, 4, 2741)
+
+    def f(x, y):
+        if y % 8 < 3 and a(x, y) > 0.25:
+            return "#ffffff" if y % 8 == 0 else "#e2e8fa"
+        return pick(["#1a4a3a", "#205644", "#28624e", "#327058"], a(x, y))
+
+    return paint(f)
+
 
 THEMES = [
     {
@@ -2462,8 +2734,56 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "hearthglow",
+        "name": "Hearthglow",
+        "description": "A Christmas village on a snowy evening: a purple and blue twilight full of stars, warm golden windows and lanterns, coloured lights, deep snow and frozen water",
+        "environment": {
+            "sky": "#2a2370",
+            "fog": {"enabled": True, "color": "#5a4c9a", "near": 220, "far": 1250},
+            "sun": {"color": "#c8c4ff", "intensity": 1.9, "direction": [-0.38, 0.72, 0.58]},
+            "ambient": {"sky": "#a49ae8", "ground": "#584a88", "intensity": 1.6},
+            "skyDome": {
+                "top": "#120c3a",
+                "horizon": "#c47ac8",
+                "bottom": "#6a58a8",
+                "sun": {"color": "#f6f4ff", "size": 5, "glow": "#b8b0ff", "elevation": 34},
+                "clouds": {"count": 18, "color": "#d49ad8", "shade": "#6a5aa8", "seed": 71, "low": 4, "high": 16, "drift": 0.003},
+                "hills": {"color": "#3a3478", "far": "#8a74c0", "height": 15, "seed": 73, "layers": 3},
+                "stars": {"count": 600, "color": "#ffffff", "seed": 79, "low": 14},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("hearth_cobble", "Village Cobbles", "hearthglow", "snow_stone", hearth_cobble, 3.5, None),
+    ("icy_cobble", "Icy Cobbles", "hearthglow", "icy_stone", icy_cobble, 3.5, {"scrollU": 0, "scrollV": 0, "glow": 0.15}),
+    ("hearth_stone", "Village Stone", "hearthglow", "wall", hearth_stone, 4, None),
+    ("river_ice", "River Ice", "hearthglow", "ice", river_ice, 8, {"scrollU": 0, "scrollV": 0, "glow": 0.3}),
+    ("river_ice_road", "River Ice Track", "hearthglow", "icy_stone", river_ice_road, 5, {"scrollU": 0, "scrollV": 0, "glow": 0.2}),
+    ("timber_rail", "Fence with Lights", "hearthglow", "wall", timber_rail, 3, None),
+    ("timber_beam", "Timber", "hearthglow", "wall", timber_beam, 3, None),
+    ("cabin_wall", "Log Wall", "hearthglow", "wall", cabin_wall, 3, None),
+    ("cabin_plaster", "Half-Timbering", "hearthglow", "wall", cabin_plaster, 4, None),
+    ("window_warm", "Glowing Window", "hearthglow", "wall", window_warm, 2, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
+    ("brick", "Chimney Brick", "hearthglow", "wall", brick, 2, None),
+    ("awning_red", "Awning (Red)", "hearthglow", "wall", awning_red, 2, None),
+    ("awning_green", "Awning (Green)", "hearthglow", "wall", awning_green, 2, None),
+    ("candy_stripe", "Candy Stripe", "hearthglow", "wall", candy_stripe, 1.5, None),
+    ("wrap_red", "Gift Wrap (Red)", "hearthglow", "wall", lambda: wrap("#d02434", "#a01a28", "#f6d040", 2751), 3, None),
+    ("wrap_green", "Gift Wrap (Green)", "hearthglow", "wall", lambda: wrap("#2a9a48", "#1e7636", "#f6f0e0", 2752), 3, None),
+    ("wrap_gold", "Gift Wrap (Gold)", "hearthglow", "wall", lambda: wrap("#f0b428", "#c88e18", "#d02434", 2753), 3, None),
+    ("wrap_blue", "Gift Wrap (Blue)", "hearthglow", "wall", lambda: wrap("#3068d8", "#2250a8", "#f6f0e0", 2754), 3, None),
+    ("wreath", "Holly", "hearthglow", "wall", wreath, 1.5, None),
+    ("xmas_lights", "Christmas Lights", "hearthglow", "wall", xmas_lights, 3, {"scrollU": 0.35, "scrollV": 0, "glow": 1.0}),
+    ("banner_tree", "Christmas Banner", "hearthglow", "wall", banner_tree, 3, None),
+    ("gold_trim", "Gold Trim", "hearthglow", "wall", gold_trim, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.45}),
+    ("star_gold", "Golden Star", "hearthglow", "wall", star_gold, 2, {"scrollU": 0, "scrollV": 0, "wave": 0.02, "wavePeriod": 2, "glow": 1.2}),
+    ("carrot", "Carrot", "hearthglow", "wall", carrot, 1, None),
+    ("pine_night", "Snow-Laden Pine", "hearthglow", "grass", pine_night, 2, None),
     ("summit_snow", "Sunny Snow", "summit_pass", "deep_snow", summit_snow, 6, None),
     ("summit_road", "Groomed Snow Road", "summit_pass", "packed_snow", summit_road, 5, None),
     ("summit_stone_road", "Swept Cobbles", "summit_pass", "snow_stone", summit_stone_road, 3.5, None),

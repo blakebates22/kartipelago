@@ -28,10 +28,8 @@ const entitiesOf = (p: { meta: { entities?: unknown[] } }) => (p.meta.entities ?
 describe("Snowy Summit Pass", () => {
   it("is Frostveil Peaks' second course, with its own bright theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
-    expect(w.tracks).toEqual(["frostveil_citadel", id]);
-    const tiles = trackTilesOf(w);
-    expect(tiles).toHaveLength(4);
-    expect(tiles.filter((t) => t.comingSoon)).toHaveLength(2);
+    expect(w.tracks.slice(0, 2)).toEqual(["frostveil_citadel", id]);
+    expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.load.packageId).toBe(id);
     expect(t.theme).toBe("summit_pass");

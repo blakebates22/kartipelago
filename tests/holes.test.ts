@@ -71,6 +71,7 @@ describe("no holes in the world", () => {
   for (const id of [
     "frostveil_citadel",
     "snowy_summit",
+    "hearthglow_hollow",
     "cascade_caverns",
     "bonebog_pyramid",
     "ember_peak",

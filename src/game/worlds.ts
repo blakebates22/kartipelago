@@ -42,9 +42,9 @@ export const WORLDS: WorldEntry[] = [
     description:
       "Snowbound mountains where an ancient civilization built temples, bridges and fortresses into the peaks.",
     color: "#6f7fd6",
-    tracks: ["frostveil_citadel", "snowy_summit"],
-    // Two more courses are planned; rename these once they have names.
-    comingSoon: ["Coming Soon", "Coming Soon"],
+    tracks: ["frostveil_citadel", "snowy_summit", "hearthglow_hollow"],
+    // One more course is planned; rename this once it has a name.
+    comingSoon: ["Coming Soon"],
   },
   {
     id: "test_world",

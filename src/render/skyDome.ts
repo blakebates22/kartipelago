@@ -14,7 +14,8 @@
  *                 "low": 3, "high": 24, "drift": 0.004 }
  *   }
  *
- * Every field is optional. The sun's direction is the look's sun direction.
+ * Every field is optional. The sun's direction is the look's sun direction. An evening
+ * sky can add twinkling stars: "stars": { "count": 500, "color": "#ffffff", "low": 12 }.
  */
 import * as THREE from "three";
 
@@ -45,6 +46,8 @@ export interface SkyDomeSpec {
    * tallest peak, degrees above the horizon.
    */
   hills?: { color?: string; far?: string; height?: number; seed?: number; layers?: number };
+  /** Stars twinkling in the sky above `low` degrees (for evening and night skies). */
+  stars?: { count?: number; color?: string; seed?: number; low?: number };
 }
 
 export interface SkyDome {
@@ -293,12 +296,65 @@ export function createSkyDome(
     }
   }
 
+  // Stars: little points over the upper sky, each twinkling at its own pace.
+  let twinkle: ((t: number) => void) | undefined;
+  if (spec.stars) {
+    const st = spec.stars;
+    const n = Math.max(0, Math.min(2000, st.count ?? 400));
+    const sr = rng((st.seed ?? 11) * 17 + 3);
+    const low = ((st.low ?? 10) * Math.PI) / 180;
+    const pos = new Float32Array(n * 3);
+    const col = new Float32Array(n * 3);
+    const base = new THREE.Color(st.color ?? "#ffffff");
+    const phase = new Float32Array(n);
+    const bright = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const az = sr() * Math.PI * 2;
+      const el = low + Math.asin(sr()) * (1 - low / (Math.PI / 2));
+      const r = RADIUS * 0.95;
+      pos[i * 3] = Math.cos(az) * Math.cos(el) * r;
+      pos[i * 3 + 1] = Math.sin(el) * r;
+      pos[i * 3 + 2] = Math.sin(az) * Math.cos(el) * r;
+      phase[i] = sr() * 100;
+      bright[i] = 0.45 + 0.55 * sr();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    const m = new THREE.PointsMaterial({
+      size: 2.2,
+      sizeAttenuation: false,
+      vertexColors: true,
+      fog: false,
+      depthWrite: false,
+      transparent: true,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.renderOrder = -9.5;
+    pts.frustumCulled = false;
+    group.add(pts);
+    disposables.push(g, m);
+    twinkle = (t) => {
+      for (let i = 0; i < n; i++) {
+        const k = bright[i]! * (0.7 + 0.3 * Math.sin(t * (1.3 + (phase[i]! % 2)) + phase[i]!));
+        col[i * 3] = base.r * k;
+        col[i * 3 + 1] = base.g * k;
+        col[i * 3 + 2] = base.b * k;
+      }
+      g.attributes.color!.needsUpdate = true;
+    };
+    twinkle(0);
+  }
+  let clockT = 0;
+
   const drift = cs.drift ?? 0.004;
   return {
     group,
     update(camera, dt) {
       group.position.copy(camera.position);
       clouds.rotation.y += drift * dt;
+      clockT += dt;
+      twinkle?.(clockT);
     },
     dispose() {
       group.removeFromParent();

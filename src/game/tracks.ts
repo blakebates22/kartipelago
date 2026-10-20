@@ -101,6 +101,17 @@ export const TRACKS: TrackEntry[] = [
     music: "summit",
     load: { scene: "track", packageId: "snowy_summit" },
   },
+  {
+    id: "hearthglow_hollow",
+    name: "Hearthglow Hollow",
+    description:
+      "Race through a Christmas village on a snowy evening: round the giant tree, over the frozen river, past rolling snowballs, up to the bell tower and down the sleigh run.",
+    preview: "previews/hearthglow_hollow.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "hearthglow",
+    music: "hearthglow",
+    load: { scene: "track", packageId: "hearthglow_hollow" },
+  },
   // Test World.
   {
     id: "dino_demo",

@@ -16,7 +16,7 @@ description, a banner colour and its track ids, in menu order:
 | World             | Id            | Tracks                                                                   |
 | ----------------- | ------------- | ------------------------------------------------------------------------ |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak            |
-| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, and two "Coming Soon" slots        |
+| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, "Coming Soon"   |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Drift Park |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -25,7 +25,7 @@ description, a banner colour and its track ids, in menu order:
   New players start on Prehistoric World.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
-  its real tracks (Frostveil Peaks has two). See [frostveil-peaks.md](frostveil-peaks.md).
+  its real tracks (Frostveil Peaks has one). See [frostveil-peaks.md](frostveil-peaks.md).
 
 **World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
 
@@ -410,6 +410,37 @@ every race and time trial sees the same eruptions:
 - **Launch:** a kart inside the column (radius `r`) while it blows is thrown upward at
   `launch` m/s, keeping its speed and heading: a free jump, never a penalty. Not again
   for a second. With `"launch": 0` it's scenery.
+
+### Snowballs and the sleigh
+
+```json
+{ "id": "snowball_01", "type": "snowball", "ax": -198, "ay": 6.9, "az": -300, "bx": -257, "by": 4.8, "bz": -266,
+  "r": 2.6, "period": 8, "offset": 1.5, "travel": 4.2 }
+{ "id": "sleigh_01", "type": "sleigh", "ax": -469, "ay": 17.6, "az": -106, "bx": -373, "by": 2.7, "bz": -106,
+  "period": 13, "offset": 4, "travel": 5.5, "warn": 2.5 }
+```
+
+Things crossing the road on a fixed beat of the race clock (`src/game/movers.ts`), so
+every race and time trial is the same. Each period a giant snowball rolls from A to B
+over `travel` seconds (it's gone the rest of the time); the sleigh, pulled by two
+reindeer with a snowman at the reins, does the same, its bells jingling for `warn`
+seconds first. Both are solid (the same solid circles as the long-neck): hit one and
+you bounce off and lose some speed, with a thud and a puff of snow. A clear moment
+between crossings is guaranteed.
+
+### Presents, the bell, baubles, chimneys and lanterns
+
+- `present` `{ "x", "y", "z", "size": 2.4, "variant": 0, "heading": 0 }`: a big wrapped
+  present by the road. Drive into it and it bursts in confetti (you lose a tenth of your
+  speed); it pops back 14 s later.
+- `bell` `{ "x", "y", "z", "heading", "period": 14, "offset": 3, "ring": 3.4 }`: the bell
+  tower's bell, swinging and bonging on its beat.
+- `ornament` `{ "x", "y", "z", "r": 1.5, "color": "#d82a3a" }`: a giant bauble turning
+  slowly.
+- `chimney` `{ "x", "y", "z" }`: smoke curling up from a chimney near you.
+- `lantern` `{ "x", "y", "z" }`: like a torch (the nearest light the scene with a gentle
+  flicker) but without embers.
+- Snow powder puffs up behind any kart driving through deep snow.
 
 ### Torches
 

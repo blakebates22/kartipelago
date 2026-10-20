@@ -23,14 +23,16 @@ const dt = 1 / 120;
 const cfg = { ...tuning.race, laps: 3 };
 
 describe("Frostveil Peaks", () => {
-  it("is a world with Frostveil Citadel first, Snowy Summit Pass, and two Coming Soon slots", () => {
+  it("is a world with Frostveil Citadel first, then its other courses and a Coming Soon slot", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks[0]).toBe(id);
     const tiles = trackTilesOf(w);
     expect(tiles).toHaveLength(4);
     expect(tiles[0]!.id).toBe(id);
-    expect(tiles[1]!.id).toBe("snowy_summit");
-    expect(tiles.slice(2).every((t) => t.comingSoon && !t.load.packageId)).toBe(true);
+    expect(tiles.slice(1, w.tracks.length).every((t) => !t.comingSoon && t.load.packageId)).toBe(
+      true,
+    );
+    expect(tiles.slice(w.tracks.length).every((t) => t.comingSoon && !t.load.packageId)).toBe(true);
     expect(trackById(id)?.load.packageId).toBe(id);
     expect(SONGS[trackById(id)!.music]).toBeDefined();
   });

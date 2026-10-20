@@ -2,9 +2,10 @@
 
 A prehistoric winter world: snowbound mountains where an ancient civilization built
 temples, bridges and fortresses into the peaks. Its courses are **Frostveil Citadel**
-(moonlit ruins) and **Snowy Summit Pass** (a bright, sunny lake); two more are planned
-and show in track select as locked "Coming Soon" tiles (`comingSoon` in
-`src/game/worlds.ts`: rename them there when they have names).
+(moonlit ruins), **Snowy Summit Pass** (a bright, sunny lake) and **Hearthglow Hollow**
+(a Christmas village at twilight); one more is planned and shows in track select as a
+locked "Coming Soon" tile (`comingSoon` in `src/game/worlds.ts`: rename it there when it
+has a name).
 
 ## Frostveil Citadel
 
@@ -168,4 +169,68 @@ skipping bass, shaker and tambourine.
 the geysers' schedule and launch, the mammoths, three AI laps) and `tests/holes.test.ts`.
 
 **Size:** about 17 MB of visual geometry and 6 MB of collision; about 510 draw calls
+at the start.
+
+## Hearthglow Hollow
+
+A Christmas village on a snowy evening: a lap of about 2.57 km (an AI lap is about
+112 s) through an alpine village decorated for Christmas, round its giant tree, over the
+frozen river, through an enchanted forest, up the mountain to the bell tower and down a
+sleigh run. A deep purple and blue twilight full of stars, warm golden windows and
+lanterns, coloured lights everywhere. All designs are original.
+
+| #   | Section                        | What happens                                                                                                                                                                            |
+| --- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | The Village Entrance           | The start under a great wooden Christmas arch (wreath, lanterns, banners, a checkered banner), up a cobbled street of glowing cottages, lantern posts and lights, the giant tree ahead. |
+| B   | The Village Square             | Down into the paved square and round the 44 m giant tree (lights spiralling up it, a golden star, giant baubles turning) in a sweep of curves, past stalls, snowmen and presents.       |
+| C   | The Frozen River Crossing      | North over an arched stone bridge above the frozen river, icicles under it. Or, before it, the shortcut: down the bank onto the river ice, west along it and back up onto the lane.     |
+| D   | The Enchanted Forest           | Between snow-laden pines (some strung with lights), log cabins and lanterns. At two crossings giant snowballs roll across the road on a fixed beat.                                     |
+| E   | The Mountain Climb             | Up the mountainside on snowy roads and timber trestles, a hairpin, the high road with the village glowing below, a trestle over the creek's gorge, to the bell tower at the summit.     |
+| F   | The Sleigh Run                 | A fast plunge down a broad snowy chute under decorated arches, candy canes down its edges, two jumps, and a sleigh crossing on a fixed beat (its bells jingle as a warning).            |
+| G   | Covered Bridge, Village Return | Through a long lantern-lit covered bridge over the river, back along the village lanes (an icy patch on two of them) and a last left-hand drift onto the finish straight.               |
+
+**The shortcut:** off the street just before the stone bridge, down the bank onto the
+frozen river (`icy_stone`: half the grip), west along it and up the north bank onto the
+lane. It's shorter, with tighter turns on slippery ice. A twin checkpoint gate stands
+across it on the ice (either counts); no other gate is in the stretch it skips.
+
+**Mechanics:** rolling snowballs and the sleigh (`snowball` and `sleigh` entities,
+`src/game/movers.ts`) are solid and slow you; presents by the road burst when you drive
+into them and come back; the bell swings and rings on its beat; icy cobbles in two lanes
+and on the river; jumps with catches. See
+[prehistoric-world.md](prehistoric-world.md#snowballs-and-the-sleigh). Kart physics is
+unchanged.
+
+**Atmosphere:** the `hearthglow` theme (a twilight sky dome with stars, which the dome
+now supports with `"stars"`), warm light painted onto the snow and the houses round
+every window, lantern and light; the nearest lanterns light the road and karts with a
+gentle flicker (`lantern` entities); chimney smoke; falling snow; Christmas lights that
+chase along their strings (a scrolling glow texture); flowing water down the middle of
+the river where it's only partly frozen; frozen falls on the cliffs; lit cabins and
+hamlets all over the valley and the mountains.
+
+**Music:** "Hearthglow Hollow" (`hearthglow` in `src/audio/songs.ts`), G major, 160 BPM:
+sleigh bells throughout; celesta and bells, then flute, then strings and brass, over
+plucked strings, a twinkling glockenspiel and an oom-pah walking bass.
+
+**How it's built** (`tools/blender/prehistoric/`):
+
+- `hearthglow_hollow.py`: the layout (turtle segments), heights, the land (the valley,
+  the river and the creek, the mountainside shaped round the climb, the ridge, the
+  mountains), the road kinds, the shortcut, the hidden floor and the gameplay.
+- `hearthglow_scenery.py`: the village (streets of cottages, the square, stalls, the
+  frozen fountain, lantern posts, lights), the bridges, trestles, the forest, the bell
+  tower, the hamlets, the sleigh run, the water, the entities and the painted light.
+- `hearthglow_props.py`: the kit (cottages and their collision blocks, stalls, lantern
+  posts, lit and plain pines, the giant tree, present piles, snowmen, candy canes,
+  Christmas arches, the bell tower, logs, strings of lights).
+- Theme `hearthglow` and 25 textures in `make_textures.py`.
+- The moving parts are drawn in code: `src/render/festive.ts` (snowballs, presents, the
+  bell, baubles, the sleigh, reindeer and snowman).
+
+**Tests:** `tests/hearthglow.test.ts` (the world, a clean load, where the moving parts
+are, their schedules, the bump and the bursting present, the shortcut counting, three
+AI laps) and `tests/holes.test.ts`.
+
+**Size:** about 22 MB of visual geometry and 6 MB of collision; about 1,000 draw calls
 at the start.
