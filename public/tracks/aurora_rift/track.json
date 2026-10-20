@@ -1,0 +1,1037 @@
+{
+  "schemaVersion": 1,
+  "id": "aurora_rift",
+  "name": "Aurora Rift",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "loop_01",
+      "type": "loop",
+      "x": -254.565,
+      "y": 24.0,
+      "z": -145.086,
+      "heading": -1.22173,
+      "radius": 24.0,
+      "ramp": 28.0,
+      "offset": 18.0,
+      "width": 14.0,
+      "minSpeed": 15.0,
+      "commit": 20.0,
+      "boostMult": 1.4,
+      "boostSec": 2.0,
+      "gravity": 8.0,
+      "probe": [
+        [0.0, -254.565, 24.0, -145.086],
+        [21.456, -274.58, 26.429, -138.076],
+        [55.427, -290.941, 53.057, -135.228],
+        [89.398, -270.651, 73.345, -148.809],
+        [123.37, -250.361, 53.057, -162.389],
+        [157.341, -266.723, 26.429, -159.542],
+        [178.796, -286.737, 24.0, -152.531]
+      ]
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -167.17,
+      "y": 27.5,
+      "z": -163.6,
+      "top": -123.6,
+      "width": 59.0,
+      "heading": -2.793
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": -497.79,
+      "y": 11.0,
+      "z": -119.24,
+      "top": -89.2,
+      "width": 10.0,
+      "heading": 2.793
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": -566.75,
+      "y": 11.0,
+      "z": -81.47,
+      "top": -51.5,
+      "width": 10.0,
+      "heading": -1.571
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 40,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 151.7,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 505.2,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 1003.3,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1382.1,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1506.2,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1788.4,
+      "across": 0
+    },
+    {
+      "id": "zip_08",
+      "type": "zipper",
+      "at": 2109.9,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 90,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 222.4,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 549.9,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 822.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 955.3,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1142.3,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_07",
+      "type": "bananas",
+      "at": 1436.9,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_08",
+      "type": "bananas",
+      "at": 1720.4,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_09",
+      "type": "bananas",
+      "at": 2072.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 100,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 100,
+      "across": 4,
+      "color": "green"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 295.2,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 465.2,
+      "across": -4,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 465.2,
+      "across": 4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 677.7,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1098.3,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1258.4,
+      "across": -5,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1258.4,
+      "across": 5,
+      "color": "red"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 1574.7,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_11",
+      "type": "balloon",
+      "at": 1934.6,
+      "across": -4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_12",
+      "type": "balloon",
+      "at": 1934.6,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "shimmer_01",
+      "type": "shimmer",
+      "x": -151.16,
+      "y": 24.5,
+      "z": -194.43,
+      "size": 1.2,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_02",
+      "type": "shimmer",
+      "x": -158.33,
+      "y": 24.5,
+      "z": -191.83,
+      "size": 1.7,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_03",
+      "type": "shimmer",
+      "x": -165.34,
+      "y": 24.5,
+      "z": -189.27,
+      "size": 2.2,
+      "color": "#4affd0"
+    },
+    {
+      "id": "shimmer_04",
+      "type": "shimmer",
+      "x": -172.38,
+      "y": 24.5,
+      "z": -186.71,
+      "size": 1.2,
+      "color": "#ff6ad0"
+    },
+    {
+      "id": "shimmer_05",
+      "type": "shimmer",
+      "x": -179.43,
+      "y": 24.5,
+      "z": -184.14,
+      "size": 1.7,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_06",
+      "type": "shimmer",
+      "x": -186.48,
+      "y": 24.5,
+      "z": -181.58,
+      "size": 2.2,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_07",
+      "type": "shimmer",
+      "x": -193.53,
+      "y": 24.5,
+      "z": -179.01,
+      "size": 1.2,
+      "color": "#4affd0"
+    },
+    {
+      "id": "shimmer_08",
+      "type": "shimmer",
+      "x": -200.49,
+      "y": 24.5,
+      "z": -176.22,
+      "size": 1.7,
+      "color": "#ff6ad0"
+    },
+    {
+      "id": "shimmer_09",
+      "type": "shimmer",
+      "x": -207.28,
+      "y": 24.5,
+      "z": -172.94,
+      "size": 2.2,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_10",
+      "type": "shimmer",
+      "x": -214.33,
+      "y": 24.5,
+      "z": -170.38,
+      "size": 1.2,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_11",
+      "type": "shimmer",
+      "x": -203.95,
+      "y": 24.9,
+      "z": -155.0,
+      "size": 1.2,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_12",
+      "type": "shimmer",
+      "x": -209.42,
+      "y": 24.9,
+      "z": -170.04,
+      "size": 1.7,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_13",
+      "type": "shimmer",
+      "x": -212.4,
+      "y": 24.9,
+      "z": -151.92,
+      "size": 2.2,
+      "color": "#4affd0"
+    },
+    {
+      "id": "shimmer_14",
+      "type": "shimmer",
+      "x": -217.87,
+      "y": 24.9,
+      "z": -166.96,
+      "size": 1.2,
+      "color": "#ff6ad0"
+    },
+    {
+      "id": "shimmer_15",
+      "type": "shimmer",
+      "x": -220.85,
+      "y": 24.9,
+      "z": -148.85,
+      "size": 1.7,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_16",
+      "type": "shimmer",
+      "x": -226.34,
+      "y": 24.9,
+      "z": -163.88,
+      "size": 2.2,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_17",
+      "type": "shimmer",
+      "x": -229.31,
+      "y": 24.9,
+      "z": -145.76,
+      "size": 1.2,
+      "color": "#4affd0"
+    },
+    {
+      "id": "shimmer_18",
+      "type": "shimmer",
+      "x": -234.79,
+      "y": 24.9,
+      "z": -160.79,
+      "size": 1.7,
+      "color": "#ff6ad0"
+    },
+    {
+      "id": "shimmer_19",
+      "type": "shimmer",
+      "x": -237.77,
+      "y": 24.9,
+      "z": -142.68,
+      "size": 2.2,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_20",
+      "type": "shimmer",
+      "x": -243.24,
+      "y": 24.9,
+      "z": -157.72,
+      "size": 1.2,
+      "color": "#b07aff"
+    },
+    {
+      "id": "shimmer_21",
+      "type": "shimmer",
+      "x": -246.23,
+      "y": 24.9,
+      "z": -139.6,
+      "size": 1.7,
+      "color": "#4affd0"
+    },
+    {
+      "id": "shimmer_22",
+      "type": "shimmer",
+      "x": -251.7,
+      "y": 24.9,
+      "z": -154.64,
+      "size": 2.2,
+      "color": "#ff6ad0"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 36,
+      "radius": 34
+    },
+    {
+      "id": "icicle_01",
+      "type": "icicle",
+      "x": -569.84,
+      "y": 23.46,
+      "z": -18.21,
+      "top": 37.5,
+      "period": 9.0,
+      "offset": 2.0,
+      "warn": 1.6,
+      "r": 3.2
+    },
+    {
+      "id": "icicle_02",
+      "type": "icicle",
+      "x": -576.34,
+      "y": 27.96,
+      "z": 9.44,
+      "top": 42.0,
+      "period": 9.0,
+      "offset": 5.1,
+      "warn": 1.6,
+      "r": 3.2
+    },
+    {
+      "id": "icicle_03",
+      "type": "icicle",
+      "x": -552.1,
+      "y": 35.9,
+      "z": 61.47,
+      "top": 49.9,
+      "period": 9.0,
+      "offset": 8.2,
+      "warn": 1.6,
+      "r": 3.2
+    },
+    {
+      "id": "icicle_04",
+      "type": "icicle",
+      "x": 223.5,
+      "y": 4.0,
+      "z": -116.9,
+      "top": 94.0,
+      "period": 7.0,
+      "offset": 0.0,
+      "warn": 0.0,
+      "r": 4.0,
+      "decor": true
+    },
+    {
+      "id": "icicle_05",
+      "type": "icicle",
+      "x": 135.6,
+      "y": 4.0,
+      "z": -203.62,
+      "top": 94.0,
+      "period": 8.0,
+      "offset": 1.7,
+      "warn": 0.0,
+      "r": 4.0,
+      "decor": true
+    },
+    {
+      "id": "icicle_06",
+      "type": "icicle",
+      "x": 0.67,
+      "y": 4.0,
+      "z": -163.3,
+      "top": 94.0,
+      "period": 9.0,
+      "offset": 3.4,
+      "warn": 0.0,
+      "r": 4.0,
+      "decor": true
+    },
+    {
+      "id": "icicle_07",
+      "type": "icicle",
+      "x": 16.38,
+      "y": 4.0,
+      "z": -55.01,
+      "top": 94.0,
+      "period": 10.0,
+      "offset": 5.1,
+      "warn": 0.0,
+      "r": 4.0,
+      "decor": true
+    },
+    {
+      "id": "thin_ice_01",
+      "type": "thin_ice",
+      "x": -445.02,
+      "y": 11.3,
+      "z": -113.95,
+      "r": 6.5,
+      "hold": 7.0
+    },
+    {
+      "id": "thin_ice_02",
+      "type": "thin_ice",
+      "x": -512.62,
+      "y": 11.3,
+      "z": -83.59,
+      "r": 6.5,
+      "hold": 7.0
+    },
+    {
+      "id": "thin_ice_03",
+      "type": "thin_ice",
+      "x": -460.66,
+      "y": 11.45,
+      "z": -97.18,
+      "r": 5.5,
+      "hold": 6.0
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": -12.5,
+      "y": 59.0,
+      "z": 270.0
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 12.5,
+      "y": 59.0,
+      "z": 270.0
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": 11.6,
+      "y": 46.4,
+      "z": 250.0
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": 11.34,
+      "y": 46.4,
+      "z": 225.32
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": 19.01,
+      "y": 45.95,
+      "z": 207.44
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -442.97,
+      "y": 58.38,
+      "z": 231.31
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -437.19,
+      "y": 58.14,
+      "z": 264.94
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": -415.39,
+      "y": 57.82,
+      "z": 292.24
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": -383.18,
+      "y": 57.5,
+      "z": 305.73
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": -351.74,
+      "y": 57.06,
+      "z": 306.48
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": -321.75,
+      "y": 56.56,
+      "z": 306.48
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": -291.75,
+      "y": 56.05,
+      "z": 306.48
+    },
+    {
+      "id": "lantern_13",
+      "type": "lantern",
+      "x": -261.76,
+      "y": 55.55,
+      "z": 306.48
+    },
+    {
+      "id": "lantern_14",
+      "type": "lantern",
+      "x": -231.76,
+      "y": 55.04,
+      "z": 306.48
+    },
+    {
+      "id": "lantern_15",
+      "type": "lantern",
+      "x": -201.78,
+      "y": 54.49,
+      "z": 306.46
+    },
+    {
+      "id": "lantern_16",
+      "type": "lantern",
+      "x": -174.77,
+      "y": 53.15,
+      "z": 308.99
+    },
+    {
+      "id": "lantern_17",
+      "type": "lantern",
+      "x": -150.14,
+      "y": 51.43,
+      "z": 319.87
+    },
+    {
+      "id": "lantern_18",
+      "type": "lantern",
+      "x": -124.11,
+      "y": 49.73,
+      "z": 334.97
+    },
+    {
+      "id": "lantern_19",
+      "type": "lantern",
+      "x": -93.8,
+      "y": 48.3,
+      "z": 347.77
+    },
+    {
+      "id": "lantern_20",
+      "type": "lantern",
+      "x": -61.5,
+      "y": 46.97,
+      "z": 350.62
+    },
+    {
+      "id": "lantern_21",
+      "type": "lantern",
+      "x": -27.7,
+      "y": 46.4,
+      "z": 347.46
+    },
+    {
+      "id": "lantern_22",
+      "type": "lantern",
+      "x": 0.83,
+      "y": 46.4,
+      "z": 324.84
+    },
+    {
+      "id": "lantern_23",
+      "type": "lantern",
+      "x": 67.82,
+      "y": 26.4,
+      "z": -140.15
+    },
+    {
+      "id": "lantern_24",
+      "type": "lantern",
+      "x": 47.65,
+      "y": 26.4,
+      "z": -141.71
+    },
+    {
+      "id": "lantern_25",
+      "type": "lantern",
+      "x": 52.1,
+      "y": 26.4,
+      "z": -122.41
+    },
+    {
+      "id": "lantern_26",
+      "type": "lantern",
+      "x": 32.28,
+      "y": 26.4,
+      "z": -123.37
+    },
+    {
+      "id": "lantern_27",
+      "type": "lantern",
+      "x": 36.68,
+      "y": 26.4,
+      "z": -104.02
+    },
+    {
+      "id": "lantern_28",
+      "type": "lantern",
+      "x": 16.85,
+      "y": 26.4,
+      "z": -104.96
+    },
+    {
+      "id": "lantern_29",
+      "type": "lantern",
+      "x": 21.71,
+      "y": 26.4,
+      "z": -85.14
+    },
+    {
+      "id": "lantern_30",
+      "type": "lantern",
+      "x": 169.44,
+      "y": 26.44,
+      "z": -24.52
+    },
+    {
+      "id": "lantern_31",
+      "type": "lantern",
+      "x": 165.75,
+      "y": 26.4,
+      "z": -69.81
+    },
+    {
+      "id": "lantern_32",
+      "type": "lantern",
+      "x": 146.17,
+      "y": 26.4,
+      "z": -109.3
+    },
+    {
+      "id": "lantern_33",
+      "type": "lantern",
+      "x": 112.86,
+      "y": 26.4,
+      "z": -140.49
+    },
+    {
+      "id": "lantern_34",
+      "type": "lantern",
+      "x": -98.27,
+      "y": 26.4,
+      "z": -159.09
+    },
+    {
+      "id": "lantern_35",
+      "type": "lantern",
+      "x": -127.39,
+      "y": 26.4,
+      "z": -179.34
+    },
+    {
+      "id": "lantern_36",
+      "type": "lantern",
+      "x": -169.88,
+      "y": 26.4,
+      "z": -166.12
+    },
+    {
+      "id": "lantern_37",
+      "type": "lantern",
+      "x": -202.1,
+      "y": 26.4,
+      "z": -155.78
+    },
+    {
+      "id": "lantern_38",
+      "type": "lantern",
+      "x": -216.9,
+      "y": 26.4,
+      "z": -167.21
+    },
+    {
+      "id": "lantern_39",
+      "type": "lantern",
+      "x": -220.89,
+      "y": 26.4,
+      "z": -148.94
+    },
+    {
+      "id": "lantern_40",
+      "type": "lantern",
+      "x": -235.69,
+      "y": 26.4,
+      "z": -160.36
+    },
+    {
+      "id": "lantern_41",
+      "type": "lantern",
+      "x": -239.68,
+      "y": 26.4,
+      "z": -142.09
+    },
+    {
+      "id": "lantern_42",
+      "type": "lantern",
+      "x": -254.48,
+      "y": 26.4,
+      "z": -153.52
+    },
+    {
+      "id": "lantern_43",
+      "type": "lantern",
+      "x": -287.78,
+      "y": 26.13,
+      "z": -143.74
+    },
+    {
+      "id": "lantern_44",
+      "type": "lantern",
+      "x": -302.55,
+      "y": 25.31,
+      "z": -155.18
+    },
+    {
+      "id": "lantern_45",
+      "type": "lantern",
+      "x": -306.25,
+      "y": 24.08,
+      "z": -136.95
+    },
+    {
+      "id": "lantern_46",
+      "type": "lantern",
+      "x": -581.76,
+      "y": 25.54,
+      "z": -20.06
+    },
+    {
+      "id": "lantern_47",
+      "type": "lantern",
+      "x": -581.25,
+      "y": 33.01,
+      "z": 28.27
+    },
+    {
+      "id": "lantern_48",
+      "type": "lantern",
+      "x": -550.73,
+      "y": 39.14,
+      "z": 72.77
+    },
+    {
+      "id": "lantern_49",
+      "type": "lantern",
+      "x": -500.13,
+      "y": 47.22,
+      "z": 79.78
+    },
+    {
+      "id": "lantern_50",
+      "type": "lantern",
+      "x": -458.76,
+      "y": 54.45,
+      "z": 85.18
+    },
+    {
+      "id": "lantern_51",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 57.68,
+      "z": 108.53
+    },
+    {
+      "id": "lantern_52",
+      "type": "lantern",
+      "x": -441.37,
+      "y": 58.16,
+      "z": 119.42
+    },
+    {
+      "id": "lantern_53",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 58.37,
+      "z": 129.62
+    },
+    {
+      "id": "lantern_54",
+      "type": "lantern",
+      "x": -441.23,
+      "y": 58.41,
+      "z": 139.62
+    },
+    {
+      "id": "lantern_55",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 58.4,
+      "z": 149.62
+    },
+    {
+      "id": "lantern_56",
+      "type": "lantern",
+      "x": -441.23,
+      "y": 58.4,
+      "z": 159.62
+    },
+    {
+      "id": "lantern_57",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 58.4,
+      "z": 169.62
+    },
+    {
+      "id": "lantern_58",
+      "type": "lantern",
+      "x": -441.23,
+      "y": 58.4,
+      "z": 179.62
+    },
+    {
+      "id": "lantern_59",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 58.4,
+      "z": 189.62
+    },
+    {
+      "id": "lantern_60",
+      "type": "lantern",
+      "x": -441.23,
+      "y": 58.4,
+      "z": 199.62
+    },
+    {
+      "id": "lantern_61",
+      "type": "lantern",
+      "x": -424.43,
+      "y": 58.4,
+      "z": 209.62
+    },
+    {
+      "id": "lantern_62",
+      "type": "lantern",
+      "x": -441.23,
+      "y": 58.4,
+      "z": 219.62
+    },
+    {
+      "id": "lantern_63",
+      "type": "lantern",
+      "x": -424.47,
+      "y": 58.39,
+      "z": 229.66
+    }
+  ],
+  "generator": "tools/blender/prehistoric/aurora_rift.py (re-running it rewrites entities)"
+}

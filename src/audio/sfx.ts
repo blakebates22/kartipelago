@@ -218,6 +218,30 @@ export function createSfx(engine: AudioEngine) {
       note(520, 0.02, 0.12, volume * 0.35, 1040, "triangle");
       note(780, 0.1, 0.16, volume * 0.3, 1170, "triangle");
     },
+    /** Onto a loop-the-loop: the booster's surge, a rising whoosh up and over. */
+    loop(volume: number) {
+      noise(0, 0.5, volume * 0.7, 900, 6000);
+      note(220, 0, 1.4, volume * 0.35, 880, "sawtooth");
+      note(660, 0.9, 0.9, volume * 0.25, 330, "triangle");
+      noise(1.2, 1.2, volume * 0.4, 5000, 500);
+    },
+    /** Ice cracking underfoot: a sharp snap and a low groan. */
+    crack(volume: number) {
+      noise(0, 0.08, volume * 0.9, 9000, 2500);
+      note(160, 0.02, 0.35, volume * 0.35, 90, "sawtooth");
+      noise(0.12, 0.06, volume * 0.5, 7000, 2000);
+    },
+    /** Ice shattering: a crash of tinkling glass. */
+    shatter(volume: number) {
+      noise(0, 0.4, volume * 0.8, 10000, 1500);
+      for (let i = 0; i < 6; i++)
+        note(1800 + i * 430, i * 0.035, 0.18, volume * 0.18, 2600 + i * 300, "triangle");
+    },
+    /** An icicle about to fall: a creaking groan. */
+    creak(volume: number) {
+      note(220, 0, 0.5, volume * 0.3, 140, "sawtooth");
+      note(300, 0.3, 0.4, volume * 0.22, 180, "square");
+    },
     /** A heavy, soft footstep. */
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);

@@ -23,7 +23,7 @@ const dt = 1 / 120;
 const cfg = { ...tuning.race, laps: 3 };
 
 describe("Frostveil Peaks", () => {
-  it("is a world with Frostveil Citadel first, then its other courses and a Coming Soon slot", () => {
+  it("is a world with Frostveil Citadel first, then its other courses", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks[0]).toBe(id);
     const tiles = trackTilesOf(w);

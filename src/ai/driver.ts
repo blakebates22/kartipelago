@@ -103,6 +103,9 @@ export function driveAi(
   kartCfg: KartConfig,
   cfg: AiConfig,
   moment: RaceMoment,
+  /** Steer for this point instead of the racing line, without drifting (lining up a
+   * loop-the-loop's entry: src/game/loops.ts). */
+  aim?: { x: number; z: number },
 ): InputState {
   const input: InputState = { throttle: 0, brake: 0, steer: 0, drift: false, item: false };
   if (moment.countdown) {
@@ -117,8 +120,16 @@ export function driveAi(
   // Pure pursuit: the turn rate that arcs the travel direction onto a point ahead.
   const look = cfg.lookAhead + cfg.lookAheadPerSpeed * speed;
   const j = (i + Math.round(look / line.spacing)) % line.n;
-  const aim = wrap(Math.atan2(line.x[j]! - kart.x, line.z[j]! - kart.z) - kart.velAngle);
-  const wantRate = (2 * speed * Math.sin(aim)) / look; // heading change per second (+ = left)
+  const tx = aim ? aim.x : line.x[j]!;
+  const tz = aim ? aim.z : line.z[j]!;
+  const toward = wrap(Math.atan2(tx - kart.x, tz - kart.z) - kart.velAngle);
+  const dist = aim ? Math.max(4, Math.hypot(tx - kart.x, tz - kart.z)) : look;
+  const wantRate = (2 * speed * Math.sin(toward)) / dist; // heading change per second (+ = left)
+  if (aim) {
+    // Lining up: no drift; plain steering onto the point.
+    d.driftHeld = input.drift = false;
+    return steerFor(input, wantRate, speed, kartCfg);
+  }
 
   const corner = sharpestAhead(line, i, 4, cfg.driftScan);
   const radius = corner === 0 ? Infinity : 1 / Math.abs(corner);
@@ -172,11 +183,15 @@ export function driveAi(
     return input;
   }
 
-  // Normal steering: stick position for the wanted turn rate at this speed.
+  d.driftHeld = false;
+  return steerFor(input, wantRate, speed, kartCfg);
+}
+
+/** Normal steering: the stick position for the wanted turn rate at this speed. */
+function steerFor(input: InputState, wantRate: number, speed: number, kartCfg: KartConfig) {
   const atSpeed = Math.min(1, speed / kartCfg.topSpeed);
   const rolling = Math.min(1, speed / kartCfg.turnFullSpeed);
   const rate = (kartCfg.turnRate + (kartCfg.turnRateAtTop - kartCfg.turnRate) * atSpeed) * rolling;
   input.steer = clamp(-wantRate / Math.max(0.1, rate), -1, 1);
-  d.driftHeld = false;
   return input;
 }

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "loop_lab",
+  "name": "Loop Lab",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "loop_01",
+      "type": "loop",
+      "x": 0.0,
+      "y": 0.5,
+      "z": 40.0,
+      "heading": -3.141593,
+      "radius": 22.0,
+      "ramp": 26.0,
+      "offset": 18.0,
+      "width": 14.0,
+      "minSpeed": 14.0,
+      "commit": 18.0,
+      "boostMult": 1.45,
+      "boostSec": 2.2,
+      "gravity": 8.0,
+      "probe": [
+        [0.0, 0.0, 0.5, 40.0],
+        [19.708, 0.258, 2.712, 20.518],
+        [50.911, 3.178, 27.105, 5.405],
+        [82.115, 9.0, 45.765, 27.15],
+        [113.319, 14.822, 27.105, 48.895],
+        [144.522, 17.742, 2.712, 33.781],
+        [164.23, 18.0, 0.5, 14.3]
+      ]
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 65.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 413.7,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 473.7,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 172.4,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 172.4,
+      "across": 4,
+      "color": "blue"
+    }
+  ],
+  "generator": "tools/blender/prehistoric/loop_lab.py (re-running it rewrites entities)"
+}

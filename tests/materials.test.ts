@@ -3,7 +3,13 @@ import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import surfacesFile from "../assets/data/surfaces.json";
-import { filterFor, fxOffset, parseFx, prepareTrackMaterials } from "../src/render/trackMaterials";
+import {
+  filterFor,
+  fxOffset,
+  pulseAt,
+  parseFx,
+  prepareTrackMaterials,
+} from "../src/render/trackMaterials";
 import { createMeshGround } from "../src/world/collisionMesh";
 import {
   loadTrackPackage,
@@ -118,10 +124,10 @@ describe("water and lava animation", () => {
   });
 
   it("scrolls steadily and ripples in a loop", () => {
-    const fx = { scrollU: 0.25, scrollV: 0, wave: 0, wavePeriod: 4 };
+    const fx = { scrollU: 0.25, scrollV: 0, wave: 0, wavePeriod: 4, pulse: 0, pulsePeriod: 4 };
     expect(fxOffset(fx, 1)[0]).toBeCloseTo(0.25);
     expect(fxOffset(fx, 5)[0]).toBeCloseTo(0.25); // wraps every 4 s
-    const ripple = { scrollU: 0, scrollV: 0, wave: 0.1, wavePeriod: 2 };
+    const ripple = { scrollU: 0, scrollV: 0, wave: 0.1, wavePeriod: 2, pulse: 0, pulsePeriod: 4 };
     const a = fxOffset(ripple, 0.3);
     const b = fxOffset(ripple, 2.3);
     // Same place one period later (offsets wrap at 1).
@@ -129,6 +135,18 @@ describe("water and lava animation", () => {
       const d = Math.abs(a[k]! - b[k]!);
       expect(Math.min(d, 1 - d)).toBeLessThan(1e-9);
     }
+  });
+});
+
+describe("pulsing glow", () => {
+  it("reads a pulse, and swells and fades round its own glow", () => {
+    const fx = parseFx({
+      kp_fx: { scroll_u: 0, scroll_v: 0, wave: 0, pulse: 0.4, pulse_period: 4 },
+    })!;
+    expect(fx.pulse).toBeCloseTo(0.4);
+    expect(pulseAt(fx, 1)).toBeCloseTo(1);
+    expect(pulseAt(fx, 3)).toBeCloseTo(0.6);
+    expect(pulseAt({ ...fx, pulse: 0 }, 3)).toBe(1);
   });
 });
 

@@ -27,6 +27,9 @@ export interface MaterialFx {
   /** Looping wobble, as a fraction of a repeat, and its period in seconds. */
   wave: number;
   wavePeriod: number;
+  /** The glow swelling and fading by this share (a living crystal), and its period. */
+  pulse: number;
+  pulsePeriod: number;
 }
 
 const num = (v: unknown, lo: number, hi: number, fallback: number) =>
@@ -42,8 +45,10 @@ export function parseFx(userData: Record<string, unknown> | undefined): Material
     scrollV: num(r.scroll_v, -10, 10, 0),
     wave: num(r.wave, 0, 1, 0),
     wavePeriod: num(r.wave_period, 0.05, 600, 4),
+    pulse: num(r.pulse, 0, 1, 0),
+    pulsePeriod: num(r.pulse_period, 0.1, 600, 4),
   };
-  return fx.scrollU || fx.scrollV || fx.wave ? fx : undefined;
+  return fx.scrollU || fx.scrollV || fx.wave || fx.pulse ? fx : undefined;
 }
 
 /** A texture's offset at time `t` (seconds): steady scroll plus a small circular ripple. */
@@ -54,6 +59,12 @@ export function fxOffset(fx: MaterialFx, t: number): [number, number] {
     wrap(fx.scrollU * t + fx.wave * Math.sin(a)),
     wrap(fx.scrollV * t + fx.wave * Math.cos(a)),
   ];
+}
+
+/** The glow's strength at time `t` as a share of its own (1 when steady). */
+export function pulseAt(fx: MaterialFx, t: number): number {
+  if (!fx.pulse) return 1;
+  return 1 - fx.pulse / 2 + (fx.pulse / 2) * Math.sin((2 * Math.PI * t) / fx.pulsePeriod);
 }
 
 /** Sampler settings for each look. */
@@ -74,8 +85,12 @@ export function filterFor(mode: LookMode) {
 export interface TrackMaterials {
   /** Every texture on the track (for switching the look). */
   textures: Set<THREE.Texture>;
-  /** Textures that move, with their animation. */
-  animated: { texture: THREE.Texture; fx: MaterialFx }[];
+  /** Textures that move, with their animation (and glows that pulse: their material). */
+  animated: {
+    texture: THREE.Texture;
+    fx: MaterialFx;
+    pulse?: { mat: THREE.MeshLambertMaterial; base: number };
+  }[];
   setMode(mode: LookMode): void;
   /** Advance water and lava to time `t`, seconds. */
   update(t: number): void;
@@ -110,6 +125,10 @@ function toRetro(src: GltfMaterial, animated: TrackMaterials["animated"]) {
     depthWrite: !src.transparent,
   });
   mat.userData = { ...src.userData };
+  if (fx?.pulse && glows) {
+    const entry = animated.find((a) => a.texture === map);
+    if (entry) entry.pulse = { mat, base: mat.emissiveIntensity };
+  }
   return mat;
 }
 
@@ -163,7 +182,10 @@ export function prepareTrackMaterials(root: THREE.Object3D, mode: LookMode): Tra
       }
     },
     update(t) {
-      for (const a of animated) a.texture.offset.set(...fxOffset(a.fx, t));
+      for (const a of animated) {
+        a.texture.offset.set(...fxOffset(a.fx, t));
+        if (a.pulse) a.pulse.mat.emissiveIntensity = a.pulse.base * pulseAt(a.fx, t);
+      }
     },
   };
   tm.setMode(mode);

@@ -2,6 +2,7 @@
 import tuning from "../assets/data/tuning.json";
 import { NEUTRAL } from "../src/core/input";
 import { createDriver, driveAi } from "../src/ai/driver";
+import { createLoops } from "../src/game/loops";
 import { buildRacingLine } from "../src/ai/racingLine";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepMeshWalls } from "../src/physics/walls";
@@ -45,6 +46,10 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
   const start = track.start;
   const k = createKartState(start.x, start.z, start.heading, track.samples[0]!.pos.y);
   k.y = ground.at(k.x, k.z, k.y + 0.5).height;
+  // Loop-the-loops ride the kart round themselves (src/game/loops.ts), as in a race.
+  const loops = createLoops(p.meta.entities ?? [], 1);
+  let loopsRidden = 0;
+  let inverted = 0;
   let lowest = Infinity;
   let worstAbove = 0;
   let walls = 0;
@@ -55,38 +60,59 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     t += dt
   ) {
     tickRace(race, dt);
-    const input = driveAi(driver, k, cfg, tuning.ai, {
-      countdown: race.phase === "countdown",
-      clock: race.clock,
-      startTarget: -1,
-    });
+    const riding = loops?.riding(0) ?? false;
+    const input = driveAi(
+      driver,
+      riding ? { ...k, ...loops!.racePos(0, k) } : k,
+      cfg,
+      tuning.ai,
+      {
+        countdown: race.phase === "countdown",
+        clock: race.clock,
+        startTarget: -1,
+      },
+      loops?.aim(0, k),
+    );
+    if (riding) input.steer = loops!.aiSteer(0);
     stepImpacts(k, tuning.collision, dt);
     let c = cfg;
     const here = ground.at(k.x, k.z, k.y);
-    if (opts.surfaces && k.grounded && here.surface) {
+    if (opts.surfaces && k.grounded && here.surface && !riding) {
       visited.add(here.surface);
       c = applySurface(cfg, SURFACES[here.surface]);
     }
-    stepKart(k, race.phase === "countdown" ? NEUTRAL : input, c, dt);
-    if (stepMeshWalls(k, p.collision, wallCfg, dt)) {
-      walls++;
-      wallHits.push({ x: k.x, y: k.y, z: k.z });
+    const before = { x: k.x, y: k.y, z: k.z };
+    const want = race.phase === "countdown" ? NEUTRAL : input;
+    stepKart(k, loops ? loops.input(0, k, want) : want, c, dt);
+    if (!riding) {
+      if (stepMeshWalls(k, p.collision, wallCfg, dt)) {
+        walls++;
+        wallHits.push({ x: k.x, y: k.y, z: k.z });
+      }
+      stepVertical(k, ground, tuning.physics, dt);
     }
-    stepVertical(k, ground, tuning.physics, dt);
+    if (loops) {
+      const lp = loops.step(0, k, before, input.steer, c, dt);
+      if (lp.entered) loopsRidden++;
+      if (loops.riding(0) && k.ny < -0.9) inverted++;
+    }
+    const at = loops?.riding(0) ? { ...k, ...loops.racePos(0, k) } : k;
     const ev = stepRacer(
       race,
       0,
-      k,
-      ground.at(k.x, k.z, k.y).onRoad,
+      at,
+      loops?.riding(0) ? true : ground.at(k.x, k.z, k.y).onRoad,
       input.throttle,
       tuning.race,
       dt,
     );
     const under = k.grounded ? ground.at(k.x, k.z, k.y).surface : undefined;
-    const fell = k.y < p.killY || (opts.surfaces && under && SURFACES[under]?.respawn);
+    const fell =
+      !loops?.riding(0) && (k.y < p.killY || (opts.surfaces && under && SURFACES[under]?.respawn));
     if (ev.respawn || fell) {
       const g = ev.respawn ?? respawnSpot(race, 0);
       Object.assign(k, createKartState(g.x, g.z, g.heading, g.y));
+      loops?.reset(0);
       teleported(race, 0, k);
       respawns++;
     }
@@ -96,7 +122,7 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     }
     lowest = Math.min(lowest, k.y);
     // How far above the nearest route point's height the kart is (wrong layer = ~8 m).
-    if (k.grounded) {
+    if (k.grounded && !loops?.riding(0)) {
       let near = track.samples[0]!;
       let nd = Infinity;
       for (const s of track.samples) {
@@ -118,6 +144,9 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     wallHits,
     killY: p.killY,
     respawns,
+    /** Loops driven onto, and steps spent upside down on one. */
+    loopsRidden,
+    inverted,
     surfaces: visited,
     kart: k,
     path,

@@ -42,9 +42,7 @@ export const WORLDS: WorldEntry[] = [
     description:
       "Snowbound mountains where an ancient civilization built temples, bridges and fortresses into the peaks.",
     color: "#6f7fd6",
-    tracks: ["frostveil_citadel", "snowy_summit", "hearthglow_hollow"],
-    // One more course is planned; rename this once it has a name.
-    comingSoon: ["Coming Soon"],
+    tracks: ["frostveil_citadel", "snowy_summit", "hearthglow_hollow", "aurora_rift"],
   },
   {
     id: "test_world",
@@ -53,7 +51,15 @@ export const WORLDS: WorldEntry[] = [
     description:
       "Prototypes and practice: the material demo, the early test circuits and the drift park.",
     color: "#5fb8f0",
-    tracks: ["dino_demo", "drift_loop", "ribbon_ridge", "meadow_run", "bridge_test", "drift_park"],
+    tracks: [
+      "dino_demo",
+      "drift_loop",
+      "ribbon_ridge",
+      "meadow_run",
+      "bridge_test",
+      "loop_lab",
+      "drift_park",
+    ],
     testing: true,
   },
 ];

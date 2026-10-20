@@ -197,6 +197,7 @@ describe("worlds", () => {
       "ribbon_ridge",
       "meadow_run",
       "bridge_test",
+      "loop_lab",
       "drift_park",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([

@@ -14,7 +14,8 @@ setting as the sampler's wrap. Things glTF has no slot for travel as material ex
     kp_surface   the driving surface (physics), chosen separately from the image
     kp_texture   which library image it is
     kp_fx        water/lava animation: scroll_u, scroll_v (repeats per second),
-                 wave (wobble, fraction of a repeat) and wave_period (seconds)
+                 wave (wobble, fraction of a repeat) and wave_period (seconds);
+                 pulse (glow swelling by that share) and pulse_period (seconds)
 
 UVs are projected in world space, so texture density is the same everywhere: one
 repeat of a texture covers `tileMetres` across (and tileMetres x height/width up or
@@ -171,6 +172,17 @@ class KPMaterialFx(bpy.types.PropertyGroup):
         soft_max=2.0,
         update=_changed,
     )
+    pulse: bpy.props.FloatProperty(
+        name="Pulse",
+        description="The glow swells and fades by this share (0 = steady), like a living crystal",
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        subtype="FACTOR",
+    )
+    pulse_period: bpy.props.FloatProperty(
+        name="Pulse Time", description="Seconds per pulse", default=4.0, min=0.1, soft_max=20.0, unit="TIME_ABSOLUTE"
+    )
     tint: bpy.props.FloatVectorProperty(
         name="Tint",
         description="Multiplies the texture's colour (white = unchanged)",
@@ -226,6 +238,8 @@ def get_material(e, surface=None, wrap=None):
     mat.kp_fx.wave_period = fx.get("wavePeriod", 4.0)
     mat.kp_fx.opacity = fx.get("opacity", 1.0)
     mat.kp_fx.glow = fx.get("glow", 0.0)
+    mat.kp_fx.pulse = fx.get("pulse", 0.0)
+    mat.kp_fx.pulse_period = fx.get("pulsePeriod", 4.0)
     build_nodes(mat, e, wrap)
     return mat
 

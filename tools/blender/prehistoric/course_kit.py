@@ -138,10 +138,13 @@ class Course:
 
     # -------------------------------------------------------------- the route
 
-    def route(self, points, width=13.0, bank=8.0, bank_gain=40.0, spacing=1.0):
+    def route(self, points, width=13.0, bank=8.0, bank_gain=40.0, spacing=1.0, sharp=(), flat=()):
         """
         The race line through (x, y, z[, width]) control points, a closed loop. Banking is
-        worked out from the curvature: up to `bank` degrees, into every turn.
+        worked out from the curvature: up to `bank` degrees, into every turn. `sharp`:
+        indices of points where the line may turn sharply (vector handles: the curve
+        comes in and goes out straight, e.g. at a loop's ends); `flat`: (x, y, radius)
+        circles where the road is never banked.
         """
         self.width = width
         cd = bpy.data.curves.new("Route", "CURVE")
@@ -149,9 +152,9 @@ class Course:
         cd.twist_mode = "Z_UP"
         sp = cd.splines.new("BEZIER")
         sp.bezier_points.add(len(points) - 1)
-        for bp, p in zip(sp.bezier_points, points):
+        for k, (bp, p) in enumerate(zip(sp.bezier_points, points)):
             bp.co = p[:3]
-            bp.handle_left_type = bp.handle_right_type = "AUTO"
+            bp.handle_left_type = bp.handle_right_type = "VECTOR" if k in sharp else "AUTO"
             bp.radius = (p[3] if len(p) > 3 else width) / width
         sp.use_cyclic_u = True
         sp.resolution_u = 24
@@ -183,6 +186,8 @@ class Course:
         for bp in sp.bezier_points:
             _, i, _ = tree.find(bp.co)
             bp.tilt = math.radians(-clamp(ks[i] * bank_gain, -1, 1) * bank)
+            if any(math.hypot(bp.co.x - fx, bp.co.y - fy) < fr for fx, fy, fr in flat):
+                bp.tilt = 0.0
         bpy.context.view_layer.update()
         self._sample(spacing)
         ob.hide_set(True)
@@ -282,6 +287,7 @@ class Course:
         ground=True,
         step=4.0,
         lift=None,
+        exact=False,
     ):
         """
         A road from s0 to s1 along the route, built with the add-on's road generator.
@@ -305,7 +311,9 @@ class Course:
             smp = self.at(sk)
             p = pos(sk)
             # The tangent includes any lift (a kicker at the end of a jump ramp).
-            t = (pos(min(s1, sk + 0.5)) - pos(max(s0, sk - 0.5))).normalized() if lift else smp.t
+            # (`exact`: tangents from this piece's own stretch, so it ends dead straight
+            # where the route turns sharply just beyond it, e.g. into a loop.)
+            t = (pos(min(s1, sk + 0.5)) - pos(max(s0, sk - 0.5))).normalized() if (lift or exact) else smp.t
             bp.handle_left_type = bp.handle_right_type = "FREE"
             bp.co = p
             bp.handle_right = p + t * h
@@ -887,6 +895,19 @@ def turtle(segs, start, head, step=1.0):
     h = head
     pts = [(x, y, h, 0)]
     for i, sg in enumerate(segs):
+        if sg[0] == "LOOP":
+            # ("LOOP", radius, ramp, offset): the route jumps straight from the loop's
+            # entry to its exit (a gap in the roads; the loop itself is Course.loop).
+            ahead, right = loop_layout(sg[1], sg[2], sg[3])
+            hr = math.radians(h)
+            dx = math.cos(hr) * ahead + math.sin(hr) * right
+            dy = math.sin(hr) * ahead - math.cos(hr) * right
+            n = max(2, int(math.hypot(dx, dy) / step))
+            for _ in range(n):
+                x += dx / n
+                y += dy / n
+                pts.append((x, y, h, i))
+            continue
         if sg[0] == "S":
             n = max(1, int(sg[1] / step))
             for _ in range(n):
@@ -1092,3 +1113,243 @@ Course.merge_props = _merge_props
 Course.underfloor_flat = _underfloor_flat
 Course.glow = _glow
 
+
+
+# ---------------------------------------------------------------- loop-the-loops
+
+LOOP_SAMPLES = 1024
+
+
+class LoopPath:
+    """
+    A loop-the-loop's road: the same curve as src/game/loops.ts (buildLoop / loopFrame),
+    in Blender coordinates. It starts at (x, y, z) heading `head` (turtle degrees, 90 =
+    north), climbs, goes over the top upside down and comes down `offset` metres to the
+    right of where it started, a little way ahead, facing the same way. The pitch turns
+    through 360°: its rate eases in over `ramp` metres, holds at 1/radius, and eases out.
+    The game rides karts round it from track.json's "loop" entity (Course.loop), so this
+    and loops.ts must stay in step: tests/loops.test.ts compares them through the
+    entity's probe points.
+    """
+
+    def __init__(self, x, y, z, head, radius, ramp, offset, width):
+        self.origin = Vector((x, y, z))
+        self.head = head
+        self.radius = radius
+        self.ramp = ramp
+        self.offset = offset
+        self.width = width
+        self.k0 = 1.0 / radius
+        self.L = 2 * math.pi * radius + ramp
+        n = LOOP_SAMPLES
+        self.ds = self.L / n
+        a = [0.0] * (n + 1)
+        b = [0.0] * (n + 1)
+        for i in range(n):
+            phi = self.pitch((i + 0.5) * self.ds)
+            a[i + 1] = a[i] + math.cos(phi) * self.ds
+            b[i + 1] = b[i] + math.sin(phi) * self.ds
+        self.a, self.b = a, b
+        h = math.radians(head)
+        self.fwd = Vector((math.cos(h), math.sin(h), 0.0))
+        self.right = Vector((math.sin(h), -math.cos(h), 0.0))
+        self.exit = self.origin + self.fwd * a[n] + self.right * offset + Vector((0, 0, b[n]))
+        self.advance = a[n]
+        self.height = max(b)
+
+    def pitch(self, s):
+        k0, r, L = self.k0, self.ramp, self.L
+        if s <= 0:
+            return 0.0
+        if s >= L:
+            return 2 * math.pi
+        if r > 0 and s < r:
+            return k0 * s * s / (2 * r)
+        if r > 0 and s > L - r:
+            return 2 * math.pi - k0 * (L - s) * (L - s) / (2 * r)
+        return k0 * (r / 2) + k0 * (s - r)
+
+    @staticmethod
+    def _shift(u):
+        t = clamp(u)
+        return t * t * t * (t * (t * 6 - 15) + 10)
+
+    @staticmethod
+    def _shift_rate(u):
+        t = clamp(u)
+        return 30 * t * t * (1 - t) * (1 - t)
+
+    def frame(self, s):
+        """(point, tangent, normal, across) at distance s; straight beyond either end."""
+        if s <= 0 or s >= self.L:
+            o = self.origin if s <= 0 else self.exit
+            along = s if s <= 0 else s - self.L
+            return o + self.fwd * along, self.fwd.copy(), Vector((0, 0, 1)), self.right.copy()
+        at = s / self.ds
+        i = min(LOOP_SAMPLES - 1, int(math.floor(at)))
+        t = at - i
+        la = self.a[i] + (self.a[i + 1] - self.a[i]) * t
+        lb = self.b[i] + (self.b[i + 1] - self.b[i]) * t
+        u = s / self.L
+        lc = self.offset * self._shift(u)
+        phi = self.pitch(s)
+        cc = self.offset * self._shift_rate(u) / self.L
+        p = self.origin + self.fwd * la + self.right * lc + Vector((0, 0, lb))
+        tan = (self.fwd * math.cos(phi) + Vector((0, 0, math.sin(phi))) + self.right * cc).normalized()
+        nrm = self.right.cross(tan).normalized()
+        across = tan.cross(nrm)
+        return p, tan, nrm, across
+
+    def point(self, s, across=0.0, up=0.0):
+        p, _, n, b = self.frame(s)
+        return p + b * across + n * up
+
+
+def loop_layout(radius, ramp, offset):
+    """How far ahead (and to the right) a loop's exit is from its entry: (ahead, right)."""
+    lp = LoopPath(0, 0, 0, 90, radius, ramp, offset, 10)
+    return lp.advance, offset
+
+
+def _course_loop(
+    self,
+    lp,
+    *,
+    road_mat,
+    side_mat,
+    rail_mat,
+    glow_mat=None,
+    thickness=1.4,
+    rail=0.9,
+    step=0.6,
+    min_speed=14.0,
+    commit=18.0,
+    boost=(1.45, 2.2),
+    gravity=8.0,
+    name="Loop",
+):
+    """
+    Build a loop-the-loop's visible road (a solid deck with low rails along both edges,
+    lit edge strips, a rock or ice underside) and add the "loop" entity that the game
+    rides karts round with. The road is visual only: on the loop the kart follows the
+    curve itself (src/game/loops.ts), so it never touches collision geometry there.
+    Returns the deck object.
+    """
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new("UVMap")
+    h = lp.width / 2
+    rw = 0.55  # rail thickness
+    road_tile = materials.entry(road_mat[0])["tileMetres"]
+    side_tile = materials.entry(side_mat[0])["tileMetres"]
+    # Cross-section (across, up) points, each strip with its material slot:
+    # 0 road top, 1 rail faces, 2 underside and outer walls, 3 lit strip.
+    strips = [
+        (0, [(-h, 0.0), (-h / 2, 0.0), (0.0, 0.0), (h / 2, 0.0), (h, 0.0)]),
+        (1, [(h, 0.0), (h, rail), (h + rw, rail)]),
+        (2, [(h + rw, rail), (h + rw, -thickness), (-h - rw, -thickness), (-h - rw, rail)]),
+        (1, [(-h - rw, rail), (-h, rail), (-h, 0.0)]),
+    ]
+    if glow_mat:
+        strips.append((3, [(h - 0.05, rail * 0.45), (h - 0.05, rail * 0.75)]))
+        strips.append((3, [(-h + 0.05, rail * 0.75), (-h + 0.05, rail * 0.45)]))
+    n = max(8, int(math.ceil(lp.L / step)))
+    frames = [lp.frame(lp.L * k / n) for k in range(n + 1)]
+    for slot, pts in strips:
+        rows = []
+        for k, (p, tan, nrm, acr) in enumerate(frames):
+            rows.append([bm.verts.new(p + acr * a + nrm * u) for a, u in pts])
+        tile = road_tile if slot == 0 else side_tile
+        # UV across: metres along the cross-section.
+        lens = [0.0]
+        for (a0, u0), (a1, u1) in zip(pts, pts[1:]):
+            lens.append(lens[-1] + math.hypot(a1 - a0, u1 - u0))
+        for k in range(n):
+            v0 = lp.L * k / n / tile
+            v1 = lp.L * (k + 1) / n / tile
+            for j in range(len(pts) - 1):
+                quad = (rows[k][j], rows[k][j + 1], rows[k + 1][j + 1], rows[k + 1][j])
+                f = bm.faces.new(quad)
+                f.material_index = slot
+                if slot == 3:
+                    uvs = ((v0 * tile / 3.0, 0.25), (v0 * tile / 3.0, 0.75), (v1 * tile / 3.0, 0.75), (v1 * tile / 3.0, 0.25))
+                else:
+                    u0, u1 = lens[j] / tile, lens[j + 1] / tile
+                    uvs = ((u0, v0), (u1, v0), (u1, v1), (u0, v1))
+                for loop, (uu, vv) in zip(f.loops, uvs):
+                    loop[uv].uv = (uu, vv)
+    # End caps under the road where it meets the ordinary road (hidden mostly).
+    bm.normal_update()
+    ob = self.mesh_object(name, bm, "Loops", "visual")
+    for m in (road_mat, side_mat, rail_mat, glow_mat or rail_mat):
+        ob.data.materials.append(self.lib(*m) if isinstance(m, tuple) else self.lib(m))
+    materials.ensure_paint(ob.data)
+    materials.keep_uvs(ob, range(len(ob.data.polygons)))
+    gx, gy, gz = self.game(*lp.origin)
+    probe = []
+    for f in (0.0, 0.12, 0.31, 0.5, 0.69, 0.88, 1.0):
+        s = lp.L * f
+        p = lp.point(s, 0.0)
+        probe.append([round(s, 3)] + [round(v, 3) for v in (p.x, p.z, -p.y)])
+    heading = (math.radians(lp.head) + math.pi / 2 + math.pi) % (2 * math.pi) - math.pi
+    self.entities.append({
+        "id": "loop_%02d" % (sum(e["type"] == "loop" for e in self.entities) + 1),
+        "type": "loop",
+        "x": round(lp.origin.x, 4), "y": round(lp.origin.z, 4), "z": round(-lp.origin.y, 4),
+        "heading": round(heading, 6),
+        "radius": lp.radius, "ramp": lp.ramp, "offset": lp.offset, "width": lp.width,
+        "minSpeed": min_speed, "commit": commit,
+        "boostMult": boost[0] if boost else 0, "boostSec": boost[1] if boost else 0,
+        "gravity": gravity,
+        "probe": probe,
+    })
+    return ob
+
+
+Course.loop = _course_loop
+
+
+def route_with_loops(pts, layout, z, every=10.0, width=None):
+    """
+    route_points_by for a layout with ("LOOP", ...) segments: control points every so
+    many metres, but across each loop only its entry and exit (both exact, both sharp,
+    so the route runs dead straight into and out of them). Returns (points, sharp
+    indices, [(entry, exit)] as (x, y, z) points).
+    """
+    loops = [i for i, sg in enumerate(layout) if sg[0] == "LOOP"]
+    # Distance along the path of each point.
+    ds = [0.0]
+    for a, b in zip(pts, pts[1:]):
+        ds.append(ds[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    ends = []
+    for li in loops:
+        ks = [k for k, p in enumerate(pts) if p[3] == li]
+        ends.append((ks[0] - 1, ks[-1]))  # entry = last point before the loop
+    out = []
+    sharp = []
+    pairs = []
+    next_at = 0.0
+    k = 0
+    while k < len(pts) - 1:
+        x, y, _, seg = pts[k]
+        hit = next((e for e in ends if e[0] == k), None)
+        near = any(abs(ds[k] - ds[e[0]]) < 4 or abs(ds[k] - ds[e[1]]) < 4 for e in ends)
+        if hit:
+            for kk in hit:
+                px, py, _, sg = pts[kk]
+                p = (round(px, 3), round(py, 3), round(z(ds[kk], sg), 3))
+                if width is not None:
+                    p = p + (round(width(ds[kk], sg), 2),)
+                sharp.append(len(out))
+                out.append(p)
+            pairs.append((out[-2][:3], out[-1][:3]))
+            k = hit[1] + 1
+            next_at = ds[hit[1]] + every
+            continue
+        if ds[k] >= next_at and not near:
+            p = (round(x, 2), round(y, 2), round(z(ds[k], seg), 2))
+            if width is not None:
+                p = p + (round(width(ds[k], seg), 2),)
+            out.append(p)
+            next_at += every
+        k += 1
+    return out, sharp, pairs

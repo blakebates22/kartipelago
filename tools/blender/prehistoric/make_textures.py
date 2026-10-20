@@ -2757,8 +2757,358 @@ THEMES.append(
     }
 )
 
+# ------------------------------------------------------------------ Aurora Rift
+
+
+def rift_road():
+    # The glacier road: smooth, polished blue ice over packed snow, a few long glossy
+    # streaks where the lanterns and the aurora catch it. Calm: it fills the screen.
+    pal = ["#5d72b0", "#6579b6", "#6d82bc", "#778cc4", "#8296ca"]
+    a, b = noise(2, 1, 3101), noise(8, 2, 3102)
+    glints = speckle(3103, 6)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#dfeaff"
+        streak = abs(math.sin(y * 0.39 + a(x, y) * 2.0))
+        if streak > 0.985 and b(x, y) > 0.45:
+            return "#a8bce8"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def rift_ice_road():
+    # Clear ice to drive on: deep, glassy blue with soft pale streaks; slippery.
+    pal = ["#3e66b8", "#456ec0", "#4c78c8", "#5682d0", "#628ed6"]
+    a, b = noise(2, 1, 3111), noise(6, 2, 3112)
+    glints = speckle(3113, 5)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#d8ecff"
+        if abs(b(x, y) - 0.5) < 0.012:
+            return "#8eb6ea"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+def mirror_ice():
+    # Mirror Lake's ice: dark, clear teal (the crystals' reflections show through it),
+    # faint frozen ripples and a few bright glints.
+    pal = ["#0e3a5a", "#124a6c", "#175a7c", "#1e6c8c", "#2a82a0"]
+    a, b = noise(4, 2, 3121), noise(12, 6, 3122)
+    glints = speckle(3123, 8)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#bff6ff"
+        rip = math.sin(y * 0.6 + a(x, y) * 5) * 0.5 + 0.5
+        return pick(pal, 0.1 + a(x, y) * 0.45 + rip * 0.2 + b(x, y) * 0.2)
+
+    return paint(f)
+
+
+def thin_ice():
+    # Thin ice over dark water: pale, crazed with white cracks.
+    pal = ["#3c7aa4", "#4c8cb4", "#62a2c4", "#7cb8d4"]
+    a, b, c = noise(4, 2, 3131), noise(8, 4, 3132), noise(5, 3, 3133)
+
+    def f(x, y):
+        if abs(a(x, y) - 0.5) < 0.03 or abs(b(x, y) - 0.42) < 0.02 or abs(c(x, y) - 0.6) < 0.018:
+            return "#f2faff"
+        return pick(pal, 0.2 + a(x, y) * 0.4 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def rift_snow():
+    # Night snow: blue-lavender, catching the aurora.
+    pal = ["#9aa6d8", "#a8b4e2", "#b8c2ea", "#c8d2f2", "#dae2f8"]
+    a, b = noise(4, 2, 3141), noise(16, 8, 3142)
+    sparkle = speckle(3143, 10)
+
+    def f(x, y):
+        if (x, y) in sparkle:
+            return "#ffffff"
+        return pick(pal, 0.15 + a(x, y) * 0.6 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def rift_rock():
+    # Dark indigo rock, snow caught in its cracks.
+    pal = ["#1e2148", "#262a58", "#2f3468", "#3a4078", "#4a5090"]
+    a, b = noise(6, 3, 3151), noise(16, 8, 3152)
+
+    def f(x, y):
+        v = a(x, y) * 0.65 + b(x, y) * 0.45
+        if v > 0.92 or (y % 11 == 0 and a(x, y) > 0.55):
+            return "#c8d2f2"
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def rift_cliff():
+    # The Rift's walls: banded dark indigo rock, frosted ledges, streaks of blue ice.
+    pal = ["#161a3c", "#1c2248", "#232a56", "#2a3364", "#333e74"]
+    a, b = noise(4, 8, 3161), noise(12, 4, 3162)
+
+    def f(x, y):
+        band = (y + int(a(x, y) * 6)) % 12
+        if band == 0:
+            return "#a8b8e8" if b(x, y) > 0.4 else "#5a6ca8"
+        if (x + int(b(x, y) * 4)) % 17 == 0 and a(x, y) > 0.5:
+            return "#4a78c8"
+        return pick(pal, 0.1 + a(x, y) * 0.5 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def glacier_wall():
+    # Old glacier ice seen from close by: deep blue, soft bands, a few pale bubbles.
+    pal = ["#1a2c6a", "#203476", "#263e84", "#2e4a92", "#3858a2"]
+    a, b = noise(3, 6, 3171), noise(6, 3, 3172)
+    bubbles = speckle(3173, 6)
+
+    def f(x, y):
+        if (x, y) in bubbles:
+            return "#8ab4e8"
+        layer = math.sin(y * 0.35 + a(x, y) * 3) * 0.5 + 0.5
+        return pick(pal, 0.1 + layer * 0.3 + b(x, y) * 0.55)
+
+    return paint(f)
+
+
+def cavern_ice():
+    # The cavern walls: dark indigo rock and old ice, a faint vein of crystal here and
+    # there.
+    pal = ["#121836", "#161e42", "#1a244c", "#202c58", "#283664"]
+    a, b = noise(5, 3, 3181), noise(3, 6, 3182)
+
+    def f(x, y):
+        if abs(b(x, y) - 0.52) < 0.012 and a(x, y) > 0.55:
+            return "#4ab8e0"
+        return pick(pal, 0.1 + a(x, y) * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def rift_stone():
+    # Frost-rimed slate masonry for the bridges and arches.
+    pal = ["#3a4266", "#444e76", "#4e5a86", "#5a6894"]
+    a = noise(4, 2, 3191)
+
+    def f(x, y):
+        course = y // 8
+        joint = y % 8 == 0 or (x + (8 if course % 2 else 0)) % 16 == 0
+        if joint:
+            return "#e2eaff" if y % 8 == 0 and a(x, y) > 0.45 else "#22284a"
+        return pick(pal, 0.15 + a(x, y) * 0.75)
+
+    return paint(f)
+
+
+def rift_carved():
+    # Carved arch stones: ancient runes glowing cyan in the slate.
+    a = noise(4, 2, 3201)
+
+    def f(x, y):
+        cx, cy = x % 16, y % 16
+        rune = (cx in (4, 11) and 3 <= cy <= 12) or (cy in (3, 12) and 4 <= cx <= 11) or (cx == cy and 4 <= cx <= 11)
+        if rune and (x // 16 + y // 16) % 2 == 0:
+            return "#7af4ff"
+        if y % 16 == 0 or x % 16 == 0:
+            return "#20264a"
+        return pick(["#3c4468", "#465078", "#505c88"], a(x, y))
+
+    return paint(f)
+
+
+def crystal(seed, pal, glint):
+    """A faceted crystal: broad facets along it, each shading from bright to deep across
+    its width, a fine bright edge between them, a few inner sparkles."""
+    a = noise(3, 6, seed)
+    sparkle = speckle(seed + 1, 8)
+
+    def f(x, y):
+        facet = (x // 16) % 4
+        if x % 16 == 0:
+            return pick(pal, 0.95)
+        if (x, y) in sparkle:
+            return glint
+        across = (x % 16) / 16.0
+        v = 0.15 + 0.5 * (1 - across) * (0.6 + 0.4 * (facet % 2)) + a(x, y) * 0.3
+        return pick(pal, min(0.99, v))
+
+    return paint(f)
+
+def lantern_amber():
+    # Warm lantern glass in an iron frame.
+    a = noise(4, 2, 3211)
+
+    def f(x, y):
+        if x % 16 < 2 or y < 2 or y > 29:
+            return "#2a1e18"
+        return pick(["#ff9a2a", "#ffb43c", "#ffcc5a", "#ffe08a"], 0.2 + a(x, y) * 0.7 + (1 - abs(y - 16) / 16) * 0.2)
+
+    return paint(f)
+
+
+def edge_amber():
+    # The road's edge walls: dark frosted slate with a row of small warm amber lamps
+    # (the guiding lights along the road).
+    a = noise(4, 2, 3215)
+
+    def f(x, y):
+        cx = x % 32
+        if 13 <= cx <= 18 and 13 <= y <= 18:
+            return "#ffd88a" if 15 <= cx <= 16 and 15 <= y <= 16 else "#ff9e3a"
+        if y < 4:
+            return "#c4d0f0" if a(x, y) > 0.3 else "#9aaada"
+        return pick(["#20264a", "#262d54", "#2c345e"], a(x, y))
+
+    return paint(f)
+
+
+def icefall_rift():
+    # A frozen waterfall: long blue icicle streaks, pale at their ridges.
+    pal = ["#2a4c9c", "#3a62b4", "#5280cc", "#78a2e0", "#b2cef2"]
+    a = noise(8, 2, 3221)
+
+    def f(x, y):
+        streak = math.sin(x * 1.3 + a(x, y) * 7) * 0.5 + 0.5
+        return pick(pal, streak * 0.75 + a(x, y) * 0.3)
+
+    return paint(f)
+
+
+def falls_rift():
+    # Falling water lit from below: white and cyan streaks.
+    pal = ["#3ab6e0", "#62cdec", "#94e2f6", "#ccf4fc", "#ffffff"]
+    a = noise(8, 2, 3231)
+
+    def f(x, y):
+        streak = math.sin(x * 2.1 + a(x, y) * 6) * 0.5 + 0.5
+        return pick(pal, streak * 0.7 + a(x, y) * 0.45)
+
+    return paint(f)
+
+
+def rift_mist():
+    a, b = noise(4, 2, 3241), noise(8, 4, 3242)
+
+    def f(x, y):
+        return pick(["#7ab4e8", "#94c6f0", "#b4d8f6", "#d4e8fc", "#f0f6ff"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def rift_roof():
+    # The caverns' roofs: deep violet-blue ice glittering with countless tiny crystals.
+    pal = ["#1c1c4e", "#22225a", "#2a2a66", "#323474"]
+    a = noise(4, 2, 3245)
+    big = speckle(3246, 10)
+    small = speckle(3247, 26)
+
+    def f(x, y):
+        if (x, y) in big:
+            return "#9af0ff" if (x + y) % 2 else "#d8b0ff"
+        if (x, y) in small:
+            return "#5a8ad8"
+        return pick(pal, a(x, y))
+
+    return paint(f)
+
+
+def abyss_glow():
+    # The bottom of the abyss, far below: darkness, glowing crystal dust.
+    a = noise(6, 3, 3251)
+    dust = speckle(3252, 40)
+
+    def f(x, y):
+        if (x, y) in dust:
+            return "#5ae8ff" if (x + y) % 3 else "#b07aff"
+        return pick(["#060a22", "#0a1030", "#0e163c", "#141e4c"], a(x, y))
+
+    return paint(f)
+
+
+def abyss_fog():
+    a, b = noise(4, 2, 3261), noise(8, 4, 3262)
+
+    def f(x, y):
+        return pick(["#141c4a", "#1c2a62", "#26387a", "#324a92", "#4462aa"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+THEMES.append(
+    {
+        "id": "aurora_rift",
+        "name": "Aurora Rift",
+        "description": "A fractured glacier under the northern lights: deep blue ice, dark indigo rock, glowing cyan and violet crystals, warm amber lanterns and a starry night alive with aurora",
+        "environment": {
+            "sky": "#0c1030",
+            "fog": {"enabled": True, "color": "#1c2c64", "near": 280, "far": 1600},
+            "sun": {"color": "#b8d4ff", "intensity": 1.7, "direction": [0.3, 0.78, -0.55]},
+            "ambient": {"sky": "#8aa8ff", "ground": "#2c2458", "intensity": 1.55},
+            "skyDome": {
+                "top": "#040720",
+                "horizon": "#6a2c8c",
+                "bottom": "#1c1848",
+                "sun": {"color": "#f4f8ff", "size": 3.5, "glow": "#a8c0ff", "elevation": 40},
+                "clouds": {"count": 10, "color": "#3c2c70", "shade": "#1a1444", "seed": 83, "low": 3, "high": 9, "drift": 0.002},
+                "hills": {"color": "#121838", "far": "#4c4c90", "height": 17, "seed": 89, "layers": 3},
+                "stars": {"count": 900, "color": "#ffffff", "seed": 97, "low": 10},
+                "aurora": {"count": 7, "seed": 5, "low": 18, "high": 80, "speed": 1, "intensity": 1.1, "azimuth": 160,
+                           "colors": ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"]},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("rift_road", "Glacier Road", "aurora_rift", "snow_stone", rift_road, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.08}),
+    ("rift_ice_road", "Clear Ice Track", "aurora_rift", "icy_stone", rift_ice_road, 5, {"scrollU": 0, "scrollV": 0, "glow": 0.22}),
+    ("mirror_ice", "Mirror Ice", "aurora_rift", "ice", mirror_ice, 16, {"scrollU": 0, "scrollV": 0, "glow": 0.3, "opacity": 0.7}),
+    ("thin_ice", "Thin Ice", "aurora_rift", "ice", thin_ice, 7, {"scrollU": 0, "scrollV": 0, "glow": 0.3, "opacity": 0.85}),
+    ("rift_snow", "Night Snow", "aurora_rift", "deep_snow", rift_snow, 6, None),
+    ("rift_rock", "Indigo Rock", "aurora_rift", "wall", rift_rock, 9, None),
+    ("rift_cliff", "Rift Cliff", "aurora_rift", "wall", rift_cliff, 12, None),
+    ("glacier_wall", "Glacier Ice Wall", "aurora_rift", "wall", glacier_wall, 16, {"scrollU": 0, "scrollV": 0, "glow": 0.12}),
+    ("cavern_ice", "Crystal-Veined Ice", "aurora_rift", "wall", cavern_ice, 14, {"scrollU": 0, "scrollV": 0, "glow": 0.08}),
+    ("rift_stone", "Frosted Slate", "aurora_rift", "wall", rift_stone, 4, None),
+    ("rift_carved", "Rune Stones", "aurora_rift", "wall", rift_carved, 4, {"scrollU": 0, "scrollV": 0, "glow": 0.45}),
+    ("crystal_cyan", "Rift Crystal (Cyan)", "aurora_rift", "wall",
+     lambda: crystal(3271, ["#0a7aa4", "#14a2c8", "#2ac8e6", "#64e4f6", "#b4f6ff"], "#ffffff"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 1.0, "pulse": 0.35, "pulsePeriod": 3.2}),
+    ("crystal_violet2", "Rift Crystal (Violet)", "aurora_rift", "wall",
+     lambda: crystal(3272, ["#3a1a8a", "#5428b0", "#7040d2", "#9a6cee", "#d0b0ff"], "#f8eeff"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 0.95, "pulse": 0.4, "pulsePeriod": 4.1}),
+    ("crystal_magenta", "Rift Crystal (Magenta)", "aurora_rift", "wall",
+     lambda: crystal(3273, ["#7a1464", "#a0207e", "#c83a9c", "#ea6cc0", "#ffb4e4"], "#fff0fa"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 0.9, "pulse": 0.3, "pulsePeriod": 5.3}),
+    ("crystal_teal", "Rift Crystal (Teal)", "aurora_rift", "wall",
+     lambda: crystal(3274, ["#0a6a6a", "#128a86", "#22b0a4", "#58d4c4", "#aaf4e8"], "#f0fffc"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 0.9, "pulse": 0.3, "pulsePeriod": 3.9}),
+    ("crystal_gold", "Rift Crystal (Amber)", "aurora_rift", "wall",
+     lambda: crystal(3275, ["#a05a10", "#c87818", "#e89a2a", "#ffc050", "#ffe6a0"], "#fffbe8"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 1.1, "pulse": 0.2, "pulsePeriod": 2.7}),
+    ("monolith_core", "Monolith Crystal", "aurora_rift", "wall",
+     lambda: crystal(3276, ["#2a8ad8", "#3cacec", "#62ccf8", "#9ae6ff", "#e0fbff"], "#ffffff"), 14,
+     {"scrollU": 0, "scrollV": 0, "glow": 1.15, "pulse": 0.25, "pulsePeriod": 6.0}),
+    ("lantern_amber", "Lantern Glass", "aurora_rift", "wall", lantern_amber, 1, {"scrollU": 0, "scrollV": 0, "wave": 0.02, "wavePeriod": 0.6, "glow": 1.2}),
+    ("edge_amber", "Edge Lamps", "aurora_rift", "wall", edge_amber, 4, {"scrollU": 0, "scrollV": 0, "glow": 0.5}),
+    ("icefall_rift", "Frozen Falls", "aurora_rift", "wall", icefall_rift, 8, {"scrollU": 0, "scrollV": 0, "glow": 0.18}),
+    ("falls_rift", "Rift Falls", "aurora_rift", "water", falls_rift, 7, {"scrollU": 0.0, "scrollV": 1.1, "wave": 0.03, "wavePeriod": 1.4, "opacity": 0.86, "glow": 0.5}),
+    ("falls_curtain", "Waterfall Curtain", "aurora_rift", "water", falls_rift, 12, {"scrollU": 0.0, "scrollV": 0.8, "wave": 0.03, "wavePeriod": 1.8, "opacity": 0.6, "glow": 0.55}),
+    ("rift_mist", "Rift Mist", "aurora_rift", "water", rift_mist, 30, {"scrollU": 0.004, "scrollV": 0.002, "wave": 0.06, "wavePeriod": 9, "opacity": 0.24, "glow": 0.6}),
+    ("rift_roof", "Glittering Roof", "aurora_rift", "wall", rift_roof, 10, {"scrollU": 0, "scrollV": 0, "glow": 0.55}),
+    ("abyss_glow", "Abyss Floor", "aurora_rift", "abyss", abyss_glow, 14, {"scrollU": 0, "scrollV": 0, "glow": 0.6}),
+    ("abyss_fog", "Abyss Fog", "aurora_rift", "water", abyss_fog, 40, {"scrollU": -0.003, "scrollV": 0.004, "wave": 0.05, "wavePeriod": 12, "opacity": 0.26, "glow": 0.5}),
     ("hearth_cobble", "Village Cobbles", "hearthglow", "snow_stone", hearth_cobble, 3.5, None),
     ("icy_cobble", "Icy Cobbles", "hearthglow", "icy_stone", icy_cobble, 3.5, {"scrollU": 0, "scrollV": 0, "glow": 0.15}),
     ("hearth_stone", "Village Stone", "hearthglow", "wall", hearth_stone, 4, None),

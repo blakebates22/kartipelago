@@ -16,6 +16,10 @@
  *
  * Every field is optional. The sun's direction is the look's sun direction. An evening
  * sky can add twinkling stars: "stars": { "count": 500, "color": "#ffffff", "low": 12 }.
+ * A night sky can add the northern lights: "aurora": { "count": 6, "low": 16, "high": 60,
+ * "colors": ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"], "speed": 1, "intensity": 1 }:
+ * broad luminous curtains, bright at their lower hem and fading up into violet, slowly
+ * folding, rippling and drifting (a small shader: no textures).
  */
 import * as THREE from "three";
 
@@ -48,7 +52,84 @@ export interface SkyDomeSpec {
   hills?: { color?: string; far?: string; height?: number; seed?: number; layers?: number };
   /** Stars twinkling in the sky above `low` degrees (for evening and night skies). */
   stars?: { count?: number; color?: string; seed?: number; low?: number };
+  /** The northern lights: curtains between `low` and `high` degrees. */
+  aurora?: {
+    count?: number;
+    seed?: number;
+    low?: number;
+    high?: number;
+    speed?: number;
+    intensity?: number;
+    /** Hem, middle, top and highlight colours. */
+    colors?: string[];
+    /** Centre the first curtain on this compass direction (degrees, world X toward Z). */
+    azimuth?: number;
+  };
 }
+
+const AURORA_VERT = /* glsl */ `
+  attribute float u;
+  attribute float v;
+  uniform float time;
+  uniform float speed;
+  uniform float az0;
+  uniform float span;
+  uniform float low;
+  uniform float high;
+  uniform float seed;
+  uniform float radius;
+  varying float vu;
+  varying float vv;
+  void main() {
+    vu = u;
+    vv = v;
+    float t = time * speed;
+    // The curtain's foot: an arc across the sky that folds and drifts slowly.
+    float az = az0 + span * u
+      + 0.10 * sin(u * 7.0 + t * 0.21 + seed)
+      + 0.05 * sin(u * 17.0 - t * 0.37 + seed * 2.0)
+      + 0.03 * sin(t * 0.05 + seed);
+    float fold = 0.5 + 0.5 * sin(u * 5.0 + t * 0.13 + seed * 3.0);
+    float el = low + (high - low) * v * (0.65 + 0.35 * fold)
+      + 0.03 * sin(u * 9.0 + t * 0.3 + seed);
+    // Lean the top over a little, like a hanging sheet.
+    az += v * 0.08 * sin(u * 3.0 + t * 0.17 + seed);
+    vec3 p = vec3(cos(az) * cos(el), sin(el), sin(az) * cos(el)) * radius;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }
+`;
+
+const AURORA_FRAG = /* glsl */ `
+  uniform float time;
+  uniform float speed;
+  uniform float seed;
+  uniform float intensity;
+  uniform vec3 hem;
+  uniform vec3 mid;
+  uniform vec3 top;
+  uniform vec3 flash;
+  varying float vu;
+  varying float vv;
+  void main() {
+    float t = time * speed;
+    // Fine vertical rays drifting along the curtain.
+    float rays = 0.55
+      + 0.25 * sin(vu * 140.0 + t * 0.9 + seed)
+      + 0.20 * sin(vu * 61.0 - t * 0.55 + seed * 1.7);
+    // Brightness rippling along it.
+    float wave = 0.6 + 0.4 * sin(vu * 9.0 - t * 0.8 + seed * 4.0);
+    // Bright at the hem, fading out towards the top and both ends.
+    float hemGlow = smoothstep(0.0, 0.06, vv) * (1.0 - smoothstep(0.08, 1.0, vv));
+    float ends = smoothstep(0.0, 0.12, vu) * (1.0 - smoothstep(0.88, 1.0, vu));
+    vec3 c = mix(hem, mid, smoothstep(0.05, 0.45, vv));
+    c = mix(c, top, smoothstep(0.45, 1.0, vv));
+    // Now and then a pink flare runs along the lower edge.
+    float flare = smoothstep(0.75, 1.0, sin(vu * 4.0 + t * 0.4 + seed * 5.0)) * (1.0 - vv);
+    c = mix(c, flash, flare * 0.6);
+    float a = intensity * rays * wave * (hemGlow + 0.25 * (1.0 - vv)) * ends;
+    gl_FragColor = vec4(c * a, 1.0);
+  }
+`;
 
 export interface SkyDome {
   readonly group: THREE.Group;
@@ -345,6 +426,72 @@ export function createSkyDome(
     };
     twinkle(0);
   }
+  // The aurora: a few curtains spread round the sky, each its own slowly moving sheet.
+  const aurora: THREE.ShaderMaterial[] = [];
+  if (spec.aurora) {
+    const au = spec.aurora;
+    const n = Math.max(0, Math.min(12, Math.round(au.count ?? 5)));
+    const ar = rng((au.seed ?? 5) * 13 + 7);
+    const cols = (au.colors?.length ? au.colors : ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"]).map(
+      (h) => new THREE.Color(h),
+    );
+    const low = ((au.low ?? 16) * Math.PI) / 180;
+    const high = ((au.high ?? 60) * Math.PI) / 180;
+    const COLS = 96;
+    for (let i = 0; i < n; i++) {
+      const g = new THREE.BufferGeometry();
+      const uu = new Float32Array((COLS + 1) * 2);
+      const vv = new Float32Array((COLS + 1) * 2);
+      const idx: number[] = [];
+      for (let k = 0; k <= COLS; k++) {
+        uu[k * 2] = uu[k * 2 + 1] = k / COLS;
+        vv[k * 2] = 0;
+        vv[k * 2 + 1] = 1;
+        if (k < COLS) idx.push(k * 2, k * 2 + 2, k * 2 + 1, k * 2 + 1, k * 2 + 2, k * 2 + 3);
+      }
+      // Positions come from the shader; these only size the bounds.
+      g.setAttribute("position", new THREE.BufferAttribute(new Float32Array((COLS + 1) * 6), 3));
+      g.setAttribute("u", new THREE.BufferAttribute(uu, 1));
+      g.setAttribute("v", new THREE.BufferAttribute(vv, 1));
+      g.setIndex(idx);
+      const lift = ar();
+      const m = new THREE.ShaderMaterial({
+        vertexShader: AURORA_VERT,
+        fragmentShader: AURORA_FRAG,
+        uniforms: {
+          time: { value: 0 },
+          speed: { value: (au.speed ?? 1) * (0.7 + ar() * 0.6) },
+          az0: {
+            value:
+              i === 0 && au.azimuth !== undefined
+                ? (au.azimuth * Math.PI) / 180 - 0.6
+                : (i / n) * Math.PI * 2 + ar() * 0.8,
+          },
+          span: { value: 0.9 + ar() * 0.9 },
+          low: { value: low + (high - low) * 0.15 * lift },
+          high: { value: high - (high - low) * 0.25 * ar() },
+          seed: { value: ar() * 50 },
+          radius: { value: RADIUS * 0.9 },
+          intensity: { value: (au.intensity ?? 1) * (0.7 + ar() * 0.5) },
+          hem: { value: cols[0]!.clone() },
+          mid: { value: (cols[1] ?? cols[0]!).clone() },
+          top: { value: (cols[2] ?? cols[0]!).clone() },
+          flash: { value: (cols[3] ?? cols[2] ?? cols[0]!).clone() },
+        },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        fog: false,
+      });
+      const mesh = new THREE.Mesh(g, m);
+      mesh.frustumCulled = false;
+      mesh.renderOrder = -9.2;
+      group.add(mesh);
+      aurora.push(m);
+      disposables.push(g, m);
+    }
+  }
   let clockT = 0;
 
   const drift = cs.drift ?? 0.004;
@@ -355,6 +502,7 @@ export function createSkyDome(
       clouds.rotation.y += drift * dt;
       clockT += dt;
       twinkle?.(clockT);
+      for (const m of aurora) m.uniforms.time!.value = clockT;
     },
     dispose() {
       group.removeFromParent();

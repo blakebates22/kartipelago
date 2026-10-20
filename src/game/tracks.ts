@@ -112,6 +112,17 @@ export const TRACKS: TrackEntry[] = [
     music: "hearthglow",
     load: { scene: "track", packageId: "hearthglow_hollow" },
   },
+  {
+    id: "aurora_rift",
+    name: "Aurora Rift",
+    description:
+      "Plunge into a fractured glacier: a crystal cathedral, a giant loop-the-loop over the abyss, a mirror lake and a bridge beneath the northern lights.",
+    preview: "previews/aurora_rift.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "aurora_rift",
+    music: "aurora",
+    load: { scene: "track", packageId: "aurora_rift" },
+  },
   // Test World.
   {
     id: "dino_demo",
@@ -165,6 +176,18 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     music: "race",
     load: { scene: "track", packageId: "bridge_test" },
+  },
+  {
+    id: "loop_lab",
+    name: "Loop Lab",
+    description:
+      "A plain test circuit: a boost pad into one giant loop-the-loop, then round again.",
+    preview: "previews/loop_lab.jpg",
+    prototype: true,
+    modes: ["race", "timeTrial"],
+    theme: "summit_pass",
+    music: "race",
+    load: { scene: "track", packageId: "loop_lab" },
   },
   {
     id: "drift_park",

@@ -13,11 +13,11 @@ prehistoric worlds late-90s console racers loved. Nothing is copied from any gam
 `src/game/worlds.ts` lists the worlds. Each has a stable `id`, a name, a tagline, a
 description, a banner colour and its track ids, in menu order:
 
-| World             | Id            | Tracks                                                                   |
-| ----------------- | ------------- | ------------------------------------------------------------------------ |
-| Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak            |
-| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, "Coming Soon"   |
-| Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Drift Park |
+| World             | Id            | Tracks                                                                             |
+| ----------------- | ------------- | ---------------------------------------------------------------------------------- |
+| Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                      |
+| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift               |
+| Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park |
 
 - Every track belongs to exactly one world (a test checks this).
 - Track ids are unchanged, so records and `?track=` links still work.
@@ -25,7 +25,7 @@ description, a banner colour and its track ids, in menu order:
   New players start on Prehistoric World.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
-  its real tracks (Frostveil Peaks has one). See [frostveil-peaks.md](frostveil-peaks.md).
+  its real tracks (none at the moment). See [frostveil-peaks.md](frostveil-peaks.md).
 
 **World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
 
@@ -441,6 +441,27 @@ between crossings is guaranteed.
 - `lantern` `{ "x", "y", "z" }`: like a torch (the nearest light the scene with a gentle
   flicker) but without embers.
 - Snow powder puffs up behind any kart driving through deep snow.
+
+### Loops, icicles, thin ice, shimmering crystals and ice motes
+
+- `loop` `{ "x", "y", "z", "heading", "radius", "ramp", "offset", "width", ... }`: a
+  loop-the-loop that karts ride in loop mode. See [loops.md](loops.md).
+- `icicle` `{ "x", "y", "z", "top": 14, "period": 9, "offset": 0, "warn": 1.6, "r": 3.2 }`:
+  a great icicle hanging over the road. On its beat of the race clock it creaks and
+  shakes for `warn` seconds while a ring glows on the road where it will land, then
+  drops and shatters. A kart within `r` there is knocked: half speed and a hop. It grows
+  back for the next beat. `"decor": true` ones fall over the abyss and hit nothing.
+- `thin_ice` `{ "x", "y", "z", "r": 6, "hold": 7 }`: a cracked patch of lake ice. Every
+  kart that drives onto it cracks it further. On the third pass it gives way into slush
+  that slows anything in it for `hold` seconds, then it freezes whole again. Left alone,
+  a crack heals every 10 s.
+- `shimmer` `{ "x", "y", "z", "size": 1.4, "color": "#5ae8ff" }`: a crystal by the road
+  that flares as a kart passes and fades slowly. In a row, they light up one after
+  another.
+- `sparkles` `{ "rate": 36, "radius": 34 }`: tiny ice crystals glinting round the camera.
+
+The rules (timing and states) are in `src/game/rift.ts`; the drawing is in
+`src/render/riftFx.ts`.
 
 ### Torches
 

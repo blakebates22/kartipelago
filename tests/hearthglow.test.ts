@@ -45,10 +45,9 @@ const SHORTCUT: [number, number, number][] = [
 describe("Hearthglow Hollow", () => {
   it("is Frostveil Peaks' third course, with its own evening theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
-    expect(w.tracks).toEqual(["frostveil_citadel", "snowy_summit", id]);
+    expect(w.tracks.slice(0, 3)).toEqual(["frostveil_citadel", "snowy_summit", id]);
     const tiles = trackTilesOf(w);
     expect(tiles).toHaveLength(4);
-    expect(tiles.filter((t) => t.comingSoon)).toHaveLength(1);
     const t = trackById(id)!;
     expect(t.theme).toBe("hearthglow");
     expect(SONGS[t.music]?.id).toBe("hearthglow");

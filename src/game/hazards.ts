@@ -60,6 +60,10 @@
  *   geyser      { "type": "geyser", ... } (see game/geyser.ts): a hot spring blowing on a
  *               fixed beat of the race clock. A kart in its column as it blows is thrown
  *               into the air (keeping its speed: a free jump).
+ *   icicle, thin_ice, shimmer, sparkles (see game/rift.ts): Aurora Rift's icicles that
+ *               drop on a beat (a knock if you're under one), lake ice that cracks and
+ *               gives way into slowing slush, crystals that flare as you pass, and ice
+ *               motes glinting in the air.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -92,6 +96,27 @@ import {
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
+import {
+  createIcicleView,
+  createShimmerView,
+  createThinIceView,
+  type IcicleView,
+  type ShimmerView,
+  type ThinIceView,
+} from "../render/riftFx";
+import {
+  icicleAt,
+  icicleLanded,
+  onThinIce,
+  parseIcicle,
+  parseThinIce,
+  SLUSH_KEEP,
+  stepThinIce,
+  underIcicle,
+  type IcicleConfig,
+  type IciclePhase,
+  type ThinIce,
+} from "./rift";
 import {
   createDragonFire,
   createDragonView,
@@ -247,6 +272,8 @@ export interface HazardEvents {
   smashed?: boolean;
   /** Bumped into a snowball or the sleigh. */
   bumped?: boolean;
+  /** Hit by a falling icicle. */
+  struck?: boolean;
 }
 
 export interface Hazards {
@@ -375,6 +402,13 @@ export function createHazards(opts: {
   let ash: ReturnType<typeof createParticles> | undefined;
   let glowing: ReturnType<typeof createParticles> | undefined;
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
+  /** Aurora Rift: falling icicles, cracking lake ice, flaring crystals, ice motes. */
+  const icicles: { cfg: IcicleConfig; last: IciclePhase; view?: IcicleView }[] = [];
+  const thin: { p: ThinIce; view?: ThinIceView }[] = [];
+  const thinEvents: { x: number; y: number; z: number; kind: "crack" | "break" | "freeze" }[] = [];
+  const shimmers: { x: number; y: number; z: number; level: number; view?: ShimmerView }[] = [];
+  let sparkles: { rate: number; radius: number; acc: number } | undefined;
+  let motes: ReturnType<typeof createParticles> | undefined;
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
   const party: {
     x: number;
@@ -506,6 +540,46 @@ export function createHazards(opts: {
         acc: Math.random(),
         embers: false,
       });
+    else if (e.type === "icicle") {
+      const ic = parseIcicle(e);
+      icicles.push({
+        cfg: ic,
+        last: "hanging",
+        view: opts.headless ? undefined : createIcicleView(group, ic),
+      });
+    } else if (e.type === "thin_ice") {
+      const p = parseThinIce(e, opts.karts);
+      thin.push({
+        p,
+        view: opts.headless ? undefined : createThinIceView(group, p, thin.length + 1),
+      });
+    } else if (e.type === "shimmer") {
+      const x = num(e.x, 0);
+      const y = num(e.y, 0);
+      const z = num(e.z, 0);
+      shimmers.push({
+        x,
+        y,
+        z,
+        level: 0,
+        view: opts.headless
+          ? undefined
+          : createShimmerView(
+              group,
+              x,
+              y,
+              z,
+              Math.max(0.3, num(e.size, 1.4)),
+              typeof e.color === "string" ? e.color : "#5ae8ff",
+              shimmers.length * 0.7,
+            ),
+      });
+    } else if (e.type === "sparkles")
+      sparkles = {
+        rate: Math.max(0, num(e.rate, 36)),
+        radius: Math.max(5, num(e.radius, 34)),
+        acc: 0,
+      };
     else if (e.type === "chimney")
       chimneys.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
     else if (e.type === "snowball" || e.type === "sleigh") {
@@ -987,6 +1061,33 @@ export function createHazards(opts: {
           }
       }
       h.bumped = Math.max(0, h.bumped - dt);
+      // ---- falling icicles: under one as it lands, you're knocked (slower, a hop)
+      for (const ic of icicles)
+        if (icicleLanded(ic.cfg, t - dt, t) && underIcicle(ic.cfg, s.x, s.y, s.z)) {
+          s.speed *= 0.5;
+          s.vy = Math.max(s.vy, 6);
+          s.y += 0.05;
+          s.grounded = false;
+          ev.struck = true;
+          spray?.burst(s.x, s.y + 1, s.z, 24, 5, 5, 0.9, 0xe8f6ff);
+          if (i === 0) opts.sfx?.thud(vol());
+        }
+      // ---- thin ice: broken, it's slush that drags you back
+      for (const ti of thin)
+        if (ti.p.broken > 0 && onThinIce(ti.p, s.x, s.y, s.z)) {
+          s.speed *= Math.pow(SLUSH_KEEP, dt);
+          if (Math.abs(s.speed) > 3 && Math.random() < 0.6)
+            spray?.emit(
+              s.x,
+              s.y + 0.2,
+              s.z,
+              (Math.random() - 0.5) * 3,
+              2 + Math.random() * 2,
+              (Math.random() - 0.5) * 3,
+              0.6,
+              0xbfe8ff,
+            );
+        }
       // ---- deep snow: a spray of powder behind you
       if (ground === "deep_snow" && Math.abs(s.speed) > 6 && Math.random() < 0.6)
         spray?.emit(
@@ -1056,6 +1157,16 @@ export function createHazards(opts: {
     },
     step(karts, dt) {
       clock += dt;
+      for (const ti of thin) {
+        const ev = stepThinIce(ti.p, karts, dt);
+        if (ev) thinEvents.push({ x: ti.p.x, y: ti.p.y, z: ti.p.z, kind: ev });
+      }
+      for (const sh of shimmers) {
+        let near = false;
+        for (const k of karts)
+          if (Math.hypot(k.x - sh.x, k.z - sh.z) < 14 && Math.abs(k.y - sh.y) < 6) near = true;
+        sh.level = near ? Math.min(1, sh.level + dt * 6) : sh.level * Math.exp(-1.4 * dt);
+      }
       for (const m of movers) placeMover(m);
       for (const p of presents) p.down = Math.max(0, p.down - dt);
       for (const f of flyers) {
@@ -1457,6 +1568,57 @@ export function createHazards(opts: {
         b.ringing = sw.ringing;
       }
       for (const o of ornaments) o.update(t);
+      // Icicles: creaking as they shake, shattering where they land.
+      const rcNow = raceClock();
+      for (const ic of icicles) {
+        const st = icicleAt(ic.cfg, rcNow);
+        ic.view?.update(st.phase, st.u, st.tip, t);
+        if (st.phase !== ic.last) {
+          const far = Math.hypot(
+            listener.x - ic.cfg.x,
+            listener.y - ic.cfg.y,
+            listener.z - ic.cfg.z,
+          );
+          const loud = vol() * Math.max(0, 1 - far / 120);
+          if (st.phase === "warning" && loud > 0) opts.sfx?.creak(loud);
+          if (st.phase === "shattered") {
+            if (loud > 0) opts.sfx?.shatter(loud);
+            spray?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 30, 6, 6, 1.0, 0xdff4ff);
+            sparks?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 14, 4, 5, 0.6, 0x9aefff);
+          }
+          ic.last = st.phase;
+        }
+      }
+      // Thin ice: cracks spreading, giving way, freezing over.
+      for (const ti of thin) ti.view?.update(ti.p, t);
+      for (const ev of thinEvents.splice(0)) {
+        const far = Math.hypot(listener.x - ev.x, listener.y - ev.y, listener.z - ev.z);
+        const loud = vol() * Math.max(0, 1 - far / 90);
+        if (ev.kind === "crack" && loud > 0) opts.sfx?.crack(loud);
+        if (ev.kind === "break") {
+          if (loud > 0) opts.sfx?.shatter(loud);
+          spray?.burst(ev.x, ev.y + 0.3, ev.z, 36, 5, 5, 1.0, 0xcfeeff);
+        }
+      }
+      for (const sh of shimmers) sh.view?.update(sh.level, t);
+      // Ice motes glinting in the air round the camera.
+      if (sparkles && !opts.headless) {
+        motes ??= createParticles(group, { max: 600, size: 0.28, gravity: 0, additive: true });
+        sparkles.acc = Math.min(2, sparkles.acc + dt * sparkles.rate);
+        const r = sparkles.radius;
+        for (; sparkles.acc >= 1; sparkles.acc -= 1)
+          motes.emit(
+            listener.x + (Math.random() - 0.5) * 2 * r,
+            listener.y - 2 + Math.random() * 14,
+            listener.z + (Math.random() - 0.5) * 2 * r,
+            (Math.random() - 0.5) * 0.6,
+            -0.3 + Math.random() * 0.5,
+            (Math.random() - 0.5) * 0.6,
+            3 + Math.random() * 3,
+            [0xbff6ff, 0x7ae8ff, 0xd6b8ff, 0xffffff][Math.floor(Math.random() * 4)]!,
+          );
+        motes.step(dt);
+      }
       for (const ch of chimneys) {
         if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
         ch.acc = Math.min(1, ch.acc + dt);
@@ -1623,6 +1785,10 @@ export function createHazards(opts: {
       for (const p of presents) p.view?.dispose();
       for (const b of bells) b.view?.dispose();
       for (const o of ornaments) o.dispose();
+      for (const ic of icicles) ic.view?.dispose();
+      for (const ti of thin) ti.view?.dispose();
+      for (const sh of shimmers) sh.view?.dispose();
+      motes?.dispose();
       for (const g of geysers)
         if (g.column) {
           g.column.geometry.dispose();

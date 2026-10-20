@@ -47,6 +47,9 @@ export function createChaseCamera(camera: THREE.PerspectiveCamera) {
   const want = new THREE.Vector3();
 
   return {
+    /** Where the camera sits and what it looks at (after the last update). */
+    pos,
+    look,
     update(t: ChaseTarget, cfg: ChaseConfig, dt: number) {
       const travelYaw = t.heading + wrapAngle(t.velAngle - t.heading) * cfg.followTravel;
       yaw = ready ? dampAngle(yaw, travelYaw, cfg.yawFollow, dt) : travelYaw;
@@ -69,6 +72,7 @@ export function createChaseCamera(camera: THREE.PerspectiveCamera) {
       else look.copy(want);
 
       ready = true;
+      camera.up.set(0, 1, 0);
       camera.position.copy(pos);
       camera.lookAt(look);
     },

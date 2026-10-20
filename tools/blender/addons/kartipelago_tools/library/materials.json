@@ -529,6 +529,73 @@
           }
         }
       }
+    },
+    {
+      "id": "aurora_rift",
+      "name": "Aurora Rift",
+      "description": "A fractured glacier under the northern lights: deep blue ice, dark indigo rock, glowing cyan and violet crystals, warm amber lanterns and a starry night alive with aurora",
+      "environment": {
+        "sky": "#0c1030",
+        "fog": {
+          "enabled": true,
+          "color": "#1c2c64",
+          "near": 280,
+          "far": 1600
+        },
+        "sun": {
+          "color": "#b8d4ff",
+          "intensity": 1.7,
+          "direction": [0.3, 0.78, -0.55]
+        },
+        "ambient": {
+          "sky": "#8aa8ff",
+          "ground": "#2c2458",
+          "intensity": 1.55
+        },
+        "skyDome": {
+          "top": "#040720",
+          "horizon": "#6a2c8c",
+          "bottom": "#1c1848",
+          "sun": {
+            "color": "#f4f8ff",
+            "size": 3.5,
+            "glow": "#a8c0ff",
+            "elevation": 40
+          },
+          "clouds": {
+            "count": 10,
+            "color": "#3c2c70",
+            "shade": "#1a1444",
+            "seed": 83,
+            "low": 3,
+            "high": 9,
+            "drift": 0.002
+          },
+          "hills": {
+            "color": "#121838",
+            "far": "#4c4c90",
+            "height": 17,
+            "seed": 89,
+            "layers": 3
+          },
+          "stars": {
+            "count": 900,
+            "color": "#ffffff",
+            "seed": 97,
+            "low": 10
+          },
+          "aurora": {
+            "count": 7,
+            "seed": 5,
+            "low": 18,
+            "high": 80,
+            "speed": 1,
+            "intensity": 1.1,
+            "azimuth": 160,
+            "colors": ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"]
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -689,6 +756,378 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "rift_road",
+      "name": "Glacier Road",
+      "theme": "aurora_rift",
+      "surface": "snow_stone",
+      "image": "rift_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.08
+      }
+    },
+    {
+      "id": "rift_ice_road",
+      "name": "Clear Ice Track",
+      "theme": "aurora_rift",
+      "surface": "icy_stone",
+      "image": "rift_ice_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.22
+      }
+    },
+    {
+      "id": "mirror_ice",
+      "name": "Mirror Ice",
+      "theme": "aurora_rift",
+      "surface": "ice",
+      "image": "mirror_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 16,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3,
+        "opacity": 0.7
+      }
+    },
+    {
+      "id": "thin_ice",
+      "name": "Thin Ice",
+      "theme": "aurora_rift",
+      "surface": "ice",
+      "image": "thin_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3,
+        "opacity": 0.85
+      }
+    },
+    {
+      "id": "rift_snow",
+      "name": "Night Snow",
+      "theme": "aurora_rift",
+      "surface": "deep_snow",
+      "image": "rift_snow.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "rift_rock",
+      "name": "Indigo Rock",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "rift_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "rift_cliff",
+      "name": "Rift Cliff",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "rift_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "glacier_wall",
+      "name": "Glacier Ice Wall",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "glacier_wall.png",
+      "wrap": "repeat",
+      "tileMetres": 16,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.12
+      }
+    },
+    {
+      "id": "cavern_ice",
+      "name": "Crystal-Veined Ice",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "cavern_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.08
+      }
+    },
+    {
+      "id": "rift_stone",
+      "name": "Frosted Slate",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "rift_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "rift_carved",
+      "name": "Rune Stones",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "rift_carved.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.45
+      }
+    },
+    {
+      "id": "crystal_cyan",
+      "name": "Rift Crystal (Cyan)",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "crystal_cyan.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.35,
+        "pulsePeriod": 3.2
+      }
+    },
+    {
+      "id": "crystal_violet2",
+      "name": "Rift Crystal (Violet)",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "crystal_violet2.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.95,
+        "pulse": 0.4,
+        "pulsePeriod": 4.1
+      }
+    },
+    {
+      "id": "crystal_magenta",
+      "name": "Rift Crystal (Magenta)",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "crystal_magenta.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.3,
+        "pulsePeriod": 5.3
+      }
+    },
+    {
+      "id": "crystal_teal",
+      "name": "Rift Crystal (Teal)",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "crystal_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.3,
+        "pulsePeriod": 3.9
+      }
+    },
+    {
+      "id": "crystal_gold",
+      "name": "Rift Crystal (Amber)",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "crystal_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.1,
+        "pulse": 0.2,
+        "pulsePeriod": 2.7
+      }
+    },
+    {
+      "id": "monolith_core",
+      "name": "Monolith Crystal",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "monolith_core.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.15,
+        "pulse": 0.25,
+        "pulsePeriod": 6.0
+      }
+    },
+    {
+      "id": "lantern_amber",
+      "name": "Lantern Glass",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "lantern_amber.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "wave": 0.02,
+        "wavePeriod": 0.6,
+        "glow": 1.2
+      }
+    },
+    {
+      "id": "edge_amber",
+      "name": "Edge Lamps",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "edge_amber.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "icefall_rift",
+      "name": "Frozen Falls",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "icefall_rift.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.18
+      }
+    },
+    {
+      "id": "falls_rift",
+      "name": "Rift Falls",
+      "theme": "aurora_rift",
+      "surface": "water",
+      "image": "falls_rift.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.1,
+        "wave": 0.03,
+        "wavePeriod": 1.4,
+        "opacity": 0.86,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "falls_curtain",
+      "name": "Waterfall Curtain",
+      "theme": "aurora_rift",
+      "surface": "water",
+      "image": "falls_curtain.png",
+      "wrap": "repeat",
+      "tileMetres": 12,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.8,
+        "wave": 0.03,
+        "wavePeriod": 1.8,
+        "opacity": 0.6,
+        "glow": 0.55
+      }
+    },
+    {
+      "id": "rift_mist",
+      "name": "Rift Mist",
+      "theme": "aurora_rift",
+      "surface": "water",
+      "image": "rift_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 30,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.002,
+        "wave": 0.06,
+        "wavePeriod": 9,
+        "opacity": 0.24,
+        "glow": 0.6
+      }
+    },
+    {
+      "id": "rift_roof",
+      "name": "Glittering Roof",
+      "theme": "aurora_rift",
+      "surface": "wall",
+      "image": "rift_roof.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.55
+      }
+    },
+    {
+      "id": "abyss_glow",
+      "name": "Abyss Floor",
+      "theme": "aurora_rift",
+      "surface": "abyss",
+      "image": "abyss_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.6
+      }
+    },
+    {
+      "id": "abyss_fog",
+      "name": "Abyss Fog",
+      "theme": "aurora_rift",
+      "surface": "water",
+      "image": "abyss_fog.png",
+      "wrap": "repeat",
+      "tileMetres": 40,
+      "fx": {
+        "scrollU": -0.003,
+        "scrollV": 0.004,
+        "wave": 0.05,
+        "wavePeriod": 12,
+        "opacity": 0.26,
+        "glow": 0.5
+      }
     },
     {
       "id": "hearth_cobble",

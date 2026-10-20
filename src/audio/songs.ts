@@ -36,6 +36,10 @@
  *                                   throughout; celesta and bells, then flute, then
  *                                   strings and brass, over plucked strings, a twinkling
  *                                   glockenspiel and an oom-pah walking bass
+ *   aurora      "Aurora Rift"       F# minor, 148: down into the glacier under the northern
+ *                                   lights. Celesta over shimmering crystal bells in the
+ *                                   Cathedral, flute and a running marimba on the lake,
+ *                                   brass and strings soaring for the Loop and the climb
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -1088,6 +1092,118 @@ function hearthglow(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Aurora Rift"
+// Down into the glacier under the northern lights: a hushed celesta over shimmering
+// crystal bells in the Cathedral, a flute and a running marimba across Mirror Lake,
+// brass and strings soaring for the Loop and the climb, and everything together on the
+// Great Rift Bridge.
+
+export const AURORA_MELODY = bars(
+  "C#5:1 F#5:.5 G#5:.5 A5:1 C#6:1",
+  "B5:1.5 A5:.5 F#5:1 D5:1",
+  "E5:.5 A5:.5 C#6:1 B5:1 A5:1",
+  "G#5:1.5 F#5:.5 E5:2",
+  "F#5:.5 A5:.5 C#6:1 F#6:1 E6:1",
+  "D6:1 C#6:.5 B5:.5 A5:1 F#5:1",
+  "B5:.5 D6:.5 F#6:1 E6:.5 D6:.5 B5:1",
+  "F5:1 G#5:1 C#6:1.5 r:.5",
+  "A5:.5 B5:.5 D6:1 F#6:1 D6:1",
+  "E6:1 G#5:.5 B5:.5 E6:1 B5:1",
+  "C#6:.5 E6:.5 G#6:1 E6:1 C#6:1",
+  "A5:1 C#6:1 F#6:2!",
+  "D6:.5 C#6:.5 B5:1 F#5:1 B5:1",
+  "G#5:.5 B5:.5 E6:1 D6:.5 B5:.5 G#5:1",
+  "A5:.5 C#6:.5 E6:1 A6:1 E6:1",
+  "F6:1 E6:.5 C#6:.5 G#5:1 F5:1",
+  "F#6:1.5 E6:.5 D6:1 A5:1",
+  "G#6:1.5 F#6:.5 E6:1 B5:1",
+  "A6:1 G#6:.5 F#6:.5 C#6:1 F#6:1",
+  "E6:1 C#6:1 A5:1 C#6:1",
+  "D6:.5 F#6:.5 B6:1 A6:.5 F#6:.5 D6:1",
+  "A6:1 F#6:.5 D6:.5 A5:1 D6:1",
+  "B6:1.5 A6:.5 G#6:1 E6:1",
+  "D6:1 B5:1 G#5:1 E5:1",
+  "C#6:.5 F#6:.5 A6:1 C#7:1 A6:1",
+  "F#6:1 A6:.5 F#6:.5 D6:1 A5:1",
+  "E6:.5 A6:.5 C#7:1 B6:.5 A6:.5 E6:1",
+  "G#6:1 B6:1 E7:2!",
+  "D7:1 B6:.5 F#6:.5 D6:1 B5:1",
+  "E6:1 C#6:.5 G#5:.5 C#6:1 E6:1",
+  "F#6:1 D6:1 G#6:1 E6:1",
+  "F#6:2! C#6:1 r:1",
+);
+export const AURORA_CHORDS =
+  "F#m:4 D:4 A:4 E:4 F#m:4 D:4 Bm:4 C#7:4 " +
+  "D:4 E:4 C#m:4 F#m:4 Bm:4 E:4 A:4 C#7:4 " +
+  "D:4 E:4 F#m:4 A:4 Bm:4 D:4 E:4 E7:4 " +
+  "F#m:4 D:4 A:4 E:4 Bm:4 C#m:4 D:2 E:2 F#m:4";
+
+function aurora(): Song {
+  const ch = chart(AURORA_CHORDS);
+  const mel = seq(AURORA_MELODY, 0, 0.82);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const later = ch.filter((c) => c.t >= 32);
+  const soar = ch.filter((c) => c.t >= 64);
+  // A pulsing bass: eighths on the root, the octave on the off-beats, a step in.
+  const pulse: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "8"],
+    [1, 0.5, "R"],
+    [1.5, 0.5, "8"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "aurora",
+    title: "Aurora Rift",
+    role: "Frostveil Peaks",
+    bpm: 148,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: celesta in the Cathedral, the flute on the lake, brass and strings
+      // for the Loop and the climb, and all of them on the bridge.
+      part("celesta", "base", 1, p1),
+      part("bell", "base", 0.35, shift(p1, 0, -12)),
+      part("flute", "base", 1, p2),
+      part("celesta", "base", 0.3, shift(p2, 0, 12)),
+      part("brass", "base", 0.8, p3),
+      part("strings", "base", 0.9, p3),
+      part("strings", "base", 1, p4),
+      part("flute", "base", 0.6, p4),
+      part("brass", "base", 0.45, shift(p4, 0, -12)),
+      part("bell", "base", 0.3, shift(p4, 0, 12)),
+      // Crystal shimmer all the way: bells running up and down the chord.
+      part("bell", "base", 0.22, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 76, 0.2, 0.26)),
+      // A running marimba from the lake on, plucked strings on the off-beats.
+      part("marimba", "base", 0.5, arpeggio(later, 0.5, [0, 2, 1, 2, 3, 2, 1, 2], 57, 0.3, 0.5)),
+      part("pizz", "base", 0.45, stabs(later, [0.5, 1.5, 2.5, 3.5], 57, 0.2, 0.45)),
+      // Pads: a cold drone and strings, horns swelling under the soaring half.
+      part("pad", "base", 0.5, pads(ch, 54, 4, 0.42)),
+      part("drone", "base", 0.25, pads(ch, 42, 4, 0.3)),
+      part("horn", "base", 0.35, pads(soar, 52, 4, 0.45)),
+      part("bass", "base", 0.95, bassLine(ch, pulse, 30, 0.8)),
+      // Drums: a hushed pulse in the Cathedral, then the full kit; a crash on each
+      // section, a tom fill into the Loop.
+      ...drumParts("base", 0.7, drums("K.......K.......", KIT, 0.25, 8)),
+      ...drumParts("base", 0.4, drums("h.h.h.h.h.h.h.h.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.85, drums("K.....k.K..k....", KIT, 0.25, 24, 32)),
+      ...drumParts("base", 0.65, drums("....S.......S...", KIT, 0.25, 24, 32)),
+      ...drumParts("base", 0.4, drums("..t...t...t...t.", KIT, 0.25, 24, 32)),
+      ...[60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.75, drums("o.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.85, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -1376,6 +1492,7 @@ export const SONGS: Record<string, Song> = {
   frostveil: frostveil(),
   summit: summit(),
   hearthglow: hearthglow(),
+  aurora: aurora(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

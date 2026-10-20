@@ -54,6 +54,7 @@ import {
 import { createBananaView } from "../render/bananaView";
 import type { Sfx } from "../audio/sfx";
 import { createHazards, type HazardConfig } from "./hazards";
+import { createLoops } from "./loops";
 import { createCheckpointView, type CheckpointView } from "../render/checkpointView";
 import { segmentProgress } from "../race/checkpoints";
 import { createTrackGround, flatGround, type GroundQuery } from "../physics/ground";
@@ -415,6 +416,11 @@ function buildSession(
     };
   });
   const you = entrants[0]!;
+  // Loop-the-loops (src/game/loops.ts): each kart rides them in its own loop mode.
+  const loops = pkg ? createLoops(pkg.meta.entities ?? [], entrants.length) : undefined;
+  /** Where race logic sees each kart (on a loop: the straight from its entry to its exit). */
+  const racePositions = () =>
+    entrants.map((e, i) => (loops?.riding(i) ? loops.racePos(i, e.state) : e.state));
   // Blender tracks: lava, deep water, creatures and waterfalls from track.json.
   const hazards =
     pkg && track
@@ -469,6 +475,7 @@ function buildSession(
       Object.assign(e.state, createKartState(spot.x, spot.z, spot.heading, spot.y));
       e.state.y = e.ground.at(spot.x, spot.z, spot.y + 0.5).height;
       Object.assign(e.items, racerItems());
+      loops?.reset(i);
       snapPrev(e);
       if (e.driver) {
         e.driver.driftHeld = false;
@@ -659,23 +666,37 @@ function buildSession(
       if (e.driver && (i > 0 || demo))
         cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
       // Imported tracks: the surface under the wheels scales speed, acceleration and grip.
-      if (pkg && e.state.grounded) {
+      if (pkg && e.state.grounded && !loops?.riding(i)) {
         const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
         cfg = applySurface(cfg, surface ? SURFACES[surface] : undefined);
       }
       return { kart: e.state, items: e.items, cfg };
     });
-    const progressOf = (j: number) =>
-      race
-        ? progress(race, j, entrants[j]!.state.x, entrants[j]!.state.z, entrants[j]!.state.y)
-        : 0;
+    const progressOf = (j: number) => {
+      if (!race) return 0;
+      const at = loops?.riding(j) ? loops.racePos(j, entrants[j]!.state) : entrants[j]!.state;
+      return progress(race, j, at.x, at.z, at.y);
+    };
     const events: ItemEvent[] = [];
     if (!demo && boostLab.equip(you.items.held)) sfx.balloon(itemsCfg.volume, "new");
     const canGo = !race || canDrive(race);
 
     entrants.forEach((e, i) => {
       const { cfg } = racers[i]!;
-      let want = e.driver && moment ? driveAi(e.driver, e.state, cfg, tuning.ai, moment) : held;
+      const onLoop = loops?.riding(i) ?? false;
+      let want =
+        e.driver && moment
+          ? driveAi(
+              e.driver,
+              onLoop ? { ...e.state, ...loops!.racePos(i, e.state) } : e.state,
+              cfg,
+              tuning.ai,
+              moment,
+              loops?.aim(i, e.state),
+            )
+          : held;
+      // On a loop the AI holds the middle of the road.
+      if (onLoop && e.driver) want = { ...want, steer: loops!.aiSteer(i) };
       if (i === 0 && !e.driver) {
         // The debug boost lab can script the throttle for a few seconds after a boost.
         const scripted = boostLab.throttle(e.state.zipPhase);
@@ -694,8 +715,12 @@ function buildSession(
       if (e.items.bubbleTime > 0) want = { ...NEUTRAL };
       // During the countdown every kart sits on the line.
       stepImpacts(e.state, tuning.collision, dt);
-      stepKart(e.state, canGo ? want : NEUTRAL, cfg, dt);
-      if (enteredZipper(e.state, zippers)) {
+      const before = { x: e.state.x, y: e.state.y, z: e.state.z };
+      const drive = canGo ? want : NEUTRAL;
+      stepKart(e.state, loops ? loops.input(i, e.state, drive) : drive, cfg, dt);
+      // Riding a loop: it moves the kart along its road itself (no walls, no ground).
+      if (onLoop) loops!.step(i, e.state, before, drive.steer, cfg, dt);
+      else if (enteredZipper(e.state, zippers)) {
         let throttle = want.throttle;
         if (i === 0 && !e.driver) {
           boostLab.started("Zipper", e.state.speed, normalTop(cfg, e.state));
@@ -703,42 +728,59 @@ function buildSession(
         }
         startZipper(e.state, throttle, cfg);
       }
-      if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
-      if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt);
-      stepSolids(e.state, solids, walls, dt);
-      if (hazards) stepSolids(e.state, hazards.solids, walls, dt);
-      stepVertical(e.state, e.ground, tuning.physics, dt);
-      if (pkg) {
+      if (!onLoop) {
+        if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
+        if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt);
+        stepSolids(e.state, solids, walls, dt);
+        if (hazards) stepSolids(e.state, hazards.solids, walls, dt);
+        stepVertical(e.state, e.ground, tuning.physics, dt);
+        // Driven onto a loop this step?
+        if (loops?.step(i, e.state, before, drive.steer, cfg, dt).entered && i === 0 && !demo)
+          sfx.loop(itemsCfg.volume);
+      }
+      if (pkg && !loops?.riding(i)) {
         // Boost surfaces fire a zipper boost when you drive onto them.
         const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
         const onBoost = Boolean(e.state.grounded && surface && SURFACES[surface]?.boost);
         if (onBoost && !e.onBoost) startZipper(e.state, want.throttle, cfg);
         e.onBoost = onBoost;
       }
-      const before = e.state.bananas;
+      const held0 = e.state.bananas;
       const got = collectBananas(bananaField, i, e.state, tuning.bananas);
       if (got.length) {
         pickupsToShow.push(...got);
-        e.state.bananas = before;
+        e.state.bananas = held0;
         gotBananas(i, got.length);
       }
       if (course && i === 0) stepCourse(course, e.state, tuning.course, cfg, dt);
       if (!race) return;
 
-      const onRoad = e.ground.at(e.state.x, e.state.z, e.state.y).onRoad;
-      const raceEvents = stepRacer(race, i, e.state, onRoad, want.throttle, tuning.race, dt);
+      const riding = loops?.riding(i) ?? false;
+      const onRoad = riding || e.ground.at(e.state.x, e.state.z, e.state.y).onRoad;
+      const raceEvents = stepRacer(
+        race,
+        i,
+        riding ? { ...e.state, ...loops!.racePos(i, e.state) } : e.state,
+        onRoad,
+        want.throttle,
+        tuning.race,
+        dt,
+      );
       if (raceEvents.boost)
         applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
       // Lava, deep water, waterfalls (hazards.ts), then: fell off an imported track's
       // geometry, or onto another respawn surface: back to the last checkpoint (or where
       // a respawn zone says, past a jump's gap).
-      const under = pkg ? e.ground.at(e.state.x, e.state.z, e.state.y).surface : undefined;
+      const under =
+        pkg && !riding ? e.ground.at(e.state.x, e.state.z, e.state.y).surface : undefined;
       const lastGate = respawnSpot(race, i);
-      if (hazards) {
+      if (hazards && !riding) {
         const hz = hazards.stepKart(i, e.state, under, lastGate, dt);
         if (hz.burnt) e.racer.react("burn");
         if (hz.splashed === "deep") e.racer.react("splash");
+        if (hz.struck) e.racer.react("burn");
         if (hz.respawned) {
+          loops?.reset(i);
           snapPrev(e);
           teleported(race, i, e.state);
         }
@@ -746,7 +788,7 @@ function buildSession(
       const surfaceDef =
         pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
       const fell =
-        pkg && (e.state.y < pkg.killY || surfaceDef?.respawn)
+        pkg && !riding && (e.state.y < pkg.killY || surfaceDef?.respawn)
           ? (hazards?.respawnSpot(e.state.x, e.state.y, e.state.z) ?? lastGate)
           : undefined;
       if (raceEvents.respawn || fell) {
@@ -754,6 +796,7 @@ function buildSession(
         const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
         e.state.bananas = bananas;
+        loops?.reset(i);
         snapPrev(e);
         teleported(race, i, e.state); // a respawn never passes (or un-passes) a gate
       }
@@ -770,11 +813,14 @@ function buildSession(
       entrants.map((e) => e.state),
       dt,
     );
+    // Karts on loops bump each other along the loop's road instead.
+    const free = entrants.filter((_, i) => !loops?.riding(i));
     bumpKarts(
-      entrants.map((e) => e.state),
+      free.map((e) => e.state),
       tuning.physics.kartBump,
-      entrants.map((e) => bumpMass(e.items, itemsCfg)),
+      free.map((e) => bumpMass(e.items, itemsCfg)),
     );
+    loops?.contacts(entrants.map((e) => e.state));
     stepEffects(racers, itemsCfg, dt);
     if (park && streak && streakLocator) {
       // Drift streak: distance round the loop in one unbroken drift, on the road.
@@ -814,6 +860,25 @@ function buildSession(
   function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
     const { state: s, prev: p, mesh } = e;
     const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
+    const pose = loops?.pose(entrants.indexOf(e), alpha);
+    if (pose) {
+      // On a loop: sat on the road wherever it faces, upside down at the top.
+      const { up, fwd, right } = tilt;
+      up.set(pose.ux, pose.uy, pose.uz);
+      fwd.set(pose.fx, pose.fy, pose.fz);
+      const lift = 0.4 + (e.items.bubbleTime > 0 ? 0.8 : 0);
+      mesh.position.set(pose.x + up.x * lift, pose.y + up.y * lift, pose.z + up.z * lift);
+      right.crossVectors(up, fwd).normalize();
+      fwd.crossVectors(right, up).normalize();
+      tiltBasis.makeBasis(right, up, fwd);
+      tiltTarget.setFromRotationMatrix(tiltBasis);
+      mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-40 * frameSeconds));
+      e.racer.shadow.visible = false;
+      e.racer.animate(frameSeconds, motionOf(s), nearestRival(e));
+      flames(e);
+      return;
+    }
+    e.racer.shadow.visible = true;
     mesh.position.set(
       p.x + (s.x - p.x) * alpha,
       p.y +
@@ -848,6 +913,11 @@ function buildSession(
     );
     // Character and kart animation: a visual layer on top of the physics state.
     r.animate(frameSeconds, motionOf(s), nearestRival(e));
+    flames(e);
+  }
+
+  function flames(e: Entrant) {
+    const s = e.state;
 
     // Exhaust: the colour says which boost (zipper amber; blue balloons orange / blue /
     // purple by level), a green core says the enhanced boost took, rainbow says "press
@@ -896,6 +966,41 @@ function buildSession(
     return best;
   }
 
+  // The loop camera: on a loop it rides the road a little way behind the kart, rolling
+  // with it, so the world turns over as you go upside down. It blends in from the chase
+  // camera as you drive on, and back out once you (and it) are off the loop.
+  let loopCamW = 0;
+  const railPos = new THREE.Vector3();
+  const railLook = new THREE.Vector3();
+  const railUp = new THREE.Vector3();
+  const blendUp = new THREE.Vector3();
+  function loopCamera(alpha: number, frameSeconds: number) {
+    if (!loops) return;
+    const { camera: cam } = tuning;
+    const view = loops.rail(0, you.state, alpha, {
+      distance: cam.distance,
+      height: cam.height * 0.8,
+      lookHeight: cam.lookHeight,
+      lookAhead: cam.lookAhead + 2,
+      keep: loopCamW > 0.01,
+    });
+    const target = view?.hold ? 1 : 0;
+    loopCamW += (target - loopCamW) * (1 - Math.exp(-(target ? 7 : 4) * frameSeconds));
+    if (!view || loopCamW < 0.002) {
+      loopCamW = view ? loopCamW : 0;
+      return;
+    }
+    const w = loopCamW;
+    railPos.set(view.px, view.py, view.pz);
+    railLook.set(view.lx, view.ly, view.lz);
+    railUp.set(view.ux, view.uy, view.uz);
+    const camera = stage.camera;
+    camera.position.lerpVectors(chase.pos, railPos, w);
+    blendUp.set(0, 1, 0).lerp(railUp, w).normalize();
+    camera.up.copy(blendUp);
+    camera.lookAt(railLook.lerp(chase.look, 1 - w));
+  }
+
   const orbitTarget = new THREE.Vector3();
   let resultsShown = false;
   function render(alpha: number, frameSeconds: number) {
@@ -903,10 +1008,7 @@ function buildSession(
     // Racers who've crossed the line celebrate (a podium) or slump (the rest).
     const anyDone = race?.racers.some((r) => r.finished) ?? false;
     if (race && (anyDone || resultsShown)) {
-      const order = standings(
-        race,
-        entrants.map((e) => e.state),
-      );
+      const order = standings(race, racePositions());
       entrants.forEach((e, i) =>
         e.racer.setResult(race!.racers[i]!.finished ? order.indexOf(i) + 1 : null, entrants.length),
       );
@@ -941,11 +1043,26 @@ function buildSession(
       );
       stage.camera.lookAt(orbitTarget);
     } else {
+      // On a loop the chase camera follows the kart's place on the straight beneath, so
+      // it's settled behind it when the loop camera hands back.
+      const ride = loops?.riding(0) ? loops.rides[0]! : undefined;
+      const at = ride ? loops!.racePos(0, s) : { x, y, z };
+      const yaw = ride
+        ? loops!.paths[ride.loop]!.heading + (ride.dir > 0 ? 0 : Math.PI) + ride.rel
+        : 0;
       chase.update(
-        { x, y, z, heading, velAngle, speedFrac: s.speed / vehicle.topSpeed },
+        {
+          x: at.x,
+          y: at.y,
+          z: at.z,
+          heading: ride ? yaw : heading,
+          velAngle: ride ? yaw : velAngle,
+          speedFrac: s.speed / vehicle.topSpeed,
+        },
         camera,
         frameSeconds,
       );
+      loopCamera(alpha, frameSeconds);
     }
 
     const now = performance.now() / 1000;
@@ -991,10 +1108,7 @@ function buildSession(
     if (race) {
       // Race progression: why you are (or aren't) gaining places.
       const r = race.racers[0]!;
-      const order = standings(
-        race,
-        entrants.map((e) => e.state),
-      );
+      const order = standings(race, racePositions());
       const n = race.course.length;
       const ev = r.lastEvent;
       debug.overlay.set(
@@ -1118,10 +1232,7 @@ function buildSession(
       };
     }
     const r = race.racers[0]!;
-    const order = standings(
-      race,
-      entrants.map((e) => e.state),
-    );
+    const order = standings(race, racePositions());
     // The place shown changes only once the new one has held for a moment, so two karts
     // side by side don't make it flicker.
     const now = order.indexOf(0) + 1;
@@ -1150,10 +1261,7 @@ function buildSession(
   function result(): RaceResult | undefined {
     if (!race || !race.racers[0]!.finished) return undefined;
     const r = race.racers[0]!;
-    const order = standings(
-      race,
-      entrants.map((e) => e.state),
-    );
+    const order = standings(race, racePositions());
     return {
       position: entrants.length > 1 ? order.indexOf(0) + 1 : undefined,
       racers: entrants.length,

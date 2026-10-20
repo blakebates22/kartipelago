@@ -72,6 +72,8 @@ describe("no holes in the world", () => {
     "frostveil_citadel",
     "snowy_summit",
     "hearthglow_hollow",
+    "aurora_rift",
+    "loop_lab",
     "cascade_caverns",
     "bonebog_pyramid",
     "ember_peak",

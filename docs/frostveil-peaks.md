@@ -2,10 +2,9 @@
 
 A prehistoric winter world: snowbound mountains where an ancient civilization built
 temples, bridges and fortresses into the peaks. Its courses are **Frostveil Citadel**
-(moonlit ruins), **Snowy Summit Pass** (a bright, sunny lake) and **Hearthglow Hollow**
-(a Christmas village at twilight); one more is planned and shows in track select as a
-locked "Coming Soon" tile (`comingSoon` in `src/game/worlds.ts`: rename it there when it
-has a name).
+(moonlit ruins), **Snowy Summit Pass** (a bright, sunny lake), **Hearthglow Hollow** (a
+Christmas village at twilight) and **Aurora Rift** (a fractured glacier under the
+northern lights, with a loop-the-loop).
 
 ## Frostveil Citadel
 
@@ -234,3 +233,87 @@ AI laps) and `tests/holes.test.ts`.
 
 **Size:** about 22 MB of visual geometry and 6 MB of collision; about 1,000 draw calls
 at the start.
+
+## Aurora Rift
+
+Down into a fractured glacier, through a crystal cathedral and a loop-the-loop, across a
+mirror lake and back up under the northern lights. A lap is about 2.31 km (an AI lap
+takes about 105 s), in five connected regions of one place. The glacier (the "massif")
+lies to the north, split from the snowfield by the Rift, a chasm running east-west whose
+floor is lost in glowing mist far below. The palette is electric cyan, glacier blue,
+indigo and violet, with warm amber lanterns marking the road. All designs are original (the concept art set the mood only).
+
+| #   | Region                 | What happens                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The Shattered Entrance | The start on the snowfield under the aurora, through a gate of carved pylons topped with crystals. East along the Rift's rim, then a downhill run of banked turns on a ledge carved into the ice wall over the chasm. North across a natural ice bridge, under a colossal ice arch, and into a narrow tunnel whose crystals grow bigger, denser and brighter the deeper you go.                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2   | The Crystal Cathedral  | The tunnel bursts out into a vast domed cavern with a glittering roof. The abyss lies below and the Central Monolith (a crystal 330 m tall) rises from it, through the island it stands on and up into a hole in the roof, glowing gold at its foot. Bridges cross at three heights. The cliffside drift sweeps round the east wall, then a stone bridge on arches crosses the abyss to the island. The Monolith curve wraps round it (or you take the crystal-arch shortcut). An ice span leads to the north wall, then a gallery behind the giant waterfall curtain, then the causeway and its boost strip into the **Rift Loop**. The Loop is 50 m tall on its pedestal over the abyss, framed by a great slanting window in the roof that shows the aurora. |
+| 3   | Mirror Lake            | Down a crystal tunnel to an underground frozen lake. Its clear ice shows the dark water below and mirrors the crystals, ice columns and hanging crystals. Sweeping drifts on slippery ice between the columns, cracked patches that give way, and the thin-ice shortcut straight across. Falls feed the lake, and its roof has fallen in in places.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 4   | The Aurora Ascent      | Up an ice tunnel lined with crystals (icicles fall on a beat here), a fractured canyon open to the sky under natural ice arches with frozen falls down its walls, a gallery past the Cathedral, and out of a great opening in the glacier's face.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 5   | The Final Descent      | The Great Rift Bridge, a carved bridge on piers that drop into the mist, high over the open chasm under the aurora. Then fast, broad curves back across the snowfield with the glacier and the Rift alongside, and a last left-hand drift onto the finish straight.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+
+**The Rift Loop** is the reusable loop-the-loop ([loops.md](loops.md)). Radius 24, ramp 28
+and shift 18 make it 50 m tall. It has an entry booster (×1.4 for 2 s), a 15 m/s
+minimum once you're 20 m in, and the loop camera. It sits on a rock pedestal, flanked by
+huge crystals. The causeways in and out stand on stone arches.
+
+**Shortcuts:**
+
+- **The crystal arch:** a chord across the Monolith's island, inside the curve, through
+  an arch of glowing crystals. It's clear ice (`icy_stone`).
+- **The thin ice:** straight across Mirror Lake, inside the sweep. Its two cracked
+  patches give way if you keep driving over them.
+
+Each shortcut has a twin checkpoint gate across it (either gate counts), and no other
+gate stands in the stretch it skips.
+
+**Hazards and life** (`src/game/rift.ts`, drawn by `src/render/riftFx.ts`):
+
+- Icicles in the ascent tunnel and the canyon drop on a fixed beat. A glowing ring on
+  the road warns where one will land. Under one, you're knocked (half speed, a hop).
+  More icicles fall harmlessly over the abyss.
+- Cracked lake ice cracks further each time a kart drives over it. On the third pass it
+  gives way into slush that slows you, then freezes over again. Left alone, it slowly
+  heals. One patch is at the edge of the main line, two are on the shortcut.
+- Crystals by the gallery and the causeway flare as you pass, one after another.
+- Ice motes glint in the air.
+
+Driving on a broken patch or getting hit by an icicle only costs speed. Neither ever
+blocks the road. Falling into the abyss puts you back at the last checkpoint (the
+`abyss` surface).
+
+**Atmosphere:** the `aurora_rift` theme is a starry night with the **northern lights**:
+animated curtains in green, teal and violet, with a pink flare now and then. They come
+from the new `"aurora"` option of the sky dome (a small shader). Crystal materials
+**pulse**, via the new `pulse` material option. The caverns are painted dim and blue,
+lit by their crystals (cyan and violet) and warm round every lantern. The nearest
+lanterns light the road and karts. Mist lies in the abyss. The giant curtain, the lake
+falls and the frozen falls on the walls complete the caverns.
+
+**Music:** "Aurora Rift" (`aurora` in `src/audio/songs.ts`), F♯ minor, 148 BPM. A celesta
+over shimmering crystal bells in the Cathedral, flute and a running marimba on the lake,
+and brass and strings soaring for the Loop and the climb.
+
+**How it's built** (`tools/blender/prehistoric/`):
+
+- `aurora_rift.py`: the layout (turtle segments, with a `LOOP` segment), heights, the
+  land (the snowfield, the Rift and its walls, the glacier's surface), the road kinds,
+  the Loop, the shortcuts.
+- `aurora_scenery.py`: the glacier (one solid, with the caverns cut out of it by
+  booleans: the entrance tunnel, the Cathedral, the crystal tunnel, the lake cavern, the
+  ascent, holes in the roof, the window behind the Loop, fractures in the face), the
+  Monolith and its island, the bridges, the Loop's pedestal, the waterfall curtain, the
+  crystal forests, the lake and its reflections (every prop round it, mirrored under the
+  ice), the canyon's arches, the Great Rift Bridge, the painted light, and the
+  entities.
+- `aurora_props.py`: the kit (spire clusters, fans, needles, hanging crystals, crystal
+  gardens, amber clusters, lantern posts, ice columns, icicle fringes, ice spikes,
+  snowy rocks, canyon arches).
+- Theme `aurora_rift` and 25 textures in `make_textures.py`.
+
+**Tests:** `tests/aurora.test.ts` covers the world, a clean load, the Loop and its
+agreement with Blender, the living cavern, both shortcuts counting, three AI laps
+through the Loop, and the icicle and thin-ice rules. `tests/holes.test.ts` checks for
+holes.
+
+**Size:** about 18 MB of visual geometry and 6 MB of collision; about 600 draw calls at
+the start.
