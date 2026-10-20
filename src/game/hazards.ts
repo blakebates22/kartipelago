@@ -42,6 +42,7 @@ import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
+import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
 
 export interface HazardConfig {
@@ -214,6 +215,17 @@ export function createHazards(opts: {
   const fires: Campfire[] = [];
   const torches: { x: number; y: number; z: number; acc: number }[] = [];
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
+  /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
+  const party: {
+    x: number;
+    y: number;
+    z: number;
+    heading: number;
+    dance: Dance;
+    phase: number;
+    ring?: { x: number; y: number; z: number; r: number; speed: number; at: number };
+    view?: PartyDinoView;
+  }[] = [];
   const ground = opts.makeGround();
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
@@ -223,7 +235,42 @@ export function createHazards(opts: {
       fires.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
     else if (e.type === "torch")
       torches.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
-    else if (e.type === "pterosaur") {
+    else if (e.type === "partygoer") {
+      const dance = (DANCES as readonly string[]).includes(String(e.dance))
+        ? (e.dance as Dance)
+        : "bounce";
+      party.push({
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        heading: num(e.heading, 0),
+        dance,
+        phase: party.length * 0.37,
+        view: opts.headless ? undefined : createPartyDinoView(group, num(e.variant, party.length)),
+      });
+    } else if (e.type === "conga") {
+      const count = Math.max(1, Math.min(16, Math.round(num(e.count, 6))));
+      const r = Math.max(2, num(e.radius, 6));
+      for (let k = 0; k < count; k++)
+        party.push({
+          x: num(e.x, 0),
+          y: num(e.y, 0),
+          z: num(e.z, 0),
+          heading: 0,
+          dance: "conga",
+          // In step: the whole line dances together.
+          phase: 0,
+          ring: {
+            x: num(e.x, 0),
+            y: num(e.y, 0),
+            z: num(e.z, 0),
+            r,
+            speed: num(e.speed, 1.4),
+            at: (k / count) * Math.PI * 2 * 0.8,
+          },
+          view: opts.headless ? undefined : createPartyDinoView(group, k + 2, 0.95),
+        });
+    } else if (e.type === "pterosaur") {
       const r = opts.routes.find((q) => q.id === e.route);
       if (!r || r.points.length < 3) continue;
       let d = 0;
@@ -610,6 +657,17 @@ export function createHazards(opts: {
     render(t, dt, listener) {
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
+      for (const p of party) {
+        if (p.ring) {
+          // Round the circle, counter-clockwise, facing the way they go.
+          const a = p.ring.at + (t * p.ring.speed) / p.ring.r;
+          p.x = p.ring.x + Math.cos(a) * p.ring.r;
+          p.z = p.ring.z + Math.sin(a) * p.ring.r;
+          p.heading = Math.atan2(-Math.sin(a), Math.cos(a));
+          p.y = ground.at(p.x, p.z, p.ring.y + 2).height;
+        }
+        p.view?.update(p.x, p.y, p.z, p.heading, p.dance, t, p.phase);
+      }
       for (const f of flyers) {
         // Flap for a while, then glide: the beat comes and goes along the loop.
         const flap = Math.max(0, Math.min(1, 0.5 + 1.6 * Math.sin(f.d / 38)));
@@ -713,6 +771,7 @@ export function createHazards(opts: {
       rush?.stop();
       for (const d of dinos) d.view?.dispose();
       for (const f of flyers) f.view?.dispose();
+      for (const p of party) p.view?.dispose();
       spray?.dispose();
       smoke?.dispose();
       sparks?.dispose();

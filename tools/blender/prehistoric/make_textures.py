@@ -849,6 +849,153 @@ def pterosaur_skin():
     return paint(f)
 
 
+# ------------------------------------------------------------------ Beach Party
+
+
+def beach_sand():
+    pal = ["#ead39a", "#f2dfaa", "#f7e8bc", "#fbf0cd", "#fff7e0"]
+    a, b = noise(4, 2, 1501), noise(16, 8, 1502)
+    shells = speckle(1503, 6)
+    pink = speckle(1504, 4)
+    peb = speckle(1505, 12)
+
+    def f(x, y):
+        if (x, y) in shells:
+            return "#ffffff"
+        if (x, y) in pink:
+            return "#f7b3a8"
+        if (x, y) in peb:
+            return "#d2b277"
+        ripple = 0.12 * math.sin((x / W) * math.tau * 2 + a(x, y) * 3 + (y / H) * math.tau * 2)
+        return pick(pal, 0.25 + a(x, y) * 0.4 + b(x, y) * 0.2 + ripple)
+
+    return paint(f)
+
+
+def beach_road():
+    # Packed sand, a little darker, with two wheel ruts and the odd shell.
+    pal = ["#a8784a", "#b88a56", "#c69a64", "#d2a872", "#dcb882"]
+    a, b = noise(4, 2, 1511), noise(16, 8, 1512)
+    shells = speckle(1513, 5)
+
+    def f(x, y):
+        if (x, y) in shells:
+            return "#fff6e6"
+        rut = 0.16 if x % 32 in (9, 10, 22, 23) else 0
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.3 - rut)
+
+    return paint(f)
+
+
+def wet_sand():
+    pal = ["#b99a62", "#c6a76e", "#d1b47c", "#dcc28d"]
+    a = noise(4, 2, 1521)
+    glints = speckle(1522, 8)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#fff4d8"
+        return pick(pal, 0.2 + a(x, y) * 0.6)
+
+    return paint(f)
+
+
+def sea_water():
+    pal = ["#0a8fb0", "#13a9c4", "#25c2d2", "#4fd8dc", "#9ef0e6"]
+    a, b = noise(4, 2, 1531), noise(8, 4, 1532)
+    glints = speckle(1533, 10)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#ffffff"
+        wave = 0.15 * math.sin((x / W) * math.tau * 2 + (y / H) * math.tau + a(x, y) * 5)
+        return pick(pal, 0.2 + a(x, y) * 0.35 + b(x, y) * 0.25 + wave)
+
+    return paint(f)
+
+
+def surf_foam():
+    a, b = noise(8, 4, 1541), noise(16, 8, 1542)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4 + 0.25 * math.sin((x / W) * math.tau * 3)
+        if v > 0.62:
+            return "#ffffff"
+        if v > 0.5:
+            return "#d8f8f6"
+        return "#7fe0e0"
+
+    return paint(f)
+
+
+def fabric(base, light, dark, seed):
+    a = noise(4, 2, seed)
+
+    def make():
+        def f(x, y):
+            # A faint weave.
+            if (x + y) % 4 == 0 and a(x, y) > 0.5:
+                return light
+            if (x - y) % 6 == 0 and a(x, y) < 0.35:
+                return dark
+            return base
+
+        return paint(f)
+
+    return make
+
+
+party_red = fabric("#ec3b4a", "#ff6a74", "#c62838", 1551)
+party_yellow = fabric("#ffd23f", "#fff08a", "#e8b020", 1552)
+party_teal = fabric("#19c3b0", "#5be6d4", "#0f9a8c", 1553)
+party_pink = fabric("#ff6fb1", "#ffa3cf", "#e04c93", 1554)
+party_white = fabric("#fbf7ee", "#ffffff", "#e3ddd0", 1555)
+party_blue = fabric("#2f80ed", "#6aa8ff", "#1f5fc0", 1556)
+
+
+def lantern_glow():
+    a = noise(4, 2, 1561)
+
+    def f(x, y):
+        if y % 8 == 0:
+            return "#d06a20"
+        return pick(["#ff9a3a", "#ffb24a", "#ffc866", "#ffdc8a"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def tiki_wood():
+    # Carved tiki posts: warm wood, with bands of eyes, mouths and zigzags.
+    pal = ["#6a3a1c", "#844a24", "#9a5a2e", "#b06c38"]
+    a = noise(8, 4, 1571)
+
+    def f(x, y):
+        v = 0.3 + a(x, y) * 0.5 + 0.15 * math.sin(y * 1.3)
+        cx = x % 16
+        # A face every 16 px: two eyes and a wide mouth.
+        if 8 <= y <= 11 and cx in (3, 4, 11, 12):
+            return "#f4e2b0" if y in (9, 10) else "#2a160a"
+        if 18 <= y <= 21 and 2 <= cx <= 13:
+            return "#2a160a" if y in (18, 21) or cx in (2, 13) else "#f4e2b0"
+        if y in (27, 28) and (cx + (y - 27) * 2) % 4 < 2:
+            return "#2a160a"
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def dino_scales():
+    # Bright scaly hide for the partygoers' accessories and the canoes.
+    a = noise(4, 2, 1581)
+
+    def f(x, y):
+        if (x // 4 + y // 4) % 2 == 0 and (x % 4 == 0 or y % 4 == 0):
+            return "#2a8c4a"
+        return pick(["#3fae5e", "#52c46e", "#6ad884"], a(x, y))
+
+    return paint(f)
+
+
 THEMES = [
     {
         "id": "jungle_falls",
@@ -914,8 +1061,44 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "beach_party",
+        "name": "Beach Party",
+        "description": "White-gold sand, a turquoise sea, palms, bright party colours and a high midday sun",
+        "environment": {
+            "sky": "#3fb0f5",
+            "fog": {"enabled": True, "color": "#d2f1ff", "near": 260, "far": 1100},
+            "sun": {"color": "#fff6dc", "intensity": 2.7, "direction": [-0.3, 0.85, -0.45]},
+            "ambient": {"sky": "#eaf8ff", "ground": "#d8c08a", "intensity": 1.3},
+            "skyDome": {
+                "top": "#1d86ea",
+                "horizon": "#c8f0ff",
+                "bottom": "#a6e6f2",
+                "sun": {"color": "#fffbe6", "size": 7, "glow": "#fff0a0", "elevation": 22},
+                "clouds": {"count": 30, "color": "#ffffff", "shade": "#d6ecff", "seed": 12, "low": 6, "high": 22, "drift": 0.006},
+                "hills": {"color": "#3f9a6a", "far": "#a9dcd8", "height": 4, "seed": 21, "layers": 2},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("beach_sand", "Beach Sand", "beach_party", "sand", beach_sand, 6, None),
+    ("beach_road", "Packed Sand Road", "beach_party", "road", beach_road, 4, None),
+    ("wet_sand", "Wet Sand", "beach_party", "sand", wet_sand, 5, None),
+    ("sea_water", "Sea Water", "beach_party", "water", sea_water, 10, {"scrollU": 0.02, "scrollV": 0.03, "wave": 0.05, "wavePeriod": 4, "opacity": 0.86}),
+    ("surf_foam", "Surf", "beach_party", "water", surf_foam, 5, {"scrollU": 0.0, "scrollV": 0.12, "wave": 0.12, "wavePeriod": 3.2, "opacity": 0.8, "glow": 0.2}),
+    ("party_red", "Party Red", "beach_party", "wall", party_red, 2, None),
+    ("party_yellow", "Party Yellow", "beach_party", "wall", party_yellow, 2, None),
+    ("party_teal", "Party Teal", "beach_party", "wall", party_teal, 2, None),
+    ("party_pink", "Party Pink", "beach_party", "wall", party_pink, 2, None),
+    ("party_white", "Party White", "beach_party", "wall", party_white, 2, None),
+    ("party_blue", "Party Blue", "beach_party", "wall", party_blue, 2, None),
+    ("lantern_glow", "Paper Lantern", "beach_party", "wall", lantern_glow, 1, {"scrollU": 0, "scrollV": 0, "glow": 0.6}),
+    ("tiki_wood", "Tiki Wood", "beach_party", "wall", tiki_wood, 2, None),
+    ("dino_scales", "Dino Scales", "beach_party", "wall", dino_scales, 1, None),
     ("valley_road", "Valley Road", "river_valley", "road", valley_road, 4, None),
     ("valley_grass", "Valley Grass", "river_valley", "grass", valley_grass, 6, None),
     ("valley_sand", "Valley Sand", "river_valley", "sand", valley_sand, 5, None),

@@ -28,7 +28,7 @@ import { createScreenManager, type Screen } from "./app/app";
 import { loadSettings, saveSettings, safeStorage, sanitize } from "./app/settings";
 import type { Game } from "./app/game";
 import { createSession, type SessionContext } from "./game/session";
-import { TRACKS, trackById, type TrackEntry } from "./game/tracks";
+import { TITLE_TRACK, TRACKS, trackById, type TrackEntry } from "./game/tracks";
 import { createUiLayer } from "./ui/layer";
 import { RACER_IDS, type RacerId } from "./render/racers/designs";
 import type { LookMode } from "./render/trackMaterials";
@@ -167,7 +167,8 @@ if (racerParam && (RACER_IDS as string[]).includes(racerParam))
 /** ?shot=<track>[&skip=<s>]: the title demo on a track with no UI, for preview pictures. */
 function shotScreen(id: string): Screen {
   let session: Awaited<ReturnType<Game["createSession"]>> | undefined;
-  const entry = trackById(id) ?? trackById("drift_loop")!;
+  const entry =
+    trackById(id) ?? (id === TITLE_TRACK.id ? TITLE_TRACK : undefined) ?? trackById("drift_loop")!;
   return {
     id: "TITLE",
     enter() {

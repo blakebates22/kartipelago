@@ -190,6 +190,42 @@ v1 is tagged `cascade-v1` in git:
 5. Then it plunges straight down the south face.
 6. On the way down you **jump a lava gully**.
 
+## Party Beach (the title screen)
+
+The title screen's demo race runs on **Party Beach** (`beach_party`), a dinosaur beach
+party built by `tools/blender/prehistoric/beach_party.py` with its props in
+`beach_props.py`. It's not in any world, so you can't pick it; `?shot=beach_party`
+shows it without the UI.
+
+- **The loop (~720 m):** the start straight runs along the beach, then up the east side
+  past the tiki bar, along the dunes at the back (over a creek on a little wooden
+  bridge), and down the west side past the bonfire, back over the lagoon's outlet.
+- **The beach:** white-gold sand, a turquoise sea with surf lapping the shore, striped
+  umbrellas with towels and deck chairs, surfboards, beach balls, sandcastles,
+  outrigger canoes, a volleyball game, starfish and shells. Sea stacks with palms on
+  top, and a volcano island on the horizon.
+- **The party:** a DJ stage with a dance floor of dancing dinosaurs, a conga line round
+  the bonfire, regulars at the tiki bar, coconut palms lining the road with bunting and
+  paper lanterns strung across it, tiki torches everywhere.
+- **Wildlife:** two long-necks (a big one and a youngster) wading in the shallows and
+  two pterosaurs circling overhead.
+- **Look:** the **Beach Party** theme: a bright midday sky with clouds and low distant
+  islands, and 14 new textures (beach sand, packed-sand road, wet sand, sea, surf, six
+  party colours, paper lantern, tiki wood, dino scales).
+
+### Partygoers
+
+```json
+{ "id": "partygoer_01", "type": "partygoer", "x": -30, "y": 2, "z": -60, "heading": 0.4, "variant": 2, "dance": "bounce" }
+{ "id": "conga_01", "type": "conga", "x": -132, "y": 1, "z": -40, "radius": 6.5, "count": 7, "speed": 1.4 }
+```
+
+Little cartoon dinosaurs (`src/render/partyDino.ts`) in six looks (a duck-bill crest,
+back plates, a horned frill, a bony dome, a spiky frill, a plain round one) with party
+extras: sunglasses, leis, party hats, a flower. They dance on the beat of the title
+music: `bounce`, `sway`, `wave`, `hop`, `chill` (at the bar), `dj` (at the decks), or
+walk round a `conga` circle. Purely visual (no collision), so keep them off the road.
+
 ## How they're built
 
 Each course is a Blender build script in `tools/blender/prehistoric/`:

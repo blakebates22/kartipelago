@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "id": "beach_party",
+  "name": "Party Beach",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "partygoer_01",
+      "type": "partygoer",
+      "x": -31.95,
+      "y": 4.27,
+      "z": -71.81,
+      "heading": 0.25,
+      "variant": 0,
+      "dance": "dj"
+    },
+    {
+      "id": "partygoer_02",
+      "type": "partygoer",
+      "x": -38.0,
+      "y": 3.34,
+      "z": -64.11,
+      "heading": 2.492,
+      "variant": 0,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_03",
+      "type": "partygoer",
+      "x": -36.85,
+      "y": 3.34,
+      "z": -61.27,
+      "heading": 2.717,
+      "variant": 1,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_04",
+      "type": "partygoer",
+      "x": -34.14,
+      "y": 3.39,
+      "z": -61.43,
+      "heading": 2.942,
+      "variant": 2,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_05",
+      "type": "partygoer",
+      "x": -31.66,
+      "y": 3.36,
+      "z": -58.51,
+      "heading": -3.117,
+      "variant": 3,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_06",
+      "type": "partygoer",
+      "x": -29.63,
+      "y": 3.44,
+      "z": -62.71,
+      "heading": -2.892,
+      "variant": 4,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_07",
+      "type": "partygoer",
+      "x": -26.49,
+      "y": 3.41,
+      "z": -61.29,
+      "heading": -2.667,
+      "variant": 5,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_08",
+      "type": "partygoer",
+      "x": -26.11,
+      "y": 3.43,
+      "z": -65.01,
+      "heading": -2.442,
+      "variant": 0,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_09",
+      "type": "partygoer",
+      "x": -24.06,
+      "y": 3.41,
+      "z": -66.02,
+      "heading": -2.217,
+      "variant": 1,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_10",
+      "type": "partygoer",
+      "x": -20.03,
+      "y": 3.34,
+      "z": -66.64,
+      "heading": -1.992,
+      "variant": 2,
+      "dance": "wave"
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -132.0,
+      "y": 2.38,
+      "z": -40.0
+    },
+    {
+      "id": "conga_01",
+      "type": "conga",
+      "x": -132.0,
+      "y": 2.38,
+      "z": -40.0,
+      "radius": 6.5,
+      "count": 7,
+      "speed": 1.4
+    },
+    {
+      "id": "partygoer_11",
+      "type": "partygoer",
+      "x": -0.82,
+      "y": 1.77,
+      "z": 9.46,
+      "heading": 2.542,
+      "variant": 3,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_12",
+      "type": "partygoer",
+      "x": 0.42,
+      "y": 1.7,
+      "z": 10.31,
+      "heading": 2.542,
+      "variant": 4,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_13",
+      "type": "partygoer",
+      "x": 1.66,
+      "y": 1.62,
+      "z": 11.16,
+      "heading": 2.542,
+      "variant": 5,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_14",
+      "type": "partygoer",
+      "x": -139.4,
+      "y": -0.19,
+      "z": 98.54,
+      "heading": 3.278,
+      "variant": 2,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_15",
+      "type": "partygoer",
+      "x": -27.16,
+      "y": 0.38,
+      "z": 94.8,
+      "heading": 2.916,
+      "variant": 5,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_16",
+      "type": "partygoer",
+      "x": -147.72,
+      "y": 0.63,
+      "z": 87.92,
+      "heading": 1.686,
+      "variant": 2,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_17",
+      "type": "partygoer",
+      "x": -130.23,
+      "y": 0.68,
+      "z": 87.5,
+      "heading": 0.407,
+      "variant": 5,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_18",
+      "type": "partygoer",
+      "x": -106.86,
+      "y": 0.45,
+      "z": 94.81,
+      "heading": 2.605,
+      "variant": 2,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_19",
+      "type": "partygoer",
+      "x": -57.03,
+      "y": 0.93,
+      "z": 94.6,
+      "heading": 0.502,
+      "variant": 5,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_20",
+      "type": "partygoer",
+      "x": 54.0,
+      "y": 0.3,
+      "z": 83.8,
+      "heading": 1.571,
+      "variant": 1,
+      "dance": "hop"
+    },
+    {
+      "id": "partygoer_21",
+      "type": "partygoer",
+      "x": 62.0,
+      "y": 0.51,
+      "z": 82.2,
+      "heading": -1.571,
+      "variant": 4,
+      "dance": "hop"
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 687.5,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 349.8,
+      "across": 2
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 50,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 211.2,
+      "across": -2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 452.3,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 614.8,
+      "across": 2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 90,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 90,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 253.3,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 564.9,
+      "across": -3,
+      "color": "green"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 687.8,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Wade Path",
+      "speed": 2.4,
+      "scale": 1.0,
+      "start": 0
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Wade Path",
+      "speed": 2.4,
+      "scale": 0.55,
+      "start": 22
+    },
+    {
+      "id": "pterosaur_01",
+      "type": "pterosaur",
+      "route": "Flyer Path",
+      "speed": 13.0,
+      "scale": 1.5
+    },
+    {
+      "id": "pterosaur_02",
+      "type": "pterosaur",
+      "route": "Flyer Path 2",
+      "speed": 11.0,
+      "scale": 1.0,
+      "start": 60
+    }
+  ],
+  "generator": "tools/blender/prehistoric/beach_party.py (re-running it rewrites entities)"
+}

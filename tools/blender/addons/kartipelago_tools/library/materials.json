@@ -217,6 +217,57 @@
           "intensity": 1.2
         }
       }
+    },
+    {
+      "id": "beach_party",
+      "name": "Beach Party",
+      "description": "White-gold sand, a turquoise sea, palms, bright party colours and a high midday sun",
+      "environment": {
+        "sky": "#3fb0f5",
+        "fog": {
+          "enabled": true,
+          "color": "#d2f1ff",
+          "near": 260,
+          "far": 1100
+        },
+        "sun": {
+          "color": "#fff6dc",
+          "intensity": 2.7,
+          "direction": [-0.3, 0.85, -0.45]
+        },
+        "ambient": {
+          "sky": "#eaf8ff",
+          "ground": "#d8c08a",
+          "intensity": 1.3
+        },
+        "skyDome": {
+          "top": "#1d86ea",
+          "horizon": "#c8f0ff",
+          "bottom": "#a6e6f2",
+          "sun": {
+            "color": "#fffbe6",
+            "size": 7,
+            "glow": "#fff0a0",
+            "elevation": 22
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#ffffff",
+            "shade": "#d6ecff",
+            "seed": 12,
+            "low": 6,
+            "high": 22,
+            "drift": 0.006
+          },
+          "hills": {
+            "color": "#3f9a6a",
+            "far": "#a9dcd8",
+            "height": 4,
+            "seed": 21,
+            "layers": 2
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -377,6 +428,152 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "beach_sand",
+      "name": "Beach Sand",
+      "theme": "beach_party",
+      "surface": "sand",
+      "image": "beach_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "beach_road",
+      "name": "Packed Sand Road",
+      "theme": "beach_party",
+      "surface": "road",
+      "image": "beach_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "wet_sand",
+      "name": "Wet Sand",
+      "theme": "beach_party",
+      "surface": "sand",
+      "image": "wet_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "sea_water",
+      "name": "Sea Water",
+      "theme": "beach_party",
+      "surface": "water",
+      "image": "sea_water.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.02,
+        "scrollV": 0.03,
+        "wave": 0.05,
+        "wavePeriod": 4,
+        "opacity": 0.86
+      }
+    },
+    {
+      "id": "surf_foam",
+      "name": "Surf",
+      "theme": "beach_party",
+      "surface": "water",
+      "image": "surf_foam.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.12,
+        "wave": 0.12,
+        "wavePeriod": 3.2,
+        "opacity": 0.8,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "party_red",
+      "name": "Party Red",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_red.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "party_yellow",
+      "name": "Party Yellow",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_yellow.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "party_teal",
+      "name": "Party Teal",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "party_pink",
+      "name": "Party Pink",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_pink.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "party_white",
+      "name": "Party White",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_white.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "party_blue",
+      "name": "Party Blue",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "party_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "lantern_glow",
+      "name": "Paper Lantern",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "lantern_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.6
+      }
+    },
+    {
+      "id": "tiki_wood",
+      "name": "Tiki Wood",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "tiki_wood.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "dino_scales",
+      "name": "Dino Scales",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "dino_scales.png",
+      "wrap": "repeat",
+      "tileMetres": 1
     },
     {
       "id": "valley_road",

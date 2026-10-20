@@ -144,6 +144,22 @@ export const TRACKS: TrackEntry[] = [
 
 export const trackById = (id: string) => TRACKS.find((t) => t.id === id);
 
+/**
+ * The title screen's course: Party Beach, a dinosaur beach party (built by
+ * tools/blender/prehistoric/beach_party.py). It isn't in any world, so it never shows
+ * in track select; the title demo races on it.
+ */
+export const TITLE_TRACK: TrackEntry = {
+  id: "beach_party",
+  name: "Party Beach",
+  description: "A dinosaur beach party: palms, sand, a turquoise sea and a dance floor.",
+  preview: "previews/dino_demo.jpg",
+  modes: ["race"],
+  theme: "beach_party",
+  music: "title",
+  load: { scene: "track", packageId: "beach_party" },
+};
+
 export const MODE_LABELS: Record<TrackMode, { name: string; sub: string }> = {
   race: { name: "RACE", sub: "8 KARTS · 3 LAPS" },
   timeTrial: { name: "TIME TRIAL", sub: "SOLO · 3 LAPS" },

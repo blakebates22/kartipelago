@@ -92,7 +92,10 @@ the code that used to be `main.ts`, now made into something that can be thrown a
   bananas and the AI all advance in `update()` and nowhere else.
 - **`restart()`:** resets the race in place, with no new objects.
 - **Demo mode:** the title screen uses one too. The AI drives every kart, the camera
-  circles your racer, and it makes no sound.
+  circles your racer, and it makes no sound. The title races on **Party Beach**
+  (`TITLE_TRACK` in `src/game/tracks.ts`, see [prehistoric-world.md](prehistoric-world.md)),
+  falling back to Dino Demo, then Drift Loop, if it can't load. Party Beach isn't in any
+  world, so it never shows in track select. `?shot=beach_party` shows it with no UI.
 
 Vehicle physics, drifting, zippers, bananas, items and the AI are exactly as before.
 

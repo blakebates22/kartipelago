@@ -2,15 +2,15 @@
  * BOOT and TITLE.
  *
  * Boot is a moment's splash while the title demo loads (any key skips it). The title
- * shows the logo bouncing in over a live demo race on Dino Demo (the AI drives every
- * kart, the camera circles your racer), "PRESS START", and then the main menu: Play,
- * Options, Music and Credits.
+ * shows the logo bouncing in over a live demo race on Party Beach, a dinosaur beach
+ * party (the AI drives every kart, the camera circles your racer), "PRESS START", and
+ * then the main menu: Play, Options, Music and Credits.
  */
 import type { Game } from "../app/game";
 import type { MenuAction } from "../app/menuInput";
 import type { Screen } from "../app/app";
 import type { Session } from "../game/session";
-import { trackById } from "../game/tracks";
+import { TITLE_TRACK, trackById } from "../game/tracks";
 import { landscape, logo } from "../ui/backdrops";
 import type { UiLayer } from "../ui/layer";
 import { PAL } from "../ui/textures";
@@ -67,9 +67,9 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
 
   async function loadDemo() {
     const token = game.screens.token;
-    const tries = ["dino_demo", "drift_loop"];
-    for (const id of tries) {
-      const entry = trackById(id)!;
+    // Party Beach, falling back to the test tracks if it can't load.
+    const tries = [TITLE_TRACK, trackById("dino_demo")!, trackById("drift_loop")!];
+    for (const entry of tries) {
       try {
         const s = await game.createSession({
           scene: entry.load.scene,
