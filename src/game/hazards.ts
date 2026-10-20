@@ -288,7 +288,9 @@ export function createHazards(opts: {
     const L = track.length;
     const d = ((at % L) + L) % L;
     let best = ss[0]!;
-    for (const q of ss) if (q.dist <= d) best = q;
+    // A hair of slack: (at % L + L) % L can land a rounding error short of a sample's
+    // own distance (it differs between JavaScript engines), which picked the one before.
+    for (const q of ss) if (q.dist <= d + 1e-6) best = q;
     return {
       x: best.pos.x,
       y: best.pos.y,
