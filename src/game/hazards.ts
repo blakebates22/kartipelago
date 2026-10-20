@@ -30,6 +30,16 @@
  *               swamp gas. Purely visual.
  *   fireflies   { "type": "fireflies", "rate": 40, "radius": 36 }: little glowing
  *               motes drifting in the air round the camera. Purely visual.
+ *   dragon      { "type": "dragon", ... } (see game/dragon.ts): a fire-breathing dragon on
+ *               a fixed schedule from the race clock. Its fire burns exactly like
+ *               lava (the same bounce, immunity and three-strikes respawn).
+ *   eruption    { "type": "eruption", "x", "y", "z", "period": 12, "offset": 0 }: a
+ *               volcano erupting on a fixed beat of the race clock: a rumble, then a
+ *               blast of glowing lava bombs and a flash of red light, with a fountain
+ *               of fire between. Purely visual.
+ *   ashfall     { "type": "ashfall", "rate": 60, "radius": 40 }: grey ash drifting down
+ *               and embers floating up round the camera. Purely visual.
+ *   steam       { "type": "steam", "x", "y", "z" }: a vent puffing steam. Purely visual.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -49,6 +59,19 @@ import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
+import {
+  createDragonFire,
+  createDragonView,
+  type DragonFireView,
+  type DragonView,
+} from "../render/dragon";
+import {
+  dragonBurns,
+  dragonPhase,
+  parseDragon,
+  type DragonConfig,
+  type DragonPhase,
+} from "./dragon";
 
 export interface HazardConfig {
   lavaBounce: number;
@@ -191,6 +214,9 @@ export function createHazards(opts: {
   quiet?: boolean;
   /** No 3D (tests). */
   headless?: boolean;
+  /** The race clock (seconds; negative in the countdown). Timed hazards (the dragon)
+   * follow it, so every race sees the same attacks. Defaults to the hazards' own. */
+  clock?: () => number;
 }): Hazards {
   const { cfg, track } = opts;
   const vol = () => (opts.quiet ? 0 : cfg.volume);
@@ -225,6 +251,29 @@ export function createHazards(opts: {
   /** Bubbling pools, and fireflies (see the bubbles and fireflies entities). */
   const pools: { x: number; y: number; z: number; r: number; acc: number; burp: number }[] = [];
   let fireflies: { rate: number; radius: number; acc: number } | undefined;
+  /** Dragons, and what they were doing last frame (for their cues). */
+  const dragons: {
+    cfg: DragonConfig;
+    view?: DragonView;
+    flames?: DragonFireView;
+    marker?: THREE.Mesh;
+    last: DragonPhase;
+    acc: number;
+  }[] = [];
+  let fire: ReturnType<typeof createParticles> | undefined;
+  const eruptions: {
+    x: number;
+    y: number;
+    z: number;
+    period: number;
+    offset: number;
+    last: number;
+    light?: THREE.PointLight;
+  }[] = [];
+  let ashfall: { rate: number; radius: number; acc: number } | undefined;
+  const vents: { x: number; y: number; z: number; acc: number }[] = [];
+  let bombs: ReturnType<typeof createParticles> | undefined;
+  let ash: ReturnType<typeof createParticles> | undefined;
   let glowing: ReturnType<typeof createParticles> | undefined;
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
@@ -260,7 +309,62 @@ export function createHazards(opts: {
         acc: 0,
         burp: 2 + Math.random() * 6,
       });
-    else if (e.type === "fireflies")
+    else if (e.type === "eruption") {
+      const er = {
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        period: Math.max(4, num(e.period, 12)),
+        offset: num(e.offset, 0),
+        last: -1,
+        light: undefined as THREE.PointLight | undefined,
+      };
+      if (!opts.headless) {
+        er.light = new THREE.PointLight(0xff5a20, 0, 1400, 1.1);
+        er.light.position.set(er.x, er.y + 40, er.z);
+        group.add(er.light);
+      }
+      eruptions.push(er);
+    } else if (e.type === "ashfall")
+      ashfall = {
+        rate: Math.max(0, num(e.rate, 60)),
+        radius: Math.max(5, num(e.radius, 40)),
+        acc: 0,
+      };
+    else if (e.type === "steam")
+      vents.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
+    else if (e.type === "dragon") {
+      const cfg = parseDragon(e);
+      let marker: THREE.Mesh | undefined;
+      if (!opts.headless) {
+        // The burn zone, glowing on the road while the dragon draws breath.
+        marker = new THREE.Mesh(
+          new THREE.PlaneGeometry(cfg.fire.width, cfg.fire.length),
+          new THREE.MeshBasicMaterial({
+            color: 0xff3a10,
+            transparent: true,
+            opacity: 0,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          }),
+        );
+        marker.rotation.order = "YXZ";
+        marker.rotation.set(-Math.PI / 2, cfg.fire.heading, 0);
+        marker.position.set(cfg.fire.x, cfg.fire.y + 0.25, cfg.fire.z);
+        marker.renderOrder = 3;
+        group.add(marker);
+      }
+      dragons.push({
+        cfg,
+        view: opts.headless
+          ? undefined
+          : createDragonView(group, { x: cfg.x, y: cfg.y, z: cfg.z }, cfg.heading, cfg.scale),
+        marker,
+        flames: opts.headless ? undefined : createDragonFire(group, cfg.fire),
+        last: "idle",
+        acc: 0,
+      });
+    } else if (e.type === "fireflies")
       fireflies = {
         rate: Math.max(0, num(e.rate, 30)),
         radius: Math.max(5, num(e.radius, 30)),
@@ -516,6 +620,51 @@ export function createHazards(opts: {
   let clock = 0;
   const lastPos = per.map(() => ({ x: NaN, z: NaN }));
 
+  const tmpTarget = new THREE.Vector3();
+  const tmpMouth = new THREE.Vector3();
+  /** The race clock the timed hazards follow. */
+  const raceClock = () => (opts.clock ? opts.clock() : clock);
+
+  /**
+   * The burning bounce, shared by lava and dragon fire: up, back towards the road and
+   * slower, with a sizzle; three in a few seconds and you're put back at the last
+   * checkpoint, held still a moment.
+   */
+  function burn(i: number, s: KartState, h: KartHazard, ev: HazardEvents, back: () => Spot) {
+    h.strikes = h.strikes.filter((t) => clock - t < cfg.lavaStrikeWindowSec);
+    h.strikes.push(clock);
+    ev.burnt = true;
+    if (h.strikes.length >= cfg.lavaStrikes) {
+      // Too many: back to the checkpoint, held still for a moment.
+      const at = back();
+      putBack(s, at);
+      h.hold = cfg.lavaPenaltySec;
+      h.holdAt = at;
+      h.strikes = [];
+      h.immune = cfg.recoverImmuneSec + cfg.lavaPenaltySec;
+      ev.respawned = at;
+      if (i === 0) opts.sfx?.recover(vol());
+    } else {
+      // Up, and back towards the road, slower.
+      const near = nearestSample(s.x, s.y, s.z);
+      const dx = near.pos.x - s.x;
+      const dz = near.pos.z - s.z;
+      const dl = Math.hypot(dx, dz) || 1;
+      const vx = Math.sin(s.velAngle) * s.speed * cfg.lavaKeep + (dx / dl) * cfg.lavaPush;
+      const vz = Math.cos(s.velAngle) * s.speed * cfg.lavaKeep + (dz / dl) * cfg.lavaPush;
+      s.speed = Math.hypot(vx, vz);
+      s.velAngle = Math.atan2(vx, vz);
+      s.vy = cfg.lavaBounce;
+      s.y += 0.05;
+      s.grounded = false;
+      h.immune = cfg.lavaImmuneSec;
+      h.smoking = 1.4;
+      if (i === 0) opts.sfx?.sizzle(vol());
+    }
+    sparks?.burst(s.x, s.y + 0.4, s.z, 18, 4, 7, 0.7, 0xffa030);
+    smoke?.burst(s.x, s.y + 0.6, s.z, 8, 1.5, 1.5, 1.1, 0x5a4a48);
+  }
+
   const hazards: Hazards = {
     solids,
     dinos,
@@ -536,41 +685,11 @@ export function createHazards(opts: {
       }
       const ground = s.grounded ? surface : undefined;
       const back = () => respawnSpot(s.x, s.y, s.z) ?? lastGate;
-      // ---- lava: the burning bounce
-      if (ground === "lava" && h.immune <= 0) {
-        h.strikes = h.strikes.filter((t) => clock - t < cfg.lavaStrikeWindowSec);
-        h.strikes.push(clock);
-        ev.burnt = true;
-        if (h.strikes.length >= cfg.lavaStrikes) {
-          // Too many: back to the checkpoint, held still for a moment.
-          const at = back();
-          putBack(s, at);
-          h.hold = cfg.lavaPenaltySec;
-          h.holdAt = at;
-          h.strikes = [];
-          h.immune = cfg.recoverImmuneSec + cfg.lavaPenaltySec;
-          ev.respawned = at;
-          if (i === 0) opts.sfx?.recover(vol());
-        } else {
-          // Up, and back towards the road, slower.
-          const near = nearestSample(s.x, s.y, s.z);
-          const dx = near.pos.x - s.x;
-          const dz = near.pos.z - s.z;
-          const dl = Math.hypot(dx, dz) || 1;
-          const vx = Math.sin(s.velAngle) * s.speed * cfg.lavaKeep + (dx / dl) * cfg.lavaPush;
-          const vz = Math.cos(s.velAngle) * s.speed * cfg.lavaKeep + (dz / dl) * cfg.lavaPush;
-          s.speed = Math.hypot(vx, vz);
-          s.velAngle = Math.atan2(vx, vz);
-          s.vy = cfg.lavaBounce;
-          s.y += 0.05;
-          s.grounded = false;
-          h.immune = cfg.lavaImmuneSec;
-          h.smoking = 1.4;
-          if (i === 0) opts.sfx?.sizzle(vol());
-        }
-        sparks?.burst(s.x, s.y + 0.4, s.z, 18, 4, 7, 0.7, 0xffa030);
-        smoke?.burst(s.x, s.y + 0.6, s.z, 8, 1.5, 1.5, 1.1, 0x5a4a48);
-      }
+      // ---- lava, and dragon fire: the burning bounce
+      const t = raceClock();
+      const scorched = ground === "lava";
+      const flamed = dragons.some((d) => dragonBurns(d.cfg, t, s.x, s.y, s.z));
+      if ((scorched || flamed) && h.immune <= 0) burn(i, s, h, ev, back);
       // ---- water
       const wet = ground === "water" || ground === "deep_water";
       if (
@@ -814,6 +933,167 @@ export function createHazards(opts: {
           );
         snow.step(dt);
       }
+      // The dragons: posed for their attack, the burn zone glowing on the road as they
+      // draw breath, then the fire (the flames fill exactly the zone that burns).
+      if (dragons.length && !opts.headless) {
+        fire ??= createParticles(group, { max: 1400, size: 2.2, gravity: 3.5, additive: true });
+        const rc = raceClock();
+        for (const d of dragons) {
+          const { phase, t: pt } = dragonPhase(d.cfg, rc);
+          const f = d.cfg.fire;
+          tmpTarget.set(f.x, f.y, f.z);
+          d.view?.update(phase, pt, t, tmpTarget);
+          const far = Math.hypot(listener.x - d.cfg.x, listener.z - d.cfg.z);
+          const loud = vol() * Math.max(0, 1 - far / 320);
+          if (phase !== d.last) {
+            if (phase === "warning" && loud > 0) opts.sfx?.roar(loud);
+            if (phase === "breathing" && loud > 0) opts.sfx?.flame(loud);
+            d.last = phase;
+          }
+          if (d.marker) {
+            const m = d.marker.material as THREE.MeshBasicMaterial;
+            m.opacity =
+              phase === "warning"
+                ? 0.18 + 0.22 * pt + 0.15 * Math.sin(t * 14)
+                : phase === "breathing"
+                  ? 0.35
+                  : phase === "cooldown"
+                    ? 0.35 * (1 - pt)
+                    : 0;
+          }
+          d.view?.mouth(tmpMouth);
+          d.flames?.update(phase, pt, t, tmpMouth);
+          if (phase !== "breathing" || far > 400) continue;
+          d.acc = Math.min(40, d.acc + dt * 420);
+          const ca = Math.cos(f.heading);
+          const sa = Math.sin(f.heading);
+          for (; d.acc >= 1; d.acc -= 1) {
+            // A point in the zone: along and across the road.
+            const along = (Math.random() - 0.5) * f.length;
+            const across = (Math.random() - 0.5) * f.width;
+            const px = f.x + sa * along + ca * across;
+            const pz = f.z + ca * along - sa * across;
+            const col = Math.random() < 0.35 ? 0xffe070 : Math.random() < 0.6 ? 0xff8a20 : 0xff4a10;
+            if (Math.random() < 0.3) {
+              // The stream from the jaws to the road.
+              const life = 0.35;
+              fire.emit(
+                tmpMouth.x,
+                tmpMouth.y,
+                tmpMouth.z,
+                (px - tmpMouth.x) / life,
+                (f.y + 1 - tmpMouth.y) / life - 0.5 * 3.5 * life,
+                (pz - tmpMouth.z) / life,
+                life,
+                col,
+              );
+            } else {
+              fire.emit(
+                px,
+                f.y + 0.3 + Math.random() * 0.8,
+                pz,
+                (Math.random() - 0.5) * 1.5,
+                2 + Math.random() * 3,
+                (Math.random() - 0.5) * 1.5,
+                0.45 + Math.random() * 0.45,
+                col,
+              );
+            }
+          }
+        }
+      }
+      fire?.step(dt);
+      // Eruptions: on their beat of the race clock, a rumble, then a blast of lava bombs
+      // arcing out of the crater and a red flash; a fountain of fire in between.
+      if (eruptions.length && !opts.headless) {
+        bombs ??= createParticles(group, { max: 900, size: 11, gravity: -16, additive: true });
+        const rc = raceClock();
+        for (const er of eruptions) {
+          const beat = Math.floor((rc - er.offset) / er.period);
+          const u = rc - er.offset - beat * er.period;
+          const far = Math.hypot(listener.x - er.x, listener.z - er.z);
+          if (beat !== er.last) {
+            er.last = beat;
+            if (far < 1500) opts.sfx?.rumble(vol() * Math.max(0.25, 1 - far / 1500));
+          }
+          // The blast, 1.2 s after the rumble.
+          const blast = u - 1.2;
+          if (blast >= 0 && blast < dt + 1e-6)
+            for (let k = 0; k < 220; k++) {
+              const a = Math.random() * Math.PI * 2;
+              const sp = 12 + Math.random() * 30;
+              bombs.emit(
+                er.x,
+                er.y + 5,
+                er.z,
+                Math.cos(a) * sp,
+                55 + Math.random() * 55,
+                Math.sin(a) * sp,
+                4 + Math.random() * 3,
+                Math.random() < 0.5 ? 0xffb030 : 0xff5a14,
+              );
+            }
+          if (er.light)
+            er.light.intensity = blast >= 0 && blast < 2.5 ? 9000 * Math.exp(-blast * 1.8) : 0;
+          // The fountain, always going.
+          const n = Math.min(6, Math.floor(Math.random() + dt * 40));
+          for (let k = 0; k < n; k++)
+            bombs.emit(
+              er.x + (Math.random() - 0.5) * 20,
+              er.y,
+              er.z + (Math.random() - 0.5) * 20,
+              (Math.random() - 0.5) * 8,
+              35 + Math.random() * 25,
+              (Math.random() - 0.5) * 8,
+              3.2,
+              Math.random() < 0.5 ? 0xff7a20 : 0xffc040,
+            );
+        }
+        bombs.step(dt);
+      }
+      // Ash drifting down and embers floating up round the camera; steam from vents.
+      if ((ashfall || vents.length) && !opts.headless) {
+        ash ??= createParticles(group, { max: 700, size: 0.3, gravity: 0, opacity: 0.9 });
+        if (ashfall) {
+          ashfall.acc = Math.min(3, ashfall.acc + dt * ashfall.rate);
+          const r = ashfall.radius;
+          for (; ashfall.acc >= 1; ashfall.acc -= 1) {
+            const ember = Math.random() < 0.35;
+            ash.emit(
+              listener.x + (Math.random() - 0.5) * 2 * r,
+              listener.y + (ember ? -2 + Math.random() * 6 : 4 + Math.random() * 16),
+              listener.z + (Math.random() - 0.5) * 2 * r,
+              (Math.random() - 0.5) * 1.6,
+              ember ? 1 + Math.random() * 1.5 : -1.5 - Math.random(),
+              (Math.random() - 0.5) * 1.6,
+              ember ? 2.5 : 7,
+              ember
+                ? Math.random() < 0.5
+                  ? 0xff8a20
+                  : 0xffc040
+                : Math.random() < 0.5
+                  ? 0x7a6e6a
+                  : 0x9a8e88,
+            );
+          }
+        }
+        for (const v of vents) {
+          if (!smoke || Math.hypot(listener.x - v.x, listener.z - v.z) > 140) continue;
+          v.acc = Math.min(1, v.acc + dt);
+          for (; v.acc > 0.09; v.acc -= 0.09)
+            smoke.emit(
+              v.x + (Math.random() - 0.5) * 1.5,
+              v.y + 0.5,
+              v.z + (Math.random() - 0.5) * 1.5,
+              (Math.random() - 0.5) * 0.8,
+              4 + Math.random() * 3,
+              (Math.random() - 0.5) * 0.8,
+              1.6,
+              0xe8e2dc,
+            );
+        }
+        ash.step(dt);
+      }
       // Glowing bubbles over the pools you're near, the odd burp of swamp gas, and
       // fireflies drifting round the camera.
       if ((pools.length || fireflies) && !opts.headless) {
@@ -870,6 +1150,17 @@ export function createHazards(opts: {
       spray?.dispose();
       snow?.dispose();
       glowing?.dispose();
+      fire?.dispose();
+      bombs?.dispose();
+      ash?.dispose();
+      for (const d of dragons) {
+        d.view?.dispose();
+        d.flames?.dispose();
+        if (d.marker) {
+          d.marker.geometry.dispose();
+          (d.marker.material as THREE.Material).dispose();
+        }
+      }
       smoke?.dispose();
       sparks?.dispose();
       group.removeFromParent();

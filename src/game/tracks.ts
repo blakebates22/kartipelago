@@ -71,10 +71,10 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak",
     name: "Ember Peak",
     description:
-      "Spiral up a rumbling volcano over rivers of lava, then plunge down the side. Mind the lava!",
+      "Climb an erupting volcano past a fire-breathing dragon, race through its lava caverns and escape the eruption.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
-    theme: "hot_top_volcano",
+    theme: "volcanic_apocalypse",
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },

@@ -30,8 +30,10 @@
  *                                   a bright marimba, deep toms and a driving bass
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
- *   ember       "Ember Peak"        A minor, 158: driving drums, low brass, fast
- *                                   marimba, strings, square-wave accents
+ *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
+ *                                   over a hammering marimba and heavy toms, then strings
+ *                                   and brass soaring as you escape the eruption
+ *   ember_classic "Ember Peak (Classic)" A minor, 158: the original volcano march
  *
  * "Pick Your Racer" is one arrangement split into stems that always play in sync: a
  * base groove, plus a layer per racer playing the same tune in their own instruments
@@ -935,9 +937,9 @@ function bonebog(): Song {
   };
 }
 
-// ---------------------------------------------------------------- "Ember Peak"
+// ---------------------------------------------------------------- "Ember Peak (Classic)"
 
-export const EMBER_MELODY = bars(
+export const EMBER_CLASSIC_MELODY = bars(
   "A4:.5 A4:.5 C5:.5 E5:.5 A5:1 E5:.5 G5:.5",
   "A5:1.5 G5:.5 E5:1 C5:1",
   "F5:.5 A5:.5 C6:1 A5:.5 F5:.5 C5:1",
@@ -955,12 +957,12 @@ export const EMBER_MELODY = bars(
   "E6:.5 D6:.5 B5:1 G#5:1 E5:1",
   "D6:.5 B5:.5 G#5:.5 E5:.5 D5:2",
 );
-export const EMBER_CHORDS =
+export const EMBER_CLASSIC_CHORDS =
   "Am:4 Am:4 F:4 E:4 Am:4 Am:4 Dm:4 E:4 F:4 G:4 Am:4 Em:4 F:4 G:4 E:4 E7:4";
 
-function ember(): Song {
-  const ch = chart(EMBER_CHORDS);
-  const mel = seq(EMBER_MELODY, 0, 0.85);
+function emberClassic(): Song {
+  const ch = chart(EMBER_CLASSIC_CHORDS);
+  const mel = seq(EMBER_CLASSIC_MELODY, 0, 0.85);
   const a = mel.filter((n) => n.t < 32);
   const b = mel.filter((n) => n.t >= 32);
   const T = 16;
@@ -976,8 +978,8 @@ function ember(): Song {
     [3.5, 0.5, "A"],
   ];
   return {
-    id: "ember",
-    title: "Ember Peak",
+    id: "ember_classic",
+    title: "Ember Peak (Classic)",
     role: "Prehistoric World",
     bpm: 158,
     beats: 64,
@@ -1008,6 +1010,106 @@ function ember(): Song {
       ...drumParts("base", 0.55, drums("iiIiiiIiiiIiiiIi", KIT, 0.25, T)),
       ...drumParts("base", 0.7, drums("..............oo", KIT, 0.25, T)),
       ...drumParts("base", 0.85, drums("C", KIT, 16, 4)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- "Ember Peak"
+
+// The Volcanic Apocalypse: D minor, 160. A relentless first half (low brass carrying
+// the tune over a hammering marimba and heavy toms), then a triumphant second half
+// (strings and brass together, soaring) as you escape the eruption.
+export const EMBER_MELODY = bars(
+  "D5:.5 D5:.5 F5:.5 A5:.5 D6:1 A5:1",
+  "C6:.5 A5:.5 F5:.5 A5:.5 D5:2",
+  "Bb5:.5 A5:.5 F5:.5 D5:.5 Bb4:1 D5:1",
+  "C5:.5 E5:.5 G5:1 E5:1 C5:1",
+  "D5:.5 F5:.5 A5:1 D6:.5 C6:.5 A5:1",
+  "F5:.5 A5:.5 D6:1 F6:1 D6:1",
+  "G5:.5 Bb5:.5 D6:1 Bb5:.5 G5:.5 D5:1",
+  "C#5:.5 E5:.5 A5:1 C#6:2",
+  "D6:1 A5:.5 F5:.5 D5:1 F5:1",
+  "Bb5:1 F5:.5 D5:.5 Bb4:1 D5:1",
+  "A5:.5 C6:.5 F6:1 C6:1 A5:1",
+  "G5:.5 E5:.5 C5:1 E5:1 G5:1",
+  "Bb5:.5 G5:.5 D5:1 G5:1 Bb5:1",
+  "A5:.5 C#6:.5 E6:1 C#6:1 A5:1",
+  "D6:.5 F6:.5 A6:1 F6:.5 D6:.5 A5:1",
+  "E5:.5 G5:.5 C#6:1 A5:2",
+  "F5:1 Bb5:.5 D6:.5 F6:1 D6:1",
+  "E6:1 C6:.5 G5:.5 E5:1 G5:1",
+  "F5:.5 A5:.5 C6:1 F6:1.5 r:.5",
+  "D6:.5 C6:.5 A5:1 F5:1 D5:1",
+  "Bb5:.5 D6:.5 F6:1 D6:.5 Bb5:.5 F5:1",
+  "C6:.5 E6:.5 G6:1 E6:1 C6:1",
+  "C#6:1 E6:.5 A6:.5 E6:1 C#6:1",
+  "A5:.5 C#6:.5 E6:.5 G6:.5 A6:2",
+  "G6:.5 F6:.5 D6:1 Bb5:1 G5:1",
+  "Bb5:.5 D6:.5 F6:1 Bb6:1 F6:1",
+  "A6:1 F6:.5 C6:.5 A5:1 C6:1",
+  "G6:.5 E6:.5 C6:1 G5:1 E5:1",
+  "D6:.5 Bb5:.5 G5:1 Bb5:1 D6:1",
+  "C#6:.5 E6:.5 A6:1 E6:1 C#6:1",
+  "D6:1 A5:.5 F5:.5 D5:1 A5:1",
+  "D6:3 r:1",
+);
+export const EMBER_CHORDS =
+  "Dm:4 Dm:4 Bb:4 C:4 Dm:4 Dm:4 Gm:4 A:4 Dm:4 Bb:4 F:4 C:4 Gm:4 A:4 Dm:4 A7:4 " +
+  "Bb:4 C:4 F:4 Dm:4 Bb:4 C:4 A:4 A7:4 Gm:4 Bb:4 F:4 C:4 Gm:4 A:4 Dm:4 Dm:4";
+
+function ember(): Song {
+  const ch = chart(EMBER_CHORDS);
+  const mel = seq(EMBER_MELODY, 0, 0.88);
+  const a = mel.filter((n) => n.t < 64);
+  const b = mel.filter((n) => n.t >= 64);
+  const first = ch.filter((c) => c.t < 64);
+  const second = ch.filter((c) => c.t >= 64);
+  // A galloping bass, digging in on every beat.
+  const gallop: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.25, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "5"],
+    [2.5, 0.25, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "ember",
+    title: "Ember Peak",
+    role: "Prehistoric World",
+    bpm: 160,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: low brass and horns in the first half; strings and brass soaring
+      // together in the second, with square-wave sparks an octave up.
+      part("brass", "base", 0.95, a),
+      part("horn", "base", 0.55, shift(a, 0, -12)),
+      part("strings", "base", 1, b),
+      part("brass", "base", 0.6, b),
+      part("square", "base", 0.2, shift(b, 0, 12)),
+      // The hammering marimba, and fast string stabs pushing every bar.
+      part("marimba", "base", 0.6, arpeggio(ch, 0.25, [0, 1, 2, 1, 3, 2, 1, 2], 57, 0.2, 0.55)),
+      part("pizz", "base", 0.5, stabs(first, [0, 0.75, 1.5, 2.5, 3], 50, 0.25, 0.6)),
+      part("strings", "base", 0.35, pads(first, 50, 4, 0.4)),
+      part("horn", "base", 0.5, stabs(second, [0, 1.5, 3], 45, 0.4, 0.6)),
+      part("square", "base", 0.16, stabs(second, [0.75, 2.75], 69, 0.15, 0.5)),
+      part("drone", "base", 0.3, pads(first, 38, 8, 0.5)),
+      part("bass", "base", 1.1, bassLine(ch, gallop, 33, 0.92)),
+      // Heavy drums: kick and snare, a storm of toms at the end of every phrase, hats.
+      ...drumParts("base", 1, drums("K.k.K.k.K.k.K.kk", KIT, 0.25, 32)),
+      ...drumParts("base", 0.85, drums("....S.......S.S.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("iiIiiiIiiiIiiiIi", KIT, 0.25, 32)),
+      ...[12, 28, 44, 60, 76, 92, 108, 124].flatMap((at) =>
+        drumParts("base", 0.9, drums("O.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.8, drums("..o...o...o..ooo", KIT, 0.25, 16, 64)),
+      ...drumParts("base", 0.9, drums("C", KIT, 16, 8)),
     ],
   };
 }
@@ -1062,6 +1164,7 @@ export const SONGS: Record<string, Song> = {
   frostveil: frostveil(),
   bonebog: bonebog(),
   ember: ember(),
+  ember_classic: emberClassic(),
 };
 
 /** The music player's list: composed pieces, then planned ones not written yet. */

@@ -158,6 +158,23 @@ export function createSfx(engine: AudioEngine) {
       note(1250, 0, 0.32, volume * 0.22, 760, "sawtooth");
       note(1100, 0.38, 0.45, volume * 0.18, 620, "sawtooth");
     },
+    /** The dragon rears up: a deep, rasping roar rising and falling. */
+    roar(volume: number) {
+      note(95, 0, 0.9, volume * 0.5, 140, "sawtooth");
+      note(70, 0.25, 1.1, volume * 0.45, 52, "sawtooth");
+      noise(0, 1.2, volume * 0.5, 900, 180);
+    },
+    /** The dragon's breath: a long, roaring whoosh of fire. */
+    flame(volume: number) {
+      noise(0, 1.9, volume * 0.9, 2400, 500);
+      noise(0.1, 1.6, volume * 0.5, 600, 120);
+    },
+    /** The volcano: a deep rumble building to a boom. */
+    rumble(volume: number) {
+      noise(0, 2.4, volume * 0.6, 260, 60);
+      noise(1.1, 1.4, volume * 0.8, 900, 70);
+      note(48, 1.1, 1.2, volume * 0.5, 30, "sine");
+    },
     /** A heavy, soft footstep. */
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);

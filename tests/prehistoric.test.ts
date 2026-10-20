@@ -10,6 +10,9 @@ import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage"
 import { aiLap } from "./aiLap";
 
 const COURSES = WORLDS.find((w) => w.id === "prehistoric")!.tracks;
+// The longest lap allowed (seconds). Ember Peak is the epic one: 2.4 km round, up, into
+// and down its volcano.
+const MAX_LAP: Record<string, number> = { ember_peak: 120 };
 
 const reader =
   (id: string): PackageReader =>
@@ -37,12 +40,13 @@ describe.each(COURSES)("%s", (id) => {
 
   it("can be driven: three AI laps through every checkpoint", async () => {
     const p = await loadTrackPackage(reader(id), { visual: false });
-    const r = await aiLap(p, { laps: 3, surfaces: true });
+    const max = MAX_LAP[id] ?? 90;
+    const r = await aiLap(p, { laps: 3, surfaces: true, lapSeconds: max + 10 });
     const racer = r.race.racers[0]!;
     expect(racer.lapTimes, `laps (respawns ${r.respawns})`).toHaveLength(3);
     for (const t of racer.lapTimes) {
       expect(t).toBeGreaterThan(25);
-      expect(t).toBeLessThan(90);
+      expect(t).toBeLessThan(max);
     }
     expect(r.respawns).toBe(0);
     expect(r.worstAbove).toBeLessThan(2.5);

@@ -370,6 +370,57 @@
           }
         }
       }
+    },
+    {
+      "id": "volcanic_apocalypse",
+      "name": "Volcanic Apocalypse",
+      "description": "A smoke-filtered blood-red sunset over erupting volcanoes: black obsidian, charred ground, molten lava and firelight",
+      "environment": {
+        "sky": "#7a2618",
+        "fog": {
+          "enabled": true,
+          "color": "#6a2a1a",
+          "near": 230,
+          "far": 1500
+        },
+        "sun": {
+          "color": "#ffb070",
+          "intensity": 2.9,
+          "direction": [0.55, 0.42, -0.72]
+        },
+        "ambient": {
+          "sky": "#ff9a78",
+          "ground": "#2e1410",
+          "intensity": 1.3
+        },
+        "skyDome": {
+          "top": "#2a0c0e",
+          "horizon": "#ff7a32",
+          "bottom": "#8a3220",
+          "sun": {
+            "color": "#ffd890",
+            "size": 11,
+            "glow": "#ff8a3a",
+            "elevation": 7
+          },
+          "clouds": {
+            "count": 46,
+            "color": "#5a2c26",
+            "shade": "#1e0e0e",
+            "seed": 37,
+            "low": 6,
+            "high": 30,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#200c0c",
+            "far": "#6a2a1e",
+            "height": 9,
+            "seed": 53,
+            "layers": 2
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -530,6 +581,219 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "basalt_road",
+      "name": "Basalt Road",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "basalt_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "scorched_ground",
+      "name": "Scorched Ground",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "scorched_ground.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ash_soil",
+      "name": "Ash Soil",
+      "theme": "volcanic_apocalypse",
+      "surface": "sand",
+      "image": "ash_soil.png",
+      "wrap": "repeat",
+      "tileMetres": 7
+    },
+    {
+      "id": "magma_rock",
+      "name": "Magma Rock",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "magma_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "wave": 0.01,
+        "wavePeriod": 5,
+        "glow": 0.9
+      }
+    },
+    {
+      "id": "obsidian",
+      "name": "Obsidian",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "obsidian.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "obsidian_vein",
+      "name": "Obsidian (Veined)",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "obsidian_vein.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "obsidian_cliff",
+      "name": "Volcanic Cliff",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "obsidian_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "basalt_block",
+      "name": "Basalt Masonry",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "basalt_block.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "basalt_carved",
+      "name": "Basalt Runes",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "basalt_carved.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.4
+      }
+    },
+    {
+      "id": "cave_rock",
+      "name": "Cave Rock",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "cave_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "lava_falls",
+      "name": "Lava Falls",
+      "theme": "volcanic_apocalypse",
+      "surface": "lava",
+      "image": "lava_falls.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.6,
+        "wave": 0.03,
+        "wavePeriod": 2,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "crystal_red",
+      "name": "Fire Crystal",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "crystal_red.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85
+      }
+    },
+    {
+      "id": "crystal_purple",
+      "name": "Amethyst Crystal",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "crystal_purple.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85
+      }
+    },
+    {
+      "id": "charred_bark",
+      "name": "Charred Bark",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "charred_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "burning_leaves",
+      "name": "Burning Foliage",
+      "theme": "volcanic_apocalypse",
+      "surface": "grass",
+      "image": "burning_leaves.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": -0.15,
+        "wave": 0.05,
+        "wavePeriod": 0.9,
+        "glow": 0.8
+      }
+    },
+    {
+      "id": "ash_smoke",
+      "name": "Ash Smoke",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "ash_smoke.png",
+      "wrap": "repeat",
+      "tileMetres": 20,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": -0.02,
+        "wave": 0.05,
+        "wavePeriod": 7,
+        "opacity": 0.72
+      }
+    },
+    {
+      "id": "fire_glow",
+      "name": "Furnace Glow",
+      "theme": "volcanic_apocalypse",
+      "surface": "wall",
+      "image": "fire_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0.03,
+        "scrollV": -0.2,
+        "wave": 0.06,
+        "wavePeriod": 1.3,
+        "glow": 1.2
+      }
     },
     {
       "id": "bog_water",

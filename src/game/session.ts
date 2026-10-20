@@ -428,6 +428,7 @@ function buildSession(
           cfg: tuning.hazards as HazardConfig,
           karts: entrants.length,
           quiet: demo,
+          clock: () => race?.clock ?? 0,
         })
       : undefined;
 

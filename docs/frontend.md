@@ -200,7 +200,7 @@ drums("K...k.k.", KIT, 0.5, 24); // a step grid, repeated
 | Cascade Caverns   | Cascade Caverns       | jungle temple: pan flute, log drums (Dm, 128)              |
 | Frostveil Citadel | Frostveil Citadel     | mysterious then uplifting: celesta, flute, horns (Em, 138) |
 | Bonebog Pyramid   | Bonebog Pyramid       | a mysterious swamp groove (Em, 116)                        |
-| Ember Peak        | Ember Peak            | frantic, brass and strings (Am, 158)                       |
+| Ember Peak        | Ember Peak            | the Volcanic Apocalypse, brass and toms (Dm, 160)          |
 
 **Pick Your Racer** is one arrangement split into stems that always play in sync. There's
 a base groove, plus a layer per racer playing the same tune in their own instruments:

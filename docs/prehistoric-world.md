@@ -44,7 +44,7 @@ The mouse works too.
 | Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village         | F major, 138 BPM |
 | Cascade Caverns | `cascade_caverns` | ~1210 m | lost jungle temple, waterfalls, torchlit hall       | D minor, 128 BPM |
 | Bonebog Pyramid | `bonebog_pyramid` | ~1630 m | a living swamp, a colossal pyramid to drive through | E minor, 116 BPM |
-| Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                          | A minor, 158 BPM |
+| Ember Peak      | `ember_peak`      | ~2.4 km | an erupting volcano, lava caverns and a dragon      | D minor, 160 BPM |
 
 All four share the same basics:
 
@@ -189,12 +189,9 @@ design. In short:
 
 ### Ember Peak
 
-1. The road spirals once round the cone, counter-clockwise, climbing about 25 m.
-2. It crosses **three lava rivers** on basalt bridges.
-3. A **glowing tunnel** goes through a rock spur, with lava crystals inside.
-4. The road runs along the crater rim at the summit, under the crater's smoke.
-5. Then it plunges straight down the south face.
-6. On the way down you **jump a lava gully**.
+Rebuilt as the Volcanic Apocalypse: see [ember-peak.md](ember-peak.md). In short: a
+2.4 km lap round, up, into and down a colossal erupting volcano, past a fire-breathing
+dragon, through about 20 seconds of lava caverns, and down the mountain as it erupts.
 
 ## Party Beach (the title screen)
 
@@ -448,7 +445,7 @@ v1 themes.
 | Cascade Caverns           | the jungle temple: pan flute and bird calls over a log-drum ostinato, a buzzing drone, djembe, horns    |
 | Cascade Caverns (Classic) | the v1 theme: flute and xylophone over running pizzicato, woodblocks, hand drums, bells, strings        |
 | Bonebog Pyramid           | clarinet and bassoon over a low marimba groove, plucks, toms, chimes, surprise chords                   |
-| Ember Peak                | strings and low brass over a galloping bass, fast marimba, square-wave stabs, big drums                 |
+| Ember Peak                | low brass over a hammering marimba and heavy toms, then strings and brass soaring (Volcanic Apocalypse) |
 
 There are eight new synthesized instruments: steel pan, bell, bowed strings, tom, pan
 flute, log drum, drone and djembe.

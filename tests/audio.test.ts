@@ -36,7 +36,8 @@ const melodies: [string, string, number][] = [
   ["cascade_classic", S.CASCADE_CLASSIC_MELODY, 64],
   ["frostveil", S.FROSTVEIL_MELODY, 64],
   ["bonebog", S.BONEBOG_MELODY, 64],
-  ["ember", S.EMBER_MELODY, 64],
+  ["ember", S.EMBER_MELODY, 128],
+  ["ember_classic", S.EMBER_CLASSIC_MELODY, 64],
 ];
 const charts: [string, string, number, string][] = [
   [
@@ -54,7 +55,8 @@ const charts: [string, string, number, string][] = [
   ["cascade_classic", S.CASCADE_CLASSIC_CHORDS, 64, S.CASCADE_CLASSIC_MELODY],
   ["frostveil", S.FROSTVEIL_CHORDS, 64, S.FROSTVEIL_MELODY],
   ["bonebog", S.BONEBOG_CHORDS, 64, S.BONEBOG_MELODY],
-  ["ember", S.EMBER_CHORDS, 64, S.EMBER_MELODY],
+  ["ember", S.EMBER_CHORDS, 128, S.EMBER_MELODY],
+  ["ember_classic", S.EMBER_CLASSIC_CHORDS, 64, S.EMBER_CLASSIC_MELODY],
 ];
 
 describe("the soundtrack", () => {

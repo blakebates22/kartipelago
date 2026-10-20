@@ -1,14 +1,29 @@
-# Ember Peak: Prehistoric World, course 4. "Frantic volcanic march."
+# Ember Peak: Prehistoric World, course 4. The Volcanic Apocalypse.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/ember_peak.py      (the bpy module)
 #
-# A smoking volcano in a field of black rock. The road spirals all the way up round the
-# cone, counter-clockwise: over three rivers of lava on basalt bridges, through a
-# glowing tunnel in a rock spur, along the crater rim at the summit, then plunges
-# straight back down the south face, leaping a lava gully on the way, to the line.
+# A lap of about 2.3 km round, up, into and down a colossal erupting volcano (230 m
+# tall, 760 m across at its foot), in a landscape of lava rivers, black obsidian and
+# burning forest, with more volcanoes smoking on the horizon:
 #
-# Saves tracks-src/ember_peak.blend and exports public/tracks/ember_peak/.
+#   A  The Burning Forest: the start, a wide road east across the south, the volcano
+#      looming on the left.
+#   B  The Obsidian Fields: sweeping S-bends between leaning black spires and lava pools.
+#   C  The Dragon's Crossing: a wide stone bridge north over a deep lava ravine, below
+#      the dragon's cliffs.
+#   D  The Volcanic Ascent: a road carved round the east flank, a hairpin, and a
+#      second, higher cliff road, 17 -> 55 m, over lava ravines.
+#   E  The Mouth of the Volcano: a monumental glowing opening in the east face.
+#   F  The Infernal Caverns: about 450 m (20 s) inside the mountain: an entry hall, a
+#      lava-lake cavern crossed on a bridge, tunnels, the crystal gallery and the
+#      magma falls hall, down to 49 m and up to 74 m.
+#   G  The Eruption Escape: out high on the north-west flank and a fast sweeping
+#      descent round the west side.
+#   H  The Final Descent: past lava rivers and burning forest, back onto the start.
+#
+# Saves tracks-src/ember_peak.blend and exports public/tracks/ember_peak/. The scenery
+# is ember_scenery.py, built from the volcanic kit in volcano_props.py.
 
 import math
 import os
@@ -17,295 +32,292 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-import props  # noqa: E402
-from course_kit import bmesh, lerp, smooth  # noqa: E402
+from course_kit import lerp, smooth  # noqa: E402
 
 TRACK_ID = "ember_peak"
-C = (10.0, 40.0)  # the crater's centre
-CRATER_R = 30.0
-LAVA_LAKE_Z = 25.0
-FLOWS = [12.0, 128.0, 196.0]  # lava rivers, by compass angle from the centre (degrees)
-GULLY_R = (108.0, 118.0)  # the lava gully the descent jumps
-SPUR = 150.0  # the rock spur the tunnel goes through, by angle
-TOP = 25.0  # the road's highest point
+
+# ---------------------------------------------------------------- the volcano
+
+R0, HT = 380.0, 230.0  # the cone's foot radius and height (centred on the origin)
+CRATER_R = 46.0
+CORE_R = 192.0  # inside this the mountain is a separate rock (the caverns are cut in it)
 
 
-def polar(theta_deg, r, z, w=None):
-    t = math.radians(theta_deg)
-    p = (C[0] + r * math.cos(t), C[1] + r * math.sin(t), z)
-    return p + ((w,) if w else ())
+PEAK = 130.0  # the steep summit cone, above the core
 
 
-SPIRAL = (292.0, 304.0, 176.0, 62.0)  # start angle, degrees turned, start and end radius
+def _base(r):
+    return HT * max(0.0, 1 - r / R0) ** 1.6 + PEAK * max(0.0, 1 - r / 215) ** 2
 
 
-def spiral_r(theta):
-    """The climb's radius where it passes `theta` (degrees)."""
-    a0, turn, r0, r1 = SPIRAL
-    u = ((theta - a0) % 360) / turn
-    return r0 + (r1 - r0) * u
-
-
-def spiral():
-    """The climb: once round the cone, from the start line to the summit."""
-    a0, turn, r0, r1 = SPIRAL
-    pts = []
-    n = 13
-    for k in range(n):
-        u = k / (n - 1)
-        pts.append(polar(a0 + turn * u, r0 + (r1 - r0) * u, 0.6 + (TOP - 0.6) * u ** 1.4))
-    return pts
-
-
-def descent():
-    """Straight down the south-south-west face, in a long S, over the gully."""
-    pts = []
-    for theta, r, z in (
-        (247, 66, TOP),
-        (254, 76, TOP - 0.8),
-        (258, 90, 22.0),
-        (259, GULLY_R[0] - 1, 18.2),  # the lip
-        (259, GULLY_R[1] + 2, 14.0),  # the landing
-        (259.5, 138, 10.4),
-        (262, 156, 5.6),
-        (268, 168, 2.6),
-        (278, 176, 0.8),
-    ):
-        pts.append(polar(theta, r, z))
-    return pts
-
-
-ROUTE = spiral() + descent()
+RIM_Z = _base(CRATER_R + 12) + 6.0
+CRATER_LAVA_Z = RIM_Z - 40.0
 
 
 def cone(r):
-    if r < CRATER_R:
-        return lerp(LAVA_LAKE_Z - 3, 31.0, smooth((r - 12) / (CRATER_R - 12)) ** 2)
-    return 31.0 * (1 - smooth((r - CRATER_R) / 150)) ** 1.15
-
-
-def flow_dist(x, y):
-    """Distance (m, across the slope) to the nearest lava river, and that river."""
-    a = math.degrees(math.atan2(y - C[1], x - C[0]))
-    r = math.hypot(x - C[0], y - C[1])
-    best = (1e9, None)
-    for f in FLOWS:
-        d = abs((a - f + 180) % 360 - 180)
-        wob = 4 * math.sin(r / 13 + f)
-        best = min(best, (abs(math.radians(d) * r - wob), f))
-    return best[0], best[1], r
-
-
-def natural(x, y):
-    r = math.hypot(x - C[0], y - C[1])
-    h = cone(r) + 0.5 * math.sin(x / 9) * math.cos(y / 11)
-    d, f, _ = flow_dist(x, y)
-    if r > CRATER_R + 4:
-        h -= 3.2 * smooth((10 - d) / 4)  # the lava channels
-    a = math.degrees(math.atan2(y - C[1], x - C[0])) % 360
-    if 232 < a < 288 and GULLY_R[0] - 6 < r < GULLY_R[1] + 6:
-        k = smooth((6 - abs(r - sum(GULLY_R) / 2) + 5) / 4) * smooth((28 - abs(a - 260)) / 6)
-        h -= 7 * k
-    # The black-rock field round the volcano, rising into jagged hills at the edge.
-    e = math.hypot(x - C[0], (y - C[1]) * 0.9)
-    h += 24 * smooth((e - 228) / 26) * (0.75 + 0.25 * math.sin(math.atan2(y, x) * 9))
+    """The volcano's height at distance r from its centre: a steepening cone, its summit
+    rising sharply from the mountain's shoulders, with a crater pit at the top."""
+    h = _base(r)
+    if r < CRATER_R + 12:
+        h = min(h, RIM_Z) - 42 * smooth((CRATER_R + 4 - r) / 16)
     return h
 
 
-def spur_centre():
-    return polar(SPUR, spiral_r(SPUR), 0)[:2]
+def P(theta, r, z, w=15.0):
+    t = math.radians(theta)
+    return (round(r * math.cos(t), 1), round(r * math.sin(t), 1), z, w)
 
 
-def in_spur(x, y, shrink=1.0):
-    sx, sy = spur_centre()
-    return math.hypot(x - sx, y - sy) < 26 * shrink
+# ---------------------------------------------------------------- the route
+
+# (x, y, height, width) through the eight sections, anticlockwise round the volcano.
+WAYPOINTS = [
+    # A: the Burning Forest
+    (-150, -405, 2.0, 16), (-50, -412, 2.0, 16), (40, -405, 2.5, 16),
+    # B: the Obsidian Fields
+    (100, -385, 3.5, 15), (153, -350, 5.0, 15), (207, -360, 6.0, 15), (255, -322, 7.0, 15), (286, -258, 8.5, 15),
+    # C: the Dragon's Crossing (north over the lava ravine)
+    (300, -190, 10.0, 17), (305, -120, 13.5, 17), (305, -50, 17.0, 16),
+    # D: the ascent: round the east flank, the hairpin, and the higher cliff road
+    P(5, 300, 21.0), P(17, 294, 25.5), P(28, 284, 29.5),
+    (256, 188, 31.5, 15), (241.5, 216, 33.5, 15), (210.4, 221, 35.0, 15), (189.2, 197, 36.5, 15),
+    P(32, 238, 40.0), P(20, 238, 44.0), P(8, 236, 48.5), P(-3, 233, 52.5),
+    # E: into the mouth
+    (213, -45, 55.0, 15), (186, -58, 56.5, 15),
+    # F: the Infernal Caverns
+    (150, -50, 56.0, 14), (124, -8, 53.0, 14), (122, 45, 49.5, 15), (98, 95, 49.0, 15), (50, 128, 52.0, 14),
+    (-5, 140, 57.0, 14), (-55, 130, 63.0, 14), (-95, 110, 68.0, 14), (-130, 96, 72.0, 14), (-163, 92, 74.0, 15),
+    # G: the Eruption Escape
+    P(156, 205, 71.0), P(168, 222, 65.0), P(182, 240, 57.0), P(196, 262, 47.0), P(209, 285, 36.0), P(221, 310, 25.0),
+    # H: the Final Descent
+    (-218, -322, 13.0, 15), (-205, -380, 6.0, 16),
+]
+
+# Lava rivers: (bearing from the centre in degrees, from radius, to radius, half-width,
+# depth of the ravine below the land). The first runs under the Dragon's Crossing.
+RIVERS = [
+    (-25.0, 240.0, 560.0, 26.0, 22.0),
+    (15.0, 200.0, 330.0, 9.0, 13.0),
+    (200.0, 200.0, 560.0, 11.0, 8.0),
+    (236.0, 250.0, 560.0, 10.0, 6.0),
+]
+
+
+def river_at(x, y):
+    """(distance across the nearest river, its half-width, depth, index), or None."""
+    r = math.hypot(x, y)
+    a = math.degrees(math.atan2(y, x))
+    best = None
+    for k, (th, r0, r1, hw, depth) in enumerate(RIVERS):
+        if not (r0 - 10 < r < r1):
+            continue
+        wob = 6 * math.sin(r / 23 + k) + 3 * math.sin(r / 9 + k * 2)
+        d = abs(math.radians((a - th + 180) % 360 - 180) * r - wob)
+        if best is None or d - hw < best[0] - best[1]:
+            best = (d, hw, depth, k)
+    return best
+
+
+def river_centre(k, r):
+    th, r0, r1, hw, depth = RIVERS[k]
+    wob = 6 * math.sin(r / 23 + k) + 3 * math.sin(r / 9 + k * 2)
+    t = math.radians(th) + wob / r
+    return r * math.cos(t), r * math.sin(t)
+
+
+def land(x, y):
+    """The volcano, its ridged flanks and the plain round it, rising to jagged hills at
+    the map's edge (no rivers)."""
+    r = math.hypot(x, y)
+    a = math.atan2(y, x)
+    h = cone(r)
+    # Ridges and gullies down the flanks.
+    h += 5.0 * math.sin(a * 9 + r / 40) * smooth((R0 - r) / 120) * smooth((r - 70) / 40)
+    # The plain: lumpy, with low lava-rock mounds.
+    h += 0.9 * math.sin(x / 17) * math.cos(y / 21) + 0.6 * math.sin((x - y) / 29)
+    # Jagged hills all round the edge.
+    e = math.hypot(x * 0.95, y)
+    h += 70 * smooth((e - 470) / 70) * (0.6 + 0.4 * math.sin(a * 7 + 1.3)) + 20 * smooth((e - 480) / 40) * math.sin(a * 23)
+    return h
+
+
+# Lava pools in the obsidian fields (x, y, radius).
+POOLS = [(130, -300, 16), (190, -305, 13), (230, -385, 15), (70, -350, 12), (250, -260, 12)]
+
+
+def natural(x, y):
+    h = land(x, y)
+    rv = river_at(x, y)
+    if rv:
+        d, hw, depth, k = rv
+        if d < hw + 14:
+            bed = (h if k else min(h, 3.0)) - depth
+            h = lerp(h, bed, smooth((hw + 14 - d) / 14))
+    for px, py, pr in POOLS:
+        dp = math.hypot(x - px, y - py)
+        if dp < pr + 8:
+            h = lerp(h, -2.5, smooth((pr + 8 - dp) / 8))
+    return h
+
+
+def lava_under(x, y):
+    """Is (x, y) in a lava river or pool?"""
+    rv = river_at(x, y)
+    if rv and rv[0] < rv[1]:
+        return True
+    return any(math.hypot(x - px, y - py) < pr for px, py, pr in POOLS)
+
+
+CAVE_S = [0.0, 0.0]  # the stretch of the lap inside the mountain (set in main)
+LAKE_S = [0.0, 0.0]  # the lava-lake cavern's bridge (set in main)
 
 
 def classify(c, n, info):
-    if in_spur(c.x, c.y, 0.92):
-        return None
+    r = math.hypot(c.x, c.y)
+    if r < CORE_R - 6:
+        return None  # the core rock is a separate mesh
+    if lava_under(c.x, c.y) and c.z < land(c.x, c.y) - 1.5:
+        return ("magma_rock", "lava")  # the bed of a lava river or pool: it burns
     if n.z < 0.62:
-        return ("volcano_basalt", "wall")
-    r = math.hypot(c.x - C[0], c.y - C[1])
-    if r < CRATER_R - 2:
-        return ("volcano_crust", "wall")
-    fd, _, _ = flow_dist(c.x, c.y)
-    if fd < 16 or r < 70:
-        return ("volcano_crust", "sand")  # hot rock with glowing cracks
-    if c.z > 6 or info["d"] < 18:
-        return ("volcano_slag", "sand")
-    return ("volcano_basalt", "sand")
+        return ("obsidian_cliff" if (int(c.z / 9) + int(r / 50)) % 3 else "magma_rock", "wall")
+    if info["d"] < 12:
+        return ("scorched_ground", "dirt")
+    if r < 300:
+        return ("ash_soil", "sand")
+    return ("scorched_ground", "sand")
 
 
-def lava_path(c, f, r0, r1, step=5.0):
-    """A lava river down the cone, dipping well under the road where a bridge crosses."""
-    pts = []
-    r = r0
-    while r <= r1:
-        wob = 4 * math.sin(r / 13 + f)
-        t = math.radians(f) + wob / r
-        x, y = C[0] + r * math.cos(t), C[1] + r * math.sin(t)
-        z = cone(r) - 2.6
-        smp, d = c.nearest(x, y)
-        if d < 26:
-            z = min(z, lerp(smp.p.z - 3.5, z, kit.smooth((d - 10) / 16)))
-        pts.append((x, y, 13.0, z))
-        r += step
-    return pts
-
-
-def scenery(c, s_tunnel):
-    ter = list(c.coll("Terrain").objects)
-    for piece in c.pieces:
-        if "bridge" in piece.name or "ramp" in piece.name:
-            props.piers(c, piece, every=10, mat=("volcano_basalt", "wall"), size=1.0, terrain=ter, inset=1.6)
-    cols, dead = props.basalt_columns(c), props.dead_tree(c)
-    rocks = [props.boulder(c, "volcano_basalt", v) for v in range(3)]
-    gems = props.crystals(c)
-
-    def away(m0, m1):
-        def ok(x, y, z):
-            smp, d = c.nearest(x, y)
-            fd, _, r = flow_dist(x, y)
-            return smp.w / 2 + m0 < d < smp.w / 2 + m1 and fd > 12 and r > CRATER_R + 6 and not in_spur(x, y, 1.1)
-        return ok
-
-    props.scatter(c, cols, 22, (-230, 250, -210, 270), away(8, 70), ter, seed=200, scale=(0.8, 1.8), sink=0.5)
-    props.scatter(c, dead, 34, (-230, 250, -210, 270), away(5, 50), ter, seed=210)
-    for v, r in enumerate(rocks):
-        props.scatter(c, r, 12, (-230, 250, -210, 270), away(5, 60), ter, seed=220 + v, scale=(1.0, 3.0))
-    # Glowing crystals inside the tunnel, along both walls.
-    s0, s1 = s_tunnel
-    for k in range(8):
-        smp = c.at(s0 + (s1 - s0) * (k + 0.5) / 8)
-        p = smp.side((1 if k % 2 else -1) * (smp.w / 2 + 2.2))
-        c.place(gems, p.x, p.y, p.z - 0.3, rot=k * 1.1, scale=1.0 + 0.3 * (k % 3), role="visual", coll="Props")
-    # Smoke rising from the crater.
-    bm = bmesh.new()
-    rings = []
-    for k in range(7):
-        z = LAVA_LAKE_Z + 4 + k * 14
-        r = 12 + k * 7 + 3 * math.sin(k * 1.7)
-        rings.append(props.ring(bm, (C[0] + 4 * math.sin(k), C[1] + 6 * k), r, z, 12))
-    props.loft(bm, rings, cap_top=False)
-    smoke = c.mesh_object("Crater Smoke", bm, "Backdrop", "visual")
-    c.assign(smoke, c.lib("smoke"))
-    # Lava falls spilling over the crater rim into the rivers.
-    for f in FLOWS:
-        x, y, _ = polar(f, CRATER_R + 1, 0)
-        c.disc("Rim Glow %d" % int(f), x, y, 6, cone(CRATER_R) - 1.5, c.lib("volcano_lava"), role="visual", n=12)
+# ---------------------------------------------------------------- the course
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Ember Peak", "volcano_dusk")
-    c.route(ROUTE, width=14.0, bank=7.0)
-    basalt = ("volcano_basalt", "wall")
+    c = kit.Course(TRACK_ID, "Ember Peak", "volcanic_apocalypse")
+    c.route(WAYPOINTS, width=15.0, bank=6.0)
+    wall = ("basalt_block", "wall")
     c.kinds = {
-        "ash": {"mat": "volcano_ashroad", "shoulder": 1.5, "shoulder_mat": ("volcano_slag", "dirt")},
+        "ash": {"mat": "basalt_road", "shoulder": 1.8, "shoulder_mat": ("scorched_ground", "dirt")},
+        "cliff": {"mat": "basalt_road", "shoulder": 1.2, "shoulder_mat": ("scorched_ground", "dirt"), "barrier": 1.1, "barrier_mat": wall},
         "bridge": {
-            "mat": "ember_road",
-            "surface": "road",
-            "shoulder": 0.6,
-            "shoulder_mat": ("volcano_basalt", "road"),
-            "barrier": 1.1,
-            "barrier_mat": basalt,
-            "deck": 2.0,
-            "deck_mat": basalt,
+            "mat": "basalt_road",
+            "shoulder": 0.8,
+            "shoulder_mat": ("basalt_block", "road"),
+            "barrier": 1.3,
+            "barrier_mat": wall,
+            "deck": 4.0,
+            "deck_mat": wall,
             "ground": False,
         },
-        "cave": {"mat": "ember_road", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("volcano_crust", "dirt")},
-        "ramp": {
-            "mat": "ember_road",
-            "surface": "road",
-            "shoulder": 0.6,
-            "shoulder_mat": ("volcano_basalt", "road"),
-            "barrier": 1.0,
-            "barrier_mat": basalt,
-            "deck": 2.0,
-            "deck_mat": basalt,
+        "cave": {"mat": "basalt_road", "shoulder": 2.5, "shoulder_mat": ("cave_rock", "dirt")},
+        "cavebridge": {
+            "mat": "basalt_road",
+            "shoulder": 0.8,
+            "shoulder_mat": ("basalt_block", "road"),
+            "barrier": 1.3,
+            "barrier_mat": wall,
+            "deck": 3.0,
+            "deck_mat": wall,
             "ground": False,
         },
     }
-    s_lip = kit.s_near(c, *polar(259, GULLY_R[0] - 1, 0)[:2])
-    s_land = kit.s_near(c, *polar(259, GULLY_R[1] + 2, 0)[:2])
+
+    def inside(smp):
+        return math.hypot(smp.p.x, smp.p.y) < CORE_R + 2
+
+    caves = kit.crossings(c, inside, margin=0)
+    c0, c1 = max(caves, key=lambda r: r[1] - r[0])
+    CAVE_S[:] = [c0, c1]
+    S = lambda k: kit.s_near(c, WAYPOINTS[k][0], WAYPOINTS[k][1])  # noqa: E731
+    LAKE = (S(25) + 12, S(27) + 8)  # the lava-lake cavern's bridge
+    LAKE_S[:] = list(LAKE)
 
     def label(smp):
-        x, y = smp.p.x, smp.p.y
-        if s_lip <= smp.s <= s_land:
-            return "gap"
-        if s_lip - 26 <= smp.s < s_lip:
-            return "ramp"
-        if in_spur(x, y, 0.98):
-            return "cave"
-        d, _, r = flow_dist(x, y)
-        if d < 13 and r > CRATER_R + 4:
+        x, y, s = smp.p.x, smp.p.y, smp.s
+        if c0 - 2 <= s <= c1 + 2:
+            return "cavebridge" if LAKE[0] <= s <= LAKE[1] else "cave"
+        above = smp.p.z - natural(x, y)
+        if above > 4.5:
             return "bridge"
-        if smp.p.z - natural(x, y) > 4.5:
-            return "bridge"
+        r = math.hypot(x, y)
+        if r < 330:
+            return "cliff"
         return "ash"
 
-    specials = []
-    for s0, s1, k in kit.runs(c, label):
-        if k == "gap":
-            specials.append((s0, s1, None))
-        elif k == "ramp":
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 1.2 * max(0.0, (u - (n - 9)) / 9) ** 2}))
-        elif k != "ash":
-            specials.append((s0, s1, k))
-    c.roads(kit.plan(c, specials, "ash"))
+    specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label) if k != "ash"]
+    c.roads(kit.plan(c, specials, "ash", max_len=220.0))
 
-    c.terrain("Volcano", -250, 270, -230, 290, 3.3, natural, classify, near=8.5, fade=18.0)
-    lava = c.lib("volcano_lava")
-    for k, f in enumerate(FLOWS):
-        c.ribbon("Lava River %d" % (k + 1), lava_path(c, f, CRATER_R + 2, 196), 13, 0, lava, steps=3)
-    c.disc("Lava Lake", C[0], C[1], CRATER_R - 6, LAVA_LAKE_Z, lava, n=32, wobble=0.08)
-    # The gully's lava, an arc under the jump.
-    arc = []
-    for a in range(230, 292, 4):
-        x, y, _ = kit.Vector(polar(a, sum(GULLY_R) / 2, 0))
-        arc.append((x, y, 10.0, natural(x, y) + 1.4))
-    c.ribbon("Lava Gully", arc, 10, 0, lava, steps=2)
+    X0, X1, Y0, Y1 = -560, 560, -560, 560
+    c.terrain("Land", X0, X1, Y0, Y1, 5.5, natural, classify, near=9.0, fade=18.0)
+    # Hidden floors, so nowhere can a kart fall through the world: under the land (flat
+    # squares, so even under a cliff there's floor) and under the caverns (at each
+    # cavern's floor). Only within 70 m of the road.
 
-    sx, sy = spur_centre()
-    rs = spiral_r(SPUR)
-    base = cone(rs) - 6
-    rock = c.rock_mass("Tunnel Spur", sx, sy, 28, 26, cone(rs) + 16, z0=base - 6, n=24, seed=5, base=base,
-                       bands=[(1.0, 0.0), (1.0, 0.4), (0.9, 0.45), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)])
-    inside = kit.crossings(c, lambda s: in_spur(s.p.x, s.p.y, 1.0), margin=0)
-    s0, s1 = max(inside, key=lambda r: r[1] - r[0])
-    c.tunnel(rock, s0, s1, height=9.0, pad=12.0)
-    c.paint_rock(rock, ("volcano_crust", "wall"), ("volcano_slag", "sand"), floor=("volcano_ashroad", "dirt"), top_z=cone(rs) + 10, floor_z=cone(rs) + 2)
+    def near(fn, m=70.0):
+        return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < m else None
+
+    def under_land(x, y):
+        if math.hypot(x, y) < CORE_R - 22:
+            return None
+        return natural(x, y) - 0.4
+
+    def under_caves(x, y):
+        if math.hypot(x, y) > CORE_R + 2:
+            return None
+        smp, d = c.nearest(x, y)
+        if not (c0 - 25 <= smp.s <= c1 + 25) or d > 60:
+            return None
+        if LAKE[0] - 22 <= smp.s <= LAKE[1] + 18:
+            return smp.p.z - 16.8
+        if CAVE_S[0] + 0.78 * (c1 - c0) <= smp.s <= c0 + 0.92 * (c1 - c0):
+            return smp.p.z - 4.4
+        return smp.p.z - 0.9
+
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.5, near(under_land), c.lib("scorched_ground", "dirt"))
+    c.underfloor_flat("Cave Underfloor", -CORE_R, CORE_R, -CORE_R, CORE_R, 3.0, under_caves, c.lib("cave_rock", "dirt"))
+
+    import ember_scenery  # noqa: E402
+
+    core = ember_scenery.volcano_core(c, sys.modules[__name__], LAKE)
+    lava = ember_scenery.lava(c, sys.modules[__name__])
 
     c.start_line()
-    scenery(c, (s0, s1))
-    L = c.length
-    c.zipper(s_lip - 20, 0)
-    c.zipper(kit.s_near(c, *polar(40, 158, 0)[:2]), 0)
-    c.zipper(kit.s_near(c, *polar(220, 52, 0)[:2]), -2)
-    for at, across in ((60, 0), (kit.s_near(c, *polar(90, 140, 0)[:2]), 2), (s1 + 25, 0), (kit.s_near(c, *polar(240, 45, 0)[:2]), 0), (L - 60, -2)):
+    # Zippers: off the start, on the dragon bridge's approach, up the second cliff road,
+    # on the caverns' long tunnel, and two down the escape.
+    c.zipper(60, 0)
+    c.zipper(S(8) - 10, 0)
+    c.zipper(S(19), 0)
+    c.zipper(S(29), 0)
+    c.zipper(S(35), 0)
+    c.zipper(S(38), 2)
+    for at, across in ((110, -3), (S(4), 0), (S(9) + 20, 2), (S(12), 0), (S(20), 0), (S(25), 0), (S(30), 0), (S(36), 0), (S(40), 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (130, -3, "red"),
-        (130, 3, "blue"),
-        (kit.s_near(c, *polar(60, 150, 0)[:2]), 0, "green"),
-        (kit.s_near(c, *polar(180, 75, 0)[:2]), 0, "yellow"),
-        (kit.s_near(c, *polar(262, 146, 0)[:2]), 0, "rainbow"),
+        (160, -4, "red"),
+        (160, 4, "blue"),
+        (S(6), 0, "green"),
+        (S(12), 0, "yellow"),
+        (S(18), 0, "rainbow"),
+        (S(28), -3, "red"),
+        (S(28), 3, "blue"),
+        (S(37), 0, "green"),
+        (S(41), 0, "yellow"),
     ):
         c.balloon(at, across, col)
 
-    # Falling into the gully: the lava bounces you; give up and you're put down past it.
-    c.entity("respawn", **{"from": round(s_lip - 30, 1), "to": round(s_land + 6, 1), "at": round(s_land + 14, 1)})
+    # Falling off the dragon's bridge into the ravine: put back at its far end.
+    b0, b1 = S(7), S(10)
+    c.entity("respawn", **{"from": round(b0, 1), "to": round(b1, 1), "at": round(b1 + 12, 1)})
+    # And off the lava-lake bridge, likewise.
+    c.entity("respawn", **{"from": round(LAKE[0] - 5, 1), "to": round(LAKE[1] + 5, 1), "at": round(LAKE[1] + 15, 1)})
 
-    # Checkpoints: round the climb, out of the tunnel, at the summit, and just past the
-    # gully's landing (beyond where falling in puts you).
-    c.checkpoints(extra=[s1 + 10, kit.s_near(c, *polar(246, 46, 0)[:2]), s_land + 24])
+    c.checkpoints(
+        extra=[S(3), S(6), S(9), S(12), S(16), S(20), S(24), S(27), S(30), S(33), S(36), S(39)],
+        height=10.0,
+    )
 
-    ter = list(c.coll("Terrain").objects)
-    c.preset("sun", ter + [rock], 0.35)
-    c.preset("bottoms", ter, 0.4)
-    c.preset("cover", [rock], 0.7)
-    kit.paint.shade_roads(c.pieces, 0.6)
+    ember_scenery.build(c, core, lava, sys.modules[__name__])
+    kit.paint.shade_roads(c.pieces, 0.45)
     c.finish()
 
 
-main()
+if __name__ == "__main__":
+    main()

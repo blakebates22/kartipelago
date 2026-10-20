@@ -1581,6 +1581,250 @@ def croc_skin():
     return paint(f)
 
 
+# ------------------------------------------------------------------ Ember Peak (the volcanic apocalypse)
+
+
+def basalt_road():
+    # A dark volcanic road: charcoal grit, ash-grey dust, the odd glowing cinder.
+    pal = ["#3a302c", "#463a34", "#52443c", "#5e4e44", "#6a584c"]
+    a, b = noise(4, 2, 2001), noise(16, 8, 2002)
+    cinder = speckle(2003, 9)
+
+    def f(x, y):
+        if (x, y) in cinder:
+            return "#ff8a2a"
+        rut = 0.1 if x % 32 in (8, 9, 23, 24) else 0
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35 - rut)
+
+    return paint(f)
+
+
+def scorched_ground():
+    # Black-brown burnt earth with ash and embers.
+    pal = ["#1c1412", "#261a16", "#30201a", "#3a2820", "#463026"]
+    a, b = noise(4, 2, 2011), noise(16, 8, 2012)
+    ember = speckle(2013, 12)
+    ash = speckle(2014, 14)
+
+    def f(x, y):
+        if (x, y) in ember:
+            return "#ff6a1a"
+        if (x, y) in ash:
+            return "#8a7e78"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def ash_soil():
+    # Ash-grey and rust-red volcanic soil on the mountain's flanks.
+    pal = ["#2e1e1c", "#3a2622", "#462e28", "#523830", "#5e4238"]
+    a, b, c = noise(4, 2, 2021), noise(16, 8, 2022), noise(8, 4, 2023)
+
+    def f(x, y):
+        if c(x, y) > 0.72:
+            return pick(["#6e6460", "#7e7470", "#8e8480"], b(x, y))  # ash drifts
+        return pick(pal, 0.1 + a(x, y) * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def magma_rock():
+    # Cracked black rock with molten veins glowing through (it glows: only the veins
+    # show, the rock stays dark).
+    pal = ["#140e10", "#1c1416", "#241a1a", "#2e2020"]
+    a, b = noise(8, 4, 2031), noise(4, 2, 2032)
+
+    def f(x, y):
+        v = abs(a(x, y) - 0.5)
+        if v < 0.03:
+            return "#ffd060"
+        if v < 0.06:
+            return "#ff7a1e"
+        if v < 0.085:
+            return "#a02a10"
+        return pick(pal, b(x, y))
+
+    return paint(f)
+
+
+def obsidian():
+    # Volcanic glass: near-black with violet depths and sharp pale glints.
+    pal = ["#0e0b12", "#15111c", "#1d1626", "#261c32", "#30243e"]
+    a, b = noise(4, 8, 2041), noise(16, 8, 2042)
+
+    def f(x, y):
+        facet = (x + 2 * y) % 23
+        if facet == 0:
+            return "#8a7aa8"
+        if facet == 1:
+            return "#4a3e60"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def obsidian_vein():
+    # Obsidian split by glowing magma veins (glows: the black stays black).
+    pal = ["#0e0b12", "#15111c", "#1d1626", "#241a2c"]
+    a, b = noise(4, 8, 2051), noise(8, 4, 2052)
+
+    def f(x, y):
+        v = abs(a(x, y) - 0.5) + 0.08 * abs(math.sin(y * 0.4))
+        if v < 0.035:
+            return "#fff0a0"
+        if v < 0.07:
+            return "#ffa030"
+        if v < 0.1:
+            return "#d84a14"
+        return pick(pal, b(x, y))
+
+    return paint(f)
+
+
+def obsidian_cliff():
+    # The volcano's cliffs: layered dark basalt and obsidian bands, a few glints.
+    pal = ["#1a1416", "#231a1c", "#2e2224", "#3a2c2c", "#463634"]
+    a, b = noise(16, 2, 2061), noise(8, 4, 2062)
+
+    def f(x, y):
+        band = math.sin(y * 0.55 + a(x, y) * 4)
+        if (x * 7 + y * 3) % 41 == 0:
+            return "#7a6a90"
+        return pick(pal, 0.4 + band * 0.3 + b(x, y) * 0.25)
+
+    return paint(f)
+
+
+def basalt_block():
+    # Masonry of dark basalt blocks: the bridges and walls.
+    pal = ["#2c2426", "#362c2e", "#423636", "#4e4040", "#5a4a48"]
+    a, b = noise(8, 4, 2071), noise(16, 8, 2072)
+
+    def f(x, y):
+        row = y // 16
+        bx, by = (x + (16 if row % 2 else 0)) % 32, y % 16
+        if bx < 1 or by < 1:
+            return "#140e0e"
+        if by == 1:
+            return "#6a5654"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def basalt_carved():
+    # Carved basalt with glowing runes: the parapets and the gate.
+    pal = ["#2c2426", "#362c2e", "#423636", "#4e4040"]
+    a = noise(8, 4, 2081)
+
+    def f(x, y):
+        cx, cy = x % 16, y % 32
+        if cx < 1 or cy < 1:
+            return "#140e0e"
+        dx, dy = cx - 7.5, cy - 15.5
+        diamond = abs(abs(dx) + abs(dy) * 0.5 - 5) < 0.8
+        if diamond:
+            return "#ff8a2a"
+        if abs(dx) < 0.8 and abs(dy) < 3:
+            return "#ffb050"
+        return pick(pal, 0.25 + a(x, y) * 0.6)
+
+    return paint(f)
+
+
+def cave_rock():
+    # The caverns: deep red-brown rock, darker in the cracks.
+    pal = ["#1e1012", "#2a1616", "#361c1a", "#44241e", "#522c24"]
+    a, b = noise(8, 4, 2091), noise(16, 8, 2092)
+
+    def f(x, y):
+        if abs(a(x, y) - 0.5) < 0.02:
+            return "#0e0606"
+        return pick(pal, 0.15 + a(x, y) * 0.45 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def lava_falls():
+    # A molten waterfall: bright streaks running down it (V runs downhill).
+    a = noise(16, 2, 2101)
+
+    def f(x, y):
+        streak = math.sin(x * 0.8 + a(x, y) * 6)
+        return pick(["#b8280c", "#e8480e", "#ff7a18", "#ffaa30", "#ffd860", "#fff4a0"], 0.35 + streak * 0.35 + (y / H) * 0.1)
+
+    return paint(f)
+
+
+def crystal_red():
+    a = noise(4, 8, 2111)
+
+    def f(x, y):
+        facet = (x + 2 * y) % 37
+        if facet == 0:
+            return "#fff0c0"
+        return pick(["#a01810", "#d02c14", "#f05020", "#ff7a30", "#ffaa50"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def crystal_purple():
+    a = noise(4, 8, 2121)
+
+    def f(x, y):
+        facet = (x + 2 * y) % 37
+        if facet == 0:
+            return "#f4e0ff"
+        return pick(["#3a1460", "#5a2090", "#7a34b8", "#9a50dc", "#c080ff"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def charred_bark():
+    pal = ["#120c0a", "#1a1210", "#241816", "#2e201c"]
+    a, b = noise(16, 2, 2131), noise(8, 4, 2132)
+
+    def f(x, y):
+        if abs(b(x, y) - 0.5) < 0.025:
+            return "#ff6a1a"  # embers in the cracks
+        return pick(pal, 0.4 + math.sin(x * 1.2 + a(x, y) * 6) * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def burning_leaves():
+    # Foliage on fire: dark scorched needles with flames licking through.
+    a, b = noise(8, 4, 2141), noise(16, 8, 2142)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if v > 0.62:
+            return pick(["#ff6a14", "#ff9a28", "#ffd050"], (v - 0.62) * 3)
+        return pick(["#140c08", "#22140c", "#30200e", "#3e2a10"], v)
+
+    return paint(f)
+
+
+def ash_smoke():
+    a, b = noise(4, 2, 2151), noise(8, 4, 2152)
+
+    def f(x, y):
+        return pick(["#2e2220", "#3e2e2a", "#504038", "#64524a", "#7a665c"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def fire_glow():
+    # A fierce glow for eruption fire, crater light and the mouth's furnace.
+    a = noise(4, 2, 2161)
+
+    def f(x, y):
+        return pick(["#ff4a10", "#ff7a18", "#ffa828", "#ffd050", "#fff090"], 0.2 + a(x, y) * 0.8)
+
+    return paint(f)
+
+
 THEMES = [
     {
         "id": "jungle_falls",
@@ -1712,8 +1956,47 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "volcanic_apocalypse",
+        "name": "Volcanic Apocalypse",
+        "description": "A smoke-filtered blood-red sunset over erupting volcanoes: black obsidian, charred ground, molten lava and firelight",
+        "environment": {
+            "sky": "#7a2618",
+            "fog": {"enabled": True, "color": "#6a2a1a", "near": 230, "far": 1500},
+            "sun": {"color": "#ffb070", "intensity": 2.9, "direction": [0.55, 0.42, -0.72]},
+            "ambient": {"sky": "#ff9a78", "ground": "#2e1410", "intensity": 1.3},
+            "skyDome": {
+                "top": "#2a0c0e",
+                "horizon": "#ff7a32",
+                "bottom": "#8a3220",
+                "sun": {"color": "#ffd890", "size": 11, "glow": "#ff8a3a", "elevation": 7},
+                "clouds": {"count": 46, "color": "#5a2c26", "shade": "#1e0e0e", "seed": 37, "low": 6, "high": 30, "drift": 0.004},
+                "hills": {"color": "#200c0c", "far": "#6a2a1e", "height": 9, "seed": 53, "layers": 2},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("basalt_road", "Basalt Road", "volcanic_apocalypse", "road", basalt_road, 4, None),
+    ("scorched_ground", "Scorched Ground", "volcanic_apocalypse", "dirt", scorched_ground, 6, None),
+    ("ash_soil", "Ash Soil", "volcanic_apocalypse", "sand", ash_soil, 7, None),
+    ("magma_rock", "Magma Rock", "volcanic_apocalypse", "wall", magma_rock, 7, {"scrollU": 0, "scrollV": 0, "wave": 0.01, "wavePeriod": 5, "glow": 0.9}),
+    ("obsidian", "Obsidian", "volcanic_apocalypse", "wall", obsidian, 5, None),
+    ("obsidian_vein", "Obsidian (Veined)", "volcanic_apocalypse", "wall", obsidian_vein, 5, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
+    ("obsidian_cliff", "Volcanic Cliff", "volcanic_apocalypse", "wall", obsidian_cliff, 10, None),
+    ("basalt_block", "Basalt Masonry", "volcanic_apocalypse", "wall", basalt_block, 4, None),
+    ("basalt_carved", "Basalt Runes", "volcanic_apocalypse", "wall", basalt_carved, 5, {"scrollU": 0, "scrollV": 0, "glow": 0.4}),
+    ("cave_rock", "Cave Rock", "volcanic_apocalypse", "wall", cave_rock, 8, None),
+    ("lava_falls", "Lava Falls", "volcanic_apocalypse", "lava", lava_falls, 6, {"scrollU": 0.0, "scrollV": 0.6, "wave": 0.03, "wavePeriod": 2, "glow": 1.0}),
+    ("crystal_red", "Fire Crystal", "volcanic_apocalypse", "wall", crystal_red, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.85}),
+    ("crystal_purple", "Amethyst Crystal", "volcanic_apocalypse", "wall", crystal_purple, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.85}),
+    ("charred_bark", "Charred Bark", "volcanic_apocalypse", "wall", charred_bark, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.5}),
+    ("burning_leaves", "Burning Foliage", "volcanic_apocalypse", "grass", burning_leaves, 3, {"scrollU": 0.0, "scrollV": -0.15, "wave": 0.05, "wavePeriod": 0.9, "glow": 0.8}),
+    ("ash_smoke", "Ash Smoke", "volcanic_apocalypse", "wall", ash_smoke, 20, {"scrollU": 0.004, "scrollV": -0.02, "wave": 0.05, "wavePeriod": 7, "opacity": 0.72}),
+    ("fire_glow", "Furnace Glow", "volcanic_apocalypse", "wall", fire_glow, 4, {"scrollU": 0.03, "scrollV": -0.2, "wave": 0.06, "wavePeriod": 1.3, "glow": 1.2}),
     ("bog_water", "Bog Water", "bonebog_swamp", "deep_water", bog_water, 18, {"scrollU": 0.004, "scrollV": 0.01, "wave": 0.04, "wavePeriod": 8, "opacity": 0.94, "glow": 0.18}),
     ("bog_glow_pool", "Glowing Pool", "bonebog_swamp", "deep_water", bog_glow_pool, 7, {"scrollU": 0.02, "scrollV": -0.03, "wave": 0.1, "wavePeriod": 3, "opacity": 0.92, "glow": 0.5}),
     ("bog_mud", "Bog Mud", "bonebog_swamp", "mud", bog_mud, 6, None),
