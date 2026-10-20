@@ -39,12 +39,12 @@ The mouse works too.
 
 ## The courses
 
-| Course          | Id                | Length  | Theme                                         | Music            |
-| --------------- | ----------------- | ------- | --------------------------------------------- | ---------------- |
-| Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village   | F major, 138 BPM |
-| Cascade Caverns | `cascade_caverns` | ~1210 m | lost jungle temple, waterfalls, torchlit hall | D minor, 128 BPM |
-| Bonebog Pyramid | `bonebog_pyramid` | ~1140 m | misty fossil swamp, a stepped pyramid         | E minor, 116 BPM |
-| Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                    | A minor, 158 BPM |
+| Course          | Id                | Length  | Theme                                               | Music            |
+| --------------- | ----------------- | ------- | --------------------------------------------------- | ---------------- |
+| Riverbend Palms | `riverbend_palms` | ~1040 m | sunny river valley, palms, a tribal village         | F major, 138 BPM |
+| Cascade Caverns | `cascade_caverns` | ~1210 m | lost jungle temple, waterfalls, torchlit hall       | D minor, 128 BPM |
+| Bonebog Pyramid | `bonebog_pyramid` | ~1630 m | a living swamp, a colossal pyramid to drive through | E minor, 116 BPM |
+| Ember Peak      | `ember_peak`      | ~850 m  | a volcano with lava rivers                          | A minor, 158 BPM |
 
 All four share the same basics:
 
@@ -168,21 +168,24 @@ v1 is tagged `cascade-v1` in git:
 
 ### Bonebog Pyramid
 
-1. The old paved road runs under the **ribs of a giant skeleton**, with its tail
-   trailing into the swamp and a frilled, horned skull beside it.
-2. A wooden causeway crosses a lagoon.
-3. Slick **mud** S-bends follow.
-4. A stone road climbs to the stepped **pyramid**, and goes straight through it.
-5. A second causeway and more mud bring you home.
+Rebuilt as a living swamp: see [bonebog-pyramid.md](bonebog-pyramid.md) for the full
+design. In short:
 
-**Scenery:** swamp trees hung with moss, reeds, glowing caps and more skulls.
+1. The start runs along an **old stone dike** and under the **Jawbone Gate**.
+2. Railed **boardwalks** wind east between giant trees, under the canopy.
+3. The **Rib Bridge**, a high trestle, runs straight through a colossal rib cage.
+4. The **Grand Causeway** crosses the lagoon (a long-neck's neck arches over it) and
+   aims at the pyramid's carved face.
+5. About **ten seconds inside the pyramid**: a torchlit corridor, a chamber round a
+   great column, and the Great Hall with its pillars, roof waterfalls and light.
+6. A trestle drops past the **great skull** of Skull Lagoon, then the **mangrove
+   boardwalks** under the treehouse village bring you home.
 
-| Surface         | Drives like                       |
-| --------------- | --------------------------------- |
-| stone road      | normal road                       |
-| wooden causeway | road (firm)                       |
-| wet mud         | slippery (grip ×0.55), a bit slow |
-| shallow water   | slow (off the causeways)          |
+| Surface            | Drives like                          |
+| ------------------ | ------------------------------------ |
+| paving, boards     | normal road                          |
+| mossy banks        | off-road (grass), beside the dike    |
+| swamp water (deep) | puts you back at the last checkpoint |
 
 ### Ember Peak
 

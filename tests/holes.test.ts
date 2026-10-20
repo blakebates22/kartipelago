@@ -68,7 +68,7 @@ async function holes(id: string) {
 }
 
 describe("no holes in the world", () => {
-  for (const id of ["frostveil_citadel", "cascade_caverns"])
+  for (const id of ["frostveil_citadel", "cascade_caverns", "bonebog_pyramid"])
     it(
       id,
       async () => {

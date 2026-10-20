@@ -25,6 +25,11 @@
  *   torch       { "type": "torch", "x", "y", "z" }: a torch flame (the torch is scenery).
  *               The few torches nearest the camera cast flickering warm light on the
  *               road, the walls and the karts, and drop the odd ember. Purely visual.
+ *   bubbles     { "type": "bubbles", "x", "y", "z", "r" }: a bubbling pool: glowing
+ *               bubbles rising and popping over it, and now and then a big burp of
+ *               swamp gas. Purely visual.
+ *   fireflies   { "type": "fireflies", "rate": 40, "radius": 36 }: little glowing
+ *               motes drifting in the air round the camera. Purely visual.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -217,6 +222,10 @@ export function createHazards(opts: {
   const fires: Campfire[] = [];
   const torches: { x: number; y: number; z: number; acc: number }[] = [];
   let snowfall: { rate: number; radius: number; acc: number } | undefined;
+  /** Bubbling pools, and fireflies (see the bubbles and fireflies entities). */
+  const pools: { x: number; y: number; z: number; r: number; acc: number; burp: number }[] = [];
+  let fireflies: { rate: number; radius: number; acc: number } | undefined;
+  let glowing: ReturnType<typeof createParticles> | undefined;
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
   const party: {
@@ -240,6 +249,21 @@ export function createHazards(opts: {
       snowfall = {
         rate: Math.max(0, num(e.rate, 100)),
         radius: Math.max(5, num(e.radius, 40)),
+        acc: 0,
+      };
+    else if (e.type === "bubbles")
+      pools.push({
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        r: Math.max(0.5, num(e.r, 3)),
+        acc: 0,
+        burp: 2 + Math.random() * 6,
+      });
+    else if (e.type === "fireflies")
+      fireflies = {
+        rate: Math.max(0, num(e.rate, 30)),
+        radius: Math.max(5, num(e.radius, 30)),
         acc: 0,
       };
     else if (e.type === "torch")
@@ -790,6 +814,50 @@ export function createHazards(opts: {
           );
         snow.step(dt);
       }
+      // Glowing bubbles over the pools you're near, the odd burp of swamp gas, and
+      // fireflies drifting round the camera.
+      if ((pools.length || fireflies) && !opts.headless) {
+        glowing ??= createParticles(group, { max: 500, size: 0.45, gravity: 0.8, additive: true });
+        for (const b of pools) {
+          if (Math.hypot(listener.x - b.x, listener.z - b.z) > 130) continue;
+          b.acc = Math.min(2, b.acc + dt * (3 + b.r));
+          for (; b.acc >= 1; b.acc -= 1) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * b.r * 0.85;
+            glowing.emit(
+              b.x + Math.cos(a) * r,
+              b.y,
+              b.z + Math.sin(a) * r,
+              0,
+              0.6 + Math.random() * 0.8,
+              0,
+              0.7 + Math.random() * 0.6,
+              Math.random() < 0.6 ? 0xa8ff70 : 0xd8ffb0,
+            );
+          }
+          b.burp -= dt;
+          if (b.burp <= 0) {
+            b.burp = 3 + Math.random() * 7;
+            glowing.burst(b.x, b.y + 0.3, b.z, 14, 1.2, 2.2, 1.4, 0x7aff5a);
+          }
+        }
+        if (fireflies) {
+          fireflies.acc = Math.min(2, fireflies.acc + dt * fireflies.rate);
+          const r = fireflies.radius;
+          for (; fireflies.acc >= 1; fireflies.acc -= 1)
+            glowing.emit(
+              listener.x + (Math.random() - 0.5) * 2 * r,
+              listener.y + 0.5 + Math.random() * 9,
+              listener.z + (Math.random() - 0.5) * 2 * r,
+              (Math.random() - 0.5) * 1.2,
+              -0.4 + Math.random() * 0.3,
+              (Math.random() - 0.5) * 1.2,
+              2.5 + Math.random() * 2.5,
+              Math.random() < 0.7 ? 0xeaff7a : 0xfff2a0,
+            );
+        }
+        glowing.step(dt);
+      }
       spray?.step(dt);
       smoke?.step(dt);
       sparks?.step(dt);
@@ -801,6 +869,7 @@ export function createHazards(opts: {
       for (const p of party) p.view?.dispose();
       spray?.dispose();
       snow?.dispose();
+      glowing?.dispose();
       smoke?.dispose();
       sparks?.dispose();
       group.removeFromParent();

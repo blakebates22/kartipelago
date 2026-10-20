@@ -60,10 +60,10 @@ export const TRACKS: TrackEntry[] = [
     id: "bonebog_pyramid",
     name: "Bonebog Pyramid",
     description:
-      "Slither through slick mud and over wooden causeways, under giant ribs and through a pyramid.",
+      "Race the raised boardwalks of a living swamp, through a giant's ribs and straight through a colossal pyramid.",
     preview: "previews/bonebog_pyramid.jpg",
     modes: ["race", "timeTrial"],
-    theme: "fossil_canyon",
+    theme: "bonebog_swamp",
     music: "bonebog",
     load: { scene: "track", packageId: "bonebog_pyramid" },
   },

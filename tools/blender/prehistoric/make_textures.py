@@ -1272,6 +1272,315 @@ def window_glow():
     return paint(f)
 
 
+# ------------------------------------------------------------------ Bonebog Pyramid (the living swamp)
+
+
+def bog_water():
+    # Murky swamp water: deep green, darker in the depths, with long soft ripples of
+    # lighter green and a few bright glints (it scrolls slowly).
+    pal = ["#123824", "#17432a", "#1c4f30", "#235c35", "#2b693b"]
+    a, b = noise(2, 2, 1801), noise(8, 4, 1802)
+    glint = speckle(1804, 7)
+
+    def f(x, y):
+        if (x, y) in glint:
+            return "#cfeea0"
+        ripple = math.sin((y / H) * math.tau * 3 + a(x, y) * 6 + (x / W) * math.tau)
+        if ripple > 0.93:
+            return "#4f8c48"
+        if ripple > 0.8:
+            return "#3a7840"
+        return pick(pal, 0.15 + a(x, y) * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def bog_glow_pool():
+    # A bubbling pool lit from inside by something strange: bright greens with pale
+    # rings where bubbles have just popped.
+    pal = ["#23702c", "#2f8a36", "#3fa240", "#55b84a", "#74cc58"]
+    a, b = noise(4, 2, 1811), noise(8, 4, 1812)
+    rings = [(9, 7, 5.0), (40, 20, 6.5), (25, 26, 3.5), (55, 6, 4.0)]
+
+    def f(x, y):
+        for cx, cy, r in rings:
+            dx = min(abs(x - cx), W - abs(x - cx))
+            dy = min(abs(y - cy), H - abs(y - cy))
+            if abs(math.hypot(dx, dy) - r) < 0.6:
+                return "#b8f08a"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def bog_mud():
+    pal = ["#1f2a14", "#2a3618", "#36441e", "#445424", "#53642c"]
+    a, b = noise(4, 2, 1821), noise(16, 8, 1822)
+
+    def f(x, y):
+        return pick(pal, 0.1 + a(x, y) * 0.6 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def bog_bank():
+    # Wet swamp ground: rich, soft moss with a few fallen leaves.
+    pal = ["#2c5420", "#336024", "#3a6c28", "#42782c", "#4c8432"]
+    a, b = noise(4, 2, 1831), noise(16, 8, 1832)
+    leaf = speckle(1834, 10)
+
+    def f(x, y):
+        if (x, y) in leaf:
+            return "#7fae44"
+        return pick(pal, 0.1 + a(x, y) * 0.5 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def bog_moss_ground():
+    # Mossy ground beside the road: lighter, trodden, with roots showing.
+    pal = ["#3a5a22", "#4a6e28", "#5a8230", "#6c9438", "#82a646"]
+    a, b = noise(4, 2, 1841), noise(16, 8, 1842)
+    root = noise(8, 2, 1843)
+
+    def f(x, y):
+        if abs(root(x, y) - 0.5) < 0.012:
+            return "#5a4a2a"
+        return pick(pal, 0.1 + a(x, y) * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def bog_root():
+    # Gnarled root and old timber: dark brown, deeply grooved, streaked with moss.
+    pal = ["#2c1e14", "#3a281a", "#4a3420", "#5c4228", "#6e5232"]
+    a, b = noise(16, 2, 1851), noise(4, 4, 1852)
+
+    def f(x, y):
+        groove = math.sin(x * 1.1 + a(x, y) * 7)
+        if b(x, y) > 0.8:
+            return pick(["#33502a", "#3e5e2e"], a(x, y))
+        return pick(pal, 0.45 + groove * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def bog_boards():
+    # Weathered boardwalk planks across the road, moss creeping in from the edges, nails.
+    pal = ["#5a3c20", "#6e4a28", "#835a31", "#976b3a", "#ab7d44"]
+    a, b = noise(2, 8, 1861), noise(8, 16, 1862)
+    m = noise(4, 2, 1863)
+
+    def f(x, y):
+        board = y // 8
+        yy = y % 8
+        if yy == 7:
+            return "#1d140c"
+        if yy == 0:
+            return "#c0905a"
+        if m(x, y) > 0.86 and yy in (1, 2, 3):
+            return pick(["#4f6e2a", "#5a7a30"], b(x, y))  # a little moss in the grain
+        if (x + board * 19) % 32 in (2, 29) and yy in (2, 5):
+            return "#2a2a28"
+        grain = 0.5 + 0.5 * math.sin(x * 0.6 + board * 1.7 + a(x, y) * 5)
+        return pick(pal, 0.12 + grain * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def bog_rail():
+    # A wooden rail bound with rope every so often.
+    pal = ["#5a3c20", "#6e4a28", "#835a31", "#976b3a"]
+    a = noise(8, 2, 1871)
+
+    def f(x, y):
+        if x % 32 in range(12, 20):
+            k = (x + y) % 3
+            return ["#c9a86a", "#a8874c", "#7a5f34"][k]  # rope
+        if y in (0, 31):
+            return "#2a1c10"
+        grain = 0.5 + 0.5 * math.sin(y * 0.9 + a(x, y) * 6)
+        return pick(pal, 0.15 + grain * 0.5 + a(x, y) * 0.3)
+
+    return paint(f)
+
+
+def bog_paving():
+    # The old road: big worn flagstones, bright moss in every joint, a few cracks.
+    pal = ["#6b7360", "#7b8470", "#8c947e", "#9ca48c", "#aeb49a"]
+    a, b = noise(4, 2, 1881), noise(16, 8, 1882)
+    crack = noise(8, 4, 1883)
+
+    def f(x, y):
+        row = y // 16
+        bx = (x + (row % 2) * 10) % 21
+        by = y % 16
+        if bx == 0 or by == 0:
+            return pick(["#3f7a2a", "#4e8e30", "#5fa238"], b(x, y))
+        if abs(crack(x, y) - 0.5) < 0.02:
+            return "#3e4434"
+        if a(x, y) > 0.74:
+            return pick(["#5e8e3a", "#6ea242"], b(x, y))
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35 + (0.15 if bx == 1 or by == 1 else 0))
+
+    return paint(f)
+
+
+def bog_stone():
+    # The pyramid's masonry: huge green-grey blocks, moss pouring over them.
+    pal = ["#6c765c", "#7c8768", "#8e9876", "#a0a986", "#b2ba96"]
+    a, b, c = noise(4, 2, 1891), noise(16, 8, 1892), noise(8, 4, 1893)
+
+    def f(x, y):
+        row = y // 16
+        bx, by = (x + (16 if row % 2 else 0)) % 32, y % 16
+        moss = c(x, y) + (1 - y / H) * 0.25
+        if moss > 0.78:
+            return pick(["#356a24", "#437e2a", "#539232", "#65a63a"], (moss - 0.78) * 3 + b(x, y) * 0.3)
+        if bx < 1 or by < 1:
+            return pick(["#2a3424", "#3a5a28"], a(x, y))
+        return pick(pal, 0.15 + a(x, y) * 0.45 + b(x, y) * 0.3 + (0.15 if by == 1 else 0))
+
+    return paint(f)
+
+
+def bog_carved():
+    # Carved temple panels: skull-like masks, step frets and eye glyphs, mossy.
+    pal = ["#5c6550", "#6d775e", "#80896e", "#929a7e"]
+    a = noise(8, 4, 1901)
+
+    def f(x, y):
+        cx, cy = x % 16, y % 16
+        cell = (x // 16 + (y // 16)) % 3
+        dx, dy = cx - 7.5, cy - 7.5
+        if cx < 1 or cy < 1:
+            return "#2e3628"
+        if cell == 0:  # a mask: two eyes and a toothy mouth
+            carved = (abs(abs(dx) - 3) < 1.6 and -4 < dy < -1) or (2 < dy < 5 and abs(dx) < 5 and cx % 2 == 0)
+        elif cell == 1:  # a step fret
+            carved = (cy - 3) == (cx // 3) * 2 or (cy - 4) == (cx // 3) * 2
+        else:  # a ringed eye
+            r = math.hypot(dx, dy)
+            carved = 4.5 < r < 6 or r < 1.8
+        if carved:
+            return "#333b2c"
+        if a(x, y) > 0.78:
+            return "#4a8030"
+        return pick(pal, 0.25 + a(x, y) * 0.6)
+
+    return paint(f)
+
+
+def bog_dark_stone():
+    # Inside the pyramid: dark, damp stone, glistening, with moss in the joints.
+    pal = ["#262a20", "#30352a", "#3c4234", "#4a5040", "#575e4a"]
+    a, b = noise(8, 4, 1911), noise(16, 8, 1912)
+    wet = speckle(1913, 14)
+
+    def f(x, y):
+        if (x, y) in wet:
+            return "#8a9a80"
+        row = y // 16
+        bx, by = (x + (16 if row % 2 else 0)) % 32, y % 16
+        if bx < 1 or by < 1:
+            return "#2e4a22" if b(x, y) > 0.5 else "#181c14"
+        return pick(pal, 0.15 + a(x, y) * 0.55 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def bog_canopy():
+    # The swamp canopy: deep, saturated greens with sunlit clumps.
+    pal = ["#183e16", "#21541c", "#2d6c22", "#3b862a", "#4f9e32", "#6ab43e"]
+    a, b = noise(8, 4, 1921), noise(16, 8, 1922)
+
+    def f(x, y):
+        clump = 0.5 + 0.5 * math.sin(x * 0.9 + 2.4 * math.sin(y * 0.55))
+        return pick(pal, 0.05 + a(x, y) * 0.45 + b(x, y) * 0.25 + clump * 0.25)
+
+    return paint(f)
+
+
+def bog_moss_hang():
+    # Hanging moss: grey-green strands.
+    pal = ["#4a5a3a", "#5c6e46", "#708252", "#86985e", "#9cae6c"]
+    a = noise(16, 2, 1931)
+
+    def f(x, y):
+        strand = math.sin(x * 1.7 + a(x, y) * 4)
+        return pick(pal, 0.4 + strand * 0.35 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def cobweb():
+    a = noise(8, 4, 1941)
+
+    def f(x, y):
+        return pick(["#cfd6cc", "#dfe4da", "#eef1ea", "#ffffff"], a(x, y))
+
+    return paint(f)
+
+
+def light_shaft():
+    # A warm haze for shafts of light through the canopy (V runs down the shaft).
+    a = noise(8, 2, 1951)
+
+    def f(x, y):
+        return pick(["#ffd27a", "#ffdf96", "#ffe9b4", "#fff4d6"], 0.3 + a(x, y) * 0.6)
+
+    return paint(f)
+
+
+def bog_mist():
+    a, b = noise(4, 2, 1961), noise(8, 4, 1962)
+
+    def f(x, y):
+        return pick(["#a9cf8c", "#bedca2", "#d2e8bc", "#e6f2d8"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def bog_bone():
+    # Ancient bone, stained green-brown by the swamp, mossy in the hollows.
+    pal = ["#a49a78", "#b8ae8a", "#cbc29e", "#dcd4b2", "#ebe5c8"]
+    a, b, c = noise(4, 2, 1971), noise(16, 8, 1972), noise(8, 4, 1973)
+
+    def f(x, y):
+        if c(x, y) > 0.72:
+            return pick(["#5e7a3a", "#6e8c42", "#80a04c"], b(x, y))
+        if abs(a(x, y) - 0.5) < 0.02:
+            return "#6e6448"
+        stain = 0.3 if c(x, y) > 0.6 else 0
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35 - stain)
+
+    return paint(f)
+
+
+def bog_eye():
+    # Eerie green light in the carved eyes.
+    a = noise(4, 2, 1981)
+
+    def f(x, y):
+        r = math.hypot(x % 16 - 7.5, y % 16 - 7.5)
+        if r < 2.5:
+            return "#f2ffd0"
+        return pick(["#5ee05a", "#7aee6a", "#9ef884", "#c8ffa8"], 0.2 + a(x, y) * 0.5 + max(0, 6 - r) * 0.08)
+
+    return paint(f)
+
+
+def croc_skin():
+    pal = ["#26321c", "#2f3e22", "#3a4c28", "#465a2e", "#566c36"]
+    a = noise(8, 4, 1991)
+
+    def f(x, y):
+        scute = (x % 6 == 0) or (y % 5 == 0)
+        return pick(pal, 0.15 + a(x, y) * 0.6 - (0.2 if scute else 0))
+
+    return paint(f)
+
+
 THEMES = [
     {
         "id": "jungle_falls",
@@ -1381,8 +1690,50 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "bonebog_swamp",
+        "name": "Bonebog Swamp",
+        "description": "A living swamp at golden hour: vivid murky greens, mossy stone, old timber, ancient bone and warm torchlight under a vast canopy",
+        "environment": {
+            "sky": "#d9b46a",
+            "fog": {"enabled": True, "color": "#9fa866", "near": 70, "far": 600},
+            "sun": {"color": "#ffd59a", "intensity": 2.4, "direction": [-0.55, 0.62, 0.55]},
+            "ambient": {"sky": "#e2ecb4", "ground": "#35502a", "intensity": 1.3},
+            "skyDome": {
+                "top": "#5f9cc0",
+                "horizon": "#ffd48a",
+                "bottom": "#9fbc6a",
+                "sun": {"color": "#fff1c8", "size": 9, "glow": "#ffc866", "elevation": 14},
+                "clouds": {"count": 20, "color": "#fff0d0", "shade": "#e0b080", "seed": 23, "low": 10, "high": 26, "drift": 0.003},
+                "hills": {"color": "#1f4a1c", "far": "#6e9a52", "height": 24, "seed": 41, "layers": 3},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("bog_water", "Bog Water", "bonebog_swamp", "deep_water", bog_water, 18, {"scrollU": 0.004, "scrollV": 0.01, "wave": 0.04, "wavePeriod": 8, "opacity": 0.94, "glow": 0.18}),
+    ("bog_glow_pool", "Glowing Pool", "bonebog_swamp", "deep_water", bog_glow_pool, 7, {"scrollU": 0.02, "scrollV": -0.03, "wave": 0.1, "wavePeriod": 3, "opacity": 0.92, "glow": 0.5}),
+    ("bog_mud", "Bog Mud", "bonebog_swamp", "mud", bog_mud, 6, None),
+    ("bog_bank", "Swamp Bank", "bonebog_swamp", "grass", bog_bank, 6, None),
+    ("bog_moss_ground", "Mossy Ground", "bonebog_swamp", "grass", bog_moss_ground, 5, None),
+    ("bog_root", "Root Wood", "bonebog_swamp", "wall", bog_root, 3, None),
+    ("bog_boards", "Boardwalk", "bonebog_swamp", "road", bog_boards, 4, None),
+    ("bog_rail", "Rope Rail", "bonebog_swamp", "wall", bog_rail, 3, None),
+    ("bog_paving", "Mossy Paving", "bonebog_swamp", "road", bog_paving, 4.5, None),
+    ("bog_stone", "Pyramid Stone", "bonebog_swamp", "wall", bog_stone, 5, None),
+    ("bog_carved", "Pyramid Carvings", "bonebog_swamp", "wall", bog_carved, 3.5, None),
+    ("bog_dark_stone", "Damp Stone", "bonebog_swamp", "wall", bog_dark_stone, 4, None),
+    ("bog_canopy", "Swamp Canopy", "bonebog_swamp", "grass", bog_canopy, 6, None),
+    ("bog_moss_hang", "Hanging Moss", "bonebog_swamp", "grass", bog_moss_hang, 2, None),
+    ("cobweb", "Cobweb", "bonebog_swamp", "wall", cobweb, 2, {"scrollU": 0, "scrollV": 0, "opacity": 0.6, "glow": 0.35}),
+    ("light_shaft", "Light Shaft", "bonebog_swamp", "wall", light_shaft, 20, {"scrollU": 0.0, "scrollV": 0.01, "wave": 0.04, "wavePeriod": 8, "opacity": 0.09, "glow": 1.0}),
+    ("bog_mist", "Swamp Mist", "bonebog_swamp", "water", bog_mist, 30, {"scrollU": 0.005, "scrollV": 0.002, "wave": 0.06, "wavePeriod": 10, "opacity": 0.22, "glow": 0.45}),
+    ("bog_bone", "Swamp Bone", "bonebog_swamp", "wall", bog_bone, 3, None),
+    ("bog_eye", "Glowing Eye", "bonebog_swamp", "wall", bog_eye, 1, {"scrollU": 0, "scrollV": 0, "wave": 0.04, "wavePeriod": 2.5, "glow": 1.2}),
+    ("croc_skin", "Croc Skin", "bonebog_swamp", "wall", croc_skin, 1.5, None),
     ("snow_ground", "Snow", "frost_citadel", "deep_snow", snow_ground, 6, None),
     ("snow_stone_road", "Snowy Stone Road", "frost_citadel", "snow_stone", snow_stone_road, 3.5, None),
     ("icy_stone_road", "Icy Stone Road", "frost_citadel", "icy_stone", icy_stone_road, 5, None),

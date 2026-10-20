@@ -122,7 +122,8 @@ The Prehistoric courses add checkpoints at their landmarks:
   has a twin gate across the dirt shortcut, so either way counts.
 - **Cascade:** up the viaduct, off the high bridge, out of the tunnel, just past the
   leap's landing.
-- **Bonebog:** after the skeleton, the causeways and the pyramid.
+- **Bonebog:** along the boardwalks, on the Rib Bridge and the causeway, in the pyramid's
+  corridor and Great Hall, and through the mangroves.
 - **Ember:** after the tunnel, at the summit, past the gully's landing.
 
 A jump's checkpoint sits _past_ where a missed jump puts you, so respawning can't skip

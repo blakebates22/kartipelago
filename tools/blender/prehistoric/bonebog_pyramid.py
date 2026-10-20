@@ -1,18 +1,30 @@
-# Bonebog Pyramid: Prehistoric World, course 3. "Mysterious swamp groove."
+# Bonebog Pyramid: Prehistoric World, course 3. A living swamp, a dinosaur graveyard
+# and a colossal overgrown pyramid you drive straight through.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/bonebog_pyramid.py      (the bpy module)
 #
-# A misty swamp of giant fossils. The old paved road starts in the south and runs north
-# beneath the ribs of a long-dead giant, then out across the water on a wooden
-# causeway, slithers through S-bends of slick mud and climbs to the ancient stepped
-# pyramid, straight through its heart. Back on the swamp it crosses a lagoon on another
-# causeway and slides through more mud to the line.
+# A lap of about 1.7 km, almost all of it raised above deep green swamp water (fall in
+# and you're fished out at the last checkpoint), under a vast canopy of giant trees:
 #
-#   stone road   normal grip       wooden causeway  firm
-#   wet mud      slippery          shallow water    slow (off the causeways)
+#   A  The Old Dike: the start, on a raised stone road along an earthen dike, heading
+#      north through the ribs of a fallen giant.
+#   B  The Boardwalks: railed wooden walkways winding east between giant trees, bone
+#      piles and bubbling pools, under the canopy.
+#   C  The Rib Bridge: a high trestle north across Rib Lagoon, straight through the
+#      rib cage of a colossal skeleton, the pyramid revealed across the water.
+#   D  The Grand Causeway: a raised stone causeway west across the lagoon, straight at
+#      the pyramid's carved face and its waterfalls.
+#   E  The Pyramid: about ten seconds inside: a torchlit entry corridor, a turning
+#      chamber, the Great Hall (pillars, waterfalls from the roof, shafts of light) and
+#      out of the south face.
+#   F  Skull Lagoon: a high trestle down past a colossal skull, then winding
+#      mangrove boardwalks under the treehouse village, and home along the dike.
 #
-# Saves tracks-src/bonebog_pyramid.blend and exports public/tracks/bonebog_pyramid/.
+# The pyramid stands on a stone foundation rising out of the swamp: 190 x 210 m at
+# its base and 90 m tall. Every corner is a 45-55 m arc. Saves
+# tracks-src/bonebog_pyramid.blend and exports public/tracks/bonebog_pyramid/. The
+# scenery is bonebog_scenery.py, built from the swamp kit in swamp_props.py.
 
 import math
 import os
@@ -21,235 +33,328 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-import props  # noqa: E402
-from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
+from course_kit import lerp, smooth  # noqa: E402
 
 TRACK_ID = "bonebog_pyramid"
-WATER_Z = -0.3
-PYR = (-64.0, 186.0)  # the pyramid's centre
-PYR_HALF = 42.0  # half the base
-PYR_TIERS = 5
-TIER_H = 6.0
+WATER_Z = 0.0
 
-ROUTE = [
-    (0, -140, 0.6),  # start / finish: the old paved road, heading north
-    (2, -84, 0.6),
-    (0, -24, 0.6),  # under the giant's ribs
-    (22, 22, 0.8),
-    (70, 42, 1.0),  # the east causeway
-    (128, 42, 1.0),
-    (168, 70, 0.8),
-    (166, 118, 0.7),  # mud S-bends
-    (128, 146, 0.7),
-    (82, 156, 1.2),
-    (38, 182, 2.6),  # up the causeway to the pyramid
-    (0, 188, 4.0),
-    (-64, 186, 4.0),  # through the pyramid
-    (-124, 182, 3.2),
-    (-160, 156, 1.6),
-    (-174, 110, 1.0),
-    (-166, 56, 1.0),  # the lagoon causeway
-    (-150, 4, 1.0),
-    (-124, -44, 0.7),  # mud S-bends home
-    (-92, -82, 0.7),
-    (-70, -126, 0.6),
-    (-36, -158, 0.6),
+# ---------------------------------------------------------------- the layout
+
+START = (0.0, -200.0)
+LAYOUT = [
+    ("S", 135),  # 0  A: the start straight, north along the dike
+    ("R", 50, 90),  # 1  east onto the boardwalks
+    ("S", 30),  # 2  B
+    ("L", 45, 55),  # 3  between the giant trees...
+    ("R", 45, 55),  # 4
+    ("S", 40),  # 5
+    ("L", 55, 90),  # 6  north, climbing
+    ("S", 90),  # 7  C: the Rib Bridge
+    ("L", 55, 90),  # 8  west, the pyramid ahead
+    ("S", 90),  # 9  D: the Grand Causeway
+    ("R", 120, 20),  # 10
+    ("L", 120, 20),  # 11
+    ("S", 40),  # 12 up to the carved face
+    ("S", 75),  # 13 E: the entry corridor
+    ("L", 45, 90),  # 14 the turning chamber
+    ("S", 60),  # 15 the Great Hall, and out of the south face
+    ("S", 30),  # 16 F: the trestle down into Skull Lagoon
+    ("R", 45, 50),  # 17
+    ("L", 45, 100),  # 18 round the skull
+    ("R", 45, 50),  # 19
+    ("S", 40),  # 20 (stretched to close the loop)
+    ("L", 50, 40),  # 21 the mangrove boardwalks
+    ("R", 50, 80),  # 22
+    ("L", 50, 40),  # 23
+    ("S", 25),  # 24
+    ("L", 45, 90),  # 25 east, back onto the dike
+    ("S", 30),  # 26 (stretched to close the loop)
+    ("L", 45, 90),  # 27 north onto the start
+    ("S", 10),  # 28
+]
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 20, 26, START, 90.0)
+SEG = kit.segment_starts(PATH)
+LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+
+# The pyramid: centred on the entry corridor's line, its east face where the corridor
+# begins and its south face where the Great Hall comes out.
+_entry = next(p for p in PATH if p[3] == 13)
+PYR_HX, PYR_HY = 95.0, 105.0
+PYR = (_entry[0] - PYR_HX, _entry[1])
+FOUND_Z = 6.5  # the top of the stone foundation the pyramid stands on
+FOUND_PAD = 16.0  # how far the foundation reaches beyond the pyramid
+# Tiers: (half-size inset, top height). The lowest is tallest: the doorways are in it.
+TIERS = [(0.0, 22.5), (12.0, 33.5), (24.0, 44.5), (36.0, 55.5), (48.0, 66.5), (60.0, 77.5)]
+SHRINE = (10.0, 12.0, 12.0)  # half-sizes and height of the shrine on top
+INSIDE = (SEG[13], SEG[16])  # the route inside the pyramid
+
+# Heights along the lap (metres along it, height); the road eases between them.
+ANCHORS = [
+    (0.0, 2.6),
+    (SEG[1] + 20, 2.6),
+    (SEG[2] + 10, 4.0),
+    (SEG[6], 4.5),
+    (SEG[7] + 5, 12.0),
+    (SEG[8] - 5, 12.0),
+    (SEG[9] + 30, 8.5),
+    (SEG[12], 8.5),
+    (SEG[13], 8.6),
+    (SEG[16], 9.6),
+    (SEG[17] + 10, 7.0),
+    (SEG[19] + 10, 4.2),
+    (SEG[24] + 20, 3.8),
+    (SEG[26], 2.6),
+    (LENGTH, 2.6),
 ]
 
 
-def natural(x, y):
-    """Low muddy islands in shallow water, a ring of misty jungle cliffs round it."""
-    h = -0.75 + 0.9 * math.sin(x / 23) * math.cos(y / 19) + 0.6 * math.sin((x - y) / 31) + 0.35 * math.sin(x / 7.0 + y / 9.0)
-    # Two lagoons the causeways cross.
-    for (cx, cy), r in (((95, 40), 52), ((-160, 30), 50)):
-        d = math.hypot(x - cx, y - cy)
-        h = lerp(h, -1.6, smooth((r - d) / 18))
-    r = math.hypot(x * 0.9, (y - 20) * 0.95)
-    h += 26 * smooth((r - 215) / 30) * (0.8 + 0.2 * math.sin(math.atan2(y, x) * 5 + 1))
-    return h
+def _lin(d):
+    d = min(max(d, 0.0), LENGTH)
+    for (d0, z0), (d1, z1) in zip(ANCHORS, ANCHORS[1:]):
+        if d0 <= d <= d1:
+            return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
+    return ANCHORS[-1][1]
+
+
+def road_z(d, seg):
+    # Smoothed over 30 m, so grades change gently.
+    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+
+
+def road_w(d, seg):
+    if 13 <= seg <= 15:
+        return 16.0  # inside the pyramid
+    if seg in (0, 27, 28):
+        return 16.0  # the dike
+    if seg in (7, 8, 9, 10, 11, 12):
+        return 15.0  # the bridge and the causeway
+    return 14.5  # boardwalks
+
+
+ROUTE = kit.route_points_by(PATH, road_z, every=12.0, width=road_w)
+
+# ---------------------------------------------------------------- the land
+
+
+def sm(t):
+    return smooth(max(0.0, min(1.0, t)))
 
 
 def in_pyramid(x, y, pad=0.0):
-    return abs(x - PYR[0]) < PYR_HALF + pad and abs(y - PYR[1]) < PYR_HALF + pad
+    return abs(x - PYR[0]) < PYR_HX + pad and abs(y - PYR[1]) < PYR_HY + pad
+
+
+def on_foundation(x, y, pad=0.0):
+    return in_pyramid(x, y, FOUND_PAD + pad)
+
+
+def pyramid_top(x, y):
+    """The height of the pyramid's stepped surface over (x, y) (None outside it)."""
+    e = min(PYR_HX - abs(x - PYR[0]), PYR_HY - abs(y - PYR[1]))
+    if e < 0:
+        return None
+    z = FOUND_Z
+    for inset, top in TIERS:
+        if e >= inset:
+            z = top
+    return z
+
+
+# The old dike the start runs along: an earthen bank under the road from the end of
+# the mangroves round to the start straight, (x, y, half-width of its top).
+def _dike_line():
+    out = []
+    d = 0.0
+    nxt = 0.0
+    for i, (x, y, _, seg) in enumerate(PATH):
+        if i:
+            d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
+        if d >= nxt:
+            if d >= SEG[25] + 10:
+                out.append((x, y, 20.0))
+            nxt += 15.0
+    d = 0.0
+    nxt = 0.0
+    for i, (x, y, _, seg) in enumerate(PATH):
+        if i:
+            d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
+        if d > SEG[1] + 15:
+            break
+        if d >= nxt:
+            out.append((x, y, 20.0 if d < SEG[1] else 12.0))
+            nxt += 15.0
+    return out
+
+
+DIKE = _dike_line()
+
+
+def _nearest(px, py, pts):
+    best = (1e9, 0, 0.0)
+    for i, (a, b) in enumerate(zip(pts, pts[1:])):
+        ax, ay, bx, by = a[0], a[1], b[0], b[1]
+        dx, dy = bx - ax, by - ay
+        t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+        d = math.hypot(px - ax - t * dx, py - ay - t * dy)
+        if d < best[0]:
+            best = (d, i, t)
+    return best
+
+
+def dike(x, y):
+    """The dike's height (its top at 2.2 m, sloping into the water), or -inf."""
+    d, i, t = _nearest(x, y, DIKE)
+    hw = lerp(DIKE[i][2], DIKE[i + 1][2], t)
+    return 2.2 - 3.4 * sm((d - hw) / 14.0) - 1.6 * sm((d - hw - 14) / 10)
+
+
+# Mud islands in the swamp (x, y, radius): root mounds for the giant trees, bone banks.
+ISLANDS = [
+    (60, -120, 26), (-60, -110, 30), (-60, -190, 24), (90, 60, 22), (170, -60, 26), (230, -40, 24),
+    (160, 120, 30), (320, 30, 30), (310, 160, 26), (120, 190, 22), (-230, 60, 30), (-220, -60, 28),
+    (-210, -170, 26), (-70, 40, 26), (40, -230, 18), (230, 300, 30), (40, 330, 26),
+]
+
+
+# Keep the water open beside the road: no islands within 30 m of it.
+ISLANDS = [(x, y, r) for x, y, r in ISLANDS if min(math.hypot(x - p[0], y - p[1]) for p in PATH[::4]) > r + 30]
+
+
+def natural(x, y):
+    """The swamp bed: deep under the water, with mud islands, the dike and, all round,
+    the jungle rising on low hills."""
+    h = -3.6 + 0.7 * math.sin(x / 19) * math.cos(y / 23) + 0.5 * math.sin((x - y) / 37)
+    for ix, iy, r in ISLANDS:
+        d = math.hypot(x - ix, y - iy)
+        if d < r + 16:
+            h = max(h, 1.0 + 0.6 * math.sin(x / 7 + y / 5) - 4.6 * sm((d - r * 0.55) / (r * 0.45 + 16)))
+    h = max(h, dike(x, y))
+    # The jungle all round, on rising ground.
+    r = math.hypot((x - 20) / 1.0, (y - 30) / 1.12)
+    rim = 300 + 25 * math.sin(math.atan2(y - 30, x - 20) * 5 + 1)
+    h = max(h, -4 + 34 * sm((r - rim) / 60))
+    return h
 
 
 def classify(c, n, info):
-    if in_pyramid(c.x, c.y, -2):
-        return None
+    if on_foundation(c.x, c.y, -2):
+        return None  # under the pyramid's foundation
+    if c.z < WATER_Z - 0.4:
+        return ("bog_mud", "mud")  # the swamp bed, under the water
     if n.z < 0.62:
-        return ("fossil_strata", "wall")
-    if c.z < WATER_Z + 0.05:
-        return ("swamp_mud", "mud")  # the swamp bed, under the water
-    if c.z > 8:
-        return ("jungle_leafcover", "grass")
-    return ("swamp_moss", "grass")
+        return ("bog_root", "wall")
+    if info["d"] < 13 and c.z > 1.5:
+        return ("bog_moss_ground", "grass")
+    return ("bog_bank", "grass")
 
 
-def build_pyramid(c):
-    """Five stepped tiers of carved blocks."""
-    bm = bmesh.new()
-    for k in range(PYR_TIERS):
-        half = PYR_HALF - k * 7.0
-        z0, z1 = k * TIER_H - (1.5 if k == 0 else 0.0), (k + 1) * TIER_H
-        cx, cy = PYR
-        lo = [bm.verts.new((cx + sx * half, cy + sy * half, z0)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
-        hi = [bm.verts.new((v.co.x, v.co.y, z1)) for v in lo]
-        bm.faces.new(list(reversed(lo)))
-        bm.faces.new(hi)
-        for i in range(4):
-            bm.faces.new((lo[i], lo[(i + 1) % 4], hi[(i + 1) % 4], hi[i]))
-    # A little shrine on top.
-    half = 6.0
-    z0, z1 = PYR_TIERS * TIER_H, PYR_TIERS * TIER_H + 7.0
-    cx, cy = PYR
-    lo = [bm.verts.new((cx + sx * half, cy + sy * half, z0)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
-    hi = [bm.verts.new((v.co.x, v.co.y, z1)) for v in lo]
-    bm.faces.new(list(reversed(lo)))
-    bm.faces.new(hi)
-    for i in range(4):
-        bm.faces.new((lo[i], lo[(i + 1) % 4], hi[(i + 1) % 4], hi[i]))
-    ob = c.mesh_object("Pyramid", bm, "Landmarks")
-    return ob
+# ---------------------------------------------------------------- the course
 
 
-def skeleton(c, s0, s1, every=7.0):
-    """The giant's ribs arching over the road from s0 to s1, joined by its spine, with
-    its tail trailing off behind and its skull at the far end."""
-    bm = bmesh.new()
-    n = int((s1 - s0) / every)
-    spine = []
-    for k in range(n + 1):
-        t = k / n
-        smp = c.at(s0 + (s1 - s0) * t)
-        size = 0.55 + 0.45 * math.sin(math.pi * min(1, t * 1.15))  # biggest in the middle
-        half = smp.w / 2 + 2.5
-        apex = smp.p.z + 7 + 6 * size
-        spine.append(smp.p + Vector((0, 0, apex - smp.p.z + 0.6)))
-        for side in (-1, 1):
-            pts = []
-            for j in range(7):
-                u = j / 6
-                o = side * half * (1 - u) ** 0.9
-                z = smp.p.z - 1.0 + (apex - smp.p.z + 1.0) * math.sin(u * math.pi / 2) ** 0.8
-                p = smp.p + smp.r * o + Vector((0, 0, z - smp.p.z)) + smp.t * (-1.5 * u)
-                pts.append(p)
-            props.tube(bm, pts, [0.55 * (1.2 - 0.5 * j / 6) * (0.7 + 0.5 * size) for j in range(7)], n=6)
-    props.tube(bm, spine, 0.9, n=6)
-    # Vertebrae knobs along the spine.
-    for p in spine:
-        props.blob(bm, (p.x, p.y, p.z + 0.6), 0.9, subdiv=1)
-    # The tail: off behind the first rib, sinking into the swamp.
-    a = c.at(s0)
-    tail = [a.p + Vector((0, 0, 8)) - a.t * (6 * k) + a.r * (2.5 * math.sin(k * 0.8)) + Vector((0, 0, -1.6 * k)) for k in range(7)]
-    props.tube(bm, tail, [0.8 - 0.1 * k for k in range(7)], n=6)
-    ob = c.mesh_object("Giant Skeleton", bm, "Landmarks")
-    c.assign(ob, c.lib("bone"))
-    ob.data.shade_flat()
-    return ob
-
-
-def scenery(c):
-    ter = list(c.coll("Terrain").objects)
-    for piece in c.pieces:
-        if "causeway" in piece.name:
-            props.piers(c, piece, every=7, mat=("palm_bark", "wall"), size=0.35, terrain=ter, inset=0.8)
-    skeleton(c, kit.s_near(c, 2, -100), kit.s_near(c, 0, -20))
-    sk = props.skull(c)
-    smp = c.at(kit.s_near(c, 0, -14))
-    p = smp.side(smp.w / 2 + 9)
-    c.place(sk, p.x, p.y, -0.6, rot=math.atan2(smp.t.y, smp.t.x) + 2.6, scale=1.4, coll="Landmarks")
-    for x, y, rot, sc in ((150, 0, 1.0, 1.0), (-110, 120, 2.5, 1.2), (60, 200, 4.0, 0.9)):
-        if props.clear_of_road(c, x, y, 10):
-            c.place(sk, x, y, -0.8, rot=rot, scale=sc, coll="Landmarks")
-    trees = [props.swamp_tree(c, v) for v in range(2)]
-    reeds, caps = props.reeds(c), props.glow_caps(c)
-    fern = props.fern(c, "swamp_moss")
-    rocks = [props.boulder(c, "swamp_stone", v) for v in range(2)]
-
-    def near_road(m0, m1, wet=None):
-        def ok(x, y, z):
-            smp, d = c.nearest(x, y)
-            if in_pyramid(x, y, 6) or not (smp.w / 2 + m0 < d < smp.w / 2 + m1):
-                return False
-            return wet is None or ((z < WATER_Z + 0.3) == wet)
-        return ok
-
-    for v, t in enumerate(trees):
-        props.scatter(c, t, 26, (-215, 215, -200, 250), near_road(8, 60), ter, seed=110 + v, scale=(0.9, 1.5), sink=0.3)
-    props.scatter(c, reeds, 90, (-215, 215, -200, 250), near_road(2.5, 45, wet=True), ter, seed=120, role="visual", sink=0.0)
-    props.scatter(c, caps, 40, (-215, 215, -200, 250), near_road(3, 35, wet=False), ter, seed=130, role="visual")
-    props.scatter(c, fern, 50, (-215, 215, -200, 250), near_road(2.5, 40, wet=False), ter, seed=140, role="visual")
-    for v, r in enumerate(rocks):
-        props.scatter(c, r, 8, (-215, 215, -200, 250), near_road(6, 50), ter, seed=150 + v, scale=(1.2, 2.5))
+def seg_of(s):
+    k = 0
+    for i, d in SEG.items():
+        if d <= s:
+            k = max(k, i)
+    return k
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Bonebog Pyramid", "fossil_swamp")
-    c.route(ROUTE, width=14.0, bank=6.0)
+    c = kit.Course(TRACK_ID, "Bonebog Pyramid", "bonebog_swamp")
+    c.route(ROUTE, width=15.0, bank=6.0)
+    rail = ("bog_rail", "wall")
+    stone_rail = ("bog_carved", "wall")
     c.kinds = {
-        "stone": {"mat": "swamp_stone", "surface": "road", "shoulder": 1.5, "shoulder_mat": ("swamp_moss", "dirt")},
-        "mud": {"mat": "swamp_mud", "surface": "mud", "shoulder": 1.5, "shoulder_mat": ("swamp_mud", "mud")},
-        "causeway": {
-            "mat": "wood_planks",
-            "surface": "road",
-            "shoulder": 0.4,
-            "shoulder_mat": ("wood_planks", "road"),
-            "deck": 1.6,
-            "deck_mat": ("palm_bark", "wall"),
+        "dike": {"mat": "bog_paving", "shoulder": 1.8, "shoulder_mat": ("bog_moss_ground", "dirt"), "barrier": 0.7, "barrier_mat": ("bog_stone", "wall")},
+        "boardwalk": {
+            "mat": "bog_boards",
+            "shoulder": 0.5,
+            "shoulder_mat": ("bog_boards", "road"),
+            "barrier": 1.2,
+            "barrier_mat": rail,
+            "deck": 2.4,
+            "deck_mat": ("bog_root", "wall"),
             "ground": False,
         },
-        "temple": {"mat": "pyramid_step", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("swamp_stone", "road")},
+        "bridge": {
+            "mat": "bog_boards",
+            "shoulder": 0.6,
+            "shoulder_mat": ("bog_boards", "road"),
+            "barrier": 1.3,
+            "barrier_mat": rail,
+            "deck": 3.0,
+            "deck_mat": ("bog_root", "wall"),
+            "ground": False,
+        },
+        "causeway": {
+            "mat": "bog_paving",
+            "shoulder": 1.0,
+            "shoulder_mat": ("bog_stone", "road"),
+            "barrier": 1.3,
+            "barrier_mat": stone_rail,
+            "deck": 12.0,
+            "deck_mat": ("bog_stone", "wall"),
+            "ground": False,
+        },
+        "temple": {"mat": "bog_paving", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road")},
     }
 
     def label(smp):
-        x, y = smp.p.x, smp.p.y
-        if in_pyramid(x, y, 2):
+        s = smp.s
+        seg = seg_of(s)
+        if INSIDE[0] - 2 <= s <= INSIDE[1] + 2:
             return "temple"
-        if natural(x, y) < WATER_Z - 0.15 and smp.p.z - natural(x, y) > 1.0:
+        if seg in (0, 27, 28) or (seg == 1 and s < SEG[1] + 20) or (seg == 26):
+            return "dike"
+        if seg in (9, 10, 11, 12) or (seg == 8 and s > SEG[9] - 30):
             return "causeway"
-        if (x > 60 and y > 80) or (x < -60 and y < -20):
-            return "mud"
-        return "stone"
+        if seg in (7, 8) or (seg == 6 and s > SEG[6] + 40) or seg in (16, 17):
+            return "bridge"
+        return "boardwalk"
 
-    specials = [r for r in kit.runs(c, label) if r[2] != "stone"]
-    c.roads(kit.plan(c, specials, "stone"))
+    specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label) if k != "boardwalk"]
+    c.roads(kit.plan(c, specials, "boardwalk", max_len=200.0))
 
-    c.terrain("Swamp", -250, 250, -230, 270, 3.3, natural, classify, near=8.5, fade=14.0, under=0.15)
-    c.disc("Swamp Water", 0, 20, 260, WATER_Z, c.lib("swamp_water"), n=48)
+    X0, X1, Y0, Y1 = -360, 400, -360, 450
+    c.terrain("Swamp", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=16.0, under=0.2)
+    # The swamp water: deep and murky. Fall in and you're fished out.
+    c.disc("Swamp Water", 20, 40, 520, WATER_Z, c.lib("bog_water", "deep_water"), n=64)
 
-    pyr = build_pyramid(c)
-    inside = kit.crossings(c, lambda s: in_pyramid(s.p.x, s.p.y, 0.5), margin=0)
-    s0, s1 = max(inside, key=lambda r: r[1] - r[0])
-    c.tunnel(pyr, s0, s1, height=9.5, pad=10.0)
-    c.paint_rock(pyr, ("pyramid_step", "wall"), ("swamp_stone", "road"), floor=("swamp_stone", "road"), floor_z=6)
+    import bonebog_scenery  # noqa: E402
+
+    pyr = bonebog_scenery.pyramid(c, sys.modules[__name__])
 
     c.start_line()
-    scenery(c)
-    L = c.length
-    c.zipper(kit.s_near(c, 1, -60), 0)  # under the ribs
-    c.zipper(kit.s_near(c, 0, 188) - 10, 0)  # into the pyramid
-    c.zipper(L - 60, -3)
-    for at, across in ((kit.s_near(c, 98, 42), 0), (kit.s_near(c, 128, 146), 2), (s1 + 20, -2), (kit.s_near(c, -166, 56), 0), (kit.s_near(c, -92, -82), 2)):
+    # Zippers: off the start, at the top of the climb to the Rib Bridge, on the causeway
+    # and down the trestle out of the pyramid.
+    c.zipper(55, 0)
+    c.zipper(SEG[7] + 20, 0)
+    c.zipper(SEG[9] + 40, 0)
+    c.zipper(SEG[16] + 22, 0)
+    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[7] + 70, 2), (SEG[10] + 20, 0), (SEG[13] + 40, 0), (SEG[15] + 20, -2), (SEG[18] + 40, 0), (SEG[22] + 30, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (kit.s_near(c, 0, -24), -4, "red"),
-        (kit.s_near(c, 0, -24), 4, "blue"),
-        (kit.s_near(c, 166, 118), 0, "green"),
-        (kit.s_near(c, -174, 110), 0, "yellow"),
-        (kit.s_near(c, -124, -44), -3, "rainbow"),
+        (130, -4, "red"),
+        (130, 4, "blue"),
+        (SEG[5] + 15, 0, "green"),
+        (SEG[8] + 30, 0, "yellow"),
+        (SEG[14] + 30, -4, "rainbow"),
+        (SEG[14] + 30, 4, "red"),
+        (SEG[19] + 20, 0, "blue"),
+        (SEG[23] + 20, 0, "green"),
     ):
         c.balloon(at, across, col)
 
-    # Checkpoints: out from under the skeleton, off the east causeway, through the mud,
-    # out of the pyramid and off the lagoon causeway.
-    c.checkpoints(extra=[kit.s_near(c, 0, -20) + 10, kit.s_near(c, 168, 70), s1 + 10, kit.s_near(c, -150, 4) + 10])
+    c.checkpoints(
+        extra=[SEG[2] + 10, SEG[5], SEG[7] + 45, SEG[9] + 20, SEG[13] + 10, SEG[15] + 10, SEG[17] + 20, SEG[21] + 10, SEG[24]],
+        height=10.0,
+    )
 
-    ter = list(c.coll("Terrain").objects)
-    c.preset("sun", ter + [pyr], 0.3)
-    c.preset("bottoms", [pyr], 0.4)
-    c.preset("cover", [pyr], 0.7)
-    kit.paint.shade_roads(c.pieces, 0.6)
+    bonebog_scenery.build(c, pyr, sys.modules[__name__])
+
+    kit.paint.shade_roads(c.pieces, 0.35)
     c.finish()
 
 
-main()
+if __name__ == "__main__":
+    main()
