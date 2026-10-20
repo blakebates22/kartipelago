@@ -90,6 +90,17 @@ export const TRACKS: TrackEntry[] = [
     music: "frostveil",
     load: { scene: "track", packageId: "frostveil_citadel" },
   },
+  {
+    id: "snowy_summit",
+    name: "Snowy Summit Pass",
+    description:
+      "A sunny race round a frozen lake: geysers, a glowing ice cave, jumps over gorges and a spiral up inside a giant tree to bridges in the treetops.",
+    preview: "previews/snowy_summit.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "summit_pass",
+    music: "summit",
+    load: { scene: "track", packageId: "snowy_summit" },
+  },
   // Test World.
   {
     id: "dino_demo",

@@ -28,6 +28,10 @@
  *                                   Celesta and bells in the moonlit first half, then a
  *                                   wooden flute and warm horns lift it; plucked strings,
  *                                   a bright marimba, deep toms and a driving bass
+ *   summit      "Snowy Summit Pass" D major, 152: a bright gallop round a sunny mountain
+ *                                   lake. Flute and xylophone, then brass, then strings
+ *                                   and bells in the treetops, over a running marimba,
+ *                                   a skipping bass, shaker and tambourine
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -876,6 +880,112 @@ function frostveil(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Snowy Summit Pass"
+// A bright, adventurous gallop round a sunny mountain lake: flute and xylophone over a
+// running marimba on the frozen bay, brass taking the tune up through the caves and
+// canyons, strings and bells soaring in the treetops, and everything together for the
+// plunge back down.
+
+export const SUMMIT_MELODY = bars(
+  "D5:.5 F#5:.5 A5:1 D6:1 A5:1",
+  "C#6:1.5 B5:.5 A5:1 E5:1",
+  "B5:.5 C#6:.5 D6:1 F#6:1 D6:1",
+  "D6:.5 E6:.5 D6:1 B5:1 G5:1",
+  "A5:.5 D6:.5 F#6:1 E6:.5 D6:.5 A5:1",
+  "E6:1 C#6:.5 E6:.5 A6:1.5 r:.5",
+  "G6:.5 F#6:.5 E6:.5 D6:.5 B5:1 D6:1",
+  "C#6:1 E6:1 A5:2",
+  "F#5:.5 B5:.5 D6:1 F#6:1 D6:.5 B5:.5",
+  "G6:1.5 F#6:.5 D6:1 B5:1",
+  "A5:.5 B5:.5 D6:1 A5:1 F#5:1",
+  "E5:.5 A5:.5 C#6:1 E6:2!",
+  "G5:.5 B5:.5 E6:1 G6:1 E6:1",
+  "D6:.5 G6:.5 B6:1 A6:.5 G6:.5 D6:1",
+  "C#6:1 E6:.5 F#6:.5 E6:1 C#6:1",
+  "G6:1 E6:1 C#6:1 A5:1",
+  "B5:1 D6:1 G6:1.5 F#6:.5",
+  "E6:1 C#6:1 A6:2",
+  "A6:1 F#6:.5 E6:.5 C#6:1 A5:1",
+  "B5:.5 C#6:.5 D6:1 F#6:1 B6:1",
+  "B6:1.5 A6:.5 G6:1 D6:1",
+  "C#6:.5 D6:.5 E6:1 A6:1 C#7:1",
+  "D7:1.5 A6:.5 F#6:1 A6:1",
+  "C7:1 A6:.5 F#6:.5 D6:2",
+  "D6:.5 G6:.5 B6:1 D7:1 B6:1",
+  "Bb6:1 G6:.5 Bb6:.5 D7:1 G6:1",
+  "F#6:1 A6:.5 F#6:.5 D6:1 A5:1",
+  "B5:.5 D6:.5 F#6:1 B6:1.5 r:.5",
+  "G6:1 E6:.5 G6:.5 B6:1 E6:1",
+  "C#7:1 B6:.5 A6:.5 E6:1 C#6:1",
+  "D6:.5 F#6:.5 A6:1 D7:2!",
+  "C#7:.5 A6:.5 E6:.5 C#6:.5 A5:1 r:1",
+);
+export const SUMMIT_CHORDS =
+  "D:4 A:4 Bm:4 G:4 D:4 A:4 G:4 A7:4 " +
+  "Bm:4 G:4 D:4 A:4 Em:4 G:4 A:4 A7:4 " +
+  "G:4 A:4 F#m:4 Bm:4 G:4 A:4 D:4 D7:4 " +
+  "G:4 Gm:4 D:4 Bm:4 Em:4 A:4 D:4 A7:4";
+
+function summit(): Song {
+  const ch = chart(SUMMIT_CHORDS);
+  const mel = seq(SUMMIT_MELODY, 0, 0.86);
+  const part1 = mel.filter((n) => n.t < 32);
+  const part2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const part3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const part4 = mel.filter((n) => n.t >= 96);
+  const upper = ch.filter((c) => c.t >= 64);
+  // A bouncing, skipping bass: root, octave, fifth, and a push into the next bar.
+  const skip: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "8"],
+    [1, 0.5, "R"],
+    [1.5, 0.5, "5"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "8"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "summit",
+    title: "Snowy Summit Pass",
+    role: "Frostveil Peaks",
+    bpm: 152,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: flute and xylophone, then brass, then strings and bells, then all.
+      part("flute", "base", 0.95, part1),
+      part("xylophone", "base", 0.5, part1),
+      part("brass", "base", 0.85, part2),
+      part("flute", "base", 0.45, part2),
+      part("strings", "base", 1, part3),
+      part("bell", "base", 0.4, part3),
+      part("brass", "base", 0.8, part4),
+      part("flute", "base", 0.6, part4),
+      part("square", "base", 0.16, shift(part4, 0, 12)),
+      // A running marimba under everything, bright pizzicato stabs, sparkling celesta.
+      part("marimba", "base", 0.55, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 1], 62, 0.2, 0.5)),
+      part("pizz", "base", 0.45, stabs(ch, [0.5, 1.5, 2.5, 3.5], 57, 0.2, 0.5)),
+      part("celesta", "base", 0.35, arpeggio(upper, 1, [3, 2, 1, 2], 79, 0.6, 0.35)),
+      // Pads: warm horns, then strings in the treetops.
+      part("horn", "base", 0.35, pads(ch, 52, 4, 0.4)),
+      part("strings", "base", 0.3, pads(upper, 60, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, skip, 33, 0.85)),
+      // Bright, driving drums: kick, backbeat snare, shaker sixteenths, tambourine,
+      // a tom fill at the end of every phrase and a crash at the top of each section.
+      ...drumParts("base", 0.9, drums("K...k.K.K...k.k.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.75, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", KIT, 0.25, 32)),
+      ...drumParts("base", 0.4, drums("..t...t...t...tt", KIT, 0.25, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.8, drums("o.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.85, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -1162,6 +1272,7 @@ export const SONGS: Record<string, Song> = {
   cascade: cascade(),
   cascade_classic: cascadeClassic(),
   frostveil: frostveil(),
+  summit: summit(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

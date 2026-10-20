@@ -1,9 +1,10 @@
 # Frostveil Peaks
 
 A prehistoric winter world: snowbound mountains where an ancient civilization built
-temples, bridges and fortresses into the peaks. Its first course is **Frostveil
-Citadel**; three more are planned and show in track select as locked "Coming Soon"
-tiles (`comingSoon` in `src/game/worlds.ts`: rename them there when they have names).
+temples, bridges and fortresses into the peaks. Its courses are **Frostveil Citadel**
+(moonlit ruins) and **Snowy Summit Pass** (a bright, sunny lake); two more are planned
+and show in track select as locked "Coming Soon" tiles (`comingSoon` in
+`src/game/worlds.ts`: rename them there when they have names).
 
 ## Frostveil Citadel
 
@@ -89,3 +90,82 @@ jump) and `tests/holes.test.ts`.
 
 **Size:** the biggest course so far (about 13 MB of visual geometry and 7 MB of
 collision; about 1,400 draw calls at the start). Fog hides the far edges.
+
+## Snowy Summit Pass
+
+The sunny opposite of the citadel: a wild, bright lap of about 2.4 km (an AI lap is
+about 103 s) round a frozen mountain lake, with three jumps, geysers, a glowing ice
+cave and a spiral up inside a giant tree. Its layout follows the "Snowy Summit Pass"
+concept: frozen bay, ice archways, crystal caves, polar ruins, glacier fields, ice
+floes, wind canyons and a summit lookout, with plank bridges and prayer flags, floating
+ice islands, icefalls, a wrecked ship and frozen tower ruins. All designs are original.
+
+| #   | Section                  | What happens                                                                                                                                                                                       |
+| --- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The Frozen Bay           | The start, under strings of prayer flags, on a groomed snow road straight across the lake's turquoise ice. Icebergs, a pirate ship wrecked in the ice, and two woolly mammoths wandering the bay.  |
+| 2   | The Ice Archways         | S-bends under three great natural arches of blue ice.                                                                                                                                              |
+| 3   | The Geothermal Springs   | The lake's east end is melted by hot springs: steaming turquoise water, ice floes, orange-rimmed travertine terraces. A geyser in the road, a wooden ramp, and a jump over the geyser basin.       |
+| 4   | The Crystal Caves        | North into the glacier: a tunnel of blue ice climbing 3 to 21 m, glowing blue and violet crystals on the walls and roof, chevron signs on the bends.                                               |
+| 5   | The Wind Canyons         | West along a canyon carved into the snowy plateau, under an ice arch and flags strung wall to wall, then a jump over a deep gorge (a zipper on the run-up makes it a huge one).                    |
+| 6   | The Giant Trees          | Down into a half-frozen, half-thawed forest: snowy pines up high, green trees and meadow on the low ground, shafts of sunlight. The road drives into the biggest tree and spirals up inside it.    |
+| 7   | Treetop Bridges, Lookout | Out of the tree 30 m up onto plank bridges with rope rails and bunting, round ledges on two more giants, and onto the lookout rock (a hut, flags) with the whole lake below.                       |
+| 8   | The Glacier Fields       | A fast plunge down the west ridge, a jump off an icy bluff over a crevasse, and a sweep across the open ice (bare ice is road but slippery: cut across if you dare) under a mammoth skull's tusks. |
+
+**The great tree:** 84 m across at the road, its trunk a thick shell (bark outside,
+golden heartwood inside) on great roots. The road goes in through an arched doorway,
+winds up two whole turns of a 28 m spiral (15 m a turn, so each turn passes over the
+one below) round a heartwood column, on a ramp with rails both sides and beams under
+every turn, and leaves through a doorway 30 m up straight onto the first bridge.
+Glowing shelf fungi, knotholes letting in beams of sunlight, and a crown of green far
+above (with the last snow on it).
+
+**Geysers:** they blow on a fixed beat of the race clock (`geyser` entities, see
+[prehistoric-world.md](prehistoric-world.md#geysers)): steam at rest, a gurgle and
+bubbling as a warning, then a roaring column. The one in the road on the terraces and
+the big one under the jump throw you into the air if you're in the column as it blows
+(you keep your speed: a free jump). The rest are scenery.
+
+**The mammoths:** a mother and her calf (`dinosaur` entities with `"model":
+"mammoth"`, an original cartoon mammoth in `src/render/mammoth.ts`) walk a loop on the
+bay south of the road, stop for karts and trumpet.
+
+**Jumps:** the geyser basin (12 m), the gorge (16 m) and the crevasse (16 m). Missing
+one puts you down on its landing (`respawn` entities). No checkpoint sits inside a
+jump's catch stretch.
+
+**Surfaces:** the snow road is `packed_snow`, cobbles `snow_stone`, plank bridges and
+travertine `road`, the forest track `dirt`, bare lake ice `ice` (road, but very
+slippery), deep snow off the road `deep_snow`, the hot water `deep_water` (you're
+fished out), and the gorge and crevasse floors `abyss`.
+
+**Lighting:** the **Summit Pass** theme: a high sun in a deep blue sky with white
+clouds and pale far peaks, light fog only far out. The caves are painted blue and
+violet round their crystals; the inside of the great tree warm gold round its fungi
+and knotholes; and the forest floor lies in dappled shade with sunny patches, with the
+giants' canopy shading the roads under it.
+
+**Music:** "Snowy Summit Pass" (`summit` in `src/audio/songs.ts`), D major, 152 BPM: flute
+and xylophone on the bay, brass up through the caves and canyons, strings and bells in
+the treetops, everything together for the plunge back down, over a running marimba, a
+skipping bass, shaker and tambourine.
+
+**How it's built** (`tools/blender/prehistoric/`):
+
+- `snowy_summit.py`: the layout (turtle segments; the spiral is one 720° arc), heights,
+  the land (the lake and its melted end, the gorge, the crevasse, the plateau, the
+  glacier, the west ridge, the lookout rock, terraced mountains), the road kinds, the
+  hidden floors and the gameplay.
+- `summit_scenery.py`: the glacier and its caves, the lake (hot water, floes, icebergs,
+  the wreck), the hot springs, the ice arches, the great tree and the other giants, the
+  forest, the bridges, flags and lookout, the canyons, the polar ruins, the floating
+  islands, the mammoths' path, the entities and the painted light.
+- `summit_props.py`: the kit (pines, broadleaf trees, shrubs, boulders, icebergs, floes,
+  ice arches, floating islands, geyser cones, terrace pools, the shipwreck, the tusk
+  gate, ribs, tower ruins, columns, chevrons, flag poles, the hut, bunting lines).
+- Theme `summit_pass` and 34 textures in `make_textures.py`.
+
+**Tests:** `tests/summit.test.ts` (the world, a clean load, the spiral really stacking,
+the geysers' schedule and launch, the mammoths, three AI laps) and `tests/holes.test.ts`.
+
+**Size:** about 17 MB of visual geometry and 6 MB of collision; about 510 draw calls
+at the start.

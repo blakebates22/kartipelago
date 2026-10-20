@@ -1,0 +1,451 @@
+{
+  "schemaVersion": 1,
+  "id": "snowy_summit",
+  "name": "Snowy Summit Pass",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 50,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 335.8,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 677.3,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 934.8,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1973.6,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 110,
+      "across": -4,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 269.9,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 564.4,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 838.0,
+      "across": 2,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1083.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1253.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_07",
+      "type": "bananas",
+      "at": 1683.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_08",
+      "type": "bananas",
+      "at": 2033.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_09",
+      "type": "bananas",
+      "at": 2305.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 160,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 160,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 309.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 513.8,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 707.3,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 1016.8,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1016.8,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1373.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1763.8,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 2091.4,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_11",
+      "type": "balloon",
+      "at": 2345.8,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 381.8,
+      "to": 441.8,
+      "at": 469.8
+    },
+    {
+      "id": "respawn_02",
+      "type": "respawn",
+      "from": 930.8,
+      "to": 994.8,
+      "at": 1022.8
+    },
+    {
+      "id": "respawn_03",
+      "type": "respawn",
+      "from": 2149.8,
+      "to": 2213.8,
+      "at": 2241.8
+    },
+    {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": 201.19,
+      "y": 1.01,
+      "z": 113.87,
+      "r": 4.2,
+      "height": 22.0,
+      "period": 7.0,
+      "offset": 0.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 15.0
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": 261.06,
+      "y": -0.3,
+      "z": 113.87,
+      "r": 5.5,
+      "height": 26.0,
+      "period": 7.0,
+      "offset": 2.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 15.0
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": 185.23,
+      "y": 1.2,
+      "z": 89.87,
+      "r": 3.5,
+      "height": 19.097498112303583,
+      "period": 11.0,
+      "offset": 1.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_04",
+      "type": "geyser",
+      "x": 215.19,
+      "y": 1.2,
+      "z": 135.87,
+      "r": 3.5,
+      "height": 20.728495564995683,
+      "period": 9.0,
+      "offset": 2.7,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_05",
+      "type": "geyser",
+      "x": 286.91,
+      "y": 1.2,
+      "z": 87.87,
+      "r": 3.5,
+      "height": 22.517053649324225,
+      "period": 10.0,
+      "offset": 4.4,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_06",
+      "type": "geyser",
+      "x": 312.01,
+      "y": 1.2,
+      "z": 137.9,
+      "r": 3.5,
+      "height": 21.130662230709277,
+      "period": 11.0,
+      "offset": 6.1,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_07",
+      "type": "geyser",
+      "x": 371.91,
+      "y": 2.17,
+      "z": 112.95,
+      "r": 3.5,
+      "height": 21.666706383344717,
+      "period": 9.0,
+      "offset": 7.8,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_08",
+      "type": "geyser",
+      "x": 337.2,
+      "y": 9.8,
+      "z": 58.27,
+      "r": 3.5,
+      "height": 20.04481929591566,
+      "period": 10.0,
+      "offset": 9.5,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_09",
+      "type": "geyser",
+      "x": 163.91,
+      "y": 1.2,
+      "z": 145.69,
+      "r": 3.5,
+      "height": 23.92387249704916,
+      "period": 11.0,
+      "offset": 11.2,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 147.79,
+      "y": -0.2,
+      "z": 100.91
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 175.19,
+      "y": -0.2,
+      "z": 134.8
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 197.32,
+      "y": -0.2,
+      "z": 93.98
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 219.32,
+      "y": -0.2,
+      "z": 133.22
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 241.29,
+      "y": -0.2,
+      "z": 94.74
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 263.12,
+      "y": -0.2,
+      "z": 135.31
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 285.05,
+      "y": -0.2,
+      "z": 89.35
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": 306.95,
+      "y": -0.2,
+      "z": 136.89
+    },
+    {
+      "id": "steam_09",
+      "type": "steam",
+      "x": 323.16,
+      "y": -0.2,
+      "z": 93.27
+    },
+    {
+      "id": "steam_10",
+      "type": "steam",
+      "x": 361.49,
+      "y": -0.2,
+      "z": 115.01
+    },
+    {
+      "id": "steam_11",
+      "type": "steam",
+      "x": 343.3,
+      "y": -0.2,
+      "z": 77.41
+    },
+    {
+      "id": "steam_12",
+      "type": "steam",
+      "x": 381.25,
+      "y": -0.2,
+      "z": 60.82
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -163.93,
+      "y": 47.0,
+      "z": -229.15
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.7,
+      "scale": 1.0,
+      "model": "mammoth"
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.7,
+      "scale": 0.55,
+      "model": "mammoth",
+      "start": 14.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/snowy_summit.py (re-running it rewrites entities)"
+}

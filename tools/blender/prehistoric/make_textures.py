@@ -1824,6 +1824,468 @@ def fire_glow():
 
     return paint(f)
 
+# ------------------------------------------------------------------ Snowy Summit Pass
+
+
+def summit_snow():
+    # Fresh snow in bright sunshine: white with soft sky-blue hollows and sparkles.
+    pal = ["#c6dcf4", "#d6e6f8", "#e4effb", "#f0f6fd", "#fbfdff"]
+    a, b = noise(4, 2, 2201), noise(16, 8, 2202)
+    sparkle = speckle(2203, 10)
+
+    def f(x, y):
+        if (x, y) in sparkle:
+            return "#ffffff"
+        return pick(pal, 0.3 + a(x, y) * 0.45 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def summit_road():
+    # A groomed snow track: corduroy lines from the groomer, two pressed wheel ruts.
+    pal = ["#b4cbe6", "#c4d7ee", "#d3e2f4", "#e2ecf8", "#eef4fb"]
+    a, b = noise(4, 2, 2211), noise(16, 8, 2212)
+
+    def f(x, y):
+        rut = x % 32 in (8, 9, 10, 22, 23, 24)
+        cord = y % 3 == 0
+        v = 0.4 + a(x, y) * 0.35 + b(x, y) * 0.25 - (0.3 if rut else 0) - (0.08 if cord else 0)
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def summit_stone_road():
+    # Warm grey cobbles swept mostly clear of snow, snow lying in the joints.
+    pave = ["#8f8c94", "#a29fa6", "#b4b1b6", "#c4c1c4"]
+    a, b = noise(4, 2, 2221), noise(16, 8, 2222)
+
+    def f(x, y):
+        bx = (x + (4 if (y // 8) % 2 else 0)) % 8
+        if bx == 0 or y % 8 == 0:
+            return "#e8f0fa" if a(x, y) > 0.35 else "#6e6a74"
+        if a(x, y) * 0.7 + b(x, y) * 0.5 > 0.92:
+            return "#eef4fb"
+        return pick(pave, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def crystal_road():
+    # The caves' floor: packed blue snow over ice, with glinting frost.
+    pal = ["#7fa8e0", "#92b8e8", "#a6c8ef", "#bcd8f5"]
+    a = noise(4, 2, 2231)
+    glints = speckle(2232, 16)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#ffffff"
+        rut = x % 32 in (8, 9, 22, 23)
+        return pick(pal, 0.25 + a(x, y) * 0.6 - (0.2 if rut else 0))
+
+    return paint(f)
+
+
+def lake_ice():
+    # Clear turquoise lake ice with white cracks and frozen bubbles.
+    pal = ["#3cbcd2", "#52cadc", "#6cd6e4", "#8ae2ec", "#aaecf2"]
+    a, b = noise(4, 2, 2241), noise(8, 4, 2242)
+    bubbles = speckle(2243, 18)
+
+    def f(x, y):
+        if (x, y) in bubbles:
+            return "#e8fbff"
+        crack = abs(a(x, y) - 0.5) < 0.018 or abs(b(x, y) - 0.45) < 0.012
+        if crack:
+            return "#f4feff"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def glacier_ice():
+    # Glacier walls: layered blue ice, brighter strata and dark-blue seams.
+    pal = ["#4a8ad8", "#5c9ee2", "#72b2ea", "#8ec6f2", "#b0dcf8"]
+    a = noise(8, 2, 2251)
+
+    def f(x, y):
+        band = math.sin((y + a(x, y) * 8) / H * math.tau * 3)
+        if band > 0.93:
+            return "#e6f6ff"
+        if band < -0.95:
+            return "#2e62b0"
+        return pick(pal, 0.45 + band * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def crystal_blue():
+    a = noise(4, 8, 2261)
+
+    def f(x, y):
+        if (x + 2 * y) % 37 == 0:
+            return "#ffffff"
+        return pick(["#1a4ab0", "#2a68d4", "#3c8cf0", "#62b4ff", "#a0dcff"], 0.2 + a(x, y) * 0.75)
+
+    return paint(f)
+
+
+def crystal_violet():
+    a = noise(4, 8, 2271)
+
+    def f(x, y):
+        if (x + 2 * y) % 37 == 0:
+            return "#fbeaff"
+        return pick(["#4a1e9a", "#6630c4", "#8448e0", "#a46cf4", "#cca0ff"], 0.2 + a(x, y) * 0.75)
+
+    return paint(f)
+
+
+def chevron_sign():
+    # Turn signs: white chevrons on bright blue.
+    def f(x, y):
+        u = (x + abs(y - 16)) % 16
+        if u < 6:
+            return "#ffffff"
+        if y in (0, 31):
+            return "#0e2e70"
+        return "#1f64d8"
+
+    return paint(f)
+
+
+def summit_rock():
+    # Sunny granite: warm light grey, speckled, with snow in the cracks.
+    pal = ["#7f7a86", "#918c96", "#a5a0a8", "#b8b4ba", "#cac6ca"]
+    a, b = noise(4, 2, 2281), noise(16, 8, 2282)
+    dots = speckle(2283, 40)
+
+    def f(x, y):
+        if (x, y) in dots:
+            return "#5e5966"
+        if abs(a(x, y) - 0.5) < 0.02:
+            return "#f2f6fc"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def summit_cliff():
+    # Bright granite cliffs with snow lying thick on every ledge.
+    pal = ["#9690a0", "#a8a3b0", "#bab6c0", "#ccc9d0"]
+    a = noise(4, 2, 2291)
+
+    def f(x, y):
+        ledge = (y + int(a(x, y) * 6)) % 10
+        if ledge < 3:
+            return "#fafcff" if ledge < 2 else "#d8e6f6"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def hot_spring():
+    # Steaming geothermal water: vivid turquoise, paler where it wells up.
+    pal = ["#0aa4b8", "#14b6c6", "#2ac8d4", "#52d8e0", "#8ce8ec"]
+    a, b = noise(4, 2, 2301), noise(8, 4, 2302)
+    foam = speckle(2303, 12)
+
+    def f(x, y):
+        if (x, y) in foam:
+            return "#f0fdff"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def hot_pool():
+    # A shallow hot pool on the terraces: bright aqua over cream sinter.
+    a = noise(4, 2, 2311)
+
+    def f(x, y):
+        return pick(["#44d0d8", "#66dce0", "#8ae6e8", "#b0f0ee"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def sinter():
+    # Travertine: cream mineral crust with orange and rust streaks where the hot water
+    # runs (the bright colours of a real hot spring's mats).
+    pal = ["#e2d2b0", "#ecdcbc", "#f4e8cc", "#faf2de"]
+    a, b = noise(8, 2, 2321), noise(16, 4, 2322)
+
+    def f(x, y):
+        streak = math.sin(x * 0.45 + a(x, y) * 7)
+        if streak > 0.86:
+            return pick(["#e07a2a", "#ee9a3a", "#f6b84e"], b(x, y))
+        if streak > 0.74:
+            return "#d8b26a"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def sinter_road():
+    # A road worn into the terraces: pale cream stone, two ruts.
+    pal = ["#cdbb98", "#d8c8a6", "#e2d4b6", "#ece0c6"]
+    a, b = noise(4, 2, 2331), noise(16, 8, 2332)
+
+    def f(x, y):
+        rut = x % 32 in (8, 9, 10, 22, 23, 24)
+        return pick(pal, 0.35 + a(x, y) * 0.4 + b(x, y) * 0.25 - (0.3 if rut else 0))
+
+    return paint(f)
+
+
+def sinter_rim():
+    # The terraces' rims: orange and rust bands of mineral and microbe mats.
+    a = noise(8, 2, 2341)
+
+    def f(x, y):
+        band = (y + int(a(x, y) * 5)) % 8
+        return ["#f6e6c2", "#f0c070", "#e89440", "#d26a26", "#b8521e", "#e89440", "#f0c070", "#f6e6c2"][band]
+
+    return paint(f)
+
+
+def thaw_grass():
+    # Thawed meadow: bright spring grass with the last patches of snow.
+    a, b = noise(4, 2, 2351), noise(16, 8, 2352)
+    flowers = speckle(2353, 8)
+
+    def f(x, y):
+        if (x, y) in flowers:
+            return "#ffe86a" if (x + y) % 2 else "#ffffff"
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if v > 0.72:
+            return pick(["#e6eef8", "#f6faff"], (v - 0.72) * 3)
+        return pick(["#4c9a3c", "#5aac44", "#6cbc4e", "#84cc5a"], v * 1.3)
+
+    return paint(f)
+
+
+def forest_road():
+    # A forest track: warm brown earth, damp from the thaw, with slush in the ruts.
+    pal = ["#8a6a4a", "#9a7a56", "#ab8a64", "#bc9c72"]
+    a, b = noise(4, 2, 2361), noise(16, 8, 2362)
+
+    def f(x, y):
+        rut = x % 32 in (8, 9, 10, 22, 23, 24)
+        if rut and a(x, y) > 0.5:
+            return "#d6e2ee"
+        return pick(pal, 0.3 + a(x, y) * 0.4 + b(x, y) * 0.3 - (0.2 if rut else 0))
+
+    return paint(f)
+
+
+def giant_bark():
+    # Colossal red-brown bark in deep vertical furrows (V runs up the trunk).
+    pal = ["#5a2c1c", "#6e3822", "#82462a", "#985634", "#ac6a42"]
+    a = noise(16, 2, 2371)
+
+    def f(x, y):
+        furrow = math.sin(x * 0.9 + a(x, y) * 5)
+        if furrow < -0.8:
+            return "#3a1a10"
+        return pick(pal, 0.45 + furrow * 0.35 + a(x, y) * 0.15)
+
+    return paint(f)
+
+
+def heartwood():
+    # Inside the great tree: golden heartwood with grain lines.
+    pal = ["#b8823e", "#c8944a", "#d8a65a", "#e6b86c", "#f0ca82"]
+    a = noise(8, 2, 2381)
+
+    def f(x, y):
+        grain = math.sin(y * 0.8 + a(x, y) * 9)
+        if grain > 0.9:
+            return "#8e5a26"
+        return pick(pal, 0.4 + grain * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def plank_road():
+    # Sunny wooden planks across the road, nail heads and gaps between boards.
+    pal = ["#a8743e", "#b88248", "#c69254", "#d4a262"]
+    a = noise(16, 2, 2391)
+
+    def f(x, y):
+        board = y // 4
+        if y % 4 == 3:
+            return "#5e3c1e"
+        if x % 16 in (2, 13) and y % 4 == 1:
+            return "#4a4a52"
+        return pick(pal, 0.2 + a(x + board * 7, y) * 0.6 + ((board * 37) % 5) * 0.04)
+
+    return paint(f)
+
+
+def rope_rail():
+    # A rail of rope between wooden posts, with snow on the top rope.
+    a = noise(8, 2, 2401)
+
+    def f(x, y):
+        if x % 16 < 3:
+            return pick(["#7a4e26", "#8e5e30"], a(x, y))
+        if y in (2, 3, 14, 15, 26, 27):
+            return "#f2f6fc" if y == 2 else pick(["#c8a466", "#d8b878"], a(x, y))
+        if (x + y) % 6 == 0 and 4 < y < 26:
+            return "#b8945a"
+        return pick(["#6e4a28", "#7e5832"], a(x, y)) if y > 27 else "#a87e46"
+
+    return paint(f)
+
+
+def bunting():
+    # Prayer-flag colours, one per flag (the flags are triangles cut in the mesh; U runs
+    # along the line, a flag every 1/8 of the tile).
+    cols = ["#e84a3a", "#f8c838", "#4cbc5a", "#3a8ae8", "#f4f4f4", "#f08a2a", "#c04ab8", "#3ac0d0"]
+
+    def f(x, y):
+        if x % 8 == 7 or y in (0, 31):
+            return "#8a6a48"
+        return cols[(x // 8) % 8]
+
+    return paint(f)
+
+
+def pine_bright():
+    # Sunny conifer needles with snow lying on the boughs.
+    a = noise(8, 4, 2421)
+
+    def f(x, y):
+        if y % 8 < 2 and a(x, y) > 0.3:
+            return "#ffffff" if y % 8 == 0 else "#dce8f6"
+        return pick(["#1e6a3e", "#287a48", "#348c52", "#44a060"], a(x, y))
+
+    return paint(f)
+
+
+def leaf_bright():
+    # A thawed canopy: fresh bright greens with sunlit gold.
+    a, b = noise(8, 4, 2431), noise(16, 8, 2432)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if v > 0.78:
+            return "#d8f080"
+        return pick(["#2e7a2c", "#3e8e34", "#52a23c", "#6cb648", "#88c856"], v)
+
+    return paint(f)
+
+
+def ship_hull():
+    # An old ship's hull: dark tarred planks, frost on the seams.
+    pal = ["#3a2a22", "#46322a", "#523c30", "#5e4636"]
+    a = noise(16, 2, 2441)
+
+    def f(x, y):
+        if y % 6 == 5:
+            return "#c8d8e8" if a(x, y) > 0.55 else "#22160e"
+        if x % 24 == 0 and y % 6 == 2:
+            return "#8a8a90"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def sail_cloth():
+    # A patched, weathered sail.
+    a = noise(4, 2, 2451)
+
+    def f(x, y):
+        if x % 21 == 0 or y % 15 == 0:
+            return "#b8ab90"
+        if 30 < x < 46 and 10 < y < 22:
+            return "#c8b48a"
+        return pick(["#d6cbb0", "#e2d8c0", "#ece4d0"], a(x, y))
+
+    return paint(f)
+
+
+def mammoth_bone():
+    pal = ["#cdbf9e", "#dccfae", "#e8dcbe", "#f2e8d0"]
+    a, b = noise(4, 8, 2461), noise(16, 4, 2462)
+
+    def f(x, y):
+        if abs(b(x, y) - 0.5) < 0.02:
+            return "#9e8e6e"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def frost_stone():
+    # The old ruins: pale blue-grey blocks with snow in the joints.
+    pal = ["#9aa4b8", "#aab4c6", "#bac4d2", "#cad2de"]
+    a = noise(4, 2, 2471)
+
+    def f(x, y):
+        joint = x % 16 == 0 or (y + (8 if (x // 16) % 2 else 0)) % 16 == 0
+        if joint:
+            return "#f2f6fc" if y % 16 == 0 else "#6c7488"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def glow_moss():
+    # Glowing fungi and moss inside the great tree: warm gold and green.
+    a, b = noise(8, 4, 2481), noise(16, 8, 2482)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if v > 0.7:
+            return pick(["#fff0a0", "#ffe070"], v)
+        return pick(["#b8d84a", "#d0e85a", "#e8d060", "#f0c050"], v)
+
+    return paint(f)
+
+
+def steam_mist():
+    a, b = noise(4, 2, 2491), noise(8, 4, 2492)
+
+    def f(x, y):
+        return pick(["#dceef6", "#e8f4fa", "#f2f9fc", "#ffffff"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def icefall_blue():
+    # Frozen waterfalls: streaky blue-white ice (V runs down the fall).
+    pal = ["#62aee8", "#80c4f0", "#a2d8f6", "#c6eafb", "#eef9ff"]
+    a = noise(8, 2, 2501)
+
+    def f(x, y):
+        streak = math.sin(x * 1.7 + a(x, y) * 6) * 0.5 + 0.5
+        return pick(pal, streak * 0.7 + a(x, y) * 0.3)
+
+    return paint(f)
+
+
+def warm_falls():
+    # A hot waterfall from the springs: bright aqua streaks (V runs downhill).
+    pal = ["#2cc0cc", "#54d2da", "#86e2e6", "#bcf2f2", "#ffffff"]
+    a = noise(8, 2, 2511)
+
+    def f(x, y):
+        streak = math.sin(x * 1.9 + a(x, y) * 6) * 0.5 + 0.5
+        return pick(pal, streak * 0.7 + a(x, y) * 0.4)
+
+    return paint(f)
+
+
+def mammoth_fur():
+    # Shaggy russet-brown fur (for the mammoth model's reference swatch).
+    a = noise(16, 4, 2521)
+
+    def f(x, y):
+        return pick(["#5a3420", "#6e4228", "#844e30", "#9a5e3a"], 0.3 + math.sin(x * 1.3 + a(x, y) * 5) * 0.3 + a(x, y) * 0.3)
+
+    return paint(f)
+
 
 THEMES = [
     {
@@ -1978,8 +2440,64 @@ THEMES.append(
     }
 )
 
+THEMES.append(
+    {
+        "id": "summit_pass",
+        "name": "Summit Pass",
+        "description": "A brilliant sunny day in the snowy mountains: dazzling snow, turquoise ice, steaming hot springs, glowing ice caves and giant trees",
+        "environment": {
+            "sky": "#5ab8ff",
+            "fog": {"enabled": True, "color": "#d4eeff", "near": 260, "far": 1400},
+            "sun": {"color": "#fff4dc", "intensity": 2.7, "direction": [0.42, 0.74, 0.52]},
+            "ambient": {"sky": "#eaf6ff", "ground": "#8ea2bc", "intensity": 1.35},
+            "skyDome": {
+                "top": "#1c7ee8",
+                "horizon": "#c8ecff",
+                "bottom": "#e4f4ff",
+                "sun": {"color": "#fffbe6", "size": 8, "glow": "#fff0b0", "elevation": 32},
+                "clouds": {"count": 30, "color": "#ffffff", "shade": "#d2e6fa", "seed": 61, "low": 8, "high": 26, "drift": 0.005},
+                "hills": {"color": "#9eb8de", "far": "#d2e4f8", "height": 16, "seed": 67, "layers": 3},
+            },
+        },
+    }
+)
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("summit_snow", "Sunny Snow", "summit_pass", "deep_snow", summit_snow, 6, None),
+    ("summit_road", "Groomed Snow Road", "summit_pass", "packed_snow", summit_road, 5, None),
+    ("summit_stone_road", "Swept Cobbles", "summit_pass", "snow_stone", summit_stone_road, 3.5, None),
+    ("crystal_road", "Ice Cave Floor", "summit_pass", "snow_stone", crystal_road, 5, None),
+    ("lake_ice", "Lake Ice", "summit_pass", "ice", lake_ice, 10, {"scrollU": 0, "scrollV": 0, "glow": 0.2}),
+    ("glacier_ice", "Glacier Ice", "summit_pass", "wall", glacier_ice, 9, {"scrollU": 0, "scrollV": 0, "glow": 0.25}),
+    ("crystal_blue", "Ice Crystal (Blue)", "summit_pass", "wall", crystal_blue, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.85}),
+    ("crystal_violet", "Ice Crystal (Violet)", "summit_pass", "wall", crystal_violet, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.85}),
+    ("chevron_sign", "Chevron Sign", "summit_pass", "wall", chevron_sign, 3, {"scrollU": 0, "scrollV": 0, "glow": 0.55}),
+    ("summit_rock", "Sunny Granite", "summit_pass", "wall", summit_rock, 9, None),
+    ("summit_cliff", "Snowy Granite Cliff", "summit_pass", "wall", summit_cliff, 8, None),
+    ("hot_spring", "Hot Spring Water", "summit_pass", "deep_water", hot_spring, 9, {"scrollU": 0.01, "scrollV": 0.03, "wave": 0.05, "wavePeriod": 4, "opacity": 0.9, "glow": 0.3}),
+    ("hot_pool", "Hot Pool", "summit_pass", "water", hot_pool, 4, {"scrollU": 0.02, "scrollV": 0.01, "wave": 0.05, "wavePeriod": 3, "opacity": 0.88, "glow": 0.35}),
+    ("sinter", "Travertine", "summit_pass", "dirt", sinter, 6, None),
+    ("sinter_road", "Travertine Road", "summit_pass", "road", sinter_road, 4, None),
+    ("sinter_rim", "Travertine Rim", "summit_pass", "wall", sinter_rim, 2, None),
+    ("thaw_grass", "Thawed Meadow", "summit_pass", "grass", thaw_grass, 5, None),
+    ("forest_road", "Forest Track", "summit_pass", "dirt", forest_road, 4, None),
+    ("giant_bark", "Giant Bark", "summit_pass", "wall", giant_bark, 6, None),
+    ("heartwood", "Heartwood", "summit_pass", "wall", heartwood, 4, None),
+    ("plank_road", "Plank Road", "summit_pass", "road", plank_road, 4, None),
+    ("rope_rail", "Rope Rail", "summit_pass", "wall", rope_rail, 2.5, None),
+    ("bunting", "Bunting", "summit_pass", "wall", bunting, 4, None),
+    ("pine_bright", "Sunny Pine", "summit_pass", "grass", pine_bright, 2, None),
+    ("leaf_bright", "Thawed Canopy", "summit_pass", "grass", leaf_bright, 4, None),
+    ("ship_hull", "Ship Hull", "summit_pass", "wall", ship_hull, 3, None),
+    ("sail_cloth", "Sailcloth", "summit_pass", "wall", sail_cloth, 4, None),
+    ("mammoth_bone", "Mammoth Bone", "summit_pass", "wall", mammoth_bone, 3, None),
+    ("frost_stone", "Frost Stone", "summit_pass", "wall", frost_stone, 4, None),
+    ("glow_moss", "Glowing Moss", "summit_pass", "wall", glow_moss, 3, {"scrollU": 0, "scrollV": 0, "wave": 0.03, "wavePeriod": 3, "glow": 0.75}),
+    ("steam_mist", "Steam", "summit_pass", "wall", steam_mist, 10, {"scrollU": 0.004, "scrollV": -0.05, "wave": 0.05, "wavePeriod": 5, "opacity": 0.42, "glow": 0.5}),
+    ("icefall_blue", "Icefall", "summit_pass", "wall", icefall_blue, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.3}),
+    ("warm_falls", "Warm Falls", "summit_pass", "water", warm_falls, 6, {"scrollU": 0.0, "scrollV": 1.0, "wave": 0.03, "wavePeriod": 1.4, "opacity": 0.9, "glow": 0.3}),
+    ("mammoth_fur", "Mammoth Fur", "summit_pass", "wall", mammoth_fur, 2, None),
     ("basalt_road", "Basalt Road", "volcanic_apocalypse", "road", basalt_road, 4, None),
     ("scorched_ground", "Scorched Ground", "volcanic_apocalypse", "dirt", scorched_ground, 6, None),
     ("ash_soil", "Ash Soil", "volcanic_apocalypse", "sand", ash_soil, 7, None),

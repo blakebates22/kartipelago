@@ -16,7 +16,7 @@ description, a banner colour and its track ids, in menu order:
 | World             | Id            | Tracks                                                                   |
 | ----------------- | ------------- | ------------------------------------------------------------------------ |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak            |
-| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, and three "Coming Soon" slots                         |
+| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, and two "Coming Soon" slots        |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Drift Park |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -25,7 +25,7 @@ description, a banner colour and its track ids, in menu order:
   New players start on Prehistoric World.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
-  its real tracks (Frostveil Peaks has three). See [frostveil-peaks.md](frostveil-peaks.md).
+  its real tracks (Frostveil Peaks has two). See [frostveil-peaks.md](frostveil-peaks.md).
 
 **World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
 
@@ -377,6 +377,39 @@ never sends you back to try again at a crawl.
   trapped.
 - **Looks and sound:** its legs, neck and tail are animated, it casts a round shadow on
   the ground, and it hoots now and then and thuds as it walks.
+
+A `"model": "mammoth"` makes it a woolly mammoth instead (Snowy Summit Pass: a mother
+and her calf, `"scale": 0.55`, walking the `Mammoth Path`), who trumpets rather than
+hoots.
+
+### Geysers
+
+```json
+{
+  "id": "geyser_01",
+  "type": "geyser",
+  "x": 186,
+  "y": 0.9,
+  "z": 114,
+  "r": 4.2,
+  "height": 22,
+  "period": 7,
+  "offset": 0,
+  "warn": 1.4,
+  "blast": 2.2,
+  "launch": 15
+}
+```
+
+Hot springs that blow on a fixed beat of the race clock (`src/game/geyser.ts`), so
+every race and time trial sees the same eruptions:
+
+- **Idle:** a gentle steam.
+- **Warning** (`warn` seconds): bubbling, a gurgle, the steam thickening.
+- **Blast** (`blast` seconds): a roaring column of water and steam, `height` metres.
+- **Launch:** a kart inside the column (radius `r`) while it blows is thrown upward at
+  `launch` m/s, keeping its speed and heading: a free jump, never a penalty. Not again
+  for a second. With `"launch": 0` it's scenery.
 
 ### Torches
 

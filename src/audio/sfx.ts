@@ -175,6 +175,24 @@ export function createSfx(engine: AudioEngine) {
       noise(1.1, 1.4, volume * 0.8, 900, 70);
       note(48, 1.1, 1.2, volume * 0.5, 30, "sine");
     },
+    /** A woolly mammoth's trumpet: a brassy blare rising and falling (higher for a calf). */
+    trumpet(volume: number, small = false) {
+      const f = small ? 1.7 : 1;
+      note(220 * f, 0, 0.35, volume * 0.28, 330 * f, "sawtooth");
+      note(330 * f, 0.3, 0.7, volume * 0.3, 260 * f, "sawtooth");
+      noise(0.05, 0.8, volume * 0.15, 1800 * f, 600 * f);
+    },
+    /** A geyser getting ready to blow: a deep gurgle and bubbling. */
+    gurgle(volume: number) {
+      noise(0, 1.3, volume * 0.45, 500, 120);
+      for (let i = 0; i < 5; i++)
+        note(120 + i * 30, i * 0.22, 0.12, volume * 0.18, 240 + i * 40, "sine");
+    },
+    /** A geyser blowing: a great roaring whoosh of water and steam. */
+    geyser(volume: number) {
+      noise(0, 2.2, volume * 0.85, 5200, 700);
+      noise(0, 1.2, volume * 0.5, 900, 140);
+    },
     /** A heavy, soft footstep. */
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);

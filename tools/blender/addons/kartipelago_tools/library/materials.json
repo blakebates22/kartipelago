@@ -421,6 +421,57 @@
           }
         }
       }
+    },
+    {
+      "id": "summit_pass",
+      "name": "Summit Pass",
+      "description": "A brilliant sunny day in the snowy mountains: dazzling snow, turquoise ice, steaming hot springs, glowing ice caves and giant trees",
+      "environment": {
+        "sky": "#5ab8ff",
+        "fog": {
+          "enabled": true,
+          "color": "#d4eeff",
+          "near": 260,
+          "far": 1400
+        },
+        "sun": {
+          "color": "#fff4dc",
+          "intensity": 2.7,
+          "direction": [0.42, 0.74, 0.52]
+        },
+        "ambient": {
+          "sky": "#eaf6ff",
+          "ground": "#8ea2bc",
+          "intensity": 1.35
+        },
+        "skyDome": {
+          "top": "#1c7ee8",
+          "horizon": "#c8ecff",
+          "bottom": "#e4f4ff",
+          "sun": {
+            "color": "#fffbe6",
+            "size": 8,
+            "glow": "#fff0b0",
+            "elevation": 32
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#ffffff",
+            "shade": "#d2e6fa",
+            "seed": 61,
+            "low": 8,
+            "high": 26,
+            "drift": 0.005
+          },
+          "hills": {
+            "color": "#9eb8de",
+            "far": "#d2e4f8",
+            "height": 16,
+            "seed": 67,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -581,6 +632,381 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "summit_snow",
+      "name": "Sunny Snow",
+      "theme": "summit_pass",
+      "surface": "deep_snow",
+      "image": "summit_snow.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "summit_road",
+      "name": "Groomed Snow Road",
+      "theme": "summit_pass",
+      "surface": "packed_snow",
+      "image": "summit_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "summit_stone_road",
+      "name": "Swept Cobbles",
+      "theme": "summit_pass",
+      "surface": "snow_stone",
+      "image": "summit_stone_road.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "crystal_road",
+      "name": "Ice Cave Floor",
+      "theme": "summit_pass",
+      "surface": "snow_stone",
+      "image": "crystal_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "lake_ice",
+      "name": "Lake Ice",
+      "theme": "summit_pass",
+      "surface": "ice",
+      "image": "lake_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "glacier_ice",
+      "name": "Glacier Ice",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "glacier_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 9,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "crystal_blue",
+      "name": "Ice Crystal (Blue)",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "crystal_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85
+      }
+    },
+    {
+      "id": "crystal_violet",
+      "name": "Ice Crystal (Violet)",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "crystal_violet.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85
+      }
+    },
+    {
+      "id": "chevron_sign",
+      "name": "Chevron Sign",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "chevron_sign.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.55
+      }
+    },
+    {
+      "id": "summit_rock",
+      "name": "Sunny Granite",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "summit_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "summit_cliff",
+      "name": "Snowy Granite Cliff",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "summit_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "hot_spring",
+      "name": "Hot Spring Water",
+      "theme": "summit_pass",
+      "surface": "deep_water",
+      "image": "hot_spring.png",
+      "wrap": "repeat",
+      "tileMetres": 9,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": 0.03,
+        "wave": 0.05,
+        "wavePeriod": 4,
+        "opacity": 0.9,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "hot_pool",
+      "name": "Hot Pool",
+      "theme": "summit_pass",
+      "surface": "water",
+      "image": "hot_pool.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0.02,
+        "scrollV": 0.01,
+        "wave": 0.05,
+        "wavePeriod": 3,
+        "opacity": 0.88,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "sinter",
+      "name": "Travertine",
+      "theme": "summit_pass",
+      "surface": "dirt",
+      "image": "sinter.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "sinter_road",
+      "name": "Travertine Road",
+      "theme": "summit_pass",
+      "surface": "road",
+      "image": "sinter_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sinter_rim",
+      "name": "Travertine Rim",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "sinter_rim.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "thaw_grass",
+      "name": "Thawed Meadow",
+      "theme": "summit_pass",
+      "surface": "grass",
+      "image": "thaw_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "forest_road",
+      "name": "Forest Track",
+      "theme": "summit_pass",
+      "surface": "dirt",
+      "image": "forest_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "giant_bark",
+      "name": "Giant Bark",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "giant_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "heartwood",
+      "name": "Heartwood",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "heartwood.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "plank_road",
+      "name": "Plank Road",
+      "theme": "summit_pass",
+      "surface": "road",
+      "image": "plank_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "rope_rail",
+      "name": "Rope Rail",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "rope_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 2.5
+    },
+    {
+      "id": "bunting",
+      "name": "Bunting",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "bunting.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "pine_bright",
+      "name": "Sunny Pine",
+      "theme": "summit_pass",
+      "surface": "grass",
+      "image": "pine_bright.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "leaf_bright",
+      "name": "Thawed Canopy",
+      "theme": "summit_pass",
+      "surface": "grass",
+      "image": "leaf_bright.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "ship_hull",
+      "name": "Ship Hull",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "ship_hull.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "sail_cloth",
+      "name": "Sailcloth",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "sail_cloth.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "mammoth_bone",
+      "name": "Mammoth Bone",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "mammoth_bone.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "frost_stone",
+      "name": "Frost Stone",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "frost_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "glow_moss",
+      "name": "Glowing Moss",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "glow_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "wave": 0.03,
+        "wavePeriod": 3,
+        "glow": 0.75
+      }
+    },
+    {
+      "id": "steam_mist",
+      "name": "Steam",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "steam_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": -0.05,
+        "wave": 0.05,
+        "wavePeriod": 5,
+        "opacity": 0.42,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "icefall_blue",
+      "name": "Icefall",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "icefall_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "warm_falls",
+      "name": "Warm Falls",
+      "theme": "summit_pass",
+      "surface": "water",
+      "image": "warm_falls.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.0,
+        "wave": 0.03,
+        "wavePeriod": 1.4,
+        "opacity": 0.9,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "mammoth_fur",
+      "name": "Mammoth Fur",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "mammoth_fur.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     },
     {
       "id": "basalt_road",

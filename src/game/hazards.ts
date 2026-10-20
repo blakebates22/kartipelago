@@ -18,6 +18,7 @@
  *               long-neck that walks round a path from route.json (draw it in Blender
  *               as a curve and mark it as a route). It stops when a kart comes close,
  *               nudges karts aside (it never traps them) and never jumps about.
+ *               "model": "mammoth" makes it a woolly mammoth instead.
  *   waterfall   { "type": "waterfall", "x", "y", "z", "top", "width", "heading" }:
  *               spray at its foot and its roar nearby; driving through it splashes.
  *   campfire    { "type": "campfire", "x", "y", "z" }: smoke and embers rising from a
@@ -40,6 +41,9 @@
  *   ashfall     { "type": "ashfall", "rate": 60, "radius": 40 }: grey ash drifting down
  *               and embers floating up round the camera. Purely visual.
  *   steam       { "type": "steam", "x", "y", "z" }: a vent puffing steam. Purely visual.
+ *   geyser      { "type": "geyser", ... } (see game/geyser.ts): a hot spring blowing on a
+ *               fixed beat of the race clock. A kart in its column as it blows is thrown
+ *               into the air (keeping its speed: a free jump).
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -56,6 +60,7 @@ import type { Track } from "../world/track";
 import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
+import { createMammothView } from "../render/mammoth";
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
@@ -72,6 +77,13 @@ import {
   type DragonConfig,
   type DragonPhase,
 } from "./dragon";
+import {
+  geyserLifts,
+  geyserPhase,
+  parseGeyser,
+  type GeyserConfig,
+  type GeyserPhase,
+} from "./geyser";
 
 export interface HazardConfig {
   lavaBounce: number;
@@ -112,6 +124,8 @@ interface KartHazard {
   sink: number;
   /** Burnt: a little smoke trail while it lasts. */
   smoking: number;
+  /** Just thrown up by a geyser: not again for a moment. */
+  lifted: number;
 }
 
 interface Dino {
@@ -129,6 +143,7 @@ interface Dino {
   view?: DinoView;
   callIn: number;
   stepIn: number;
+  mammoth: boolean;
 }
 
 interface Campfire {
@@ -173,6 +188,8 @@ export interface HazardEvents {
   splashed?: "shallow" | "deep";
   /** Put back on the road. */
   respawned?: Spot;
+  /** Thrown into the air by a geyser. */
+  launched?: boolean;
 }
 
 export interface Hazards {
@@ -227,6 +244,7 @@ export function createHazards(opts: {
     deep: 0,
     sink: 0,
     smoking: 0,
+    lifted: 0,
   }));
   const group = new THREE.Group();
   group.name = "hazards";
@@ -272,6 +290,14 @@ export function createHazards(opts: {
   }[] = [];
   let ashfall: { rate: number; radius: number; acc: number } | undefined;
   const vents: { x: number; y: number; z: number; acc: number }[] = [];
+  /** Geysers, and what they were doing last frame (for their cues). */
+  const geysers: {
+    cfg: GeyserConfig;
+    last: GeyserPhase;
+    acc: number;
+    column?: THREE.Mesh;
+  }[] = [];
+  let jets: ReturnType<typeof createParticles> | undefined;
   let bombs: ReturnType<typeof createParticles> | undefined;
   let ash: ReturnType<typeof createParticles> | undefined;
   let glowing: ReturnType<typeof createParticles> | undefined;
@@ -333,7 +359,28 @@ export function createHazards(opts: {
       };
     else if (e.type === "steam")
       vents.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: 0 });
-    else if (e.type === "dragon") {
+    else if (e.type === "geyser") {
+      const g = parseGeyser(e);
+      let column: THREE.Mesh | undefined;
+      if (!opts.headless) {
+        // The column: a tall, pale, see-through cone, grown and shrunk as it blows.
+        column = new THREE.Mesh(
+          new THREE.CylinderGeometry(g.r * 0.75, g.r * 0.45, 1, 10, 1, true).translate(0, 0.5, 0),
+          new THREE.MeshBasicMaterial({
+            color: 0xeafcff,
+            transparent: true,
+            opacity: 0.6,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+          }),
+        );
+        column.position.set(g.x, g.y, g.z);
+        column.visible = false;
+        column.renderOrder = 2;
+        group.add(column);
+      }
+      geysers.push({ cfg: g, last: "idle", acc: 0, column });
+    } else if (e.type === "dragon") {
       const cfg = parseDragon(e);
       let marker: THREE.Mesh | undefined;
       if (!opts.headless) {
@@ -471,9 +518,14 @@ export function createHazards(opts: {
           radius: cfg.dinoBodyRadius * scale,
           height: 1e3,
         })),
-        view: opts.headless ? undefined : createDinoView(group, scale),
-        callIn: 6,
+        view: opts.headless
+          ? undefined
+          : e.model === "mammoth"
+            ? createMammothView(group, scale)
+            : createDinoView(group, scale),
+        callIn: 6 + dinos.length * 2.5,
         stepIn: 0,
+        mammoth: e.model === "mammoth",
       };
       dinos.push(dino);
     }
@@ -690,6 +742,20 @@ export function createHazards(opts: {
       const scorched = ground === "lava";
       const flamed = dragons.some((d) => dragonBurns(d.cfg, t, s.x, s.y, s.z));
       if ((scorched || flamed) && h.immune <= 0) burn(i, s, h, ev, back);
+      // ---- geysers: thrown into the air (speed and heading kept)
+      h.lifted = Math.max(0, h.lifted - dt);
+      if (h.lifted <= 0)
+        for (const g of geysers)
+          if (geyserLifts(g.cfg, t, s.x, s.y, s.z)) {
+            s.vy = Math.max(s.vy, g.cfg.launch);
+            s.y += 0.05;
+            s.grounded = false;
+            h.lifted = 1.0;
+            ev.launched = true;
+            spray?.burst(s.x, s.y + 0.3, s.z, 26, 4, 9, 0.9, 0xe8fbff);
+            if (i === 0) opts.sfx?.splash(vol(), true);
+            break;
+          }
       // ---- water
       const wet = ground === "water" || ground === "deep_water";
       if (
@@ -797,7 +863,12 @@ export function createHazards(opts: {
         dn.callIn -= dt;
         if (dn.callIn <= 0) {
           dn.callIn = 9 + (dn.d % 5);
-          if (close < 60) opts.sfx?.dinoCall(vol() * Math.max(0.2, 1 - close / 60));
+          if (close < 60) {
+            const loud = vol() * Math.max(0.2, 1 - close / 60);
+            if (dn.mammoth)
+              opts.sfx?.trumpet(loud, dn.solids[0]!.radius < cfg.dinoBodyRadius * 0.8);
+            else opts.sfx?.dinoCall(loud);
+          }
         }
         dn.stepIn -= dt * dn.pace;
         if (dn.stepIn <= 0) {
@@ -1094,6 +1165,92 @@ export function createHazards(opts: {
         }
         ash.step(dt);
       }
+      // Geysers: steam at rest, bubbling and gurgling before they blow, then a roaring
+      // column of water and steam.
+      if (geysers.length && !opts.headless) {
+        jets ??= createParticles(group, { max: 1600, size: 0.9, gravity: -12 });
+        const rc = raceClock();
+        for (const g of geysers) {
+          const c = g.cfg;
+          const { phase, t: pt } = geyserPhase(c, rc);
+          const far = Math.hypot(listener.x - c.x, listener.z - c.z);
+          if (phase !== g.last) {
+            const loud = vol() * Math.max(0, 1 - far / 220);
+            if (loud > 0 && phase === "warning") opts.sfx?.gurgle(loud);
+            if (loud > 0 && phase === "blast") opts.sfx?.geyser(loud);
+            g.last = phase;
+          }
+          if (g.column) {
+            if (phase === "blast") {
+              const rise = Math.min(1, pt * 5) * (pt > 0.8 ? Math.max(0.05, (1 - pt) / 0.2) : 1);
+              g.column.visible = true;
+              g.column.scale.set(
+                1 + 0.08 * Math.sin(t * 23),
+                c.height * rise,
+                1 + 0.08 * Math.cos(t * 19),
+              );
+              (g.column.material as THREE.MeshBasicMaterial).opacity =
+                0.55 * (pt > 0.8 ? (1 - pt) / 0.2 : 1);
+            } else g.column.visible = false;
+          }
+          if (far > 420) continue;
+          const j = () => Math.random() - 0.5;
+          if (phase === "blast" && pt < 0.85) {
+            // Water thrown up the column, falling back as spray.
+            g.acc = Math.min(30, g.acc + dt * 320);
+            const up = Math.sqrt(2 * 12 * c.height);
+            for (; g.acc >= 1; g.acc -= 1)
+              jets.emit(
+                c.x + j() * c.r * 0.8,
+                c.y + Math.random() * 2,
+                c.z + j() * c.r * 0.8,
+                j() * 5,
+                up * (0.75 + Math.random() * 0.35),
+                j() * 5,
+                1.6 + Math.random() * 0.8,
+                Math.random() < 0.7 ? 0xffffff : 0xbff2ff,
+              );
+            if (Math.random() < 0.6)
+              smoke?.emit(
+                c.x + j() * c.r,
+                c.y + c.height * (0.4 + Math.random() * 0.6),
+                c.z + j() * c.r,
+                j() * 2,
+                2 + Math.random() * 2,
+                j() * 2,
+                2.2,
+                0xf4f8fa,
+              );
+          } else {
+            // Steam drifting up, thickening as it gets ready to blow; bubbling before.
+            const rate = phase === "warning" ? 12 + pt * 18 : 3;
+            g.acc = Math.min(4, g.acc + dt * rate);
+            for (; g.acc >= 1; g.acc -= 1)
+              smoke?.emit(
+                c.x + j() * c.r,
+                c.y + 0.3,
+                c.z + j() * c.r,
+                j() * 0.6,
+                2 + Math.random() * 2,
+                j() * 0.6,
+                2.4,
+                0xeef4f6,
+              );
+            if (phase === "warning" && Math.random() < 0.3 + pt * 0.6)
+              jets.burst(
+                c.x + j() * c.r,
+                c.y + 0.2,
+                c.z + j() * c.r,
+                6,
+                1.5,
+                3 + pt * 5,
+                0.6,
+                0xdff8ff,
+              );
+          }
+        }
+        jets.step(dt);
+      }
       // Glowing bubbles over the pools you're near, the odd burp of swamp gas, and
       // fireflies drifting round the camera.
       if ((pools.length || fireflies) && !opts.headless) {
@@ -1153,6 +1310,12 @@ export function createHazards(opts: {
       fire?.dispose();
       bombs?.dispose();
       ash?.dispose();
+      jets?.dispose();
+      for (const g of geysers)
+        if (g.column) {
+          g.column.geometry.dispose();
+          (g.column.material as THREE.Material).dispose();
+        }
       for (const d of dragons) {
         d.view?.dispose();
         d.flames?.dispose();
