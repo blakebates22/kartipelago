@@ -10,6 +10,11 @@
  *               "period": 13, "offset": 0, "travel": 5, "warn": 2.5 }
  *             A sleigh pulled by two reindeer crosses from A to B over `travel` seconds
  *             once every period, its bells jingling for `warn` seconds before it sets off.
+ *   minecart  { "type": "minecart", "ax", "ay", "az", "bx", "by", "bz",
+ *               "period": 7, "offset": 0, "travel": 3, "warn": 1.8 }
+ *             A runaway ore cart that nobody is pushing rattles across the mine's
+ *             workings from A to B over `travel` seconds once every period. For `warn`
+ *             seconds first it waits glowing in the side tunnel's mouth, rattling.
  *   bell      { "type": "bell", "x", "y", "z", "heading", "period": 16, "offset": 0,
  *               "ring": 3.2 }
  *             The bell tower's bell, swinging and ringing for `ring` seconds each period.
@@ -45,9 +50,13 @@ export interface BellConfig extends Point3 {
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 
 /** A snowball or sleigh from a track.json entity (defaults for anything missing). */
-export function parseCrossing(e: Record<string, unknown>, sleigh = false): CrossingConfig {
-  const travel = Math.max(0.5, num(e.travel, sleigh ? 5 : 3.2));
-  const warn = Math.max(0, num(e.warn, sleigh ? 2.5 : 0));
+export function parseCrossing(
+  e: Record<string, unknown>,
+  sleigh = false,
+  cart = false,
+): CrossingConfig {
+  const travel = Math.max(0.5, num(e.travel, sleigh ? 5 : cart ? 3 : 3.2));
+  const warn = Math.max(0, num(e.warn, sleigh ? 2.5 : cart ? 1.8 : 0));
   return {
     a: { x: num(e.ax, 0), y: num(e.ay, 0), z: num(e.az, 0) },
     b: { x: num(e.bx, 0), y: num(e.by, 0), z: num(e.bz, 0) },
@@ -56,7 +65,7 @@ export function parseCrossing(e: Record<string, unknown>, sleigh = false): Cross
     offset: num(e.offset, 0),
     travel,
     warn,
-    r: Math.max(0.5, num(e.r, 2.4)),
+    r: Math.max(0.5, num(e.r, cart ? 1.3 : 2.4)),
   };
 }
 

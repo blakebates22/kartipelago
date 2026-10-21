@@ -246,6 +246,98 @@ export function createSfx(engine: AudioEngine) {
     thud(volume: number) {
       noise(0, 0.12, volume * 0.5, 400, 80);
     },
+    /** An ore cart on old rails: a fast iron clatter over the joints and a squeal. */
+    rattle(volume: number) {
+      for (let i = 0; i < 14; i++) {
+        noise(i * 0.11, 0.05, volume * (0.35 + 0.15 * (i % 2)), 5200, 1400);
+        if (i % 4 === 0) note(180 + (i % 3) * 30, i * 0.11, 0.06, volume * 0.12, 140, "square");
+      }
+      note(2400, 0.2, 0.9, volume * 0.06, 2100, "sawtooth");
+    },
+    /** Ghostly whispering: breathy hisses that rise and fall, like words just out of
+     * hearing. */
+    whisper(volume: number) {
+      for (let i = 0; i < 5; i++) {
+        const at = i * 0.32 + Math.random() * 0.12;
+        noise(at, 0.28 + Math.random() * 0.2, volume * 0.22, 2600 + Math.random() * 1800, 900);
+      }
+    },
+    /** A ghost's low moan: a hollow tone sliding down, wavering. */
+    moan(volume: number) {
+      note(330, 0, 1.6, volume * 0.16, 196, "sine");
+      note(333, 0.05, 1.5, volume * 0.1, 200, "triangle");
+    },
+    /** Old timber creaking underfoot. */
+    timber(volume: number) {
+      note(140 + Math.random() * 60, 0, 0.45, volume * 0.22, 90, "sawtooth");
+      noise(0.05, 0.3, volume * 0.12, 700, 200);
+    },
+    /** A hinge squeaking (the saloon's doors). */
+    squeak(volume: number) {
+      note(900, 0, 0.35, volume * 0.12, 1300, "square");
+      note(1250, 0.32, 0.3, volume * 0.1, 800, "square");
+    },
+    /**
+     * The night wind (a breathy rush whose pitch wanders) or the mine's drone (a low
+     * rumble with a hollow hum in it), looping until stopped. Returns a handle to set its
+     * volume (0..1) every frame.
+     */
+    ambience(kind: "wind" | "drone"): { set(volume: number): void; stop(): void } {
+      if (!ctx) return { set() {}, stop() {} };
+      const frames = ctx.sampleRate * 3;
+      const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < frames; i++) {
+        last = last * 0.92 + (Math.random() * 2 - 1) * 0.08;
+        data[i] = last * 3;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = kind === "wind" ? "bandpass" : "lowpass";
+      filter.frequency.value = kind === "wind" ? 500 : 160;
+      filter.Q.value = kind === "wind" ? 1.4 : 0.7;
+      // The wind's pitch wanders slowly.
+      const lfo = ctx.createOscillator();
+      const depth = ctx.createGain();
+      lfo.frequency.value = kind === "wind" ? 0.11 : 0.05;
+      depth.gain.value = kind === "wind" ? 260 : 40;
+      lfo.connect(depth).connect(filter.frequency);
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(filter).connect(gain).connect(out());
+      const hums: OscillatorNode[] = [];
+      if (kind === "drone")
+        for (const f of [55, 82.4]) {
+          const o = ctx.createOscillator();
+          o.type = "sine";
+          o.frequency.value = f;
+          const g = ctx.createGain();
+          g.gain.value = 0.18;
+          o.connect(g).connect(gain);
+          o.start();
+          hums.push(o);
+        }
+      src.start();
+      lfo.start();
+      let stopped = false;
+      return {
+        set(v: number) {
+          if (!stopped)
+            gain.gain.setTargetAtTime(Math.max(0, Math.min(1, v)), ctx.currentTime, 0.3);
+        },
+        stop() {
+          if (stopped) return;
+          stopped = true;
+          gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+          src.stop(ctx.currentTime + 0.3);
+          lfo.stop(ctx.currentTime + 0.3);
+          for (const o of hums) o.stop(ctx.currentTime + 0.3);
+        },
+      };
+    },
     /**
      * A steady rushing noise (waterfalls), looping until stopped. Returns a handle to set
      * its volume (0..1) every frame.

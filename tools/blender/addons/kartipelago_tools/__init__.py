@@ -683,6 +683,7 @@ class KP_PT_effects(bpy.types.Panel):
         col.prop(fx, "pulse_period")
         col.prop(fx, "lagoon")
         col.prop(fx, "sway")
+        col.prop(fx, "flicker")
         col = lay.column(align=True)
         col.prop(fx, "opacity", slider=True)
         col.prop(fx, "glow")

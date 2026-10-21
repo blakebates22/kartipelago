@@ -3893,6 +3893,685 @@ THEMES.append(
 )
 
 
+# ------------------------------------------------------------------ Dry Gulch Ghost Town
+
+# A little 5x7 pixel font for the town's painted signs (our own glyphs).
+FONT = {
+    "A": ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+    "B": ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+    "C": ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+    "D": ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+    "E": ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+    "F": ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+    "G": ["01111", "10000", "10000", "10011", "10001", "10001", "01111"],
+    "H": ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+    "I": ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+    "J": ["00111", "00010", "00010", "00010", "00010", "10010", "01100"],
+    "K": ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+    "L": ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+    "M": ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+    "N": ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+    "O": ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+    "P": ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+    "R": ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+    "S": ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+    "T": ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+    "U": ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+    "V": ["10001", "10001", "10001", "10001", "01010", "01010", "00100"],
+    "W": ["10001", "10001", "10001", "10101", "10101", "11011", "10001"],
+    "X": ["10001", "01010", "00100", "00100", "00100", "01010", "10001"],
+    "Y": ["10001", "01010", "00100", "00100", "00100", "00100", "00100"],
+    "Z": ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+    "&": ["01100", "10010", "10100", "01000", "10101", "10010", "01101"],
+    "!": ["00100", "00100", "00100", "00100", "00100", "00000", "00100"],
+    "-": ["00000", "00000", "00000", "01110", "00000", "00000", "00000"],
+    ".": ["00000", "00000", "00000", "00000", "00000", "00000", "00100"],
+    "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+    "8": ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+    "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+    "9": ["01110", "10001", "10001", "01111", "00001", "00001", "01110"],
+    " ": ["00000"] * 7,
+}
+
+
+def sign_board(text, w=128, h=32, wood=("#4a3220", "#5a3e28", "#6a4a30", "#7a5636"), ink="#f0e2c0", seed=0, scale=None):
+    """A weathered plank sign with the text in pale paint: a dark border, nail heads,
+    the paint a little worn."""
+    a, b = noise(2, 8, 5101 + seed, w, h), noise(8, 4, 5102 + seed, w, h)
+    sc = scale or max(1, min((h - 8) // 7, (w - 8) // max(1, len(text) * 6 - 1)))
+    tw = len(text) * 6 * sc - sc
+    x0 = (w - tw) // 2
+    y0 = (h - 7 * sc) // 2
+    lit = set()
+    for k, ch in enumerate(text):
+        g = FONT.get(ch, FONT[" "])
+        for gy, row in enumerate(g):
+            for gx, bit in enumerate(row):
+                if bit == "1":
+                    for dx in range(sc):
+                        for dy in range(sc):
+                            lit.add((x0 + (k * 6 + gx) * sc + dx, y0 + gy * sc + dy))
+    wear = speckle(5103 + seed, w * h // 14, w, h)
+
+    def f(x, y):
+        if x < 2 or y < 2 or x >= w - 2 or y >= h - 2:
+            return "#2a1c12"
+        if (x in (4, w - 5)) and (y in (4, h - 5)):
+            return "#1a1410"
+        if (x, y) in lit and (x, y) not in wear:
+            return ink
+        if (x, y) in lit:
+            return "#b8a888"
+        if y % 10 == 9:
+            return "#3a2818"
+        grain = 0.5 + 0.5 * math.sin(x * 0.35 + (y // 10) * 2.1 + a(x, y) * 5)
+        return pick(list(wood), 0.15 + grain * 0.5 + b(x, y) * 0.3)
+
+    return paint(f, w, h)
+
+
+def gulch_road():
+    # The town's packed dirt: orange-red, hoof-churned, pale wheel tracks and pebbles.
+    pal = ["#8a4a2e", "#9a5634", "#aa623a", "#ba7044", "#c87e4e"]
+    a, b = noise(4, 2, 5001), noise(16, 8, 5002)
+    peb = speckle(5003, 40)
+    dark = speckle(5004, 30)
+
+    def f(x, y):
+        if (x, y) in peb:
+            return "#d8a478"
+        if (x, y) in dark:
+            return "#6a3622"
+        track = x % 32 in (9, 10, 22, 23)
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.3 + (0.12 if track else 0))
+
+    return paint(f)
+
+
+def gulch_verge():
+    pal = ["#6e3c28", "#7c462e", "#8a5034", "#9a5c3c"]
+    a, b = noise(4, 2, 5011), noise(16, 8, 5012)
+    tufts = speckle(5013, 34)
+
+    def f(x, y):
+        if (x, y) in tufts or ((x - 1, y) in tufts and y % 2):
+            return "#9a8a5a"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def gulch_sand():
+    # Moonlit red sand: wind ripples, darker hollows.
+    pal = ["#8a4c38", "#9a563e", "#a86246", "#b66e4e", "#c27a58"]
+    a, b = noise(4, 2, 5021), noise(8, 4, 5022)
+
+    def f(x, y):
+        rip = 0.5 + 0.5 * math.sin((x * 0.5 + y * 1.3) + a(x, y) * 6)
+        return pick(pal, 0.15 + rip * 0.3 + b(x, y) * 0.45)
+
+    return paint(f)
+
+
+def gulch_talus():
+    pal = ["#5a3028", "#6c3a2e", "#7e4636", "#904f3c", "#a25c44"]
+    a = noise(8, 4, 5031)
+
+    def f(x, y):
+        cx, cy = (x // 8) * 8 + 4 + int(a(x - x % 8, y - y % 8) * 3), (y // 8) * 8 + 4
+        d = abs(x - cx) + abs(y - cy)
+        if d > 5:
+            return "#3a2220"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + (0.25 if y < cy else 0))
+
+    return paint(f)
+
+
+def gulch_wash():
+    # The ravine floor: pebbly wash, dark cracks, a faint green glow deep in a few.
+    pal = ["#5e3a32", "#6c4438", "#7a4e3e", "#885846"]
+    a, b = noise(4, 2, 5041), noise(3, 2, 5042)
+    peb = speckle(5043, 50)
+
+    def f(x, y):
+        v = abs(b(x, y) - 0.5)
+        if v < 0.008:
+            return "#3ad88a"
+        if v < 0.025:
+            return "#2a2228"
+        if (x, y) in peb:
+            return "#a8806a"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def graveyard_earth():
+    pal = ["#5e4436", "#6a4c3c", "#765642", "#82604a"]
+    a, b = noise(4, 2, 5051), noise(16, 8, 5052)
+    grass = speckle(5053, 60)
+
+    def f(x, y):
+        if (x, y) in grass:
+            return "#9a9a62" if (x + y) % 3 else "#7a8a56"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def gulch_chasm():
+    # The chasm's floor, far down: dark rock, thin glowing green seams through it.
+    a, b = noise(3, 2, 5061), noise(6, 3, 5062)
+    c2 = noise(12, 6, 5063)
+
+    def f(x, y):
+        v = abs(a(x, y) - 0.5)
+        w = abs(b(x, y) - 0.5)
+        if v < 0.012 or w < 0.008:
+            return "#9affd0"
+        if v < 0.03 or w < 0.02:
+            return "#24b878"
+        if v < 0.05:
+            return "#0e3a2a"
+        return pick(["#120a18", "#180e20", "#1e1428", "#241a2e"], 0.2 + c2(x, y) * 0.7)
+
+    return paint(f)
+
+
+def mine_floor():
+    # The mine's floor: dark packed earth, spilt ore, the odd green glint.
+    pal = ["#3a2a26", "#46322c", "#523a32", "#5e4438"]
+    a, b = noise(4, 2, 5071), noise(16, 8, 5072)
+    ore = speckle(5073, 30)
+    glints = speckle(5074, 6)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#6affb0"
+        if (x, y) in ore:
+            return "#2a2028"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def mine_rock():
+    # The rock inside the mine: dark red-brown, chisel marks, the odd thin glowing vein.
+    pal = ["#2e1c1e", "#3a2224", "#46292a", "#523032", "#5e3838"]
+    a, b, vein = noise(4, 2, 5081), noise(16, 8, 5082), noise(3, 2, 5083)
+
+    def f(x, y):
+        v = abs(vein(x, y) - 0.5)
+        if v < 0.01:
+            return "#56f0a0"
+        if v < 0.022:
+            return "#1a5a40"
+        chisel = (x + y * 2) % 11 == 0 and b(x, y) > 0.5
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.3 - (0.25 if chisel else 0))
+
+    return paint(f)
+
+
+def fissure_glow():
+    # A crack in the rock with the green light pouring out of it.
+    a = noise(4, 8, 5091)
+
+    def f(x, y):
+        c = abs((x % 64) - 32 - (a(x, y) - 0.5) * 18)
+        if c < 2:
+            return "#e8fff2"
+        if c < 5:
+            return "#7affc0"
+        if c < 9:
+            return "#22c47c"
+        if c < 14:
+            return "#0e5a3a"
+        return "#14100e"
+
+    return paint(f)
+
+
+def siding(base, light, dark, seed):
+    """Weathered clapboard: horizontal boards, each its own shade, peeling paint over grey
+    wood, nail lines, cracks."""
+
+    def make():
+        a, b = noise(2, 8, seed), noise(8, 4, seed + 1)
+        peel = noise(6, 4, seed + 2)
+        pal = [dark, base, light]
+
+        def f(x, y):
+            board = y // 4
+            if y % 4 == 3:
+                return "#1c1410"
+            if x % 32 == (board * 13) % 32 and y % 4 == 1:
+                return "#2a2420"
+            if peel(x, y) > 0.76:
+                return pick(["#5a5048", "#6a6058", "#7a7066"], 0.3 + a(x, y) * 0.6)
+            g = 0.5 + 0.5 * math.sin(x * 0.3 + board * 1.7 + a(x, y) * 4)
+            return pick(pal, 0.2 + g * 0.35 + b(x, y) * 0.35 - (0.25 if y % 4 == 0 else 0))
+
+        return paint(f)
+
+    return make
+
+
+def board_walk():
+    pal = ["#5a3e28", "#664830", "#725238", "#7e5c40"]
+    a = noise(2, 8, 5111)
+
+    def f(x, y):
+        if y % 5 == 4:
+            return "#24180e"
+        if x % 16 == ((y // 5) * 7) % 16 and y % 5 == 2:
+            return "#1a1410"
+        return pick(pal, 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def shingle_roof():
+    pal = ["#3a2c2a", "#463430", "#523c36", "#5e463e"]
+    a = noise(4, 8, 5121)
+    gaps = speckle(5122, 10)
+
+    def f(x, y):
+        row = y // 4
+        if y % 4 == 3:
+            return "#1a1210"
+        if (x + row * 3) % 6 == 0:
+            return "#241a16"
+        if (x // 6, row) in {(gx // 6, gy // 4) for gx, gy in gaps}:
+            return "#120c0a"
+        return pick(pal, 0.15 + a(x, y) * 0.8)
+
+    return paint(f)
+
+
+def tin_roof():
+    # Corrugated tin, rusting.
+    a, b = noise(4, 4, 5131), noise(8, 8, 5132)
+
+    def f(x, y):
+        rib = 0.5 + 0.5 * math.sin(x * 0.8)
+        if b(x, y) > 0.62:
+            return pick(["#6a3018", "#8a4020", "#a45428"], a(x, y))
+        return pick(["#4a4a52", "#5c5c64", "#707078", "#86868c"], 0.1 + rib * 0.6 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def window_lit():
+    # A lit window: four warm panes in a dark frame, a ragged curtain drawn half across.
+    a = noise(2, 2, 5141)
+
+    def f(x, y):
+        if x < 3 or x > 60 or y < 2 or y > 29 or x in (31, 32) or y in (15, 16):
+            return "#2a1a10"
+        if x < 9 or x > 54:
+            return "#8a2a22" if (y // 3) % 2 else "#6a1e18"
+        glow = 1.0 - abs(y - 16) / 18.0
+        return pick(["#ff9030", "#ffa844", "#ffc060", "#ffd88a"], 0.2 + glow * 0.5 + a(x, y) * 0.25)
+
+    return paint(f)
+
+
+def window_ghost():
+    # A window glowing the wrong colour: cold green light behind cracked panes.
+    a = noise(2, 2, 5151)
+
+    def f(x, y):
+        if x < 3 or x > 60 or y < 2 or y > 29 or x in (31, 32) or y in (15, 16):
+            return "#141a14"
+        if abs((x - y * 2) % 41) == 0:
+            return "#e8fff0"
+        glow = 1.0 - abs(y - 16) / 18.0
+        return pick(["#14a86a", "#28c884", "#4ae0a0", "#9af4c8"], 0.15 + glow * 0.5 + a(x, y) * 0.3)
+
+    return paint(f)
+
+
+def window_dark():
+    # A dead window: dark panes, a broken one, boards nailed across.
+    a = noise(2, 2, 5161)
+
+    def f(x, y):
+        if 9 <= y <= 13 or 20 <= y <= 24:
+            if x % 20 == 7:
+                return "#1a1410"
+            return pick(["#5a4030", "#6a4c38", "#7a5640"], a(x, y))
+        if x < 3 or x > 60 or y < 2 or y > 29 or x in (31, 32) or y in (15, 16):
+            return "#1e1612"
+        if x > 33 and y < 15 and (x - 33) + y > 18:
+            return "#080608"
+        return pick(["#141824", "#1c2230", "#262c3c"], 0.2 + a(x, y) * 0.6 + (0.3 if (x - y) % 23 == 0 else 0))
+
+    return paint(f)
+
+
+def door_wood():
+    a = noise(2, 8, 5171)
+
+    def f(x, y):
+        if x < 2 or x > 61 or y < 1:
+            return "#1a120c"
+        if x in (31, 32):
+            return "#22160e"
+        if 4 <= y <= 13 and (6 <= x <= 26 or 37 <= x <= 57):
+            return pick(["#3a2616", "#442e1c"], a(x, y))
+        if y in (20, 21) and x in (27, 36):
+            return "#c8a050"
+        return pick(["#4e3420", "#5a3e28", "#664830"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def lantern_glass():
+    a = noise(4, 2, 5181)
+
+    def f(x, y):
+        if x % 16 < 2 or y < 2 or y > 29:
+            return "#22180e"
+        hot = 1 - abs(y - 17) / 15
+        return pick(["#ff8a20", "#ffa030", "#ffbc50", "#ffd880", "#fff0c0"], 0.1 + hot * 0.65 + a(x, y) * 0.25)
+
+    return paint(f)
+
+
+def lantern_green():
+    a = noise(4, 2, 5191)
+
+    def f(x, y):
+        if x % 16 < 2 or y < 2 or y > 29:
+            return "#0e1a14"
+        hot = 1 - abs(y - 17) / 15
+        return pick(["#14a060", "#22c47c", "#48e09c", "#8cf4c4", "#e0fff0"], 0.1 + hot * 0.65 + a(x, y) * 0.25)
+
+    return paint(f)
+
+
+def iron():
+    a = noise(8, 4, 5201)
+
+    def f(x, y):
+        if a(x, y) > 0.7:
+            return pick(["#5a2a14", "#743818"], a(x, y) * 3 % 1)
+        return pick(["#1e1c20", "#28262a", "#323034", "#3c3a3e"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def mine_timber():
+    # The mine's timbers: old, dark, split, with iron straps.
+    pal = ["#2e2018", "#3a281c", "#463022", "#523a28"]
+    a, b = noise(2, 8, 5211), noise(8, 16, 5212)
+
+    def f(x, y):
+        if y % 32 in (6, 7):
+            return "#1a1818"
+        if y % 32 == 6 and x % 8 == 3:
+            return "#6a6460"
+        grain = 0.5 + 0.5 * math.sin(x * 1.3 + a(x, y) * 6)
+        if grain < 0.08:
+            return "#140e0a"
+        return pick(pal, 0.15 + grain * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def rail_iron():
+    a = noise(8, 2, 5221)
+
+    def f(x, y):
+        if y < 6:
+            return pick(["#8a8a92", "#a0a0a8"], a(x, y))
+        return pick(["#3a2a24", "#4a3226", "#5a3a28", "#6e4428"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def spectral_mist():
+    # A drifting sheet of ghostly green mist (see-through, glowing).
+    a, b = noise(4, 2, 5231), noise(8, 4, 5232)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        fade = 1.0 - abs(y - 16) / 16.0
+        return pick(["#06140e", "#0e3a28", "#16684a", "#28a070", "#5ad8a4", "#a8f8d4"], v * 0.6 + fade * 0.45)
+
+    return paint(f)
+
+
+def tombstone():
+    pal = ["#5a5a62", "#6a6a72", "#7a7a82", "#8a8a90", "#9a9aa0"]
+    a, b = noise(4, 2, 5241), noise(16, 8, 5242)
+    moss = noise(6, 3, 5243)
+
+    def f(x, y):
+        if moss(x, y) > 0.7:
+            return pick(["#3a4a30", "#4a5a38"], b(x, y))
+        if abs(a(x, y) - 0.5) < 0.02:
+            return "#3a3a40"
+        return pick(pal, 0.2 + a(x, y) * 0.4 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def dead_wood():
+    pal = ["#3a3230", "#4a403a", "#5a4e46", "#6a5c52", "#7a6c60"]
+    a, b = noise(2, 8, 5251), noise(8, 16, 5252)
+
+    def f(x, y):
+        grain = 0.5 + 0.5 * math.sin(x * 1.1 + a(x, y) * 7)
+        if grain < 0.1:
+            return "#1e1816"
+        return pick(pal, 0.15 + grain * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def canvas_torn():
+    # Old wagon and awning canvas: off-white, stained, patched, frayed edge.
+    pal = ["#9a9080", "#aaa08e", "#b8ae9a", "#c6bca6"]
+    a, b = noise(4, 2, 5261), noise(8, 4, 5262)
+
+    def f(x, y):
+        if y >= 28 and (x * 7) % 5 < 2:
+            return "#2a2018"
+        if 10 <= x <= 22 and 6 <= y <= 15:
+            return pick(["#7a5a3a", "#8a6a48"], a(x, y))
+        return pick(pal, 0.15 + a(x, y) * 0.4 + b(x, y) * 0.4 - (0.3 if b(x, y) > 0.72 else 0))
+
+    return paint(f)
+
+
+def barrel_wood():
+    a = noise(2, 8, 5271)
+
+    def f(x, y):
+        if y in (5, 6, 25, 26):
+            return "#2a2626"
+        if x % 8 == 0:
+            return "#24180e"
+        return pick(["#5a3a22", "#664428", "#724e30", "#7e5838"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def clock_face():
+    # The clock tower's face, stopped long ago: cream dial, black ticks, the hands at
+    # a quarter to midnight.
+    w = h = 64
+
+    def f(x, y):
+        dx, dy = x - 31.5, y - 31.5
+        r = math.hypot(dx, dy)
+        if r > 31:
+            return "#2a1c14"
+        if r > 28:
+            return "#1a1410"
+        a = math.atan2(dy, dx)
+        tick = abs(((a / (math.tau / 12)) + 0.5) % 1 - 0.5) < 0.06
+        if 22 < r < 27 and tick:
+            return "#1a1410"
+        # Hour hand to the 12 (up), minute hand to the 9 (left): a quarter to twelve.
+        if abs(dx) < 1.6 and -18 < dy < 0:
+            return "#141010"
+        if abs(dy) < 1.2 and -24 < dx < 0:
+            return "#141010"
+        if r < 2.5:
+            return "#141010"
+        crack = abs(dx * 0.6 - dy + 9) < 0.7 and dx > 0
+        if crack:
+            return "#6a5a40"
+        return pick(["#c8b88a", "#d8c89a", "#e4d6aa"], 0.4 + 0.3 * math.sin(x * 0.3) * math.cos(y * 0.2))
+
+    return paint(f, w, h)
+
+
+def tank_staves():
+    a, b = noise(8, 2, 5281), noise(16, 4, 5282)
+
+    def f(x, y):
+        if x % 6 == 5:
+            return "#20160e"
+        if y in (6, 7, 22, 23):
+            return "#2a2a2c"
+        return pick(["#4a3420", "#563e28", "#624830", "#6e5238"], 0.2 + a(x, y) * 0.4 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
+def ore_pile():
+    a = noise(8, 4, 5291)
+    glints = speckle(5292, 14)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#8affc8"
+        return pick(["#1e1a1e", "#2a242a", "#363036", "#423a40"], 0.2 + a(x, y) * 0.7)
+
+    return paint(f)
+
+
+def ghost_sheet():
+    # For the ghostly silhouettes painted on glass and rock: soft green-white glow.
+    def f(x, y):
+        v = 1.0 - abs(y - 16) / 16.0
+        return pick(["#2aa070", "#5ad0a0", "#a8f0d0", "#e8fff4"], 0.3 + v * 0.6)
+
+    return paint(f)
+
+
+THEMES.append(
+    {
+        "id": "dry_gulch",
+        "name": "Dry Gulch Ghost Town",
+        "description": "A haunted frontier mining town under an enormous full moon: deep violet and indigo sky, red-rock mesas in moonlight, weathered wooden buildings glowing with warm orange lanterns, and an abandoned mine pouring out an eerie spectral green",
+        "environment": {
+            "sky": "#1a1040",
+            "fog": {"enabled": True, "color": "#3a2a6a", "near": 300, "far": 1700},
+            "sun": {"color": "#b8c4ff", "intensity": 1.65, "direction": [-0.22, 0.62, -0.75]},
+            "ambient": {"sky": "#8a7ad8", "ground": "#5a3a5a", "intensity": 1.55},
+            "skyDome": {
+                "top": "#0a0626",
+                "horizon": "#a0388c",
+                "bottom": "#2a1a4a",
+                "sun": {"color": "#f4f2ea", "size": 10, "glow": "#9ab0ff", "elevation": 21, "face": "moon"},
+                "clouds": {"count": 22, "color": "#5a3e8a", "shade": "#2a1a52", "seed": 151, "low": 4, "high": 30, "drift": 0.004},
+                "hills": {"color": "#2a1630", "far": "#5a2e5e", "height": 7, "seed": 157, "layers": 3, "style": "mesas"},
+                "stars": {"count": 700, "color": "#ffffff", "seed": 163, "low": 12},
+                "skull": {"azimuth": 52, "elevation": 32, "size": 34, "color": "#6a4e9a", "shade": "#2c1c58", "period": 46},
+            },
+        },
+    }
+)
+
+WOOD_SIGN = ("#4a3220", "#5a3e28", "#6a4a30", "#7a5636")
+
+
+def sign_tiles(sid, name, text, w, h, kw):
+    """A sign's library entries: the board painted whole, cut into 64 px tiles
+    ("<id>_1", "<id>_2", ...), each one tile metre per 64 px."""
+    n = max(1, w // 64)
+    out = []
+    for k in range(n):
+        def painter(k=k):
+            return sign_board(text, w, h, **kw).crop((k * 64, 0, k * 64 + 64, h))
+
+        out.append(("%s_%d" % (sid, k + 1), "Sign: %s (%d/%d)" % (name, k + 1, n), "dry_gulch", "wall", painter, 2, None))
+    return out
+RED_SIGN = ("#5a1e18", "#6a241c", "#782a20", "#863226")
+GREEN_SIGN = ("#1e3a2a", "#244630", "#2a5238", "#305e40")
+GLOW = lambda g: {"scrollU": 0, "scrollV": 0, "glow": g}  # noqa: E731
+
+GULCH_MATERIALS = [
+    ("gulch_road", "Ghost Town Dirt Road", "dry_gulch", "packed_dirt", gulch_road, 6, None),
+    ("gulch_verge", "Dirt Verge (Night)", "dry_gulch", "dirt", gulch_verge, 4, None),
+    ("gulch_sand", "Red Sand (Night)", "dry_gulch", "loose_sand", gulch_sand, 8, None),
+    ("gulch_talus", "Ravine Rubble", "dry_gulch", "loose_sand", gulch_talus, 6, None),
+    ("gulch_wash", "Ravine Wash", "dry_gulch", "dirt", gulch_wash, 8, GLOW(0.08)),
+    ("graveyard_earth", "Graveyard Earth", "dry_gulch", "dirt", graveyard_earth, 5, None),
+    ("gulch_chasm", "Glowing Chasm Floor", "dry_gulch", "abyss", gulch_chasm, 22, {"scrollU": 0, "scrollV": 0, "glow": 0.7, "pulse": 0.4, "pulsePeriod": 5.0}),
+    ("mine_floor", "Mine Floor", "dry_gulch", "packed_dirt", mine_floor, 5, GLOW(0.06)),
+    ("mine_rock", "Mine Rock", "dry_gulch", "wall", mine_rock, 12, {"scrollU": 0, "scrollV": 0, "glow": 0.12, "pulse": 0.3, "pulsePeriod": 6.0}),
+    ("fissure_glow", "Glowing Fissure", "dry_gulch", "wall", fissure_glow, 6, {"scrollU": 0, "scrollV": 0, "glow": 1.0, "pulse": 0.35, "pulsePeriod": 3.7}),
+    ("siding_brown", "Clapboard (Brown)", "dry_gulch", "wall", siding("#6a4a32", "#7e5a3e", "#4e3624", 5301), 4, None),
+    ("siding_grey", "Clapboard (Grey)", "dry_gulch", "wall", siding("#6e6660", "#827a72", "#524a46", 5311), 4, None),
+    ("siding_red", "Clapboard (Barn Red)", "dry_gulch", "wall", siding("#7a2c24", "#8e382c", "#5a2018", 5321), 4, None),
+    ("siding_ochre", "Clapboard (Ochre)", "dry_gulch", "wall", siding("#9a7238", "#ae8444", "#76562a", 5331), 4, None),
+    ("siding_green", "Clapboard (Faded Green)", "dry_gulch", "wall", siding("#4a5e4a", "#5a6e56", "#364636", 5341), 4, None),
+    ("board_walk", "Boardwalk", "dry_gulch", "road", board_walk, 3, None),
+    ("shingle_roof", "Shingle Roof", "dry_gulch", "wall", shingle_roof, 3, None),
+    ("tin_roof", "Tin Roof", "dry_gulch", "wall", tin_roof, 3, None),
+    ("window_lit", "Lit Window", "dry_gulch", "wall", window_lit, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.95, "flicker": 0.3}),
+    ("window_ghost", "Haunted Window", "dry_gulch", "wall", window_ghost, 2, {"scrollU": 0, "scrollV": 0, "glow": 1.0, "pulse": 0.5, "pulsePeriod": 4.4}),
+    ("window_dark", "Boarded Window", "dry_gulch", "wall", window_dark, 2, None),
+    ("door_wood", "Old Door", "dry_gulch", "wall", door_wood, 2, None),
+    ("lantern_glass", "Lantern Glass", "dry_gulch", "wall", lantern_glass, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.3, "flicker": 0.45}),
+    ("lantern_green", "Spectral Lantern", "dry_gulch", "wall", lantern_green, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.3, "flicker": 0.35}),
+    ("iron", "Old Iron", "dry_gulch", "wall", iron, 2, None),
+    ("mine_timber", "Mine Timber", "dry_gulch", "wall", mine_timber, 3, None),
+    ("rail_iron", "Mine Rail", "dry_gulch", "wall", rail_iron, 2, None),
+    ("spectral_mist", "Spectral Mist", "dry_gulch", "wall", spectral_mist, 16,
+     {"scrollU": 0.012, "scrollV": 0.004, "wave": 0.06, "wavePeriod": 9, "opacity": 0.42, "glow": 0.75}),
+    ("crystal_ghost", "Spectral Crystal", "dry_gulch", "wall",
+     lambda: crystal(5401, ["#0a5a3a", "#128a56", "#22b874", "#58e0a0", "#b4ffdc"], "#ffffff"), 3,
+     {"scrollU": 0, "scrollV": 0, "glow": 1.0, "pulse": 0.35, "pulsePeriod": 3.4}),
+    ("tombstone", "Weathered Headstone", "dry_gulch", "wall", tombstone, 2, None),
+    ("dead_wood", "Dead Wood", "dry_gulch", "wall", dead_wood, 2, None),
+    ("canvas_torn", "Torn Canvas", "dry_gulch", "wall", canvas_torn, 3, {"scrollU": 0, "scrollV": 0, "sway": 0.05}),
+    ("barrel_wood", "Barrel Staves", "dry_gulch", "wall", barrel_wood, 2, None),
+    ("clock_face", "Stopped Clock", "dry_gulch", "wall", clock_face, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.35}),
+    ("tank_staves", "Water Tank Staves", "dry_gulch", "wall", tank_staves, 3, None),
+    ("ore_pile", "Spectral Ore", "dry_gulch", "wall", ore_pile, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.25}),
+    ("ghost_sheet", "Ghost Glow", "dry_gulch", "wall", ghost_sheet, 2, {"scrollU": 0, "scrollV": 0, "glow": 1.2, "opacity": 0.6}),
+] + [
+    # The painted signs: each a wide board cut into 64 px tiles (the era's texture size),
+    # drawn side by side.
+    entry
+    for sid, name, text, w, h, kw in (
+        ("sign_saloon", "Saloon", "SALOON", 128, 32, {"seed": 1}),
+        ("sign_general", "General Store", "GENERAL STORE", 192, 32, {"seed": 2}),
+        ("sign_hotel", "Hotel", "HOTEL", 128, 32, {"seed": 3, "wood": RED_SIGN}),
+        ("sign_sheriff", "Sheriff", "SHERIFF", 128, 32, {"seed": 4}),
+        ("sign_jail", "Jail", "JAIL", 64, 32, {"seed": 5}),
+        ("sign_bank", "Bank", "BANK", 64, 32, {"seed": 6, "wood": GREEN_SIGN}),
+        ("sign_assay", "Assay Office", "ASSAY OFFICE", 192, 32, {"seed": 7}),
+        ("sign_livery", "Livery", "LIVERY", 128, 32, {"seed": 8, "wood": RED_SIGN}),
+        ("sign_undertaker", "Undertaker", "UNDERTAKER", 192, 32, {"seed": 9, "ink": "#c8d8c0"}),
+        ("sign_barber", "Barber", "BARBER", 128, 32, {"seed": 10, "wood": GREEN_SIGN}),
+        ("sign_drygulch", "Dry Gulch", "DRY GULCH", 256, 48, {"seed": 11}),
+        ("sign_ghosttown", "Ghost Town", "GHOST TOWN", 256, 32, {"seed": 12, "ink": "#f4c870"}),
+        ("sign_hazard", "Hazard Mine", "HAZARD MINE", 256, 48, {"seed": 13}),
+        ("sign_keepout", "Keep Out", "KEEP OUT!", 128, 32, {"seed": 14, "wood": RED_SIGN}),
+        ("sign_finish", "Finish", "FINISH", 128, 32, {"seed": 15}),
+        ("sign_shaft", "Shaft No 9", "SHAFT NO.9", 192, 32, {"seed": 16}),
+    )
+    for entry in sign_tiles(sid, name, text, w, h, kw)
+]
+
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
     ("oasis_paving", "Oasis Flagstones", "oasis_haven", "road", oasis_paving, 5, None),
@@ -4234,6 +4913,8 @@ MATERIALS = [
         {"scrollU": 0.01, "scrollV": -0.05, "wave": 0.05, "wavePeriod": 5, "opacity": 0.55},
     ),
 ]
+
+MATERIALS += GULCH_MATERIALS
 
 
 def thumb(im):

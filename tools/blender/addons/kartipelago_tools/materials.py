@@ -16,7 +16,8 @@ setting as the sampler's wrap. Things glTF has no slot for travel as material ex
     kp_fx        water/lava animation: scroll_u, scroll_v (repeats per second),
                  wave (wobble, fraction of a repeat) and wave_period (seconds);
                  pulse (glow swelling by that share) and pulse_period (seconds),
-                 lagoon (living water drawn by the game) and sway (metres)
+                 lagoon (living water drawn by the game), sway (metres) and
+                 flicker (the glow guttering like a flame, each spot on its own)
 
 UVs are projected in world space, so texture density is the same everywhere: one
 repeat of a texture covers `tileMetres` across (and tileMetres x height/width up or
@@ -198,6 +199,14 @@ class KPMaterialFx(bpy.types.PropertyGroup):
         min=0.0,
         soft_max=1.0,
     )
+    flicker: bpy.props.FloatProperty(
+        name="Flicker",
+        description="The glow gutters like a flame by this share, each lantern or window on its own (0 = steady)",
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        subtype="FACTOR",
+    )
     tint: bpy.props.FloatVectorProperty(
         name="Tint",
         description="Multiplies the texture's colour (white = unchanged)",
@@ -257,6 +266,7 @@ def get_material(e, surface=None, wrap=None):
     mat.kp_fx.pulse_period = fx.get("pulsePeriod", 4.0)
     mat.kp_fx.lagoon = fx.get("lagoon", 0.0)
     mat.kp_fx.sway = fx.get("sway", 0.0)
+    mat.kp_fx.flicker = fx.get("flicker", 0.0)
     build_nodes(mat, e, wrap)
     return mat
 

@@ -1699,6 +1699,118 @@ function fanfare(): Song {
 }
 
 /** Every composed piece, by id. */
+// ---------------------------------------------------------------- "Dry Gulch"
+
+export const GHOST_MELODY = bars(
+  "E5:1 B4:.5 E5:.5 G5:1 F#5:1",
+  "E5:.5 D5:.5 B4:1 r:1 B4:1",
+  "C5:1 E5:.5 A5:.5 G5:1 E5:1",
+  "F#5:2 D#5:1 B4:1",
+  "E5:1 B4:.5 E5:.5 G5:1 B5:1",
+  "A5:.5 G5:.5 F#5:1 E5:1 C5:1",
+  "B4:1 D#5:1 F#5:1 A5:1",
+  "G5:1 F#5:1 E5:2",
+  "B5:1.5 A5:.5 G5:1 E5:1",
+  "C6:1.5 B5:.5 A5:1 E5:1",
+  "D5:1 G5:1 B5:1 D6:1",
+  "C6:1 B5:1 A5:2",
+  "G5:1.5 F#5:.5 E5:1 C5:1",
+  "A5:1 G5:.5 F#5:.5 E5:1 D#5:1",
+  "E5:1 F#5:1 G5:1 A5:1",
+  "B5:3 r:1",
+  "E5:.5 F5:.5 E5:.5 D#5:.5 E5:2",
+  "G5:.5 G#5:.5 G5:.5 F#5:.5 G5:2",
+  "A5:1 C6:1 B5:1 G5:1",
+  "F#5:1 A5:1 D#5:2",
+  "E5:.5 F5:.5 E5:.5 D#5:.5 E5:1 B4:1",
+  "C5:1 E5:1 A5:1 C6:1",
+  "B5:1 A5:1 F#5:1 D#5:1",
+  "E5:2 r:2",
+  "E5:1 B4:.5 E5:.5 G5:1 F#5:1",
+  "E5:.5 D5:.5 B4:1 E5:1 G5:1",
+  "C6:1 B5:.5 A5:.5 G5:1 E5:1",
+  "F#5:2 B5:2",
+  "E6:1 D6:.5 B5:.5 G5:1 E5:1",
+  "A5:1 C6:1 B5:1 A5:1",
+  "G5:.5 F#5:.5 E5:1 D#5:1 F#5:1",
+  "E5:3! r:1",
+);
+export const GHOST_CHORDS =
+  "Em:4 Em:4 Am:4 B7:4 Em:4 Am:4 B7:4 Em:4 " +
+  "Em:4 Am:4 G:4 Am:4 Em:4 B7:4 C:4 B7:4 " +
+  "Em:4 C:4 Am:4 B7:4 Em:4 Am:4 B7:4 Em:4 " +
+  "Em:4 Em:4 Am:4 B7:4 Em:4 Am:4 B7:4 Em:4";
+
+/**
+ * "Dry Gulch": a haunted frontier ballad in E minor, 132 BPM. A lonesome whistle (the
+ * pan flute) carries the tune down Main Street over a plucked, strummed guitar (the
+ * pizzicato) and a galloping bass; eerie strings and a music-box celesta come in by the
+ * graveyard; in the mine the celesta and a low clarinet creep round a chromatic turn
+ * over a deep drone; the whistle returns for the ride home. Woodblock hooves, a
+ * slow kick, a rimshot and the odd tambourine shake. Our own tune.
+ */
+function ghost(): Song {
+  const ch = chart(GHOST_CHORDS);
+  const mel = seq(GHOST_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const gallop: [number, number, string][] = [
+    [0, 0.75, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "5"],
+    [2, 0.75, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "ghost",
+    title: "Dry Gulch",
+    role: "Desert World",
+    bpm: 132,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      part("panflute", "base", 1, p1),
+      part("pizz", "base", 0.3, shift(p1, 0, -12)),
+      part("strings", "base", 0.95, p2),
+      part("celesta", "base", 0.35, shift(p2, 0, 12)),
+      part("celesta", "base", 0.9, p3),
+      part("clarinet", "base", 0.5, shift(p3, 0, -12)),
+      part("panflute", "base", 0.95, p4),
+      part("strings", "base", 0.5, p4),
+      part("brass", "base", 0.3, shift(p4, 0, -12)),
+      // The strummed guitar, a music box turning, the drone underneath.
+      part("pizz", "base", 0.55, stabs(ch, [0, 1.5, 2, 3.5], 52, 0.2, 0.5)),
+      part("celesta", "base", 0.28, arpeggio(ch, 0.5, [0, 1, 2, 1, 3, 2, 1, 2], 67, 0.3, 0.3)),
+      part("drone", "base", 0.35, pads(ch, 40, 4, 0.5)),
+      part(
+        "pad",
+        "base",
+        0.3,
+        pads(
+          ch.filter((c) => c.t >= 32),
+          55,
+          4,
+          0.4,
+        ),
+      ),
+      part("bass", "base", 1, bassLine(ch, gallop, 28, 0.85)),
+      ...drumParts("base", 0.6, drums("w..w.ww.w..w.ww.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.8, drums("K.......K.......", KIT, 0.25, 32)),
+      ...drumParts("base", 0.55, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.3, drums("..............t.", KIT, 0.25, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.7, drums("o...o...o.o.oOoO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.7, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -1715,6 +1827,7 @@ export const SONGS: Record<string, Song> = {
   aurora: aurora(),
   canyon: canyon(),
   oasis: oasis(),
+  ghost: ghost(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

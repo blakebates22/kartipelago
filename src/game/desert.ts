@@ -79,6 +79,8 @@ export interface WindmillConfig {
   heading: number;
   radius: number;
   speed: number;
+  /** Turning fitfully: lurching, stalling, now and then creaking back a little. */
+  gusty: boolean;
 }
 
 export function parseWindmill(e: Record<string, unknown>): WindmillConfig {
@@ -89,11 +91,20 @@ export function parseWindmill(e: Record<string, unknown>): WindmillConfig {
     heading: num(e.heading, 0),
     radius: Math.max(0.5, num(e.radius, 3.2)),
     speed: num(e.speed, 1.4),
+    gusty: e.gusty === true,
   };
 }
 
-/** The wheel's angle at time t: it follows the gusts. */
+/** The wheel's angle at time t: it follows the gusts (a gusty one fitfully: lurching
+ * on, stalling, rocking back). */
 export function windmillAngle(c: WindmillConfig, t: number): number {
+  if (c.gusty)
+    return (
+      c.speed * t +
+      1.4 * Math.sin(t * 0.23) +
+      0.9 * Math.sin(t * 0.61 + 1.0) +
+      0.35 * Math.sin(t * 1.7) * Math.max(0, Math.sin(t * 0.13))
+    );
   return c.speed * t + 0.6 * Math.sin(t * 0.21);
 }
 

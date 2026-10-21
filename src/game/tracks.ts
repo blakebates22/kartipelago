@@ -146,6 +146,17 @@ export const TRACKS: TrackEntry[] = [
     music: "oasis",
     load: { scene: "track", packageId: "oasis_haven" },
   },
+  {
+    id: "dry_gulch",
+    name: "Dry Gulch Ghost Town",
+    description:
+      "Race by moonlight through an abandoned frontier town where the lanterns still burn, past the graveyard and over the glowing chasm. Dare you take the shortcut through the haunted mine?",
+    preview: "previews/dry_gulch.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dry_gulch",
+    music: "ghost",
+    load: { scene: "track", packageId: "dry_gulch" },
+  },
   // Test World.
   {
     id: "dino_demo",

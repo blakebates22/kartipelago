@@ -1,9 +1,10 @@
 # Desert World
 
 Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost
-towns of the old frontier. Its courses so far are **Canyon Dash** (the great canyon)
-and **Oasis Haven** (the resort paradise). Two more are planned, and they're shown in
-track select as "Coming Soon": a haunted ghost town and an underground adventure.
+towns of the old frontier. Its courses so far are **Canyon Dash** (the great canyon),
+**Oasis Haven** (the resort paradise) and **Dry Gulch Ghost Town** (the haunted mining
+town by night). One more is planned, shown in track select as "Coming Soon": an
+underground adventure.
 
 All of it is our own design: the layout, the scenery, the props and the music were made
 for this project. The concept art was only a guide to the mood and colours.
@@ -203,5 +204,128 @@ the island.
 - that the passage counts as the stretch it skips;
 - three AI laps of 75–100 s with no falls into the lake;
 - the boat and fountain rules.
+
+`tests/holes.test.ts` covers it too.
+
+## Dry Gulch Ghost Town
+
+A lap of about 2.1 km (an AI lap is about 94 s) by night under an enormous full moon,
+through a frontier mining town abandoned years ago. Every lantern is still burning.
+
+Dry Gulch stands on a red-rock plateau. East of town rises **Hazard Ridge**, with the old
+Hazard Mine bored right through it. Past the ridge the ground drops into a ravine, and
+north of the ridge the ravine opens into a deep chasm. Something down there glows green.
+
+Two kinds of light give the course its look: warm orange lanterns and lit windows round
+the town, and a cold spectral green from the mine, the chasm, the ravine's fissures and
+the graveyard.
+
+| Section | Name                | What happens                                                                                                                                                                                                                                                           |
+| ------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | Haunted Main Street | The start, under a timber arch with the DRY GULCH sign, a cattle skull and lanterns. The hotel, the bank, the undertaker, the sheriff's office and jail and the assay office line the street, with the water tower and the chapel's spire behind. North to the square. |
+| 2       | The Saloon District | Left at the square past the saloon, two storeys with a balcony, its doors swinging on their own. Then drifting S-bends west past the general store, the livery and boardwalks, and down a narrower side street past an abandoned wagon.                                |
+| 3       | Graveyard Bend      | One broad sweeping bend round Boot Hill, the moon dead ahead: an iron fence and gate, headstones and crosses on both sides of the road, crypts, twisted dead trees, green mist, ghosts drifting among the graves, and the ghost rider galloping along the far ridge.   |
+| 4       | The Mine Approach   | East along the north edge of town, past miners' shacks and sheds, toward Hazard Ridge. On the right, the great timber portal of the Hazard Mine pours out green light. The shortcut turns off into it.                                                                 |
+| 5       | The Moonlit Canyon  | The Rickety Trestle: a long timber trestle on tall braced bents, 58 m over the glowing chasm. Then south down the ravine's east wall, partly on trestles over the drop, the ridge's cliffs and its mineworks across the gulf.                                          |
+| 6       | The Lower Ravine    | Along the ravine floor, where the shortcut rejoins: glowing fissures split the walls, old adits glow green, mining machinery and carts lie about. Then round Dead Man's Rock.                                                                                          |
+| 7       | The Final Return    | Up out of the ravine, under the mine railway's trestle (a cart sometimes rolls along it by itself), past the chapel, and one last broad corner onto Main Street.                                                                                                       |
+
+**The Haunted Mine (the shortcut):**
+
+- **Entering the mine:** through the portal under the HAZARD MINE sign, where veils of
+  green light hang in the tunnel mouth.
+- **The tunnels:** down through timbered tunnels. There are rails between the sleepers,
+  lanterns on the timber sets (mostly orange, the odd green one), and glowing crystals
+  breaking out of the walls. Some of the sets are broken.
+- **The old workings:** a wide chamber full of carts, ore and tools. A runaway ore cart
+  (the `minecart` entity) rattles across the road here every 7 s. It waits glowing and
+  rattling in its side tunnel for 1.8 s first, then takes 3 s to cross. It's solid: hit
+  it and you're knocked aside and slowed. Ghostly miners stand at the edges and fade
+  away as you get close.
+- **The spectral trestle:** a curving plank trestle across a great cavern. It's 45 m
+  over a chasm floor that glows through layers of green mist, with ghosts drifting
+  in the air. Its rails are broken away in one stretch, so a sloppy line can drop you
+  in. A twin gate just before it puts you back on the trestle's near end.
+- **The escape:** climbing out past a giant miner's shadow that looms on the wall, then
+  through a broken timber gateway onto the ravine floor.
+
+The mine counts as the stretch it skips (a twin gate). Driven well it saves about
+7 s. The cart, the narrow tunnels and the broken rails are the risk. The AI keeps to
+the main road.
+
+**The haunting:** most of it is purely visual (and audible); only the runaway ore cart
+touches a kart.
+
+- **Ghosts:** shapes at the saloon's, the hotel's and the jail's windows, sheet-like
+  spirits over the graves and in the cavern, miners in the tunnels, the giant shadow.
+- **The ghost rider:** gallops along the far ridge beyond the graveyard.
+- **Green wisps and mist:** over the graves, at the mine, in the cavern, along the
+  fissures and down in the chasm.
+- **In town:** the saloon doors swing open by themselves, and tumbleweeds bowl across
+  the road now and then.
+- **Flickering light:** every lantern and lit window flickers on its own (the new
+  `flicker` material effect), and the nearest lanterns light the karts.
+- **Lanterns lighting the way:** lanterns hang along the road, so the route is always
+  readable.
+- **Moving scenery:** the windmill turns fitfully. Bats circle over the ridge and the
+  graveyard. A cart rolls along the mine railway by itself.
+- **The chapel bell:** rings now and then, though nobody is in the tower. The clock is
+  stopped at a quarter to midnight.
+- **The sky:** a huge full moon, stars, violet clouds, and a cloud that now and then
+  gathers into the shape of a skull and drifts apart again.
+
+**Sound:** the night wind falls away as you go underground, where a low rumble takes
+over. You'll also hear:
+
+- whispers near the graveyard, the mine and the cavern;
+- timber creaking on the trestles;
+- the cart's rattle;
+- the doors' squeak;
+- a ghost's moan as one appears near you.
+
+**Driving:**
+
+- **The roads:** the town's packed dirt road, with plank decks on the trestles.
+- **Off the road:** the verges are dirt and the sand is loose sand. The graveyard and
+  the ravine floor are dirt.
+- **The drops:** the chasm's floor (and the cavern's) puts you back on the road.
+- **Fences:** a ranch fence lines every edge with a drop.
+
+**Music:** "Dry Gulch" (`ghost`), E minor, 132 BPM: a haunted frontier ballad.
+
+- A lonesome whistle (the pan flute) carries the tune over strummed pizzicato and a
+  galloping bass.
+- Eerie strings and a music-box celesta come in by the graveyard.
+- In the mine, the celesta and a low clarinet creep round a chromatic turn over a drone.
+- Woodblock hooves and a slow kick keep the beat.
+
+**How it's built:**
+
+- `dry_gulch.py`: the layout, heights, the ravine and the chasm, Hazard Ridge, the mine's
+  path, the road kinds, and the shortcut's roads.
+- `gulch_scenery.py`: the land, the ridge and the boolean-cut mine (tunnels, the
+  workings and its cart tunnel, the chasm cavern), the trestles, the mine's insides, the
+  ravine, the rocks and plants, the gameplay entities, and the night's light painted
+  into the vertex colours (moonlit everywhere, warm round every lantern and lit window,
+  green round the spectral light).
+- `gulch_town.py`: the frontier building kit (false fronts, porches, balconies, windows,
+  painted signs), Main Street, the square, the saloon district, the chapel, the water
+  tower, the back lanes, the graveyard, the start arch, and the mineworks (the portal,
+  the headframe, the railway and its trestle, the stamp mill).
+- `gulch_props.py`: lanterns, barrels, crates, wagons, headstones, crosses, crypts, iron
+  fences, dead trees, cattle skulls, ore carts, timber sets, crystals, tumbleweeds.
+- The painted signs are wide boards cut into 64 px tiles (the era's texture size), with
+  our own pixel font.
+
+**Tests:** `tests/gulch.test.ts` checks:
+
+- the world, the night sky and the music;
+- a clean load with the haunting, the runaway cart, flickering lanterns and the mine's
+  twin gate;
+- that the mine counts as the stretch it skips;
+- three AI laps of 75-100 s with no falls;
+- that the AI driven through the mine laps a few seconds faster;
+- the haunting's rules (ghosts, the rider, the rail cart, the doors, the wisps, the
+  cart's crossing, the windmill, the skull cloud).
 
 `tests/holes.test.ts` covers it too.

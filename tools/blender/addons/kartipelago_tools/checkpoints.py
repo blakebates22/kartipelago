@@ -241,7 +241,16 @@ def place(samples, length, avoid=(), extra=(), min_gap=MIN_GAP, max_gap=MAX_GAP)
                 if x - 8 <= d <= y + 8:
                     d = y + 20 if y + 20 < b - 10 else x - 20
             out.append(d)
-    return out
+    # In order, and never two on top of each other (an in-between gate moved out of an
+    # avoided stretch can land on another, or back past it) or one in an avoided stretch.
+    kept = []
+    for d in sorted(out):
+        if d not in forced and d != 0.0 and blocked(d):
+            continue
+        if kept and d - kept[-1] < min_gap * 0.5 and d not in forced:
+            continue
+        kept.append(d)
+    return kept
 
 
 def _at(samples, length, d):

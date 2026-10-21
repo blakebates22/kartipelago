@@ -17,7 +17,7 @@ description, a banner colour and its track ids, in menu order:
 | ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
 | Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
-| Desert World      | `desert`      | Canyon Dash, Oasis Haven (two more to come: a ghost town, an underground course)                                                                                                                 |
+| Desert World      | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town (one more to come: an underground course)                                                                                                         |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -489,6 +489,39 @@ All purely visual. The rules are in `src/game/desert.ts`; the drawing is in
   `jets` arcing out to land `radius` metres away. Drawn only near the camera.
 
 The rules are in `src/game/oasis.ts`; the boats are drawn by `src/render/oasisFx.ts`.
+
+### The haunting (Dry Gulch)
+
+- `minecart` `{ "ax", "ay", "az", "bx", "by", "bz", "period": 7, "offset": 0, "travel": 3,
+"warn": 1.8 }`: a runaway ore cart rattling across the road from A to B on a fixed
+  beat of the race clock. For `warn` seconds first it waits in the side tunnel's mouth,
+  glowing brighter and rattling. Solid, like the sleigh: hit it and you're knocked aside
+  and slowed. There's always a clear moment in every period.
+- `ghost` `{ "x", "y", "z", "heading", "look": "float", "period": 13, "offset": 0,
+"scale": 1, "drift": 0, "vanish": 0 }`: a see-through figure that appears for a few
+  seconds of each period and fades away. `look`: `window` (a figure at a window),
+  `float` (a sheet-like spirit, bobbing, drifting round `drift` metres), `miner` (a
+  ghostly miner who fades out when a kart comes within `vanish` metres), `shadow` (a
+  giant miner's shadow on a wall, ringed with green light).
+- `ghostrider` `{ "route": "Ghost Rider Path", "period": 38, "offset": 0, "travel": 14 }`:
+  a ghostly rider galloping along a path once a period, rising out of the mist and
+  melting back into it.
+- `railcart` `{ "route": "Railway", "period": 34, "travel": 13, "pause": 4 }`: an empty
+  ore cart rolling along a path by itself: out, a pause, back, a pause.
+- `tumbleweed` `{ "ax", ..., "bz", "period", "offset", "travel", "r": 0.8 }`: a tumbleweed
+  bowling across the road now and then. It rolls through karts: purely visual.
+- `door` `{ "x", "y", "z", "heading", "width": 2.4, "period": 9 }`: swinging saloon doors
+  that open on their own now and then (heading: the line of the doorway).
+- `wisps` `{ "x", "y", "z", "radius", "count" }`: little green lights wandering about.
+- `mist` `{ "x", "y", "z", "radius", "rate" }`: green mist curling low over the ground.
+- `whispers`, `creak` `{ "x", "y", "z", "radius" }`: ghostly whispering, or old timber
+  creaking, when you're near.
+- `ambience` `{ "wind": 0.55, "caves": [[x, y, z, r], ...] }`: the night wind, which falls
+  away underground (inside the caves' spheres) as a low rumble takes over.
+- `windmill` can be `"gusty": true`: it turns fitfully, lurching and stalling.
+
+All but the cart are purely visual (and audible). The rules are in `src/game/haunt.ts`
+(the cart's in `src/game/movers.ts`); the drawing is in `src/render/hauntFx.ts`.
 
 ### Torches
 

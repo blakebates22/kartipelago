@@ -353,6 +353,7 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
       const hl = isObj(d.hills) ? d.hills : undefined;
       const st = isObj(d.stars) ? d.stars : undefined;
       const au = isObj(d.aurora) ? d.aurora : undefined;
+      const sk = isObj(d.skull) ? d.skull : undefined;
       look.skyDome = {
         top: hex(d.top),
         horizon: hex(d.horizon),
@@ -362,6 +363,7 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
           size: num(sd.size),
           glow: hex(sd.glow),
           elevation: num(sd.elevation),
+          face: sd.face === "moon" ? "moon" : undefined,
         },
         clouds: {
           count: num(cl.count),
@@ -397,6 +399,14 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
           colors: Array.isArray(au.colors)
             ? au.colors.map(hex).filter((c): c is string => Boolean(c))
             : undefined,
+        },
+        skull: sk && {
+          azimuth: num(sk.azimuth),
+          elevation: num(sk.elevation),
+          size: num(sk.size),
+          color: hex(sk.color),
+          shade: hex(sk.shade),
+          period: num(sk.period),
         },
       };
     }

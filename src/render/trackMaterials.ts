@@ -34,6 +34,11 @@ export interface MaterialFx {
   lagoon: number;
   /** Swaying in the breeze, metres (palm fronds, banners, awnings). */
   sway: number;
+  /**
+   * The glow guttering like a flame by this share (lanterns, lit windows): each spot
+   * flickers on its own, now and then dipping low. 0 = steady.
+   */
+  flicker: number;
 }
 
 const num = (v: unknown, lo: number, hi: number, fallback: number) =>
@@ -53,8 +58,11 @@ export function parseFx(userData: Record<string, unknown> | undefined): Material
     pulsePeriod: num(r.pulse_period, 0.1, 600, 4),
     lagoon: num(r.lagoon, 0, 4, 0),
     sway: num(r.sway, 0, 2, 0),
+    flicker: num(r.flicker, 0, 1, 0),
   };
-  return fx.scrollU || fx.scrollV || fx.wave || fx.pulse || fx.lagoon || fx.sway ? fx : undefined;
+  return fx.scrollU || fx.scrollV || fx.wave || fx.pulse || fx.lagoon || fx.sway || fx.flicker
+    ? fx
+    : undefined;
 }
 
 /** A texture's offset at time `t` (seconds): steady scroll plus a small circular ripple. */
@@ -133,11 +141,22 @@ const WAVES = /* glsl */ `
     return h;
   }
   float kpHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  // A flame's guttering: each 2.5 m cell of the world (one lantern, one window) on its
+  // own, with the odd deep dip.
+  float kpFlick(vec3 p, float t, float amt) {
+    vec3 c = floor(p / 2.5);
+    float h = kpHash(c.xz + c.y * 7.31);
+    float f = 1.0 - amt * 0.35 * (0.5 + 0.5 * sin(t * (7.0 + 5.0 * h) + h * 40.0))
+                  - amt * 0.22 * (0.5 + 0.5 * sin(t * (17.0 + 9.0 * h) + h * 13.0));
+    float k = kpHash(vec2(floor(t * 3.0 + h * 11.0), h * 91.0));
+    return f * (k > 0.96 ? 1.0 - amt * 0.7 : 1.0);
+  }
 `;
 
 /**
- * Patch a Lambert material's shaders: living water (waves, ripples, glitter, sky sheen)
- * and/or swaying (a gentle breeze). Purely visual; collision never moves.
+ * Patch a Lambert material's shaders: living water (waves, ripples, glitter, sky sheen),
+ * swaying (a gentle breeze) and/or a flickering glow. Purely visual; collision never
+ * moves.
  */
 function patchShader(mat: THREE.MeshLambertMaterial, fx: MaterialFx, u: WaterUniforms) {
   mat.onBeforeCompile = (sh) => {
@@ -146,10 +165,12 @@ function patchShader(mat: THREE.MeshLambertMaterial, fx: MaterialFx, u: WaterUni
     sh.uniforms.kpSky = u.kpSky;
     sh.uniforms.kpLagoon = { value: fx.lagoon };
     sh.uniforms.kpSway = { value: fx.sway };
+    sh.uniforms.kpFlicker = { value: fx.flicker };
     const head = /* glsl */ `
       uniform float kpTime;
       uniform float kpLagoon;
       uniform float kpSway;
+      uniform float kpFlicker;
       varying vec3 vKpWorld;
       ${WAVES}
     `;
@@ -174,6 +195,11 @@ function patchShader(mat: THREE.MeshLambertMaterial, fx: MaterialFx, u: WaterUni
       .replace(
         "#include <common>",
         `#include <common>\n${head}\nuniform vec3 kpSun;\nuniform vec3 kpSky;`,
+      )
+      .replace(
+        "#include <emissivemap_fragment>",
+        /* glsl */ `#include <emissivemap_fragment>
+        if (kpFlicker > 0.0) totalEmissiveRadiance *= kpFlick(vKpWorld, kpTime, kpFlicker);`,
       )
       .replace(
         "#include <map_fragment>",
@@ -218,7 +244,8 @@ function patchShader(mat: THREE.MeshLambertMaterial, fx: MaterialFx, u: WaterUni
         }`,
       );
   };
-  mat.customProgramCacheKey = () => `kp:${fx.lagoon > 0 ? 1 : 0}:${fx.sway > 0 ? 1 : 0}`;
+  mat.customProgramCacheKey = () =>
+    `kp:${fx.lagoon > 0 ? 1 : 0}:${fx.sway > 0 ? 1 : 0}:${fx.flicker > 0 ? 1 : 0}`;
 }
 
 /** The retro version of one glTF material. */
@@ -248,7 +275,8 @@ function toRetro(src: GltfMaterial, animated: TrackMaterials["animated"], water:
     depthWrite: !src.transparent,
   });
   mat.userData = { ...src.userData };
-  if (fx && (fx.lagoon > 0 || fx.sway > 0)) patchShader(mat, fx, water);
+  if (fx && (fx.lagoon > 0 || fx.sway > 0 || (fx.flicker > 0 && glows)))
+    patchShader(mat, fx, water);
   if (fx?.pulse && glows) {
     const entry = animated.find((a) => a.texture === map);
     if (entry) entry.pulse = { mat, base: mat.emissiveIntensity };

@@ -20,6 +20,12 @@
  * "colors": ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"], "speed": 1, "intensity": 1 }:
  * broad luminous curtains, bright at their lower hem and fading up into violet, slowly
  * folding, rippling and drifting (a small shader: no textures).
+ *
+ * A night sky can make the sun a full moon ("sun": { "face": "moon", ... }: a pale disc
+ * with grey seas and craters, a soft halo) and hang a cloud over the land that now and
+ * then gathers into the shape of a skull ("skull": { "azimuth": 50, "elevation": 30,
+ * "size": 30, "color", "shade", "period": 45 }): for a few seconds of every period it
+ * slowly forms, lingers and drifts apart again, and the rest of the time it's gone.
  */
 import * as THREE from "three";
 
@@ -32,7 +38,7 @@ export interface SkyDomeSpec {
    * sky than the light really comes from, so you see it while racing; its compass
    * direction always matches the light.
    */
-  sun?: { color?: string; size?: number; glow?: string; elevation?: number };
+  sun?: { color?: string; size?: number; glow?: string; elevation?: number; face?: "moon" };
   clouds?: {
     count?: number;
     color?: string;
@@ -60,6 +66,15 @@ export interface SkyDomeSpec {
   };
   /** Stars twinkling in the sky above `low` degrees (for evening and night skies). */
   stars?: { count?: number; color?: string; seed?: number; low?: number };
+  /** A cloud that slowly gathers into a skull now and then (degrees, seconds). */
+  skull?: {
+    azimuth?: number;
+    elevation?: number;
+    size?: number;
+    color?: string;
+    shade?: string;
+    period?: number;
+  };
   /** The northern lights: curtains between `low` and `high` degrees. */
   aurora?: {
     count?: number;
@@ -214,6 +229,133 @@ function sunTexture(color: string, glow: string) {
   return t;
 }
 
+/** A full moon: a pale disc with grey seas and a few craters, and a soft halo. */
+function moonTexture(color: string, glow: string) {
+  const { c, g } = canvas(256, 256);
+  const halo = g.createRadialGradient(128, 128, 40, 128, 128, 128);
+  halo.addColorStop(0, `${glow}cc`);
+  halo.addColorStop(0.25, `${glow}55`);
+  halo.addColorStop(1, `${glow}00`);
+  g.fillStyle = halo;
+  g.fillRect(0, 0, 256, 256);
+  g.fillStyle = color;
+  g.beginPath();
+  g.arc(128, 128, 64, 0, Math.PI * 2);
+  g.fill();
+  g.save();
+  g.beginPath();
+  g.arc(128, 128, 64, 0, Math.PI * 2);
+  g.clip();
+  // The seas: soft grey blotches (our own arrangement).
+  const r = rng(29);
+  for (const [x, y, rad, a] of [
+    [104, 98, 26, 0.32],
+    [140, 112, 20, 0.28],
+    [118, 140, 18, 0.25],
+    [150, 150, 14, 0.22],
+    [94, 132, 12, 0.2],
+    [160, 88, 10, 0.18],
+  ] as const) {
+    const sea = g.createRadialGradient(x, y, 0, x, y, rad);
+    sea.addColorStop(0, `rgba(120,124,150,${a})`);
+    sea.addColorStop(1, "rgba(120,124,150,0)");
+    g.fillStyle = sea;
+    g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+  // Craters: little rings, lit on one side.
+  for (let k = 0; k < 9; k++) {
+    const x = 84 + r() * 88;
+    const y = 84 + r() * 88;
+    const rad = 2 + r() * 4;
+    g.strokeStyle = "rgba(110,112,140,0.16)";
+    g.lineWidth = 1.2;
+    g.beginPath();
+    g.arc(x, y, rad, 0, Math.PI * 2);
+    g.stroke();
+    g.strokeStyle = "rgba(255,255,255,0.14)";
+    g.beginPath();
+    g.arc(x, y, rad, Math.PI * 0.9, Math.PI * 1.6);
+    g.stroke();
+  }
+  // A faint shade round the limb.
+  const limb = g.createRadialGradient(128, 128, 44, 128, 128, 64);
+  limb.addColorStop(0, "rgba(90,90,140,0)");
+  limb.addColorStop(1, "rgba(90,90,140,0.3)");
+  g.fillStyle = limb;
+  g.fillRect(0, 0, 256, 256);
+  g.restore();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * A billowing cloud in the shape of a skull: puffs for the dome of the head, the cheeks
+ * and the jaw, two hollow eyes, a hollow nose and gaps between the teeth, all soft-edged
+ * like any other cloud.
+ */
+function skullTexture(color: string, shade: string) {
+  const { c, g } = canvas(256, 256);
+  const puffs: [number, number, number][] = [];
+  // The cranium: a ring of big puffs, then filled.
+  for (let k = 0; k <= 9; k++) {
+    const a = Math.PI * (1.05 + (k / 9) * 0.9);
+    puffs.push([128 + Math.cos(a) * 70, 112 + Math.sin(a) * 66, 30 + (k % 3) * 4]);
+  }
+  puffs.push([128, 100, 62], [92, 130, 34], [164, 130, 34]);
+  // Cheeks and the jaw.
+  puffs.push([86, 160, 26], [170, 160, 26], [104, 186, 22], [152, 186, 22], [128, 192, 24]);
+  for (const pass of [0, 1]) {
+    g.fillStyle = pass ? color : shade;
+    for (const [x, y, r] of puffs) {
+      g.beginPath();
+      g.arc(x, y + (pass ? 0 : 7), r, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
+  // Cut out the eyes, the nose and the gaps between the teeth.
+  g.globalCompositeOperation = "destination-out";
+  for (const x of [98, 158]) {
+    const eye = g.createRadialGradient(x, 132, 4, x, 132, 24);
+    eye.addColorStop(0, "rgba(0,0,0,1)");
+    eye.addColorStop(0.75, "rgba(0,0,0,0.9)");
+    eye.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = eye;
+    g.beginPath();
+    g.ellipse(x, 132, 24, 20, x < 128 ? 0.2 : -0.2, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.fillStyle = "rgba(0,0,0,0.85)";
+  g.beginPath();
+  g.moveTo(128, 150);
+  g.lineTo(118, 172);
+  g.lineTo(138, 172);
+  g.closePath();
+  g.fill();
+  for (let k = -2; k <= 2; k++) {
+    g.fillRect(128 + k * 12 - 1.5, 184, 3, 20);
+  }
+  g.globalCompositeOperation = "source-over";
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * How visible the skull cloud is at time `t` (0..1): each period it gathers over 8 s,
+ * lingers 10 s and drifts apart over 8 s; gone the rest of the time.
+ */
+export function skullShown(t: number, period: number): number {
+  const p = Math.max(30, period);
+  const u = ((t % p) + p) % p;
+  const start = p * 0.35;
+  const k = u - start;
+  if (k < 0 || k > 26) return 0;
+  if (k < 8) return k / 8;
+  if (k < 18) return 1;
+  return 1 - (k - 18) / 8;
+}
+
 /**
  * Desert skyline: flat-topped mesas and buttes with steep, slightly stepped sides on a
  * low rolling base, and now and then a thin spire. Fills lifts (0..1) round the circle.
@@ -290,7 +432,10 @@ export function createSkyDome(
     const el = (spec.sun.elevation * Math.PI) / 180;
     sd.set((sd.x / flat) * Math.cos(el), Math.sin(el), (sd.z / flat) * Math.cos(el));
   }
-  const sunTex = sunTexture(spec.sun?.color ?? "#fff4c2", spec.sun?.glow ?? "#ffe58a");
+  const moon = spec.sun?.face === "moon";
+  const sunTex = moon
+    ? moonTexture(spec.sun?.color ?? "#f4f2ea", spec.sun?.glow ?? "#9ab0ff")
+    : sunTexture(spec.sun?.color ?? "#fff4c2", spec.sun?.glow ?? "#ffe58a");
   const sunMat = new THREE.SpriteMaterial({
     map: sunTex,
     fog: false,
@@ -298,7 +443,8 @@ export function createSkyDome(
     transparent: true,
   });
   const sun = new THREE.Sprite(sunMat);
-  const size = (((spec.sun?.size ?? 7) * Math.PI) / 180) * RADIUS * 2.6;
+  // (The moon's picture has more halo round its disc, so it's drawn bigger.)
+  const size = (((spec.sun?.size ?? 7) * Math.PI) / 180) * RADIUS * (moon ? 3.2 : 2.6);
   sun.scale.set(size, size, 1);
   sun.position.copy(sd).multiplyScalar(RADIUS * 0.92);
   sun.renderOrder = -9;
@@ -534,6 +680,36 @@ export function createSkyDome(
       disposables.push(g, m);
     }
   }
+  // The skull cloud: one soft billboard, faded in and out on its period.
+  let skull: { mat: THREE.MeshBasicMaterial; mesh: THREE.Mesh; period: number } | undefined;
+  if (spec.skull) {
+    const sk = spec.skull;
+    const tex = skullTexture(sk.color ?? "#6a4e9a", sk.shade ?? "#2c1c58");
+    const mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0,
+      fog: false,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const az = ((sk.azimuth ?? 50) * Math.PI) / 180;
+    const el = ((sk.elevation ?? 30) * Math.PI) / 180;
+    const w = (((sk.size ?? 30) * Math.PI) / 180) * RADIUS;
+    const geo2 = new THREE.PlaneGeometry(1, 1);
+    const mesh = new THREE.Mesh(geo2, mat);
+    mesh.scale.set(w, w, 1);
+    mesh.position
+      .set(Math.cos(az) * Math.cos(el), Math.sin(el), Math.sin(az) * Math.cos(el))
+      .multiplyScalar(RADIUS * 0.84);
+    mesh.lookAt(0, mesh.position.y * 0.5, 0);
+    mesh.renderOrder = -7.9;
+    mesh.frustumCulled = false;
+    mesh.visible = false;
+    group.add(mesh);
+    disposables.push(tex, mat, geo2);
+    skull = { mat, mesh, period: sk.period ?? 45 };
+  }
   let clockT = 0;
 
   const drift = cs.drift ?? 0.004;
@@ -545,6 +721,14 @@ export function createSkyDome(
       clockT += dt;
       twinkle?.(clockT);
       for (const m of aurora) m.uniforms.time!.value = clockT;
+      if (skull) {
+        const k = skullShown(clockT, skull.period);
+        skull.mat.opacity = 0.85 * k;
+        skull.mesh.visible = k > 0;
+        // Forming, it swells a little and settles; drifting apart, it stretches.
+        const sw = 1 + 0.06 * (1 - k);
+        skull.mesh.scale.y = skull.mesh.scale.x * sw;
+      }
     },
     dispose() {
       group.removeFromParent();

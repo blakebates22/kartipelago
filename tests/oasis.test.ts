@@ -42,8 +42,8 @@ const PASSAGE: [number, number, number][] = [
 describe("Oasis Haven", () => {
   it("is the Desert World's second course, with its own theme and music", () => {
     const w = WORLDS.find((x) => x.id === "desert")!;
-    expect(w.tracks).toEqual(["canyon_dash", id]);
-    expect(trackTilesOf(w).filter((t) => t.comingSoon)).toHaveLength(2);
+    expect(w.tracks.slice(0, 2)).toEqual(["canyon_dash", id]);
+    expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.theme).toBe("oasis_haven");
     expect(SONGS[t.music]?.id).toBe("oasis");

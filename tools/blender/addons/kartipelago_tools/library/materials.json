@@ -700,6 +700,73 @@
           }
         }
       }
+    },
+    {
+      "id": "dry_gulch",
+      "name": "Dry Gulch Ghost Town",
+      "description": "A haunted frontier mining town under an enormous full moon: deep violet and indigo sky, red-rock mesas in moonlight, weathered wooden buildings glowing with warm orange lanterns, and an abandoned mine pouring out an eerie spectral green",
+      "environment": {
+        "sky": "#1a1040",
+        "fog": {
+          "enabled": true,
+          "color": "#3a2a6a",
+          "near": 300,
+          "far": 1700
+        },
+        "sun": {
+          "color": "#b8c4ff",
+          "intensity": 1.65,
+          "direction": [-0.22, 0.62, -0.75]
+        },
+        "ambient": {
+          "sky": "#8a7ad8",
+          "ground": "#5a3a5a",
+          "intensity": 1.55
+        },
+        "skyDome": {
+          "top": "#0a0626",
+          "horizon": "#a0388c",
+          "bottom": "#2a1a4a",
+          "sun": {
+            "color": "#f4f2ea",
+            "size": 10,
+            "glow": "#9ab0ff",
+            "elevation": 21,
+            "face": "moon"
+          },
+          "clouds": {
+            "count": 22,
+            "color": "#5a3e8a",
+            "shade": "#2a1a52",
+            "seed": 151,
+            "low": 4,
+            "high": 30,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#2a1630",
+            "far": "#5a2e5e",
+            "height": 7,
+            "seed": 157,
+            "layers": 3,
+            "style": "mesas"
+          },
+          "stars": {
+            "count": 700,
+            "color": "#ffffff",
+            "seed": 163,
+            "low": 12
+          },
+          "skull": {
+            "azimuth": 52,
+            "elevation": 32,
+            "size": 34,
+            "color": "#6a4e9a",
+            "shade": "#2c1c58",
+            "period": 46
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -4011,6 +4078,791 @@
         "wavePeriod": 5,
         "opacity": 0.55
       }
+    },
+    {
+      "id": "gulch_road",
+      "name": "Ghost Town Dirt Road",
+      "theme": "dry_gulch",
+      "surface": "packed_dirt",
+      "image": "gulch_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "gulch_verge",
+      "name": "Dirt Verge (Night)",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "gulch_verge.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "gulch_sand",
+      "name": "Red Sand (Night)",
+      "theme": "dry_gulch",
+      "surface": "loose_sand",
+      "image": "gulch_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "gulch_talus",
+      "name": "Ravine Rubble",
+      "theme": "dry_gulch",
+      "surface": "loose_sand",
+      "image": "gulch_talus.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "gulch_wash",
+      "name": "Ravine Wash",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "gulch_wash.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.08
+      }
+    },
+    {
+      "id": "graveyard_earth",
+      "name": "Graveyard Earth",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "graveyard_earth.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "gulch_chasm",
+      "name": "Glowing Chasm Floor",
+      "theme": "dry_gulch",
+      "surface": "abyss",
+      "image": "gulch_chasm.png",
+      "wrap": "repeat",
+      "tileMetres": 22,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.7,
+        "pulse": 0.4,
+        "pulsePeriod": 5.0
+      }
+    },
+    {
+      "id": "mine_floor",
+      "name": "Mine Floor",
+      "theme": "dry_gulch",
+      "surface": "packed_dirt",
+      "image": "mine_floor.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.06
+      }
+    },
+    {
+      "id": "mine_rock",
+      "name": "Mine Rock",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "mine_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 12,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.12,
+        "pulse": 0.3,
+        "pulsePeriod": 6.0
+      }
+    },
+    {
+      "id": "fissure_glow",
+      "name": "Glowing Fissure",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "fissure_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.35,
+        "pulsePeriod": 3.7
+      }
+    },
+    {
+      "id": "siding_brown",
+      "name": "Clapboard (Brown)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "siding_brown.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "siding_grey",
+      "name": "Clapboard (Grey)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "siding_grey.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "siding_red",
+      "name": "Clapboard (Barn Red)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "siding_red.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "siding_ochre",
+      "name": "Clapboard (Ochre)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "siding_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "siding_green",
+      "name": "Clapboard (Faded Green)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "siding_green.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "board_walk",
+      "name": "Boardwalk",
+      "theme": "dry_gulch",
+      "surface": "road",
+      "image": "board_walk.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "shingle_roof",
+      "name": "Shingle Roof",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "shingle_roof.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "tin_roof",
+      "name": "Tin Roof",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "tin_roof.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "window_lit",
+      "name": "Lit Window",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "window_lit.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.95,
+        "flicker": 0.3
+      }
+    },
+    {
+      "id": "window_ghost",
+      "name": "Haunted Window",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "window_ghost.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.5,
+        "pulsePeriod": 4.4
+      }
+    },
+    {
+      "id": "window_dark",
+      "name": "Boarded Window",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "window_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "door_wood",
+      "name": "Old Door",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "door_wood.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "lantern_glass",
+      "name": "Lantern Glass",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "lantern_glass.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.3,
+        "flicker": 0.45
+      }
+    },
+    {
+      "id": "lantern_green",
+      "name": "Spectral Lantern",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "lantern_green.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.3,
+        "flicker": 0.35
+      }
+    },
+    {
+      "id": "iron",
+      "name": "Old Iron",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "iron.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "mine_timber",
+      "name": "Mine Timber",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "mine_timber.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "rail_iron",
+      "name": "Mine Rail",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "rail_iron.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "spectral_mist",
+      "name": "Spectral Mist",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "spectral_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 16,
+      "fx": {
+        "scrollU": 0.012,
+        "scrollV": 0.004,
+        "wave": 0.06,
+        "wavePeriod": 9,
+        "opacity": 0.42,
+        "glow": 0.75
+      }
+    },
+    {
+      "id": "crystal_ghost",
+      "name": "Spectral Crystal",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "crystal_ghost.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.35,
+        "pulsePeriod": 3.4
+      }
+    },
+    {
+      "id": "tombstone",
+      "name": "Weathered Headstone",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "tombstone.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "dead_wood",
+      "name": "Dead Wood",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "dead_wood.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "canvas_torn",
+      "name": "Torn Canvas",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "canvas_torn.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.05
+      }
+    },
+    {
+      "id": "barrel_wood",
+      "name": "Barrel Staves",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "barrel_wood.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "clock_face",
+      "name": "Stopped Clock",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "clock_face.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "tank_staves",
+      "name": "Water Tank Staves",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "tank_staves.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ore_pile",
+      "name": "Spectral Ore",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "ore_pile.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "ghost_sheet",
+      "name": "Ghost Glow",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "ghost_sheet.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.2,
+        "opacity": 0.6
+      }
+    },
+    {
+      "id": "sign_saloon_1",
+      "name": "Sign: Saloon (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_saloon_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_saloon_2",
+      "name": "Sign: Saloon (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_saloon_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_general_1",
+      "name": "Sign: General Store (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_general_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_general_2",
+      "name": "Sign: General Store (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_general_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_general_3",
+      "name": "Sign: General Store (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_general_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hotel_1",
+      "name": "Sign: Hotel (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hotel_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hotel_2",
+      "name": "Sign: Hotel (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hotel_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_sheriff_1",
+      "name": "Sign: Sheriff (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_sheriff_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_sheriff_2",
+      "name": "Sign: Sheriff (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_sheriff_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_jail_1",
+      "name": "Sign: Jail (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_jail_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_bank_1",
+      "name": "Sign: Bank (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_bank_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_assay_1",
+      "name": "Sign: Assay Office (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_assay_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_assay_2",
+      "name": "Sign: Assay Office (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_assay_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_assay_3",
+      "name": "Sign: Assay Office (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_assay_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_livery_1",
+      "name": "Sign: Livery (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_livery_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_livery_2",
+      "name": "Sign: Livery (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_livery_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_undertaker_1",
+      "name": "Sign: Undertaker (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_undertaker_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_undertaker_2",
+      "name": "Sign: Undertaker (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_undertaker_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_undertaker_3",
+      "name": "Sign: Undertaker (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_undertaker_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_barber_1",
+      "name": "Sign: Barber (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_barber_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_barber_2",
+      "name": "Sign: Barber (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_barber_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drygulch_1",
+      "name": "Sign: Dry Gulch (1/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drygulch_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drygulch_2",
+      "name": "Sign: Dry Gulch (2/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drygulch_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drygulch_3",
+      "name": "Sign: Dry Gulch (3/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drygulch_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drygulch_4",
+      "name": "Sign: Dry Gulch (4/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drygulch_4.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_ghosttown_1",
+      "name": "Sign: Ghost Town (1/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_ghosttown_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_ghosttown_2",
+      "name": "Sign: Ghost Town (2/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_ghosttown_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_ghosttown_3",
+      "name": "Sign: Ghost Town (3/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_ghosttown_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_ghosttown_4",
+      "name": "Sign: Ghost Town (4/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_ghosttown_4.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hazard_1",
+      "name": "Sign: Hazard Mine (1/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hazard_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hazard_2",
+      "name": "Sign: Hazard Mine (2/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hazard_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hazard_3",
+      "name": "Sign: Hazard Mine (3/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hazard_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hazard_4",
+      "name": "Sign: Hazard Mine (4/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hazard_4.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_keepout_1",
+      "name": "Sign: Keep Out (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_keepout_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_keepout_2",
+      "name": "Sign: Keep Out (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_keepout_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_finish_1",
+      "name": "Sign: Finish (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_finish_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_finish_2",
+      "name": "Sign: Finish (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_finish_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_shaft_1",
+      "name": "Sign: Shaft No 9 (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_shaft_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_shaft_2",
+      "name": "Sign: Shaft No 9 (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_shaft_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_shaft_3",
+      "name": "Sign: Shaft No 9 (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_shaft_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     }
   ]
 }

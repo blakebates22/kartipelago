@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "theme": "dry_gulch",
+  "sky": "#1a1040",
+  "fog": {
+    "enabled": true,
+    "color": "#3a2a6a",
+    "near": 300,
+    "far": 1700
+  },
+  "sun": {
+    "color": "#b8c4ff",
+    "intensity": 1.65,
+    "direction": [
+      -0.22,
+      0.62,
+      -0.75
+    ]
+  },
+  "ambient": {
+    "sky": "#8a7ad8",
+    "ground": "#5a3a5a",
+    "intensity": 1.55
+  },
+  "skyDome": {
+    "top": "#0a0626",
+    "horizon": "#a0388c",
+    "bottom": "#2a1a4a",
+    "sun": {
+      "color": "#f4f2ea",
+      "size": 10,
+      "glow": "#9ab0ff",
+      "elevation": 21,
+      "face": "moon"
+    },
+    "clouds": {
+      "count": 22,
+      "color": "#5a3e8a",
+      "shade": "#2a1a52",
+      "seed": 151,
+      "low": 4,
+      "high": 30,
+      "drift": 0.004
+    },
+    "hills": {
+      "color": "#2a1630",
+      "far": "#5a2e5e",
+      "height": 7,
+      "seed": 157,
+      "layers": 3,
+      "style": "mesas"
+    },
+    "stars": {
+      "count": 700,
+      "color": "#ffffff",
+      "seed": 163,
+      "low": 12
+    },
+    "skull": {
+      "azimuth": 52,
+      "elevation": 32,
+      "size": 34,
+      "color": "#6a4e9a",
+      "shade": "#2c1c58",
+      "period": 46
+    }
+  }
+}

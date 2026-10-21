@@ -119,6 +119,9 @@ These settings belong to the active object's material:
   colour comes from the vertex paint (paint the deep water darker). Oasis Haven's lake.
 - **Sway:** sways in the breeze by this many metres (palm fronds, flowers, banners,
   awnings).
+- **Flicker:** the glow gutters like a flame by this share: lantern glass, lit windows.
+  Every lantern and window flickers on its own (the game picks each 2.5 m patch of the
+  world its own timing), now and then dipping low. Dry Gulch's lanterns.
 
 Ancient Water and Volcano Lava come with sensible settings already. The animation runs
 in the game, not in Blender (glTF has no way to carry it), and it is purely visual.
@@ -184,8 +187,9 @@ material extras (custom properties) or in `look.json`.
 
 The game reads `scroll_u` and `scroll_v` (texture repeats per second), `wave` and
 `wave_period` (a circular wobble, as a fraction of a repeat, and its loop time in
-seconds), `pulse` and `pulse_period`, `lagoon` (living water's strength) and `sway`
-(metres). Lagoon and sway are vertex and fragment shader patches on the material
+seconds), `pulse` and `pulse_period`, `lagoon` (living water's strength), `sway`
+(metres) and `flicker` (a share of the glow). Lagoon, sway and flicker are vertex and
+fragment shader patches on the material
 (`src/render/trackMaterials.ts`), sharing one clock and the look's sun direction; the
 collision never moves. Opacity, glow and tint are also stored there, so Blender can show them, but
 the game takes those three from the standard glTF fields.

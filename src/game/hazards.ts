@@ -69,6 +69,15 @@
  *               windmill's turning wheel and big birds circling over the canyon.
  *   boat, fountain (see game/oasis.ts): Oasis Haven's little sailing boats going round
  *               the lake on paths from route.json, with wakes, and fountains' jets.
+ *   minecart    { "type": "minecart", ... } (see game/movers.ts): a runaway ore cart rattling
+ *               across the mine's workings on a fixed beat, waiting glowing (and rattling)
+ *               in the side tunnel first. Solid, like the sleigh.
+ *   ghost, ghostrider, railcart, tumbleweed, door, wisps, mist, whispers, creak,
+ *   ambience    (see game/haunt.ts): Dry Gulch's haunting: see-through ghosts at windows,
+ *               over the graves and in the mine, the ghost rider on the far ridge, an ore
+ *               cart rolling along the railway by itself, tumbleweeds bowling across the
+ *               road, the saloon's doors swinging, green wisps and mist, whispers, creaking
+ *               timber, and the night wind that falls away underground.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -118,6 +127,42 @@ import {
   type WindmillView,
 } from "../render/desertFx";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
+import {
+  doorSwing,
+  ghostAt,
+  openPath,
+  parseAmbience,
+  parseDoor,
+  parseGhost,
+  parseRailcart,
+  parseRider,
+  parseSpot,
+  parseWisps,
+  pathPoint,
+  railcartAt,
+  riderAt,
+  underground,
+  type AmbienceConfig,
+  type DoorConfig,
+  type GhostConfig,
+  type RailcartConfig,
+  type RiderConfig,
+  type SoundSpot,
+} from "./haunt";
+import {
+  createCartView,
+  createDoorView,
+  createGhostView,
+  createRiderView,
+  createTumbleweedView,
+  createWispsView,
+  type CartView,
+  type DoorView,
+  type GhostView,
+  type RiderView,
+  type TumbleweedView,
+  type WispsView,
+} from "../render/hauntFx";
 import { createParticles } from "../render/particles";
 import {
   createIcicleView,
@@ -163,6 +208,7 @@ import {
 import {
   bellSwing,
   crossingAt,
+  crossingLength,
   parseBell,
   parseCrossing,
   type BellConfig,
@@ -218,6 +264,8 @@ interface KartHazard {
 interface Mover {
   cfg: CrossingConfig;
   sleigh: boolean;
+  /** A runaway ore cart (two circles, waits glowing in the tunnel mouth first). */
+  cart: boolean;
   x: number;
   y: number;
   z: number;
@@ -226,7 +274,7 @@ interface Mover {
   phase: CrossingPhase;
   last: CrossingPhase;
   solids: SolidCircle[];
-  view?: SnowballView | SleighView;
+  view?: SnowballView | SleighView | CartView;
 }
 
 interface Dino {
@@ -437,6 +485,30 @@ export function createHazards(opts: {
   let dusty: ReturnType<typeof createParticles> | undefined;
   const dustAcc: number[] = Array.from({ length: opts.karts }, () => Math.random());
   const windmills: WindmillView[] = [];
+  /** Dry Gulch: the haunting (see game/haunt.ts). */
+  const ghosts: { cfg: GhostConfig; view?: GhostView; shown: boolean }[] = [];
+  const riders: { cfg: RiderConfig; path: ReturnType<typeof openPath>; view?: RiderView }[] = [];
+  const railcarts: {
+    cfg: RailcartConfig;
+    path: ReturnType<typeof openPath>;
+    view?: CartView;
+    moving: boolean;
+  }[] = [];
+  const tumbleweeds: {
+    cfg: CrossingConfig;
+    r: number;
+    y: number;
+    view?: TumbleweedView;
+  }[] = [];
+  const doors: { cfg: DoorConfig; view?: DoorView; open: boolean }[] = [];
+  const wisps: WispsView[] = [];
+  const mists: (SoundSpot & { rate: number; acc: number })[] = [];
+  let mistPuffs: ReturnType<typeof createParticles> | undefined;
+  const whispers: (SoundSpot & { next: number })[] = [];
+  const creaks: (SoundSpot & { next: number })[] = [];
+  let ambience: AmbienceConfig | undefined;
+  let windLoop: ReturnType<Sfx["ambience"]> | undefined;
+  let droneLoop: ReturnType<Sfx["ambience"]> | undefined;
   /** Oasis Haven: boats on the lake, fountains. */
   const boats: (BoatView & { acc: number })[] = [];
   const fountains: (FountainConfig & { acc: number[] })[] = [];
@@ -628,13 +700,15 @@ export function createHazards(opts: {
       if (!opts.headless) flocks.push(createBirdsView(group, parseBirds(e)));
     } else if (e.type === "chimney")
       chimneys.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
-    else if (e.type === "snowball" || e.type === "sleigh") {
+    else if (e.type === "snowball" || e.type === "sleigh" || e.type === "minecart") {
       const sleigh = e.type === "sleigh";
-      const c = parseCrossing(e, sleigh);
-      const parts = sleigh ? 3 : 1;
+      const cart = e.type === "minecart";
+      const c = parseCrossing(e, sleigh, cart);
+      const parts = sleigh ? 3 : cart ? 2 : 1;
       const mover: Mover = {
         cfg: c,
         sleigh,
+        cart,
         x: c.a.x,
         y: c.a.y,
         z: c.a.z,
@@ -647,14 +721,66 @@ export function createHazards(opts: {
           look: "creature" as const,
           x: 1e6,
           z: 1e6,
-          radius: sleigh ? 1.9 : c.r * 0.92,
+          radius: sleigh ? 1.9 : cart ? c.r : c.r * 0.92,
           height: -1e6,
         })),
       };
       if (!opts.headless)
-        mover.view = sleigh ? createSleighView(group) : createSnowballView(group, c.r);
+        mover.view = cart
+          ? createCartView(group)
+          : sleigh
+            ? createSleighView(group)
+            : createSnowballView(group, c.r);
       movers.push(mover);
-    } else if (e.type === "present") {
+    } else if (e.type === "ghost") {
+      const g = parseGhost(e);
+      ghosts.push({
+        cfg: g,
+        view: opts.headless ? undefined : createGhostView(group, g.look, g.scale),
+        shown: false,
+      });
+    } else if (e.type === "ghostrider" || e.type === "railcart") {
+      const r = opts.routes.find((q) => q.id === e.route);
+      if (!r || r.points.length < 2) continue;
+      const path = openPath(r.points);
+      if (e.type === "ghostrider")
+        riders.push({
+          cfg: parseRider(e),
+          path,
+          view: opts.headless ? undefined : createRiderView(group),
+        });
+      else
+        railcarts.push({
+          cfg: parseRailcart(e),
+          path,
+          view: opts.headless ? undefined : createCartView(group),
+          moving: false,
+        });
+    } else if (e.type === "tumbleweed") {
+      const c = parseCrossing(e);
+      const r = Math.max(0.3, num(e.r, 0.8));
+      tumbleweeds.push({
+        cfg: c,
+        r,
+        y: c.a.y,
+        view: opts.headless ? undefined : createTumbleweedView(group, r),
+      });
+    } else if (e.type === "door") {
+      const d = parseDoor(e);
+      doors.push({
+        cfg: d,
+        view: opts.headless ? undefined : createDoorView(group, d.x, d.y, d.z, d.heading, d.width),
+        open: false,
+      });
+    } else if (e.type === "wisps") {
+      if (!opts.headless) wisps.push(createWispsView(group, parseWisps(e)));
+    } else if (e.type === "mist")
+      mists.push({ ...parseSpot(e, 10), rate: Math.max(0, num(e.rate, 6)), acc: 0 });
+    else if (e.type === "whispers")
+      whispers.push({ ...parseSpot(e, 50), next: 2 + Math.random() * 4 });
+    else if (e.type === "creak") creaks.push({ ...parseSpot(e, 30), next: Math.random() * 3 });
+    else if (e.type === "ambience") ambience = parseAmbience(e);
+    else if (e.type === "present") {
       const size = Math.max(0.8, num(e.size, 2.4));
       const x = num(e.x, 0);
       const y = num(e.y, 0);
@@ -822,6 +948,12 @@ export function createHazards(opts: {
     const fx = Math.sin(c.heading);
     const fz = Math.cos(c.heading);
     if (c.phase !== "crossing") {
+      if (m.cart && c.phase === "warning") {
+        // Waiting in the side tunnel's mouth, creeping forward a little.
+        m.x = c.x;
+        m.z = c.z;
+        m.y = ground.at(c.x, c.z, Math.max(c.y, m.y) + 4).height;
+      }
       for (const sd of m.solids) {
         sd.x = 1e6;
         sd.z = 1e6;
@@ -835,12 +967,13 @@ export function createHazards(opts: {
     m.x = c.x;
     m.z = c.z;
     m.y = ground.at(c.x, c.z, Math.max(c.y, m.y) + 4).height;
-    // Snowball: one circle. Sleigh: the reindeer in front, the sleigh behind.
-    const offs = m.sleigh ? [3.0, 0.0, -3.4] : [0];
+    // Snowball: one circle. Sleigh: the reindeer in front, the sleigh behind. Cart:
+    // its front and back.
+    const offs = m.sleigh ? [3.0, 0.0, -3.4] : m.cart ? [0.8, -0.8] : [0];
     m.solids.forEach((sd, k) => {
       sd.x = m.x + fx * offs[k]!;
       sd.z = m.z + fz * offs[k]!;
-      sd.height = m.y + (m.sleigh ? 3.5 : m.cfg.r * 1.9);
+      sd.height = m.y + (m.sleigh ? 3.5 : m.cart ? 2.0 : m.cfg.r * 1.9);
     });
   }
 
@@ -1593,10 +1726,32 @@ export function createHazards(opts: {
         if (m.phase !== m.last) {
           const loud = vol() * Math.max(0, 1 - far / 200);
           if (loud > 0 && m.sleigh && m.phase === "warning") opts.sfx?.jingle(loud);
-          if (loud > 0 && !m.sleigh && m.phase === "crossing") opts.sfx?.rumble(loud * 0.35);
+          if (loud > 0 && m.cart && m.phase !== "idle")
+            opts.sfx?.rattle(loud * (m.phase === "crossing" ? 1 : 0.6));
+          if (loud > 0 && !m.sleigh && !m.cart && m.phase === "crossing")
+            opts.sfx?.rumble(loud * 0.35);
           m.last = m.phase;
         }
         const shown = m.phase === "crossing";
+        if (m.cart) {
+          const rc = crossingAt(m.cfg, raceClock());
+          const t0 = (((raceClock() - m.cfg.offset) % m.cfg.period) + m.cfg.period) % m.cfg.period;
+          const warmUp = Math.max(
+            0,
+            Math.min(1, (t0 - (m.cfg.period - m.cfg.travel - m.cfg.warn)) / m.cfg.warn),
+          );
+          (m.view as CartView | undefined)?.update(
+            m.x,
+            m.y,
+            m.z,
+            rc.heading,
+            m.run,
+            m.phase !== "idle",
+            shown ? 1 : warmUp,
+            t,
+          );
+          continue;
+        }
         if (m.sleigh)
           (m.view as SleighView | undefined)?.update(m.x, m.y, m.z, m.heading, m.run, shown, t);
         else (m.view as SnowballView | undefined)?.update(m.x, m.y, m.z, m.heading, m.run, shown);
@@ -1763,6 +1918,105 @@ export function createHazards(opts: {
         fountainSpray.step(dt);
       }
       for (const v of flocks) v.update(t);
+      // ---- Dry Gulch's haunting
+      const hc = raceClock();
+      for (const g of ghosts) {
+        const near = Math.hypot(listener.x - g.cfg.x, listener.y - g.cfg.y, listener.z - g.cfg.z);
+        const a = ghostAt(g.cfg, hc, near);
+        g.view?.set(g.cfg.x + a.dx, g.cfg.y + a.dy, g.cfg.z + a.dz, g.cfg.heading, a.alpha, t);
+        const shown = a.alpha > 0.05;
+        if (shown && !g.shown && near < 55 && g.cfg.look !== "window")
+          opts.sfx?.moan(vol() * (1 - near / 55));
+        g.shown = shown;
+      }
+      for (const r of riders) {
+        const at = riderAt(r.cfg, hc);
+        if (at.u < 0) {
+          r.view?.set(0, 0, 0, 0, 0, t);
+          continue;
+        }
+        const p = pathPoint(r.path, at.u * r.path.length);
+        const gy = ground.at(p.x, p.z, p.y + 20).height;
+        r.view?.set(p.x, gy, p.z, p.heading, at.alpha, t);
+      }
+      for (const rc of railcarts) {
+        const at = railcartAt(rc.cfg, hc);
+        const p = pathPoint(rc.path, at.u * rc.path.length);
+        const ahead = pathPoint(rc.path, Math.min(rc.path.length, at.u * rc.path.length + 1));
+        const far = Math.hypot(listener.x - p.x, listener.z - p.z);
+        if (at.moving && !rc.moving && far < 120) opts.sfx?.rattle(vol() * 0.5 * (1 - far / 120));
+        rc.moving = at.moving;
+        rc.view?.update(p.x, p.y - 0.1, p.z, ahead.heading, at.u * rc.path.length, true, 0.35, t);
+      }
+      for (const tw of tumbleweeds) {
+        const at = crossingAt(tw.cfg, hc);
+        const shown = at.phase === "crossing";
+        if (shown) tw.y = ground.at(at.x, at.z, Math.max(at.y, tw.y) + 4).height;
+        tw.view?.update(at.x, tw.y, at.z, at.heading, at.u * crossingLength(tw.cfg), shown);
+      }
+      for (const d of doors) {
+        const ang = doorSwing(d.cfg, hc);
+        d.view?.update(ang);
+        const open = Math.abs(ang) > 0.05;
+        if (open && !d.open) {
+          const far = Math.hypot(listener.x - d.cfg.x, listener.z - d.cfg.z);
+          if (far < 45) opts.sfx?.squeak(vol() * (1 - far / 45));
+        }
+        d.open = open;
+      }
+      for (const w of wisps) w.update(t);
+      if (mists.length && !opts.headless) {
+        mistPuffs ??= createParticles(group, {
+          max: 500,
+          size: 3.2,
+          gravity: -0.3,
+          opacity: 0.32,
+          additive: true,
+        });
+        for (const ms of mists) {
+          const far = Math.hypot(listener.x - ms.x, listener.z - ms.z);
+          if (far > 180) continue;
+          ms.acc = Math.min(4, ms.acc + dt * ms.rate);
+          for (; ms.acc >= 1; ms.acc -= 1) {
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * ms.radius;
+            mistPuffs.emit(
+              ms.x + Math.cos(a) * r,
+              ms.y + 0.3 + Math.random() * 0.6,
+              ms.z + Math.sin(a) * r,
+              (Math.random() - 0.5) * 0.8,
+              0.15 + Math.random() * 0.3,
+              (Math.random() - 0.5) * 0.8,
+              3.0 + Math.random() * 2.0,
+              Math.random() < 0.5 ? 0x2ac884 : 0x186a4a,
+            );
+          }
+        }
+        mistPuffs.step(dt);
+      }
+      for (const w of whispers) {
+        const far = Math.hypot(listener.x - w.x, listener.y - w.y, listener.z - w.z);
+        w.next -= dt;
+        if (w.next <= 0) {
+          w.next = 4 + Math.random() * 5;
+          if (far < w.radius) opts.sfx?.whisper(vol() * (1 - far / w.radius));
+        }
+      }
+      for (const c of creaks) {
+        const far = Math.hypot(listener.x - c.x, listener.y - c.y, listener.z - c.z);
+        c.next -= dt;
+        if (c.next <= 0) {
+          c.next = 1.5 + Math.random() * 3;
+          if (far < c.radius) opts.sfx?.timber(vol() * (1 - far / c.radius));
+        }
+      }
+      if (ambience && !opts.quiet) {
+        const deep = underground(ambience, listener.x, listener.y, listener.z);
+        windLoop ??= opts.sfx?.ambience("wind");
+        droneLoop ??= opts.sfx?.ambience("drone");
+        windLoop?.set(cfg.volume * ambience.wind * 0.5 * (1 - deep));
+        droneLoop?.set(cfg.volume * 0.45 * deep);
+      }
       for (const ch of chimneys) {
         if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
         ch.acc = Math.min(1, ch.acc + dt);
@@ -1938,6 +2192,15 @@ export function createHazards(opts: {
       for (const b of boats) b.dispose();
       fountainSpray?.dispose();
       for (const v of flocks) v.dispose();
+      for (const g of ghosts) g.view?.dispose();
+      for (const r of riders) r.view?.dispose();
+      for (const r of railcarts) r.view?.dispose();
+      for (const tw of tumbleweeds) tw.view?.dispose();
+      for (const d of doors) d.view?.dispose();
+      for (const w of wisps) w.dispose();
+      mistPuffs?.dispose();
+      windLoop?.stop();
+      droneLoop?.stop();
       for (const g of geysers)
         if (g.column) {
           g.column.geometry.dispose();

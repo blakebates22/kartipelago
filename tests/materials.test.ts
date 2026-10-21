@@ -131,6 +131,12 @@ describe("water and lava animation", () => {
     expect(parseFx({ kp_fx: { lagoon: 99 } })?.lagoon).toBe(4); // clamped
   });
 
+  it("reads a flickering glow (lanterns, lit windows), animated on its own", () => {
+    expect(parseFx({ kp_fx: { flicker: 0.4 } })?.flicker).toBeCloseTo(0.4);
+    expect(parseFx({ kp_fx: { flicker: 7 } })?.flicker).toBe(1); // clamped
+    expect(parseFx({ kp_fx: { flicker: 0 } })).toBeUndefined();
+  });
+
   it("scrolls steadily and ripples in a loop", () => {
     const fx = {
       scrollU: 0.25,
@@ -141,6 +147,7 @@ describe("water and lava animation", () => {
       pulsePeriod: 4,
       lagoon: 0,
       sway: 0,
+      flicker: 0,
     };
     expect(fxOffset(fx, 1)[0]).toBeCloseTo(0.25);
     expect(fxOffset(fx, 5)[0]).toBeCloseTo(0.25); // wraps every 4 s
@@ -153,6 +160,7 @@ describe("water and lava animation", () => {
       pulsePeriod: 4,
       lagoon: 0,
       sway: 0,
+      flicker: 0,
     };
     const a = fxOffset(ripple, 0.3);
     const b = fxOffset(ripple, 2.3);
