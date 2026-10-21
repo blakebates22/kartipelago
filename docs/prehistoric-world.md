@@ -18,6 +18,7 @@ description, a banner colour and its track ids, in menu order:
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
 | Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
 | Desert World      | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town, Impact Depths                                                                                                                                    |
+| Dragon Kingdom    | `dragon`      | Dragon Isles, then three Coming Soon tiles (see [dragon-kingdom.md](dragon-kingdom.md))                                                                                                          |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -26,7 +27,7 @@ description, a banner colour and its track ids, in menu order:
   New players start on Prehistoric World.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
-  its real tracks (none at the moment). See [frostveil-peaks.md](frostveil-peaks.md).
+  its real tracks (the Dragon Kingdom has three). See [frostveil-peaks.md](frostveil-peaks.md).
 
 **World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
 
@@ -535,7 +536,8 @@ All but the cart are purely visual (and audible). The rules are in `src/game/hau
 "sun": 0.35, "sky": "#8ab0ff", "ground": "#6a3a2a", "hemi": 1.25, "sound": "chime" },
 ... }, "keys": [[x, y, z, "zoneA", "zoneB", t], ...] }`: the air of each world (fog
   colour and distance, how much sunlight reaches it, the ambient light, its sound:
-  `wind`, `resonance`, `chime`, `jungle`, `drip`, `rumble` or `hum`) and keys along the
+  `wind`, `resonance`, `chime`, `jungle`, `drip`, `rumble`, `hum`, or Dragon Isles'
+  `festival`, `falls`, `garden` and `harbour`) and keys along the
   lap and the shortcut saying which worlds are either side and how far between them.
   Wherever you are, the nearest keys blend the air smoothly from one world into the next.
 - `triceratops` `{ "x", "y", "z", "heading", "scale": 1, "roam": 6, "seed": 1 }`: a
@@ -563,6 +565,26 @@ All but the cart are purely visual (and audible). The rules are in `src/game/hau
 The triceratops, raptors, meteors, plume, core, motes, glows and air are in
 `src/game/depths.ts` (the rules) and `src/game/depthsLife.ts` (running them); the
 drawing is in `src/render/depthsFx.ts`.
+
+### The dragon kingdom (Dragon Isles)
+
+- `isles_dragon` `{ "keys": [[s, x, y, z], ...], "length", "size": 1 }`: the great
+  dragon. Each key says where it should be when the player is `s` metres round the lap.
+  It flies a smooth loop through the keys, never backwards: faster when behind, gliding
+  when ahead. Its body follows its head's path, it turns its head toward you when near,
+  its shadow crosses the ground and it calls now and then. Scenery only: it never
+  touches a kart.
+- `villagers` `{ "list": [[x, y, z, faceX, faceZ, role, variant], ...] }`: the crowd,
+  drawn instanced. Roles: `cheer`, `wave`, `merchant`, `dancer`, `musician`, `fisher`,
+  `gardener`, `guard` (never moves) and `bow`. Everyone but the guards bows together
+  when the dragon passes close, and the `festival` sound hushes.
+- `waterwheel` `{ "x", "y", "z", "heading", "radius": 3, "speed": 0.8 }`: a mill wheel
+  turning about its axle (`heading`: 0 = the axle along +Z).
+- `little_dragons` `{ "x", "y", "z", "radius", "count", "speed", "seed" }`: small
+  dragons looping and weaving round a spot.
+
+The rules are in `src/game/isles.ts`, running them in `src/game/islesLife.ts`, and the
+drawing in `src/render/islesFx.ts`. See [dragon-kingdom.md](dragon-kingdom.md).
 
 ### Torches
 

@@ -57,6 +57,16 @@ export const WORLDS: WorldEntry[] = [
     tracks: ["canyon_dash", "oasis_haven", "dry_gulch", "impact_depths"],
   },
   {
+    id: "dragon",
+    name: "Dragon Kingdom",
+    tagline: "A jade kingdom",
+    description:
+      "A sunlit kingdom of karst islands in a turquoise lagoon: festival towns, temple gardens, waterfalls and a royal palace, all watched over by a great jade dragon.",
+    color: "#2fae8f",
+    tracks: ["dragon_isles"],
+    comingSoon: ["Jade Lagoon", "Lantern Peaks", "Dragon's Crown"],
+  },
+  {
     id: "test_world",
     name: "Test World",
     tagline: "Prototypes",

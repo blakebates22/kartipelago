@@ -50,7 +50,18 @@ const isObj = (v: unknown): v is Record<string, unknown> =>
 
 // ---------------------------------------------------------------- the atmosphere
 
-export type SoundKind = "wind" | "resonance" | "chime" | "jungle" | "drip" | "rumble" | "hum";
+export type SoundKind =
+  | "wind"
+  | "resonance"
+  | "chime"
+  | "jungle"
+  | "drip"
+  | "rumble"
+  | "hum"
+  | "festival"
+  | "falls"
+  | "garden"
+  | "harbour";
 export const SOUND_KINDS: SoundKind[] = [
   "wind",
   "resonance",
@@ -59,6 +70,10 @@ export const SOUND_KINDS: SoundKind[] = [
   "drip",
   "rumble",
   "hum",
+  "festival",
+  "falls",
+  "garden",
+  "harbour",
 ];
 
 export interface Zone {

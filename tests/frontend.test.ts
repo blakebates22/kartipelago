@@ -210,7 +210,12 @@ describe("worlds", () => {
 
   it("keeps the prototype world in the game but out of the menus", () => {
     expect(WORLDS.find((w) => w.id === "test_world")?.hidden).toBe(true);
-    expect(VISIBLE_WORLDS.map((w) => w.id)).toEqual(["prehistoric", "frostveil", "desert"]);
+    expect(VISIBLE_WORLDS.map((w) => w.id)).toEqual([
+      "prehistoric",
+      "frostveil",
+      "desert",
+      "dragon",
+    ]);
     // Its tracks still load directly.
     expect(trackById("loop_lab")).toBeTruthy();
   });

@@ -4923,6 +4923,12 @@ import impact_textures  # noqa: E402
 MATERIALS += impact_textures.materials(sys.modules[__name__])
 THEMES.append(impact_textures.THEME)
 
+# Dragon Isles (Dragon Kingdom, course 1).
+import isles_textures  # noqa: E402
+
+MATERIALS += isles_textures.materials(sys.modules[__name__])
+THEMES.append(isles_textures.THEME)
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

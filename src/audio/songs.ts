@@ -52,6 +52,11 @@
  *                                   Brass and flute over the sands, celesta and bells in
  *                                   the crystal halls, low marimba, horns and toms in the
  *                                   jungle and the lava, strings climbing back to the sun
+ *   dragon      "Dragon Isles"      G major pentatonic, 152: a festival lap of the dragon
+ *                                   kingdom. Bamboo flute over plucked strings and bright
+ *                                   mallets in the market, bells and celesta for the great
+ *                                   dragon's theme, brass for the palace; festival drums,
+ *                                   bongos and a gong-like crash
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -1955,6 +1960,130 @@ function depths(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Dragon Isles"
+
+export const DRAGON_MELODY = bars(
+  // The festival (flute)
+  "G5:.5 A5:.5 B5:1 D6:1 B5:.5 A5:.5",
+  "G5:1 E5:.5 G5:.5 A5:2",
+  "B5:.5 D6:.5 E6:1 D6:.5 B5:.5 A5:1",
+  "G5:.5 A5:.5 B5:.5 A5:.5 G5:1 E5:1",
+  "D5:.5 E5:.5 G5:1 A5:1 B5:.5 D6:.5",
+  "E6:1.5 D6:.5 B5:1 A5:1",
+  "G5:.5 A5:.5 B5:.5 D6:.5 A5:1 B5:.5 A5:.5",
+  "G5:3 r:1",
+  // The market (plucked strings and xylophone)
+  "D6:.5 D6:.5 B5:.5 D6:.5 E6:1 D6:1",
+  "B5:.5 A5:.5 G5:.5 A5:.5 B5:2",
+  "A5:.5 A5:.5 G5:.5 A5:.5 B5:1 D6:1",
+  "E6:.5 D6:.5 B5:.5 A5:.5 G5:2",
+  "G5:.5 B5:.5 D6:.5 E6:.5 G6:1 E6:1",
+  "D6:.5 E6:.5 D6:.5 B5:.5 A5:2",
+  "B5:.5 A5:.5 G5:.5 E5:.5 D5:1 E5:1",
+  "G5:2 A5:1 B5:1",
+  // The dragon (bells and celesta, broad)
+  "D6:2 B5:1 A5:1",
+  "G5:1 A5:1 B5:2",
+  "E6:2 D6:1 B5:1",
+  "A5:3 r:1",
+  "G5:1 B5:1 D6:1 E6:1",
+  "G6:2 E6:1 D6:1",
+  "B5:1 D6:.5 B5:.5 A5:1 G5:1",
+  "A5:3 r:1",
+  // The palace (brass and flute)
+  "G5:.5 A5:.5 B5:1 D6:1 E6:1",
+  "D6:.5 B5:.5 A5:1 G5:2",
+  "E5:.5 G5:.5 A5:1 B5:1 D6:1",
+  "B5:.5 A5:.5 G5:1 A5:2",
+  "G5:.5 A5:.5 B5:1 D6:1 G6:1",
+  "E6:.5 D6:.5 B5:1 D6:2",
+  "E6:.5 D6:.5 B5:.5 A5:.5 G5:.5 A5:.5 B5:1",
+  "G5:3! r:1",
+);
+export const DRAGON_CHORDS =
+  "G:4 Em:4 C:4 D:4 G:4 Em:4 C:2 D:2 G:4 " +
+  "G:4 D:4 Am:4 Em:4 C:4 D:4 Em:2 D:2 G:4 " +
+  "Em:4 C:4 G:4 D:4 Em:4 C:4 Am:2 D:2 D:4 " +
+  "G:4 Em:4 C:4 D:4 G:4 C:4 Am:2 D:2 G:4";
+
+/**
+ * "Dragon Isles": a festival lap of the dragon kingdom, G major pentatonic, 152 BPM.
+ * A bamboo flute leads through the festival over plucked strings; the market skips
+ * along on plucked strings and xylophone; bells and celesta sing the great dragon's
+ * broad theme over held strings; brass and flute bring it home to the palace. Festival
+ * drums, bongos and a gong-like crash throughout. Our own tune.
+ */
+function dragon(): Song {
+  const ch = chart(DRAGON_CHORDS);
+  const mel = seq(DRAGON_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const skip: [number, number, string][] = [
+    [0, 1, "R"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "R"],
+    [2, 1, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "5"],
+  ];
+  return {
+    id: "dragon",
+    title: "Dragon Isles",
+    role: "Dragon Kingdom",
+    bpm: 152,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      part("flute", "base", 1, p1),
+      part("pizz", "base", 0.9, p2),
+      part("xylophone", "base", 0.6, shift(p2, 0, 12)),
+      part("bell", "base", 0.55, p3),
+      part("celesta", "base", 0.9, p3),
+      part(
+        "strings",
+        "base",
+        0.5,
+        pads(
+          ch.filter((c) => c.t >= 64 && c.t < 96),
+          55,
+          4,
+          0.45,
+        ),
+      ),
+      part("brass", "base", 0.85, p4),
+      part("flute", "base", 0.5, shift(p4, 0, 12)),
+      // Plucked strings rippling under it all; mallets on the off-beats; the bass.
+      part(
+        "pizz",
+        "base",
+        0.45,
+        arpeggio(
+          ch.filter((c) => c.t < 32 || c.t >= 64),
+          0.5,
+          [0, 1, 2, 1, 0, 2, 1, 2],
+          62,
+          0.3,
+          0.4,
+        ),
+      ),
+      part("marimba", "base", 0.6, stabs(ch, [0.5, 1.5, 2.5, 3.5], 60, 0.2, 0.45)),
+      part("pad", "base", 0.3, pads(ch, 55, 4, 0.35)),
+      part("bass", "base", 1, bassLine(ch, skip, 31, 0.8)),
+      ...drumParts("base", 0.75, drums("o...o.o.o...o.oo", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("..b...b...b.b.b.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.35, drums("h.h.h.h.h.h.h.hh", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("k.......k.......", KIT, 0.25, 32)),
+      ...[30, 62, 94, 126].flatMap((at) =>
+        drumParts("base", 0.7, drums("oooooooo", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.6, drums("c", KIT, 32, 4)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -1973,6 +2102,7 @@ export const SONGS: Record<string, Song> = {
   oasis: oasis(),
   ghost: ghost(),
   depths: depths(),
+  dragon: dragon(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

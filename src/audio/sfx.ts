@@ -283,7 +283,19 @@ export function createSfx(engine: AudioEngine) {
      * volume (0..1) every frame.
      */
     ambience(
-      kind: "wind" | "drone" | "resonance" | "chime" | "jungle" | "drip" | "rumble" | "hum",
+      kind:
+        | "wind"
+        | "drone"
+        | "resonance"
+        | "chime"
+        | "jungle"
+        | "drip"
+        | "rumble"
+        | "hum"
+        | "festival"
+        | "falls"
+        | "garden"
+        | "harbour",
     ): { set(volume: number): void; stop(): void } {
       if (!ctx) return { set() {}, stop() {} };
       // Each world's bed of sound: shaped noise (filter, its centre wandering on a slow
@@ -376,6 +388,51 @@ export function createSfx(engine: AudioEngine) {
           toneGain: 0.2,
           smooth: 0.97,
         },
+        // Dragon Isles' festival: the murmur of a happy crowd (a voice-band babble that
+        // swells and falls).
+        festival: {
+          type: "bandpass",
+          f: 900,
+          q: 1.1,
+          lfo: 0.7,
+          depth: 350,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.55,
+        },
+        // Waterfalls: a broad, steady roar.
+        falls: {
+          type: "lowpass",
+          f: 1400,
+          q: 0.5,
+          lfo: 0.09,
+          depth: 300,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.35,
+        },
+        // The temple gardens: a soft breeze in the leaves, a faint temple-bell hum.
+        garden: {
+          type: "highpass",
+          f: 2200,
+          q: 0.5,
+          lfo: 0.15,
+          depth: 500,
+          tones: [196, 293.7],
+          toneGain: 0.018,
+          smooth: 0.7,
+        },
+        // The harbour: waves washing in and out against the docks.
+        harbour: {
+          type: "lowpass",
+          f: 520,
+          q: 0.8,
+          lfo: 0.16,
+          depth: 360,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.85,
+        },
         // The core: a shimmering harmonic hum.
         hum: {
           type: "bandpass",
@@ -460,6 +517,38 @@ export function createSfx(engine: AudioEngine) {
       note(f, 0, 0.25, volume * 0.07, f * 0.6, "sine");
       for (let i = 0; i < 4; i++)
         note(f * 1.2, 0.3 + i * 0.07, 0.06, volume * 0.05, f * 1.4, "sine");
+    },
+    /** A gull over the harbour: two falling cries. */
+    gull(volume: number) {
+      const f = 1500 + Math.random() * 400;
+      note(f, 0, 0.22, volume * 0.06, f * 0.72, "triangle");
+      note(f * 1.05, 0.28, 0.2, volume * 0.05, f * 0.7, "triangle");
+    },
+    /** Somewhere in the festival: a gong, a drum roll or a plucked phrase. */
+    festivalBit(volume: number) {
+      const r = Math.random();
+      if (r < 0.3) {
+        note(98, 0, 2.2, volume * 0.1, 92, "sine");
+        note(196.5, 0, 1.6, volume * 0.05, 190, "sine");
+        noise(0, 0.4, volume * 0.06, 2400, 300);
+      } else if (r < 0.65) {
+        for (let i = 0; i < 6; i++) note(110, i * 0.09, 0.12, volume * 0.12, 70, "sine");
+      } else {
+        const scale = [587.3, 659.3, 784, 880, 987.8, 1174.7];
+        for (let i = 0; i < 4; i++) {
+          const f = scale[Math.floor(Math.random() * scale.length)]!;
+          note(f, i * 0.16, 0.3, volume * 0.05, f, "triangle");
+        }
+      }
+    },
+    /** The great dragon calling: a long, deep, gliding horn with a bright edge, rising
+     * then falling away (wonder, not menace). */
+    dragonCall(volume: number) {
+      note(110, 0, 2.6, volume * 0.22, 165, "sawtooth");
+      note(165, 0.05, 2.4, volume * 0.12, 247, "triangle");
+      note(220, 0.9, 1.8, volume * 0.07, 196, "sine");
+      note(147, 1.6, 2.2, volume * 0.16, 98, "sawtooth");
+      noise(0, 2.8, volume * 0.12, 900, 200);
     },
     /** A triceratops bellowing: a deep, rough, rising-falling low. */
     grunt(volume: number) {

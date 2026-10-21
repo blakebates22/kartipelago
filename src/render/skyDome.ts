@@ -62,7 +62,7 @@ export interface SkyDomeSpec {
     height?: number;
     seed?: number;
     layers?: number;
-    style?: "mesas";
+    style?: "mesas" | "karst";
   };
   /** Stars twinkling in the sky above `low` degrees (for evening and night skies). */
   stars?: { count?: number; color?: string; seed?: number; low?: number };
@@ -360,6 +360,33 @@ export function skullShown(t: number, period: number): number {
  * Desert skyline: flat-topped mesas and buttes with steep, slightly stepped sides on a
  * low rolling base, and now and then a thin spire. Fills lifts (0..1) round the circle.
  */
+/** Karst country: a low haze of hills with tall, round-shouldered towers standing out of
+ * it, crowded together, some with a lean (Dragon Isles). */
+function karstProfile(lifts: Float32Array, r: () => number) {
+  const n = lifts.length - 1;
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    lifts[i] = 0.12 + 0.06 * Math.sin(a * 4 + 2) + 0.03 * Math.sin(a * 19);
+  }
+  const count = 40 + Math.floor(r() * 16);
+  for (let k = 0; k < count; k++) {
+    const c = r() * n;
+    const half = (3 + r() * 9) * (n / 720);
+    const h = 0.3 + r() * 0.7;
+    const lean = (r() - 0.5) * 0.5;
+    for (let j = Math.floor(c - half * 1.3); j <= Math.ceil(c + half * 1.3); j++) {
+      const i = ((j % n) + n) % n;
+      const d = (j - c) / half + lean * 0.4;
+      // Steep sides, a rounded top.
+      const ad = Math.abs(d);
+      const v = ad < 1 ? h * Math.sqrt(1 - ad * ad * ad * ad) : 0;
+      lifts[i] = Math.max(lifts[i]!, v);
+      if (i === 0) lifts[n] = lifts[0]!;
+    }
+  }
+  lifts[n] = lifts[0]!;
+}
+
 function mesaProfile(lifts: Float32Array, r: () => number) {
   const n = lifts.length - 1;
   for (let i = 0; i <= n; i++) {
@@ -502,7 +529,8 @@ export function createSkyDome(
     const far = new THREE.Color(hs.far ?? spec.horizon ?? "#9cc8b0");
     const base = new THREE.Color(spec.horizon ?? "#c4ecff");
     const mesas = hs.style === "mesas";
-    const SEG = mesas ? 720 : 128;
+    const karst = hs.style === "karst";
+    const SEG = mesas || karst ? 720 : 128;
     for (let l = 0; l < layers; l++) {
       const k = layers === 1 ? 1 : l / (layers - 1); // 0 far .. 1 near
       const top = near.clone().lerp(far, 1 - k);
@@ -513,6 +541,7 @@ export function createSkyDome(
       const phase = [hr() * 6.28, hr() * 6.28, hr() * 6.28];
       const lifts = new Float32Array(SEG + 1);
       if (mesas) mesaProfile(lifts, hr);
+      else if (karst) karstProfile(lifts, hr);
       else
         for (let i = 0; i <= SEG; i++) {
           const a = (i / SEG) * Math.PI * 2;

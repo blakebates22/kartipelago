@@ -118,6 +118,8 @@ export function createDepthsLife(opts: {
   headless?: boolean;
   clock: () => number;
   slow: number;
+  /** Turns the festival's sound down (0..1): Dragon Isles' hush as the dragon passes. */
+  hush?: () => number;
 }): DepthsLife {
   const { group, ground } = opts;
   const packs: Pack[] = [];
@@ -397,7 +399,8 @@ export function createDepthsLife(opts: {
           // The sound of each world, faded into the next.
           if (!opts.quiet && opts.sfx?.ambience) {
             for (const kind of SOUND_KINDS) {
-              const v = a.sound[kind];
+              const hushed = kind === "festival" ? 1 - 0.85 * (opts.hush?.() ?? 0) : 1;
+              const v = a.sound[kind] * hushed;
               if (v > 0.02 && !loops[kind]) loops[kind] = opts.sfx.ambience(kind);
               loops[kind]?.set(vol * 0.42 * v);
             }
@@ -411,7 +414,11 @@ export function createDepthsLife(opts: {
               const v = vol * a.sound[pick];
               if (pick === "chime") opts.sfx.chime?.(v);
               else if (pick === "drip") opts.sfx.drip?.(v);
-              else if (pick === "jungle" && Math.random() < 0.5) opts.sfx.bird?.(v);
+              else if ((pick === "jungle" || pick === "garden") && Math.random() < 0.5)
+                opts.sfx.bird?.(v);
+              else if (pick === "harbour" && Math.random() < 0.35) opts.sfx.gull?.(v);
+              else if (pick === "festival" && Math.random() < 0.4 * (1 - (opts.hush?.() ?? 0)))
+                opts.sfx.festivalBit?.(v);
             }
           }
         }

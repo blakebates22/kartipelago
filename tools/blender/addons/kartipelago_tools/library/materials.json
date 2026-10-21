@@ -819,6 +819,58 @@
           }
         }
       }
+    },
+    {
+      "id": "dragon_isles",
+      "name": "Dragon Isles",
+      "description": "A sunlit kingdom of karst mountains in a turquoise lagoon: red-lacquered temples under blue and gold tiled roofs, white waterfalls, pink blossom, golden lanterns and red festival banners, distant peaks fading into soft blue haze",
+      "environment": {
+        "sky": "#5aa8f0",
+        "fog": {
+          "enabled": true,
+          "color": "#cfe4f4",
+          "near": 520,
+          "far": 2900
+        },
+        "sun": {
+          "color": "#fff2dc",
+          "intensity": 2.7,
+          "direction": [-0.42, 0.78, 0.46]
+        },
+        "ambient": {
+          "sky": "#c4dcff",
+          "ground": "#86a070",
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#2a7ae0",
+          "horizon": "#dceefa",
+          "bottom": "#cfe4f0",
+          "sun": {
+            "color": "#fffbe8",
+            "size": 8,
+            "glow": "#ffe8b0",
+            "elevation": 46
+          },
+          "clouds": {
+            "count": 34,
+            "color": "#ffffff",
+            "shade": "#dce8f4",
+            "seed": 311,
+            "low": 2,
+            "high": 26,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#7a9ab0",
+            "far": "#c4d8e8",
+            "height": 11,
+            "seed": 313,
+            "layers": 3,
+            "style": "karst"
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -5555,6 +5607,425 @@
         "wavePeriod": 7,
         "opacity": 0.3,
         "glow": 0.8
+      }
+    },
+    {
+      "id": "isle_paving",
+      "name": "Palace Paving",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "isle_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "village_cobble",
+      "name": "Village Cobbles",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "village_cobble.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "temple_flag",
+      "name": "Temple Flagstones",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "temple_flag.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "royal_carpet",
+      "name": "Royal Runner",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "royal_carpet.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "stone_curb",
+      "name": "Festival Kerb",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "stone_curb.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cliff_road",
+      "name": "Cliff Road",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "cliff_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "passage_stone",
+      "name": "Passage Stone",
+      "theme": "dragon_isles",
+      "surface": "road",
+      "image": "passage_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "lush_grass",
+      "name": "Lush Grass",
+      "theme": "dragon_isles",
+      "surface": "grass",
+      "image": "lush_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "flowerbed",
+      "name": "Flower Bed",
+      "theme": "dragon_isles",
+      "surface": "grass",
+      "image": "flowerbed.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "limestone",
+      "name": "Karst Limestone",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "limestone.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "limestone_moss",
+      "name": "Mossy Limestone",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "limestone_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "pale_beach",
+      "name": "Pale Beach",
+      "theme": "dragon_isles",
+      "surface": "sand",
+      "image": "pale_beach.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "red_lacquer",
+      "name": "Red Lacquer",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "red_lacquer.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "roof_blue",
+      "name": "Blue Glazed Tiles",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "roof_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "roof_jade",
+      "name": "Jade Glazed Tiles",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "roof_jade.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "roof_gold",
+      "name": "Imperial Gold Tiles",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "roof_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "isle_gold",
+      "name": "Gilded Trim",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "isle_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "white_plaster",
+      "name": "White Plaster",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "white_plaster.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "lattice_window",
+      "name": "Lattice Window",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "lattice_window.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.55,
+        "flicker": 0.15
+      }
+    },
+    {
+      "id": "wood_wall",
+      "name": "Timber Wall",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "wood_wall.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "stone_base",
+      "name": "Dressed Stone",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "stone_base.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "isle_balustrade",
+      "name": "Stone Balustrade",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "isle_balustrade.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "red_rail",
+      "name": "Lacquered Rail",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "red_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "jade_stone",
+      "name": "Jade Stone",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "jade_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "dragon_scales",
+      "name": "Dragon Scales",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "dragon_scales.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "carved_relief",
+      "name": "Carved Dragon Relief",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "carved_relief.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "glyph_teal",
+      "name": "Old Glowing Carvings",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "glyph_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5,
+        "pulse": 0.5,
+        "pulsePeriod": 6.5
+      }
+    },
+    {
+      "id": "dark_corridor",
+      "name": "Dark Corridor",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "dark_corridor.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "banner_royal",
+      "name": "Royal Banner",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "banner_royal.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "banner_jade",
+      "name": "Jade Banner",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "banner_jade.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "emblem_plaque",
+      "name": "Royal Emblem",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "emblem_plaque.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "isle_bunting",
+      "name": "Festival Bunting",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "isle_bunting.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "lantern_red",
+      "name": "Red Lantern",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "lantern_red.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "flicker": 0.25
+      }
+    },
+    {
+      "id": "sail_red",
+      "name": "Junk Sail",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "sail_red.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.04
+      }
+    },
+    {
+      "id": "blossom_pink",
+      "name": "Cherry Blossom",
+      "theme": "dragon_isles",
+      "surface": "grass",
+      "image": "blossom_pink.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.05
+      }
+    },
+    {
+      "id": "bamboo",
+      "name": "Bamboo",
+      "theme": "dragon_isles",
+      "surface": "grass",
+      "image": "bamboo.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.05
+      }
+    },
+    {
+      "id": "robe_cloth",
+      "name": "Festival Cloth",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "robe_cloth.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "cloud_bank",
+      "name": "Cloud Bank",
+      "theme": "dragon_isles",
+      "surface": "wall",
+      "image": "cloud_bank.png",
+      "wrap": "repeat",
+      "tileMetres": 30,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.001,
+        "wave": 0.05,
+        "wavePeriod": 11,
+        "opacity": 0.55,
+        "glow": 0.6
       }
     }
   ]

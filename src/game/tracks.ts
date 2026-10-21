@@ -168,6 +168,17 @@ export const TRACKS: TrackEntry[] = [
     music: "depths",
     load: { scene: "track", packageId: "impact_depths" },
   },
+  {
+    id: "dragon_isles",
+    name: "Dragon Isles",
+    description:
+      "Race the festival lap of a sunlit kingdom of karst islands ruled by dragons: through the riverside market, up the cliffs, over the Great Waterfall Bridge, through the temple gardens and along the sky paths as the great jade dragon flies overhead.",
+    preview: "previews/dragon_isles.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragon_isles",
+    music: "dragon",
+    load: { scene: "track", packageId: "dragon_isles" },
+  },
   // Test World.
   {
     id: "dino_demo",

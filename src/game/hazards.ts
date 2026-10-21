@@ -95,6 +95,7 @@ import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createDepthsLife, hasDepthsLife, type DepthsLife } from "./depthsLife";
+import { createIslesLife, hasIslesLife, type IslesLife } from "./islesLife";
 import { createMammothView } from "../render/mammoth";
 import {
   createBellView,
@@ -374,6 +375,8 @@ export interface Hazards {
   readonly flyers: { x: number; y: number; z: number }[];
   /** Impact Depths' life and air (game/depthsLife.ts), if the course has any. */
   readonly depths?: DepthsLife;
+  /** Dragon Isles' dragon, villagers and mill wheels (game/islesLife.ts), if any. */
+  readonly isles?: IslesLife;
   dispose(): void;
 }
 
@@ -1197,6 +1200,19 @@ export function createHazards(opts: {
   }
 
   // Impact Depths: triceratops, raptors, meteors, the core, motes, glows and the air.
+  // Dragon Isles: the great dragon, the villagers, the mill wheels.
+  const isles = hasIslesLife(opts.entities)
+    ? createIslesLife({
+        group,
+        entities: opts.entities,
+        track,
+        ground,
+        sfx: opts.sfx,
+        volume: vol,
+        quiet: opts.quiet,
+        headless: opts.headless,
+      })
+    : undefined;
   const depths = hasDepthsLife(opts.entities)
     ? createDepthsLife({
         group,
@@ -1208,6 +1224,7 @@ export function createHazards(opts: {
         headless: opts.headless,
         clock: raceClock,
         slow: cfg.dinoSlow,
+        hush: isles ? () => isles.hush() : undefined,
       })
     : undefined;
   if (depths) solids.push(...depths.solids);
@@ -1215,6 +1232,7 @@ export function createHazards(opts: {
   const hazards: Hazards = {
     solids,
     depths,
+    isles,
     dinos,
     flyers,
     handles: (surface) => surface === "lava" || surface === "deep_water",
@@ -1504,6 +1522,7 @@ export function createHazards(opts: {
     },
     render(t, dt, listener) {
       depths?.render(t, dt, listener);
+      isles?.render(t, dt, listener);
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
       for (const p of party) {
@@ -2381,6 +2400,7 @@ export function createHazards(opts: {
           }
       lavaJets?.dispose();
       depths?.dispose();
+      isles?.dispose();
       for (const d of dragons) {
         d.view?.dispose();
         d.flames?.dispose();
