@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "id": "canyon_dash",
+  "name": "Canyon Dash",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 28,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 124.0,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 319.0,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 832.7,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 997.5,
+      "across": -3
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1331.7,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1542.8,
+      "across": 0
+    },
+    {
+      "id": "zip_08",
+      "type": "zipper",
+      "at": 1747.0,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 70,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 217.8,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 431.1,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 501.1,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 693.2,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 917.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_07",
+      "type": "bananas",
+      "at": 1068.6,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_08",
+      "type": "bananas",
+      "at": 1425.3,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_09",
+      "type": "bananas",
+      "at": 1637.4,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 90,
+      "across": -5,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 90,
+      "across": 5,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 154.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 299.0,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 466.1,
+      "across": -4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 466.1,
+      "across": 4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 653.2,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 802.6,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 957.5,
+      "across": -4,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 957.5,
+      "across": 4,
+      "color": "red"
+    },
+    {
+      "id": "bal_11",
+      "type": "balloon",
+      "at": 1218.2,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_12",
+      "type": "balloon",
+      "at": 1465.3,
+      "across": -4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_13",
+      "type": "balloon",
+      "at": 1465.3,
+      "across": 4,
+      "color": "green"
+    },
+    {
+      "id": "bal_14",
+      "type": "balloon",
+      "at": 1667.4,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "dust_01",
+      "type": "dust",
+      "color": "#d89a6a",
+      "rate": 1.0
+    },
+    {
+      "id": "dustwind_01",
+      "type": "dustwind",
+      "rate": 10,
+      "radius": 60,
+      "color": "#e0a878"
+    },
+    {
+      "id": "windmill_01",
+      "type": "windmill",
+      "x": 176.31,
+      "y": 69.27,
+      "z": 186.56,
+      "heading": 3.477,
+      "radius": 3.2,
+      "speed": 1.4
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": -150.0,
+      "y": 110.0,
+      "z": -10.0,
+      "radius": 70.0,
+      "count": 3,
+      "speed": 0.16,
+      "seed": 1
+    },
+    {
+      "id": "birds_02",
+      "type": "birds",
+      "x": 300.0,
+      "y": 120.0,
+      "z": -60.0,
+      "radius": 55.0,
+      "count": 2,
+      "speed": 0.2,
+      "seed": 2
+    },
+    {
+      "id": "birds_03",
+      "type": "birds",
+      "x": -600.0,
+      "y": 140.0,
+      "z": -0.0,
+      "radius": 90.0,
+      "count": 4,
+      "speed": 0.24,
+      "seed": 3
+    },
+    {
+      "id": "birds_04",
+      "type": "birds",
+      "x": 520.0,
+      "y": 130.0,
+      "z": 180.0,
+      "radius": 60.0,
+      "count": 2,
+      "speed": 0.28,
+      "seed": 4
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": 428.85,
+      "y": -40.0,
+      "z": -52.59,
+      "top": 41.6,
+      "width": 26.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": 540.99,
+      "y": 42.4,
+      "z": -53.12,
+      "top": 91.4,
+      "width": 20.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": -330.0,
+      "y": -39.6,
+      "z": -64.0,
+      "top": 21.8,
+      "width": 12.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_04",
+      "type": "waterfall",
+      "x": -330.0,
+      "y": 21.8,
+      "z": -160.26,
+      "top": 83.0,
+      "width": 10.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_05",
+      "type": "waterfall",
+      "x": -560.0,
+      "y": -39.6,
+      "z": 86.4,
+      "top": 21.8,
+      "width": 13.5,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_06",
+      "type": "waterfall",
+      "x": -70.0,
+      "y": -39.6,
+      "z": -68.42,
+      "top": 26.3,
+      "width": 7.5,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_07",
+      "type": "waterfall",
+      "x": -820.0,
+      "y": -39.6,
+      "z": -123.68,
+      "top": 21.8,
+      "width": 15.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_08",
+      "type": "waterfall",
+      "x": -820.0,
+      "y": 21.8,
+      "z": -153.25,
+      "top": 84.8,
+      "width": 10.0,
+      "heading": 0
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 157.98,
+      "y": 57.83,
+      "z": 162.2
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 157.98,
+      "y": 57.83,
+      "z": 137.8
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 134.01,
+      "y": 58.4,
+      "z": 162.2
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 133.99,
+      "y": 58.4,
+      "z": 137.8
+    }
+  ],
+  "generator": "tools/blender/prehistoric/canyon_dash.py (re-running it rewrites entities)"
+}

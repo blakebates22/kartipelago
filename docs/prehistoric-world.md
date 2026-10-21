@@ -17,6 +17,7 @@ description, a banner colour and its track ids, in menu order:
 | ----------------- | ------------- | ---------------------------------------------------------------------------------- |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                      |
 | Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift               |
+| Desert World      | `desert`      | Canyon Dash (three more to come: an oasis, a ghost town, an underground course)    |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -462,6 +463,20 @@ between crossings is guaranteed.
 
 The rules (timing and states) are in `src/game/rift.ts`; the drawing is in
 `src/render/riftFx.ts`.
+
+### Desert dust, wind, windmills and birds
+
+- `dust` `{ "color": "#d89a6a", "rate": 1 }`: dust kicked up behind karts on dirt and
+  sand, thicker with speed and off the road.
+- `dustwind` `{ "rate": 10, "radius": 60, "color": "#e0a878" }`: wisps of dust blowing
+  across the land round the camera on a gusting breeze.
+- `windmill` `{ "x", "y", "z", "heading", "radius": 3.2, "speed": 1.4 }`: a ranch
+  windmill's turning wheel (the tower is scenery), its hub at (x, y, z).
+- `birds` `{ "x", "y", "z", "radius": 70, "count": 3, "speed": 0.2, "seed": 1 }`: big birds
+  circling high over a spot, beating their wings now and then.
+
+All purely visual. The rules are in `src/game/desert.ts`; the drawing is in
+`src/render/desertFx.ts`. See [desert-world.md](desert-world.md).
 
 ### Torches
 

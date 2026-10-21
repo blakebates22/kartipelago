@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "theme": "canyon_dash",
+  "sky": "#3f8fe6",
+  "fog": {
+    "enabled": true,
+    "color": "#d4c4cc",
+    "near": 520,
+    "far": 2900
+  },
+  "sun": {
+    "color": "#ffd8a0",
+    "intensity": 3.0,
+    "direction": [
+      -0.62,
+      0.52,
+      0.58
+    ]
+  },
+  "ambient": {
+    "sky": "#a8c8f4",
+    "ground": "#8a4636",
+    "intensity": 1.25
+  },
+  "skyDome": {
+    "top": "#155ed6",
+    "horizon": "#cfe2f2",
+    "bottom": "#e2c8b4",
+    "sun": {
+      "color": "#fff4d0",
+      "size": 9,
+      "glow": "#ffc878",
+      "elevation": 18
+    },
+    "clouds": {
+      "count": 28,
+      "color": "#ffffff",
+      "shade": "#e6d0c8",
+      "seed": 101,
+      "low": 8,
+      "high": 32,
+      "drift": 0.004
+    },
+    "hills": {
+      "color": "#b4705c",
+      "far": "#d0b2b0",
+      "height": 5,
+      "seed": 103,
+      "layers": 3,
+      "style": "mesas"
+    }
+  }
+}

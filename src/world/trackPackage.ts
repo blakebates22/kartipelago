@@ -378,6 +378,7 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
           height: num(hl.height),
           seed: num(hl.seed),
           layers: num(hl.layers),
+          style: hl.style === "mesas" ? "mesas" : undefined,
         },
         stars: st && {
           count: num(st.count),

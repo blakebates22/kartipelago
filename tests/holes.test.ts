@@ -73,6 +73,7 @@ describe("no holes in the world", () => {
     "snowy_summit",
     "hearthglow_hollow",
     "aurora_rift",
+    "canyon_dash",
     "loop_lab",
     "cascade_caverns",
     "bonebog_pyramid",

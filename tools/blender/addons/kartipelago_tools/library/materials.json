@@ -596,6 +596,58 @@
           }
         }
       }
+    },
+    {
+      "id": "canyon_dash",
+      "name": "Canyon Dash",
+      "description": "A clear desert afternoon turning golden: layered red, orange and cream sandstone, deep blue-violet canyon shadows, a turquoise river and a saturated blue sky with big white clouds",
+      "environment": {
+        "sky": "#3f8fe6",
+        "fog": {
+          "enabled": true,
+          "color": "#d4c4cc",
+          "near": 520,
+          "far": 2900
+        },
+        "sun": {
+          "color": "#ffd8a0",
+          "intensity": 3.0,
+          "direction": [-0.62, 0.52, 0.58]
+        },
+        "ambient": {
+          "sky": "#a8c8f4",
+          "ground": "#8a4636",
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#155ed6",
+          "horizon": "#cfe2f2",
+          "bottom": "#e2c8b4",
+          "sun": {
+            "color": "#fff4d0",
+            "size": 9,
+            "glow": "#ffc878",
+            "elevation": 18
+          },
+          "clouds": {
+            "count": 28,
+            "color": "#ffffff",
+            "shade": "#e6d0c8",
+            "seed": 101,
+            "low": 8,
+            "high": 32,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#b4705c",
+            "far": "#d0b2b0",
+            "height": 5,
+            "seed": 103,
+            "layers": 3,
+            "style": "mesas"
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -756,6 +808,286 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "dash_road",
+      "name": "Canyon Dirt Road",
+      "theme": "canyon_dash",
+      "surface": "packed_dirt",
+      "image": "dash_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "dash_shoulder",
+      "name": "Dirt Verge",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "dash_shoulder.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "desert_sand",
+      "name": "Red Sand",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "desert_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "slickrock",
+      "name": "Slickrock",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "slickrock.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "red_sand",
+      "name": "Red Sand (Deep)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "red_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "pale_sand",
+      "name": "Pale Sand",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "pale_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "strata_cream",
+      "name": "Caprock Sandstone",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "strata_cream.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "strata_orange",
+      "name": "Orange Sandstone",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "strata_orange.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "strata_red",
+      "name": "Red Sandstone",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "strata_red.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "strata_rust",
+      "name": "Red Shale",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "strata_rust.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "strata_purple",
+      "name": "Canyon Base Rock",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "strata_purple.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "talus",
+      "name": "Talus",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "talus.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "canyon_river",
+      "name": "Turquoise River",
+      "theme": "canyon_dash",
+      "surface": "water",
+      "image": "canyon_river.png",
+      "wrap": "repeat",
+      "tileMetres": 12,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.12,
+        "wave": 0.03,
+        "wavePeriod": 5,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "falls_dash",
+      "name": "Canyon Falls",
+      "theme": "canyon_dash",
+      "surface": "water",
+      "image": "falls_dash.png",
+      "wrap": "repeat",
+      "tileMetres": 7,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.2,
+        "wave": 0.03,
+        "wavePeriod": 1.3,
+        "opacity": 0.92,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "canyon_mist",
+      "name": "Falls Mist",
+      "theme": "canyon_dash",
+      "surface": "water",
+      "image": "canyon_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 20,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": -0.03,
+        "wave": 0.08,
+        "wavePeriod": 5,
+        "opacity": 0.4,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "weathered_timber",
+      "name": "Weathered Timber",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "weathered_timber.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "fence_rail",
+      "name": "Ranch Fence",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "fence_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "plank_deck",
+      "name": "Bridge Planks",
+      "theme": "canyon_dash",
+      "surface": "road",
+      "image": "plank_deck.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "masonry",
+      "name": "Sandstone Masonry",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "masonry.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "saguaro",
+      "name": "Saguaro",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "saguaro.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "agave",
+      "name": "Agave",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "agave.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "sagebrush",
+      "name": "Sagebrush",
+      "theme": "canyon_dash",
+      "surface": "grass",
+      "image": "sagebrush.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "dry_grass",
+      "name": "Dry Grass",
+      "theme": "canyon_dash",
+      "surface": "grass",
+      "image": "dry_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "chevron_amber",
+      "name": "Chevron Sign (Amber)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "chevron_amber.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "windmill_blade",
+      "name": "Windmill Vane",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "windmill_blade.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "canvas_sun",
+      "name": "Race Banner (Red)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "canvas_sun.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "canvas_blue",
+      "name": "Race Banner (Blue)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "canvas_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "desert_haze",
+      "name": "Distant Mesa",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "desert_haze.png",
+      "wrap": "repeat",
+      "tileMetres": 40
     },
     {
       "id": "rift_road",

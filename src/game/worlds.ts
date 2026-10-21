@@ -45,6 +45,16 @@ export const WORLDS: WorldEntry[] = [
     tracks: ["frostveil_citadel", "snowy_summit", "hearthglow_hollow", "aurora_rift"],
   },
   {
+    id: "desert",
+    name: "Desert World",
+    tagline: "Red rock country",
+    description:
+      "Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost towns of the old frontier.",
+    color: "#d8703a",
+    tracks: ["canyon_dash"],
+    comingSoon: ["Desert Oasis", "Haunted Ghost Town", "Underground Adventure"],
+  },
+  {
     id: "test_world",
     name: "Test World",
     tagline: "Prototypes",

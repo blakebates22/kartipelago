@@ -47,9 +47,17 @@ export interface SkyDomeSpec {
   /**
    * Distant hills all round the horizon (so a track's open ends never look out into
    * empty sky): rings of jagged silhouettes, the far ones paler. `height` is the
-   * tallest peak, degrees above the horizon.
+   * tallest peak, degrees above the horizon. `style: "mesas"` makes them desert
+   * mesas and buttes instead: flat tops, steep sides, the odd spire.
    */
-  hills?: { color?: string; far?: string; height?: number; seed?: number; layers?: number };
+  hills?: {
+    color?: string;
+    far?: string;
+    height?: number;
+    seed?: number;
+    layers?: number;
+    style?: "mesas";
+  };
   /** Stars twinkling in the sky above `low` degrees (for evening and night skies). */
   stars?: { count?: number; color?: string; seed?: number; low?: number };
   /** The northern lights: curtains between `low` and `high` degrees. */
@@ -206,6 +214,37 @@ function sunTexture(color: string, glow: string) {
   return t;
 }
 
+/**
+ * Desert skyline: flat-topped mesas and buttes with steep, slightly stepped sides on a
+ * low rolling base, and now and then a thin spire. Fills lifts (0..1) round the circle.
+ */
+function mesaProfile(lifts: Float32Array, r: () => number) {
+  const n = lifts.length - 1;
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    lifts[i] = 0.1 + 0.05 * Math.sin(a * 5 + 1) + 0.03 * Math.sin(a * 23);
+  }
+  const count = 18 + Math.floor(r() * 8);
+  for (let k = 0; k < count; k++) {
+    const c = r() * n;
+    const half = (r() < 0.25 ? 2 + r() * 4 : 8 + r() * 28) * (n / 720);
+    const h = 0.35 + r() * 0.65;
+    const step = r() < 0.6;
+    for (let j = Math.floor(c - half * 1.4); j <= Math.ceil(c + half * 1.4); j++) {
+      const i = ((j % n) + n) % n;
+      const d = Math.abs(j - c) / half;
+      // Flat top, a steep cliff, then (sometimes) a ledge and a talus foot.
+      let v =
+        d < 1 ? h : d < 1.12 ? h * (1 - (d - 1) / 0.12) * 0.6 + h * 0.4 * (1 - (d - 1) / 0.4) : 0;
+      if (step && d >= 1 && d < 1.4) v = Math.max(v, h * 0.45 * (1 - (d - 1) / 0.4));
+      v *= 1 - 0.03 * Math.sin(j * 1.7);
+      lifts[i] = Math.max(lifts[i]!, v);
+      if (i === 0) lifts[n] = lifts[0]!;
+    }
+  }
+  lifts[n] = lifts[0]!;
+}
+
 export function createSkyDome(
   spec: SkyDomeSpec,
   sunDirection: [number, number, number] = [0.5, 0.8, 0.3],
@@ -316,7 +355,8 @@ export function createSkyDome(
     const near = new THREE.Color(hs.color ?? "#2f5a34");
     const far = new THREE.Color(hs.far ?? spec.horizon ?? "#9cc8b0");
     const base = new THREE.Color(spec.horizon ?? "#c4ecff");
-    const SEG = 128;
+    const mesas = hs.style === "mesas";
+    const SEG = mesas ? 720 : 128;
     for (let l = 0; l < layers; l++) {
       const k = layers === 1 ? 1 : l / (layers - 1); // 0 far .. 1 near
       const top = near.clone().lerp(far, 1 - k);
@@ -326,16 +366,18 @@ export function createSkyDome(
       // A jagged ridge: a few big peaks plus small bumps, all smooth-ish.
       const phase = [hr() * 6.28, hr() * 6.28, hr() * 6.28];
       const lifts = new Float32Array(SEG + 1);
-      for (let i = 0; i <= SEG; i++) {
-        const a = (i / SEG) * Math.PI * 2;
-        const v =
-          0.45 +
-          0.3 * Math.sin(a * 3 + phase[0]!) +
-          0.18 * Math.sin(a * 7 + phase[1]!) +
-          0.1 * Math.sin(a * 17 + phase[2]!) +
-          (hr() - 0.5) * 0.08;
-        lifts[i] = Math.max(0.08, Math.min(1, v));
-      }
+      if (mesas) mesaProfile(lifts, hr);
+      else
+        for (let i = 0; i <= SEG; i++) {
+          const a = (i / SEG) * Math.PI * 2;
+          const v =
+            0.45 +
+            0.3 * Math.sin(a * 3 + phase[0]!) +
+            0.18 * Math.sin(a * 7 + phase[1]!) +
+            0.1 * Math.sin(a * 17 + phase[2]!) +
+            (hr() - 0.5) * 0.08;
+          lifts[i] = Math.max(0.08, Math.min(1, v));
+        }
       lifts[SEG] = lifts[0]!;
       const pos: number[] = [];
       const col: number[] = [];

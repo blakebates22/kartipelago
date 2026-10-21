@@ -123,6 +123,18 @@ export const TRACKS: TrackEntry[] = [
     music: "aurora",
     load: { scene: "track", packageId: "aurora_rift" },
   },
+  // Desert World (src/game/worlds.ts), built by tools/blender/prehistoric/canyon_*.py.
+  {
+    id: "canyon_dash",
+    name: "Canyon Dash",
+    description:
+      "A flat-out dash round a great red-rock canyon: down the cliffs, under a giant sandstone arch, over the gorge and past a thundering waterfall.",
+    preview: "previews/canyon_dash.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "canyon_dash",
+    music: "canyon",
+    load: { scene: "track", packageId: "canyon_dash" },
+  },
   // Test World.
   {
     id: "dino_demo",

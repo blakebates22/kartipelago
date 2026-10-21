@@ -64,6 +64,9 @@
  *               drop on a beat (a knock if you're under one), lake ice that cracks and
  *               gives way into slowing slush, crystals that flare as you pass, and ice
  *               motes glinting in the air.
+ *   dust, dustwind, windmill, birds (see game/desert.ts): Desert World's dust kicked up
+ *               behind karts on dirt and sand, dust blowing across the land, a ranch
+ *               windmill's turning wheel and big birds circling over the canyon.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -94,6 +97,22 @@ import {
   type SnowballView,
 } from "../render/festive";
 import { createPterosaurView, type PterosaurView } from "../render/pterosaur";
+import {
+  dustRate,
+  parseBirds,
+  parseDust,
+  parseWind,
+  parseWindmill,
+  windAt,
+  type DustConfig,
+  type WindConfig,
+} from "./desert";
+import {
+  createBirdsView,
+  createWindmillView,
+  type BirdsView,
+  type WindmillView,
+} from "../render/desertFx";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createParticles } from "../render/particles";
 import {
@@ -408,6 +427,13 @@ export function createHazards(opts: {
   const thinEvents: { x: number; y: number; z: number; kind: "crack" | "break" | "freeze" }[] = [];
   const shimmers: { x: number; y: number; z: number; level: number; view?: ShimmerView }[] = [];
   let sparkles: { rate: number; radius: number; acc: number } | undefined;
+  /** Desert World: dust trails, blowing dust, the windmill, the birds. */
+  let dust: DustConfig | undefined;
+  let wind: (WindConfig & { acc: number }) | undefined;
+  let dusty: ReturnType<typeof createParticles> | undefined;
+  const dustAcc: number[] = Array.from({ length: opts.karts }, () => Math.random());
+  const windmills: WindmillView[] = [];
+  const flocks: BirdsView[] = [];
   let motes: ReturnType<typeof createParticles> | undefined;
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
   const party: {
@@ -580,7 +606,13 @@ export function createHazards(opts: {
         radius: Math.max(5, num(e.radius, 34)),
         acc: 0,
       };
-    else if (e.type === "chimney")
+    else if (e.type === "dust") dust = parseDust(e);
+    else if (e.type === "dustwind") wind = { ...parseWind(e), acc: 0 };
+    else if (e.type === "windmill") {
+      if (!opts.headless) windmills.push(createWindmillView(group, parseWindmill(e)));
+    } else if (e.type === "birds") {
+      if (!opts.headless) flocks.push(createBirdsView(group, parseBirds(e)));
+    } else if (e.type === "chimney")
       chimneys.push({ x: num(e.x, 0), y: num(e.y, 0), z: num(e.z, 0), acc: Math.random() });
     else if (e.type === "snowball" || e.type === "sleigh") {
       const sleigh = e.type === "sleigh";
@@ -1088,6 +1120,25 @@ export function createHazards(opts: {
               0xbfe8ff,
             );
         }
+      // ---- desert dust: a reddish trail behind you on dirt and sand
+      if (dust && !opts.headless) {
+        dustAcc[i] = Math.min(2, dustAcc[i]! + dt * dustRate(dust, ground, s.speed));
+        for (; dustAcc[i]! >= 1; dustAcc[i]! -= 1) {
+          dusty ??= createParticles(group, { max: 700, size: 1.5, gravity: -0.5, opacity: 0.5 });
+          const side = Math.random() < 0.5 ? -1 : 1;
+          const back = 1.3 + Math.random() * 0.6;
+          dusty.emit(
+            s.x - Math.sin(s.heading) * back + Math.cos(s.heading) * side * 0.8,
+            s.y + 0.25,
+            s.z - Math.cos(s.heading) * back - Math.sin(s.heading) * side * 0.8,
+            -Math.sin(s.heading) * 2 + (Math.random() - 0.5) * 2,
+            0.6 + Math.random() * 1.2,
+            -Math.cos(s.heading) * 2 + (Math.random() - 0.5) * 2,
+            0.9 + Math.random() * 0.8,
+            dust.color,
+          );
+        }
+      }
       // ---- deep snow: a spray of powder behind you
       if (ground === "deep_snow" && Math.abs(s.speed) > 6 && Math.random() < 0.6)
         spray?.emit(
@@ -1619,6 +1670,33 @@ export function createHazards(opts: {
           );
         motes.step(dt);
       }
+      // Desert dust blowing across the land round the camera; the windmills and birds.
+      if (wind && !opts.headless) {
+        dusty ??= createParticles(group, { max: 700, size: 1.5, gravity: -0.5, opacity: 0.5 });
+        wind.acc = Math.min(3, wind.acc + dt * wind.rate);
+        const w = windAt(t);
+        const r = wind.radius;
+        for (; wind.acc >= 1; wind.acc -= 1) {
+          const x = listener.x + (Math.random() - 0.5) * 2 * r;
+          const z = listener.z + (Math.random() - 0.5) * 2 * r;
+          const y = ground.at(x, z, listener.y + 30).height;
+          if (!Number.isFinite(y) || y > listener.y + 20) continue;
+          for (let k = 0; k < 3; k++)
+            dusty.emit(
+              x + k * 0.8,
+              y + 0.2 + Math.random() * 0.8,
+              z + (Math.random() - 0.5),
+              w.x * (0.8 + Math.random() * 0.4),
+              0.2 + Math.random() * 0.4,
+              w.z * (0.8 + Math.random() * 0.4),
+              2.2 + Math.random() * 1.6,
+              wind.color,
+            );
+        }
+      }
+      dusty?.step(dt);
+      for (const v of windmills) v.update(t);
+      for (const v of flocks) v.update(t);
       for (const ch of chimneys) {
         if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
         ch.acc = Math.min(1, ch.acc + dt);
@@ -1789,6 +1867,9 @@ export function createHazards(opts: {
       for (const ti of thin) ti.view?.dispose();
       for (const sh of shimmers) sh.view?.dispose();
       motes?.dispose();
+      dusty?.dispose();
+      for (const v of windmills) v.dispose();
+      for (const v of flocks) v.dispose();
       for (const g of geysers)
         if (g.column) {
           g.column.geometry.dispose();

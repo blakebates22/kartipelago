@@ -20,6 +20,12 @@
       "accel": 0.92,
       "grip": 0.92
     },
+    "packed_dirt": {
+      "road": true,
+      "speed": 1,
+      "accel": 0.97,
+      "grip": 0.95
+    },
     "grass": {
       "road": false,
       "speed": 0.72,
@@ -31,6 +37,12 @@
       "speed": 0.58,
       "accel": 0.62,
       "grip": 0.75
+    },
+    "loose_sand": {
+      "road": false,
+      "speed": 0.74,
+      "accel": 0.78,
+      "grip": 0.84
     },
     "ice": {
       "road": true,

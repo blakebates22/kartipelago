@@ -3069,8 +3069,445 @@ THEMES.append(
     }
 )
 
+# ------------------------------------------------------------------ Canyon Dash
+
+
+def _shade(c, k):
+    r, g, b = hexrgb(c)
+    return "#%02x%02x%02x" % tuple(max(0, min(255, int(v * k))) for v in (r, g, b))
+
+
+def dash_road():
+    # Packed red-orange desert dirt: smooth and fast, two worn tyre lines along it
+    # (V runs along the road), a few pale pebbles. Calm, because it fills the screen.
+    pal = ["#c8885a", "#d09262", "#d89c6a", "#dfa572", "#e6ae7c"]
+    a, b = noise(3, 6, 3601), noise(12, 8, 3602)
+    peb = speckle(3603, 14)
+
+    def f(x, y):
+        if (x, y) in peb:
+            return "#f2cc9c"
+        v = 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35
+        # Tyre lines: two soft darker bands across U, a little wobbly.
+        for c in (19, 45):
+            d = abs(x - c - 2.0 * math.sin(y * 0.2 + c))
+            if d < 3.5:
+                v -= 0.22 * (1 - d / 3.5)
+        return pick(pal, v)
+
+    return paint(f)
+
+
+def dash_shoulder():
+    # The verge: browner loose dirt and gravel, pebbles and the odd tuft.
+    pal = ["#8e4424", "#9c4e2a", "#aa5a30", "#b86638", "#c67444"]
+    a, b = noise(6, 3, 3611), noise(16, 8, 3612)
+    peb = speckle(3613, 70)
+    tuft = speckle(3614, 10)
+
+    def f(x, y):
+        if (x, y) in tuft:
+            return "#9a8a3a"
+        if (x, y) in peb:
+            return "#e0ae7a" if (x + y) % 3 else "#6a3018"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def desert_sand():
+    # Off the road: soft red sand with ripples, dry grass and sage dots.
+    pal = ["#c46a3a", "#cf7642", "#d9824c", "#e38f56", "#eb9c62"]
+    a, b = noise(4, 2, 3621), noise(16, 8, 3622)
+    sage = speckle(3623, 18)
+    grass = speckle(3624, 22)
+
+    def f(x, y):
+        if (x, y) in sage:
+            return "#7a8a4a"
+        if (x, y) in grass:
+            return "#d8b860"
+        rip = 0.5 + 0.5 * math.sin(x * 0.55 + y * 0.9 + a(x, y) * 4)
+        return pick(pal, 0.12 + rip * 0.3 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def red_sand():
+    # Deeper, redder sand where the ground is lower and sheltered, more scrub.
+    pal = ["#b4522e", "#be5c34", "#c8663a", "#d07040", "#d87a48"]
+    a, b = noise(4, 2, 3801), noise(16, 8, 3802)
+    sage = speckle(3803, 30)
+    grass = speckle(3804, 16)
+
+    def f(x, y):
+        if (x, y) in sage:
+            return "#6e8a46"
+        if (x, y) in grass:
+            return "#d8b05a"
+        rip = 0.5 + 0.5 * math.sin(x * 0.5 - y * 0.8 + a(x, y) * 4)
+        return pick(pal, 0.12 + rip * 0.3 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def pale_sand():
+    # Pale, sun-bleached sand drifts on the high ground.
+    pal = ["#d08a5c", "#d69464", "#dc9e6e", "#e2a878", "#e8b282"]
+    a, b = noise(4, 2, 3811), noise(16, 8, 3812)
+    dots = speckle(3813, 14)
+
+    def f(x, y):
+        if (x, y) in dots:
+            return "#9a7a40"
+        rip = 0.5 + 0.5 * math.sin(x * 0.6 + y * 1.1 + a(x, y) * 4)
+        return pick(pal, 0.1 + rip * 0.35 + b(x, y) * 0.45)
+
+    return paint(f)
+
+
+def slickrock():
+    # The mesa tops: smooth pink-orange sandstone pavement, cracked into slabs, with
+    # sand drifted in the cracks and a few dark potholes.
+    pal = ["#c8784a", "#d28452", "#dc905c", "#e49c66", "#eca872"]
+    a, b = noise(4, 2, 3631), noise(12, 6, 3632)
+
+    def f(x, y):
+        cell = abs(math.sin(x * 0.19 + a(x, y) * 3) * math.sin(y * 0.37 + b(x, y) * 2))
+        if cell < 0.05:
+            return "#a85a34"
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def strata(seed, base, light, dark, lines=4, grain=0.35):
+    """A sandstone layer: horizontal bedding lines (V is height on a cliff), soft
+    cross-bedding, light and dark streaks. One per band of the canyon wall."""
+
+    def make():
+        a, b = noise(4, 2, seed), noise(16, 8, seed + 1)
+        c = noise(2, 4, seed + 2)
+
+        def f(x, y):
+            yy = y + a(x, y) * 3.0
+            line = yy % (H / lines)
+            k = 0.86 + b(x, y) * 0.26
+            # Cross-bedding: faint slanting lines inside each bed.
+            if abs(math.sin((x * 0.35 + yy * 1.2) + c(x, y) * 3)) < 0.06:
+                k -= 0.08
+            if line < 1.0:
+                return _shade(dark, 0.95 + b(x, y) * 0.1)
+            if line < 2.0:
+                return _shade(light, k)
+            if b(x, y) > 0.82:
+                return _shade(light, 0.95)
+            return _shade(base, k + (c(x, y) - 0.5) * grain)
+
+        return paint(f)
+
+    return make
+
+
+strata_cream = strata(3641, "#e2b07a", "#f4d2a0", "#b47a4c", lines=3)
+strata_orange = strata(3644, "#d4783e", "#eca262", "#9a4a24", lines=4)
+strata_red = strata(3647, "#b84a2a", "#d86a3e", "#7e2c18", lines=4)
+strata_rust = strata(3650, "#9a3a24", "#be5434", "#64221a", lines=6)
+strata_purple = strata(3653, "#7a3a3a", "#9a5048", "#4a2230", lines=5)
+
+
+def talus():
+    # Scree slopes under the cliffs: orange-brown rubble with dark gaps.
+    pal = ["#8c4428", "#a2522e", "#b46036", "#c66e40", "#d68050"]
+    a, b = noise(8, 4, 3661), noise(32, 16, 3662)
+
+    def f(x, y):
+        v = b(x, y)
+        if v < 0.18:
+            return "#5a2a1c"
+        if v > 0.85:
+            return "#e4a070"
+        return pick(pal, 0.2 + a(x, y) * 0.4 + v * 0.4)
+
+    return paint(f)
+
+
+def canyon_river():
+    # The river far below: bright turquoise, paler where it riffles (scrolls along V).
+    pal = ["#1898a8", "#22aab6", "#36bcc2", "#58d0cc", "#8ae4dc"]
+    a, b = noise(4, 8, 3671), noise(8, 16, 3672)
+
+    def f(x, y):
+        rip = 0.5 + 0.5 * math.sin(y * 0.8 + a(x, y) * 6)
+        if rip > 0.94 and b(x, y) > 0.5:
+            return "#e4fbf6"
+        return pick(pal, 0.1 + rip * 0.4 + b(x, y) * 0.45)
+
+    return paint(f)
+
+
+def falls_dash():
+    # The canyon falls: white water streaked with turquoise.
+    pal = ["#4ab8c8", "#7ed2dc", "#b4e8ec", "#e2f8f8", "#ffffff"]
+    a, b = noise(16, 2, 3681), noise(8, 4, 3682)
+
+    def f(x, y):
+        streak = 0.5 + 0.5 * math.sin(x * 1.3 + a(x, y) * 8)
+        return pick(pal, 0.15 + streak * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def canyon_mist():
+    # Spray hanging over the plunge pools.
+    a, b = noise(4, 2, 3691), noise(8, 4, 3692)
+
+    def f(x, y):
+        return pick(["#d8ecf0", "#e6f4f6", "#f2fafa", "#ffffff"], a(x, y) * 0.6 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def weathered_timber():
+    # Sun-bleached trestle timber: grey-brown grain, dark splits, iron bolts.
+    pal = ["#6e5038", "#7e5e42", "#8e6c4c", "#a07c58", "#b28c66"]
+    a, b = noise(2, 8, 3701), noise(8, 16, 3702)
+
+    def f(x, y):
+        if y % 16 in (4, 12) and x % 16 == 8:
+            return "#2a2622"
+        grain = 0.5 + 0.5 * math.sin(x * 1.4 + a(x, y) * 6)
+        if grain < 0.07:
+            return "#463224"
+        return pick(pal, 0.15 + grain * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def fence_rail():
+    # The road-edge fence: two round timber rails on dark posts, the sandstone curb
+    # under them. (Horizontal: U runs along the barrier, V up it.)
+    a = noise(8, 2, 3711)
+
+    def f(x, y):
+        if x % 16 < 3:
+            return pick(["#4e3220", "#5e3c26", "#6e4a30"], a(x, y))  # a post
+        for top in (4, 14):
+            if top <= y < top + 5:
+                k = (y - top) / 4
+                return pick(["#c09868", "#a8804e", "#8e6a40", "#6a4c2e", "#4e3622"], k * 0.8 + a(x, y) * 0.2)
+        if y >= 24:
+            return pick(["#b8683c", "#c87648", "#d68654"], a(x, y))  # the curb
+        return pick(["#6a3a22", "#7a4428"], a(x, y))  # shadow between the rails
+
+    return paint(f)
+
+
+def plank_deck():
+    # The great bridge's deck: sun-bleached boards across the road, dark gaps.
+    pal = ["#8a6a48", "#9c7a54", "#ae8a60", "#be9a6c", "#cca878"]
+    a, b = noise(2, 8, 3721), noise(8, 16, 3722)
+
+    def f(x, y):
+        board = y // 6
+        yy = y % 6
+        if yy == 5:
+            return "#3a2818"
+        if yy == 0:
+            return "#dcb888"
+        if (x + board * 19) % 32 in (2, 3) and yy == 2:
+            return "#3a3530"
+        grain = 0.5 + 0.5 * math.sin(x * 0.6 + board * 2.3 + a(x, y) * 5)
+        return pick(pal, 0.15 + grain * 0.45 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def masonry():
+    # Dressed sandstone blocks: the bridge piers, retaining walls, the outpost.
+    a, b = noise(4, 2, 3731), noise(16, 8, 3732)
+
+    def f(x, y):
+        row = y // 8
+        off = 8 if row % 2 else 0
+        if y % 8 == 7 or (x + off) % 16 == 15:
+            return "#7a3e24"
+        k = 0.85 + a(x, y) * 0.2 + ((x + off) // 16 + row * 3) % 4 * 0.03
+        if y % 8 == 0:
+            k += 0.12
+        return _shade("#c87a48", k + (b(x, y) - 0.5) * 0.12)
+
+    return paint(f)
+
+
+def saguaro():
+    # Cactus skin: deep green ribs (vertical) with pale spines.
+    a = noise(4, 8, 3741)
+    sp = speckle(3742, 40)
+
+    def f(x, y):
+        if (x, y) in sp:
+            return "#f0e4b0"
+        rib = (x % 8) / 8
+        v = 0.25 + 0.6 * (1 - abs(rib - 0.5) * 2) + (a(x, y) - 0.5) * 0.2
+        return pick(["#1e5a2a", "#2a7034", "#3a8640", "#4e9a4a", "#68ae58"], v)
+
+    return paint(f)
+
+
+def agave():
+    a = noise(8, 4, 3751)
+
+    def f(x, y):
+        v = 0.3 + 0.5 * (1 - abs((x % 12) / 12 - 0.5) * 2) + (a(x, y) - 0.5) * 0.3
+        if y < 2:
+            return "#e0d070"
+        return pick(["#3a6a5a", "#4a7e6a", "#5e927a", "#78a88a", "#94bc9c"], v)
+
+    return paint(f)
+
+
+def sagebrush():
+    a, b = noise(8, 4, 3761), noise(16, 8, 3762)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if b(x, y) > 0.86:
+            return "#d8c070"  # little yellow flowers
+        return pick(["#4a5a2a", "#5e6e34", "#74823e", "#8a944c", "#a2a65e"], v)
+
+    return paint(f)
+
+
+def dry_grass():
+    a = noise(16, 2, 3771)
+
+    def f(x, y):
+        blade = 0.5 + 0.5 * math.sin(x * 2.1 + a(x, y) * 5)
+        return pick(["#a8782e", "#c0903a", "#d4a848", "#e4c060", "#f0d47a"], blade * 0.7 + (1 - y / H) * 0.3)
+
+    return paint(f)
+
+
+def chevron_amber():
+    # Turn signs: black chevrons on bright amber, a dark frame.
+    def f(x, y):
+        u = (x + abs(y - 16)) % 16
+        if y in (0, 1, 30, 31):
+            return "#2a1a10"
+        if u < 6:
+            return "#1c1410"
+        return "#ffb81c" if (x + y) % 9 else "#ffc840"
+
+    return paint(f)
+
+
+def windmill_blade():
+    # Galvanised windmill vanes, a red stripe near the tips.
+    a = noise(4, 2, 3781)
+
+    def f(x, y):
+        if x > 52:
+            return "#c8302a" if x < 58 else "#e8e4dc"
+        if x % 8 == 0:
+            return "#7a8088"
+        return pick(["#a8b0b8", "#bcc4ca", "#d0d6da", "#e2e6e8"], a(x, y))
+
+    return paint(f)
+
+
+def canvas_sun():
+    # Race-day canvas: deep red with a gold sun emblem, a gold hem.
+    def f(x, y):
+        cx, cy = (x % 32) - 15.5, (y % 32) - 14.5
+        if y % 32 >= 29 or x % 32 in (0, 31):
+            return "#f0b840"
+        r = math.hypot(cx, cy)
+        a = math.atan2(cy, cx)
+        if r < 4.5:
+            return "#ffd050"
+        if 5.5 < r < 10 and math.cos(a * 8) > 0.55:
+            return "#f4b83a"
+        return "#b8262a" if (x + y) % 7 else "#a82026"
+
+    return paint(f)
+
+
+def canvas_blue():
+    def f(x, y):
+        cx, cy = (x % 32) - 15.5, (y % 32) - 14.5
+        if y % 32 >= 29 or x % 32 in (0, 31):
+            return "#f0b840"
+        if abs(cx) + abs(cy) < 7 and abs(cx) + abs(cy) > 4:
+            return "#f4c048"
+        return "#1e4c9a" if (x + y) % 7 else "#1a4288"
+
+    return paint(f)
+
+
+def desert_haze():
+    # Far-off mesas: soft and pale, a few faint bands.
+    a = noise(4, 2, 3791)
+
+    def f(x, y):
+        return pick(["#c48a7a", "#cc9482", "#d49e8a", "#dca894"], (y % 8) / 10 + a(x, y) * 0.4)
+
+    return paint(f)
+
+
+THEMES.append(
+    {
+        "id": "canyon_dash",
+        "name": "Canyon Dash",
+        "description": "A clear desert afternoon turning golden: layered red, orange and cream sandstone, deep blue-violet canyon shadows, a turquoise river and a saturated blue sky with big white clouds",
+        "environment": {
+            "sky": "#3f8fe6",
+            "fog": {"enabled": True, "color": "#d4c4cc", "near": 520, "far": 2900},
+            "sun": {"color": "#ffd8a0", "intensity": 3.0, "direction": [-0.62, 0.52, 0.58]},
+            "ambient": {"sky": "#a8c8f4", "ground": "#8a4636", "intensity": 1.25},
+            "skyDome": {
+                "top": "#155ed6",
+                "horizon": "#cfe2f2",
+                "bottom": "#e2c8b4",
+                "sun": {"color": "#fff4d0", "size": 9, "glow": "#ffc878", "elevation": 18},
+                "clouds": {"count": 28, "color": "#ffffff", "shade": "#e6d0c8", "seed": 101, "low": 8, "high": 32, "drift": 0.004},
+                "hills": {"color": "#b4705c", "far": "#d0b2b0", "height": 5, "seed": 103, "layers": 3, "style": "mesas"},
+            },
+        },
+    }
+)
+
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("dash_road", "Canyon Dirt Road", "canyon_dash", "packed_dirt", dash_road, 6, None),
+    ("dash_shoulder", "Dirt Verge", "canyon_dash", "dirt", dash_shoulder, 4, None),
+    ("desert_sand", "Red Sand", "canyon_dash", "loose_sand", desert_sand, 8, None),
+    ("slickrock", "Slickrock", "canyon_dash", "dirt", slickrock, 10, None),
+    ("red_sand", "Red Sand (Deep)", "canyon_dash", "loose_sand", red_sand, 8, None),
+    ("pale_sand", "Pale Sand", "canyon_dash", "loose_sand", pale_sand, 8, None),
+    ("strata_cream", "Caprock Sandstone", "canyon_dash", "wall", strata_cream, 14, None),
+    ("strata_orange", "Orange Sandstone", "canyon_dash", "wall", strata_orange, 14, None),
+    ("strata_red", "Red Sandstone", "canyon_dash", "wall", strata_red, 14, None),
+    ("strata_rust", "Red Shale", "canyon_dash", "wall", strata_rust, 12, None),
+    ("strata_purple", "Canyon Base Rock", "canyon_dash", "wall", strata_purple, 12, None),
+    ("talus", "Talus", "canyon_dash", "wall", talus, 8, None),
+    ("canyon_river", "Turquoise River", "canyon_dash", "water", canyon_river, 12, {"scrollU": 0.0, "scrollV": 0.12, "wave": 0.03, "wavePeriod": 5, "glow": 0.15}),
+    ("falls_dash", "Canyon Falls", "canyon_dash", "water", falls_dash, 7, {"scrollU": 0.0, "scrollV": 1.2, "wave": 0.03, "wavePeriod": 1.3, "opacity": 0.92, "glow": 0.25}),
+    ("canyon_mist", "Falls Mist", "canyon_dash", "water", canyon_mist, 20, {"scrollU": 0.01, "scrollV": -0.03, "wave": 0.08, "wavePeriod": 5, "opacity": 0.4, "glow": 0.3}),
+    ("weathered_timber", "Weathered Timber", "canyon_dash", "wall", weathered_timber, 3, None),
+    ("fence_rail", "Ranch Fence", "canyon_dash", "wall", fence_rail, 4, None),
+    ("plank_deck", "Bridge Planks", "canyon_dash", "road", plank_deck, 4, None),
+    ("masonry", "Sandstone Masonry", "canyon_dash", "wall", masonry, 4, None),
+    ("saguaro", "Saguaro", "canyon_dash", "wall", saguaro, 1.5, None),
+    ("agave", "Agave", "canyon_dash", "wall", agave, 1.5, None),
+    ("sagebrush", "Sagebrush", "canyon_dash", "grass", sagebrush, 2, None),
+    ("dry_grass", "Dry Grass", "canyon_dash", "grass", dry_grass, 1.5, None),
+    ("chevron_amber", "Chevron Sign (Amber)", "canyon_dash", "wall", chevron_amber, 3, {"scrollU": 0, "scrollV": 0, "glow": 0.35}),
+    ("windmill_blade", "Windmill Vane", "canyon_dash", "wall", windmill_blade, 3, None),
+    ("canvas_sun", "Race Banner (Red)", "canyon_dash", "wall", canvas_sun, 3, None),
+    ("canvas_blue", "Race Banner (Blue)", "canyon_dash", "wall", canvas_blue, 3, None),
+    ("desert_haze", "Distant Mesa", "canyon_dash", "wall", desert_haze, 40, None),
     ("rift_road", "Glacier Road", "aurora_rift", "snow_stone", rift_road, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.08}),
     ("rift_ice_road", "Clear Ice Track", "aurora_rift", "icy_stone", rift_ice_road, 5, {"scrollU": 0, "scrollV": 0, "glow": 0.22}),
     ("mirror_ice", "Mirror Ice", "aurora_rift", "ice", mirror_ice, 16, {"scrollU": 0, "scrollV": 0, "glow": 0.3, "opacity": 0.7}),

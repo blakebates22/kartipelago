@@ -40,6 +40,10 @@
  *                                   lights. Celesta over shimmering crystal bells in the
  *                                   Cathedral, flute and a running marimba on the lake,
  *                                   brass and strings soaring for the Loop and the climb
+ *   canyon      "Canyon Dash"       D minor, 168: a desert gallop round the red-rock canyon.
+ *                                   Brass and flute trading a sun-baked tune over a
+ *                                   clip-clopping woodblock, strummed pizzicato, a rolling
+ *                                   marimba, bongos, and strings for the bridge and the falls
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -1204,6 +1208,107 @@ function aurora(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Canyon Dash"
+
+export const CANYON_MELODY = bars(
+  "D5:.5 E5:.5 F5:1 A5:1 D6:1",
+  "C#6:.5 D6:.5 A5:1 F5:1 D5:1",
+  "F5:.5 G5:.5 Bb5:1 D6:.5 C6:.5 Bb5:1",
+  "E5:1 C#5:.5 E5:.5 A5:2",
+  "A5:.5 G5:.5 F5:1 E5:.5 F5:.5 D5:1",
+  "Bb5:1 G5:.5 Bb5:.5 D6:1 C6:1",
+  "C#6:.5 E6:.5 G6:1 F6:.5 E6:.5 C#6:1",
+  "D6:2! A5:1 r:1",
+  "C6:.5 A5:.5 F5:1 A5:1 C6:1",
+  "E6:1 D6:.5 C6:.5 G5:1 E5:1",
+  "F5:.5 A5:.5 D6:1 F6:1 D6:1",
+  "E6:1.5 C#6:.5 A5:2",
+  "D6:.5 F6:.5 Bb6:1 A6:.5 G6:.5 F6:1",
+  "A6:1 F6:.5 C6:.5 A5:1 C6:1",
+  "Bb5:.5 D6:.5 G6:1 F6:.5 D6:.5 Bb5:1",
+  "A5:1 C#6:1 E6:1 G6:1",
+  "F6:1 E6:.5 D6:.5 A5:1 F5:1",
+  "Bb5:1 D6:.5 F6:.5 Bb6:2",
+  "A6:.5 G6:.5 F6:1 C6:1 A5:1",
+  "G5:.5 C6:.5 E6:1 G6:1 E6:1",
+  "D6:1 Bb5:.5 D6:.5 G6:1 Bb6:1",
+  "A6:1.5 F6:.5 D6:2",
+  "F6:.5 E6:.5 D6:1 Bb5:1 D6:1",
+  "C#6:1 E6:1 A6:1.5 r:.5",
+  "D6:.5 E6:.5 F6:1 A6:1 F6:1",
+  "G6:.5 A6:.5 Bb6:1 D7:1 Bb6:1",
+  "C7:1 G6:.5 E6:.5 C6:1 E6:1",
+  "F6:1.5 A6:.5 C7:2!",
+  "D7:1 Bb6:.5 F6:.5 D6:1 F6:1",
+  "G6:1 D6:.5 Bb5:.5 G5:1 Bb5:1",
+  "A5:.5 C#6:.5 E6:.5 G6:.5 A6:1 C#7:1",
+  "D7:2! A6:1 r:1",
+);
+export const CANYON_CHORDS =
+  "Dm:4 Dm:4 Bb:4 A:4 Dm:4 Gm:4 A7:4 Dm:4 " +
+  "F:4 C:4 Dm:4 A:4 Bb:4 F:4 Gm:4 A7:4 " +
+  "Dm:4 Bb:4 F:4 C:4 Gm:4 Dm:4 Bb:4 A7:4 " +
+  "Dm:4 Gm:4 C:4 F:4 Bb:4 Gm:4 A7:4 Dm:4";
+
+function canyon(): Song {
+  const ch = chart(CANYON_CHORDS);
+  const mel = seq(CANYON_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const later = ch.filter((c) => c.t >= 32);
+  // A galloping bass: root, a skip to the fifth, the octave, a walk into the next bar.
+  const gallop: [number, number, string][] = [
+    [0, 0.75, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "8"],
+    [2, 0.75, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "canyon",
+    title: "Canyon Dash",
+    role: "Desert World",
+    bpm: 168,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: brass down the canyon wall, the flute over the bridge, strings and
+      // brass by the falls, everyone on the mesa.
+      part("brass", "base", 0.85, p1),
+      part("marimba", "base", 0.35, shift(p1, 0, -12)),
+      part("flute", "base", 1, p2),
+      part("xylophone", "base", 0.4, p2),
+      part("strings", "base", 0.95, p3),
+      part("brass", "base", 0.45, shift(p3, 0, -12)),
+      part("brass", "base", 0.85, p4),
+      part("flute", "base", 0.6, p4),
+      part("strings", "base", 0.5, shift(p4, 0, -12)),
+      // Strummed pizzicato on the off-beats, a rolling marimba from the bridge on.
+      part("pizz", "base", 0.55, stabs(ch, [0.5, 1, 1.5, 2.5, 3, 3.5], 57, 0.15, 0.5)),
+      part("marimba", "base", 0.45, arpeggio(later, 0.5, [0, 1, 2, 1, 3, 2, 1, 2], 62, 0.25, 0.45)),
+      part("horn", "base", 0.35, pads(ch, 50, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, gallop, 33, 0.85)),
+      // The gallop: woodblock hooves throughout, bongos, a driving kick and snare, a
+      // tambourine shake, tom fills and crashes at the top of each section.
+      ...drumParts("base", 0.55, drums("w..ww..ww..ww..w", KIT, 0.25, 32)),
+      ...drumParts("base", 0.85, drums("K.......K.k.....", KIT, 0.25, 32)),
+      ...drumParts("base", 0.7, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.4, drums("b.b.bb.bb.b.bb.b", KIT, 0.25, 24, 32)),
+      ...drumParts("base", 0.35, drums("..t...t...t...tt", KIT, 0.25, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.8, drums("o.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.85, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -1493,6 +1598,7 @@ export const SONGS: Record<string, Song> = {
   summit: summit(),
   hearthglow: hearthglow(),
   aurora: aurora(),
+  canyon: canyon(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),
