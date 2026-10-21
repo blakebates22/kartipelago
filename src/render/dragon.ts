@@ -36,6 +36,7 @@ export function createDragonView(
   pos: { x: number; y: number; z: number },
   heading: number,
   scale = 1,
+  look: "ember" | "obsidian" = "ember",
 ): DragonView {
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
@@ -45,12 +46,16 @@ export function createDragonView(
     return m;
   };
   const geo = <G extends THREE.BufferGeometry>(g: G) => (geos.push(g), g);
-  const scales = mat(SCALES);
-  const dark = mat(DARK);
-  const belly = mat(BELLY);
-  const horn = mat(HORN);
-  const spine = mat(SPINE);
-  const wingMat = mat(WING, { side: THREE.DoubleSide });
+  // Impact Depths' dragon is obsidian-black with molten spines and a crimson membrane.
+  const ob = look === "obsidian";
+  const scales = mat(ob ? "#26202a" : SCALES);
+  const dark = mat(ob ? "#120e14" : DARK);
+  const belly = mat(ob ? "#6a3a2a" : BELLY);
+  const horn = mat(ob ? "#e8dcc0" : HORN);
+  const spine = ob
+    ? mat("#ff6a1a", { emissive: new THREE.Color("#ff4a10"), emissiveIntensity: 0.9 })
+    : mat(SPINE);
+  const wingMat = mat(ob ? "#5a1418" : WING, { side: THREE.DoubleSide });
   const eyeMat = mat("#ffd040", { emissive: new THREE.Color("#ffb020"), emissiveIntensity: 1.4 });
   const throatMat = mat("#c04010", {
     emissive: new THREE.Color("#ff6a10"),
@@ -127,7 +132,10 @@ export function createDragonView(
       }
     }
   }
-  // The tail, draped back and down the crag, with a spiked tip.
+  // The tail, draped back and down the crag, with a spiked tip (it swishes slowly).
+  const tail = new THREE.Group();
+  tail.position.set(0, 6, -9);
+  body.add(tail);
   const tailPts = [
     V(0, 6, -9),
     V(1.5, 4.5, -14),
@@ -136,14 +144,15 @@ export function createDragonView(
     V(6.5, -10, -22),
     V(5.5, -15, -21),
   ];
+  for (const p of tailPts) p.sub(tail.position);
   for (let k = 0; k < tailPts.length - 1; k++)
-    body.add(
+    tail.add(
       limb(k % 2 ? dark : scales, tailPts[k]!, tailPts[k + 1]!, 2.4 - k * 0.42, 2.0 - k * 0.38),
     );
   const tip = cone(spine, 0.9, 3.5, 4);
   tip.position.copy(tailPts.at(-1)!).add(V(0, -1.5, 0));
   tip.rotation.x = Math.PI;
-  body.add(tip);
+  tail.add(tip);
 
   // The wings: an arm and three long fingers, with membrane between.
   const wings: THREE.Group[] = [];
@@ -207,6 +216,7 @@ export function createDragonView(
     sp.rotation.x = -0.6;
     (k < 2 ? neckA : neckB).add(sp);
   }
+  const eyes: THREE.Mesh[] = [];
   const head = new THREE.Group();
   head.position.set(0, 4.5, 4.5);
   neckB.add(head);
@@ -220,6 +230,7 @@ export function createDragonView(
     brow.position.set(sd * 1.3, 1.9, 2.4);
     const eye = blob(eyeMat, 0.5, 1.2, 0.8, 1.0, 1);
     eye.position.set(sd * 1.55, 1.35, 2.6);
+    eyes.push(eye);
     const hornA = cone(horn, 0.7, 5.5, 5);
     hornA.position.set(sd * 1.4, 2.6, -1.0);
     hornA.rotation.set(-1.9, 0, sd * 0.35);
@@ -295,9 +306,18 @@ export function createDragonView(
       jaw.rotation.x = jawOpen;
       throatMat.emissiveIntensity = glow;
       mouthMat.emissiveIntensity = phase === "breathing" ? 2.5 : glow * 0.4;
-      wings[0]!.rotation.set(0, -spread * 0.6, spread * 0.5);
-      wings[1]!.rotation.set(0, spread * 0.6, -spread * 0.5);
+      // Wings: a slow restless flex at rest, a great beat as it rears up.
+      const flap =
+        0.06 * Math.sin(time * 1.1) + (phase === "warning" ? 0.25 * Math.sin(time * 6) * t : 0);
+      wings[0]!.rotation.set(0, -spread * 0.6, spread * 0.5 + flap);
+      wings[1]!.rotation.set(0, spread * 0.6, -spread * 0.5 - flap);
       body.position.y = 0.25 * Math.sin(time * 0.9);
+      tail.rotation.y =
+        0.18 * Math.sin(time * 0.7) + (phase === "warning" ? 0.15 * Math.sin(time * 4) : 0);
+      // It blinks every few seconds (never while breathing fire).
+      const b = (time + heading * 3) % 4.3;
+      const lid = phase !== "breathing" && b < 0.16 ? 0.1 : 1;
+      for (const e of eyes) e.scale.y = 0.8 * lid;
     },
     mouth(out) {
       return mouthPoint.getWorldPosition(out);

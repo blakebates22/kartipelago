@@ -11,6 +11,7 @@
 import json
 import math
 import os
+import sys
 
 from PIL import Image
 
@@ -4915,6 +4916,12 @@ MATERIALS = [
 ]
 
 MATERIALS += GULCH_MATERIALS
+
+# Impact Depths (Desert World, course 4): its own module, painted with the helpers above.
+import impact_textures  # noqa: E402
+
+MATERIALS += impact_textures.materials(sys.modules[__name__])
+THEMES.append(impact_textures.THEME)
 
 
 def thumb(im):

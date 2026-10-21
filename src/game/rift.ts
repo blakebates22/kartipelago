@@ -10,6 +10,9 @@
  *             road at (x, y, z). A kart within `r` of the spot at that moment is
  *             knocked (slower, a hop). It grows back while the beat comes round again.
  *             "decor": true ones hang over the abyss: they fall, but hit nothing.
+ *             "look": "rock" makes it a boulder breaking off a cave roof (Impact
+ *             Depths' volcanic depths), "meteor" a burning fragment of the asteroid
+ *             streaking down from the sky (the crater): the same beat and knock.
  *   thin_ice  { "type": "thin_ice", "x", "y", "z", "r": 6, "hold": 7 }
  *             A cracked patch of lake ice. Each time a kart drives over it the cracks
  *             spread (three passes and it gives way); while it's broken it's slush that
@@ -37,6 +40,7 @@ export interface IcicleConfig {
   fall: number;
   r: number;
   decor: boolean;
+  look: "ice" | "rock" | "meteor";
 }
 
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
@@ -61,6 +65,7 @@ export function parseIcicle(e: Record<string, unknown>): IcicleConfig {
     fall,
     r: Math.max(0.5, num(e.r, 3.2)),
     decor: e.decor === true,
+    look: e.look === "rock" || e.look === "meteor" ? e.look : "ice",
   };
 }
 

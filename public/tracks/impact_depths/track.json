@@ -1,0 +1,1820 @@
+{
+  "schemaVersion": 1,
+  "id": "impact_depths",
+  "name": "Impact Depths",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "plume_01",
+      "type": "plume",
+      "x": 302.0,
+      "y": 31.54,
+      "z": 164.0,
+      "height": 150.0,
+      "radius": 16.0,
+      "rate": 7.0,
+      "color": "#4a3e44",
+      "glow": "#ff7a4a"
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 368.63,
+      "y": -7.54,
+      "z": 141.08
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 314.38,
+      "y": -12.45,
+      "z": 102.49
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 251.75,
+      "y": -12.83,
+      "z": 127.41
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 243.37,
+      "y": -12.97,
+      "z": 190.92
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 297.62,
+      "y": -12.28,
+      "z": 229.51
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 360.25,
+      "y": -12.62,
+      "z": 204.59
+    },
+    {
+      "id": "shimmer_01",
+      "type": "shimmer",
+      "x": 213.76,
+      "y": 4.54,
+      "z": 286.38,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_02",
+      "type": "shimmer",
+      "x": 207.05,
+      "y": 5.12,
+      "z": 266.27,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_03",
+      "type": "shimmer",
+      "x": 200.31,
+      "y": 3.88,
+      "z": 291.95,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_04",
+      "type": "shimmer",
+      "x": 190.98,
+      "y": 3.88,
+      "z": 272.92,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_05",
+      "type": "shimmer",
+      "x": 187.74,
+      "y": 3.29,
+      "z": 299.26,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_06",
+      "type": "shimmer",
+      "x": 175.92,
+      "y": 3.29,
+      "z": 281.66,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_07",
+      "type": "shimmer",
+      "x": 174.79,
+      "y": 4.17,
+      "z": 308.3,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_08",
+      "type": "shimmer",
+      "x": 162.64,
+      "y": 4.17,
+      "z": 290.93,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_09",
+      "type": "shimmer",
+      "x": 161.7,
+      "y": 4.01,
+      "z": 317.48,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_10",
+      "type": "shimmer",
+      "x": 149.53,
+      "y": 4.01,
+      "z": 300.12,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_11",
+      "type": "shimmer",
+      "x": 148.59,
+      "y": 3.85,
+      "z": 326.65,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_12",
+      "type": "shimmer",
+      "x": 136.42,
+      "y": 3.85,
+      "z": 309.29,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_13",
+      "type": "shimmer",
+      "x": 135.48,
+      "y": 3.69,
+      "z": 335.84,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_14",
+      "type": "shimmer",
+      "x": 123.33,
+      "y": 3.69,
+      "z": 318.47,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_15",
+      "type": "shimmer",
+      "x": 122.38,
+      "y": 3.53,
+      "z": 345.01,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_16",
+      "type": "shimmer",
+      "x": 110.21,
+      "y": 3.53,
+      "z": 327.64,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_17",
+      "type": "shimmer",
+      "x": 109.32,
+      "y": 3.37,
+      "z": 354.16,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_18",
+      "type": "shimmer",
+      "x": 97.07,
+      "y": 3.37,
+      "z": 336.86,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_19",
+      "type": "shimmer",
+      "x": 95.26,
+      "y": 1.98,
+      "z": 363.47,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_20",
+      "type": "shimmer",
+      "x": 84.47,
+      "y": 1.98,
+      "z": 345.22,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_21",
+      "type": "shimmer",
+      "x": 79.69,
+      "y": 1.76,
+      "z": 371.24,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_22",
+      "type": "shimmer",
+      "x": 71.42,
+      "y": 1.76,
+      "z": 351.72,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_23",
+      "type": "shimmer",
+      "x": 63.22,
+      "y": 1.55,
+      "z": 376.87,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_24",
+      "type": "shimmer",
+      "x": 57.64,
+      "y": 1.55,
+      "z": 356.42,
+      "size": 1.6,
+      "color": "#d27aff"
+    },
+    {
+      "id": "shimmer_25",
+      "type": "shimmer",
+      "x": 46.16,
+      "y": 1.33,
+      "z": 380.27,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "shimmer_26",
+      "type": "shimmer",
+      "x": 43.34,
+      "y": 1.33,
+      "z": 359.26,
+      "size": 1.6,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": 112.0,
+      "y": -7.0,
+      "z": 262.0,
+      "top": 13.7,
+      "width": 12.0,
+      "heading": 0.4
+    },
+    {
+      "id": "motes_01",
+      "type": "motes",
+      "x": 150.0,
+      "y": 6.0,
+      "z": 340.0,
+      "radius": 80.0,
+      "rate": 14.0,
+      "color": "#9ae8ff",
+      "rise": 0.2,
+      "size": 0.3
+    },
+    {
+      "id": "motes_02",
+      "type": "motes",
+      "x": -55.3,
+      "y": 1.16,
+      "z": 516.43,
+      "radius": 20.8,
+      "rate": 11.2,
+      "color": "#ffe6a0",
+      "rise": 0.15,
+      "size": 0.25
+    },
+    {
+      "id": "motes_03",
+      "type": "motes",
+      "x": -132.35,
+      "y": -6.0,
+      "z": 579.73,
+      "radius": 25.6,
+      "rate": 12.4,
+      "color": "#ffe6a0",
+      "rise": 0.15,
+      "size": 0.25
+    },
+    {
+      "id": "motes_04",
+      "type": "motes",
+      "x": -216.12,
+      "y": -1.73,
+      "z": 537.74,
+      "radius": 17.6,
+      "rate": 10.4,
+      "color": "#ffe6a0",
+      "rise": 0.15,
+      "size": 0.25
+    },
+    {
+      "id": "motes_05",
+      "type": "motes",
+      "x": -95.45,
+      "y": 1.13,
+      "z": 456.26,
+      "radius": 12.8,
+      "rate": 9.2,
+      "color": "#ffe6a0",
+      "rise": 0.15,
+      "size": 0.25
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": -206.0,
+      "y": -11.0,
+      "z": 612.0,
+      "top": 20.0,
+      "width": 10.0,
+      "heading": 0.0
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": -136.0,
+      "y": -11.0,
+      "z": 610.0,
+      "top": 16.6,
+      "width": 7.0,
+      "heading": 0.0
+    },
+    {
+      "id": "motes_06",
+      "type": "motes",
+      "x": -150.0,
+      "y": 0.0,
+      "z": 520.0,
+      "radius": 110.0,
+      "rate": 12.0,
+      "color": "#c8ff7a",
+      "rise": 0.05,
+      "size": 0.22,
+      "blink": true
+    },
+    {
+      "id": "motes_07",
+      "type": "motes",
+      "x": -217.8,
+      "y": -5.71,
+      "z": 372.36,
+      "radius": 70.0,
+      "rate": 8.0,
+      "color": "#6affd8",
+      "rise": 0.1,
+      "size": 0.25,
+      "blink": true
+    },
+    {
+      "id": "motes_08",
+      "type": "motes",
+      "x": -400.0,
+      "y": -8.0,
+      "z": 280.0,
+      "radius": 90.0,
+      "rate": 16.0,
+      "color": "#ff8a3a",
+      "rise": 1.2,
+      "size": 0.22
+    },
+    {
+      "id": "motes_09",
+      "type": "motes",
+      "x": -318.0,
+      "y": -6.0,
+      "z": 118.0,
+      "radius": 70.0,
+      "rate": 18.0,
+      "color": "#ff6a2a",
+      "rise": 1.6,
+      "size": 0.25
+    },
+    {
+      "id": "motes_10",
+      "type": "motes",
+      "x": -146.79,
+      "y": -8.0,
+      "z": 124.11,
+      "radius": 60.0,
+      "rate": 20.0,
+      "color": "#ffd27a",
+      "rise": 0.6,
+      "size": 0.3
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -179.12,
+      "y": -2.61,
+      "z": 187.42
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -210.13,
+      "y": 2.0,
+      "z": 166.47
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -229.58,
+      "y": 6.6,
+      "z": 134.47
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -233.85,
+      "y": 11.21,
+      "z": 97.18
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -222.08,
+      "y": 15.81,
+      "z": 61.5
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -196.48,
+      "y": 20.41,
+      "z": 34.09
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -161.86,
+      "y": 25.02,
+      "z": 19.91
+    },
+    {
+      "id": "triceratops_01",
+      "type": "triceratops",
+      "x": -34.0,
+      "y": -6.04,
+      "z": 500.0,
+      "heading": 0.0,
+      "scale": 1.25,
+      "roam": 6.0,
+      "seed": 1
+    },
+    {
+      "id": "triceratops_02",
+      "type": "triceratops",
+      "x": -18.0,
+      "y": -6.0,
+      "z": 510.0,
+      "heading": 1.3,
+      "scale": 1.0,
+      "roam": 6.0,
+      "seed": 2
+    },
+    {
+      "id": "triceratops_03",
+      "type": "triceratops",
+      "x": -48.0,
+      "y": -7.0,
+      "z": 516.0,
+      "heading": 2.6,
+      "scale": 1.1,
+      "roam": 6.0,
+      "seed": 3
+    },
+    {
+      "id": "triceratops_04",
+      "type": "triceratops",
+      "x": -28.0,
+      "y": -6.0,
+      "z": 480.0,
+      "heading": 3.9,
+      "scale": 0.8,
+      "roam": 6.0,
+      "seed": 4
+    },
+    {
+      "id": "triceratops_05",
+      "type": "triceratops",
+      "x": -58.0,
+      "y": -6.47,
+      "z": 492.0,
+      "heading": 5.2,
+      "scale": 0.65,
+      "roam": 6.0,
+      "seed": 5
+    },
+    {
+      "id": "raptors_01",
+      "type": "raptors",
+      "ax": -98.01,
+      "ay": -6.56,
+      "az": 435.63,
+      "bx": -128.85,
+      "by": -13.71,
+      "bz": 398.85,
+      "period": 9.0,
+      "offset": 0.0,
+      "travel": 2.2,
+      "warn": 1.4,
+      "count": 3
+    },
+    {
+      "id": "raptors_02",
+      "type": "raptors",
+      "ax": -170.97,
+      "ay": 30.3,
+      "az": 434.2,
+      "bx": -140.12,
+      "by": -7.97,
+      "bz": 470.98,
+      "period": 11.0,
+      "offset": 4.0,
+      "travel": 2.2,
+      "warn": 1.4,
+      "count": 2
+    },
+    {
+      "id": "raptors_03",
+      "type": "raptors",
+      "ax": -235.03,
+      "ay": -9.76,
+      "az": 512.99,
+      "bx": -238.51,
+      "by": -9.86,
+      "bz": 465.12,
+      "period": 13.0,
+      "offset": 7.0,
+      "travel": 2.2,
+      "warn": 1.4,
+      "count": 3
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Sauropod Path",
+      "speed": 1.4,
+      "scale": 2.1,
+      "start": 0
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Lake Wade Path",
+      "speed": 1.6,
+      "scale": 1.7,
+      "start": 30
+    },
+    {
+      "id": "dinosaur_03",
+      "type": "dinosaur",
+      "route": "Lake Wade Path",
+      "speed": 1.6,
+      "scale": 0.9,
+      "start": 42
+    },
+    {
+      "id": "pterosaur_01",
+      "type": "pterosaur",
+      "route": "Flyer Path 1",
+      "speed": 11.0,
+      "scale": 1.2,
+      "start": 0
+    },
+    {
+      "id": "pterosaur_02",
+      "type": "pterosaur",
+      "route": "Flyer Path 2",
+      "speed": 12.0,
+      "scale": 1.2,
+      "start": 20
+    },
+    {
+      "id": "pterosaur_03",
+      "type": "pterosaur",
+      "route": "Flyer Path 3",
+      "speed": 13.0,
+      "scale": 1.6,
+      "start": 40
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 70.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 635.5,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 857.3,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 1171.3,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1589.2,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1931.6,
+      "across": -4
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 2111.6,
+      "across": 0
+    },
+    {
+      "id": "zip_08",
+      "type": "zipper",
+      "at": 2191.6,
+      "across": 0
+    },
+    {
+      "id": "zip_09",
+      "type": "zipper",
+      "at": 2515.1,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 150.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 724.0,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 967.3,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 1110.6,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1342.1,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1669.2,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_07",
+      "type": "bananas",
+      "at": 2041.6,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_08",
+      "type": "bananas",
+      "at": 2370.1,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 110.0,
+      "across": -5,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 110.0,
+      "across": 5,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 359.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 814.0,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 947.3,
+      "across": -4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 947.3,
+      "across": 4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1211.3,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1412.1,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1559.2,
+      "across": -4,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 1559.2,
+      "across": 4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_11",
+      "type": "balloon",
+      "at": 1874.5,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "bal_12",
+      "type": "balloon",
+      "at": 2151.6,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_13",
+      "type": "balloon",
+      "at": 2290.1,
+      "across": -4,
+      "color": "green"
+    },
+    {
+      "id": "bal_14",
+      "type": "balloon",
+      "at": 2290.1,
+      "across": 4,
+      "color": "yellow"
+    },
+    {
+      "id": "dragon_01",
+      "type": "dragon",
+      "x": -322.32,
+      "y": 10.52,
+      "z": 118.0,
+      "heading": 2.415,
+      "scale": 1.7,
+      "look": "obsidian",
+      "fire": {
+        "x": -278.87,
+        "y": -12.64,
+        "z": 69.11,
+        "heading": 1.571,
+        "length": 30.0,
+        "width": 11.0,
+        "height": 6.0
+      },
+      "period": 10.0,
+      "offset": 2.0,
+      "aim": 1.4,
+      "warn": 1.8,
+      "breathe": 2.2,
+      "cool": 1.2
+    },
+    {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": -390.79,
+      "y": -10.76,
+      "z": 349.5,
+      "r": 3.6,
+      "height": 16.0,
+      "period": 6.5,
+      "offset": 0.0,
+      "warn": 1.5,
+      "blast": 1.6,
+      "launch": 0,
+      "lava": true
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": -402.79,
+      "y": -11.12,
+      "z": 294.51,
+      "r": 3.6,
+      "height": 16.0,
+      "period": 6.5,
+      "offset": 2.3,
+      "warn": 1.5,
+      "blast": 1.6,
+      "launch": 0,
+      "lava": true
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": -390.79,
+      "y": -11.49,
+      "z": 239.51,
+      "r": 3.6,
+      "height": 16.0,
+      "period": 6.5,
+      "offset": 4.6,
+      "warn": 1.5,
+      "blast": 1.6,
+      "launch": 0,
+      "lava": true
+    },
+    {
+      "id": "geyser_04",
+      "type": "geyser",
+      "x": -402.79,
+      "y": -11.86,
+      "z": 184.51,
+      "r": 3.6,
+      "height": 16.0,
+      "period": 6.5,
+      "offset": 1.2,
+      "warn": 1.5,
+      "blast": 1.6,
+      "launch": 0,
+      "lava": true
+    },
+    {
+      "id": "icicle_01",
+      "type": "icicle",
+      "x": -399.79,
+      "y": -11.29,
+      "z": 269.51,
+      "top": 12.7,
+      "period": 8.0,
+      "offset": 0.0,
+      "warn": 1.6,
+      "r": 3.4,
+      "look": "rock"
+    },
+    {
+      "id": "icicle_02",
+      "type": "icicle",
+      "x": -389.48,
+      "y": -12.1,
+      "z": 135.52,
+      "top": 6.8,
+      "period": 8.0,
+      "offset": 3.5,
+      "warn": 1.6,
+      "r": 3.4,
+      "look": "rock"
+    },
+    {
+      "id": "icicle_03",
+      "type": "icicle",
+      "x": -384.1,
+      "y": -9.73,
+      "z": 433.93,
+      "top": -0.5,
+      "period": 8.0,
+      "offset": 5.0,
+      "warn": 1.6,
+      "r": 3.4,
+      "look": "rock"
+    },
+    {
+      "id": "icicle_04",
+      "type": "icicle",
+      "x": 407.97,
+      "y": 25.58,
+      "z": 79.71,
+      "top": 145.6,
+      "period": 11.0,
+      "offset": 1.0,
+      "warn": 2.0,
+      "r": 3.8,
+      "look": "meteor"
+    },
+    {
+      "id": "icicle_05",
+      "type": "icicle",
+      "x": 411.2,
+      "y": 16.58,
+      "z": 218.22,
+      "top": 136.6,
+      "period": 11.0,
+      "offset": 4.0,
+      "warn": 2.0,
+      "r": 3.8,
+      "look": "meteor"
+    },
+    {
+      "id": "icicle_06",
+      "type": "icicle",
+      "x": 345.7,
+      "y": 11.49,
+      "z": 262.1,
+      "top": 131.5,
+      "period": 11.0,
+      "offset": 7.0,
+      "warn": 2.0,
+      "r": 3.8,
+      "look": "meteor"
+    },
+    {
+      "id": "meteors_01",
+      "type": "meteors",
+      "x": 306.0,
+      "y": 35.54,
+      "z": 166.0,
+      "rate": 0.35,
+      "intro": true
+    },
+    {
+      "id": "core_01",
+      "type": "core",
+      "x": -146.79,
+      "y": 1.0,
+      "z": 124.11,
+      "size": 16.0
+    },
+    {
+      "id": "glow_01",
+      "type": "glow",
+      "x": -449.7,
+      "y": -73.21,
+      "z": 407.85,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_02",
+      "type": "glow",
+      "x": -366.0,
+      "y": -48.86,
+      "z": 394.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_03",
+      "type": "glow",
+      "x": -448.0,
+      "y": -15.5,
+      "z": 398.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_04",
+      "type": "glow",
+      "x": -439.43,
+      "y": -15.5,
+      "z": 348.29,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_05",
+      "type": "glow",
+      "x": -434.0,
+      "y": -15.5,
+      "z": 300.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_06",
+      "type": "glow",
+      "x": -422.67,
+      "y": -15.5,
+      "z": 253.56,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_07",
+      "type": "glow",
+      "x": -378.67,
+      "y": -15.5,
+      "z": 228.33,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_08",
+      "type": "glow",
+      "x": -333.6,
+      "y": -15.5,
+      "z": 200.8,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_09",
+      "type": "glow",
+      "x": -366.0,
+      "y": -15.5,
+      "z": 346.62,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_10",
+      "type": "glow",
+      "x": -368.46,
+      "y": -15.5,
+      "z": 296.77,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_11",
+      "type": "glow",
+      "x": -373.11,
+      "y": -15.5,
+      "z": 248.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_12",
+      "type": "glow",
+      "x": -342.0,
+      "y": -25.0,
+      "z": 216.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_13",
+      "type": "glow",
+      "x": -342.0,
+      "y": -25.0,
+      "z": 198.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_14",
+      "type": "glow",
+      "x": -360.0,
+      "y": -25.0,
+      "z": 180.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_15",
+      "type": "glow",
+      "x": -288.0,
+      "y": -25.0,
+      "z": 180.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_16",
+      "type": "glow",
+      "x": -342.0,
+      "y": -25.0,
+      "z": 162.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_17",
+      "type": "glow",
+      "x": -378.0,
+      "y": -25.0,
+      "z": 144.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_18",
+      "type": "glow",
+      "x": -306.0,
+      "y": -25.0,
+      "z": 144.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_19",
+      "type": "glow",
+      "x": -342.0,
+      "y": -25.0,
+      "z": 126.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_20",
+      "type": "glow",
+      "x": -378.0,
+      "y": -25.0,
+      "z": 108.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_21",
+      "type": "glow",
+      "x": -306.0,
+      "y": -25.0,
+      "z": 108.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_22",
+      "type": "glow",
+      "x": -324.0,
+      "y": -25.0,
+      "z": 90.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_23",
+      "type": "glow",
+      "x": -342.0,
+      "y": -25.0,
+      "z": 72.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_24",
+      "type": "glow",
+      "x": -306.0,
+      "y": -25.0,
+      "z": 54.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_25",
+      "type": "glow",
+      "x": -270.0,
+      "y": -25.0,
+      "z": 36.0,
+      "color": "#ff6a2a"
+    },
+    {
+      "id": "glow_26",
+      "type": "glow",
+      "x": 202.9,
+      "y": 4.0,
+      "z": 344.09,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "glow_27",
+      "type": "glow",
+      "x": 94.47,
+      "y": -2.0,
+      "z": 258.17,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "glow_28",
+      "type": "glow",
+      "x": 81.97,
+      "y": 1.25,
+      "z": 380.04,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "glow_29",
+      "type": "glow",
+      "x": 92.64,
+      "y": 0.47,
+      "z": 324.31,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "glow_30",
+      "type": "glow",
+      "x": 112.0,
+      "y": -1.0,
+      "z": 262.0,
+      "color": "#5ae8ff"
+    },
+    {
+      "id": "glow_31",
+      "type": "glow",
+      "x": 142.2,
+      "y": 6.33,
+      "z": 359.42,
+      "color": "#c070ff"
+    },
+    {
+      "id": "glow_32",
+      "type": "glow",
+      "x": 114.45,
+      "y": 0.29,
+      "z": 365.27,
+      "color": "#c070ff"
+    },
+    {
+      "id": "glow_33",
+      "type": "glow",
+      "x": 77.06,
+      "y": 1.1,
+      "z": 311.69,
+      "color": "#c070ff"
+    },
+    {
+      "id": "glow_34",
+      "type": "glow",
+      "x": 93.18,
+      "y": 1.0,
+      "z": 403.54,
+      "color": "#c070ff"
+    },
+    {
+      "id": "glow_35",
+      "type": "glow",
+      "x": -43.65,
+      "y": -0.89,
+      "z": 380.01,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_36",
+      "type": "glow",
+      "x": -83.52,
+      "y": -5.16,
+      "z": 380.35,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_37",
+      "type": "glow",
+      "x": -125.68,
+      "y": -5.48,
+      "z": 384.15,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_38",
+      "type": "glow",
+      "x": -165.47,
+      "y": -5.58,
+      "z": 380.96,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_39",
+      "type": "glow",
+      "x": -205.67,
+      "y": -5.68,
+      "z": 381.27,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_40",
+      "type": "glow",
+      "x": -245.87,
+      "y": -5.78,
+      "z": 381.58,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_41",
+      "type": "glow",
+      "x": -286.07,
+      "y": -5.89,
+      "z": 381.89,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_42",
+      "type": "glow",
+      "x": -326.27,
+      "y": -5.99,
+      "z": 382.21,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_43",
+      "type": "glow",
+      "x": -369.77,
+      "y": -6.66,
+      "z": 378.39,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_44",
+      "type": "glow",
+      "x": -339.77,
+      "y": -6.72,
+      "z": 387.4,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_45",
+      "type": "glow",
+      "x": -377.34,
+      "y": -7.19,
+      "z": 380.67,
+      "color": "#4affc8"
+    },
+    {
+      "id": "glow_46",
+      "type": "glow",
+      "x": -116.79,
+      "y": -10.0,
+      "z": 124.11,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_47",
+      "type": "glow",
+      "x": -125.57,
+      "y": -10.0,
+      "z": 102.89,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_48",
+      "type": "glow",
+      "x": -146.79,
+      "y": -10.0,
+      "z": 94.11,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_49",
+      "type": "glow",
+      "x": -168.0,
+      "y": -10.0,
+      "z": 102.89,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_50",
+      "type": "glow",
+      "x": -176.79,
+      "y": -10.0,
+      "z": 124.11,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_51",
+      "type": "glow",
+      "x": -168.0,
+      "y": -10.0,
+      "z": 145.32,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_52",
+      "type": "glow",
+      "x": -146.79,
+      "y": -10.0,
+      "z": 154.11,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_53",
+      "type": "glow",
+      "x": -125.57,
+      "y": -10.0,
+      "z": 145.32,
+      "color": "#ffc070"
+    },
+    {
+      "id": "glow_54",
+      "type": "glow",
+      "x": -146.79,
+      "y": -1.0,
+      "z": 124.11,
+      "color": "#ffc070"
+    },
+    {
+      "id": "atmosphere_01",
+      "type": "atmosphere",
+      "zones": {
+        "desert": {
+          "fog": "#e0c49c",
+          "near": 420,
+          "far": 2400,
+          "sun": 2.8,
+          "sky": "#b0ccf0",
+          "ground": "#9a6a42",
+          "hemi": 1.2,
+          "sound": "wind"
+        },
+        "crater": {
+          "fog": "#a87a62",
+          "near": 260,
+          "far": 1500,
+          "sun": 2.4,
+          "sky": "#c8a49a",
+          "ground": "#5a3a32",
+          "hemi": 1.1,
+          "sound": "resonance"
+        },
+        "crystal": {
+          "fog": "#241a3a",
+          "near": 60,
+          "far": 520,
+          "sun": 0.35,
+          "sky": "#8ab0ff",
+          "ground": "#6a3a2a",
+          "hemi": 1.25,
+          "sound": "chime"
+        },
+        "jungle": {
+          "fog": "#2a4a34",
+          "near": 70,
+          "far": 620,
+          "sun": 0.7,
+          "sky": "#cfe8a8",
+          "ground": "#3a5a2a",
+          "hemi": 1.3,
+          "sound": "jungle"
+        },
+        "hidden": {
+          "fog": "#0e2224",
+          "near": 40,
+          "far": 380,
+          "sun": 0.25,
+          "sky": "#7ad8c0",
+          "ground": "#1e3a32",
+          "hemi": 1.0,
+          "sound": "drip"
+        },
+        "volcanic": {
+          "fog": "#3a1008",
+          "near": 50,
+          "far": 460,
+          "sun": 0.3,
+          "sky": "#ff9a6a",
+          "ground": "#4a1408",
+          "hemi": 1.2,
+          "sound": "rumble"
+        },
+        "lair": {
+          "fog": "#4a0c06",
+          "near": 50,
+          "far": 480,
+          "sun": 0.3,
+          "sky": "#ff7a4a",
+          "ground": "#5a1006",
+          "hemi": 1.25,
+          "sound": "rumble"
+        },
+        "core": {
+          "fog": "#2a0e3a",
+          "near": 60,
+          "far": 520,
+          "sun": 0.6,
+          "sky": "#ffc0e8",
+          "ground": "#5a2a6a",
+          "hemi": 1.35,
+          "sound": "hum"
+        },
+        "ascent": {
+          "fog": "#c8a07a",
+          "near": 200,
+          "far": 1400,
+          "sun": 2.2,
+          "sky": "#d8c8e8",
+          "ground": "#8a5a3a",
+          "hemi": 1.15,
+          "sound": "wind"
+        }
+      },
+      "keys": [
+        [0.0, 30.61, -0.0, "desert", "desert", 0.0],
+        [12.0, 30.62, -0.0, "desert", "desert", 0.0],
+        [24.0, 30.64, -0.0, "desert", "desert", 0.0],
+        [36.0, 30.66, -0.0, "desert", "desert", 0.0],
+        [48.0, 30.69, -0.0, "desert", "desert", 0.0],
+        [60.0, 30.7, -0.0, "desert", "desert", 0.0],
+        [72.0, 30.73, -0.0, "desert", "desert", 0.0],
+        [84.0, 30.75, -0.0, "desert", "desert", 0.0],
+        [96.0, 30.77, -0.0, "desert", "desert", 0.0],
+        [108.0, 30.79, -0.0, "desert", "desert", 0.0],
+        [120.0, 30.81, -0.0, "desert", "desert", 0.0],
+        [132.0, 30.83, -0.0, "desert", "desert", 0.0],
+        [144.0, 30.86, -0.0, "desert", "desert", 0.0],
+        [156.0, 30.87, -0.0, "desert", "desert", 0.0],
+        [168.0, 30.9, -0.0, "desert", "desert", 0.0],
+        [180.0, 30.92, -0.0, "desert", "desert", 0.0],
+        [192.0, 30.94, -0.0, "desert", "desert", 0.0],
+        [204.0, 30.96, -0.0, "desert", "desert", 0.0],
+        [216.0, 30.98, -0.0, "desert", "desert", 0.0],
+        [228.0, 31.0, -0.0, "desert", "desert", 0.0],
+        [240.0, 31.03, -0.0, "desert", "crater", 0.076],
+        [252.0, 31.04, -0.0, "desert", "crater", 0.308],
+        [264.0, 31.07, -0.0, "crater", "crater", 0.0],
+        [276.0, 31.09, -0.01, "crater", "crater", 0.0],
+        [287.99, 31.11, 0.27, "crater", "crater", 0.0],
+        [299.93, 31.13, 1.48, "crater", "crater", 0.0],
+        [311.73, 31.15, 3.65, "crater", "crater", 0.0],
+        [323.32, 31.18, 6.73, "crater", "crater", 0.0],
+        [334.62, 31.1, 10.76, "crater", "crater", 0.0],
+        [345.57, 30.74, 15.65, "crater", "crater", 0.0],
+        [356.08, 30.13, 21.4, "crater", "crater", 0.0],
+        [366.1, 29.49, 27.97, "crater", "crater", 0.0],
+        [375.55, 28.85, 35.33, "crater", "crater", 0.0],
+        [384.41, 28.2, 43.4, "crater", "crater", 0.0],
+        [392.56, 27.51, 52.17, "crater", "crater", 0.0],
+        [400.01, 26.79, 61.55, "crater", "crater", 0.0],
+        [406.67, 26.06, 71.5, "crater", "crater", 0.0],
+        [412.54, 25.34, 81.93, "crater", "crater", 0.0],
+        [417.53, 24.61, 92.82, "crater", "crater", 0.0],
+        [421.66, 23.89, 104.06, "crater", "crater", 0.0],
+        [424.86, 23.16, 115.6, "crater", "crater", 0.0],
+        [427.15, 22.44, 127.35, "crater", "crater", 0.0],
+        [428.47, 21.71, 139.26, "crater", "crater", 0.0],
+        [428.86, 20.98, 151.22, "crater", "crater", 0.0],
+        [428.14, 20.22, 163.17, "crater", "crater", 0.0],
+        [426.24, 19.46, 174.99, "crater", "crater", 0.0],
+        [423.15, 18.7, 186.56, "crater", "crater", 0.0],
+        [418.95, 17.94, 197.77, "crater", "crater", 0.0],
+        [413.63, 17.18, 208.49, "crater", "crater", 0.0],
+        [407.29, 16.42, 218.65, "crater", "crater", 0.0],
+        [399.96, 15.65, 228.11, "crater", "crater", 0.0],
+        [391.73, 14.88, 236.8, "crater", "crater", 0.0],
+        [382.67, 14.12, 244.62, "crater", "crater", 0.0],
+        [372.87, 13.36, 251.51, "crater", "crater", 0.0],
+        [362.44, 12.6, 257.37, "crater", "crater", 0.0],
+        [351.48, 11.84, 262.19, "crater", "crater", 0.0],
+        [340.09, 11.08, 265.87, "crater", "crater", 0.0],
+        [328.39, 10.32, 268.41, "crater", "crater", 0.0],
+        [316.5, 9.55, 269.76, "crater", "crater", 0.0],
+        [304.53, 8.73, 270.01, "crater", "crater", 0.0],
+        [292.56, 7.86, 270.0, "crater", "crater", 0.0],
+        [280.6, 6.96, 270.0, "crater", "crater", 0.0],
+        [268.63, 6.06, 270.0, "crater", "crater", 0.0],
+        [256.66, 5.17, 270.0, "crater", "crater", 0.0],
+        [244.69, 4.44, 270.07, "crater", "crater", 0.0],
+        [232.75, 3.88, 271.08, "crater", "crystal", 0.028],
+        [220.97, 3.39, 273.29, "crater", "crystal", 0.217],
+        [209.46, 2.9, 276.64, "crystal", "crystal", 0.0],
+        [198.35, 2.41, 281.14, "crystal", "crystal", 0.0],
+        [187.75, 1.92, 286.72, "crystal", "crystal", 0.0],
+        [177.73, 1.56, 293.32, "crystal", "crystal", 0.0],
+        [167.9, 1.36, 300.19, "crystal", "crystal", 0.0],
+        [158.07, 1.24, 307.07, "crystal", "crystal", 0.0],
+        [148.24, 1.12, 313.96, "crystal", "crystal", 0.0],
+        [138.41, 1.0, 320.84, "crystal", "crystal", 0.0],
+        [128.58, 0.88, 327.73, "crystal", "crystal", 0.0],
+        [118.75, 0.76, 334.6, "crystal", "crystal", 0.0],
+        [108.92, 0.64, 341.49, "crystal", "crystal", 0.0],
+        [99.1, 0.51, 348.38, "crystal", "crystal", 0.0],
+        [89.0, 0.36, 354.85, "crystal", "crystal", 0.0],
+        [78.31, 0.2, 360.29, "crystal", "crystal", 0.0],
+        [67.13, 0.04, 364.64, "crystal", "crystal", 0.0],
+        [55.58, -0.12, 367.84, "crystal", "crystal", 0.0],
+        [43.76, -0.29, 369.89, "crystal", "crystal", 0.0],
+        [31.79, -0.47, 370.73, "crystal", "crystal", 0.0],
+        [19.8, -0.72, 370.76, "crystal", "crystal", 0.0],
+        [7.8, -1.01, 370.76, "crystal", "jungle", 0.002],
+        [-4.2, -1.32, 370.75, "crystal", "jungle", 0.128],
+        [-16.19, -1.66, 370.87, "crystal", "jungle", 0.386],
+        [-28.13, -2.05, 371.92, "jungle", "jungle", 0.0],
+        [-39.93, -2.44, 374.08, "jungle", "jungle", 0.0],
+        [-51.47, -2.84, 377.31, "jungle", "jungle", 0.0],
+        [-62.67, -3.24, 381.59, "jungle", "jungle", 0.0],
+        [-73.43, -3.63, 386.88, "jungle", "jungle", 0.0],
+        [-83.65, -4.03, 393.15, "jungle", "jungle", 0.0],
+        [-93.26, -4.4, 400.32, "jungle", "jungle", 0.0],
+        [-102.45, -4.71, 408.03, "jungle", "jungle", 0.0],
+        [-111.64, -4.98, 415.74, "jungle", "jungle", 0.0],
+        [-120.83, -5.25, 423.45, "jungle", "jungle", 0.0],
+        [-130.02, -5.52, 431.16, "jungle", "jungle", 0.0],
+        [-139.21, -5.78, 438.88, "jungle", "jungle", 0.0],
+        [-148.4, -6.05, 446.59, "jungle", "jungle", 0.0],
+        [-157.59, -6.31, 454.3, "jungle", "jungle", 0.0],
+        [-166.84, -6.52, 461.94, "jungle", "jungle", 0.0],
+        [-176.62, -6.67, 468.88, "jungle", "jungle", 0.0],
+        [-187.0, -6.81, 474.89, "jungle", "jungle", 0.0],
+        [-197.9, -6.94, 479.9, "jungle", "jungle", 0.0],
+        [-209.21, -7.06, 483.9, "jungle", "jungle", 0.0],
+        [-220.84, -7.2, 486.83, "jungle", "jungle", 0.0],
+        [-232.69, -7.33, 488.68, "jungle", "jungle", 0.0],
+        [-244.66, -7.47, 489.42, "jungle", "jungle", 0.0],
+        [-256.66, -7.59, 489.44, "jungle", "jungle", 0.0],
+        [-268.66, -7.71, 489.44, "jungle", "jungle", 0.0],
+        [-280.66, -7.83, 489.44, "jungle", "jungle", 0.0],
+        [-292.66, -7.96, 489.45, "jungle", "jungle", 0.0],
+        [-304.65, -8.11, 489.14, "jungle", "jungle", 0.0],
+        [-316.53, -8.3, 487.47, "jungle", "jungle", 0.0],
+        [-328.12, -8.49, 484.41, "jungle", "volcanic", 0.003],
+        [-339.26, -8.68, 479.98, "jungle", "volcanic", 0.136],
+        [-349.8, -8.88, 474.25, "jungle", "volcanic", 0.398],
+        [-359.56, -9.06, 467.29, "volcanic", "volcanic", 0.0],
+        [-368.43, -9.26, 459.22, "volcanic", "volcanic", 0.0],
+        [-376.27, -9.44, 450.14, "volcanic", "volcanic", 0.0],
+        [-382.96, -9.64, 440.19, "volcanic", "volcanic", 0.0],
+        [-388.41, -9.83, 429.51, "volcanic", "volcanic", 0.0],
+        [-392.55, -10.01, 418.26, "volcanic", "volcanic", 0.0],
+        [-395.31, -10.21, 406.59, "volcanic", "volcanic", 0.0],
+        [-396.65, -10.39, 394.67, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.53, 382.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.62, 370.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.7, 358.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.78, 346.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.86, 334.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -10.94, 322.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.02, 310.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.1, 298.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.18, 286.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.26, 274.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.34, 262.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.42, 250.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.5, 238.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.58, 226.68, "volcanic", "volcanic", 0.0],
+        [-396.79, -11.66, 214.68, "volcanic", "lair", 0.067],
+        [-396.79, -11.74, 202.68, "volcanic", "lair", 0.293],
+        [-396.79, -11.82, 190.68, "lair", "lair", 0.0],
+        [-396.79, -11.9, 178.68, "lair", "lair", 0.0],
+        [-396.81, -11.97, 166.68, "lair", "lair", 0.0],
+        [-396.35, -12.03, 154.69, "lair", "lair", 0.0],
+        [-394.5, -12.06, 142.84, "lair", "lair", 0.0],
+        [-391.26, -12.11, 131.3, "lair", "lair", 0.0],
+        [-386.65, -12.14, 120.23, "lair", "lair", 0.0],
+        [-380.75, -12.18, 109.79, "lair", "lair", 0.0],
+        [-373.64, -12.22, 100.13, "lair", "lair", 0.0],
+        [-365.44, -12.26, 91.38, "lair", "lair", 0.0],
+        [-356.23, -12.29, 83.69, "lair", "lair", 0.0],
+        [-346.18, -12.33, 77.15, "lair", "lair", 0.0],
+        [-335.42, -12.37, 71.86, "lair", "lair", 0.0],
+        [-324.1, -12.41, 67.9, "lair", "lair", 0.0],
+        [-312.38, -12.45, 65.33, "lair", "lair", 0.0],
+        [-300.45, -12.49, 64.18, "lair", "lair", 0.0],
+        [-288.45, -12.57, 64.11, "lair", "lair", 0.0],
+        [-276.45, -12.66, 64.11, "lair", "lair", 0.0],
+        [-264.45, -12.76, 64.11, "lair", "lair", 0.0],
+        [-252.45, -12.86, 64.11, "lair", "lair", 0.0],
+        [-240.45, -12.97, 64.11, "lair", "lair", 0.0],
+        [-228.45, -13.06, 64.11, "lair", "lair", 0.0],
+        [-216.45, -13.17, 64.11, "lair", "core", 0.0],
+        [-204.45, -13.26, 64.11, "lair", "core", 0.111],
+        [-192.45, -13.36, 64.11, "lair", "core", 0.362],
+        [-180.45, -13.5, 64.11, "core", "core", 0.0],
+        [-168.46, -13.76, 64.11, "core", "core", 0.0],
+        [-156.46, -14.13, 64.11, "core", "core", 0.0],
+        [-144.46, -14.3, 64.14, "core", "core", 0.0],
+        [-132.6, -14.11, 65.79, "core", "core", 0.0],
+        [-121.31, -13.76, 69.78, "core", "core", 0.0],
+        [-111.02, -13.41, 75.91, "core", "core", 0.0],
+        [-102.17, -13.06, 83.98, "core", "core", 0.0],
+        [-95.08, -12.71, 93.63, "core", "core", 0.0],
+        [-90.07, -12.37, 104.5, "core", "core", 0.0],
+        [-87.3, -12.01, 116.16, "core", "core", 0.0],
+        [-86.91, -11.66, 128.12, "core", "core", 0.0],
+        [-88.9, -11.31, 139.93, "core", "core", 0.0],
+        [-93.19, -10.96, 151.11, "core", "core", 0.0],
+        [-99.62, -10.61, 161.21, "core", "core", 0.0],
+        [-107.92, -10.26, 169.84, "core", "core", 0.0],
+        [-117.78, -9.92, 176.65, "core", "core", 0.0],
+        [-128.79, -9.57, 181.35, "core", "core", 0.0],
+        [-140.51, -9.14, 183.79, "core", "core", 0.0],
+        [-152.46, -8.21, 183.9, "core", "core", 0.0],
+        [-164.22, -6.75, 182.15, "core", "core", 0.0],
+        [-175.56, -5.11, 178.61, "core", "core", 0.0],
+        [-186.24, -3.48, 173.41, "core", "core", 0.0],
+        [-196.0, -1.86, 166.64, "core", "core", 0.0],
+        [-204.61, -0.23, 158.46, "core", "core", 0.0],
+        [-211.89, 1.4, 149.07, "core", "core", 0.0],
+        [-217.66, 3.02, 138.69, "core", "core", 0.0],
+        [-221.79, 4.65, 127.56, "core", "core", 0.0],
+        [-224.17, 6.27, 115.92, "core", "ascent", 0.012],
+        [-224.77, 7.89, 104.06, "core", "ascent", 0.174],
+        [-223.55, 9.52, 92.24, "core", "ascent", 0.448],
+        [-220.56, 11.14, 80.75, "ascent", "ascent", 0.0],
+        [-215.85, 12.77, 69.84, "ascent", "ascent", 0.0],
+        [-209.55, 14.39, 59.78, "ascent", "ascent", 0.0],
+        [-201.78, 16.02, 50.79, "ascent", "ascent", 0.0],
+        [-192.75, 17.64, 43.07, "ascent", "ascent", 0.0],
+        [-182.64, 19.27, 36.84, "ascent", "ascent", 0.0],
+        [-171.71, 20.89, 32.18, "ascent", "ascent", 0.0],
+        [-160.2, 22.52, 29.27, "ascent", "desert", 0.059],
+        [-148.36, 24.0, 28.16, "ascent", "desert", 0.279],
+        [-136.42, 25.12, 27.75, "desert", "desert", 0.0],
+        [-124.52, 25.97, 26.45, "desert", "desert", 0.0],
+        [-112.77, 26.79, 24.2, "desert", "desert", 0.0],
+        [-101.23, 27.62, 21.04, "desert", "desert", 0.0],
+        [-89.98, 28.41, 16.93, "desert", "desert", 0.0],
+        [-79.01, 28.99, 12.11, "desert", "desert", 0.0],
+        [-67.81, 29.3, 7.82, "desert", "desert", 0.0],
+        [-56.3, 29.53, 4.45, "desert", "desert", 0.0],
+        [-44.55, 29.75, 2.02, "desert", "desert", 0.0],
+        [-32.65, 29.99, 0.53, "desert", "desert", 0.0],
+        [-20.67, 30.21, -0.0, "desert", "desert", 0.0],
+        [-8.67, 30.42, -0.0, "desert", "desert", 0.0],
+        [-132.51, -8.5, 373.78, "hidden", "hidden", 0.0],
+        [-145.18, -8.53, 371.93, "hidden", "hidden", 0.0],
+        [-157.5, -8.56, 371.9, "hidden", "hidden", 0.0],
+        [-169.56, -8.59, 371.99, "hidden", "hidden", 0.0],
+        [-181.62, -8.62, 372.08, "hidden", "hidden", 0.0],
+        [-193.68, -8.65, 372.18, "hidden", "hidden", 0.0],
+        [-205.74, -8.68, 372.27, "hidden", "hidden", 0.0],
+        [-217.8, -8.71, 372.36, "hidden", "hidden", 0.0],
+        [-229.86, -8.74, 372.46, "hidden", "hidden", 0.0],
+        [-241.92, -8.77, 372.55, "hidden", "hidden", 0.0],
+        [-253.98, -8.8, 372.64, "hidden", "hidden", 0.0],
+        [-266.04, -8.84, 372.74, "hidden", "hidden", 0.0],
+        [-278.1, -8.87, 372.83, "hidden", "hidden", 0.0],
+        [-290.16, -8.9, 372.92, "hidden", "hidden", 0.0],
+        [-302.22, -8.93, 373.02, "hidden", "hidden", 0.0],
+        [-314.28, -8.96, 373.11, "hidden", "hidden", 0.0],
+        [-326.34, -8.99, 373.21, "hidden", "hidden", 0.0],
+        [-338.4, -9.04, 373.3, "hidden", "hidden", 0.0],
+        [-350.5, -9.23, 373.35, "hidden", "hidden", 0.0]
+      ]
+    }
+  ],
+  "generator": "tools/blender/prehistoric/impact_depths.py (re-running it rewrites entities)"
+}

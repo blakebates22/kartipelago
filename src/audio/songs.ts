@@ -48,6 +48,10 @@
  *                                   trading a carefree tune, strings over the falls,
  *                                   marimba arpeggios like sparkling water, a bouncy bass,
  *                                   congas, shaker and tambourine
+ *   depths      "Impact Depths"     D minor, 140: down through the world under the desert.
+ *                                   Brass and flute over the sands, celesta and bells in
+ *                                   the crystal halls, low marimba, horns and toms in the
+ *                                   jungle and the lava, strings climbing back to the sun
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -1811,6 +1815,146 @@ function ghost(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Impact Depths"
+
+export const DEPTHS_MELODY = bars(
+  "D5:1 A4:.5 D5:.5 F5:1 E5:1",
+  "D5:.5 C5:.5 A4:1 r:1 A4:1",
+  "Bb4:1 D5:.5 F5:.5 G5:1 F5:1",
+  "E5:2 C#5:1 A4:1",
+  "D5:1 A4:.5 D5:.5 F5:1 A5:1",
+  "G5:.5 F5:.5 E5:1 D5:1 Bb4:1",
+  "A4:1 C#5:1 E5:1 G5:1",
+  "F5:1 E5:1 D5:2",
+  "A5:1.5 G5:.5 F5:1 D5:1",
+  "Bb5:1.5 A5:.5 G5:1 D5:1",
+  "C5:1 F5:1 A5:1 C6:1",
+  "Bb5:1 A5:1 G5:2",
+  "F5:1.5 E5:.5 D5:1 Bb4:1",
+  "G5:1 F5:.5 E5:.5 D5:1 C#5:1",
+  "D5:1 E5:1 F5:1 G5:1",
+  "A5:3 r:1",
+  "D4:.5 E4:.5 D4:.5 C#4:.5 D4:2",
+  "F4:.5 G4:.5 F4:.5 E4:.5 F4:2",
+  "G4:1 Bb4:1 A4:1 F4:1",
+  "E4:1 G4:1 C#4:2",
+  "D4:.5 E4:.5 D4:.5 C#4:.5 D4:1 A3:1",
+  "Bb3:1 D4:1 G4:1 Bb4:1",
+  "A4:1 G4:1 E4:1 C#4:1",
+  "D4:2 r:2",
+  "D5:1 A4:.5 D5:.5 F5:1 E5:1",
+  "D5:.5 C5:.5 A4:1 D5:1 F5:1",
+  "Bb5:1 A5:.5 G5:.5 F5:1 D5:1",
+  "E5:2 A5:2",
+  "D6:1 C6:.5 A5:.5 F5:1 D5:1",
+  "G5:1 Bb5:1 A5:1 G5:1",
+  "F5:.5 E5:.5 D5:1 C#5:1 E5:1",
+  "D5:3! r:1",
+);
+export const DEPTHS_CHORDS =
+  "Dm:4 Dm:4 Bb:4 A7:4 Dm:4 Gm:4 A7:4 Dm:4 " +
+  "Dm:4 Gm:4 F:4 C:4 Bb:4 Gm:4 Bb:4 A:4 " +
+  "Dm:4 Bb:4 Gm:4 A7:4 Dm:4 Bb:4 A7:4 Dm:4 " +
+  "Dm:4 Dm:4 Bb:4 A:4 Bb:4 Gm:4 A7:4 Dm:4";
+
+/**
+ * "Impact Depths": an expedition going down, D minor, 140 BPM. Bold brass and flute
+ * carry the adventure theme over the desert; celesta and bells ring through the crystal
+ * halls; down in the Lost World and the lava, a low marimba and horns creep round a
+ * chromatic figure over pounding toms; then strings and brass climb the theme back up
+ * into the sun. Our own tune.
+ */
+function depths(): Song {
+  const ch = chart(DEPTHS_CHORDS);
+  const mel = seq(DEPTHS_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const drive: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "R"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "depths",
+    title: "Impact Depths",
+    role: "Desert World",
+    bpm: 140,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      part("brass", "base", 0.9, p1),
+      part("flute", "base", 0.6, shift(p1, 0, 12)),
+      part("celesta", "base", 0.95, p2),
+      part("bell", "base", 0.35, p2),
+      part("marimba", "base", 1, shift(p3, 0, 12)),
+      part("horn", "base", 0.8, p3),
+      part("strings", "base", 1, p4),
+      part("brass", "base", 0.55, shift(p4, 0, -12)),
+      part("flute", "base", 0.4, shift(p4, 0, 12)),
+      // Plucked strings on the off-beats; crystal arpeggios in the halls; a pad and
+      // the drone in the deep; the driving bass.
+      part("pizz", "base", 0.5, stabs(ch, [0.5, 1.5, 2.5, 3.5], 57, 0.2, 0.5)),
+      part(
+        "celesta",
+        "base",
+        0.3,
+        arpeggio(
+          ch.filter((c) => c.t >= 32 && c.t < 64),
+          0.25,
+          [0, 1, 2, 3, 2, 1, 2, 3],
+          72,
+          0.2,
+          0.3,
+        ),
+      ),
+      part(
+        "marimba",
+        "base",
+        0.45,
+        arpeggio(
+          ch.filter((c) => c.t < 32 || c.t >= 96),
+          0.5,
+          [0, 2, 1, 2, 0, 2, 1, 3],
+          62,
+          0.3,
+          0.35,
+        ),
+      ),
+      part(
+        "drone",
+        "base",
+        0.4,
+        pads(
+          ch.filter((c) => c.t >= 64 && c.t < 96),
+          38,
+          4,
+          0.5,
+        ),
+      ),
+      part("pad", "base", 0.35, pads(ch, 55, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, drive, 26, 0.85)),
+      ...drumParts("base", 0.8, drums("k.......k.k.....", KIT, 0.25, 32)),
+      ...drumParts("base", 0.6, drums("....s.......s...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.35, drums("i.i.i.i.i.i.i.ii", KIT, 0.25, 32)),
+      ...[64, 72, 80, 88].flatMap((at) =>
+        drumParts("base", 0.8, drums("o..o..o.o..o.oOo", KIT, 0.25, 2, at)),
+      ),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.7, drums("o.o.o.o.oooooooo", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.7, drums("c", KIT, 32, 4)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -1828,6 +1972,7 @@ export const SONGS: Record<string, Song> = {
   canyon: canyon(),
   oasis: oasis(),
   ghost: ghost(),
+  depths: depths(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

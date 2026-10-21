@@ -54,7 +54,7 @@ const minePath = (p: TrackPackage) =>
 describe("Dry Gulch Ghost Town", () => {
   it("is the Desert World's third course, with its own night sky and music", async () => {
     const w = WORLDS.find((x) => x.id === "desert")!;
-    expect(w.tracks).toEqual(["canyon_dash", "oasis_haven", id]);
+    expect(w.tracks.slice(0, 3)).toEqual(["canyon_dash", "oasis_haven", id]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.theme).toBe("dry_gulch");

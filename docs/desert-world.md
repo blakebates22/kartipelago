@@ -1,10 +1,10 @@
 # Desert World
 
 Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost
-towns of the old frontier. Its courses so far are **Canyon Dash** (the great canyon),
-**Oasis Haven** (the resort paradise) and **Dry Gulch Ghost Town** (the haunted mining
-town by night). One more is planned, shown in track select as "Coming Soon": an
-underground adventure.
+towns of the old frontier. Its four courses are **Canyon Dash** (the great canyon),
+**Oasis Haven** (the resort paradise), **Dry Gulch Ghost Town** (the haunted mining
+town by night) and **Impact Depths** (down through an asteroid's crater into the world
+beneath the desert).
 
 All of it is our own design: the layout, the scenery, the props and the music were made
 for this project. The concept art was only a guide to the mood and colours.
@@ -329,3 +329,79 @@ over. You'll also hear:
   cart's crossing, the windmill, the skull cloud).
 
 `tests/holes.test.ts` covers it too.
+
+## Impact Depths
+
+A lap of about 2.6 km (an AI lap is about 118 s). Long ago an asteroid fell on the
+desert. Its crater broke open a hidden world underneath, and the lap goes down through
+it, each level stranger than the last, then climbs back out into the sun. One
+continuous loop, no teleports: every world sits where the one before leads.
+
+| Section | Name                   | What happens                                                                                                                                                                                                                                                |
+| ------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | The Desert Approach    | The start, under a rustic timber arch hung with meteor banners, between red mesas, saguaros and an old natural arch. The asteroid smokes in its crater straight ahead. At the start of every race a fireball streaks over the grid and lands in the crater. |
+| 2       | The Colossal Crater    | Round the rim past the expedition's camp (tents, a telescope trained on the asteroid), then down the fractured, terraced inner wall on broad banked curves. Glowing fissures, meteorites and impact glass; debris falls from the sky onto the road.         |
+| 3       | The Crystal Descent    | Into a cave mouth at the crater's foot and a warm ochre hall of cyan, violet and rose crystal: a stone bridge over the underground river, a waterfall from the north wall, the blue lake, crystals flaring as you pass. Ferns start toward the far end.     |
+| 4       | The Lost World         | A vast jungle cavern lit by sunbeams through holes in its roof: cycads, tree ferns, giant horsetails, a turquoise lake with ruins and waterfalls, triceratops grazing, raptors darting across the road, pterosaurs, and a sauropod at the river bridge.     |
+| 5       | The Volcanic Depths    | A tunnel down into black rock: a causeway between rivers of lava, lava falls, a short bridge over a lava channel, lava geysers on the shoulders and rocks breaking off the roof.                                                                            |
+| 6       | The Dragon's Lair      | The road bends round the dragon's crag over a lake of lava. The obsidian dragon watches, blinks, flexes its wings and roars, then breathes fire across the right-hand lanes of the broad bridge over the lava gorge.                                        |
+| 7       | The Heart of the Earth | Through a carved portal into the shaft at the world's centre: round the great core crystal (gold heart, magenta shell, rings of light), over a glowing abyss. Its ring road is the Core Boost.                                                              |
+| 8       | The Final Ascent       | Up a terrace spiralling round the shaft's wall, from crystal to sandstone to sunlight, out onto the desert under a sandstone arch, one fast curve to the line.                                                                                              |
+
+**The Ancient Way (the shortcut):** straight on where the main road turns into the Lost
+World, through a narrow ruined gateway with glowing glyphs, along a stone causeway
+across a hidden cavern's still black pool (obelisks, glowing fungi), and out onto the
+volcanic causeway. It counts as the stretch it skips (a twin gate) and saves about 6 s
+driven well; it's narrower, darker and twistier.
+
+**The hazards** all keep the race clock's beat, and all warn first:
+
+- **The dragon** (period 10 s): it turns its head, rears up with its throat glowing and
+  roars (the burn zone glows on the road), then breathes fire for 2.2 s across the
+  bridge's right-hand lanes. The left side is safe.
+- **Lava geysers** (`geyser` with `"lava": true`): their vents glow and spit before they
+  blow; caught in the column, you get lava's burning bounce.
+- **Falling rocks** (`icicle` with `"look": "rock"`) in the volcanic depths, and **meteor
+  debris** (`"look": "meteor"`) on the crater's descent: a ring glows where they'll land.
+- **Raptors** (`raptors`): packs that chatter in the ferns, then dart across the road.
+  Solid while they cross.
+- **Lava** off the causeways and in the lair; the core's abyss puts you back on the road.
+
+**The air:** an `atmosphere` entity blends fog, light and sound from world to world as
+you go down: the desert's warm haze, the crater's dust, the crystal halls' blue-violet
+dark, the jungle's green gloom, the black pool's silence, the red of the lava, the
+core's magenta glow. The sun barely reaches the caves; sunbeams pour through the
+jungle's skylights. Each world has its own bed of sound (wind, a hollow resonance,
+chimes, insects and birds, drips, a lava rumble, the core's hum).
+
+**Driving:** each world has its own road: desert dirt, crater plates, cavern
+flagstones and stone bridges, a red-earth jungle track and mossy bridges, basalt setts,
+scorched flagstones in the lair, the core's glowing ring road, cut sandstone up the
+ascent, ancient causeway stones on the shortcut.
+
+**Music:** "Impact Depths" (`depths`), D minor, 140 BPM. Brass and flute carry the
+adventure theme over the desert; celesta and bells ring in the crystal halls; a low
+marimba and horns creep over pounding toms in the jungle and the lava; strings climb
+back to the sun.
+
+**How it's built:**
+
+- `impact_land.py`: the land as plain data (no Blender): the layout, heights, the
+  desert and its mesas, the crater, the Heart Shaft and its ascent terrace, and the
+  caves as "tubes" (chains of nodes with a radius, floor and height). Three height
+  fields make the world: the top surface, the caves' floor and their roof.
+- `impact_depths.py`: the route and its road kinds (bridges found where the ground
+  falls away).
+- `impact_scenery.py`: the land mesh, the caves' roofs and the desert over them, the
+  rims of every opening (skylights, the cave mouth, the portal), water and lava, and the
+  light painted per world.
+- `impact_life.py`: each region's dressing, the creatures' paths, and the gameplay.
+- `impact_props.py`: cycads, tree ferns, horsetails, fungi, stalactites, meteorites,
+  sunbeams, the gateway, obelisks, the camp. `impact_textures.py`: the textures.
+
+**Tests:** `tests/depths.test.ts` checks the world, theme and music; a clean load with
+every creature and hazard; that the lap passes through every world in order and back
+up; that the dragon's fire covers only part of its bridge and only while breathing; that
+the Ancient Way counts as the stretch it skips and is a real short cut; three AI laps
+of 100-130 s with no falls; and the rules of the air, the lava geysers, the rocks and
+meteors, the raptors, the triceratops and the core. `tests/holes.test.ts` covers it too.

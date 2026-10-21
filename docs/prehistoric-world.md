@@ -17,7 +17,7 @@ description, a banner colour and its track ids, in menu order:
 | ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
 | Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
-| Desert World      | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town (one more to come: an underground course)                                                                                                         |
+| Desert World      | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town, Impact Depths                                                                                                                                    |
 | Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
 
 - Every track belongs to exactly one world (a test checks this).
@@ -411,6 +411,9 @@ every race and time trial sees the same eruptions:
 - **Launch:** a kart inside the column (radius `r`) while it blows is thrown upward at
   `launch` m/s, keeping its speed and heading: a free jump, never a penalty. Not again
   for a second. With `"launch": 0` it's scenery.
+- **Lava** (`"lava": true`, Impact Depths): the same beat, but the column is fire. While
+  it gets ready its vent glows on the road and spits sparks; caught in it as it blows,
+  you get lava's burning bounce.
 
 ### Snowballs and the sleigh
 
@@ -452,6 +455,9 @@ between crossings is guaranteed.
   shakes for `warn` seconds while a ring glows on the road where it will land, then
   drops and shatters. A kart within `r` there is knocked: half speed and a hop. It grows
   back for the next beat. `"decor": true` ones fall over the abyss and hit nothing.
+  `"look": "rock"` makes it a boulder working loose from a cave roof, `"meteor"` a
+  burning fragment of the asteroid streaking down out of the sky (it isn't seen until
+  it falls): the same beat, warning ring and knock.
 - `thin_ice` `{ "x", "y", "z", "r": 6, "hold": 7 }`: a cracked patch of lake ice. Every
   kart that drives onto it cracks it further. On the third pass it gives way into slush
   that slows anything in it for `hold` seconds, then it freezes whole again. Left alone,
@@ -522,6 +528,41 @@ The rules are in `src/game/oasis.ts`; the boats are drawn by `src/render/oasisFx
 
 All but the cart are purely visual (and audible). The rules are in `src/game/haunt.ts`
 (the cart's in `src/game/movers.ts`); the drawing is in `src/render/hauntFx.ts`.
+
+### The world under the desert (Impact Depths)
+
+- `atmosphere` `{ "zones": { "crystal": { "fog": "#241a3a", "near": 60, "far": 520,
+"sun": 0.35, "sky": "#8ab0ff", "ground": "#6a3a2a", "hemi": 1.25, "sound": "chime" },
+... }, "keys": [[x, y, z, "zoneA", "zoneB", t], ...] }`: the air of each world (fog
+  colour and distance, how much sunlight reaches it, the ambient light, its sound:
+  `wind`, `resonance`, `chime`, `jungle`, `drip`, `rumble` or `hum`) and keys along the
+  lap and the shortcut saying which worlds are either side and how far between them.
+  Wherever you are, the nearest keys blend the air smoothly from one world into the next.
+- `triceratops` `{ "x", "y", "z", "heading", "scale": 1, "roam": 6, "seed": 1 }`: a
+  three-horned grazer ambling round its own patch, head down to graze, now and then
+  lifting it to bellow. Solid.
+- `raptors` `{ "ax", ..., "bz", "period": 9, "offset": 0, "travel": 2.2, "warn": 1.4,
+"count": 3 }`: a pack darting across the road on a beat, chattering in the ferns for
+  `warn` seconds first. Solid while crossing (a knock and a slowdown); a clear road
+  between crossings.
+- `meteors` `{ "x", "y", "z", "rate": 0.35, "intro": true }`: shooting stars over the
+  open desert, and with `intro` the great fireball at the start of every race, down
+  into the crater at (x, y, z) with a flash and a boom.
+- `plume` `{ "x", "y", "z", "height": 150, "radius": 16, "rate": 7, "color", "glow" }`:
+  a column of smoke rising and drifting, lit from below.
+- `core` `{ "x", "y", "z", "size": 16 }`: the Heart of the Earth: a gold crystal heart
+  in a shell of magenta points, beating, with three rings of light turning round it,
+  motes rising and a pulsing light.
+- `motes` `{ "x", "y", "z", "radius", "rate", "color", "rise", "size", "blink" }`: little
+  lights drifting near a spot (sunbeam dust, crystal glints, fireflies, embers).
+- `glow` `{ "x", "y", "z", "color" }`: a coloured light; the four nearest you light the
+  road, the walls and the karts.
+- The `dragon` takes `"look": "obsidian"` (black, with molten spines and a crimson
+  membrane), and every dragon now blinks, flexes its wings and swishes its tail.
+
+The triceratops, raptors, meteors, plume, core, motes, glows and air are in
+`src/game/depths.ts` (the rules) and `src/game/depthsLife.ts` (running them); the
+drawing is in `src/render/depthsFx.ts`.
 
 ### Torches
 

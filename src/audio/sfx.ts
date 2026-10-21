@@ -282,44 +282,148 @@ export function createSfx(engine: AudioEngine) {
      * rumble with a hollow hum in it), looping until stopped. Returns a handle to set its
      * volume (0..1) every frame.
      */
-    ambience(kind: "wind" | "drone"): { set(volume: number): void; stop(): void } {
+    ambience(
+      kind: "wind" | "drone" | "resonance" | "chime" | "jungle" | "drip" | "rumble" | "hum",
+    ): { set(volume: number): void; stop(): void } {
       if (!ctx) return { set() {}, stop() {} };
+      // Each world's bed of sound: shaped noise (filter, its centre wandering on a slow
+      // LFO) and, for some, steady tones under it.
+      const SHAPES: Record<
+        string,
+        {
+          type: BiquadFilterType;
+          f: number;
+          q: number;
+          lfo: number;
+          depth: number;
+          tones: number[];
+          toneGain: number;
+          smooth: number;
+        }
+      > = {
+        wind: {
+          type: "bandpass",
+          f: 500,
+          q: 1.4,
+          lfo: 0.11,
+          depth: 260,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.92,
+        },
+        drone: {
+          type: "lowpass",
+          f: 160,
+          q: 0.7,
+          lfo: 0.05,
+          depth: 40,
+          tones: [55, 82.4],
+          toneGain: 0.18,
+          smooth: 0.92,
+        },
+        // The crater: a hollow, whistling resonance over a low hum.
+        resonance: {
+          type: "bandpass",
+          f: 340,
+          q: 6,
+          lfo: 0.07,
+          depth: 120,
+          tones: [65.4, 98],
+          toneGain: 0.12,
+          smooth: 0.9,
+        },
+        // The crystal halls: an airy hiss and a soft glassy chord.
+        chime: {
+          type: "highpass",
+          f: 2600,
+          q: 0.6,
+          lfo: 0.04,
+          depth: 400,
+          tones: [523.3, 659.3, 784],
+          toneGain: 0.035,
+          smooth: 0.6,
+        },
+        // The Lost World: insects (a buzzing hiss) and the warm hum of the cavern.
+        jungle: {
+          type: "bandpass",
+          f: 4200,
+          q: 3,
+          lfo: 6,
+          depth: 900,
+          tones: [110],
+          toneGain: 0.06,
+          smooth: 0.5,
+        },
+        // The hidden cavern: almost silence, a deep hollow hum.
+        drip: {
+          type: "lowpass",
+          f: 220,
+          q: 0.8,
+          lfo: 0.05,
+          depth: 60,
+          tones: [73.4],
+          toneGain: 0.1,
+          smooth: 0.95,
+        },
+        // Lava: a deep, churning roar.
+        rumble: {
+          type: "lowpass",
+          f: 120,
+          q: 1.2,
+          lfo: 0.13,
+          depth: 50,
+          tones: [41.2, 49],
+          toneGain: 0.2,
+          smooth: 0.97,
+        },
+        // The core: a shimmering harmonic hum.
+        hum: {
+          type: "bandpass",
+          f: 900,
+          q: 2,
+          lfo: 0.3,
+          depth: 300,
+          tones: [110, 165, 220, 330],
+          toneGain: 0.07,
+          smooth: 0.8,
+        },
+      };
+      const sh = SHAPES[kind]!;
       const frames = ctx.sampleRate * 3;
       const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
       const data = buf.getChannelData(0);
       let last = 0;
       for (let i = 0; i < frames; i++) {
-        last = last * 0.92 + (Math.random() * 2 - 1) * 0.08;
-        data[i] = last * 3;
+        last = last * sh.smooth + (Math.random() * 2 - 1) * (1 - sh.smooth);
+        data[i] = last * (sh.smooth > 0.85 ? 3 : 1.4);
       }
       const src = ctx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
       const filter = ctx.createBiquadFilter();
-      filter.type = kind === "wind" ? "bandpass" : "lowpass";
-      filter.frequency.value = kind === "wind" ? 500 : 160;
-      filter.Q.value = kind === "wind" ? 1.4 : 0.7;
-      // The wind's pitch wanders slowly.
+      filter.type = sh.type;
+      filter.frequency.value = sh.f;
+      filter.Q.value = sh.q;
       const lfo = ctx.createOscillator();
       const depth = ctx.createGain();
-      lfo.frequency.value = kind === "wind" ? 0.11 : 0.05;
-      depth.gain.value = kind === "wind" ? 260 : 40;
+      lfo.frequency.value = sh.lfo;
+      depth.gain.value = sh.depth;
       lfo.connect(depth).connect(filter.frequency);
       const gain = ctx.createGain();
       gain.gain.value = 0;
       src.connect(filter).connect(gain).connect(out());
       const hums: OscillatorNode[] = [];
-      if (kind === "drone")
-        for (const f of [55, 82.4]) {
-          const o = ctx.createOscillator();
-          o.type = "sine";
-          o.frequency.value = f;
-          const g = ctx.createGain();
-          g.gain.value = 0.18;
-          o.connect(g).connect(gain);
-          o.start();
-          hums.push(o);
-        }
+      for (const f of sh.tones) {
+        const o = ctx.createOscillator();
+        o.type = "sine";
+        o.frequency.value = f;
+        o.detune.value = (Math.random() - 0.5) * 8;
+        const g = ctx.createGain();
+        g.gain.value = sh.toneGain;
+        o.connect(g).connect(gain);
+        o.start();
+        hums.push(o);
+      }
       src.start();
       lfo.start();
       let stopped = false;
@@ -337,6 +441,45 @@ export function createSfx(engine: AudioEngine) {
           for (const o of hums) o.stop(ctx.currentTime + 0.3);
         },
       };
+    },
+    /** A crystal ringing somewhere in the cavern: a soft, glassy two-note chime. */
+    chime(volume: number) {
+      const f = [1046.5, 1174.7, 1318.5, 1568, 1760][Math.floor(Math.random() * 5)]!;
+      note(f, 0, 1.4, volume * 0.06, f, "sine");
+      note(f * 1.5, 0.12, 1.1, volume * 0.04, f * 1.5, "sine");
+    },
+    /** A drop of water falling into a still pool. */
+    drip(volume: number) {
+      const f = 900 + Math.random() * 700;
+      note(f, 0, 0.12, volume * 0.12, f * 2.2, "sine");
+      note(f * 0.6, 0.05, 0.25, volume * 0.04, f * 0.9, "sine");
+    },
+    /** A strange bird far off in the jungle: a falling whistle and a trill. */
+    bird(volume: number) {
+      const f = 1400 + Math.random() * 900;
+      note(f, 0, 0.25, volume * 0.07, f * 0.6, "sine");
+      for (let i = 0; i < 4; i++)
+        note(f * 1.2, 0.3 + i * 0.07, 0.06, volume * 0.05, f * 1.4, "sine");
+    },
+    /** A triceratops bellowing: a deep, rough, rising-falling low. */
+    grunt(volume: number) {
+      note(70, 0, 0.9, volume * 0.35, 95, "sawtooth");
+      note(95, 0.4, 0.8, volume * 0.3, 60, "sawtooth");
+      noise(0, 1.0, volume * 0.25, 600, 120);
+    },
+    /** Raptors: quick, sharp, chattering shrieks. */
+    raptor(volume: number) {
+      for (let i = 0; i < 3; i++) {
+        const f = 1500 + Math.random() * 600;
+        note(f, i * 0.16, 0.12, volume * 0.14, f * 0.55, "sawtooth");
+      }
+      noise(0, 0.4, volume * 0.15, 5000, 1500);
+    },
+    /** A fireball landing: a deep boom and a rolling crash. */
+    boom(volume: number) {
+      noise(0, 1.8, volume * 0.9, 1800, 60);
+      note(60, 0, 1.4, volume * 0.6, 28, "sine");
+      noise(0.3, 2.4, volume * 0.4, 500, 50);
     },
     /**
      * A steady rushing noise (waterfalls), looping until stopped. Returns a handle to set

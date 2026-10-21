@@ -94,6 +94,7 @@ import type { Track } from "../world/track";
 import type { SolidCircle } from "../world/solids";
 import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
+import { createDepthsLife, hasDepthsLife, type DepthsLife } from "./depthsLife";
 import { createMammothView } from "../render/mammoth";
 import {
   createBellView,
@@ -199,6 +200,7 @@ import {
   type DragonPhase,
 } from "./dragon";
 import {
+  geyserBurns,
   geyserLifts,
   geyserPhase,
   parseGeyser,
@@ -370,6 +372,8 @@ export interface Hazards {
   readonly dinos: { x: number; y: number; z: number }[];
   /** Where the flyers are (for tests and the camera). */
   readonly flyers: { x: number; y: number; z: number }[];
+  /** Impact Depths' life and air (game/depthsLife.ts), if the course has any. */
+  readonly depths?: DepthsLife;
   dispose(): void;
 }
 
@@ -452,8 +456,11 @@ export function createHazards(opts: {
     last: GeyserPhase;
     acc: number;
     column?: THREE.Mesh;
+    /** A lava geyser's vent, glowing on the road as it gets ready to blow. */
+    ring?: THREE.Mesh;
   }[] = [];
   let jets: ReturnType<typeof createParticles> | undefined;
+  let lavaJets: ReturnType<typeof createParticles> | undefined;
   /** Rolling snowballs and the sleigh (see game/movers.ts). */
   const movers: Mover[] = [];
   /** Presents by the road: `down` counts down while one is smashed. */
@@ -575,24 +582,45 @@ export function createHazards(opts: {
     else if (e.type === "geyser") {
       const g = parseGeyser(e);
       let column: THREE.Mesh | undefined;
+      let ring: THREE.Mesh | undefined;
       if (!opts.headless) {
-        // The column: a tall, pale, see-through cone, grown and shrunk as it blows.
+        // The column: a tall, pale, see-through cone, grown and shrunk as it blows (a
+        // lava geyser's is fire).
         column = new THREE.Mesh(
           new THREE.CylinderGeometry(g.r * 0.75, g.r * 0.45, 1, 10, 1, true).translate(0, 0.5, 0),
           new THREE.MeshBasicMaterial({
-            color: 0xeafcff,
+            color: g.lava ? 0xff6a1a : 0xeafcff,
             transparent: true,
             opacity: 0.6,
             depthWrite: false,
             side: THREE.DoubleSide,
+            blending: g.lava ? THREE.AdditiveBlending : THREE.NormalBlending,
           }),
         );
         column.position.set(g.x, g.y, g.z);
         column.visible = false;
         column.renderOrder = 2;
         group.add(column);
+        if (g.lava) {
+          // The vent: a glowing ring on the road that brightens as it gets ready.
+          ring = new THREE.Mesh(
+            new THREE.CircleGeometry(g.r, 20).rotateX(-Math.PI / 2),
+            new THREE.MeshBasicMaterial({
+              color: 0xff5a10,
+              transparent: true,
+              opacity: 0.25,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
+              polygonOffset: true,
+              polygonOffsetFactor: -4,
+            }),
+          );
+          ring.position.set(g.x, g.y + 0.12, g.z);
+          ring.renderOrder = 3;
+          group.add(ring);
+        }
       }
-      geysers.push({ cfg: g, last: "idle", acc: 0, column });
+      geysers.push({ cfg: g, last: "idle", acc: 0, column, ring });
     } else if (e.type === "dragon") {
       const cfg = parseDragon(e);
       let marker: THREE.Mesh | undefined;
@@ -618,7 +646,13 @@ export function createHazards(opts: {
         cfg,
         view: opts.headless
           ? undefined
-          : createDragonView(group, { x: cfg.x, y: cfg.y, z: cfg.z }, cfg.heading, cfg.scale),
+          : createDragonView(
+              group,
+              { x: cfg.x, y: cfg.y, z: cfg.z },
+              cfg.heading,
+              cfg.scale,
+              cfg.look,
+            ),
         marker,
         flames: opts.headless ? undefined : createDragonFire(group, cfg.fire),
         last: "idle",
@@ -1162,8 +1196,25 @@ export function createHazards(opts: {
     smoke?.burst(s.x, s.y + 0.6, s.z, 8, 1.5, 1.5, 1.1, 0x5a4a48);
   }
 
+  // Impact Depths: triceratops, raptors, meteors, the core, motes, glows and the air.
+  const depths = hasDepthsLife(opts.entities)
+    ? createDepthsLife({
+        group,
+        entities: opts.entities,
+        ground,
+        sfx: opts.sfx,
+        volume: vol,
+        quiet: opts.quiet,
+        headless: opts.headless,
+        clock: raceClock,
+        slow: cfg.dinoSlow,
+      })
+    : undefined;
+  if (depths) solids.push(...depths.solids);
+
   const hazards: Hazards = {
     solids,
+    depths,
     dinos,
     flyers,
     handles: (surface) => surface === "lava" || surface === "deep_water",
@@ -1185,7 +1236,9 @@ export function createHazards(opts: {
       // ---- lava, and dragon fire: the burning bounce
       const t = raceClock();
       const scorched = ground === "lava";
-      const flamed = dragons.some((d) => dragonBurns(d.cfg, t, s.x, s.y, s.z));
+      const flamed =
+        dragons.some((d) => dragonBurns(d.cfg, t, s.x, s.y, s.z)) ||
+        geysers.some((g) => geyserBurns(g.cfg, t, s.x, s.y, s.z));
       if ((scorched || flamed) && h.immune <= 0) burn(i, s, h, ev, back);
       // ---- geysers: thrown into the air (speed and heading kept)
       h.lifted = Math.max(0, h.lifted - dt);
@@ -1239,6 +1292,14 @@ export function createHazards(opts: {
             }
           }
       }
+      if (depths) {
+        const r = depths.stepKart(s, dt);
+        if (r.bumped && h.bumped <= 0) {
+          h.bumped = 0.8;
+          ev.bumped = true;
+          if (i === 0) opts.sfx?.thud(vol());
+        }
+      }
       h.bumped = Math.max(0, h.bumped - dt);
       // ---- falling icicles: under one as it lands, you're knocked (slower, a hop)
       for (const ic of icicles)
@@ -1248,7 +1309,16 @@ export function createHazards(opts: {
           s.y += 0.05;
           s.grounded = false;
           ev.struck = true;
-          spray?.burst(s.x, s.y + 1, s.z, 24, 5, 5, 0.9, 0xe8f6ff);
+          spray?.burst(
+            s.x,
+            s.y + 1,
+            s.z,
+            24,
+            5,
+            5,
+            0.9,
+            ic.cfg.look === "ice" ? 0xe8f6ff : 0x8a7a70,
+          );
           if (i === 0) opts.sfx?.thud(vol());
         }
       // ---- thin ice: broken, it's slush that drags you back
@@ -1355,6 +1425,7 @@ export function createHazards(opts: {
     },
     step(karts, dt) {
       clock += dt;
+      depths?.step(dt);
       for (const ti of thin) {
         const ev = stepThinIce(ti.p, karts, dt);
         if (ev) thinEvents.push({ x: ti.p.x, y: ti.p.y, z: ti.p.z, kind: ev });
@@ -1432,6 +1503,7 @@ export function createHazards(opts: {
       }
     },
     render(t, dt, listener) {
+      depths?.render(t, dt, listener);
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
       for (const p of party) {
@@ -1800,11 +1872,38 @@ export function createHazards(opts: {
             listener.z - ic.cfg.z,
           );
           const loud = vol() * Math.max(0, 1 - far / 120);
-          if (st.phase === "warning" && loud > 0) opts.sfx?.creak(loud);
+          const look = ic.cfg.look;
+          if (st.phase === "warning" && loud > 0)
+            look === "meteor" ? opts.sfx?.missile(loud * 0.6) : opts.sfx?.creak(loud);
           if (st.phase === "shattered") {
-            if (loud > 0) opts.sfx?.shatter(loud);
-            spray?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 30, 6, 6, 1.0, 0xdff4ff);
-            sparks?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 14, 4, 5, 0.6, 0x9aefff);
+            if (look === "ice") {
+              if (loud > 0) opts.sfx?.shatter(loud);
+              spray?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 30, 6, 6, 1.0, 0xdff4ff);
+              sparks?.burst(ic.cfg.x, ic.cfg.y + 0.4, ic.cfg.z, 14, 4, 5, 0.6, 0x9aefff);
+            } else {
+              // A rock or a meteor: a crash, dust and (burning) sparks.
+              if (loud > 0) opts.sfx?.explosion(loud * (look === "meteor" ? 0.9 : 0.6));
+              smoke?.burst(
+                ic.cfg.x,
+                ic.cfg.y + 0.6,
+                ic.cfg.z,
+                22,
+                5,
+                3,
+                1.6,
+                look === "meteor" ? 0x4a3a36 : 0x6a5a50,
+              );
+              sparks?.burst(
+                ic.cfg.x,
+                ic.cfg.y + 0.4,
+                ic.cfg.z,
+                look === "meteor" ? 30 : 12,
+                6,
+                7,
+                0.8,
+                0xffa040,
+              );
+            }
           }
           ic.last = st.phase;
         }
@@ -2044,8 +2143,79 @@ export function createHazards(opts: {
           if (phase !== g.last) {
             const loud = vol() * Math.max(0, 1 - far / 220);
             if (loud > 0 && phase === "warning") opts.sfx?.gurgle(loud);
-            if (loud > 0 && phase === "blast") opts.sfx?.geyser(loud);
+            if (loud > 0 && phase === "blast")
+              c.lava ? opts.sfx?.flame(loud) : opts.sfx?.geyser(loud);
             g.last = phase;
+          }
+          if (g.ring) {
+            const m = g.ring.material as THREE.MeshBasicMaterial;
+            m.opacity =
+              phase === "warning"
+                ? 0.3 + 0.6 * pt + 0.15 * Math.sin(t * 30)
+                : phase === "blast"
+                  ? 0.9
+                  : 0.18 + 0.05 * Math.sin(t * 2 + c.x);
+          }
+          if (c.lava) {
+            // Fire: the column, sparks and lava thrown up, black smoke; spitting before.
+            lavaJets ??= createParticles(group, {
+              max: 900,
+              size: 0.8,
+              gravity: -12,
+              additive: true,
+            });
+            if (g.column) {
+              g.column.visible = phase === "blast";
+              if (phase === "blast") {
+                const rise = Math.min(1, pt * 5) * (pt > 0.8 ? Math.max(0.05, (1 - pt) / 0.2) : 1);
+                g.column.scale.set(
+                  1 + 0.1 * Math.sin(t * 23),
+                  c.height * rise,
+                  1 + 0.1 * Math.cos(t * 19),
+                );
+                (g.column.material as THREE.MeshBasicMaterial).opacity =
+                  0.7 * (pt > 0.8 ? (1 - pt) / 0.2 : 1);
+              }
+            }
+            if (far > 420) continue;
+            const j = () => Math.random() - 0.5;
+            if (phase === "blast" && pt < 0.85) {
+              g.acc = Math.min(20, g.acc + dt * 220);
+              const up = Math.sqrt(2 * 12 * c.height);
+              for (; g.acc >= 1; g.acc -= 1)
+                lavaJets.emit(
+                  c.x + j() * c.r * 0.8,
+                  c.y + Math.random() * 2,
+                  c.z + j() * c.r * 0.8,
+                  j() * 4,
+                  up * (0.7 + Math.random() * 0.4),
+                  j() * 4,
+                  1.4 + Math.random() * 0.6,
+                  Math.random() < 0.5 ? 0xffc040 : 0xff5a10,
+                );
+              if (Math.random() < 0.5)
+                smoke?.emit(
+                  c.x + j() * c.r,
+                  c.y + c.height * (0.5 + Math.random() * 0.5),
+                  c.z + j() * c.r,
+                  j() * 2,
+                  3,
+                  j() * 2,
+                  2.4,
+                  0x3a3030,
+                );
+            } else if (phase === "warning" && Math.random() < 0.4 + pt * 0.6)
+              lavaJets.burst(
+                c.x + j() * c.r,
+                c.y + 0.2,
+                c.z + j() * c.r,
+                5,
+                1.5,
+                4 + pt * 6,
+                0.6,
+                0xffa030,
+              );
+            continue;
           }
           if (g.column) {
             if (phase === "blast") {
@@ -2117,6 +2287,7 @@ export function createHazards(opts: {
           }
         }
         jets.step(dt);
+        lavaJets?.step(dt);
       }
       // Glowing bubbles over the pools you're near, the odd burp of swamp gas, and
       // fireflies drifting round the camera.
@@ -2202,10 +2373,14 @@ export function createHazards(opts: {
       windLoop?.stop();
       droneLoop?.stop();
       for (const g of geysers)
-        if (g.column) {
-          g.column.geometry.dispose();
-          (g.column.material as THREE.Material).dispose();
-        }
+        for (const m of [g.column, g.ring])
+          if (m) {
+            m.geometry.dispose();
+            (m.material as THREE.Material).dispose();
+            m.removeFromParent();
+          }
+      lavaJets?.dispose();
+      depths?.dispose();
       for (const d of dragons) {
         d.view?.dispose();
         d.flames?.dispose();

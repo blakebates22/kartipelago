@@ -767,6 +767,58 @@
           }
         }
       }
+    },
+    {
+      "id": "impact_depths",
+      "name": "Impact Depths",
+      "description": "A blazing desert noon over a smoking asteroid crater, and under it a descending world: warm ochre caverns of cyan and violet crystal, a sunlit prehistoric jungle round a turquoise lake, black volcanic depths of lava, a dragon's crimson lair and a glowing gold-and-magenta core",
+      "environment": {
+        "sky": "#4a8ee0",
+        "fog": {
+          "enabled": true,
+          "color": "#e0c49c",
+          "near": 420,
+          "far": 2400
+        },
+        "sun": {
+          "color": "#fff0d0",
+          "intensity": 2.8,
+          "direction": [-0.34, 0.86, -0.38]
+        },
+        "ambient": {
+          "sky": "#b0ccf0",
+          "ground": "#9a6a42",
+          "intensity": 1.2
+        },
+        "skyDome": {
+          "top": "#1a5cc8",
+          "horizon": "#e8d8c0",
+          "bottom": "#e2c09a",
+          "sun": {
+            "color": "#fffbe8",
+            "size": 8,
+            "glow": "#ffe2a0",
+            "elevation": 58
+          },
+          "clouds": {
+            "count": 14,
+            "color": "#ffffff",
+            "shade": "#ecd6c0",
+            "seed": 211,
+            "low": 10,
+            "high": 34,
+            "drift": 0.003
+          },
+          "hills": {
+            "color": "#b8784e",
+            "far": "#d8b896",
+            "height": 5,
+            "seed": 213,
+            "layers": 3,
+            "style": "mesas"
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -4863,6 +4915,647 @@
       "image": "sign_shaft_3.png",
       "wrap": "repeat",
       "tileMetres": 2
+    },
+    {
+      "id": "crater_ground",
+      "name": "Scorched Crater Ground",
+      "theme": "impact_depths",
+      "surface": "loose_sand",
+      "image": "crater_ground.png",
+      "wrap": "repeat",
+      "tileMetres": 7
+    },
+    {
+      "id": "crater_rock",
+      "name": "Shocked Crater Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "crater_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "crater_road",
+      "name": "Crater Plates Road",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "crater_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "impact_glow",
+      "name": "Glowing Impact Fissure",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "impact_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.4,
+        "pulsePeriod": 3.2
+      }
+    },
+    {
+      "id": "asteroid_rock",
+      "name": "Asteroid Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "asteroid_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "asteroid_vein",
+      "name": "Asteroid Vein",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "asteroid_vein.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.2,
+        "pulse": 0.45,
+        "pulsePeriod": 2.6
+      }
+    },
+    {
+      "id": "impact_glass",
+      "name": "Impact Glass",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "impact_glass.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "cave_ochre",
+      "name": "Warm Cave Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "cave_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "cave_ochre_dark",
+      "name": "Deep Cave Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "cave_ochre_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "cave_road",
+      "name": "Cavern Flagstones",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "cave_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "bridge_stone",
+      "name": "Bridge Stone",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "bridge_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "crystal_aqua",
+      "name": "Aqua Crystal",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "crystal_aqua.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85,
+        "pulse": 0.3,
+        "pulsePeriod": 4.2
+      }
+    },
+    {
+      "id": "crystal_amethyst",
+      "name": "Amethyst Crystal",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "crystal_amethyst.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85,
+        "pulse": 0.3,
+        "pulsePeriod": 5.1
+      }
+    },
+    {
+      "id": "crystal_rose",
+      "name": "Rose Crystal",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "crystal_rose.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85,
+        "pulse": 0.3,
+        "pulsePeriod": 3.7
+      }
+    },
+    {
+      "id": "core_crystal",
+      "name": "Core Crystal",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "core_crystal.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.1,
+        "pulse": 0.5,
+        "pulsePeriod": 2.2
+      }
+    },
+    {
+      "id": "depths_water",
+      "name": "Cavern Water",
+      "theme": "impact_depths",
+      "surface": "deep_water",
+      "image": "depths_water.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.01,
+        "wave": 0.03,
+        "wavePeriod": 6,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "depths_stream",
+      "name": "Underground River",
+      "theme": "impact_depths",
+      "surface": "water",
+      "image": "depths_stream.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.12,
+        "wave": 0.03,
+        "wavePeriod": 3,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "flowstone",
+      "name": "Flowstone",
+      "theme": "impact_depths",
+      "surface": "dirt",
+      "image": "flowstone.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "moss_rock",
+      "name": "Mossy Cave Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "moss_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "jungle_lake",
+      "name": "Turquoise Lake",
+      "theme": "impact_depths",
+      "surface": "deep_water",
+      "image": "jungle_lake.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.008,
+        "wave": 0.03,
+        "wavePeriod": 7,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "jungle_river",
+      "name": "Jungle River",
+      "theme": "impact_depths",
+      "surface": "water",
+      "image": "jungle_river.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.1,
+        "wave": 0.03,
+        "wavePeriod": 3,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "fern_floor",
+      "name": "Fern Floor",
+      "theme": "impact_depths",
+      "surface": "grass",
+      "image": "fern_floor.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "cycad_bark",
+      "name": "Cycad Trunk",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "cycad_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cycad_leaf",
+      "name": "Cycad Frond",
+      "theme": "impact_depths",
+      "surface": "grass",
+      "image": "cycad_leaf.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "horsetail",
+      "name": "Giant Horsetail",
+      "theme": "impact_depths",
+      "surface": "grass",
+      "image": "horsetail.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.05
+      }
+    },
+    {
+      "id": "ruin_moss",
+      "name": "Mossy Ruin Stone",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "ruin_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "jungle_track",
+      "name": "Lost World Track",
+      "theme": "impact_depths",
+      "surface": "packed_dirt",
+      "image": "jungle_track.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "dino_trackway",
+      "name": "Footprint Mud",
+      "theme": "impact_depths",
+      "surface": "mud",
+      "image": "dino_trackway.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "black_rock",
+      "name": "Volcanic Black Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "black_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
+      "id": "lava_flow",
+      "name": "Flowing Lava",
+      "theme": "impact_depths",
+      "surface": "lava",
+      "image": "lava_flow.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.06,
+        "wave": 0.04,
+        "wavePeriod": 5,
+        "glow": 1.0,
+        "pulse": 0.2,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "lava_fall",
+      "name": "Lava Fall",
+      "theme": "impact_depths",
+      "surface": "lava",
+      "image": "lava_fall.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.45,
+        "wave": 0.06,
+        "wavePeriod": 2,
+        "glow": 1.0
+      }
+    },
+    {
+      "id": "lava_crust",
+      "name": "Lava Crust",
+      "theme": "impact_depths",
+      "surface": "dirt",
+      "image": "lava_crust.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5,
+        "pulse": 0.35,
+        "pulsePeriod": 3.5
+      }
+    },
+    {
+      "id": "basalt_slab",
+      "name": "Basalt Setts",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "basalt_slab.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "lair_rock",
+      "name": "Lair Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "lair_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "lair_road",
+      "name": "Scorched Flagstones",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "lair_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.12,
+        "pulse": 0.3,
+        "pulsePeriod": 4.0
+      }
+    },
+    {
+      "id": "bone_pile",
+      "name": "Old Bones",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "bone_pile.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "ember_ash",
+      "name": "Ember Ash",
+      "theme": "impact_depths",
+      "surface": "dirt",
+      "image": "ember_ash.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "core_glass",
+      "name": "Core Glass",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "core_glass.png",
+      "wrap": "repeat",
+      "tileMetres": 9,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3,
+        "pulse": 0.4,
+        "pulsePeriod": 2.8
+      }
+    },
+    {
+      "id": "core_road",
+      "name": "Core Ring Road",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "core_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.7,
+        "pulse": 0.5,
+        "pulsePeriod": 2.2
+      }
+    },
+    {
+      "id": "core_abyss",
+      "name": "Core Abyss",
+      "theme": "impact_depths",
+      "surface": "abyss",
+      "image": "core_abyss.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": 0.02,
+        "glow": 1.0,
+        "pulse": 0.4,
+        "pulsePeriod": 2.2
+      }
+    },
+    {
+      "id": "spiral_road",
+      "name": "Ascent Road",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "spiral_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "crystal_rock",
+      "name": "Crystal-Crusted Rock",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "crystal_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3,
+        "pulse": 0.3,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "causeway_stone",
+      "name": "Ancient Causeway",
+      "theme": "impact_depths",
+      "surface": "road",
+      "image": "causeway_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "dark_pool",
+      "name": "Still Black Pool",
+      "theme": "impact_depths",
+      "surface": "deep_water",
+      "image": "dark_pool.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.002,
+        "scrollV": 0.003,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "glow_fungus",
+      "name": "Glow Fungus",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "glow_fungus.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.4,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "ancient_glyph",
+      "name": "Glowing Glyphs",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "ancient_glyph.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5,
+        "pulse": 0.45,
+        "pulsePeriod": 4.5
+      }
+    },
+    {
+      "id": "depths_road",
+      "name": "Desert Track",
+      "theme": "impact_depths",
+      "surface": "packed_dirt",
+      "image": "depths_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "meteor_banner",
+      "name": "Meteor Banner",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "meteor_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.05
+      }
+    },
+    {
+      "id": "warning_stripe",
+      "name": "Warning Stripes",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "warning_stripe.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "depths_mist",
+      "name": "Dust Haze",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "depths_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 16,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": 0.003,
+        "wave": 0.05,
+        "wavePeriod": 9,
+        "opacity": 0.35
+      }
+    },
+    {
+      "id": "ember_mist",
+      "name": "Ember Haze",
+      "theme": "impact_depths",
+      "surface": "wall",
+      "image": "ember_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 16,
+      "fx": {
+        "scrollU": 0.008,
+        "scrollV": -0.01,
+        "wave": 0.05,
+        "wavePeriod": 7,
+        "opacity": 0.3,
+        "glow": 0.8
+      }
     }
   ]
 }

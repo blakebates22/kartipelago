@@ -54,8 +54,7 @@ export const WORLDS: WorldEntry[] = [
     description:
       "Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost towns of the old frontier.",
     color: "#d8703a",
-    tracks: ["canyon_dash", "oasis_haven", "dry_gulch"],
-    comingSoon: ["Underground Adventure"],
+    tracks: ["canyon_dash", "oasis_haven", "dry_gulch", "impact_depths"],
   },
   {
     id: "test_world",

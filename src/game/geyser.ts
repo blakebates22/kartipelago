@@ -7,13 +7,18 @@
  *   { "type": "geyser", "x", "y", "z",          the vent (y is its surface)
  *     "r": 4, "height": 20,                     the column's radius and height
  *     "period": 7, "offset": 0, "warn": 1.4, "blast": 2.2,
- *     "launch": 15 }                            upward speed it gives a kart (0: none)
+ *     "launch": 15,                             upward speed it gives a kart (0: none)
+ *     "lava": false }                           a lava geyser: it burns instead (below)
  *
  * Each period runs IDLE (a gentle steam) -> WARNING (it bubbles and gurgles, steam
  * thickening) -> BLAST (a roaring column of water and steam). A kart inside the column
  * during the blast is thrown into the air at `launch` m/s, keeping its speed and
  * heading: a free jump, not a penalty. Hit the geyser in the road as it blows and you
  * fly; drive over it the rest of the time and nothing happens.
+ *
+ * A lava geyser (Impact Depths) keeps the same beat, but its column is fire: caught in
+ * it as it blows and you get the same burning bounce as lava. Its warning (the vent
+ * glowing, spitting sparks) gives you time to go round.
  */
 
 export type GeyserPhase = "idle" | "warning" | "blast";
@@ -29,6 +34,7 @@ export interface GeyserConfig {
   warn: number;
   blast: number;
   launch: number;
+  lava: boolean;
 }
 
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
@@ -49,6 +55,7 @@ export function parseGeyser(e: Record<string, unknown>): GeyserConfig {
     warn,
     blast,
     launch: Math.max(0, num(e.launch, 0)),
+    lava: e.lava === true,
   };
 }
 
@@ -79,4 +86,18 @@ export function geyserLifts(
   if (g.launch <= 0) return false;
   const { phase, t } = geyserPhase(g, clock);
   return phase === "blast" && t < 0.8 && inColumn(g, x, y, z);
+}
+
+/** Does a lava geyser burn a kart at (x, y, z) at race time `clock`? (While blowing,
+ * until the column has mostly fallen.) */
+export function geyserBurns(
+  g: GeyserConfig,
+  clock: number,
+  x: number,
+  y: number,
+  z: number,
+): boolean {
+  if (!g.lava) return false;
+  const { phase, t } = geyserPhase(g, clock);
+  return phase === "blast" && t < 0.85 && inColumn(g, x, y, z);
 }

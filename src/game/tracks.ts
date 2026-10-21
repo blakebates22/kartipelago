@@ -157,6 +157,17 @@ export const TRACKS: TrackEntry[] = [
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch" },
   },
+  {
+    id: "impact_depths",
+    name: "Impact Depths",
+    description:
+      "Plunge into a smoking asteroid crater and race down through the world beneath the desert: crystal caverns, a lost jungle full of dinosaurs, rivers of lava, a dragon's lair and the glowing heart of the Earth. Then climb back into the sun.",
+    preview: "previews/impact_depths.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "impact_depths",
+    music: "depths",
+    load: { scene: "track", packageId: "impact_depths" },
+  },
   // Test World.
   {
     id: "dino_demo",

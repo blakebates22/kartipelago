@@ -26,6 +26,8 @@ export interface DragonConfig {
   /** The way the dragon faces (radians, 0 = +z). */
   heading: number;
   scale: number;
+  /** What it looks like: "ember" (Ember Peak's) or "obsidian" (Impact Depths'). */
+  look: "ember" | "obsidian";
   /** The burn zone: a box on the road. heading: along the road (radians, 0 = +z). */
   fire: {
     x: number;
@@ -58,6 +60,7 @@ export function parseDragon(e: Record<string, unknown>): DragonConfig {
     z: num(e.z, 0),
     heading: num(e.heading, 0),
     scale: Math.max(0.1, num(e.scale, 1)),
+    look: e.look === "obsidian" ? "obsidian" : "ember",
     fire: {
       x: num(f.x, 0),
       y: num(f.y, 0),
