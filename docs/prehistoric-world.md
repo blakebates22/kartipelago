@@ -13,12 +13,12 @@ prehistoric worlds late-90s console racers loved. Nothing is copied from any gam
 `src/game/worlds.ts` lists the worlds. Each has a stable `id`, a name, a tagline, a
 description, a banner colour and its track ids, in menu order:
 
-| World             | Id            | Tracks                                                                             |
-| ----------------- | ------------- | ---------------------------------------------------------------------------------- |
-| Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                      |
-| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift               |
-| Desert World      | `desert`      | Canyon Dash (three more to come: an oasis, a ghost town, an underground course)    |
-| Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park |
+| World             | Id            | Tracks                                                                                                                                                                                           |
+| ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
+| Frostveil Peaks   | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
+| Desert World      | `desert`      | Canyon Dash, Oasis Haven (two more to come: a ghost town, an underground course)                                                                                                                 |
+| Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
 
 - Every track belongs to exactly one world (a test checks this).
 - Track ids are unchanged, so records and `?track=` links still work.
@@ -477,6 +477,18 @@ The rules (timing and states) are in `src/game/rift.ts`; the drawing is in
 
 All purely visual. The rules are in `src/game/desert.ts`; the drawing is in
 `src/render/desertFx.ts`. See [desert-world.md](desert-world.md).
+
+### Boats and fountains
+
+- `boat` `{ "route": "Boat Path 1", "speed": 4, "start": 0, "colors": ["#e02a2a",
+"#f6c03a"], "scale": 1 }`: a little sailing boat going round a closed path from
+  route.json (draw a curve on the water in Blender and mark it as a route), bobbing and
+  heeling, its striped sail filling, a wake behind it.
+- `fountain` `{ "x", "y", "z", "height": 6, "jets": 6, "radius": 3.5 }`: spray from a
+  fountain (the basin is scenery): a jet straight up `height` metres and a ring of
+  `jets` arcing out to land `radius` metres away. Drawn only near the camera.
+
+The rules are in `src/game/oasis.ts`; the boats are drawn by `src/render/oasisFx.ts`.
 
 ### Torches
 

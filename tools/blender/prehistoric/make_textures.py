@@ -3478,8 +3478,466 @@ THEMES.append(
 )
 
 
+# ------------------------------------------------------------------ Oasis Haven
+
+
+def oasis_paving():
+    # Warm cream flagstones in staggered rows (V runs along the road), soft joints, a
+    # few pale and honey stones, the odd blue tile set in.
+    a, b = noise(4, 2, 3901), noise(16, 8, 3902)
+
+    def f(x, y):
+        row = y // 8
+        off = 8 if row % 2 else 0
+        cell = ((x + off) // 16) * 7 + row * 13
+        if y % 8 == 7 or (x + off) % 16 == 15:
+            return "#c8a878"
+        if cell % 23 == 5 and 3 <= (x + off) % 16 <= 11 and 2 <= y % 8 <= 5:
+            return "#2c64c8" if (x + y) % 2 else "#3a78d8"
+        k = 0.93 + a(x, y) * 0.07 + ((cell * 37) % 7) * 0.012 + (b(x, y) - 0.5) * 0.05
+        return _shade("#efd9b0", k)
+
+    return paint(f)
+
+
+def palace_paving():
+    # The palace road: larger pale stones with a blue-and-gold star inlay.
+    a = noise(4, 2, 3911)
+
+    def f(x, y):
+        cx, cy = (x % 32) - 15.5, (y % 32) - 15.5
+        if abs(cx) + abs(cy) < 6:
+            return "#e6b43a" if abs(cx) + abs(cy) < 3 else "#2a5cc0"
+        if x % 32 == 31 or y % 32 == 31:
+            return "#c7a676"
+        return _shade("#f4e2c0", 0.94 + a(x, y) * 0.08)
+
+    return paint(f)
+
+
+def tile_border():
+    # The road's border: bands of blue and white tiles with a gold line (V along the road).
+    def f(x, y):
+        u = x % 64
+        if u < 3 or u > 60:
+            return "#e2b84a"
+        k = (u // 6 + y // 6) % 2
+        cx, cy = (u % 6) - 2.5, (y % 6) - 2.5
+        if abs(cx) + abs(cy) < 1.6:
+            return "#ffffff" if k else "#f0c040"
+        return "#2456c0" if k else "#3c8ae0"
+
+    return paint(f)
+
+
+def balustrade():
+    # A cream stone balustrade: a capping rail, turned balusters, a base course; a blue
+    # tile band under the rail. (U along the wall, V up it.)
+    a = noise(8, 2, 3921)
+
+    def f(x, y):
+        if y < 5:
+            return _shade("#f2e2c4", 0.95 + a(x, y) * 0.06)
+        if y < 8:
+            return "#2e66cc" if (x // 4) % 2 else "#e8c04a"
+        if y >= 26:
+            return _shade("#dcc49a", 0.95 + a(x, y) * 0.06)
+        u = x % 8
+        w = 2.4 + 1.2 * math.sin((y - 8) / 18 * math.pi)
+        if abs(u - 3.5) < w:
+            return _shade("#efdcb8", 0.88 + 0.12 * (1 - abs(u - 3.5) / w))
+        return "#7a5a3a"
+
+    return paint(f)
+
+
+def market_rail():
+    # Market street railings: dark carved wood with brass knobs and a striped cloth hung on it.
+    def f(x, y):
+        if y < 4:
+            return "#6a3a1e"
+        if x % 16 < 2:
+            return "#4a2812" if y > 6 else "#d8a83a"
+        if 8 < y < 22:
+            return ["#d83a3a", "#f0c040", "#2a8ad8", "#f6f0e0"][(x // 4) % 4]
+        return "#5a3418"
+
+    return paint(f)
+
+
+def oasis_stone():
+    # Cream sandstone ashlar for buildings and terrace walls, lit warm.
+    a, b = noise(4, 2, 3931), noise(16, 8, 3932)
+
+    def f(x, y):
+        row = y // 8
+        off = 8 if row % 2 else 0
+        if y % 8 == 7 or (x + off) % 16 == 15:
+            return "#c9a87a"
+        k = 0.92 + a(x, y) * 0.08 + (((x + off) // 16 + row * 5) % 4) * 0.015 + (b(x, y) - 0.5) * 0.06
+        return _shade("#f0dcb4", k)
+
+    return paint(f)
+
+
+def oasis_arcade(wall="#f2deb8", band="#2e66cc", dark="#3a3a6a"):
+    # A façade of pointed arches: cream stone, deep blue-shadowed openings with a gold
+    # lamp glow, blue tile bands. (U along the wall, V up it: one storey per repeat.)
+    return paint(_arcade(wall, band, dark))
+
+
+def _arcade(wall, band, dark):
+    def f(x, y):
+        u = x % 16
+        if y < 3:
+            return band if (x // 2) % 2 else "#f0f0f0"
+        if y > 28:
+            return _shade(wall, 0.88)
+        cx = u - 7.5
+        top = 9 + abs(cx) * 0.9 if abs(cx) < 5 else 99
+        if abs(cx) < 5 and y > top - 2 and y < 27:
+            if y < top:
+                return "#e8c04a"
+            return dark if y < 22 else "#ffcf70"
+        return _shade(wall, 0.95 + 0.05 * ((x * 7 + y * 3) % 5) / 5)
+
+    return f
+
+
+def oasis_windows(wall="#f2deb8", shutter="#1fa6a8"):
+    # Upper storeys: cream walls with small arched windows, turquoise shutters, a frieze.
+    def f(x, y):
+        u, v = x % 16, y % 32
+        if v < 2:
+            return "#e8c04a"
+        if 6 < v < 22 and 5 <= u <= 10:
+            if v < 9 and (u in (5, 10)):
+                return wall
+            if u in (5, 10):
+                return shutter
+            return "#203a6a" if v < 18 else "#2a4a7a"
+        return wall if (x + y) % 9 else _shade(wall, 0.95)
+
+    return paint(f, 64, 32)
+
+
+def dome_blue():
+    # A royal-blue tiled dome: scale-pattern tiles, gold ribs (U round, V up).
+    def f(x, y):
+        if x % 16 == 0:
+            return "#f0c040"
+        r = (y // 4) % 2
+        u = (x + (2 if r else 0)) % 4
+        if y % 4 == 0 or u == 0:
+            return "#1a3a9a"
+        return "#2a5ad0" if (u + y) % 3 else "#3c78e8"
+
+    return paint(f)
+
+
+def dome_teal():
+    def f(x, y):
+        if x % 16 == 0:
+            return "#f0c040"
+        r = (y // 4) % 2
+        u = (x + (2 if r else 0)) % 4
+        if y % 4 == 0 or u == 0:
+            return "#0a6a6a"
+        return "#14a0a0" if (u + y) % 3 else "#2cc4bc"
+
+    return paint(f)
+
+
+def gold_leaf():
+    a = noise(8, 4, 3941)
+
+    def f(x, y):
+        return pick(["#b07a10", "#d49a20", "#f0c040", "#ffe080", "#fff4c0"], 0.15 + a(x, y) * 0.75)
+
+    return paint(f)
+
+
+def lagoon():
+    # The lake: brilliant pale turquoise (the depth comes from the vertex paint, the
+    # waves and sparkle from the game's water shader), soft light ripple lines.
+    a, b = noise(8, 4, 3951), noise(16, 8, 3952)
+
+    def f(x, y):
+        rip = abs(math.sin(x * 0.35 + a(x, y) * 5) * math.sin(y * 0.5 + b(x, y) * 4))
+        if rip > 0.92:
+            return "#f4ffff"
+        return pick(["#6ad8e4", "#7ee0ea", "#92e8ef", "#a8eff4", "#c0f6f8"], 0.1 + rip * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def shore_foam():
+    # A band of foam lapping at the shore (V across the band: thick at the shore edge).
+    a = noise(16, 2, 3961)
+
+    def f(x, y):
+        k = 1 - y / H + (a(x, y) - 0.5) * 0.6
+        if k > 0.62:
+            return "#ffffff"
+        if k > 0.42:
+            return "#d8f8fa" if (x + y) % 3 else "#ffffff"
+        return "#9ae6ee"
+
+    return paint(f)
+
+
+def lake_sand():
+    a, b = noise(4, 2, 3971), noise(16, 8, 3972)
+
+    def f(x, y):
+        return pick(["#d8c896", "#e2d2a0", "#ead9aa", "#f0e2b6"], a(x, y) * 0.6 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def gold_sand():
+    # The desert round the oasis: golden sand with wind ripples.
+    a, b = noise(4, 2, 3981), noise(16, 8, 3982)
+    dots = speckle(3983, 10)
+
+    def f(x, y):
+        if (x, y) in dots:
+            return "#a8803a"
+        rip = 0.5 + 0.5 * math.sin(x * 0.6 + y * 1.0 + a(x, y) * 4)
+        return pick(["#e2b06a", "#e8b874", "#eec07e", "#f2ca8a", "#f6d498"], 0.1 + rip * 0.35 + b(x, y) * 0.45)
+
+    return paint(f)
+
+
+def gold_cliff():
+    # The basin's cliffs: golden and peach sandstone in bands.
+    bands = ["#e0a86a", "#eab87a", "#d89458", "#f0c48a", "#d08a52"]
+    a, b = noise(4, 2, 3991), noise(16, 8, 3992)
+
+    def f(x, y):
+        yy = y + a(x, y) * 3
+        c = bands[int(yy / 5) % len(bands)]
+        if int(yy) % 5 == 4:
+            return _shade(c, 0.82)
+        return _shade(c, 0.9 + b(x, y) * 0.2)
+
+    return paint(f)
+
+
+def oasis_lawn():
+    # Lush garden grass: bright and green, little flowers.
+    a, b = noise(8, 4, 4001), noise(16, 8, 4002)
+    fl = speckle(4003, 22)
+
+    def f(x, y):
+        if (x, y) in fl:
+            return ["#ff5aa8", "#ffe060", "#ffffff"][(x + y) % 3]
+        return pick(["#3a9a2e", "#46aa34", "#54b83c", "#64c644", "#78d050"], a(x, y) * 0.5 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def garden_soil():
+    a, b = noise(8, 4, 4011), noise(16, 8, 4012)
+    tuft = speckle(4013, 40)
+
+    def f(x, y):
+        if (x, y) in tuft:
+            return "#5aa63a"
+        return pick(["#b88a56", "#c49660", "#cea26c", "#d8ae78"], a(x, y) * 0.5 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def bougainvillea():
+    # Magenta and pink blossom clouds over dark green leaves.
+    a, b = noise(8, 4, 4021), noise(16, 8, 4022)
+
+    def f(x, y):
+        v = a(x, y) * 0.6 + b(x, y) * 0.4
+        if v > 0.42:
+            return pick(["#c8186e", "#e02a88", "#f04aa0", "#ff7cc0", "#ffb0dc"], (v - 0.42) / 0.58)
+        return pick(["#1e5a26", "#2a7030", "#3a8640"], v / 0.42)
+
+    return paint(f)
+
+
+def hedge():
+    a, b = noise(8, 4, 4031), noise(16, 8, 4032)
+    fl = speckle(4033, 12)
+
+    def f(x, y):
+        if (x, y) in fl:
+            return "#ffffff" if (x * y) % 2 else "#ffd040"
+        return pick(["#1e6a2a", "#287a32", "#348a3a", "#44a046", "#5ab454"], a(x, y) * 0.5 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def stripes(cols, w=8):
+    def make():
+        def f(x, y):
+            if y >= 28:
+                return "#f0c040" if (x // 2) % 2 else cols[0]
+            return cols[(x // w) % len(cols)]
+
+        return paint(f)
+
+    return make
+
+
+def oasis_banner():
+    # Royal blue banner with a gold border and a gold lotus emblem.
+    def f(x, y):
+        u, v = x % 32, y % 32
+        if u in (0, 1, 30, 31) or v in (0, 1, 30, 31):
+            return "#f0c040"
+        cx, cy = u - 15.5, v - 14.5
+        r = math.hypot(cx, cy)
+        a = math.atan2(cy, cx)
+        petal = 4.5 + 3.5 * abs(math.cos(a * 2.5))
+        if r < petal and r > 1.5:
+            return "#f4c84a" if r < petal - 1.2 else "#c8901a"
+        if r <= 1.5:
+            return "#fff0a0"
+        return "#1e44a8" if (u + v) % 6 else "#22489c"
+
+    return paint(f)
+
+
+def chevron_red():
+    # Red-and-white turn chevrons in a gold frame.
+    def f(x, y):
+        if y in (0, 1, 30, 31):
+            return "#e8b83a"
+        u = (x + abs(y - 16)) % 16
+        return "#ffffff" if u < 7 else "#e02a2a"
+
+    return paint(f)
+
+
+def terracotta():
+    a = noise(8, 4, 4041)
+
+    def f(x, y):
+        if y % 8 == 0:
+            return "#f0c040" if (x // 4) % 2 else "#2a64c8"
+        return pick(["#a84a24", "#bc5a2e", "#cc6a38", "#da7c46"], a(x, y))
+
+    return paint(f)
+
+
+def rug():
+    def f(x, y):
+        u, v = x % 32, y % 32
+        if u < 2 or u > 29 or v < 2 or v > 29:
+            return "#f0c040"
+        d = abs(u - 15.5) + abs(v - 15.5)
+        if d < 5:
+            return "#f6e6c0"
+        if d < 9:
+            return "#1e44a8"
+        if d < 12:
+            return "#f0c040"
+        return "#b8202e" if (u + v) % 4 else "#d02e3e"
+
+    return paint(f)
+
+
+def fruit():
+    # Market produce piled in crates: oranges, melons, lemons, grapes, pomegranates.
+    cols = [["#ff8a1a", "#ffa63a"], ["#5ac040", "#3a9a2a"], ["#ffe040", "#f0c820"], ["#8a2aa8", "#a84ac8"], ["#d8202e", "#f04050"]]
+    a = noise(8, 4, 4051)
+
+    def f(x, y):
+        c = cols[(x // 13 + y // 11) % len(cols)]
+        if ((x % 4) - 1.5) ** 2 + ((y % 4) - 1.5) ** 2 < 2.2:
+            return c[0] if a(x, y) > 0.4 else c[1]
+        return "#6a4426"
+
+    return paint(f)
+
+
+def wood_dock():
+    pal = ["#8a5a32", "#9a6838", "#ac7a44", "#be8c52"]
+    a = noise(2, 8, 4061)
+
+    def f(x, y):
+        if y % 6 == 5:
+            return "#3a2414"
+        return pick(pal, 0.2 + 0.6 * (0.5 + 0.5 * math.sin(x * 0.7 + (y // 6) * 2 + a(x, y) * 4)))
+
+    return paint(f)
+
+
+THEMES.append(
+    {
+        "id": "oasis_haven",
+        "name": "Oasis Haven",
+        "description": "A perfect summer afternoon at a desert oasis resort: an intense blue sky with big white clouds, high bright sun, brilliant turquoise water, cream sandstone with royal-blue domes and gold, lush palms and flowers, and golden dunes and red mesas beyond",
+        "environment": {
+            "sky": "#2a8af0",
+            "fog": {"enabled": True, "color": "#bfe2fa", "near": 600, "far": 3200},
+            "sun": {"color": "#fff6e0", "intensity": 3.0, "direction": [-0.35, 0.86, 0.38]},
+            "ambient": {"sky": "#bfe0ff", "ground": "#d8b880", "intensity": 1.35},
+            "skyDome": {
+                "top": "#0a5ce0",
+                "horizon": "#a8dcff",
+                "bottom": "#e8d4a8",
+                "sun": {"color": "#fffbe8", "size": 10, "glow": "#fff4b0", "elevation": 46},
+                "clouds": {"count": 32, "color": "#ffffff", "shade": "#d6e8fa", "seed": 131, "low": 7, "high": 34, "drift": 0.005},
+                "hills": {"color": "#d0805e", "far": "#e6b896", "height": 5, "seed": 137, "layers": 3, "style": "mesas"},
+            },
+        },
+    }
+)
+
+
 # id, name, theme, surface, painter, tileMetres, fx
 MATERIALS = [
+    ("oasis_paving", "Oasis Flagstones", "oasis_haven", "road", oasis_paving, 5, None),
+    ("palace_paving", "Palace Flagstones", "oasis_haven", "road", palace_paving, 8, None),
+    ("tile_border", "Blue Tile Border", "oasis_haven", "road", tile_border, 4, None),
+    ("balustrade", "Balustrade", "oasis_haven", "wall", balustrade, 3, None),
+    ("market_rail", "Market Railing", "oasis_haven", "wall", market_rail, 3, None),
+    ("oasis_stone", "Cream Sandstone", "oasis_haven", "wall", oasis_stone, 5, None),
+    ("oasis_arcade", "Arcade Façade", "oasis_haven", "wall", oasis_arcade, 8, None),
+    ("oasis_windows", "Window Façade", "oasis_haven", "wall", oasis_windows, 8, None),
+    ("arcade_rose", "Arcade Façade (Rose)", "oasis_haven", "wall", lambda: oasis_arcade("#f4cbb4", "#1fa6a8", "#5a2a4a"), 8, None),
+    ("windows_rose", "Window Façade (Rose)", "oasis_haven", "wall", lambda: oasis_windows("#f4cbb4", "#2e66cc"), 8, None),
+    ("arcade_white", "Arcade Façade (White)", "oasis_haven", "wall", lambda: oasis_arcade("#f8f4ea", "#2e66cc", "#2a3a6a"), 8, None),
+    ("windows_white", "Window Façade (White)", "oasis_haven", "wall", lambda: oasis_windows("#f8f4ea", "#e8a020"), 8, None),
+    ("arcade_ochre", "Arcade Façade (Ochre)", "oasis_haven", "wall", lambda: oasis_arcade("#eebc78", "#c8302a", "#4a2a2a"), 8, None),
+    ("windows_ochre", "Window Façade (Ochre)", "oasis_haven", "wall", lambda: oasis_windows("#eebc78", "#1fa6a8"), 8, None),
+    ("dome_blue", "Royal Blue Dome", "oasis_haven", "wall", dome_blue, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.08}),
+    ("dome_teal", "Turquoise Dome", "oasis_haven", "wall", dome_teal, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.08}),
+    ("gold_leaf", "Gold Leaf", "oasis_haven", "wall", gold_leaf, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.3}),
+    ("lagoon", "Lagoon Water", "oasis_haven", "deep_water", lagoon, 14, {"scrollU": 0.004, "scrollV": 0.006, "wave": 0.04, "wavePeriod": 7, "lagoon": 1.0}),
+    ("lagoon_shallow", "Lagoon Shallows", "oasis_haven", "water", lagoon, 14, {"scrollU": 0.004, "scrollV": 0.006, "wave": 0.04, "wavePeriod": 7, "lagoon": 1.0}),
+    ("canal_water", "Canal Water", "oasis_haven", "deep_water", lagoon, 10, {"scrollU": 0.0, "scrollV": 0.08, "wave": 0.03, "wavePeriod": 4, "lagoon": 0.6}),
+    ("shore_foam", "Shore Foam", "oasis_haven", "water", shore_foam, 8, {"scrollU": 0.05, "scrollV": 0.0, "wave": 0.08, "wavePeriod": 3.2, "opacity": 0.75, "glow": 0.3}),
+    ("lake_sand", "Lake Bed", "oasis_haven", "water", lake_sand, 8, None),
+    ("gold_sand", "Golden Sand", "oasis_haven", "loose_sand", gold_sand, 8, None),
+    ("gold_cliff", "Golden Cliffs", "oasis_haven", "wall", gold_cliff, 14, None),
+    ("oasis_lawn", "Garden Lawn", "oasis_haven", "grass", oasis_lawn, 5, None),
+    ("garden_soil", "Garden Path", "oasis_haven", "dirt", garden_soil, 5, None),
+    ("bougainvillea", "Bougainvillea", "oasis_haven", "wall", bougainvillea, 2, {"scrollU": 0, "scrollV": 0, "sway": 0.12}),
+    ("hedge", "Hedge", "oasis_haven", "wall", hedge, 2, None),
+    ("awning_sun", "Awning (Red & Gold)", "oasis_haven", "wall", stripes(["#e02a2a", "#f6c03a"]), 3, {"scrollU": 0, "scrollV": 0, "sway": 0.06}),
+    ("awning_sea", "Awning (Blue & White)", "oasis_haven", "wall", stripes(["#2a6ad8", "#f6f2e6"]), 3, {"scrollU": 0, "scrollV": 0, "sway": 0.06}),
+    ("awning_teal", "Awning (Teal & Orange)", "oasis_haven", "wall", stripes(["#16a8a0", "#ff8a2a"]), 3, {"scrollU": 0, "scrollV": 0, "sway": 0.06}),
+    ("awning_rose", "Awning (Pink & Yellow)", "oasis_haven", "wall", stripes(["#e8388a", "#ffe050"]), 3, {"scrollU": 0, "scrollV": 0, "sway": 0.06}),
+    ("oasis_banner", "Oasis Banner", "oasis_haven", "wall", oasis_banner, 3, {"scrollU": 0, "scrollV": 0, "sway": 0.1}),
+    ("chevron_red", "Chevron Sign (Red)", "oasis_haven", "wall", chevron_red, 3, {"scrollU": 0, "scrollV": 0, "glow": 0.25}),
+    ("terracotta", "Painted Terracotta", "oasis_haven", "wall", terracotta, 2, None),
+    ("rug", "Market Rug", "oasis_haven", "wall", rug, 3, None),
+    ("fruit", "Market Produce", "oasis_haven", "wall", fruit, 2, None),
+    ("wood_dock", "Dock Planks", "oasis_haven", "road", wood_dock, 3, None),
+    ("oasis_frond", "Swaying Palm Frond", "oasis_haven", "wall", palm_frond, 3, {"scrollU": 0, "scrollV": 0, "sway": 0.3}),
+    ("oasis_bark", "Palm Trunk", "oasis_haven", "wall", palm_bark, 2, None),
+    ("fountain_jet", "Fountain Jet", "oasis_haven", "water", falls_dash, 3, {"scrollU": 0.0, "scrollV": -1.8, "wave": 0.04, "wavePeriod": 0.7, "opacity": 0.8, "glow": 0.35}),
+    ("falls_oasis", "Oasis Falls", "oasis_haven", "water", falls_dash, 6, {"scrollU": 0.0, "scrollV": 1.3, "wave": 0.03, "wavePeriod": 1.2, "opacity": 0.92, "glow": 0.3}),
+    ("falls_curtain_oasis", "Oasis Falls Curtain", "oasis_haven", "water", falls_dash, 6, {"scrollU": 0.0, "scrollV": 1.1, "wave": 0.03, "wavePeriod": 1.5, "opacity": 0.55, "glow": 0.35}),
     ("dash_road", "Canyon Dirt Road", "canyon_dash", "packed_dirt", dash_road, 6, None),
     ("dash_shoulder", "Dirt Verge", "canyon_dash", "dirt", dash_shoulder, 4, None),
     ("desert_sand", "Red Sand", "canyon_dash", "loose_sand", desert_sand, 8, None),

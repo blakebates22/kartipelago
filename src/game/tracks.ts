@@ -135,6 +135,17 @@ export const TRACKS: TrackEntry[] = [
     music: "canyon",
     load: { scene: "track", packageId: "canyon_dash" },
   },
+  {
+    id: "oasis_haven",
+    name: "Oasis Haven",
+    description:
+      "Race round a sun-drenched oasis resort: a turquoise lake, a waterfront market, a great arched bridge, a domed pavilion, cascading terraces and the palace above.",
+    preview: "previews/oasis_haven.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "oasis_haven",
+    music: "oasis",
+    load: { scene: "track", packageId: "oasis_haven" },
+  },
   // Test World.
   {
     id: "dino_demo",

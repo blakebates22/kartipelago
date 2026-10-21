@@ -461,7 +461,10 @@ export async function loadTrackPackage(
   } else if (meta.geometry.look) warnings.push(`${lookFile}: missing, using the default look`);
   const visual = visBuf ? await parseGlb(visBuf, meta.geometry.visual) : new THREE.Group();
   visual.name = `track:${meta.id}`;
-  const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic");
+  const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic", {
+    sun: look.sun?.direction,
+    sky: look.skyDome?.horizon ?? look.sky,
+  });
   const trackData = routeToTrackData(meta, route, warnings);
   if (cpBuf) {
     try {

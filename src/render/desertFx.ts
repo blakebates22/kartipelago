@@ -72,7 +72,7 @@ export interface BirdsView {
 export function createBirdsView(parent: THREE.Object3D, c: BirdsConfig): BirdsView {
   const root = new THREE.Group();
   const mat = new THREE.MeshLambertMaterial({
-    color: 0x2a201c,
+    color: new THREE.Color(c.color),
     side: THREE.DoubleSide,
     flatShading: true,
   });

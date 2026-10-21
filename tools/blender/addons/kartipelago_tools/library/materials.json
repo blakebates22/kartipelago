@@ -648,6 +648,58 @@
           }
         }
       }
+    },
+    {
+      "id": "oasis_haven",
+      "name": "Oasis Haven",
+      "description": "A perfect summer afternoon at a desert oasis resort: an intense blue sky with big white clouds, high bright sun, brilliant turquoise water, cream sandstone with royal-blue domes and gold, lush palms and flowers, and golden dunes and red mesas beyond",
+      "environment": {
+        "sky": "#2a8af0",
+        "fog": {
+          "enabled": true,
+          "color": "#bfe2fa",
+          "near": 600,
+          "far": 3200
+        },
+        "sun": {
+          "color": "#fff6e0",
+          "intensity": 3.0,
+          "direction": [-0.35, 0.86, 0.38]
+        },
+        "ambient": {
+          "sky": "#bfe0ff",
+          "ground": "#d8b880",
+          "intensity": 1.35
+        },
+        "skyDome": {
+          "top": "#0a5ce0",
+          "horizon": "#a8dcff",
+          "bottom": "#e8d4a8",
+          "sun": {
+            "color": "#fffbe8",
+            "size": 10,
+            "glow": "#fff4b0",
+            "elevation": 46
+          },
+          "clouds": {
+            "count": 32,
+            "color": "#ffffff",
+            "shade": "#d6e8fa",
+            "seed": 131,
+            "low": 7,
+            "high": 34,
+            "drift": 0.005
+          },
+          "hills": {
+            "color": "#d0805e",
+            "far": "#e6b896",
+            "height": 5,
+            "seed": 137,
+            "layers": 3,
+            "style": "mesas"
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -808,6 +860,501 @@
       "image": "volcano_slag.png",
       "wrap": "repeat",
       "tileMetres": 5
+    },
+    {
+      "id": "oasis_paving",
+      "name": "Oasis Flagstones",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "oasis_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "palace_paving",
+      "name": "Palace Flagstones",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "palace_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "tile_border",
+      "name": "Blue Tile Border",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "tile_border.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "balustrade",
+      "name": "Balustrade",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "balustrade.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "market_rail",
+      "name": "Market Railing",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "market_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "oasis_stone",
+      "name": "Cream Sandstone",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "oasis_arcade",
+      "name": "Arcade Fa\u00e7ade",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_arcade.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "oasis_windows",
+      "name": "Window Fa\u00e7ade",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_windows.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "arcade_rose",
+      "name": "Arcade Fa\u00e7ade (Rose)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "arcade_rose.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "windows_rose",
+      "name": "Window Fa\u00e7ade (Rose)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "windows_rose.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "arcade_white",
+      "name": "Arcade Fa\u00e7ade (White)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "arcade_white.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "windows_white",
+      "name": "Window Fa\u00e7ade (White)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "windows_white.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "arcade_ochre",
+      "name": "Arcade Fa\u00e7ade (Ochre)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "arcade_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "windows_ochre",
+      "name": "Window Fa\u00e7ade (Ochre)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "windows_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "dome_blue",
+      "name": "Royal Blue Dome",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "dome_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.08
+      }
+    },
+    {
+      "id": "dome_teal",
+      "name": "Turquoise Dome",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "dome_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.08
+      }
+    },
+    {
+      "id": "gold_leaf",
+      "name": "Gold Leaf",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "gold_leaf.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "lagoon",
+      "name": "Lagoon Water",
+      "theme": "oasis_haven",
+      "surface": "deep_water",
+      "image": "lagoon.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.006,
+        "wave": 0.04,
+        "wavePeriod": 7,
+        "lagoon": 1.0
+      }
+    },
+    {
+      "id": "lagoon_shallow",
+      "name": "Lagoon Shallows",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "lagoon_shallow.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.006,
+        "wave": 0.04,
+        "wavePeriod": 7,
+        "lagoon": 1.0
+      }
+    },
+    {
+      "id": "canal_water",
+      "name": "Canal Water",
+      "theme": "oasis_haven",
+      "surface": "deep_water",
+      "image": "canal_water.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.08,
+        "wave": 0.03,
+        "wavePeriod": 4,
+        "lagoon": 0.6
+      }
+    },
+    {
+      "id": "shore_foam",
+      "name": "Shore Foam",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "shore_foam.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.05,
+        "scrollV": 0.0,
+        "wave": 0.08,
+        "wavePeriod": 3.2,
+        "opacity": 0.75,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "lake_sand",
+      "name": "Lake Bed",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "lake_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "gold_sand",
+      "name": "Golden Sand",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "gold_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "gold_cliff",
+      "name": "Golden Cliffs",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "gold_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "oasis_lawn",
+      "name": "Garden Lawn",
+      "theme": "oasis_haven",
+      "surface": "grass",
+      "image": "oasis_lawn.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "garden_soil",
+      "name": "Garden Path",
+      "theme": "oasis_haven",
+      "surface": "dirt",
+      "image": "garden_soil.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "bougainvillea",
+      "name": "Bougainvillea",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "bougainvillea.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.12
+      }
+    },
+    {
+      "id": "hedge",
+      "name": "Hedge",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "hedge.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "awning_sun",
+      "name": "Awning (Red & Gold)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "awning_sun.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "awning_sea",
+      "name": "Awning (Blue & White)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "awning_sea.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "awning_teal",
+      "name": "Awning (Teal & Orange)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "awning_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "awning_rose",
+      "name": "Awning (Pink & Yellow)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "awning_rose.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "oasis_banner",
+      "name": "Oasis Banner",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.1
+      }
+    },
+    {
+      "id": "chevron_red",
+      "name": "Chevron Sign (Red)",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "chevron_red.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "terracotta",
+      "name": "Painted Terracotta",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "terracotta.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "rug",
+      "name": "Market Rug",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "rug.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "fruit",
+      "name": "Market Produce",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "fruit.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "wood_dock",
+      "name": "Dock Planks",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "wood_dock.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "oasis_frond",
+      "name": "Swaying Palm Frond",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_frond.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.3
+      }
+    },
+    {
+      "id": "oasis_bark",
+      "name": "Palm Trunk",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "oasis_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "fountain_jet",
+      "name": "Fountain Jet",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "fountain_jet.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": -1.8,
+        "wave": 0.04,
+        "wavePeriod": 0.7,
+        "opacity": 0.8,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "falls_oasis",
+      "name": "Oasis Falls",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "falls_oasis.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.3,
+        "wave": 0.03,
+        "wavePeriod": 1.2,
+        "opacity": 0.92,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "falls_curtain_oasis",
+      "name": "Oasis Falls Curtain",
+      "theme": "oasis_haven",
+      "surface": "water",
+      "image": "falls_curtain_oasis.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.1,
+        "wave": 0.03,
+        "wavePeriod": 1.5,
+        "opacity": 0.55,
+        "glow": 0.35
+      }
     },
     {
       "id": "dash_road",

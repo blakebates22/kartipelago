@@ -1,9 +1,9 @@
 # Desert World
 
 Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost
-towns of the old frontier. Its first course is **Canyon Dash**. Three more are planned,
-and they're shown in track select as "Coming Soon": a desert oasis, a haunted ghost
-town and an underground adventure.
+towns of the old frontier. Its courses so far are **Canyon Dash** (the great canyon)
+and **Oasis Haven** (the resort paradise). Two more are planned, and they're shown in
+track select as "Coming Soon": a haunted ghost town and an underground adventure.
 
 All of it is our own design: the layout, the scenery, the props and the music were made
 for this project. The concept art was only a guide to the mood and colours.
@@ -109,3 +109,99 @@ module). Paint the textures with `python3 tools/blender/prehistoric/make_texture
   - three AI laps of 60–85 s with no falls;
   - the dust, wind, windmill and bird rules.
 - `tests/holes.test.ts` checks that there are no holes in the world.
+
+## Oasis Haven
+
+The desert's paradise: a sun-drenched resort round a great turquoise lake in a basin of
+golden sand and cliffs, red mesas beyond. A lap of about 2.1 km (an AI lap is about 90
+s), anticlockwise round the lake on a perfect summer afternoon.
+
+**Water is the lifeblood of it all.** A spring in the palace gardens, high on the north
+shore, feeds everything you see:
+
+- It runs east and west along the palace terrace in stone channels.
+- It falls down the terraces in two great three-tier cascades, east and west, into the
+  lake.
+- A central stream crosses the second terrace into an aqueduct over the terrace road,
+  pours through a slot in it as a curtain you drive through, and falls into the lake.
+- The pavilion island's fountain spills off its rim in little falls.
+- The lake runs into the market in canals.
+
+Lush gardens grow where the water is, and give way to sand and scrub beyond.
+
+| Section | Name                       | What happens                                                                                                                                                                                                                                                        |
+| ------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | The Grand Resort Entrance  | The start, on a raised plaza at the south shore under a great sandstone gateway with domed towers, banners and a checkered board, fountains either side, cafés and shops. The lake, the pavilion and the palace are ahead across the water. Down to the waterfront. |
+| 2       | The Great Lagoon Promenade | Sweeping drifts along the south and east shores on a tiled promenade, the lake on the left all the way, the pavilion, bridges, falls and boats across the water.                                                                                                    |
+| 3       | The Waterfront Market      | A tighter run between market halls (arcades, domes, towers), stalls under striped awnings and waterfront cafés, over two canals with boats moored in them and fountains at their ends.                                                                              |
+| 4       | The Grand Arched Bridge    | West across the lake on stone arches, rising to a crown and down again, banners and flower urns along the parapets, a broad drifting turn off it.                                                                                                                   |
+| 5       | The Central Pavilion       | Round the blue-domed pavilion on its island (a colonnade, a great dome with turrets, a fountain inside, gardens, little falls off the island's rim), then north over the causeway.                                                                                  |
+| 6       | The Waterfall Terraces     | Up the terraced gardens: through the aqueduct's waterfall curtain, then round a broad climbing turn beside the great east cascade. The terrace walls are tiers of arcades.                                                                                          |
+| 7       | The Palace Heights         | Along the foot of the palace (a great hall under a vast blue dome, wings, towers and galleries round the spring garden), through its gateway, the whole lake below.                                                                                                 |
+| 8       | The Lakeside Return        | Down the west shore past villas, round the beach headland (umbrellas, loungers, a conga line), or straight on through the canal passage under the beach hotel: the shortcut. Back to the gate.                                                                      |
+
+**The shortcut:** the Canal Passage. Where the road swings out round the beach headland,
+the passage goes straight on, under the arcade of the beach hotel, beside a canal that
+runs through the headland. It's narrower, and a little shorter. A twin gate counts it as
+the stretch it skips. The AI keeps to the main road.
+
+**The living resort:**
+
+- the lake's living water (below);
+- thirteen waterfalls with spray and roar;
+- fountains whose jets arc and splash;
+- five sailing boats going round the lake with wakes behind them;
+- gulls wheeling over the water;
+- palm fronds, flowers, banners and awnings swaying in the breeze;
+- dinosaur guests dancing and waving in the plaza, the market, the pavilion and the
+  palace gardens, and a conga line on the beach.
+
+**Living water:** the lake and canals use the new `lagoon` material effect
+([materials.md](materials.md)):
+
+- the surface rolls in a few travelling waves;
+- bright ripple lines play over it;
+- the sun glitters off the waves in winking sparkles;
+- low angles take on the sky's sheen.
+
+The depth is painted into the water mesh's vertex colours: bright, pale turquoise over
+the sandy shallows, deepening to rich blue. Foam laps at the natural shores and round
+the island.
+
+**Driving:**
+
+- **The roads:** cream flagstones with a blue-tiled border and stone balustrades, full
+  grip.
+- **Off the road:** the lawns are grass and the sand is loose sand.
+- **The water:** the shallows are slow water. The deep lake fishes you out back on the
+  road after a moment.
+
+**Music:** "Oasis Haven" (`oasis`), A major, 150 BPM: a carefree holiday tune.
+
+- Steel pan and flute trade the tune, with strings over the falls.
+- Marimba and bells run up and down the chords like sparkling water.
+- A bouncy bass, congas, shaker and tambourine keep the groove.
+
+**How it's built:**
+
+- `oasis_haven.py`: the layout, heights, the lake's outline (from the roads), the
+  canals, the terraces, the land, the shortcut.
+- `oasis_scenery.py`: the land, the lake and foam, the water system (the spring,
+  channels, cascades and aqueduct), the architecture helpers (blocks, towers, domes,
+  gates), and the gameplay.
+- `oasis_resort.py`: the start gate, the road dressing, the bridges, the pavilion, the
+  market, the terraces, the palace, the beach hotel, the resort districts, gardens and
+  rocks.
+- `oasis_props.py`: palms, cypresses, flowers, lanterns, banners, stalls, cafés, beach
+  sets, boats, fountains, kiosks.
+
+**Tests:** `tests/oasis.test.ts` checks:
+
+- the world, the theme and the music;
+- a clean load with living water, swaying plants, the falls, fountains, boats and their
+  paths, and the guests;
+- that the passage counts as the stretch it skips;
+- three AI laps of 75–100 s with no falls into the lake;
+- the boat and fountain rules.
+
+`tests/holes.test.ts` covers it too.

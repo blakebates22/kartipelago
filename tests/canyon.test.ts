@@ -1,5 +1,5 @@
-// Canyon Dash (Desert World, course 1): the Desert World opens with it (three more
-// courses to come), with its own theme, mesa skyline and music; it loads cleanly with
+// Canyon Dash (Desert World, course 1): the Desert World opens with it (four
+// courses planned), with its own theme, mesa skyline and music; it loads cleanly with
 // its waterfalls, dust, windmill, birds and the butte slot's twin gate; the slot counts
 // as the lap it skips; it's fast (a desert dirt road at full speed, sand off it); and
 // the AI drives it in 60-85 s a lap without ever falling into the canyon.
@@ -47,12 +47,11 @@ const BUTTE_SLOT: [number, number, number][] = [
 ];
 
 describe("Canyon Dash", () => {
-  it("opens the Desert World, with its own theme and music", () => {
+  it("opens the Desert World (four courses planned), with its own theme and music", () => {
     const w = WORLDS.find((x) => x.id === "desert")!;
-    expect(w.tracks).toEqual([id]);
+    expect(w.tracks[0]).toBe(id);
     const tiles = trackTilesOf(w);
     expect(tiles).toHaveLength(4);
-    expect(tiles.filter((t) => t.comingSoon)).toHaveLength(3);
     const t = trackById(id)!;
     expect(t.theme).toBe("canyon_dash");
     expect(SONGS[t.music]?.id).toBe("canyon");

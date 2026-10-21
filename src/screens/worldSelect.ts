@@ -9,7 +9,7 @@
  */
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
-import { WORLDS, currentWorld, tracksOf, type WorldEntry } from "../game/worlds";
+import { VISIBLE_WORLDS as WORLDS, currentWorld, tracksOf, type WorldEntry } from "../game/worlds";
 import { landscape } from "../ui/backdrops";
 import { wrap } from "../ui/font";
 import { ACCENTS, PAL, focusRing } from "../ui/textures";

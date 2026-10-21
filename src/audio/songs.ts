@@ -44,6 +44,10 @@
  *                                   Brass and flute trading a sun-baked tune over a
  *                                   clip-clopping woodblock, strummed pizzicato, a rolling
  *                                   marimba, bongos, and strings for the bridge and the falls
+ *   oasis       "Oasis Haven"       A major, 150: a sunny resort holiday. Steel pan and flute
+ *                                   trading a carefree tune, strings over the falls,
+ *                                   marimba arpeggios like sparkling water, a bouncy bass,
+ *                                   congas, shaker and tambourine
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -1309,6 +1313,117 @@ function canyon(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Oasis Haven"
+
+export const OASIS_MELODY = bars(
+  "E5:.5 A5:.5 C#6:1 B5:.5 A5:.5 E5:1",
+  "F#5:.5 A5:.5 D6:1 C#6:1 A5:1",
+  "B5:.5 C#6:.5 D6:1 B5:.5 G#5:.5 E5:1",
+  "A5:1 C#6:1 E6:2",
+  "E6:.5 D6:.5 C#6:1 A5:.5 B5:.5 C#6:1",
+  "D6:1 F#6:.5 E6:.5 D6:1 B5:1",
+  "C#6:.5 E6:.5 A6:1 G#6:.5 F#6:.5 E6:1",
+  "D6:1 B5:1 C#6:2!",
+  "A5:.5 B5:.5 C#6:.5 E6:.5 F#6:1 E6:1",
+  "D6:.5 C#6:.5 B5:1 G#5:1 E5:1",
+  "F#5:.5 A5:.5 C#6:1 F#6:1 E6:1",
+  "D6:1 C#6:.5 B5:.5 A5:2",
+  "B5:.5 D6:.5 F#6:1 A6:1 F#6:1",
+  "E6:1 C#6:.5 E6:.5 A6:1 E6:1",
+  "D6:.5 E6:.5 F#6:1 E6:.5 D6:.5 B5:1",
+  "G#5:1 B5:1 E6:1.5 r:.5",
+  "A6:1 G#6:.5 F#6:.5 E6:1 C#6:1",
+  "D6:1 F#6:1 A6:2",
+  "G#6:.5 F#6:.5 E6:1 B5:1 E6:1",
+  "C#6:1 E6:1 A6:1.5 r:.5",
+  "F#6:.5 E6:.5 D6:1 A5:1 D6:1",
+  "C#6:.5 D6:.5 E6:1 A5:1 C#6:1",
+  "B5:.5 C#6:.5 D6:1 F#6:1 B6:1",
+  "G#6:1 E6:1 B5:2",
+  "A5:.5 C#6:.5 E6:.5 A6:.5 C#7:1 A6:1",
+  "B6:1 G#6:.5 E6:.5 B5:1 E6:1",
+  "F#6:.5 A6:.5 D7:1 C#7:.5 B6:.5 A6:1",
+  "E6:1.5 F#6:.5 G#6:2",
+  "A6:1 E6:.5 C#6:.5 A5:1 C#6:1",
+  "D6:1 F#6:1 B6:1 A6:1",
+  "G#6:.5 B6:.5 E7:1 D7:.5 B6:.5 G#6:1",
+  "A6:2! E6:1 r:1",
+);
+export const OASIS_CHORDS =
+  "A:4 D:4 E:4 A:4 F#m:4 D:4 A:4 E:4 " +
+  "A:4 E:4 F#m:4 D:4 Bm:4 A:4 Bm:4 E7:4 " +
+  "F#m:4 D:4 E:4 A:4 D:4 A:4 Bm:4 E:4 " +
+  "A:4 E:4 D:4 E:4 F#m:4 D:4 E7:4 A:4";
+
+function oasis(): Song {
+  const ch = chart(OASIS_CHORDS);
+  const mel = seq(OASIS_MELODY, 0, 0.82);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  // A bouncy bass: root, a skip up to the fifth, the octave, a walk in.
+  const bounce: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "8"],
+    [2, 0.5, "R"],
+    [2.75, 0.25, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "oasis",
+    title: "Oasis Haven",
+    role: "Desert World",
+    bpm: 150,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      // The tune: steel pan on the promenade, the flute through the market, strings
+      // over the falls, and all of them for the palace.
+      part("steelpan", "base", 1, p1),
+      part("marimba", "base", 0.35, shift(p1, 0, -12)),
+      part("flute", "base", 1, p2),
+      part("steelpan", "base", 0.4, shift(p2, 0, -12)),
+      part("strings", "base", 0.95, p3),
+      part("bell", "base", 0.3, shift(p3, 0, 12)),
+      part("steelpan", "base", 0.9, p4),
+      part("flute", "base", 0.6, p4),
+      part("brass", "base", 0.4, shift(p4, 0, -12)),
+      // Sparkling water: marimba and bells running up and down the chords.
+      part("marimba", "base", 0.5, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 64, 0.2, 0.42)),
+      part("bell", "base", 0.18, arpeggio(ch, 0.5, [3, 2, 1, 2], 79, 0.3, 0.3)),
+      part("pizz", "base", 0.45, stabs(ch, [0.5, 1.5, 2.5, 3.5], 57, 0.15, 0.45)),
+      part("pad", "base", 0.4, pads(ch, 55, 4, 0.4)),
+      part(
+        "horn",
+        "base",
+        0.3,
+        pads(
+          ch.filter((c) => c.t >= 96),
+          52,
+          4,
+          0.4,
+        ),
+      ),
+      part("bass", "base", 1, bassLine(ch, bounce, 33, 0.85)),
+      // A light holiday groove: kick, rimshot snare, shaker, congas (bongos), tambourine.
+      ...drumParts("base", 0.85, drums("K.....k.K.......", KIT, 0.25, 32)),
+      ...drumParts("base", 0.6, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("..b.bb.b..b.b.bb", KIT, 0.25, 32)),
+      ...drumParts("base", 0.35, drums("..t...t...t...t.", KIT, 0.25, 24, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.7, drums("o.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.8, drums("C", KIT, 32, 4)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Bonebog Pyramid"
 
 export const BONEBOG_MELODY = bars(
@@ -1599,6 +1714,7 @@ export const SONGS: Record<string, Song> = {
   hearthglow: hearthglow(),
   aurora: aurora(),
   canyon: canyon(),
+  oasis: oasis(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

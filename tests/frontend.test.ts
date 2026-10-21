@@ -4,7 +4,7 @@ import { createMenuInput, type MenuAction } from "../src/app/menuInput";
 import { loadRecords, submitResult } from "../src/app/records";
 import { DEFAULT_SETTINGS, loadSettings, sanitize, saveSettings } from "../src/app/settings";
 import { TRACKS, trackById } from "../src/game/tracks";
-import { WORLDS, currentWorld, tracksOf, worldOfTrack } from "../src/game/worlds";
+import { VISIBLE_WORLDS, WORLDS, currentWorld, tracksOf, worldOfTrack } from "../src/game/worlds";
 import { FONT_CHARS, FONT_ROWS, textWidth, wrap } from "../src/ui/font";
 import type { UiLayer } from "../src/ui/layer";
 import { CATALOG } from "../src/audio/songs";
@@ -208,8 +208,21 @@ describe("worlds", () => {
     ]);
   });
 
+  it("keeps the prototype world in the game but out of the menus", () => {
+    expect(WORLDS.find((w) => w.id === "test_world")?.hidden).toBe(true);
+    expect(VISIBLE_WORLDS.map((w) => w.id)).toEqual(["prehistoric", "frostveil", "desert"]);
+    // Its tracks still load directly.
+    expect(trackById("loop_lab")).toBeTruthy();
+  });
+
   it("opens on the world last picked, else the last track's", () => {
-    expect(currentWorld({ trackId: "meadow_run" }).id).toBe("test_world");
+    expect(currentWorld({ trackId: "riverbend_palms" }).id).toBe("prehistoric");
+    expect(currentWorld({ trackId: "aurora_rift" }).id).toBe("frostveil");
+    // A hidden world's track opens on the first world shown.
+    expect(currentWorld({ trackId: "meadow_run" }).id).toBe(VISIBLE_WORLDS[0]!.id);
+    expect(currentWorld({ trackId: "meadow_run", worldId: "test_world" }).id).toBe(
+      VISIBLE_WORLDS[0]!.id,
+    );
     expect(currentWorld({ trackId: "meadow_run", worldId: "prehistoric" }).id).toBe("prehistoric");
     expect(currentWorld({ trackId: "gone", worldId: "gone" }).id).toBe(WORLDS[0]!.id);
   });

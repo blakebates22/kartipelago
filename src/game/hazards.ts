@@ -67,6 +67,8 @@
  *   dust, dustwind, windmill, birds (see game/desert.ts): Desert World's dust kicked up
  *               behind karts on dirt and sand, dust blowing across the land, a ranch
  *               windmill's turning wheel and big birds circling over the canyon.
+ *   boat, fountain (see game/oasis.ts): Oasis Haven's little sailing boats going round
+ *               the lake on paths from route.json, with wakes, and fountains' jets.
  *   pterosaur   { "type": "pterosaur", "route": "Flyer Path", "speed": 13, "scale": 1.6 }:
  *               a pterosaur circling high over the course along a route (its height
  *               comes from the route), flapping and gliding, banking into turns, with
@@ -107,6 +109,8 @@ import {
   type DustConfig,
   type WindConfig,
 } from "./desert";
+import { jetVelocity, parseBoat, parseFountain, SPRAY_GRAVITY, type FountainConfig } from "./oasis";
+import { createBoatView, type BoatView } from "../render/oasisFx";
 import {
   createBirdsView,
   createWindmillView,
@@ -433,6 +437,10 @@ export function createHazards(opts: {
   let dusty: ReturnType<typeof createParticles> | undefined;
   const dustAcc: number[] = Array.from({ length: opts.karts }, () => Math.random());
   const windmills: WindmillView[] = [];
+  /** Oasis Haven: boats on the lake, fountains. */
+  const boats: (BoatView & { acc: number })[] = [];
+  const fountains: (FountainConfig & { acc: number[] })[] = [];
+  let fountainSpray: ReturnType<typeof createParticles> | undefined;
   const flocks: BirdsView[] = [];
   let motes: ReturnType<typeof createParticles> | undefined;
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
@@ -608,7 +616,13 @@ export function createHazards(opts: {
       };
     else if (e.type === "dust") dust = parseDust(e);
     else if (e.type === "dustwind") wind = { ...parseWind(e), acc: 0 };
-    else if (e.type === "windmill") {
+    else if (e.type === "boat") {
+      const b = parseBoat(e, opts.routes);
+      if (b && !opts.headless) boats.push(Object.assign(createBoatView(group, b), { acc: 0 }));
+    } else if (e.type === "fountain") {
+      const f = parseFountain(e);
+      fountains.push({ ...f, acc: Array.from({ length: f.jets + 1 }, () => Math.random()) });
+    } else if (e.type === "windmill") {
       if (!opts.headless) windmills.push(createWindmillView(group, parseWindmill(e)));
     } else if (e.type === "birds") {
       if (!opts.headless) flocks.push(createBirdsView(group, parseBirds(e)));
@@ -1696,6 +1710,58 @@ export function createHazards(opts: {
       }
       dusty?.step(dt);
       for (const v of windmills) v.update(t);
+      // Boats sailing round the lake, a wake curling behind each one near you.
+      for (const b of boats) {
+        b.update(t);
+        if (!spray) continue;
+        if (Math.hypot(b.pos.x - listener.x, b.pos.z - listener.z) > 160) continue;
+        b.acc = Math.min(2, b.acc + dt * 14);
+        for (; b.acc >= 1; b.acc -= 1) {
+          const side = Math.random() < 0.5 ? -1 : 1;
+          const sx = Math.sin(b.heading);
+          const sz = Math.cos(b.heading);
+          spray.emit(
+            b.pos.x - sx * 2.6 + sz * side * 0.9,
+            b.pos.y + 0.05,
+            b.pos.z - sz * 2.6 - sx * side * 0.9,
+            sz * side * 1.2 - sx * 0.6,
+            0.8 + Math.random() * 0.6,
+            -sx * side * 1.2 - sz * 0.6,
+            0.7,
+            0xf4ffff,
+          );
+        }
+      }
+      // Fountains near you: a jet straight up and a ring of arcing jets.
+      if (fountains.length && !opts.headless) {
+        fountainSpray ??= createParticles(group, {
+          max: 900,
+          size: 0.42,
+          gravity: -SPRAY_GRAVITY,
+          opacity: 0.85,
+        });
+        for (const f of fountains) {
+          if (Math.hypot(f.x - listener.x, f.z - listener.z) > 170) continue;
+          for (let k = 0; k <= f.jets; k++) {
+            f.acc[k] = Math.min(3, f.acc[k]! + dt * (k === 0 ? 40 : 14));
+            const { v, t: flight } = jetVelocity(f, k);
+            for (; f.acc[k]! >= 1; f.acc[k]! -= 1) {
+              const j = 0.06;
+              fountainSpray.emit(
+                f.x,
+                f.y,
+                f.z,
+                v[0] * (1 + (Math.random() - 0.5) * j) + (Math.random() - 0.5) * 0.3,
+                v[1] * (1 + (Math.random() - 0.5) * j),
+                v[2] * (1 + (Math.random() - 0.5) * j) + (Math.random() - 0.5) * 0.3,
+                flight,
+                Math.random() < 0.3 ? 0xffffff : 0xcff6ff,
+              );
+            }
+          }
+        }
+        fountainSpray.step(dt);
+      }
       for (const v of flocks) v.update(t);
       for (const ch of chimneys) {
         if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
@@ -1869,6 +1935,8 @@ export function createHazards(opts: {
       motes?.dispose();
       dusty?.dispose();
       for (const v of windmills) v.dispose();
+      for (const b of boats) b.dispose();
+      fountainSpray?.dispose();
       for (const v of flocks) v.dispose();
       for (const g of geysers)
         if (g.column) {

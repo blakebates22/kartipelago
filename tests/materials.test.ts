@@ -123,11 +123,37 @@ describe("water and lava animation", () => {
     expect(fx.wavePeriod).toBeGreaterThan(0);
   });
 
+  it("reads living water and swaying, which count as animated on their own", () => {
+    const fx = parseFx({ kp_fx: { lagoon: 1, sway: 0.3 } })!;
+    expect(fx.lagoon).toBe(1);
+    expect(fx.sway).toBeCloseTo(0.3);
+    expect(parseFx({ kp_fx: { sway: 0.2 } })?.sway).toBeCloseTo(0.2);
+    expect(parseFx({ kp_fx: { lagoon: 99 } })?.lagoon).toBe(4); // clamped
+  });
+
   it("scrolls steadily and ripples in a loop", () => {
-    const fx = { scrollU: 0.25, scrollV: 0, wave: 0, wavePeriod: 4, pulse: 0, pulsePeriod: 4 };
+    const fx = {
+      scrollU: 0.25,
+      scrollV: 0,
+      wave: 0,
+      wavePeriod: 4,
+      pulse: 0,
+      pulsePeriod: 4,
+      lagoon: 0,
+      sway: 0,
+    };
     expect(fxOffset(fx, 1)[0]).toBeCloseTo(0.25);
     expect(fxOffset(fx, 5)[0]).toBeCloseTo(0.25); // wraps every 4 s
-    const ripple = { scrollU: 0, scrollV: 0, wave: 0.1, wavePeriod: 2, pulse: 0, pulsePeriod: 4 };
+    const ripple = {
+      scrollU: 0,
+      scrollV: 0,
+      wave: 0.1,
+      wavePeriod: 2,
+      pulse: 0,
+      pulsePeriod: 4,
+      lagoon: 0,
+      sway: 0,
+    };
     const a = fxOffset(ripple, 0.3);
     const b = fxOffset(ripple, 2.3);
     // Same place one period later (offsets wrap at 1).

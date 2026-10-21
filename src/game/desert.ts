@@ -11,8 +11,9 @@
  *             "speed": 1.4 }: a ranch windmill's wheel (the tower is scenery), its hub
  *             at (x, y, z), facing `heading`, turning `speed` radians a second.
  *   birds     { "type": "birds", "x", "y", "z", "radius": 70, "count": 3,
- *             "speed": 0.2, "seed": 1 }: a few big birds circling high over the
- *             canyon on the thermals, wings beating now and then.
+ *             "speed": 0.2, "seed": 1, "color": "#2a201c" }: a few big birds circling
+ *             high over the canyon on the thermals, wings beating now and then (white
+ *             ones make gulls over water).
  *
  * The timing is pure (no three.js) here; render/desertFx.ts draws them.
  */
@@ -97,6 +98,8 @@ export function windmillAngle(c: WindmillConfig, t: number): number {
 }
 
 export interface BirdsConfig {
+  /** Body colour (dark soaring birds by default; white for gulls over water). */
+  color: string;
   x: number;
   y: number;
   z: number;
@@ -108,6 +111,7 @@ export interface BirdsConfig {
 
 export function parseBirds(e: Record<string, unknown>): BirdsConfig {
   return {
+    color: typeof e.color === "string" ? e.color : "#2a201c",
     x: num(e.x, 0),
     y: num(e.y, 80),
     z: num(e.z, 0),

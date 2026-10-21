@@ -112,6 +112,13 @@ These settings belong to the active object's material:
 - **Opacity:** below 1 you can see through it (water).
 - **Glow:** it shines with its own light, whatever the shade (lava).
 - **Tint:** multiplies the texture's colour.
+- **Pulse / Pulse Time:** the glow swells and fades (a living crystal).
+- **Lagoon:** living water, drawn by the game's own shader: rolling waves (the surface
+  really moves), bright ripple lines like sunlight through the water, the sun glittering
+  off the waves in winking sparkles, and the sky's sheen at a low angle. The depth
+  colour comes from the vertex paint (paint the deep water darker). Oasis Haven's lake.
+- **Sway:** sways in the breeze by this many metres (palm fronds, flowers, banners,
+  awnings).
 
 Ancient Water and Volcano Lava come with sensible settings already. The animation runs
 in the game, not in Blender (glTF has no way to carry it), and it is purely visual.
@@ -175,9 +182,12 @@ material extras (custom properties) or in `look.json`.
 { "scroll_u": 0.03, "scroll_v": 0.015, "wave": 0.04, "wave_period": 4, "opacity": 0.85 }
 ```
 
-The game reads `scroll_u` and `scroll_v` (texture repeats per second), and `wave` and
+The game reads `scroll_u` and `scroll_v` (texture repeats per second), `wave` and
 `wave_period` (a circular wobble, as a fraction of a repeat, and its loop time in
-seconds). Opacity, glow and tint are also stored there, so Blender can show them, but
+seconds), `pulse` and `pulse_period`, `lagoon` (living water's strength) and `sway`
+(metres). Lagoon and sway are vertex and fragment shader patches on the material
+(`src/render/trackMaterials.ts`), sharing one clock and the look's sun direction; the
+collision never moves. Opacity, glow and tint are also stored there, so Blender can show them, but
 the game takes those three from the standard glTF fields.
 
 `look.json`:

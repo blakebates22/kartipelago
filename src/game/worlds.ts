@@ -21,6 +21,9 @@ export interface WorldEntry {
   tracks: string[];
   /** Unfinished worlds are labelled as such. */
   testing?: boolean;
+  /** Kept in the game (its tracks still load, e.g. with ?track=) but not shown in the
+   * menus. */
+  hidden?: boolean;
   /** Names of tracks still to come: shown after the real ones as "Coming Soon". */
   comingSoon?: string[];
 }
@@ -51,8 +54,8 @@ export const WORLDS: WorldEntry[] = [
     description:
       "Sun-baked red-rock country: vast canyons, towering mesas, hidden oases and the ghost towns of the old frontier.",
     color: "#d8703a",
-    tracks: ["canyon_dash"],
-    comingSoon: ["Desert Oasis", "Haunted Ghost Town", "Underground Adventure"],
+    tracks: ["canyon_dash", "oasis_haven"],
+    comingSoon: ["Haunted Ghost Town", "Underground Adventure"],
   },
   {
     id: "test_world",
@@ -71,8 +74,13 @@ export const WORLDS: WorldEntry[] = [
       "drift_park",
     ],
     testing: true,
+    // Set aside for now: the prototypes stay in the code but out of the menus.
+    hidden: true,
   },
 ];
+
+/** The worlds the menus show. */
+export const VISIBLE_WORLDS = WORLDS.filter((w) => !w.hidden);
 
 export const worldById = (id: string) => WORLDS.find((w) => w.id === id);
 
@@ -103,5 +111,9 @@ export const trackTilesOf = (w: WorldEntry): TrackEntry[] => {
 };
 
 /** The world the menus should open on: the one last picked, else the last track's. */
-export const currentWorld = (sel: { worldId?: string; trackId: string }): WorldEntry =>
-  worldById(sel.worldId ?? "") ?? worldOfTrack(sel.trackId) ?? WORLDS[0]!;
+export const currentWorld = (sel: { worldId?: string; trackId: string }): WorldEntry => {
+  const shown = (w: WorldEntry | undefined) => (w && !w.hidden ? w : undefined);
+  return (
+    shown(worldById(sel.worldId ?? "")) ?? shown(worldOfTrack(sel.trackId)) ?? VISIBLE_WORLDS[0]!
+  );
+};
