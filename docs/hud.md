@@ -3,8 +3,8 @@
 The item box sits in the bottom-left corner, the eggs beside it: see
 [balloons.md](balloons.md).
 
-Drifting (or sliding hard) plays a tyre squeal (`sfx.skid`), louder the more you slide
-and higher at speed, with a bark of the tyres going into a drift. It's mostly tone, with
+Drifting (or sliding hard) plays a low tyre squeal (`sfx.skid`, about 300-450 Hz),
+louder the more you slide and a little higher at speed, with a bark of the tyres going into a drift. It's mostly tone, with
 only a low rumble of scrub, so it never turns into a hiss. Only your own kart skids
 out loud.
 

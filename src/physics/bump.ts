@@ -9,8 +9,16 @@ import type { KartState } from "../vehicles/kart";
 /** Karts further apart vertically than this (one mid-jump) don't touch. */
 const VERTICAL_CLEAR = 1.5;
 
-/** Separate every overlapping pair. Returns how many pairs touched. */
-export function bumpKarts(karts: KartState[], radius: number, masses?: number[]): number {
+/**
+ * Separate every overlapping pair. Returns how many pairs touched; `touched(i, j)` hears
+ * about each one (shields spin out the kart they hit).
+ */
+export function bumpKarts(
+  karts: KartState[],
+  radius: number,
+  masses?: number[],
+  touched?: (i: number, j: number) => void,
+): number {
   let touches = 0;
   for (let i = 0; i < karts.length; i++) {
     for (let j = i + 1; j < karts.length; j++) {
@@ -23,6 +31,7 @@ export function bumpKarts(karts: KartState[], radius: number, masses?: number[])
       const min = radius * 2;
       if (dist >= min || dist < 1e-6) continue;
       touches++;
+      touched?.(i, j);
       const nx = dx / dist;
       const nz = dz / dist;
       const ma = masses?.[i] ?? 1;

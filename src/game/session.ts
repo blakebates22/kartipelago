@@ -27,7 +27,14 @@ import { createCourse, resetCourse, stepCourse } from "../world/course";
 import { buildTrack, type Track, type TrackData } from "../world/track";
 import { buildZippers, enteredZipper } from "../world/zippers";
 import { BOOST_SOURCE, ZIP, startZipper } from "../vehicles/zipper";
-import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "../items/effects";
+import {
+  bumpMass,
+  racerItems,
+  shieldRam,
+  stepEffects,
+  type Racer,
+  type RacerItems,
+} from "../items/effects";
 import { heldLabel, type BalloonColor } from "../items/inventory";
 import {
   collectBalloons,
@@ -615,6 +622,7 @@ function buildSession(
       if (!near(ev.racer)) return;
       if (ev.blocked) sfx.shieldBlock(vol);
       else if (ev.kind === "oil") sfx.oil(vol);
+      else if (ev.kind === "shield") sfx.shieldZap(vol);
       else if (ev.kind === "bubble") sfx.bubble(vol);
       else sfx.explosion(vol);
       if (ev.racer === 0 && ev.lost) sfx.bananaLost(tuning.bananas.volume);
@@ -861,6 +869,20 @@ function buildSession(
       free.map((e) => e.state),
       tuning.physics.kartBump,
       free.map((e) => bumpMass(e.items, itemsCfg)),
+      (a, b) => {
+        // A shielded kart that touches an unshielded one spins it out (either way round).
+        const ia = entrants.indexOf(free[a]!);
+        const ib = entrants.indexOf(free[b]!);
+        const hit = shieldRam(racers[ia]!, racers[ib]!, ia, ib, itemsCfg, tuning.bananas);
+        if (hit)
+          itemFeedback({
+            type: "hit",
+            racer: hit.victim,
+            kind: "shield",
+            blocked: false,
+            lost: hit.lost,
+          });
+      },
     );
     loops?.contacts(entrants.map((e) => e.state));
     stepEffects(racers, itemsCfg, dt);
@@ -1418,6 +1440,26 @@ function buildSession(
     result,
     /** Seconds since the player finished (undefined while racing). */
     finishedFor: () => (finishedAt === undefined || !race ? undefined : race.clock - finishedAt),
+    /**
+     * Developer tool (?debug, screenshots and tests): finish racer `index` right now, as
+     * if they'd just crossed the line on their last lap. Finish rivals first to set
+     * the order.
+     */
+    debugFinish(index = 0) {
+      if (!race) return;
+      const r = race.racers[index];
+      if (!r || r.finished) return;
+      const clock = Math.max(race.clock, 30 + index);
+      race.clock = clock;
+      r.lapTimes = Array.from(
+        { length: tuning.race.laps },
+        (_, i) => clock / tuning.race.laps + (i - 1) * 0.37,
+      );
+      r.bestLap = Math.min(...r.lapTimes);
+      r.totalTime = clock;
+      r.finished = true;
+      race.finishOrder.push(index);
+    },
     setLookMode(mode: LookMode) {
       lookMode = mode;
       pkg?.materials.setMode(mode);

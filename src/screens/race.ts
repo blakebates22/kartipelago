@@ -12,12 +12,12 @@ import type { Screen } from "../app/app";
 import { submitResult, type NewRecords } from "../app/records";
 import type { HudState, RaceResult, Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
-import { DESIGNS } from "../render/racers/designs";
 import { formatTime } from "../race/race";
 import { tuning } from "../core/tuning";
 import type { UiLayer } from "../ui/layer";
 import { PAL } from "../ui/textures";
 import { BALLOON_HUES, ICON, itemIcon } from "../ui/itemIcons";
+import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
 import { VMenu, hints } from "./common";
 import { optionsScreen } from "./options";
 import { trackSelect } from "./trackSelect";
@@ -167,8 +167,8 @@ const shownItem = new WeakMap<Session, { key: string; at: number }>();
 
 /**
  * The item box: a frame in the balloon's colour with its pixel icon at 2x, a pip for each
- * level and the ammo count when there's more than one shot. A new or upgraded item pops
- * in (a quick grow and a white flash).
+ * level and the ammo count when there's more than one shot. It's only there while you
+ * hold something; a new or upgraded item pops in (a quick grow and a white flash).
  */
 function itemBox(
   ui: UiLayer,
@@ -182,19 +182,17 @@ function itemBox(
   const key = held ? `${held.color}${held.level}` : "";
   let seen = shownItem.get(session);
   if (!seen || seen.key !== key) {
-    seen = { key, at: held && seen ? t : -1 };
+    seen = { key, at: held ? t : -1 };
     shownItem.set(session, seen);
   }
+  // Nothing held: no box at all (it pops in with the first item).
+  if (!held) return;
   const pop = seen.at >= 0 ? Math.max(0, 1 - (t - seen.at) / 0.25) : 0;
-  const hue = held ? BALLOON_HUES[held.color] : { light: "#6a6a78", dark: "#2c2c38" };
+  const hue = BALLOON_HUES[held.color];
   ui.rect(x - 2, y - 2, S + 4, S + 4, PAL.shadow);
   ui.rect(x, y, S, S, pop > 0.5 ? "#ffffff" : hue.light);
   ui.rect(x + 2, y + 2, S - 4, S - 4, hue.dark);
   ui.rect(x + 3, y + 3, S - 6, S - 6, "#14121e");
-  if (!held) {
-    ui.text("?", x + S / 2, y + S / 2 - 7, { scale: 2, color: "#3a3a4a", align: "center" });
-    return;
-  }
   const size = Math.round(ICON * (2 + pop * 0.8));
   ui.image(
     itemIcon(held.color, held.level),
@@ -276,11 +274,11 @@ function drawHud(
 
   // Bottom left: the item box (the held balloon's pixel icon) and the eggs (bananas, in
   // the code) beside it.
-  itemBox(ui, session, h.held, 8, ui.H - 58, t);
   if (!practice || h.bananas > 0) {
-    banana(ui, 62, ui.H - 24);
-    ui.text(`×${h.bananas}`, 77, ui.H - 23, { scale: 2, color: PAL.gold, ...big });
+    banana(ui, 9, ui.H - 22);
+    ui.text(`×${h.bananas}`, 24, ui.H - 21, { scale: 2, color: PAL.gold, ...big });
   }
+  itemBox(ui, session, h.held, 8, ui.H - 80, t);
 
   // Centre: countdown, GO!, banners, toasts.
   if (h.phase === "countdown") {
@@ -494,10 +492,16 @@ function resultsScreen(
   const solo = result.position === undefined;
   let clicked = -1;
   const best = Math.min(...result.lapTimes);
+  let pp: PixelPortraits | undefined;
   return {
     id: "RESULTS",
     enter() {
       game.ui.interactive = true;
+      pp = createPixelPortraits(game.stage.renderer);
+    },
+    exit() {
+      pp?.dispose();
+      pp = undefined;
     },
     frame(dt, actions) {
       t += dt;
@@ -515,60 +519,68 @@ function resultsScreen(
       ui.dim(0.3);
       const w = 300;
       const x = Math.round(ui.W / 2 - w / 2);
-      const y = 12;
-      ui.panel(x, y, w, 196, "parchment", "ink");
-      const racer = DESIGNS[game.selection.racer];
-      if (solo) {
-        ui.text("TIME TRIAL", ui.W / 2, y + 8, {
+      const y = 14;
+      ui.panel(x, y, w, 192, "parchment", "ink");
+      // Your racer, celebrating (or not), beside where you came.
+      const won = solo || (result.position ?? 9) <= 3;
+      if (pp) {
+        const img = pp.draw(
+          game.selection.racer,
+          { w: 48, h: 48, view: "head", yaw: 0.35 + Math.sin(t * 1.6) * 0.2, levels: 8 },
+          undefined,
+          1 / 60,
+          won ? 1 : 6,
+        );
+        ui.rect(x + 12, y + 10, 52, 52, PAL.ink);
+        ui.rect(x + 14, y + 12, 48, 48, won ? "#f6d77a" : "#c9b48a");
+        ui.image(img, x + 14, y + 12, 48, 48, false);
+      }
+      const cx = x + 64 + (w - 64) / 2;
+      if (solo)
+        ui.text("TIME TRIAL", cx, y + 14, {
           scale: 2,
           color: PAL.coral,
           outline: PAL.ink,
           align: "center",
         });
-      } else {
-        const pos = `${ordinal(result.position!)} PLACE!`;
-        ui.text(pos, ui.W / 2, y + 6, {
-          scale: 3,
-          color: result.position === 1 ? PAL.gold : PAL.coral,
+      else {
+        const pop = Math.max(0, 1 - t * 4);
+        ui.text(`${ordinal(result.position!)}!`, cx, y + 10 - Math.round(pop * 4), {
+          scale: 4,
+          color: result.position === 1 ? PAL.gold : result.position! <= 3 ? PAL.leaf : PAL.coral,
           outline: PAL.ink,
           align: "center",
         });
       }
-      ui.text(`${racer.name.toUpperCase()} · ${entry.name.toUpperCase()}`, ui.W / 2, y + 30, {
-        color: PAL.inkSoft,
+      ui.text(entry.name.toUpperCase(), cx, y + 46, { color: PAL.inkSoft, align: "center" });
+      // Your time, big, and the laps underneath.
+      ui.rect(x + 12, y + 68, w - 24, 1, "#b08a5a");
+      ui.text("TIME", x + w / 2, y + 74, { color: PAL.inkSoft, align: "center" });
+      ui.text(formatTime(result.totalTime), x + w / 2, y + 84, {
+        scale: 3,
+        color: PAL.ink,
         align: "center",
       });
-      // Left: times.
-      const lx = x + 14;
-      ui.text("TOTAL", lx, y + 46, { color: PAL.inkSoft });
-      ui.text(formatTime(result.totalTime), lx, y + 56, { scale: 2, color: PAL.ink });
-      if (rec.race && t % 0.8 < 0.55) ui.text("NEW RECORD!", lx + 40, y + 46, { color: PAL.coral });
-      ui.text("LAPS", lx, y + 80, { color: PAL.inkSoft });
-      result.lapTimes.forEach((lt, i) => {
-        const isBest = lt === best;
-        ui.text(`${i + 1}  ${formatTime(lt)}${isBest ? " ★" : ""}`, lx, y + 91 + i * 10, {
-          color: isBest ? PAL.coral : PAL.ink,
-        });
+      if (rec.race && t % 0.8 < 0.55)
+        ui.text("NEW RECORD!", x + w / 2, y + 108, { color: PAL.coral, align: "center" });
+      const laps = result.lapTimes.map(
+        (lt, i) => `${i + 1} ${formatTime(lt)}${lt === best ? "★" : ""}`,
+      );
+      const lapRow = laps.join("   ");
+      ui.text(lapRow, x + w / 2, y + 120, { color: PAL.ink, align: "center" });
+      const lapLine = rec.lap
+        ? "NEW LAP RECORD!"
+        : rec.previousLap !== undefined
+          ? `BEST LAP ${formatTime(result.bestLap)} · RECORD ${formatTime(rec.previousLap)}`
+          : `BEST LAP ${formatTime(result.bestLap)}`;
+      ui.text(lapLine, x + w / 2, y + 134, {
+        color: rec.lap ? PAL.coral : PAL.inkSoft,
+        align: "center",
       });
-      const ly = y + 94 + result.lapTimes.length * 10;
-      ui.text(`BEST LAP ${formatTime(result.bestLap)}`, lx, ly, { color: PAL.ink });
-      if (rec.lap) ui.text("NEW LAP RECORD!", lx, ly + 10, { color: PAL.coral });
-      else if (rec.previousLap !== undefined)
-        ui.text(`RECORD ${formatTime(rec.previousLap)}`, lx, ly + 10, { color: PAL.inkSoft });
-      // Right: the finishing order (racing the AI).
-      if (!solo) {
-        const rx = x + 160;
-        ui.text("FINISH ORDER", rx, y + 46, { color: PAL.inkSoft });
-        result.order.slice(0, 8).forEach((o, i) => {
-          const time = o.time !== undefined ? formatTime(o.time) : "--:--.--";
-          ui.text(`${i + 1} ${o.name.toUpperCase().padEnd(7)} ${time}`, rx, y + 57 + i * 10, {
-            color: o.you ? PAL.coral : PAL.ink,
-          });
-        });
-      }
+      ui.rect(x + 12, y + 148, w - 24, 1, "#b08a5a");
       menu.items.forEach((it, i) => {
         const bx = x + 10 + i * 96;
-        const r = ui.button(bx, y + 168, 88, 18, it.label, { focused: menu.focus === i });
+        const r = ui.button(bx, y + 160, 88, 18, it.label, { focused: menu.focus === i });
         if (r.hover && game.menuInput.pointer.moved) menu.focus = i;
         if (r.clicked && t > 0.3) clicked = i;
       });

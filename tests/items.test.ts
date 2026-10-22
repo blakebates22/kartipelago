@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
 import { NEUTRAL } from "../src/core/input";
 import type { ItemsConfig } from "../src/items/config";
-import { racerItems, stepEffects, bumpMass, type Racer } from "../src/items/effects";
+import { racerItems, stepEffects, bumpMass, shieldRam, type Racer } from "../src/items/effects";
 import { collectBalloon, emptyHeld, useAmmo } from "../src/items/inventory";
 import {
   collectBalloons,
@@ -299,6 +299,30 @@ describe("green traps", () => {
     fireItem(world, racers, 0, 1, items, () => 0);
     expect(world.traps).toHaveLength(1);
     expect(world.traps[0]).toMatchObject({ kind: "oil", y: 0.5, nx: 0.3, ny: 0.95 });
+  });
+
+  it("a shielded kart that rams another spins it out, either way round", () => {
+    const s = setup([
+      [0, 0],
+      [0, 1],
+    ]);
+    const [me, ai] = s.racers as [Racer, Racer];
+    me.items.shieldTime = 5;
+    ai.kart.bananas = 4;
+    ai.kart.speed = 20;
+    expect(shieldRam(me, ai, 0, 1, items, loss)).toEqual({ victim: 1, lost: 0 });
+    expect(ai.kart.spinTime).toBeGreaterThan(0);
+    expect(ai.kart.bananas).toBe(4);
+    // Immune for a moment, so staying in contact doesn't spin it again.
+    expect(shieldRam(me, ai, 0, 1, items, loss)).toBeNull();
+    // Both shielded, or neither: nothing happens.
+    ai.items.shieldTime = 5;
+    ai.items.immuneTime = 0;
+    expect(shieldRam(me, ai, 0, 1, items, loss)).toBeNull();
+    // The other way round: their shield spins you.
+    me.items.shieldTime = 0;
+    expect(shieldRam(me, ai, 0, 1, items, loss)).toEqual({ victim: 0, lost: 0 });
+    expect(me.kart.spinTime).toBeGreaterThan(0);
   });
 
   it("oil spins a racer out without costing bananas", () => {

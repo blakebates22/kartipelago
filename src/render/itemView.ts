@@ -17,8 +17,6 @@ export const BALLOON_COLORS: Record<BalloonColor, string> = {
 
 const UP = new THREE.Vector3(0, 1, 0);
 const trapUp = new THREE.Vector3();
-/** Shield colour by level: brighter and warmer as it gets longer. */
-const SHIELD_COLORS = ["#ffffff", "#fff3a0", "#ffc94a", "#ff9f1c"];
 
 const BLAST_COLORS: Record<string, string> = {
   missile: "#ff7b00",
@@ -275,21 +273,156 @@ export function createItemView(scene: THREE.Object3D) {
     return m;
   }, scene);
 
-  const shields = pool(
-    () =>
-      new THREE.Mesh(
-        new THREE.SphereGeometry(2.1, 18, 14),
-        new THREE.MeshStandardMaterial({
-          color: "#ffd23f",
-          emissive: "#ffd23f",
-          emissiveIntensity: 0.5,
-          transparent: true,
-          opacity: 0.3,
-          depthWrite: false,
-        }),
-      ),
-    scene,
-  );
+  // The shield: a plasma globe. A glass ball round the kart (clear in the middle,
+  // glowing violet at its edges), a bright core with a soft halo, and electric tendrils
+  // crackling from the core out to the glass, beading where they touch it (more of them
+  // at higher levels). Like the toy, the nearest rival draws a tendril toward it.
+  const plasmaGlass = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      tint: { value: new THREE.Color("#a070ff") },
+      edge: { value: new THREE.Color("#ff9cff") },
+    },
+    vertexShader: `
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vN = normalize(normalMatrix * normal);
+        vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 tint;
+      uniform vec3 edge;
+      varying vec3 vN;
+      varying vec3 vV;
+      void main() {
+        float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.6);
+        gl_FragColor = vec4(mix(tint, edge, f) * (0.06 + f * 0.9), 1.0);
+      }`,
+  });
+  const additive = (color: string, opacity: number) =>
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+  const plasmaCore = additive("#fff0ff", 0.95);
+  const plasmaHalo = additive("#d070ff", 0.35);
+  const plasmaBead = additive("#ffd8ff", 0.9);
+  const boltMat = new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const BOLTS = 10;
+  const SEGS = 7;
+  /** Each segment is two crossed quads (so a tendril has width from any angle). */
+  const VERTS_PER_SEG = 8;
+  const beadGeo = new THREE.SphereGeometry(0.11, 6, 4);
+  const shields = pool(() => {
+    const g = new THREE.Group();
+    const glass = new THREE.Mesh(new THREE.SphereGeometry(2.1, 24, 16), plasmaGlass);
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), plasmaCore);
+    core.name = "core";
+    const halo = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 8), plasmaHalo);
+    halo.name = "halo";
+    const geo = new THREE.BufferGeometry();
+    const nv = BOLTS * SEGS * VERTS_PER_SEG;
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(nv * 3), 3));
+    const idx: number[] = [];
+    for (let k = 0; k < BOLTS * SEGS; k++)
+      for (const q of [0, 4]) {
+        const o = k * VERTS_PER_SEG + q;
+        idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2);
+      }
+    geo.setIndex(idx);
+    const bolts = new THREE.Mesh(geo, boltMat);
+    bolts.name = "bolts";
+    bolts.frustumCulled = false;
+    g.add(glass, halo, core, bolts);
+    for (let k = 0; k < BOLTS; k++) {
+      const bead = new THREE.Mesh(beadGeo, plasmaBead);
+      bead.name = `bead${k}`;
+      g.add(bead);
+    }
+    g.userData = { next: 0 };
+    return g;
+  }, scene);
+  const boltColor = new THREE.Color();
+  const toRival = new THREE.Vector3();
+  const cA = new THREE.Vector3();
+  const cB = new THREE.Vector3();
+  const dir = new THREE.Vector3();
+  const sideA = new THREE.Vector3();
+  const sideB = new THREE.Vector3();
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+  const WORLD_X = new THREE.Vector3(1, 0, 0);
+
+  /** New tendrils: jagged paths from the core to random points on the glass. */
+  function crackle(g: THREE.Group, level: number, toward: THREE.Vector3 | null) {
+    const n = Math.min(BOLTS, 4 + level * 2);
+    const bolts = g.getObjectByName("bolts") as THREE.Mesh;
+    const pos = bolts.geometry.getAttribute("position") as THREE.BufferAttribute;
+    const col = bolts.geometry.getAttribute("color") as THREE.BufferAttribute;
+    const end = new THREE.Vector3();
+    for (let k = 0; k < BOLTS; k++) {
+      const bead = g.getObjectByName(`bead${k}`)!;
+      bead.visible = k < n;
+      if (k >= n) {
+        for (let q = 0; q < SEGS * VERTS_PER_SEG; q++)
+          pos.setXYZ(k * SEGS * VERTS_PER_SEG + q, 0, 0, 0);
+        continue;
+      }
+      // Toward the nearest rival for the first tendril (if one's close), else anywhere
+      // (a little more often up and out than down into the kart).
+      if (k === 0 && toward) end.copy(toward);
+      else end.set(Math.random() * 2 - 1, Math.random() * 1.7 - 0.5, Math.random() * 2 - 1);
+      end.normalize().multiplyScalar(2.05);
+      bead.position.copy(end);
+      boltColor.setHSL(0.76 + Math.random() * 0.14, 1, 0.6 + Math.random() * 0.2);
+      cA.set(0, 0, 0);
+      for (let q = 0; q < SEGS; q++) {
+        const f = (q + 1) / SEGS;
+        cB.copy(end).multiplyScalar(f);
+        if (q < SEGS - 1) {
+          const jag = 0.42 * Math.sin(f * Math.PI);
+          cB.x += (Math.random() - 0.5) * jag;
+          cB.y += (Math.random() - 0.5) * jag;
+          cB.z += (Math.random() - 0.5) * jag;
+        }
+        // Two quads crossed along the segment; thicker near the core.
+        dir.subVectors(cB, cA).normalize();
+        sideA.crossVectors(dir, Math.abs(dir.y) > 0.9 ? WORLD_X : WORLD_UP).normalize();
+        sideB.crossVectors(dir, sideA).normalize();
+        const w0 = 0.07 * (1.3 - (q / SEGS) * 0.7);
+        const w1 = 0.07 * (1.3 - f * 0.7);
+        const o = (k * SEGS + q) * VERTS_PER_SEG;
+        let v = o;
+        for (const side of [sideA, sideB]) {
+          pos.setXYZ(v++, cA.x + side.x * w0, cA.y + side.y * w0, cA.z + side.z * w0);
+          pos.setXYZ(v++, cA.x - side.x * w0, cA.y - side.y * w0, cA.z - side.z * w0);
+          pos.setXYZ(v++, cB.x + side.x * w1, cB.y + side.y * w1, cB.z + side.z * w1);
+          pos.setXYZ(v++, cB.x - side.x * w1, cB.y - side.y * w1, cB.z - side.z * w1);
+        }
+        const glow = 1.15 - f * 0.45;
+        for (let c = o; c < o + VERTS_PER_SEG; c++)
+          col.setXYZ(c, boltColor.r * glow, boltColor.g * glow, boltColor.b * glow);
+        cA.copy(cB);
+      }
+    }
+    pos.needsUpdate = true;
+    col.needsUpdate = true;
+  }
+
   const held = pool(() => new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), bubbleMat), scene);
   const beams = pool(
     () =>
@@ -372,19 +505,36 @@ export function createItemView(scene: THREE.Object3D) {
         const p = karts[i];
         if (!p) return;
         if (it.shieldTime > 0) {
-          const m = shields.get(s++) as THREE.Mesh;
-          const mat = m.material as THREE.MeshStandardMaterial;
-          mat.color.set(SHIELD_COLORS[it.shieldLevel] ?? "#ffd23f");
-          mat.emissive.copy(mat.color);
-          // Flickers in its last second, so you know it's about to drop.
+          const g = shields.get(s++) as THREE.Group;
+          // Centred on the kart (its origin is on the ground).
+          g.position.copy(p).y += 0.9;
+          g.scale.setScalar(1 + 0.06 * it.shieldLevel + Math.sin(seconds * 6) * 0.02);
+          // In its last second it sputters, so you know it's about to drop.
           const ending = it.shieldTime < 1 && Math.floor(seconds * 12) % 2 === 0;
-          mat.opacity = ending ? 0.08 : 0.22 + 0.08 * it.shieldLevel;
-          m.scale.setScalar(1 + 0.08 * it.shieldLevel + Math.sin(seconds * 6) * 0.03);
-          m.position.copy(p);
+          g.visible = !ending;
+          const u = g.userData as { next: number };
+          if (seconds >= u.next) {
+            // The nearest rival within reach draws a tendril.
+            let best = 7;
+            let near: THREE.Vector3 | null = null;
+            karts.forEach((q, j) => {
+              if (j === i || !q) return;
+              const d = q.distanceTo(p);
+              if (d < best) {
+                best = d;
+                near = toRival.copy(q).sub(p);
+              }
+            });
+            crackle(g, it.shieldLevel, near);
+            u.next = seconds + 0.045 + Math.random() * 0.04;
+          }
+          const flick = 1 + Math.sin(seconds * 23) * 0.15 + Math.random() * 0.1;
+          g.getObjectByName("core")!.scale.setScalar(flick);
+          g.getObjectByName("halo")!.scale.setScalar(0.9 + flick * 0.2);
         }
         if (it.bubbleTime > 0) {
           const m = held.get(h++);
-          m.position.copy(p).y += 0.6;
+          m.position.copy(p).y += 1.0;
           m.scale.setScalar(1 + Math.sin(seconds * 5) * 0.04);
         }
         const target = it.magnetTime > 0 ? it.magnetTarget : -1;
@@ -398,8 +548,8 @@ export function createItemView(scene: THREE.Object3D) {
           if (a < 0 || b < 0 || !pa || !pb) continue;
           const m = beams.get(bm++) as THREE.Mesh;
           (m.material as THREE.MeshBasicMaterial).color.setHSL((seconds * 1.5) % 1, 1, 0.6);
-          m.position.copy(pa).y += 0.6;
-          tmp.copy(pb).y += 0.6;
+          m.position.copy(pa).y += 1.0;
+          tmp.copy(pb).y += 1.0;
           m.lookAt(tmp);
           m.scale.set(1, 1, pa.distanceTo(pb));
         }

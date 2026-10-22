@@ -4,7 +4,7 @@ Balloons float over the track (`balloons: [{ at, across, color }]` in each track
 and come back `items.balloonRespawnSec` (half a second) after being taken. Press and
 **release** the item button (E or F; B or Y on a gamepad) to use what you hold.
 
-**The item box** (bottom left of the HUD) shows what you hold as a pixel icon, one for
+**The item box** (bottom left of the HUD, there only while you hold something) shows what you hold as a pixel icon, one for
 every colour and level (`src/ui/itemIcons.ts`), in a frame of the balloon's colour, with
 a pip per level and the ammo count when there's more than one shot. A new or upgraded
 item pops in with a jingle that climbs with the level (two notes, three, then a
@@ -93,7 +93,9 @@ lost speed, a pop into the air, or a boost ending.
   corners. Missiles explode on walls, tunnel rock, trees and the boundary.
 - **Traps** drop `trapBehind` metres behind the kart. The racer who dropped one can't
   set it off for `trapOwnerGrace` seconds.
-- **Shields** block missiles and traps (the trap is used up). A shielded kart is
+- **Shields** look like a plasma globe round the kart: a glass ball glowing at its edges,
+  a bright core and electric tendrils crackling out to the glass (more at higher levels),
+  one reaching toward the nearest rival. They block missiles and traps (the trap is used up). A shielded kart is
   `shieldMass` times heavier in bumps, so it shoves others aside. It flickers in its
   last second.
 - **Magnets** need a rival ahead within range, and keep the balloon if there isn't one.

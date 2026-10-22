@@ -9,7 +9,8 @@ import type { KartConfig, KartState } from "../vehicles/kart";
 import type { ItemsConfig } from "./config";
 import { emptyHeld, type Held } from "./inventory";
 
-export type HitKind = "missile" | "oil" | "mine" | "bubble";
+/** What hit a racer. "shield": rammed by a kart with its shield up. */
+export type HitKind = "missile" | "oil" | "mine" | "bubble" | "shield";
 
 export interface RacerItems {
   held: Held;
@@ -61,6 +62,7 @@ const LOSS: Record<HitKind, keyof BananaLossConfig | null> = {
   mine: "lossWeapon",
   oil: "lossSpin",
   bubble: null,
+  shield: null,
 };
 
 export interface HitResult {
@@ -112,6 +114,8 @@ export function hitRacer(
     k.grounded = false;
   } else if (kind === "oil") {
     spinOut(k, cfg.oilSpinSec, cfg.oilSpeedKeep);
+  } else if (kind === "shield") {
+    spinOut(k, cfg.shieldSpinSec, cfg.shieldSpeedKeep);
   } else {
     it.bubbleTime = cfg.bubbleSec;
     it.immuneTime = Math.max(it.immuneTime, cfg.bubbleSec + cfg.hitImmuneSec);
@@ -122,6 +126,26 @@ export function hitRacer(
     k.zipCrashed = true;
   }
   return { blocked: false, lost };
+}
+
+/**
+ * Two karts touched. If exactly one has its shield up, the other spins out (unless it's
+ * immune from a hit a moment ago). Returns the racer who spun, or -1.
+ */
+export function shieldRam(
+  a: Racer,
+  b: Racer,
+  ia: number,
+  ib: number,
+  cfg: ItemsConfig,
+  loss: BananaLossConfig,
+): { victim: number; lost: number } | null {
+  const sa = a.items.shieldTime > 0;
+  const sb = b.items.shieldTime > 0;
+  if (sa === sb) return null;
+  const [v, iv] = sa ? [b, ib] : [a, ia];
+  const res = hitRacer(v.kart, v.items, "shield", cfg, loss);
+  return res.blocked ? null : { victim: iv, lost: res.lost };
 }
 
 export function activateShield(it: RacerItems, level: number, cfg: ItemsConfig) {

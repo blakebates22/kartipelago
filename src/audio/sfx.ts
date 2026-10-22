@@ -113,15 +113,15 @@ export function createSfx(engine: AudioEngine) {
       // The squeal: two detuned saws through a resonant band, wobbling a little.
       const band = c.createBiquadFilter();
       band.type = "bandpass";
-      band.frequency.value = 1500;
-      band.Q.value = 6;
+      band.frequency.value = 620;
+      band.Q.value = 4;
       const squeal = c.createGain();
       squeal.gain.value = 0.55;
       band.connect(squeal).connect(gain);
       const oscs = [0, 7].map((cents) => {
         const o = c.createOscillator();
         o.type = "sawtooth";
-        o.frequency.value = 700;
+        o.frequency.value = 340;
         o.detune.value = cents;
         o.connect(band);
         o.start();
@@ -130,7 +130,7 @@ export function createSfx(engine: AudioEngine) {
       const wob = c.createOscillator();
       const wobDepth = c.createGain();
       wob.frequency.value = 11;
-      wobDepth.gain.value = 22;
+      wobDepth.gain.value = 12;
       wob.connect(wobDepth);
       for (const o of oscs) wobDepth.connect(o.frequency);
       wob.start();
@@ -154,9 +154,9 @@ export function createSfx(engine: AudioEngine) {
       scrubSrc.loop = true;
       const scrubF = c.createBiquadFilter();
       scrubF.type = "lowpass";
-      scrubF.frequency.value = 420;
+      scrubF.frequency.value = 300;
       const scrub = c.createGain();
-      scrub.gain.value = 2.2;
+      scrub.gain.value = 2.8;
       scrubSrc.connect(scrubF).connect(scrub).connect(gain);
       scrubSrc.start();
       let stopped = false;
@@ -166,9 +166,10 @@ export function createSfx(engine: AudioEngine) {
           const now = c.currentTime;
           const v = Math.max(0, Math.min(1, level));
           gain.gain.setTargetAtTime(v * 0.32, now, v > gain.gain.value ? 0.03 : 0.08);
-          const f = 620 + Math.max(0, Math.min(1, pitch)) * 260;
+          // A low, rubbery squeal: about 300-450 Hz (higher sounded shrill).
+          const f = 300 + Math.max(0, Math.min(1, pitch)) * 150;
           for (const o of oscs) o.frequency.setTargetAtTime(f, now, 0.1);
-          band.frequency.setTargetAtTime(f * 2.1, now, 0.1);
+          band.frequency.setTargetAtTime(f * 1.7, now, 0.1);
         },
         stop() {
           if (stopped) return;
@@ -182,9 +183,9 @@ export function createSfx(engine: AudioEngine) {
     },
     /** Into a drift: a short bark of the tyres. */
     skidChirp(volume: number) {
-      note(980, 0, 0.11, volume * 0.22, 760, "sawtooth");
-      note(1470, 0, 0.08, volume * 0.1, 1100, "sawtooth");
-      noise(0, 0.08, volume * 0.25, 1400, 400);
+      note(460, 0, 0.12, volume * 0.24, 340, "sawtooth");
+      note(690, 0, 0.08, volume * 0.08, 520, "sawtooth");
+      noise(0, 0.09, volume * 0.25, 900, 250);
     },
     /** The enhanced (released-throttle) boost took: a bright double chime. */
     enhanced(volume: number) {
@@ -218,6 +219,14 @@ export function createSfx(engine: AudioEngine) {
     explosion(volume: number) {
       noise(0, 0.7, volume, 2500, 80);
       note(90, 0, 0.5, volume, 40, "square");
+    },
+    /** A shield rams a kart: a crackling electric zap and a spin. */
+    shieldZap(volume: number) {
+      for (let i = 0; i < 5; i++) {
+        const f = 900 + Math.random() * 900;
+        note(f, i * 0.035, 0.05, volume * 0.35, f * 0.5, "square");
+      }
+      note(420, 0.02, 0.35, volume * 0.5, 160, "sawtooth");
     },
     shieldBlock(volume: number) {
       note(1200, 0, 0.2, volume, 900, "sine");

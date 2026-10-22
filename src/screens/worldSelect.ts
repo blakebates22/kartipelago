@@ -16,11 +16,16 @@ import { ACCENTS, PAL, focusRing } from "../ui/textures";
 import { hints, titleSign } from "./common";
 import { modeSelect } from "./modeSelect";
 import { preview, trackSelect } from "./trackSelect";
+import { trackMenu } from "./trackMenu";
 
 /** How long the pick animation plays before the track select opens, s. */
 const PICK_SEC = 0.42;
 
 export function worldSelect(game: Game): Screen {
+  // Prototypes of a reworked Tracks menu (?tracks=a|b|c) while we choose one.
+  const proto =
+    typeof location !== "undefined" ? new URLSearchParams(location.search).get("tracks") : null;
+  if (proto === "a" || proto === "b" || proto === "c") return trackMenu(game, proto);
   let focus = Math.max(0, WORLDS.indexOf(currentWorld(game.selection)));
   let t = 0;
   let picked = -1;

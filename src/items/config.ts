@@ -28,6 +28,9 @@ export interface ItemsConfig {
   missilePop: number;
 
   oilRadius: number;
+  /** Rammed by a shielded kart: a spin-out like oil's (no bananas lost). */
+  shieldSpinSec: number;
+  shieldSpeedKeep: number;
   oilSpinSec: number;
   oilSpeedKeep: number;
   mineRadius: number;
