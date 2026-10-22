@@ -10,7 +10,7 @@
  */
 import * as THREE from "three";
 import { Build, box, cyl, lowDetail, torus, tyre } from "./shapes";
-import { facetMaterial } from "./paint";
+import { facetMaterial, skinMaterial } from "./paint";
 
 export interface KartModel {
   root: THREE.Group;
@@ -61,6 +61,11 @@ export interface WheelLook {
   sides?: number;
   /** A ring of bolts or glow on the hub. */
   ring?: string;
+  /**
+   * Racing slicks: a smooth, rounder tyre with no tread blocks, a coloured line round
+   * the sidewall and a spoked rim (the sleek karts).
+   */
+  slick?: { stripe: string; spokes: number };
 }
 
 /** A racer's kart: the body kit on the shared chassis. */
@@ -72,6 +77,8 @@ export interface BodyKit {
   wheel: WheelLook;
   /** Steering wheel colour. */
   steering: string;
+  /** Smooth-shaded bodywork (sleek, glossy curves) instead of flat facets. */
+  smooth?: boolean;
 }
 
 export function wheelGeometry(r: number, w: WheelLook, far = false) {
@@ -81,6 +88,7 @@ export function wheelGeometry(r: number, w: WheelLook, far = false) {
       .add(tyre(r, CHASSIS.tyreWidth, 0.07, 6), w.tyre)
       .add(cyl(r * 0.6, r * 0.6, CHASSIS.tyreWidth + 0.02, 6), w.rim, { r: [0, 0, Math.PI / 2] })
       .build();
+  if (w.slick) return slickWheel(b, r, w, w.slick);
   b.add(tyre(r, CHASSIS.tyreWidth, 0.07, w.sides ?? 10), w.tyre);
   // Tread blocks round the tyre, chunky like the era's karts.
   const n = (w.sides ?? 10) + 2;
@@ -102,9 +110,32 @@ export function wheelGeometry(r: number, w: WheelLook, far = false) {
   return b.build();
 }
 
+/** A racing slick: round tyre, a stripe on each sidewall, a dished rim with spokes. */
+function slickWheel(b: Build, r: number, w: WheelLook, s: { stripe: string; spokes: number }) {
+  const hw = CHASSIS.tyreWidth / 2;
+  const sides = w.sides ?? 18;
+  b.add(tyre(r, CHASSIS.tyreWidth, 0.1, sides), w.tyre);
+  for (const x of [1, -1]) {
+    b.add(torus(r * 0.8, 0.018, 3, sides), s.stripe, { r: [0, Math.PI / 2, 0], p: [x * (hw + 0.002), 0, 0] });
+    // The rim, sunk into the tyre, and its spokes.
+    b.add(cyl(r * 0.66, r * 0.66, 0.02, sides), w.rim, { r: [0, 0, Math.PI / 2], p: [x * (hw - 0.02), 0, 0] });
+    b.add(cyl(r * 0.5, r * 0.5, 0.03, sides), "#1c1a1e", { r: [0, 0, Math.PI / 2], p: [x * (hw - 0.012), 0, 0] });
+    for (let k = 0; k < s.spokes; k++) {
+      const a = (k / s.spokes) * Math.PI * 2;
+      b.add(box(0.03, r * 0.5, 0.06, 0.01), w.rim, {
+        p: [x * (hw - 0.0), Math.cos(a) * r * 0.27, Math.sin(a) * r * 0.27],
+        r: [a, 0, 0],
+      });
+    }
+    b.add(cyl(r * 0.16, r * 0.2, 0.05, 8), w.cap, { r: [0, 0, Math.PI / 2], p: [x * (hw + 0.01), 0, 0] });
+  }
+  return b.build();
+}
+
 /** Build a kart: the shared chassis (wheels, steering, attachment points) plus a body kit. */
 export function buildKart(kit: BodyKit, detail: 0 | 1 = 0): KartModel {
   const mat = facetMaterial();
+  const shellMat = kit.smooth ? skinMaterial() : mat;
   const root = new THREE.Group();
   root.name = "kart";
   const body = new THREE.Group();
@@ -114,7 +145,7 @@ export function buildKart(kit: BodyKit, detail: 0 | 1 = 0): KartModel {
   if (detail === 1) lowDetail(() => kit.shell(b, 1));
   else kit.shell(b, 0);
   const shell = b.build();
-  body.add(new THREE.Mesh(shell, mat));
+  body.add(new THREE.Mesh(shell, shellMat));
   if (detail === 0) kit.decorate?.(body);
 
   const front = wheelGeometry(CHASSIS.wheels[0]!.r, kit.wheel, detail === 1);

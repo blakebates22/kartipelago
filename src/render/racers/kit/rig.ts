@@ -141,6 +141,19 @@ export interface EyeStyle {
   /** How far the pupil sits toward the nose (0..1), a friendly look. */
   inward?: number;
   brow?: { color: string; at: V3; size: V3; tilt?: number };
+  /**
+   * Slant the upper lid (radians; >0 drops its inner end, a determined look, <0 a
+   * worried one). With the lids part-closed it shapes the whole expression.
+   */
+  lidTilt?: number;
+  /** A cheek pushed up under the eye (0..1): a grin's squint. */
+  cheek?: number;
+  /** A lighter ring round the iris, for colourful eyes. */
+  irisRing?: string;
+  /** Iris size (1 = the classic look). */
+  irisScale?: number;
+  /** Where the pupils rest (a sideways glance), as a fraction of the eye: [x, y]. */
+  gaze?: [number, number];
 }
 
 /** Two big cartoon eyes with blinking lids, pupils that look about, and brows. */
@@ -165,18 +178,25 @@ export function buildEyes(
     );
     // Iris and pupil on the front, with a bright highlight.
     const look = new THREE.Group();
-    const inward = (s.inward ?? 0.2) * -side * rx * 0.25;
-    const b = new Build()
-      .add(ellipsoid(10, 7), s.iris, {
-        p: [inward, -ry * 0.04, rz * 0.62],
-        s: [rx * 0.62, ry * 0.7, rz * 0.42],
-      })
+    const inward = (s.inward ?? 0.2) * -side * rx * 0.25 + (s.gaze?.[0] ?? 0) * rx;
+    const gy = -ry * 0.04 + (s.gaze?.[1] ?? 0) * ry;
+    const k = s.irisScale ?? 1;
+    const b = new Build();
+    if (s.irisRing)
+      b.add(ellipsoid(12, 8), s.irisRing, {
+        p: [inward, gy, rz * 0.58],
+        s: [rx * 0.66 * k, ry * 0.74 * k, rz * 0.46],
+      });
+    b.add(ellipsoid(10, 7), s.iris, {
+      p: [inward, gy, rz * (s.irisRing ? 0.66 : 0.62)],
+      s: [rx * (s.irisRing ? 0.54 : 0.62) * k, ry * (s.irisRing ? 0.62 : 0.7) * k, rz * 0.42],
+    })
       .add(ellipsoid(8, 6), s.pupil ?? "#120d10", {
-        p: [inward, -ry * 0.04, rz * 0.8],
-        s: [rx * 0.4, ry * 0.48, rz * 0.28],
+        p: [inward, gy, rz * 0.8],
+        s: [rx * 0.4 * Math.min(1, k), ry * 0.48 * Math.min(1, k), rz * 0.28],
       })
       .add(ellipsoid(6, 4), "#ffffff", {
-        p: [inward + rx * 0.2 * side, ry * 0.26, rz * 0.98],
+        p: [inward + rx * 0.2 * side, gy + ry * 0.3, rz * 0.98],
         s: [rx * 0.17, ry * 0.19, rz * 0.08],
       });
     look.add(new THREE.Mesh(b.build(), mat));
@@ -190,7 +210,24 @@ export function buildEyes(
         mat,
       ),
     );
-    g.add(lid);
+    if (s.lidTilt) {
+      const tilt = new THREE.Group();
+      tilt.rotation.z = s.lidTilt * side;
+      tilt.add(lid);
+      g.add(tilt);
+    } else g.add(lid);
+    if (s.cheek)
+      g.add(
+        new THREE.Mesh(
+          new Build()
+            .add(ellipsoid(10, 6), s.lid, {
+              p: [0, -ry * (1.25 - s.cheek * 0.55), rz * 0.25],
+              s: [rx * 1.12, ry * 0.62, rz * 0.95],
+            })
+            .build(),
+          mat,
+        ),
+      );
     head.add(g);
     eyes.push({ group: g, lid, look, side });
     if (s.brow) {

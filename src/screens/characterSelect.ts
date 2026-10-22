@@ -23,6 +23,7 @@ import { PAL } from "../ui/textures";
 import { wrap } from "../ui/font";
 import { hints, titleSign } from "./common";
 import { modeSelect } from "./modeSelect";
+import { rosterSelect, type RosterVariant } from "./rosterSelect";
 import { titleScreen } from "./title";
 
 /** Where the other racers wait, on lower pedestals in front (x, z). */
@@ -191,6 +192,9 @@ function buildScene() {
 }
 
 export function characterSelect(game: Game): Screen {
+  // Prototypes of a pixel-art roster (?roster=a|b|c) while we choose one.
+  const proto = typeof location !== "undefined" ? new URLSearchParams(location.search).get("roster") : null;
+  if (proto === "a" || proto === "b" || proto === "c") return rosterSelect(game, proto as RosterVariant);
   let index = Math.max(0, RACER_IDS.indexOf(game.settings.last.racer));
   let built: ReturnType<typeof buildScene> | undefined;
   let racer: Racer | undefined;
