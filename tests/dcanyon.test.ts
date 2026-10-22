@@ -86,7 +86,7 @@ function twistiness(points: { x: number; z: number }[]) {
 describe("Dragon Canyon", () => {
   it("is the Dragon Kingdom's second course, with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks).toEqual(["dragon_isles", id, "snow_dragon_pass"]);
+    expect(w.tracks).toEqual(["dragon_isles", id, "snow_dragon_pass", "celestial_dragon_festival"]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.theme).toBe(id);

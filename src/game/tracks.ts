@@ -201,6 +201,17 @@ export const TRACKS: TrackEntry[] = [
     music: "snow_dragon",
     load: { scene: "track", packageId: "snow_dragon_pass" },
   },
+  {
+    id: "celestial_dragon_festival",
+    name: "Celestial Dragon Festival",
+    description:
+      "The grand finale: the dragon kingdom's sacred heart on the night of its greatest festival. Over the Waterfall Bridge, up to the Star Bridge above the clouds, round the great golden rings of the observatory and down to the palace, while the sky fills with fireworks, more every lap, until the whole kingdom erupts on the last.",
+    preview: "previews/celestial_dragon_festival.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "celestial_dragon_festival",
+    music: "celestial",
+    load: { scene: "track", packageId: "celestial_dragon_festival" },
+  },
   // Test World.
   {
     id: "dino_demo",

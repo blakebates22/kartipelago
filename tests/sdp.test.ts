@@ -72,7 +72,7 @@ function sharedWith(
 describe("Snow Dragon Pass", () => {
   it("is the Dragon Kingdom's third course, with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks).toEqual(["dragon_isles", "dragon_canyon", id]);
+    expect(w.tracks).toEqual(["dragon_isles", "dragon_canyon", id, "celestial_dragon_festival"]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.theme).toBe(id);

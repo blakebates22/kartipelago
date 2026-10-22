@@ -84,7 +84,7 @@ describe("Dragon Isles", () => {
     expect(people.length).toBeGreaterThan(300);
     // (Dragon Isles has every festival role; the canyon's labourers and the pass's
     // winter roles belong to the later courses.)
-    const later = ["worker", "hauler", "huddle", "queue", "monk"];
+    const later = ["worker", "hauler", "huddle", "queue", "monk", "worship"];
     for (const r of ROLES.filter((x) => !later.includes(x)))
       expect(
         people.some((v) => v.role === r),

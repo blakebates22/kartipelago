@@ -97,6 +97,7 @@ import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createDepthsLife, hasDepthsLife, type DepthsLife } from "./depthsLife";
 import { createIslesLife, hasIslesLife, type IslesLife } from "./islesLife";
 import { createSnowLife, hasSnowLife, type SnowLife } from "./snowLife";
+import { createFestivalLife, hasFestivalLife, type FestivalLife } from "./festivalLife";
 import { createMammothView } from "../render/mammoth";
 import {
   createBellView,
@@ -380,6 +381,8 @@ export interface Hazards {
   readonly isles?: IslesLife;
   /** Snow Dragon Pass's blizzard, prayer flags, bells and avalanches (game/snowLife.ts). */
   readonly snow?: SnowLife;
+  /** Celestial Dragon Festival's fireworks, lanterns and observatory (game/festivalLife.ts). */
+  readonly festival?: FestivalLife;
   dispose(): void;
 }
 
@@ -399,6 +402,8 @@ export function createHazards(opts: {
   /** The race clock (seconds; negative in the countdown). Timed hazards (the dragon)
    * follow it, so every race sees the same attacks. Defaults to the hazards' own. */
   clock?: () => number;
+  /** The player's lap (the festival grows with it), if there's a race. */
+  lap?: () => { lap: number; laps: number; finished: boolean } | undefined;
 }): Hazards {
   const { cfg, track } = opts;
   const vol = () => (opts.quiet ? 0 : cfg.volume);
@@ -1202,6 +1207,20 @@ export function createHazards(opts: {
     smoke?.burst(s.x, s.y + 0.6, s.z, 8, 1.5, 1.5, 1.1, 0x5a4a48);
   }
 
+  // Celestial Dragon Festival: the fireworks, the lanterns, the observatory's rings.
+  const festival = hasFestivalLife(opts.entities)
+    ? createFestivalLife({
+        group,
+        entities: opts.entities,
+        track,
+        sfx: opts.sfx,
+        volume: vol,
+        clock: raceClock,
+        lap: opts.lap,
+        quiet: opts.quiet,
+        headless: opts.headless,
+      })
+    : undefined;
   // Impact Depths: triceratops, raptors, meteors, the core, motes, glows and the air.
   // Dragon Isles: the great dragon, the villagers, the mill wheels.
   const isles = hasIslesLife(opts.entities)
@@ -1214,6 +1233,7 @@ export function createHazards(opts: {
         volume: vol,
         quiet: opts.quiet,
         headless: opts.headless,
+        stage: festival ? () => festival.stage() : undefined,
       })
     : undefined;
   const depths = hasDepthsLife(opts.entities)
@@ -1250,6 +1270,7 @@ export function createHazards(opts: {
     depths,
     isles,
     snow: snowLife,
+    festival,
     dinos,
     flyers,
     handles: (surface) => surface === "lava" || surface === "deep_water",
@@ -1541,6 +1562,7 @@ export function createHazards(opts: {
       depths?.render(t, dt, listener);
       isles?.render(t, dt, listener);
       snowLife?.render(t, dt, listener);
+      festival?.render(t, dt, listener);
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
       for (const p of party) {
@@ -2420,6 +2442,7 @@ export function createHazards(opts: {
       depths?.dispose();
       isles?.dispose();
       snowLife?.dispose();
+      festival?.dispose();
       for (const d of dragons) {
         d.view?.dispose();
         d.flames?.dispose();

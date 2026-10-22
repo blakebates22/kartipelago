@@ -4941,6 +4941,12 @@ import snow_textures  # noqa: E402
 MATERIALS += snow_textures.materials(sys.modules[__name__])
 THEMES.append(snow_textures.THEME)
 
+# Celestial Dragon Festival (Dragon Kingdom, course 4).
+import cdf_textures  # noqa: E402
+
+MATERIALS += cdf_textures.materials(sys.modules[__name__])
+THEMES.append(cdf_textures.THEME)
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

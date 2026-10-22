@@ -22,7 +22,8 @@
  * folding, rippling and drifting (a small shader: no textures).
  *
  * A night sky can make the sun a full moon ("sun": { "face": "moon", ... }: a pale disc
- * with grey seas and craters, a soft halo) and hang a cloud over the land that now and
+ * with grey seas and craters, a soft halo), or a crescent ("face": "crescent": the same
+ * moon, mostly in shadow, a bright sickle on one side) and hang a cloud over the land that now and
  * then gathers into the shape of a skull ("skull": { "azimuth": 50, "elevation": 30,
  * "size": 30, "color", "shade", "period": 45 }): for a few seconds of every period it
  * slowly forms, lingers and drifts apart again, and the rest of the time it's gone.
@@ -38,7 +39,13 @@ export interface SkyDomeSpec {
    * sky than the light really comes from, so you see it while racing; its compass
    * direction always matches the light.
    */
-  sun?: { color?: string; size?: number; glow?: string; elevation?: number; face?: "moon" };
+  sun?: {
+    color?: string;
+    size?: number;
+    glow?: string;
+    elevation?: number;
+    face?: "moon" | "crescent";
+  };
   clouds?: {
     count?: number;
     color?: string;
@@ -229,8 +236,9 @@ function sunTexture(color: string, glow: string) {
   return t;
 }
 
-/** A full moon: a pale disc with grey seas and a few craters, and a soft halo. */
-function moonTexture(color: string, glow: string) {
+/** A full moon: a pale disc with grey seas and a few craters, and a soft halo. A crescent
+ * shades all but a sickle on its upper left (the night sky's colour, faintly lit). */
+function moonTexture(color: string, glow: string, crescent = false) {
   const { c, g } = canvas(256, 256);
   const halo = g.createRadialGradient(128, 128, 40, 128, 128, 128);
   halo.addColorStop(0, `${glow}cc`);
@@ -284,6 +292,19 @@ function moonTexture(color: string, glow: string) {
   g.fillStyle = limb;
   g.fillRect(0, 0, 256, 256);
   g.restore();
+  if (crescent) {
+    // The dark part: cut away (moon and halo both) by a disc offset down and right, with
+    // a soft edge, so only the sickle shines and the night sky shows through the rest.
+    const shade = g.createRadialGradient(152, 146, 0, 152, 146, 128);
+    shade.addColorStop(0, "rgba(0,0,0,1)");
+    shade.addColorStop(0.46, "rgba(0,0,0,1)");
+    shade.addColorStop(0.54, "rgba(0,0,0,0.85)");
+    shade.addColorStop(1, "rgba(0,0,0,0)");
+    g.globalCompositeOperation = "destination-out";
+    g.fillStyle = shade;
+    g.fillRect(0, 0, 256, 256);
+    g.globalCompositeOperation = "source-over";
+  }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -459,9 +480,13 @@ export function createSkyDome(
     const el = (spec.sun.elevation * Math.PI) / 180;
     sd.set((sd.x / flat) * Math.cos(el), Math.sin(el), (sd.z / flat) * Math.cos(el));
   }
-  const moon = spec.sun?.face === "moon";
+  const moon = spec.sun?.face === "moon" || spec.sun?.face === "crescent";
   const sunTex = moon
-    ? moonTexture(spec.sun?.color ?? "#f4f2ea", spec.sun?.glow ?? "#9ab0ff")
+    ? moonTexture(
+        spec.sun?.color ?? "#f4f2ea",
+        spec.sun?.glow ?? "#9ab0ff",
+        spec.sun?.face === "crescent",
+      )
     : sunTexture(spec.sun?.color ?? "#fff4c2", spec.sun?.glow ?? "#ffe58a");
   const sunMat = new THREE.SpriteMaterial({
     map: sunTex,

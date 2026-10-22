@@ -466,6 +466,10 @@ function buildSession(
           karts: entrants.length,
           quiet: demo,
           clock: () => race?.clock ?? 0,
+          lap: () => {
+            const r = race?.racers[0];
+            return r ? { lap: r.lap, laps: tuning.race.laps, finished: r.finished } : undefined;
+          },
         })
       : undefined;
 

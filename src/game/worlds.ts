@@ -63,8 +63,7 @@ export const WORLDS: WorldEntry[] = [
     description:
       "A sunlit kingdom of karst islands in a turquoise lagoon: festival towns, temple gardens, waterfalls and a royal palace, all watched over by a great jade dragon.",
     color: "#2fae8f",
-    tracks: ["dragon_isles", "dragon_canyon", "snow_dragon_pass"],
-    comingSoon: ["Dragon's Crown"],
+    tracks: ["dragon_isles", "dragon_canyon", "snow_dragon_pass", "celestial_dragon_festival"],
   },
   {
     id: "test_world",

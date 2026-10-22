@@ -80,6 +80,7 @@ describe("no holes in the world", () => {
     "dragon_isles",
     "dragon_canyon",
     "snow_dragon_pass",
+    "celestial_dragon_festival",
     "loop_lab",
     "cascade_caverns",
     "bonebog_pyramid",

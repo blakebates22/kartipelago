@@ -974,6 +974,65 @@
           }
         }
       }
+    },
+    {
+      "id": "celestial_dragon_festival",
+      "name": "Celestial Dragon Festival",
+      "description": "The dragon kingdom's sacred heart on the night of its greatest festival: a deep navy and violet sky full of stars, a crescent moon, karst islands over a glowing turquoise lagoon, thousands of warm red and gold lanterns, white and gold palaces under deep blue domes, golden astronomical rings, pink blossom, crimson and navy dragon banners, and fireworks",
+      "environment": {
+        "sky": "#141a4a",
+        "fog": {
+          "enabled": true,
+          "color": "#2c2a6a",
+          "near": 420,
+          "far": 2600
+        },
+        "sun": {
+          "color": "#c8d0ff",
+          "intensity": 1.75,
+          "direction": [0.36, 0.7, 0.6]
+        },
+        "ambient": {
+          "sky": "#9a9af0",
+          "ground": "#4a3a78",
+          "intensity": 1.6
+        },
+        "skyDome": {
+          "top": "#060a2e",
+          "horizon": "#5a3a9a",
+          "bottom": "#24205a",
+          "sun": {
+            "color": "#fff6dc",
+            "size": 6,
+            "glow": "#c8c4ff",
+            "elevation": 38,
+            "face": "crescent"
+          },
+          "clouds": {
+            "count": 12,
+            "color": "#4a3e8c",
+            "shade": "#1a1648",
+            "seed": 611,
+            "low": 2,
+            "high": 10,
+            "drift": 0.002
+          },
+          "hills": {
+            "color": "#1c1c4c",
+            "far": "#4a4090",
+            "height": 13,
+            "seed": 613,
+            "layers": 3,
+            "style": "karst"
+          },
+          "stars": {
+            "count": 1100,
+            "color": "#ffffff",
+            "seed": 617,
+            "low": 8
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -6497,6 +6556,270 @@
       "image": "sdp_gold_trim.png",
       "wrap": "repeat",
       "tileMetres": 2
+    },
+    {
+      "id": "cdf_paving",
+      "name": "Festival Paving",
+      "theme": "celestial_dragon_festival",
+      "surface": "road",
+      "image": "cdf_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "cdf_celestial",
+      "name": "Celestial Road",
+      "theme": "celestial_dragon_festival",
+      "surface": "road",
+      "image": "cdf_celestial.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.12
+      }
+    },
+    {
+      "id": "cdf_royal",
+      "name": "Processional Runner",
+      "theme": "celestial_dragon_festival",
+      "surface": "road",
+      "image": "cdf_royal.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "cdf_kerb",
+      "name": "Gold Kerb",
+      "theme": "celestial_dragon_festival",
+      "surface": "road",
+      "image": "cdf_kerb.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.1
+      }
+    },
+    {
+      "id": "cdf_marble",
+      "name": "Palace Marble",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_marble.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "cdf_balustrade",
+      "name": "Gilded Balustrade",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_balustrade.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.22
+      }
+    },
+    {
+      "id": "cdf_lantern_rail",
+      "name": "Lantern Rail",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_lantern_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.45,
+        "flicker": 0.12
+      }
+    },
+    {
+      "id": "cdf_dome",
+      "name": "Star Dome Tiles",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_dome.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "cdf_gold",
+      "name": "Festival Gold",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.4,
+        "pulse": 0.12,
+        "pulsePeriod": 5.0
+      }
+    },
+    {
+      "id": "cdf_window",
+      "name": "Palace Windows",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_window.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "flicker": 0.06
+      }
+    },
+    {
+      "id": "cdf_star_glass",
+      "name": "Star Glass",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_star_glass.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.7,
+        "pulse": 0.2,
+        "pulsePeriod": 6.0
+      }
+    },
+    {
+      "id": "cdf_mural",
+      "name": "Celestial Dragon Mural",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_mural.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.6,
+        "pulse": 0.15,
+        "pulsePeriod": 7.0
+      }
+    },
+    {
+      "id": "cdf_banner_dragon",
+      "name": "Festival Dragon Banner",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_banner_dragon.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "cdf_banner_star",
+      "name": "Celestial Star Banner",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_banner_star.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "cdf_chevron",
+      "name": "Festival Chevrons",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_chevron.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "cdf_grass",
+      "name": "Night Grass",
+      "theme": "celestial_dragon_festival",
+      "surface": "grass",
+      "image": "cdf_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "cdf_karst",
+      "name": "Moonlit Karst",
+      "theme": "celestial_dragon_festival",
+      "surface": "wall",
+      "image": "cdf_karst.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "cdf_lagoon",
+      "name": "Night Lagoon",
+      "theme": "celestial_dragon_festival",
+      "surface": "deep_water",
+      "image": "cdf_lagoon.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.006,
+        "wave": 0.04,
+        "wavePeriod": 7,
+        "lagoon": 0.8,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "cdf_cloud",
+      "name": "Cloud Sea",
+      "theme": "celestial_dragon_festival",
+      "surface": "water",
+      "image": "cdf_cloud.png",
+      "wrap": "repeat",
+      "tileMetres": 34,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.0015,
+        "wave": 0.05,
+        "wavePeriod": 11,
+        "opacity": 0.7,
+        "glow": 0.55
+      }
+    },
+    {
+      "id": "cdf_abyss",
+      "name": "Chasm Floor",
+      "theme": "celestial_dragon_festival",
+      "surface": "abyss",
+      "image": "cdf_abyss.png",
+      "wrap": "repeat",
+      "tileMetres": 14
     }
   ]
 }

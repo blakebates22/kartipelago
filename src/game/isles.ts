@@ -41,27 +41,38 @@ export interface IslesDragonConfig {
   size: number;
   /** Its colours (Snow Dragon Pass's is ice blue); jade and gold if not given. */
   colors?: { body: string; belly: string };
+  /** The grand finale's flight (Celestial Dragon Festival's last lap), if it has one:
+   * the same lap, other keys. */
+  finale?: IslesDragonConfig;
 }
 
 export function parseIslesDragon(e: Record<string, unknown>): IslesDragonConfig | undefined {
-  const keys: DragonKey[] = [];
-  if (Array.isArray(e.keys))
-    for (const k of e.keys) {
-      if (!Array.isArray(k) || k.length < 4) continue;
-      keys.push({ s: num(k[0], 0), x: num(k[1], 0), y: num(k[2], 0), z: num(k[3], 0) });
-    }
-  keys.sort((a, b) => a.s - b.s);
+  const keys = parseKeys(e.keys);
   if (keys.length < 4) return undefined;
   const col =
     typeof e.colors === "object" && e.colors !== null && !Array.isArray(e.colors)
       ? (e.colors as Record<string, unknown>)
       : undefined;
-  return {
+  const base: IslesDragonConfig = {
     keys,
     length: Math.max(1, num(e.length, 1000)),
     size: Math.max(0.1, num(e.size, 1)),
     ...(col && { colors: { body: str(col.body, "#34b888"), belly: str(col.belly, "#ffe39a") } }),
   };
+  const fin = parseKeys(e.finale);
+  if (fin.length >= 4) base.finale = { ...base, keys: fin };
+  return base;
+}
+
+function parseKeys(src: unknown): DragonKey[] {
+  const keys: DragonKey[] = [];
+  if (Array.isArray(src))
+    for (const k of src) {
+      if (!Array.isArray(k) || k.length < 4) continue;
+      keys.push({ s: num(k[0], 0), x: num(k[1], 0), y: num(k[2], 0), z: num(k[3], 0) });
+    }
+  keys.sort((a, b) => a.s - b.s);
+  return keys;
 }
 
 /** A point on the closed Catmull-Rom loop through the keys: u in key units (key i at
@@ -190,6 +201,7 @@ export const ROLES = [
   "huddle",
   "queue",
   "monk",
+  "worship",
 ] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -371,6 +383,20 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         lean: 0.18 + 0.02 * Math.sin(t * 0.5 + ph),
         armL: 0.08,
         armR: 0.08,
+        turn: 0,
+        step: 0,
+      };
+      break;
+    }
+    case "worship": {
+      // Kneeling before the altar, all together (not phased by villager): arms raised
+      // to the sky, then down in a deep bow, over and over.
+      const w = 0.5 + 0.5 * Math.sin(t * 1.1);
+      p = {
+        hop: -0.45,
+        lean: 0.15 + 0.85 * (1 - w),
+        armL: 0.9 * w,
+        armR: 0.9 * w,
         turn: 0,
         step: 0,
       };

@@ -82,6 +82,10 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         game.sounds.go();
       }
       if (h.phase === "racing" && h.lap !== lastLap && !h.finished) {
+        // Songs that grow with the race (Celestial Dragon Festival's) bring in their
+        // layers: "rise" for the middle laps, "finale" (which carries it) for the last.
+        game.audio.music.layer("rise", h.lap >= 2 && h.lap < h.laps ? 1 : 0, 2.5);
+        game.audio.music.layer("finale", h.lap >= h.laps ? 1 : 0, 2.5);
         if (h.lap === h.laps) {
           game.sounds.finalLap();
           banner = { text: "FINAL LAP!", until: clock + 1.6 };

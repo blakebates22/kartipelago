@@ -635,6 +635,38 @@ export function createSfx(engine: AudioEngine) {
       }
       noise(0, 0.4, volume * 0.15, 5000, 1500);
     },
+    /** A firework going up: a thin rising whistle and the hiss of its fuse. */
+    fireworkLaunch(volume: number) {
+      const f = 700 + Math.random() * 300;
+      note(f, 0, 0.9, volume * 0.025, f * 2.6, "sine");
+      noise(0, 0.6, volume * 0.04, 2400, 5200);
+    },
+    /** A firework bursting: a soft thump, the boom rolling away, then crackling (kept
+     * well under the engines and the boosts). */
+    fireworkBurst(volume: number, big = false) {
+      noise(0, big ? 1.5 : 0.9, volume * (big ? 0.26 : 0.18), 1500, 70);
+      note(big ? 62 : 80, 0, big ? 0.9 : 0.5, volume * (big ? 0.22 : 0.14), 34, "sine");
+      const n = big ? 9 : 4;
+      for (let i = 0; i < n; i++)
+        noise(0.35 + Math.random() * (big ? 1.2 : 0.6), 0.03, volume * 0.05, 7000, 2500);
+    },
+    /** A great gong: a deep shimmering bloom that hangs in the air. */
+    gong(volume: number) {
+      note(73.4, 0, 5.0, volume * 0.28, 70, "sine");
+      note(146.8, 0, 3.6, volume * 0.12, 144, "sine");
+      note(221, 0.02, 2.4, volume * 0.07, 216, "triangle");
+      note(311, 0.05, 1.6, volume * 0.04, 305, "sine");
+      noise(0, 0.5, volume * 0.12, 3000, 200);
+    },
+    /** A whole crowd roaring together, swelling and falling away. */
+    crowdCheer(volume: number) {
+      noise(0, 2.8, volume * 0.22, 1800, 600);
+      noise(0.3, 2.2, volume * 0.12, 3200, 1200);
+      for (let i = 0; i < 5; i++) {
+        const f = 300 + Math.random() * 300;
+        note(f, 0.2 + Math.random() * 0.8, 0.7, volume * 0.02, f * 1.3, "triangle");
+      }
+    },
     /** A fireball landing: a deep boom and a rolling crash. */
     boom(volume: number) {
       noise(0, 1.8, volume * 0.9, 1800, 60);

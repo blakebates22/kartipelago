@@ -2,9 +2,9 @@
 
 The fourth world (`dragon` in `src/game/worlds.ts`): a sunlit kingdom of karst islands
 in a turquoise lagoon, ruled by dragons. Festival towns, temple gardens, waterfalls and a
-royal palace on its mountain, all watched over by a great jade dragon. Three courses so
-far (Dragon Isles, Dragon Canyon and Snow Dragon Pass), then a "Coming Soon" tile
-(Dragon's Crown).
+royal palace on its mountain, all watched over by a great jade dragon. Four courses:
+Dragon Isles, Dragon Canyon, Snow Dragon Pass and the grand finale, Celestial Dragon
+Festival.
 
 The look is joyful and readable: blue and gold tiled roofs, red pillars, lanterns and
 banners, blossom, bright water. Underneath there is a small, quiet unease, never more
@@ -349,6 +349,114 @@ fork. The balance is the current AI's; a player's needs playtesting. The blizzar
 veils are simple cylinders: from some angles their edges show. The monastery and citadel
 read well from the road but would reward a closer look (stairs, more buildings). Lanterns
 don't swing yet.
+
+## Celestial Dragon Festival
+
+The kingdom's grand finale, and the most spectacular course in the game: its sacred heart
+on the night of its greatest festival. A lap of about 2.7 km (an AI lap about 114 s) round
+the Palace Mount, at night under a sky of stars and a crescent moon, while the whole
+kingdom celebrates its dragon ruler, and the sky fills with fireworks, more every lap. It
+closes the kingdom's story: the beauty and the riches are all here, and after the canyon's
+labour and the pass's hunger, the worship feels a little too much.
+
+| Part | Name                    | What happens                                                                                                                                                                                       |
+| ---- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | The Festival Gate       | The start on the gate's terrace: the great ceremonial gate, colossal golden dragons, grandstands packed with the crowd, banners, braziers, lanterns strung across the broad straight, drum stages. |
+| 2    | The Lantern Market      | Sweeping down through the night market to the water: shops, stalls, lantern strings and bunting, dragon floats parked for the procession, dancers and musicians.                                   |
+| 3    | The Waterfall Bridge    | North over the lagoon's inlet on a long white bridge, waterfalls pouring off the mountain beside it, pagodas on the islands, lantern boats sailing beneath.                                        |
+| 4    | The Dragon Promenade    | West across the great plaza of worship: the altar and its glowing mural of the dragon among the stars, two colossal golden dragons, gongs, braziers, rows of worshippers kneeling as one, priests. |
+| 5    | The Celestial Climb     | Up the mountain's north face in sweeping S-bends on blue and gold celestial stone, star pillars, terraced gardens of blossom.                                                                      |
+| 6    | The Star Bridge         | West across the Cloud Chasm, high over a sea of cloud; its middle 70 m has no parapets (the one place you can fall).                                                                               |
+| 7    | The Observatory Spiral  | Right, all the way round the Observatory Pinnacle under its great golden armillary rings (they turn in the game), climbing, and out over the Star Bridge's far end (15 m clear).                   |
+| 8    | The Palace Terraces     | Through the palace's upper gardens: domed halls, lotus pools, blossom, guards.                                                                                                                     |
+| 9    | The Procession Causeway | Down the broad processional way between grandstands of thousands, golden dragons, banners, a line of monks.                                                                                        |
+| 10   | The Fireworks Overlook  | Out on the cliff's edge: the best seat for the fireworks, the whole kingdom below.                                                                                                                 |
+| 11   | The Final Ascension     | Up round the palace's western bastion under golden celestial arches, crowds packed in.                                                                                                             |
+| 12   | The Grand Finale        | Down onto the straight, under the celestial arches and the gate, to the line, the palace blazing above.                                                                                            |
+
+**The festival** (`src/game/festival.ts` rules, `festivalLife.ts` drawing it; the
+`festival` entity from `cdf_town.py`). Three stages, one per lap, following **your**
+lap (the rivals never change it; time trials the same): the Opening Celebration (lap 1),
+the Ceremony Intensifies (middle laps) and the Grand Finale (the last lap, and after the
+line). Each stage sets how often the city's own rockets go up (about 0.45 a second, then
+1.5, then 2.6 rising to about 4 by the line), how big (16-26 m bursts, then 20-38, then
+26-52) and how varied (peonies and glitter; then willows, palms, rings and stars; then
+everything, in rainbow too), how many sky lanterns rise (up to 700), how fast and bright
+the observatory's rings turn and the brightness of the flash each burst throws on the
+kingdom. Inside the last lap everything keeps building to the finish.
+
+Over that, **set pieces**: choreographed displays keyed to places on the lap, so whoever
+is driving sees them as they reach the landmark, each once per lap on its own laps:
+
+- Lap 1: the opening salvo over the palace (a gong), bursts over the plaza, a blue ring
+  round the observatory.
+- Lap 2: a bigger salvo, golden comets across the inlet, a pink dragon sketched over the
+  observatory as you reach the Star Bridge (a roar), three rings round the rings, the
+  districts answering one another from the overlook.
+- Lap 3: the Imperial Salute rippling along the skyline, golden rain over the palace,
+  the Starfall, the dragon constellation in blue (bells), **the golden dragon drawn
+  above the observatory, ringed, as you cross the Star Bridge** (a roar), the Celestial
+  Rings, the palace salute, the panorama from the overlook (the crowd roars), the red
+  dragon over the palace on the Final Ascension, and the Grand Finale over the finish:
+  a golden dragon, a ring round the palace, a constellation, wave after wave of the
+  biggest bursts and a curtain of golden rain.
+
+Fireworks are purely visual. The city's own rockets follow the race clock and a fixed
+seed, so every race and time trial sees the same show. Every star is a point in one
+pooled buffer (24,000); the GPU works out where each is from when it was fired, and the
+CPU writes each star once, when it's born. The lanterns are animated entirely on the
+GPU. The flash is one hemisphere light. Stars never write depth or fog. Sounds (a
+launch whistle, the boom and crackle a moment later with distance, a gong, the crowd's
+roar) stay under the engines.
+
+**The imperial dragon** is the kingdom's (`isles_dragon`), here in gold, bigger; on the
+last lap it flies its `finale` path: round the palace's west side as you reach the
+overlook, rising high above the palace on the Final Ascension, then down low over the
+finish. Worshippers bow as it passes.
+
+**People:** about 1,300: grandstand crowds (`cheer`, `wave`, `bow`), `worship` (new:
+kneeling in rows before the altar, arms raised to the sky then a deep bow, all
+together), monks, dancers, musicians, merchants, guards.
+
+**Music:** "Celestial Dragon Festival" (`celestial`), D major, 144 BPM, in three layers
+that follow the laps (`screens/race.ts` fades them as the lap changes): the base (flute
+and bells, strings for the worship, celesta above the clouds, a bright tune for the
+triumph); `rise` adds horns, sustained strings, a running marimba, toms, bongos and
+tambourine; `finale` carries all of that plus brass and bells on the tune, a xylophone,
+snare, more kick and a crash every phrase.
+
+**The sky:** stars (1,100), a crescent moon (`skyDome.sun.face: "crescent"`, new), dark
+violet clouds low on the horizon, karst hills. Night but readable: moonlight from the
+south-east, warm pools round every lantern and brazier, gold round the palace,
+blue-white round the observatory and the star pillars.
+
+**How it's built:** `cdf_land.py` (pure data: the corners, heights, widths, the Palace
+Mount with its terraced gardens, the Observatory Pinnacle, the Cloud Chasm, the inlet,
+the city's terraces, the zones), `celestial_dragon_festival.py` (the route and road
+kinds; bridges where the ground falls away or another stretch passes beneath; the Star
+Bridge's open middle), `cdf_scenery.py` (land, lagoon, cloud sea, islands, falls, light,
+checkpoints and pickups), `cdf_town.py` (every part's dressing, the palace, the
+observatory, the people, the dragon's two flights, the festival's sites, set pieces and
+lantern grounds, the air), `cdf_props.py` (domed halls and towers, terraces, celestial
+arches, the observatory, the altar, mural walls, gongs, braziers, star pillars,
+grandstands, dragon floats, colossal dragons), `cdf_textures.py` (20 textures and the
+`celestial_dragon_festival` theme).
+
+**Tests:** `tests/cdf.test.ts`: the world, theme and three-layer music; a clean load
+with its worshippers, the dragon's finale flight, the festival and the air; the stages
+and levels; the city's rockets more often, bigger and more varied each stage, the same
+every time; set pieces firing once at their places on their laps only (the Star Bridge
+dragon on the last); the show running as you drive (headless); the spiral well clear
+over the Star Bridge; the AI driving it cleanly in 100-125 s. `tests/holes.test.ts`
+covers it too.
+
+**Limits and polish next:** the AI lap is about 114 s, a little over the 110 s aimed
+for (players are usually quicker, and the AI is due to be rewritten). There's no
+multiplayer yet; when there is, the festival can take its lap from any source (the
+leader's, for a shared sky). There are no reflections of the fireworks in the water,
+only their light. The firework sounds are simple synthesis. The palace and observatory
+read well from the road; a closer pass (stairs, gardens, a lit interior) would reward
+the overview shots.
 
 ## Polish next (Dragon Isles)
 

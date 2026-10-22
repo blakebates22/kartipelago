@@ -62,6 +62,8 @@
  *                                   marimba, strings soaring over the High Bridges, and
  *                                   flute and xylophone racing through the Final Twist;
  *                                   driving toms, bongos and shaker throughout
+ *   celestial   "Celestial Dragon Festival"  D major, 144: the grand finale, in three
+ *                                   layers that grow lap by lap with the fireworks
  *   snow_dragon "Snow Dragon Pass"  B minor, 150: the kingdom in winter. Cold bells and
  *                                   celesta over a pulsing drone, a lamenting string
  *                                   melody for the village and the ration lines, low
@@ -2311,6 +2313,119 @@ function snowDragon(): Song {
   };
 }
 
+export const CELESTIAL_MELODY = bars(
+  // The Festival Gate and the market (flute and bells)
+  "F#5:1 A5:.5 B5:.5 D6:1 B5:1",
+  "A5:1 E5:.5 F#5:.5 E5:2",
+  "F#5:1 D5:.5 E5:.5 F#5:1 B5:1",
+  "A5:3 r:1",
+  "D6:1 B5:.5 A5:.5 F#5:1 A5:1",
+  "B5:1 A5:.5 G5:.5 E5:2",
+  "G5:1 A5:1 B5:1 C#6:1",
+  "D6:3! r:1",
+  // The worship of the dragon (strings, solemn)
+  "F#5:2 E5:1 D5:1",
+  "B4:2 D5:1 E5:1",
+  "F#5:1.5 A5:.5 F#5:1 E5:1",
+  "E5:3 r:1",
+  "D5:2 F#5:1 B5:1",
+  "A5:2 G5:1 F#5:1",
+  "E5:1 F#5:1 G5:1 E5:1",
+  "A5:3 r:1",
+  // Above the clouds: the Star Bridge and the observatory (celesta, high)
+  "B5:.5 D6:.5 E6:1 D6:.5 B5:.5 A5:1",
+  "C#6:1 E6:1 A5:2",
+  "A5:.5 C#6:.5 F#6:1 E6:.5 C#6:.5 A5:1",
+  "B5:3 r:1",
+  "D6:.5 B5:.5 G5:1 B5:.5 D6:.5 E6:1",
+  "E6:1 C#6:1 A5:1 E6:1",
+  "F#6:1 E6:.5 D6:.5 A5:1 D6:1",
+  "D6:3 r:1",
+  // The triumph (brass)
+  "B5:1 D6:1 G6:1 F#6:1",
+  "E6:1 C#6:1 A5:2",
+  "F#6:1 E6:.5 D6:.5 B5:1 D6:1",
+  "G5:3 r:1",
+  "A5:1 D6:1 F#6:1 A6:1",
+  "G6:1 F#6:1 E6:2",
+  "D6:1 E6:1 F#6:1 E6:1",
+  "D6:3! r:1",
+);
+export const CELESTIAL_CHORDS =
+  "D:4 A:4 Bm:4 G:4 D:4 Em:4 G:2 A:2 D:4 " +
+  "Bm:4 G:4 D:4 A:4 Bm:4 G:4 Em:4 A:4 " +
+  "G:4 A:4 F#m:4 Bm:4 G:4 A:4 D:4 D:4 " +
+  "G:4 A:4 Bm:4 G:4 D:4 A:4 G:2 A:2 D:4";
+
+/**
+ * "Celestial Dragon Festival": the grand finale, D major, 144 BPM, in three layers that
+ * follow the festival lap by lap. The base (the Opening Celebration): flute and bells at
+ * the gate, strings for the worship, celesta above the clouds, a bright tune for the
+ * triumph, over celesta arpeggios, plucked strings, a warm pad and a light pulse. "rise"
+ * (the Ceremony Intensifies) adds horns under the tune, sustained strings, a running
+ * marimba, toms, bongos and tambourine. "finale" (the Grand Finale) is all of that and
+ * the brass and bells on the tune, a xylophone, snare, more kick and a crash on every
+ * phrase. Our own tune.
+ */
+function celestial(): Song {
+  const ch = chart(CELESTIAL_CHORDS);
+  const mel = seq(CELESTIAL_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const walk: [number, number, string][] = [
+    [0, 1, "R"],
+    [1, 1, "5"],
+    [2, 1, "8"],
+    [3, 1, "5"],
+  ];
+  // The middle layer, which the finale carries too.
+  const rise = (stem: string): Part[] => [
+    part("horn", stem, 0.45, shift(mel, 0, -12)),
+    part("strings", stem, 0.4, pads(ch, 57, 4, 0.35)),
+    part("marimba", stem, 0.35, arpeggio(ch, 0.25, [0, 1, 2, 1, 3, 2, 1, 2], 62, 0.2, 0.4)),
+    ...drumParts(stem, 0.6, drums("o.....o.o.....o.", KIT, 0.25, 32)),
+    ...drumParts(stem, 0.4, drums("..b..b.b..b..b.b", KIT, 0.25, 32)),
+    ...drumParts(stem, 0.35, drums("....t.......t...", KIT, 0.25, 32)),
+  ];
+  return {
+    id: "celestial",
+    title: "Celestial Dragon Festival",
+    role: "Dragon Kingdom",
+    bpm: 144,
+    beats: 128,
+    loop: true,
+    stems: ["rise", "finale"],
+    parts: [
+      part("flute", "base", 0.9, p1),
+      part("bell", "base", 0.4, shift(p1, 0, 12)),
+      part("strings", "base", 0.9, p2),
+      part("celesta", "base", 0.8, p3),
+      part("bell", "base", 0.35, p3),
+      part("flute", "base", 0.8, p4),
+      part("celesta", "base", 0.3, arpeggio(ch, 0.5, [0, 2, 1, 2, 3, 2, 1, 2], 69, 0.2, 0.35)),
+      part("pizz", "base", 0.35, stabs(ch, [0.5, 1.5, 2.5, 3.5], 57, 0.2, 0.45)),
+      part("pad", "base", 0.35, pads(ch, 50, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, walk, 26, 0.8)),
+      ...drumParts("base", 0.5, drums("k...k...k...k...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.3, drums("..h...h...h...hh", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("c", KIT, 32, 4)),
+      ...rise("rise"),
+      ...rise("finale"),
+      part("brass", "finale", 0.6, mel),
+      part("bell", "finale", 0.3, shift(mel, 0, 12)),
+      part("xylophone", "finale", 0.3, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 74, 0.15, 0.4)),
+      ...drumParts("finale", 0.55, drums("....S.......S...", KIT, 0.25, 32)),
+      ...drumParts("finale", 0.4, drums("..k.....k.k.....", KIT, 0.25, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("finale", 0.6, drums("sssssssSsSsSSSSS", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("finale", 0.45, drums("c", KIT, 8, 16)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -2332,6 +2447,7 @@ export const SONGS: Record<string, Song> = {
   dragon: dragon(),
   dragon_canyon: canyonDragon(),
   snow_dragon: snowDragon(),
+  celestial: celestial(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

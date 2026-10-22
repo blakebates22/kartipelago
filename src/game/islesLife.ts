@@ -68,6 +68,9 @@ export function createIslesLife(opts: {
   volume: () => number;
   quiet?: boolean;
   headless?: boolean;
+  /** The festival's stage (Celestial Dragon Festival): on the grand finale (3) the
+   * dragon flies its finale path, if it has one. */
+  stage?: () => number;
 }): IslesLife {
   const { group, ground } = opts;
   let dragonCfg: IslesDragonConfig | undefined;
@@ -119,6 +122,7 @@ export function createIslesLife(opts: {
     !opts.headless && villagers.length ? createCrowdView(group, villagers) : undefined;
 
   let hint = 0;
+  let flying: IslesDragonConfig | undefined = dragonCfg;
   let hushNow = 0;
   let callIn = 6;
   const look = { at: new THREE.Vector3(), amount: 0 };
@@ -149,8 +153,15 @@ export function createIslesLife(opts: {
         const samples = opts.track.samples;
         hint = nearestSample(samples, listener.x, listener.z, hint);
         const s = samples[hint]?.dist ?? 0;
-        stepDragon(dragonCfg, flight, s, Math.min(0.1, dt));
-        const p = dragonHead(dragonCfg, flight.u, t);
+        // The grand finale's path on the last lap (switched where the two meet, at the
+        // line, so it doesn't jump).
+        const want = dragonCfg.finale && opts.stage?.() === 3 ? dragonCfg.finale : dragonCfg;
+        if (want !== flying) {
+          placeDragon(want, flight, s);
+          flying = want;
+        }
+        stepDragon(want, flight, s, Math.min(0.1, dt));
+        const p = dragonHead(want, flight.u, t);
         head.set(p.x, p.y, p.z);
         const far = Math.hypot(listener.x - head.x, listener.y - head.y, listener.z - head.z);
         look.at.set(listener.x, listener.y + 2, listener.z);

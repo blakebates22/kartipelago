@@ -395,7 +395,7 @@ export function parseLook(json: unknown, warnings: string[] = []): TrackLook {
           size: num(sd.size),
           glow: hex(sd.glow),
           elevation: num(sd.elevation),
-          face: sd.face === "moon" ? "moon" : undefined,
+          face: sd.face === "moon" || sd.face === "crescent" ? sd.face : undefined,
         },
         clouds: {
           count: num(cl.count),
