@@ -3,6 +3,14 @@
 The item box sits in the bottom-left corner, the eggs beside it: see
 [balloons.md](balloons.md).
 
+Your kart's engine hums quietly under everything (`sfx.engine`), rising with speed.
+
+**Boosts** show as a layered jet from the exhaust (outer colour, hot inner flame, white
+core, shock diamonds rippling down it), a shockwave ring and flash as one kicks in, light
+trails from the rear wheels, speed lines round the screen's edges and a small widening
+of the view; afterwards the flame dies away in half a second (`render/boostFx.ts`,
+`Racer.animateFlame`).
+
 Drifting (or sliding hard) plays a low tyre squeal (`sfx.skid`, about 300-450 Hz),
 louder the more you slide and a little higher at speed, with a bark of the tyres going into a drift. It's mostly tone, with
 only a low rumble of scrub, so it never turns into a hiss. Only your own kart skids

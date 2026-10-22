@@ -10,7 +10,7 @@
  *   blue     1-3 boost flames, bigger and hotter, with 1-3 chevrons
  *   green    1 oil slick         2 mine                             3 bubble trap
  *   yellow   1-3 shields, with 1-3 rank chevrons
- *   rainbow  1 magnet            2 long-range magnet (waves)        3 reverse magnet
+ *   rainbow  1 grappling arm     2 long-reach grapple               3 reverse grapple
  */
 import type { BalloonColor } from "../items/inventory";
 
@@ -168,37 +168,64 @@ function shield(g: G, level: number) {
   }
 }
 
-function magnet(g: G, level: number) {
-  // Long range and reverse: smaller, lower, with room for what's around it.
-  const small = level > 1;
-  g.save();
-  if (small) {
-    g.translate(10, 12);
-    g.scale(0.78, 0.78);
-    g.translate(-10, -10);
+/** A grappling arm: a segmented steel arm with brass joints, a three-fingered claw. */
+function grapple(g: G, level: number) {
+  const joints: [number, number][] =
+    level === 2
+      ? [
+          [1.5, 18],
+          [4, 15],
+          [5, 11],
+          [8, 8.5],
+          [11.5, 7.5],
+          [14, 5],
+        ]
+      : [
+          [3, 18],
+          [5.5, 15],
+          [7, 11.5],
+          [10, 9],
+          [13, 7],
+        ];
+  // The arm: steel links between brass joints.
+  for (let k = 0; k < joints.length - 1; k++) {
+    const [x0, y0] = joints[k]!;
+    const [x1, y1] = joints[k + 1]!;
+    const n = 6;
+    for (let s = 0; s <= n; s++)
+      disc(g, "#6a7080", x0 + ((x1 - x0) * s) / n, y0 + ((y1 - y0) * s) / n, 1.5);
   }
-  // A U: red arms (blue for the reverse magnet), white tips.
-  const arm = level === 3 ? "#2f7ae8" : "#e8302a";
-  ring(g, arm, 10, 9, 5.5, 4.4, 0, Math.PI);
-  g.fillStyle = arm;
-  g.fillRect(2.3, 3, 4.4, 6.2);
-  g.fillRect(13.3, 3, 4.4, 6.2);
-  g.fillStyle = "#f2f2f6";
-  g.fillRect(2.3, 1, 4.4, 3);
-  g.fillRect(13.3, 1, 4.4, 3);
-  g.restore();
-  if (level === 2) {
-    // Long range: field lines curving up and out of the tips.
-    ring(g, "#ff6ae8", 10, 7, 8.5, 1.6, Math.PI * 1.08, Math.PI * 1.92);
-    ring(g, "#ffd84a", 10, 7, 5.6, 1.4, Math.PI * 1.12, Math.PI * 1.88);
+  for (const [x, y] of joints) disc(g, "#c8962a", x, y, 1.5);
+  // The claw at the end: a hub with a red eye and three fingers.
+  const [cx, cy] = joints[joints.length - 1]!;
+  const open = level === 3 ? 0.45 : 0.75;
+  for (const a of [-open - 0.75, -0.75, open - 0.75]) {
+    // A hooked finger: out along the arm, then curling in at the tip.
+    poly(g, "#d8d8e0", [
+      [cx + Math.cos(a - 0.5) * 1.4, cy + Math.sin(a - 0.5) * 1.4],
+      [cx + Math.cos(a - 0.12) * 6.2, cy + Math.sin(a - 0.12) * 6.2],
+      [cx + Math.cos(a + 0.25) * 6.6, cy + Math.sin(a + 0.25) * 6.6],
+      [cx + Math.cos(a + 0.5) * 1.4, cy + Math.sin(a + 0.5) * 1.4],
+    ]);
   }
+  disc(g, "#c8962a", cx, cy, 1.8);
+  disc(g, "#ff2a2a", cx, cy, 0.8);
+  if (level === 2)
+    // Long reach: motion marks along the arm.
+    for (const [x, y] of [
+      [13, 15],
+      [16, 12],
+    ] as const) {
+      g.fillStyle = "#ffffff";
+      g.fillRect(x, y, 3, 1.2);
+    }
   if (level === 3) {
-    // Reverse: an arrow curling back down toward the magnet.
-    ring(g, "#ff6ae8", 10, 5.5, 5, 1.8, Math.PI * 1.05, Math.PI * 1.95);
+    // Reverse: an arrow curling back down toward you.
+    ring(g, "#ff6ae8", 10, 13, 5.4, 1.6, Math.PI * 0.05, Math.PI * 0.9);
     poly(g, "#ff6ae8", [
-      [12.8, 5],
-      [17.8, 5],
-      [15.3, 8.6],
+      [2.4, 11],
+      [6.2, 12.2],
+      [3.4, 15],
     ]);
   }
 }
@@ -271,7 +298,7 @@ function draw(g: G, color: BalloonColor, level: number) {
       shield(g, level);
       break;
     case "rainbow":
-      magnet(g, level);
+      grapple(g, level);
       break;
   }
 }
@@ -301,6 +328,10 @@ const SNAP = [
   "#e86a14",
   "#e8302a",
   "#ff6ae8",
+  "#6a7080",
+  "#c8962a",
+  "#c8c8d0",
+  "#d8d8e0",
   "#3a3050",
   "#e85a14",
   "#8a6ad8",

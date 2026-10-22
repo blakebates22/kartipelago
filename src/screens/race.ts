@@ -162,6 +162,51 @@ const EGG_COLORS: Record<string, string> = {
   g: "#3f9e6e",
 };
 
+/**
+ * Speed lines while your boost pushes: streaks rushing out from the middle of the screen
+ * toward its edges (more and longer for an enhanced boost; rainbow in the rainbow
+ * window). Only round the edges, so the road ahead stays clear.
+ */
+function speedLines(ui: UiLayer, power: number, color: string | null, t: number) {
+  const cx = ui.W / 2;
+  const cy = ui.H * 0.45;
+  const R = Math.hypot(ui.W, ui.H) / 2;
+  const n = Math.round(18 + power * 14);
+  const g = ui.g;
+  g.save();
+  g.lineCap = "butt";
+  for (let i = 0; i < n; i++) {
+    const seed = Math.sin(i * 91.7) * 43758.5;
+    const r0 = seed - Math.floor(seed);
+    const a = (i / n) * Math.PI * 2 + r0 * 0.4;
+    // Each streak runs outward and loops, at its own pace.
+    const ph = (t * (1.8 + r0 * 1.4) + r0) % 1;
+    const d0 = R * (0.5 + ph * 0.5);
+    const len = R * (0.12 + power * 0.12) * (0.6 + r0 * 0.6);
+    const x0 = cx + Math.cos(a) * d0;
+    const y0 = cy + Math.sin(a) * d0 * 0.8;
+    const x1 = cx + Math.cos(a) * (d0 + len);
+    const y1 = cy + Math.sin(a) * (d0 + len) * 0.8;
+    g.globalAlpha = (0.35 + 0.4 * power) * Math.min(1, ph * 4);
+    g.strokeStyle = color ?? `hsl(${((t * 300 + i * 40) % 360).toFixed(0)}, 100%, 70%)`;
+    g.lineWidth = i % 3 ? 1.5 : 2.5;
+    g.beginPath();
+    g.moveTo(x0, y0);
+    g.lineTo(x1, y1);
+    g.stroke();
+    // A white glint on some, for sparkle.
+    if (i % 4 === 0) {
+      g.strokeStyle = "#ffffff";
+      g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(x0, y0);
+      g.lineTo((x0 + x1) / 2, (y0 + y1) / 2);
+      g.stroke();
+    }
+  }
+  g.restore();
+}
+
 /** The last item shown in each race's item box, and when it changed (for the pop). */
 const shownItem = new WeakMap<Session, { key: string; at: number }>();
 
@@ -234,6 +279,7 @@ function drawHud(
   const h = session.hud();
   const W = ui.W;
   const big = { outline: PAL.shadow };
+  if (h.boost > 0) speedLines(ui, h.boost, h.rainbow ? null : h.boostColor, t);
   // Top left: position (or the mode).
   if (practice && h.park) {
     ui.text("DRIFT PARK", 8, 8, { color: PAL.gold, ...big });

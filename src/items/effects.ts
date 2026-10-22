@@ -159,22 +159,37 @@ export function magnetRange(level: number, cfg: ItemsConfig): number {
   return units * cfg.magnetUnit;
 }
 
+/** How far round from the nose a grapple target can be (cosine of 75 degrees). */
+const IN_FRONT = Math.cos((75 * Math.PI) / 180);
+
+/** Is `t` in front of kart `k` (within 75 degrees of where it's facing)? */
+function inFront(k: KartState, t: KartState, cosLimit = IN_FRONT) {
+  const dx = t.x - k.x;
+  const dz = t.z - k.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 1e-6) return false;
+  return (dx * Math.sin(k.heading) + dz * Math.cos(k.heading)) / d >= cosLimit;
+}
+
 /**
- * Pick a magnet target: the nearest rival ahead (by race progress) within range.
- * Returns its index, or -1 if nobody qualifies.
+ * Pick a grapple (magnet) target: the nearest rival within range who is ahead of you,
+ * both in the race and on the road in front of you (not someone beside or behind you
+ * across a hairpin). Returns its index, or -1 if nobody qualifies.
  */
 export function magnetTarget(
   racers: Racer[],
   i: number,
   range: number,
   progress: (index: number) => number,
+  /** Only karts in front of you (grapples). Homing missiles follow the road to anyone ahead. */
+  front = true,
 ): number {
   const me = racers[i]!.kart;
   const mine = progress(i);
   let best = -1;
   let bestD = range;
   racers.forEach((r, j) => {
-    if (j === i || progress(j) <= mine) return;
+    if (j === i || progress(j) <= mine || (front && !inFront(me, r.kart))) return;
     const d = Math.hypot(r.kart.x - me.x, r.kart.z - me.z);
     if (d <= bestD) {
       bestD = d;
@@ -235,7 +250,9 @@ export function stepEffects(racers: Racer[], cfg: ItemsConfig, dt: number) {
       it.magnetTime = Math.max(0, it.magnetTime - dt);
       const t = racers[it.magnetTarget]?.kart;
       const d = t ? Math.hypot(t.x - k.x, t.z - k.z) : 0;
-      if (!t || d < cfg.magnetReach || it.bubbleTime > 0) {
+      // It lets go on arrival, in a bubble, or if you've got past them (so it never
+      // drags you backwards).
+      if (!t || d < cfg.magnetReach || it.bubbleTime > 0 || !inFront(k, t, 0)) {
         it.magnetTime = 0;
       } else {
         // Turn the path (and the nose with it) toward the target, and speed up.

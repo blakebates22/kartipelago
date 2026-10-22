@@ -59,19 +59,69 @@ export class Racer {
     this.lod.addLevel(this.lowGroup, LOD_DISTANCE);
     this.root.add(this.lod);
 
-    // Exhaust flame: shows boosts (the session colours it by boost source and phase).
-    this.flameMat = new THREE.MeshBasicMaterial({ color: "#ff8c1a", transparent: true });
+    // Exhaust flame: shows boosts (the session colours it by boost source and phase). A
+    // jet: the coloured outer flame (glowing, additive), a hot yellow-white flame inside
+    // it, a white-hot core, a glow at the nozzle and shock diamonds rippling down it
+    // (see animateFlame). Its origin is at the nozzle; it points back along -Z.
+    this.flameMat = new THREE.MeshBasicMaterial({
+      color: "#ff8c1a",
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const jet = (r: number, len: number, color: string, opacity: number) =>
+      new THREE.Mesh(
+        new THREE.ConeGeometry(r, len, 12).rotateX(-Math.PI / 2).translate(0, 0, -len / 2),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
     this.flame = new THREE.Mesh(
-      new THREE.ConeGeometry(0.3, 1.2, 10).rotateX(-Math.PI / 2),
+      new THREE.ConeGeometry(0.34, 1.7, 12).rotateX(-Math.PI / 2).translate(0, 0, -0.85),
       this.flameMat,
     );
-    this.flame.position.copy(this.kart.exhaust).add(new THREE.Vector3(0, 0, -0.5));
+    const hot = jet(0.2, 1.15, "#ffe08a", 0.85);
+    hot.name = "hot";
+    const white = jet(0.1, 0.7, "#ffffff", 0.95);
+    white.name = "white";
+    const glow = new THREE.Mesh(
+      new THREE.SphereGeometry(0.32, 10, 8),
+      new THREE.MeshBasicMaterial({
+        color: "#fff4c8",
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }),
+    );
+    glow.name = "glow";
+    this.flame.add(hot, white, glow);
+    for (let k = 0; k < 3; k++) {
+      const d = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 8, 6),
+        new THREE.MeshBasicMaterial({
+          color: "#ffffff",
+          transparent: true,
+          opacity: 0.8,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      d.name = `diamond${k}`;
+      d.scale.set(0.12, 0.12, 0.2);
+      this.flame.add(d);
+    }
+    this.flame.position.copy(this.kart.exhaust);
     this.flame.visible = false;
     this.core = new THREE.Mesh(
       new THREE.ConeGeometry(0.15, 0.95, 8).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({ color: "#3ddc84" }),
     );
-    this.core.position.copy(this.flame.position).add(new THREE.Vector3(0, 0, 0.12));
+    this.core.position.copy(this.flame.position).add(new THREE.Vector3(0, 0, -0.38));
     this.core.visible = false;
     this.root.add(this.flame, this.core);
 
@@ -80,6 +130,28 @@ export class Racer {
       new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }),
     );
     this.shadow.renderOrder = 1;
+  }
+
+  /**
+   * Bring the boost flame to life this frame: it flickers and pulses, and shock diamonds
+   * ripple back down it (faster and brighter the hotter it burns, 0..1).
+   */
+  animateFlame(seconds: number, heat: number) {
+    const f = this.flame;
+    const flick = 1 + Math.sin(seconds * 47) * 0.06 + Math.sin(seconds * 31 + 1) * 0.05;
+    f.scale.z *= flick * (1 + heat * 0.25);
+    const hot = f.getObjectByName("hot")!;
+    hot.scale.set(1, 1, 0.9 + Math.sin(seconds * 53) * 0.12);
+    const glow = f.getObjectByName("glow")!;
+    glow.scale.setScalar(0.85 + heat * 0.35 + Math.sin(seconds * 40) * 0.08);
+    for (let k = 0; k < 3; k++) {
+      const d = f.getObjectByName(`diamond${k}`)!;
+      const ph = (seconds * (2.6 + heat * 2) + k / 3) % 1;
+      d.position.set(0, 0, -0.2 - ph * 1.15);
+      const s = (1 - ph) * (0.9 + heat * 0.5);
+      d.scale.set(0.12 * s, 0.12 * s, 0.22 * s);
+      d.visible = heat > 0.15;
+    }
   }
 
   /** Put the blob shadow on the ground under the kart (it stays flat on the road). */

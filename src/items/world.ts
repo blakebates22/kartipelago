@@ -184,7 +184,7 @@ function homingTarget(
   cfg: ItemsConfig,
   progress: (j: number) => number,
 ) {
-  return magnetTarget(racers, i, cfg.homingRange, progress);
+  return magnetTarget(racers, i, cfg.homingRange, progress, false);
 }
 
 function nearestSample(track: Track, x: number, z: number, hint: number) {

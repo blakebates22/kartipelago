@@ -99,93 +99,148 @@ export function createSfx(engine: AudioEngine) {
       }
     },
     /**
-     * Tyres skidding through a drift: a looping squeal you turn up and down. It's mostly
-     * tone (a narrow band of rubbery whine with a little chatter), with only a low
-     * rumble of scrub under it, so it reads as tyres and never as a hiss. `set(level,
-     * pitch)`: level 0..1 (0 silent), pitch 0..1 (higher at speed and in a tight slide).
+     * Tyres skidding through a drift: a looping screech you turn up and down. It's made
+     * of noise, not tones (tones hummed): noise rung through two narrow resonant bands
+     * for the raspy, rubbery squeal, an irregular stutter in its loudness (the tread
+     * gripping and slipping), and a low rumble of scrub under it. `set(level, pitch)`:
+     * level 0..1 (0 silent), pitch 0..1 (a little higher at speed and in a tight slide).
      */
     skid() {
       if (!ctx || ctx.state !== "running") return undefined;
       const c = ctx;
+      const sr = c.sampleRate;
       const gain = c.createGain();
       gain.gain.value = 0;
       gain.connect(out());
-      // The squeal: two detuned saws through a resonant band, wobbling a little.
-      const band = c.createBiquadFilter();
-      band.type = "bandpass";
-      band.frequency.value = 620;
-      band.Q.value = 4;
+      const loop = (frames: number, fill: (i: number, last: number) => number) => {
+        const buf = c.createBuffer(1, frames, sr);
+        const d = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < frames; i++) d[i] = last = fill(i, last);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        return src;
+      };
+      // The squeal: white noise rung through two resonant bands.
+      const hiss = loop(sr * 2, () => Math.random() * 2 - 1);
       const squeal = c.createGain();
-      squeal.gain.value = 0.55;
-      band.connect(squeal).connect(gain);
-      const oscs = [0, 7].map((cents) => {
-        const o = c.createOscillator();
-        o.type = "sawtooth";
-        o.frequency.value = 340;
-        o.detune.value = cents;
-        o.connect(band);
-        o.start();
-        return o;
+      squeal.gain.value = 1;
+      const bands = [
+        { f: 760, q: 9, g: 1.6 },
+        { f: 1450, q: 6, g: 0.55 },
+      ].map(({ f, q, g }) => {
+        const b = c.createBiquadFilter();
+        b.type = "bandpass";
+        b.frequency.value = f;
+        b.Q.value = q;
+        const bg = c.createGain();
+        bg.gain.value = g;
+        hiss.connect(b).connect(bg).connect(squeal);
+        return b;
       });
-      const wob = c.createOscillator();
-      const wobDepth = c.createGain();
-      wob.frequency.value = 11;
-      wobDepth.gain.value = 12;
-      wob.connect(wobDepth);
-      for (const o of oscs) wobDepth.connect(o.frequency);
-      wob.start();
-      // Chatter: the tread gripping and slipping, a fast flutter in the loudness.
-      const chat = c.createOscillator();
-      const chatDepth = c.createGain();
-      chat.type = "triangle";
-      chat.frequency.value = 27;
-      chatDepth.gain.value = 0.22;
-      chat.connect(chatDepth).connect(squeal.gain);
-      chat.start();
-      // The scrub: low, rumbly noise (well filtered: no hiss).
-      const frames = c.sampleRate * 2;
-      const buf = c.createBuffer(1, frames, c.sampleRate);
-      const data = buf.getChannelData(0);
-      let last = 0;
-      for (let i = 0; i < frames; i++)
-        data[i] = last = last * 0.92 + (Math.random() * 2 - 1) * 0.08;
-      const scrubSrc = c.createBufferSource();
-      scrubSrc.buffer = buf;
-      scrubSrc.loop = true;
+      squeal.connect(gain);
+      // The stutter: a slowly wandering random signal (about 20-30 bumps a second)
+      // shaking the squeal's loudness.
+      const stutter = loop(sr * 3, (i, last) => {
+        const target =
+          Math.sin((i * (Math.PI * 2 * 24)) / sr + Math.sin(i / 900) * 3) * 0.6 +
+          (Math.random() - 0.5) * 0.8;
+        return last * 0.995 + target * 0.005;
+      });
+      const stutterDepth = c.createGain();
+      stutterDepth.gain.value = 0.55;
+      stutter.connect(stutterDepth).connect(squeal.gain);
+      // The scrub: low, rumbly noise (well filtered).
+      const rumble = loop(sr * 2, (_i, last) => last * 0.92 + (Math.random() * 2 - 1) * 0.08);
       const scrubF = c.createBiquadFilter();
       scrubF.type = "lowpass";
-      scrubF.frequency.value = 300;
+      scrubF.frequency.value = 320;
       const scrub = c.createGain();
-      scrub.gain.value = 2.8;
-      scrubSrc.connect(scrubF).connect(scrub).connect(gain);
-      scrubSrc.start();
+      scrub.gain.value = 2.6;
+      rumble.connect(scrubF).connect(scrub).connect(gain);
+      for (const src of [hiss, stutter, rumble]) src.start();
       let stopped = false;
       return {
         set(level: number, pitch: number) {
           if (stopped) return;
           const now = c.currentTime;
           const v = Math.max(0, Math.min(1, level));
-          gain.gain.setTargetAtTime(v * 0.32, now, v > gain.gain.value ? 0.03 : 0.08);
-          // A low, rubbery squeal: about 300-450 Hz (higher sounded shrill).
-          const f = 300 + Math.max(0, Math.min(1, pitch)) * 150;
-          for (const o of oscs) o.frequency.setTargetAtTime(f, now, 0.1);
-          band.frequency.setTargetAtTime(f * 1.7, now, 0.1);
+          gain.gain.setTargetAtTime(v * 0.42, now, v > gain.gain.value ? 0.03 : 0.08);
+          const p = Math.max(0, Math.min(1, pitch));
+          bands[0]!.frequency.setTargetAtTime(640 + p * 320, now, 0.1);
+          bands[1]!.frequency.setTargetAtTime(1250 + p * 500, now, 0.1);
         },
         stop() {
           if (stopped) return;
           stopped = true;
           const now = c.currentTime;
           gain.gain.setTargetAtTime(0, now, 0.04);
-          for (const o of [...oscs, wob, chat]) o.stop(now + 0.3);
-          scrubSrc.stop(now + 0.3);
+          for (const src of [hiss, stutter, rumble]) src.stop(now + 0.3);
         },
       };
     },
-    /** Into a drift: a short bark of the tyres. */
+    /** Into a drift: a short, raspy bark of the tyres. */
     skidChirp(volume: number) {
-      note(460, 0, 0.12, volume * 0.24, 340, "sawtooth");
-      note(690, 0, 0.08, volume * 0.08, 520, "sawtooth");
-      noise(0, 0.09, volume * 0.25, 900, 250);
+      noise(0, 0.12, volume * 0.35, 1400, 500);
+      noise(0.02, 0.08, volume * 0.2, 2600, 900);
+    },
+    /**
+     * Your kart's engine: a quiet, low hum under everything (two buzzy tones, filtered
+     * soft, with a gentle chug), rising in pitch with speed. `set(level, pitch)`: level
+     * 0..1, pitch 0..1 (idle .. flat out; a boost can take it a little past 1).
+     */
+    engine() {
+      if (!ctx || ctx.state !== "running") return undefined;
+      const c = ctx;
+      const gain = c.createGain();
+      gain.gain.value = 0;
+      gain.connect(out());
+      const lp = c.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 360;
+      lp.Q.value = 0.9;
+      lp.connect(gain);
+      const body = c.createGain();
+      body.gain.value = 1;
+      body.connect(lp);
+      const saw = c.createOscillator();
+      saw.type = "sawtooth";
+      saw.frequency.value = 55;
+      const sub = c.createOscillator();
+      sub.type = "square";
+      sub.frequency.value = 27.5;
+      const subGain = c.createGain();
+      subGain.gain.value = 0.5;
+      saw.connect(body);
+      sub.connect(subGain).connect(body);
+      // The chug: a slow flutter in the loudness, like pistons.
+      const chug = c.createOscillator();
+      chug.frequency.value = 14;
+      const chugDepth = c.createGain();
+      chugDepth.gain.value = 0.25;
+      chug.connect(chugDepth).connect(body.gain);
+      for (const o of [saw, sub, chug]) o.start();
+      let stopped = false;
+      return {
+        set(level: number, pitch: number) {
+          if (stopped) return;
+          const now = c.currentTime;
+          const f = 55 + Math.max(0, Math.min(1.3, pitch)) * 85;
+          saw.frequency.setTargetAtTime(f, now, 0.08);
+          sub.frequency.setTargetAtTime(f / 2, now, 0.08);
+          chug.frequency.setTargetAtTime(f / 4, now, 0.08);
+          lp.frequency.setTargetAtTime(260 + f * 1.6, now, 0.1);
+          gain.gain.setTargetAtTime(Math.max(0, Math.min(1, level)) * 0.1, now, 0.12);
+        },
+        stop() {
+          if (stopped) return;
+          stopped = true;
+          const now = c.currentTime;
+          gain.gain.setTargetAtTime(0, now, 0.05);
+          for (const o of [saw, sub, chug]) o.stop(now + 0.3);
+        },
+      };
     },
     /** The enhanced (released-throttle) boost took: a bright double chime. */
     enhanced(volume: number) {

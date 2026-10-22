@@ -70,6 +70,7 @@ import { stepImpacts, stepMeshWalls, stepSolids, stepWalls } from "../physics/wa
 import { boundarySolids, buildTunnel, placeTrees, tunnelSolids } from "../world/solids";
 import { createSceneryView } from "../render/sceneryView";
 import { bumpKarts } from "../physics/bump";
+import { createBoostFx } from "../render/boostFx";
 import { buildRacingLine } from "../ai/racingLine";
 import { createDriver, driveAi, type Driver } from "../ai/driver";
 import {
@@ -180,6 +181,11 @@ export interface HudState {
   finished: boolean;
   bananas: number;
   item: string;
+  /** Your boost, for the screen's speed lines: 0 none, 0.7 pushing, 1 enhanced. */
+  boost: number;
+  boostColor: string;
+  /** The rainbow window (press the throttle now). */
+  rainbow: boolean;
   /** The held balloon, for the item box's icon (null when holding nothing). */
   held: { color: BalloonColor; level: number; ammo: number } | null;
   /** Drift Park: loop name, current drift streak (laps), best streak, direction. */
@@ -939,7 +945,7 @@ function buildSession(
       mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-40 * frameSeconds));
       e.racer.shadow.visible = false;
       e.racer.animate(frameSeconds, motionOf(s), nearestRival(e));
-      flames(e);
+      flames(e, frameSeconds);
       return;
     }
     e.racer.shadow.visible = true;
@@ -973,10 +979,10 @@ function buildSession(
     r.placeShadow(mesh.position.x, groundY, mesh.position.z, heading, mesh.position.y - groundY);
     // Character and kart animation: a visual layer on top of the physics state.
     r.animate(frameSeconds, motionOf(s), nearestRival(e));
-    flames(e);
+    flames(e, frameSeconds);
   }
 
-  function flames(e: Entrant) {
+  function flames(e: Entrant, frameSeconds: number) {
     const s = e.state;
 
     // Exhaust: the colour says which boost (zipper amber; blue balloons orange / blue /
@@ -985,7 +991,11 @@ function buildSession(
     const z = s.zipPhase;
     const color = FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!;
     const pushing = z === ZIP.ACTIVE || z === ZIP.ENDING;
-    e.racer.flame.visible = z !== ZIP.NORMAL;
+    // After the push, a small flame dies away over half a second. (The recovery itself
+    // can go on much longer, while the extra speed bleeds off: it once kept the flame lit
+    // all that time, as if the boost were still going.)
+    const dying = z === ZIP.RECOVERY ? Math.max(0, 1 - s.zipTime / 0.5) : 0;
+    e.racer.flame.visible = pushing || dying > 0;
     e.racer.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
     if (z === ZIP.ENDING) {
       e.racer.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
@@ -1002,9 +1012,21 @@ function buildSession(
       e.racer.flame.scale.setScalar(size);
     } else if (z === ZIP.RECOVERY) {
       e.racer.flameMat.color.set(color);
-      e.racer.flame.scale.setScalar(0.55);
+      e.racer.flame.scale.setScalar(0.25 + 0.4 * dying);
     }
-    e.racer.flameMat.opacity = z === ZIP.RECOVERY ? 0.45 : 0.9;
+    e.racer.flameMat.opacity = z === ZIP.RECOVERY ? 0.6 * dying : 0.9;
+    boostFx.update(
+      entrants.indexOf(e),
+      e.mesh,
+      { pushing, color, enhanced: s.zipEnhanced, rainbow: z === ZIP.ENDING },
+      performance.now() / 1000,
+      frameSeconds,
+    );
+    if (e.racer.flame.visible)
+      e.racer.animateFlame(
+        performance.now() / 1000 + entrants.indexOf(e) * 0.37,
+        pushing ? (s.zipEnhanced ? 1 : 0.7) : 0.1,
+      );
   }
 
   /** The nearest other racer within glancing distance, in this racer's local frame. */
@@ -1062,6 +1084,10 @@ function buildSession(
   }
 
   const orbitTarget = new THREE.Vector3();
+  /** Boost light trails and launch bursts. */
+  const boostFx = createBoostFx(root);
+  /** The camera's boost kick (0..1): it widens a little while your boost pushes. */
+  let fovKick = 0;
   let resultsShown = false;
   function render(alpha: number, frameSeconds: number) {
     const { camera, world, vehicle } = tuning;
@@ -1090,7 +1116,12 @@ function buildSession(
     const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
     const velAngle = p.velAngle + wrapAngle(s.velAngle - p.velAngle) * alpha;
     stage.followSun(x, z);
-    stage.camera.fov = camera.fov;
+    // While your boost pushes the view widens a little (more for an enhanced boost), so
+    // the speed lands; it eases back after.
+    const boosting = !demo && (s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING);
+    const kickTo = boosting ? (s.zipEnhanced ? 1 : 0.7) : 0;
+    fovKick += (kickTo - fovKick) * (1 - Math.exp(-(kickTo > fovKick ? 8 : 2.5) * frameSeconds));
+    stage.camera.fov = camera.fov + fovKick * 10;
     stage.camera.updateProjectionMatrix();
     if (demo) {
       // Title screen: a slow orbit round the lead kart, a little above it.
@@ -1137,6 +1168,7 @@ function buildSession(
       entrants.map((e) => e.mesh.position),
       entrants.map((e) => e.items),
       now,
+      entrants.map((e) => e.mesh),
     );
     if (!demo) {
       ctx.boostLab.render(debug.overlay.visible);
@@ -1267,6 +1299,9 @@ function buildSession(
       racers: entrants.length,
       bananas: s.bananas,
       item: heldLabel(you.items.held),
+      boost: s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING ? (s.zipEnhanced ? 1 : 0.7) : 0,
+      boostColor: FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!,
+      rainbow: s.zipPhase === ZIP.ENDING,
       held: you.items.held.color
         ? { color: you.items.held.color, level: you.items.held.level, ammo: you.items.held.ammo }
         : null,
@@ -1393,10 +1428,11 @@ function buildSession(
 
   let disposed = false;
 
-  // Your tyres skidding: a squeal while you drift (or slide hard), louder the more you
-  // slide, higher at speed; a bark of the tyres going into a drift. Silent while the
-  // race isn't running (paused, or in the demo).
+  // Your kart's sounds. The engine: a quiet hum rising with speed. The tyres: a squeal
+  // while you drift (or slide hard), louder the more you slide, higher at speed; a bark
+  // going into a drift. Silent while the race isn't running (paused, or in the demo).
   let skid: ReturnType<typeof sfx.skid>;
+  let engine: ReturnType<typeof sfx.engine>;
   let lastStepAt = 0;
   let lastDrift = 0;
   function skidSound() {
@@ -1410,12 +1446,22 @@ function buildSession(
     lastDrift = running ? s.driftDir : 0;
     if (level > 0) skid ??= sfx.skid();
     skid?.set(level, fast * 0.7 + Math.min(1, slide) * 0.3);
+    // The engine: a quiet hum that rises with speed (a little higher on boost).
+    if (running) engine ??= sfx.engine();
+    const pushing = s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING;
+    const speedFrac = Math.abs(s.speed) / tuning.vehicle.topSpeed;
+    engine?.set(
+      running ? 0.45 + Math.min(1, speedFrac) * 0.55 : 0,
+      speedFrac + (pushing ? 0.15 : 0),
+    );
   }
   /** Remove everything this session added (3D, HUD, listeners) and free GPU memory. */
   function dispose() {
     if (disposed) return;
     disposed = true;
     skid?.stop();
+    engine?.stop();
+    boostFx.dispose();
     abort.abort();
     hazards?.dispose();
     gateView?.dispose();

@@ -424,14 +424,122 @@ export function createItemView(scene: THREE.Object3D) {
   }
 
   const held = pool(() => new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), bubbleMat), scene);
-  const beams = pool(
-    () =>
-      new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.12, 1, 6).translate(0, 0.5, 0).rotateX(Math.PI / 2),
-        new THREE.MeshBasicMaterial({ color: "#ff00ff", transparent: true, opacity: 0.7 }),
-      ),
-    scene,
-  );
+  // Grappling arms (the rainbow balloon): segmented mechanical arms of dark steel with
+  // brass collars, rising from the back of the grappler's kart, arcing over and clamping
+  // three-fingered claws onto the other kart. They shoot out over a quarter of a second,
+  // then writhe a little as they reel in.
+  const ARM_SEGS = 16;
+  const steel = new THREE.MeshStandardMaterial({
+    color: "#3a3f4a",
+    metalness: 0.7,
+    roughness: 0.35,
+    flatShading: true,
+  });
+  const brass = new THREE.MeshStandardMaterial({
+    color: "#c8962a",
+    metalness: 0.8,
+    roughness: 0.3,
+    flatShading: true,
+  });
+  const eyeMat = new THREE.MeshBasicMaterial({ color: "#ff3a2a" });
+  const segGeo = new THREE.CylinderGeometry(1, 1, 1, 8).rotateX(Math.PI / 2);
+  const collarGeo = new THREE.TorusGeometry(1, 0.28, 5, 10);
+  const fingerGeo = new THREE.ConeGeometry(0.07, 0.42, 5).translate(0, 0.21, 0);
+  const arms = pool(() => {
+    const g = new THREE.Group();
+    for (let k = 0; k < ARM_SEGS; k++) {
+      const seg = new THREE.Mesh(segGeo, steel);
+      seg.name = `seg${k}`;
+      const collar = new THREE.Mesh(collarGeo, brass);
+      collar.name = `col${k}`;
+      g.add(seg, collar);
+    }
+    // The claw: a brass hub with a red eye, three steel fingers.
+    const claw = new THREE.Group();
+    claw.name = "claw";
+    const hub = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), brass);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 4), eyeMat);
+    eye.position.set(0, 0.1, 0.1);
+    claw.add(hub, eye);
+    for (let f = 0; f < 3; f++) {
+      const pivot = new THREE.Group();
+      pivot.rotation.z = (f / 3) * Math.PI * 2;
+      const finger = new THREE.Mesh(fingerGeo, steel);
+      finger.name = "finger";
+      finger.position.set(0, 0.1, 0);
+      pivot.add(finger);
+      claw.add(pivot);
+    }
+    g.add(claw);
+    g.userData = { since: 0, key: "" };
+    return g;
+  }, scene);
+  const armStart = new Map<string, number>();
+  const bz = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const ap = new THREE.Vector3();
+  const aq = new THREE.Vector3();
+  const tan = new THREE.Vector3();
+  const lift = new THREE.Vector3();
+  const qArm = new THREE.Quaternion();
+  const zAxis = new THREE.Vector3(0, 0, 1);
+  const bezier = (t: number, out: THREE.Vector3) => {
+    const u = 1 - t;
+    return out
+      .copy(bz[0]!)
+      .multiplyScalar(u * u * u)
+      .addScaledVector(bz[1]!, 3 * u * u * t)
+      .addScaledVector(bz[2]!, 3 * u * t * t)
+      .addScaledVector(bz[3]!, t * t * t);
+  };
+
+  /** Pose one arm from `from` (a shoulder) to `to` (where its claw grips). */
+  function poseArm(
+    g: THREE.Group,
+    from: THREE.Vector3,
+    to: THREE.Vector3,
+    out: THREE.Vector3,
+    reach: number,
+    seconds: number,
+    seed: number,
+  ) {
+    const span = from.distanceTo(to);
+    const h = 1.2 + Math.min(3, span * 0.18);
+    bz[0]!.copy(from);
+    bz[1]!.copy(from).addScaledVector(out, 0.7).y += h;
+    bz[2]!.copy(to).addScaledVector(out, 0.5).y += h * 0.8;
+    bz[3]!.copy(to);
+    let prev = bezier(0, ap.clone());
+    for (let k = 0; k < ARM_SEGS; k++) {
+      const t1 = ((k + 1) / ARM_SEGS) * reach;
+      bezier(t1, aq);
+      // A writhe along the arm, fading out at both ends.
+      const w = Math.sin((k / ARM_SEGS) * Math.PI) * 0.18;
+      aq.x += Math.sin(seconds * 7 + k * 0.7 + seed) * w;
+      aq.y += Math.cos(seconds * 6 + k * 0.9 + seed) * w;
+      const seg = g.getObjectByName(`seg${k}`)!;
+      const col = g.getObjectByName(`col${k}`)!;
+      tan.subVectors(aq, prev);
+      const len = tan.length();
+      const r = 0.075 - (k / ARM_SEGS) * 0.025;
+      seg.position.addVectors(prev, aq).multiplyScalar(0.5);
+      qArm.setFromUnitVectors(zAxis, tan.normalize());
+      seg.quaternion.copy(qArm);
+      seg.scale.set(r, r, Math.max(0.01, len * 0.92));
+      col.position.copy(aq);
+      col.quaternion.copy(qArm);
+      col.scale.setScalar(r * 1.25);
+      prev = prev.copy(aq);
+    }
+    const claw = g.getObjectByName("claw")!;
+    claw.position.copy(prev);
+    claw.quaternion.copy(qArm);
+    // Fingers open as it flies, close to grip once it arrives.
+    const grip = reach >= 1 ? 1 : 0;
+    claw.children.forEach((c) => {
+      const finger = c.getObjectByName("finger");
+      if (finger) finger.rotation.x = grip ? 0.25 : -0.7;
+    });
+  }
 
   const tmp = new THREE.Vector3();
 
@@ -440,7 +548,15 @@ export function createItemView(scene: THREE.Object3D) {
      * Draw this frame. `karts` are the karts' drawn positions (meshes), in racer order;
      * `lift` is how far each one is raised (a kart held in a bubble floats).
      */
-    render(w: ItemWorld, karts: THREE.Vector3[], racers: RacerItems[], seconds: number) {
+    render(
+      w: ItemWorld,
+      karts: THREE.Vector3[],
+      racers: RacerItems[],
+      seconds: number,
+      /** The karts' roots, for where on them the grappling arms attach. */
+      roots?: THREE.Object3D[],
+    ) {
+      const live = new Set<string>();
       rainbowMat.color.setHSL((seconds * 0.4) % 1, 0.9, 0.6);
       rainbowMat.emissive.copy(rainbowMat.color);
 
@@ -537,6 +653,8 @@ export function createItemView(scene: THREE.Object3D) {
           m.position.copy(p).y += 1.0;
           m.scale.setScalar(1 + Math.sin(seconds * 5) * 0.04);
         }
+        // The grappler (a) reaches for the other kart (b): a's own grapple, or a
+        // reverse grapple dragging this racer back to its owner.
         const target = it.magnetTime > 0 ? it.magnetTarget : -1;
         const from = it.pullTime > 0 ? it.pullBy : -1;
         for (const [a, b] of [
@@ -546,17 +664,30 @@ export function createItemView(scene: THREE.Object3D) {
           const pa = karts[a];
           const pb = karts[b];
           if (a < 0 || b < 0 || !pa || !pb) continue;
-          const m = beams.get(bm++) as THREE.Mesh;
-          (m.material as THREE.MeshBasicMaterial).color.setHSL((seconds * 1.5) % 1, 1, 0.6);
-          m.position.copy(pa).y += 1.0;
-          tmp.copy(pb).y += 1.0;
-          m.lookAt(tmp);
-          m.scale.set(1, 1, pa.distanceTo(pb));
+          const key = `${a}>${b}`;
+          live.add(key);
+          if (!armStart.has(key)) armStart.set(key, seconds);
+          const reach = Math.min(1, (seconds - armStart.get(key)!) / 0.25);
+          const ra = roots?.[a];
+          const rb = roots?.[b];
+          for (const side of [1, -1]) {
+            const g = arms.get(bm++) as THREE.Group;
+            // Shoulders on the back of the grappler, grips on the other kart's sides.
+            if (ra) ra.localToWorld(bz[0]!.set(side * 0.42, 0.95, -0.7));
+            else bz[0]!.copy(pa).y += 0.95;
+            if (rb) rb.localToWorld(tmp.set(side * 0.62, 0.65, 0.1));
+            else tmp.copy(pb).y += 0.65;
+            lift.set(side, 0, 0);
+            if (ra) lift.transformDirection(ra.matrixWorld);
+            const shoulder = bz[0]!.clone();
+            poseArm(g, shoulder, tmp.clone(), lift.clone(), reach, seconds, side * 1.7 + a);
+          }
         }
       });
       shields.hideFrom(s);
       held.hideFrom(h);
-      beams.hideFrom(bm);
+      arms.hideFrom(bm);
+      for (const k of [...armStart.keys()]) if (!live.has(k)) armStart.delete(k);
     },
   };
 }

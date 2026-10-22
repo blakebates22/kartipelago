@@ -22,13 +22,13 @@ Colour, level and ammo are stored separately (`inventory.ts`).
 - A different colour replaces it, at level 1.
 - Once the ammo is used up you hold nothing, so the next balloon is level 1.
 
-| Colour  | Level 1       | Level 2        | Level 3                              |
-| ------- | ------------- | -------------- | ------------------------------------ |
-| Red     | missile       | homing missile | 10 missiles                          |
-| Blue    | boost 0.58 s  | boost 0.92 s   | boost 1.25 s                         |
-| Green   | oil slick     | mine           | bubble trap                          |
-| Yellow  | shield 5 s    | shield 10 s    | shield 15 s                          |
-| Rainbow | magnet (50 m) | magnet (75 m)  | reverse magnet: pulls a rival to you |
+| Colour  | Level 1        | Level 2        | Level 3                               |
+| ------- | -------------- | -------------- | ------------------------------------- |
+| Red     | missile        | homing missile | 10 missiles                           |
+| Blue    | boost 0.58 s   | boost 0.92 s   | boost 1.25 s                          |
+| Green   | oil slick      | mine           | bubble trap                           |
+| Yellow  | shield 5 s     | shield 10 s    | shield 15 s                           |
+| Rainbow | grapple (50 m) | grapple (75 m) | reverse grapple: pulls a rival to you |
 
 AI rivals don't pick up balloons yet (`aiCollect`), but they can be hit.
 
@@ -98,7 +98,9 @@ lost speed, a pop into the air, or a boost ending.
   one reaching toward the nearest rival. They block missiles and traps (the trap is used up). A shielded kart is
   `shieldMass` times heavier in bumps, so it shoves others aside. It flickers in its
   last second.
-- **Magnets** need a rival ahead within range, and keep the balloon if there isn't one.
+- **Grapples** (`magnet` in the code) fire two segmented mechanical arms that clamp onto
+  the nearest rival ahead and reel you in (level 3 drags them back to you instead). They
+  need a rival ahead within range, and keep the balloon if there isn't one.
   The original's ranges are in game units; `magnetUnit` (0.05 m per unit, a guess)
   converts them. Levels 1-2 turn you toward the target and speed you up to
   `magnetSpeedMult` × top speed for `magnetSec` (1.5 s). Level 3 brakes the rival and

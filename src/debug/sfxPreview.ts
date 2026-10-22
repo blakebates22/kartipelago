@@ -84,3 +84,35 @@ export async function previewItemsAndSkid(): Promise<string> {
   await Promise.all(jobs);
   return wav(await rendering);
 }
+
+/** Driving: the engine from idle up to speed, two drifts (with their barks), a boost. */
+export async function previewDriving(): Promise<string> {
+  const seconds = 9;
+  const { real, sfx } = offline(seconds);
+  const at = async (t: number, fn: () => void) => {
+    await real.suspend(t);
+    fn();
+    void real.resume();
+  };
+  const jobs: Promise<void>[] = [];
+  let engine: ReturnType<typeof sfx.engine>;
+  let skid: ReturnType<typeof sfx.skid>;
+  jobs.push(at(0.01, () => ((engine = sfx.engine()), (skid = sfx.skid()))));
+  for (let k = 0; k < 85; k++) {
+    const t = 0.05 + k * 0.1;
+    const speed = Math.min(1, t / 2.5);
+    const drifting = (t > 2.8 && t < 4.6) || (t > 5.4 && t < 7.2);
+    jobs.push(
+      at(t, () => {
+        engine?.set(0.45 + speed * 0.55, speed + (t > 7.4 ? 0.15 : 0));
+        skid?.set(drifting ? 0.7 + 0.3 * Math.sin(t * 5) ** 2 : 0, 0.6 + 0.3 * Math.sin(t));
+      }),
+    );
+  }
+  for (const t of [2.8, 5.4]) jobs.push(at(t, () => sfx.skidChirp(0.3)));
+  jobs.push(at(7.4, () => sfx.blueBoost(0.3, 2, 0.3)));
+  jobs.push(at(8.7, () => (engine?.stop(), skid?.stop())));
+  const rendering = real.startRendering();
+  await Promise.all(jobs);
+  return wav(await rendering);
+}

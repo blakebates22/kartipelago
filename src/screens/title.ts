@@ -123,6 +123,8 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
     frame(dt, actions: MenuAction[]) {
       t += dt;
       if (session) shown += dt;
+      // Nothing to press until there's something to see.
+      if (!session && !failed) return;
       if (mode === "press") {
         if (
           actions.some((a) => a === "confirm" || a === "pause") ||
@@ -134,29 +136,34 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
       } else menu.handle(actions);
     },
     draw(ui: UiLayer) {
-      // Until the demo race is ready, a dark screen (not the painted landscape, which
-      // would flash up for a moment); then the race fades in from it.
+      // Until the demo race is ready the screen stays black (no logo or menu over an
+      // empty screen, and no painted landscape flashing up); then the race, the logo and
+      // the menu all fade in together.
+      if (!session && !failed) {
+        ui.rect(0, 0, ui.W, ui.H, "#0b0710");
+        return;
+      }
       if (failed) landscape(ui.g, ui.W, ui.H, t, calm());
-      else if (!session || shown < 0.6)
-        ui.rect(0, 0, ui.W, ui.H, "#0b0710", session ? 1 - shown / 0.6 : 1);
+      // The logo's bounce-in starts when it can be seen.
+      const lt = failed ? t : shown;
       // A soft band behind the logo so it reads over any scene.
       ui.rect(0, 14, ui.W, 46, "#0b0710", 0.18);
-      logo(ui.g, ui.W / 2, 22, t, 3, calm());
+      logo(ui.g, ui.W / 2, 22, lt, 3, calm());
       ui.text("ISLAND KART RACING", ui.W / 2, 50, {
         align: "center",
         color: PAL.cream,
         outline: PAL.shadow,
       });
       if (mode === "press") {
-        const on = calm() || Math.floor(t * 2.2) % 2 === 0;
-        if (on && t > 0.9)
+        const on = calm() || Math.floor(lt * 2.2) % 2 === 0;
+        if (on && lt > 0.9)
           ui.text("PRESS START", ui.W / 2, 176, {
             align: "center",
             scale: 2,
             color: PAL.gold,
             outline: PAL.shadow,
           });
-        if (!game.audio.running && t > 0.9)
+        if (!game.audio.running && lt > 0.9)
           ui.text("(PRESS ANY KEY OR CLICK FOR SOUND)", ui.W / 2, 198, {
             align: "center",
             color: PAL.cream,
@@ -176,6 +183,8 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
           color: "#e8d5b0",
           shadow: PAL.shadow,
         });
+      // Fading in from black: the scene and the logo together.
+      if (!failed && shown < 0.6) ui.rect(0, 0, ui.W, ui.H, "#0b0710", 1 - shown / 0.6);
     },
   };
 }

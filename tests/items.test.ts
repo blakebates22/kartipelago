@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
 import { NEUTRAL } from "../src/core/input";
 import type { ItemsConfig } from "../src/items/config";
-import { racerItems, stepEffects, bumpMass, shieldRam, type Racer } from "../src/items/effects";
+import {
+  racerItems,
+  stepEffects,
+  bumpMass,
+  shieldRam,
+  magnetTarget,
+  type Racer,
+} from "../src/items/effects";
 import { collectBalloon, emptyHeld, useAmmo } from "../src/items/inventory";
 import {
   collectBalloons,
@@ -299,6 +306,21 @@ describe("green traps", () => {
     fireItem(world, racers, 0, 1, items, () => 0);
     expect(world.traps).toHaveLength(1);
     expect(world.traps[0]).toMatchObject({ kind: "oil", y: 0.5, nx: 0.3, ny: 0.95 });
+  });
+
+  it("grapple only racers ahead of you, in front of you", () => {
+    // Facing +Z. Racer 1 is ahead in the race but physically behind (across a hairpin);
+    // racer 2 is ahead and in front.
+    const s = setup([
+      [0, 0],
+      [0, -8],
+      [3, 20],
+    ]);
+    const ahead = (j: number) => [0, 5, 3][j]!;
+    expect(magnetTarget(s.racers, 0, 100, ahead)).toBe(2);
+    // Nobody in front: nothing to grab.
+    s.racers[2]!.kart.z = -20;
+    expect(magnetTarget(s.racers, 0, 100, ahead)).toBe(-1);
   });
 
   it("a shielded kart that rams another spins it out, either way round", () => {
