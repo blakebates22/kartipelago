@@ -10,13 +10,14 @@
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { submitResult, type NewRecords } from "../app/records";
-import type { RaceResult, Session } from "../game/session";
+import type { HudState, RaceResult, Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
 import { DESIGNS } from "../render/racers/designs";
 import { formatTime } from "../race/race";
 import { tuning } from "../core/tuning";
 import type { UiLayer } from "../ui/layer";
 import { PAL } from "../ui/textures";
+import { BALLOON_HUES, ICON, itemIcon } from "../ui/itemIcons";
 import { VMenu, hints } from "./common";
 import { optionsScreen } from "./options";
 import { trackSelect } from "./trackSelect";
@@ -24,13 +25,6 @@ import { titleScreen } from "./title";
 
 const ordinal = (n: number) =>
   `${n}${["TH", "ST", "ND", "RD"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
-
-const ITEM_COLORS: Record<string, string> = {
-  Red: PAL.coral,
-  Blue: PAL.sky,
-  Green: PAL.leaf,
-  Yellow: PAL.gold,
-};
 
 /** Wait this long after crossing the line before the results come up, seconds. */
 const RESULTS_AFTER = 2.4;
@@ -168,6 +162,59 @@ const EGG_COLORS: Record<string, string> = {
   g: "#3f9e6e",
 };
 
+/** The last item shown in each race's item box, and when it changed (for the pop). */
+const shownItem = new WeakMap<Session, { key: string; at: number }>();
+
+/**
+ * The item box: a frame in the balloon's colour with its pixel icon at 2x, a pip for each
+ * level and the ammo count when there's more than one shot. A new or upgraded item pops
+ * in (a quick grow and a white flash).
+ */
+function itemBox(
+  ui: UiLayer,
+  session: Session,
+  held: HudState["held"],
+  x: number,
+  y: number,
+  t: number,
+) {
+  const S = 48;
+  const key = held ? `${held.color}${held.level}` : "";
+  let seen = shownItem.get(session);
+  if (!seen || seen.key !== key) {
+    seen = { key, at: held && seen ? t : -1 };
+    shownItem.set(session, seen);
+  }
+  const pop = seen.at >= 0 ? Math.max(0, 1 - (t - seen.at) / 0.25) : 0;
+  const hue = held ? BALLOON_HUES[held.color] : { light: "#6a6a78", dark: "#2c2c38" };
+  ui.rect(x - 2, y - 2, S + 4, S + 4, PAL.shadow);
+  ui.rect(x, y, S, S, pop > 0.5 ? "#ffffff" : hue.light);
+  ui.rect(x + 2, y + 2, S - 4, S - 4, hue.dark);
+  ui.rect(x + 3, y + 3, S - 6, S - 6, "#14121e");
+  if (!held) {
+    ui.text("?", x + S / 2, y + S / 2 - 7, { scale: 2, color: "#3a3a4a", align: "center" });
+    return;
+  }
+  const size = Math.round(ICON * (2 + pop * 0.8));
+  ui.image(
+    itemIcon(held.color, held.level),
+    x + (S - size) / 2,
+    y + (S - size) / 2 - 1,
+    size,
+    size,
+    false,
+  );
+  // Level pips along the bottom.
+  for (let i = 0; i < 3; i++)
+    ui.rect(x + 6 + i * 6, y + S - 7, 4, 3, i < held.level ? hue.light : "#3a3a4a");
+  if (held.ammo > 1)
+    ui.text(`×${held.ammo}`, x + S - 4, y + S - 11, {
+      color: PAL.cream,
+      outline: PAL.shadow,
+      align: "right",
+    });
+}
+
 /** A dinosaur egg, in pixels. */
 function banana(ui: UiLayer, x: number, y: number) {
   EGG.forEach((row, j) => {
@@ -227,18 +274,13 @@ function drawHud(
       });
   }
 
-  // Bottom left: eggs (bananas, in the code) and the held item.
+  // Bottom left: the item box (the held balloon's pixel icon) and the eggs (bananas, in
+  // the code) beside it.
+  itemBox(ui, session, h.held, 8, ui.H - 58, t);
   if (!practice || h.bananas > 0) {
-    banana(ui, 9, ui.H - 42);
-    ui.text(`×${h.bananas}`, 24, ui.H - 41, { scale: 2, color: PAL.gold, ...big });
+    banana(ui, 62, ui.H - 24);
+    ui.text(`×${h.bananas}`, 77, ui.H - 23, { scale: 2, color: PAL.gold, ...big });
   }
-  const item = h.item === "-" ? "" : h.item.toUpperCase();
-  ui.panel(8, ui.H - 26, 70, 16, "wood", item ? "gold" : "dark");
-  ui.text(item || "NO ITEM", 43, ui.H - 21, {
-    align: "center",
-    color: item ? (ITEM_COLORS[h.item.split(" ")[0]!] ?? PAL.cream) : "#9a8a78",
-    ...big,
-  });
 
   // Centre: countdown, GO!, banners, toasts.
   if (h.phase === "countdown") {

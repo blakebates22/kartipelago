@@ -6,7 +6,9 @@
  *   mesas and a Dragon Kingdom pagoda with an arched bridge on the right, a serpent
  *   dragon gliding through the sky above it;
  * - a jungle tree with hanging vines framing the top left, and a friendly long-necked
- *   dinosaur on a ledge below it;
+ *   dinosaur on a broken temple plinth below it;
+ * - the terrace: the ruins of an old temple, the erupting volcano, a triceratops, a pair
+ *   of pteranodons and a stegosaurus (modeRuins.ts);
  * - a title plank hung on chains between two red dragon banners;
  * - the mode signboards: planks on posts with stone footings, vines over the corners,
  *   a checkered flag (Tracks) or a treasure map (Adventure) on top.
@@ -16,6 +18,15 @@
  */
 import { drawText, textWidth } from "./font";
 import { PAL } from "./textures";
+import {
+  paintVolcano,
+  pteranodons,
+  ruinFloor,
+  ruinsLeft,
+  ruinsRight,
+  stegosaurus,
+  volcanoLife,
+} from "./modeRuins";
 
 type G = CanvasRenderingContext2D;
 
@@ -63,6 +74,11 @@ const SKY = ["#3f9be6", "#4ea6ea", "#5fb2ee", "#72bef1", "#88c9f3", "#a0d5f5", "
 const HORIZON = 132;
 /** The terrace's top edge. */
 const TERRACE = 186;
+/** The top of the broken plinth the long-necked dinosaur stands on. */
+export const PLINTH = 193;
+/** Where the triceratops grazes (from the right edge), and its feet. */
+export const TRIKE_FROM_RIGHT = 38;
+export const TRIKE_FEET = TERRACE + 9;
 
 function paintSky(W: number): HTMLCanvasElement {
   const [c, g] = canvas(W, HORIZON + 2);
@@ -89,22 +105,8 @@ function paintVista(W: number, H: number): HTMLCanvasElement {
 
   // ---- left: the Prehistoric island
   const L = W * 0.3;
-  // Distant volcano.
-  const vx = W * 0.14;
-  ridge(
-    g,
-    vx - 46,
-    vx + 46,
-    (x) => 92 + Math.abs(x - vx) * 0.85 - (Math.abs(x - vx) < 6 ? 0 : 0),
-    HORIZON + 2,
-    "#8e7d9c",
-  );
-  ridge(g, vx - 46, vx, (x) => 92 + Math.abs(x - vx) * 0.85 + 2, HORIZON + 2, "#a191ae");
-  px(g, vx - 5, 91, 10, 2, "#e8613a");
-  px(g, vx - 3, 93, 2, 6, "#e8613a");
-  px(g, vx + 2, 93, 1, 9, "#d24a2e");
-  // Green slopes on the volcano's foot.
-  ridge(g, vx - 50, vx + 40, (x) => 118 + Math.sin(x * 0.12) * 3, HORIZON + 2, "#5f9a5a");
+  // The volcano, erupting (its moving parts are drawn each frame).
+  paintVolcano(g, W);
   // Cliffs with waterfalls, nearer.
   const cliffTop = (x: number) =>
     134 + Math.sin(x * 0.09) * 4 + (x > L - 20 ? (x - (L - 20)) * 1.2 : 0);
@@ -223,28 +225,11 @@ function paintVista(W: number, H: number): HTMLCanvasElement {
     }
   }
 
-  // ---- the terrace
-  px(g, 0, TERRACE, W, H - TERRACE, "#b9a27e");
-  // Flagstones in rows that widen towards the viewer.
-  let y = TERRACE + 2;
-  let row = 0;
-  while (y < H) {
-    const rh = 5 + row * 2;
-    const bw = 20 + row * 7;
-    const off = (row % 2) * (bw / 2);
-    for (let x = -off; x < W; x += bw) {
-      const shade = ["#c4ae88", "#b49c76", "#cbb791", "#ab946f"][Math.floor(hash(x, row, 5) * 4)]!;
-      px(g, x + 1, y, bw - 2, rh - 1, shade);
-      px(g, x + 1, y, bw - 2, 1, "#d8c6a2");
-    }
-    px(g, 0, y + rh - 1, W, 1, "#8a7556");
-    y += rh;
-    row++;
-  }
-  // Low stone walls at both ends, ferns.
-  stoneWall(g, 0, TERRACE - 14, 74, 20);
-  stoneWall(g, W - 70, TERRACE - 10, 70, 16);
-  for (const fx of [70, 92, W * 0.5 - 90, W * 0.5 + 84, W - 80, W - 30]) fern(g, fx, TERRACE + 3);
+  // ---- the terrace: the ruins of an old temple
+  ruinFloor(g, W, H, TERRACE);
+  ruinsLeft(g, PLINTH, TERRACE);
+  ruinsRight(g, W, TERRACE);
+  for (const fx of [92, W * 0.5 - 90, W * 0.5 + 84, W - 104]) fern(g, fx, TERRACE + 3);
   return c;
 }
 
@@ -319,16 +304,6 @@ function arches(g: G, x0: number, x1: number, y: number) {
       if (k < 0.2 || k > 0.8) px(g, x, y + 4, 1, TERRACE - y - 4, "#968874");
       else px(g, x, y + 4, 1, 3 + (1 - open) * 8, "#968874");
     }
-}
-
-function stoneWall(g: G, x: number, y: number, w: number, h: number) {
-  for (let r = 0; r * 6 < h; r++)
-    for (let k = -(r % 2) * 5; k < w; k += 10) {
-      const shade = ["#8f8a7c", "#a19c8d", "#7d786b"][Math.floor(hash(k + x, r, 3) * 3)]!;
-      px(g, x + Math.max(0, k) + 1, y + r * 6, Math.min(9, w - Math.max(0, k) - 1), 5, shade);
-      px(g, x + Math.max(0, k) + 1, y + r * 6, Math.min(9, w - Math.max(0, k) - 1), 1, "#bdb8a8");
-    }
-  for (let k = 0; k < w; k += 3) if (hash(k, x, 9) < 0.5) px(g, x + k, y - 1, 3, 2, "#4f9a3c");
 }
 
 function fern(g: G, x: number, y: number) {
@@ -420,9 +395,16 @@ export function modeVista(g: G, W: number, H: number, t: number, calm = false) {
   g.drawImage(vistaCache.sky, 0, 0);
   clouds(g, W, t, calm);
   skyDragon(g, W, t, calm);
+  // The smoke and the fountain go behind the land, so the cone hides what falls back.
+  volcanoLife(g, W, t, calm);
   g.drawImage(vistaCache.land, 0, 0);
   waterfalls(g, W, t, calm);
   seaGlints(g, W, t, calm);
+  // A stegosaurus plodding to and fro along the cliff top, pteranodons overhead.
+  const walk = calm ? 0.5 : (Math.sin(t * 0.09) + 1) / 2;
+  const sx = 34 + walk * 44;
+  stegosaurus(g, sx, Math.round(134 + Math.sin(sx * 0.09) * 4) + 1, t, calm);
+  pteranodons(g, W, t, calm);
 }
 
 /** The friendly long-necked dinosaur on the ledge: blinks and bobs its head. */

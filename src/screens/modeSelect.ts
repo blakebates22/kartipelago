@@ -7,7 +7,16 @@
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { treasureMap } from "../ui/backdrops";
-import { modeBoard, modeVista, terraceDino, titlePlank } from "../ui/modeArt";
+import {
+  PLINTH,
+  TRIKE_FEET,
+  TRIKE_FROM_RIGHT,
+  modeBoard,
+  modeVista,
+  terraceDino,
+  titlePlank,
+} from "../ui/modeArt";
+import { triceratops } from "../ui/modeRuins";
 import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
@@ -53,7 +62,11 @@ export function modeSelect(game: Game): Screen {
       const calm = game.settings.general.reduceMotion;
       modeVista(ui.g, ui.W, ui.H, t, calm);
       // The dino stands on the left ledge when there's room beside the boards.
-      if (ui.W / 2 - 128 - 15 > 64) terraceDino(ui.g, 38, 172, t, calm);
+      if (ui.W / 2 - 128 - 15 > 64) {
+        terraceDino(ui.g, 38, PLINTH - 22, t, calm);
+        // And a triceratops grazing on the ruins on the other side.
+        triceratops(ui.g, ui.W - TRIKE_FROM_RIGHT, TRIKE_FEET, t, calm);
+      }
       titlePlank(ui.g, ui.W, "CHOOSE A MODE", t, calm);
       const signs = [
         { label: "TRACKS", sub: "RACE ANY COURSE", icon: "flag" as const },

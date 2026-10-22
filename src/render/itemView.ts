@@ -15,6 +15,8 @@ export const BALLOON_COLORS: Record<BalloonColor, string> = {
   rainbow: "#ffffff",
 };
 
+const UP = new THREE.Vector3(0, 1, 0);
+const trapUp = new THREE.Vector3();
 /** Shield colour by level: brighter and warmer as it gets longer. */
 const SHIELD_COLORS = ["#ffffff", "#fff3a0", "#ffc94a", "#ff9f1c"];
 
@@ -194,23 +196,38 @@ export function createItemView(scene: THREE.Object3D) {
 
   const missileMat = new THREE.MeshStandardMaterial({ color: "#d62828", flatShading: true });
   const missileFlame = new THREE.MeshBasicMaterial({ color: "#ffb703" });
+  const trailMat = new THREE.MeshBasicMaterial({
+    color: "#ffd27a",
+    transparent: true,
+    opacity: 0.55,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
   const missiles = pool(() => {
     const g = new THREE.Group();
     const body = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.22, 0.22, 1.4, 8).rotateX(Math.PI / 2),
+      new THREE.CylinderGeometry(0.3, 0.3, 1.8, 8).rotateX(Math.PI / 2),
       missileMat,
     );
     const nose = new THREE.Mesh(
-      new THREE.ConeGeometry(0.22, 0.5, 8).rotateX(Math.PI / 2),
+      new THREE.ConeGeometry(0.3, 0.65, 8).rotateX(Math.PI / 2),
       missileMat,
     );
-    nose.position.z = 0.95;
+    nose.position.z = 1.22;
     const flame = new THREE.Mesh(
-      new THREE.ConeGeometry(0.2, 0.7, 8).rotateX(-Math.PI / 2),
+      new THREE.ConeGeometry(0.28, 0.9, 8).rotateX(-Math.PI / 2),
       missileFlame,
     );
-    flame.position.z = -1;
-    g.add(body, nose, flame);
+    flame.position.z = -1.3;
+    // A bright streak behind, so a fast missile is easy to follow (it's scaled to the
+    // missile's speed each frame).
+    const trail = new THREE.Mesh(
+      new THREE.ConeGeometry(0.26, 1, 8).rotateX(-Math.PI / 2).translate(0, 0, -0.5),
+      trailMat,
+    );
+    trail.name = "trail";
+    trail.position.z = -1.5;
+    g.add(body, nose, flame, trail);
     return g;
   }, scene);
 
@@ -313,6 +330,7 @@ export function createItemView(scene: THREE.Object3D) {
         const g = missiles.get(i);
         g.position.set(m.x, m.y, m.z);
         g.rotation.y = m.heading;
+        g.getObjectByName("trail")!.scale.set(1, 1, Math.min(9, m.speed * 0.08));
       });
       missiles.hideFrom(w.missiles.length);
 
@@ -321,6 +339,13 @@ export function createItemView(scene: THREE.Object3D) {
         g.position.set(t.x, t.y, t.z);
         for (const kind of ["oil", "mine", "bubble"])
           g.getObjectByName(kind)!.visible = t.kind === kind;
+        if (t.kind === "oil") {
+          // Lie along the ground (banked or sloping road), just above it.
+          const oil = g.getObjectByName("oil")!;
+          trapUp.set(t.nx ?? 0, t.ny ?? 1, t.nz ?? 0).normalize();
+          oil.quaternion.setFromUnitVectors(UP, trapUp);
+          oil.position.copy(trapUp).multiplyScalar(0.08);
+        }
         const light = g.getObjectByName("light");
         if (light) light.visible = t.kind === "mine" && Math.floor(seconds * 4) % 2 === 0;
         if (t.kind === "bubble")

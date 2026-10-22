@@ -1,5 +1,13 @@
 # HUD
 
+The item box sits in the bottom-left corner, the eggs beside it: see
+[balloons.md](balloons.md).
+
+Drifting (or sliding hard) plays a tyre squeal (`sfx.skid`), louder the more you slide
+and higher at speed, with a bark of the tyres going into a drift. It's mostly tone, with
+only a low rumble of scrub, so it never turns into a hiss. Only your own kart skids
+out loud.
+
 ## Speedometer
 
 The speedometer sits in the bottom-right corner (`src/render/speedometer.ts`): a

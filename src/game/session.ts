@@ -28,7 +28,7 @@ import { buildTrack, type Track, type TrackData } from "../world/track";
 import { buildZippers, enteredZipper } from "../world/zippers";
 import { BOOST_SOURCE, ZIP, startZipper } from "../vehicles/zipper";
 import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "../items/effects";
-import { heldLabel } from "../items/inventory";
+import { heldLabel, type BalloonColor } from "../items/inventory";
 import {
   collectBalloons,
   createItemWorld,
@@ -173,6 +173,8 @@ export interface HudState {
   finished: boolean;
   bananas: number;
   item: string;
+  /** The held balloon, for the item box's icon (null when holding nothing). */
+  held: { color: BalloonColor; level: number; ammo: number } | null;
   /** Drift Park: loop name, current drift streak (laps), best streak, direction. */
   park?: { loop: string; streak: number; best: number; turning: "left" | "right" };
   toast?: string;
@@ -596,7 +598,7 @@ function buildSession(
     }
     if (demo) return;
     if (ev.type === "pickup") {
-      if (ev.racer === 0) sfx.balloon(vol, ev.result);
+      if (ev.racer === 0) sfx.balloon(vol, ev.result, you.items.held.level, ev.color);
     } else if (ev.type === "noTarget") {
       sfx.fizz(vol);
       showToast("No target in range", 1);
@@ -650,6 +652,7 @@ function buildSession(
   }
 
   function update(dt: number) {
+    lastStepAt = performance.now();
     if (resetRequested) {
       resetRequested = false;
       race = newRace();
@@ -905,7 +908,7 @@ function buildSession(
       const { up, fwd, right } = tilt;
       up.set(pose.ux, pose.uy, pose.uz);
       fwd.set(pose.fx, pose.fy, pose.fz);
-      const lift = 0.4 + (e.items.bubbleTime > 0 ? 0.8 : 0);
+      const lift = e.items.bubbleTime > 0 ? 0.8 : 0;
       mesh.position.set(pose.x + up.x * lift, pose.y + up.y * lift, pose.z + up.z * lift);
       right.crossVectors(up, fwd).normalize();
       fwd.crossVectors(right, up).normalize();
@@ -920,9 +923,11 @@ function buildSession(
     e.racer.shadow.visible = true;
     mesh.position.set(
       p.x + (s.x - p.x) * alpha,
+      // The kart model's origin is where its wheels touch the ground, so it sits right on
+      // the physics contact height (it once floated 0.4 m: the old placeholder box's
+      // centre height).
       p.y +
         (s.y - p.y) * alpha +
-        0.4 +
         (e.items.bubbleTime > 0 ? 0.8 : 0) -
         (hazards?.sinkOf(entrants.indexOf(e)) ?? 0),
       p.z + (s.z - p.z) * alpha,
@@ -943,13 +948,7 @@ function buildSession(
     // The blob shadow stays on the ground under the kart, smaller the higher it flies.
     const r = e.racer;
     const groundY = e.ground.at(mesh.position.x, mesh.position.z, mesh.position.y).height;
-    r.placeShadow(
-      mesh.position.x,
-      groundY,
-      mesh.position.z,
-      heading,
-      mesh.position.y - 0.4 - groundY,
-    );
+    r.placeShadow(mesh.position.x, groundY, mesh.position.z, heading, mesh.position.y - groundY);
     // Character and kart animation: a visual layer on top of the physics state.
     r.animate(frameSeconds, motionOf(s), nearestRival(e));
     flames(e);
@@ -1054,6 +1053,7 @@ function buildSession(
       resultsShown = anyDone;
     }
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
+    skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
     sceneryView?.render(tuning.scenery);
@@ -1245,6 +1245,9 @@ function buildSession(
       racers: entrants.length,
       bananas: s.bananas,
       item: heldLabel(you.items.held),
+      held: you.items.held.color
+        ? { color: you.items.held.color, level: you.items.held.level, ammo: you.items.held.ammo }
+        : null,
       toast: toast?.text,
       laps: tuning.race.laps,
     };
@@ -1367,10 +1370,30 @@ function buildSession(
     });
 
   let disposed = false;
+
+  // Your tyres skidding: a squeal while you drift (or slide hard), louder the more you
+  // slide, higher at speed; a bark of the tyres going into a drift. Silent while the
+  // race isn't running (paused, or in the demo).
+  let skid: ReturnType<typeof sfx.skid>;
+  let lastStepAt = 0;
+  let lastDrift = 0;
+  function skidSound() {
+    const s = you.state;
+    const running = !demo && performance.now() - lastStepAt < 120;
+    const slide = Math.abs(wrapAngle(s.heading - s.velAngle));
+    const fast = Math.min(1, s.speed / 18);
+    const on = running && s.grounded && s.speed > 5 && (s.driftDir !== 0 || slide > 0.4);
+    const level = on ? Math.min(1, 0.55 + slide * 0.9) * fast : 0;
+    if (on && s.driftDir !== 0 && lastDrift === 0) sfx.skidChirp(itemsCfg.volume);
+    lastDrift = running ? s.driftDir : 0;
+    if (level > 0) skid ??= sfx.skid();
+    skid?.set(level, fast * 0.7 + Math.min(1, slide) * 0.3);
+  }
   /** Remove everything this session added (3D, HUD, listeners) and free GPU memory. */
   function dispose() {
     if (disposed) return;
     disposed = true;
+    skid?.stop();
     abort.abort();
     hazards?.dispose();
     gateView?.dispose();

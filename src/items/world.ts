@@ -66,6 +66,10 @@ export interface Trap {
   z: number;
   owner: number;
   age: number;
+  /** The ground's up direction where it was dropped (the slick lies along it). */
+  nx?: number;
+  ny?: number;
+  nz?: number;
 }
 
 /** A moment worth showing or hearing: an explosion, a blocked hit, a fizzled shot. */
@@ -234,7 +238,10 @@ function dropTrap(w: ItemWorld, r: Racer, i: number, kind: TrapKind, cfg: ItemsC
   const k = r.kart;
   const x = k.x - Math.sin(k.heading) * cfg.trapBehind;
   const z = k.z - Math.cos(k.heading) * cfg.trapBehind;
-  w.traps.push({ kind, x, y: w.makeGround().at(x, z).height, z, owner: i, age: 0 });
+  // The surface at the kart's own height (not another one above or below it, on a bridge
+  // or under one), and its slope, so a slick lies flat on banked and sloping road.
+  const g = w.makeGround().at(x, z, k.y);
+  w.traps.push({ kind, x, y: g.height, z, owner: i, age: 0, nx: g.nx, ny: g.ny, nz: g.nz });
 }
 
 /**
@@ -346,7 +353,10 @@ export function stepItemWorld(
     }
     m.x += Math.sin(m.heading) * m.speed * dt;
     m.z += Math.cos(m.heading) * m.speed * dt;
-    m.y = m.ground.at(m.x, m.z).height + 0.7;
+    // Follow the surface it's flying over: the one at its own height (without the
+    // height, where surfaces overlap, on bridges, ramps and loops, it could snap to
+    // another one and fly on hidden inside the ground).
+    m.y = m.ground.at(m.x, m.z, m.y - 0.7).height + 0.7;
     if (blocked(w, m)) {
       w.blasts.push({ kind: "wall", x: m.x, y: m.y, z: m.z, age: 0 });
       return false;

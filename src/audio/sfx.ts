@@ -54,12 +54,35 @@ export function createSfx(engine: AudioEngine) {
   };
 
   return {
-    /** Balloon popped: a new one, an upgrade (higher), or a refill. */
-    balloon(volume: number, result: "new" | "upgrade" | "refill") {
-      const f = result === "new" ? 520 : result === "upgrade" ? 780 : 660;
-      noise(0, 0.08, volume * 0.8, 4000, 800);
-      note(f, 0.02, 0.15, volume, f * 1.5);
-      if (result === "upgrade") note(f * 1.5, 0.12, 0.15, volume, f * 2);
+    /**
+     * Balloon popped: the item lands in the box with a bright little jingle. It climbs
+     * with the level (two notes at level 1, three at 2, a four-note flourish and a sparkle
+     * at 3); a refill is a quick double blip. Each colour has its own key.
+     */
+    balloon(
+      volume: number,
+      result: "new" | "upgrade" | "refill",
+      level = result === "new" ? 1 : 2,
+      color: "red" | "blue" | "green" | "yellow" | "rainbow" = "red",
+    ) {
+      const key = { red: 0, blue: 2, green: -3, yellow: 4, rainbow: 7 }[color];
+      const f = (semi: number) => 523.25 * 2 ** ((semi + key) / 12);
+      // The pop: short and dull, not a hiss.
+      noise(0, 0.05, volume * 0.45, 2600, 500);
+      if (result === "refill") {
+        note(f(12), 0.02, 0.07, volume * 0.8, f(12), "square");
+        note(f(12), 0.1, 0.1, volume * 0.8, f(12), "square");
+        return;
+      }
+      const run = level >= 3 ? [0, 4, 7, 12] : level === 2 ? [0, 4, 7] : [-5, 0];
+      const step = 0.055;
+      run.forEach((semi, i) => {
+        note(f(semi), 0.02 + i * step, 0.14, volume * 0.55, f(semi), "square");
+        note(f(semi + 12), 0.02 + i * step, 0.12, volume * 0.35, f(semi + 12), "sine");
+      });
+      if (level >= 3)
+        for (let i = 0; i < 4; i++)
+          note(f(19 + (i % 2) * 5), 0.26 + i * 0.04, 0.06, volume * 0.25, f(24), "sine");
     },
     /**
      * A blue boost firing. Level 3 charges (a rising tone) and then booms after
@@ -74,6 +97,94 @@ export function createSfx(engine: AudioEngine) {
         noise(0, 0.25 + level * 0.15, volume, 5000, 400);
         note(level === 1 ? 300 : 240, 0, 0.3, volume * 0.6, 120, "square");
       }
+    },
+    /**
+     * Tyres skidding through a drift: a looping squeal you turn up and down. It's mostly
+     * tone (a narrow band of rubbery whine with a little chatter), with only a low
+     * rumble of scrub under it, so it reads as tyres and never as a hiss. `set(level,
+     * pitch)`: level 0..1 (0 silent), pitch 0..1 (higher at speed and in a tight slide).
+     */
+    skid() {
+      if (!ctx || ctx.state !== "running") return undefined;
+      const c = ctx;
+      const gain = c.createGain();
+      gain.gain.value = 0;
+      gain.connect(out());
+      // The squeal: two detuned saws through a resonant band, wobbling a little.
+      const band = c.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = 1500;
+      band.Q.value = 6;
+      const squeal = c.createGain();
+      squeal.gain.value = 0.55;
+      band.connect(squeal).connect(gain);
+      const oscs = [0, 7].map((cents) => {
+        const o = c.createOscillator();
+        o.type = "sawtooth";
+        o.frequency.value = 700;
+        o.detune.value = cents;
+        o.connect(band);
+        o.start();
+        return o;
+      });
+      const wob = c.createOscillator();
+      const wobDepth = c.createGain();
+      wob.frequency.value = 11;
+      wobDepth.gain.value = 22;
+      wob.connect(wobDepth);
+      for (const o of oscs) wobDepth.connect(o.frequency);
+      wob.start();
+      // Chatter: the tread gripping and slipping, a fast flutter in the loudness.
+      const chat = c.createOscillator();
+      const chatDepth = c.createGain();
+      chat.type = "triangle";
+      chat.frequency.value = 27;
+      chatDepth.gain.value = 0.22;
+      chat.connect(chatDepth).connect(squeal.gain);
+      chat.start();
+      // The scrub: low, rumbly noise (well filtered: no hiss).
+      const frames = c.sampleRate * 2;
+      const buf = c.createBuffer(1, frames, c.sampleRate);
+      const data = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < frames; i++)
+        data[i] = last = last * 0.92 + (Math.random() * 2 - 1) * 0.08;
+      const scrubSrc = c.createBufferSource();
+      scrubSrc.buffer = buf;
+      scrubSrc.loop = true;
+      const scrubF = c.createBiquadFilter();
+      scrubF.type = "lowpass";
+      scrubF.frequency.value = 420;
+      const scrub = c.createGain();
+      scrub.gain.value = 2.2;
+      scrubSrc.connect(scrubF).connect(scrub).connect(gain);
+      scrubSrc.start();
+      let stopped = false;
+      return {
+        set(level: number, pitch: number) {
+          if (stopped) return;
+          const now = c.currentTime;
+          const v = Math.max(0, Math.min(1, level));
+          gain.gain.setTargetAtTime(v * 0.32, now, v > gain.gain.value ? 0.03 : 0.08);
+          const f = 620 + Math.max(0, Math.min(1, pitch)) * 260;
+          for (const o of oscs) o.frequency.setTargetAtTime(f, now, 0.1);
+          band.frequency.setTargetAtTime(f * 2.1, now, 0.1);
+        },
+        stop() {
+          if (stopped) return;
+          stopped = true;
+          const now = c.currentTime;
+          gain.gain.setTargetAtTime(0, now, 0.04);
+          for (const o of [...oscs, wob, chat]) o.stop(now + 0.3);
+          scrubSrc.stop(now + 0.3);
+        },
+      };
+    },
+    /** Into a drift: a short bark of the tyres. */
+    skidChirp(volume: number) {
+      note(980, 0, 0.11, volume * 0.22, 760, "sawtooth");
+      note(1470, 0, 0.08, volume * 0.1, 1100, "sawtooth");
+      noise(0, 0.08, volume * 0.25, 1400, 400);
     },
     /** The enhanced (released-throttle) boost took: a bright double chime. */
     enhanced(volume: number) {

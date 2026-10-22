@@ -153,10 +153,26 @@ describe("missiles", () => {
     give(s.racers[0]!, "red", 1);
     fireItem(s.world, s.racers, 0, 1, items, s.progress);
     expect(s.world.missiles).toHaveLength(1);
-    const ev = hits(run(s, 2));
+    // (Long enough to arrive, short enough that the spin hasn't worn off.)
+    const ev = hits(run(s, 1));
     expect(ev).toEqual([{ type: "hit", racer: 1, kind: "missile", blocked: false, lost: 2 }]);
     expect(victim.bananas).toBe(3);
     expect(victim.spinTime).toBeGreaterThan(0);
+  });
+
+  it("stay on the surface they were fired along, under a bridge or over one", () => {
+    // Road at 0 and a bridge deck 8 m up, overlapping: asked without a height, the
+    // ground would answer with the deck.
+    const road = { height: 0, nx: 0, ny: 1, nz: 0, onRoad: true };
+    const deck = { height: 8, nx: 0, ny: 1, nz: 0, onRoad: true };
+    const ground = { at: (_x: number, _z: number, y?: number) => ((y ?? 99) > 4 ? deck : road) };
+    const racers: Racer[] = [{ kart: createKartState(0, 0, 0), items: racerItems(), cfg }];
+    const world = createItemWorld(undefined, [], () => ground, [], false);
+    give(racers[0]!, "red", 1);
+    fireItem(world, racers, 0, 1, items, () => 0);
+    for (let i = 0; i < 30; i++) stepItemWorld(world, racers, items, loss, dt, () => 0);
+    expect(world.missiles).toHaveLength(1);
+    expect(world.missiles[0]!.y).toBeCloseTo(0.7, 5);
   });
 
   it("carry the kart's own speed as well as their launch speed", () => {
@@ -269,6 +285,20 @@ describe("green traps", () => {
     fireItem(s.world, s.racers, 0, 1, items, s.progress);
     s.racers[0]!.kart.z = -items.trapBehind; // sitting right on it
     expect(hits(run(s, 0.5))).toHaveLength(0);
+  });
+
+  it("drops a trap on the kart's own surface, lying along its slope", () => {
+    // Two surfaces at once: a sloping road at 0-ish and a bridge deck 8 m above.
+    const slope = { height: 0.5, nx: 0.3, ny: 0.95, nz: 0, onRoad: true };
+    const deck = { height: 8, nx: 0, ny: 1, nz: 0, onRoad: true };
+    const ground = { at: (_x: number, _z: number, y?: number) => ((y ?? 99) > 5 ? deck : slope) };
+    const racers: Racer[] = [{ kart: createKartState(0, 0, 0), items: racerItems(), cfg }];
+    const world = createItemWorld(undefined, [], () => ground, [], false);
+    racers[0]!.kart.y = 0.5;
+    give(racers[0]!, "green", 1);
+    fireItem(world, racers, 0, 1, items, () => 0);
+    expect(world.traps).toHaveLength(1);
+    expect(world.traps[0]).toMatchObject({ kind: "oil", y: 0.5, nx: 0.3, ny: 0.95 });
   });
 
   it("oil spins a racer out without costing bananas", () => {

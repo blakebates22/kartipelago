@@ -52,6 +52,10 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
   let t = 0;
   let mode: "press" | "menu" = startInMenu ? "menu" : "press";
   let session: Session | undefined;
+  /** Seconds since the demo race appeared (it fades in from black). */
+  let shown = 0;
+  /** No demo track would load: the painted landscape stands in. */
+  let failed = false;
   let alive = true;
   const calm = () => game.settings.general.reduceMotion;
   const menu = new VMenu(
@@ -89,6 +93,7 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
         console.warn("[title] demo track failed to load:", err);
       }
     }
+    failed = true;
   }
 
   return {
@@ -117,6 +122,7 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
     },
     frame(dt, actions: MenuAction[]) {
       t += dt;
+      if (session) shown += dt;
       if (mode === "press") {
         if (
           actions.some((a) => a === "confirm" || a === "pause") ||
@@ -128,7 +134,11 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
       } else menu.handle(actions);
     },
     draw(ui: UiLayer) {
-      if (!session) landscape(ui.g, ui.W, ui.H, t, calm());
+      // Until the demo race is ready, a dark screen (not the painted landscape, which
+      // would flash up for a moment); then the race fades in from it.
+      if (failed) landscape(ui.g, ui.W, ui.H, t, calm());
+      else if (!session || shown < 0.6)
+        ui.rect(0, 0, ui.W, ui.H, "#0b0710", session ? 1 - shown / 0.6 : 1);
       // A soft band behind the logo so it reads over any scene.
       ui.rect(0, 14, ui.W, 46, "#0b0710", 0.18);
       logo(ui.g, ui.W / 2, 22, t, 3, calm());

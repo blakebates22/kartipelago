@@ -1,8 +1,14 @@
 # Balloons and weapons
 
 Balloons float over the track (`balloons: [{ at, across, color }]` in each track's JSON)
-and come back `items.balloonRespawnSec` after being taken. Press and **release** the
-item button (E or F; B or Y on a gamepad) to use what you hold. The HUD shows it.
+and come back `items.balloonRespawnSec` (half a second) after being taken. Press and
+**release** the item button (E or F; B or Y on a gamepad) to use what you hold.
+
+**The item box** (bottom left of the HUD) shows what you hold as a pixel icon, one for
+every colour and level (`src/ui/itemIcons.ts`), in a frame of the balloon's colour, with
+a pip per level and the ammo count when there's more than one shot. A new or upgraded
+item pops in with a jingle that climbs with the level (two notes, three, then a
+four-note flourish), each colour in its own key; a refill is a quick double blip.
 
 Code: `src/items/` (inventory, boosts, effects, world), `render/itemView.ts`,
 `debug/boostLab.ts`. Every number is in the `items` section of `tuning.json`.
@@ -78,7 +84,10 @@ lost speed, a pop into the air, or a boost ending.
 | Oil     | spin-out, speed × 0.6                           | 0 (a spin)   |
 | Bubble  | held in place for `bubbleSec` (2 s), no control | 0            |
 
-- **Missiles** launch along the nose, plus the kart's own velocity. Homing missiles pick
+- **Missiles** launch along the nose at `missileSpeed` (72 m/s) plus the kart's own
+  velocity, about 94 m/s at top speed, for `missileLife` (3.5 s), with a bright streak
+  behind them. They follow the surface they're flying over at their own height (so they
+  stay on a bridge, or under it). Homing missiles pick
   the nearest rival ahead in `homingRange`. They aim straight at the target within
   `homingDirect`, and otherwise follow the road ahead toward it, so they go round
   corners. Missiles explode on walls, tunnel rock, trees and the boundary.
