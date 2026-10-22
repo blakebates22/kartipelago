@@ -57,6 +57,11 @@
  *                                   mallets in the market, bells and celesta for the great
  *                                   dragon's theme, brass for the palace; festival drums,
  *                                   bongos and a gong-like crash
+ *   dragon_canyon "Dragon Canyon"   D minor, 168: the kingdom's desert frontier. A galloping
+ *                                   flute over plucked strings, the quarry's low brass and
+ *                                   marimba, strings soaring over the High Bridges, and
+ *                                   flute and xylophone racing through the Final Twist;
+ *                                   driving toms, bongos and shaker throughout
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -2084,6 +2089,128 @@ function dragon(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Dragon Canyon"
+
+export const CANYON_DRAGON_MELODY = bars(
+  // The frontier (flute)
+  "D5:.5 F5:.5 G5:.5 A5:.5 C6:1 A5:1",
+  "G5:.5 A5:.5 G5:.5 F5:.5 D5:2",
+  "F5:.5 G5:.5 A5:1 C6:.5 D6:.5 C6:1",
+  "A5:.5 G5:.5 F5:.5 G5:.5 A5:2",
+  "D6:.5 C6:.5 A5:1 G5:.5 A5:.5 C6:1",
+  "A5:1 G5:.5 F5:.5 D5:2",
+  "F5:.5 A5:.5 C6:.5 D6:.5 E6:1 C6:1",
+  "D6:3 r:1",
+  // The quarry (low brass and marimba)
+  "D4:1 F4:.5 G4:.5 A4:1 G4:1",
+  "F4:.5 E4:.5 D4:1 r:1 A3:1",
+  "Bb3:1 D4:.5 F4:.5 G4:1 F4:1",
+  "E4:1.5 F4:.5 E4:1 C4:1",
+  "D4:1 F4:.5 G4:.5 A4:1 C5:1",
+  "Bb4:1 A4:.5 G4:.5 F4:1 E4:1",
+  "D4:.5 E4:.5 F4:.5 G4:.5 A4:1 G4:1",
+  "A4:3 r:1",
+  // The High Bridges (strings, the dragon overhead)
+  "A5:2 D6:1 E6:1",
+  "F6:2 E6:1 D6:1",
+  "C6:2 A5:1 C6:1",
+  "D6:3 r:1",
+  "Bb5:2 C6:1 D6:1",
+  "E6:2 F6:1 E6:1",
+  "D6:1 C6:1 A5:1 G5:1",
+  "A5:3 r:1",
+  // The Final Twist (flute and xylophone)
+  "D6:.5 C6:.5 A5:.5 G5:.5 A5:.5 C6:.5 D6:1",
+  "F6:.5 E6:.5 D6:.5 C6:.5 A5:2",
+  "G5:.5 A5:.5 C6:.5 D6:.5 E6:.5 D6:.5 C6:1",
+  "A5:.5 G5:.5 F5:.5 E5:.5 D5:2",
+  "D5:.5 F5:.5 A5:.5 D6:.5 F6:1 E6:1",
+  "D6:.5 C6:.5 A5:.5 C6:.5 D6:2",
+  "E6:.5 D6:.5 C6:.5 A5:.5 G5:.5 A5:.5 C6:1",
+  "D6:3! r:1",
+);
+export const CANYON_DRAGON_CHORDS =
+  "Dm:4 C:4 Bb:4 A:4 Dm:4 Gm:2 A:2 F:2 C:2 Dm:4 " +
+  "Dm:4 Dm:4 Bb:4 C:4 Dm:4 Bb:4 Gm:4 A:4 " +
+  "F:4 Dm:4 C:4 Dm:4 Bb:4 C:4 Gm:4 A:4 " +
+  "Dm:4 F:4 C:4 Dm:4 Dm:4 Bb:4 C:4 Dm:4";
+
+/**
+ * "Dragon Canyon": the kingdom's desert frontier, D minor, 168 BPM: more driven and
+ * restless than Dragon Isles. A galloping flute over plucked strings; the quarry's low
+ * brass and marimba over pounding toms; strings soaring over the High Bridges; flute and
+ * xylophone racing through the Final Twist. Our own tune.
+ */
+function canyonDragon(): Song {
+  const ch = chart(CANYON_DRAGON_CHORDS);
+  const mel = seq(CANYON_DRAGON_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const gallop: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "5"],
+    [2, 0.5, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "8"],
+  ];
+  return {
+    id: "dragon_canyon",
+    title: "Dragon Canyon",
+    role: "Dragon Kingdom",
+    bpm: 168,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      part("flute", "base", 1, p1),
+      part("brass", "base", 0.85, p2),
+      part("marimba", "base", 0.7, shift(p2, 0, 12)),
+      part("strings", "base", 1, p3),
+      part("horn", "base", 0.5, shift(p3, 0, -12)),
+      part("flute", "base", 0.9, p4),
+      part("xylophone", "base", 0.6, p4),
+      part(
+        "pizz",
+        "base",
+        0.5,
+        arpeggio(
+          ch.filter((c) => c.t < 32 || c.t >= 96),
+          0.5,
+          [0, 1, 2, 1, 0, 2, 1, 2],
+          62,
+          0.25,
+          0.45,
+        ),
+      ),
+      part(
+        "pizz",
+        "base",
+        0.4,
+        stabs(
+          ch.filter((c) => c.t >= 32 && c.t < 96),
+          [0.5, 1.5, 2.5, 3.5],
+          57,
+          0.2,
+          0.45,
+        ),
+      ),
+      part("pad", "base", 0.3, pads(ch, 50, 4, 0.35)),
+      part("bass", "base", 1, bassLine(ch, gallop, 26, 0.85)),
+      ...drumParts("base", 0.85, drums("o..oo..oo..oo.oo", KIT, 0.25, 32)),
+      ...drumParts("base", 0.55, drums("k...k...k...k...", KIT, 0.25, 32)),
+      ...drumParts("base", 0.45, drums("..b..b.b..b..b.b", KIT, 0.25, 32)),
+      ...drumParts("base", 0.35, drums("h.hhh.hhh.hhh.hh", KIT, 0.25, 32)),
+      ...[28, 60, 92, 124].flatMap((at) =>
+        drumParts("base", 0.75, drums("o.o.oooooooooooo", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.6, drums("c", KIT, 32, 4)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -2103,6 +2230,7 @@ export const SONGS: Record<string, Song> = {
   ghost: ghost(),
   depths: depths(),
   dragon: dragon(),
+  dragon_canyon: canyonDragon(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

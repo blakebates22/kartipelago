@@ -4929,6 +4929,12 @@ import isles_textures  # noqa: E402
 MATERIALS += isles_textures.materials(sys.modules[__name__])
 THEMES.append(isles_textures.THEME)
 
+# Dragon Canyon (Dragon Kingdom, course 2).
+import dcanyon_textures  # noqa: E402
+
+MATERIALS += dcanyon_textures.materials(sys.modules[__name__])
+THEMES.append(dcanyon_textures.THEME)
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

@@ -410,7 +410,7 @@ ZONES = [
     (S[8] + 20, "cliff"),
     (S[14] - 10, "bridge"),
     (S[15], "temple"),
-    (S[23] + 16, "sky"),
+    (S[23] + 11, "sky"),
     (S[30] + 40, "harbour"),
     (S[35] + 30, "passage"),
     (S[37] + 30, "reveal"),

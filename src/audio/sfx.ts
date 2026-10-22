@@ -295,7 +295,8 @@ export function createSfx(engine: AudioEngine) {
         | "festival"
         | "falls"
         | "garden"
-        | "harbour",
+        | "harbour"
+        | "quarry",
     ): { set(volume: number): void; stop(): void } {
       if (!ctx) return { set() {}, stop() {} };
       // Each world's bed of sound: shaped noise (filter, its centre wandering on a slow
@@ -433,6 +434,17 @@ export function createSfx(engine: AudioEngine) {
           toneGain: 0,
           smooth: 0.85,
         },
+        // The quarry: a dusty wind with a low, laboured drone of work under it.
+        quarry: {
+          type: "bandpass",
+          f: 380,
+          q: 1.2,
+          lfo: 0.09,
+          depth: 180,
+          tones: [61.7, 92.5],
+          toneGain: 0.05,
+          smooth: 0.88,
+        },
         // The core: a shimmering harmonic hum.
         hum: {
           type: "bandpass",
@@ -517,6 +529,17 @@ export function createSfx(engine: AudioEngine) {
       note(f, 0, 0.25, volume * 0.07, f * 0.6, "sine");
       for (let i = 0; i < 4; i++)
         note(f * 1.2, 0.3 + i * 0.07, 0.06, volume * 0.05, f * 1.4, "sine");
+    },
+    /** Stone-cutting somewhere in the quarry: chisel strikes, a creak of timber. */
+    chisel(volume: number) {
+      const n = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < n; i++) {
+        const f = 1800 + Math.random() * 900;
+        note(f, i * 0.32, 0.06, volume * 0.07, f * 0.7, "square");
+        noise(i * 0.32, 0.08, volume * 0.05, 5000, 1500);
+      }
+      if (Math.random() < 0.4)
+        note(120 + Math.random() * 40, n * 0.32, 0.5, volume * 0.06, 90, "sawtooth");
     },
     /** A gull over the harbour: two falling cries. */
     gull(volume: number) {

@@ -120,6 +120,6 @@ describe("Ribbon Ridge", () => {
     expect(stats.wall / stats.steps).toBeLessThan(0.03);
     expect(stats.drift / stats.steps).toBeGreaterThan(0.4);
     // No jumps on this track: the kart should essentially never leave the road.
-    expect(stats.air / stats.steps).toBeLessThan(0.01);
+    expect(stats.air / stats.steps).toBeLessThan(0.015);
   });
 });

@@ -7,7 +7,14 @@
  */
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { ROLES, villagerPose, type Villager, type WaterwheelConfig } from "../game/isles";
+import {
+  craneLoad,
+  ROLES,
+  villagerPose,
+  type CraneConfig,
+  type Villager,
+  type WaterwheelConfig,
+} from "../game/isles";
 
 const lam = (
   mats: THREE.Material[],
@@ -430,6 +437,8 @@ const ROBES = [
   "#e8782a",
   "#2ab0c0",
 ];
+/** The quarry's workers: dusty, faded clothes. */
+const DUSTY = ["#8a6a4a", "#9a7a56", "#6e5a48", "#a88a64", "#7a6450"];
 const SKINS = ["#f2c8a0", "#e0aa7c", "#c88a5c", "#f6d6b4"];
 
 /**
@@ -473,7 +482,12 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
   const hatOf: ("straw" | "cap" | "none")[] = [];
   people.forEach((p, i) => {
     const guard = p.role === "guard";
-    const robe = guard ? "#8a1c1c" : ROBES[(p.variant + i) % ROBES.length]!;
+    const labour = p.role === "worker" || p.role === "hauler";
+    const robe = guard
+      ? "#8a1c1c"
+      : labour
+        ? DUSTY[(p.variant + i) % DUSTY.length]!
+        : ROBES[(p.variant + i) % ROBES.length]!;
     color.set(robe);
     skirts.setColorAt(i, color);
     torsos.setColorAt(i, guard ? color.set("#b02a22") : color);
@@ -482,7 +496,7 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
     heads.setColorAt(i, color.set(SKINS[(p.variant * 3 + i) % SKINS.length]!));
     const hat = guard
       ? "cap"
-      : p.role === "fisher" || p.role === "gardener" || p.variant % 4 === 1
+      : labour || p.role === "fisher" || p.role === "gardener" || p.variant % 4 === 1
         ? "straw"
         : p.variant % 4 === 2
           ? "cap"
@@ -514,7 +528,9 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
         }
         const pose = villagerPose(p, i, t, far ? 0 : bowOf(i));
         const yaw = Math.atan2(p.fx, p.fz) + pose.turn;
-        base.makeRotationY(yaw).setPosition(p.x, p.y + pose.hop, p.z);
+        base
+          .makeRotationY(yaw)
+          .setPosition(p.x + p.fx * pose.step, p.y + pose.hop, p.z + p.fz * pose.step);
         skirts.setMatrixAt(i, base);
         torso
           .copy(base)
@@ -612,6 +628,45 @@ export function createWaterwheelView(parent: THREE.Object3D, c: WaterwheelConfig
     dispose() {
       pivot.removeFromParent();
       for (const g of geos) g.dispose();
+      for (const m of mats) m.dispose();
+    },
+  };
+}
+
+// ---------------------------------------------------------------- the quarry cranes
+
+export interface CraneView {
+  update(t: number): void;
+  dispose(): void;
+}
+
+/** A crane's rope and the sandstone block it raises and lowers, swaying a little. */
+export function createCraneView(parent: THREE.Object3D, c: CraneConfig): CraneView {
+  const mats: THREE.Material[] = [];
+  const ropeGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 4).translate(0, -0.5, 0);
+  const blockGeo = new THREE.BoxGeometry(1.8, 1.4, 1.8);
+  const rope = new THREE.Mesh(ropeGeo, lam(mats, "#4a3420"));
+  const block = new THREE.Mesh(blockGeo, lam(mats, "#e4ae82"));
+  parent.add(rope, block);
+  return {
+    update(t) {
+      const l = craneLoad(c, t);
+      rope.position.set(l.tip.x, l.tip.y, l.tip.z);
+      rope.scale.set(1, l.rope, 1);
+      // (Tilted toward the swaying block.)
+      rope.rotation.set(
+        -Math.atan2(l.block.z - l.tip.z, l.rope),
+        0,
+        Math.atan2(l.block.x - l.tip.x, l.rope),
+      );
+      block.position.set(l.block.x, l.block.y, l.block.z);
+      block.rotation.y = c.heading + 0.2 * Math.sin(t * 0.4);
+    },
+    dispose() {
+      rope.removeFromParent();
+      block.removeFromParent();
+      ropeGeo.dispose();
+      blockGeo.dispose();
       for (const m of mats) m.dispose();
     },
   };

@@ -61,7 +61,8 @@ export type SoundKind =
   | "festival"
   | "falls"
   | "garden"
-  | "harbour";
+  | "harbour"
+  | "quarry";
 export const SOUND_KINDS: SoundKind[] = [
   "wind",
   "resonance",
@@ -74,6 +75,7 @@ export const SOUND_KINDS: SoundKind[] = [
   "falls",
   "garden",
   "harbour",
+  "quarry",
 ];
 
 export interface Zone {

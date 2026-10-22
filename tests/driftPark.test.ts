@@ -151,7 +151,7 @@ function driveLoop(
 }
 
 /** The test driver's entry: this far inside, starting this many metres before a wide part. */
-const ENTRY_INSIDE = Number(env?.ENTRY_INSIDE ?? 3);
+const ENTRY_INSIDE = Number(env?.ENTRY_INSIDE ?? 4);
 const ENTRY_BEFORE = Number(env?.ENTRY_BEFORE ?? 8);
 const BRAKE_MAX = Number(env?.BRAKE_MAX ?? 0.3);
 const BRAKE_AFTER = Number(env?.BRAKE_AFTER ?? 0.4);

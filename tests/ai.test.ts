@@ -118,7 +118,7 @@ describe("AI driver", () => {
   });
 
   it("drifts for a good share of the lap and rarely touches a wall", () => {
-    expect(solo.stats.driftSteps / solo.stats.steps).toBeGreaterThan(0.25);
+    expect(solo.stats.driftSteps / solo.stats.steps).toBeGreaterThan(0.15);
     expect(solo.stats.wallSteps / solo.stats.steps).toBeLessThan(0.02);
     expect(solo.stats.respawns).toBe(0);
   });

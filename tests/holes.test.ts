@@ -78,6 +78,7 @@ describe("no holes in the world", () => {
     "dry_gulch",
     "impact_depths",
     "dragon_isles",
+    "dragon_canyon",
     "loop_lab",
     "cascade_caverns",
     "bonebog_pyramid",

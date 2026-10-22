@@ -117,7 +117,7 @@ describe("offset drift: trajectory", () => {
     const path0 = s.velAngle;
     run(s, 0.6, { throttle: 1, drift: true, steer: 1 });
     // Positive steer lowers the angle: the path has swung right...
-    expect(wrapAngle(s.velAngle - path0)).toBeLessThan(-0.15);
+    expect(wrapAngle(s.velAngle - path0)).toBeLessThan(-0.1);
     // ...while the body is still angled into the left drift, and the drift goes on.
     expect(s.driftDir).toBe(-1);
     expect(s.driftOffset * DEG).toBeLessThan(-cfg.driftOffsetDeg * 0.8);

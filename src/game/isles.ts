@@ -174,6 +174,8 @@ export const ROLES = [
   "gardener",
   "guard",
   "bow",
+  "worker",
+  "hauler",
 ] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -216,11 +218,13 @@ export interface Pose {
   armL: number;
   armR: number;
   turn: number;
+  /** How far they've walked along their facing (haulers pacing to and fro), m. */
+  step: number;
 }
 
 export function villagerPose(v: Villager, k: number, t: number, bow: number): Pose {
   const ph = k * 0.73 + v.variant * 1.9;
-  let p: Pose = { hop: 0, lean: 0, armL: 0, armR: 0, turn: 0 };
+  let p: Pose = { hop: 0, lean: 0, armL: 0, armR: 0, turn: 0, step: 0 };
   switch (v.role) {
     case "guard":
       return p;
@@ -232,6 +236,7 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armL: 0.6 + 0.4 * b,
         armR: 0.6 + 0.4 * Math.sin(t * 7 + ph + 1),
         turn: 0,
+        step: 0,
       };
       break;
     }
@@ -242,6 +247,7 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armL: 0.1,
         armR: 0.75 + 0.25 * Math.sin(t * 6 + ph),
         turn: 0.15 * Math.sin(t * 6 + ph),
+        step: 0,
       };
       break;
     case "merchant":
@@ -251,6 +257,7 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armL: 0.15,
         armR: 0.35 + 0.25 * Math.max(0, Math.sin(t * 2.4 + ph)),
         turn: 0.4 * Math.sin(t * 0.5 + ph),
+        step: 0,
       };
       break;
     case "dancer": {
@@ -261,6 +268,7 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armL: 0.5 + 0.4 * b,
         armR: 0.5 - 0.4 * b,
         turn: t * 1.6 + ph,
+        step: 0,
       };
       break;
     }
@@ -271,20 +279,55 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armL: 0.35 + 0.3 * Math.abs(Math.sin(t * 8 + ph)),
         armR: 0.35 + 0.3 * Math.abs(Math.cos(t * 8 + ph)),
         turn: 0,
+        step: 0,
       };
       break;
     case "fisher":
-      p = { hop: 0, lean: 0.06 + 0.03 * Math.sin(t * 0.7 + ph), armL: 0.3, armR: 0.45, turn: 0 };
+      p = {
+        hop: 0,
+        lean: 0.06 + 0.03 * Math.sin(t * 0.7 + ph),
+        armL: 0.3,
+        armR: 0.45,
+        turn: 0,
+        step: 0,
+      };
       break;
     case "gardener": {
       const b = 0.5 + 0.5 * Math.sin(t * 0.8 + ph);
-      p = { hop: 0, lean: 0.9 * b * b, armL: 0.1, armR: 0.1 + 0.1 * b, turn: 0 };
+      p = { hop: 0, lean: 0.9 * b * b, armL: 0.1, armR: 0.1 + 0.1 * b, turn: 0, step: 0 };
+      break;
+    }
+    case "worker": {
+      // Hewing stone: a slow, heavy swing, bent over the block; now and then a pause.
+      const sw = Math.max(0, Math.sin(t * 1.6 + ph));
+      const rest = Math.sin(t * 0.13 + ph) > 0.7 ? 0 : 1;
+      p = {
+        hop: 0,
+        lean: 0.35 + 0.15 * sw * rest,
+        armL: 0.2 + 0.7 * sw * rest,
+        armR: 0.2 + 0.7 * sw * rest,
+        turn: 0,
+        step: 0,
+      };
+      break;
+    }
+    case "hauler": {
+      // Leaning into a load, pacing slowly to and fro along a short track.
+      const w = Math.sin(t * 0.32 + ph);
+      p = {
+        hop: 0.05 * Math.abs(Math.sin(t * 3.2 + ph)),
+        lean: 0.45,
+        armL: 0.35,
+        armR: 0.35,
+        turn: w < 0 ? Math.PI : 0,
+        step: (4.0 * Math.asin(Math.max(-1, Math.min(1, w)))) / (Math.PI / 2),
+      };
       break;
     }
     case "bow": {
       // Bowing politely now and then as the race goes by.
       const b = Math.max(0, Math.sin(t * 0.9 + ph * 0.3) - 0.3) / 0.7;
-      p = { hop: 0, lean: 0.75 * b, armL: 0, armR: 0, turn: 0 };
+      p = { hop: 0, lean: 0.75 * b, armL: 0, armR: 0, turn: 0, step: 0 };
       break;
     }
   }
@@ -347,6 +390,52 @@ export function littleDragonAt(c: LittleDragonsConfig, k: number, t: number): Ve
     x: c.x + Math.cos(a) * r,
     y: c.y + 6 * Math.sin(a * 1.7 + ph) + 3 * Math.sin(t * 0.9 + k),
     z: c.z + Math.sin(a) * r * (0.85 + 0.15 * Math.cos(ph)),
+  };
+}
+
+// ---------------------------------------------------------------- quarry cranes
+
+export interface CraneConfig extends Vec3 {
+  /** Which way the jib points (game yaw; its tip is at x + sin·reach, z − cos·reach). */
+  heading: number;
+  reach: number;
+  /** Longest the rope pays out (the block's lowest), m. */
+  drop: number;
+  swing: number;
+  period: number;
+}
+
+export function parseCrane(e: Record<string, unknown>): CraneConfig {
+  return {
+    x: num(e.x, 0),
+    y: num(e.y, 0),
+    z: num(e.z, 0),
+    heading: num(e.heading, 0),
+    reach: Math.max(1, num(e.reach, 10)),
+    drop: Math.max(2.5, num(e.drop, 10)),
+    swing: num(e.swing, 0.5),
+    period: Math.max(2, num(e.period, 10)),
+  };
+}
+
+/** The crane's load at time t: where the rope hangs from, and the block's centre. */
+export function craneLoad(c: CraneConfig, t: number) {
+  const tip = {
+    x: c.x + Math.sin(c.heading) * c.reach,
+    y: c.y,
+    z: c.z - Math.cos(c.heading) * c.reach,
+  };
+  const k = 0.5 - 0.5 * Math.cos((t / c.period) * Math.PI * 2);
+  const rope = 2 + (c.drop - 2) * k;
+  const sway = c.swing * Math.sin(t * 1.7 + c.x * 0.1);
+  return {
+    tip,
+    rope,
+    block: {
+      x: tip.x + Math.cos(c.heading) * sway,
+      y: tip.y - rope - 0.8,
+      z: tip.z + Math.sin(c.heading) * sway,
+    },
   };
 }
 

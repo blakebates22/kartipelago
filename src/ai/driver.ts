@@ -4,7 +4,7 @@
  * The kart model treats it the same as the player's input.
  */
 import type { InputState } from "../core/input";
-import { driftSteerFor, type KartConfig, type KartState } from "../vehicles/kart";
+import { driftCurvature, driftSteerFor, type KartConfig, type KartState } from "../vehicles/kart";
 import type { RacingLine } from "./racingLine";
 
 export interface AiConfig {
@@ -33,6 +33,10 @@ export interface Driver {
   driftHeld: boolean;
   /** Seconds from the perfect start moment that this driver presses the throttle. */
   startOffset: number;
+  /** The last drift's direction and when it ended (race clock): a drift the other way
+   * straight after (an S-bend) would be flung wide by the new slide building, so the
+   * second half is steered. */
+  lastDrift: { dir: number; at: number };
 }
 
 /** Small deterministic pseudo-random number in [-1, 1) from an integer seed. */
@@ -42,7 +46,13 @@ function noise(seed: number) {
 }
 
 export function createDriver(line: RacingLine, seed: number, cfg: AiConfig): Driver {
-  return { line, index: 0, driftHeld: false, startOffset: noise(seed) * cfg.startSpread };
+  return {
+    line,
+    index: 0,
+    driftHeld: false,
+    startOffset: noise(seed) * cfg.startSpread,
+    lastDrift: { dir: 0, at: -Infinity },
+  };
 }
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -134,13 +144,22 @@ export function driveAi(
   const corner = sharpestAhead(line, i, 4, cfg.driftScan);
   const radius = corner === 0 ? Infinity : 1 / Math.abs(corner);
   const cornerDir = corner < 0 ? 1 : -1; // drift direction: +1 right, -1 left
+  // The tightest arc a drift can carve (offset model): corners tighter than that are
+  // taken with ordinary steering, which bites harder.
+  const tightest = kartCfg.driftModel >= 1 ? kartCfg.driftRadiusTight : 0;
+  // ...and the widest it can hold without countersteering into a spin-out: gentler
+  // corners than that are taken with ordinary steering too.
+  const counterMax = kartCfg.spinThreshold * 0.9;
+  const widestCurv = kartCfg.driftModel >= 1 ? driftCurvature(-counterMax, kartCfg) : -1;
+  const widest = widestCurv > 1e-6 ? 1 / widestCurv : Infinity;
 
+  if (kart.driftDir !== 0) d.lastDrift = { dir: kart.driftDir, at: moment.clock };
   if (kart.driftDir !== 0) {
     // Keep drifting while the corner continues the same way and is still tight.
     const now = sharpestAhead(line, i, 0, cfg.driftScan * 0.5);
     const nowRadius = now === 0 ? Infinity : 1 / Math.abs(now);
     const sameWay = (now < 0 ? 1 : -1) === kart.driftDir;
-    input.drift = sameWay && nowRadius < cfg.driftExitRadius;
+    input.drift = sameWay && nowRadius < cfg.driftExitRadius && nowRadius > tightest * 1.05;
     if (input.drift) {
       if (kartCfg.driftModel >= 1) {
         // Offset model: the stick sets the body's curvature, and the path is the body
@@ -150,10 +169,15 @@ export function driveAi(
         const target = (kart.driftDir * kartCfg.driftOffsetDeg * Math.PI) / 180;
         const offsetRate = (target - kart.driftOffset) * kartCfg.driftOffsetRate;
         const curvature = (-kart.driftDir * (wantRate - offsetRate)) / speed;
-        const into = Math.max(-kartCfg.spinThreshold * 0.9, driftSteerFor(curvature, kartCfg));
-        input.steer = clamp(into, -1, 1) * kart.driftDir;
-        d.driftHeld = true;
-        return input;
+        const want = driftSteerFor(curvature, kartCfg);
+        if (want >= -counterMax) {
+          input.steer = clamp(want, -1, 1) * kart.driftDir;
+          d.driftHeld = true;
+          return input;
+        }
+        // The line straightens out more than the drift can follow: let go and steer.
+        input.drift = false;
+        return steerFor(input, wantRate, speed, kartCfg);
       }
       // Legacy model: pick the stick position whose drift turn rate matches what the
       // line needs, inverting the kart's tight / neutral / counter mapping.
@@ -172,10 +196,13 @@ export function driveAi(
   const startDrift =
     cfg.drift > 0 &&
     kart.driftDir === 0 &&
+    // (not the other way straight after a drift: the new slide would carry it wide)
+    (cornerDir === d.lastDrift.dir || moment.clock - d.lastDrift.at > 0.9) &&
     !d.driftHeld &&
     kart.grounded &&
     kart.speed > kartCfg.driftMinSpeed + 3 &&
-    radius < cfg.driftEnterRadius;
+    radius < Math.min(cfg.driftEnterRadius, widest) &&
+    radius >= tightest * 1.1;
   if (startDrift) {
     input.drift = true;
     input.steer = cornerDir;

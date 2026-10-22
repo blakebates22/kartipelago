@@ -25,14 +25,28 @@ export interface LapOptions {
   trace?: number;
   /** Give up after this many seconds a lap (default 90). */
   lapSeconds?: number;
+  /** Override the AI's settings (e.g. { drift: 0 }: steer every corner, never drift). */
+  ai?: Partial<typeof tuning.ai>;
 }
 
 /** Drive one kart round an imported track with the race's own AI driver. */
 export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
   const laps = opts.laps ?? 1;
+  const ai = { ...tuning.ai, ...opts.ai };
   let respawns = 0;
   const visited = new Set<string>();
-  const path: { t: number; x: number; y: number; z: number; v: number; gate: number }[] = [];
+  const path: {
+    t: number;
+    x: number;
+    y: number;
+    z: number;
+    v: number;
+    gate: number;
+    drift?: number;
+    steer?: number;
+    h?: number;
+    va?: number;
+  }[] = [];
   let nextTrace = 0;
   const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
   const line = buildRacingLine(track, {
@@ -41,7 +55,7 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     iterations: tuning.ai.lineIterations,
   });
   const race = createRace(track, tuning.race, 1);
-  const driver = createDriver(line, 1, tuning.ai);
+  const driver = createDriver(line, 1, ai);
   const ground = createMeshGround(p.collision);
   const start = track.start;
   const k = createKartState(start.x, start.z, start.heading, track.samples[0]!.pos.y);
@@ -65,7 +79,7 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
       driver,
       riding ? { ...k, ...loops!.racePos(0, k) } : k,
       cfg,
-      tuning.ai,
+      ai,
       {
         countdown: race.phase === "countdown",
         clock: race.clock,
@@ -87,7 +101,11 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     if (!riding) {
       if (stepMeshWalls(k, p.collision, wallCfg, dt)) {
         walls++;
-        wallHits.push({ x: k.x, y: k.y, z: k.z });
+        wallHits.push({ x: k.x, y: k.y, z: k.z, t, drift: k.driftDir, v: k.speed } as {
+          x: number;
+          y: number;
+          z: number;
+        });
       }
       stepVertical(k, ground, tuning.physics, dt);
     }
@@ -118,7 +136,18 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     }
     if (opts.trace && t >= nextTrace) {
       nextTrace += opts.trace;
-      path.push({ t, x: k.x, y: k.y, z: k.z, v: k.speed, gate: race.racers[0]!.last });
+      path.push({
+        t,
+        x: k.x,
+        y: k.y,
+        z: k.z,
+        v: k.speed,
+        gate: race.racers[0]!.last,
+        drift: k.driftDir,
+        steer: input.steer,
+        h: k.heading,
+        va: k.velAngle,
+      });
     }
     lowest = Math.min(lowest, k.y);
     // How far above the nearest route point's height the kart is (wrong layer = ~8 m).

@@ -377,10 +377,15 @@ class Course:
         # Under a bridge or over a jump's gap the land keeps its own shape, except that
         # it never comes up through the bridge.
         _, j, dj = self._all_tree.find(Vector((x, y, 0)))
-        if not self.S[j].ground and dj < self.S[j].w / 2 + 4:
-            below = self.S[j].p.z - 3.0
-            return (1.0, below) if nat is not None and nat > below else (0.0, 0.0)
         hits = self._ground_tree.find_range(Vector((x, y, 0)), near + fade)
+        if not self.S[j].ground and dj < self.S[j].w / 2 + 4:
+            # (Unless another road runs right under the bridge: then the land meets that
+            # one, as it would anywhere else.)
+            beneath = [h for h in hits if h[2] < near and self._ground[h[1]].p.z < self.S[j].p.z - 6.0]
+            if not beneath:
+                below = self.S[j].p.z - 3.0
+                return (1.0, below) if nat is not None and nat > below else (0.0, 0.0)
+            hits = beneath
         if not hits:
             return 0.0, 0.0
         wsum = 0.0

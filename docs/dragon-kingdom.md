@@ -2,8 +2,8 @@
 
 The fourth world (`dragon` in `src/game/worlds.ts`): a sunlit kingdom of karst islands
 in a turquoise lagoon, ruled by dragons. Festival towns, temple gardens, waterfalls and a
-royal palace on its mountain, all watched over by a great jade dragon. One course so far,
-Dragon Isles, then three "Coming Soon" tiles (Jade Lagoon, Lantern Peaks, Dragon's
+royal palace on its mountain, all watched over by a great jade dragon. Two courses so far,
+Dragon Isles and Dragon Canyon, then two "Coming Soon" tiles (Lantern Peaks, Dragon's
 Crown).
 
 The look is joyful and readable: blue and gold tiled roofs, red pillars, lanterns and
@@ -149,7 +149,88 @@ is a single merged mesh. The far karst towers merge into a few big meshes.
 
 `tests/holes.test.ts` covers it too.
 
-## Polish next
+## Dragon Canyon
+
+The kingdom's desert frontier at golden hour, and the most technical, drift-hungry lap in
+the game: about 2.2 km (an AI lap is about 94 s), turning harder per kilometre than any
+other course, with five 180° hairpins. Red sandstone ledges, a turquoise river far below,
+cliffside fortresses, red banners and flaring braziers under a low orange sun.
+
+| Section | Name                      | What happens                                                                                                                                       |
+| ------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | The Canyon Outpost        | The start, under the fortress's Dragon Gate between stone dragons. Guards on the walls, a caravan and workers by the road.                         |
+| 2       | The Cliffside Hairpins    | Right onto the bottom ledge, then two stacked hairpins (left, right) climbing the cliff: each ledge 8 m over the last, the next one visible above. |
+| 3       | The Great Canyon Descent  | Off the top ledge onto the Canyon Bridge, the Great Falls dropping into the gorge beside it, then down the far wall.                               |
+| 4       | Dragon Skeleton Pass      | Left-right-left under the ribs of a colossal dragon, its skull jutting from the east wall, its spine running off along the cliff.                  |
+| 5       | The Imperial Quarry       | Round the loading yard: treadwheel cranes lifting blocks, stacks of cut stone, scaffolds and a cargo lift on the cliffs, tired workers, guards.    |
+| 6       | The Winding Caverns       | A torchlit tunnel bending through the mesa; barred side passages leak a warm glow from sealed chambers.                                            |
+| 7       | The High Bridges          | Out over the chasm and the River Sprint below, sweeping round the Lone Spire.                                                                      |
+| 8       | The Hidden Oasis          | Down round a palm-fringed pool, its little village, stalls and mill wheel.                                                                         |
+| 9       | River Canyon Sprint       | North along the river, fast, under the High Bridges and an old aqueduct.                                                                           |
+| 10      | The Watchtower Ascent     | Over the river and up two hairpins round the imperial watchtower; the dragon glides low over it, its shadow across the road.                       |
+| 11      | The Final Twist           | Snapping left and right off the tower's ledge, over the crest and round the Dragon's Coil hairpin, a giant dragon statue at its heart...           |
+| 12      | Return to the Dragon Gate | ...and back onto the straight under the gate.                                                                                                      |
+
+**Built for drifting.** Every corner was sized for the current drift (tight arc 26 m,
+hands-off 42 m): hairpins are 30 m on the centre line on 16 m roads, so a full drift fits
+with room for the entry swing; sweepers sit inside the hands-off arc; the S-bends are
+spaced so one drift's exit sets up the next. Drifting raises top speed by 15%, so the
+fastest lap is the one that spends the most time drifting. The AI drifts about half the
+lap and is faster for it, though only by about a second: it drifts cautiously, and a
+player chaining drifts through the hairpins and the Final Twist gains much more. Zippers
+sit on the exits worth chaining (off the hairpins, onto the bridges, out of the oasis and
+the Dragon's Coil). Barriers line every edge: mistakes cost speed, not falls.
+
+**The Quarry Service Road (the shortcut):** off the Skeleton Pass's last bend, straight
+through the loading yard under a stone arch, back onto the road where it turns into the
+mesa. It's narrow (8 m), dusty (a dirt surface, a little slower) and saves about half a
+second if you hit it cleanly; it counts as the stretch it skips (a twin gate).
+
+**The unease:** stronger than in Dragon Isles, still quiet. The quarry's workers are
+dusty and stooped, hewing and hauling under guards; a barred door leads somewhere
+restricted; the caverns' side passages are sealed, with light behind them. The dragon is
+still majestic, but here it watches: its low pass over the watchtower casts its shadow
+across the road. No prisons, chains or villains.
+
+**Life:** the dragon (`isles_dragon`, keyed to the lap), workers and haulers pacing with
+their loads, guards on the walls and the tower, oasis villagers, crane loads rising and
+falling (`crane`), the oasis mill wheel, little dragons over the skull, birds, dust behind
+the karts and blowing across the road (`dust`, `dustwind`), waterfalls, flickering
+braziers and torches.
+
+**The air:** golden-hour sun low in the west; the canyon's depths in cooler shade.
+Sounds: wind on the ledges, falls in the gorge and along the river, the quarry's drone
+with chisel strikes, near-silence and drips in the caverns, birds at the oasis.
+
+**Music:** "Dragon Canyon" (`dragon_canyon`), D minor, 168 BPM: a galloping flute over
+plucked strings, the quarry's low brass and marimba, strings soaring over the High
+Bridges, flute and xylophone racing through the Final Twist; toms, bongos and shaker.
+
+**How it's built:** `dcanyon_land.py` (pure data: the corners as fillets, heights,
+widths, the river, the basin, the Service Road, zones), `dragon_canyon.py` (route and
+road kinds; bridges found where the ground falls away), `dcanyon_scenery.py` (land, far
+desert, the caverns' mesa, river and pool, falls, light, gameplay),
+`dcanyon_town.py` (every section's dressing, the people, the dragon's keys, the air),
+`dcanyon_props.py` (spires, buttes, braziers, turn boards, fortress, watchtower, skull,
+ribs, vertebrae, cranes, block stacks, scaffolds, carts, tents, lift, chamber doors,
+aqueduct), `dcanyon_textures.py` (18 textures and the `dragon_canyon` theme). The game
+side reuses Dragon Isles' runtime, with new `worker` and `hauler` villagers and the
+`crane` entity. `course_kit.road_height` now lets the land meet a road that runs under a
+bridge (the River Sprint under the High Bridges).
+
+**Tests:** `tests/dcanyon.test.ts`: the world, theme and music; a clean load with the
+frontier's life; the twistiest course per km in the game with at least five hairpins;
+roads that never touch where they cross over and under; the Service Road counts; three
+AI laps of 80-110 s with no falls; drifting faster than steering. `tests/holes.test.ts`
+covers it too.
+
+**Polish next:** a richer quarry (moving carts on rails, more scaffolding up the faces);
+the cliffs' terracing between the hairpins (retaining walls, more ledge detail);
+sharper sandstone strata; the dragon skeleton's ribcage could close over the road more
+dramatically; side passages you can glimpse further into; the AI's drifting (it leaves
+time on the table in S-bends).
+
+## Polish next (Dragon Isles)
 
 - **The cliffs.** They read as broad grey walls. More terracing, ledges with gardens
   and a few more falls (and mist) would bring the Cliffside Ascent closer to the

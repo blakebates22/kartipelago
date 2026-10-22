@@ -179,6 +179,17 @@ export const TRACKS: TrackEntry[] = [
     music: "dragon",
     load: { scene: "track", packageId: "dragon_isles" },
   },
+  {
+    id: "dragon_canyon",
+    name: "Dragon Canyon",
+    description:
+      "The dragon kingdom's desert frontier at golden hour: stacked cliffside hairpins, a bridge over the falls, a dragon's bones, the imperial quarry, the High Bridges and the Final Twist. The most technical drifting course in the game.",
+    preview: "previews/dragon_canyon.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragon_canyon",
+    music: "dragon_canyon",
+    load: { scene: "track", packageId: "dragon_canyon" },
+  },
   // Test World.
   {
     id: "dino_demo",

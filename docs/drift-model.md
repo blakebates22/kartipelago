@@ -69,13 +69,13 @@ and the spin-out counter.
 | ----------------------- | ------- | ------------------------------------------------------ |
 | `driftModel`            | 1       | 0 legacy, 1 offset model                               |
 | `driftSteerSmooth`      | 0.06    | Steering smoothing time, s                             |
-| `driftRadiusNeutral`    | 33      | Arc hands-off, m                                       |
-| `driftRadiusTight`      | 20      | Tightest arc (full in), m                              |
-| `driftRadiusCounter`    | 120     | Arc at full countersteer, m                            |
-| `driftInCurve`          | 2       | Diminishing returns steering in                        |
+| `driftRadiusNeutral`    | 42      | Arc hands-off, m                                       |
+| `driftRadiusTight`      | 26      | Tightest arc (full in), m                              |
+| `driftRadiusCounter`    | 100     | Arc at full countersteer, m                            |
+| `driftInCurve`          | 1.2     | Diminishing returns steering in                        |
 | `driftCounterCurve`     | 1.3     | Finer widening near centre                             |
 | `driftCounterOut`       | true    | Countersteer bends the path outward (false = classic)  |
-| `driftRadiusCounterOut` | 34      | Outward arc at full countersteer, m                    |
+| `driftRadiusCounterOut` | 100     | Outward arc at full countersteer, m                    |
 | `driftCounterOutCurve`  | 1       | How countersteer builds towards that arc               |
 | `driftOffsetDeg`        | 40      | Body-to-path angle the drift builds to                 |
 | `driftOffsetRate`       | 4       | Entry build-up, per s (about 86% in 0.5 s)             |
@@ -86,6 +86,18 @@ and the spin-out counter.
 | `spinSec`               | 0.8     | Spin duration, s                                       |
 | `spinSpeedKeep`         | 0.5     | Speed kept by a spin-out                               |
 | `spinSteer`             | 0.3     | Steering available while spinning                      |
+
+The drift radii above are Blake's hand-tuned feel (October 2026, tuned driving Zephyr):
+wider, calmer arcs, and countersteer about half as strong as before (full countersteer
+now only just straightens the path rather than bending it hard the other way). Every
+racer currently drives with the Speedster's stats (handling 2.5), which scales these
+radii by 1/0.94.
+
+The AI driver (`src/ai/driver.ts`) works within them: it drifts only corners between the
+tightest arc a drift can carve and the widest it can hold without countersteering into a
+spin-out, lets go when the line straightens more than the drift can follow, and steers
+(rather than re-drifting) the second half of a quick S-bend, where a fresh drift's slide
+would carry it wide.
 
 ## Wall impacts
 

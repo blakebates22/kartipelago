@@ -14,6 +14,7 @@ import {
   dragonHead,
   littleDragonAt,
   nearestSample,
+  parseCrane,
   parseIslesDragon,
   parseLittleDragons,
   parseVillagers,
@@ -26,10 +27,12 @@ import {
   type Villager,
 } from "./isles";
 import {
+  createCraneView,
   createCrowdView,
   createSerpentView,
   createShadowView,
   createWaterwheelView,
+  type CraneView,
   type CrowdView,
   type SerpentView,
   type ShadowView,
@@ -52,7 +55,7 @@ export interface IslesLife {
 }
 
 export function hasIslesLife(entities: unknown[]): boolean {
-  const kinds = new Set(["isles_dragon", "villagers", "waterwheel", "little_dragons"]);
+  const kinds = new Set(["isles_dragon", "villagers", "waterwheel", "little_dragons", "crane"]);
   return entities.some((e) => isObj(e) && kinds.has(String(e.type)));
 }
 
@@ -70,12 +73,15 @@ export function createIslesLife(opts: {
   let dragonCfg: IslesDragonConfig | undefined;
   const villagers: Villager[] = [];
   const wheels: WheelView[] = [];
+  const cranes: CraneView[] = [];
   const littles: { cfg: LittleDragonsConfig; views: SerpentView[] }[] = [];
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
     if (e.type === "isles_dragon") dragonCfg = parseIslesDragon(e);
     else if (e.type === "villagers") villagers.push(...parseVillagers(e));
-    else if (e.type === "waterwheel") {
+    else if (e.type === "crane") {
+      if (!opts.headless) cranes.push(createCraneView(group, parseCrane(e)));
+    } else if (e.type === "waterwheel") {
       if (!opts.headless) wheels.push(createWaterwheelView(group, parseWaterwheel(e)));
     } else if (e.type === "little_dragons") {
       const cfg = parseLittleDragons(e);
@@ -171,6 +177,7 @@ export function createIslesLife(opts: {
         return v.role === "guard" ? 0 : aweAt(v.x, v.y, v.z);
       });
       for (const w of wheels) w.update(t);
+      for (const k of cranes) k.update(t);
       for (const l of littles)
         l.views.forEach((v, k) => {
           const p = littleDragonAt(l.cfg, k, t);
@@ -182,6 +189,7 @@ export function createIslesLife(opts: {
       shadow?.dispose();
       crowd?.dispose();
       for (const w of wheels) w.dispose();
+      for (const k of cranes) k.dispose();
       for (const l of littles) for (const v of l.views) v.dispose();
     },
   };

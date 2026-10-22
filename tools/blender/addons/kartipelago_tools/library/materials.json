@@ -871,6 +871,58 @@
           }
         }
       }
+    },
+    {
+      "id": "dragon_canyon",
+      "name": "Dragon Canyon",
+      "description": "The dragon kingdom's desert frontier at golden hour: towering red-orange sandstone canyons, turquoise rivers and white waterfalls far below, cliffside fortresses under blue and jade roofs, red imperial banners, flaring braziers, pink and violet sunset clouds and a warm haze over the distant spires",
+      "environment": {
+        "sky": "#f2a070",
+        "fog": {
+          "enabled": true,
+          "color": "#f0a47c",
+          "near": 420,
+          "far": 2300
+        },
+        "sun": {
+          "color": "#ffc888",
+          "intensity": 2.6,
+          "direction": [-0.82, 0.36, 0.44]
+        },
+        "ambient": {
+          "sky": "#f4b494",
+          "ground": "#8a4630",
+          "intensity": 1.2
+        },
+        "skyDome": {
+          "top": "#5a5ab8",
+          "horizon": "#ffb878",
+          "bottom": "#f0a070",
+          "sun": {
+            "color": "#ffeab0",
+            "size": 13,
+            "glow": "#ff9a4a",
+            "elevation": 9
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#ffc4a8",
+            "shade": "#c8708e",
+            "seed": 421,
+            "low": 4,
+            "high": 30,
+            "drift": 0.003
+          },
+          "hills": {
+            "color": "#a84e36",
+            "far": "#e48c6a",
+            "height": 13,
+            "seed": 423,
+            "layers": 3,
+            "style": "karst"
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -6027,6 +6079,180 @@
         "opacity": 0.55,
         "glow": 0.6
       }
+    },
+    {
+      "id": "frontier_road",
+      "name": "Frontier Road",
+      "theme": "dragon_canyon",
+      "surface": "road",
+      "image": "frontier_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "imperial_setts",
+      "name": "Imperial Setts",
+      "theme": "dragon_canyon",
+      "surface": "road",
+      "image": "imperial_setts.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "kerb_redwhite",
+      "name": "Red-White Kerb",
+      "theme": "dragon_canyon",
+      "surface": "road",
+      "image": "kerb_redwhite.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "dust_shoulder",
+      "name": "Dusty Verge",
+      "theme": "dragon_canyon",
+      "surface": "dirt",
+      "image": "dust_shoulder.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "canyon_cliff",
+      "name": "Canyon Sandstone",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "canyon_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "canyon_cliff_shade",
+      "name": "Shaded Sandstone",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "canyon_cliff_shade.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "canyon_ledge",
+      "name": "Canyon Ledge",
+      "theme": "dragon_canyon",
+      "surface": "dirt",
+      "image": "canyon_ledge.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "canyon_scree",
+      "name": "Red Scree",
+      "theme": "dragon_canyon",
+      "surface": "loose_sand",
+      "image": "canyon_scree.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "river_sand",
+      "name": "River Sand",
+      "theme": "dragon_canyon",
+      "surface": "sand",
+      "image": "river_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "oasis_grass",
+      "name": "Oasis Grass",
+      "theme": "dragon_canyon",
+      "surface": "grass",
+      "image": "oasis_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "sandstone_block",
+      "name": "Cut Sandstone",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "sandstone_block.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "fortress_wall",
+      "name": "Fortress Ashlar",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "fortress_wall.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "quarry_dust",
+      "name": "Quarry Dust",
+      "theme": "dragon_canyon",
+      "surface": "dirt",
+      "image": "quarry_dust.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "scaffold_timber",
+      "name": "Scaffold Timber",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "scaffold_timber.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "bone_ivory",
+      "name": "Ancient Bone",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "bone_ivory.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "chamber_glow",
+      "name": "Chamber Glow",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "chamber_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.8,
+        "flicker": 0.3
+      }
+    },
+    {
+      "id": "brazier_fire",
+      "name": "Brazier Fire",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "brazier_fire.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "flicker": 0.4
+      }
+    },
+    {
+      "id": "chevron_canyon",
+      "name": "Canyon Chevrons",
+      "theme": "dragon_canyon",
+      "surface": "wall",
+      "image": "chevron_canyon.png",
+      "wrap": "repeat",
+      "tileMetres": 4
     }
   ]
 }
