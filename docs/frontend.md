@@ -240,5 +240,6 @@ These work, but are meant to be replaced or extended:
 - **The music** is synthesized. Real sampled instruments, or a composer, can replace the
   pieces one at a time; the engine just plays buffers.
 - **Track previews** are game screenshots.
-- **Select Racer** draws its jungle clearing, cliffs and pedestals from simple primitives.
+- **Select Racer** is pixel art: each racer's sprite is their real 3D model rendered small
+  and stepped down to a few colours, outlined, every frame (`ui/pixelPortraits.ts`).
 - **Adventure** is a "coming soon" page only.

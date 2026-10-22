@@ -9,21 +9,12 @@
 import * as THREE from "three";
 import type { RacerId } from "./designs";
 import { BUILDS } from "./roster";
-import { BUILDS_V2 } from "./roster/v2";
 import { CHASSIS, buildKart, type KartModel } from "./kit/chassis";
 import type { RiderRig } from "./kit/rig";
 import { shadowTexture } from "./kit/paint";
 import { Animator, type RacerMotion } from "./animator";
 
 export { motionOf, type RacerMotion, type AnimState } from "./animator";
-
-/**
- * The redesigned racers and karts (prototype): on with ?racers=v2 in the address, or
- * per racer with the `v2` option.
- */
-export function racerV2(): boolean {
-  return typeof location !== "undefined" && new URLSearchParams(location.search).get("racers") === "v2";
-}
 
 /** Distance beyond which the cheap version is drawn, metres. */
 export const LOD_DISTANCE = 45;
@@ -43,9 +34,9 @@ export class Racer {
   readonly id: RacerId;
   private lowKart: KartModel;
 
-  constructor(id: RacerId, opts: { alt?: boolean; seed?: number; v2?: boolean } = {}) {
+  constructor(id: RacerId, opts: { alt?: boolean; seed?: number } = {}) {
     this.id = id;
-    const build = ((opts.v2 ?? racerV2()) && BUILDS_V2[id]) || BUILDS[id];
+    const build = BUILDS[id];
     const palette = opts.alt ? build.palettes.alt : build.palettes.main;
     const kit = build.kart(palette);
     this.kart = buildKart(kit, 0);

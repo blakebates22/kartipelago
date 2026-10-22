@@ -110,24 +110,37 @@ export function wheelGeometry(r: number, w: WheelLook, far = false) {
   return b.build();
 }
 
-/** A racing slick: round tyre, a stripe on each sidewall, a dished rim with spokes. */
+/**
+ * A racing slick: a round tyre, a stripe on each sidewall, a rim sunk into it with a dark
+ * dish and spokes. Kept lean (about 600 triangles a wheel): four of them on every kart.
+ */
 function slickWheel(b: Build, r: number, w: WheelLook, s: { stripe: string; spokes: number }) {
   const hw = CHASSIS.tyreWidth / 2;
-  const sides = w.sides ?? 18;
+  const sides = w.sides ?? 16;
   b.add(tyre(r, CHASSIS.tyreWidth, 0.1, sides), w.tyre);
+  // The rim: one drum through the tyre, its faces just inside the sidewalls.
+  b.add(cyl(r * 0.66, r * 0.66, CHASSIS.tyreWidth - 0.03, 14), w.rim, { r: [0, 0, Math.PI / 2] });
   for (const x of [1, -1]) {
-    b.add(torus(r * 0.8, 0.018, 3, sides), s.stripe, { r: [0, Math.PI / 2, 0], p: [x * (hw + 0.002), 0, 0] });
-    // The rim, sunk into the tyre, and its spokes.
-    b.add(cyl(r * 0.66, r * 0.66, 0.02, sides), w.rim, { r: [0, 0, Math.PI / 2], p: [x * (hw - 0.02), 0, 0] });
-    b.add(cyl(r * 0.5, r * 0.5, 0.03, sides), "#1c1a1e", { r: [0, 0, Math.PI / 2], p: [x * (hw - 0.012), 0, 0] });
+    b.add(torus(r * 0.8, 0.018, 3, 12), s.stripe, {
+      r: [0, Math.PI / 2, 0],
+      p: [x * (hw + 0.002), 0, 0],
+    });
+    // The dark dish, and the spokes across it.
+    b.add(new THREE.CircleGeometry(r * 0.5, 14), "#1c1a1e", {
+      r: [0, (x * Math.PI) / 2, 0],
+      p: [x * (hw - 0.012), 0, 0],
+    });
     for (let k = 0; k < s.spokes; k++) {
       const a = (k / s.spokes) * Math.PI * 2;
-      b.add(box(0.03, r * 0.5, 0.06, 0.01), w.rim, {
+      b.add(new THREE.BoxGeometry(0.03, r * 0.5, 0.06), w.rim, {
         p: [x * (hw - 0.0), Math.cos(a) * r * 0.27, Math.sin(a) * r * 0.27],
         r: [a, 0, 0],
       });
     }
-    b.add(cyl(r * 0.16, r * 0.2, 0.05, 8), w.cap, { r: [0, 0, Math.PI / 2], p: [x * (hw + 0.01), 0, 0] });
+    b.add(cyl(r * 0.16, r * 0.2, 0.05, 6), w.cap, {
+      r: [0, 0, Math.PI / 2],
+      p: [x * (hw + 0.01), 0, 0],
+    });
   }
   return b.build();
 }

@@ -1,32 +1,23 @@
 /**
- * Brakka the triceratops: the Rocky Roader (design D).
+ * Brakka the triceratops: the Rocky Roader (design D), the bruiser.
  *
- * Silhouette: a broad, angular frill covered in rocky plates, framing the head from
- * behind, and three big ivory horns; a compact, muscular body sitting low. Warm
- * golden-brown skin, cream muzzle and belly, big eyes under heavy, determined brows.
+ * Silhouette: the frill, big and graphic: a sunburst of rust and orange rays inside a
+ * dark rim, ringed with ivory spikes, two cream eye-spots on the front. From the race
+ * camera it's the whole silhouette. A compact, muscular body sitting low.
+ * Face: a blocky skull under a heavy bony brow, deep-set eyes in a permanent scowl, a
+ * hooked beak with a tough set to it, two long brow horns thrust forward and a stout
+ * nose horn. Warm golden-brown skin, cream muzzle and belly.
  * Gear: utility straps and a small rugged pack.
- * Kart: a sturdy stone-and-timber roader: a broad sandstone nose with a dark footprint
- * emblem, chunky charcoal stone fenders, timber sides, green leaf tufts and a log on the
- * back.
+ * Kart: the Rock Rally (the sleek family): broad and low, sandstone and burnt orange,
+ * horn splitters at the front, a ducktail and fat twin pipes, a footprint emblem.
  */
 import * as THREE from "three";
 import type { BodyKit } from "../kit/chassis";
 import { buildArms, buildEyes, type RiderRig } from "../kit/rig";
-import {
-  Build,
-  box,
-  card,
-  cone,
-  cyl,
-  ellipsoid,
-  gem,
-  horn,
-  loft,
-  taper,
-  tube,
-} from "../kit/shapes";
-import { seeded, skinMaterial } from "../kit/paint";
-import { backpack, emblemMesh, leaf, strap } from "../kit/props";
+import { Build, box, card, cone, cyl, ellipsoid, horn, loft, tube } from "../kit/shapes";
+import { skinMaterial } from "../kit/paint";
+import { backpack, strap } from "../kit/props";
+import { sleekKart } from "../kit/sleek";
 import type { RacerBuild } from "./types";
 
 const MAIN = {
@@ -80,133 +71,33 @@ const ALT: typeof MAIN = {
 
 type P = typeof MAIN;
 
-/** A cluster of faceted rocks on a surface (grid of `n` x `m` over w x h, facing +Z). */
-function rocks(
-  b: Build,
-  c: P,
-  w: number,
-  h: number,
-  n: number,
-  m: number,
-  at: [number, number, number],
-  seed: number,
-  size = 1,
-) {
-  const r = seeded(seed);
-  const cols = [c.rock1, c.rock2, c.rock3, c.rockLight];
-  for (let i = 0; i < n; i++)
-    for (let j = 0; j < m; j++) {
-      const x = (i / Math.max(1, n - 1) - 0.5) * w + (r() - 0.5) * 0.03;
-      const y = (j / Math.max(1, m - 1) - 0.5) * h + (r() - 0.5) * 0.03;
-      const s = (0.05 + r() * 0.025) * size;
-      b.add(gem(0), cols[Math.floor(r() * cols.length)]!, {
-        p: [at[0] + x, at[1] + y, at[2]],
-        s: [s * 1.3, s * 1.05, s * 0.2],
-        r: [r() * 0.25, r() * 0.25, r() * 3],
-      });
-    }
-}
+const RIM = "#5a2414";
+const RAY_A = "#c94a1c";
+const RAY_B = "#ef8a2a";
 
 // ------------------------------------------------------------------ the kart
 
 function kart(c: P): BodyKit {
-  return {
-    wheel: { tyre: c.tyre, rim: c.orange, cap: "#f0b44a", ring: c.stoneLight, sides: 9 },
-    steering: "#352a24",
-    shell(b, detail) {
-      b.add(box(1.0, 0.14, 2.2, 0.05), c.woodDark, { p: [0, 0.28, -0.05] });
-      // A boxy tub: sandstone on top, timber sides.
-      b.addColored(
-        loft(
-          [
-            { at: [0, 0.5, -1.02], rx: 0.44, ry: 0.15, sq: 3.2 },
-            { at: [0, 0.5, -0.7], rx: 0.54, ry: 0.2, sq: 3.4 },
-            { at: [0, 0.5, 0.2], rx: 0.54, ry: 0.21, sq: 3.4 },
-            { at: [0, 0.49, 0.8], rx: 0.5, ry: 0.2, sq: 3.2 },
-          ],
-          {
-            sides: 12,
-            steps: 2,
-            capStart: true,
-            capEnd: true,
-            paint: (_t, a) =>
-              a > 0.35 && a < 2.8 ? c.sand : a > -0.2 && a < 3.35 ? c.wood : c.woodDark,
-          },
-        ),
-      );
-      // The broad sandstone nose, flat at the front for the emblem, with stone teeth.
-      b.add(taper(box(0.98, 0.4, 0.5, 0.1), 0.94, 0.9), c.sand, { p: [0, 0.48, 1.06] });
-      b.add(box(1.02, 0.08, 0.52, 0.03), c.sandDark, { p: [0, 0.68, 1.04] });
-      b.add(box(0.5, 0.1, 0.14, 0.04), c.woodDark, { p: [0, 0.3, 1.33] });
-      // Cockpit rim: timber.
-      b.add(new THREE.TorusGeometry(0.35, 0.06, 4, 12), c.wood, {
-        p: [0, 0.7, -0.28],
-        r: [Math.PI / 2, 0, Math.PI / 12],
-        s: [1, 1.2, 1],
-      });
-      b.add(box(0.52, 0.1, 0.42, 0.04), c.seat, { p: [0, 0.48, -0.3] });
-      b.add(box(0.52, 0.24, 0.1, 0.04), c.seat, { p: [0, 0.66, -0.56], r: [-0.12, 0, 0] });
-      for (const s of [1, -1]) {
-        // Chunky stone fenders: faceted slabs, lighter on top.
-        b.add(gem(0), (p) => (p.y > 0.3 ? c.stoneLight : c.stone), {
-          p: [s * 0.77, 0.76, 0.88],
-          s: [0.27, 0.13, 0.44],
-          r: [0, s * 0.3, 0],
-        });
-        b.add(gem(0), (p) => (p.y > 0.3 ? c.stoneLight : c.stone), {
-          p: [s * 0.81, 0.76, -0.78],
-          s: [0.3, 0.15, 0.5],
-          r: [0, -s * 0.25, 0],
-        });
-        // Timber planks down the sides, with orange pegs.
-        for (const k of [0, 1])
-          b.add(box(0.06, 0.08, 0.84, 0.015), k ? c.wood : c.woodDark, {
-            p: [s * 0.57, 0.44 + k * 0.1, 0.02],
-          });
-        b.add(cyl(0.025, 0.025, 0.06, 6), c.orange, {
-          p: [s * 0.6, 0.49, 0.35],
-          r: [0, 0, Math.PI / 2],
-        });
-        b.add(cyl(0.025, 0.025, 0.06, 6), c.orange, {
-          p: [s * 0.6, 0.49, -0.3],
-          r: [0, 0, Math.PI / 2],
-        });
-        b.add(box(0.2, 0.16, 0.8, 0.05), c.woodDark, { p: [s * 0.6, 0.36, 0.05] });
-      }
-      // The log on the back, strapped down, and stone exhaust.
-      b.add(cyl(0.13, 0.13, 0.9, 9), c.wood, { p: [0, 0.78, -0.98], r: [0, 0, Math.PI / 2] });
-      for (const s of [1, -1])
-        b.add(cyl(0.1, 0.1, 0.02, 9), "#c49a64", {
-          p: [s * 0.455, 0.78, -0.98],
-          r: [0, 0, Math.PI / 2],
-        });
-      for (const x of [-0.25, 0.25])
-        b.add(cyl(0.135, 0.135, 0.04, 9), c.strap, { p: [x, 0.78, -0.98], r: [0, 0, Math.PI / 2] });
-      b.add(cyl(0.1, 0.12, 0.3, 7), c.stone, { p: [0, 0.42, -1.18], r: [Math.PI / 2, 0, 0] });
-      if (detail === 0) {
-        // Leaf tufts behind the log and on the nose corners.
-        for (const s of [1, -1]) {
-          b.addColored(leaf(0.42, 0.13, c.green, c.greenLight), {
-            p: [s * 0.5, 0.82, -1.08],
-            r: [-1.1, s * 0.4, s * 0.6],
-          });
-          b.addColored(leaf(0.34, 0.11, c.green, c.greenLight), {
-            p: [s * 0.3, 0.84, -1.1],
-            r: [-1.3, s * 0.2, s * 0.25],
-          });
-          b.addColored(leaf(0.3, 0.1, c.green, c.greenLight), {
-            p: [s * 0.47, 0.66, 1.25],
-            r: [-0.4, s * 0.2, s * 1.3],
-          });
-        }
-      }
-    },
-    decorate(body) {
-      const e = emblemMesh("footprint", { disc: c.sand, ink: c.ink, rim: c.sandDark }, 0.32);
-      e.position.set(0, 0.47, 1.315);
-      body.add(e);
-    },
-  };
+  return sleekKart({
+    main: c.sand,
+    dark: c.stone,
+    stripe: c.orange,
+    nose: c.orange,
+    trim: c.stone,
+    metal: "#4a4440",
+    seat: c.seat,
+    glass: "#f2c27a",
+    tyre: c.tyre,
+    rim: c.orange,
+    cap: c.sand,
+    tyreLine: c.orange,
+    width: 1.08,
+    front: "horns",
+    pods: "intake",
+    rear: "ducktail",
+    spokes: 6,
+    emblem: { kind: "footprint", disc: c.sand, ink: c.ink, rim: c.orange },
+  });
 }
 
 // ------------------------------------------------------------------ Brakka
@@ -257,114 +148,9 @@ function rider(c: P): RiderRig {
   });
   torso.add(new THREE.Mesh(body.build(), mat));
 
-  // The head: big skull, cream muzzle, a hooked beak.
+  // The head: built by buildHead() below, once the rig exists.
   const head = new THREE.Group();
-  head.position.set(0, 0.5, 0.06);
-  head.rotation.x = -0.12;
-  head.scale.setScalar(1.32);
   torso.add(head);
-  const cream = new THREE.Color(c.cream);
-  const skin = new THREE.Color(c.skin);
-  const skull = new Build().addColored(
-    loft(
-      [
-        { at: [0, 0.12, -0.17], rx: 0.11, ry: 0.11 },
-        { at: [0, 0.13, -0.11], rx: 0.18, ry: 0.17 },
-        { at: [0, 0.13, -0.01], rx: 0.21, ry: 0.19 },
-        { at: [0, 0.11, 0.09], rx: 0.19, ry: 0.17, flat: 0.3 },
-        { at: [0, 0.07, 0.18], rx: 0.15, ry: 0.13, flat: 0.4 },
-        { at: [0, 0.04, 0.26], rx: 0.11, ry: 0.1, flat: 0.3 },
-        { at: [0, 0.0, 0.31], rx: 0.07, ry: 0.075 },
-        { at: [0, -0.04, 0.33], rx: 0.02, ry: 0.02 },
-      ],
-      {
-        sides: 12,
-        steps: 2,
-        capStart: true,
-        capEnd: true,
-        paint: (t, a) => (t > 0.5 && a < 0.3 ? cream : t > 0.78 ? cream : skin),
-      },
-    ),
-  );
-  for (const s of [1, -1])
-    skull.add(ellipsoid(6, 4), c.skinDark, { p: [s * 0.05, 0.1, 0.27], s: [0.02, 0.014, 0.014] });
-  skull.add(ellipsoid(10, 6), c.mouth, { p: [0, 0.0, 0.15], s: [0.12, 0.04, 0.15] });
-  // Three ivory horns: two long brow horns sweeping forward, a short nose horn.
-  for (const s of [1, -1])
-    skull.addColored(
-      horn([s * 0.1, 0.24, 0.02], [s * 0.15, 0.39, 0.27], 0.05, c.horn, [s * 0.02, 0.05, -0.06], 7),
-    );
-  skull.addColored(horn([0, 0.15, 0.2], [0, 0.24, 0.27], 0.04, c.horn, [0, 0.02, -0.02], 6));
-  head.add(new THREE.Mesh(skull.build(), mat));
-
-  // The frill: a broad, angular shield behind the head, covered with rocky plates and
-  // knobs round the edge. It lags a little behind the head's motion.
-  const frill = new THREE.Group();
-  frill.position.set(0, 0.2, -0.1);
-  frill.rotation.x = -0.45;
-  head.add(frill);
-  const outline: [number, number][] = [];
-  const N = 9;
-  for (let i = 0; i <= N; i++) {
-    const a = Math.PI * (0.06 + 0.88 * (i / N));
-    const r = i % 2 ? 0.38 : 0.42;
-    outline.push([Math.cos(a) * r * 1.15, Math.sin(a) * r * 0.85 - 0.04]);
-  }
-  outline.push([-0.2, -0.12], [0.2, -0.12]);
-  const fb = new Build().add(card(outline, 0.05), (p) => (p.y > 0.24 ? c.skinDark : c.skin));
-  // Rocky plates on the front and back faces, knobs round the edge.
-  rocks(fb, c, 0.7, 0.24, 6, 3, [0, 0.13, -0.035], 11, 1.15);
-  rocks(fb, c, 0.4, 0.06, 4, 1, [0, 0.31, -0.035], 12, 1.1);
-  rocks(fb, c, 0.62, 0.2, 5, 2, [0, 0.16, 0.035], 13, 1.0);
-  for (let i = 0; i <= N; i += 1) {
-    const a = Math.PI * (0.06 + 0.88 * (i / N));
-    const r = i % 2 ? 0.38 : 0.42;
-    fb.add(cone(0.035, 0.08, 4), c.hornBase, {
-      p: [Math.cos(a) * r * 1.15, Math.sin(a) * r * 0.85 - 0.04, 0],
-      r: [0, 0, a - Math.PI / 2],
-    });
-  }
-  frill.add(new THREE.Mesh(fb.build(), mat));
-
-  // Lower jaw: the beak's lower half.
-  const jaw = new THREE.Group();
-  jaw.position.set(0, 0.0, 0.0);
-  head.add(jaw);
-  jaw.add(
-    new THREE.Mesh(
-      new Build()
-        .addColored(
-          loft(
-            [
-              { at: [0, 0.0, -0.02], rx: 0.15, ry: 0.06 },
-              { at: [0, -0.03, 0.12], rx: 0.13, ry: 0.055, flat: -0.4 },
-              { at: [0, -0.03, 0.24], rx: 0.09, ry: 0.045, flat: -0.4 },
-              { at: [0, -0.02, 0.3], rx: 0.03, ry: 0.02 },
-            ],
-            {
-              sides: 10,
-              steps: 2,
-              capStart: true,
-              capEnd: true,
-              paint: (_t, a) => (a > 0.5 && a < 2.6 ? c.mouth : c.cream),
-            },
-          ),
-        )
-        .add(ellipsoid(8, 5), c.tongue, { p: [0, -0.008, 0.13], s: [0.075, 0.022, 0.09] })
-        .build(),
-      mat,
-    ),
-  );
-
-  const eyes = buildEyes(head, {
-    at: [0.115, 0.165, 0.15],
-    size: [0.074, 0.088, 0.066],
-    yaw: 0.36,
-    iris: c.eye,
-    lid: c.skin,
-    inward: 0.3,
-    brow: { color: c.brow, at: [0.11, 0.255, 0.17], size: [0.066, 0.022, 0.03], tilt: -0.32 },
-  });
 
   const { arms, hands } = buildArms(torso, {
     shoulder: [0.21, 0.41, 0.08],
@@ -406,24 +192,24 @@ function rider(c: P): RiderRig {
     new Build()
       .add(ellipsoid(6, 4), c.skin, { p: [0, 0.2, 0], s: [0.26, 0.26, 0.21] })
       .add(ellipsoid(6, 4), c.skin, { p: [0, 0.6, 0.12], s: [0.27, 0.23, 0.32] })
-      .add(cyl(0.42, 0.5, 0.06, 6), c.rock1, { p: [0, 0.82, -0.05], r: [1.1, 0, 0] })
+      .add(cyl(0.5, 0.56, 0.06, 7), RAY_B, { p: [0, 0.84, -0.08], r: [1.15, 0, 0] })
       .add(cone(0.06, 0.3, 4), c.horn, { p: [0.15, 0.85, 0.35], r: [1.0, 0, 0] })
       .add(cone(0.06, 0.3, 4), c.horn, { p: [-0.15, 0.85, 0.35], r: [1.0, 0, 0] })
       .build(),
     mat,
   );
 
-  return {
+  const rig: RiderRig = {
     root,
     torso,
     neck: null,
     head,
-    face: { ...eyes, jaw, jawOpen: 0.4 },
+    face: { eyes: [], brows: [], jaw: null, jawOpen: 0, lidOpen: -1.6, lidClosed: 1.45 },
     arms,
     hands,
     tail: [tailJ],
     wings: [],
-    wiggles: [{ obj: frill, kind: "crest", side: 0, amount: 0.6 }],
+    wiggles: [],
     low,
     cheer: [new THREE.Vector3(0.36, 0.66, 0.16), new THREE.Vector3(-0.36, 0.66, 0.16)],
     personality: {
@@ -440,12 +226,187 @@ function rider(c: P): RiderRig {
       boostFace: 0.55,
       grumble: 1,
       response: 1,
-      restJaw: 0.24,
-      restBrow: -0.35,
-      restLids: 0.08,
+      restJaw: 0.06,
+      restBrow: -0.2,
+      restLids: 0.2,
       victory: "nod",
     },
   };
+  buildHead(rig, c);
+  return rig;
+}
+
+function buildHead(rig: RiderRig, c: P) {
+  const mat = skinMaterial();
+  const head = rig.head;
+  head.position.set(0, 0.5, 0.07);
+  head.rotation.x = -0.1;
+  head.scale.setScalar(1.36);
+  const cream = new THREE.Color(c.cream);
+  const skin = new THREE.Color(c.skin);
+
+  // A blocky skull, deep at the cheeks, into a hooked beak.
+  const skull = new Build().addColored(
+    loft(
+      [
+        { at: [0, 0.12, -0.17], rx: 0.12, ry: 0.11, sq: 2.6 },
+        { at: [0, 0.13, -0.1], rx: 0.2, ry: 0.18, sq: 2.8 },
+        { at: [0, 0.12, 0.0], rx: 0.225, ry: 0.2, sq: 3 },
+        { at: [0, 0.1, 0.1], rx: 0.2, ry: 0.18, sq: 3, flat: 0.25 },
+        { at: [0, 0.07, 0.19], rx: 0.15, ry: 0.14, sq: 2.6, flat: 0.3 },
+        { at: [0, 0.04, 0.26], rx: 0.1, ry: 0.11, sq: 2.2, flat: 0.2 },
+        { at: [0, -0.01, 0.31], rx: 0.055, ry: 0.07 },
+        { at: [0, -0.06, 0.33], rx: 0.015, ry: 0.02 },
+      ],
+      {
+        sides: 14,
+        steps: 2,
+        capStart: true,
+        capEnd: true,
+        paint: (t, a) => (t > 0.74 ? cream : t > 0.5 && a < -0.2 ? cream : skin),
+      },
+    ),
+  );
+  for (const s of [1, -1]) {
+    skull.add(ellipsoid(6, 4), c.skinDark, { p: [s * 0.045, 0.1, 0.255], s: [0.02, 0.013, 0.014] });
+    // The heavy brow ridge: a bony shelf over each eye, sloping down toward the nose.
+    skull.addColored(
+      loft(
+        [
+          { at: [s * 0.2, 0.25, 0.1], rx: 0.03, ry: 0.025, color: c.skinDark },
+          { at: [s * 0.15, 0.27, 0.17], rx: 0.05, ry: 0.035, color: c.skinDark },
+          { at: [s * 0.06, 0.235, 0.225], rx: 0.04, ry: 0.03, color: c.skinDark },
+          { at: [s * 0.0, 0.21, 0.24], rx: 0.02, ry: 0.02, color: c.skinDark },
+        ],
+        { sides: 8, steps: 2, capStart: true, capEnd: true, up: [0, 0, 1] },
+      ),
+    );
+    // A tough set to the mouth: a dark line, turned down at the back.
+    skull.addColored(
+      tube(
+        [
+          [s * 0.07, -0.025, 0.28],
+          [s * 0.12, -0.005, 0.2],
+          [s * 0.165, 0.0, 0.1],
+          [s * 0.175, -0.025, 0.04],
+        ],
+        [0.008, 0.01, 0.01, 0.007],
+        c.mouth,
+        { sides: 5 },
+      ),
+    );
+  }
+  skull.add(ellipsoid(10, 6), c.mouth, { p: [0, -0.01, 0.15], s: [0.13, 0.04, 0.14] });
+  // Three horns: two long brow horns thrust forward and out, a stout nose horn.
+  for (const s of [1, -1])
+    skull.addColored(
+      horn(
+        [s * 0.12, 0.27, 0.06],
+        [s * 0.22, 0.36, 0.56],
+        0.065,
+        c.horn,
+        [s * 0.04, 0.12, -0.08],
+        8,
+      ),
+    );
+  skull.addColored(horn([0, 0.13, 0.22], [0, 0.25, 0.32], 0.05, c.horn, [0, 0.03, -0.03], 7));
+  for (const s of [1, -1])
+    skull.add(cone(0.07, 0.04, 8), c.hornBase, {
+      p: [s * 0.12, 0.27, 0.06],
+      r: [-0.6, 0, s * 0.2],
+    });
+  head.add(new THREE.Mesh(skull.build(), mat));
+
+  // The frill: a sunburst shield behind the head, ringed with spikes.
+  const frill = new THREE.Group();
+  frill.position.set(0, 0.2, -0.12);
+  frill.rotation.x = -0.4;
+  head.add(frill);
+  const N = 11;
+  const R = 0.5;
+  const a0 = 0.02;
+  const a1 = Math.PI - 0.02;
+  const outline: [number, number][] = [];
+  for (let i = 0; i <= N * 2; i++) {
+    const a = a0 + (a1 - a0) * (i / (N * 2));
+    const r = i % 2 ? R * 0.92 : R;
+    outline.push([Math.cos(a) * r * 1.1, Math.sin(a) * r * 0.9 - 0.06]);
+  }
+  outline.push([-0.22, -0.14], [0.22, -0.14]);
+  const fb = new Build();
+  // The rim (dark), then the rays inside it, a touch in front and behind.
+  fb.add(card(outline, 0.045), RIM);
+  const inner = outline.map(([x, y]) => [x * 0.84, (y + 0.06) * 0.84 - 0.06] as [number, number]);
+  const rays = (p: THREE.Vector3) => {
+    const a = Math.atan2(p.y + 0.06, p.x);
+    return Math.floor(a / (Math.PI / 9)) % 2 ? RAY_A : RAY_B;
+  };
+  fb.add(card(inner, 0.06), rays);
+  // Two cream eye-spots on the front, a crest of studs up the middle of the back.
+  for (const s of [1, -1]) {
+    fb.add(ellipsoid(10, 6), c.cream, { p: [s * 0.22, 0.2, 0.032], s: [0.075, 0.06, 0.012] });
+    fb.add(ellipsoid(8, 5), RIM, { p: [s * 0.22, 0.2, 0.04], s: [0.035, 0.028, 0.008] });
+  }
+  for (let k = 0; k < 4; k++)
+    fb.add(cone(0.035, 0.07, 5), c.hornBase, {
+      p: [0, 0.06 + k * 0.09, -0.04],
+      r: [-Math.PI / 2, 0, 0],
+    });
+  // Ivory spikes round the edge, longest at the top.
+  for (let i = 0; i <= N; i++) {
+    const a = a0 + (a1 - a0) * (i / N);
+    const len = 0.09 + 0.07 * Math.sin(a);
+    fb.add(cone(0.04, len, 5), (p) => (p.y < 0 ? c.hornBase : c.horn), {
+      p: [Math.cos(a) * (R * 1.1 + len * 0.35), Math.sin(a) * (R * 0.9 + len * 0.35) - 0.06, 0],
+      r: [0, 0, a - Math.PI / 2],
+    });
+  }
+  frill.add(new THREE.Mesh(fb.build(), mat));
+
+  // The lower beak.
+  const jaw = new THREE.Group();
+  head.add(jaw);
+  jaw.add(
+    new THREE.Mesh(
+      new Build()
+        .addColored(
+          loft(
+            [
+              { at: [0, -0.01, -0.02], rx: 0.17, ry: 0.06, sq: 2.6 },
+              { at: [0, -0.04, 0.12], rx: 0.14, ry: 0.06, flat: -0.4, sq: 2.6 },
+              { at: [0, -0.05, 0.22], rx: 0.09, ry: 0.05, flat: -0.4 },
+              { at: [0, -0.05, 0.28], rx: 0.03, ry: 0.02 },
+            ],
+            {
+              sides: 10,
+              steps: 2,
+              capStart: true,
+              capEnd: true,
+              paint: (_t, a) => (a > 0.5 && a < 2.6 ? c.mouth : c.cream),
+            },
+          ),
+        )
+        .add(ellipsoid(8, 5), c.tongue, { p: [0, -0.02, 0.12], s: [0.075, 0.022, 0.08] })
+        .build(),
+      mat,
+    ),
+  );
+
+  // Deep-set, narrowed eyes in a scowl, under the brow ridge.
+  const eyes = buildEyes(head, {
+    at: [0.105, 0.175, 0.19],
+    size: [0.078, 0.088, 0.065],
+    yaw: 0.3,
+    iris: "#4a2a12",
+    irisRing: "#c98a2a",
+    lid: c.skinDark,
+    inward: 0.1,
+    lidTilt: 0.5,
+    brow: { color: c.brow, at: [0.105, 0.258, 0.215], size: [0.075, 0.024, 0.032], tilt: 0.42 },
+  });
+
+  rig.face = { ...eyes, jaw, jawOpen: 0.42 };
+  rig.wiggles.push({ obj: frill, kind: "crest", side: 0, amount: 0.5 });
 }
 
 export const BRAKKA: RacerBuild<P> = {

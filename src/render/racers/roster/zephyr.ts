@@ -1,20 +1,22 @@
 /**
- * Zephyr the pteranodon: the Sky Scout (design A).
+ * Zephyr the pteranodon: the Sky Scout (design A), the hotshot ace.
  *
- * Silhouette: the most aerodynamic of the four: a long pointed beak forward, a swept-back
- * orange-red crest behind, and orange wings folded at the sides that spread in the air
- * and flap to celebrate. Golden-yellow face and neck, pale cream underside, big eyes.
- * Gear: brown aviator goggles up on the forehead and a red-orange scarf.
- * Kart: an aviation-inspired racer (still a kart): a pointed deep-red nose with a wing
- * emblem on the hood, burnt-orange fenders, cream panels, rivets, and a rounded engine
- * with twin exhausts at the back.
+ * Silhouette: the most aerodynamic of the four: a long needle beak forward, the crest a
+ * long sharp blade with a pale leading edge, and orange wings folded at the sides that
+ * spread in the air and flap to celebrate.
+ * Face: a leather flying helmet with brass goggles pushed up on it; a half-lidded side
+ * glance, one brow cocked high and a lopsided smirk. Golden-yellow face and neck, pale
+ * cream underside. Gear: the helmet and a red-orange scarf.
+ * Kart: the Sky Jet (the sleek family): deep red with gold, a needle nose, delta wings for
+ * sidepods, a tall tail fin, twin burners and a wing emblem.
  */
 import * as THREE from "three";
 import type { BodyKit } from "../kit/chassis";
 import { buildArms, buildEyes, type RiderRig } from "../kit/rig";
-import { Build, box, card, cone, cyl, ellipsoid, loft, taper } from "../kit/shapes";
+import { Build, box, card, cone, cyl, ellipsoid, loft, tube } from "../kit/shapes";
 import { skinMaterial } from "../kit/paint";
-import { emblemMesh, goggles } from "../kit/props";
+import { goggles } from "../kit/props";
+import { sleekKart } from "../kit/sleek";
 import type { RacerBuild } from "./types";
 
 const MAIN = {
@@ -63,93 +65,32 @@ const ALT: typeof MAIN = {
 
 type P = typeof MAIN;
 
+const LEATHER = "#7a4a26";
+const LEATHER_DARK = "#5a3418";
+const BRASS = "#e8b440";
+
 // ------------------------------------------------------------------ the kart
 
 function kart(c: P): BodyKit {
-  return {
-    wheel: { tyre: c.tyre, rim: c.orange, cap: c.gold, ring: c.gold, sides: 10 },
-    steering: c.charcoal,
-    shell(b, detail) {
-      b.add(box(0.96, 0.14, 2.2, 0.05), c.charcoal, { p: [0, 0.28, -0.05] });
-      // A sleek tub that narrows into a pointed nose; an orange stripe down each side.
-      b.addColored(
-        loft(
-          [
-            { at: [0, 0.5, -1.0], rx: 0.42, ry: 0.15 },
-            { at: [0, 0.51, -0.72], rx: 0.52, ry: 0.2 },
-            { at: [0, 0.5, -0.2], rx: 0.53, ry: 0.2 },
-            { at: [0, 0.48, 0.4], rx: 0.46, ry: 0.19 },
-            { at: [0, 0.44, 0.9], rx: 0.33, ry: 0.16 },
-            { at: [0, 0.4, 1.25], rx: 0.17, ry: 0.1 },
-            { at: [0, 0.37, 1.42], rx: 0.04, ry: 0.035 },
-          ],
-          {
-            sides: 12,
-            steps: 2,
-            capStart: true,
-            capEnd: true,
-            paint: (t, a) => {
-              if (Math.abs(a) < 0.22 || Math.abs(Math.abs(a) - Math.PI) < 0.22) return c.orange;
-              if (a > 0.9 && a < 2.25 && t > 0.62) return c.sand; // the hood
-              return a > 0 ? c.red : c.redDark;
-            },
-          },
-        ),
-      );
-      // Cream intake lip under the nose, gold trim round the cockpit.
-      b.add(taper(box(0.5, 0.1, 0.4, 0.04), 0.5, 0.8), c.sand, { p: [0, 0.3, 1.16] });
-      b.add(new THREE.TorusGeometry(0.34, 0.045, 4, 14), c.gold, {
-        p: [0, 0.69, -0.26],
-        r: [Math.PI / 2, 0, 0],
-        s: [1, 1.2, 1],
-      });
-      // A little dashboard dial.
-      b.add(cyl(0.06, 0.06, 0.03, 10), c.sand, { p: [0.18, 0.73, 0.14], r: [1.1, 0, 0] });
-      b.add(box(0.5, 0.1, 0.42, 0.04), c.seat, { p: [0, 0.48, -0.3] });
-      b.add(box(0.5, 0.26, 0.1, 0.04), c.seat, { p: [0, 0.66, -0.56], r: [-0.15, 0, 0] });
-      for (const s of [1, -1]) {
-        // Swept fenders, and rivets down the sides.
-        b.add(taper(box(0.44, 0.22, 0.76, 0.1), 0.85, 0.6, 0.06), c.orange, {
-          p: [s * 0.76, 0.74, 0.88],
-        });
-        b.add(taper(box(0.5, 0.28, 0.84, 0.11), 0.92, 0.8, 0.04), c.red, {
-          p: [s * 0.8, 0.72, -0.78],
-        });
-        for (let k = 0; k < 5; k++)
-          b.add(cyl(0.018, 0.018, 0.02, 5), c.gold, {
-            p: [s * 0.545, 0.56, -0.5 + k * 0.22],
-            r: [0, 0, Math.PI / 2],
-          });
-        b.add(box(0.2, 0.16, 0.8, 0.05), c.charcoal, { p: [s * 0.6, 0.36, 0.05] });
-      }
-      // The rounded engine behind the seat, with twin exhausts and gold bands.
-      b.add(ellipsoid(12, 8), c.charcoal, { p: [0, 0.68, -0.92], s: [0.3, 0.2, 0.26] });
-      b.add(cyl(0.2, 0.2, 0.05, 12), c.gold, {
-        p: [0, 0.68, -0.92],
-        r: [Math.PI / 2, 0, 0],
-        s: [1.45, 1, 1],
-      });
-      for (const s of [1, -1]) {
-        b.add(cyl(0.08, 0.1, 0.42, 9), c.charcoal, {
-          p: [s * 0.2, 0.46, -1.16],
-          r: [Math.PI / 2, 0, 0],
-        });
-        b.add(cyl(0.1, 0.1, 0.05, 9), c.gold, {
-          p: [s * 0.2, 0.46, -1.37],
-          r: [Math.PI / 2, 0, 0],
-        });
-      }
-      if (detail === 0)
-        b.add(cyl(0.07, 0.07, 0.04, 9), "#141012", { p: [0, 0.42, -1.33], r: [Math.PI / 2, 0, 0] });
-    },
-    decorate(body) {
-      // The wing emblem on the cream hood.
-      const e = emblemMesh("wing", { disc: c.sand, ink: c.red, rim: c.gold }, 0.3);
-      e.position.set(0, 0.565, 1.02);
-      e.rotation.x = -1.22;
-      body.add(e);
-    },
-  };
+  return sleekKart({
+    main: c.red,
+    dark: c.redDark,
+    stripe: c.gold,
+    nose: c.red,
+    trim: c.sand,
+    metal: "#3a3436",
+    seat: c.seat,
+    glass: "#9ad8f6",
+    tyre: c.tyre,
+    rim: c.gold,
+    cap: c.orange,
+    tyreLine: c.gold,
+    front: "needle",
+    pods: "delta",
+    rear: "jet",
+    spokes: 5,
+    emblem: { kind: "wing", disc: c.sand, ink: c.red, rim: c.gold },
+  });
 }
 
 // ------------------------------------------------------------------ Zephyr
@@ -289,123 +230,9 @@ function rider(c: P): RiderRig {
     ),
   );
 
+  // The head: built by buildHead() below, once the rig exists.
   const head = new THREE.Group();
-  head.position.set(0, 0.2, 0.03);
-  head.rotation.x = -0.08;
-  head.scale.setScalar(1.3);
   neck.add(head);
-  const beak = new THREE.Color(c.beak);
-  const beakTip = new THREE.Color(c.beakTip);
-  const skull = new Build().addColored(
-    loft(
-      [
-        { at: [0, 0.1, -0.15], rx: 0.08, ry: 0.09 },
-        { at: [0, 0.11, -0.1], rx: 0.15, ry: 0.15 },
-        { at: [0, 0.11, -0.01], rx: 0.18, ry: 0.17 },
-        { at: [0, 0.09, 0.08], rx: 0.15, ry: 0.14, flat: 0.3 },
-        { at: [0, 0.05, 0.16], rx: 0.1, ry: 0.085, flat: 0.5 },
-        { at: [0, 0.035, 0.3], rx: 0.065, ry: 0.055, flat: 0.5 },
-        { at: [0, 0.02, 0.44], rx: 0.03, ry: 0.025, flat: 0.4 },
-        { at: [0, 0.01, 0.5], rx: 0.006, ry: 0.006 },
-      ],
-      {
-        sides: 12,
-        steps: 2,
-        capStart: true,
-        capEnd: true,
-        paint: (t, a) =>
-          t > 0.45
-            ? beak.clone().lerp(beakTip, Math.max(0, (t - 0.75) * 4))
-            : a < -1.0 && t > 0.3
-              ? c.cream
-              : c.skin,
-      },
-    ),
-  );
-  skull.add(ellipsoid(10, 6), c.mouth, { p: [0, 0.0, 0.18], s: [0.08, 0.03, 0.18] });
-  for (const s of [1, -1])
-    skull.add(ellipsoid(5, 4), c.beakTip, { p: [s * 0.035, 0.07, 0.3], s: [0.012, 0.008, 0.02] });
-  head.add(new THREE.Mesh(skull.build(), mat));
-
-  // The crest: a long blade swept back from the top of the head.
-  const crest = new THREE.Group();
-  crest.position.set(0, 0.2, -0.06);
-  head.add(crest);
-  const ctop = new THREE.Color(c.crest);
-  const ctip = new THREE.Color(c.crestTip);
-  crest.add(
-    new THREE.Mesh(
-      new Build()
-        .add(
-          card(
-            [
-              [0.12, -0.06],
-              [0.02, 0.1],
-              [-0.26, 0.22],
-              [-0.62, 0.27],
-              [-0.4, 0.1],
-              [-0.14, -0.03],
-            ],
-            0.07,
-          ),
-          (p) => ctop.clone().lerp(ctip, Math.min(1, Math.max(0, -p.x * 2))),
-          { r: [0, -Math.PI / 2, 0] },
-        )
-        .build(),
-      mat,
-    ),
-  );
-
-  // Aviator goggles up on the forehead, on a band round the head.
-  const gog = new Build()
-    .addColored(goggles({ frame: c.gogFrame, lens: c.gogLens, glint: "#ffffff" }, 0.075, 0.052), {
-      p: [0, 0.255, 0.1],
-      r: [-0.55, 0, 0],
-    })
-    .add(new THREE.TorusGeometry(0.17, 0.018, 4, 14), c.gogFrame, {
-      p: [0, 0.2, -0.01],
-      r: [Math.PI / 2 + 0.55, 0, 0],
-      s: [1.05, 1.1, 1],
-    });
-  head.add(new THREE.Mesh(gog.build(), mat));
-
-  const jaw = new THREE.Group();
-  head.add(jaw);
-  jaw.add(
-    new THREE.Mesh(
-      new Build()
-        .addColored(
-          loft(
-            [
-              { at: [0, 0.0, -0.02], rx: 0.11, ry: 0.05 },
-              { at: [0, -0.02, 0.12], rx: 0.085, ry: 0.04, flat: -0.4 },
-              { at: [0, -0.015, 0.3], rx: 0.055, ry: 0.03, flat: -0.4 },
-              { at: [0, -0.005, 0.42], rx: 0.02, ry: 0.012 },
-            ],
-            {
-              sides: 10,
-              steps: 2,
-              capStart: true,
-              capEnd: true,
-              paint: (_t, a) => (a > 0.5 && a < 2.6 ? c.mouth : c.beak),
-            },
-          ),
-        )
-        .add(ellipsoid(8, 5), c.tongue, { p: [0, -0.006, 0.14], s: [0.05, 0.018, 0.1] })
-        .build(),
-      mat,
-    ),
-  );
-
-  const eyes = buildEyes(head, {
-    at: [0.1, 0.14, 0.06],
-    size: [0.078, 0.09, 0.068],
-    yaw: 0.45,
-    iris: c.eye,
-    lid: c.skin,
-    inward: 0.2,
-    brow: { color: c.skinDark, at: [0.1, 0.225, 0.08], size: [0.05, 0.014, 0.02], tilt: -0.2 },
-  });
 
   const { arms, hands } = buildArms(torso, {
     shoulder: [0.15, 0.34, 0.07],
@@ -444,20 +271,17 @@ function rider(c: P): RiderRig {
     mat,
   );
 
-  return {
+  const rig: RiderRig = {
     root,
     torso,
     neck,
     head,
-    face: { ...eyes, jaw, jawOpen: 0.4 },
+    face: { eyes: [], brows: [], jaw: null, jawOpen: 0, lidOpen: -1.6, lidClosed: 1.45 },
     arms,
     hands,
     tail: [],
     wings,
-    wiggles: [
-      { obj: crest, kind: "crest", side: 0, amount: 0.8 },
-      { obj: tails, kind: "flutter", side: 1, amount: 1.2 },
-    ],
+    wiggles: [{ obj: tails, kind: "flutter", side: 1, amount: 1.2 }],
     low,
     cheer: [new THREE.Vector3(0.38, 0.66, 0.12), new THREE.Vector3(-0.38, 0.66, 0.12)],
     personality: {
@@ -474,12 +298,226 @@ function rider(c: P): RiderRig {
       boostFace: 1,
       grumble: 0.3,
       response: 1.2,
-      restJaw: 0.3,
-      restBrow: 0.3,
-      restLids: 0,
+      restJaw: 0.04,
+      restBrow: 0.0,
+      restLids: 0.2,
       victory: "flap",
     },
   };
+  buildHead(rig, c);
+  return rig;
+}
+
+function buildHead(rig: RiderRig, c: P) {
+  const mat = skinMaterial();
+  const head = rig.head;
+  head.position.set(0, 0.2, 0.03);
+  head.rotation.x = -0.06;
+  head.scale.setScalar(1.32);
+  const beak = new THREE.Color(c.beak);
+  const beakTip = new THREE.Color(c.beakTip);
+
+  // A compact cranium and a long, sharp beak.
+  const skull = new Build().addColored(
+    loft(
+      [
+        { at: [0, 0.1, -0.15], rx: 0.08, ry: 0.09 },
+        { at: [0, 0.11, -0.1], rx: 0.155, ry: 0.155 },
+        { at: [0, 0.11, -0.0], rx: 0.18, ry: 0.17 },
+        { at: [0, 0.085, 0.09], rx: 0.15, ry: 0.13, flat: 0.3 },
+        { at: [0, 0.05, 0.17], rx: 0.095, ry: 0.08, flat: 0.5 },
+        { at: [0, 0.035, 0.32], rx: 0.06, ry: 0.05, flat: 0.5 },
+        { at: [0, 0.02, 0.48], rx: 0.026, ry: 0.022, flat: 0.4 },
+        { at: [0, 0.01, 0.56], rx: 0.005, ry: 0.005 },
+      ],
+      {
+        sides: 14,
+        steps: 2,
+        capStart: true,
+        capEnd: true,
+        paint: (t, a) =>
+          t > 0.45
+            ? beak.clone().lerp(beakTip, Math.max(0, (t - 0.72) * 3.5))
+            : a < -1.0 && t > 0.3
+              ? c.cream
+              : c.skin,
+      },
+    ),
+  );
+  skull.add(ellipsoid(10, 6), c.mouth, { p: [0, 0.0, 0.18], s: [0.08, 0.03, 0.18] });
+  for (const s of [1, -1])
+    skull.add(ellipsoid(5, 4), c.beakTip, { p: [s * 0.033, 0.065, 0.32], s: [0.012, 0.008, 0.02] });
+  // The smirk: the beak line curls up on the left side only.
+  skull.addColored(
+    tube(
+      [
+        [0.04, 0.012, 0.3],
+        [0.075, 0.012, 0.18],
+        [0.12, 0.03, 0.1],
+        [0.13, 0.065, 0.075],
+      ],
+      [0.011, 0.013, 0.013, 0.009],
+      "#5a1a10",
+      { sides: 5 },
+    ),
+  );
+  skull.addColored(
+    tube(
+      [
+        [-0.04, 0.012, 0.3],
+        [-0.075, 0.01, 0.18],
+        [-0.12, 0.005, 0.1],
+      ],
+      [0.011, 0.012, 0.009],
+      "#5a1a10",
+      { sides: 5 },
+    ),
+  );
+
+  // The flying helmet: a leather cap over the back of the cranium, a stitched ridge,
+  // ear flaps and a chin strap.
+  skull.addColored(
+    loft(
+      [
+        { at: [0, 0.11, -0.17], rx: 0.09, ry: 0.1, color: LEATHER },
+        { at: [0, 0.13, -0.11], rx: 0.17, ry: 0.17, color: LEATHER },
+        { at: [0, 0.14, -0.02], rx: 0.192, ry: 0.18, color: LEATHER },
+        { at: [0, 0.15, 0.05], rx: 0.18, ry: 0.16, color: LEATHER, flat: 0.55 },
+        { at: [0, 0.17, 0.08], rx: 0.15, ry: 0.11, color: LEATHER_DARK, flat: 0.7 },
+      ],
+      { sides: 14, steps: 2, capStart: true },
+    ),
+  );
+  skull.addColored(
+    tube(
+      [
+        [0, 0.33, 0.06],
+        [0, 0.32, -0.04],
+        [0, 0.27, -0.12],
+      ],
+      0.012,
+      LEATHER_DARK,
+      { sides: 5 },
+    ),
+  );
+  for (const s of [1, -1]) {
+    skull.add(ellipsoid(10, 6), LEATHER, {
+      p: [s * 0.17, 0.06, -0.04],
+      s: [0.04, 0.09, 0.075],
+      r: [0.2, 0, 0],
+    });
+    skull.add(cyl(0.022, 0.022, 0.012, 8), BRASS, {
+      p: [s * 0.21, 0.04, -0.04],
+      r: [0, 0, Math.PI / 2],
+    });
+  }
+  skull.addColored(
+    tube(
+      [
+        [0.2, 0.02, -0.03],
+        [0.14, -0.09, 0.02],
+        [0, -0.12, 0.04],
+        [-0.14, -0.09, 0.02],
+        [-0.2, 0.02, -0.03],
+      ],
+      0.013,
+      LEATHER_DARK,
+      { sides: 5 },
+    ),
+  );
+  // Goggles pushed up on the helmet: brass frames, sky-blue lenses.
+  skull.addColored(goggles({ frame: BRASS, lens: c.gogLens, glint: "#ffffff" }, 0.08, 0.058), {
+    p: [0, 0.29, 0.1],
+    r: [-0.75, 0, 0],
+  });
+  head.add(new THREE.Mesh(skull.build(), mat));
+
+  // The crest: a long, sharp blade out of the back of the helmet, a pale leading edge.
+  const crest = new THREE.Group();
+  crest.position.set(0, 0.22, -0.1);
+  head.add(crest);
+  const ctop = new THREE.Color(c.crest);
+  const ctip = new THREE.Color(c.crestTip);
+  crest.add(
+    new THREE.Mesh(
+      new Build()
+        .add(
+          card(
+            [
+              [0.08, -0.08],
+              [0.04, 0.06],
+              [-0.3, 0.2],
+              [-0.72, 0.29],
+              [-0.5, 0.1],
+              [-0.12, -0.06],
+            ],
+            0.06,
+          ),
+          (p) => {
+            const k = ctop.clone().lerp(ctip, Math.min(1, Math.max(0, -p.x * 1.6)));
+            // The pale leading (top) edge.
+            const edge = 0.06 + -p.x * 0.3;
+            if (p.y > edge - 0.035 && p.x < 0.0) k.lerp(new THREE.Color(c.cream), 0.75);
+            return k;
+          },
+          { r: [0, -Math.PI / 2, 0] },
+        )
+        .build(),
+      mat,
+    ),
+  );
+
+  const jaw = new THREE.Group();
+  head.add(jaw);
+  jaw.add(
+    new THREE.Mesh(
+      new Build()
+        .addColored(
+          loft(
+            [
+              { at: [0, 0.0, -0.02], rx: 0.11, ry: 0.05 },
+              { at: [0, -0.02, 0.12], rx: 0.085, ry: 0.04, flat: -0.4 },
+              { at: [0, -0.015, 0.32], rx: 0.05, ry: 0.028, flat: -0.4 },
+              { at: [0, -0.005, 0.46], rx: 0.015, ry: 0.01 },
+            ],
+            {
+              sides: 10,
+              steps: 2,
+              capStart: true,
+              capEnd: true,
+              paint: (_t, a) => (a > 0.5 && a < 2.6 ? c.mouth : c.beak),
+            },
+          ),
+        )
+        .add(ellipsoid(8, 5), c.tongue, { p: [0, -0.006, 0.14], s: [0.05, 0.018, 0.1] })
+        .build(),
+      mat,
+    ),
+  );
+
+  // A cool, half-lidded side glance; one brow cocked.
+  const eyes = buildEyes(head, {
+    at: [0.098, 0.145, 0.07],
+    size: [0.076, 0.088, 0.066],
+    yaw: 0.42,
+    iris: "#3a2210",
+    irisRing: "#e0902a",
+    lid: c.skin,
+    inward: 0,
+    gaze: [0.22, 0.02],
+    lidTilt: 0.12,
+    brow: { color: LEATHER_DARK, at: [0.1, 0.228, 0.095], size: [0.06, 0.02, 0.026], tilt: 0.25 },
+  });
+  // The cocked brow: the right one high and arched, its eye a little wider.
+  const right = eyes.eyes.find((e) => e.side === -1)!;
+  const rb = eyes.brows[1]!;
+  rb.position.y += 0.035;
+  rb.rotation.z = 0.35;
+  (right.lid.parent as THREE.Object3D).rotation.z = -0.1;
+  right.group.scale.setScalar(1.06);
+
+  rig.face = { ...eyes, jaw, jawOpen: 0.4 };
+  rig.wiggles.push({ obj: crest, kind: "crest", side: 0, amount: 0.8 });
 }
 
 /** The same shape mirrored across X (the other wing), faces kept outward. */

@@ -3,7 +3,7 @@
  * comparing designs. Load it from the browser console on a ?debug page:
  *
  *   const lab = await import("/src/debug/racerLab.ts");
- *   const url = lab.racerSheet(kp.stage.renderer, { v2: true });  // a PNG data URL
+ *   const url = lab.racerSheet(kp.stage.renderer);  // a PNG data URL
  *
  * Each row is a racer: front three-quarter, side, from behind (the race camera), a close
  * look at the face, and the select screen's pixel tile and pixel kart.
@@ -28,7 +28,13 @@ const still = (): RacerMotion => ({
   spinTime: 0,
 });
 
-type View = { label: string; cam: [number, number, number]; look: [number, number, number]; fov: number; face?: boolean };
+type View = {
+  label: string;
+  cam: [number, number, number];
+  look: [number, number, number];
+  fov: number;
+  face?: boolean;
+};
 // Face views: `cam` is the offset from the head.
 
 const ALL_VIEWS: View[] = [
@@ -42,7 +48,6 @@ const ALL_VIEWS: View[] = [
 export function racerSheet(
   renderer: THREE.WebGLRenderer,
   opts: {
-    v2?: boolean;
     ids?: RacerId[];
     cell?: [number, number];
     pose?: Partial<RacerMotion>;
@@ -67,7 +72,10 @@ export function racerSheet(
   const sun = new THREE.DirectionalLight("#fff0d2", 2.4);
   sun.position.set(4, 8, 6);
   scene.add(sun, new THREE.HemisphereLight("#e2f4ff", "#6a7a4a", 1.25));
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 32).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: "#7fae5a" }));
+  const floor = new THREE.Mesh(
+    new THREE.CircleGeometry(6, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshLambertMaterial({ color: "#7fae5a" }),
+  );
   scene.add(floor);
   const camera = new THREE.PerspectiveCamera(30, cw / ch, 0.05, 80);
   const rt = new THREE.WebGLRenderTarget(cw, ch);
@@ -77,7 +85,7 @@ export function racerSheet(
   const pp = createPixelPortraits(renderer);
   const prev = renderer.getRenderTarget();
   ids.forEach((id, row) => {
-    const r = new Racer(id, { seed: 5, v2: opts.v2 });
+    const r = new Racer(id, { seed: 5 });
     r.lod.autoUpdate = false;
     r.lod.levels.forEach((l, i) => (l.object.visible = i === 0));
     scene.add(r.root);
@@ -106,20 +114,33 @@ export function racerSheet(
       renderer.setRenderTarget(rt);
       renderer.render(scene, camera);
       renderer.readRenderTargetPixels(rt, 0, 0, cw, ch, buf);
-      for (let y = 0; y < ch; y++) img.data.set(buf.subarray((ch - 1 - y) * cw * 4, (ch - y) * cw * 4), y * cw * 4);
+      for (let y = 0; y < ch; y++)
+        img.data.set(buf.subarray((ch - 1 - y) * cw * 4, (ch - y) * cw * 4), y * cw * 4);
       g.putImageData(img, col * cw, row * ch);
       g.fillStyle = "#ffffff";
       g.font = "12px monospace";
-      g.fillText(`${DESIGNS[id].name} ${opts.v2 ? "v2" : "now"} - ${v.label}`, col * cw + 6, row * ch + 14);
+      g.fillText(`${DESIGNS[id].name} - ${v.label}`, col * cw + 6, row * ch + 14);
     });
     renderer.setRenderTarget(prev);
     r.root.removeFromParent();
     if (opts.noPixels) return;
     // The pixel tile and kart, as the select screen draws them.
     g.imageSmoothingEnabled = false;
-    const tile = pp.draw(id, { w: 40, h: 40, view: "head", yaw: 0.35, levels: 8 }, undefined, 0, null, opts.v2);
+    const tile = pp.draw(
+      id,
+      { w: 40, h: 40, view: "head", yaw: 0.35, levels: 8 },
+      undefined,
+      0,
+      null,
+    );
     g.drawImage(tile, VIEWS.length * cw + 15, row * ch + 10, 120, 120);
-    const kart = pp.draw(id, { w: 72, h: 60, view: "kart", yaw: 0.6, levels: 8 }, undefined, 0, null, opts.v2);
+    const kart = pp.draw(
+      id,
+      { w: 72, h: 60, view: "kart", yaw: 0.6, levels: 8 },
+      undefined,
+      0,
+      null,
+    );
     g.drawImage(kart, VIEWS.length * cw + 15, row * ch + 132, 96, 80);
   });
   pp.dispose();

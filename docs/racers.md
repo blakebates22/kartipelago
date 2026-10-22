@@ -2,12 +2,16 @@
 
 The launch roster is four dinosaur racers, built from Blake's finalized concept designs:
 
-| Racer  | Species         | Design            | Seen from behind                                  | Kart                                                          |
-| ------ | --------------- | ----------------- | ------------------------------------------------- | ------------------------------------------------------------- |
-| Tiko   | parasaurolophus | Tropical Explorer | the big gold-to-orange crest, backpack and tail   | rounded turquoise explorer, ivory nose, palm emblem, leaves   |
-| Brakka | triceratops     | Rocky Roader      | a broad frill covered in rocky plates             | sandstone and timber roader, stone fenders, footprint emblem  |
-| Pebble | ankylosaurus    | Shoreline Roller  | an armoured dome with ivory spikes, the tail club | low cream-and-blue roller, big turquoise spiral, wooden trim  |
-| Zephyr | pteranodon      | Sky Scout         | a swept crest, goggles and folded orange wings    | red aviation racer, pointed nose, wing emblem, rounded engine |
+| Racer  | Species         | Design            | Seen from behind                                     | Kart (the sleek family)                                       |
+| ------ | --------------- | ----------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Tiko   | parasaurolophus | Tropical Explorer | the bold banded crest, backpack and tail             | Jungle GT: teal and ivory, blade front wing, raised rear wing |
+| Brakka | triceratops     | Rocky Roader      | a sunburst frill ringed with ivory spikes            | Rock Rally: broad sandstone wedge, horn splitters, ducktail   |
+| Pebble | ankylosaurus    | Shoreline Roller  | a spiked dome, long flank spikes, the two-lobed club | Shore Cruiser: round, blue and cream, bubble pods, fins       |
+| Zephyr | pteranodon      | Sky Scout         | a blade crest, flying helmet and folded orange wings | Sky Jet: red and gold, needle nose, delta wings, tail fin     |
+
+Faces are the heart of each design: Tiko's determined front-set eyes and grin, Brakka's
+scowl under a heavy brow, Pebble's easy half-lidded look, Zephyr's side glance, cocked
+brow and smirk. The first versions are kept in `archive/v1-racers/`.
 
 Tiko is the mascot (the default racer). Pick a racer on **Select Racer** (or with
 `?racer=tiko`, `brakka`, `pebble`, `zephyr`). Rivals take the other looks in turn;
@@ -69,5 +73,5 @@ In short: each racer is one file in `src/render/racers/roster/`, built from a sh
 shared rider rig, and the shared animator.
 
 Budgets (checked by `tests/racers.test.ts`): 3,000-12,000 triangles up close (kart and
-rider together; the four come to about 7,500-8,500 each), under 3,000 far away (beyond
+rider together; the four come to about 10,300-11,800 each), under 3,000 far away (beyond
 45 m), and about 30-35 draw calls each up close.
