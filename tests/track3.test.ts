@@ -10,7 +10,7 @@ import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepSolids } from "../src/physics/walls";
 import { gridSlot } from "../src/race/grid";
-import { canDrive, createRace, startTarget, stepRacer, tickRace } from "../src/race/race";
+import { canDrive, createRace, stepRacer, tickRace } from "../src/race/race";
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart, type KartState } from "../src/vehicles/kart";
 import { startZipper } from "../src/vehicles/zipper";
@@ -73,7 +73,7 @@ function aiRace(ids: string[]) {
     const moment = {
       countdown: race.phase === "countdown",
       clock: race.clock,
-      startTarget: startTarget(tuning.race),
+      startRefHz: tuning.race.startRefHz,
     };
     ids.forEach((id, i) => {
       const k = karts[i]!;

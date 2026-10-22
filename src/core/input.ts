@@ -4,6 +4,11 @@
  * Gameplay code never reads devices directly. It calls input.sample(dt, drifting) once per fixed
  * step and reads the result, so keyboard and gamepad behave identically and the
  * simulation stays deterministic for a given input sequence.
+ *
+ * Throttle presses carry the time they happened (the key event's or the gamepad's own
+ * timestamp). The loop runs a frame's fixed steps in a burst, each standing for a moment
+ * a little earlier than "now"; a press is only down for the steps after it happened. So
+ * the race start's timing windows (race.ts) are the same at 30 fps as at 144.
  */
 import { tuning } from "./tuning";
 
@@ -55,6 +60,15 @@ export const NEUTRAL: Readonly<DeviceReading> = {
   drift: false,
   item: false,
 };
+
+/**
+ * Is a held control down at the simulated moment `at` (ms, page time)? Not if it was
+ * pressed after that moment: a fixed step standing for an earlier instant mustn't see a
+ * press that happened later in the same frame. Unknown times count as down.
+ */
+export function downAt(held: boolean, since: number | undefined, at: number | undefined) {
+  return held && (at === undefined || since === undefined || since <= at);
+}
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -134,6 +148,12 @@ export function readGamepad(pad: Gamepad, cfg: InputConfig): DeviceReading {
 export function createInput(target: Window = window) {
   const held = new Set<string>();
   let keySteer = 0;
+  /** When the throttle key went down (event time, ms), and the gamepad's throttle. */
+  let keyThrottleSince: number | undefined;
+  let padThrottleSince: number | undefined;
+  let padThrottleWas = false;
+  /** The moment the current fixed step stands for (ms, page time), from the loop. */
+  let stepAt: number | undefined;
   const state: InputState = { ...NEUTRAL };
 
   const isTyping = (e: KeyboardEvent) =>
@@ -141,6 +161,8 @@ export function createInput(target: Window = window) {
 
   target.addEventListener("keydown", (e) => {
     if (isTyping(e) || !GAME_KEYS.has(e.code)) return;
+    if ((KEYS.throttle as readonly string[]).includes(e.code) && !any(KEYS.throttle))
+      keyThrottleSince = e.timeStamp;
     held.add(e.code);
     e.preventDefault(); // stop arrows and space scrolling the page
   });
@@ -148,10 +170,17 @@ export function createInput(target: Window = window) {
   // Keys released while the tab is unfocused never fire keyup; don't leave them stuck.
   target.addEventListener("blur", () => held.clear());
 
-  const any = (codes: readonly string[]) => codes.some((c) => held.has(c));
+  function any(codes: readonly string[]) {
+    return codes.some((c) => held.has(c));
+  }
 
   return {
     state: state as Readonly<InputState>,
+
+    /** The loop says which moment the next fixed step stands for (ms, page time). */
+    setStepTime(at: number | undefined) {
+      stepAt = at;
+    },
 
     /** Read all devices and update state. Call once per fixed step. */
     sample(dt: number, drifting = false): Readonly<InputState> {
@@ -160,15 +189,27 @@ export function createInput(target: Window = window) {
       keySteer = rampKeySteer(keySteer, steerTarget, dt, cfg, drifting);
 
       let merged: DeviceReading = {
-        throttle: any(KEYS.throttle) ? 1 : 0,
+        throttle: downAt(any(KEYS.throttle), keyThrottleSince, stepAt) ? 1 : 0,
         brake: any(KEYS.brake) ? 1 : 0,
         steer: keySteer,
         drift: any(KEYS.drift),
         item: any(KEYS.item),
       };
+      let padThrottle = false;
       for (const pad of navigator.getGamepads?.() ?? []) {
-        if (pad?.connected) merged = mergeReadings(merged, readGamepad(pad, cfg));
+        if (!pad?.connected) continue;
+        const r = readGamepad(pad, cfg);
+        if (r.throttle > 0.5) {
+          // A fresh press: stamp it with the pad's own time (when the browser last read
+          // it), so its timing is as exact as a key's.
+          if (!padThrottleWas && !padThrottle)
+            padThrottleSince = pad.timestamp || performance.now();
+          padThrottle = true;
+          if (!downAt(true, padThrottleSince, stepAt)) r.throttle = 0;
+        }
+        merged = mergeReadings(merged, r);
       }
+      padThrottleWas = padThrottle;
 
       Object.assign(state, merged);
       return state;

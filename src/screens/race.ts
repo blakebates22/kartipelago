@@ -72,11 +72,11 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         return;
       }
       const h = session.hud();
-      // Countdown knocks, GO, lap chimes.
+      // A knock as GET READY comes up, the GO sound the moment the karts are let go,
+      // lap chimes.
       if (h.phase === "countdown") {
-        const n = Math.ceil(h.countdown);
-        if (n !== lastCount && n <= 3) game.sounds.count();
-        lastCount = n;
+        if (lastCount !== 1) game.sounds.count();
+        lastCount = 1;
       } else if (lastCount > 0) {
         lastCount = 0;
         game.sounds.go();
@@ -237,24 +237,30 @@ function drawHud(
   });
 
   // Centre: countdown, GO!, banners, toasts.
-  if (h.phase === "countdown" && h.countdown <= 3) {
-    const n = Math.max(1, Math.ceil(h.countdown));
-    const f = n - h.countdown; // 0..1 within the second
-    const scale = f < 0.15 ? 6 : 5;
-    ui.text(String(n), W / 2, 70 - (f < 0.15 ? 3 : 0), {
+  if (h.phase === "countdown") {
+    // GET READY...: the letters pop in one after another, each in its own colour. Nothing here hints at the moment to press: that's the skill.
+    const shown = tuning.race.readySec - h.countdown;
+    popWord(ui, "GET READY...", W / 2, 74, shown, 3);
+  } else if (h.phase === "racing" && h.sinceGo < tuning.race.goShowSec) {
+    // GO!: slams in big, settles, wobbles.
+    const k = h.sinceGo;
+    const scale = k < 0.06 ? 8 : 7;
+    const wob = Math.round(Math.sin(k * 30) * (k < 0.3 ? 2 : 0));
+    ui.text("GO!", W / 2 + wob, 62 - (scale - 7) * 3, {
       scale,
-      color: [PAL.coral, PAL.gold, PAL.leaf][3 - n] ?? PAL.cream,
+      color: Math.floor(k * 12) % 2 ? PAL.gold : PAL.leaf,
       align: "center",
       ...big,
     });
-  } else if (h.phase === "countdown") {
-    ui.text("GET READY!", W / 2, 80, { scale: 2, color: PAL.cream, align: "center", ...big });
-  } else if (h.phase === "racing" && h.sinceGo < tuning.race.goShowSec) {
-    ui.text("GO!", W / 2, 66, { scale: 6, color: PAL.leaf, align: "center", ...big });
-    if (h.startTier === "perfect")
-      ui.text("PERFECT START!", W / 2, 112, { scale: 2, color: PAL.gold, align: "center", ...big });
-    else if (h.startTier === "good")
-      ui.text("GOOD START", W / 2, 112, { color: PAL.cream, align: "center", ...big });
+    if (h.startTier === "strong")
+      ui.text("STRONG START!", W / 2, 118, {
+        scale: 2,
+        color: Math.floor(k * 16) % 2 ? PAL.white : PAL.gold,
+        align: "center",
+        ...big,
+      });
+    else if (h.startTier === "weak")
+      ui.text("GOOD START", W / 2, 118, { color: PAL.cream, align: "center", ...big });
   } else if (banner) {
     const wob = Math.round(Math.sin(t * 10) * 1);
     ui.text(banner, W / 2, 70 + wob, {
@@ -270,6 +276,31 @@ function drawHud(
     ui.text(h.toast.toUpperCase(), W / 2, ui.H - 53, { align: "center", color: PAL.cream });
   }
   void entry;
+}
+
+/**
+ * A word whose letters drop in one after another (every 0.05 s), each overshooting to a
+ * bigger size before settling, in the accent colours: the countdown's GET READY.
+ */
+function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, scale: number) {
+  const colors = [PAL.coral, PAL.gold, PAL.leaf, PAL.turquoise, PAL.sky, PAL.violet];
+  const total = [...word].reduce((a, ch) => a + ui.textWidth(ch) * scale + scale, -scale);
+  let x = cx - total / 2;
+  [...word].forEach((ch, i) => {
+    const w = ui.textWidth(ch) * scale;
+    const k = t - i * 0.05;
+    if (ch !== " " && k > 0) {
+      const s = k < 0.08 ? scale + 1 : scale;
+      const dy = k < 0.08 ? -Math.round((0.08 - k) * 60) : 0;
+      ui.text(ch, x + w / 2, y + dy - (s - scale) * 3, {
+        scale: s,
+        color: colors[i % colors.length]!,
+        align: "center",
+        outline: PAL.shadow,
+      });
+    }
+    x += w + scale;
+  });
 }
 
 // ---------------------------------------------------------------- pause

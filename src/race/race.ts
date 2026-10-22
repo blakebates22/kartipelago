@@ -1,6 +1,21 @@
 /**
- * Race rules for every kart in a race: "Get ready!" then "GO!" with a start boost for
+ * Race rules for every kart in a race: "GET READY..." then "GO!" with a start boost for
  * good timing, laps, lap times, finishing order, race positions, and respawning.
+ *
+ * The start boost works the way Blake's notes on the N64 original describe it: what
+ * counts is how many frames (at a 60 fps reference) before GO you first press the
+ * throttle, and that you're still holding it at GO.
+ *
+ *   30 or more frames early   no boost           (too early)
+ *   15 to 29 frames early     weak boost
+ *   1 to 14 frames early      strong boost       (about 17 to 233 ms before GO)
+ *   at or after GO            no boost, an ordinary start
+ *
+ * Only the first press during GET READY counts: let go before GO and the boost is lost
+ * for this start (pressing again doesn't earn another try). A throttle already held
+ * when the countdown begins isn't a press. Times are the race clock's, which advances
+ * in fixed simulation steps, so the windows are the same at any frame rate; and presses
+ * are timed to the step they happened in (core/input.ts), not to the rendered frame.
  *
  * Progress round the course is checkpoint progression (checkpoints.ts): invisible 3D
  * gates crossed in order, wherever you drive between them. Gate 0 is the start/finish
@@ -34,20 +49,22 @@ export type { Spot } from "./checkpoints";
 
 export interface RaceConfig {
   laps: number;
-  /** How long "Get ready!" shows before GO, seconds. */
+  /** How long "GET READY..." shows before GO, seconds. */
   readySec: number;
-  /** Where the perfect start moment sits between "Get ready!" (0) and GO (1). */
-  startTargetFrac: number;
-  /** A press this close to the perfect moment (either side) is a perfect start, s. */
-  perfectWindowSec: number;
-  /** A press up to this much earlier than the perfect window is a good start, s. */
-  earlyWindowSec: number;
+  /** The frame rate the start windows are counted in (the original's 60 fps). */
+  startRefHz: number;
+  /** A first press this many reference frames before GO or fewer (and more than 0)
+   * is a strong start... */
+  startStrongFrames: number;
+  /** ...and up to this many, a weak one. Earlier than that: no boost. */
+  startWeakFrames: number;
   /** How long "GO!" stays up, seconds. */
   goShowSec: number;
-  startPerfectMult: number;
-  startPerfectSec: number;
-  startGoodMult: number;
-  startGoodSec: number;
+  /** How long each start boost pushes, seconds (the zipper's boost model: it
+   * accelerates the kart toward the zipper's target speed, vehicles/zipper.ts). Tunable:
+   * not taken from the original. */
+  startStrongSec: number;
+  startWeakSec: number;
   /** Seconds grounded off the road before you're put back on it. */
   respawnAfterSec: number;
 }
@@ -57,12 +74,14 @@ export type Gate = CheckpointGate;
 
 export type Phase = "countdown" | "racing";
 
-export type StartTier = "perfect" | "good" | "early" | "late" | "none";
+/** strong / weak: a boost. early: pressed too soon. released: let go before GO.
+ * none: no press during GET READY (including pressing at or after GO). */
+export type StartTier = "strong" | "weak" | "early" | "released" | "none";
 
 export interface StartResult {
   tier: StartTier;
-  /** Seconds from the perfect moment to the press: negative = early. */
-  offset?: number;
+  /** How many reference frames before GO the first press was. */
+  frames?: number;
 }
 
 /** One kart's progress through the race. */
@@ -79,8 +98,10 @@ export interface Racer extends Progression {
   px: number;
   py: number;
   pz: number;
-  /** Clock time of the latest throttle press during "Get ready!". */
+  /** Clock time of the first throttle press during "GET READY...". */
   pressAt?: number;
+  /** Let go of that press before GO (the boost is lost). */
+  releasedEarly?: boolean;
   /** Throttle state last step; undefined before the first step. */
   throttleWas?: boolean;
   /** How the start went, once GO has happened. */
@@ -110,8 +131,8 @@ export interface Race {
 export interface RaceEvents {
   /** Put the kart back here (walled tracks: stuck off the road). */
   respawn?: Spot;
-  /** Start boost to apply right now, at GO. */
-  boost?: { mult: number; seconds: number };
+  /** Start boost to start right now, at GO. */
+  boost?: { tier: "strong" | "weak"; seconds: number };
   /** A checkpoint was validated, a lap completed, or a checkpoint lost by reversing. */
   checkpoint?: Gate;
   lap?: number;
@@ -214,25 +235,29 @@ export function teleported(race: Race, i: number, kart: { x: number; y: number; 
   r.pz = kart.z;
 }
 
-/** Clock time (negative, before GO) of the perfect start moment. */
-export const startTarget = (cfg: RaceConfig) => -cfg.readySec * (1 - cfg.startTargetFrac);
+/** Reference frames (startRefHz) between a press at clock time `pressAt` and GO (0).
+ * A press in the step just before GO is frame 1. */
+export function framesBeforeGo(pressAt: number, cfg: RaceConfig): number {
+  return Math.ceil(-pressAt * cfg.startRefHz - 1e-6);
+}
 
 /**
- * Judge a start. The press must still be held at GO. Holding the throttle from before
- * "Get ready!" never counts as a press, so mashing it early earns nothing.
+ * Judge a start from the first press during GET READY: whether it was still held at
+ * GO, and how many reference frames before GO it came.
  */
 export function judgeStart(
   pressAt: number | undefined,
   heldAtGo: boolean,
   cfg: RaceConfig,
+  releasedEarly = false,
 ): StartResult {
-  if (pressAt === undefined || !heldAtGo) return { tier: "none" };
-  const offset = pressAt - startTarget(cfg);
-  if (Math.abs(offset) <= cfg.perfectWindowSec) return { tier: "perfect", offset };
-  if (offset < 0 && offset >= -(cfg.perfectWindowSec + cfg.earlyWindowSec)) {
-    return { tier: "good", offset };
-  }
-  return { tier: offset < 0 ? "early" : "late", offset };
+  if (pressAt === undefined) return { tier: "none" };
+  const frames = framesBeforeGo(pressAt, cfg);
+  if (releasedEarly || !heldAtGo) return { tier: "released", frames };
+  if (frames <= 0) return { tier: "none", frames };
+  if (frames <= cfg.startStrongFrames) return { tier: "strong", frames };
+  if (frames <= cfg.startWeakFrames) return { tier: "weak", frames };
+  return { tier: "early", frames };
 }
 
 export const canDrive = (race: Race) => race.phase !== "countdown";
@@ -263,18 +288,17 @@ export function stepRacer(
 
   if (race.phase === "countdown" || race.goThisStep) {
     // A press is the moment the throttle goes down. One already held when the race
-    // (re)starts doesn't count: on the first step we only note its state.
-    if (race.phase === "countdown" && r.throttleWas === false && pressed) {
-      r.pressAt = race.clock;
+    // (re)starts doesn't count: on the first step we only note its state. Only the
+    // first press counts, and letting go of it before GO loses the boost.
+    if (race.phase === "countdown") {
+      if (r.throttleWas === false && pressed && r.pressAt === undefined) r.pressAt = race.clock;
+      if (r.pressAt !== undefined && !pressed) r.releasedEarly = true;
     }
     r.throttleWas = pressed;
     if (race.goThisStep) {
-      r.start = judgeStart(r.pressAt, pressed, cfg);
-      if (r.start.tier === "perfect") {
-        events.boost = { mult: cfg.startPerfectMult, seconds: cfg.startPerfectSec };
-      } else if (r.start.tier === "good") {
-        events.boost = { mult: cfg.startGoodMult, seconds: cfg.startGoodSec };
-      }
+      r.start = judgeStart(r.pressAt, pressed, cfg, r.releasedEarly);
+      if (r.start.tier === "strong") events.boost = { tier: "strong", seconds: cfg.startStrongSec };
+      else if (r.start.tier === "weak") events.boost = { tier: "weak", seconds: cfg.startWeakSec };
     }
     r.px = kart.x;
     r.py = kart.y;

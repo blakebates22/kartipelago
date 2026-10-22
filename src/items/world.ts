@@ -26,6 +26,8 @@ export interface BalloonSpot {
   at: number;
   across?: number;
   color: BalloonColor;
+  /** Branching courses: `at` is along this whole-lap route (TrackMeta.lapRoutes). */
+  route?: string;
 }
 
 export interface BalloonPickup {

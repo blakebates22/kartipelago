@@ -10,6 +10,8 @@ export interface ZipperSpot {
   at: number;
   /** Offset across the road, metres; positive is toward the right edge. */
   across?: number;
+  /** Branching courses: `at` is along this whole-lap route (TrackMeta.lapRoutes). */
+  route?: string;
 }
 
 export interface ZipperPad {
@@ -54,10 +56,14 @@ export function onZipper(x: number, z: number, pad: ZipperPad): boolean {
 
 /** True on the step a kart enters any pad (and updates its "on a pad" memory). */
 export function enteredZipper(
-  kart: { x: number; z: number; zipOnPad: boolean },
+  kart: { x: number; y?: number; z: number; zipOnPad: boolean },
   pads: ZipperPad[],
 ): boolean {
-  const on = pads.some((p) => onZipper(kart.x, kart.z, p));
+  // Within a few metres of the pad's height too: on stacked roads a pad on the lower
+  // road mustn't fire for a kart on the bridge above it.
+  const on = pads.some(
+    (p) => onZipper(kart.x, kart.z, p) && (kart.y === undefined || Math.abs(kart.y - p.y) < 4),
+  );
   const entered = on && !kart.zipOnPad;
   kart.zipOnPad = on;
   return entered;

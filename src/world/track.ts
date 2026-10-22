@@ -23,17 +23,26 @@ export interface TrackData {
   defaultWidth: number;
   points: TrackPoint[];
   /** Zipper pads: distance along the lap and offset across the road, metres. */
-  zippers?: { at: number; across?: number }[];
+  /** `route` (branching courses): `at` is along that whole-lap route instead of main. */
+  zippers?: { at: number; across?: number; route?: string }[];
   /**
    * Banana rows: distance along the lap, offset across, how many and how far apart, and
    * optionally seconds until each comes back once taken (overrides bananas.respawnSec).
    */
-  bananas?: { at: number; across?: number; count?: number; gap?: number; respawn?: number }[];
+  bananas?: {
+    at: number;
+    across?: number;
+    count?: number;
+    gap?: number;
+    respawn?: number;
+    route?: string;
+  }[];
   /** Balloons: distance along the lap, offset across, colour. */
   balloons?: {
     at: number;
     across?: number;
     color: "red" | "blue" | "green" | "yellow" | "rainbow";
+    route?: string;
   }[];
   /**
    * Open track: no walls along the road and no respawn for leaving it. You can drive on

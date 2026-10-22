@@ -10,6 +10,8 @@ import { createRace, respawnSpot, stepRacer, teleported, tickRace } from "../src
 import { createKartState, stepKart, type KartConfig } from "../src/vehicles/kart";
 import { applySurface, createMeshGround } from "../src/world/collisionMesh";
 import { buildTrack } from "../src/world/track";
+import { buildZippers, enteredZipper } from "../src/world/zippers";
+import { startZipper } from "../src/vehicles/zipper";
 import { SURFACES, type TrackPackage } from "../src/world/trackPackage";
 
 const dt = 1 / 120;
@@ -27,6 +29,10 @@ export interface LapOptions {
   lapSeconds?: number;
   /** Override the AI's settings (e.g. { drift: 0 }: steer every corner, never drift). */
   ai?: Partial<typeof tuning.ai>;
+  /** Branching courses: drive this whole-lap route (TrackMeta.lapRoutes) instead of main. */
+  route?: string;
+  /** Fire zipper pads (main route's and every lap route's) as a race does. */
+  zippers?: boolean;
 }
 
 /** Drive one kart round an imported track with the race's own AI driver. */
@@ -49,12 +55,34 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
   }[] = [];
   let nextTrace = 0;
   const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
-  const line = buildRacingLine(track, {
-    margin: tuning.ai.lineMargin,
-    span: tuning.ai.lineSpan,
-    iterations: tuning.ai.lineIterations,
-  });
+  const alt = opts.route ? p.lapRoutes.find((r) => r.id === opts.route) : undefined;
+  if (opts.route && !alt) throw new Error(`no lap route ${opts.route}`);
+  const line = buildRacingLine(
+    alt ? buildTrack(alt.trackData, tuning.track.sampleSpacing) : track,
+    {
+      margin: tuning.ai.lineMargin,
+      span: tuning.ai.lineSpan,
+      iterations: tuning.ai.lineIterations,
+    },
+  );
   const race = createRace(track, tuning.race, 1);
+  const pads = opts.zippers
+    ? [
+        ...buildZippers(
+          track,
+          (p.trackData.zippers ?? []).filter((z) => !z.route),
+          tuning.track,
+        ),
+        ...p.lapRoutes.flatMap((r) =>
+          buildZippers(
+            buildTrack(r.trackData, tuning.track.sampleSpacing),
+            (p.trackData.zippers ?? []).filter((z) => z.route === r.id),
+            tuning.track,
+          ),
+        ),
+      ]
+    : [];
+  let zips = 0;
   const driver = createDriver(line, 1, ai);
   const ground = createMeshGround(p.collision);
   const start = track.start;
@@ -83,7 +111,7 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
       {
         countdown: race.phase === "countdown",
         clock: race.clock,
-        startTarget: -1,
+        startRefHz: tuning.race.startRefHz,
       },
       loops?.aim(0, k),
     );
@@ -98,6 +126,10 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     const before = { x: k.x, y: k.y, z: k.z };
     const want = race.phase === "countdown" ? NEUTRAL : input;
     stepKart(k, loops ? loops.input(0, k, want) : want, c, dt);
+    if (!riding && enteredZipper(k, pads)) {
+      startZipper(k, input.throttle, c);
+      zips++;
+    }
     if (!riding) {
       if (stepMeshWalls(k, p.collision, wallCfg, dt)) {
         walls++;
@@ -173,6 +205,8 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
     wallHits,
     killY: p.killY,
     respawns,
+    /** Zipper pads fired. */
+    zips,
     /** Loops driven onto, and steps spent upside down on one. */
     loopsRidden,
     inverted,

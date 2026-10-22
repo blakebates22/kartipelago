@@ -1,13 +1,15 @@
 /**
- * MODE_SELECT: two big wooden signs, TRACKS and ADVENTURE, over the island.
+ * MODE_SELECT: two wooden signboards, TRACKS and ADVENTURE, on a stone terrace looking
+ * out over the island, the sea and the Dragon Kingdom (art in ui/modeArt.ts).
  * ADVENTURE_COMING_SOON: a treasure-map teaser with a Back button. Adventure itself
  * isn't built yet; nothing here pretends it is.
  */
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
-import { landscape, treasureMap } from "../ui/backdrops";
+import { treasureMap } from "../ui/backdrops";
+import { modeBoard, modeVista, terraceDino, titlePlank } from "../ui/modeArt";
 import { PAL } from "../ui/textures";
-import { hints, titleSign } from "./common";
+import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
 import { worldSelect } from "./worldSelect";
 
@@ -48,34 +50,39 @@ export function modeSelect(game: Game): Screen {
       }
     },
     draw(ui) {
-      landscape(ui.g, ui.W, ui.H, t, game.settings.general.reduceMotion);
-      titleSign(ui, "CHOOSE A MODE");
+      const calm = game.settings.general.reduceMotion;
+      modeVista(ui.g, ui.W, ui.H, t, calm);
+      // The dino stands on the left ledge when there's room beside the boards.
+      if (ui.W / 2 - 128 - 15 > 64) terraceDino(ui.g, 38, 172, t, calm);
+      titlePlank(ui.g, ui.W, "CHOOSE A MODE", t, calm);
       const signs = [
-        { label: "TRACKS", sub: "RACE ANY COURSE", color: PAL.gold },
-        { label: "ADVENTURE", sub: "COMING SOON", color: "#cfe9a8" },
+        { label: "TRACKS", sub: "RACE ANY COURSE", icon: "flag" as const },
+        { label: "ADVENTURE", sub: "COMING SOON", icon: "map" as const, dim: true },
       ];
       const w = 128;
-      const gap = 16;
+      const h = 80;
+      const gap = 30;
       signs.forEach((s, i) => {
-        const x = ui.W / 2 - w - gap / 2 + i * (w + gap);
-        const sway = game.settings.general.reduceMotion
-          ? 0
-          : Math.round(Math.sin(t * 2 + i) * (i === focus ? 2 : 0.6));
-        const y = 74 + sway;
-        // Posts in the ground.
-        ui.rect(x + 22, y + 60, 6, 80, "#5a3318");
-        ui.rect(x + w - 28, y + 60, 6, 80, "#5a3318");
-        const r = ui.button(x, y, w, 64, s.label, {
-          focused: i === focus,
-          scale: 2,
-          color: i === focus ? s.color : PAL.cream,
-          sub: s.sub,
-        });
-        if (r.hover && game.menuInput.pointer.moved && focus !== i) {
+        const x = Math.round(ui.W / 2 - w - gap / 2 + i * (w + gap));
+        const sway = calm ? 0 : Math.round(Math.sin(t * 2 + i) * (i === focus ? 1.5 : 0.4));
+        const y = 96 + sway;
+        modeBoard(ui.g, x, y, w, h, { ...s, focused: i === focus }, t, calm);
+        const over = ui.hover(x, y, w, h);
+        if (over && game.menuInput.pointer.moved && focus !== i) {
           focus = i;
           game.sounds.move();
         }
-        if (r.clicked) clicked = i;
+        if (over && game.menuInput.pointer.clicked) clicked = i;
+        if (i === focus) {
+          // A gold arrow pointing at the chosen board, bobbing.
+          const bob = calm ? 0 : Math.round(Math.sin(t * 6) * 1.5);
+          const ax = i === 0 ? x + w + 6 - bob : x - 14 + bob;
+          ui.text(i === 0 ? "◀" : "▶", ax, y + h / 2 - 7, {
+            scale: 2,
+            color: PAL.gold,
+            outline: PAL.shadow,
+          });
+        }
       });
       hints(ui, [
         ["◀▶", "CHOOSE"],

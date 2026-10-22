@@ -213,7 +213,9 @@ else if (fromUrl) {
 // ---------------------------------------------------------------- the loop
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
-  update(dt) {
+  update(dt, _tick, at) {
+    // Throttle presses only count from the step they happened in (core/input.ts).
+    gameInput.setStepTime(at);
     screens.step(dt);
   },
   render(alpha, frameSeconds) {

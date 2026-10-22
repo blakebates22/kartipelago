@@ -1,0 +1,67 @@
+# The race start: GET READY... GO!
+
+Every race opens with **GET READY...** for `race.readySec` (1.33 s: about 80 frames at
+60 fps, from Blake's notes on the N64 original), then **GO!**, the moment every kart is let
+go. GO! stays up for `race.goShowSec`.
+
+## The start boost
+
+What counts is when you **first** press the throttle during GET READY, counted in frames
+of a 60 fps reference (`race.startRefHz`) before GO, and that you're **still holding it
+at GO**. The windows come from Blake's notes on the original's `handle_racer_top_speed()`:
+
+| First press                                   | Result         | Tier       |
+| --------------------------------------------- | -------------- | ---------- |
+| 30 or more frames before GO (0.5 s or more)   | no boost       | `early`    |
+| 15 to 29 frames before GO                     | weak boost     | `weak`     |
+| 1 to 14 frames before GO (about 17 to 233 ms) | strong boost   | `strong`   |
+| at or after GO                                | ordinary start | `none`     |
+| let go before GO (any press)                  | no boost       | `released` |
+
+- Only the first press counts. Let go before GO and the boost is lost for this start:
+  pressing again doesn't earn another try, so tapping can't game it.
+- A throttle already held when GET READY appears isn't a press.
+- `race.startStrongFrames` (14) and `race.startWeakFrames` (29) set the window edges.
+
+### What the boost does
+
+It reuses the zipper's boost model (`vehicles/zipper.ts`, source `START`): the kart is
+pushed toward the zipper's ordinary target speed for `race.startStrongSec` (1.0 s, the
+same as a zipper pad) or `race.startWeakSec` (0.5 s). It accelerates the kart from
+standstill; it never sets its speed. These two durations are **our tuning, not values
+from the original**: adjust them in the Tuning panel's `race` folder.
+
+Feedback: a bright yellow exhaust flame (bigger for a strong start), a launch whoosh (the
+strong start adds a two-note fanfare), and STRONG START! / GOOD START under GO!.
+
+## Frame-rate independence
+
+- The race clock advances in fixed simulation steps (120 Hz, `loop.physicsHz`), whatever
+  the display's frame rate. The windows are converted from frames to seconds
+  (`frames / startRefHz`) and compared with that clock.
+- A frame runs its fixed steps in a burst, each standing for a moment a little before
+  the frame. Throttle presses carry the time they happened (the key event's
+  `timeStamp`, or the gamepad's own `timestamp`), and a press only counts from the step
+  it happened in (`core/input.ts: downAt`). So pressing at the same instant gives the
+  same result at 30, 60, 120 or 144 fps. The resolution is the 120 Hz step: half a
+  reference frame.
+- Keyboard and gamepad (A or the right trigger) share the same throttle and timing.
+
+## Rivals
+
+Rivals sit still until GO like everyone else. Each first presses the throttle
+`ai.startAimFrames` (10) frames before GO, give or take up to `ai.startSpreadFrames` (12),
+fixed per rival so races repeat. That lands most of them in the strong or weak window and
+some on an ordinary start; none is given a boost it didn't time. (There's no difficulty
+setting yet: these two numbers are the knob for one.)
+
+## Tuning tool
+
+`?timing` in the URL shows a timeline of the countdown with the weak and strong windows,
+where you pressed, and the result in frames before GO.
+
+## Tests
+
+`tests/race.test.ts` (windows, edges, release rule, holding early, fixed-step and
+30/60/120/144 fps rendering), `tests/input.test.ts` (keyboard and gamepad throttle, press
+timing) and `tests/ai.test.ts` (no rival moves before GO; rivals get a mix of starts).

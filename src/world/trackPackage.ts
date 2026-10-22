@@ -40,6 +40,12 @@ export interface TrackMeta {
   race?: { laps?: number };
   /** Gameplay entities with stable ids (Milestone 2). */
   entities?: unknown[];
+  /**
+   * Branching courses: the ids of other closed routes in route.json that are whole
+   * legal laps (each a different combination of branches). Rivals are spread across
+   * the main route and these.
+   */
+  lapRoutes?: string[];
 }
 
 export interface RoutePoint {
@@ -155,6 +161,8 @@ export interface TrackPackage {
   route: RouteFile;
   /** The main route as centre-line track data. */
   trackData: TrackData;
+  /** Branching courses: the other whole-lap routes (meta.lapRoutes), as centre lines. */
+  lapRoutes: { id: string; trackData: TrackData }[];
   visual: THREE.Object3D;
   collision: CollisionMesh;
   /** The visual's materials: texture look and water/lava animation. */
@@ -194,7 +202,24 @@ export function parseTrackMeta(json: unknown): TrackMeta {
     geometry: g as TrackMeta["geometry"],
     race: isObj(json.race) ? (json.race as TrackMeta["race"]) : undefined,
     entities: Array.isArray(json.entities) ? json.entities : [],
+    lapRoutes: Array.isArray(json.lapRoutes)
+      ? json.lapRoutes.filter((r): r is string => typeof r === "string")
+      : undefined,
   };
+}
+
+/** The whole-lap alternative routes a branching course lists (see TrackMeta.lapRoutes). */
+export function lapRoutesOf(meta: TrackMeta, route: RouteFile, warnings: string[] = []) {
+  const out: { id: string; trackData: TrackData }[] = [];
+  for (const id of meta.lapRoutes ?? []) {
+    const r = route.routes.find((q) => q.id === id);
+    if (!r || !r.closed || r.points.length < 4) {
+      warnings.push(`track.json: lap route "${id}" isn't a closed route in route.json`);
+      continue;
+    }
+    out.push({ id, trackData: routeToTrackData(meta, route, [], id) });
+  }
+  return out;
 }
 
 /** Check route.json, or throw a TrackError. */
@@ -243,7 +268,9 @@ export function placementsFrom(entities: unknown[], warnings: string[] = []) {
     }
     const at = e.at as number;
     const across = finite(e.across) ? (e.across as number) : 0;
-    if (e.type === "zipper") zippers.push({ at, across });
+    // On a branching course a pickup can sit on another lap route's branch.
+    const r = typeof e.route === "string" ? { route: e.route } : {};
+    if (e.type === "zipper") zippers.push({ at, across, ...r });
     else if (e.type === "bananas")
       bananas.push({
         at,
@@ -251,24 +278,29 @@ export function placementsFrom(entities: unknown[], warnings: string[] = []) {
         count: finite(e.count) ? (e.count as number) : undefined,
         gap: finite(e.gap) ? (e.gap as number) : undefined,
         respawn: finite(e.respawn) ? (e.respawn as number) : undefined,
+        ...r,
       });
     else {
       const color = BALLOON_COLORS.includes(e.color as BalloonColor)
         ? (e.color as BalloonColor)
         : "red";
-      balloons.push({ at, across, color });
+      balloons.push({ at, across, color, ...r });
     }
   }
   return { zippers, bananas, balloons };
 }
 
-/** The main route as centre-line track data for the existing systems. */
+/** The main route (or another route, by id) as centre-line track data. */
 export function routeToTrackData(
   meta: TrackMeta,
   route: RouteFile,
   warnings: string[] = [],
+  id = "main",
 ): TrackData {
-  const main = route.routes.find((r) => r.id === "main") ?? route.routes[0]!;
+  const main =
+    route.routes.find((r) => r.id === id) ??
+    route.routes.find((r) => r.id === "main") ??
+    route.routes[0]!;
   return {
     name: meta.name,
     defaultWidth: main.points[0]!.width,
@@ -476,6 +508,7 @@ export async function loadTrackPackage(
     sky: look.skyDome?.horizon ?? look.sky,
   });
   const trackData = routeToTrackData(meta, route, warnings);
+  const lapRoutes = lapRoutesOf(meta, route, warnings);
   if (cpBuf) {
     try {
       trackData.gates = parseCheckpoints(JSON.parse(text(cpBuf)), warnings);
@@ -497,6 +530,7 @@ export async function loadTrackPackage(
     meta,
     route,
     trackData,
+    lapRoutes,
     visual,
     collision,
     materials,

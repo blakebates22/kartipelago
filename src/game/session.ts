@@ -26,7 +26,7 @@ import { createTrackView } from "../render/trackView";
 import { createCourse, resetCourse, stepCourse } from "../world/course";
 import { buildTrack, type Track, type TrackData } from "../world/track";
 import { buildZippers, enteredZipper } from "../world/zippers";
-import { BOOST_SOURCE, ZIP, startZipper } from "../vehicles/zipper";
+import { BOOST_SOURCE, ZIP, startBoost, startZipper } from "../vehicles/zipper";
 import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "../items/effects";
 import { heldLabel } from "../items/inventory";
 import {
@@ -72,7 +72,6 @@ import {
   progress,
   respawnSpot,
   standings,
-  startTarget,
   stepRacer,
   teleported,
   tickRace,
@@ -103,14 +102,7 @@ import {
 } from "../world/driftPark";
 import { boostChevrons, needleDeg, speedoValue } from "../render/speedo";
 import { applyCharacter, type Character } from "../vehicles/character";
-import {
-  applyBoost,
-  createKartState,
-  slipAngle,
-  stepKart,
-  wrapAngle,
-  type KartState,
-} from "../vehicles/kart";
+import { createKartState, slipAngle, stepKart, wrapAngle, type KartState } from "../vehicles/kart";
 import type { createDebug } from "../debug";
 import type { createBoostLab } from "../debug/boostLab";
 import { createChaseCamera } from "../render/chaseCamera";
@@ -211,8 +203,8 @@ interface Entrant {
   driver?: Driver;
 }
 
-/** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */
-const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5"];
+/** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3, start boost. */
+const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5", "#ffe14a"];
 /** Meadow grass under the Drift Park. */
 const PARK_GROUND = "#6fae4b";
 const GROUND_SIZE = 1200;
@@ -309,8 +301,19 @@ function buildSession(
   const parkPads = (park?.loops ?? []).map((l) =>
     buildZippers(l.track, l.track.data.zippers ?? [], tuning.track),
   );
+  /** Branching courses: the other whole-lap routes, for pickups placed on their branches. */
+  const altTracks = new Map(
+    (pkg?.lapRoutes ?? []).map((r) => [r.id, buildTrack(r.trackData, tuning.track.sampleSpacing)]),
+  );
+  /** Split pickups by the route their `at` is measured along (main, or a lap route). */
+  const byRoute = <T extends { route?: string }>(spots: T[] = []) => {
+    const out: [Track, T[]][] = [];
+    if (track) out.push([track, spots.filter((s) => !s.route || !altTracks.has(s.route))]);
+    for (const [id, t] of altTracks) out.push([t, spots.filter((s) => s.route === id)]);
+    return out;
+  };
   const zippers = track
-    ? buildZippers(track, trackData.zippers ?? [], tuning.track)
+    ? byRoute(trackData.zippers).flatMap(([t, s]) => buildZippers(t, s, tuning.track))
     : parkPads.flat();
   let trackView = track
     ? createTrackView(root, track, tuning.track, zippers, { surface: !pkg })
@@ -357,7 +360,9 @@ function buildSession(
   })();
   const sceneryView =
     OPEN && !pkg ? createSceneryView(root, solids, tunnels, tuning.scenery) : undefined;
-  const bananaField = createBananaField(track, trackData.bananas ?? [], makeGround, !OPEN);
+  const bananaField = createBananaField(track, [], makeGround, !OPEN);
+  for (const [t, s] of byRoute(trackData.bananas))
+    bananaField.bananas.push(...createBananaField(t, s, makeGround, !OPEN).bananas);
   for (const l of park?.loops ?? [])
     bananaField.bananas.push(
       ...createBananaField(l.track, l.track.data.bananas ?? [], makeGround, false).bananas,
@@ -365,17 +370,35 @@ function buildSession(
   const bananaView = createBananaView(root, tuning.bananas);
   const itemsCfg = tuning.items as ItemsConfig;
   // Balloons and weapons: pickups, missiles and traps live in the item world.
-  const itemWorld = createItemWorld(track, trackData.balloons ?? [], makeGround, solids, !OPEN);
+  const itemWorld = createItemWorld(track, [], makeGround, solids, !OPEN);
+  for (const [t, s] of byRoute(trackData.balloons))
+    itemWorld.balloons.push(...createItemWorld(t, s, makeGround).balloons);
   const itemView = createItemView(root);
   /** Collected this step, for the render to show (effects run at frame rate). */
   const pickupsToShow: BananaPickup[] = [];
-  let line = track
-    ? buildRacingLine(track, {
-        margin: trackData.aiLineMargin ?? tuning.ai.lineMargin,
-        span: tuning.ai.lineSpan,
-        iterations: tuning.ai.lineIterations,
-      })
-    : undefined;
+  const lineOf = (t: Track) =>
+    buildRacingLine(t, {
+      margin: trackData.aiLineMargin ?? tuning.ai.lineMargin,
+      span: tuning.ai.lineSpan,
+      iterations: tuning.ai.lineIterations,
+    });
+  let line = track ? lineOf(track) : undefined;
+  /**
+   * Branching courses: a racing line for every whole-lap route (the main one first).
+   * Rivals are spread across them in turn, so every branch combination is raced, and
+   * the same rival always takes the same branches (repeatable races and tests).
+   */
+  const lapLinesOf = (p: TrackPackage | undefined) =>
+    line
+      ? [
+          line,
+          ...(p?.lapRoutes ?? []).map((r) =>
+            lineOf(buildTrack(r.trackData, tuning.track.sampleSpacing)),
+          ),
+        ]
+      : [];
+  let lapLines = lapLinesOf(pkg);
+  const lineFor = (i: number) => lapLines[i % lapLines.length] ?? line!;
 
   // Rivals take the other racers' looks in turn; repeats get the alternate paint.
   const playerLook = opts.racer;
@@ -412,7 +435,8 @@ function buildSession(
       mesh: racer.root,
       items: racerItems(),
       ground: makeGround(),
-      driver: (i > 0 || demo) && line ? createDriver(line, i, tuning.ai) : undefined,
+      driver:
+        (i > 0 || demo) && line ? createDriver(i > 0 ? lineFor(i) : line, i, tuning.ai) : undefined,
     };
   });
   const you = entrants[0]!;
@@ -657,7 +681,7 @@ function buildSession(
     const moment = race && {
       countdown: race.phase === "countdown",
       clock: race.clock,
-      startTarget: startTarget(tuning.race),
+      startRefHz: tuning.race.startRefHz,
     };
     const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
     // Rebuilt each step so live tuning edits apply immediately.
@@ -766,8 +790,13 @@ function buildSession(
         tuning.race,
         dt,
       );
-      if (raceEvents.boost)
-        applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
+      if (raceEvents.boost) {
+        // The start boost: the zipper's push (vehicles/zipper.ts), throttle held, from
+        // standstill. It accelerates the kart; it never sets its speed.
+        const sec = raceEvents.boost.seconds;
+        startBoost(e.state, 1, cfg, BOOST_SOURCE.START, sec, sec);
+        if (i === 0 && !demo) sfx.startBoost(itemsCfg.volume, raceEvents.boost.tier === "strong");
+      }
       // Lava, deep water, waterfalls (hazards.ts), then: fell off an imported track's
       // geometry, or onto another respawn surface: back to the last checkpoint (or where
       // a respawn zone says, past a jump's gap).
@@ -933,6 +962,9 @@ function buildSession(
     } else if (z === ZIP.ACTIVE) {
       e.racer.flameMat.color.set(color);
       let size = s.zipEnhanced ? 1.35 : 1;
+      // A strong start roars out of the line; a weak one is a smaller flame.
+      if (s.zipSource === BOOST_SOURCE.START)
+        size = s.zipTotal >= tuning.race.startStrongSec ? 1.5 : 0.85;
       // Level 3 blue: the flame builds while its sound charges (the push already started).
       const sinceStart = s.zipTotal - s.zipTime;
       if (s.zipSource === BOOST_SOURCE.BLUE3 && sinceStart < itemsCfg.blue3ChargeSec) {
@@ -1168,7 +1200,7 @@ function buildSession(
     debug.overlay.set(
       "boost",
       s.zipPhase
-        ? `${["zipper", "blue 1", "blue 2", "blue 3"][s.zipSource]} ${phases[s.zipPhase]}`
+        ? `${["zipper", "blue 1", "blue 2", "blue 3", "start"][s.zipSource]} ${phases[s.zipPhase]}`
         : s.boostTime > 0
           ? `boost ×${s.boostMult.toFixed(2)} ${s.boostTime.toFixed(1)}s`
           : "-",
@@ -1300,16 +1332,13 @@ function buildSession(
       Object.assign(track, buildTrack(trackData, tuning.track.sampleSpacing));
       trackView?.dispose();
       trackView = createTrackView(root, track, tuning.track, zippers, { surface: false });
-      line = buildRacingLine(track, {
-        margin: trackData.aiLineMargin ?? tuning.ai.lineMargin,
-        span: tuning.ai.lineSpan,
-        iterations: tuning.ai.lineIterations,
-      });
-      for (const e of entrants) {
-        if (!e.driver) continue;
-        e.driver.line = line;
+      line = lineOf(track);
+      lapLines = lapLinesOf(next);
+      entrants.forEach((e, i) => {
+        if (!e.driver) return;
+        e.driver.line = i > 0 ? lineFor(i) : line!;
         e.driver.index = 0;
-      }
+      });
       for (const w of next.warnings) console.warn(`[track] ${w}`);
       resetRequested = true; // restart the race on the new geometry
       showToast(

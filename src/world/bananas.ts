@@ -19,6 +19,8 @@ export interface BananaSpot {
   at: number;
   /** Offset across the road, metres; positive is toward the right edge. */
   across?: number;
+  /** Branching courses: `at` is along this whole-lap route (TrackMeta.lapRoutes). */
+  route?: string;
   /** A row of this many along the track (default 1)... */
   count?: number;
   /** ...this many metres apart (default 4). */

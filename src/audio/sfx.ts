@@ -84,6 +84,18 @@ export function createSfx(engine: AudioEngine) {
     rainbow(volume: number) {
       note(1046, 0, 0.09, volume, 1568);
     },
+    /**
+     * A start boost at GO: a launch whoosh and a rising tone; the strong one adds a
+     * bright two-note fanfare.
+     */
+    startBoost(volume: number, strong: boolean) {
+      noise(0, strong ? 0.6 : 0.35, volume * (strong ? 1 : 0.7), 5000, 500);
+      note(strong ? 220 : 180, 0, strong ? 0.45 : 0.3, volume * 0.7, strong ? 880 : 520, "square");
+      if (strong) {
+        note(1046, 0.08, 0.12, volume * 0.8);
+        note(1568, 0.18, 0.22, volume * 0.8);
+      }
+    },
     /** The boost stopped pushing. */
     boostEnd(volume: number) {
       noise(0, 0.15, volume * 0.4, 1200, 200);

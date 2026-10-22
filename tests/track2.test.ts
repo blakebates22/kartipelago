@@ -9,14 +9,7 @@ import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepWalls } from "../src/physics/walls";
 import { gridSlot } from "../src/race/grid";
-import {
-  canDrive,
-  createRace,
-  standings,
-  startTarget,
-  stepRacer,
-  tickRace,
-} from "../src/race/race";
+import { canDrive, createRace, standings, stepRacer, tickRace } from "../src/race/race";
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart } from "../src/vehicles/kart";
 import { startZipper } from "../src/vehicles/zipper";
@@ -91,7 +84,7 @@ describe("Ribbon Ridge", () => {
       const moment = {
         countdown: race.phase === "countdown",
         clock: race.clock,
-        startTarget: startTarget(tuning.race),
+        startRefHz: tuning.race.startRefHz,
       };
       const want = driveAi(driver, kart, cfg, tuning.ai, moment);
       stepImpacts(kart, tuning.collision, dt);

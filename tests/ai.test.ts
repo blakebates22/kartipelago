@@ -10,14 +10,7 @@ import { createTrackGround } from "../src/physics/ground";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepWalls } from "../src/physics/walls";
 import { gridSlot } from "../src/race/grid";
-import {
-  canDrive,
-  createRace,
-  standings,
-  startTarget,
-  stepRacer,
-  tickRace,
-} from "../src/race/race";
+import { canDrive, createRace, standings, stepRacer, tickRace } from "../src/race/race";
 import { applyCharacter, type Character } from "../src/vehicles/character";
 import { createKartState, stepKart, type KartState } from "../src/vehicles/kart";
 import { startZipper } from "../src/vehicles/zipper";
@@ -71,7 +64,7 @@ function aiRace(ids: string[], seconds = 200) {
     const moment = {
       countdown: race.phase === "countdown",
       clock: race.clock,
-      startTarget: startTarget(tuning.race),
+      startRefHz: tuning.race.startRefHz,
     };
     ids.forEach((id, i) => {
       const k = karts[i]!;
@@ -181,5 +174,51 @@ describe("bumping", () => {
     const a = createKartState(0, 0, 0);
     const b = createKartState(0, 1, 0, 4);
     expect(bumpKarts([a, b], tuning.physics.kartBump)).toBe(0);
+  });
+});
+
+describe("AI at the start", () => {
+  /** Each rival's start, with the race's rules, from its own throttle in the countdown. */
+  function rivalStarts(n: number) {
+    const race = createRace(track, tuning.race, n);
+    const drivers = Array.from({ length: n }, (_, i) => createDriver(line, i + 1, ai));
+    const karts = Array.from({ length: n }, (_, i) => {
+      const g = gridSlot(track, i);
+      return createKartState(g.x, g.z, g.heading, g.y);
+    });
+    const moved = new Set<number>();
+    const startPos = karts.map((k) => ({ x: k.x, z: k.z }));
+    while (race.clock < 0.1) {
+      tickRace(race, dt);
+      const moment = {
+        countdown: race.phase === "countdown",
+        clock: race.clock,
+        startRefHz: tuning.race.startRefHz,
+      };
+      drivers.forEach((d, i) => {
+        const k = karts[i]!;
+        const want = driveAi(d, k, tuning.vehicle, ai, moment);
+        if (race.phase === "countdown") expect(want.steer).toBe(0);
+        stepKart(k, canDrive(race) ? want : NEUTRAL, tuning.vehicle, dt);
+        if (
+          race.phase === "countdown" &&
+          Math.hypot(k.x - startPos[i]!.x, k.z - startPos[i]!.z) > 1e-6
+        )
+          moved.add(i);
+        stepRacer(race, i, k, true, want.throttle, tuning.race, dt);
+      });
+    }
+    return { tiers: race.racers.map((r) => r.start?.tier), moved };
+  }
+
+  it("10. no rival moves before GO", () => {
+    expect(rivalStarts(8).moved.size).toBe(0);
+  });
+
+  it("plays by the same windows: a mix of strong, weak and ordinary starts, not all strong", () => {
+    const { tiers } = rivalStarts(16);
+    expect(tiers.filter((t) => t === "strong").length).toBeGreaterThan(0);
+    expect(tiers.filter((t) => t !== "strong").length).toBeGreaterThan(0);
+    expect(tiers.every((t) => t !== "early" && t !== "released")).toBe(true);
   });
 });

@@ -1,10 +1,10 @@
-import { startTarget, type Race, type RaceConfig } from "../race/race";
+import { framesBeforeGo, type Race, type RaceConfig } from "../race/race";
 
 /**
  * Start-boost timing bar: a tuning tool, shown only with ?timing in the URL. Shows the
- * countdown as a timeline from "Get ready!" to just after GO, with the good (early) and
- * perfect windows, a moving cursor for now, and a mark where you pressed. Tune the
- * windows live in the tuning panel's `race` folder, then copy the JSON.
+ * countdown as a timeline from "GET READY..." to just after GO, with the weak and strong
+ * windows (counted in reference frames before GO, race.ts), a moving cursor for now,
+ * and a mark where you first pressed.
  */
 export function createStartMeter(parent: HTMLElement) {
   const el = document.createElement("div");
@@ -39,28 +39,27 @@ export function createStartMeter(parent: HTMLElement) {
       const t0 = -cfg.readySec;
       const span = cfg.readySec + AFTER;
       const pct = (t: number) => `${(((t - t0) / span) * 100).toFixed(2)}%`;
-      const target = startTarget(cfg);
-      const pStart = target - cfg.perfectWindowSec;
-      const gStart = pStart - cfg.earlyWindowSec;
-      good.style.left = pct(gStart);
-      good.style.width = pct(t0 + cfg.earlyWindowSec);
-      perfect.style.left = pct(pStart);
-      perfect.style.width = pct(t0 + cfg.perfectWindowSec * 2);
+      const hz = cfg.startRefHz;
+      const strong0 = -cfg.startStrongFrames / hz;
+      const weak0 = -cfg.startWeakFrames / hz;
+      good.style.left = pct(weak0);
+      good.style.width = `${(((strong0 - weak0) / span) * 100).toFixed(2)}%`;
+      perfect.style.left = pct(strong0);
+      perfect.style.width = `${((-strong0 / span) * 100).toFixed(2)}%`;
       go.style.left = pct(0);
       now.style.left = pct(Math.min(race.clock, AFTER));
       const you = race.racers[0]!;
       press.hidden = you.pressAt === undefined;
       if (you.pressAt !== undefined) press.style.left = pct(you.pressAt);
-
-      const ms = (s: number) => `${s >= 0 ? "+" : ""}${Math.round(s * 1000)} ms`;
+      const frames = (n: number) => `${n} frame${n === 1 ? "" : "s"} before GO`;
       if (you.start) {
-        const off = you.start.offset;
-        text.textContent = `${you.start.tier.toUpperCase()}${off !== undefined ? `  ·  ${ms(off)} from perfect` : ""}`;
+        const f = you.start.frames;
+        text.textContent = `${you.start.tier.toUpperCase()}${f !== undefined ? `  ·  ${frames(f)}` : ""}`;
       } else {
         text.textContent =
           you.pressAt !== undefined
-            ? `pressed ${ms(you.pressAt - target)} from perfect`
-            : "press the throttle in the green window";
+            ? `pressed ${frames(framesBeforeGo(you.pressAt, cfg))}${you.releasedEarly ? " (let go)" : ""}`
+            : `press 1-${cfg.startStrongFrames} frames before GO and hold`;
       }
     },
   };

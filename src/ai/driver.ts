@@ -21,8 +21,14 @@ export interface AiConfig {
   driftExitRadius: number;
   /** How far ahead to look for corners to drift, metres. */
   driftScan: number;
-  /** Rivals press the throttle within ± this many seconds of the perfect start. */
-  startSpread: number;
+  /**
+   * The start (race.ts): each rival first presses the throttle this many reference
+   * frames before GO, give or take up to startSpreadFrames (fixed per rival, so starts
+   * repeat). Around 1-14 frames is a strong start, 15-29 weak, 0 an ordinary one: a
+   * skill knob, not a guaranteed boost.
+   */
+  startAimFrames: number;
+  startSpreadFrames: number;
 }
 
 export interface Driver {
@@ -31,8 +37,8 @@ export interface Driver {
   index: number;
   /** Drift button held last step (a drift needs a fresh press). */
   driftHeld: boolean;
-  /** Seconds from the perfect start moment that this driver presses the throttle. */
-  startOffset: number;
+  /** Reference frames before GO that this driver first presses the throttle. */
+  startLead: number;
   /** The last drift's direction and when it ended (race clock): a drift the other way
    * straight after (an S-bend) would be flung wide by the new slide building, so the
    * second half is steered. */
@@ -50,7 +56,7 @@ export function createDriver(line: RacingLine, seed: number, cfg: AiConfig): Dri
     line,
     index: 0,
     driftHeld: false,
-    startOffset: noise(seed) * cfg.startSpread,
+    startLead: cfg.startAimFrames + noise(seed) * cfg.startSpreadFrames,
     lastDrift: { dir: 0, at: -Infinity },
   };
 }
@@ -103,8 +109,8 @@ export interface RaceMoment {
   countdown: boolean;
   /** Race clock; negative before GO. */
   clock: number;
-  /** Clock time of the perfect start moment. */
-  startTarget: number;
+  /** The frame rate the start windows are counted in (race.ts: startRefHz). */
+  startRefHz: number;
 }
 
 export function driveAi(
@@ -119,7 +125,8 @@ export function driveAi(
 ): InputState {
   const input: InputState = { throttle: 0, brake: 0, steer: 0, drift: false, item: false };
   if (moment.countdown) {
-    input.throttle = moment.clock >= moment.startTarget + d.startOffset ? 1 : 0;
+    // Pressed once, then held through GO (a press at or after GO is an ordinary start).
+    input.throttle = moment.clock >= -d.startLead / moment.startRefHz ? 1 : 0;
     return input;
   }
   input.throttle = 1;

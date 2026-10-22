@@ -4,13 +4,14 @@ import tuning from "../assets/data/tuning.json";
 import { createKartState } from "../src/vehicles/kart";
 import { buildTrack, type TrackData } from "../src/world/track";
 import { crossGate } from "../src/race/checkpoints";
+import { createFixedStep } from "../src/core/fixedStep";
+import { downAt } from "../src/core/input";
 import {
   createRace,
   formatTime,
   judgeStart,
   makeGates,
   standings,
-  startTarget,
   stepRacer,
   tickRace,
   type Race,
@@ -157,49 +158,144 @@ describe("positions", () => {
   });
 });
 
-/** Run a start for racer 0 with a throttle press at `pressAt` (clock time). */
-function startWith(pressAt: number | undefined, holdFromStart = false) {
+/**
+ * Run a start for racer 0. `down(clock)` says whether the throttle is held at that race
+ * clock time; `simDt` is the fixed step.
+ */
+function startWith(down: (clock: number) => boolean, simDt = dt) {
   const race = createRace(track, cfg);
   let boost;
-  while (race.phase === "countdown") {
-    const down = holdFromStart || (pressAt !== undefined && race.clock + dt >= pressAt);
-    boost ??= step(race, 0, 0, down ? 1 : 0).boost;
+  const g = race.gates[0]!;
+  // Run on past GO a little, so presses after GO are seen too.
+  while (race.clock < 0.2) {
+    tickRace(race, simDt);
+    const ev = stepRacer(
+      race,
+      0,
+      createKartState(g.x, g.z, 0, 0),
+      true,
+      down(race.clock) ? 1 : 0,
+      cfg,
+      simDt,
+    );
+    boost ??= ev.boost;
   }
-  return { racer: race.racers[0]!, boost };
+  return { racer: race.racers[0]!, boost, tier: race.racers[0]!.start?.tier };
 }
 
-describe("start boost", () => {
-  const target = startTarget(cfg);
+/** Press `frames` reference frames (60 fps) before GO and hold on. */
+const pressFrames = (frames: number) => (clock: number) => clock >= -frames / 60 - 1e-9;
 
-  it("sits halfway between Get ready and GO", () => {
-    expect(target).toBeCloseTo(-cfg.readySec / 2);
+describe("start boost (GET READY... GO!)", () => {
+  it("counts its windows at a 60 fps reference", () => {
+    expect(cfg.startRefHz).toBe(60);
+    expect(cfg.startStrongFrames).toBe(14);
+    expect(cfg.startWeakFrames).toBe(29);
   });
 
-  it("gives the strong boost for a press in the perfect window", () => {
-    const { racer, boost } = startWith(target + 0.02);
-    expect(racer.start?.tier).toBe("perfect");
-    expect(boost?.mult).toBe(cfg.startPerfectMult);
-  });
-
-  it("gives the weaker boost for a press a bit too early", () => {
-    const { racer, boost } = startWith(target - cfg.perfectWindowSec - 0.1);
-    expect(racer.start?.tier).toBe("good");
-    expect(boost?.mult).toBe(cfg.startGoodMult);
-  });
-
-  it("gives nothing for pressing way too early or late", () => {
-    expect(startWith(target - 0.9).boost).toBeUndefined();
-    expect(startWith(target + 0.3).racer.start?.tier).toBe("late");
-  });
-
-  it("gives nothing for holding the throttle down from the very start", () => {
-    const { racer, boost } = startWith(undefined, true);
-    expect(racer.start?.tier).toBe("none");
+  it("1. holding from 40 frames before GO is too early: no boost", () => {
+    const { tier, boost } = startWith(pressFrames(40));
+    expect(tier).toBe("early");
     expect(boost).toBeUndefined();
   });
 
-  it("needs the press still held at GO", () => {
-    expect(judgeStart(target, false, cfg).tier).toBe("none");
+  it("2. pressing 20 frames before GO and holding: a weak boost", () => {
+    const { tier, boost } = startWith(pressFrames(20));
+    expect(tier).toBe("weak");
+    expect(boost).toEqual({ tier: "weak", seconds: cfg.startWeakSec });
+  });
+
+  it("3. pressing 10 frames before GO and holding: a strong boost", () => {
+    const { tier, boost } = startWith(pressFrames(10));
+    expect(tier).toBe("strong");
+    expect(boost).toEqual({ tier: "strong", seconds: cfg.startStrongSec });
+  });
+
+  it("4. pressing 2 frames before GO and holding: a strong boost", () => {
+    expect(startWith(pressFrames(2)).tier).toBe("strong");
+  });
+
+  it("5. pressing at GO: an ordinary start", () => {
+    const { tier, boost } = startWith((c) => c >= 0);
+    expect(tier).toBe("none");
+    expect(boost).toBeUndefined();
+  });
+
+  it("6. pressing after GO: an ordinary start", () => {
+    expect(startWith((c) => c >= 0.1).boost).toBeUndefined();
+  });
+
+  it("7. letting go before GO loses it, and pressing again doesn't earn another try", () => {
+    const tapped = startWith((c) => c >= -10 / 60 && c < -5 / 60);
+    expect(tapped.tier).toBe("released");
+    expect(tapped.boost).toBeUndefined();
+    // Too early, let go, then a perfectly timed second press: still nothing.
+    const again = startWith((c) => (c >= -50 / 60 && c < -40 / 60) || c >= -8 / 60);
+    expect(again.tier).toBe("released");
+    expect(again.boost).toBeUndefined();
+  });
+
+  it("gives nothing for holding the throttle down from before GET READY", () => {
+    const { tier, boost } = startWith(() => true);
+    expect(tier).toBe("none");
+    expect(boost).toBeUndefined();
+  });
+
+  it("puts the window edges where the frames say (14 strong, 15 weak, 29 weak, 30 early)", () => {
+    expect(judgeStart(-14 / 60, true, cfg).tier).toBe("strong");
+    expect(judgeStart(-15 / 60, true, cfg).tier).toBe("weak");
+    expect(judgeStart(-29 / 60, true, cfg).tier).toBe("weak");
+    expect(judgeStart(-30 / 60, true, cfg).tier).toBe("early");
+    expect(judgeStart(-1 / 60, true, cfg).tier).toBe("strong");
+    expect(judgeStart(-0.004, true, cfg).tier).toBe("strong"); // inside the last frame
+    expect(judgeStart(-5 / 60, false, cfg).tier).toBe("released");
+  });
+
+  it("is the same at a finer simulation step (the game's 120 Hz is half a frame)", () => {
+    for (const frames of [2, 10, 13.5, 15.6, 20, 28.5, 31, 40])
+      expect(
+        new Set([1 / 120, 1 / 240].map((h) => startWith(pressFrames(frames), h).tier)).size,
+        `${frames} frames`,
+      ).toBe(1);
+  });
+
+  it("8. is the same at 30, 60, 120 and 144 fps rendering (presses timed to the step)", () => {
+    // The real loop: frames of 1/fps, each running the fixed steps due, each step
+    // standing for a moment a little before the frame (core/loop.ts). A key press at
+    // wall time T only shows from the next frame on, and only to steps after T.
+    const run = (fps: number, pressMs: number) => {
+      const race = createRace(track, cfg);
+      const clock = createFixedStep(120, 8);
+      const g = race.gates[0]!;
+      let now = 0;
+      while (race.clock < 0.2) {
+        now += 1000 / fps;
+        const steps = clock.advance(1 / fps);
+        for (let i = 0; i < steps; i++) {
+          const at = now - (steps - 1 - i + clock.alpha) * clock.stepSeconds * 1000;
+          const seen = pressMs <= now; // the browser delivered the event before this frame
+          tickRace(race, clock.stepSeconds);
+          const held = downAt(seen, pressMs, at);
+          stepRacer(
+            race,
+            0,
+            createKartState(g.x, g.z, 0, 0),
+            true,
+            held ? 1 : 0,
+            cfg,
+            clock.stepSeconds,
+          );
+        }
+      }
+      return race.racers[0]!.start?.tier;
+    };
+    // GO is at wall time readySec (the race clock starts at -readySec with the loop).
+    const goMs = cfg.readySec * 1000;
+    for (const before of [40, 20, 15.5, 13, 10, 2])
+      for (const fps of [30, 60, 120, 144]) {
+        const want = before >= 30 ? "early" : before > 14 ? "weak" : "strong";
+        expect(run(fps, goMs - (before / 60) * 1000), `${before} frames at ${fps} fps`).toBe(want);
+      }
   });
 });
 

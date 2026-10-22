@@ -165,15 +165,13 @@
   "race": {
     "laps": 3,
     "respawnAfterSec": 0.6,
-    "readySec": 1.5,
-    "startTargetFrac": 0.5,
-    "perfectWindowSec": 0.2,
-    "earlyWindowSec": 0.3,
+    "readySec": 1.3333,
+    "startRefHz": 60,
+    "startStrongFrames": 14,
+    "startWeakFrames": 29,
     "goShowSec": 0.8,
-    "startPerfectMult": 2,
-    "startPerfectSec": 2,
-    "startGoodMult": 1.2,
-    "startGoodSec": 0.8
+    "startStrongSec": 1.0,
+    "startWeakSec": 0.5
   },
   "ai": {
     "speedMult": 1,
@@ -183,7 +181,8 @@
     "driftEnterRadius": 45,
     "driftExitRadius": 55,
     "driftScan": 20,
-    "startSpread": 0.25,
+    "startAimFrames": 10,
+    "startSpreadFrames": 12,
     "lineMargin": 4.5,
     "lineSpan": 14,
     "lineIterations": 200

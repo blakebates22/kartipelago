@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { mergeReadings, NEUTRAL, rampKeySteer, shapeStick } from "../src/core/input";
+import {
+  downAt,
+  mergeReadings,
+  NEUTRAL,
+  rampKeySteer,
+  readGamepad,
+  shapeStick,
+} from "../src/core/input";
 
 const cfg = {
   stickDeadzone: 0.15,
@@ -69,5 +76,33 @@ describe("mergeReadings", () => {
       drift: true,
       item: true,
     });
+  });
+});
+
+describe("throttle presses for the race start (9. keyboard and gamepad alike)", () => {
+  const pad = (buttons: Record<number, number>) =>
+    ({
+      axes: [0, 0],
+      buttons: Array.from({ length: 16 }, (_, i) => ({
+        value: buttons[i] ?? 0,
+        pressed: (buttons[i] ?? 0) > 0.5,
+      })),
+    }) as unknown as Gamepad;
+
+  it("reads the gamepad's A button and right trigger as the same throttle as a key", () => {
+    expect(readGamepad(pad({ 0: 1 }), cfg).throttle).toBe(1);
+    expect(readGamepad(pad({ 7: 1 }), cfg).throttle).toBe(1);
+    expect(readGamepad(pad({}), cfg).throttle).toBe(0);
+  });
+
+  it("only counts a press from the fixed step it happened in", () => {
+    // Pressed at 1000 ms: a step standing for 990 ms hasn't seen it yet; 1000 and later have.
+    expect(downAt(true, 1000, 990)).toBe(false);
+    expect(downAt(true, 1000, 1000)).toBe(true);
+    expect(downAt(true, 1000, 1008.3)).toBe(true);
+    expect(downAt(false, 1000, 2000)).toBe(false);
+    // No timing known: as held.
+    expect(downAt(true, undefined, 990)).toBe(true);
+    expect(downAt(true, 1000, undefined)).toBe(true);
   });
 });
