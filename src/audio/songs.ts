@@ -62,6 +62,11 @@
  *                                   marimba, strings soaring over the High Bridges, and
  *                                   flute and xylophone racing through the Final Twist;
  *                                   driving toms, bongos and shaker throughout
+ *   snow_dragon "Snow Dragon Pass"  B minor, 150: the kingdom in winter. Cold bells and
+ *                                   celesta over a pulsing drone, a lamenting string
+ *                                   melody for the village and the ration lines, low
+ *                                   horns and toms for the ice dragon, flute and
+ *                                   strings together for the climb to the citadel
  *   bonebog     "Bonebog Pyramid"   E minor, 116: low marimba groove, clarinet, toms,
  *                                   chimes, with friendly surprise chords (A, Ab, F)
  *   ember       "Ember Peak"        D minor, 160: the Volcanic Apocalypse. Low brass
@@ -2211,6 +2216,101 @@ function canyonDragon(): Song {
   };
 }
 
+export const SNOW_DRAGON_MELODY = bars(
+  // The pass in the storm (bells)
+  "B5:1 F#5:.5 A5:.5 B5:1 D6:1",
+  "C#6:1 A5:1 F#5:2",
+  "G5:1 A5:.5 B5:.5 D6:1 C#6:1",
+  "B5:3 r:1",
+  "D6:1 C#6:.5 B5:.5 A5:1 F#5:1",
+  "G5:1 F#5:.5 E5:.5 F#5:2",
+  "B5:1 D6:.5 E6:.5 F#6:1 E6:1",
+  "D6:3 r:1",
+  // The village and the ration lines (strings, a lament)
+  "F#5:2 E5:1 D5:1",
+  "B4:2 C#5:1 D5:1",
+  "E5:1.5 D5:.5 C#5:1 A4:1",
+  "B4:3 r:1",
+  "D5:2 E5:1 F#5:1",
+  "G5:2 F#5:1 E5:1",
+  "F#5:1 E5:1 D5:1 C#5:1",
+  "B4:3 r:1",
+  // The ice dragon (low horns)
+  "B3:1 B3:.5 D4:.5 F#4:2",
+  "E4:1 D4:1 C#4:2",
+  "G3:1 B3:.5 D4:.5 E4:2",
+  "F#4:3 r:1",
+  "B3:1 D4:.5 E4:.5 F#4:1 A4:1",
+  "G4:1 F#4:1 E4:2",
+  "D4:1 E4:1 F#4:1 C#4:1",
+  "B3:3! r:1",
+  // The climb to the citadel (flute and strings)
+  "F#5:.5 B5:.5 C#6:.5 D6:.5 F#6:1 E6:1",
+  "D6:.5 C#6:.5 B5:.5 A5:.5 B5:2",
+  "G5:.5 A5:.5 B5:.5 D6:.5 E6:1 D6:1",
+  "C#6:.5 B5:.5 A5:.5 C#6:.5 F#5:2",
+  "B5:.5 D6:.5 F#6:.5 G6:.5 F#6:1 E6:1",
+  "D6:.5 E6:.5 F#6:1 E6:.5 D6:.5 C#6:1",
+  "B5:.5 C#6:.5 D6:.5 E6:.5 F#6:1 A6:1",
+  "B6:3! r:1",
+);
+export const SNOW_DRAGON_CHORDS =
+  "Bm:4 F#m:4 G:4 Bm:4 D:4 Em:4 G:2 A:2 Bm:4 " +
+  "Bm:4 G:4 Em:4 Bm:4 D:4 G:4 F#:4 Bm:4 " +
+  "Bm:4 Em:4 G:4 F#:4 Bm:4 Em:4 D:2 F#:2 Bm:4 " +
+  "Bm:4 G:4 Em:4 F#:4 Bm:4 G:4 A:4 Bm:4";
+
+/**
+ * "Snow Dragon Pass": the kingdom in winter, B minor, 150 BPM: beautiful and cold, and
+ * sadder than the canyon. Bells and celesta ring out over a pulsing drone in the storm;
+ * strings lament through the village and the ration lines; low horns and pounding toms
+ * for the ice dragon; flute and strings climb together to the citadel. Our own tune.
+ */
+function snowDragon(): Song {
+  const ch = chart(SNOW_DRAGON_CHORDS);
+  const mel = seq(SNOW_DRAGON_MELODY, 0, 0.8);
+  const p1 = mel.filter((n) => n.t < 32);
+  const p2 = mel.filter((n) => n.t >= 32 && n.t < 64);
+  const p3 = mel.filter((n) => n.t >= 64 && n.t < 96);
+  const p4 = mel.filter((n) => n.t >= 96);
+  const pulse: [number, number, string][] = [
+    [0, 1.5, "R"],
+    [1.5, 0.5, "R"],
+    [2, 1.5, "5"],
+    [3.5, 0.5, "R"],
+  ];
+  return {
+    id: "snow_dragon",
+    title: "Snow Dragon Pass",
+    role: "Dragon Kingdom",
+    bpm: 150,
+    beats: 128,
+    loop: true,
+    stems: [],
+    parts: [
+      part("bell", "base", 0.8, p1),
+      part("celesta", "base", 0.6, shift(p1, 0, -12)),
+      part("strings", "base", 1, p2),
+      part("pizz", "base", 0.35, shift(p2, 0, -12)),
+      part("horn", "base", 1, p3),
+      part("brass", "base", 0.5, shift(p3, 0, 12)),
+      part("flute", "base", 0.9, p4),
+      part("strings", "base", 0.7, shift(p4, 0, -12)),
+      part("celesta", "base", 0.35, arpeggio(ch, 0.5, [0, 2, 1, 2, 0, 2, 1, 2], 69, 0.2, 0.35)),
+      part("pad", "base", 0.4, pads(ch, 50, 4, 0.4)),
+      part("drone", "base", 0.3, pads(ch, 38, 8, 0.3)),
+      part("bass", "base", 1, bassLine(ch, pulse, 26, 0.8)),
+      ...drumParts("base", 0.8, drums("o.....o.o.....o.", KIT, 0.25, 32)),
+      ...drumParts("base", 0.5, drums("k.......k.......", KIT, 0.25, 32)),
+      ...drumParts("base", 0.3, drums("..h...h...h...hh", KIT, 0.25, 32)),
+      ...[60, 92].flatMap((at) =>
+        drumParts("base", 0.8, drums("o.o.o.oooooooooo", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.55, drums("c", KIT, 32, 4)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -2231,6 +2331,7 @@ export const SONGS: Record<string, Song> = {
   depths: depths(),
   dragon: dragon(),
   dragon_canyon: canyonDragon(),
+  snow_dragon: snowDragon(),
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),

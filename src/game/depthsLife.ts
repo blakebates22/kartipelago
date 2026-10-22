@@ -418,6 +418,7 @@ export function createDepthsLife(opts: {
                 opts.sfx.bird?.(v);
               else if (pick === "harbour" && Math.random() < 0.35) opts.sfx.gull?.(v);
               else if (pick === "quarry" && Math.random() < 0.6) opts.sfx.chisel?.(v);
+              else if (pick === "bells" && Math.random() < 0.18) opts.sfx.monasteryBell?.(v);
               else if (pick === "festival" && Math.random() < 0.4 * (1 - (opts.hush?.() ?? 0)))
                 opts.sfx.festivalBit?.(v);
             }

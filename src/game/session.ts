@@ -26,7 +26,7 @@ import { createTrackView } from "../render/trackView";
 import { createCourse, resetCourse, stepCourse } from "../world/course";
 import { buildTrack, type Track, type TrackData } from "../world/track";
 import { buildZippers, enteredZipper } from "../world/zippers";
-import { BOOST_SOURCE, ZIP, startBoost, startZipper } from "../vehicles/zipper";
+import { BOOST_SOURCE, ZIP, startZipper } from "../vehicles/zipper";
 import { bumpMass, racerItems, stepEffects, type Racer, type RacerItems } from "../items/effects";
 import { heldLabel } from "../items/inventory";
 import {
@@ -102,7 +102,14 @@ import {
 } from "../world/driftPark";
 import { boostChevrons, needleDeg, speedoValue } from "../render/speedo";
 import { applyCharacter, type Character } from "../vehicles/character";
-import { createKartState, slipAngle, stepKart, wrapAngle, type KartState } from "../vehicles/kart";
+import {
+  applyBoost,
+  createKartState,
+  slipAngle,
+  stepKart,
+  wrapAngle,
+  type KartState,
+} from "../vehicles/kart";
 import type { createDebug } from "../debug";
 import type { createBoostLab } from "../debug/boostLab";
 import { createChaseCamera } from "../render/chaseCamera";
@@ -203,8 +210,8 @@ interface Entrant {
   driver?: Driver;
 }
 
-/** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3, start boost. */
-const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5", "#ffe14a"];
+/** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */
+const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5"];
 /** Meadow grass under the Drift Park. */
 const PARK_GROUND = "#6fae4b";
 const GROUND_SIZE = 1200;
@@ -791,10 +798,9 @@ function buildSession(
         dt,
       );
       if (raceEvents.boost) {
-        // The start boost: the zipper's push (vehicles/zipper.ts), throttle held, from
-        // standstill. It accelerates the kart; it never sets its speed.
-        const sec = raceEvents.boost.seconds;
-        startBoost(e.state, 1, cfg, BOOST_SOURCE.START, sec, sec);
+        // The start boost: launched at a multiple of top speed, held for a while (the
+        // strength the start boost has always had; only its timing is new).
+        applyBoost(e.state, cfg, raceEvents.boost.mult, raceEvents.boost.seconds);
         if (i === 0 && !demo) sfx.startBoost(itemsCfg.volume, raceEvents.boost.tier === "strong");
       }
       // Lava, deep water, waterfalls (hazards.ts), then: fell off an imported track's
@@ -962,9 +968,6 @@ function buildSession(
     } else if (z === ZIP.ACTIVE) {
       e.racer.flameMat.color.set(color);
       let size = s.zipEnhanced ? 1.35 : 1;
-      // A strong start roars out of the line; a weak one is a smaller flame.
-      if (s.zipSource === BOOST_SOURCE.START)
-        size = s.zipTotal >= tuning.race.startStrongSec ? 1.5 : 0.85;
       // Level 3 blue: the flame builds while its sound charges (the push already started).
       const sinceStart = s.zipTotal - s.zipTime;
       if (s.zipSource === BOOST_SOURCE.BLUE3 && sinceStart < itemsCfg.blue3ChargeSec) {
@@ -1200,7 +1203,7 @@ function buildSession(
     debug.overlay.set(
       "boost",
       s.zipPhase
-        ? `${["zipper", "blue 1", "blue 2", "blue 3", "start"][s.zipSource]} ${phases[s.zipPhase]}`
+        ? `${["zipper", "blue 1", "blue 2", "blue 3"][s.zipSource]} ${phases[s.zipPhase]}`
         : s.boostTime > 0
           ? `boost ×${s.boostMult.toFixed(2)} ${s.boostTime.toFixed(1)}s`
           : "-",

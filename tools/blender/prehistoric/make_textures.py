@@ -4935,6 +4935,12 @@ import dcanyon_textures  # noqa: E402
 MATERIALS += dcanyon_textures.materials(sys.modules[__name__])
 THEMES.append(dcanyon_textures.THEME)
 
+# Snow Dragon Pass (Dragon Kingdom, course 3).
+import snow_textures  # noqa: E402
+
+MATERIALS += snow_textures.materials(sys.modules[__name__])
+THEMES.append(snow_textures.THEME)
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

@@ -60,10 +60,12 @@ export interface RaceConfig {
   startWeakFrames: number;
   /** How long "GO!" stays up, seconds. */
   goShowSec: number;
-  /** How long each start boost pushes, seconds (the zipper's boost model: it
-   * accelerates the kart toward the zipper's target speed, vehicles/zipper.ts). Tunable:
-   * not taken from the original. */
+  /** The start boosts: a top-speed multiple the kart launches at and holds for so many
+   * seconds (vehicles/kart.ts applyBoost; the strength the game has always had, which
+   * Blake asked to keep). Tunable: not taken from the original. */
+  startStrongMult: number;
   startStrongSec: number;
+  startWeakMult: number;
   startWeakSec: number;
   /** Seconds grounded off the road before you're put back on it. */
   respawnAfterSec: number;
@@ -132,7 +134,7 @@ export interface RaceEvents {
   /** Put the kart back here (walled tracks: stuck off the road). */
   respawn?: Spot;
   /** Start boost to start right now, at GO. */
-  boost?: { tier: "strong" | "weak"; seconds: number };
+  boost?: { tier: "strong" | "weak"; mult: number; seconds: number };
   /** A checkpoint was validated, a lap completed, or a checkpoint lost by reversing. */
   checkpoint?: Gate;
   lap?: number;
@@ -297,8 +299,10 @@ export function stepRacer(
     r.throttleWas = pressed;
     if (race.goThisStep) {
       r.start = judgeStart(r.pressAt, pressed, cfg, r.releasedEarly);
-      if (r.start.tier === "strong") events.boost = { tier: "strong", seconds: cfg.startStrongSec };
-      else if (r.start.tier === "weak") events.boost = { tier: "weak", seconds: cfg.startWeakSec };
+      if (r.start.tier === "strong")
+        events.boost = { tier: "strong", mult: cfg.startStrongMult, seconds: cfg.startStrongSec };
+      else if (r.start.tier === "weak")
+        events.boost = { tier: "weak", mult: cfg.startWeakMult, seconds: cfg.startWeakSec };
     }
     r.px = kart.x;
     r.py = kart.y;

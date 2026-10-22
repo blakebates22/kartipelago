@@ -25,9 +25,8 @@
  */
 export const ZIP = { NORMAL: 0, ACTIVE: 1, ENDING: 2, RECOVERY: 3 } as const;
 
-/** Where the active boost came from: a zipper pad, a blue balloon of level 1-3, or a
- * start boost (race.ts). */
-export const BOOST_SOURCE = { ZIPPER: 0, BLUE1: 1, BLUE2: 2, BLUE3: 3, START: 4 } as const;
+/** Where the active boost came from: a zipper pad, or a blue balloon of level 1-3. */
+export const BOOST_SOURCE = { ZIPPER: 0, BLUE1: 1, BLUE2: 2, BLUE3: 3 } as const;
 
 export interface ZipperConfig {
   /** Ordinary boost: target speed as a multiple of top speed, and duration (s). */

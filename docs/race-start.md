@@ -25,14 +25,20 @@ at GO**. The windows come from Blake's notes on the original's `handle_racer_top
 
 ### What the boost does
 
-It reuses the zipper's boost model (`vehicles/zipper.ts`, source `START`): the kart is
-pushed toward the zipper's ordinary target speed for `race.startStrongSec` (1.0 s, the
-same as a zipper pad) or `race.startWeakSec` (0.5 s). It accelerates the kart from
-standstill; it never sets its speed. These two durations are **our tuning, not values
-from the original**: adjust them in the Tuning panel's `race` folder.
+The strength is the start boost the game has always had (Blake asked to keep it: it makes
+the start feel fast); only the timing above is new. At GO the kart is launched at a
+multiple of its top speed and held there for a while (`vehicles/kart.ts`, `applyBoost`):
 
-Feedback: a bright yellow exhaust flame (bigger for a strong start), a launch whoosh (the
-strong start adds a two-note fanfare), and STRONG START! / GOOD START under GO!.
+| Tier   | Launch                                   | Held for                      |
+| ------ | ---------------------------------------- | ----------------------------- |
+| strong | `race.startStrongMult` (2.0) × top speed | `race.startStrongSec` (2.0 s) |
+| weak   | `race.startWeakMult` (1.2) × top speed   | `race.startWeakSec` (0.8 s)   |
+
+These are **our tuning, not values from the original**: adjust them in the Tuning panel's
+`race` folder.
+
+Feedback: a launch whoosh (the strong start adds a two-note fanfare), and STRONG START! /
+GOOD START under GO!.
 
 ## Frame-rate independence
 

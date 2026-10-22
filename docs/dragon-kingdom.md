@@ -2,9 +2,9 @@
 
 The fourth world (`dragon` in `src/game/worlds.ts`): a sunlit kingdom of karst islands
 in a turquoise lagoon, ruled by dragons. Festival towns, temple gardens, waterfalls and a
-royal palace on its mountain, all watched over by a great jade dragon. Two courses so far,
-Dragon Isles and Dragon Canyon, then two "Coming Soon" tiles (Lantern Peaks, Dragon's
-Crown).
+royal palace on its mountain, all watched over by a great jade dragon. Three courses so
+far (Dragon Isles, Dragon Canyon and Snow Dragon Pass), then a "Coming Soon" tile
+(Dragon's Crown).
 
 The look is joyful and readable: blue and gold tiled roofs, red pillars, lanterns and
 banners, blossom, bright water. Underneath there is a small, quiet unease, never more
@@ -229,6 +229,126 @@ the cliffs' terracing between the hairpins (retaining walls, more ledge detail);
 sharper sandstone strata; the dragon skeleton's ribcage could close over the road more
 dramatically; side passages you can glimpse further into; the AI's drifting (it leaves
 time on the table in S-bends).
+
+## Snow Dragon Pass
+
+The kingdom's highest mountains in a blizzard, and the first course where **the lap
+splits**. Half of it is shared road; the other half is a choice of two roads at each of
+two splits, four whole laps in all (about 2.31-2.38 km, an AI lap about 98-101 s).
+Slate-grey peaks buried in snow, frozen turquoise falls, a blue ice cavern, a monastery in
+whitewash and red, villages in weathered timber, and above it all the Dragon Citadel
+blazing gold. It is the third chapter of the kingdom's story: the people are suffering.
+
+| Part | Name                   | What happens                                                                                                                                                                                                                                                                                          |
+| ---- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | The Frozen Gate        | The start, just past the citadel's ceremonial gate: guardian dragons, braziers, banners, guards on the walls; the Frozen Gate over the straight. The citadel towers above on its crag.                                                                                                                |
+| 2    | The Windy Village      | Down through the village: snow-buried houses with warm windows, families huddled round small fires, a ration line at a bare stall under guard, prayer flags across the street.                                                                                                                        |
+| 3a   | The High Cliff Road    | (Main.) A switchback up the mountain's face, along an exposed ledge past the colossal Dragon Overlook statue, down to the crossing. Narrow (14 m), tight, parapets and turn boards.                                                                                                                   |
+| 3b   | The Frozen Supply Road | Round the mountain's foot past the full storehouses (guarded), sledges hauled to and fro, workers at the sacks, people sheltering under tattered awnings; through the blue ice cavern. Wide (18 m) and flowing.                                                                                       |
+| 4    | Starvation Road        | The shared supply corridor: a long line of people at an empty storehouse; across the road, the royal storehouses stacked to the rafters, guarded, banners flying; fires, empty stalls, houses half buried.                                                                                            |
+| 5    | The Broken Bridges     | Over the frozen gorge on the road's own bridge, ruined bridges either side, icicles hanging from their broken ends, the gorge's frozen falls.                                                                                                                                                         |
+| 6    | The Avalanche Run      | Down the windswept pass, the storm at its fiercest; avalanches pour down the far slopes on the race clock's beat.                                                                                                                                                                                     |
+| 7a   | The Monastery Ridge    | (Main.) A switchback up round the mount, east over the monastery's bridge (the aqueduct runs beneath), under its ceremonial gates, past the monastery itself (halls, chortens, bells, prayer flags, silent monks all looking across to the citadel), and a steep descending exit.                     |
+| 7b   | The Frozen Aqueduct    | Straight on and down along the old water channels (a frozen channel beside the road), under the monastery's bridge, past frozen falls and the aqueduct's arches, a tunnel bend through the crag. Faster.                                                                                              |
+| 8    | The Final Ascent       | Up past pairs of guardian dragons and walls lined with guards, braziers and banners whipping in the wind, toward the citadel; the ice dragon comes down out of the cloud and passes low over the road, its shadow sweeping the snow, then away to the citadel; under the ceremonial gate to the line. |
+
+**The network.** Each split's two branches leave the shared road along the same line out
+of its last corner (one turns away while the other runs on, a Y) and come back along the
+same line into the next shared corner, so the shared road is exactly the same whichever
+way you came. The main route (the one the game's track, checkpoints and placements are
+measured along) is Cliff + Ridge; `track.json`'s `lapRoutes` lists the other three
+combinations, each a whole closed route in `route.json`:
+
+- Rivals are spread across the four laps (rival i drives lap route i mod 4, always the
+  same one, so races repeat). Each drives its own racing line.
+- Pickups can sit on a branch: a zipper, egg row or balloon with `"route": "<lap id>"` is
+  placed along that lap route instead of the main one.
+- Zipper pads now need you within a few metres of their height, so a pad on a lower road
+  never fires for a kart on the bridge above it.
+
+**Route balance (computer racers, flying laps):**
+
+| Lap                                 | Time     | vs fastest |
+| ----------------------------------- | -------- | ---------- |
+| High Cliff + Frozen Aqueduct        | ~98.3 s  | fastest    |
+| High Cliff + Monastery Ridge (main) | ~99.0 s  | +0.7%      |
+| Supply + Aqueduct                   | ~99.8 s  | +1.5%      |
+| Supply + Ridge                      | ~101.3 s | +3.0%      |
+
+The Cliff Road is shorter but narrower and tighter; the Supply Road is wider and longer.
+The Aqueduct is shorter and flowing; the Ridge climbs through switchbacks. These are the
+current AI's times, measured with its own physics: a skilled player's gains on the
+technical roads will differ, and the AI is due to be rewritten. Only playtesting will
+settle the real balance.
+
+**Checkpoints on every branch.** The add-on's generator places the shared road's gates
+(none inside the splits); then each branch of each split gets four gates at the same
+shares of its length, numbered together with the other branch's (a pair: crossing
+either counts the same). Each branch's gate respawns you on that branch, and every gate
+is nudged clear of any other road at about its height (the monastery's bridge over the
+aqueduct). Dropping from a high road to a low one gains nothing: the next gate in order
+is still needed.
+
+**Junctions.** Where a branch leaves or joins, neither road has rails of its own; a rail
+runs round the outside edge of the two together (wherever one road's edge isn't inside
+the other's surface), so the junction is open between them and closed to the drops
+beyond. A branch sits 5 cm below the main road where they overlap (the main road shows).
+A signpost in the gore points both ways: either road is the race.
+
+**The story, told by the places.** Hungry villagers queue at bare stalls and huddle round
+small fires; guards stand before storehouses stacked to the rafters; workers haul sledges
+through the snow; the citadel's every window blazes gold above the freezing villages; the
+monks stand silent, all looking across at it; the ice dragon, majestic in Dragon Isles,
+here feels like a ruler passing over its kingdom. No violence, no villains, nothing
+explained.
+
+**The blizzard** (`src/game/snow.ts`, `snowLife.ts`), all visual, never touching a kart:
+veils of snow sweeping across the distance (camera-centred cylinders with streaks
+drifting on them), driving snow in the middle distance, a few flakes whipping past the
+camera, powder blowing low across the road. How hard it snows is set per place (`blizzard`
+keys: fiercest on the exposed heights, gentle in the village, none in the tunnels) and
+the storm ebbs and gusts on its own slow rhythm. The fog closes to 800-1050 m, never so
+close a bend disappears. Prayer flags flap in the wind (`prayer_flags`), the monastery's
+bells sway and toll (`bells`), avalanches pour down the far slopes on the race clock's
+beat (`avalanches`): predictable and never on the road.
+
+**People:** about 110: `queue` (shuffling in the ration lines), `huddle` (crouched round
+the fires), `monk` (hooded, still, heads bowed), plus the canyon's `worker`, `hauler` and
+`guard`. Winter wool and maroon robes (`render/islesFx.ts`).
+
+**The air:** zones for the gate, village, cliff, supply road, cavern (blue and dark),
+starvation road, gorge, avalanche run, monastery, aqueduct, tunnel and ascent. Sounds:
+a howling `blizzard` on the heights, wind elsewhere, the monastery's `bells` (a chanted
+drone and the bells tolling), drips in the cavern and tunnel, distant avalanches.
+
+**Music:** "Snow Dragon Pass" (`snow_dragon`), B minor, 150 BPM: bells and celesta over a
+pulsing drone in the storm, strings lamenting through the village and the ration lines,
+low horns and toms for the ice dragon, flute and strings climbing to the citadel.
+
+**How it's built:** `snow_land.py` (pure data: the network's sections, the four laps,
+heights with level junctions, widths, the mountains, the gorge, the branches and zones),
+`snow_dragon_pass.py` (the main route and its road kinds; bridges where the ground falls
+away or a branch passes under), `snow_scenery.py` (the branch roads, junction rails, land
+and far peaks, the tunnels' crags, the gorge, the lap routes, checkpoints, pickups,
+light), `snow_town.py` (every part's dressing, the people, the dragon's keys, the air and
+the weather), `snow_props.py` (houses, ration stalls, storehouses, sledges, sacks, pines,
+chortens, monastery halls, flag poles, bells, citadel towers and hall, icicles, broken
+arches, fork signs, guard posts, ice), `snow_textures.py` (20 textures and the
+`snow_dragon_pass` theme).
+
+**Tests:** `tests/sdp.test.ts`: the world, theme and music; a clean load with its people,
+weather and dragon; the blizzard's strengths and the avalanches' beat; about half of
+every lap shared; paired checkpoints on every branch, respawning on the branch; falling
+off a branch puts you back on it; roads that never touch where they pass over and under;
+all four laps driven cleanly by the AI, Cliff + Aqueduct fastest by 0.2-3.5%.
+`tests/holes.test.ts` covers it too.
+
+**Limits and polish next:** there is no minimap in the HUD yet, so the splits are shown
+by the fork signs only. The AI picks its lap at the start rather than choosing at each
+fork. The balance is the current AI's; a player's needs playtesting. The blizzard's
+veils are simple cylinders: from some angles their edges show. The monastery and citadel
+read well from the road but would reward a closer look (stairs, more buildings). Lanterns
+don't swing yet.
 
 ## Polish next (Dragon Isles)
 

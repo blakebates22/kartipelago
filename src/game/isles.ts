@@ -39,6 +39,8 @@ export interface IslesDragonConfig {
   /** The lap's length (m). */
   length: number;
   size: number;
+  /** Its colours (Snow Dragon Pass's is ice blue); jade and gold if not given. */
+  colors?: { body: string; belly: string };
 }
 
 export function parseIslesDragon(e: Record<string, unknown>): IslesDragonConfig | undefined {
@@ -50,7 +52,16 @@ export function parseIslesDragon(e: Record<string, unknown>): IslesDragonConfig 
     }
   keys.sort((a, b) => a.s - b.s);
   if (keys.length < 4) return undefined;
-  return { keys, length: Math.max(1, num(e.length, 1000)), size: Math.max(0.1, num(e.size, 1)) };
+  const col =
+    typeof e.colors === "object" && e.colors !== null && !Array.isArray(e.colors)
+      ? (e.colors as Record<string, unknown>)
+      : undefined;
+  return {
+    keys,
+    length: Math.max(1, num(e.length, 1000)),
+    size: Math.max(0.1, num(e.size, 1)),
+    ...(col && { colors: { body: str(col.body, "#34b888"), belly: str(col.belly, "#ffe39a") } }),
+  };
 }
 
 /** A point on the closed Catmull-Rom loop through the keys: u in key units (key i at
@@ -176,6 +187,9 @@ export const ROLES = [
   "bow",
   "worker",
   "hauler",
+  "huddle",
+  "queue",
+  "monk",
 ] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -321,6 +335,44 @@ export function villagerPose(v: Villager, k: number, t: number, bow: number): Po
         armR: 0.35,
         turn: w < 0 ? Math.PI : 0,
         step: (4.0 * Math.asin(Math.max(-1, Math.min(1, w)))) / (Math.PI / 2),
+      };
+      break;
+    }
+    case "huddle": {
+      // Crouched by a fire, arms in, rocking a little against the cold.
+      p = {
+        hop: -0.45,
+        lean: 0.55 + 0.06 * Math.sin(t * 1.1 + ph),
+        armL: 0.05,
+        armR: 0.05,
+        turn: 0.06 * Math.sin(t * 0.7 + ph),
+        step: 0,
+      };
+      break;
+    }
+    case "queue": {
+      // Waiting in line: hunched, shifting from foot to foot, now and then a shuffle
+      // forward and back.
+      const sh = Math.sin(t * 0.21 + ph);
+      p = {
+        hop: 0.03 * Math.abs(Math.sin(t * 1.4 + ph)),
+        lean: 0.22,
+        armL: 0.05,
+        armR: 0.05,
+        turn: 0.08 * Math.sin(t * 0.9 + ph),
+        step: sh > 0.9 ? (sh - 0.9) * 4 : 0,
+      };
+      break;
+    }
+    case "monk": {
+      // Thin, hooded and silent: head bowed, perfectly still but for a slow breath.
+      p = {
+        hop: 0,
+        lean: 0.18 + 0.02 * Math.sin(t * 0.5 + ph),
+        armL: 0.08,
+        armR: 0.08,
+        turn: 0,
+        step: 0,
       };
       break;
     }

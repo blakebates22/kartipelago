@@ -170,8 +170,10 @@
     "startStrongFrames": 14,
     "startWeakFrames": 29,
     "goShowSec": 0.8,
-    "startStrongSec": 1.0,
-    "startWeakSec": 0.5
+    "startStrongMult": 2,
+    "startStrongSec": 2,
+    "startWeakMult": 1.2,
+    "startWeakSec": 0.8
   },
   "ai": {
     "speedMult": 1,

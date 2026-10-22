@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "theme": "snow_dragon_pass",
+  "sky": "#9fb2c8",
+  "fog": {
+    "enabled": true,
+    "color": "#c6d3e2",
+    "near": 150,
+    "far": 900
+  },
+  "sun": {
+    "color": "#e4ecff",
+    "intensity": 1.7,
+    "direction": [
+      0.42,
+      0.62,
+      -0.66
+    ]
+  },
+  "ambient": {
+    "sky": "#cdd9ee",
+    "ground": "#5a6478",
+    "intensity": 1.45
+  },
+  "skyDome": {
+    "top": "#4f6688",
+    "horizon": "#c9d6e6",
+    "bottom": "#b4c2d4",
+    "sun": {
+      "color": "#f4f6ff",
+      "size": 9,
+      "glow": "#d4def0",
+      "elevation": 22
+    },
+    "clouds": {
+      "count": 46,
+      "color": "#e4eaf2",
+      "shade": "#8a9ab4",
+      "seed": 517,
+      "low": 3,
+      "high": 34,
+      "drift": 0.006
+    },
+    "hills": {
+      "color": "#6a7896",
+      "far": "#b4c2d6",
+      "height": 19,
+      "seed": 521,
+      "layers": 3
+    }
+  }
+}

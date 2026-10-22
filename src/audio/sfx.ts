@@ -308,7 +308,9 @@ export function createSfx(engine: AudioEngine) {
         | "falls"
         | "garden"
         | "harbour"
-        | "quarry",
+        | "quarry"
+        | "blizzard"
+        | "bells",
     ): { set(volume: number): void; stop(): void } {
       if (!ctx) return { set() {}, stop() {} };
       // Each world's bed of sound: shaped noise (filter, its centre wandering on a slow
@@ -457,6 +459,28 @@ export function createSfx(engine: AudioEngine) {
           toneGain: 0.05,
           smooth: 0.88,
         },
+        // A blizzard: a howling, gusting wind, its whistle rising and falling.
+        blizzard: {
+          type: "bandpass",
+          f: 720,
+          q: 2.2,
+          lfo: 0.23,
+          depth: 520,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.8,
+        },
+        // The monastery: wind over the mount and a low chanted drone under it.
+        bells: {
+          type: "bandpass",
+          f: 420,
+          q: 1.4,
+          lfo: 0.08,
+          depth: 200,
+          tones: [73.4, 110],
+          toneGain: 0.045,
+          smooth: 0.9,
+        },
         // The core: a shimmering harmonic hum.
         hum: {
           type: "bandpass",
@@ -541,6 +565,18 @@ export function createSfx(engine: AudioEngine) {
       note(f, 0, 0.25, volume * 0.07, f * 0.6, "sine");
       for (let i = 0; i < 4; i++)
         note(f * 1.2, 0.3 + i * 0.07, 0.06, volume * 0.05, f * 1.4, "sine");
+    },
+    /** A monastery bell tolling: a deep strike and its long, beating hum. */
+    monasteryBell(volume: number) {
+      note(196, 0, 3.2, volume * 0.5, 194, "sine");
+      note(392.6, 0, 2.4, volume * 0.22, 391, "sine");
+      note(588, 0, 1.4, volume * 0.12, 586, "sine");
+      noise(0, 0.05, volume * 0.3, 3000, 800);
+    },
+    /** An avalanche far off: a long low roar building and fading. */
+    avalanche(volume: number) {
+      noise(0, 3.6, volume * 0.6, 260, 90);
+      note(46, 0.2, 3.0, volume * 0.35, 38, "sine");
     },
     /** Stone-cutting somewhere in the quarry: chisel strikes, a creak of timber. */
     chisel(volume: number) {

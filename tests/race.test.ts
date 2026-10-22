@@ -202,13 +202,17 @@ describe("start boost (GET READY... GO!)", () => {
   it("2. pressing 20 frames before GO and holding: a weak boost", () => {
     const { tier, boost } = startWith(pressFrames(20));
     expect(tier).toBe("weak");
-    expect(boost).toEqual({ tier: "weak", seconds: cfg.startWeakSec });
+    expect(boost).toEqual({ tier: "weak", mult: cfg.startWeakMult, seconds: cfg.startWeakSec });
   });
 
   it("3. pressing 10 frames before GO and holding: a strong boost", () => {
     const { tier, boost } = startWith(pressFrames(10));
     expect(tier).toBe("strong");
-    expect(boost).toEqual({ tier: "strong", seconds: cfg.startStrongSec });
+    expect(boost).toEqual({
+      tier: "strong",
+      mult: cfg.startStrongMult,
+      seconds: cfg.startStrongSec,
+    });
   });
 
   it("4. pressing 2 frames before GO and holding: a strong boost", () => {

@@ -111,7 +111,7 @@ export function createIslesLife(opts: {
     const p = dragonHead(dragonCfg, 0, 0);
     head.set(p.x, p.y, p.z);
     if (!opts.headless) {
-      serpent = createSerpentView(group, dragonCfg.size);
+      serpent = createSerpentView(group, dragonCfg.size, { colors: dragonCfg.colors });
       shadow = createShadowView(group, dragonCfg.size);
     }
   }

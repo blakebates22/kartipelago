@@ -96,6 +96,7 @@ import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createDepthsLife, hasDepthsLife, type DepthsLife } from "./depthsLife";
 import { createIslesLife, hasIslesLife, type IslesLife } from "./islesLife";
+import { createSnowLife, hasSnowLife, type SnowLife } from "./snowLife";
 import { createMammothView } from "../render/mammoth";
 import {
   createBellView,
@@ -377,6 +378,8 @@ export interface Hazards {
   readonly depths?: DepthsLife;
   /** Dragon Isles' dragon, villagers and mill wheels (game/islesLife.ts), if any. */
   readonly isles?: IslesLife;
+  /** Snow Dragon Pass's blizzard, prayer flags, bells and avalanches (game/snowLife.ts). */
+  readonly snow?: SnowLife;
   dispose(): void;
 }
 
@@ -1228,11 +1231,25 @@ export function createHazards(opts: {
       })
     : undefined;
   if (depths) solids.push(...depths.solids);
+  // Snow Dragon Pass: the blizzard, the prayer flags, the bells, the avalanches.
+  const snowLife = hasSnowLife(opts.entities)
+    ? createSnowLife({
+        group,
+        entities: opts.entities,
+        ground,
+        sfx: opts.sfx,
+        volume: vol,
+        clock: raceClock,
+        quiet: opts.quiet,
+        headless: opts.headless,
+      })
+    : undefined;
 
   const hazards: Hazards = {
     solids,
     depths,
     isles,
+    snow: snowLife,
     dinos,
     flyers,
     handles: (surface) => surface === "lava" || surface === "deep_water",
@@ -1523,6 +1540,7 @@ export function createHazards(opts: {
     render(t, dt, listener) {
       depths?.render(t, dt, listener);
       isles?.render(t, dt, listener);
+      snowLife?.render(t, dt, listener);
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
       for (const p of party) {
@@ -2401,6 +2419,7 @@ export function createHazards(opts: {
       lavaJets?.dispose();
       depths?.dispose();
       isles?.dispose();
+      snowLife?.dispose();
       for (const d of dragons) {
         d.view?.dispose();
         d.flames?.dispose();

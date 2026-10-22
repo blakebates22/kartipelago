@@ -190,6 +190,17 @@ export const TRACKS: TrackEntry[] = [
     music: "dragon_canyon",
     load: { scene: "track", packageId: "dragon_canyon" },
   },
+  {
+    id: "snow_dragon_pass",
+    name: "Snow Dragon Pass",
+    description:
+      "The kingdom's highest mountains in a blizzard. Half the lap is a choice of roads: the High Cliff Road or the Frozen Supply Road, the Monastery Ridge or the Frozen Aqueduct. Past ration lines and full storehouses, up to the blazing citadel under the ice dragon.",
+    preview: "previews/snow_dragon_pass.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "snow_dragon_pass",
+    music: "snow_dragon",
+    load: { scene: "track", packageId: "snow_dragon_pass" },
+  },
   // Test World.
   {
     id: "dino_demo",

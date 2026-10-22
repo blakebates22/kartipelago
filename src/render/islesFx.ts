@@ -439,6 +439,10 @@ const ROBES = [
 ];
 /** The quarry's workers: dusty, faded clothes. */
 const DUSTY = ["#8a6a4a", "#9a7a56", "#6e5a48", "#a88a64", "#7a6450"];
+/** Snow Dragon Pass's villagers: worn winter wool, patched and faded. */
+const WINTER = ["#6a5a4e", "#7a6a5a", "#5a5048", "#8a5a48", "#4e5462", "#7a6e62"];
+/** The monks' robes: deep maroon, hooded. */
+const MONK = "#6a1e1c";
 const SKINS = ["#f2c8a0", "#e0aa7c", "#c88a5c", "#f6d6b4"];
 
 /**
@@ -483,26 +487,46 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
   people.forEach((p, i) => {
     const guard = p.role === "guard";
     const labour = p.role === "worker" || p.role === "hauler";
+    const winter = p.role === "huddle" || p.role === "queue";
+    const monk = p.role === "monk";
     const robe = guard
       ? "#8a1c1c"
-      : labour
-        ? DUSTY[(p.variant + i) % DUSTY.length]!
-        : ROBES[(p.variant + i) % ROBES.length]!;
+      : monk
+        ? MONK
+        : winter
+          ? WINTER[(p.variant + i) % WINTER.length]!
+          : labour
+            ? DUSTY[(p.variant + i) % DUSTY.length]!
+            : ROBES[(p.variant + i) % ROBES.length]!;
     color.set(robe);
     skirts.setColorAt(i, color);
     torsos.setColorAt(i, guard ? color.set("#b02a22") : color);
     armsL.setColorAt(i, color);
     armsR.setColorAt(i, color);
     heads.setColorAt(i, color.set(SKINS[(p.variant * 3 + i) % SKINS.length]!));
-    const hat = guard
-      ? "cap"
-      : labour || p.role === "fisher" || p.role === "gardener" || p.variant % 4 === 1
-        ? "straw"
-        : p.variant % 4 === 2
-          ? "cap"
-          : "none";
+    const hat =
+      guard || monk || winter
+        ? "cap"
+        : labour || p.role === "fisher" || p.role === "gardener" || p.variant % 4 === 1
+          ? "straw"
+          : p.variant % 4 === 2
+            ? "cap"
+            : "none";
     hatOf.push(hat);
-    caps.setColorAt(i, color.set(guard ? "#e8b830" : p.variant % 2 ? "#222222" : "#3a2a6a"));
+    caps.setColorAt(
+      i,
+      color.set(
+        guard
+          ? "#e8b830"
+          : monk
+            ? MONK
+            : winter
+              ? WINTER[(p.variant * 5 + i + 2) % WINTER.length]!
+              : p.variant % 2
+                ? "#222222"
+                : "#3a2a6a",
+      ),
+    );
     straws.setColorAt(i, color.set("#e8cf86"));
   });
   for (const m of [skirts, torsos, heads, caps, straws, armsL, armsR])

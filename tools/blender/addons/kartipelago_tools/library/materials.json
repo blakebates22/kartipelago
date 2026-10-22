@@ -923,6 +923,57 @@
           }
         }
       }
+    },
+    {
+      "id": "snow_dragon_pass",
+      "name": "Snow Dragon Pass",
+      "description": "The dragon kingdom's highest mountains in a blizzard: slate-grey peaks buried in snow, frozen turquoise waterfalls, blue ice caverns, snow-laden monasteries in whitewash and red, weathered red timber, imperial crimson banners and muted gold, warm orange lanterns in the villages and the citadel blazing gold high above",
+      "environment": {
+        "sky": "#9fb2c8",
+        "fog": {
+          "enabled": true,
+          "color": "#c6d3e2",
+          "near": 150,
+          "far": 900
+        },
+        "sun": {
+          "color": "#e4ecff",
+          "intensity": 1.7,
+          "direction": [0.42, 0.62, -0.66]
+        },
+        "ambient": {
+          "sky": "#cdd9ee",
+          "ground": "#5a6478",
+          "intensity": 1.45
+        },
+        "skyDome": {
+          "top": "#4f6688",
+          "horizon": "#c9d6e6",
+          "bottom": "#b4c2d4",
+          "sun": {
+            "color": "#f4f6ff",
+            "size": 9,
+            "glow": "#d4def0",
+            "elevation": 22
+          },
+          "clouds": {
+            "count": 46,
+            "color": "#e4eaf2",
+            "shade": "#8a9ab4",
+            "seed": 517,
+            "low": 3,
+            "high": 34,
+            "drift": 0.006
+          },
+          "hills": {
+            "color": "#6a7896",
+            "far": "#b4c2d6",
+            "height": 19,
+            "seed": 521,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -6253,6 +6304,199 @@
       "image": "chevron_canyon.png",
       "wrap": "repeat",
       "tileMetres": 4
+    },
+    {
+      "id": "sdp_road",
+      "name": "Mountain Road",
+      "theme": "snow_dragon_pass",
+      "surface": "snow_stone",
+      "image": "sdp_road.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "sdp_setts",
+      "name": "Snowy Setts",
+      "theme": "snow_dragon_pass",
+      "surface": "snow_stone",
+      "image": "sdp_setts.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "sdp_snowbank",
+      "name": "Snowbank",
+      "theme": "snow_dragon_pass",
+      "surface": "packed_snow",
+      "image": "sdp_snowbank.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sdp_snowfield",
+      "name": "Windswept Snow",
+      "theme": "snow_dragon_pass",
+      "surface": "deep_snow",
+      "image": "sdp_snowfield.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "sdp_slate",
+      "name": "Slate Cliff",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_slate.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "sdp_slate_snow",
+      "name": "Snowy Slate",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_slate_snow.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "sdp_scree",
+      "name": "Snowy Scree",
+      "theme": "snow_dragon_pass",
+      "surface": "deep_snow",
+      "image": "sdp_scree.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "sdp_roof",
+      "name": "Snowy Tiles",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_roof.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "sdp_whitewash",
+      "name": "Monastery Whitewash",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_whitewash.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sdp_redwall",
+      "name": "Citadel Red",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_redwall.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "sdp_flags",
+      "name": "Prayer Flags",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_flags.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sdp_ice_channel",
+      "name": "Frozen Channel",
+      "theme": "snow_dragon_pass",
+      "surface": "ice",
+      "image": "sdp_ice_channel.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "sdp_aqueduct",
+      "name": "Aqueduct Stone",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_aqueduct.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sdp_cavern",
+      "name": "Blue Ice Cavern",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_cavern.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.55,
+        "pulse": 0.15,
+        "pulsePeriod": 6.0
+      }
+    },
+    {
+      "id": "sdp_icicle",
+      "name": "Icicle",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_icicle.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sdp_awning",
+      "name": "Tattered Awning",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_awning.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "sdp_window",
+      "name": "Citadel Windows",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_window.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "flicker": 0.08
+      }
+    },
+    {
+      "id": "sdp_burlap",
+      "name": "Grain Sacks",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_burlap.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sdp_chevron",
+      "name": "Snow Chevrons",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_chevron.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "sdp_gold_trim",
+      "name": "Imperial Gold",
+      "theme": "snow_dragon_pass",
+      "surface": "wall",
+      "image": "sdp_gold_trim.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     }
   ]
 }
