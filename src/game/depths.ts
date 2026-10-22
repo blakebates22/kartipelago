@@ -64,7 +64,10 @@ export type SoundKind =
   | "harbour"
   | "quarry"
   | "blizzard"
-  | "bells";
+  | "bells"
+  /** No bed of noise at all: only the odd drum, gong or plucked phrase of a celebration
+   * (Celestial Dragon Festival, where the fireworks and the music carry it). */
+  | "celebration";
 export const SOUND_KINDS: SoundKind[] = [
   "wind",
   "resonance",
@@ -80,6 +83,7 @@ export const SOUND_KINDS: SoundKind[] = [
   "quarry",
   "blizzard",
   "bells",
+  "celebration",
 ];
 
 export interface Zone {

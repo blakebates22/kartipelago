@@ -60,7 +60,7 @@ export function hasFestivalLife(entities: unknown[]): boolean {
 }
 
 /** Stars in the pool (the grand finale's peak stays well under it). */
-export const POOL = 24000;
+export const POOL = 40000;
 const LANTERNS = 700;
 const GRAVITY = 9;
 const FUSE = 1.9;

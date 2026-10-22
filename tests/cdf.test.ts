@@ -97,7 +97,7 @@ describe("Celestial Dragon Festival", () => {
     expect(n(3)).toBeGreaterThan(n(2));
     expect(n(2)).toBeGreaterThan(n(1));
     const atm = parseAtmosphere(one(p, "atmosphere"));
-    expect(atm.zones.gate!.sound).toBe("festival");
+    for (const z of Object.values(atm.zones)) expect(z.sound).toBe("celebration"); // (no hiss)
     for (const z of Object.values(atm.zones)) expect(z.far).toBeGreaterThan(1500);
     expect(entitiesOf(p).filter((e) => e.type === "glow").length).toBeGreaterThan(100);
   });
@@ -126,9 +126,9 @@ describe("Celestial Dragon Festival", () => {
     const s3 = run(3, festivalLevel(3, 0.5));
     const s3end = run(3, 1);
     const secs = 6000 * TICK;
-    expect(s1.length / secs).toBeGreaterThan(0.25);
-    expect(s1.length / secs).toBeLessThan(0.8);
-    expect(s2.length).toBeGreaterThan(s1.length * 2.5);
+    expect(s1.length / secs).toBeGreaterThan(1);
+    expect(s1.length / secs).toBeLessThan(2);
+    expect(s2.length).toBeGreaterThan(s1.length * 2);
     expect(s3.length).toBeGreaterThan(s2.length * 1.3);
     expect(s3end.length).toBeGreaterThan(s3.length * 1.15);
     const mean = (xs: { size: number }[]) => xs.reduce((a, x) => a + x.size, 0) / xs.length;
@@ -213,6 +213,20 @@ describe("Celestial Dragon Festival", () => {
       expect(life.fired.filter((x) => x === q.id).length, q.id).toBe(q.stages.length);
     expect(life.live).toBeGreaterThan(0);
     life.dispose();
+  });
+
+  it("has the Star Leap: a zipper on its run-up, a gap, and a catch that puts you on the landing", async () => {
+    const p = await load();
+    const resp = entitiesOf(p).find((e) => e.type === "respawn")!;
+    const from = resp.from as number;
+    const to = resp.to as number;
+    const at = resp.at as number;
+    expect(to - from).toBeGreaterThan(50);
+    expect(at).toBeGreaterThan(to);
+    const lip = from + 40;
+    const zips = p.trackData.zippers ?? [];
+    expect(zips.length).toBeGreaterThanOrEqual(10);
+    expect(zips.some((z) => z.at > lip - 60 && z.at < lip - 20)).toBe(true);
   });
 
   it("keeps the spiral well clear over the Star Bridge, and the roads apart elsewhere", async () => {

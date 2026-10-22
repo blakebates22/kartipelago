@@ -19,7 +19,7 @@
  *               as a curve and mark it as a route). It stops when a kart comes close,
  *               nudges karts aside (it never traps them) and never jumps about.
  *               "model": "mammoth" makes it a woolly mammoth instead.
- *   waterfall   { "type": "waterfall", "x", "y", "z", "top", "width", "heading" }:
+ *   waterfall   { "type": "waterfall", "x", "y", "z", "top", "width", "heading", "sound"? }:
  *               spray at its foot and its roar nearby; driving through it splashes.
  *   campfire    { "type": "campfire", "x", "y", "z" }: smoke and embers rising from a
  *               little bonfire (the fire itself is scenery). Purely visual.
@@ -329,6 +329,8 @@ interface Fall {
   top: number;
   width: number;
   heading: number;
+  /** No roar (Celestial Dragon Festival's falls: the fireworks and music carry it). */
+  silent: boolean;
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> =>
@@ -935,6 +937,7 @@ export function createHazards(opts: {
         top: num(e.top, 10),
         width: num(e.width, 10),
         heading: num(e.heading, 0),
+        silent: e.sound === false,
       });
     else if (e.type === "dinosaur") {
       const r = opts.routes.find((q) => q.id === e.route);
@@ -1616,7 +1619,7 @@ export function createHazards(opts: {
       let nearest = Infinity;
       for (const f of falls) {
         const d = Math.hypot(listener.x - f.x, listener.z - f.z);
-        nearest = Math.min(nearest, d);
+        if (!f.silent) nearest = Math.min(nearest, d);
         if (d > 160 || !spray) continue;
         for (let k = 0; k < 2; k++) {
           const u = (Math.random() - 0.5) * f.width;
@@ -1634,7 +1637,7 @@ export function createHazards(opts: {
           );
         }
       }
-      if (falls.length && !opts.quiet) {
+      if (falls.some((f) => !f.silent) && !opts.quiet) {
         rush ??= opts.sfx?.rush();
         rush?.set(
           nearest < cfg.waterfallRadius

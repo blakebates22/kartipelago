@@ -635,11 +635,10 @@ export function createSfx(engine: AudioEngine) {
       }
       noise(0, 0.4, volume * 0.15, 5000, 1500);
     },
-    /** A firework going up: a thin rising whistle and the hiss of its fuse. */
+    /** A firework going up: a thin rising whistle (no hiss: dozens go up at once). */
     fireworkLaunch(volume: number) {
       const f = 700 + Math.random() * 300;
-      note(f, 0, 0.9, volume * 0.025, f * 2.6, "sine");
-      noise(0, 0.6, volume * 0.04, 2400, 5200);
+      note(f, 0, 0.9, volume * 0.02, f * 2.6, "sine");
     },
     /** A firework bursting: a soft thump, the boom rolling away, then crackling (kept
      * well under the engines and the boosts). */

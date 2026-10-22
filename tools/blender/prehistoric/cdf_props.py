@@ -478,6 +478,43 @@ def dragon_float(c):
     return _p(c, name, build)
 
 
+def shrine_base(c, r=22.0):
+    """The Great Dragon Shrine's platform: three round marble tiers with gold rims, steps
+    on four sides, a ring of gold fire bowls on the top tier (the colossal dragon stands
+    in the middle)."""
+    name = "Shrine Base %g" % r
+
+    def build(bm):
+        marble, gold, fire = [], [], []
+        k = len(bm.faces)
+        for i, (rr, z0, z1) in enumerate(((r, -2.0, 1.4), (r * 0.8, 1.4, 2.8), (r * 0.6, 2.8, 4.2))):
+            _cyl(bm, 0, 0, z0, z1, rr, rr, n=24)
+        for a in range(4):
+            ang = a * math.pi / 2 + math.pi / 4
+            ca, sa = math.cos(ang), math.sin(ang)
+            for j in range(6):
+                d = r + 1.0 - j * (r * 0.4 / 5)
+                z = 0.7 * j
+                cuboid(bm, (ca * d, sa * d, z + 0.35), (7.0, 2.2, 0.7), rot=ang + math.pi / 2)
+        marble += _faces(bm, k)
+        k = len(bm.faces)
+        for rr, z in ((r, 1.4), (r * 0.8, 2.8), (r * 0.6, 4.2)):
+            _cyl(bm, 0, 0, z, z + 0.35, rr + 0.3, rr + 0.3, n=24)
+        for i in range(12):
+            a = i * math.tau / 12
+            _cyl(bm, r * 0.55 * math.cos(a), r * 0.55 * math.sin(a), 4.2, 6.0, 0.2, 0.6, n=6)
+            _cyl(bm, r * 0.55 * math.cos(a), r * 0.55 * math.sin(a), 6.0, 6.6, 1.0, 1.2, n=8)
+        gold += _faces(bm, k)
+        k = len(bm.faces)
+        for i in range(12):
+            a = i * math.tau / 12
+            blob(bm, (r * 0.55 * math.cos(a), r * 0.55 * math.sin(a), 7.0), 0.75, 1, 1, 1.4)
+        fire += _faces(bm, k)
+        return [(c.lib("cdf_marble"), marble), (c.lib("cdf_gold"), gold), (c.lib("lantern_red"), fire)]
+
+    return _p(c, name, build)
+
+
 def colossus(c):
     """A colossal golden dragon: Dragon Isles' coiled statue in gold on a tall marble
     pedestal (placed at three to four times size)."""

@@ -263,19 +263,19 @@ def falls(c, sc):
 
     E, W, N, S_ = math.pi / 2, -math.pi / 2, math.pi, 0.0  # (falls toward +X, -X, +Y, -Y)
     # Beside the Waterfall Bridge: the mountain's cliffs to the west, falling east...
-    for k, y in enumerate((30.0, 120.0, 215.0)):
+    for k, y in enumerate((20.0, 95.0, 165.0)):
         x = L.INLET[0] - 2.0
         fall("Bridge Falls West %d" % (k + 1), x, y, E, 12.0 + 4 * (k % 2), throw=8.0)
     # The Cloud Chasm: off the mountain's north edge into the cloud.
-    for k, x in enumerate((-150.0, -40.0, 40.0)):
-        y = 466.0 + 6 * k
+    for k, x in enumerate((-130.0, -40.0, 30.0)):
+        y = 356.0 + 4 * k
         fall("Chasm Falls %d" % (k + 1), x, y, N, 10.0, foot=30.0, throw=6.0, veils=2)
     # Off the pinnacle's north side and the western cliffs into the lagoon.
     fall("Pinnacle Falls", L.PINNACLE[0] - 10.0, L.PINNACLE[1] + 74.0, N, 9.0, throw=6.0, veils=2)
-    for k, (x, y) in enumerate(((-300.0, 330.0), (-330.0, 210.0))):
+    for k, (x, y) in enumerate(((-142.0, 345.0), (-205.0, 200.0))):
         fall("West Falls %d" % (k + 1), x, y, W, 12.0, throw=7.0)
     for x, y, top, w, ang, foot in out:
-        game_entity(c, "waterfall", x, y, foot, top=round(top, 1), width=w, heading=round(ang, 3))
+        game_entity(c, "waterfall", x, y, foot, top=round(top, 1), width=w, heading=round(ang, 3), sound=False)
     sc.falls = out
     del S_
 
@@ -313,22 +313,27 @@ def light(c, sc):
 
 def gameplay(c, sc):
     A = L.at
+    # Missing the Star Leap puts you back on its landing (first: the checkpoints keep clear
+    # of it).
+    c.entity("respawn", **{"from": round(L.LIP - 40, 1), "to": round(L.LAND + 8, 1), "at": round(L.LAND + 44, 1)})
     c.checkpoints(
-        extra=[A("m1", 0.5), A("m2", 0.5), A("m3", 0.6), A("p1", 0.3), A("c1", 0.6), A("c3", 0.5), A("c4", 0.6), L.STAR[0] + 60,
-               L.STAR_OPEN[1] + 20, A("o2", 0.0), A("o3", 0.2), A("o3", 0.7), A("t1", 0.6), A("t2", 0.6), A("v1", 0.5), A("v2", 0.6),
-               A("v3", 0.6), A("f1", 0.4)],
+        extra=[A("m1", 0.5), A("mx", 0.5), A("m3", 0.6), A("w2", 0.5), A("p2", 0.2), A("r1", 0.6), A("c1", 0.6), A("c3", 0.5),
+               A("c4", 0.6), L.LIP - 50, L.LAND + 60, A("o2", 0.0), A("o3", 0.2), A("o3", 0.7), A("t1", 0.6), A("t2", 0.6), A("v1", 0.5),
+               A("v2", 0.6), A("v3", 0.6), A("f1", 0.4)],
         height=9.0,
     )
-    # Zippers on the long fast stretches.
-    for at, across in ((A("st", 0.55), 0), (A("m3", 0.55), 0), (A("p1", 0.6), 0), (L.STAR[0] + 30, 0), (A("t1", 0.3), 0),
-                       (A("v1", 0.2), 0), (A("f1", 0.3), 0)):
+    # Zippers: out of the market chicane, onto the bridge, out of the shrine's hairpin, up
+    # the climb, the run-up to the Star Leap (three abreast: it makes the leap huge), down the terraces,
+    # down the causeway, out of the overlook, and the start and finish straights.
+    for at, across in ((A("st", 0.55), 0), (A("mx", 0.7), 0), (A("m3", 0.75), 0), (A("r1", 0.55), 0), (A("c3", 0.7), 0),
+                       (L.LIP - 46.0, -6), (L.LIP - 46.0, 0), (L.LIP - 46.0, 6), (A("t1", 0.3), 0), (A("v1", 0.25), 0), (A("v3", 0.75), 0), (A("f1", 0.3), 0)):
         c.zipper(at, across)
-    for at, across in ((A("m1", 0.7), 3), (A("m3", 0.3), -3), (A("p1", 0.8), 0), (A("c2", 0.6), 0), (A("o2", 0.5), 0),
-                       (A("t2", 0.4), -3), (A("v2", 0.4), 3), (A("v3", 0.5), 0)):
+    for at, across in ((A("m1", 0.7), 3), (A("m2", 0.5), -3), (A("w1", 0.5), 0), (A("p2", 0.5), 0), (A("c2", 0.6), 0),
+                       (L.LAND + 70.0, -4), (A("o2", 0.5), 0), (A("t2", 0.4), -3), (A("v2", 0.4), 3)):
         c.bananas(at, across, count=5, gap=2.6)
-    for at, across, col in ((A("st", 0.8), -4, "red"), (A("st", 0.8), 4, "blue"), (A("m2", 0.6), 0, "green"),
-                            (A("m3", 0.75), -4, "yellow"), (A("m3", 0.75), 4, "rainbow"), (A("p1", 0.45), 0, "red"),
-                            (A("c3", 0.7), 0, "blue"), (L.STAR[0] + 100, -3, "green"), (L.STAR[0] + 100, 3, "yellow"),
+    for at, across, col in ((A("st", 0.8), -4, "red"), (A("st", 0.8), 4, "blue"), (A("mx", 0.4), 0, "green"),
+                            (A("w1", 0.8), -4, "yellow"), (A("w1", 0.8), 4, "rainbow"), (A("p1", 0.6), 0, "red"),
+                            (A("c3", 0.3), 0, "blue"), (L.LAND + 110.0, -4, "green"), (L.LAND + 110.0, 4, "yellow"),
                             (A("o3", 0.5), 0, "rainbow"), (A("t2", 0.8), 0, "red"), (A("v1", 0.6), -4, "blue"),
                             (A("v1", 0.6), 4, "green"), (A("v3", 0.3), 0, "yellow")):
         c.balloon(at, across, col)

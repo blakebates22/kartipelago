@@ -4,19 +4,19 @@
 #
 #   python tools/blender/prehistoric/celestial_dragon_festival.py      (the bpy module)
 #
-# A lap of about 2.9 km (just under two minutes) round the Palace Mount, at night, with
+# A lap of about 2.5 km (under two minutes) round the Palace Mount, at night, with
 # the sky filling with fireworks lap by lap (the game's festival: game/festival.ts).
 #
 #    1  The Festival Gate: the start, under the great ceremonial arch, east along the
 #       broad straight on the gate's terrace, the crowds packed either side.
-#    2  The Lantern Market Curve: sweeping down through the night market to the water.
-#    3  The Waterfall Bridge: north over the lagoon on a long stone bridge, waterfalls
-#       pouring off the islands either side, lantern boats beneath.
-#    4  The Dragon Promenade: west across the great plaza of worship, the golden dragon
-#       monuments, the dancers, the altar, the kneeling crowds.
+#    2  The Lantern Market: a chicane down through the night market to the water.
+#    3  The Waterfall Bridge: north over the lagoon on a long curving bridge, waterfalls
+#       pouring off the mountain beside it, lantern boats beneath.
+#    4  The Great Dragon Shrine: a hairpin right round the colossal golden dragon, the
+#       crowds packed round it, worshippers kneeling, then west to the climb.
 #    5  The Celestial Climb: up the mountain's north face in sweeping S-bends.
-#    6  The Star Bridge: west across the Cloud Chasm, high over a sea of cloud, the stars
-#       all round; parapets only at its ends.
+#    6  The Star Bridge and the Star Leap: west along the bridge high over the Cloud
+#       Chasm's sea of cloud, over the zipper, up the ramp and off the broken end.
 #    7  The Observatory Spiral: right, all the way round the Observatory Pinnacle and its
 #       great golden rings, climbing, and out over the Star Bridge's far end.
 #    8  The Palace Terraces: through the palace's upper gardens and courtyards.
@@ -24,6 +24,10 @@
 #   10  The Fireworks Overlook: out on the cliff's edge, the whole kingdom below.
 #   11  The Final Ascension: up round the palace's western bastion under golden arches...
 #   12  The Grand Finale: ...and down onto the straight, under the gate, to the line.
+#
+# The Star Leap (part 6): the Star Bridge breaks off over the Cloud Chasm; a zipper on the
+# run-up, a kicker at the broken end, and a flight to the landing ramp beyond (miss it and
+# you're put back on the landing).
 #
 # The land is cdf_land.py (plain data, no Blender); the land, water and gameplay
 # cdf_scenery.py; the city, the palace, the observatory, the people, the dragon and the
@@ -64,8 +68,11 @@ def main():
         "high": {"mat": "cdf_celestial", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.2, "barrier_mat": bal},
         "high_bridge": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 5.0,
                         "deck_mat": marble, "ground": False},
-        # The Star Bridge's open middle: no parapets at all.
-        "star_open": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "deck": 5.0, "deck_mat": marble, "ground": False},
+        # The Star Leap: the ramp up to the broken end, and the landing beyond the gap.
+        "ramp": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "barrier": 1.4, "barrier_mat": bal, "deck": 6.0,
+                 "deck_mat": marble, "ground": False},
+        "landing": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "barrier": 1.4, "barrier_mat": bal, "deck": 6.0,
+                    "deck_mat": marble, "ground": False},
         # The processional way and the finale: the crimson runner, lantern rails.
         "royal": {"mat": "cdf_royal", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
         "royal_bridge": {"mat": "cdf_royal", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 4.5,
@@ -79,8 +86,12 @@ def main():
     def label(smp):
         x, y = smp.p.x, smp.p.y
         s = smp.s
-        if L.STAR_OPEN[0] <= s <= L.STAR_OPEN[1]:
-            return "star_open"
+        if L.LIP <= s <= L.LAND:
+            return "gap"
+        if L.LIP - 40.0 <= s < L.LIP:
+            return "ramp"
+        if L.LAND < s <= L.LAND + 100.0:
+            return "landing"
         kind = zone_kind[L.zone_of(s)]
         below = min(L.ground(x + ox, y + oy) for ox, oy in ((0, 0), (5, 0), (-5, 0), (0, 5), (0, -5)))
         if below < smp.p.z - 3.5:
@@ -91,7 +102,7 @@ def main():
                 return bridge_kind[kind]
         return kind
 
-    specials = [r for r in kit.runs(c, label) if r[2] != "gate"]
+    specials = [(a, b, None if k == "gap" else k) for a, b, k in kit.runs(c, label) if k != "gate"]
     c.roads(kit.plan(c, specials, "gate", max_len=200.0))
 
     import cdf_scenery  # noqa: E402

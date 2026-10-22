@@ -353,34 +353,38 @@ don't swing yet.
 ## Celestial Dragon Festival
 
 The kingdom's grand finale, and the most spectacular course in the game: its sacred heart
-on the night of its greatest festival. A lap of about 2.7 km (an AI lap about 114 s) round
-the Palace Mount, at night under a sky of stars and a crescent moon, while the whole
+on the night of its greatest festival. A lap of about 2.55 km (an AI lap about 104 s)
+round the Palace Mount, at night under a near-black sky of stars and a crescent moon, while the whole
 kingdom celebrates its dragon ruler, and the sky fills with fireworks, more every lap. It
 closes the kingdom's story: the beauty and the riches are all here, and after the canyon's
 labour and the pass's hunger, the worship feels a little too much.
 
-| Part | Name                    | What happens                                                                                                                                                                                       |
-| ---- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | The Festival Gate       | The start on the gate's terrace: the great ceremonial gate, colossal golden dragons, grandstands packed with the crowd, banners, braziers, lanterns strung across the broad straight, drum stages. |
-| 2    | The Lantern Market      | Sweeping down through the night market to the water: shops, stalls, lantern strings and bunting, dragon floats parked for the procession, dancers and musicians.                                   |
-| 3    | The Waterfall Bridge    | North over the lagoon's inlet on a long white bridge, waterfalls pouring off the mountain beside it, pagodas on the islands, lantern boats sailing beneath.                                        |
-| 4    | The Dragon Promenade    | West across the great plaza of worship: the altar and its glowing mural of the dragon among the stars, two colossal golden dragons, gongs, braziers, rows of worshippers kneeling as one, priests. |
-| 5    | The Celestial Climb     | Up the mountain's north face in sweeping S-bends on blue and gold celestial stone, star pillars, terraced gardens of blossom.                                                                      |
-| 6    | The Star Bridge         | West across the Cloud Chasm, high over a sea of cloud; its middle 70 m has no parapets (the one place you can fall).                                                                               |
-| 7    | The Observatory Spiral  | Right, all the way round the Observatory Pinnacle under its great golden armillary rings (they turn in the game), climbing, and out over the Star Bridge's far end (15 m clear).                   |
-| 8    | The Palace Terraces     | Through the palace's upper gardens: domed halls, lotus pools, blossom, guards.                                                                                                                     |
-| 9    | The Procession Causeway | Down the broad processional way between grandstands of thousands, golden dragons, banners, a line of monks.                                                                                        |
-| 10   | The Fireworks Overlook  | Out on the cliff's edge: the best seat for the fireworks, the whole kingdom below.                                                                                                                 |
-| 11   | The Final Ascension     | Up round the palace's western bastion under golden celestial arches, crowds packed in.                                                                                                             |
-| 12   | The Grand Finale        | Down onto the straight, under the celestial arches and the gate, to the line, the palace blazing above.                                                                                            |
+| Part | Name                    | What happens                                                                                                                                                                                                                                                                                                                    |
+| ---- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | The Festival Gate       | The start on the gate's terrace: the great ceremonial gate, colossal golden dragons, grandstands packed with the crowd, banners, braziers, lanterns strung across the straight, drum stages.                                                                                                                                    |
+| 2    | The Lantern Market      | A right-left-right chicane down through the night market to the water: shops, stalls, lantern strings and bunting, dragon floats parked for the procession, dancers and musicians.                                                                                                                                              |
+| 3    | The Waterfall Bridge    | North over the lagoon's inlet on a long white bridge curving right then left, waterfalls pouring off the mountain beside it, pagodas on the islands, lantern boats beneath.                                                                                                                                                     |
+| 4    | The Great Dragon Shrine | A hairpin right round the shrine: a 50 m golden dragon on a tiered marble platform ringed with fire bowls, the altar and murals, about 200 worshippers kneeling and bowing as one, priests, packed stands.                                                                                                                      |
+| 5    | The Celestial Climb     | Up the mountain's north face in S-bends on blue and gold celestial stone, star pillars, terraced gardens of blossom.                                                                                                                                                                                                            |
+| 6    | The Star Leap           | West along the Star Bridge high over the Cloud Chasm, over three zippers abreast, under a golden arch, up a 30% kicker and off the broken end: a 16 m gap and a 12 m drop at top speed, a flight of about 40 m with the zipper (70 with a rainbow boost), onto a long landing ramp. Miss it and you're put back on the landing. |
+| 7    | The Observatory Spiral  | Right, all the way round the Observatory Pinnacle under its great golden armillary rings (they turn in the game), climbing, and out over the Star Bridge's far end (14 m clear).                                                                                                                                                |
+| 8    | The Palace Terraces     | Down through the palace's upper gardens: domed halls, lotus pools, blossom, guards.                                                                                                                                                                                                                                             |
+| 9    | The Procession Causeway | Down the broad processional way between grandstands of thousands, golden dragons, banners, a line of monks.                                                                                                                                                                                                                     |
+| 10   | The Fireworks Overlook  | Out on the cliff's edge: the best seat for the fireworks, the whole kingdom below.                                                                                                                                                                                                                                              |
+| 11   | The Final Ascension     | Up round the palace's western bastion under golden celestial arches, crowds packed in.                                                                                                                                                                                                                                          |
+| 12   | The Grand Finale        | Down onto the straight, under the celestial arches and the gate, to the line, the palace blazing above.                                                                                                                                                                                                                         |
+
+**Zippers (12):** the start straight, out of the market chicane, onto the bridge, out of
+the shrine's hairpin, up the climb, the Star Leap's run-up (three abreast: it makes the leap huge), down
+the terraces, down the causeway, out of the overlook, the finish straight.
 
 **The festival** (`src/game/festival.ts` rules, `festivalLife.ts` drawing it; the
 `festival` entity from `cdf_town.py`). Three stages, one per lap, following **your**
 lap (the rivals never change it; time trials the same): the Opening Celebration (lap 1),
 the Ceremony Intensifies (middle laps) and the Grand Finale (the last lap, and after the
-line). Each stage sets how often the city's own rockets go up (about 0.45 a second, then
-1.5, then 2.6 rising to about 4 by the line), how big (16-26 m bursts, then 20-38, then
-26-52) and how varied (peonies and glitter; then willows, palms, rings and stars; then
+line). Each stage sets how often the city's own rockets go up (about 1.4 a second, then
+3.2, then 4.6 rising to about 7 by the line), how big (18-30 m bursts, then 22-42, then
+28-56) and how varied (peonies and glitter; then willows, palms, rings and stars; then
 everything, in rainbow too), how many sky lanterns rise (up to 700), how fast and bright
 the observatory's rings turn and the brightness of the flash each burst throws on the
 kingdom. Inside the last lap everything keeps building to the finish.
@@ -403,11 +407,13 @@ is driving sees them as they reach the landmark, each once per lap on its own la
 
 Fireworks are purely visual. The city's own rockets follow the race clock and a fixed
 seed, so every race and time trial sees the same show. Every star is a point in one
-pooled buffer (24,000); the GPU works out where each is from when it was fired, and the
+pooled buffer (40,000); the GPU works out where each is from when it was fired, and the
 CPU writes each star once, when it's born. The lanterns are animated entirely on the
 GPU. The flash is one hemisphere light. Stars never write depth or fog. Sounds (a
-launch whistle, the boom and crackle a moment later with distance, a gong, the crowd's
-roar) stay under the engines.
+faint launch whistle, the boom and crackle a moment later with distance, a gong, the
+crowd's roar) stay under the engines. There is no hiss: the course's zones use the
+`celebration` sound (no bed of noise, only the odd drum, gong or plucked phrase), and its
+waterfalls are silent (`"sound": false`).
 
 **The imperial dragon** is the kingdom's (`isles_dragon`), here in gold, bigger; on the
 last lap it flies its `finale` path: round the palace's west side as you reach the
@@ -425,8 +431,8 @@ triumph); `rise` adds horns, sustained strings, a running marimba, toms, bongos 
 tambourine; `finale` carries all of that plus brass and bells on the tune, a xylophone,
 snare, more kick and a crash every phrase.
 
-**The sky:** stars (1,100), a crescent moon (`skyDome.sun.face: "crescent"`, new), dark
-violet clouds low on the horizon, karst hills. Night but readable: moonlight from the
+**The sky:** near black (deepest overhead, a faint indigo at the horizon), stars (1,400), a crescent moon (`skyDome.sun.face: "crescent"`, new), dark
+clouds low on the horizon, karst hills. Night but readable: moonlight from the
 south-east, warm pools round every lantern and brazier, gold round the palace,
 blue-white round the observatory and the star pillars.
 
@@ -446,12 +452,12 @@ grandstands, dragon floats, colossal dragons), `cdf_textures.py` (20 textures an
 with its worshippers, the dragon's finale flight, the festival and the air; the stages
 and levels; the city's rockets more often, bigger and more varied each stage, the same
 every time; set pieces firing once at their places on their laps only (the Star Bridge
-dragon on the last); the show running as you drive (headless); the spiral well clear
-over the Star Bridge; the AI driving it cleanly in 100-125 s. `tests/holes.test.ts`
+dragon on the last); the show running as you drive (headless); the Star Leap (its run-up
+zipper and its catch); the spiral well clear over the Star Bridge; the AI driving it
+cleanly in 90-115 s. `tests/holes.test.ts`
 covers it too.
 
-**Limits and polish next:** the AI lap is about 114 s, a little over the 110 s aimed
-for (players are usually quicker, and the AI is due to be rewritten). There's no
+**Limits and polish next:** the AI is due to be rewritten; its lap is about 104 s. There's no
 multiplayer yet; when there is, the festival can take its lap from any source (the
 leader's, for a shared sky). There are no reflections of the fireworks in the water,
 only their light. The firework sounds are simple synthesis. The palace and observatory

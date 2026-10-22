@@ -199,25 +199,25 @@ const RAINBOW = ["#ff3a3a", "#ffa030", "#ffe050", "#4aff9a", "#5aa0ff", "#b07aff
 
 export const AMBIENT: Record<Stage, AmbientStyle> = {
   1: {
-    rate: 0.45,
-    size: [16, 26],
+    rate: 1.4,
+    size: [18, 30],
     patterns: ["peony", "peony", "chrysanthemum", "glitter"],
     colors: [RED_GOLD, BLUE_GOLD, GOLD],
-    volley: 0.05,
+    volley: 0.15,
   },
   2: {
-    rate: 1.5,
-    size: [20, 38],
+    rate: 3.2,
+    size: [22, 42],
     patterns: ["peony", "chrysanthemum", "willow", "glitter", "palm", "ring", "star"],
     colors: [RED_GOLD, BLUE_GOLD, GOLD, PINK, GREEN, VIOLET],
-    volley: 0.25,
+    volley: 0.3,
   },
   3: {
-    rate: 2.6,
-    size: [26, 52],
+    rate: 4.6,
+    size: [28, 56],
     patterns: ["peony", "chrysanthemum", "willow", "willow", "glitter", "palm", "ring", "star"],
     colors: [RED_GOLD, BLUE_GOLD, GOLD, PINK, GREEN, VIOLET, RAINBOW],
-    volley: 0.4,
+    volley: 0.45,
   },
 };
 

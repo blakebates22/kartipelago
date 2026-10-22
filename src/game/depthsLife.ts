@@ -401,6 +401,7 @@ export function createDepthsLife(opts: {
             for (const kind of SOUND_KINDS) {
               const hushed = kind === "festival" ? 1 - 0.85 * (opts.hush?.() ?? 0) : 1;
               const v = a.sound[kind] * hushed;
+              if (kind === "celebration") continue; // (no bed of noise)
               if (v > 0.02 && !loops[kind]) loops[kind] = opts.sfx.ambience(kind);
               loops[kind]?.set(vol * 0.42 * v);
             }
@@ -421,6 +422,7 @@ export function createDepthsLife(opts: {
               else if (pick === "bells" && Math.random() < 0.18) opts.sfx.monasteryBell?.(v);
               else if (pick === "festival" && Math.random() < 0.4 * (1 - (opts.hush?.() ?? 0)))
                 opts.sfx.festivalBit?.(v);
+              else if (pick === "celebration" && Math.random() < 0.3) opts.sfx.festivalBit?.(v);
             }
           }
         }

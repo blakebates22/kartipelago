@@ -269,59 +269,60 @@ def waterfront(c, sc):
 # ------------------------------------------------------------------ 4  the Dragon Promenade
 
 
-def promenade(c, sc):
-    a, b = S["p1"] + 30.0, S["c1"]
-    px, py = L.PLAZA
-    gz = sc.info(px, py + 30)
-    # The altar of the dragon, facing the road across the plaza.
-    ax, ay = px, py + 48.0
-    put(sc, cp.altar(c), ax, ay, math.pi, 1.4, coll="Landmarks", role="both", z=sc.info(ax, ay))
-    sc.footprints.append((ax, ay, 18.0))
-    sc.light("gold", ax, ay - 4, sc.info(ax, ay) + 8.0)
-    sc.light("fire", ax - 6.4, ay - 1.7, sc.info(ax, ay) + 7.5)
-    sc.light("fire", ax + 6.4, ay - 1.7, sc.info(ax, ay) + 7.5)
-    # Two colossal golden dragons either side of the altar.
-    for dx in (-34.0, 34.0):
-        x, y = ax + dx, ay - 4.0
-        put(sc, cp.colossus(c), x, y, math.pi, 4.0, coll="Landmarks", role="both", z=sc.info(x, y))
-        sc.footprints.append((x, y, 10.0))
-        sc.light("gold", x, y, sc.info(x, y) + 22.0)
-    # Gongs, murals, braziers.
-    for dx in (-18.0, 18.0):
-        place(c, sc, cp.gong(c), ax + dx, ay - 10.0, math.pi, 3.0, coll="Landmarks", margin=0.0)
-    for dx in (-60.0, 60.0):
-        place(c, sc, cp.mural_wall(c), ax + dx, ay + 6.0, math.pi, 6.0, coll="Landmarks", margin=0.0)
+def shrine(c, sc):
+    """The Great Dragon Shrine, inside the hairpin: a colossal golden dragon on a tiered
+    marble platform, fire bowls all round it, the altar and murals, and the people packed
+    in round it: rings of worshippers kneeling and bowing as one, priests on the steps,
+    dancers, the crowd lining the hairpin."""
+    cx, cy = L.SHRINE
+    gz = 23.4
+    R = 22.0
+    put(sc, cp.shrine_base(c, R), cx, cy, 0.0, coll="Landmarks", role="both", z=gz)
+    sc.footprints.append((cx, cy, R + 2))
+    # The dragon: Dragon Isles' coiled statue in gold, over fifty metres tall.
+    put(sc, cp.colossus(c), cx, cy - 2.0, math.radians(200.0), 6.0, coll="Landmarks", role="both", z=gz + 4.2)
+    for k in range(12):
+        a = k * math.tau / 12
+        sc.light("fire", cx + R * 0.55 * math.cos(a), cy + R * 0.55 * math.sin(a), gz + 7.5)
+    for z in (20.0, 40.0, 58.0):
+        sc.light("gold", cx, cy, gz + z)
+    # The altar facing the hairpin's mouth (south), murals and gongs round the edge.
+    ax, ay = cx, cy - R - 9.0
+    put(sc, cp.altar(c), ax, ay, 0.0, 0.8, coll="Landmarks", role="both", z=gz)
+    sc.light("gold", ax, ay, gz + 6.0)
+    for k, a in enumerate((50.0, 130.0, 230.0, 310.0)):
+        r = math.radians(a)
+        x, y = cx + (R + 7.0) * math.cos(r), cy + (R + 7.0) * math.sin(r)
+        put(sc, cp.mural_wall(c) if k % 2 else cp.gong(c), x, y, ip.facing(x, y, cx, cy) + math.pi, coll="Landmarks", role="both", z=gz)
+    # The faithful: rings kneeling on the platform's foot, all facing the dragon.
+    for ring, (rr, n) in enumerate(((R + 2.5, 40), (R + 5.0, 46), (R + 7.5, 52), (R + 10.0, 58))):
+        for i in range(n):
+            a = (i + 0.5 * ring) * math.tau / n
+            x, y = cx + rr * math.cos(a), cy + rr * math.sin(a)
+            if abs(math.degrees(a) % 360 - 270) < 14:
+                continue  # (the way up to the altar)
+            if clear(c, x, y, 3.0):
+                villager(c, sc, x, y, "worship" if ring < 3 else "bow", cx, cy, z=gz)
+    # Priests on the steps, and dancers round the altar.
     for i in range(10):
-        x = ax - 45 + i * 10
-        if sc.free(x, ay - 24, 1.2):
-            put(sc, cp.brazier(c), x, ay - 24.0, 0.0, coll="Props", role="both")
-            sc.light("fire", x, ay - 24.0, sc.info(x, ay - 24) + cp.BRAZIER_LIGHT)
-    # The worshippers: rows kneeling toward the altar, priests before it, dancers in a
-    # ring, the crowd along the road.
-    for row in range(5):
-        for i in range(16):
-            x = ax - 30 + i * 4.0 + (2.0 if row % 2 else 0.0)
-            y = ay - 16.0 - row * 3.2
-            if ok(c, sc, x, y, 0.6, margin=2.0):
-                villager(c, sc, x, y, "worship", ax, ay)
-    for i in range(6):
-        villager(c, sc, ax - 7.5 + i * 3.0, ay - 6.0, "monk", ax, ay, z=sc.info(ax, ay) + 1.8)
+        a = i * math.tau / 10
+        villager(c, sc, cx + R * 0.72 * math.cos(a), cy + R * 0.72 * math.sin(a), "monk", cx, cy, z=gz + 4.2)
+    for i in range(8):
+        a = i * math.tau / 8
+        villager(c, sc, ax + 6 * math.cos(a), ay - 6 + 4 * math.sin(a), "dancer", ax, ay, z=gz)
+    # The crowd along the hairpin, banners, braziers, lanterns strung across.
+    a, b = S["p1"] - 30.0, L.at("r1", 1.0)
+    crowd_along(c, sc, a, b, q_w(c, a) / 2 + 2.0, q_w(c, a) / 2 + 6.0, 3.5, role="cheer", chance=0.7)
+    banners(c, sc, a, b, 16.0, off=1.6)
+    braziers(c, sc, a, b, 28.0, off=2.6)
+    strings_across(c, sc, a + 10, b, 26.0, height=10.0, kind="lantern", posts=False)
     for side in (-1, 1):
-        cx, cy = ax + side * 62.0, ay - 22.0
-        for i in range(10):
-            ang = i * math.tau / 10
-            villager(c, sc, cx + 7 * math.cos(ang), cy + 7 * math.sin(ang), "dancer", cx, cy)
-    crowd_along(c, sc, a, b, q_w(c, a) / 2 + 2.0, q_w(c, a) / 2 + 6.0, 4.0, role="bow", chance=0.6, sides=(1,))
-    banners(c, sc, a, b, 18.0, off=1.6)
-    braziers(c, sc, a, b, 36.0, off=2.6, sides=(-1,))
-    for s in (a + 30.0, b - 40.0):
-        q = c.at(s)
-        sc.put(cp.celestial_arch(c, q.w + 6.0, 15.0), q.p.x, q.p.y, q.p.z, math.atan2(q.t.y, q.t.x) - math.pi / 2, 1.0, coll="Landmarks",
-               role="both")
-        sc.light("gold", q.p.x, q.p.y, q.p.z + 14.0)
-    game_entity(c, "motes", px, py + 20, gz + 8, radius=90.0, rate=14.0, color="#ffb8d8", rise=-0.3, size=0.32)
-    trees(c, sc, px + 120.0, py + 40.0, 60.0, 12, 21)
-    trees(c, sc, px - 120.0, py + 50.0, 50.0, 10, 23)
+        for s in (S["p1"] - 60.0, L.at("r1", 0.5)):
+            stand(c, sc, s, 4.0, side, 22.0, 4)
+    chevrons(c, sc, L.at("p1", 0.5), 1)
+    chevrons(c, sc, L.at("p2", 0.5), 1)
+    game_entity(c, "motes", cx, cy, gz + 10, radius=80.0, rate=16.0, color="#ffd080", rise=0.4, size=0.35)
+    trees(c, sc, cx + 110.0, cy + 60.0, 50.0, 10, 21)
 
 
 # ------------------------------------------------------------------ 5  the Celestial Climb, 6  the Star Bridge
@@ -341,18 +342,32 @@ def climb(c, sc):
 
 
 def star_bridge(c, sc):
+    """The Star Bridge and the Star Leap: star pillars along the parapets, a golden arch
+    over the ramp, lamps at the broken ends so you see where the bridge stops and starts
+    again."""
     a, b = L.STAR
-    o0, o1 = L.STAR_OPEN
-    # Star pillars on the parapets either side of the open stretch, navy star banners.
-    pillars_along(c, sc, a + 15.0, o0 - 10.0, 34.0, off=0.6, deck=True)
-    pillars_along(c, sc, o1 + 15.0, b, 34.0, off=0.6, deck=True)
-    # Lamps right at the open stretch's ends so you see where the parapets stop.
-    for s in (o0 - 2.0, o1 + 2.0):
+    pillars_along(c, sc, a + 12.0, L.LIP - 50.0, 30.0, off=0.6, deck=True)
+    pillars_along(c, sc, L.LAND + 24.0, b, 30.0, off=0.6, deck=True)
+    q = c.at(L.LIP - 22.0)
+    sc.put(cp.celestial_arch(c, q.w + 6.0, 16.0), q.p.x, q.p.y, q.p.z, math.atan2(q.t.y, q.t.x) - math.pi / 2, 1.0, coll="Landmarks",
+           role="both")
+    sc.light("gold", q.p.x, q.p.y, q.p.z + 15.0)
+    for s in (L.LIP - 1.0, L.LAND + 1.0):
         q = c.at(s)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 0.6))
             sc.put(cp.star_pillar(c, 4.0), p.x, p.y, p.z, 0.0, 1.0, coll="Props", role="visual")
             sc.light("star", p.x, p.y, p.z + 4.6)
+    for s in (L.LIP - 30.0, L.LIP - 12.0):
+        chevrons_over(c, sc, s)
+
+
+def chevrons_over(c, sc, s):
+    """Turn boards along both parapets pointing on (the leap's run-up)."""
+    q = c.at(s % c.length)
+    for side in (-1, 1):
+        p = q.side(side * (q.w / 2 + 1.2))
+        sc.put(chevron(c), p.x, p.y, p.z, math.atan2(q.t.y, q.t.x) + (0.0 if side > 0 else math.pi), 1.0, coll="Props", role="visual")
 
 
 # ------------------------------------------------------------------ 7  the Observatory
@@ -576,8 +591,8 @@ def dragon(c, sc):
     ox, oy = L.PINNACLE
     star = L.STAR[0] + 120.0
     keys = [
-        (0.0, 60.0, 60.0, 150.0),  # over the gate as the race starts
-        (S["m1"], 260.0, 120.0, 140.0),
+        (0.0, 60.0, 30.0, 120.0),  # over the gate as the race starts
+        (S["mx"], 260.0, 120.0, 140.0),
         (A("m3", 0.4), *over(A("m3", 0.4), 70.0, 120.0)),  # over the inlet beside the bridge
         (S["p1"], *over(S["p1"], 60.0, 40.0)),
         (A("p1", 0.6), *over(A("p1", 0.6), 34.0, -20.0)),  # low over the Dragon Promenade: the worshippers bow
@@ -591,15 +606,15 @@ def dragon(c, sc):
         (A("v1", 0.6), *over(A("v1", 0.6), 40.0, 30.0)),  # down the causeway with the procession
         (A("v2", 0.6), -430.0, 130.0, 120.0),  # out over the lagoon, seen from the overlook
         (A("v3", 0.6), -300.0, 260.0, 180.0),
-        (c.length - 90.0, px + 40.0, py - 110.0, pz + 90.0),
-        (c.length - 1.0, 60.0, 60.0, 150.0),
+        (c.length - 90.0, -60.0, 120.0, pz + 100.0),
+        (c.length - 1.0, 60.0, 30.0, 120.0),
     ]
     finale = keys[:-4] + [
-        (A("v2", 0.5), px - 110.0, py - 60.0, pz + 60.0),  # round the palace's west side...
-        (A("v3", 0.5), px - 10.0, py - 80.0, pz + 100.0),
-        (S["f1"] + 30.0, px + 30.0, py + 10.0, pz + 150.0),  # the Dragon's Ascension above the palace...
-        (c.length - 60.0, *over(c.length - 60.0, 60.0, 30.0)),  # ...and down over the finish
-        (c.length - 1.0, 60.0, 60.0, 150.0),
+        (A("v2", 0.4), px - 110.0, py - 60.0, pz + 60.0),  # round the palace's west side...
+        (A("v3", 0.2), px - 10.0, py - 80.0, pz + 110.0),
+        (S["f1"] - 20.0, px + 30.0, py + 10.0, pz + 150.0),  # the Dragon's Ascension above the palace...
+        (c.length - 40.0, *over(c.length - 40.0, 60.0, 30.0)),  # ...and down over the finish
+        (c.length - 1.0, 60.0, 30.0, 120.0),
     ]
 
     def conv(ks):
@@ -696,7 +711,7 @@ def festival(c, sc):
         B(0.6, (px + 60, py, pz + 120), "peony", 34, BLUE_GOLD, frm=(px + 60, py, pz + 4)),
         B(1.4, (px, py + 10, pz + 150), "chrysanthemum", 44, GOLD, frm=(px, py, pz + 4)),
     ], cue="gong")
-    piece("promenade_1", [1], S["p1"] - 40.0, [
+    piece("shrine_1", [1], S["p1"] - 40.0, [
         B(0.0, (L.PLAZA[0] - 40, L.PLAZA[1] + 90, 120), "peony", 30, RED_GOLD, frm=(L.PLAZA[0] - 40, L.PLAZA[1] + 90, 10)),
         B(0.8, (L.PLAZA[0] + 40, L.PLAZA[1] + 90, 130), "glitter", 30, GOLD, frm=(L.PLAZA[0] + 40, L.PLAZA[1] + 90, 10)),
     ])
@@ -728,6 +743,13 @@ def festival(c, sc):
           frm=(x, y, 10)) for i, (x, y) in enumerate(city)
     ])
 
+    sx, sy = L.SHRINE
+    piece("shrine_salute", [2, 3], S["p1"] - 70.0, [
+        B(0.12 * i, (sx + 46 * math.cos(i * math.tau / 10), sy + 46 * math.sin(i * math.tau / 10), 95 + 10 * (i % 2)),
+          ("peony", "glitter", "star", "chrysanthemum")[i % 4], 30, (GOLD, RED_GOLD, PINK, BLUE_GOLD)[i % 4],
+          frm=(sx + 46 * math.cos(i * math.tau / 10), sy + 46 * math.sin(i * math.tau / 10), 24)) for i in range(10)
+    ] + [B(1.6, (sx, sy, 130.0), "willow", 60, GOLD, frm=(sx, sy, 60.0))], cue="gong")
+
     # ---- lap 3: the Grand Finale (the entire sky explodes), building all the way
     piece("salute", [3], 8.0, [
         B(0.18 * i, (x, y, 140 + 15 * (i % 2)), "peony", 40, (RED_GOLD, GOLD)[i % 2], frm=(x, y, 10)) for i, (x, y) in enumerate(city)
@@ -745,7 +767,7 @@ def festival(c, sc):
     ], cue="bells")
     # The signature moment: crossing the Star Bridge on the last lap, the dragon drawn in
     # gold over the observatory, ringed by its rings.
-    eye = viewer(L.STAR_OPEN[0])
+    eye = viewer(L.LIP + 8.0, up=8.0)
     dpos = (ox + 20, oy - 10, oz + 140)
     piece("star_bridge_dragon", [3], L.STAR[0] + 10, [
         B(0.0, dpos, "dragon", 92, GOLD, frm=(ox, oy, oz + 20), yaw=yaw_to(dpos, eye)),
@@ -797,18 +819,18 @@ def festival(c, sc):
 
 # ------------------------------------------------------------------ the air
 
-ZONES = {  # the air and sound of each part (game/depths.ts' atmosphere)
-    "gate": {"fog": "#2c2a6a", "near": 420, "far": 2600, "sun": 1.75, "sky": "#9a9af0", "ground": "#4a3a78", "hemi": 1.6, "sound": "festival"},
-    "market": {"fog": "#2e2a66", "near": 380, "far": 2500, "sun": 1.7, "sky": "#a29af0", "ground": "#5a3a70", "hemi": 1.6, "sound": "festival"},
-    "falls": {"fog": "#262c6a", "near": 420, "far": 2600, "sun": 1.75, "sky": "#9aa4f4", "ground": "#3a4a78", "hemi": 1.6, "sound": "falls"},
-    "promenade": {"fog": "#2e2a6a", "near": 420, "far": 2600, "sun": 1.7, "sky": "#a49af0", "ground": "#5a3a6a", "hemi": 1.6, "sound": "festival"},
-    "climb": {"fog": "#24286a", "near": 460, "far": 2800, "sun": 1.8, "sky": "#9aa0f4", "ground": "#3a3a78", "hemi": 1.55, "sound": "garden"},
-    "star": {"fog": "#1e2466", "near": 520, "far": 3000, "sun": 1.85, "sky": "#9aa6ff", "ground": "#3a3a80", "hemi": 1.5, "sound": "wind"},
-    "observatory": {"fog": "#1e2466", "near": 520, "far": 3000, "sun": 1.85, "sky": "#9aa6ff", "ground": "#3a3a80", "hemi": 1.55,
-                    "sound": "wind"},
-    "terraces": {"fog": "#2a2a6a", "near": 440, "far": 2700, "sun": 1.75, "sky": "#a29af0", "ground": "#4a3a70", "hemi": 1.6, "sound": "garden"},
-    "causeway": {"fog": "#2e2a66", "near": 420, "far": 2600, "sun": 1.7, "sky": "#a49af0", "ground": "#5a3a6a", "hemi": 1.6, "sound": "festival"},
-    "overlook": {"fog": "#24286a", "near": 520, "far": 3000, "sun": 1.8, "sky": "#9aa4f4", "ground": "#3a3a78", "hemi": 1.55, "sound": "wind"},
+ZONES = {  # the air and sound of each part (game/depths.ts' atmosphere): a near-black night,
+    # no beds of noise (the fireworks and the music carry it; the odd drum and gong)
+    "gate": {"fog": "#0c0c22", "near": 420, "far": 2600, "sun": 1.75, "sky": "#9a9af0", "ground": "#4a3a78", "hemi": 1.6, "sound": "celebration"},
+    "market": {"fog": "#0e0c22", "near": 380, "far": 2500, "sun": 1.7, "sky": "#a29af0", "ground": "#5a3a70", "hemi": 1.6, "sound": "celebration"},
+    "falls": {"fog": "#0a0e24", "near": 420, "far": 2600, "sun": 1.75, "sky": "#9aa4f4", "ground": "#3a4a78", "hemi": 1.6, "sound": "celebration"},
+    "promenade": {"fog": "#0e0c22", "near": 420, "far": 2600, "sun": 1.7, "sky": "#a49af0", "ground": "#5a3a6a", "hemi": 1.6, "sound": "celebration"},
+    "climb": {"fog": "#0a0c22", "near": 460, "far": 2800, "sun": 1.8, "sky": "#9aa0f4", "ground": "#3a3a78", "hemi": 1.55, "sound": "celebration"},
+    "star": {"fog": "#080a20", "near": 520, "far": 3000, "sun": 1.85, "sky": "#9aa6ff", "ground": "#3a3a80", "hemi": 1.5, "sound": "celebration"},
+    "observatory": {"fog": "#080a20", "near": 520, "far": 3000, "sun": 1.85, "sky": "#9aa6ff", "ground": "#3a3a80", "hemi": 1.55, "sound": "celebration"},
+    "terraces": {"fog": "#0c0c22", "near": 440, "far": 2700, "sun": 1.75, "sky": "#a29af0", "ground": "#4a3a70", "hemi": 1.6, "sound": "celebration"},
+    "causeway": {"fog": "#0e0c22", "near": 420, "far": 2600, "sun": 1.7, "sky": "#a49af0", "ground": "#5a3a6a", "hemi": 1.6, "sound": "celebration"},
+    "overlook": {"fog": "#0a0c22", "near": 520, "far": 3000, "sun": 1.8, "sky": "#9aa4f4", "ground": "#3a3a78", "hemi": 1.55, "sound": "celebration"},
 }
 ZONE_OF = {"gate": "gate", "market": "market", "falls": "falls", "promenade": "promenade", "climb": "climb", "star": "star",
            "observatory": "observatory", "terraces": "terraces", "causeway": "causeway", "overlook": "overlook", "ascension": "causeway",
@@ -857,7 +879,7 @@ def build(c, sc):
     gate(c, sc)
     market(c, sc)
     waterfront(c, sc)
-    promenade(c, sc)
+    shrine(c, sc)
     climb(c, sc)
     star_bridge(c, sc)
     observatory(c, sc)

@@ -4,12 +4,13 @@
 # SPDX-License-Identifier: MIT
 #
 # The lap runs anticlockwise round the Palace Mount (inside the loop), out of the
-# Festival Gate on the low terrace south of it, east through the lantern market to the
-# waterfront, north over the lagoon on the Waterfall Bridge, west along the Dragon
-# Promenade, up the Celestial Climb, west across the Cloud Chasm on the Star Bridge,
-# right round the Observatory Pinnacle (the spiral comes out over the Star Bridge's far
-# end), south along the Palace Terraces, down the Procession Causeway to the Fireworks
-# Overlook, and round the Final Ascension back down to the gate.
+# Festival Gate on the low terrace south of it, through the lantern market's chicane to
+# the waterfront, north over the lagoon on the curving Waterfall Bridge, round the hairpin
+# at the Great Dragon Shrine, up the Celestial Climb, west along the Star Bridge and over
+# the Star Leap (the broken bridge: a zipper, a ramp, and a long flight over the Cloud
+# Chasm), right round the Observatory Pinnacle (the spiral comes out over the Star
+# Bridge's far end), down the Palace Terraces and the Procession Causeway to the
+# Fireworks Overlook, and round the Final Ascension back down to the gate.
 #
 # Drawn as corners like Dragon Canyon: (x, y, radius, name), straights joined by arcs.
 # Blender coordinates: x east, y north, z up.
@@ -29,23 +30,28 @@ def rnd(k):
 
 CORNERS = [
     (40.0, 0.0, 0.0, "st"),  # 1  the Festival Gate: east along the start straight
-    (150.0, 0.0, 70.0, "m1"),  # 2  the Lantern Market Curve: down through the market...
-    (260.0, -90.0, 70.0, "m2"),  #    ...and out along the waterfront
-    (390.0, -90.0, 60.0, "m3"),  # 3  the Waterfall Bridge: north over the lagoon
-    (390.0, 280.0, 60.0, "p1"),  # 4  the Dragon Promenade: west across the great plaza
-    (180.0, 280.0, 38.0, "c1"),  # 5  the Celestial Climb: up the mountain in S-bends
-    (180.0, 380.0, 38.0, "c2"),
-    (75.0, 380.0, 40.0, "c3"),
-    (75.0, 470.0, 42.0, "c4"),
-    (-320.0, 470.0, 58.0, "o1"),  # 6  the Star Bridge west over the Cloud Chasm, then
-    (-320.0, 590.0, 58.0, "o2"),  # 7  the Observatory Spiral: right, round the pinnacle,
-    (-200.0, 590.0, 58.0, "o3"),  #    out over the bridge's far end
-    (-200.0, 320.0, 60.0, "t1"),  # 8  the Palace Terraces
-    (-140.0, 240.0, 56.0, "t2"),
-    (-200.0, 130.0, 56.0, "v1"),  # 9  the Procession Causeway, down to...
-    (-305.0, 90.0, 48.0, "v2"),  # 10 ...the Fireworks Overlook
-    (-280.0, -20.0, 50.0, "v3"),  # 11 the Final Ascension
-    (-175.0, 0.0, 50.0, "f1"),  # 12 the Grand Finale: down onto the straight
+    (120.0, 0.0, 40.0, "m1"),  # 2  the Lantern Market chicane: right, left...
+    (165.0, -50.0, 34.0, "m2"),
+    (245.0, -50.0, 34.0, "mx"),  #    ...right again, down to the waterfront
+    (345.0, -75.0, 48.0, "m3"),  # 3  the Waterfall Bridge: north over the lagoon,
+    (395.0, 40.0, 110.0, "w1"),  #    curving right then left
+    (350.0, 160.0, 110.0, "w2"),
+    (410.0, 285.0, 46.0, "p1"),  # 4  the Great Dragon Shrine: a hairpin right round it
+    (262.0, 285.0, 46.0, "p2"),
+    (262.0, 190.0, 38.0, "r1"),  #    and away west
+    (172.0, 190.0, 38.0, "c1"),  # 5  the Celestial Climb: up the mountain in S-bends
+    (172.0, 305.0, 38.0, "c2"),
+    (75.0, 305.0, 40.0, "c3"),
+    (75.0, 415.0, 42.0, "c4"),
+    (-230.0, 415.0, 58.0, "o1"),  # 6  the Star Bridge and the Star Leap west over the Cloud
+    (-230.0, 535.0, 58.0, "o2"),  #    Chasm; 7 the Observatory Spiral: right, round the
+    (-110.0, 535.0, 58.0, "o3"),  #    pinnacle, out over the bridge's far end
+    (-115.0, 300.0, 50.0, "t1"),  # 8  the Palace Terraces
+    (-90.0, 225.0, 44.0, "t2"),
+    (-160.0, 140.0, 46.0, "v1"),  # 9  the Procession Causeway, down to...
+    (-255.0, 95.0, 44.0, "v2"),  # 10 ...the Fireworks Overlook
+    (-230.0, -20.0, 44.0, "v3"),  # 11 the Final Ascension
+    (-120.0, 0.0, 44.0, "f1"),  # 12 the Grand Finale: down onto the straight
 ]
 
 PATH = fillet_path(CORNERS)
@@ -147,28 +153,30 @@ LEVEL = True
 ANCHORS = [
     ("st", 0.0, 32.0, LEVEL),  # the Festival Gate's terrace
     ("m1", 0.0, 32.0, LEVEL),
-    ("m2", 0.0, 24.0),  # down through the market to the waterfront
-    ("m3", 0.0, 15.0, LEVEL),
+    ("m2", 0.0, 27.0),  # down through the market's chicane...
+    ("mx", 0.0, 21.0),
+    ("m3", 0.0, 15.0, LEVEL),  # ...to the waterfront
     ("m3", "end", 15.5),
-    ("p1", -110.0, 21.0),  # the Waterfall Bridge's crown
-    ("p1", "end", 22.0, LEVEL),  # the Dragon Promenade
-    ("c1", 0.0, 29.0),
-    ("c2", 0.0, 37.0),  # the Celestial Climb
-    ("c3", 0.0, 46.0),
+    ("w2", 0.0, 21.0),  # the Waterfall Bridge's crown
+    ("p1", 0.0, 24.0, LEVEL),  # round the Great Dragon Shrine
+    ("r1", "end", 24.0, LEVEL),
+    ("c1", 0.0, 26.0),
+    ("c2", 0.0, 35.0),  # the Celestial Climb
+    ("c3", 0.0, 44.0),
     ("c4", 0.0, 53.0),
-    ("c4", "end", 57.5),
-    ("o1", -150.0, 62.0, LEVEL),  # the Star Bridge's crown
-    ("o1", 0.0, 61.5),
-    ("o2", 0.0, 65.5),  # round the pinnacle, climbing
-    ("o3", 0.0, 70.0),
-    ("o3", "end", 75.0),
-    ("t1", 0.0, 78.0, LEVEL),  # the Palace Terraces
-    ("t2", 0.0, 71.0),
-    ("v1", 0.0, 55.5),  # down the Procession Causeway
-    ("v2", 0.0, 47.0, LEVEL),  # the Fireworks Overlook
-    ("v2", "end", 47.0, LEVEL),
-    ("v3", "end", 50.0, LEVEL),  # the Final Ascension's crest
-    ("f1", 40.0, 44.0),  # the Grand Finale: down to the gate
+    ("c4", "end", 58.0, LEVEL),
+    # (the Star Leap's run-up, gap and landing: jump_z below)
+    ("o1", 0.0, 33.0, LEVEL),  # round the pinnacle, climbing
+    ("o2", 0.0, 41.0),
+    ("o3", 0.0, 49.0),
+    ("o3", "end", 55.0),
+    ("t1", 0.0, 58.0, LEVEL),  # down the Palace Terraces
+    ("t2", 0.0, 53.0),
+    ("v1", 0.0, 46.0),  # the Procession Causeway
+    ("v2", 0.0, 40.0, LEVEL),  # the Fireworks Overlook
+    ("v2", "end", 40.0, LEVEL),
+    ("v3", "end", 42.0, LEVEL),  # the Final Ascension's crest
+    ("f1", 40.0, 37.0),  # the Grand Finale: down to the gate
     ("st", -40.0, 32.0, LEVEL),
 ]
 
@@ -199,8 +207,46 @@ def _anchors():
 
 _A = _anchors()
 
+# The Star Leap (lap distances along the Star Bridge): a gentle run-up to the lip (the
+# last 12 m a 30% kicker), the gap (the route runs straight through the air), and the
+# landing 12 m below: a wide ramp falling away at 30% (fast karts fly far down it),
+# easing out to 12%. At top speed you drop onto the landing's lip; with the zipper on
+# the run-up you fly about forty metres, with a rainbow boost seventy.
+RUNUP = arc_end("c4") + 4.0  # (level here)
+LIP = RUNUP + 56.0
+GAP = 16.0
+LAND = LIP + GAP
+JUMP_Z = [  # (lap distance, z): straight lines between these
+    (LIP - 12.0, 60.6),
+    (LIP, 64.2),
+    (LAND, 52.2),
+    (LAND + 40.0, 40.2),
+    (LAND + 100.0, 33.0),
+]
+
+
+def _smooth_join(d, d0, z0, m0, d1, z1, m1):
+    h = d1 - d0
+    t = (d - d0) / max(1e-6, h)
+    t2, t3 = t * t, t * t * t
+    return (2 * t3 - 3 * t2 + 1) * z0 + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * z1 + (t3 - t2) * h * m1
+
 
 def road_z(d, seg=None):
+    d %= LENGTH
+    if RUNUP <= d <= S["o1"]:
+        (a0, za), (a1, zb) = JUMP_Z[0], JUMP_Z[-1]
+        if d < a0:  # ease up from the level corner into the kicker
+            return _smooth_join(d, RUNUP, 58.0, 0.0, a0, za, 0.12)
+        if d > a1:  # ease out of the landing into the spiral
+            return _smooth_join(d, a1, zb, -0.12, S["o1"], _base_z(S["o1"]), 0.0)
+        for (d0, z0), (d1, z1) in zip(JUMP_Z, JUMP_Z[1:]):
+            if d0 <= d <= d1:
+                return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
+    return _base_z(d)
+
+
+def _base_z(d):
     d %= LENGTH
     if d < _A[0][0]:
         d += LENGTH
@@ -213,23 +259,24 @@ def road_z(d, seg=None):
     return _A[0][1]
 
 
-WIDTH = {"st": 22.0, "m1": 18.0, "m2": 18.0, "m3": 18.0, "p1": 22.0, "c1": 17.0, "c2": 17.0, "c3": 17.0, "c4": 16.0, "o1": 16.0,
-         "o2": 16.0, "o3": 17.0, "t1": 18.0, "t2": 20.0, "v1": 20.0, "v2": 18.0, "v3": 18.0, "f1": 20.0}
+WIDTH = {"st": 22.0, "m1": 18.0, "m2": 18.0, "mx": 18.0, "m3": 18.0, "w1": 18.0, "w2": 18.0, "p1": 20.0, "p2": 20.0, "r1": 18.0,
+         "c1": 17.0, "c2": 17.0, "c3": 17.0, "c4": 17.0, "o1": 16.0, "o2": 16.0, "o3": 17.0, "t1": 18.0, "t2": 20.0, "v1": 20.0,
+         "v2": 18.0, "v3": 18.0, "f1": 20.0}
 
 
 def road_w(d, seg=None):
     s = d % LENGTH
     if s < 40 or s > LENGTH - 80:
         return 22.0  # the start: room for the pack
+    if LIP - 40 <= s <= LAND + 70:
+        return 22.0  # the Star Leap: a broad ramp, a broad landing
     if STAR[0] < s < STAR[1]:
-        return 15.0  # the Star Bridge: narrow-looking, high and exposed
+        return 16.0
     return WIDTH[seg_of(s)]
 
 
-# The Star Bridge (lap distances): from the climb's top west to the pinnacle; the open
-# stretch in its middle, no parapets.
-STAR = (arc_end("c4") + 20.0, S["o1"] - 10.0)
-STAR_OPEN = (lerp(STAR[0], STAR[1], 0.42), lerp(STAR[0], STAR[1], 0.42) + 70.0)
+# The Star Bridge (lap distances): from the climb's top west to the pinnacle.
+STAR = (arc_end("c4") + 2.0, S["o1"] - 6.0)
 
 # ---------------------------------------------------------------- the land
 
@@ -240,12 +287,14 @@ SEA = -9.0  # its bed
 
 PALACE = (40.0, 205.0)  # the Celestial Palace on the Palace Mount's top
 PALACE_Z = 104.0
-PINNACLE = (-262.0, 532.0)  # the Observatory Pinnacle inside the spiral
+PINNACLE = (-172.0, 477.0)  # the Observatory Pinnacle inside the spiral
 PINNACLE_Z = 96.0
 OBSERVATORY = PINNACLE
 GATE = (-20.0, 0.0)  # the Festival Gate over the start straight
-PLAZA = (280.0, 330.0)  # the Dragon Promenade's great plaza
-OVERLOOK = (-350.0, 96.0)
+PLAZA = (336.0, 240.0)  # the Great Dragon Shrine, inside the hairpin
+SHRINE = PLAZA
+SHRINE_R = 34.0
+OVERLOOK = (-300.0, 96.0)
 
 
 def _winding(x, y, poly):
@@ -271,7 +320,7 @@ def inside(x, y):
 
 # The Cloud Chasm: the deep cleft between the Palace Mount and the northern heights that
 # the Star Bridge crosses (floor far below, filled with cloud).
-CHASM = [(60.0, 437.0), (-20.0, 453.0), (-120.0, 457.0), (-195.0, 448.0)]
+CHASM = [(50.0, 392.0), (-20.0, 402.0), (-100.0, 405.0), (-160.0, 398.0)]
 CHASM_HW = 36.0
 
 
@@ -289,11 +338,11 @@ def city(x, y):
     """0..1: how much (x, y) is the festival city's ground (south of the start straight,
     round the market, along the waterfront, round the plaza)."""
     k = 0.0
-    if -240 < x < 430 and -230 < y < 60:
+    if -220 < x < 430 and -230 < y < 60:
         k = 1.0 - sm((-y - 150.0 - 20.0 * noise(x, y, 0.02, 3.0)) / 40.0)
         k *= 1.0 - sm((x - 400.0) / 30.0)
-    if 170 < x < 480 and 250 < y < 380:
-        k = max(k, (1.0 - sm((x - 430.0) / 30.0)) * (1.0 - sm((y - 360.0) / 20.0)))
+    sd = math.hypot(x - SHRINE[0], y - SHRINE[1])
+    k = max(k, 1.0 - sm((sd - 120.0) / 30.0))
     return k
 
 
@@ -349,7 +398,7 @@ def natural(x, y):
 
 # The lagoon's inlet the Waterfall Bridge crosses: between the Palace Mount's eastern
 # cliffs and the islands.
-INLET = (298.0, 500.0, -10.0, 236.0)
+INLET = (300.0, 500.0, -10.0, 196.0)
 
 
 def inlet(x, y):
@@ -361,6 +410,10 @@ def inlet(x, y):
 
 def ground(x, y):
     z = natural(x, y)
+    # The Great Dragon Shrine's plaza, inside the hairpin: flat, at the road's level.
+    sd = math.hypot(x - SHRINE[0], y - SHRINE[1])
+    if sd < 110:
+        z = lerp(23.4, z, sm((sd - 70.0) / 40.0))
     k = inlet(x, y)
     if k > 0:
         z = lerp(z, SEA, k)

@@ -978,12 +978,12 @@
     {
       "id": "celestial_dragon_festival",
       "name": "Celestial Dragon Festival",
-      "description": "The dragon kingdom's sacred heart on the night of its greatest festival: a deep navy and violet sky full of stars, a crescent moon, karst islands over a glowing turquoise lagoon, thousands of warm red and gold lanterns, white and gold palaces under deep blue domes, golden astronomical rings, pink blossom, crimson and navy dragon banners, and fireworks",
+      "description": "The dragon kingdom's sacred heart on the night of its greatest festival: a near-black sky full of stars, a crescent moon, karst islands over a glowing turquoise lagoon, thousands of warm red and gold lanterns, white and gold palaces under deep blue domes, golden astronomical rings, pink blossom, crimson and navy dragon banners, and fireworks",
       "environment": {
-        "sky": "#141a4a",
+        "sky": "#05060f",
         "fog": {
           "enabled": true,
-          "color": "#2c2a6a",
+          "color": "#0c0c22",
           "near": 420,
           "far": 2600
         },
@@ -998,38 +998,38 @@
           "intensity": 1.6
         },
         "skyDome": {
-          "top": "#060a2e",
-          "horizon": "#5a3a9a",
-          "bottom": "#24205a",
+          "top": "#000003",
+          "horizon": "#15132e",
+          "bottom": "#07071a",
           "sun": {
             "color": "#fff6dc",
             "size": 6,
-            "glow": "#c8c4ff",
+            "glow": "#a8a4e0",
             "elevation": 38,
             "face": "crescent"
           },
           "clouds": {
-            "count": 12,
-            "color": "#4a3e8c",
-            "shade": "#1a1648",
+            "count": 8,
+            "color": "#1c1a38",
+            "shade": "#09091c",
             "seed": 611,
             "low": 2,
-            "high": 10,
+            "high": 9,
             "drift": 0.002
           },
           "hills": {
-            "color": "#1c1c4c",
-            "far": "#4a4090",
+            "color": "#0a0a18",
+            "far": "#1c1a3a",
             "height": 13,
             "seed": 613,
             "layers": 3,
             "style": "karst"
           },
           "stars": {
-            "count": 1100,
+            "count": 1400,
             "color": "#ffffff",
             "seed": 617,
-            "low": 8
+            "low": 6
           }
         }
       }
