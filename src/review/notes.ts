@@ -158,6 +158,8 @@ export async function openStore(
     const backlog = readLocal(track);
     const left: ReviewNote[] = [];
     for (const n of backlog) {
+      // Already in the repo (sent before, or added by Claude): the repo's copy wins.
+      if (notes.some((x) => x.id === n.id)) continue;
       try {
         const shot = n.shot?.startsWith("data:") ? n.shot : undefined;
         const { shot: _drop, ...rest } = n;
