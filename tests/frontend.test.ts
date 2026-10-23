@@ -204,6 +204,7 @@ describe("worlds", () => {
       "ember_peak_v2",
       "bonebog_pyramid_v2",
       "frostveil_citadel_v2",
+      "snowy_summit_v2",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
       "riverbend_palms",

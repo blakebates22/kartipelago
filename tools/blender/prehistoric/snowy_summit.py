@@ -44,12 +44,17 @@ TRACK_ID = "snowy_summit"
 
 # ---------------------------------------------------------------- the layout
 
-START = (-150.0, -170.0)
+START = (-70.0, -170.0)
 HELIX_R = 28.0  # the spiral inside the great tree
 HELIX_TURNS = 2
 HELIX_RISE = 15.0  # metres per turn
+# The spiral weaves as it climbs: three times a turn it swings in towards the column (up
+# to HELIX_WAVE metres) and back out to the wall, tightening and opening the bend, and
+# its climb comes in steps (a steeper kick, then a breather) rather than one even grade.
+HELIX_WAVE = 4.0
+HELIX_STEP = 0.9
 LAYOUT = [
-    ("S", 210),  # 0  1: the Frozen Bay, east across the lake
+    ("S", 131),  # 0  1: the Frozen Bay, east across the lake
     ("L", 70, 40),  # 1  2: the Ice Archways
     ("S", 40),  # 2
     ("R", 60, 40),  # 3
@@ -58,10 +63,10 @@ LAYOUT = [
     ("S", 12),  # 6  the gap, over the geyser basin
     ("S", 50),  # 7  the landing
     ("L", 45, 90),  # 8  north along the hot shore
-    ("S", 40),  # 9
-    ("L", 40, 45),  # 10 4: into the glacier: the Crystal Caves
-    ("R", 40, 45),  # 11
-    ("S", 90),  # 12 the climb
+    ("S", 52.91),  # 9  into the glacier: 4: the Crystal Caves
+    ("L", 34, 80),  # 10 a double S, climbing over icy rollers...
+    ("R", 37.81, 140),  # 11
+    ("L", 34, 61.29),  # 12 ...and out (it ends where the old straight climb did)
     ("L", 45, 90),  # 13 out, west: 5: the Wind Canyons
     ("S", 50),  # 14
     ("R", 40, 45),  # 15
@@ -72,15 +77,15 @@ LAYOUT = [
     ("L", 50, 30),  # 20 6: down into the giant forest
     ("S", 60),  # 21 straight at the great tree
     ("L", HELIX_R, 360 * HELIX_TURNS),  # 22 the spiral, inside it
-    ("S", 80),  # 23 7: out onto the first bridge
+    ("S", 52),  # 23 7: out onto the rope bridge, short, narrow and sagging
     ("R", 34, 150),  # 24 round the second tree, on a ledge
     ("S", 80),  # 25 the second bridge
     ("L", 34, 120),  # 26 round the third tree
     ("S", 50),  # 27 the third bridge, to the lookout rock
     ("L", 50, 90),  # 28 the Summit Lookout
     ("S", 100),  # 29 8: the plunge down the west ridge (stretched to close the loop)
-    ("R", 55, 40),  # 30
-    ("L", 55, 40),  # 31
+    ("L", 35, 55),  # 30 a tight S down the ridge (drift it both ways)...
+    ("R", 35, 55),  # 31 ...that swings the run home east, shortening the lake straight
     ("S", 80),  # 32 the run-up
     ("S", 16),  # 33 the gap, off the bluff over the crevasse
     ("S", 60),  # 34 the landing, down onto the lake
@@ -88,6 +93,31 @@ LAYOUT = [
     ("S", 20),  # 36 onto the start (stretched to close the loop)
 ]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 29, 36, START, 0.0)
+
+
+def _weave(path):
+    """The spiral's weave: each of its points pulled in towards the tree's centre, by
+    nothing at its start and end (so the doorways stay put) and the same on both turns
+    (so each turn still lies right over the one below)."""
+    pts = [p for p in path if p[3] == 22]
+    x, y, h, _ = pts[0]
+    a = math.radians(h + 90)
+    cx, cy = x + HELIX_R * math.cos(a), y + HELIX_R * math.sin(a)
+    out = []
+    for x, y, h, i in path:
+        if i == 22:
+            th = math.radians(h - pts[0][2])
+            r = math.hypot(x - cx, y - cy)
+            k = (r - HELIX_WAVE * (1 - math.cos(3 * th)) / 2) / r
+            x, y = cx + (x - cx) * k, cy + (y - cy) * k
+        out.append([x, y, h, i])
+    for j in range(1, len(out) - 1):
+        if out[j][3] == 22:
+            out[j][2] = math.degrees(math.atan2(out[j + 1][1] - out[j - 1][1], out[j + 1][0] - out[j - 1][0]))
+    return [tuple(p) for p in out]
+
+
+PATH = _weave(PATH)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 # The three jumps: (lip, landing) along the lap.
@@ -139,7 +169,7 @@ ANCHORS = [
     (SEG[28], 47.0),
     (SEG[29], 44.0),
     (SEG[33], 15.5),  # the bluff's lip
-    (SEG[34], 6.0),  # ...the landing
+    (SEG[34], 5.0),  # ...the landing
     (SEG[35], 0.6),
     (LENGTH, 0.6),
 ]
@@ -161,10 +191,41 @@ def _straight(d):
     return any(lip - 34 <= d <= land + 14 for lip, land in JUMPS)
 
 
+def _ease(t):
+    return smooth(max(0.0, min(1.0, t)))
+
+
+def _rollers(d, s0, s1, height, every):
+    """Crests in the road between s0 and s1: one every `every` metres, `height` high,
+    easing in and out at the ends (fast over them and you catch air)."""
+    if not s0 < d < s1:
+        return 0.0
+    ease = _ease((d - s0) / 10) * _ease((s1 - d) / 10)
+    return height * (0.5 - 0.5 * math.cos(math.tau * (d - s0) / every)) * ease
+
+
+def bridge_sag(d):
+    """The rope bridge sags in the middle (and the road with it)."""
+    s0, s1 = SEG[23] + 33, SEG[24] + 2
+    if not s0 < d < s1:
+        return 0.0
+    return -1.4 * math.sin(math.pi * (d - s0) / (s1 - s0))
+
+
 def road_z(d, seg=None):
+    if HELIX[0] <= d <= HELIX[1]:
+        # The spiral's steps: four a turn (the same on each, so they stack evenly).
+        turn = (HELIX[1] - HELIX[0]) / HELIX_TURNS
+        ease = _ease((d - HELIX[0]) / 12) * _ease((HELIX[1] - d) / 12)
+        return _lin(d) + HELIX_STEP * math.sin(math.tau * 4 * (d - HELIX[0]) / turn) * ease
     if _straight(d):
         return _lin(d)
-    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+    z = sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+    # Icy rollers through the caves' S-bends, and down the plunge from the lookout.
+    z += _rollers(d, SEG[10] - 4, SEG[13] - 6, 1.7, 34.0)
+    z += _rollers(d, SEG[29] + 16, SEG[30] - 2, 1.6, 30.0)
+    z += _rollers(d, SEG[32] + 2, SEG[33] - 40, 1.4, 28.0)
+    return z + bridge_sag(d)
 
 
 def road_w(d, seg):
@@ -176,6 +237,8 @@ def road_w(d, seg):
         return 17.0  # the ramps
     if seg == 22:
         return 14.0  # the spiral
+    if seg == 23 and d > SEG[23] + 32:
+        return 10.0  # the rope bridge: narrow
     if seg in (23, 24, 25, 26, 27):
         return 13.0  # the bridges and ledges
     if seg in (10, 11, 12):
@@ -184,6 +247,56 @@ def road_w(d, seg):
 
 
 ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+
+
+# The route's distances (along the road in 3D, round its spline) run a little ahead of
+# the layout's (flat, along the turtle path): by about 12 m at the end of the lap, most of
+# it climbing the spiral. MARKS pairs them up (set in main, once the route is made), so
+# the layout's marks land where they belong on the road: R(d) is the route's distance at
+# layout distance d, and L(s) the other way round.
+MARKS = []
+
+
+def _interp(v, pairs):
+    if not pairs:
+        return v
+    if v <= pairs[0][0]:
+        return pairs[0][1] + (v - pairs[0][0])
+    for (a0, b0), (a1, b1) in zip(pairs, pairs[1:]):
+        if a0 <= v <= a1:
+            return lerp(b0, b1, (v - a0) / max(1e-6, a1 - a0))
+    return pairs[-1][1] + (v - pairs[-1][0])
+
+
+def R(d):
+    return _interp(d, MARKS)
+
+
+def L(s):
+    return _interp(s, [(b, a) for a, b in MARKS])
+
+
+def _match_route(c):
+    """Fill MARKS: each route point's layout distance, and the route's distance where the
+    road passes through it (found in 3D, so the spiral's stacked turns don't mix)."""
+    from mathutils import kdtree
+
+    tree = kdtree.KDTree(len(c.S))
+    for i, smp in enumerate(c.S):
+        tree.insert(smp.p, i)
+    tree.balance()
+    d, nxt, last = 0.0, 0.0, -1.0
+    MARKS.clear()
+    for i, (x, y, _, seg) in enumerate(PATH[:-1]):
+        if i:
+            d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
+        if d >= nxt:
+            _, k, _ = tree.find((x, y, road_z(d)))
+            s = c.S[k].s
+            if s > last:
+                MARKS.append((d, s))
+                last = s
+            nxt += 8.0
 
 
 def seg_of(s):
@@ -240,7 +353,7 @@ def melted(x, y):
 # crosses it) and opening out into a frozen river that runs into the lake.
 GORGE = [(150.0, 470.0), (141.0, 310.0), (137.0, 186.0), (128.0, 90.0), (116.0, 0.0), (108.0, -80.0)]
 # The crevasse below the bluff (the last jump), running east-west.
-CREVASSE = [(-330.0, -36.0), (-280.0, -31.0), (-238.0, -33.0), (-190.0, -30.0), (-150.0, -40.0)]
+CREVASSE = [(-330.0, -36.0), (-280.0, -31.0), (-238.0, -33.0), (-190.0, -30.0), (-150.0, -34.0), (-110.0, -33.0), (-70.0, -40.0)]
 
 
 def gorge_at(x, y):
@@ -298,7 +411,7 @@ def land(x, y):
     # (South of the ridge they stand back beyond the lake's west shore.)
     west_foot = lerp(335.0, 215.0, sm((y + 40) / 40)) + 14 * math.sin(y / 37)
     west = 1.6 * max(0.0, -x - west_foot)
-    ridge = 34.0 * sm((-x - 150) / 70) * sm((y + 10) / 160)
+    ridge = 34.0 * sm((-x - 80) / 70) * sm((y + 10) / 160)
     if y > -60:
         h = max(h, 10 + ridge)
     # The north mountains, behind the forest and the plateau, and the southern hills
@@ -397,6 +510,7 @@ def abyss_z(x, y):
 def main():
     c = kit.Course(TRACK_ID, "Snowy Summit Pass", "summit_pass")
     c.route(ROUTE, width=15.0, bank=6.0)
+    _match_route(c)
     rope = ("rope_rail", "wall")
     wood = ("heartwood", "wall")
     snowbank = ("summit_snow", "packed_snow")
@@ -477,7 +591,7 @@ def main():
     lift = {"lift": lambda u, n: 1.5 * max(0.0, (u - (n - 10)) / 10) ** 2}
 
     def label(smp):
-        x, y, s = smp.p.x, smp.p.y, smp.s
+        x, y, s = smp.p.x, smp.p.y, L(smp.s)
         seg = seg_of(s)
         for k, (lip, land_) in enumerate(JUMPS):
             if lip <= s <= land_:
@@ -555,22 +669,22 @@ def main():
     rock = summit_scenery.glacier(c, sys.modules[__name__], t0, t1)
 
     c.start_line()
-    S = lambda i: SEG[i]  # noqa: E731
+    S = lambda i: R(SEG[i])  # noqa: E731
     # Zippers: off the start, before the terraces, on the cave's long climb, at the
     # canyon jump's run-up (for a huge leap), and down the plunge to the bluff.
     c.zipper(50, 0)
     c.zipper(S(4) - 6, 0)
-    c.zipper(S(12) + 20, 0)
+    c.zipper(S(10) - 8, 0)  # (into the caves' rollers)
     c.zipper(S(17) + 4, 0)
     c.zipper(S(29) + 40, 0)
-    for at, across in ((110, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(22) + 120, 0), (S(25) + 30, 0), (S(30), 0), (S(35) + 40, 0)):
+    for at, across in ((80, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(22) + 120, 0), (S(25) + 30, 0), (S(30), 0), (S(35) + 40, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (160, -4, "red"),
-        (160, 4, "blue"),
+        (110, -4, "red"),
+        (110, 4, "blue"),
         (S(3) + 10, 0, "green"),
         (S(8) + 30, 0, "yellow"),
-        (S(12) + 50, 0, "rainbow"),
+        (S(11) + 50, 0, "rainbow"),
         (S(19) + 30, -4, "red"),
         (S(19) + 30, 4, "blue"),
         (S(22) + 240, 0, "green"),
@@ -583,14 +697,15 @@ def main():
     # A missed jump drops you into the hot water, the gorge or the crevasse: you're put
     # down on its landing.
     for lip, land_ in JUMPS:
+        lip, land_ = R(lip), R(land_)
         c.entity("respawn", **{"from": round(lip - 40, 1), "to": round(land_ + 8, 1), "at": round(land_ + 36, 1)})
 
     # Gates: none inside a jump's respawn stretch (a respawn there would skip it), so one
     # just before each run-up and one just after each landing, and no more than 130 m
     # apart anywhere (the generator's own fill-ins would land in those stretches).
-    J = JUMPS
+    J = [(R(a), R(b)) for a, b in JUMPS]
     c.checkpoints(
-        extra=[S(2), J[0][0] - 60, J[0][1] + 46, S(10) + 10, S(12) + 60, S(14) + 20, J[1][0] - 66, J[1][1] + 48, S(21),
+        extra=[S(2), J[0][0] - 60, J[0][1] + 46, S(10) + 10, S(11) + 70, S(14) + 20, J[1][0] - 66, J[1][1] + 48, S(21),
                S(22) + 90, S(22) + 180, S(22) + 270, S(23) + 40, S(25) + 40, S(27), S(29) + 40, S(31), J[2][0] - 70, J[2][1] + 43, S(35) + 60],
         height=9.0,
     )

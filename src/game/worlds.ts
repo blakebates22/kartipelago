@@ -85,6 +85,7 @@ export const WORLDS: WorldEntry[] = [
       "ember_peak_v2",
       "bonebog_pyramid_v2",
       "frostveil_citadel_v2",
+      "snowy_summit_v2",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

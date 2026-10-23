@@ -340,11 +340,11 @@ def hollow_tree(c, ss, glow_pts):
     bm = m.bm
     zf = ss.road_z(S22) - 0.45
     k0 = len(bm.faces)
-    ring_f = props.ring(bm, (cx, cy), ri + 0.6, zf, 40)
+    ring_f = props.ring(bm, (cx, cy), ri + 5.0, zf, 48)  # (on under the wall: no gap at its foot)
     bm.faces.new(ring_f)
     m.mark(("forest_road", "dirt"), k0)
     k0 = len(bm.faces)
-    col = [props.ring(bm, (cx, cy), 17.0 + 1.5 * math.exp(-(z - zf) / 4), z, 24, phase=0.1 * j) for j, z in enumerate((zf - 1, zf + 4, zf + 20, zf + 40, 60, 64.5))]
+    col = [props.ring(bm, (cx, cy), 11.0 + 1.5 * math.exp(-(z - zf) / 4), z, 24, phase=0.1 * j) for j, z in enumerate((zf - 1, zf + 4, zf + 20, zf + 40, 60, 64.5))]
     props.loft(bm, col, cap_top=False)
     m.mark(("heartwood", "wall"), k0)
     k0 = len(bm.faces)
@@ -369,13 +369,13 @@ def hollow_tree(c, ss, glow_pts):
         a = math.atan2(rel.y, rel.x)
         zb = q.p.z - 2.2
         k0 = len(bm.faces)
-        props.cuboid(bm, (cx + rel.x * 27.0, cy + rel.y * 27.0, zb), (21.0, 1.4, 1.2), rot=a)
+        props.cuboid(bm, (cx + rel.x * 24.5, cy + rel.y * 24.5, zb), (26.0, 1.4, 1.2), rot=a)
         props.cuboid(bm, (cx + rel.x * (ri - 1.0), cy + rel.y * (ri - 1.0), zb - 2.5), (1.4, 1.4, 6.0), rot=a)
         m.mark(("heartwood", "wall"), k0)
     for k in range(18):
         a = k * 2.4
         z = zf + 3 + (k * 3.1) % 50
-        r = 17.6 if k % 2 else ri - 0.3
+        r = 11.6 if k % 2 else ri - 0.3
         k0 = len(bm.faces)
         props.blob(bm, (cx + r * math.cos(a), cy + r * math.sin(a), z), 1.6 + 0.8 * rnd(k), sx=1.0, sy=1.0, sz=0.5, subdiv=1)
         m.mark("glow_moss", k0)
@@ -536,13 +536,90 @@ def forest(c, ss, ter):
 # ------------------------------------------------------------------ bridges, the lookout and flags
 
 
+def rope_bridge(c, ss):
+    """The rope bridge out of the great tree: short, narrow and sagging, slung from
+    leaning log posts on two deep-sagging ropes, its slats uneven and a few missing,
+    broken planks dangling underneath and one hanger snapped. It looks ready to go."""
+    s0, s1 = ss.R(ss.SEG[23] + 33), ss.R(ss.SEG[24] + 2)
+    m = Mesh()
+    bm = m.bm
+    rope = "rope_rail"
+    ends = []
+    for s, lean in ((s0 - 1.0, -0.1), (s1 + 1.0, 0.1)):
+        q = c.at(s)
+        pair = []
+        for side in (-1, 1):
+            p = q.side(side * (q.w / 2 + 0.9))
+            k0 = len(bm.faces)
+            props.cuboid(bm, (p.x, p.y, p.z + 2.4), (0.7, 0.7, 6.8), rot=road_rot(q), tilt=(0.06 * side, lean))
+            m.mark(("heartwood", "wall"), k0)
+            top = Vector((p.x, p.y, p.z + 5.5))
+            pair.append(top)
+            # A lashing of rope round the top of the post.
+            k0 = len(bm.faces)
+            props.tube(bm, [top + Vector((0, 0, -0.3)), top + Vector((0, 0, 0.2))], 0.48, n=6)
+            m.mark(rope, k0)
+        ends.append(pair)
+    n = 24
+    for j, side in enumerate((-1, 1)):
+        a, b = ends[0][j], ends[1][j]
+        rope_pts = []
+        for k in range(n + 1):
+            t = k / n
+            p = a.lerp(b, t)
+            p.z -= 5.4 * 4 * t * (1 - t)  # down to handrail height in the middle
+            rope_pts.append(p)
+        k0 = len(bm.faces)
+        props.tube(bm, [tuple(p) for p in rope_pts], 0.11, n=5)
+        m.mark(rope, k0)
+        # Hangers down to the deck's edge (one snapped, its end dangling).
+        for k in range(2, n - 1, 2):
+            t = k / n
+            q = c.at(s0 + (s1 - s0) * t)
+            e = q.side(side * (q.w / 2 + 0.25))
+            top = rope_pts[k]
+            if k == 10 and side > 0:
+                bottom = top.lerp(e, 0.45) + Vector((0.3, 0.2, 0))
+            else:
+                bottom = e
+            if top.z - bottom.z < 0.2:
+                continue
+            k0 = len(bm.faces)
+            props.tube(bm, [tuple(top), tuple(bottom)], 0.045, n=4)
+            m.mark(rope, k0)
+    # The slats: uneven, a few missing, two broken ones hanging below the deck.
+    k = 0
+    s = s0 + 0.5
+    while s < s1 - 0.4:
+        q = c.at(s)
+        k += 1
+        if k % 9 == 4:
+            s += 0.95
+            continue
+        tw = 0.05 * math.sin(k * 2.3)
+        k0 = len(bm.faces)
+        props.cuboid(bm, (q.p.x, q.p.y, q.p.z + 0.07 + 0.02 * math.sin(k * 1.7)), (0.62, q.w + 0.5 - 0.3 * (k % 3), 0.1), rot=road_rot(q) + tw, tilt=(0.03 * math.sin(k), 0.0))
+        m.mark("plank_road", k0)
+        s += 0.95
+    for k, (t, side) in enumerate(((0.35, 1), (0.62, -1))):
+        q = c.at(s0 + (s1 - s0) * t)
+        e = q.side(side * (q.w / 2 - 0.6), -1.6)
+        k0 = len(bm.faces)
+        props.cuboid(bm, (e.x, e.y, e.z), (0.6, 0.12, 2.6), rot=road_rot(q), tilt=(0.25 * side, 0.15))
+        m.mark("plank_road", k0)
+        k0 = len(bm.faces)
+        props.tube(bm, [tuple(e + Vector((0, 0, 1.3))), tuple(q.side(side * (q.w / 2 - 0.3), 0.0))], 0.04, n=4)
+        m.mark(rope, k0)
+    m.build(c, "Rope Bridge", "Bridges", "visual", flat=False)
+
+
 def bridges_and_flags(c, ss, ter, flags):
     """Bunting along the treetop bridges and round the ledges (from posts on the rails),
     over the start, across the canyon, and round the lookout, with its hut and cairns."""
     S = ss.SEG
     post = sp.flag_pole(c, 4.5)
-    for i0, i1 in ((23, 24), (24, 25), (25, 26), (26, 27), (27, 28)):
-        s = S[i0] + (34 if i0 == 23 else 4)
+    for i0, i1 in ((24, 25), (25, 26), (26, 27), (27, 28)):
+        s = S[i0] + 4
         prev = None
         while s < S[i1] - 2:
             q = c.at(s)
@@ -566,7 +643,7 @@ def bridges_and_flags(c, ss, ter, flags):
         ends.append(p)
     for k in range(4):
         flags.line(ends[0] + Vector((0, 0, 10.6 - k * 0.9)), ends[1] + Vector((0, 0, 10.6 - k * 0.9)), sag=1.6 + 0.4 * k, spacing=1.1, size=0.85)
-    for s0 in (40.0, 90.0, 140.0):
+    for s0 in (30.0, 70.0, 110.0):
         a, b = c.at(s0), c.at(s0 + 25)
         for side in (-1, 1):
             p0, p1 = a.side(side * (a.w / 2 + 3.0)), b.side(side * (b.w / 2 + 3.0))
@@ -605,7 +682,7 @@ def canyons(c, ss, ter):
     """The Wind Canyons: chevrons on the bends, an ice arch over the road, and frozen
     falls down into the gorge either side of the jump."""
     S = ss.SEG
-    for s_, side in ((S[15] + 12, 1), (S[16] + 12, -1), (S[20] + 10, -1), (S[30] + 14, 1), (S[31] + 14, -1)):
+    for s_, side in ((S[15] + 12, 1), (S[16] + 12, -1), (S[20] + 10, -1), (S[30] + 14, -1), (S[31] + 14, 1)):
         q = c.at(s_)
         p = q.side(side * (q.w / 2 + 3.0))
         z = ground(c, ter, p.x, p.y, q.p.z)
@@ -630,7 +707,7 @@ def ruins(c, ss, ter):
     for k, (s, off, v) in enumerate(((S[35] + 10, 26, 0), (S[35] + 80, -30, 1), (S[34] + 30, 24, 0), (S[36] - 5, -28, 1))):
         p = c.at(s).side(off)
         c.place(sp.ribs(c, v), p.x, p.y, -0.6, rot=rnd(k) * 6, coll="Ruins")
-    for k, (s, off, h) in enumerate(((S[35] + 20, -40, 22.0), (S[35] + 100, 34, 16.0), (S[34] + 10, -26, 26.0), (180.0, 30, 18.0), (60.0, -34, 20.0))):
+    for k, (s, off, h) in enumerate(((S[35] + 20, -40, 22.0), (S[35] + 100, 34, 16.0), (S[34] + 10, -26, 26.0), (120.0, 30, 18.0), (30.0, -34, 20.0))):
         p = c.at(s).side(off)
         z = ground(c, ter, p.x, p.y, 0.0)
         c.place(sp.tower_ruin(c, k % 3, h), p.x, p.y, z - 1.0, rot=rnd(k) * 6, coll="Ruins")
@@ -673,6 +750,7 @@ def build(c, rock, t0, t1, ss):
         giant_tree(c, tree[0], tree[1], ss.road_z(ss.SEG[seg] + 30), k + 1)
     forest(c, ss, ter)
     hut = bridges_and_flags(c, ss, ter, flags)
+    rope_bridge(c, ss)
     canyons(c, ss, ter)
     ruins(c, ss, ter)
     sky_islands(c)

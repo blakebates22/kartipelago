@@ -126,6 +126,18 @@ export const TRACKS: TrackEntry[] = [
     music: "frostveil",
     load: { scene: "track", packageId: "frostveil_citadel_v2" },
   },
+  // The previous Snowy Summit Pass (before the shorter, twistier lap), kept playable with
+  // ?track=snowy_summit_v2. Not in any world's menu.
+  {
+    id: "snowy_summit_v2",
+    name: "Snowy Summit Pass (v2)",
+    description: "The version before the shorter lap.",
+    preview: "previews/snowy_summit.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "summit_pass",
+    music: "summit",
+    load: { scene: "track", packageId: "snowy_summit_v2" },
+  },
   // The previous Ember Peak (v2, the long climb up the volcano, before the redo), kept
   // playable with ?track=ember_peak_v2. Not in any world's menu.
   {

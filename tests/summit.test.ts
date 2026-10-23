@@ -45,7 +45,10 @@ describe("Snowy Summit Pass", () => {
     expect(entitiesOf(p).filter((e) => e.type === "respawn")).toHaveLength(3);
     const ys = p.trackData.points.map((q) => q.y ?? 0);
     expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(40);
-    expect(Math.min(...p.trackData.points.map((q) => q.width ?? 0))).toBeGreaterThanOrEqual(13);
+    // Wide everywhere but the rope bridge out of the great tree, which is narrow (10 m).
+    const widths = p.trackData.points.map((q) => q.width ?? 0);
+    expect(Math.min(...widths)).toBeGreaterThanOrEqual(10);
+    expect(widths.filter((w) => w < 13).length).toBeLessThan(40);
   });
 
   it("spirals up inside the great tree: two whole turns, each over the one below", async () => {
