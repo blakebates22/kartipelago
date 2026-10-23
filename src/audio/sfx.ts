@@ -140,6 +140,21 @@ export function createSfx(engine: AudioEngine) {
         return b;
       });
       squeal.connect(gain);
+      // The screech: a thin, high whistle of tyre squeal on top (a very narrow band of
+      // the same noise), its pitch wavering; it comes in as the slide gets harder.
+      const screechBand = c.createBiquadFilter();
+      screechBand.type = "bandpass";
+      screechBand.frequency.value = 2400;
+      screechBand.Q.value = 28;
+      const screech = c.createGain();
+      screech.gain.value = 0;
+      hiss.connect(screechBand).connect(screech).connect(gain);
+      const waver = c.createOscillator();
+      waver.frequency.value = 5.5;
+      const waverDepth = c.createGain();
+      waverDepth.gain.value = 110;
+      waver.connect(waverDepth).connect(screechBand.frequency);
+      waver.start();
       // The stutter: a slowly wandering random signal (about 20-30 bumps a second)
       // shaking the squeal's loudness.
       const stutter = loop(sr * 3, (i, last) => {
@@ -170,6 +185,9 @@ export function createSfx(engine: AudioEngine) {
           const p = Math.max(0, Math.min(1, pitch));
           bands[0]!.frequency.setTargetAtTime(640 + p * 320, now, 0.1);
           bands[1]!.frequency.setTargetAtTime(1250 + p * 500, now, 0.1);
+          screechBand.frequency.setTargetAtTime(2200 + p * 700, now, 0.12);
+          // A slight screech: none in a gentle slide, up to a third of the mix flat out.
+          screech.gain.setTargetAtTime(Math.max(0, v - 0.45) * 5, now, 0.1);
         },
         stop() {
           if (stopped) return;
@@ -177,6 +195,7 @@ export function createSfx(engine: AudioEngine) {
           const now = c.currentTime;
           gain.gain.setTargetAtTime(0, now, 0.04);
           for (const src of [hiss, stutter, rumble]) src.stop(now + 0.3);
+          waver.stop(now + 0.3);
         },
       };
     },

@@ -172,9 +172,11 @@ function inFront(k: KartState, t: KartState, cosLimit = IN_FRONT) {
 }
 
 /**
- * Pick a grapple (magnet) target: the nearest rival within range who is ahead of you,
- * both in the race and on the road in front of you (not someone beside or behind you
- * across a hairpin). Returns its index, or -1 if nobody qualifies.
+ * Pick a target: the nearest rival within range ahead of you. For a grapple (`front`)
+ * "ahead" is physical: in front of your nose (within 75 degrees) and at about your
+ * height, whatever lap they're on, so you can grab a backmarker you're about to lap
+ * but never someone beside or behind you. For a homing missile it's race order (it
+ * follows the road round corners to reach them). Returns its index, or -1.
  */
 export function magnetTarget(
   racers: Racer[],
@@ -189,7 +191,8 @@ export function magnetTarget(
   let best = -1;
   let bestD = range;
   racers.forEach((r, j) => {
-    if (j === i || progress(j) <= mine || (front && !inFront(me, r.kart))) return;
+    if (j === i) return;
+    if (front ? !inFront(me, r.kart) || Math.abs(r.kart.y - me.y) > 4 : progress(j) <= mine) return;
     const d = Math.hypot(r.kart.x - me.x, r.kart.z - me.z);
     if (d <= bestD) {
       bestD = d;

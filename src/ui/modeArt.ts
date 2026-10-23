@@ -19,6 +19,14 @@
 import { drawText, textWidth } from "./font";
 import { PAL } from "./textures";
 import {
+  floatingIsland,
+  jadeCliff,
+  naturalArch,
+  snowPeak,
+  snowRange,
+  vistaLayout,
+} from "./modeWorlds";
+import {
   paintVolcano,
   pteranodons,
   ruinFloor,
@@ -84,15 +92,24 @@ function paintSky(W: number): HTMLCanvasElement {
   const [c, g] = canvas(W, HORIZON + 2);
   const band = Math.ceil(HORIZON / SKY.length);
   SKY.forEach((col, i) => px(g, 0, i * band, W, band + 1, col));
-  // A pale sun low over the sea.
-  px(g, W * 0.5 - 9, 70, 18, 18, "#fff6c2");
-  px(g, W * 0.5 - 11, 74, 22, 10, "#fff6c2");
+  // A pale sun low over the sea (moved aside when Frostveil's peaks stand in the middle).
+  const sunX = vistaLayout() === 1 || vistaLayout() === 3 ? W * 0.62 : W * 0.5;
+  px(g, sunX - 9, 70, 18, 18, "#fff6c2");
+  px(g, sunX - 11, 74, 22, 10, "#fff6c2");
   return c;
 }
 
 /** Everything but the sky (transparent above the land). */
 function paintVista(W: number, H: number): HTMLCanvasElement {
   const [c, g] = canvas(W, H);
+  const layout = vistaLayout();
+  // Frostveil's snowy peaks, far off on the horizon (behind the sea), in the middle or
+  // beside the volcano.
+  if (layout === 1 || layout === 3) snowRange(g, W * 0.5, HORIZON + 1, 1.15);
+  if (layout === 2) {
+    snowPeak(g, W * 0.34, HORIZON + 1, 44, 72, 9);
+    snowPeak(g, W * 0.41, HORIZON + 1, 30, 46, 4);
+  }
   // Sea.
   px(g, 0, HORIZON, W, TERRACE - HORIZON, "#2f8fd0");
   px(g, 0, HORIZON, W, 2, "#8fd0f2");
@@ -186,13 +203,29 @@ function paintVista(W: number, H: number): HTMLCanvasElement {
   // A waterfall down the red wall.
   px(g, W - 70, wallTop(W - 70), 5, TERRACE - wallTop(W - 70), "#bfe6f7");
   px(g, W - 69, wallTop(W - 70), 1, TERRACE - wallTop(W - 70), "#ffffff");
-  // Pagodas on the high terraces.
-  pagoda(g, W - 16, wallTop(W - 16), 1.3);
-  pagoda(g, W - 46, wallTop(W - 46), 0.95);
-  pagoda(g, W - 76, wallTop(W - 76), 0.75);
-  pagoda(g, W - 108, wallTop(W - 108), 0.6);
-  // An arched bridge from the lowest terrace to the cliff.
-  arches(g, W - 132, W - 104, wallTop(W - 104) + 4);
+  if (layout === 2) {
+    // The Dragon Kingdom's jade cliffs beyond the canyon, its pagodas on top; the
+    // canyon's natural arch in front.
+    jadeCliff(g, W - 84, W, wallTop, TERRACE);
+    pagoda(g, W - 16, wallTop(W - 16), 1.3);
+    pagoda(g, W - 46, wallTop(W - 46), 0.95);
+    pagoda(g, W - 74, wallTop(W - 74), 0.75);
+    naturalArch(g, W - 128, wallTop(W - 128) + 1, 34, 30);
+  } else if (layout === 3) {
+    // The canyon on its own, a natural arch on its lowest terrace.
+    naturalArch(g, W - 128, wallTop(W - 128) + 1, 34, 30);
+    naturalArch(g, W - 62, wallTop(W - 62) + 1, 26, 22);
+  } else {
+    // Pagodas on the high terraces.
+    pagoda(g, W - 16, wallTop(W - 16), 1.3);
+    pagoda(g, W - 46, wallTop(W - 46), 0.95);
+    pagoda(g, W - 76, wallTop(W - 76), 0.75);
+    pagoda(g, W - 108, wallTop(W - 108), 0.6);
+    // An arched bridge from the lowest terrace to the cliff.
+    arches(g, W - 132, W - 104, wallTop(W - 104) + 4);
+  }
+  // Four corners: the Dragon Kingdom as a floating island high over the canyon.
+  if (layout === 3) floatingIsland(g, W - 44, 78, 18, pagoda);
 
   // ---- the jungle tree, top left
   const tx = 14;

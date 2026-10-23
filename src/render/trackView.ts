@@ -65,6 +65,13 @@ function checkerTexture() {
 
 /** Bright chevrons pointing along the pad (toward +Z once laid flat). */
 function zipperTexture() {
+  const tex = zipperCanvas();
+  // It scrolls along the pad (see render).
+  tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+function zipperCanvas() {
   return canvasTexture(64, 128, (g) => {
     // Tinted by the material colour: the white becomes the pad colour, the chevrons a
     // darker shade of it.
@@ -125,7 +132,14 @@ export function createTrackView(
   look: TrackLook,
   zippers: ZipperPad[] = [],
   /** false: skip the road and walls (an imported track brings its own geometry). */
-  opts: { surface?: boolean } = {},
+  opts: {
+    surface?: boolean;
+    /**
+     * The ground's height under (x, z) near height y: zipper pads are draped over it so
+     * they lie flush on humps, dips and banking (done on the first render).
+     */
+    drape?: (x: number, z: number, y: number) => number;
+  } = {},
 ) {
   // Polygon offset makes the road win depth ties with the ground plane where it lies
   // nearly flat on it (no flickering grass showing through).
@@ -194,15 +208,40 @@ export function createTrackView(
     polygonOffsetFactor: -4,
     polygonOffsetUnits: -8,
   });
+  // A fine grid, so it can bend to the ground under it.
   const zipMeshes = zippers.map((z) => {
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(z.halfWidth * 2, z.halfLength * 2).rotateX(-Math.PI / 2),
+      new THREE.PlaneGeometry(z.halfWidth * 2, z.halfLength * 2, 6, 12).rotateX(-Math.PI / 2),
       zipMat,
     );
     mesh.position.set(z.x, z.y + LIFT * 2, z.z);
     mesh.rotation.y = z.heading;
     return mesh;
   });
+  let draped = !opts.drape;
+  /** Lay each pad's vertices on the ground beneath them, just above it. */
+  function drape() {
+    draped = true;
+    zippers.forEach((z, i) => {
+      const mesh = zipMeshes[i]!;
+      mesh.updateMatrixWorld(true);
+      const pos = mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
+      const c = Math.cos(z.heading);
+      const sn = Math.sin(z.heading);
+      for (let k = 0; k < pos.count; k++) {
+        // Local to world (the pad only turns about Y).
+        const lx = pos.getX(k);
+        const lz = pos.getZ(k);
+        const wx = z.x + lx * c + lz * sn;
+        const wz = z.z - lx * sn + lz * c;
+        const h = opts.drape!(wx, wz, z.y + 1);
+        pos.setY(k, h + LIFT * 3 - mesh.position.y);
+      }
+      pos.needsUpdate = true;
+      mesh.geometry.computeVertexNormals();
+      mesh.geometry.computeBoundingSphere();
+    });
+  }
 
   const surface = opts.surface ?? true;
   const parts = [...(surface ? [road, ...walls] : []), startLine, ...zipMeshes];
@@ -221,6 +260,9 @@ export function createTrackView(
       }
     },
     render(colors: Pick<TrackLook, "roadColor" | "wallColor" | "zipperColor">) {
+      if (!draped) drape();
+      // The chevrons flow forward along the pad.
+      if (zipMat.map) zipMat.map.offset.y = ((performance.now() / 1000) * 1.2) % 1;
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
       zipMat.color.set(colors.zipperColor);

@@ -308,7 +308,7 @@ describe("green traps", () => {
     expect(world.traps[0]).toMatchObject({ kind: "oil", y: 0.5, nx: 0.3, ny: 0.95 });
   });
 
-  it("grapple only racers ahead of you, in front of you", () => {
+  it("grapple only racers in front of you on the road (backmarkers too)", () => {
     // Facing +Z. Racer 1 is ahead in the race but physically behind (across a hairpin);
     // racer 2 is ahead and in front.
     const s = setup([
@@ -321,6 +321,9 @@ describe("green traps", () => {
     // Nobody in front: nothing to grab.
     s.racers[2]!.kart.z = -20;
     expect(magnetTarget(s.racers, 0, 100, ahead)).toBe(-1);
+    // A backmarker you're about to lap: behind you in the race, in front on the road.
+    s.racers[2]!.kart.z = 15;
+    expect(magnetTarget(s.racers, 0, 100, (j) => [10, 5, 2][j]!)).toBe(2);
   });
 
   it("a shielded kart that rams another spins it out, either way round", () => {

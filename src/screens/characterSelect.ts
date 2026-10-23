@@ -22,6 +22,7 @@ import type { UiLayer } from "../ui/layer";
 import { wrap } from "../ui/font";
 import { PAL } from "../ui/textures";
 import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
+import { mysteryEgg, selectBackdrop, type SelectBackdrop } from "../ui/selectArt";
 import { hints } from "./common";
 import { modeSelect } from "./modeSelect";
 import { titleScreen } from "./title";
@@ -52,6 +53,10 @@ function frame(
 }
 
 export function characterSelect(game: Game): Screen {
+  // The backdrop: a jungle at dawn (?selectbg=ruins|vista shows the other options).
+  const bgParam =
+    typeof location !== "undefined" ? new URLSearchParams(location.search).get("selectbg") : null;
+  const backdrop: SelectBackdrop = bgParam === "ruins" || bgParam === "vista" ? bgParam : "dawn";
   let index = Math.max(0, RACER_IDS.indexOf(game.settings.last.racer));
   let pp: PixelPortraits | undefined;
   let t = 0;
@@ -95,16 +100,6 @@ export function characterSelect(game: Game): Screen {
 
   // ---------------------------------------------------------------- the backgrounds
 
-  function scrollChecker(ui: UiLayer, a: string, b: string, size: number, speed: number) {
-    ui.rect(0, 0, ui.W, ui.H, a);
-    const off = Math.floor((t * speed) % (size * 2));
-    for (let y = -size * 2; y < ui.H + size; y += size)
-      for (let x = -size * 2; x < ui.W + size; x += size) {
-        const k = (Math.floor((x + 1000) / size) + Math.floor((y + 1000) / size)) % 2;
-        if (k) ui.rect(x + off, y + off, size, size, b);
-      }
-  }
-
   function banner(ui: UiLayer, text: string, y: number, color: string) {
     const w = ui.textWidth(text) * 2 + 20;
     const x = Math.round(ui.W / 2 - w / 2);
@@ -131,7 +126,7 @@ export function characterSelect(game: Game): Screen {
 
   function drawRoster(ui: UiLayer) {
     const d = DESIGNS[id()];
-    scrollChecker(ui, "#141a3a", "#1a2248", 16, game.settings.general.reduceMotion ? 0 : 8);
+    selectBackdrop(ui.g, ui.W, ui.H, backdrop, t, game.settings.general.reduceMotion);
     banner(ui, "SELECT RACER", 6, "#c8322a");
     // The big portrait, turning.
     const px = 14;
@@ -224,22 +219,18 @@ export function characterSelect(game: Game): Screen {
         }
         if (game.menuInput.pointer.clicked && ui.hover(x, y, tile, tile)) clicked = k;
       } else {
+        // Still to hatch: a mystery egg (not one of our racers in shadow).
         frame(ui, x, y, tile, tile, "#2a2e4a", "#151830");
-        const img = pp!.draw(RACER_IDS[k % N]!, {
-          w: 40,
-          h: 40,
-          view: "head",
-          yaw: 0.35,
-          silhouette: "#262a48",
-          outline: "#3a4068",
-        });
-        ui.image(img, x + 3, y + 3, tile - 6, tile - 6, false);
-        ui.text("?", x + tile / 2, y + tile / 2 - 6, {
-          scale: 2,
-          color: "#5a6090",
-          align: "center",
-        });
-        ui.text("LOCKED", x + tile / 2, y + tile + 3, { color: "#4a5078", align: "center" });
+        mysteryEgg(
+          ui.g,
+          x + tile / 2,
+          y + tile / 2 + 1,
+          30,
+          t,
+          k,
+          game.settings.general.reduceMotion,
+        );
+        ui.text("???", x + tile / 2, y + tile + 3, { color: "#4a5078", align: "center" });
       }
     }
     bioBox(ui, gx - 4, gy + 2 * (tile + gap + 10) + 2, ui.W - gx - 10, 56);
