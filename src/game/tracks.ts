@@ -95,7 +95,7 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak",
     name: "Ember Peak",
     description:
-      "Up the side of an erupting volcano, past a dragon with a temper, then outrun the lava through the caves.",
+      "A fast run across a smouldering volcanic field: a big jump over the lava river, a cave through the volcano, and a dragon from beyond the valley.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
@@ -114,17 +114,17 @@ export const TRACKS: TrackEntry[] = [
     music: "bonebog",
     load: { scene: "track", packageId: "bonebog_pyramid_v2" },
   },
-  // Ember Peak's complete redo, as a greybox to drive before it gets its look
-  // (tools/blender/prehistoric/ember_v3.py): ?track=ember_peak_v3. Not in any menu yet.
+  // The previous Ember Peak (v2, the long climb up the volcano, before the redo), kept
+  // playable with ?track=ember_peak_v2. Not in any world's menu.
   {
-    id: "ember_peak_v3",
-    name: "Ember Peak (v3 greybox)",
-    description: "The redo: a short, fast lap with a big jump over the lava. Plain rock for now.",
+    id: "ember_peak_v2",
+    name: "Ember Peak (v2)",
+    description: "The version before the redo.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
     music: "ember",
-    load: { scene: "track", packageId: "ember_peak_v3" },
+    load: { scene: "track", packageId: "ember_peak_v2" },
   },
   // Frostveil Peaks (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
   {

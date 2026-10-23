@@ -82,7 +82,7 @@ export const WORLDS: WorldEntry[] = [
       "drift_park",
       "riverbend_palms_v21",
       "cascade_caverns_v2",
-      "ember_peak_v3",
+      "ember_peak_v2",
       "bonebog_pyramid_v2",
     ],
     testing: true,
