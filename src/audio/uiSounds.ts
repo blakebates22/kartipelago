@@ -14,9 +14,9 @@ const CALLS: Record<RacerId, { inst: InstrumentId; notes: number[] }> = Object.f
 ) as Record<RacerId, { inst: InstrumentId; notes: number[] }>;
 
 /**
- * The race announcer: a raspy, playful dinosaur voice (made for this game: synthesised
- * speech, pitched down, with a growl and a rasp; tools/voice/make_announcer.py). Three voices
- * to choose from, ?voice=a|b|c: a raspy raptor, b big friendly rex, c cheeky little dino.
+ * The race announcer: a friendly, playful voice, no rasp (made for this game: synthesised
+ * speech, pitched down a little; tools/voice/make_announcer.py). Three voices to choose
+ * from, ?voice=a|b|c: a friendly dino, b a big gentle one, c a bright little one.
  */
 const announcer = () => {
   const v =
