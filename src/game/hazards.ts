@@ -26,9 +26,10 @@
  *   torch       { "type": "torch", "x", "y", "z" }: a torch flame (the torch is scenery).
  *               The few torches nearest the camera cast flickering warm light on the
  *               road, the walls and the karts, and drop the odd ember. Purely visual.
- *   bubbles     { "type": "bubbles", "x", "y", "z", "r" }: a bubbling pool: glowing
+ *   bubbles     { "type": "bubbles", "x", "y", "z", "r", "molten"? }: a bubbling pool: glowing
  *               bubbles rising and popping over it, and now and then a big burp of
- *               swamp gas. Purely visual.
+ *               swamp gas ("molten": true: orange lava bubbles and spatter). Purely
+ *               visual.
  *   fireflies   { "type": "fireflies", "rate": 40, "radius": 36 }: little glowing
  *               motes drifting in the air round the camera. Purely visual.
  *   dragon      { "type": "dragon", ... } (see game/dragon.ts): a fire-breathing dragon on
@@ -440,7 +441,15 @@ export function createHazards(opts: {
   const torches: { x: number; y: number; z: number; acc: number; embers: boolean }[] = [];
   let snowfall: { rate: number; radius: number; acc: number } | undefined;
   /** Bubbling pools, and fireflies (see the bubbles and fireflies entities). */
-  const pools: { x: number; y: number; z: number; r: number; acc: number; burp: number }[] = [];
+  const pools: {
+    x: number;
+    y: number;
+    z: number;
+    r: number;
+    acc: number;
+    burp: number;
+    lava: boolean;
+  }[] = [];
   let fireflies: { rate: number; radius: number; acc: number } | undefined;
   /** Dragons, and what they were doing last frame (for their cues). */
   const dragons: {
@@ -567,6 +576,7 @@ export function createHazards(opts: {
         r: Math.max(0.5, num(e.r, 3)),
         acc: 0,
         burp: 2 + Math.random() * 6,
+        lava: e.molten === true,
       });
     else if (e.type === "eruption") {
       const er = {
@@ -2369,13 +2379,19 @@ export function createHazards(opts: {
               0.6 + Math.random() * 0.8,
               0,
               0.7 + Math.random() * 0.6,
-              Math.random() < 0.6 ? 0xa8ff70 : 0xd8ffb0,
+              b.lava
+                ? Math.random() < 0.6
+                  ? 0xff8a20
+                  : 0xffd060
+                : Math.random() < 0.6
+                  ? 0xa8ff70
+                  : 0xd8ffb0,
             );
           }
           b.burp -= dt;
           if (b.burp <= 0) {
             b.burp = 3 + Math.random() * 7;
-            glowing.burst(b.x, b.y + 0.3, b.z, 14, 1.2, 2.2, 1.4, 0x7aff5a);
+            glowing.burst(b.x, b.y + 0.3, b.z, 14, 1.2, 2.2, 1.4, b.lava ? 0xff5a18 : 0x7aff5a);
           }
         }
         if (fireflies) {

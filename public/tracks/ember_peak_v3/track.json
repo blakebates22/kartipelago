@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "ember_peak_v3",
-  "name": "Ember Peak (v3 greybox)",
+  "name": "Ember Peak (v3)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -12,6 +12,267 @@
     "laps": 3
   },
   "entities": [
+    {
+      "id": "bubbles_01",
+      "type": "bubbles",
+      "x": -120,
+      "y": -1.3,
+      "z": -45,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_02",
+      "type": "bubbles",
+      "x": -55,
+      "y": -1.3,
+      "z": -40,
+      "r": 6,
+      "molten": true
+    },
+    {
+      "id": "bubbles_03",
+      "type": "bubbles",
+      "x": 25,
+      "y": -1.3,
+      "z": -45,
+      "r": 7,
+      "molten": true
+    },
+    {
+      "id": "bubbles_04",
+      "type": "bubbles",
+      "x": 125,
+      "y": -1.3,
+      "z": 45,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_05",
+      "type": "bubbles",
+      "x": -160,
+      "y": -1.3,
+      "z": 60,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_06",
+      "type": "bubbles",
+      "x": 60,
+      "y": -1.3,
+      "z": 60,
+      "r": 7,
+      "molten": true
+    },
+    {
+      "id": "bubbles_07",
+      "type": "bubbles",
+      "x": 150,
+      "y": -1.3,
+      "z": -150,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_08",
+      "type": "bubbles",
+      "x": -100,
+      "y": -1.3,
+      "z": -175,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_09",
+      "type": "bubbles",
+      "x": -330,
+      "y": -1.3,
+      "z": 60,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_10",
+      "type": "bubbles",
+      "x": 210,
+      "y": -1.3,
+      "z": 120,
+      "r": 10,
+      "molten": true
+    },
+    {
+      "id": "bubbles_11",
+      "type": "bubbles",
+      "x": -200,
+      "y": -1.3,
+      "z": -60,
+      "r": 6,
+      "molten": true
+    },
+    {
+      "id": "bubbles_12",
+      "type": "bubbles",
+      "x": 110,
+      "y": -1.3,
+      "z": -210,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_13",
+      "type": "bubbles",
+      "x": -16.06,
+      "y": -1.3,
+      "z": 300,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_14",
+      "type": "bubbles",
+      "x": -8.31,
+      "y": -1.3,
+      "z": 250,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_15",
+      "type": "bubbles",
+      "x": -15.82,
+      "y": -1.3,
+      "z": 200,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_16",
+      "type": "bubbles",
+      "x": -13.31,
+      "y": -1.3,
+      "z": 150,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_17",
+      "type": "bubbles",
+      "x": -13.96,
+      "y": -1.3,
+      "z": 100,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_18",
+      "type": "bubbles",
+      "x": -17.42,
+      "y": -1.3,
+      "z": 50,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_19",
+      "type": "bubbles",
+      "x": -9.67,
+      "y": -1.3,
+      "z": 0,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_20",
+      "type": "bubbles",
+      "x": -16.27,
+      "y": -1.3,
+      "z": -50,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_21",
+      "type": "bubbles",
+      "x": -9.03,
+      "y": -1.3,
+      "z": -100,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_22",
+      "type": "bubbles",
+      "x": -14.0,
+      "y": -1.3,
+      "z": -150,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_23",
+      "type": "bubbles",
+      "x": -14.65,
+      "y": -1.3,
+      "z": -200,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_24",
+      "type": "bubbles",
+      "x": -12.33,
+      "y": -1.3,
+      "z": -250,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_25",
+      "type": "bubbles",
+      "x": -18.58,
+      "y": -1.3,
+      "z": -300,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_26",
+      "type": "bubbles",
+      "x": -9.93,
+      "y": -1.3,
+      "z": -350,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_27",
+      "type": "bubbles",
+      "x": -305.59,
+      "y": -1.3,
+      "z": 134.89,
+      "r": 4.800000000000001,
+      "molten": true
+    },
+    {
+      "id": "bubbles_28",
+      "type": "bubbles",
+      "x": 280,
+      "y": -1.3,
+      "z": -60,
+      "r": 5.2,
+      "molten": true
+    },
+    {
+      "id": "bubbles_29",
+      "type": "bubbles",
+      "x": -200,
+      "y": -1.3,
+      "z": -360,
+      "r": 4.4,
+      "molten": true
+    },
     {
       "id": "torch_01",
       "type": "torch",
@@ -74,6 +335,189 @@
       "x": -242.93,
       "y": 7.91,
       "z": -19.29
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -115.03,
+      "y": 1.31,
+      "z": 31.07
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 94.74,
+      "y": 0.28,
+      "z": 10.58
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -312.72,
+      "y": 1.71,
+      "z": -168.59
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -229.11,
+      "y": 0.66,
+      "z": 36.16
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -227.37,
+      "y": 2.58,
+      "z": -255.77
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 152.17,
+      "y": 2.81,
+      "z": -122.9
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": 67.31,
+      "y": 1.95,
+      "z": -207.13
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": -276.15,
+      "y": 1.38,
+      "z": -164.32
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": -231.77,
+      "y": 1.55,
+      "z": 126.72
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": 130.56,
+      "y": 2.91,
+      "z": 71.94
+    },
+    {
+      "id": "campfire_11",
+      "type": "campfire",
+      "x": -224.4,
+      "y": 3.03,
+      "z": 83.89
+    },
+    {
+      "id": "campfire_12",
+      "type": "campfire",
+      "x": 89.89,
+      "y": 2.04,
+      "z": -164.12
+    },
+    {
+      "id": "campfire_13",
+      "type": "campfire",
+      "x": 7.2,
+      "y": 1.43,
+      "z": 21.07
+    },
+    {
+      "id": "campfire_14",
+      "type": "campfire",
+      "x": 2.86,
+      "y": 0.03,
+      "z": 140.9
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 50.0,
+      "y": 10.88,
+      "z": -60.0
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": -149.22,
+      "y": 0.19,
+      "z": -134.3
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": -48.45,
+      "y": 1.76,
+      "z": 59.54
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 26.99,
+      "y": 1.49,
+      "z": -163.18
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": -211.64,
+      "y": 0.17,
+      "z": -35.59
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 79.24,
+      "y": 1.06,
+      "z": 20.49
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": -105.73,
+      "y": 0.44,
+      "z": -214.51
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": -146.15,
+      "y": -0.38,
+      "z": 90.89
+    },
+    {
+      "id": "steam_09",
+      "type": "steam",
+      "x": 125.97,
+      "y": 0.98,
+      "z": -121.8
+    },
+    {
+      "id": "steam_10",
+      "type": "steam",
+      "x": -253.21,
+      "y": 0.32,
+      "z": -132.44
+    },
+    {
+      "id": "eruption_01",
+      "type": "eruption",
+      "x": -310.59,
+      "y": 115.0,
+      "z": -55.11,
+      "period": 12.0,
+      "offset": 2.0
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 40,
+      "radius": 40
     },
     {
       "id": "zip_01",

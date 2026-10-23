@@ -4,9 +4,9 @@
   "sky": "#d0806a",
   "fog": {
     "enabled": true,
-    "color": "#b07466",
-    "near": 140,
-    "far": 820
+    "color": "#b47866",
+    "near": 220,
+    "far": 1200
   },
   "sun": {
     "color": "#ffc896",
