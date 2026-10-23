@@ -1548,6 +1548,23 @@ function buildSession(
       return disposed;
     },
     showToast,
+    /**
+     * The review tool's "drive from here": put your kart on the ground at (x, z) (the
+     * surface at or below height y) facing `heading`, stopped. If the race is still
+     * counting down, it starts now.
+     */
+    placeYou(x: number, z: number, heading: number, y: number) {
+      const g = you.ground.at(x, z, y);
+      const bananas = you.state.bananas;
+      Object.assign(you.state, createKartState(x, z, heading, g.height));
+      you.state.bananas = bananas;
+      loops?.reset(0);
+      snapPrev(you);
+      if (race) {
+        teleported(race, 0, you.state);
+        if (race.phase === "countdown") race.clock = -1e-4;
+      }
+    },
     /** Testing and demos: let the AI drive the player's kart. */
     autopilot() {
       if (line && !you.driver) you.driver = createDriver(line, 0, tuning.ai);

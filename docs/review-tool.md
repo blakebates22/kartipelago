@@ -14,18 +14,19 @@ Run the game with `npm run dev` so that notes save straight into the repo (see b
 
 ## Moving around
 
-| Keys                                     | Does                                          |
-| ---------------------------------------- | --------------------------------------------- |
-| W A S D                                  | fly forward, left, back, right                |
-| Q / E                                    | down / up                                     |
-| Shift                                    | four times faster                             |
-| mouse wheel                              | flying speed                                  |
-| arrow keys, or drag with the right mouse | look around                                   |
-| F                                        | mouse-look: a crosshair, click to place at it |
-| K                                        | jump to your kart                             |
-| H                                        | hide or show the panel                        |
-| Tab                                      | back to driving (F2 to come back)             |
-| Esc                                      | cancel what you're placing, or leave the tool |
+| Keys                                     | Does                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| W A S D                                  | fly forward, left, back, right                                                             |
+| Q / E                                    | down / up                                                                                  |
+| Shift                                    | four times faster                                                                          |
+| mouse wheel                              | flying speed                                                                               |
+| arrow keys, or drag with the right mouse | look around                                                                                |
+| F                                        | mouse-look: a crosshair, click to place at it                                              |
+| K                                        | jump to your kart                                                                          |
+| H                                        | hide or show the panel                                                                     |
+| Tab                                      | drive from here: your kart is put down under the camera, facing your way (F2 to come back) |
+| Shift + Tab                              | back to your kart where it was                                                             |
+| Esc                                      | cancel what you're placing, or leave the tool                                              |
 
 ## The tools (keys 1-5)
 

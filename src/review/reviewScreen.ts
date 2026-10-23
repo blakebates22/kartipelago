@@ -203,8 +203,11 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   kartBtn.onclick = () => toKart();
   const exportBtn = el("button", { textContent: "EXPORT" });
   exportBtn.onclick = () => exportNotes();
-  const driveBtn = el("button", { textContent: "TAB DRIVE" });
-  driveBtn.onclick = () => leave();
+  const driveBtn = el("button", {
+    textContent: "TAB DRIVE FROM HERE",
+    title: "Your kart, put down under the camera (Shift+Tab: back to it where it was)",
+  });
+  driveBtn.onclick = () => driveFromHere();
   const list = el("div", { cls: "list" });
   panel.append(
     el("header", {}, el("h1", { textContent: `REVIEW · ${entry.name.toUpperCase()}` }), where),
@@ -214,7 +217,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     list,
     el("footer", {
       innerHTML:
-        "WASD fly · Q/E down/up · Shift fast · wheel speed<br>Arrows or right-drag look · F mouse-look<br>Enter finish path · Backspace undo · H hide · Esc leave",
+        "WASD fly · Q/E down/up · Shift fast · wheel speed<br>Arrows or right-drag look · F mouse-look<br>Tab drive from here · Shift+Tab back to kart<br>Enter finish path · Backspace undo · H hide · Esc leave",
     }),
   );
 
@@ -918,8 +921,12 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       return;
     }
     if (e.code === "Tab") {
+      // Tab: drive from here (your kart put down where you're looking from). Shift+Tab:
+      // back to your kart where it was.
       e.preventDefault();
-      if (!e.repeat) leave();
+      if (e.repeat) return;
+      if (e.shiftKey) leave();
+      else driveFromHere();
       return;
     }
     if (e.repeat && !/^Arrow|^Key[WASDQE]$|^Shift/.test(e.code)) return;
@@ -990,6 +997,12 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
 
   function leave() {
     game.screens.pop();
+  }
+
+  /** Put your kart on the ground under the camera, facing the way you're looking, and go. */
+  function driveFromHere() {
+    session.placeYou(pos.x, pos.z, yaw + Math.PI, pos.y);
+    leave();
   }
 
   return {
