@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "theme": "frost_citadel",
+  "sky": "#4b5596",
+  "fog": {
+    "enabled": true,
+    "color": "#9a9fd6",
+    "near": 150,
+    "far": 980
+  },
+  "sun": {
+    "color": "#c4ceff",
+    "intensity": 1.9,
+    "direction": [
+      -0.35,
+      0.8,
+      0.48
+    ]
+  },
+  "ambient": {
+    "sky": "#aab2f0",
+    "ground": "#4a4472",
+    "intensity": 1.45
+  },
+  "skyDome": {
+    "top": "#1f2766",
+    "horizon": "#a7a0d8",
+    "bottom": "#8e93cc",
+    "sun": {
+      "color": "#f4f6ff",
+      "size": 9,
+      "glow": "#c9d2ff",
+      "elevation": 24
+    },
+    "clouds": {
+      "count": 26,
+      "color": "#c9c6ec",
+      "shade": "#7f80b8",
+      "seed": 17,
+      "low": 8,
+      "high": 26,
+      "drift": 0.003
+    },
+    "hills": {
+      "color": "#6b6fa8",
+      "far": "#a39fd4",
+      "height": 17,
+      "seed": 31,
+      "layers": 3
+    }
+  }
+}

@@ -693,7 +693,7 @@ def build(c, rock, t0, t1, cc):
     half = c.width / 2 + 3.4
 
     # A: the Great Gate, braziers down the valley, pillars along the chasm's rim.
-    great_gate(c, cc, lights, 75.0)
+    great_gate(c, cc, lights, 59.0)
     braziers_along(c, cc, lights, 20.0, cc.SEG[1] + 40, 26.0, 3.2)
     pillars_along(c, 30.0, cc.SEG[1], 30.0, 4.5, -1, 0, 6.0)
     # B: the switchbacks, braziers on the outside and pillars on the guardrail.

@@ -114,6 +114,18 @@ export const TRACKS: TrackEntry[] = [
     music: "bonebog",
     load: { scene: "track", packageId: "bonebog_pyramid_v2" },
   },
+  // The previous Frostveil Citadel (before the shorter bridge and the quicker run home),
+  // kept playable with ?track=frostveil_citadel_v2. Not in any world's menu.
+  {
+    id: "frostveil_citadel_v2",
+    name: "Frostveil Citadel (v2)",
+    description: "The version before the shorter lap.",
+    preview: "previews/frostveil_citadel.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "frost_citadel",
+    music: "frostveil",
+    load: { scene: "track", packageId: "frostveil_citadel_v2" },
+  },
   // The previous Ember Peak (v2, the long climb up the volcano, before the redo), kept
   // playable with ?track=ember_peak_v2. Not in any world's menu.
   {

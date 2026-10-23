@@ -3,13 +3,13 @@
 #
 #   python tools/blender/prehistoric/frostveil_citadel.py      (the bpy module)
 #
-# A clockwise journey (about 2.1 km) round one moonlit mountain valley:
+# A clockwise journey (about 2.0 km) round one moonlit mountain valley:
 #
 #   A  The Forgotten Entrance: the start, on the valley floor beside a fog-filled chasm,
 #      through a great gate between two carved dinosaur heads, heading north, under
 #      the Bridge of Giants. The temple glows high on the west mountain ahead.
-#   B  The Frozen Causeway: sweeping switchbacks up the east hillside, 0 -> 31 m.
-#   C  The Bridge of Giants: 230 m of arched stone heading west at 32 m, over the start
+#   B  The Frozen Causeway: a hairpin and a switchback up the east hillside, 0 -> 31 m.
+#   C  The Bridge of Giants: 165 m of arched stone heading west at 32 m, over the start
 #      straight and then a 130 m-deep chasm full of fog, straight at...
 #   D  The Serpent Gate: the open mouth of a giant serpent carved into the west cliff.
 #      A torchlit tunnel climbs inside the mountain, 32 -> 53 m, with an icy patch.
@@ -39,16 +39,16 @@ PLATEAU_Z = 54.0
 
 # ---------------------------------------------------------------- the layout
 
-START = (0.0, -230.0)
+START = (0.0, -214.0)
 LAYOUT = [
-    ("S", 260),  # 0  A: the start straight, north up the valley
-    ("R", 45, 90),  # 1  round the head of the valley
-    ("S", 50),  # 2  B: the climb begins
-    ("R", 40, 90),  # 3
-    ("S", 50),  # 4
-    ("L", 36, 50),  # 5  the switchback...
-    ("R", 36, 140),  # 6  ...round the cliff: the bridge appears
-    ("S", 230),  # 7  C: the Bridge of Giants
+    ("S", 244),  # 0  A: the start straight, north up the valley
+    ("R", 34, 90),  # 1  B: climbing already, a hairpin round the head of the valley...
+    ("S", 2),  # 2
+    ("R", 30, 90),  # 3  ...back south
+    ("S", 64.19),  # 4
+    ("L", 30, 50),  # 5  the switchback...
+    ("R", 30, 140),  # 6  ...round the cliff: the bridge appears
+    ("S", 163.71),  # 7  C: the Bridge of Giants (it ends where it always did: the mouth)
     ("S", 30),  # 8  D: into the serpent's mouth
     ("R", 40, 90),  # 9  the tunnel turns north, climbing
     ("S", 50),  # 10
@@ -68,11 +68,11 @@ LAYOUT = [
     ("L", 45, 50),  # 24
     ("S", 60),  # 25 the run-up to the jump
     ("S", 16),  # 26 the gap, over the frozen gorge
-    ("S", 50),  # 27 the landing
-    ("R", 50, 90),  # 28 H: into the lower ruins
-    ("S", 120),  # 29 (stretched to close the loop)
-    ("R", 45, 90),  # 30 round onto the start straight
-    ("S", 20),  # 31 (stretched to close the loop)
+    ("S", 36),  # 27 the landing
+    ("R", 40, 90),  # 28 H: straight into the lower ruins
+    ("S", 150),  # 29 (stretched to close the loop)
+    ("R", 40, 90),  # 30 round onto the start straight
+    ("S", 18),  # 31 (stretched to close the loop)
 ]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 29, 31, START, 90.0)
 SEG = kit.segment_starts(PATH)
@@ -83,7 +83,7 @@ LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]
 # Heights along the lap (metres along it, height); the road eases between them.
 ANCHORS = [
     (0.0, 0.0),
-    (SEG[2], 0.4),
+    (SEG[1] + 10, 0.4),
     (SEG[7], 31.5),
     (SEG[8], 32.5),
     (SEG[14], 54.0),
@@ -92,8 +92,8 @@ ANCHORS = [
     (SEG[20], 58.0),
     (SEG[25], 23.0),
     (LIP, 21.5),
-    (LAND, 16.0),
-    (SEG[28], 10.0),
+    (LAND, 14.5),  # (7 m under the lip: a kart at top speed always clears the gap)
+    (SEG[28], 11.5),
     (SEG[30], 1.5),
     (LENGTH, 0.0),
 ]
@@ -204,7 +204,7 @@ def land(x, y):
     """The mountains without the chasm and gorges."""
     h = 0.6 * math.sin(x / 23) * math.cos(y / 19) + 0.4 * math.sin((x + y) / 31)
     # The east hillside the causeway climbs, fading out in the south (the lower town).
-    east = min(36.0, 0.26 * max(0.0, x - 45)) * sm((y + 222) / 40)
+    east = min(36.0, 0.36 * max(0.0, x - 8)) * sm((y + 222) / 40)
     # The descent's shelf, and the mountains rising steeply behind it.
     shelf = sm((x - 188) / 10) * shelf_z(y)
     h += max(east, shelf)
@@ -436,18 +436,18 @@ def main():
 
     c.start_line()
     L = c.length
-    # Zippers: off the start, on the bridge's approach, on the courtyard's exit, and
+    # Zippers: off the start, on the bridge, on the courtyard's exit, and
     # half-way down the descent (as the S-bends open out).
     c.zipper(40, 0)
-    c.zipper(SEG[6] + 50, 0)
+    c.zipper(SEG[7] + 30, 0)
     c.zipper(SEG[15] + 4, 0)
     c.zipper(SEG[23] + 40, 0)
-    for at, across in ((90, -3), (SEG[4] + 10, 0), (SEG[7] + 120, 2), (SEG[10] + 15, 0), (SEG[19] + 90, 0), (SEG[21] + 20, -2), (SEG[29] + 30, 0)):
+    for at, across in ((90, -3), (SEG[4] + 10, 0), (SEG[7] + 125, 2), (SEG[10] + 15, 0), (SEG[19] + 90, 0), (SEG[21] + 20, -2), (SEG[29] + 30, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
         (150, -4, "red"),
         (150, 4, "blue"),
-        (SEG[7] + 60, 0, "green"),
+        (SEG[7] + 80, 0, "green"),
         (SEG[14] + 50, -4, "yellow"),
         (SEG[14] + 50, 4, "red"),
         (SEG[19] + 150, 0, "rainbow"),
@@ -457,10 +457,10 @@ def main():
         c.balloon(at, across, col)
 
     # Missing the jump drops you into the frozen gorge: you're put down on the landing.
-    c.entity("respawn", **{"from": round(LIP - 40, 1), "to": round(LAND + 8, 1), "at": round(LAND + 44, 1)})
+    c.entity("respawn", **{"from": round(LIP - 40, 1), "to": round(LAND + 8, 1), "at": round(LAND + 30, 1)})
 
     c.checkpoints(
-        extra=[SEG[4], SEG[7] + 40, SEG[7] + 190, SEG[10], SEG[13] + 10, SEG[16], SEG[19] + 100, SEG[22], LAND + 52, SEG[29]],
+        extra=[SEG[4], SEG[7] + 40, SEG[7] + 150, SEG[10], SEG[13] + 10, SEG[16], SEG[19] + 100, SEG[22], LAND + 52, SEG[29]],
         height=10.0,
     )
 

@@ -60,6 +60,10 @@ describe("Frostveil Citadel", () => {
     const ys = p.trackData.points.map((q) => q.y ?? 0);
     expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(50);
     expect(Math.min(...p.trackData.points.map((q) => q.width ?? 0))).toBeGreaterThanOrEqual(13);
+    // The shorter lap (Blake's notes): the bridge cut by a third, a quicker run home.
+    const length = buildTrack(p.trackData, tuning.track.sampleSpacing).length;
+    expect(length).toBeGreaterThan(1900);
+    expect(length).toBeLessThan(2100);
   });
 
   it("can be driven: three AI laps through every checkpoint", async () => {
