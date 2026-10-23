@@ -21,7 +21,7 @@ describe("Ember Peak v3 (greybox)", () => {
     const ents = (p.meta.entities ?? []) as Ent[];
     expect(ents.some((e) => e.type === "respawn")).toBe(true);
     expect(Math.min(...p.trackData.points.map((q) => q.width ?? 0))).toBeGreaterThanOrEqual(14);
-    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(4);
+    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(3);
   });
 
   it("has the dragon from beyond the valley, flying the whole lap", async () => {

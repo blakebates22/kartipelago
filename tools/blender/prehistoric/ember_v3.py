@@ -7,14 +7,14 @@
 #
 #   python tools/blender/prehistoric/ember_v3.py      (the bpy module)
 #
-# A short, fast lap (about 820 m, 30-ish seconds) in a tight volcanic valley:
+# A short, fast lap (about 880 m, 30-odd seconds) in a tight volcanic valley:
 #
 #   0  The start: east off a low basalt bridge over the lava river.
 #   1  The big banked hairpin, climbing 15 m.
 #   2  The cliff ledge, west, high above the start (a zipper).
-#   3  THE BIG JUMP: up a stone ramp with a kicker and over the same lava river, about
+#   3  THE BIG JUMP: up a straight stone ramp and over the same lava river, about
 #      18 m across and 11 m down (the dragon swoops over you in the air).
-#   4  The S-bends: a drift chain down the obsidian slope.
+#   4  The S-bends: a tight, deep drift chain down the obsidian slope.
 #   5  The magma cave: through the volcano's flank.
 #   6  The home run: flat out (a zipper), a fast kink, over the lava bridge to the line.
 #
@@ -37,15 +37,15 @@ LAVA_Z = -1.5
 
 LAYOUT = [
     ("S", 50),  # 0  the start straight, east
-    ("L", 46, 180),  # 1  the big banked hairpin, climbing
+    ("L", 42, 180),  # 1  the big banked hairpin, climbing
     ("S", 30),  # 2  the cliff ledge, west (zipper)
     ("S", 24),  # 3  the ramp, with a kicker at the lip
     ("S", 18),  # 4  the gap: over the lava river
-    ("S", 34),  # 5  the landing, downhill
-    ("R", 32, 55),  # 6  the S-bends
-    ("L", 32, 70),  # 7
-    ("R", 32, 70),  # 8
-    ("L", 34, 55),  # 9
+    ("S", 50),  # 5  the landing: a long downhill, so even a boosted jump lands on it
+    ("R", 26, 70),  # 6  the S-bends: tight and deep, so you have to drift them
+    ("L", 26, 140),  # 7
+    ("R", 26, 140),  # 8
+    ("L", 26, 70),  # 9
     ("L", 34, 90),  # 10 into the volcano: the magma cave, turning south
     ("S", 30),  # 11 the cave
     ("L", 34, 90),  # 12 turning east, out of the mountain
@@ -67,13 +67,13 @@ HEIGHT = [
     (3, 17.0),
     (4, 21.0),
     (5, 9.5),
-    (6, 8.6),
-    (7, 8.1),
-    (8, 7.6),
-    (9, 7.0),
-    (10, 6.5),
-    (11, 5.5),
-    (12, 4.5),
+    (6, 6.5),
+    (7, 6.0),
+    (8, 5.5),
+    (9, 5.0),
+    (10, 4.5),
+    (11, 4.0),
+    (12, 3.5),
     (13, 3.0),
     (14, 2.2),
     (15, 2.0),
@@ -87,7 +87,15 @@ def road_z(d, seg):
         if s0 <= seg < s1:
             a, b = SEG[s0], SEG[s1]
             t = (d - a) / max(1e-6, b - a)
-            return lerp(z0, z1, t if s0 in (3, 5) else smooth(t))
+            if s0 == 3:
+                # The ramp: eases in from the flat ledge, then a steady 11 degree slope
+                # to a clean lip (v3.2: no kicker and no sudden change of slope, which
+                # stopped some karts dead and fired others straight up).
+                t0 = 0.35
+                k = 1.0 / (1.0 - t0 / 2.0)
+                f = k * t * t / (2 * t0) if t < t0 else k * (t - t0 / 2.0)
+                return lerp(z0, z1, f)
+            return lerp(z0, z1, t if s0 == 5 else smooth(t))
     end = HEIGHT[-1]
     t = (d - SEG[end[0]]) / max(1e-6, PATH_LEN - SEG[end[0]])
     return lerp(end[1], HEIGHT[0][1], smooth(t))
@@ -275,8 +283,7 @@ def main():
         if k == "gap":
             specials.append((s0, s1, None))
         elif k == "ramp":
-            # The kicker: the last 10 m of the ramp curve up by 1.6 m, for a big launch.
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 1.6 * max(0.0, (u - (n - 10)) / 10) ** 2}))
+            specials.append((s0, s1, "ramp"))
         elif k != "path":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "path"))
@@ -329,12 +336,12 @@ def main():
         c.entity("torch", x=gx, y=gy, z=gz)
 
     c.start_line()
-    # Speed: a zipper off the start, one on the ledge so everyone reaches the ramp fast,
-    # one out of the cave and one down the home run.
-    c.zipper(30, 0)
+    # Speed: one on the ledge so everyone reaches the ramp fast, one out of the cave and
+    # one at the home run's kink, well apart so one boost is over before the next.
+    # (None by the start: there's the start boost.)
     c.zipper(SEG[2] + 6, 0)
     c.zipper(SEG[13] - 2, 0)
-    c.zipper(SEG[13] + 50, 0)
+    c.zipper(SEG[14] + 25, 0)
     for at, across in ((SEG[1] + 60, 0), (SEG[7] + 10, 0), (SEG[11] + 10, 0), (SEG[13] + 80, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in ((SEG[1] + 20, -3, "red"), (SEG[1] + 20, 3, "blue"), (SEG[6] + 8, 0, "green"), (SEG[10] + 20, 0, "yellow"), (SEG[13] + 30, 0, "rainbow")):
