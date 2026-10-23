@@ -1551,6 +1551,7 @@ function buildSession(
     hazards,
     entrants,
     itemWorld,
+    zippers,
     root,
     get race() {
       return race;

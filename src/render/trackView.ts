@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { acrossRoad, type Track } from "../world/track";
 import type { ZipperPad } from "../world/zippers";
+import { zipStyle, zipperMaterial } from "./zipperStyles";
 
 export interface TrackLook {
   wallHeight: number;
@@ -200,14 +201,17 @@ export function createTrackView(
   startLine.position.copy(first.pos).y += LIFT * 2;
   startLine.rotation.y = track.start.heading;
 
-  const zipMat = new THREE.MeshStandardMaterial({
-    map: zipperTexture(),
-    emissive: new THREE.Color(look.zipperColor),
-    emissiveIntensity: 0.15,
-    polygonOffset: true,
-    polygonOffsetFactor: -4,
-    polygonOffsetUnits: -8,
-  });
+  const zStyle = zipStyle();
+  const zipMat = zStyle
+    ? zipperMaterial(zStyle, look.zipperColor)
+    : new THREE.MeshStandardMaterial({
+        map: zipperTexture(),
+        emissive: new THREE.Color(look.zipperColor),
+        emissiveIntensity: 0.15,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -8,
+      });
   // A fine grid, so it can bend to the ground under it.
   const zipMeshes = zippers.map((z) => {
     const mesh = new THREE.Mesh(
@@ -262,10 +266,13 @@ export function createTrackView(
     render(colors: Pick<TrackLook, "roadColor" | "wallColor" | "zipperColor">) {
       if (!draped) drape();
       // The chevrons flow forward along the pad.
-      if (zipMat.map) zipMat.map.offset.y = ((performance.now() / 1000) * 1.2) % 1;
+      const flow = ((performance.now() / 1000) * 1.2) % 1;
+      if (zipMat.map) zipMat.map.offset.y = flow;
+      if (zipMat.emissiveMap) zipMat.emissiveMap.offset.y = flow;
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
-      zipMat.color.set(colors.zipperColor);
+      if (!zStyle || zStyle === 4) zipMat.color.set(colors.zipperColor);
+      if (zStyle === 4) zipMat.emissive.set(colors.zipperColor);
     },
   };
 }

@@ -6,6 +6,7 @@ import * as THREE from "three";
 import type { RacerItems } from "../items/effects";
 import type { BalloonColor } from "../items/inventory";
 import type { ItemWorld } from "../items/world";
+import { wrapMaterial, wrapStyle } from "./balloonWraps";
 
 export const BALLOON_COLORS: Record<BalloonColor, string> = {
   red: "#e63946",
@@ -108,7 +109,7 @@ function pool(make: () => THREE.Object3D, scene: THREE.Object3D) {
  * round the middle, rows of dots, little triangles near the top). The texture is a
  * shade of grey that darkens the balloon's own colour, so red stays red.
  */
-function markingsTexture() {
+export function markingsTexture() {
   const W = 64;
   const H = 32;
   const data = new Uint8Array(W * H * 4);
@@ -195,18 +196,21 @@ export function createItemView(scene: THREE.Object3D) {
     emissiveMap: markings,
     emissiveIntensity: 0.25,
   });
+  const wrap = wrapStyle();
   const balloonMats = Object.fromEntries(
     Object.entries(BALLOON_COLORS).map(([k, c]) => [
       k,
-      k === "rainbow"
-        ? rainbowMat
-        : new THREE.MeshStandardMaterial({
-            color: c,
-            map: markings,
-            emissive: c,
-            emissiveMap: markings,
-            emissiveIntensity: 0.2,
-          }),
+      wrap
+        ? wrapMaterial(wrap, k as BalloonColor)
+        : k === "rainbow"
+          ? rainbowMat
+          : new THREE.MeshStandardMaterial({
+              color: c,
+              map: markings,
+              emissive: c,
+              emissiveMap: markings,
+              emissiveIntensity: 0.2,
+            }),
     ]),
   ) as Record<BalloonColor, THREE.MeshStandardMaterial>;
   const balloonGeo = new THREE.SphereGeometry(0.9, 16, 12).scale(1, 1.2, 1);

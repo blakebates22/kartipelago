@@ -61,6 +61,169 @@ function ring(
 }
 // All shapes below are in icon pixels (0..20); the canvas is scaled by SS.
 
+/**
+ * Prototype styles for the oil slick and mine icons (?icons=o1m2 etc.; 0 is the
+ * original). Oil: 1 a tipped clay pot spilling oil, 2 a tar splat, 3 a big oily drop.
+ * Mine: 1 a stone egg bomb with a lit fuse, 2 a heavier spiked mine, 3 a coconut bomb.
+ */
+export const ICON_STYLE = (() => {
+  const q =
+    typeof location !== "undefined"
+      ? (new URLSearchParams(location.search).get("icons") ?? "")
+      : "";
+  return { oil: Number(/o(\d)/.exec(q)?.[1] ?? 0), mine: Number(/m(\d)/.exec(q)?.[1] ?? 0) };
+})();
+
+/** Draw every icon again (after ICON_STYLE changes, for the prototype sheet). */
+export function clearIconCache() {
+  cache.clear();
+}
+
+function sheen(g: G, x: number, y: number, w: number) {
+  disc(g, "#8a6ad8", x, y, w, 0.9);
+  disc(g, "#5ac8ff", x + w * 0.45, y + 1.1, w * 0.55, 0.7);
+}
+
+function oilIcon(g: G, v: number) {
+  if (v === 1) {
+    // A clay jar knocked over, oil glugging out of its mouth into a puddle.
+    disc(g, "#1e1828", 12.5, 15.6, 7.2, 3.4);
+    sheen(g, 12, 15, 3.4);
+    g.save();
+    g.translate(7.4, 8.4);
+    g.rotate(0.75);
+    disc(g, "#b8582a", 0, 0, 4.6, 5.2);
+    g.fillStyle = "#b8582a";
+    g.fillRect(-1.8, 3.6, 3.6, 3.2);
+    disc(g, "#7a3418", 0, 7, 2.6, 1.2);
+    disc(g, "#1e1828", 0, 7.2, 1.6, 0.7);
+    disc(g, "#e07a3a", -1.8, -2, 1.8, 2.2);
+    g.fillStyle = "#7a3418";
+    g.fillRect(-4.4, 0.6, 8.8, 1);
+    g.restore();
+    disc(g, "#1e1828", 4.4, 14.4, 1.6, 2.6);
+    disc(g, "#ffffff", 14.4, 15, 0.8, 0.5);
+  } else if (v === 2) {
+    // A tar splat: a lumpy blob, drops flung out, an oily sheen and a glint.
+    for (const [x, y, r] of [
+      [10, 11, 6.2],
+      [5.5, 8.5, 3.4],
+      [14.5, 8, 3.2],
+      [14, 14.5, 3.6],
+      [6, 14.5, 3.4],
+    ] as const)
+      disc(g, "#1e1828", x, y, r);
+    for (const [x, y, r] of [
+      [2, 3.5, 1.3],
+      [18, 3, 1.1],
+      [18.6, 17.4, 1.2],
+      [1.6, 18, 1],
+      [10, 1.6, 1],
+    ] as const)
+      disc(g, "#1e1828", x, y, r);
+    sheen(g, 9, 11.5, 4.6);
+    disc(g, "#3a3050", 7, 8, 2, 1.2);
+    disc(g, "#ffffff", 6.4, 7.6, 0.9, 0.6);
+  } else {
+    // A big round oily drop over a small puddle.
+    disc(g, "#1e1828", 10, 16.8, 8.4, 2.6);
+    sheen(g, 8.6, 16.6, 4);
+    g.fillStyle = "#2a2240";
+    g.beginPath();
+    g.moveTo(10, 1);
+    g.quadraticCurveTo(13.2, 6, 15.4, 9.4);
+    g.arc(10, 10.6, 5.6, -0.2, Math.PI + 0.2);
+    g.quadraticCurveTo(6.8, 6, 10, 1);
+    g.fill();
+    disc(g, "#8a6ad8", 11.8, 12.6, 2.2, 1.1);
+    disc(g, "#5ac8ff", 12.6, 13.6, 1.3, 0.6);
+    disc(g, "#ffffff", 7.6, 8.6, 1, 1.8);
+  }
+}
+
+function fuse(g: G, x: number, y: number) {
+  g.strokeStyle = "#c8962a";
+  g.lineWidth = 1.2;
+  g.beginPath();
+  g.moveTo(x, y);
+  g.quadraticCurveTo(x + 3, y - 1.5, x + 3, y - 3.4);
+  g.stroke();
+  // The spark: an eight-point star, orange round a white-hot middle.
+  const sx = x + 3;
+  const sy = y - 4.4;
+  const star = (r: number, col: string) => {
+    const pts: [number, number][] = [];
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      const rr = i % 2 ? r * 0.42 : i % 4 ? r * 0.75 : r;
+      pts.push([sx + Math.cos(a) * rr, sy + Math.sin(a) * rr]);
+    }
+    poly(g, col, pts);
+  };
+  star(3.6, "#ffb02a");
+  star(2.2, "#fff06a");
+  disc(g, "#ffffff", sx, sy, 0.8);
+}
+
+function mineIcon(g: G, v: number) {
+  if (v === 1) {
+    // A stone egg bomb: an egg of grey rock, cracked, glowing red through the cracks,
+    // with a lit fuse in the top.
+    g.save();
+    g.translate(10, 12);
+    disc(g, "#6a6a7a", 0, 0.6, 6.2, 7.4);
+    disc(g, "#8a8a98", -1.2, -0.8, 4.4, 5.4);
+    disc(g, "#c8c8d0", -2.4, -3, 1.4, 1.8);
+    g.strokeStyle = "#ff2a2a";
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(-4, 1);
+    g.lineTo(-1.6, 2.6);
+    g.lineTo(0.4, 0.8);
+    g.lineTo(2.8, 3);
+    g.lineTo(5, 1.6);
+    g.stroke();
+    g.restore();
+    fuse(g, 10, 5);
+  } else if (v === 2) {
+    // A heavy spiked mine: six thick spikes with bright tips, rivets, a glowing light.
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      poly(g, "#6a7080", [
+        [10 + Math.cos(a) * 9.4, 11 + Math.sin(a) * 9.4],
+        [10 + Math.cos(a + 0.42) * 5.4, 11 + Math.sin(a + 0.42) * 5.4],
+        [10 + Math.cos(a - 0.42) * 5.4, 11 + Math.sin(a - 0.42) * 5.4],
+      ]);
+      disc(g, "#d8d8e0", 10 + Math.cos(a) * 8.4, 11 + Math.sin(a) * 8.4, 0.9);
+    }
+    disc(g, "#4a4a58", 10, 11, 6.4);
+    disc(g, "#6a6a7a", 8.4, 9.2, 3);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      disc(g, "#8a8a98", 10 + Math.cos(a) * 4.6, 11 + Math.sin(a) * 4.6, 0.6);
+    }
+    disc(g, "#ff8a6a", 10, 11, 2.6);
+    disc(g, "#ff2a2a", 10, 11, 1.8);
+    disc(g, "#ffd0c0", 9.4, 10.4, 0.7);
+  } else {
+    // A coconut bomb: a hairy brown nut with its three eyes and a lit fuse.
+    disc(g, "#5a3a20", 10, 12.4, 7);
+    disc(g, "#7a5030", 8.6, 10.6, 4.4);
+    g.strokeStyle = "#3a2414";
+    g.lineWidth = 0.7;
+    for (let i = 0; i < 5; i++) {
+      g.beginPath();
+      g.moveTo(4.6 + i * 2.6, 8 + (i % 2));
+      g.lineTo(5.6 + i * 2.6, 11 + (i % 2));
+      g.stroke();
+    }
+    disc(g, "#3a2414", 8, 14, 1.2);
+    disc(g, "#3a2414", 12, 14, 1.2);
+    disc(g, "#3a2414", 10, 16.6, 1.2);
+    fuse(g, 10, 5.6);
+  }
+}
+
 /** A missile pointing right, centred on (x, y), `s` its scale. */
 function missile(g: G, x: number, y: number, s: number, nose = "#f2f2f6") {
   g.save();
@@ -256,7 +419,9 @@ function draw(g: G, color: BalloonColor, level: number) {
       flame(g, level);
       break;
     case "green":
-      if (level === 1) {
+      if (level === 1 && ICON_STYLE.oil) oilIcon(g, ICON_STYLE.oil);
+      else if (level === 2 && ICON_STYLE.mine) mineIcon(g, ICON_STYLE.mine);
+      else if (level === 1) {
         // An oil slick: a dark puddle with a rainbow sheen, and a drip falling into it.
         disc(g, "#3a3050", 10, 14, 8.6, 4.4);
         disc(g, "#3a3050", 4.6, 12, 3.4, 2.6);
@@ -343,6 +508,15 @@ const SNAP = [
   "#5ac8ff",
   "#bff0ff",
   "#8fe0ff",
+  "#1e1828",
+  "#2a2240",
+  "#b8582a",
+  "#e07a3a",
+  "#7a3418",
+  "#fff0d0",
+  "#5a3a20",
+  "#7a5030",
+  "#3a2414",
 ].map(rgbOf);
 
 function snap(r: number, g: number, b: number) {

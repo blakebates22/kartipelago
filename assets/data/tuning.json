@@ -136,8 +136,8 @@
     "wallHeight": 1.2,
     "roadColor": "#d6d6d6",
     "wallColor": "#e63946",
-    "zipperLength": 6,
-    "zipperWidth": 7,
+    "zipperLength": 4.5,
+    "zipperWidth": 5.25,
     "zipperColor": "#ff7b00"
   },
   "bananas": {

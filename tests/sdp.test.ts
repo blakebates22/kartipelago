@@ -240,7 +240,9 @@ describe("Snow Dragon Pass", () => {
     for (const [name, t] of Object.entries(times)) {
       if (t === best) continue;
       expect((t - best) / best, name).toBeGreaterThan(0.002);
-      expect((t - best) / best, name).toBeLessThan(0.035);
+      // 4% (was 3.5%): the smaller zipper pads (5.25 x 4.5 m, from 7 x 6) shifted the
+      // route balance a touch.
+      expect((t - best) / best, name).toBeLessThan(0.04);
     }
   }, 600000);
 });

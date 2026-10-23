@@ -38,7 +38,7 @@ export const TRACKS: TrackEntry[] = [
     id: "riverbend_palms",
     name: "Riverbend Palms",
     description:
-      "Palm-lined S-bends, a wooden bridge, a stone ford and a gentle giant strolling by the river.",
+      "Palm-shaded S-bends, a creaky bridge and a splashy ford. Mind the long-neck strolling across the road.",
     preview: "previews/riverbend_palms.jpg",
     modes: ["race", "timeTrial"],
     theme: "jungle_falls",
@@ -49,7 +49,7 @@ export const TRACKS: TrackEntry[] = [
     id: "cascade_caverns",
     name: "Cascade Caverns",
     description:
-      "Leap through a thundering waterfall, roar through the caves and race the high canyon ledges.",
+      "Punch straight through the waterfall, rattle through the caves, then hug the canyon ledges high above.",
     preview: "previews/cascade_caverns.jpg",
     modes: ["race", "timeTrial"],
     theme: "jungle_falls",
@@ -60,7 +60,7 @@ export const TRACKS: TrackEntry[] = [
     id: "bonebog_pyramid",
     name: "Bonebog Pyramid",
     description:
-      "Race the raised boardwalks of a living swamp, through a giant's ribs and straight through a colossal pyramid.",
+      "Rickety boardwalks over a steaming swamp, through a giant's ribcage and right through the pyramid.",
     preview: "previews/bonebog_pyramid.jpg",
     modes: ["race", "timeTrial"],
     theme: "bonebog_swamp",
@@ -71,7 +71,7 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak",
     name: "Ember Peak",
     description:
-      "Climb an erupting volcano past a fire-breathing dragon, race through its lava caverns and escape the eruption.",
+      "Up the side of an erupting volcano, past a dragon with a temper, then outrun the lava through the caves.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
@@ -83,7 +83,7 @@ export const TRACKS: TrackEntry[] = [
     id: "frostveil_citadel",
     name: "Frostveil Citadel",
     description:
-      "Climb to a lost citadel in the moonlit mountains: giant bridges over clouds, a serpent's mouth, a temple of gold and a frozen descent.",
+      "Cloud-high bridges to a lost citadel, through a stone serpent's jaws and down a frozen slide.",
     preview: "previews/frostveil_citadel.jpg",
     modes: ["race", "timeTrial"],
     theme: "frost_citadel",
@@ -94,7 +94,7 @@ export const TRACKS: TrackEntry[] = [
     id: "snowy_summit",
     name: "Snowy Summit Pass",
     description:
-      "A sunny race round a frozen lake: geysers, a glowing ice cave, jumps over gorges and a spiral up inside a giant tree to bridges in the treetops.",
+      "Round a frozen lake past geysers and an ice cave, then spiral up a giant tree to the treetop bridges.",
     preview: "previews/snowy_summit.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_pass",
@@ -105,7 +105,7 @@ export const TRACKS: TrackEntry[] = [
     id: "hearthglow_hollow",
     name: "Hearthglow Hollow",
     description:
-      "Race through a Christmas village on a snowy evening: round the giant tree, over the frozen river, past rolling snowballs, up to the bell tower and down the sleigh run.",
+      "A snowy village at dusk: round the big tree, over the frozen river, dodge snowballs, down the sleigh run.",
     preview: "previews/hearthglow_hollow.jpg",
     modes: ["race", "timeTrial"],
     theme: "hearthglow",
@@ -116,7 +116,7 @@ export const TRACKS: TrackEntry[] = [
     id: "aurora_rift",
     name: "Aurora Rift",
     description:
-      "Plunge into a fractured glacier: a crystal cathedral, a giant loop-the-loop over the abyss, a mirror lake and a bridge beneath the northern lights.",
+      "Inside a cracked glacier: a crystal cathedral, a loop over the abyss, a bridge under the northern lights.",
     preview: "previews/aurora_rift.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_rift",
@@ -128,7 +128,7 @@ export const TRACKS: TrackEntry[] = [
     id: "canyon_dash",
     name: "Canyon Dash",
     description:
-      "A flat-out dash round a great red-rock canyon: down the cliffs, under a giant sandstone arch, over the gorge and past a thundering waterfall.",
+      "Flat out round a red-rock canyon: down the cliffs, under the great arch and over the gorge.",
     preview: "previews/canyon_dash.jpg",
     modes: ["race", "timeTrial"],
     theme: "canyon_dash",
@@ -139,7 +139,7 @@ export const TRACKS: TrackEntry[] = [
     id: "oasis_haven",
     name: "Oasis Haven",
     description:
-      "Race round a sun-drenched oasis resort: a turquoise lake, a waterfront market, a great arched bridge, a domed pavilion, cascading terraces and the palace above.",
+      "A turquoise lake, a waterfront market, terraces of fountains and a palace on top. Very fancy. Very fast.",
     preview: "previews/oasis_haven.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_haven",
@@ -150,7 +150,7 @@ export const TRACKS: TrackEntry[] = [
     id: "dry_gulch",
     name: "Dry Gulch Ghost Town",
     description:
-      "Race by moonlight through an abandoned frontier town where the lanterns still burn, past the graveyard and over the glowing chasm. Dare you take the shortcut through the haunted mine?",
+      "A moonlit ghost town where the lanterns still burn. The haunted mine is a shortcut, if you dare.",
     preview: "previews/dry_gulch.jpg",
     modes: ["race", "timeTrial"],
     theme: "dry_gulch",
@@ -161,7 +161,7 @@ export const TRACKS: TrackEntry[] = [
     id: "impact_depths",
     name: "Impact Depths",
     description:
-      "Plunge into a smoking asteroid crater and race down through the world beneath the desert: crystal caverns, a lost jungle full of dinosaurs, rivers of lava, a dragon's lair and the glowing heart of the Earth. Then climb back into the sun.",
+      "Dive into a smoking crater, down through crystal caves, a lost jungle and lava, to the Earth's core.",
     preview: "previews/impact_depths.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_depths",
@@ -172,7 +172,7 @@ export const TRACKS: TrackEntry[] = [
     id: "dragon_isles",
     name: "Dragon Isles",
     description:
-      "Race the festival lap of a sunlit kingdom of karst islands ruled by dragons: through the riverside market, up the cliffs, over the Great Waterfall Bridge, through the temple gardens and along the sky paths as the great jade dragon flies overhead.",
+      "Festival day on the karst isles: market streets, cliff roads, a huge waterfall bridge, a jade dragon above.",
     preview: "previews/dragon_isles.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragon_isles",
@@ -183,7 +183,7 @@ export const TRACKS: TrackEntry[] = [
     id: "dragon_canyon",
     name: "Dragon Canyon",
     description:
-      "The dragon kingdom's desert frontier at golden hour: stacked cliffside hairpins, a bridge over the falls, a dragon's bones, the imperial quarry, the High Bridges and the Final Twist. The most technical drifting course in the game.",
+      "Golden-hour hairpins stacked up the cliffs. The most technical drifting course in the game.",
     preview: "previews/dragon_canyon.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragon_canyon",
@@ -194,7 +194,7 @@ export const TRACKS: TrackEntry[] = [
     id: "snow_dragon_pass",
     name: "Snow Dragon Pass",
     description:
-      "The kingdom's highest mountains in a blizzard. Half the lap is a choice of roads: the High Cliff Road or the Frozen Supply Road, the Monastery Ridge or the Frozen Aqueduct. Past ration lines and full storehouses, up to the blazing citadel under the ice dragon.",
+      "A blizzard over the highest peaks. Pick your road twice, then climb to the citadel under the ice dragon.",
     preview: "previews/snow_dragon_pass.jpg",
     modes: ["race", "timeTrial"],
     theme: "snow_dragon_pass",
@@ -205,7 +205,7 @@ export const TRACKS: TrackEntry[] = [
     id: "celestial_dragon_festival",
     name: "Celestial Dragon Festival",
     description:
-      "The grand finale: the dragon kingdom's sacred heart on the night of its greatest festival. Over the Waterfall Bridge, up to the Star Bridge above the clouds, round the great golden rings of the observatory and down to the palace, while the sky fills with fireworks, more every lap, until the whole kingdom erupts on the last.",
+      "The grand finale on festival night: leap among the stars while fireworks fill the sky, more every lap.",
     preview: "previews/celestial_dragon_festival.jpg",
     modes: ["race", "timeTrial"],
     theme: "celestial_dragon_festival",
