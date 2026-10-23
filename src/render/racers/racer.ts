@@ -19,6 +19,27 @@ export { motionOf, type RacerMotion, type AnimState } from "./animator";
 /** Distance beyond which the cheap version is drawn, metres. */
 export const LOD_DISTANCE = 45;
 
+let rainbowTex: THREE.Texture | undefined;
+/** Six bold bands of colour (red to violet), repeated twice along the flame. */
+function rainbowTexture() {
+  if (rainbowTex) return rainbowTex;
+  const c = document.createElement("canvas");
+  c.width = 2;
+  c.height = 12;
+  const g = c.getContext("2d")!;
+  ["#ff2a2a", "#ff9a1a", "#ffe82a", "#3ade3a", "#2a8aff", "#a84aff"].forEach((col, i) => {
+    g.fillStyle = col;
+    g.fillRect(0, i * 2, 2, 2);
+  });
+  rainbowTex = new THREE.CanvasTexture(c);
+  rainbowTex.wrapS = rainbowTex.wrapT = THREE.RepeatWrapping;
+  rainbowTex.repeat.set(1, 2);
+  rainbowTex.magFilter = THREE.NearestFilter;
+  rainbowTex.minFilter = THREE.NearestFilter;
+  rainbowTex.colorSpace = THREE.SRGBColorSpace;
+  return rainbowTex;
+}
+
 const SH_UP = new THREE.Vector3(0, 1, 0);
 const SH_N = new THREE.Vector3();
 const SH_Q = new THREE.Quaternion();
@@ -143,6 +164,43 @@ export class Racer {
     );
     this.shadow.renderOrder = 1;
   }
+
+  /**
+   * The rainbow window's flame (on), or back to normal (off): the outer flame painted in
+   * bands of every colour that stream back along it (drawn solid, not added, so the
+   * colours stay strong instead of washing out to white), its hot inner flame, white
+   * core and shock diamonds hidden, and the nozzle glow cycling through the colours.
+   */
+  rainbowFlame(on: boolean, seconds: number) {
+    const glow = this.flame.getObjectByName("glow") as THREE.Mesh;
+    const glowMat = glow.material as THREE.MeshBasicMaterial;
+    const inner = ["hot", "white", "diamond0", "diamond1", "diamond2"].map((n) =>
+      this.flame.getObjectByName(n)!,
+    );
+    const m = this.flameMat;
+    if (on) {
+      if (!this.rainbowOn) {
+        m.map = rainbowTexture();
+        m.blending = THREE.NormalBlending;
+        m.needsUpdate = true;
+        this.rainbowOn = true;
+      }
+      m.color.set("#ffffff");
+      m.map!.offset.y = (seconds * 3) % 1;
+      for (const o of inner) o.visible = false;
+      glowMat.color.setHSL((seconds * 2.6) % 1, 1, 0.6);
+      glowMat.opacity = 0.9;
+    } else if (this.rainbowOn) {
+      m.map = null;
+      m.blending = THREE.AdditiveBlending;
+      m.needsUpdate = true;
+      for (const o of inner) o.visible = true;
+      glowMat.color.set("#fff4c8");
+      glowMat.opacity = 0.55;
+      this.rainbowOn = false;
+    }
+  }
+  private rainbowOn = false;
 
   /**
    * Bring the boost flame to life this frame: it flickers and pulses, and shock diamonds

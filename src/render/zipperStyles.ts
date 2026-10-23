@@ -79,3 +79,61 @@ export function zipperMaterial() {
     polygonOffsetUnits: -8,
   });
 }
+
+/** A soft canvas gradient texture (smoothed: glows aren't pixel art). */
+function gradient(w: number, h: number, paint: (g: CanvasRenderingContext2D) => void) {
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  paint(c.getContext("2d")!);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * The glow round a pad: a soft pool of warm yellow light on the ground (brightest in the
+ * middle, fading to nothing at its rounded edges) and a faint haze rising off it. Both
+ * add light (additive) and never hide what's behind them.
+ */
+export function zipperGlowMaterials() {
+  const pool = gradient(64, 64, (g) => {
+    // Fades to nothing before the edges, so no outline shows (the quad stretches it).
+    const r = g.createRadialGradient(32, 32, 2, 32, 32, 31);
+    r.addColorStop(0, "rgba(255, 220, 90, 1)");
+    r.addColorStop(0.5, "rgba(255, 200, 60, 0.45)");
+    r.addColorStop(1, "rgba(255, 180, 40, 0)");
+    g.fillStyle = r;
+    g.fillRect(0, 0, 64, 64);
+  });
+  const haze = gradient(8, 64, (g) => {
+    const l = g.createLinearGradient(0, 64, 0, 0);
+    l.addColorStop(0, "rgba(255, 220, 90, 1)");
+    l.addColorStop(0.35, "rgba(255, 210, 80, 0.4)");
+    l.addColorStop(1, "rgba(255, 200, 60, 0)");
+    g.fillStyle = l;
+    g.fillRect(0, 0, 8, 64);
+  });
+  const common = {
+    color: "#ffd84a",
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  } as const;
+  return {
+    glowMat: new THREE.MeshBasicMaterial({
+      ...common,
+      map: pool,
+      opacity: 0.42,
+      polygonOffset: true,
+      polygonOffsetFactor: -3,
+      polygonOffsetUnits: -6,
+    }),
+    hazeMat: new THREE.MeshBasicMaterial({
+      ...common,
+      map: haze,
+      opacity: 0.16,
+      side: THREE.DoubleSide,
+    }),
+  };
+}

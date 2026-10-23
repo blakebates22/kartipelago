@@ -1016,9 +1016,12 @@ function buildSession(
     const dying = z === ZIP.RECOVERY ? Math.max(0, 1 - s.zipTime / 0.5) : 0;
     e.racer.flame.visible = pushing || dying > 0;
     e.racer.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
+    e.racer.rainbowFlame(z === ZIP.ENDING, performance.now() / 1000);
     if (z === ZIP.ENDING) {
-      e.racer.flameMat.color.setHSL((performance.now() / 250) % 1, 1, 0.6);
-      e.racer.flame.scale.setScalar(1.5);
+      // The rainbow window: a big flame, every layer a different colour, cycling fast and
+      // pulsing, so "press the throttle now" can't be missed.
+      const pulse = 1 + 0.18 * Math.sin(performance.now() / 45);
+      e.racer.flame.scale.setScalar(1.9 * pulse);
     } else if (z === ZIP.ACTIVE) {
       e.racer.flameMat.color.set(color);
       let size = s.zipEnhanced ? 1.35 : 1;

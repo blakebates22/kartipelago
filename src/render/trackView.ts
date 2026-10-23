@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { acrossRoad, type Track } from "../world/track";
 import type { ZipperPad } from "../world/zippers";
-import { zipperMaterial } from "./zipperStyles";
+import { zipperGlowMaterials, zipperMaterial } from "./zipperStyles";
 
 export interface TrackLook {
   wallHeight: number;
@@ -184,12 +184,43 @@ export function createTrackView(
     mesh.rotation.y = z.heading;
     return mesh;
   });
+  // A subtle yellow glow round each pad: a soft pool of light on the ground under the
+  // arrows, and a faint haze rising off it, so zippers are easy to spot from afar.
+  const { glowMat, hazeMat } = zipperGlowMaterials();
+  const glowMeshes = zippers.map((z) => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(z.halfWidth * 2 * 1.5, z.halfLength * 2 * 1.6, 6, 12).rotateX(
+        -Math.PI / 2,
+      ),
+      glowMat,
+    );
+    mesh.position.set(z.x, z.y + LIFT, z.z);
+    mesh.rotation.y = z.heading;
+    mesh.renderOrder = 1;
+    return mesh;
+  });
+  const hazeMeshes = zippers.map((z) => {
+    // An open box (no top or bottom) round the pad, fading out upward.
+    const g = new THREE.CylinderGeometry(1, 1, 1, 4, 1, true).rotateY(Math.PI / 4);
+    g.translate(0, 0.5, 0);
+    const mesh = new THREE.Mesh(g, hazeMat);
+    mesh.scale.set(z.halfWidth * Math.SQRT2 * 1.05, 1.1, z.halfLength * Math.SQRT2 * 1.05);
+    mesh.position.set(z.x, z.y, z.z);
+    mesh.rotation.y = z.heading;
+    mesh.renderOrder = 2;
+    return mesh;
+  });
   let draped = !opts.drape;
   /** Lay each pad's vertices on the ground beneath them, just above it. */
   function drape() {
     draped = true;
     zippers.forEach((z, i) => {
-      const mesh = zipMeshes[i]!;
+      // The haze stands on the ground at the pad's middle.
+      hazeMeshes[i]!.position.y = opts.drape!(z.x, z.z, z.y + 1);
+    });
+    [...zipMeshes, ...glowMeshes].forEach((mesh, j) => {
+      const z = zippers[j % zippers.length]!;
+      const lift = j < zipMeshes.length ? LIFT * 3 : LIFT * 2;
       mesh.updateMatrixWorld(true);
       const pos = mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
       const c = Math.cos(z.heading);
@@ -201,7 +232,7 @@ export function createTrackView(
         const wx = z.x + lx * c + lz * sn;
         const wz = z.z - lx * sn + lz * c;
         const h = opts.drape!(wx, wz, z.y + 1);
-        pos.setY(k, h + LIFT * 3 - mesh.position.y);
+        pos.setY(k, h + lift - mesh.position.y);
       }
       pos.needsUpdate = true;
       mesh.geometry.computeVertexNormals();
@@ -210,17 +241,30 @@ export function createTrackView(
   }
 
   const surface = opts.surface ?? true;
-  const parts = [...(surface ? [road, ...walls] : []), startLine, ...zipMeshes];
+  const parts = [
+    ...(surface ? [road, ...walls] : []),
+    startLine,
+    ...glowMeshes,
+    ...hazeMeshes,
+    ...zipMeshes,
+  ];
   scene.add(...parts);
 
   return {
     /** Remove everything this view added and free its GPU resources. */
     dispose() {
-      for (const m of [road, ...walls, startLine, ...zipMeshes]) {
+      for (const m of [road, ...walls, startLine, ...zipMeshes, ...glowMeshes, ...hazeMeshes]) {
         scene.remove(m);
         m.geometry.dispose();
       }
-      for (const mat of [roadMat, wallMat, zipMat, startLine.material as THREE.Material]) {
+      for (const mat of [
+        roadMat,
+        wallMat,
+        zipMat,
+        glowMat,
+        hazeMat,
+        startLine.material as THREE.Material,
+      ]) {
         (mat as THREE.MeshStandardMaterial).map?.dispose();
         (mat as THREE.MeshStandardMaterial).emissiveMap?.dispose();
         mat.dispose();
@@ -232,6 +276,10 @@ export function createTrackView(
       const flow = ((performance.now() / 1000) * 1.2) % 1;
       if (zipMat.map) zipMat.map.offset.y = flow;
       if (zipMat.emissiveMap) zipMat.emissiveMap.offset.y = flow;
+      // The glow breathes gently.
+      const breathe = 0.85 + 0.15 * Math.sin((performance.now() / 1000) * 2.4);
+      glowMat.opacity = 0.42 * breathe;
+      hazeMat.opacity = 0.16 * breathe;
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
     },
