@@ -1,7 +1,7 @@
 // Dragon Canyon (Dragon Kingdom, course 2): the Dragon Kingdom's second course with its
 // own theme and music; it loads cleanly with its frontier (the dragon, the workers and
 // guards, the cranes, waterfalls, the air); it turns harder per kilometre than any other
-// course, with at least five hairpins; its roads never touch where they pass over and
+// course but Bonebog's v3 lap, with at least five hairpins; its roads never touch where they pass over and
 // under each other; the lap runs through every part in order; the Quarry Service Road
 // counts as the stretch it skips; drifting really is the fast way round; and the AI
 // drives it cleanly.
@@ -126,10 +126,14 @@ describe("Dragon Canyon", () => {
     }
   });
 
-  it("turns harder per kilometre than any other course in the game, with at least five hairpins", async () => {
+  it("turns harder per kilometre than any other course but Bonebog, with at least five hairpins", async () => {
     const mine = twistiness((await loadTrackPackage(reader, { visual: false })).trackData.points);
     expect(mine.hairpins).toBeGreaterThanOrEqual(5);
-    const others = VISIBLE_WORLDS.flatMap((w) => w.tracks).filter((t) => t !== id);
+    // (Bonebog Pyramid's v3 lap, rebuilt from Blake's driving notes to be nearly all
+    // bends, now turns harder still: it's the one exception.)
+    const others = VISIBLE_WORLDS.flatMap((w) => w.tracks).filter(
+      (t) => t !== id && t !== "bonebog_pyramid",
+    );
     for (const t of others) {
       const p = await loadTrackPackage(readerFor(t), { visual: false }).catch(() => undefined);
       if (!p) continue;

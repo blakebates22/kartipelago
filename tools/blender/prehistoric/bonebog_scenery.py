@@ -55,6 +55,17 @@ class Mesh:
 # ------------------------------------------------------------------ the pyramid
 
 
+def _S(bb):
+    """Where each of the old lap's sections is (bonebog_pyramid.py's SCENE_SEG maps them
+    onto v3's lap), by the old lap's segment numbers."""
+    return getattr(bb, "SCENE_SEG", bb.SEG)
+
+
+def _near_spiral(bb, x, y, m=0.0):
+    f = getattr(bb, "near_spiral", None)
+    return bool(f and f(x, y, m))
+
+
 def _rect_ring(bm, cx, cy, hx, hy, z, per_side):
     """A rectangle of points (per_side along each side), anticlockwise from the
     south-west corner."""
@@ -70,7 +81,7 @@ def _rect_ring(bm, cx, cy, hx, hy, z, per_side):
 
 def halls(bb):
     """The spaces cut through the pyramid: (from, to, half-width, height), along the lap."""
-    S = bb.SEG
+    S = getattr(bb, "SCENE_SEG", bb.SEG)
     return [
         (bb.INSIDE[0], bb.INSIDE[1], 12.5, 11.0, 16.0),  # the corridor, open at both faces
         (S[14] - 4, S[15] + 2, 22.0, 24.0, 0.0),  # the turning chamber, round a great column
@@ -350,7 +361,7 @@ def inside_dressing(c, bb, lights, falls):
     vines through the roof; the great column in the turning chamber with a guardian
     head; the Great Hall's two rows of pillars, its side pools fed by waterfalls from
     the roof, and shafts of light."""
-    S = bb.SEG
+    S = getattr(bb, "SCENE_SEG", bb.SEG)
     m = Mesh()
     torch = props.torch(c)
     web_full, web_corner = sp.cobweb(c, 0), sp.cobweb(c, 1)
@@ -581,11 +592,13 @@ def bones(c, bb, ter):
     """The graveyard: the Rib Bridge's colossal cage and its skull, the Jawbone Gate,
     a long-neck whose neck arches over the Grand Causeway, the great skull of Skull
     Lagoon, and bones scattered everywhere else."""
-    S = bb.SEG
-    rib_cage(c, bb, S[7] + 4, S[7] + 86, "Rib Bridge Cage", spine_up=24.0, reach=24.0)
+    S = getattr(bb, "SCENE_SEG", bb.SEG)
+    rib_cage(c, bb, S[7] + 4, min(S[7] + 86, S[8] + 6), "Rib Bridge Cage", spine_up=24.0, reach=24.0)
     # Its skull in the water at the north end, its tail trailing off to the south.
     q = c.at(S[8] + 20)
     p = q.side(-36.0)
+    if _near_spiral(bb, p.x, p.y, 10):
+        p = q.side(36.0)
     c.place(sp.great_skull(c), p.x, p.y, -3.0, rot=math.atan2(-q.r.y, -q.r.x) + 0.5, scale=0.9, coll="Bones", role="visual")
     t0 = c.at(S[7] + 2)
     tail = []
@@ -593,9 +606,15 @@ def bones(c, bb, ter):
         p = t0.p - t0.t * (7.0 * k) + t0.r * (6.0 * math.sin(k * 0.6))
         tail.append((p.x, p.y, t0.p.z + 18.0 - 2.4 * k))
     neck_arch(c, tail, "Rib Tail", size=1.0, head=False)
-    jaw_gate(c, 95.0, "Jawbone Gate")
+    jaw_gate(c, getattr(bb, "JAW_S", 95.0), "Jawbone Gate")
     # A long-neck: its body half sunk in the lagoon, its neck arching high over the
     # causeway and its head resting on the far bank.
+    if getattr(bb, "LONGNECK", True):
+        long_neck(c, S)
+    _skull_lagoon(c, bb, S, ter)
+
+
+def long_neck(c, S):
     cw = c.at(S[9] + 60)
     body = cw.side(-60.0)
     over = cw.p
@@ -611,6 +630,10 @@ def bones(c, bb, ter):
     for k in range(7):
         p = body + Vector((-cw.r.x, -cw.r.y, 0)) * (6.0 * k + 4.0)
         c.place(rp, p.x, p.y, -1.5, rot=math.atan2(cw.r.y, cw.r.x), scale=(14.0, 12.0 - k, 13.0 - k * 1.2), coll="Bones", role="visual")
+
+
+def _skull_lagoon(c, bb, S, ter):
+    rp = sp.rib_pair(c, 0)
     # Skull Lagoon: the great skull on the outside of the bend, jaws open toward you.
     s18 = (S[18] + S[19]) / 2
     q = c.at(s18)
@@ -714,7 +737,7 @@ def trees(c, bb, ter):
         return all((x - px) ** 2 + (y - py) ** 2 > gap * gap for px, py, _ in placed)
 
     def plant(x, y, sc, margin):
-        if bb.on_foundation(x, y, 22) or open_lagoon(bb, x, y):
+        if bb.on_foundation(x, y, 22) or open_lagoon(bb, x, y) or _near_spiral(bb, x, y, 14):
             return False
         if not props.clear_of_road(c, x, y, margin) or not free(x, y, 30 * sc):
             return False
@@ -946,7 +969,7 @@ def swamp_life(c, bb, ter, lights):
     """Lily pads and flowers, cattails and reeds, rotting logs, stumps and sunken
     timber, bubbling glowing pools, mist, crocodiles and frogs; the stilt village and
     the watchtowers; glowing caps and big leaves on the banks."""
-    S = bb.SEG
+    S = getattr(bb, "SCENE_SEG", bb.SEG)
     area = (-300, 340, -300, 340)
 
     def water(m0, m1):
@@ -1067,7 +1090,7 @@ def treehouses(c, bb, placed, lights):
     near = []
     for x, y, sc in placed:
         smp, d = c.nearest(x, y)
-        if len(near) < 10 and (bb.SEG[17] - 10 <= smp.s <= bb.SEG[25] + 10 or bb.SEG[1] <= smp.s <= bb.SEG[5]):
+        if len(near) < 10 and (_S(bb)[17] - 10 <= smp.s <= _S(bb)[25] + 10 or _S(bb)[1] <= smp.s <= _S(bb)[5]):
             z = 18.0 + 4.0 * rnd(x * 0.1 + y)
             c.place(plat, x, y, z, rot=rnd(x) * math.tau, scale=sc, coll="Village", role="visual")
             near.append((x, y, z, sc))
@@ -1123,7 +1146,7 @@ def build(c, pyr, bb):
     lights = []
     inner = []
     falls = []
-    S = bb.SEG
+    S = getattr(bb, "SCENE_SEG", bb.SEG)
     # The pyramid: its two carved faces with their waterfalls, the stairs, the vines
     # over every tier, the terrace and its fires, trees growing on the tiers.
     e = c.at(bb.INSIDE[0])

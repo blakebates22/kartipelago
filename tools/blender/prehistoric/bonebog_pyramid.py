@@ -4,27 +4,25 @@
 #
 #   python tools/blender/prehistoric/bonebog_pyramid.py      (the bpy module)
 #
-# A lap of about 1.7 km, almost all of it raised above deep green swamp water (fall in
-# and you're fished out at the last checkpoint), under a vast canopy of giant trees:
+# v3 (Blake's driving notes, 2026-10-23, from the greybox bonebog_v3.py): the same swamp,
+# graveyard and pyramid as v2 (kept playable as bonebog_pyramid_v2), round a new lap of
+# about 1.5 km that's nearly all bends:
 #
-#   A  The Old Dike: the start, on a raised stone road along an earthen dike, heading
-#      north through the ribs of a fallen giant.
-#   B  The Boardwalks: railed wooden walkways winding east between giant trees, bone
-#      piles and bubbling pools, under the canopy.
-#   C  The Rib Bridge: a high trestle north across Rib Lagoon, straight through the
-#      rib cage of a colossal skeleton, the pyramid revealed across the water.
-#   D  The Grand Causeway: a raised stone causeway west across the lagoon, straight at
-#      the pyramid's carved face and its waterfalls.
-#   E  The Pyramid: about ten seconds inside: a torchlit entry corridor, a turning
-#      chamber, the Great Hall (pillars, waterfalls from the roof, shafts of light) and
-#      out of the south face.
-#   F  Skull Lagoon: a high trestle down past a colossal skull, then winding
-#      mangrove boardwalks under the treehouse village, and home along the dike.
+#   A  The Old Dike: the start, north along the dike, and the first S-bends east over
+#      the boardwalks; the first green balloon's spot is a zipper.
+#   B  A big hairpin back west, and a weave across the heart of the swamp.
+#   C  The Rib Bridge: north through the rib cage of a colossal skeleton.
+#   D  The great tree: one and a quarter turns up round its trunk to the treehouse
+#      village in its limbs, then a fast drop down a stone causeway to the pyramid.
+#   E  The Pyramid: rolling crests down the torchlit corridor, the turning chamber, and
+#      the Great Hall: more crests, and a jump over the river that runs through it and
+#      pours out of the pyramid's side into the swamp.
+#   F  Skull Lagoon: an S down the trestle past the great skull, weaving home under the
+#      stilt village, and onto the dike.
 #
-# The pyramid stands on a stone foundation rising out of the swamp: 190 x 210 m at
-# its base and 90 m tall. Every corner is a 45-55 m arc. Saves
-# tracks-src/bonebog_pyramid.blend and exports public/tracks/bonebog_pyramid/. The
-# scenery is bonebog_scenery.py, built from the swamp kit in swamp_props.py.
+# Saves tracks-src/bonebog_pyramid.blend and exports public/tracks/bonebog_pyramid/. The
+# scenery is bonebog_scenery.py (built round the old lap's sections, mapped onto the new
+# ones by SCENE_SEG), from the swamp kit in swamp_props.py.
 
 import math
 import os
@@ -33,7 +31,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-from course_kit import lerp, smooth  # noqa: E402
+from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
 TRACK_ID = "bonebog_pyramid"
 WATER_Z = 0.0
@@ -42,96 +40,120 @@ WATER_Z = 0.0
 
 START = (0.0, -200.0)
 LAYOUT = [
-    ("S", 135),  # 0  A: the start straight, north along the dike
+    ("S", 95),  # 0  the start, north along the dike
     ("R", 50, 90),  # 1  east onto the boardwalks
-    ("S", 30),  # 2  B
-    ("L", 45, 55),  # 3  between the giant trees...
+    ("S", 30),  # 2
+    ("L", 45, 55),  # 3  the first S-bends
     ("R", 45, 55),  # 4
-    ("S", 40),  # 5
-    ("L", 55, 90),  # 6  north, climbing
-    ("S", 90),  # 7  C: the Rib Bridge
-    ("L", 55, 90),  # 8  west, the pyramid ahead
-    ("S", 90),  # 9  D: the Grand Causeway
-    ("R", 120, 20),  # 10
-    ("L", 120, 20),  # 11
-    ("S", 40),  # 12 up to the carved face
-    ("S", 75),  # 13 E: the entry corridor
-    ("L", 45, 90),  # 14 the turning chamber
-    ("S", 60),  # 15 the Great Hall, and out of the south face
-    ("S", 30),  # 16 F: the trestle down into Skull Lagoon
-    ("R", 45, 50),  # 17
-    ("L", 45, 100),  # 18 round the skull
-    ("R", 45, 50),  # 19
-    ("S", 40),  # 20 (stretched to close the loop)
-    ("L", 50, 40),  # 21 the mangrove boardwalks
-    ("R", 50, 80),  # 22
-    ("L", 50, 40),  # 23
-    ("S", 25),  # 24
-    ("L", 45, 90),  # 25 east, back onto the dike
-    ("S", 30),  # 26 (stretched to close the loop)
-    ("L", 45, 90),  # 27 north onto the start
-    ("S", 10),  # 28
+    ("S", 40),  # 5  (the green balloon's spot: a zipper now)
+    ("L", 28, 180),  # 6  a big hairpin back west
+    ("R", 26, 60),  # 7  weaving west across the heart of the swamp
+    ("L", 26, 120),  # 8
+    ("R", 26, 60),  # 9
+    ("S", 21),  # 10
+    ("R", 26, 90),  # 11 north
+    ("S", 42),  # 12 the Rib Bridge, climbing
+    ("L", 31.5, 90),  # 13 west
+    ("S", 14),  # 14 to the great tree
+    ("L", 26, 450),  # 15 the spiral up round the great tree
+    ("R", 28, 90),  # 16 out along the treehouse village
+    ("S", 28),  # 17 the drop to the pyramid's face
+    ("S", 42),  # 18 the corridor: rolling hills
+    ("L", 31.5, 90),  # 19 the turning chamber
+    ("S", 63),  # 20 the great hall: hills, and the jump over the river
+    ("S", 21),  # 21 the trestle down out of the pyramid (stretched to close)
+    ("R", 28, 45),  # 22 an S down the trestle
+    ("L", 28, 90),  # 23
+    ("R", 28, 45),  # 24
+    ("L", 31.5, 60),  # 25 weaving home through the swamp
+    ("R", 28, 60),  # 26
+    ("L", 28, 80),  # 27
+    ("S", 28),  # 28 (stretched to close)
+    ("L", 31.5, 100),  # 29 north onto the dike
+    ("S", 7),  # 30
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 20, 26, START, 90.0)
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 21, 28, START, 90.0)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 
-# The pyramid: centred on the entry corridor's line, its east face where the corridor
-# begins and its south face where the Great Hall comes out.
-_entry = next(p for p in PATH if p[3] == 13)
-PYR_HX, PYR_HY = 95.0, 105.0
+# The jump in the great hall: where along the hall, and its gap.
+HALL = (SEG[20], SEG[21])
+GAP = (lerp(HALL[0], HALL[1], 0.55), lerp(HALL[0], HALL[1], 0.55) + 8.0)
+
+# Heights at segment starts; between them the road eases (the spiral climbs steadily).
+HEIGHT = {
+    0: 2.6, 1: 2.6, 2: 3.2, 3: 3.6, 4: 3.6, 5: 3.6, 6: 3.8, 7: 4.2, 8: 4.0, 9: 4.4, 10: 4.2, 11: 4.2,
+    12: 5.0, 13: 10.0, 14: 9.5, 15: 9.0, 16: 19.0, 17: 14.0, 18: 8.6, 19: 8.6, 20: 8.6, 21: 8.6,
+    22: 7.4, 23: 6.2, 24: 5.2, 25: 4.6, 26: 4.0, 27: 3.6, 28: 3.2, 29: 2.8, 30: 2.6,
+}
+
+
+def road_z(d, seg):
+    a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
+    t = (d - a) / max(1e-6, b - a)
+    z0, z1 = HEIGHT[seg], HEIGHT.get(seg + 1, HEIGHT[0])
+    z = lerp(z0, z1, t if seg == 15 else smooth(t))
+    if seg == 18:
+        z += 2.2 * math.sin(t * math.pi * 2) ** 2  # two crests down the corridor
+    if seg == 20:
+        if GAP[0] <= d <= GAP[1]:
+            return lerp(8.6, 8.4, (d - GAP[0]) / (GAP[1] - GAP[0]))
+        u = (d - a) / max(1e-6, GAP[0] - a)
+        if d < GAP[0]:
+            # A crest down the hall, flattening out before the take-off ramp (which is
+            # the ramp piece's own lift, so it's exact).
+            z += 1.8 * math.sin(u * math.pi * 2.0) ** 2 * (1 - smooth((u - 0.55) / 0.3))
+        else:
+            v = (d - GAP[1]) / max(1e-6, b - GAP[1])
+            z += -0.2 + 1.6 * math.sin(v * math.pi) ** 2 * smooth(v * 3)
+    return z
+
+
+def road_w(d, seg):
+    if 18 <= seg <= 20:
+        return 16.0
+    if seg in (0, 29, 30) or (seg == 1 and d < SEG[1] + 20):
+        return 16.0
+    if seg in (12, 13, 21):
+        return 15.0
+    return 14.5
+
+
+ROUTE = kit.route_points_by(PATH, road_z, every=10.0, width=road_w)
+
+
+
+# The old lap's sections, as the scenery knows them, on the new lap: old segment ->
+# where that section is now (bonebog_scenery.py places things by these).
+_OLD_TO_NEW = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 11, 7: 12, 8: 13, 9: 14, 10: 15, 11: 16, 12: 17, 13: 18,
+               14: 19, 15: 20, 16: 21, 17: 22, 18: 23, 19: 24, 20: 25, 21: 25, 22: 26, 23: 27, 24: 28, 25: 29, 26: 29, 27: 29, 28: 30}
+SCENE_SEG = {o: SEG[n] for o, n in _OLD_TO_NEW.items()}
+JAW_S = 62.0  # the Jawbone Gate, over the start straight
+LONGNECK = False  # (its causeway is the great tree's spiral now)
+
+# The pyramid: its east face where the corridor begins, its south face where the Great
+# Hall comes out, centred over the hall.
+_entry = next(p for p in PATH if p[3] == 18)
+_exit = next(p for p in PATH if p[3] == 21)
+PYR_HX = 72.0
+PYR_HY = _entry[1] - _exit[1]
 PYR = (_entry[0] - PYR_HX, _entry[1])
 FOUND_Z = 6.5  # the top of the stone foundation the pyramid stands on
 FOUND_PAD = 16.0  # how far the foundation reaches beyond the pyramid
 # Tiers: (half-size inset, top height). The lowest is tallest: the doorways are in it.
 TIERS = [(0.0, 22.5), (12.0, 33.5), (24.0, 44.5), (36.0, 55.5), (48.0, 66.5), (60.0, 77.5)]
 SHRINE = (10.0, 12.0, 12.0)  # half-sizes and height of the shrine on top
-INSIDE = (SEG[13], SEG[16])  # the route inside the pyramid
+INSIDE = (SEG[18], SEG[21])  # the route inside the pyramid
 
-# Heights along the lap (metres along it, height); the road eases between them.
-ANCHORS = [
-    (0.0, 2.6),
-    (SEG[1] + 20, 2.6),
-    (SEG[2] + 10, 4.0),
-    (SEG[6], 4.5),
-    (SEG[7] + 5, 12.0),
-    (SEG[8] - 5, 12.0),
-    (SEG[9] + 30, 8.5),
-    (SEG[12], 8.5),
-    (SEG[13], 8.6),
-    (SEG[16], 9.6),
-    (SEG[17] + 10, 7.0),
-    (SEG[19] + 10, 4.2),
-    (SEG[24] + 20, 3.8),
-    (SEG[26], 2.6),
-    (LENGTH, 2.6),
-]
+# The great tree, at the spiral's centre.
+_h0 = next(p for p in PATH if p[3] == 15)
+SPIRAL_R = LAYOUT[15][1]
+TREE = (_h0[0], _h0[1] - SPIRAL_R)
 
 
-def _lin(d):
-    d = min(max(d, 0.0), LENGTH)
-    for (d0, z0), (d1, z1) in zip(ANCHORS, ANCHORS[1:]):
-        if d0 <= d <= d1:
-            return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
-    return ANCHORS[-1][1]
+def near_spiral(x, y, m=0.0):
+    return math.hypot(x - TREE[0], y - TREE[1]) < SPIRAL_R + 22 + m
 
-
-def road_z(d, seg):
-    # Smoothed over 30 m, so grades change gently.
-    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
-
-
-def road_w(d, seg):
-    if 13 <= seg <= 15:
-        return 16.0  # inside the pyramid
-    if seg in (0, 27, 28):
-        return 16.0  # the dike
-    if seg in (7, 8, 9, 10, 11, 12):
-        return 15.0  # the bridge and the causeway
-    return 14.5  # boardwalks
-
-
-ROUTE = kit.route_points_by(PATH, road_z, every=12.0, width=road_w)
 
 # ---------------------------------------------------------------- the land
 
@@ -170,7 +192,7 @@ def _dike_line():
         if i:
             d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
         if d >= nxt:
-            if d >= SEG[25] + 10:
+            if d >= SEG[28]:
                 out.append((x, y, 20.0))
             nxt += 15.0
     d = 0.0
@@ -248,8 +270,6 @@ def classify(c, n, info):
     return ("bog_bank", "grass")
 
 
-# ---------------------------------------------------------------- the course
-
 
 def seg_of(s):
     k = 0
@@ -259,33 +279,76 @@ def seg_of(s):
     return k
 
 
+def boolean_cut(ob, bm, name="Cut", mat=None):
+    import bpy  # noqa: E402
+
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    if mat is not None:
+        me.materials.append(mat)  # the faces the cut makes get this
+    cutter = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(cutter)
+    mod = ob.modifiers.new(name, "BOOLEAN")
+    mod.operation = "DIFFERENCE"
+    mod.solver = "EXACT"
+    mod.object = cutter
+    bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(cutter)
+
+
+
+def great_tree(c, lights):
+    """The great tree the spiral climbs, and the treehouse village in its limbs: plank
+    platforms ringing its trunk at three heights, plank huts on them, rope bridges out to
+    the nearest giants, and lanterns."""
+    import props  # noqa: E402
+    import swamp_props as sp  # noqa: E402
+
+    c.place(sp.swamp_giant(c, 1), TREE[0], TREE[1], 0.0, rot=0.7, scale=1.0, coll="Trees", role="both")
+    plat = sp.platform(c, 0)
+    huts = bmesh.new()
+    roofs = bmesh.new()
+    for k, (z, a) in enumerate(((21.0, 0.4), (28.0, 2.5), (35.0, 4.4))):
+        c.place(plat, TREE[0], TREE[1], z, rot=a, scale=1.0, coll="Village", role="visual")
+        for j in range(2):
+            b = a + j * math.pi
+            hx, hy = TREE[0] + 7.0 * math.cos(b), TREE[1] + 7.0 * math.sin(b)
+            props.cuboid(huts, (hx, hy, z + 1.6), (3.2, 3.0, 3.2), rot=b)
+            props.cuboid(roofs, (hx, hy, z + 3.6), (4.0, 3.8, 0.9), rot=b, tilt=(0.25, 0))
+            lights.append((hx, hy, z + 2.4))
+    hut = c.mesh_object("Great Tree Huts", huts, "Village", "visual")
+    c.assign(hut, c.lib("bog_boards", "wall"))
+    roof = c.mesh_object("Great Tree Roofs", roofs, "Village", "visual")
+    c.assign(roof, c.lib("bog_rail", "wall"))
+
+
+# ---------------------------------------------------------------- the course
+
+
 def main():
+    import props  # noqa: E402
+
     c = kit.Course(TRACK_ID, "Bonebog Pyramid", "bonebog_swamp")
-    c.route(ROUTE, width=15.0, bank=6.0)
+    c.route(ROUTE, width=14.5, bank=6.0)
     rail = ("bog_rail", "wall")
     stone_rail = ("bog_carved", "wall")
+    board = {
+        "mat": "bog_boards",
+        "shoulder": 0.5,
+        "shoulder_mat": ("bog_boards", "road"),
+        "barrier": 1.2,
+        "barrier_mat": rail,
+        "deck": 2.4,
+        "deck_mat": ("bog_root", "wall"),
+        "ground": False,
+    }
     c.kinds = {
         "dike": {"mat": "bog_paving", "shoulder": 1.8, "shoulder_mat": ("bog_moss_ground", "dirt"), "barrier": 0.7, "barrier_mat": ("bog_stone", "wall")},
-        "boardwalk": {
-            "mat": "bog_boards",
-            "shoulder": 0.5,
-            "shoulder_mat": ("bog_boards", "road"),
-            "barrier": 1.2,
-            "barrier_mat": rail,
-            "deck": 2.4,
-            "deck_mat": ("bog_root", "wall"),
-            "ground": False,
-        },
-        "bridge": {
-            "mat": "bog_boards",
-            "shoulder": 0.6,
-            "shoulder_mat": ("bog_boards", "road"),
-            "barrier": 1.3,
-            "barrier_mat": rail,
-            "deck": 3.0,
-            "deck_mat": ("bog_root", "wall"),
-            "ground": False,
-        },
+        "boardwalk": board,
+        "bridge": dict(board, barrier=1.3, deck=3.0),
+        "spiral": dict(board, barrier=1.4, deck=2.0),
         "causeway": {
             "mat": "bog_paving",
             "shoulder": 1.0,
@@ -296,23 +359,44 @@ def main():
             "deck_mat": ("bog_stone", "wall"),
             "ground": False,
         },
-        "temple": {"mat": "bog_paving", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road")},
+        "temple": {"mat": "bog_paving", "surface": "road", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road")},
+        "ramp": {"mat": "bog_paving", "surface": "road", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road"), "barrier": 1.0, "barrier_mat": stone_rail},
     }
 
     def label(smp):
         s = smp.s
         seg = seg_of(s)
+        if GAP[0] <= s <= GAP[1]:
+            return "gap"
+        if seg == 20 and GAP[0] - 12 <= s < GAP[0]:
+            return "ramp"
         if INSIDE[0] - 2 <= s <= INSIDE[1] + 2:
             return "temple"
-        if seg in (0, 27, 28) or (seg == 1 and s < SEG[1] + 20) or (seg == 26):
+        if seg in (0, 29, 30) or (seg == 1 and s < SEG[1] + 20):
             return "dike"
-        if seg in (9, 10, 11, 12) or (seg == 8 and s > SEG[9] - 30):
+        if seg == 17:
             return "causeway"
-        if seg in (7, 8) or (seg == 6 and s > SEG[6] + 40) or seg in (16, 17):
+        if seg in (12, 13, 21):
             return "bridge"
+        if seg in (15, 16):
+            return "spiral"
         return "boardwalk"
 
-    specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label) if k != "boardwalk"]
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "ramp":
+            # The take-off: a straight incline rising 1.6 m to a clean lip, eased in at its
+            # foot (never a kicker curling up at the end).
+            def lift(u, n, w=12.0, rise=1.6, t0=0.35):
+                v = max(0.0, min(1.0, (u - (n - w)) / w))
+                k = 1.0 / (1.0 - t0 / 2.0)
+                return rise * (k * v * v / (2 * t0) if v < t0 else k * (v - t0 / 2.0))
+
+            specials.append((s0, s1, "ramp", {"lift": lift}))
+        elif k != "boardwalk":
+            specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "boardwalk", max_len=200.0))
 
     X0, X1, Y0, Y1 = -360, 400, -360, 450
@@ -322,38 +406,58 @@ def main():
 
     import bonebog_scenery  # noqa: E402
 
-    pyr = bonebog_scenery.pyramid(c, sys.modules[__name__])
+    me = sys.modules[__name__]
+    pyr = bonebog_scenery.pyramid(c, me)
+    # The river across the Great Hall, at the jump: a channel west out of the pyramid's
+    # side, pouring into the swamp.
+    q = c.at((GAP[0] + GAP[1]) / 2)
+    gx, gy = q.p.x, q.p.y
+    west = PYR[0] - PYR_HX
+    cut = bmesh.new()
+    props.cuboid(cut, ((west - 10 + gx + 14) / 2, gy, FOUND_Z + 2.0), (gx + 14 - west + 10, 10.0, 6.0))
+    boolean_cut(pyr, cut, "River Cut", c.lib("bog_dark_stone", "wall"))
+    c.ribbon("Hall River", [(gx + 12, gy, 9), (west + 1, gy, 9)], 9, FOUND_Z + 0.4, c.lib("bog_water", "deep_water"), steps=2)
+    falls = props.falls(c, "Hall River Falls", west - 0.5, gy, FOUND_Z + 0.6, WATER_Z, 7.0, 10.0, facing=-1, throw=3.0, angle=-math.pi / 2, veils=2)
+    g = c.game(falls[0], falls[1], WATER_Z)
+    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(FOUND_Z + 0.6, 1), width=10.0, heading=0)
 
     c.start_line()
-    # Zippers: off the start, at the top of the climb to the Rib Bridge, on the causeway
-    # and down the trestle out of the pyramid.
+    # Zippers: off the start, at the first green balloon's spot (Blake's note), on the
+    # Rib Bridge's climb, down the drop to the pyramid, into the Great Hall (up to speed
+    # for the jump) and down the trestle out of it.
     c.zipper(55, 0)
-    c.zipper(SEG[7] + 20, 0)
-    c.zipper(SEG[9] + 40, 0)
-    c.zipper(SEG[16] + 22, 0)
-    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[7] + 70, 2), (SEG[10] + 20, 0), (SEG[13] + 40, 0), (SEG[15] + 20, -2), (SEG[18] + 40, 0), (SEG[22] + 30, 0)):
+    c.zipper(SEG[5] + 15, 0)
+    c.zipper(SEG[12] + 15, 0)
+    c.zipper(SEG[17] + 5, 0)
+    c.zipper(SEG[20] + 4, 0)
+    c.zipper(SEG[21] + 13, 0)
+    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[8] + 20, 0), (SEG[15] + 80, 0), (SEG[18] + 30, 0), (SEG[26] + 10, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (130, -4, "red"),
-        (130, 4, "blue"),
-        (SEG[5] + 15, 0, "green"),
-        (SEG[8] + 30, 0, "yellow"),
-        (SEG[14] + 30, -4, "rainbow"),
-        (SEG[14] + 30, 4, "red"),
-        (SEG[19] + 20, 0, "blue"),
-        (SEG[23] + 20, 0, "green"),
+        (75, -4, "red"),
+        (75, 4, "blue"),
+        (SEG[7] + 15, 0, "green"),
+        (SEG[13] + 20, 0, "yellow"),
+        (SEG[16] + 30, -3, "rainbow"),
+        (SEG[16] + 30, 3, "red"),
+        (SEG[25] + 15, 0, "blue"),
+        (SEG[27] + 10, 0, "green"),
     ):
         c.balloon(at, across, col)
+    # Missing the hall's jump drops you in the river: back out past it.
+    c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
+    c.checkpoints(extra=[SEG[2] + 10, SEG[6] + 30, SEG[9], SEG[12] + 30, SEG[15] + 60, SEG[15] + 140, SEG[17], SEG[19] + 10, SEG[21] + 10, SEG[25], SEG[27]], height=10.0)
 
-    c.checkpoints(
-        extra=[SEG[2] + 10, SEG[5], SEG[7] + 45, SEG[9] + 20, SEG[13] + 10, SEG[15] + 10, SEG[17] + 20, SEG[21] + 10, SEG[24]],
-        height=10.0,
-    )
-
-    bonebog_scenery.build(c, pyr, sys.modules[__name__])
+    lights = []
+    great_tree(c, lights)
+    for x, y, z in lights:
+        g = c.game(x, y, z)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+    bonebog_scenery.build(c, pyr, me)
 
     kit.paint.shade_roads(c.pieces, 0.35)
     c.finish()
+    print("lap", round(c.length, 1))
 
 
 if __name__ == "__main__":

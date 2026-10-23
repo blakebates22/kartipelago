@@ -67,7 +67,7 @@ describe("Bonebog Pyramid", () => {
     expect(fenced / drops).toBeGreaterThan(0.97);
   });
 
-  it("spends about ten seconds inside the pyramid", async () => {
+  it("spends seven or eight seconds inside the pyramid", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     const pts = p.trackData.points;
     // Under the pyramid there's solid stone (its stepped tiers) high overhead.
@@ -81,8 +81,8 @@ describe("Bonebog Pyramid", () => {
       else run = 0;
       best = Math.max(best, run);
     }
-    // ~200 m at racing speed (20-24 m/s) is a good nine or ten seconds.
-    expect(best).toBeGreaterThan(180);
+    // v3's shorter lap: ~155 m at racing speed (20-24 m/s), seven or eight seconds.
+    expect(best).toBeGreaterThan(140);
   });
 
   it("can be driven: three clean AI laps", async () => {
