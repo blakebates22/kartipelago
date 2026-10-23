@@ -12,7 +12,7 @@
   "materials": [
     {
       "id": "ancient_road",
-      "group": "Ancient Lake",
+      "group": "Mirror Lake",
       "surface": "road",
       "image": "ancient_road.png",
       "size": [
@@ -24,7 +24,7 @@
     },
     {
       "id": "ancient_grass",
-      "group": "Ancient Lake",
+      "group": "Mirror Lake",
       "surface": "grass",
       "image": "ancient_grass.png",
       "size": [
@@ -36,7 +36,7 @@
     },
     {
       "id": "ancient_cliff",
-      "group": "Ancient Lake",
+      "group": "Mirror Lake",
       "surface": "solid",
       "image": "ancient_cliff.png",
       "size": [
@@ -48,7 +48,7 @@
     },
     {
       "id": "ancient_water",
-      "group": "Ancient Lake",
+      "group": "Mirror Lake",
       "surface": "water",
       "image": "ancient_water.png",
       "size": [
@@ -60,7 +60,7 @@
     },
     {
       "id": "fossil_road",
-      "group": "Fossil Canyon",
+      "group": "Bone Canyon",
       "surface": "road",
       "image": "fossil_road.png",
       "size": [
@@ -72,7 +72,7 @@
     },
     {
       "id": "fossil_strata",
-      "group": "Fossil Canyon",
+      "group": "Bone Canyon",
       "surface": "solid",
       "image": "fossil_strata.png",
       "size": [
@@ -84,7 +84,7 @@
     },
     {
       "id": "fossil_scree",
-      "group": "Fossil Canyon",
+      "group": "Bone Canyon",
       "surface": "sand",
       "image": "fossil_scree.png",
       "size": [
@@ -96,7 +96,7 @@
     },
     {
       "id": "fossil_dry_clay",
-      "group": "Fossil Canyon",
+      "group": "Bone Canyon",
       "surface": "sand",
       "image": "fossil_dry_clay.png",
       "size": [
@@ -108,7 +108,7 @@
     },
     {
       "id": "jungle_temple",
-      "group": "Jungle Falls",
+      "group": "Jungle Cascade",
       "surface": "solid",
       "image": "jungle_temple.png",
       "size": [
@@ -120,7 +120,7 @@
     },
     {
       "id": "jungle_mossstone",
-      "group": "Jungle Falls",
+      "group": "Jungle Cascade",
       "surface": "solid",
       "image": "jungle_mossstone.png",
       "size": [
@@ -132,7 +132,7 @@
     },
     {
       "id": "jungle_leafcover",
-      "group": "Jungle Falls",
+      "group": "Jungle Cascade",
       "surface": "grass",
       "image": "jungle_leafcover.png",
       "size": [
@@ -144,7 +144,7 @@
     },
     {
       "id": "jungle_path",
-      "group": "Jungle Falls",
+      "group": "Jungle Cascade",
       "surface": "road",
       "image": "jungle_path.png",
       "size": [
@@ -156,7 +156,7 @@
     },
     {
       "id": "volcano_ashroad",
-      "group": "Hot Top Volcano",
+      "group": "Ember Volcano",
       "surface": "road",
       "image": "volcano_ashroad.png",
       "size": [
@@ -168,7 +168,7 @@
     },
     {
       "id": "volcano_basalt",
-      "group": "Hot Top Volcano",
+      "group": "Ember Volcano",
       "surface": "solid",
       "image": "volcano_basalt.png",
       "size": [
@@ -180,7 +180,7 @@
     },
     {
       "id": "volcano_lava",
-      "group": "Hot Top Volcano",
+      "group": "Ember Volcano",
       "surface": "lava",
       "image": "volcano_lava.png",
       "size": [
@@ -192,7 +192,7 @@
     },
     {
       "id": "volcano_slag",
-      "group": "Hot Top Volcano",
+      "group": "Ember Volcano",
       "surface": "sand",
       "image": "volcano_slag.png",
       "size": [

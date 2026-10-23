@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "id": "ember_peak_v3",
+  "name": "Ember Peak (v3 greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -204.54,
+      "y": 10.21,
+      "z": -112.74
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -221.58,
+      "y": 11.13,
+      "z": -103.27
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -204.55,
+      "y": 10.89,
+      "z": -93.25
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -221.55,
+      "y": 10.76,
+      "z": -83.25
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -204.55,
+      "y": 10.59,
+      "z": -73.25
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -221.55,
+      "y": 10.41,
+      "z": -63.25
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -204.55,
+      "y": 10.24,
+      "z": -53.25
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -221.55,
+      "y": 10.12,
+      "z": -43.26
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -204.6,
+      "y": 9.79,
+      "z": -32.98
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -221.24,
+      "y": 10.84,
+      "z": -22.38
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 30,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 201.5,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 632.1,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 684.1,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 111.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 342.2,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 506.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 714.1,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 71.0,
+      "across": -3,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 71.0,
+      "across": 3,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 309.5,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 463.1,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 664.1,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 219.5,
+      "to": 273.5,
+      "at": 297.5
+    },
+    {
+      "id": "isles_dragon_01",
+      "type": "isles_dragon",
+      "keys": [
+        [0.0, -271.05, 155.0, -109.13],
+        [51.0, 150.0, 80.0, 60.0],
+        [195.5, 120.0, 55.0, -150.0],
+        [234.5, 26.5, 38.0, -162.0],
+        [258.5, -13.5, 29.0, -94.0],
+        [297.5, -43.5, 40.0, -22.0],
+        [410.4, -120.0, 70.0, 60.0],
+        [580.7, -311.05, 135.0, -9.13],
+        [816.1, -271.05, 155.0, -109.13]
+      ],
+      "length": 817.1,
+      "size": 1.0,
+      "colors": {
+        "body": "#c8482a",
+        "belly": "#ffcf6a"
+      }
+    }
+  ],
+  "generator": "tools/blender/prehistoric/ember_peak_v3.py (re-running it rewrites entities)"
+}

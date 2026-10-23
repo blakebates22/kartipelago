@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "theme": "jungle_falls",
+  "theme": "jungle_cascade",
   "sky": "#8fcfe0",
   "fog": {
     "enabled": true,

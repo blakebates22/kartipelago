@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "theme": "ancient_lake",
+  "theme": "mirror_lake",
   "sky": "#8fd3ff",
   "fog": {
     "enabled": true,

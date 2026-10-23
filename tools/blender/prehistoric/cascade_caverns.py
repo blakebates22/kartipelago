@@ -260,7 +260,7 @@ def underfloor_z(x, y):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Cascade Caverns", "jungle_falls")
+    c = kit.Course(TRACK_ID, "Cascade Caverns", "jungle_cascade")
     c.route(ROUTE, width=14.0, bank=7.0)
     stone = ("ruin_stone", "wall")
     c.kinds = {

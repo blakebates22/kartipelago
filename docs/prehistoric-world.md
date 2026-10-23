@@ -303,20 +303,20 @@ The Material Browser gains three themes, each with its own sky and fog:
 
 - **River Valley**;
 - **Fossil Swamp**;
-- **Volcano Dusk** (an environment only, using the Hot Top Volcano textures).
+- **Volcano Dusk** (an environment only, using the Ember Volcano textures).
 
 There are 25 new textures, all 64×32:
 
 - **River Valley:** valley road, grass, sand and water; sandstone cliff; wood planks;
   palm bark and fronds; thatch; painted wood; a start checker; blossom.
 - **Fossil Swamp:** mud, swamp water, moss, bone, paving, glowing caps, pyramid steps.
-- **Jungle Falls additions:** waterfall, foam, fern.
+- **Jungle Cascade additions:** waterfall, foam, fern.
 - **Riverbend v2 additions (River Valley):** cattail leaf and head, campfire flame,
   bright canopy, lily pad, lotus petal, rainbow, and the
   falls' sheet, veil and foam (brighter and bluer than Cascade's, which keep the
-  Jungle Falls ones). Valley water is bluer than in v1.
-- **Hot Top Volcano additions:** volcano crust (glowing cracks), ember road, smoke.
-- **Cascade v2 additions (Jungle Falls):** grey, mossy and ochre canyon rock; ruin
+  Jungle Cascade ones). Valley water is bluer than in v1.
+- **Ember Volcano additions:** volcano crust (glowing cracks), ember road, smoke.
+- **Cascade v2 additions (Jungle Cascade):** grey, mossy and ochre canyon rock; ruin
   stone, carved glyphs and sooty ruin stone; jungle bark; deep canopy; big leaf; vine
   leaves; frog skin; log end; pterosaur skin; torch flame; jungle mud.
 

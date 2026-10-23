@@ -267,7 +267,7 @@ def start_checker():
     return paint(f)
 
 
-# ------------------------------------------------------------------ Jungle Falls additions
+# ------------------------------------------------------------------ Jungle Cascade additions
 
 
 def waterfall():
@@ -429,7 +429,7 @@ def pyramid_step():
     return paint(f)
 
 
-# ------------------------------------------------------------------ Hot Top Volcano additions
+# ------------------------------------------------------------------ Ember Volcano additions
 
 
 def volcano_crust():
@@ -2562,8 +2562,8 @@ def pine_night():
 
 THEMES = [
     {
-        "id": "jungle_falls",
-        "name": "Jungle Falls",
+        "id": "jungle_cascade",
+        "name": "Jungle Cascade",
         "description": "Mossy stone, old masonry, leafy ground and soft green light, ringed by misty jungle hills",
         "environment": {
             "sky": "#8fcfe0",
@@ -2615,7 +2615,7 @@ THEMES.append(
     {
         "id": "volcano_dusk",
         "name": "Volcano Dusk",
-        "description": "A glowing red-orange evening under a smoking volcano (uses the Hot Top Volcano textures)",
+        "description": "A glowing red-orange evening under a smoking volcano (uses the Ember Volcano textures)",
         "environment": {
             "sky": "#9a4f4a",
             "fog": {"enabled": True, "color": "#b0603e", "near": 150, "far": 680},
@@ -4848,7 +4848,7 @@ MATERIALS = [
     (
         "waterfall",
         "Waterfall",
-        "jungle_falls",
+        "jungle_cascade",
         "water",
         waterfall,
         6,
@@ -4857,28 +4857,28 @@ MATERIALS = [
     (
         "foam",
         "Foam",
-        "jungle_falls",
+        "jungle_cascade",
         "water",
         foam,
         4,
         {"scrollU": 0.05, "scrollV": 0.12, "wave": 0.06, "wavePeriod": 2, "opacity": 0.75},
     ),
-    ("jungle_fern", "Jungle Fern", "jungle_falls", "grass", jungle_fern, 4, None),
-    ("canyon_rock_grey", "Canyon Rock (Grey)", "jungle_falls", "wall", canyon_rock_grey, 9, None),
-    ("canyon_rock_moss", "Canyon Rock (Mossy)", "jungle_falls", "wall", canyon_rock_moss, 8, None),
-    ("canyon_rock_ochre", "Canyon Rock (Ochre)", "jungle_falls", "wall", canyon_rock_ochre, 10, None),
-    ("ruin_stone", "Ruin Stone", "jungle_falls", "wall", ruin_stone, 4, None),
-    ("ruin_glyph", "Ruin Glyphs", "jungle_falls", "wall", ruin_glyph, 3, None),
-    ("ruin_dark", "Ruin Stone (Sooty)", "jungle_falls", "wall", ruin_dark, 4, None),
-    ("jungle_bark", "Jungle Bark", "jungle_falls", "wall", jungle_bark, 3, None),
-    ("canopy_dark", "Deep Canopy", "jungle_falls", "grass", canopy_dark, 5, None),
-    ("big_leaf", "Big Leaf", "jungle_falls", "grass", big_leaf, 2, None),
-    ("vine_leaf", "Vine Leaves", "jungle_falls", "grass", vine_leaf, 1.5, None),
-    ("frog_skin", "Frog Skin", "jungle_falls", "wall", frog_skin, 0.4, None),
-    ("log_end", "Log End", "jungle_falls", "wall", log_end, 1, None),
-    ("torch_glow", "Torch Flame", "jungle_falls", "wall", torch_glow, 1, {"scrollU": 0.2, "scrollV": -1.6, "wave": 0.1, "wavePeriod": 0.4, "glow": 1.0}),
-    ("jungle_mud", "Jungle Mud", "jungle_falls", "mud", jungle_mud, 5, None),
-    ("pterosaur_skin", "Pterosaur Skin", "jungle_falls", "wall", pterosaur_skin, 2, None),
+    ("jungle_fern", "Jungle Fern", "jungle_cascade", "grass", jungle_fern, 4, None),
+    ("canyon_rock_grey", "Canyon Rock (Grey)", "jungle_cascade", "wall", canyon_rock_grey, 9, None),
+    ("canyon_rock_moss", "Canyon Rock (Mossy)", "jungle_cascade", "wall", canyon_rock_moss, 8, None),
+    ("canyon_rock_ochre", "Canyon Rock (Ochre)", "jungle_cascade", "wall", canyon_rock_ochre, 10, None),
+    ("ruin_stone", "Ruin Stone", "jungle_cascade", "wall", ruin_stone, 4, None),
+    ("ruin_glyph", "Ruin Glyphs", "jungle_cascade", "wall", ruin_glyph, 3, None),
+    ("ruin_dark", "Ruin Stone (Sooty)", "jungle_cascade", "wall", ruin_dark, 4, None),
+    ("jungle_bark", "Jungle Bark", "jungle_cascade", "wall", jungle_bark, 3, None),
+    ("canopy_dark", "Deep Canopy", "jungle_cascade", "grass", canopy_dark, 5, None),
+    ("big_leaf", "Big Leaf", "jungle_cascade", "grass", big_leaf, 2, None),
+    ("vine_leaf", "Vine Leaves", "jungle_cascade", "grass", vine_leaf, 1.5, None),
+    ("frog_skin", "Frog Skin", "jungle_cascade", "wall", frog_skin, 0.4, None),
+    ("log_end", "Log End", "jungle_cascade", "wall", log_end, 1, None),
+    ("torch_glow", "Torch Flame", "jungle_cascade", "wall", torch_glow, 1, {"scrollU": 0.2, "scrollV": -1.6, "wave": 0.1, "wavePeriod": 0.4, "glow": 1.0}),
+    ("jungle_mud", "Jungle Mud", "jungle_cascade", "mud", jungle_mud, 5, None),
+    ("pterosaur_skin", "Pterosaur Skin", "jungle_cascade", "wall", pterosaur_skin, 2, None),
     ("swamp_mud", "Swamp Mud", "fossil_swamp", "mud", swamp_mud, 5, None),
     (
         "swamp_water",
@@ -4897,17 +4897,17 @@ MATERIALS = [
     (
         "volcano_crust",
         "Volcano Crust",
-        "hot_top_volcano",
+        "ember_volcano",
         "wall",
         volcano_crust,
         7,
         {"scrollU": 0, "scrollV": 0, "glow": 0.35},
     ),
-    ("ember_road", "Ember Road", "hot_top_volcano", "road", ember_road, 4, None),
+    ("ember_road", "Ember Road", "ember_volcano", "road", ember_road, 4, None),
     (
         "smoke",
         "Smoke",
-        "hot_top_volcano",
+        "ember_volcano",
         "wall",
         smoke,
         8,

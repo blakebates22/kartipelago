@@ -5,7 +5,7 @@
 #
 # (or with the `bpy` Python module: python tools/blender/build_dino_demo.py)
 #
-# A small Ancient Lake-themed loop that shows off the material library: a curving dirt
+# A small Mirror Lake-themed loop that shows off the material library: a curving dirt
 # road, grass beside it, a layered cliff, a tunnel through a rock mesa and a lake. Every
 # material comes from the Material Browser's library, every face's UVs are projected by
 # the add-on, and the shading is the Vertex Paint presets, so opening the .blend shows
@@ -139,7 +139,7 @@ def main():
     scene = bpy.context.scene
     scene.kp_track_id = "dino_demo"
     scene.kp_track_name = "Dino Demo"
-    scene.kp_environment = "ancient_lake"
+    scene.kp_environment = "mirror_lake"
     scene.kp_fog = True
 
     # The road, textured from the library (ancient_road drives as road; the shoulders

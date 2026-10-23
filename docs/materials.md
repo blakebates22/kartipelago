@@ -31,7 +31,7 @@ Track panel there are four more panels.
 
 ### Materials
 
-1. Pick a **Theme**: Ancient Lake, Fossil Canyon, Jungle Falls, Hot Top Volcano, or All.
+1. Pick a **Theme**: Mirror Lake, Bone Canyon, Jungle Cascade, Ember Volcano, or All.
    Type in the search box to filter by name.
 2. Click a texture. Either click the big thumbnail for a grid of every texture in the
    theme, or click one of the buttons below it.
@@ -199,7 +199,7 @@ the game takes those three from the standard glTF fields.
 ```json
 {
   "schemaVersion": 1,
-  "theme": "ancient_lake",
+  "theme": "mirror_lake",
   "sky": "#8fd3ff",
   "fog": { "enabled": true, "color": "#c4e7fa", "near": 150, "far": 680 },
   "sun": { "color": "#fff0d2", "intensity": 2.3, "direction": [0.55, 0.75, 0.35] },
@@ -221,7 +221,7 @@ How it's read:
   the horizon, drift in radians per second), and rings of distant hills
   (`hills: { color, far, height, seed, layers }`: `color` is the nearest ring, `far` the
   farthest, `height` in degrees above the horizon) so a course's edges never open onto
-  empty sky. Every field is optional. River Valley (Riverbend Palms) and Jungle Falls
+  empty sky. Every field is optional. River Valley (Riverbend Palms) and Jungle Cascade
   (Cascade Caverns) use one; without it the sky is the flat `sky` colour. The code is
   `src/render/skyDome.ts`.
 

@@ -58,7 +58,7 @@ function pngSize(file: URL) {
 
 describe("material library (Blender add-on)", () => {
   it("keeps the four starter themes and their sixteen materials first", () => {
-    const starter = ["ancient_lake", "fossil_canyon", "jungle_falls", "hot_top_volcano"];
+    const starter = ["mirror_lake", "bone_canyon", "jungle_cascade", "ember_volcano"];
     expect(library.themes.slice(0, 4).map((t) => t.id)).toEqual(starter);
     expect(library.materials.slice(0, 16).every((m) => starter.includes(m.theme))).toBe(true);
     for (const t of starter)
@@ -267,7 +267,7 @@ describe("Dino Demo (exported from Blender)", () => {
   it("loads with its environment, surfaces and no warnings", async () => {
     const p = await demo();
     expect(p.warnings).toEqual([]);
-    expect(p.look.theme).toBe("ancient_lake");
+    expect(p.look.theme).toBe("mirror_lake");
     expect(p.look.fog?.enabled).toBe(true);
     expect(new Set(p.collision.surfaces)).toEqual(
       new Set(["road", "dirt", "grass", "wall", "water", "sand"]),
