@@ -18,7 +18,10 @@ export function resolutionScale(lines: number, cssHeight: number, dpr: number) {
 export function createStage(container: HTMLElement) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
+  // No shadow maps: karts and creatures carry simple blob shadows instead, like the
+  // era's games. (A sun shadow map over a small area round the kart swam, popped in at
+  // its edges and broke on high ground; blobs stay steady and cost nothing.)
+  renderer.shadowMap.enabled = false;
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -26,9 +29,6 @@ export function createStage(container: HTMLElement) {
 
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.set(8, 14, 6);
-  sun.castShadow = true;
-  // Without this, Lambert surfaces get shadow acne: rings of stripes across the ground.
-  sun.shadow.normalBias = 0.05;
   const hemi = new THREE.HemisphereLight(0xdff6ff, 0x335533, 1.1);
   scene.add(sun, sun.target, hemi);
   const defaults = {

@@ -17,6 +17,61 @@ export const BALLOON_COLORS: Record<BalloonColor, string> = {
 
 const UP = new THREE.Vector3(0, 1, 0);
 const trapUp = new THREE.Vector3();
+const trapSpin = new THREE.Quaternion();
+
+let oilTex: THREE.Texture | undefined;
+/**
+ * A pixel-art oil puddle: a lumpy blob with a couple of splashes beside it, near-black
+ * with a purple rim and a band of rainbow sheen, two glints. 24 x 24, nearest-filtered.
+ */
+function oilTexture(): THREE.Texture {
+  if (oilTex) return oilTex;
+  const N = 24;
+  const c = document.createElement("canvas");
+  c.width = c.height = N;
+  const g = c.getContext("2d")!;
+  const lobes = [
+    [12, 12, 7.2],
+    [8, 9, 4.6],
+    [16, 9.5, 4.4],
+    [15, 15.5, 4.8],
+    [8.5, 15, 4.2],
+    [20.5, 17.5, 1.6],
+    [4, 5, 1.4],
+    [19.5, 5.5, 1.1],
+  ] as const;
+  /** Signed "how far inside" the blob (above 0 is inside). */
+  const inside = (x: number, y: number) =>
+    Math.max(...lobes.map(([cx, cy, r]) => r - Math.hypot(x - cx, y - cy)));
+  // A faint oily sheen: muted purple, blue and teal, not a bright rainbow.
+  const sheen = ["#33244a", "#2a3a5e", "#2a4a4e", "#3a2a48"];
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const d = inside(x + 0.5, y + 0.5);
+      if (d <= 0) continue;
+      let col = "#121018";
+      if (d < 1)
+        col = "#2a1838"; // the rim
+      else {
+        // A wavy band of rainbow across the middle.
+        const band = (x - y) * 0.5 + Math.sin(y * 0.9) * 1.2;
+        if (band > -1 && band < 3) col = sheen[Math.floor(band + 1)]!;
+        else if (d < 2) col = "#1e1828";
+      }
+      g.fillStyle = col;
+      g.fillRect(x, y, 1, 1);
+    }
+  g.fillStyle = "#e8e4f4";
+  g.fillRect(9, 8, 2, 1);
+  g.fillRect(9, 9, 1, 1);
+  g.fillRect(15, 15, 1, 1);
+  oilTex = new THREE.CanvasTexture(c);
+  oilTex.colorSpace = THREE.SRGBColorSpace;
+  oilTex.magFilter = THREE.NearestFilter;
+  oilTex.minFilter = THREE.NearestFilter;
+  oilTex.generateMipmaps = false;
+  return oilTex;
+}
 
 const BLAST_COLORS: Record<string, string> = {
   missile: "#ff7b00",
@@ -229,10 +284,16 @@ export function createItemView(scene: THREE.Object3D) {
     return g;
   }, scene);
 
-  const oilMat = new THREE.MeshStandardMaterial({
-    color: "#151515",
-    roughness: 0.2,
-    metalness: 0.4,
+  // The oil: a chunky pixel-art puddle (24 texels across, unfiltered) with an oily
+  // rainbow sheen, so it sits in the world's low-res look.
+  const oilMat = new THREE.MeshBasicMaterial({
+    map: oilTexture(),
+    transparent: true,
+    alphaTest: 0.5,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -4,
   });
   const mineMat = new THREE.MeshStandardMaterial({ color: "#2b2b2b", flatShading: true });
   const mineLight = new THREE.MeshBasicMaterial({ color: "#ff2a2a" });
@@ -246,7 +307,7 @@ export function createItemView(scene: THREE.Object3D) {
   });
   const traps = pool(() => {
     const g = new THREE.Group();
-    const oil = new THREE.Mesh(new THREE.CircleGeometry(2.2, 20).rotateX(-Math.PI / 2), oilMat);
+    const oil = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6).rotateX(-Math.PI / 2), oilMat);
     oil.name = "oil";
     oil.position.y = 0.06;
     const mine = new THREE.Group();
@@ -593,7 +654,9 @@ export function createItemView(scene: THREE.Object3D) {
           const oil = g.getObjectByName("oil")!;
           trapUp.set(t.nx ?? 0, t.ny ?? 1, t.nz ?? 0).normalize();
           oil.quaternion.setFromUnitVectors(UP, trapUp);
-          oil.position.copy(trapUp).multiplyScalar(0.08);
+          // Each puddle turned its own way, so they don't all look stamped.
+          oil.quaternion.multiply(trapSpin.setFromAxisAngle(UP, i * 2.39));
+          oil.position.copy(trapUp).multiplyScalar(0.06);
         }
         const light = g.getObjectByName("light");
         if (light) light.visible = t.kind === "mine" && Math.floor(seconds * 4) % 2 === 0;

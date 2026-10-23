@@ -3,7 +3,7 @@
  * from the terrace: Frostveil's snowy peaks, the Desert's red-rock canyon with a natural
  * arch, the Dragon Kingdom's jade cliffs (or a floating island with a pagoda).
  *
- * Arrangements (prototypes, ?vista=1|2|3):
+ * Arrangements (1 is the default; ?vista=0|2|3 shows the others):
  *   1  peaks on the horizon: a snowy range behind the sea in the middle; the canyon on
  *      the right with the pagodas on its high terraces.
  *   2  side by side: a snow peak beside the volcano on the left; on the right the red
@@ -17,11 +17,12 @@ type G = CanvasRenderingContext2D;
 
 export type VistaLayout = 0 | 1 | 2 | 3;
 
-/** The arrangement to show (0: the original, before all four worlds were in it). */
+/** The arrangement to show: peaks on the horizon (0 is the original, before all four
+ * worlds were in it). */
 export function vistaLayout(): VistaLayout {
   const v =
     typeof location !== "undefined" ? new URLSearchParams(location.search).get("vista") : null;
-  return v === "1" || v === "2" || v === "3" ? (Number(v) as VistaLayout) : 0;
+  return v === "0" || v === "2" || v === "3" ? (Number(v) as VistaLayout) : 1;
 }
 
 function hash(x: number, y: number, s = 0) {

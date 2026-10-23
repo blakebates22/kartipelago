@@ -6,6 +6,7 @@ import type { AudioEngine } from "../audio/engine";
 import type { UiSounds } from "../audio/uiSounds";
 import type { Input } from "../core/input";
 import type { RacerId } from "../render/racers/designs";
+import type { TrophyCup } from "../game/trophy";
 import type { Stage } from "../render/stage";
 import type { UiLayer } from "../ui/layer";
 import type { MenuInput } from "./menuInput";
@@ -41,4 +42,6 @@ export interface Game {
   session?: Session;
   /** ?debug: developer extras. */
   debugMode: boolean;
+  /** The Trophy Race in progress, if any (game/trophy.ts). */
+  trophy?: TrophyCup;
 }

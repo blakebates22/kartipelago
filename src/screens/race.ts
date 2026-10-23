@@ -20,7 +20,9 @@ import { BALLOON_HUES, ICON, itemIcon } from "../ui/itemIcons";
 import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
 import { VMenu, hints } from "./common";
 import { optionsScreen } from "./options";
-import { trackSelect } from "./trackSelect";
+import { tracksMenu } from "./tracks";
+import { trophyStandings } from "./trophy";
+import { cupOver } from "../game/trophy";
 import { titleScreen } from "./title";
 
 const ordinal = (n: number) =>
@@ -110,9 +112,13 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
             result.bestLap,
           );
           showingResults = true;
-          game.screens.push(
-            resultsScreen(game, result, rec, entry, restart, () => (showingResults = false)),
-          );
+          // In a Trophy Race: the cup table (and on to the next track) instead.
+          if (game.trophy && !cupOver(game.trophy))
+            game.screens.push(trophyStandings(game, result, entry));
+          else
+            game.screens.push(
+              resultsScreen(game, result, rec, entry, restart, () => (showingResults = false)),
+            );
         }
       }
     },
@@ -129,6 +135,9 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         practice,
         banner && clock < banner.until ? banner.text : undefined,
         clock,
+        game.trophy
+          ? `TROPHY RACE ${game.trophy.raced + 1}/${game.trophy.tracks.length}`
+          : undefined,
       );
     },
   };
@@ -144,23 +153,47 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
   return screen;
 }
 
-// The pickups are dinosaur eggs (the code calls them bananas).
-const EGG = [
-  "...####...",
-  "..#wwww#..",
-  ".#wwwggw#.",
-  ".#wggwww#.",
-  "#wwwwwgg#.",
-  "#wggwwwww#",
-  "#wwwwggww#",
-  ".#wwwwww#.",
-  "..######..",
-];
-const EGG_COLORS: Record<string, string> = {
-  "#": "#3a2a18",
-  w: "#f6ecd2",
-  g: "#3f9e6e",
-};
+// The pickups are dinosaur eggs (the code calls them bananas). The HUD's egg: a proper
+// egg shape (narrower at the top), lit from the upper left, with green speckles.
+let eggImg: HTMLCanvasElement | undefined;
+function eggSprite(): HTMLCanvasElement {
+  if (eggImg) return eggImg;
+  const W = 13;
+  const H = 16;
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const g = c.getContext("2d")!;
+  const cx = 6.5;
+  const cy = 9;
+  /** Inside the egg: an ellipse squeezed toward the top. */
+  const inEgg = (x: number, y: number) => {
+    const v = (y - cy) / 7;
+    const half = 5.6 * (v < 0 ? 1 + v * 0.28 : 1);
+    return ((x - cx) / half) ** 2 + v * v <= 1;
+  };
+  const speckles = new Set(["4,6", "5,6", "8,5", "9,9", "10,9", "4,11", "7,12", "8,12", "6,9"]);
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) {
+      const px = x + 0.5;
+      const py = y + 0.5;
+      if (!inEgg(px, py)) continue;
+      const edge =
+        !inEgg(px - 1, py) || !inEgg(px + 1, py) || !inEgg(px, py - 1) || !inEgg(px, py + 1);
+      // Light from the upper left: bright there, a cooler shade down the lower right.
+      const lit = (px - cx) * 0.6 + (py - cy) * 0.8;
+      let col = lit < -3.2 ? "#fffbea" : lit < 1.5 ? "#f3e6c4" : lit < 4 ? "#dcc898" : "#bfa774";
+      if (speckles.has(`${x},${y}`)) col = lit < 1.5 ? "#4fae74" : "#2f7e55";
+      if (edge) col = "#3a2414";
+      g.fillStyle = col;
+      g.fillRect(x, y, 1, 1);
+    }
+  g.fillStyle = "#ffffff";
+  g.fillRect(4, 3, 1, 2);
+  g.fillRect(3, 5, 1, 1);
+  eggImg = c;
+  return c;
+}
 
 /**
  * Speed lines while your boost pushes: streaks rushing out from the middle of the screen
@@ -258,13 +291,21 @@ function itemBox(
     });
 }
 
-/** A dinosaur egg, in pixels. */
-function banana(ui: UiLayer, x: number, y: number) {
-  EGG.forEach((row, j) => {
-    for (let i = 0; i < row.length; i++) {
-      const c = EGG_COLORS[row[i]!];
-      if (c) ui.rect(x + i, y + j, 1, 1, c);
-    }
+/** The egg counter: the egg (with a soft shadow) and how many, with a hop on each pickup. */
+let eggsShown = 0;
+let eggHopAt = -1;
+function eggCounter(ui: UiLayer, count: number, x: number, y: number, t: number) {
+  if (count > eggsShown) eggHopAt = t;
+  if (count !== eggsShown && t < eggHopAt) eggHopAt = -1;
+  eggsShown = count;
+  const k = eggHopAt >= 0 ? Math.max(0, 1 - (t - eggHopAt) / 0.3) : 0;
+  const hop = Math.round(Math.sin(k * Math.PI) * 3);
+  ui.rect(x + 2, y + 15, 10, 2, "#00000055");
+  ui.image(eggSprite(), x, y - hop, 13, 16, false);
+  ui.text(`×${count}`, x + 16, y + 3, {
+    scale: 2,
+    color: k > 0.5 ? PAL.white : PAL.gold,
+    outline: PAL.shadow,
   });
 }
 
@@ -275,11 +316,14 @@ function drawHud(
   practice: boolean,
   banner: string | undefined,
   t: number,
+  /** In a Trophy Race: which race of the cup this is. */
+  cup?: string,
 ) {
   const h = session.hud();
   const W = ui.W;
   const big = { outline: PAL.shadow };
   if (h.boost > 0) speedLines(ui, h.boost, h.rainbow ? null : h.boostColor, t);
+  if (cup) ui.text(cup, ui.W / 2, 6, { color: PAL.gold, outline: PAL.shadow, align: "center" });
   // Top left: position (or the mode).
   if (practice && h.park) {
     ui.text("DRIFT PARK", 8, 8, { color: PAL.gold, ...big });
@@ -321,8 +365,7 @@ function drawHud(
   // Bottom left: the item box (the held balloon's pixel icon) and the eggs (bananas, in
   // the code) beside it.
   if (!practice || h.bananas > 0) {
-    banana(ui, 9, ui.H - 22);
-    ui.text(`×${h.bananas}`, 24, ui.H - 21, { scale: 2, color: PAL.gold, ...big });
+    eggCounter(ui, h.bananas, 8, ui.H - 24, t);
   }
   itemBox(ui, session, h.held, 8, ui.H - 80, t);
 
@@ -397,26 +440,42 @@ function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, sc
 
 function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () => void): Screen {
   const leave = (what: string, go: () => void) => () =>
-    game.screens.push(confirmDialog(game, `LEAVE THIS RACE AND GO TO ${what}?`, go));
+    game.screens.push(
+      confirmDialog(
+        game,
+        game.trophy
+          ? `QUIT THE TROPHY RACE AND GO TO ${what}?`
+          : `LEAVE THIS RACE AND GO TO ${what}?`,
+        go,
+      ),
+    );
   const menu: VMenu = new VMenu(
     game,
     [
       { label: "RESUME", action: () => resume() },
-      {
-        label: entry.modes.includes("practice") ? "RESTART" : "RESTART RACE",
-        action: () => {
-          restart();
-          resume(false);
-        },
-      },
+      // No restarts in a Trophy Race: every race counts.
+      ...(game.trophy
+        ? []
+        : [
+            {
+              label: entry.modes.includes("practice") ? "RESTART" : "RESTART RACE",
+              action: () => {
+                restart();
+                resume(false);
+              },
+            },
+          ]),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       {
         label: "TRACK SELECT",
-        action: leave("TRACK SELECT", () => game.screens.go(trackSelect(game))),
+        action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
       },
       {
         label: "MAIN MENU",
-        action: leave("THE MAIN MENU", () => game.screens.go(titleScreen(game, true))),
+        action: leave("THE MAIN MENU", () => {
+          game.trophy = undefined;
+          game.screens.go(titleScreen(game, true));
+        }),
       },
     ],
     () => resume(),
@@ -532,7 +591,7 @@ function resultsScreen(
         restart();
       },
     },
-    { label: "TRACK SELECT", action: () => game.screens.go(trackSelect(game)) },
+    { label: "TRACK SELECT", action: () => game.screens.go(tracksMenu(game)) },
     { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
   ]);
   const solo = result.position === undefined;

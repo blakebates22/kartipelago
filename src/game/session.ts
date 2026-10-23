@@ -201,7 +201,7 @@ export interface RaceResult {
   lapTimes: number[];
   bestLap: number;
   /** Everyone's finishing order (names and times), when racing the AI. */
-  order: { name: string; racer: RacerId; time?: number; you: boolean }[];
+  order: { name: string; racer: RacerId; time?: number; you: boolean; slot: number }[];
 }
 
 interface Entrant {
@@ -663,6 +663,8 @@ function buildSession(
     }
   }
 
+  /** Extra seconds before the countdown after a restart. */
+  const RESTART_PAUSE = 0.5;
   function restart() {
     resetRequested = true;
   }
@@ -672,6 +674,9 @@ function buildSession(
     if (resetRequested) {
       resetRequested = false;
       race = newRace();
+      // A restart waits a breath before GET READY, so it doesn't start the instant the
+      // menu closes.
+      if (race) race.clock -= RESTART_PAUSE;
       placeKarts();
       shownPlace = { shown: 1, pending: 1, since: 0 };
       if (gateView && race) {
@@ -977,8 +982,17 @@ function buildSession(
 
     // The blob shadow stays on the ground under the kart, smaller the higher it flies.
     const r = e.racer;
-    const groundY = e.ground.at(mesh.position.x, mesh.position.z, mesh.position.y).height;
-    r.placeShadow(mesh.position.x, groundY, mesh.position.z, heading, mesh.position.y - groundY);
+    const g = e.ground.at(mesh.position.x, mesh.position.z, mesh.position.y + 0.5);
+    r.placeShadow(
+      mesh.position.x,
+      g.height,
+      mesh.position.z,
+      heading,
+      mesh.position.y - g.height,
+      g.nx,
+      g.ny,
+      g.nz,
+    );
     // Character and kart animation: a visual layer on top of the physics state.
     r.animate(frameSeconds, motionOf(s), nearestRival(e));
     flames(e, frameSeconds);
@@ -1374,6 +1388,7 @@ function buildSession(
         racer: entrants[i]!.look,
         time: race!.racers[i]!.finished ? race!.racers[i]!.totalTime : undefined,
         you: i === 0,
+        slot: i,
       })),
     };
   }
@@ -1433,9 +1448,10 @@ function buildSession(
 
   let disposed = false;
 
-  // Your kart's sounds. The engine: a quiet hum rising with speed. The tyres: a squeal
-  // while you drift (or slide hard), louder the more you slide, higher at speed; a bark
-  // going into a drift. Silent while the race isn't running (paused, or in the demo).
+  // Your kart's sounds. The engine: a quiet hum rising with speed. The tyres (switched
+  // off for now, DRIFT_SOUND): a squeal while you drift or slide hard and a bark going
+  // into a drift. Silent while the race isn't running (paused, or in the demo).
+  const DRIFT_SOUND = false;
   let skid: ReturnType<typeof sfx.skid>;
   let engine: ReturnType<typeof sfx.engine>;
   let lastStepAt = 0;
@@ -1445,7 +1461,8 @@ function buildSession(
     const running = !demo && performance.now() - lastStepAt < 120;
     const slide = Math.abs(wrapAngle(s.heading - s.velAngle));
     const fast = Math.min(1, s.speed / 18);
-    const on = running && s.grounded && s.speed > 5 && (s.driftDir !== 0 || slide > 0.4);
+    const on =
+      DRIFT_SOUND && running && s.grounded && s.speed > 5 && (s.driftDir !== 0 || slide > 0.4);
     const level = on ? Math.min(1, 0.55 + slide * 0.9) * fast : 0;
     if (on && s.driftDir !== 0 && lastDrift === 0) sfx.skidChirp(itemsCfg.volume);
     lastDrift = running ? s.driftDir : 0;
@@ -1533,6 +1550,7 @@ function buildSession(
     /** Course hazards and creatures (Blender tracks), for the debug tools. */
     hazards,
     entrants,
+    itemWorld,
     root,
     get race() {
       return race;

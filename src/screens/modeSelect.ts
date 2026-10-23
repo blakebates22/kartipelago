@@ -20,7 +20,7 @@ import { triceratops } from "../ui/modeRuins";
 import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
-import { worldSelect } from "./worldSelect";
+import { tracksMenu } from "./tracks";
 
 export function modeSelect(game: Game): Screen {
   let focus = 0;
@@ -28,7 +28,7 @@ export function modeSelect(game: Game): Screen {
   let clicked = -1;
   const pick = (i: number) => {
     game.sounds.confirm();
-    if (i === 0) game.screens.go(worldSelect(game));
+    if (i === 0) game.screens.go(tracksMenu(game));
     else game.screens.go(comingSoon(game));
   };
   return {

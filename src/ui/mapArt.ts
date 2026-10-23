@@ -368,10 +368,15 @@ export function stop(g: G, x: number, y: number, label: string, on: boolean, loc
 }
 
 /** A small gold trophy cup (about 12 x 14), for Trophy Race. */
-export function trophy(g: G, x: number, y: number, s = 1, shine = 0) {
-  const gold = "#f2c64a";
-  const dark = "#b8861a";
-  const lite = "#fff0a0";
+const METALS = {
+  gold: ["#f2c64a", "#b8861a", "#fff0a0"],
+  silver: ["#d4dae4", "#8a94a8", "#ffffff"],
+  bronze: ["#d8904a", "#8a5226", "#f6c08a"],
+} as const;
+export type Metal = keyof typeof METALS;
+
+export function trophy(g: G, x: number, y: number, s = 1, shine = 0, metal: Metal = "gold") {
+  const [gold, dark, lite] = METALS[metal];
   const P = (dx: number, dy: number, w: number, h: number, c: string) =>
     px(g, x + dx * s, y + dy * s, w * s, h * s, c);
   // Outline first, then the cup.

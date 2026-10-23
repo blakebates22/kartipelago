@@ -15,7 +15,7 @@ implementation, art and music.
 ```
 BOOT ─► TITLE ── PRESS START ──► main menu
                                    ├─ PLAY ─► CHARACTER_SELECT ─► MODE_SELECT
-                                   │                                ├─ TRACKS ─► WORLD_SELECT ─► TRACK_SELECT ─► LOADING ─► RACING
+                                   │                                ├─ TRACKS ─► TRACK_SELECT (the Ledger) ─► LOADING ─► RACING
                                    │                                └─ ADVENTURE ─► ADVENTURE_COMING_SOON
                                    ├─ OPTIONS ─► AUDIO_SETTINGS (─► MUSIC_PLAYER) / VIDEO_SETTINGS / CONTROLS / GENERAL_SETTINGS
                                    ├─ MUSIC ─► MUSIC_PLAYER
@@ -23,6 +23,7 @@ BOOT ─► TITLE ── PRESS START ──► main menu
 
 RACING ── Esc / Start ──► PAUSED ─► Resume · Restart · Options · Track select* · Main menu*
        ── finish line ──► RESULTS ─► Retry · Track select · Main menu
+       ── (Trophy Race) ──► TROPHY_STANDINGS ─► next track's LOADING … ─► TROPHY_PODIUM
 LOADING ── fails ──► LOAD_ERROR ─► Track select
                                                          * asks "Leave this race?" first
 ```
@@ -30,10 +31,15 @@ LOADING ── fails ──► LOAD_ERROR ─► Track select
 Esc (or B on a gamepad) always goes back one step. Mouse hover moves the keyboard focus,
 so the two never disagree.
 
-World Select fits however many worlds there are (the cards narrow, and long names wrap).
-Track Select lists a world's tracks, then a locked "Coming Soon" tile for each of its
-planned ones (`comingSoon` in `src/game/worlds.ts`): they show a padlock, and Start says
-LOCKED.
+Track Select is the Ledger (`src/screens/tracks.ts`): a wooden bookmark per world along
+the top (◀ ▶), and that world's list (▲ ▼): the Trophy Race first, then its tracks, with
+the picture and details on the right. The Trophy Race (`src/game/trophy.ts`,
+`src/screens/trophy.ts`) runs all of a world's tracks against the same seven rivals,
+points 10 8 6 5 4 3 2 1, no retries, then a podium. The old World Select and Track Select
+are kept in `archive/v1-menus/`.
+
+LOADING is a title card for the race ahead: the track's picture, its name, the kind of
+race, a tip, and your kart driving along a road toward the flag as it loads.
 
 ## The pieces
 

@@ -29,15 +29,10 @@ description, a banner colour and its track ids, in menu order:
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
   its real tracks (the Dragon Kingdom has three). See [frostveil-peaks.md](frostveil-peaks.md).
 
-**World Select** (`src/screens/worldSelect.ts`) shows each world as a wooden board, with:
-
-- a mosaic of its tracks' preview pictures;
-- its name and tagline;
-- its track count.
-
-The highlighted board lifts and shines. Picking one makes it hop and flash, then Track
-Select opens on that world's tracks. Controls: ◀ ▶ choose, Enter picks, Esc goes back.
-The mouse works too.
+**The Ledger** (`src/screens/tracks.ts`) has a wooden bookmark for each world along the
+top; the chosen world's Trophy Race and tracks are listed below, with the picture and
+details on the right. Controls: ◀ ▶ world, ▲ ▼ track, Enter picks, Esc goes back. The
+mouse works too.
 
 ## The courses
 

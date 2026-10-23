@@ -19,6 +19,10 @@ export { motionOf, type RacerMotion, type AnimState } from "./animator";
 /** Distance beyond which the cheap version is drawn, metres. */
 export const LOD_DISTANCE = 45;
 
+const SH_UP = new THREE.Vector3(0, 1, 0);
+const SH_N = new THREE.Vector3();
+const SH_Q = new THREE.Quaternion();
+
 export class Racer {
   readonly root = new THREE.Group();
   readonly lod = new THREE.LOD();
@@ -127,7 +131,15 @@ export class Racer {
 
     this.shadow = new THREE.Mesh(
       new THREE.PlaneGeometry(2.2, 3).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false }),
+      new THREE.MeshBasicMaterial({
+        map: shadowTexture(),
+        transparent: true,
+        depthWrite: false,
+        // Drawn just in front of the ground so it never sinks into bumps.
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -4,
+      }),
     );
     this.shadow.renderOrder = 1;
   }
@@ -154,12 +166,29 @@ export class Racer {
     }
   }
 
-  /** Put the blob shadow on the ground under the kart (it stays flat on the road). */
-  placeShadow(x: number, groundY: number, z: number, heading: number, above: number) {
-    this.shadow.position.set(x, groundY + 0.05, z);
-    this.shadow.rotation.y = heading;
-    this.shadow.scale.setScalar(Math.max(0.4, 1 - above * 0.12));
-    (this.shadow.material as THREE.MeshBasicMaterial).opacity = Math.max(0.25, 1 - above * 0.15);
+  /**
+   * Put the blob shadow on the ground under the kart, lying along the slope (normal
+   * nx, ny, nz), smaller and fainter the higher the kart flies; gone if it's far above.
+   */
+  placeShadow(
+    x: number,
+    groundY: number,
+    z: number,
+    heading: number,
+    above: number,
+    nx = 0,
+    ny = 1,
+    nz = 0,
+  ) {
+    const sh = this.shadow;
+    sh.visible = above < 12;
+    sh.position.set(x + nx * 0.04, groundY + ny * 0.04, z + nz * 0.04);
+    SH_N.set(nx, ny, nz);
+    sh.quaternion.setFromUnitVectors(SH_UP, SH_N);
+    SH_Q.setFromAxisAngle(SH_UP, heading);
+    sh.quaternion.multiply(SH_Q);
+    sh.scale.setScalar(Math.max(0.4, 1 - Math.max(0, above) * 0.08));
+    (sh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1 - Math.max(0, above) / 12);
   }
 
   /** Remove from the scene and free the geometry. */
