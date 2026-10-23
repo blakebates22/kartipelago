@@ -26,6 +26,7 @@ export type ScreenId =
   | "LOADING"
   | "LOAD_ERROR"
   | "RACING"
+  | "REVIEW"
   | "PAUSED"
   | "CONFIRM"
   | "RESULTS"

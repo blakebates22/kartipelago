@@ -312,10 +312,43 @@ export function createAudioEngine(initial: AudioSettings) {
     setTimeout(() => out.disconnect(), (end + 2) * 1000);
   }
 
+  /** Recorded sounds (public/audio/), fetched and decoded once. */
+  const samples = new Map<string, Promise<AudioBuffer | undefined>>();
+  function loadSample(path: string) {
+    let p = samples.get(path);
+    if (!p) {
+      p = ctx
+        ? fetch(`${import.meta.env.BASE_URL}${path}`)
+            .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.statusText))))
+            .then((b) => ctx!.decodeAudioData(b))
+            .catch(() => undefined)
+        : Promise.resolve(undefined);
+      samples.set(path, p);
+    }
+    return p;
+  }
+  /** Play a recorded sound on a bus (loading it first if it isn't yet). */
+  function sample(bus: Bus, path: string, level = 1) {
+    if (!ctx || !buses || ctx.state !== "running") return;
+    void loadSample(path).then((buf) => {
+      if (!buf || !ctx || !buses) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.value = level;
+      src.connect(g).connect(buses[bus]);
+      src.start();
+      src.onended = () => g.disconnect();
+    });
+  }
+
   return {
     get context() {
       return ctx;
     },
+    sample,
+    /** Fetch and decode a recorded sound ahead of time. */
+    preload: (path: string) => void loadSample(path),
     /** True once the browser lets us make sound. */
     get running() {
       return ctx?.state === "running";

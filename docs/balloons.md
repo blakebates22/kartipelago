@@ -58,7 +58,8 @@ differs**: `blue1Sec` / `blue2Sec` / `blue3Sec`.
 
 - The exhaust colour says which boost it is: zipper amber, blue 1 orange, blue 2 blue,
   blue 3 purple.
-- A green core inside the flame means the enhanced boost took, with a double chime.
+- A red flame with a white-hot core means you let off the throttle in time and the
+  enhanced boost took, with a double chime.
 - The flame turns rainbow, with a blip, when it's time to press the throttle again.
 - The flame shrinks and dims, with a puff, when the push ends.
 - Level 3 plays a charging sound and then its boost sound `blue3ChargeSec` later, and

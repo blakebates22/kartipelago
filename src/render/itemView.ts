@@ -6,7 +6,7 @@ import * as THREE from "three";
 import type { RacerItems } from "../items/effects";
 import type { BalloonColor } from "../items/inventory";
 import type { ItemWorld } from "../items/world";
-import { wrapMaterial, wrapStyle } from "./balloonWraps";
+import { wrapMaterial } from "./balloonWraps";
 
 export const BALLOON_COLORS: Record<BalloonColor, string> = {
   red: "#e63946",
@@ -104,50 +104,6 @@ function pool(make: () => THREE.Object3D, scene: THREE.Object3D) {
   };
 }
 
-/**
- * The balloons' painted markings: a carved-stone, cave-painting look (a zigzag band
- * round the middle, rows of dots, little triangles near the top). The texture is a
- * shade of grey that darkens the balloon's own colour, so red stays red.
- */
-export function markingsTexture() {
-  const W = 64;
-  const H = 32;
-  const data = new Uint8Array(W * H * 4);
-  const set = (x: number, y: number, v: number) => {
-    const i = ((((y % H) + H) % H) * W + (((x % W) + W) % W)) * 4;
-    data[i] = data[i + 1] = data[i + 2] = v;
-    data[i + 3] = 255;
-  };
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) set(x, y, 255);
-  const ink = 120;
-  // A zigzag band round the middle (v = 0.5 is the equator).
-  for (let x = 0; x < W; x++) {
-    const z = Math.abs((x % 8) - 4);
-    for (let t = 0; t < 2; t++) set(x, 14 + z + t, ink);
-    set(x, 12, 170);
-    set(x, 21, 170);
-  }
-  // Dots above and below.
-  for (let x = 2; x < W; x += 6) {
-    for (const y of [8, 25]) {
-      set(x, y, ink);
-      set(x + 1, y, ink);
-      set(x, y + 1, ink);
-      set(x + 1, y + 1, ink);
-    }
-  }
-  // Little triangles near the top, pointing up.
-  for (let x = 0; x < W; x += 8)
-    for (let r = 0; r < 3; r++) for (let k = -r; k <= r; k++) set(x + 4 + k, 4 - r + 2, 150);
-  const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.magFilter = THREE.NearestFilter;
-  tex.minFilter = THREE.NearestFilter;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.needsUpdate = true;
-  return tex;
-}
-
 /** A twisted leather-and-vine cord: diagonal stripes in two browns and a green. */
 function cordTexture() {
   const W = 8;
@@ -188,31 +144,11 @@ function cordGeometry(len: number) {
 }
 
 export function createItemView(scene: THREE.Object3D) {
-  const markings = markingsTexture();
-  const rainbowMat = new THREE.MeshStandardMaterial({
-    color: "#ffffff",
-    map: markings,
-    emissive: "#ffffff",
-    emissiveMap: markings,
-    emissiveIntensity: 0.25,
-  });
-  const wrap = wrapStyle();
+  // The balloons wear cave glyphs (balloonWraps.ts); the rainbow one's colour cycles.
   const balloonMats = Object.fromEntries(
-    Object.entries(BALLOON_COLORS).map(([k, c]) => [
-      k,
-      wrap
-        ? wrapMaterial(wrap, k as BalloonColor)
-        : k === "rainbow"
-          ? rainbowMat
-          : new THREE.MeshStandardMaterial({
-              color: c,
-              map: markings,
-              emissive: c,
-              emissiveMap: markings,
-              emissiveIntensity: 0.2,
-            }),
-    ]),
+    (Object.keys(BALLOON_COLORS) as BalloonColor[]).map((k) => [k, wrapMaterial(k)]),
   ) as Record<BalloonColor, THREE.MeshStandardMaterial>;
+  const rainbowMat = balloonMats.rainbow;
   const balloonGeo = new THREE.SphereGeometry(0.9, 16, 12).scale(1, 1.2, 1);
   // The string: a squiggly twisted cord, bound at the knot, with a bone bead at the end.
   const cordMat = new THREE.MeshLambertMaterial({ map: cordTexture() });
@@ -299,8 +235,12 @@ export function createItemView(scene: THREE.Object3D) {
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -4,
   });
-  const mineMat = new THREE.MeshStandardMaterial({ color: "#2b2b2b", flatShading: true });
-  const mineLight = new THREE.MeshBasicMaterial({ color: "#ff2a2a" });
+  // The mine is a coconut bomb (like its icon): a hairy brown nut, three dark eyes, a
+  // fuse with a spark that flickers.
+  const mineMat = new THREE.MeshStandardMaterial({ color: "#6a4424", flatShading: true });
+  const mineEye = new THREE.MeshLambertMaterial({ color: "#2a180c" });
+  const fuseMat = new THREE.MeshLambertMaterial({ color: "#c8962a" });
+  const mineLight = new THREE.MeshBasicMaterial({ color: "#ffd84a" });
   const bubbleMat = new THREE.MeshStandardMaterial({
     color: "#9fdcff",
     transparent: true,
@@ -316,11 +256,23 @@ export function createItemView(scene: THREE.Object3D) {
     oil.position.y = 0.06;
     const mine = new THREE.Group();
     mine.name = "mine";
-    mine.add(new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 8), mineMat));
-    const light = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 4), mineLight);
+    mine.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 1), mineMat));
+    for (const [x, y] of [
+      [-0.2, 0.05],
+      [0.2, 0.05],
+      [0, -0.22],
+    ] as const) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 4), mineEye);
+      eye.position.set(x, y, 0.55);
+      mine.add(eye);
+    }
+    const fuse = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.4, 5), fuseMat);
+    fuse.position.set(0.08, 0.72, 0);
+    fuse.rotation.z = -0.4;
+    const light = new THREE.Mesh(new THREE.IcosahedronGeometry(0.13, 0), mineLight);
     light.name = "light";
-    light.position.y = 0.6;
-    mine.add(light);
+    light.position.set(0.17, 0.93, 0);
+    mine.add(fuse, light);
     mine.position.y = 0.5;
     const bubble = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 12), bubbleMat);
     bubble.name = "bubble";
@@ -663,7 +615,11 @@ export function createItemView(scene: THREE.Object3D) {
           oil.position.copy(trapUp).multiplyScalar(0.06);
         }
         const light = g.getObjectByName("light");
-        if (light) light.visible = t.kind === "mine" && Math.floor(seconds * 4) % 2 === 0;
+        // The fuse's spark flickers.
+        if (light) {
+          light.visible = t.kind === "mine";
+          light.scale.setScalar(0.7 + Math.abs(Math.sin(seconds * 23 + i)) * 0.6);
+        }
         if (t.kind === "bubble")
           g.getObjectByName("bubble")!.position.y = 1.4 + Math.sin(seconds * 3) * 0.15;
       });

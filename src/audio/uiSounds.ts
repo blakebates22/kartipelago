@@ -13,6 +13,17 @@ const CALLS: Record<RacerId, { inst: InstrumentId; notes: number[] }> = Object.f
   RACER_IDS.map((id) => [id, DESIGNS[id].call]),
 ) as Record<RacerId, { inst: InstrumentId; notes: number[] }>;
 
+/**
+ * The race announcer: a raspy, playful dinosaur voice (made for this game: synthesised
+ * speech, pitched down, with a growl and a rasp; tools/voice/make_announcer.py). Three voices
+ * to choose from, ?voice=a|b|c: a raspy raptor, b big friendly rex, c cheeky little dino.
+ */
+const announcer = () => {
+  const v =
+    typeof location !== "undefined" ? new URLSearchParams(location.search).get("voice") : null;
+  return v === "b" || v === "c" ? v : "a";
+};
+
 export function createUiSounds(audio: AudioEngine) {
   return {
     move: () => audio.notes("sfx", [["woodblock", 84, 0, 0.05, 0.55]], 0.8),
@@ -73,13 +84,23 @@ export function createUiSounds(audio: AudioEngine) {
         ["tamb", 0, 0.24, 0.2, 0.7],
       ]);
     },
-    /** Countdown: three wood knocks, then a bright GO. */
-    count: () => audio.notes("sfx", [["woodblock", 79, 0, 0.08, 0.9]]),
-    go: () =>
+    /** Countdown: a wood knock and the announcer's "Get ready!", then a bright GO. */
+    count: () => {
+      audio.notes("sfx", [["woodblock", 79, 0, 0.08, 0.9]]);
+      audio.sample("voice", `audio/voice/${announcer()}_ready.mp3`, 0.9);
+    },
+    go: () => {
       audio.notes("sfx", [
         ["xylophone", 84, 0, 0.3, 0.9],
         ["xylophone", 91, 0, 0.3, 0.7],
-      ]),
+      ]);
+      audio.sample("voice", `audio/voice/${announcer()}_go.mp3`, 0.95);
+    },
+    /** Load the announcer's lines before a race starts. */
+    preloadAnnouncer() {
+      audio.preload(`audio/voice/${announcer()}_ready.mp3`);
+      audio.preload(`audio/voice/${announcer()}_go.mp3`);
+    },
     lap: () =>
       audio.notes("sfx", [
         ["celesta", 79, 0, 0.12],

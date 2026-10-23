@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { acrossRoad, type Track } from "../world/track";
 import type { ZipperPad } from "../world/zippers";
-import { zipStyle, zipperMaterial } from "./zipperStyles";
+import { zipperMaterial } from "./zipperStyles";
 
 export interface TrackLook {
   wallHeight: number;
@@ -62,34 +62,6 @@ function checkerTexture() {
   });
   tex.magFilter = THREE.NearestFilter;
   return tex;
-}
-
-/** Bright chevrons pointing along the pad (toward +Z once laid flat). */
-function zipperTexture() {
-  const tex = zipperCanvas();
-  // It scrolls along the pad (see render).
-  tex.wrapT = THREE.RepeatWrapping;
-  return tex;
-}
-
-function zipperCanvas() {
-  return canvasTexture(64, 128, (g) => {
-    // Tinted by the material colour: the white becomes the pad colour, the chevrons a
-    // darker shade of it.
-    g.fillStyle = "#ffffff";
-    g.fillRect(0, 0, 64, 128);
-    g.strokeStyle = "#7a3a10";
-    g.lineWidth = 10;
-    g.lineJoin = "round";
-    for (let i = 0; i < 3; i++) {
-      const y = 16 + i * 38;
-      g.beginPath();
-      g.moveTo(8, y);
-      g.lineTo(32, y + 24);
-      g.lineTo(56, y);
-      g.stroke();
-    }
-  });
 }
 
 /** One strip of quads between two rows of points per sample, closed into a loop. */
@@ -201,17 +173,7 @@ export function createTrackView(
   startLine.position.copy(first.pos).y += LIFT * 2;
   startLine.rotation.y = track.start.heading;
 
-  const zStyle = zipStyle();
-  const zipMat = zStyle
-    ? zipperMaterial(zStyle, look.zipperColor)
-    : new THREE.MeshStandardMaterial({
-        map: zipperTexture(),
-        emissive: new THREE.Color(look.zipperColor),
-        emissiveIntensity: 0.15,
-        polygonOffset: true,
-        polygonOffsetFactor: -4,
-        polygonOffsetUnits: -8,
-      });
+  const zipMat = zipperMaterial(look.zipperColor);
   // A fine grid, so it can bend to the ground under it.
   const zipMeshes = zippers.map((z) => {
     const mesh = new THREE.Mesh(
@@ -260,6 +222,7 @@ export function createTrackView(
       }
       for (const mat of [roadMat, wallMat, zipMat, startLine.material as THREE.Material]) {
         (mat as THREE.MeshStandardMaterial).map?.dispose();
+        (mat as THREE.MeshStandardMaterial).emissiveMap?.dispose();
         mat.dispose();
       }
     },
@@ -271,8 +234,8 @@ export function createTrackView(
       if (zipMat.emissiveMap) zipMat.emissiveMap.offset.y = flow;
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
-      if (!zStyle || zStyle === 4) zipMat.color.set(colors.zipperColor);
-      if (zStyle === 4) zipMat.emissive.set(colors.zipperColor);
+      zipMat.color.set(colors.zipperColor);
+      zipMat.emissive.set(colors.zipperColor);
     },
   };
 }

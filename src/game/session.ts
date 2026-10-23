@@ -227,6 +227,8 @@ interface Entrant {
 
 /** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */
 const FLAME_COLORS = ["#ffb347", "#ff7b00", "#2f80ed", "#9b5de5"];
+/** Any boost you let off the throttle for (enhanced): a red flame. */
+const ENHANCED_FLAME = "#ff2a1a";
 /** Meadow grass under the Drift Park. */
 const PARK_GROUND = "#6fae4b";
 const GROUND_SIZE = 1200;
@@ -1002,10 +1004,11 @@ function buildSession(
     const s = e.state;
 
     // Exhaust: the colour says which boost (zipper amber; blue balloons orange / blue /
-    // purple by level), a green core says the enhanced boost took, rainbow says "press
-    // the throttle now", and a small dim flame means the push has ended.
+    // purple by level). A red flame with a white-hot core says you let off the throttle
+    // in time and the enhanced boost took; rainbow says "press the throttle now"; a small
+    // dim flame means the push has ended.
     const z = s.zipPhase;
-    const color = FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!;
+    const color = s.zipEnhanced ? ENHANCED_FLAME : (FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!);
     const pushing = z === ZIP.ACTIVE || z === ZIP.ENDING;
     // After the push, a small flame dies away over half a second. (The recovery itself
     // can go on much longer, while the extra speed bleeds off: it once kept the flame lit

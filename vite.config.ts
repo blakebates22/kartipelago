@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from "vitest/config";
+import { reviewStore } from "./tools/reviewStore.mjs";
 
 /**
  * Dev only: when the Blender add-on exports a track into public/tracks/<id>/, tell the
@@ -34,7 +35,7 @@ export default defineConfig({
   // Relative base so the build works on GitHub Pages under /<repo-name>/
   // without hardcoding the repo name.
   base: "./",
-  plugins: [trackWatcher()],
+  plugins: [trackWatcher(), reviewStore()],
   build: {
     target: "es2022",
     sourcemap: true,

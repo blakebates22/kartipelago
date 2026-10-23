@@ -123,7 +123,7 @@ export class Racer {
     this.flame.visible = false;
     this.core = new THREE.Mesh(
       new THREE.ConeGeometry(0.15, 0.95, 8).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: "#3ddc84" }),
+      new THREE.MeshBasicMaterial({ color: "#fff4c0" }),
     );
     this.core.position.copy(this.flame.position).add(new THREE.Vector3(0, 0, -0.38));
     this.core.visible = false;

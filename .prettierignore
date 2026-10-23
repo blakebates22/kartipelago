@@ -10,3 +10,5 @@ tools/blender/addons/kartipelago_tools/library/starter_manifest.json
 # Exporter output kept as a reference for the tests.
 tests/fixtures/**
 public/tracks/**/checkpoints.json
+# Written by the level review tool (tools/reviewStore.mjs), not by hand.
+reviews/**

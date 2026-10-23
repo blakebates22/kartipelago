@@ -63,6 +63,7 @@ export function loadingScreen(game: Game): Screen {
       pp = createPixelPortraits(game.stage.renderer);
       game.audio.music.stop(0.6);
       game.audio.music.prepare(entry.music);
+      game.sounds.preloadAnnouncer();
       const token = game.screens.token;
       game
         .createSession({

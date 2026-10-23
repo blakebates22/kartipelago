@@ -7,6 +7,12 @@
  * together. (Results are the exception: the race keeps running behind them so the AI
  * can finish and your kart takes its lap of honour.)
  */
+import {
+  isRecordingLine,
+  recordLineFrame,
+  reviewScreen,
+  stopRecordingLine,
+} from "../review/reviewScreen";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { submitResult, type NewRecords } from "../app/records";
@@ -41,11 +47,26 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
 
   const startMusic = () => void game.audio.music.play(entry.music, { fade: 1.2, restart: true });
 
+  // F2: the level review tool (or, while recording a driving line, stop and write it up).
+  const openReview = () => {
+    if (game.screens.top !== screen) return;
+    if (isRecordingLine()) stopRecordingLine();
+    game.screens.push(reviewScreen(game, session, entry));
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.code === "F2" && !e.repeat) {
+      e.preventDefault();
+      openReview();
+    }
+  };
+  let autoReview = new URLSearchParams(location.search).has("review");
+
   const screen: Screen = {
     id: "RACING",
     enter() {
       game.session = session;
       game.ui.interactive = false;
+      window.addEventListener("keydown", onKey);
       startMusic();
     },
     resume() {
@@ -53,6 +74,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
       game.audio.music.duck(false);
     },
     exit() {
+      window.removeEventListener("keydown", onKey);
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
@@ -63,6 +85,11 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
     frame(dt, actions, top) {
       clock += dt;
       if (!top) return;
+      recordLineFrame(session);
+      if (autoReview && clock > 0.5) {
+        autoReview = false;
+        return openReview();
+      }
       if (actions.some((a) => a === "pause" || a === "back")) {
         game.screens.push(pauseMenu(game, session, entry, restart));
         return;
@@ -71,8 +98,11 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
       // A knock as GET READY comes up, the GO sound the moment the karts are let go,
       // lap chimes.
       if (h.phase === "countdown") {
-        if (lastCount !== 1) game.sounds.count();
-        lastCount = 1;
+        // (After a restart's pause, as the letters start to pop in.)
+        if (lastCount !== 1 && h.countdown <= tuning.race.readySec) {
+          game.sounds.count();
+          lastCount = 1;
+        }
       } else if (lastCount > 0) {
         lastCount = 0;
         game.sounds.go();
@@ -466,6 +496,13 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
             },
           ]),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
+      {
+        label: "REVIEW TRACK",
+        action: () => {
+          game.screens.pop();
+          game.screens.push(reviewScreen(game, session, entry));
+        },
+      },
       {
         label: "TRACK SELECT",
         action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
