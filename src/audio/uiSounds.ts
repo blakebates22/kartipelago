@@ -18,6 +18,8 @@ const CALLS: Record<RacerId, { inst: InstrumentId; notes: number[] }> = Object.f
  * speech, pitched down a little; tools/voice/make_announcer.py). Three voices to choose
  * from, ?voice=a|b|c: a friendly dino, b a big gentle one, c a bright little one.
  */
+/** The announcer is off for now (Blake: it threw him off; to revisit). */
+const ANNOUNCER_ON = false;
 const announcer = () => {
   const v =
     typeof location !== "undefined" ? new URLSearchParams(location.search).get("voice") : null;
@@ -87,17 +89,18 @@ export function createUiSounds(audio: AudioEngine) {
     /** Countdown: a wood knock and the announcer's "Get ready!", then a bright GO. */
     count: () => {
       audio.notes("sfx", [["woodblock", 79, 0, 0.08, 0.9]]);
-      audio.sample("voice", `audio/voice/${announcer()}_ready.mp3`, 0.9);
+      if (ANNOUNCER_ON) audio.sample("voice", `audio/voice/${announcer()}_ready.mp3`, 0.9);
     },
     go: () => {
       audio.notes("sfx", [
         ["xylophone", 84, 0, 0.3, 0.9],
         ["xylophone", 91, 0, 0.3, 0.7],
       ]);
-      audio.sample("voice", `audio/voice/${announcer()}_go.mp3`, 0.95);
+      if (ANNOUNCER_ON) audio.sample("voice", `audio/voice/${announcer()}_go.mp3`, 0.95);
     },
     /** Load the announcer's lines before a race starts. */
     preloadAnnouncer() {
+      if (!ANNOUNCER_ON) return;
       audio.preload(`audio/voice/${announcer()}_ready.mp3`);
       audio.preload(`audio/voice/${announcer()}_go.mp3`);
     },
