@@ -17,12 +17,12 @@ describe("Bonebog Pyramid v3 (greybox)", () => {
     expect(p.warnings).toEqual([]);
     expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(5);
     const pts = p.trackData.points;
-    expect(Math.max(...pts.map((q) => q.y ?? 0))).toBeGreaterThan(20);
+    expect(Math.max(...pts.map((q) => q.y ?? 0))).toBeGreaterThan(17);
     // Somewhere the road passes right over itself (the spiral's upper turn).
     let over = false;
     for (const a of pts)
       for (const b of pts)
-        if (Math.hypot(a.x - b.x, a.z - b.z) < 4 && (a.y ?? 0) - (b.y ?? 0) > 9) over = true;
+        if (Math.hypot(a.x - b.x, a.z - b.z) < 4 && (a.y ?? 0) - (b.y ?? 0) > 7) over = true;
     expect(over).toBe(true);
   });
 

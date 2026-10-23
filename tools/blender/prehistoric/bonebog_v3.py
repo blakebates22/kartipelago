@@ -1,4 +1,4 @@
-# Bonebog Pyramid v3: the GREYBOX of the new layout (Blake's driving notes, 2026-10-23).
+# Bonebog Pyramid v3.1: the GREYBOX of the new layout (Blake's driving notes, 2026-10-23).
 # Driving first: the new lap, playable with plain shapes, so it can be driven and changed
 # quickly; the swamp's look comes back once the lap is fun. Builds its own package,
 # bonebog_pyramid_v3 (?track=bonebog_pyramid_v3); the current Bonebog stays as it is.
@@ -6,13 +6,13 @@
 #
 #   python tools/blender/prehistoric/bonebog_v3.py      (the bpy module)
 #
-# About 1.96 km, nearly all of it bends:
+# About 1.5 km (v3.1: 25% shorter than the first greybox), nearly all of it bends:
 #
 #   A  The start along the old dike and the first S-bends (unchanged), then the first
 #      green balloon is a zipper now.
 #   B  A big hairpin back west and a weave across the heart of the swamp.
 #   C  The Rib Bridge, climbing north.
-#   D  The spiral: one and a quarter turns up round the great tree (+16 m) to the
+#   D  The spiral: one and a quarter turns up round the great tree (+10 m) to the
 #      treehouse village, then a fast drop to the pyramid's face.
 #   E  The pyramid: rolling hills down the corridor, the turning chamber, and the great
 #      hall: more hills and a jump over the river that runs through it and pours out of
@@ -34,52 +34,54 @@ WATER_Z = 0.0
 
 START = (0.0, -200.0)
 LAYOUT = [
-    ("S", 135),  # 0  the start, north along the dike
+    # v3.1 (Blake: "25% shorter, cut from the boring parts"): the start straight is 40 m
+    # shorter, everything after the first S-bends is 70% of its old size (no corner
+    # tighter than 26 m), and the long straight trestle out of the pyramid is an S now.
+    ("S", 95),  # 0  the start, north along the dike
     ("R", 50, 90),  # 1  east onto the boardwalks
     ("S", 30),  # 2
     ("L", 45, 55),  # 3  the first S-bends
     ("R", 45, 55),  # 4
     ("S", 40),  # 5  (the green balloon's spot: a zipper now)
-    ("L", 40, 180),  # 6  a big hairpin back west
-    ("R", 34, 60),  # 7  weaving west across the heart of the swamp
-    ("L", 34, 120),  # 8
-    ("R", 34, 60),  # 9
-    ("S", 30),  # 10
-    ("R", 36, 90),  # 11 north
-    ("S", 60),  # 12 the Rib Bridge, climbing
-    ("L", 45, 90),  # 13 west
-    ("S", 20),  # 14 to the great tree
-    ("L", 30, 450),  # 15 the spiral up round the great tree
-    ("R", 40, 90),  # 16 out along the treehouse village
-    ("S", 40),  # 17 the drop to the pyramid's face
-    ("S", 60),  # 18 the corridor: rolling hills
-    ("L", 45, 90),  # 19 the turning chamber
-    ("S", 90),  # 20 the great hall: hills, and the jump over the river
-    ("S", 30),  # 21 the trestle down out of the pyramid (stretched to close)
-    ("R", 60, 30),  # 22
-    ("L", 60, 30),  # 23
-    ("L", 45, 60),  # 24 weaving home through the swamp
-    ("R", 40, 70),  # 25
-    ("L", 40, 90),  # 26
-    ("R", 40, 70),  # 27
-    ("L", 40, 70),  # 28
-    ("S", 40),  # 29 (stretched to close)
-    ("L", 45, 100),  # 30 north onto the dike
-    ("S", 10),  # 31
+    ("L", 28, 180),  # 6  a big hairpin back west
+    ("R", 26, 60),  # 7  weaving west across the heart of the swamp
+    ("L", 26, 120),  # 8
+    ("R", 26, 60),  # 9
+    ("S", 21),  # 10
+    ("R", 26, 90),  # 11 north
+    ("S", 42),  # 12 the Rib Bridge, climbing
+    ("L", 31.5, 90),  # 13 west
+    ("S", 14),  # 14 to the great tree
+    ("L", 26, 450),  # 15 the spiral up round the great tree
+    ("R", 28, 90),  # 16 out along the treehouse village
+    ("S", 28),  # 17 the drop to the pyramid's face
+    ("S", 42),  # 18 the corridor: rolling hills
+    ("L", 31.5, 90),  # 19 the turning chamber
+    ("S", 63),  # 20 the great hall: hills, and the jump over the river
+    ("S", 21),  # 21 the trestle down out of the pyramid (stretched to close)
+    ("R", 28, 45),  # 22 an S down the trestle
+    ("L", 28, 90),  # 23
+    ("R", 28, 45),  # 24
+    ("L", 31.5, 60),  # 25 weaving home through the swamp
+    ("R", 28, 60),  # 26
+    ("L", 28, 80),  # 27
+    ("S", 28),  # 28 (stretched to close)
+    ("L", 31.5, 100),  # 29 north onto the dike
+    ("S", 7),  # 30
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 21, 29, START, 90.0)
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 21, 28, START, 90.0)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 
 # The jump in the great hall: where along the hall, and its gap.
 HALL = (SEG[20], SEG[21])
-GAP = (lerp(HALL[0], HALL[1], 0.55), lerp(HALL[0], HALL[1], 0.55) + 9.0)
+GAP = (lerp(HALL[0], HALL[1], 0.55), lerp(HALL[0], HALL[1], 0.55) + 8.0)
 
 # Heights at segment starts; between them the road eases (the spiral climbs steadily).
 HEIGHT = {
     0: 2.6, 1: 2.6, 2: 3.2, 3: 3.6, 4: 3.6, 5: 3.6, 6: 3.8, 7: 4.2, 8: 4.0, 9: 4.4, 10: 4.2, 11: 4.2,
-    12: 5.0, 13: 12.0, 14: 8.0, 15: 7.0, 16: 23.0, 17: 16.0, 18: 8.6, 19: 8.6, 20: 8.6, 21: 8.6,
-    22: 7.0, 23: 5.8, 24: 4.8, 25: 4.2, 26: 3.8, 27: 3.6, 28: 3.4, 29: 3.0, 30: 2.8, 31: 2.6,
+    12: 5.0, 13: 10.0, 14: 9.5, 15: 9.0, 16: 19.0, 17: 14.0, 18: 8.6, 19: 8.6, 20: 8.6, 21: 8.6,
+    22: 7.4, 23: 6.2, 24: 5.2, 25: 4.6, 26: 4.0, 27: 3.6, 28: 3.2, 29: 2.8, 30: 2.6,
 }
 
 
@@ -92,20 +94,22 @@ def road_z(d, seg):
         z += 2.2 * math.sin(t * math.pi * 2) ** 2  # two crests down the corridor
     if seg == 20:
         if GAP[0] <= d <= GAP[1]:
-            return lerp(10.4, 8.9, (d - GAP[0]) / (GAP[1] - GAP[0]))
+            return lerp(8.6, 8.4, (d - GAP[0]) / (GAP[1] - GAP[0]))
         u = (d - a) / max(1e-6, GAP[0] - a)
         if d < GAP[0]:
-            z += 1.8 * math.sin(u * math.pi * 2.0) ** 2 * (1 - smooth((u - 0.6) / 0.4)) + 1.8 * smooth((u - 0.7) / 0.3)
+            # A crest down the hall, flattening out before the take-off ramp (which is
+            # the ramp piece's own lift, so it's exact).
+            z += 1.8 * math.sin(u * math.pi * 2.0) ** 2 * (1 - smooth((u - 0.55) / 0.3))
         else:
             v = (d - GAP[1]) / max(1e-6, b - GAP[1])
-            z += 0.3 + 1.6 * math.sin(v * math.pi) ** 2 * smooth(v * 3)
+            z += -0.2 + 1.6 * math.sin(v * math.pi) ** 2 * smooth(v * 3)
     return z
 
 
 def road_w(d, seg):
     if 18 <= seg <= 20:
         return 16.0
-    if seg in (0, 30, 31) or (seg == 1 and d < SEG[1] + 20):
+    if seg in (0, 29, 30) or (seg == 1 and d < SEG[1] + 20):
         return 16.0
     if seg in (12, 13, 21):
         return 15.0
@@ -148,7 +152,7 @@ for _i, (_x, _y, _h, _s) in enumerate(PATH):
     if _i:
         _d += math.hypot(_x - PATH[_i - 1][0], _y - PATH[_i - 1][1])
     if not _samples or _d - _samples[-1][3] >= 4.0:
-        dike = _s in (0, 30, 31) or (_s == 1 and _d < SEG[1] + 20)
+        dike = _s in (0, 29, 30) or (_s == 1 and _d < SEG[1] + 20)
         _samples.append((_x, _y, road_z(_d, _s), _d, dike))
 _dike = [s for s in _samples if s[4]]
 _tree = kdtree.KDTree(len(_dike))
@@ -279,7 +283,7 @@ def main():
             return "ramp"
         if 18 <= seg <= 20:
             return "temple"
-        if seg in (0, 30, 31) or (seg == 1 and s < SEG[1] + 20):
+        if seg in (0, 29, 30) or (seg == 1 and s < SEG[1] + 20):
             return "dike"
         if seg in (12, 13, 21):
             return "bridge"
@@ -292,7 +296,15 @@ def main():
         if k == "gap":
             specials.append((s0, s1, None))
         elif k == "ramp":
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+            # The take-off: a straight incline rising 1.6 m to a clean lip, eased in at its
+            # foot (never a kicker curling up at the end: that stops karts dead or fires
+            # them straight up).
+            def lift(u, n, w=12.0, rise=1.6, t0=0.35):
+                v = max(0.0, min(1.0, (u - (n - w)) / w))
+                k = 1.0 / (1.0 - t0 / 2.0)
+                return rise * (k * v * v / (2 * t0) if v < t0 else k * (v - t0 / 2.0))
+
+            specials.append((s0, s1, "ramp", {"lift": lift}))
         elif k != "boardwalk":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "boardwalk", max_len=200.0))
@@ -397,8 +409,8 @@ def main():
     c.zipper(SEG[12] + 15, 0)
     c.zipper(SEG[17] + 5, 0)
     c.zipper(SEG[20] + 4, 0)  # into the hall, up to speed for the jump
-    c.zipper(SEG[21] + 10, 0)
-    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[8] + 20, 0), (SEG[15] + 80, 0), (SEG[18] + 30, 0), (SEG[26] + 20, 0)):
+    c.zipper(SEG[21] + 13, 0)  # (3 m further on than at first: Blake's note)
+    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[8] + 20, 0), (SEG[15] + 80, 0), (SEG[18] + 30, 0), (SEG[26] + 10, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
         (130, -4, "red"),
@@ -407,13 +419,13 @@ def main():
         (SEG[13] + 20, 0, "yellow"),
         (SEG[16] + 30, -3, "rainbow"),
         (SEG[16] + 30, 3, "red"),
-        (SEG[24] + 20, 0, "blue"),
-        (SEG[28] + 20, 0, "green"),
+        (SEG[25] + 15, 0, "blue"),
+        (SEG[27] + 10, 0, "green"),
     ):
         c.balloon(at, across, col)
     # Missing the hall's jump drops you in the river: back out past it.
     c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
-    c.checkpoints(extra=[SEG[2] + 10, SEG[6] + 30, SEG[9], SEG[12] + 30, SEG[15] + 60, SEG[15] + 180, SEG[17], SEG[19] + 10, SEG[21] + 10, SEG[25], SEG[28]], height=10.0)
+    c.checkpoints(extra=[SEG[2] + 10, SEG[6] + 30, SEG[9], SEG[12] + 30, SEG[15] + 60, SEG[15] + 140, SEG[17], SEG[19] + 10, SEG[21] + 10, SEG[25], SEG[27]], height=10.0)
 
     kit.paint.shade_roads(c.pieces, 0.35)
     c.finish()
