@@ -78,7 +78,25 @@ note if it isn't right.
 
 The `reviews/` folder is ignored by Prettier: the tool writes it, not people.
 
-## Coming next
+## Moving props (tool 6, MOVE)
 
-Nudges: select a prop and move, turn, scale, copy or delete it with handles. The tool
-will record the edits exactly, for Claude to bake into the track build.
+Click a prop (a tree, rock, bush, hut...) to pick it up. Handles appear:
+
+- **G** or **MOVE** shifts it, **R** or **TURN** turns it, **T** or **SIZE** resizes it.
+- **SNAP** moves in half-metre steps and turns in 15° steps.
+- **COPY** makes a copy beside it and picks the copy up.
+- **DELETE** removes it.
+- **SAVE EDIT** saves it as a note (with a screenshot and optional words); **CANCEL** or
+  Esc puts it back.
+
+Ground, road and other very big pieces can't be picked up: use a pin or a box for those.
+
+An edit is a preview until it's baked: you see it in the game (after the review tool has
+been opened in that race), but karts still hit the prop where it was. Deleting the note
+undoes the edit.
+
+**Baking (Claude):** `node tools/bakeEdits.mjs <trackId> [note numbers]` copies the open
+edits into `public/tracks/<trackId>/edits.json` and marks those notes done. The game
+applies edits.json whenever the track loads, to what you see and to what you hit
+(`src/world/trackEdits.ts`). Props are found by name, and a Blender re-export can rename
+generated props, so check edits.json after one.

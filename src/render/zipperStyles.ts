@@ -1,6 +1,6 @@
 /**
  * The zipper pads' look: floating arrows. No slab, just chunky glowing chevrons sitting
- * on the road in the track's zipper colour, outlined in dark ink, scrolling forward
+ * on the road, red rims round bright yellow middles, outlined in dark ink, scrolling forward
  * (Blake's pick from four prototypes: rune stone, lava rock, painted planks, arrows).
  *
  * A small pixel texture (32 x 64, nearest, cut out), with a second "glow" texture for
@@ -44,9 +44,11 @@ function zipperTextures(): { map: THREE.Texture; glow: THREE.Texture } {
     for (let x = 0; x < TW; x++) {
       const k = chevron(x, y, 13);
       if (k < 0) continue;
-      if (k < 0.25) px(x, y, "#3a2414", "#000000");
-      else if (k < 0.6) px(x, y, "#c8c8c8", "#808080");
-      else px(x, y, "#ffffff", "#ffffff");
+      // Ink outline, a red rim, then orange into a bright yellow middle.
+      if (k < 0.2) px(x, y, "#3a2414", "#000000");
+      else if (k < 0.45) px(x, y, "#e8302a", "#701808");
+      else if (k < 0.7) px(x, y, "#ff9a1a", "#a05008");
+      else px(x, y, "#fff06a", "#fff06a");
     }
   const tex = (cv: HTMLCanvasElement) => {
     const t = new THREE.CanvasTexture(cv);
@@ -60,13 +62,13 @@ function zipperTextures(): { map: THREE.Texture; glow: THREE.Texture } {
   return { map: tex(c), glow: tex(e) };
 }
 
-/** The pad material, tinted by the track's zipper colour. */
-export function zipperMaterial(zipperColor: string) {
+/** The pad material: red and yellow arrows on every track (easy to spot on any road). */
+export function zipperMaterial() {
   const { map, glow } = zipperTextures();
   return new THREE.MeshStandardMaterial({
     map,
-    color: zipperColor,
-    emissive: zipperColor,
+    color: "#ffffff",
+    emissive: "#ffffff",
     emissiveMap: glow,
     emissiveIntensity: 0.9,
     roughness: 0.8,

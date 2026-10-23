@@ -7,6 +7,7 @@
  *   collision.glb  what you drive on and hit (semantic surfaces in material extras)
  *   route.json     the race route sampled from the Blender curve (exporter-owned)
  *   look.json      sky, sun and fog (exporter-owned; optional)
+ *   edits.json     props nudged in the review tool and baked in (trackEdits.ts; optional)
  *   checkpoints.json  the checkpoint gates placed in Blender (exporter-owned; optional:
  *                  without it they're placed automatically from the route)
  *
@@ -16,6 +17,7 @@
  * CollisionMesh for the ground and wall queries, and the visual GLB is added to the
  * scene. Nothing here depends on the editor. See docs/track-pipeline.md.
  */
+import { applyEdits, parseEdits, type BakedEdit } from "./trackEdits";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import surfacesFile from "../../assets/data/surfaces.json";
@@ -480,16 +482,32 @@ export async function loadTrackPackage(
   const meta = parseTrackMeta(JSON.parse(text(await read("track.json"))));
   // look.json is optional: tracks exported before it existed don't list it.
   const lookFile = meta.geometry.look ?? "look.json";
-  const [routeBuf, colBuf, visBuf, lookBuf, cpBuf] = await Promise.all([
+  const [routeBuf, colBuf, visBuf, lookBuf, cpBuf, editsBuf] = await Promise.all([
     read(meta.geometry.route),
     read(meta.geometry.collision),
     opts.visual === false ? Promise.resolve(undefined) : read(meta.geometry.visual),
     read(lookFile).catch(() => undefined),
     read("checkpoints.json").catch(() => undefined),
+    read("edits.json").catch(() => undefined),
   ]);
+  // Baked nudges from the review tool (trackEdits.ts): to the collision and the visual.
+  const editWarnings: string[] = [];
+  let edits: BakedEdit[] = [];
+  if (editsBuf) {
+    const body = text(editsBuf);
+    // (A dev server answers a missing file with its index page: that's "no edits".)
+    if (!body.trimStart().startsWith("<"))
+      try {
+        edits = parseEdits(JSON.parse(body), editWarnings);
+      } catch {
+        editWarnings.push("edits.json: not valid JSON, ignored");
+      }
+  }
   const route = parseRoute(JSON.parse(text(routeBuf)));
   const colScene = await parseGlb(colBuf, meta.geometry.collision);
+  applyEdits(colScene, edits);
   const { mesh: collision, warnings } = buildCollisionMesh(colScene, SURFACES);
+  warnings.push(...editWarnings);
   disposeObject(colScene); // only its triangles are kept
   if (collision.floors.count === 0)
     throw new TrackError(`${meta.geometry.collision}: nothing to drive on (no floor triangles)`);
@@ -502,6 +520,7 @@ export async function loadTrackPackage(
     }
   } else if (meta.geometry.look) warnings.push(`${lookFile}: missing, using the default look`);
   const visual = visBuf ? await parseGlb(visBuf, meta.geometry.visual) : new THREE.Group();
+  applyEdits(visual, edits);
   visual.name = `track:${meta.id}`;
   const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic", {
     sun: look.sun?.direction,

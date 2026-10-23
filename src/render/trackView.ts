@@ -173,7 +173,7 @@ export function createTrackView(
   startLine.position.copy(first.pos).y += LIFT * 2;
   startLine.rotation.y = track.start.heading;
 
-  const zipMat = zipperMaterial(look.zipperColor);
+  const zipMat = zipperMaterial();
   // A fine grid, so it can bend to the ground under it.
   const zipMeshes = zippers.map((z) => {
     const mesh = new THREE.Mesh(
@@ -234,8 +234,6 @@ export function createTrackView(
       if (zipMat.emissiveMap) zipMat.emissiveMap.offset.y = flow;
       roadMat.color.set(colors.roadColor);
       wallMat.color.set(colors.wallColor);
-      zipMat.color.set(colors.zipperColor);
-      zipMat.emissive.set(colors.zipperColor);
     },
   };
 }

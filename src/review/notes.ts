@@ -10,7 +10,14 @@
  *   EXPORT button downloads them as one JSON file (screenshots inside).
  */
 
-export type NoteKind = "pin" | "box" | "path" | "measure" | "line" | "general";
+export type NoteKind = "pin" | "box" | "path" | "measure" | "line" | "general" | "edit";
+export type EditOp = "move" | "copy" | "delete";
+/** A transform in the world: position, quaternion (x, y, z, w) and scale. */
+export interface Transform {
+  pos: Vec3;
+  quat: [number, number, number, number];
+  scale: Vec3;
+}
 export type NoteTag = "art" | "layout" | "gameplay" | "bug";
 export type Vec3 = [number, number, number];
 
@@ -46,6 +53,12 @@ export interface ReviewNote {
   path?: Vec3[];
   /** Measure: two points and the distance between them, metres. */
   measure?: { a: Vec3; b: Vec3; metres: number };
+  /**
+   * Edit (a nudge): a track prop moved / turned / resized, copied or deleted. `node` is
+   * the prop's name in the track file (for a copy: the new copy's name, and `copyOf` the
+   * prop it was copied from). `from` and `to` are world transforms (three.js: Y up).
+   */
+  edit?: { op: EditOp; node: string; copyOf?: string; from: Transform; to: Transform };
   /** The screenshot's file name in reviews/<track>/shots/ (or a data URL when local). */
   shot?: string;
 }

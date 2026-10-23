@@ -12,3 +12,5 @@ tests/fixtures/**
 public/tracks/**/checkpoints.json
 # Written by the level review tool (tools/reviewStore.mjs), not by hand.
 reviews/**
+# Baked review edits (tools/bakeEdits.mjs).
+public/tracks/**/edits.json

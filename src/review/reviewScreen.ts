@@ -27,24 +27,37 @@ import type { Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
 import type { UiLayer } from "../ui/layer";
 import { PAL } from "../ui/textures";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { animateMarkers, disposeMarker, noteMarker } from "./markers";
+import {
+  MAX_PROP_RADIUS,
+  applyEdit,
+  propOf,
+  radiusOf,
+  revertEdit,
+  setWorldTransform,
+  worldTransform,
+} from "./nudge";
 import {
   newNoteId,
   openStore,
   type NoteKind,
   type NoteStore,
+  type EditOp,
   type NoteTag,
+  type Transform,
   type ReviewNote,
   type Vec3,
 } from "./notes";
 
-type Tool = "pin" | "box" | "path" | "measure" | "general";
+type Tool = "pin" | "box" | "path" | "measure" | "general" | "move";
 const TOOLS: [Tool, string, string][] = [
   ["pin", "1", "PIN"],
   ["box", "2", "BOX"],
   ["path", "3", "PATH"],
   ["measure", "4", "MEASURE"],
   ["general", "5", "NOTE"],
+  ["move", "6", "MOVE"],
 ];
 const TAGS: NoteTag[] = ["art", "layout", "gameplay", "bug"];
 
@@ -85,7 +98,7 @@ const CSS = `
 .kp-review header { padding: 10px 12px 6px; border-bottom: 1px solid #5a3a20; }
 .kp-review h1 { font-size: 15px; margin: 0; color: #ffd84a; letter-spacing: 1px; }
 .kp-review .where { font-size: 11px; color: #c8a878; margin-top: 2px; }
-.kp-review .tools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 12px; }
+.kp-review .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 12px; }
 .kp-review button, .kp-review-editor button { font: inherit; color: #f6ecd2; background: #5a3a20; border: 2px solid #8a5a32;
   border-radius: 4px; padding: 5px 4px; cursor: pointer; }
 .kp-review button:hover, .kp-review-editor button:hover { background: #6a4628; }
@@ -206,6 +219,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   );
 
   function pickTool(t: Tool) {
+    if (grabbed && t !== "move") cancelGrab();
     tool = t;
     clearPending();
     for (const [k, b] of toolButtons) b.classList.toggle("on", k === t);
@@ -217,21 +231,25 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     hint =
       editing !== undefined
         ? "WRITE YOUR NOTE, THEN SAVE"
-        : tool === "pin"
-          ? "CLICK THE THING YOU MEAN"
-          : tool === "box"
-            ? pts.length
-              ? "CLICK THE OPPOSITE CORNER"
-              : "CLICK ONE CORNER OF THE AREA"
-            : tool === "path"
+        : tool === "move"
+          ? grabbed
+            ? "DRAG THE HANDLES · G MOVE · R TURN · T SIZE"
+            : "CLICK A PROP (TREE, ROCK, HUT...) TO PICK IT UP"
+          : tool === "pin"
+            ? "CLICK THE THING YOU MEAN"
+            : tool === "box"
               ? pts.length
-                ? `${pts.length} POINTS · ENTER TO FINISH · BACKSPACE UNDO`
-                : "CLICK ALONG THE GROUND"
-              : tool === "measure"
+                ? "CLICK THE OPPOSITE CORNER"
+                : "CLICK ONE CORNER OF THE AREA"
+              : tool === "path"
                 ? pts.length
-                  ? "CLICK THE OTHER END"
-                  : "CLICK THE FIRST POINT"
-                : "";
+                  ? `${pts.length} POINTS · ENTER TO FINISH · BACKSPACE UNDO`
+                  : "CLICK ALONG THE GROUND"
+                : tool === "measure"
+                  ? pts.length
+                    ? "CLICK THE OTHER END"
+                    : "CLICK THE FIRST POINT"
+                  : "";
     hintEl.textContent = hint;
   }
 
@@ -278,6 +296,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
         e.stopPropagation();
         if (del.dataset.sure) {
           void store?.remove(n.id).then(() => {
+            if (n.kind === "edit") revertEdit(scene, n);
             notes = notes.filter((x) => x.id !== n.id);
             refreshMarkers();
             renderList();
@@ -362,7 +381,8 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     const ndc = looking ? new THREE.Vector2(0, 0) : new THREE.Vector2(mouse.x, mouse.y);
     ray.setFromCamera(ndc, cam);
     const targets = scene.children.filter(
-      (o) => o !== markers && o !== pending && o.name !== "sky dome" && o.visible,
+      (o) =>
+        o !== markers && o !== pending && o !== gizmoHelper && o.name !== "sky dome" && o.visible,
     );
     for (const hit of ray.intersectObjects(targets, true)) {
       const o = hit.object;
@@ -414,10 +434,19 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   function clickAt() {
     if (editing) return;
     if (tool === "general") return;
+    if (tool === "move" && (gizmo?.dragging || gizmo?.axis)) return;
     const hit = pick();
     if (!hit) {
       hint = "NOTHING THERE: CLICK A SURFACE";
       hintEl.textContent = hint;
+      return;
+    }
+    if (tool === "move") {
+      const prop = propOf(hit.object);
+      if (!prop) hintEl.textContent = "THAT'S NOT PART OF THE TRACK: USE A PIN";
+      else if (radiusOf(prop) > MAX_PROP_RADIUS)
+        hintEl.textContent = "TOO BIG TO MOVE HERE (GROUND OR ROAD): USE A PIN OR A BOX";
+      else grab(prop);
       return;
     }
     if (tool === "pin") {
@@ -704,6 +733,179 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
+  // ----- Nudges (the MOVE tool) -------------------------------------------------------
+  let gizmo: TransformControls | undefined;
+  let gizmoHelper: THREE.Object3D | undefined;
+  /** The prop picked up: how it was before (to cancel), and the edit so far. */
+  let grabbed:
+    | {
+        prop: THREE.Object3D;
+        before: Transform;
+        wasVisible: boolean;
+        op: EditOp;
+        copyOf?: string;
+        /** The prop's open edit note, if it already has one (it's updated, not doubled). */
+        note?: ReviewNote;
+        from: Transform;
+      }
+    | undefined;
+  let nudgeEl: HTMLElement | undefined;
+
+  const openEditFor = (name: string) =>
+    notes.find((n) => n.kind === "edit" && n.status === "open" && n.edit?.node === name);
+
+  function grab(prop: THREE.Object3D, op: EditOp = "move", copyOf?: string, from?: Transform) {
+    if (grabbed) cancelGrab();
+    const note = op === "move" ? openEditFor(prop.name) : undefined;
+    const before = worldTransform(prop);
+    grabbed = {
+      prop,
+      before,
+      wasVisible: prop.visible,
+      op,
+      copyOf,
+      note,
+      from: from ?? note?.edit?.from ?? before,
+    };
+    gizmo?.attach(prop);
+    showNudgePanel();
+    updateHint();
+  }
+
+  function releaseGizmo() {
+    gizmo?.detach();
+    nudgeEl?.remove();
+    nudgeEl = undefined;
+  }
+
+  function cancelGrab() {
+    const g = grabbed;
+    if (!g) return;
+    grabbed = undefined;
+    releaseGizmo();
+    if (g.op === "copy") g.prop.removeFromParent();
+    else {
+      g.prop.visible = g.wasVisible;
+      setWorldTransform(g.prop, g.before);
+    }
+    updateHint();
+  }
+
+  function saveGrab(text: string) {
+    const g = grabbed;
+    if (!g) return;
+    grabbed = undefined;
+    releaseGizmo();
+    const n = g.note ?? draft("edit", {});
+    n.text = text || n.text;
+    n.edit = {
+      op: g.op === "move" && !g.prop.visible ? "delete" : g.op,
+      node: g.prop.name,
+      ...(g.copyOf ? { copyOf: g.copyOf } : {}),
+      from: g.from,
+      to: worldTransform(g.prop),
+    };
+    g.prop.userData.reviewEdit = g.op === "copy" ? n.id : `${n.id}:${n.created}`;
+    // The screenshot shows the prop where it now is.
+    capture = (url) => void persist(n, url);
+    updateHint();
+  }
+
+  function copyGrabbed() {
+    const g = grabbed;
+    if (!g?.prop.parent) return;
+    const src = g.prop;
+    const base = g.copyOf ?? src.name;
+    let k = 1;
+    const taken = (name: string) => {
+      let hit = false;
+      scene.traverse((o) => (hit ||= o.name === name));
+      return hit;
+    };
+    while (taken(`${base} copy ${k}`)) k++;
+    // Keep the original where it was (and its edit, if it moved), and pick up the copy.
+    const c = src.clone();
+    c.name = `${base} copy ${k}`;
+    src.parent!.add(c);
+    const r = new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(0, yaw, 0));
+    const t = worldTransform(src);
+    t.pos = [t.pos[0] + r.x * 3, t.pos[1], t.pos[2] + r.z * 3];
+    setWorldTransform(c, t);
+    if (g.op === "move" && g.note === undefined) {
+      // The original wasn't saved as moved: put it back.
+      src.visible = g.wasVisible;
+      setWorldTransform(src, g.before);
+    }
+    grabbed = undefined;
+    releaseGizmo();
+    grab(c, "copy", base, worldTransform(src));
+  }
+
+  function showNudgePanel() {
+    nudgeEl?.remove();
+    const g = grabbed!;
+    const modes: [string, "translate" | "rotate" | "scale"][] = [
+      ["G MOVE", "translate"],
+      ["R TURN", "rotate"],
+      ["T SIZE", "scale"],
+    ];
+    const modeBtns = modes.map(([label, m]) => {
+      const b = el("button", { cls: "small", textContent: label });
+      b.onclick = () => setMode(m);
+      return [m, b] as const;
+    });
+    const setMode = (m: "translate" | "rotate" | "scale") => {
+      gizmo?.setMode(m);
+      for (const [k, b] of modeBtns) b.classList.toggle("on", k === m);
+    };
+    setMode("translate");
+    const snap = el("input", { type: "checkbox" });
+    snap.onchange = () => {
+      gizmo?.setTranslationSnap(snap.checked ? 0.5 : null);
+      gizmo?.setRotationSnap(snap.checked ? Math.PI / 12 : null);
+      gizmo?.setScaleSnap(snap.checked ? 0.1 : null);
+    };
+    const copy = el("button", { cls: "small", textContent: "COPY" });
+    copy.onclick = () => copyGrabbed();
+    const del = el("button", { cls: "small danger", textContent: "DELETE" });
+    del.onclick = () => {
+      g.prop.visible = false;
+      del.classList.add("on");
+    };
+    const text = el("textarea", {
+      value: g.note?.text ?? "",
+      placeholder: "Anything to add? (optional)",
+    });
+    text.style.height = "54px";
+    const save = el("button", { textContent: "SAVE EDIT" });
+    save.onclick = () => saveGrab(text.value.trim());
+    const cancel = el("button", { textContent: "CANCEL" });
+    cancel.onclick = () => cancelGrab();
+    nudgeEl = el(
+      "div",
+      { cls: "kp-review-editor" },
+      el("h2", {
+        textContent: `${g.op === "copy" ? "COPY OF" : "MOVING"} ${g.copyOf ?? g.prop.name}`,
+      }),
+      el("div", {
+        cls: "what",
+        textContent:
+          "Drag the handles. It's a preview: karts don't bump into the new spot until Claude bakes it into the track.",
+      }),
+      el(
+        "div",
+        { cls: "opts" },
+        ...modeBtns.map((x) => x[1]),
+        el("label", {}, snap, "SNAP"),
+        copy,
+        del,
+      ),
+      text,
+      el("div", { cls: "opts" }, el("span", { style: "flex: 1" } as never), cancel, save),
+    );
+    document.body.append(nudgeEl);
+  }
+
   // ----- Input -------------------------------------------------------------------------
   const typing = (e: Event) => {
     const t = e.target as HTMLElement | null;
@@ -724,6 +926,9 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     held.add(e.code);
     const toolKey = TOOLS.find(([, k]) => e.code === `Digit${k}`);
     if (toolKey && !editing) pickTool(toolKey[0]);
+    else if (grabbed && e.code === "KeyG") gizmo?.setMode("translate");
+    else if (grabbed && e.code === "KeyR") gizmo?.setMode("rotate");
+    else if (grabbed && e.code === "KeyT") gizmo?.setMode("scale");
     else if (e.code === "KeyF") toggleLook();
     else if (e.code === "KeyK") toKart();
     else if (e.code === "KeyH") panel.classList.toggle("hidden");
@@ -734,6 +939,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       updateHint();
     } else if (e.code === "Escape") {
       if (looking) toggleLook();
+      else if (grabbed) cancelGrab();
       else if (editing) closeEditor();
       else if (pts.length) {
         clearPending();
@@ -800,6 +1006,10 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       pitch = euler.x;
       fov = cam.fov;
       scene.add(markers, pending);
+      gizmo = new TransformControls(cam, stage.renderer.domElement);
+      gizmo.setSize(1.1);
+      gizmoHelper = gizmo.getHelper();
+      scene.add(gizmoHelper);
       document.head.append(style);
       document.body.append(panel);
       window.addEventListener("keydown", onKey);
@@ -814,6 +1024,8 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       void openStore(entry.id, entry.name).then(async (s) => {
         store = s;
         notes = await s.load();
+        // Show the edits not yet baked into the track.
+        for (const n of notes) if (n.kind === "edit") applyEdit(scene, n);
         where.textContent = savedWhere();
         refreshMarkers();
         renderList();
@@ -828,6 +1040,11 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     },
     exit() {
       if (looking) document.exitPointerLock();
+      if (grabbed) cancelGrab();
+      if (gizmoHelper) scene.remove(gizmoHelper);
+      gizmo?.dispose();
+      gizmo = undefined;
+      gizmoHelper = undefined;
       stage.setResolution(wasLines);
       scene.remove(markers, pending);
       for (const m of markerOf.values()) disposeMarker(m);
@@ -890,7 +1107,8 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
         ui.rect(cx, cy + 2, 1, 4, PAL.gold);
       }
       ui.text("REVIEW", 6, 6, { color: PAL.gold, outline: PAL.shadow });
-      if (hint) ui.text(hint, 6, 16, { color: PAL.cream, outline: PAL.shadow });
+      // The hint is on the panel; repeat it here only while the mouse steers (no cursor).
+      if (hint && looking) ui.text(hint, 6, 16, { color: PAL.cream, outline: PAL.shadow });
     },
   };
 }

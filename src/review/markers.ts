@@ -114,6 +114,15 @@ export function noteMarker(n: ReviewNote, active = false): THREE.Object3D {
     const l = label(tag, color);
     l.position.copy(v3(b.center)).add(new THREE.Vector3(0, b.size[1] / 2 + 1, 0));
     g.add(holder, l);
+  } else if (n.edit) {
+    // A moved, copied or deleted prop: its number over where it now is.
+    const at = v3(n.edit.to.pos);
+    const verb = n.edit.op === "delete" ? "DELETED" : n.edit.op === "copy" ? "COPY" : "MOVED";
+    const l = label(`${tag} ${verb}`, color);
+    l.position.copy(at).y += 4;
+    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 3, 5), mat);
+    stick.position.copy(at).y += 2.2;
+    g.add(l, stick);
   } else if ((n.path && n.path.length) || n.measure) {
     const pts = n.measure ? [n.measure.a, n.measure.b] : n.path!;
     const line = new THREE.Line(
