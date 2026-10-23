@@ -858,6 +858,26 @@ def torch(c):
     return c.proto(name, build) and name
 
 
+def _ring_caps(me, faces):
+    """Map each cap face onto ONE ring set of log_end (its texture holds two side by
+    side, 64 x 32), centred and filling the cap: a single tree's rings per end, rather
+    than the texture tiled across it (which read as a cluster of tiny stumps)."""
+    if me.get("kp_ring_caps"):
+        return
+    uv = me.uv_layers.active
+    for fi in faces:
+        f = me.polygons[fi]
+        pts = [me.vertices[i].co for i in f.vertices]
+        centre = sum(pts, Vector()) / len(pts)
+        a = f.normal.orthogonal().normalized()
+        b = f.normal.cross(a).normalized()
+        r = max((v - centre).length for v in pts) or 1.0
+        for li in f.loop_indices:
+            d = me.vertices[me.loops[li].vertex_index].co - centre
+            uv.data[li].uv = (0.25 + 0.235 * d.dot(a) / r, 0.5 + 0.47 * d.dot(b) / r)
+    me["kp_ring_caps"] = 1
+
+
 def log(c, variant=0):
     """A fallen mossy log (along X)."""
     name = "Log %d" % variant
@@ -877,12 +897,17 @@ def log(c, variant=0):
             ring_ = [bm.verts.new((s * L / 2 if s > 0 else -L / 2, rr * math.cos(a), r * 0.8 + rr * math.sin(a))) for a in [k * math.tau / 8 for k in range(8)]]
             bm.faces.new(ring_ if s > 0 else list(reversed(ring_)))
         ends = _faces(bm, k0)
+        caps[:] = ends
         k1 = len(bm.faces)
         blob(bm, (0.5, 0, r * 1.6), r * 0.8, sx=2.2, sy=0.9, sz=0.35, subdiv=1)
         moss = _faces(bm, k1)
         return [(c.lib("jungle_bark"), bark), (c.lib("log_end"), ends), (c.lib("jungle_leafcover"), moss)]
 
-    return c.proto(name, build) and name
+    caps = []
+    me = c.proto(name, build)
+    if caps:
+        _ring_caps(me, caps)
+    return name
 
 
 def stump(c, variant=0):
@@ -903,9 +928,14 @@ def stump(c, variant=0):
         k0 = len(bm.faces)
         bm.faces.new(ring(bm, (0, 0), r, h + 0.01, 8, phase=0.2))
         top = _faces(bm, k0)
+        caps[:] = top
         return [(c.lib("jungle_bark"), bark), (c.lib("log_end"), top)]
 
-    return c.proto(name, build) and name
+    caps = []
+    me = c.proto(name, build)
+    if caps:
+        _ring_caps(me, caps)
+    return name
 
 
 def frog(c):
@@ -986,7 +1016,9 @@ def falls(c, name, cx, lip_y, top, foot, width_top, width_bottom, facing=-1, thr
                 if prev is not None:
                     along[k] += (p - prev[k]).length
                 row.append(p)
-            rows.append([(p, (k / cols - 0.5) * w / tile, -along[k] / tile) for k, p in enumerate(row)])
+            # v grows down the fall (the texture scrolls toward -v, so the water runs down;
+            # with -along it ran back up the falls).
+            rows.append([(p, (k / cols - 0.5) * w / tile, along[k] / tile) for k, p in enumerate(row)])
             prev = row
         return rows
 

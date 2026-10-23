@@ -5,6 +5,7 @@
 
 import math
 
+import cascade_review as cr
 import course_kit as kit
 import props
 from course_kit import Vector, bmesh, lerp, rnd
@@ -279,35 +280,9 @@ def wall_vines(c, cc, ter, count, seed):
 def ruins(c, cc, ter):
     """The lost city: columns, tumbled blocks, steles and colossal heads along the floor,
     an archway over the road, and stairs up to the ledges."""
-    cols = [props.ruin_column(c, v) for v in range(3)]
-    blocks = [props.ruin_blocks(c, v) for v in range(2)]
-    steles = [props.stele(c, v) for v in range(2)]
-    head = props.idol_head(c)
-    steps = props.stairs(c, 7)
-
-    def floor_ok(m0, m1):
-        def ok(x, y, z):
-            smp, d = c.nearest(x, y)
-            return z > cc.WATER_Z + 0.6 and smp.w / 2 + m0 < d < smp.w / 2 + m1 and not cc.in_tunnel_rock(x, y, 1.05) and z < 16
-        return ok
-
-    for v, p in enumerate(cols):
-        props.scatter(c, p, 12, (-270, 190, -75, 110), floor_ok(5, 30), ter, seed=200 + v, scale=(0.9, 1.3), sink=0.4, coll="Ruins")
-    for v, p in enumerate(blocks):
-        props.scatter(c, p, 10, (-270, 190, -75, 110), floor_ok(4, 34), ter, seed=210 + v, scale=(0.8, 1.2), sink=0.5, coll="Ruins")
-    for v, p in enumerate(steles):
-        props.scatter(c, p, 6, (-270, 190, -75, 110), floor_ok(5, 22), ter, seed=220 + v, scale=(1.0, 1.2), sink=0.3, coll="Ruins")
-    # Colossal heads: one watching the start straight, one on the north road.
-    for i, (x, y, face) in enumerate(((10, -62, 0.0), (-160, 106, math.pi), (150, -60, 0.4))):
-        z = c.ground_z(x, y, ter)
-        if z is not None and props.clear_of_road(c, x, y, 8):
-            c.place(head, x, y, z - 0.6, rot=face, scale=1.4, coll="Ruins")
-    # Stairs climbing the first tier of the south wall near the start.
-    for i, x in enumerate((-10, 70)):
-        y = cc.wall_s(x) + 6
-        z = c.ground_z(x, y, ter)
-        if z is not None and props.clear_of_road(c, x, y, 6):
-            c.place(steps, x, y, z - 0.3, rot=math.pi, scale=1.2, coll="Ruins")
+    # v3 (Blake's review): composed sites on level ground, facing the road, instead of
+    # columns, blocks, steles and stairs scattered at random (some on the walls).
+    print("ruins:", cr.ruin_sites(c, cc, ter))
     # A ruined archway over the north road.
     s = cc.SEG[23] + 20
     q = c.at(s)
@@ -325,9 +300,9 @@ def ruins(c, cc, ter):
 def vegetation(c, cc, ter):
     """Dense jungle: giant trees, jungle trees, palms, big-leaf plants, ferns and bushes on
     the floor and the shelves, and a ring of giants along the canyon rims."""
-    giants = [props.giant_tree(c, v) for v in range(3)]
+    giants = [cr.giant_tree(c, v) for v in range(3)]
     trees = [props.jungle_tree(c, v) for v in range(2)]
-    grand = [props.grand_tree(c, v) for v in range(2)]
+    grand = [cr.grand_tree(c, v) for v in range(2)]
     palms = [props.palm(c, 9 + v * 2, 1.0 + v * 0.6, v) for v in range(2)]
     leaves = [props.big_leaf_plant(c, v) for v in range(2)]
     bushes = [props.bush(c, v) for v in range(2)]
@@ -437,6 +412,7 @@ def build(c, rock, t0, t1, cc):
     # its rock painted dark with warm pools of torchlight.
     facade(c, t0 - 3, "Temple Face", half, 11.0, 1)
     facade(c, t1 + 3, "Temple Back", half, 11.0, -1)
+    print("guardians:", cr.tunnel_guardians(c, cc, ter, t0 - 3, half, facing=1))
     lights = torches(c, t0 + 6, t1 - 4, 8.0, half)
     tunnel_dressing(c, t0 + 6, t1 - 4, half, 8.0)
     for s, side in ((t0 - 3, -1), (t0 - 3, 1), (t1 + 3, -1), (t1 + 3, 1)):
@@ -471,6 +447,12 @@ def build(c, rock, t0, t1, cc):
     # Waterfalls down the canyon walls, and the river's source at the east end.
     feet = []
     for i, (x, north) in enumerate(((40, False), (130, False), (-70, True), (100, True))):
+        if i == 2:
+            # Wall Falls 3 (Blake's note 26): a great stepped cascade from the rim, tier by
+            # tier, then a stream across the floor into the river.
+            for fx, fy, foot, top, w in cr.cascade_falls(c, cc, ter, x, "Wall Falls 3", width=16.0)[-1:]:
+                feet.append((fx, fy, foot, top, w))
+            continue
         edge = cc.wall_n(x) if north else cc.wall_s(x)
         lip_y = edge + (cc.TIERS[3][0] if north else -cc.TIERS[3][0])
         top = c.ground_z(x, lip_y + (1 if north else -1), ter) or 30.0
@@ -487,10 +469,17 @@ def build(c, rock, t0, t1, cc):
     feet.append((fx, fy, cc.WATER_Z - 3.0, 30.0, 16.0))
 
     ledges(c, cc, ter, 18, 7)
+    print("wall shelves:", cr.wall_shelves(c, cc, ter))
     wall_vines(c, cc, ter, 60, 3)
     ruins(c, cc, ter)
+    flames = cr.temple_on_rock(c, cc, rock)
+    for x, y, z in flames:
+        gx, gy2, gz = c.game(x, y, z)
+        c.entity("torch", x=gx, y=gy2, z=gz)
     vegetation(c, cc, ter)
     river_life(c, cc, ter)
+    # No tree hangs half off a slope: ledges for those on the walls (Blake's notes 6, 24).
+    print("trees ledged, removed:", cr.ground_trees(c, cc, ter))
 
     # Lianas slung across the canyon floor between the trees, high over the road.
     for i, (a, b) in enumerate((((-20, -75, 22), (-30, 25, 24)), ((90, -72, 20), (70, -10, 22)), ((-150, 100, 26), (-135, 60, 24)), ((150, -66, 24), (160, -20, 22)))):

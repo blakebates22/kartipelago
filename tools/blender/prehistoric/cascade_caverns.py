@@ -187,18 +187,42 @@ def in_tunnel_rock(x, y, shrink=1.0):
     return ((x - cx) / (rx * shrink)) ** 2 + ((y - cy) / (ry * shrink)) ** 2 < 1
 
 
+def wall_tier(x, y):
+    """Which rise of the canyon wall (0 = the first above the floor) the point (x, y) is on,
+    or None on the open floor."""
+    best = None
+    for edge, sign, ph in ((wall_n(x), 1, 0.0), (wall_s(x), -1, 2.0)):
+        d = (y - edge) * sign
+        if d < -3:
+            continue
+        k = 0
+        for t, (step, _) in enumerate(TIERS):
+            wob = 1.6 * math.sin(x / (13 + t * 3) + ph + t)
+            if d > step + wob + 1.3:
+                k = t + 1
+        k = min(k, len(TIERS) - 1)
+        best = k if best is None else max(best, k)
+    for edge, sign in ((200, 1), (-276, -1)):
+        d = (x - edge) * sign
+        if d < -3:
+            continue
+        k = sum(1 for step in (0, 7, 16, 26) if d > step + 1.75) - 1
+        best = max(best or 0, max(0, k))
+    return best
+
+
 def rock_mat(c):
-    """Rock varies across the walls: grey beds, mossy rock and ochre sandstone, in
-    patches and bands, so no stretch of wall repeats."""
-    a = math.sin(c.x / 41 + c.z / 9) + 0.7 * math.sin(c.y / 23 - c.x / 61)
-    if c.z > 26:
+    """Rock in beds (v3, Blake's review: the old patchwork of grey, moss and ochre faces
+    didn't blend). Each rise of the stepped walls is one kind of rock, so the changes run
+    along the shelf edges like real strata instead of zig-zagging across the faces: mossy
+    rock at the damp foot and toward the rim, grey beds between, and a bed of ochre
+    sandstone on the third rise along most of the canyon."""
+    k = wall_tier(c.x, c.y)
+    if k is None or k == 0 or k >= 4:
         return "canyon_rock_moss"
-    if a > 0.75:
+    if k == 2 and math.sin(c.x / 95.0 + 0.8) > -0.45:
         return "canyon_rock_ochre"
-    if a < -0.7:
-        return "canyon_rock_grey"
-    b = math.sin(c.x / 17 - c.y / 13) + 0.6 * math.sin(c.z / 5 + c.x / 29)
-    return "canyon_rock_grey" if b > 0.35 else "canyon_rock_moss"
+    return "canyon_rock_grey"
 
 
 # The stretch of route through the tunnel (set once the route is built), padded.
@@ -211,8 +235,11 @@ def classify(c, n, info):
     # always reaches past 0.86 of its radius, so there's never a gap between them.
     if in_tunnel_rock(c.x, c.y, 0.86):
         return None
+    # (v3: only inside the rock's outline. Out in the open before the mouths this used to
+    # cut holes in the wall beside the road, where you could see the sky through the
+    # world and fall in: Blake's note 1.)
     smp = info["sample"]
-    if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 16 and c.z > smp.p.z - 1.0:
+    if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 16 and c.z > smp.p.z - 1.0 and in_tunnel_rock(c.x, c.y, 1.04):
         return None
     if n.z < 0.62:
         return (rock_mat(c), "wall")
@@ -320,8 +347,11 @@ def main():
     t0, t1 = max(inside, key=lambda r: r[1] - r[0])
     TUNNEL_S[:] = [t0 - 16, t1 + 16]
     c.terrain("Canyon", -300, 225, -165, 165, 3.0, natural, classify, near=8.5, fade=16.0)
-    # A hidden floor under it all: nowhere to fall through the world.
-    c.underfloor("Underfloor", -300, 225, -165, 165, 3.0, underfloor_z, c.lib("jungle_leafcover", "grass"))
+    # A hidden floor under it all: nowhere to fall through the world. (v3: under the land
+    # as it's shaped round the roads, so it never comes up through a road in a cutting.)
+    import cascade_review  # noqa: E402
+
+    c.underfloor("Underfloor", -300, 225, -165, 165, 3.0, cascade_review.underfloor_height(c, sys.modules[__name__]), c.lib("jungle_leafcover", "grass"))
     river = [(x, river_y(x), 2 * river_half(x) + 2) for x in range(-292, 222, 4)]
     c.ribbon("River", river, 30, WATER_Z, c.lib("valley_water", "deep_water"), steps=3)
 
@@ -333,11 +363,15 @@ def main():
     c.paint_rock(rock, ("canyon_rock_grey", "wall"), ("canopy_dark", "grass"), floor=("ruin_dark", "road"), top_z=32, floor_z=19)
     # A hidden floor the full width of the tunnel and out past both mouths, just under
     # the road: no gaps at the sides or where the mouths were cut.
+    # (v3: wide inside the rock, where the passage's walls bound it, but outside the rock
+    # no wider than the road's shoulders, so it never makes an invisible shelf out over
+    # a drop at the mouths: Blake's notes 8 and 9.)
     floor = []
     s = t0 - 22
     while s <= t1 + 22:
         q = c.at(s)
-        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + 14, q.p.z - 0.25))
+        inside_rock = in_tunnel_rock(q.p.x, q.p.y, 0.85)
+        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + (14.0 if inside_rock else 0.0), q.p.z - 0.25))
         s += 2.0
     c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("ruin_dark", "road"), coll="Collision", role="collision", steps=4)
 
@@ -374,6 +408,8 @@ def main():
     import cascade_scenery  # noqa: E402
 
     cascade_scenery.build(c, rock, t0, t1, sys.modules[__name__])
+    # Rails wherever the road runs along a drop (Blake's notes 1, 2, 8, 9).
+    print("edge rails:", cascade_review.edge_rails(c, sys.modules[__name__], list(c.coll("Terrain").objects) + [rock]))
 
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [rock], 0.35)

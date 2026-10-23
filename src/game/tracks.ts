@@ -68,6 +68,18 @@ export const TRACKS: TrackEntry[] = [
     music: "cascade",
     load: { scene: "track", packageId: "cascade_caverns" },
   },
+  // The previous Cascade Caverns (v2, before Blake's first review round), kept
+  // playable with ?track=cascade_caverns_v2. Not in any world's menu.
+  {
+    id: "cascade_caverns_v2",
+    name: "Cascade Caverns (v2)",
+    description: "The version before the first review round.",
+    preview: "previews/cascade_caverns.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "jungle_falls",
+    music: "cascade",
+    load: { scene: "track", packageId: "cascade_caverns_v2" },
+  },
   {
     id: "bonebog_pyramid",
     name: "Bonebog Pyramid",

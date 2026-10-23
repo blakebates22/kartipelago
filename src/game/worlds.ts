@@ -81,6 +81,7 @@ export const WORLDS: WorldEntry[] = [
       "loop_lab",
       "drift_park",
       "riverbend_palms_v21",
+      "cascade_caverns_v2",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

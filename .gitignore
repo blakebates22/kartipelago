@@ -13,3 +13,4 @@ Thumbs.db
 .env.*
 
 __pycache__/
+audit-out/

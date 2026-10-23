@@ -101,3 +101,25 @@ edits into `public/tracks/<trackId>/edits.json` and marks those notes done. The 
 applies edits.json whenever the track loads, to what you see and to what you hit
 (`src/world/trackEdits.ts`). Props are found by name, and a Blender re-export can rename
 generated props, so check edits.json after one.
+
+## Out-of-bounds audit (Claude)
+
+`tools/audit/oob.audit.ts` checks a built track for places a kart can get to but
+shouldn't, using the game's own collision rules (`floorAt`, `deepestWall`). It floods out
+over a 2 m grid from the road, walking each step the way a kart follows the ground, then
+floods back from the road to see what you can return from. It reports:
+
+- **holes**: no floor at all (you'd fall out of the world);
+- **traps**: places you can reach but never drive out of;
+- **drops**: stretches of road where you can go over the edge and land somewhere with no
+  road (want a rail);
+- **covered**: something solid just above the road (a hidden floor poking through: you'd
+  hover on it).
+
+```
+AUDIT_TRACK=cascade_caverns npx vitest run --config tools/audit/vitest.config.ts --disableConsoleIntercept
+```
+
+It writes `audit-out/<track>-oob.json` and a top-down map `audit-out/<track>-oob.png`
+(white road, grey reachable, red traps, purple fallen off, orange far off course).
+`TRACE=x,z` (and `TRACE_Y=y`) prints how it got to a spot. Not part of `npm test`.

@@ -184,7 +184,9 @@ def waterfall(c, ter):
                 if prev is not None:
                     along[k] += (p - prev[k]).length
                 row.append(p)
-            rows.append([(p, (k / cols - 0.5) * w / tile, -along[k] / tile) for k, p in enumerate(row)])
+            # v grows down the fall (the texture scrolls toward -v, so the water runs down;
+            # with -along it ran back up the falls).
+            rows.append([(p, (k / cols - 0.5) * w / tile, along[k] / tile) for k, p in enumerate(row)])
             prev = row
         return rows
 
