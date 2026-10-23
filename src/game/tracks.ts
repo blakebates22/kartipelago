@@ -102,6 +102,18 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },
+  // Bonebog's new layout from Blake's driving notes, as a greybox to drive before it
+  // gets its look (tools/blender/prehistoric/bonebog_v3.py): ?track=bonebog_pyramid_v3.
+  {
+    id: "bonebog_pyramid_v3",
+    name: "Bonebog Pyramid (v3 greybox)",
+    description: "The new lap: weaving the swamp, a spiral up the great tree, a hilly pyramid.",
+    preview: "previews/bonebog_pyramid.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "bonebog_swamp",
+    music: "bonebog",
+    load: { scene: "track", packageId: "bonebog_pyramid_v3" },
+  },
   // Ember Peak's complete redo, as a greybox to drive before it gets its look
   // (tools/blender/prehistoric/ember_v3.py): ?track=ember_peak_v3. Not in any menu yet.
   {

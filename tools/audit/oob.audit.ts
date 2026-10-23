@@ -370,7 +370,9 @@ async function audit(track: string) {
       cells: members.length,
       game: [+cx.toFixed(1), +cy.toFixed(1), +cz.toFixed(1)],
       blender: [+cx.toFixed(1), +(-cz).toFixed(1), +cy.toFixed(1)],
-      fromRoad: +Math.min(...members.map((n) => distTo(n.ix * CELL, n.iz * CELL))).toFixed(1),
+      fromRoad: +members
+        .reduce((m, n) => Math.min(m, distTo(n.ix * CELL, n.iz * CELL)), Infinity)
+        .toFixed(1),
       surfaces: [...new Set(members.map((n) => n.surface))],
     });
   }

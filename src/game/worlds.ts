@@ -83,6 +83,7 @@ export const WORLDS: WorldEntry[] = [
       "riverbend_palms_v21",
       "cascade_caverns_v2",
       "ember_peak_v3",
+      "bonebog_pyramid_v3",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "id": "bonebog_pyramid_v3",
+  "name": "Bonebog Pyramid (v3 greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -165.04,
+      "y": 14.74,
+      "z": -165.13
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -175.96,
+      "y": 16.01,
+      "z": -183.63
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -186.82,
+      "y": 16.01,
+      "z": -165.13
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -197.7,
+      "y": 14.97,
+      "z": -183.63
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -208.57,
+      "y": 16.52,
+      "z": -165.13
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -219.47,
+      "y": 15.62,
+      "z": -183.68
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -229.28,
+      "y": 13.85,
+      "z": -164.88
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -244.34,
+      "y": 15.54,
+      "z": -180.08
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -245.48,
+      "y": 13.64,
+      "z": -158.72
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -265.78,
+      "y": 15.56,
+      "z": -165.23
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -256.92,
+      "y": 13.65,
+      "z": -145.65
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -277.87,
+      "y": 15.44,
+      "z": -141.83
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -260.86,
+      "y": 14.36,
+      "z": -128.8
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -279.32,
+      "y": 16.01,
+      "z": -117.82
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -260.81,
+      "y": 15.04,
+      "z": -106.99
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -279.31,
+      "y": 15.62,
+      "z": -96.11
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -260.81,
+      "y": 16.12,
+      "z": -85.14
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": -279.31,
+      "y": 15.51,
+      "z": -74.16
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": -260.81,
+      "y": 15.3,
+      "z": -63.17
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": -279.31,
+      "y": 16.46,
+      "z": -52.25
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 55,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 345.9,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 740.6,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 1179.7,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1349.4,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1445.4,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 95,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 264.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 552.2,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 956.2,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1244.7,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1639.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 130,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 130,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 511.6,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 805.6,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 1141.9,
+      "across": -3,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 1141.9,
+      "across": 3,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1543.5,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1751.2,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 1374.9,
+      "to": 1407.9,
+      "at": 1423.9
+    }
+  ],
+  "generator": "tools/blender/prehistoric/bonebog_pyramid_v3.py (re-running it rewrites entities)"
+}
