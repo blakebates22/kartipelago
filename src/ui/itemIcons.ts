@@ -209,6 +209,163 @@ function flame(g: G, level: number) {
   }
 }
 
+/**
+ * Prototype shield icons (?shield=1|2|3|4; 0 is the original):
+ *   1 knight's shield: a steel-rimmed shield, gold field, a raised boss; 1-3 gems above.
+ *   2 plasma orb: the in-game shield's globe of light with 1-3 rings round it.
+ *   3 turtle shell: a round shell shield of plates with a bone rim; 1-3 gems on the rim.
+ *   4 energy crest: a glowing blue shield with a lightning bolt; 1-3 bolts.
+ */
+export const SHIELD_STYLE = {
+  v: (() => {
+    const q =
+      typeof location !== "undefined" ? new URLSearchParams(location.search).get("shield") : null;
+    const n = Number(q);
+    return n >= 1 && n <= 4 ? n : 0;
+  })(),
+};
+/** Draw every icon again (after SHIELD_STYLE changes, for the prototype sheet). */
+export function clearIconCache() {
+  cache.clear();
+}
+
+function gems(g: G, level: number, y: number, color: string, gap = 4.2) {
+  for (let i = 0; i < level; i++) {
+    const x = 10 + (i - (level - 1) / 2) * gap;
+    poly(g, color, [
+      [x, y - 1.6],
+      [x + 1.6, y],
+      [x, y + 1.6],
+      [x - 1.6, y],
+    ]);
+    disc(g, "#ffffff", x - 0.4, y - 0.5, 0.45);
+  }
+}
+
+function shieldStyle(g: G, level: number, v: number) {
+  if (v === 1) {
+    // A knight's shield: curved top corners, steel rim, gold field split by a bar, a boss.
+    const outline: [number, number][] = [
+      [10, 4.2],
+      [13.5, 3.6],
+      [17, 4.6],
+      [17, 10],
+      [15, 14.6],
+      [10, 19],
+      [5, 14.6],
+      [3, 10],
+      [3, 4.6],
+      [6.5, 3.6],
+    ];
+    poly(g, "#c8c8d0", outline);
+    poly(
+      g,
+      "#ffc42a",
+      outline.map(([x, y]) => [10 + (x - 10) * 0.78, 11 + (y - 11) * 0.8]),
+    );
+    poly(g, "#c8962a", [
+      [10, 5.6],
+      [15.4, 5.2],
+      [15.4, 10],
+      [13.8, 13.6],
+      [10, 17],
+    ]);
+    g.fillStyle = "#d8d8e0";
+    g.fillRect(9.2, 5, 1.6, 12.5);
+    disc(g, "#d8d8e0", 10, 10.6, 2.4);
+    disc(g, "#ffffff", 9.4, 10, 0.9);
+    gems(g, level, 2, "#e8302a");
+  } else if (v === 2) {
+    // The plasma orb (like the shield you wear): a bright globe with a white-hot middle,
+    // little arcs inside, and one ring orbiting round it per level.
+    for (let i = 0; i < level; i++) {
+      g.save();
+      g.translate(10, 10);
+      g.rotate(-0.5 + i * 1.05);
+      g.strokeStyle = "#ffe88a";
+      g.lineWidth = 1.1;
+      g.beginPath();
+      g.ellipse(0, 0, 9.2, 3.4, 0, 0, Math.PI * 2);
+      g.stroke();
+      g.restore();
+    }
+    disc(g, "#ffb02a", 10, 10, 6.4);
+    disc(g, "#ffd84a", 10, 10, 5.2);
+    disc(g, "#fff06a", 10, 10, 3.4);
+    disc(g, "#ffffff", 10, 10, 1.7);
+    g.strokeStyle = "#ffffff";
+    g.lineWidth = 0.8;
+    g.beginPath();
+    g.moveTo(10, 10);
+    g.lineTo(7.4, 7.6);
+    g.lineTo(6.2, 9.4);
+    g.moveTo(10, 10);
+    g.lineTo(13.4, 11.8);
+    g.lineTo(13, 14);
+    g.stroke();
+    disc(g, "#ffffff", 7.4, 6.4, 1, 0.7);
+  } else if (v === 3) {
+    // A turtle-shell shield: a domed shell of plates with a bone rim and gems.
+    disc(g, "#efe3c4", 10, 10.6, 8.8, 8.2);
+    disc(g, "#5a8a3a", 10, 10.6, 7.4, 6.8);
+    const hex = (cx: number, cy: number, r: number, col: string) =>
+      poly(
+        g,
+        col,
+        Array.from({ length: 6 }, (_, k) => {
+          const a = (k / 6) * Math.PI * 2 + Math.PI / 6;
+          return [cx + Math.cos(a) * r, cy + Math.sin(a) * r] as [number, number];
+        }),
+      );
+    hex(10, 10.6, 2.6, "#8ac25a");
+    for (let k = 0; k < 6; k++) {
+      const a = (k / 6) * Math.PI * 2;
+      hex(10 + Math.cos(a) * 4.6, 10.6 + Math.sin(a) * 4.4, 1.9, "#7ab24a");
+    }
+    disc(g, "#d8f0a8", 8.4, 8.6, 1.2, 0.8);
+    gems(g, level, 2.4, "#ffd84a", 4.6);
+  } else {
+    // An energy crest: a glowing blue shield with a lightning bolt, one bolt per level.
+    const outline: [number, number][] = [
+      [10, 1.6],
+      [17.6, 4.4],
+      [16.6, 12],
+      [10, 18.8],
+      [3.4, 12],
+      [2.4, 4.4],
+    ];
+    poly(g, "#bff0ff", outline);
+    poly(
+      g,
+      "#2f7ae8",
+      outline.map(([x, y]) => [10 + (x - 10) * 0.8, 9.6 + (y - 9.6) * 0.8]),
+    );
+    poly(
+      g,
+      "#5ab4ff",
+      outline.map(([x, y]) => [8.8 + (x - 10) * 0.45, 8.4 + (y - 9.6) * 0.5]),
+    );
+    const bolt = (cx: number, s: number) =>
+      poly(g, "#fff06a", [
+        [cx + 0.6 * s, 4.4],
+        [cx - 2.2 * s, 10.6],
+        [cx - 0.2 * s, 10.6],
+        [cx - 1 * s, 16],
+        [cx + 2.4 * s, 8.8],
+        [cx + 0.4 * s, 8.8],
+      ]);
+    if (level === 1) bolt(10, 1);
+    else if (level === 2) {
+      bolt(7.6, 0.8);
+      bolt(12.4, 0.8);
+    } else {
+      bolt(6.4, 0.66);
+      bolt(10, 0.66);
+      bolt(13.6, 0.66);
+    }
+  }
+}
+
 function shield(g: G, level: number) {
   const pts: [number, number][] = [
     [10, 1.5],
@@ -338,7 +495,8 @@ function draw(g: G, color: BalloonColor, level: number) {
       }
       break;
     case "yellow":
-      shield(g, level);
+      if (SHIELD_STYLE.v) shieldStyle(g, level, SHIELD_STYLE.v);
+      else shield(g, level);
       break;
     case "rainbow":
       grapple(g, level);
@@ -395,6 +553,15 @@ const SNAP = [
   "#5a3a20",
   "#7a5030",
   "#3a2414",
+  "#c8962a",
+  "#efe3c4",
+  "#5a8a3a",
+  "#8ac25a",
+  "#7ab24a",
+  "#d8f0a8",
+  "#e8302a",
+  "#ffb02a",
+  "#fff06a",
 ].map(rgbOf);
 
 function snap(r: number, g: number, b: number) {
