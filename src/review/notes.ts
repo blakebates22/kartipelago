@@ -90,67 +90,117 @@ export interface NoteStore {
   exportFile(): ReviewFile;
 }
 
-export async function openStore(track: string, trackName: string): Promise<NoteStore> {
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** The notes kept in this browser for a track (when the repo couldn't be reached). */
+function readLocal(track: string): ReviewNote[] {
+  try {
+    return (JSON.parse(localStorage.getItem(LOCAL_KEY(track)) ?? "[]") as ReviewNote[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+function writeLocal(track: string, notes: ReviewNote[]) {
+  try {
+    if (notes.length) localStorage.setItem(LOCAL_KEY(track), JSON.stringify(notes));
+    else localStorage.removeItem(LOCAL_KEY(track));
+  } catch {
+    // Full or blocked: the notes stay for this visit; EXPORT still works.
+  }
+}
+
+/**
+ * Open a track's notes. On the dev server they live in the repo: it's asked a few times
+ * (it can be restarting for a moment) before falling back to this browser, and any notes
+ * that were kept in the browser earlier are sent to the repo as soon as it answers
+ * (`synced` says how many).
+ */
+export async function openStore(
+  track: string,
+  trackName: string,
+): Promise<NoteStore & { synced: number }> {
   let notes: ReviewNote[] = [];
   const base = `/__review/${encodeURIComponent(track)}`;
   let repo = false;
   if (import.meta.env.DEV) {
-    try {
-      const r = await fetch(base);
-      if (r.ok) {
-        const f = (await r.json()) as Partial<ReviewFile>;
-        notes = f.notes ?? [];
-        repo = true;
+    for (let attempt = 0; attempt < 5 && !repo; attempt++) {
+      try {
+        const r = await fetch(base, { cache: "no-store" });
+        const type = r.headers.get("content-type") ?? "";
+        if (r.ok && type.includes("json")) {
+          const f = (await r.json()) as Partial<ReviewFile>;
+          notes = f.notes ?? [];
+          repo = true;
+        }
+      } catch {
+        // Not answering yet.
       }
-    } catch {
-      repo = false;
+      if (!repo) await wait(500 * (attempt + 1));
     }
   }
-  if (!repo) {
-    try {
-      notes = (JSON.parse(localStorage.getItem(LOCAL_KEY(track)) ?? "[]") as ReviewNote[]) ?? [];
-    } catch {
-      notes = [];
-    }
-  }
-  const keepLocal = () => {
-    try {
-      localStorage.setItem(LOCAL_KEY(track), JSON.stringify(notes));
-    } catch {
-      // Full or blocked: the notes stay for this visit; EXPORT still works.
-    }
+  const post = async (note: ReviewNote, shot?: string) => {
+    const r = await fetch(`${base}/note`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ trackName, note, shot }),
+    });
+    if (!r.ok) throw new Error(`the dev server said ${r.status}`);
+    return (await r.json()) as ReviewNote;
   };
   const upsert = (n: ReviewNote) => {
     const i = notes.findIndex((x) => x.id === n.id);
     if (i >= 0) notes[i] = n;
     else notes.push(n);
   };
+  // Send any notes kept in this browser earlier up to the repo.
+  let synced = 0;
+  if (repo) {
+    const backlog = readLocal(track);
+    const left: ReviewNote[] = [];
+    for (const n of backlog) {
+      try {
+        const shot = n.shot?.startsWith("data:") ? n.shot : undefined;
+        const { shot: _drop, ...rest } = n;
+        void _drop;
+        upsert(await post(rest as ReviewNote, shot));
+        synced++;
+      } catch {
+        left.push(n);
+      }
+    }
+    writeLocal(track, left);
+  } else notes = readLocal(track);
   return {
     where: repo ? "repo" : "local",
+    synced,
     async load() {
       return notes;
     },
     async save(note, shot) {
       if (repo) {
-        const r = await fetch(`${base}/note`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ trackName, note, shot }),
-        });
-        if (!r.ok) throw new Error(`saving the note failed (${r.status})`);
-        const saved = (await r.json()) as ReviewNote;
-        upsert(saved);
-        Object.assign(note, saved);
-      } else {
-        if (shot) note.shot = shot;
-        upsert(note);
-        keepLocal();
+        try {
+          const saved = await post(note, shot);
+          upsert(saved);
+          Object.assign(note, saved);
+          return;
+        } catch (err) {
+          // Keep it in the browser so nothing is lost; it goes up next time.
+          if (shot) note.shot = shot;
+          writeLocal(track, [...readLocal(track).filter((x) => x.id !== note.id), note]);
+          upsert(note);
+          throw new Error(
+            `${(err as Error).message}: kept in this browser, sent to the repo next time`,
+          );
+        }
       }
+      if (shot) note.shot = shot;
+      upsert(note);
+      writeLocal(track, notes);
     },
     async remove(id) {
       if (repo) await fetch(`${base}/note/${encodeURIComponent(id)}`, { method: "DELETE" });
       notes = notes.filter((n) => n.id !== id);
-      if (!repo) keepLocal();
+      if (!repo) writeLocal(track, notes);
     },
     shotUrl(note) {
       if (!note.shot) return undefined;

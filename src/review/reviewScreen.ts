@@ -98,6 +98,10 @@ const CSS = `
 .kp-review header { padding: 10px 12px 6px; border-bottom: 1px solid #5a3a20; }
 .kp-review h1 { font-size: 15px; margin: 0; color: #ffd84a; letter-spacing: 1px; }
 .kp-review .where { font-size: 11px; color: #c8a878; margin-top: 2px; }
+.kp-review .banner { display: none; margin: 8px 12px 0; padding: 8px 10px; border-radius: 4px;
+  font-weight: bold; font-size: 12px; line-height: 1.3; }
+.kp-review .banner.bad { display: block; background: #b8241c; color: #fff; border: 2px solid #ff8a6a; }
+.kp-review .banner.ok { display: block; background: #24561e; color: #e8ffe0; border: 2px solid #6ade5a; }
 .kp-review .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 12px; }
 .kp-review button, .kp-review-editor button { font: inherit; color: #f6ecd2; background: #5a3a20; border: 2px solid #8a5a32;
   border-radius: 4px; padding: 5px 4px; cursor: pointer; }
@@ -181,6 +185,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   const style = el("style", { textContent: CSS });
   const panel = el("div", { cls: "kp-review" });
   const where = el("div", { cls: "where", textContent: "Loading notes..." });
+  const banner = el("div", { cls: "banner" });
   const toolButtons = new Map<Tool, HTMLButtonElement>();
   const tools = el("div", { cls: "tools" });
   for (const [t, key, name] of TOOLS) {
@@ -211,6 +216,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   const list = el("div", { cls: "list" });
   panel.append(
     el("header", {}, el("h1", { textContent: `REVIEW · ${entry.name.toUpperCase()}` }), where),
+    banner,
     tools,
     hintEl,
     el("div", { cls: "row" }, recordBtn, kartBtn, exportBtn, driveBtn),
@@ -519,9 +525,10 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     const out = new Set<string>();
     const v = new THREE.Vector3();
     scene.traverse((o) => {
-      if (out.size >= 40 || !(o as THREE.Mesh).isMesh || !o.name) return;
-      for (let p: THREE.Object3D | null = o; p; p = p.parent)
-        if (p === markers || p === pending) return;
+      if (out.size >= 40 || !(o as THREE.Mesh).isMesh) return;
+      // Only the track's own things (not karts, items or markers), by prop name.
+      const prop = propOf(o);
+      if (!prop?.name || out.has(prop.name)) return;
       const m = o as THREE.Mesh;
       if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
       v.copy(m.geometry.boundingSphere!.center).applyMatrix4(o.matrixWorld).applyMatrix4(inv);
@@ -530,7 +537,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
         Math.abs(v.y) <= b.size[1] / 2 &&
         Math.abs(v.z) <= b.size[2] / 2
       )
-        out.add(o.name);
+        out.add(prop.name);
     });
     return [...out];
   }
@@ -721,6 +728,18 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     renderList();
   }
 
+  /** Say loudly where notes are going, and if browser-only notes were just sent up. */
+  function showWhere(w: "repo" | "local", synced: number) {
+    banner.className = `banner ${w === "repo" ? (synced ? "ok" : "") : "bad"}`;
+    banner.textContent =
+      w === "local"
+        ? import.meta.env.DEV
+          ? "NOT SAVING TO THE PROJECT: the dev server didn't answer. Notes are kept in this browser and sent to the project automatically next time it does."
+          : "This build can't save into the project (run npm run dev). Notes stay in this browser: use EXPORT."
+        : synced
+          ? `Sent ${synced} note${synced === 1 ? "" : "s"} kept in this browser to the project.`
+          : "";
+  }
   const savedWhere = () =>
     store?.where === "repo"
       ? `${notes.length} notes · saved into the repo: reviews/${entry.id}/`
@@ -1037,6 +1056,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       void openStore(entry.id, entry.name).then(async (s) => {
         store = s;
         notes = await s.load();
+        showWhere(s.where, s.synced);
         // Show the edits not yet baked into the track.
         for (const n of notes) if (n.kind === "edit") applyEdit(scene, n);
         where.textContent = savedWhere();
