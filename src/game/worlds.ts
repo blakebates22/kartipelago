@@ -80,6 +80,7 @@ export const WORLDS: WorldEntry[] = [
       "bridge_test",
       "loop_lab",
       "drift_park",
+      "riverbend_palms_v21",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

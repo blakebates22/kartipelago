@@ -87,8 +87,57 @@ def sample_route(ob, spacing=2.0):
     return {"closed": bool(sp.use_cyclic_u), "points": out}
 
 
+def _realize_uv_curves(objects):
+    """Roads are curves whose geometry nodes store their UVs as a "UVMap" attribute. Some
+    Blender builds (the bpy module, for one) don't export such a UV map from an evaluated
+    curve, so roads came out untextured. Export a real mesh copy of each instead, with
+    that UV map active, under the same name and properties. Returns (objects to export,
+    a function that removes the copies and restores the names)."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    out, made = [], []
+    for o in objects:
+        if o.type != "CURVE" or not any(m.type == "NODES" for m in o.modifiers):
+            out.append(o)
+            continue
+        me = bpy.data.meshes.new_from_object(o.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
+        uv = me.uv_layers.get("UVMap")
+        if uv is None:
+            bpy.data.meshes.remove(me)
+            out.append(o)
+            continue
+        me.uv_layers.active = uv
+        uv.active_render = True
+        name = o.name
+        o.name = name + " (curve)"
+        copy = bpy.data.objects.new(name, me)
+        copy.matrix_world = o.matrix_world
+        for k in o.keys():
+            copy[k] = o[k]
+        for coll in o.users_collection:
+            coll.objects.link(copy)
+        made.append((o, copy, name))
+        out.append(copy)
+
+    def restore():
+        for o, copy, name in made:
+            me = copy.data
+            bpy.data.objects.remove(copy)
+            bpy.data.meshes.remove(me)
+            o.name = name
+
+    return out, restore
+
+
 def _export_glb(path, objects, images=True):
     """Export exactly these objects (modifiers applied) to a GLB file."""
+    objects, restore = _realize_uv_curves(objects)
+    try:
+        _export_glb_objects(path, objects, images)
+    finally:
+        restore()
+
+
+def _export_glb_objects(path, objects, images=True):
     view = bpy.context.view_layer
     hidden = [o for o in objects if o.hide_get() or o.hide_viewport]
     for o in hidden:

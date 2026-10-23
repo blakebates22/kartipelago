@@ -13,6 +13,11 @@
 # own radii), long enough to hold a drift and earn its boost, and the S-bends chain one
 # drift into the next. Version 1 is in git: tag riverbend-v1.
 #
+# Version 2.2 is Blake's first review round (riverbend_review.py): paths between the
+# huts, real campfires, a volcano, rocks of every shape, ledges on the walls, landmarks
+# (a sandstone feature, a grand pillar, a stone arch over the river), a kicker, a
+# footpath and a family of long-necks. v2.1 stays playable as riverbend_palms_v21.
+#
 # Saves tracks-src/riverbend_palms.blend and exports public/tracks/riverbend_palms/.
 
 import math
@@ -23,6 +28,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import props  # noqa: E402
+import riverbend_review as rv  # noqa: E402  (v2.2: Blake's first review round)
+import volcano_props as vp  # noqa: E402
 from course_kit import bmesh, lerp, smooth  # noqa: E402
 
 TRACK_ID = "riverbend_palms"
@@ -247,8 +254,9 @@ HAMLETS = [((60, -150), 7, 14.0), ((110, -172), 5, 12.0), ((100, -72), 3, 8.5), 
 def settle(c, ter):
     """Huts in rings round each campfire, with a totem or two; returns the spots used
     (so trees keep clear)."""
-    hut, totem, fire = props.hut(c), props.totem(c), props.campfire(c)
+    hut, totem, fire = props.hut(c), props.totem(c), rv.campfire_v2(c)
     taken = []
+    villages = []
     for h, ((cx, cy), count, radius) in enumerate(HAMLETS):
         z = c.ground_z(cx, cy, ter)
         if z is None or not props.clear_of_road(c, cx, cy, 6) or z < WATER_Z + 0.5:
@@ -257,6 +265,8 @@ def settle(c, ter):
         gx, gy, gz = c.game(cx, cy, z)
         c.entity("campfire", x=gx, y=gy, z=gz)
         taken.append((cx, cy, 5.0))
+        huts = []
+        villages.append(((cx, cy), huts))
         placed = 0
         for k in range(count * 3):
             if placed >= count:
@@ -272,6 +282,7 @@ def settle(c, ter):
             # Doorways face the fire.
             c.place(hut, x, y, zz - 0.1, rot=a + math.pi, scale=0.85 + 0.35 * kit.rnd(k + h * 7), coll="Village")
             taken.append((x, y, 4.5))
+            huts.append((x, y, a))
             placed += 1
         for k in range(1 + (count > 4)):
             a = h * 1.3 + k * math.pi + 0.8
@@ -280,7 +291,7 @@ def settle(c, ter):
             if zz is not None and props.clear_of_road(c, x, y, 3) and all(math.hypot(x - tx, y - ty) > tr + 1.5 for tx, ty, tr in taken):
                 c.place(totem, x, y, zz - 0.2, rot=a, coll="Village")
                 taken.append((x, y, 1.5))
-    return taken
+    return taken, villages
 
 
 def river_cattails(c, ter):
@@ -306,15 +317,20 @@ def scenery(c):
     for piece in c.pieces:
         if "bridge" in piece.name:
             props.piers(c, piece, every=10, mat=("palm_bark", "wall"), size=0.55, terrain=ter)
-    taken = settle(c, ter)
+    taken, villages = settle(c, ter)
+    # v2.2: paths between the huts and out to the road, light at the fires, landmarks.
+    taken += rv.village_paths(c, ter, villages, WATER_Z, river_x)
+    rv.village_lights(c, ter, villages)
+    taken += rv.rock_feature(c, ter)
+    taken += rv.grand_pillar(c, ter)
+    taken += rv.stone_arch(c, ter, river_x, WATER_Z)
+    rv.wall_ledges(c, ter, natural)
     palms = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
     trees = [props.jungle_tree(c, v) for v in range(2)]
     grand = [props.grand_tree(c, v) for v in range(3)]
     bushes = [props.bush(c, v) for v in range(2)]
     fern = props.fern(c)
     flowers = props.flowers(c)
-    rocks = [props.boulder(c, "valley_cliff", v) for v in range(3)]
-
     def dry(x, y, z):
         return z > WATER_Z + 0.3
 
@@ -342,8 +358,8 @@ def scenery(c):
         props.scatter(c, b, 55, (-205, 205, -205, 205), beside(3.5, 60), ter, seed=70 + v, role="visual", scale=(0.7, 1.5))
     props.scatter(c, fern, 120, (-200, 200, -200, 200), beside(3, 50), ter, seed=40, role="visual")
     props.scatter(c, flowers, 170, (-200, 200, -200, 200), beside(2.5, 45), ter, seed=41, role="visual", sink=0.1)
-    for v, r in enumerate(rocks):
-        props.scatter(c, r, 9, (-220, 220, -220, 220), beside(8, 60), ter, seed=50 + v, scale=(1.2, 3.2))
+    # Rocks of eight shapes, turned and tilted (v2.2: they were all three alike).
+    rv.scatter_boulders(c, ter, beside(8, 60), count=5)
     # Sandstone stacks: landmarks you can see across the valley.
     for i, (x, y, h) in enumerate(((-60, 40, 22), (60, 10, 16), (-100, -10, 26), (40, -60, 14), (-190, 120, 30))):
         if props.clear_of_road(c, x, y, 12):
@@ -352,13 +368,8 @@ def scenery(c):
     waterfall(c, ter)
     water_flowers(c, ter)
     river_cattails(c, ter)
-    # A smoking volcano far beyond the walls: a hint of Ember Peak.
-    bm = bmesh.new()
-    rings = [props.ring(bm, (-360, 380), r, z, 16) for r, z in ((170, -5), (120, 50), (55, 105), (40, 112))]
-    props.loft(bm, rings)
-    vol = c.mesh_object("Far Volcano", bm, "Backdrop", "visual")
-    c.assign(vol, c.lib("volcano_basalt"))
-    vol.data.shade_flat()
+    # A smoking volcano far beyond the walls: a hint of Ember Peak (v2.2: a real one).
+    rv.volcano(c, vp)
 
 
 def main():
@@ -396,6 +407,8 @@ def main():
     # A dirt shortcut through the village, cutting the last bend.
     c.shortcut("Village Shortcut", [(x, y, road_z(x, y) - 0.05) for x, y in SHORTCUT],
                "valley_road", "dirt", width=8.0, shoulder_mat=("valley_grass", "dirt"))
+    # v2.2: a narrow footpath you can drive on at full speed (Blake's recorded line).
+    rv.footpath(c)
 
     c.terrain("Valley", -250, 250, -250, 250, 3.3, natural, classify)
     # The river: shallow (slow, but you can splash across) by the ford, deep (you're
@@ -409,6 +422,7 @@ def main():
     c.ribbon("River South", south, 56, WATER_Z, c.lib("valley_water", "deep_water"), steps=4)
     c.start_line()
     scenery(c)
+    rv.corner_kicker(c)
 
     L = c.length
     # Gameplay: zippers on the final straight and off the bridge, bananas on the
@@ -437,6 +451,8 @@ def main():
     # (it waits for karts to pass), and back up beside the river.
     c.path_curve("Dino Path", DINO)
     c.entity("dinosaur", route="Dino Path", speed=3.0, scale=1.0, start=40)
+    # v2.2: a mother and two young grazing the meadows, never on the road.
+    rv.meadow_dinos(c, lambda x, y: props.clear_of_road(c, x, y, 10) and abs(x - river_x(y)) > 32 and math.hypot(x * 0.95, y) < 188)
     gx, gy, gz = c.game(river_x(FALLS_Y), FALLS_Y - 7.5, WATER_Z)
     c.entity("waterfall", x=gx, y=gy, z=gz, top=FALLS_TOP, width=30, heading=0)
 

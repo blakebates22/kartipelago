@@ -175,6 +175,8 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
   let pts: THREE.Vector3[] = []; // corners / path points / measure ends being placed
   let boxYaw = 0;
   let hint = "";
+  /** When Esc was last pressed with nothing to cancel (a second one leaves). */
+  let escAt = -1e9;
   let seconds = 0;
   let wasLines = stage.lines;
   let capture: ((url: string) => void) | undefined;
@@ -223,7 +225,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     list,
     el("footer", {
       innerHTML:
-        "WASD fly · Q/E down/up · Shift fast · wheel speed<br>Arrows or right-drag look · F mouse-look<br>Tab drive from here · Shift+Tab back to kart<br>Enter finish path · Backspace undo · H hide · Esc leave",
+        "WASD fly · Q/E down/up · Shift fast · wheel speed<br>Arrows or right-drag look · F mouse-look<br>Tab drive from here · Shift+Tab back to kart<br>Enter finish path · Backspace undo · H hide · Esc Esc leave",
     }),
   );
 
@@ -970,7 +972,13 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       else if (pts.length) {
         clearPending();
         updateHint();
-      } else leave();
+      } else if (performance.now() - escAt < 2000) leave();
+      else {
+        // Leaving takes a second Esc, so a stray one doesn't drop you out of the tool.
+        escAt = performance.now();
+        hint = "PRESS ESC AGAIN TO LEAVE · TAB DRIVES FROM HERE";
+        hintEl.textContent = hint;
+      }
     }
     if (/^Arrow|^Space/.test(e.code)) e.preventDefault();
   };

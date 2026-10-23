@@ -45,6 +45,18 @@ export const TRACKS: TrackEntry[] = [
     music: "riverbend",
     load: { scene: "track", packageId: "riverbend_palms" },
   },
+  // The previous Riverbend Palms (v2.1, before Blake's first review round), kept
+  // playable with ?track=riverbend_palms_v21. Not in any world's menu.
+  {
+    id: "riverbend_palms_v21",
+    name: "Riverbend Palms (v2.1)",
+    description: "The version before the first review round.",
+    preview: "previews/riverbend_palms.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "jungle_falls",
+    music: "riverbend",
+    load: { scene: "track", packageId: "riverbend_palms_v21" },
+  },
   {
     id: "cascade_caverns",
     name: "Cascade Caverns",

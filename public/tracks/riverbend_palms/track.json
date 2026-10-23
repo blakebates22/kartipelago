@@ -62,6 +62,55 @@
       "z": 8
     },
     {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 60,
+      "y": 1.92,
+      "z": 150
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 110,
+      "y": 0.99,
+      "z": 172
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 100,
+      "y": 2.07,
+      "z": 72
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 82,
+      "y": 1.7,
+      "z": -150
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -75,
+      "y": 2.06,
+      "z": -140
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 48,
+      "y": 2.46,
+      "z": 190
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -182,
+      "y": 12.08,
+      "z": 8
+    },
+    {
       "id": "zip_01",
       "type": "zipper",
       "at": 997.6,
@@ -161,6 +210,30 @@
       "speed": 3.0,
       "scale": 1.0,
       "start": 40
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Dino Path 2",
+      "speed": 1.6,
+      "scale": 0.7,
+      "start": 7
+    },
+    {
+      "id": "dinosaur_03",
+      "type": "dinosaur",
+      "route": "Dino Path 3",
+      "speed": 2.0,
+      "scale": 0.5,
+      "start": 14
+    },
+    {
+      "id": "dinosaur_04",
+      "type": "dinosaur",
+      "route": "Dino Path 4",
+      "speed": 1.8,
+      "scale": 0.45,
+      "start": 21
     },
     {
       "id": "waterfall_01",
