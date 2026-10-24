@@ -537,80 +537,102 @@ def forest(c, ss, ter):
 
 
 def rope_bridge(c, ss):
-    """The rope bridge out of the great tree: short, narrow and sagging, slung from
-    leaning log posts on two deep-sagging ropes, its slats uneven and a few missing,
-    broken planks dangling underneath and one hanger snapped. It looks ready to go."""
-    s0, s1 = ss.R(ss.SEG[23] + 33), ss.R(ss.SEG[24] + 2)
+    """The swinging rope bridge out of the great tree, built plank by plank (its road
+    piece is collision only): loose planks with gaps between them, a few missing, laid
+    on rope stringers; rope handrails netted down to the planks; big log posts at both
+    ends with the main ropes slung from their tops; broken planks dangling underneath
+    and one hanger snapped. It sags in the middle and looks ready to go."""
+    s0, s1 = ss.R(ss.SEG[23] + 33), ss.R(ss.SEG[24])
     m = Mesh()
     bm = m.bm
     rope = "rope_rail"
-    ends = []
-    for s, lean in ((s0 - 1.0, -0.1), (s1 + 1.0, 0.1)):
-        q = c.at(s)
-        pair = []
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 0.9))
-            k0 = len(bm.faces)
-            props.cuboid(bm, (p.x, p.y, p.z + 2.4), (0.7, 0.7, 6.8), rot=road_rot(q), tilt=(0.06 * side, lean))
-            m.mark(("heartwood", "wall"), k0)
-            top = Vector((p.x, p.y, p.z + 5.5))
-            pair.append(top)
-            # A lashing of rope round the top of the post.
-            k0 = len(bm.faces)
-            props.tube(bm, [top + Vector((0, 0, -0.3)), top + Vector((0, 0, 0.2))], 0.48, n=6)
-            m.mark(rope, k0)
-        ends.append(pair)
-    n = 24
-    for j, side in enumerate((-1, 1)):
-        a, b = ends[0][j], ends[1][j]
-        rope_pts = []
-        for k in range(n + 1):
-            t = k / n
-            p = a.lerp(b, t)
-            p.z -= 5.4 * 4 * t * (1 - t)  # down to handrail height in the middle
-            rope_pts.append(p)
+
+    def tube(pts, r, n=5):
         k0 = len(bm.faces)
-        props.tube(bm, [tuple(p) for p in rope_pts], 0.11, n=5)
+        props.tube(bm, [tuple(p) for p in pts], r, n=n)
         m.mark(rope, k0)
-        # Hangers down to the deck's edge (one snapped, its end dangling).
-        for k in range(2, n - 1, 2):
-            t = k / n
-            q = c.at(s0 + (s1 - s0) * t)
-            e = q.side(side * (q.w / 2 + 0.25))
-            top = rope_pts[k]
-            if k == 10 and side > 0:
-                bottom = top.lerp(e, 0.45) + Vector((0.3, 0.2, 0))
-            else:
-                bottom = e
-            if top.z - bottom.z < 0.2:
-                continue
-            k0 = len(bm.faces)
-            props.tube(bm, [tuple(top), tuple(bottom)], 0.045, n=4)
-            m.mark(rope, k0)
-    # The slats: uneven, a few missing, two broken ones hanging below the deck.
+
+    def along(off, up, a=s0, b=s1, step=1.0):
+        pts, s = [], a
+        while s < b:
+            pts.append(c.at(s).side(off, up))
+            s += step
+        pts.append(c.at(b).side(off, up))
+        return pts
+
+    half = c.at((s0 + s1) / 2).w / 2
+    # The planks.
     k = 0
-    s = s0 + 0.5
-    while s < s1 - 0.4:
+    s = s0 + 0.4
+    while s < s1 - 0.3:
         q = c.at(s)
         k += 1
-        if k % 9 == 4:
-            s += 0.95
-            continue
-        tw = 0.05 * math.sin(k * 2.3)
+        if k % 7 == 4 and s0 + 3 < s < s1 - 3:
+            s += 1.0
+            continue  # a missing plank
+        jit = math.sin(k * 2.7)
         k0 = len(bm.faces)
-        props.cuboid(bm, (q.p.x, q.p.y, q.p.z + 0.07 + 0.02 * math.sin(k * 1.7)), (0.62, q.w + 0.5 - 0.3 * (k % 3), 0.1), rot=road_rot(q) + tw, tilt=(0.03 * math.sin(k), 0.0))
-        m.mark("plank_road", k0)
-        s += 0.95
-    for k, (t, side) in enumerate(((0.35, 1), (0.62, -1))):
+        props.cuboid(bm, (q.p.x, q.p.y, q.p.z - 0.07 + 0.03 * jit), (0.74, q.w + 0.6 - 0.25 * (k % 3), 0.14), rot=road_rot(q) + 0.05 * jit, tilt=(0.03 * math.cos(k * 1.3), 0.0))
+        m.mark("plank_road" if k % 3 else ("heartwood", "wall"), k0)
+        s += 1.0
+    # The stringers under the planks, the handrails and a middle rope on each side, and
+    # the netting between them.
+    for side in (-1, 1):
+        tube(along(side * (half - 0.4), -0.2), 0.1)
+        top = along(side * (half + 0.3), 1.15)
+        mid = along(side * (half + 0.3), 0.6)
+        foot = along(side * (half + 0.2), -0.05)
+        tube(top, 0.08)
+        tube(mid, 0.05)
+        for j in range(len(top) - 1):
+            if side > 0 and j == len(top) // 2:
+                continue  # one hanger's snapped
+            a, b = (top[j], foot[j + 1]) if j % 2 == 0 else (foot[j], top[j + 1])
+            tube([a, b], 0.03, n=4)
+        snap = top[len(top) // 2]
+        tube([snap, snap + Vector((0.15, 0.1, -0.7))], 0.03, n=4)
+    # The posts, and the main ropes slung from their tops to the handrails mid-span.
+    tops = []
+    for s_, lean in ((s0 - 0.6, -0.12), (s1 + 0.6, 0.12)):
+        q = c.at(s_)
+        pair = []
+        for side in (-1, 1):
+            p = q.side(side * (half + 0.9))
+            k0 = len(bm.faces)
+            props.tube(bm, [tuple(p + Vector((0, 0, -2.0))), tuple(p + Vector((0, 0, 4.2)))], 0.34, n=8)
+            m.mark(("heartwood", "wall"), k0)
+            t = p + Vector((0, 0, 3.9))
+            tube([t + Vector((0, 0, -0.35)), t + Vector((0, 0, 0.15))], 0.42, n=6)
+            pair.append(t)
+        tops.append(pair)
+    n = 20
+    for j, side in enumerate((-1, 1)):
+        a, b = tops[0][j], tops[1][j]
+        rail = along(side * (half + 0.3), 1.15, step=(s1 - s0) / n)
+        pts = []
+        for i in range(n + 1):
+            t = i / n
+            p = a.lerp(b, t)
+            r = rail[min(i, len(rail) - 1)]
+            # Down from the post tops to just above the handrail in the middle.
+            p.z = lerp_z(p.z, r.z + 0.35, math.sin(math.pi * t) ** 0.7)
+            pts.append(p)
+        tube(pts, 0.11)
+        for i in range(2, n - 1, 3):
+            tube([pts[i], rail[min(i, len(rail) - 1)]], 0.03, n=4)
+    # Two broken planks hanging underneath by a rope.
+    for t, side in ((0.35, 1), (0.66, -1)):
         q = c.at(s0 + (s1 - s0) * t)
-        e = q.side(side * (q.w / 2 - 0.6), -1.6)
+        e = q.side(side * (half - 0.8), -1.7)
         k0 = len(bm.faces)
-        props.cuboid(bm, (e.x, e.y, e.z), (0.6, 0.12, 2.6), rot=road_rot(q), tilt=(0.25 * side, 0.15))
+        props.cuboid(bm, (e.x, e.y, e.z), (0.62, 0.14, 2.6), rot=road_rot(q), tilt=(0.25 * side, 0.15))
         m.mark("plank_road", k0)
-        k0 = len(bm.faces)
-        props.tube(bm, [tuple(e + Vector((0, 0, 1.3))), tuple(q.side(side * (q.w / 2 - 0.3), 0.0))], 0.04, n=4)
-        m.mark(rope, k0)
+        tube([e + Vector((0, 0, 1.3)), q.side(side * (half - 0.4), -0.2)], 0.035, n=4)
     m.build(c, "Rope Bridge", "Bridges", "visual", flat=False)
+
+
+def lerp_z(a, b, t):
+    return a + (b - a) * t
 
 
 def bridges_and_flags(c, ss, ter, flags):
@@ -643,7 +665,7 @@ def bridges_and_flags(c, ss, ter, flags):
         ends.append(p)
     for k in range(4):
         flags.line(ends[0] + Vector((0, 0, 10.6 - k * 0.9)), ends[1] + Vector((0, 0, 10.6 - k * 0.9)), sag=1.6 + 0.4 * k, spacing=1.1, size=0.85)
-    for s0 in (30.0, 70.0, 110.0):
+    for s0 in (25.0, 62.0):
         a, b = c.at(s0), c.at(s0 + 25)
         for side in (-1, 1):
             p0, p1 = a.side(side * (a.w / 2 + 3.0)), b.side(side * (b.w / 2 + 3.0))

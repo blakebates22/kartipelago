@@ -21,31 +21,49 @@
     {
       "id": "zip_02",
       "type": "zipper",
-      "at": 256.8,
+      "at": 224.8,
       "across": 0
     },
     {
       "id": "zip_03",
       "type": "zipper",
-      "at": 520.9,
+      "at": 488.9,
       "across": 0
     },
     {
       "id": "zip_04",
       "type": "zipper",
-      "at": 894.2,
+      "at": 862.2,
       "across": 0
     },
     {
       "id": "zip_05",
       "type": "zipper",
-      "at": 1889.7,
+      "at": 1772.8,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1202.5,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1511.9,
+      "across": 0
+    },
+    {
+      "id": "zip_08",
+      "type": "zipper",
+      "at": 2081.0,
       "across": 0
     },
     {
       "id": "ban_01",
       "type": "bananas",
-      "at": 80,
+      "at": 70,
       "across": -4,
       "count": 5,
       "gap": 2.6
@@ -53,7 +71,7 @@
     {
       "id": "ban_02",
       "type": "bananas",
-      "at": 190.9,
+      "at": 158.9,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -61,7 +79,7 @@
     {
       "id": "ban_03",
       "type": "bananas",
-      "at": 485.8,
+      "at": 453.8,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -69,7 +87,7 @@
     {
       "id": "ban_04",
       "type": "bananas",
-      "at": 797.4,
+      "at": 765.4,
       "across": 2,
       "count": 5,
       "gap": 2.6
@@ -77,7 +95,7 @@
     {
       "id": "ban_05",
       "type": "bananas",
-      "at": 1044.4,
+      "at": 997.4,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -85,7 +103,7 @@
     {
       "id": "ban_06",
       "type": "bananas",
-      "at": 1214.4,
+      "at": 1152.5,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -93,7 +111,7 @@
     {
       "id": "ban_07",
       "type": "bananas",
-      "at": 1599.8,
+      "at": 1537.9,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -101,7 +119,7 @@
     {
       "id": "ban_08",
       "type": "bananas",
-      "at": 1968.5,
+      "at": 1829.4,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -109,7 +127,7 @@
     {
       "id": "ban_09",
       "type": "bananas",
-      "at": 2235.7,
+      "at": 2097.0,
       "across": 0,
       "count": 5,
       "gap": 2.6
@@ -117,100 +135,100 @@
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 110,
+      "at": 92,
       "across": -4,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 110,
+      "at": 92,
       "across": 4,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 230.9,
+      "at": 198.9,
       "across": 0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 435.1,
+      "at": 403.1,
       "across": 0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 626.9,
+      "at": 594.9,
       "across": 0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 978.1,
+      "at": 946.1,
       "across": -4,
       "color": "red"
     },
     {
       "id": "bal_07",
       "type": "balloon",
-      "at": 978.1,
+      "at": 946.1,
       "across": 4,
       "color": "blue"
     },
     {
       "id": "bal_08",
       "type": "balloon",
-      "at": 1334.4,
+      "at": 1272.5,
       "across": 0,
       "color": "green"
     },
     {
       "id": "bal_09",
       "type": "balloon",
-      "at": 1679.8,
+      "at": 1582.9,
       "across": 0,
       "color": "yellow"
     },
     {
       "id": "bal_10",
       "type": "balloon",
-      "at": 2022.3,
+      "at": 1883.2,
       "across": 0,
       "color": "rainbow"
     },
     {
       "id": "bal_11",
       "type": "balloon",
-      "at": 2275.7,
+      "at": 2137.0,
       "across": 0,
       "color": "red"
     },
     {
       "id": "respawn_01",
       "type": "respawn",
-      "from": 302.8,
-      "to": 363.0,
-      "at": 391.0
+      "from": 270.8,
+      "to": 331.0,
+      "at": 359.0
     },
     {
       "id": "respawn_02",
       "type": "respawn",
-      "from": 890.3,
-      "to": 956.1,
-      "at": 984.1
+      "from": 858.3,
+      "to": 924.1,
+      "at": 952.1
     },
     {
       "id": "respawn_03",
       "type": "respawn",
-      "from": 2077.0,
-      "to": 2143.4,
-      "at": 2171.4
+      "from": 1937.8,
+      "to": 2004.6,
+      "at": 2032.6
     },
     {
       "id": "geyser_01",
@@ -425,9 +443,9 @@
     {
       "id": "campfire_01",
       "type": "campfire",
-      "x": -141.33,
+      "x": -110.33,
       "y": 47.0,
-      "z": -232.43
+      "z": -210.32
     },
     {
       "id": "dinosaur_01",

@@ -3,7 +3,7 @@
 #
 #   python tools/blender/prehistoric/snowy_summit.py      (the bpy module)
 #
-# A sunny, anticlockwise lap (about 2.4 km) round a frozen mountain lake, its geothermal
+# A sunny, anticlockwise lap (about 2.2 km) round a frozen mountain lake, its geothermal
 # shore, a glacier, a wind-carved plateau and a forest of colossal trees:
 #
 #   1  The Frozen Bay: the start, on a groomed snow road straight across the frozen
@@ -14,15 +14,15 @@
 #      steaming travertine terraces past geysers (one in the road: hit it as it blows
 #      and it throws you into the air), a wooden ramp, and a jump over the geyser basin.
 #   4  The Crystal Caves: north into the glacier, climbing through a glowing blue and
-#      violet ice tunnel, 3 -> 21 m.
+#      violet ice tunnel, 3 -> 21 m, in a double S over icy rollers.
 #   5  The Wind Canyons: west along a canyon carved into the snowy plateau, then a jump
 #      over a deep gorge.
 #   6  The Giant Trees: down into a half-frozen, half-thawed forest of colossal trees.
 #      The road drives into the biggest (84 m across) and spirals up inside it like a
-#      staircase, two whole turns, 10 -> 40 m.
-#   7  The Treetop Bridges and the Summit Lookout: out of the tree high up onto plank
-#      bridges between the giants (round the outside of two more), and onto the
-#      lookout rock, with the whole lake below.
+#      staircase, two whole turns, 10 -> 40 m, weaving in and out as it climbs.
+#   7  The Treetop Bridges and the Summit Lookout: out of the tree high up onto a swinging
+#      rope bridge, then plank bridges between the giants (round the outside of two
+#      more), and onto the lookout rock, with the whole lake below.
 #   8  The Glacier Fields: a fast plunge down the west ridge, a jump off an icy bluff
 #      over a crevasse, and a sweep across the open ice (cut across it if you dare:
 #      bare ice is slippery) past the mammoth-skull ruins, back to the start.
@@ -44,7 +44,7 @@ TRACK_ID = "snowy_summit"
 
 # ---------------------------------------------------------------- the layout
 
-START = (-70.0, -170.0)
+START = (-38.0, -170.0)
 HELIX_R = 28.0  # the spiral inside the great tree
 HELIX_TURNS = 2
 HELIX_RISE = 15.0  # metres per turn
@@ -54,7 +54,7 @@ HELIX_RISE = 15.0  # metres per turn
 HELIX_WAVE = 4.0
 HELIX_STEP = 0.9
 LAYOUT = [
-    ("S", 131),  # 0  1: the Frozen Bay, east across the lake
+    ("S", 99),  # 0  1: the Frozen Bay, east across the lake
     ("L", 70, 40),  # 1  2: the Ice Archways
     ("S", 40),  # 2
     ("R", 60, 40),  # 3
@@ -73,15 +73,15 @@ LAYOUT = [
     ("L", 40, 45),  # 16
     ("S", 40),  # 17 the run-up
     ("S", 16),  # 18 the gap, over the gorge
-    ("S", 60),  # 19 the landing
+    ("S", 45),  # 19 the landing
     ("L", 50, 30),  # 20 6: down into the giant forest
-    ("S", 60),  # 21 straight at the great tree
+    ("S", 45),  # 21 straight at the great tree
     ("L", HELIX_R, 360 * HELIX_TURNS),  # 22 the spiral, inside it
     ("S", 52),  # 23 7: out onto the rope bridge, short, narrow and sagging
     ("R", 34, 150),  # 24 round the second tree, on a ledge
-    ("S", 80),  # 25 the second bridge
+    ("S", 45),  # 25 the second bridge
     ("L", 34, 120),  # 26 round the third tree
-    ("S", 50),  # 27 the third bridge, to the lookout rock
+    ("S", 30),  # 27 the third bridge, to the lookout rock
     ("L", 50, 90),  # 28 the Summit Lookout
     ("S", 100),  # 29 8: the plunge down the west ridge (stretched to close the loop)
     ("L", 35, 55),  # 30 a tight S down the ridge (drift it both ways)...
@@ -563,6 +563,19 @@ def main():
             "deck_mat": wood,
             "ground": False,
         },
+        # The rope bridge out of the great tree: only its collision is a road piece (the
+        # same deck and rope rails as a bridge); what you see is built plank by plank in
+        # summit_scenery.rope_bridge, gaps and all.
+        "ropebridge": {
+            "mat": "plank_road",
+            "shoulder": 0.5,
+            "shoulder_mat": ("plank_road", "road"),
+            "barrier": 1.3,
+            "barrier_mat": rope,
+            "deck": 0.8,
+            "deck_mat": wood,
+            "ground": False,
+        },
         "ledge": {
             "mat": "plank_road",
             "shoulder": 0.6,
@@ -614,6 +627,8 @@ def main():
             return "cave"
         if seg == 22 or (seg == 21 and in_tree1(x, y, 6.0)) or (seg == 23 and in_tree1(x, y, 6.0)):
             return "spiral"
+        if seg == 23 and s >= SEG[23] + 33:
+            return "ropebridge"
         if seg in (23, 25, 27):
             return "bridge"
         if seg in (24, 26):
@@ -639,6 +654,9 @@ def main():
         elif k != "lake":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "lake", max_len=220.0))
+    for p in c.pieces:
+        if "ropebridge" in p.name:
+            p["kp_role"] = "collision"
 
     inside = kit.crossings(c, lambda smp: in_glacier(smp.p.x, smp.p.y, 1.0), margin=0)
     t0, t1 = max(inside, key=lambda r: r[1] - r[0])
@@ -677,11 +695,16 @@ def main():
     c.zipper(S(10) - 8, 0)  # (into the caves' rollers)
     c.zipper(S(17) + 4, 0)
     c.zipper(S(29) + 40, 0)
-    for at, across in ((80, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(22) + 120, 0), (S(25) + 30, 0), (S(30), 0), (S(35) + 40, 0)):
+    # ...and three more: half-way up the spiral (rocket up the second turn), onto the
+    # second treetop bridge, and on the sweep home across the ice.
+    c.zipper(S(22) + 170, 0)
+    c.zipper(S(25) + 4, 0)
+    c.zipper(S(35) + 24, 0)
+    for at, across in ((70, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(22) + 120, 0), (S(25) + 30, 0), (S(30), 0), (S(35) + 40, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (110, -4, "red"),
-        (110, 4, "blue"),
+        (92, -4, "red"),
+        (92, 4, "blue"),
         (S(3) + 10, 0, "green"),
         (S(8) + 30, 0, "yellow"),
         (S(11) + 50, 0, "rainbow"),
