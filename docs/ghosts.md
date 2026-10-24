@@ -16,8 +16,8 @@ design and code.
   gap to the ghost at the same checkpoint pops up in the middle for 3 s: green `-0.42`
   when you're ahead, red `+0.42` behind. It's measured by checkpoint (equal progress),
   not by who's physically nearer.
-- **On / off:** Options > General > TIME TRIAL GHOST (PERSONAL BEST or OFF), or GHOST:
-  ON/OFF in the pause menu during a Time Trial (it switches at once).
+- **On / off:** Options > General > TIME TRIAL GHOST (PERSONAL BEST or OFF). Mid-race,
+  it's the same place: pause > OPTIONS > GENERAL (it switches at once).
 - Time Trial keeps only the **blue balloons** (the boosts). The weapons and shields
   have nobody to use them on.
 

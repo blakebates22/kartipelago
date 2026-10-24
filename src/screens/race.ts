@@ -496,7 +496,6 @@ function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, sc
 // ---------------------------------------------------------------- pause
 
 function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () => void): Screen {
-  const ghostLabel = () => (game.settings.general.ghost === "off" ? "GHOST: OFF" : "GHOST: ON");
   const leave = (what: string, go: () => void) => () =>
     game.screens.push(
       confirmDialog(
@@ -523,21 +522,6 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
               },
             },
           ]),
-      // Time Trial: the ghost on or off, right here.
-      ...(session.timeTrial
-        ? [
-            {
-              label: ghostLabel(),
-              action: () => {
-                const g = game.settings.general;
-                g.ghost = g.ghost === "off" ? "best" : "off";
-                session.setGhost(g.ghost);
-                game.applySettings();
-                menu.items.find((i) => i.label.startsWith("GHOST"))!.label = ghostLabel();
-              },
-            },
-          ]
-        : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       ...(import.meta.env.DEV
         ? [
