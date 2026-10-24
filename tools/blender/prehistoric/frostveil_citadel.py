@@ -417,7 +417,9 @@ def main():
     def near(fn):
         return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < 80 else None
 
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 4.0, near(underfloor_z), c.lib("snow_ground", "deep_snow"))
+    # (Kept under every road, except round the tunnel rock, whose walls it seals.)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 4.0, near(underfloor_z), c.lib("snow_ground", "deep_snow"),
+                      clamp_where=lambda x, y: not in_tunnel_rock(x, y, 2.5))
     c.underfloor_flat("Abyss Floor", X0, X1, Y0, Y1, 4.0, near(abyss_z), c.lib("frost_rock", "abyss"))
 
     # The tunnel rock: the massif's east face, cut through along the route.
