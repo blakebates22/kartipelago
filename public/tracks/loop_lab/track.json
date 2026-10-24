@@ -54,9 +54,10 @@
       "id": "ban_01",
       "type": "bananas",
       "at": 473.7,
-      "across": 0,
-      "count": 5,
-      "gap": 2.6
+      "across": -4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
     },
     {
       "id": "bal_01",

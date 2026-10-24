@@ -279,6 +279,7 @@ export function placementsFrom(entities: unknown[], warnings: string[] = []) {
         across,
         count: finite(e.count) ? (e.count as number) : undefined,
         gap: finite(e.gap) ? (e.gap as number) : undefined,
+        spread: finite(e.spread) ? (e.spread as number) : undefined,
         respawn: finite(e.respawn) ? (e.respawn as number) : undefined,
         ...r,
       });

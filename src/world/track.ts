@@ -26,7 +26,8 @@ export interface TrackData {
   /** `route` (branching courses): `at` is along that whole-lap route instead of main. */
   zippers?: { at: number; across?: number; route?: string }[];
   /**
-   * Banana rows: distance along the lap, offset across, how many and how far apart, and
+   * Banana rows: distance along the lap, offset across, how many, how far apart (along
+   * and across), and
    * optionally seconds until each comes back once taken (overrides bananas.respawnSec).
    */
   bananas?: {
@@ -34,6 +35,8 @@ export interface TrackData {
     across?: number;
     count?: number;
     gap?: number;
+    /** Metres further across for each egg after the first (a diagonal cluster). */
+    spread?: number;
     respawn?: number;
     route?: string;
   }[];

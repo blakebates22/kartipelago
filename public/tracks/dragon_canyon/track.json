@@ -181,73 +181,55 @@
       "id": "ban_01",
       "type": "bananas",
       "at": 90.1,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_02",
       "type": "bananas",
       "at": 318.7,
-      "across": 3,
-      "count": 5,
-      "gap": 2.4
-    },
-    {
-      "id": "ban_03",
-      "type": "bananas",
-      "at": 618.9,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_04",
       "type": "bananas",
       "at": 834.4,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_05",
       "type": "bananas",
       "at": 1103.7,
-      "across": -3,
-      "count": 5,
-      "gap": 2.4
-    },
-    {
-      "id": "ban_06",
-      "type": "bananas",
-      "at": 1256.3,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
+      "across": 5.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_07",
       "type": "bananas",
       "at": 1433.7,
-      "across": 3,
-      "count": 5,
-      "gap": 2.4
+      "across": -5.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
     },
     {
       "id": "ban_08",
       "type": "bananas",
       "at": 1718.3,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
-    },
-    {
-      "id": "ban_09",
-      "type": "bananas",
-      "at": 1963.7,
-      "across": 0,
-      "count": 5,
-      "gap": 2.4
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "bal_01",

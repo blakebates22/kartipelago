@@ -23,8 +23,10 @@ export interface BananaSpot {
   route?: string;
   /** A row of this many along the track (default 1)... */
   count?: number;
-  /** ...this many metres apart (default 4). */
+  /** ...this many metres apart (default 4)... */
   gap?: number;
+  /** ...each this many metres further across than the last (a diagonal; default 0). */
+  spread?: number;
   /** Seconds until each comes back once taken; overrides the field's respawnSec. */
   respawn?: number;
 }
@@ -101,7 +103,7 @@ export function createBananaField(
         const at = spot.at + k * (spot.gap ?? 4);
         const s = track.samples[((Math.round((at / track.length) * n) % n) + n) % n]!;
         const rh = Math.hypot(s.right.x, s.right.z);
-        const across = spot.across ?? 0;
+        const across = (spot.across ?? 0) + k * (spot.spread ?? 0);
         bananas.push({
           ...still(),
           x: s.pos.x + (s.right.x / rh) * across,

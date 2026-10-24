@@ -157,7 +157,7 @@
     "pickupRadius": 2.2,
     "pickupHeight": 2,
     "restHeight": 0.5,
-    "respawnSec": 0,
+    "respawnSec": 8,
     "dropSpeed": 6,
     "dropUp": 7,
     "dropCarry": 0.35,
