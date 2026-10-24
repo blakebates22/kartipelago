@@ -858,6 +858,10 @@ class Course:
             meta = json.load(f)
         meta["name"] = self.name
         meta["generator"] = "tools/blender/prehistoric/%s.py (re-running it rewrites entities)" % self.id
+        # The eggs: a few small clusters off the racing line (eggs.py).
+        import eggs  # noqa: E402
+
+        eggs.cluster(self.entities, eggs._routes(os.path.join(TRACKS_DIR, self.id)))
         meta["entities"] = self.entities
         if extra:
             meta.update(extra)
@@ -870,8 +874,11 @@ class Course:
         return rep
 
 
-def s_near(course, x, y):
-    """Distance along the route of the route point nearest (x, y)."""
+def s_near(course, x, y, z=None):
+    """Distance along the route of the route point nearest (x, y) (and, given z, the
+    nearest in 3D: for a spot under or over another part of the lap)."""
+    if z is not None:
+        return min(course.S, key=lambda q: (q.p.x - x) ** 2 + (q.p.y - y) ** 2 + (q.p.z - z) ** 2).s
     smp, _ = course.nearest(x, y)
     return smp.s
 
@@ -1040,6 +1047,79 @@ def route_points_by(pts, z, every=14.0, width=None):
     return out
 
 
+def along(pts, z):
+    """
+    For layouts whose heights come from z(distance, segment): the turtle's distances are
+    measured in plan, but the course measures along the road itself, which is longer
+    wherever it climbs (a steep spiral's 3D length is several metres more). Returns
+    (to_road, to_plan): plan distance -> distance along the road, and back.
+    """
+    d2 = [0.0]
+    d3 = [0.0]
+    zp = z(0.0, pts[0][3])
+    for i in range(1, len(pts)):
+        a, b = pts[i - 1], pts[i]
+        h = math.hypot(b[0] - a[0], b[1] - a[1])
+        d2.append(d2[-1] + h)
+        zb = z(d2[-1], b[3])
+        d3.append(d3[-1] + math.sqrt(h * h + (zb - zp) ** 2))
+        zp = zb
+
+    def interp(xs, ys, v):
+        import bisect
+
+        if v <= xs[0]:
+            return ys[0] + (v - xs[0])
+        if v >= xs[-1]:
+            return ys[-1] + (v - xs[-1])
+        k = bisect.bisect_right(xs, v)
+        x0, x1 = xs[k - 1], xs[k]
+        return ys[k - 1] + (ys[k] - ys[k - 1]) * (v - x0) / max(1e-9, x1 - x0)
+
+    return (lambda d: interp(d2, d3, d)), (lambda s: interp(d3, d2, s))
+
+
+def clear_piers(c, piece, terrain, **kw):
+    """props.piers under a bridge piece, but none that would come down through another
+    road below it (a spiral's lower turn, a loop's way in, a road passing under): a post
+    stands only where its own road is the only one over that spot."""
+    import props
+
+    def avoid(x, y, bottom):
+        zs = [q.p.z for q in c.S[::2] if (q.p.x - x) ** 2 + (q.p.y - y) ** 2 < (q.w / 2 + 2.0) ** 2]
+        if not zs:
+            return False
+        top = max(zs)
+        return any(bottom + 0.3 < z < top - 3.0 for z in zs)
+
+    return props.piers(c, piece, terrain=terrain, avoid=avoid, **kw)
+
+
+def with_jumps(base, seg_of, jumps, run=12.0, out=30.0):
+    """
+    A road height z(d, seg) from base(d, seg) with jumps cut in: for each (lip, landing,
+    drop, kick), a kicker over the last `run` metres up to the lip (`kick` metres up), the
+    flight line across the gap, a landing `drop` metres below the road there (so a kart at
+    ordinary speed clears it), and the road easing back up out of the dip over `out`
+    metres. Distances are the layout's (plan) distances.
+    """
+
+    def b(dd):
+        return base(dd, seg_of(dd))
+
+    def z(d, seg):
+        for lip, land, drop, kick in jumps:
+            if lip - run <= d <= land + out:
+                if d <= lip:
+                    return b(d) + kick * ((d - (lip - run)) / run) ** 2
+                if d <= land:
+                    return lerp(b(lip) + kick, b(land) - drop, (d - lip) / (land - lip))
+                return b(d) - drop * (1 - smooth((d - land) / out))
+        return base(d, seg)
+
+    return z
+
+
 def segment_starts(pts):
     """Distance along a turtle path where each segment starts."""
     out = {}
@@ -1079,11 +1159,18 @@ def _underfloor(self, name, x0, x1, y0, y1, cell, height, mat):
     return ob
 
 
-def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat):
+def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, clamp_where=None):
     """
     Like underfloor, but every cell is its own flat square at the lowest of its corners:
     under the steepest cliffs there's still a flat floor (never a steep face, which would
     count as a wall), so nothing can fall through the world anywhere.
+
+    It's also kept `clear` metres under every road surface already built there (roads,
+    side roads, shortcuts), so it can never sit above the road: `height` is
+    usually the natural ground, and where a road is cut lower than that, a floor at the
+    natural height would be an invisible plane over the road (it slowed karts down and
+    blocked Dry Gulch's mine). `clamp_where(x, y)` can limit where that applies (round a
+    tunnel's rock, the old floor height is what keeps the walls sealed).
     """
     nx = int(round((x1 - x0) / cell))
     ny = int(round((y1 - y0) / cell))
@@ -1091,6 +1178,7 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat):
     for j in range(ny + 1):
         for i in range(nx + 1):
             hs[i, j] = height(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny)
+    lowest = self._lowest_surface()
     bm = bmesh.new()
     for j in range(ny):
         for i in range(nx):
@@ -1100,12 +1188,57 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat):
             z = min(q)
             xa, xb = x0 + (x1 - x0) * i / nx, x0 + (x1 - x0) * (i + 1) / nx
             ya, yb = y0 + (y1 - y0) * j / ny, y0 + (y1 - y0) * (j + 1) / ny
+            for u, v in ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.5, 0.0), (1.0, 0.5), (0.5, 1.0), (0.0, 0.5)):
+                if clamp_where is not None and not clamp_where(lerp(xa, xb, u), lerp(ya, yb, v)):
+                    continue
+                s = lowest(lerp(xa, xb, u), lerp(ya, yb, v))
+                if s is not None:
+                    z = min(z, s - clear)
             # A hair of overlap, so neighbouring squares never leave a crack.
             e = 0.02
             bm.faces.new([bm.verts.new(v) for v in ((xa - e, ya - e, z), (xb + e, ya - e, z), (xb + e, yb + e, z), (xa - e, yb + e, z))])
     ob = self.mesh_object(name, bm, "Collision", "collision")
     self.assign(ob, mat)
     return ob
+
+
+def _lowest_surface(self):
+    """A lookup (x, y) -> the height of the lowest road surface built so far there (the
+    top faces of every road, side road and shortcut), or None if there's none. Only
+    roads: a rock's buried base or a deck's underside mustn't drag the floor down."""
+    from mathutils.bvhtree import BVHTree
+
+    dg = bpy.context.evaluated_depsgraph_get()
+    verts, faces = [], []
+    roads = self.colls.get("Roads")
+    for ob in list(roads.all_objects) if roads else []:
+        if ob.type not in ("MESH", "CURVE") or ob.get("kp_role", "both") not in ("both", "collision"):
+            continue
+        ev = ob.evaluated_get(dg)
+        try:
+            me = ev.to_mesh()
+        except RuntimeError:
+            continue
+        if me is None:
+            continue
+        mw = ob.matrix_world
+        nm = mw.to_3x3().inverted().transposed()
+        k = len(verts)
+        verts += [mw @ v.co for v in me.vertices]
+        for p in me.polygons:
+            if (nm @ p.normal).normalized().z > 0.5:
+                faces.append([k + i for i in p.vertices])
+        ev.to_mesh_clear()
+    if not faces:
+        return lambda x, y: None
+    tree = BVHTree.FromPolygons(verts, faces)
+    up = Vector((0.0, 0.0, 1.0))
+
+    def lowest(x, y):
+        hit = tree.ray_cast(Vector((x, y, -2000.0)), up, 4000.0)
+        return None if hit[0] is None else hit[0].z
+
+    return lowest
 
 
 def _glow(self, obs, lights, radius, color, base=1.0, region=None):
@@ -1170,6 +1303,7 @@ def _merge_props(self, colls, cell=160.0):
 Course.underfloor = _underfloor
 Course.merge_props = _merge_props
 Course.underfloor_flat = _underfloor_flat
+Course._lowest_surface = _lowest_surface
 Course.glow = _glow
 
 
