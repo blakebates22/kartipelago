@@ -1,8 +1,9 @@
 // Hearthglow Hollow (Frostveil Peaks, course 3): it's in the world with its own evening
 // theme (with stars) and music; it loads cleanly; its moving parts are where they should
 // be and keep to the race clock (snowballs and the sleigh cross the road, presents sit
-// by it, the bell swings); a snowball or the sleigh is a solid bump, a present bursts and
-// comes back; the frozen-river shortcut counts as the lap it skips; and the AI drives it.
+// by it, the bell swings); a snowball or the sleigh is a solid bump, a present bursts (for a boost) and
+// comes back; the rooftop shortcut counts as the lap it skips (and saves a lot); and the AI
+// drives it, in under a minute and a half.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
@@ -27,19 +28,29 @@ type Entity = { type: string } & Record<string, unknown>;
 const entitiesOf = (p: { meta: { entities?: unknown[] } }) => (p.meta.entities ?? []) as Entity[];
 const dt = 1 / 120;
 
-// The frozen-river shortcut (game coordinates), from hearthglow_hollow.py's SHORTCUT.
+// The rooftop shortcut (game coordinates), from hearthglow_hollow.py's roof_points(): off
+// the west lane, up the alley ramp, along the rooftops, and the leap off the last roof
+// onto the finish street.
 const SHORTCUT: [number, number, number][] = [
-  [-57, 2.6, -100],
-  [-61, 2.0, -116],
-  [-78, 0.2, -136],
-  [-100, -1.2, -150],
-  [-122, -1.4, -156],
-  [-138, -1.3, -162],
-  [-145, -0.6, -180],
-  [-148, 1.4, -205],
-  [-155, 3.0, -228],
-  [-166, 3.6, -238.5],
-  [-180, 3.7, -241],
+  [-274.0, 4.0, -0.0],
+  [-267.2, 6.5, 19.0],
+  [-251.4, 10.4, 31.5],
+  [-235.0, 10.4, 42.9],
+  [-218.6, 10.4, 54.4],
+  [-202.2, 10.4, 65.9],
+  [-185.8, 10.4, 77.3],
+  [-169.5, 10.4, 88.8],
+  [-153.1, 10.4, 100.3],
+  [-136.7, 8.9, 111.8],
+  [-120.3, 8.9, 123.2],
+  [-103.9, 8.9, 134.7],
+  [-87.5, 8.9, 146.2],
+  [-70.4, 7.4, 156.4],
+  [-50.6, 7.4, 159.8],
+  [-31.2, 7.4, 155.1],
+  [-15.1, 7.4, 143.2],
+  [-11.4, 7.4, 138.5],
+  [-3.3, 3.0, 127.0],
 ];
 
 describe("Hearthglow Hollow", () => {
@@ -53,15 +64,15 @@ describe("Hearthglow Hollow", () => {
     expect(SONGS[t.music]?.id).toBe("hearthglow");
   });
 
-  it("loads cleanly: pickups, zippers, two jumps with catches, a climb, a starry sky", async () => {
+  it("loads cleanly: pickups, zippers, a jump with a catch, a climb, a starry sky", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
     expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(5);
     expect(p.trackData.bananas?.length).toBeGreaterThan(0);
     expect(p.trackData.balloons?.length).toBeGreaterThan(0);
-    expect(entitiesOf(p).filter((e) => e.type === "respawn")).toHaveLength(2);
+    expect(entitiesOf(p).filter((e) => e.type === "respawn")).toHaveLength(1);
     const ys = p.trackData.points.map((q) => q.y ?? 0);
-    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(40);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(20);
     expect(Math.min(...p.trackData.points.map((q) => q.width ?? 0))).toBeGreaterThanOrEqual(13);
     expect(p.look.skyDome?.stars?.count).toBeGreaterThan(100);
   });
@@ -109,15 +120,16 @@ describe("Hearthglow Hollow", () => {
     expect(es.some((e) => e.type === "snowfall")).toBe(true);
   });
 
-  it("counts the frozen-river shortcut as the stretch it skips", async () => {
+  it("counts the rooftop shortcut as the stretch it skips, and it saves at least 150 m", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
-    const race = createRace(track, { ...tuning.race, laps: 2 }, 1);
+    const rc = { ...tuning.race, laps: 2 };
+    const race = createRace(track, rc, 1);
     const s0 = track.samples[0]!;
     const k = createKartState(s0.pos.x, s0.pos.z, track.start.heading, s0.pos.y);
     while (race.phase === "countdown") {
       tickRace(race, dt);
-      stepRacer(race, 0, k, true, 0, tuning.race, dt);
+      stepRacer(race, 0, k, true, 0, rc, dt);
     }
     // Where the shortcut leaves and rejoins the road, along the lap.
     const along = (x: number, z: number) => {
@@ -134,6 +146,13 @@ describe("Hearthglow Hollow", () => {
     };
     const sIn = along(SHORTCUT[0]![0], SHORTCUT[0]![2]);
     const sOut = along(SHORTCUT.at(-1)![0], SHORTCUT.at(-1)![2]);
+    let roofs = 0;
+    for (let i = 0; i + 1 < SHORTCUT.length; i++)
+      roofs += Math.hypot(
+        SHORTCUT[i + 1]![0] - SHORTCUT[i]![0],
+        SHORTCUT[i + 1]![2] - SHORTCUT[i]![2],
+      );
+    expect(sOut - sIn - roofs).toBeGreaterThan(150);
     // One lap's path: the road to the shortcut, the shortcut, the road from it.
     const path: { x: number; y: number; z: number }[] = [];
     for (const q of track.samples)
@@ -168,10 +187,13 @@ describe("Hearthglow Hollow", () => {
       k.y = a.y + (b.y - a.y) * f + 0.4;
       k.z = a.z + (b.z - a.z) * f;
       if (race.racers[0]!.activeRoute !== "main") tookShortcut = true;
-      stepRacer(race, 0, k, true, 1, tuning.race, dt);
+      stepRacer(race, 0, k, true, 1, rc, dt);
     }
     expect(tookShortcut).toBe(true);
-    expect(race.racers[0]!.lapTimes.length, `passed ${race.racers[0]!.passed}`).toBe(2);
+    expect(
+      race.racers[0]!.lapTimes.length,
+      `passed ${race.racers[0]!.passed} laps ${race.racers[0]!.lapTimes.map((t) => t.toFixed(1))}`,
+    ).toBe(2);
   });
 
   it("can be driven: three AI laps through every checkpoint", async () => {
@@ -180,8 +202,8 @@ describe("Hearthglow Hollow", () => {
     const racer = r.race.racers[0]!;
     expect(racer.lapTimes, `laps (respawns ${r.respawns})`).toHaveLength(3);
     for (const t of racer.lapTimes) {
-      expect(t).toBeGreaterThan(85);
-      expect(t).toBeLessThan(130);
+      expect(t).toBeGreaterThan(55);
+      expect(t).toBeLessThan(90);
     }
     expect(r.respawns).toBe(0);
     expect(r.worstAbove).toBeLessThan(2.5);
@@ -297,12 +319,12 @@ describe("snowballs, the sleigh and the bell", () => {
     clock = 2;
     h.step([], dt);
     expect(h.solids.every((s) => s.x > 1e5)).toBe(true);
-    // The present: drive into it and it bursts, slowing you a little; it's back later.
+    // The present: drive into it and it bursts (the session gives the boost); it's back later.
     const q = createKartState(20, 0, 0, 0);
     q.grounded = true;
     q.speed = 20;
     expect(h.stepKart(0, q, "road", gate, dt).smashed).toBe(true);
-    expect(q.speed).toBeCloseTo(18, 5);
+    expect(q.speed).toBeCloseTo(20, 5);
     expect(h.stepKart(0, q, "road", gate, dt).smashed).toBeUndefined();
     for (let t = 0; t < 15; t += 0.1) h.step([], 0.1);
     expect(h.stepKart(0, q, "road", gate, dt).smashed).toBe(true);

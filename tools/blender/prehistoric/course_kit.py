@@ -410,6 +410,51 @@ class Course:
             z = min(z, best[1])  # never poke up through the nearest road
         return wmax, z
 
+    def side_road(self, name, pts, mat, surface=None, width=9.0, shoulder=1.0, shoulder_mat=None, barrier=0.0, barrier_mat=None,
+                  deck=0.0, deck_mat=None, ground=True):
+        """
+        Like shortcut (a road off the race line through (x, y, z) points), with a barrier
+        and a deck if asked; `ground=False`: the terrain doesn't rise to meet it (a road
+        up on the rooftops, say). Its samples are in self.side_samples either way.
+        """
+        cd = bpy.data.curves.new(name, "CURVE")
+        cd.dimensions = "3D"
+        cd.twist_mode = "Z_UP"
+        sp = cd.splines.new("BEZIER")
+        sp.bezier_points.add(len(pts) - 1)
+        for bp, p in zip(sp.bezier_points, pts):
+            bp.co = p[:3]
+            bp.handle_left_type = bp.handle_right_type = "AUTO"
+        sp.resolution_u = 12
+        ob = bpy.data.objects.new(name, cd)
+        self.coll("Roads").objects.link(ob)
+        road.attach_road(ob, width=width, barrier=barrier, deck=deck)
+        mod = ob.modifiers["KP Road"]
+        road.set_input(mod, "Shoulder Width", shoulder)
+        road.set_input(mod, "Segment Length", 1.0)
+        e = materials.entry(mat)
+        materials.apply_to_road(ob, self.lib(mat, surface), "road", e["tileMetres"], 0, materials.aspect(e))
+        sm = shoulder_mat or (mat, "dirt")
+        se = materials.entry(sm[0])
+        materials.apply_to_road(ob, self.lib(*sm), "shoulder", se["tileMetres"], 0, materials.aspect(se))
+        if barrier > 0:
+            bm_ = barrier_mat or ("valley_cliff", "wall")
+            be = materials.entry(bm_[0])
+            materials.apply_to_road(ob, self.lib(*bm_), "barrier", be["tileMetres"], 0, materials.aspect(be))
+        if deck > 0:
+            dm = deck_mat or ("valley_cliff", "wall")
+            de = materials.entry(dm[0])
+            materials.apply_to_road(ob, self.lib(*dm), "deck", de["tileMetres"], 0, materials.aspect(de))
+        bpy.context.view_layer.update()
+        if not hasattr(self, "side_samples"):
+            self.side_samples = []
+        for p in export.sample_route(ob, 1.0)["points"]:
+            smp = Sample(Vector((p["x"], -p["z"], p["y"])), width, 0.0, 0.0)
+            self.side_samples.append(smp)
+            if ground:
+                self.extra_ground.append(smp)
+        return ob
+
     def shortcut(self, name, pts, mat, surface=None, width=9.0, shoulder=1.0, shoulder_mat=None):
         """
         A side road off the race line (a shortcut): a road curve through (x, y, z) points,

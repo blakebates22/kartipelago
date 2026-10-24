@@ -49,7 +49,8 @@
  *               crossing the road on a fixed beat, bells jingling first. Solid, likewise.
  *   present     { "type": "present", "x", "y", "z", "size": 2.4, "variant": 0,
  *               "heading": 0 }: a big wrapped present by the road. Drive into it and it
- *               bursts (a little slower for a moment); it's back a while later.
+ *               bursts into confetti and gives you a small boost (the session fires a
+ *               level 1 blue balloon's boost on `smashed`); it's back a while later.
  *   bell        { "type": "bell", ... } (see game/movers.ts): the bell tower's bell,
  *               swinging and ringing on a fixed beat. Purely visual (and audible).
  *   ornament    { "type": "ornament", "x", "y", "z", "r": 1.5, "color": "#d82a3a" }: a
@@ -347,7 +348,7 @@ export interface HazardEvents {
   respawned?: Spot;
   /** Thrown into the air by a geyser. */
   launched?: boolean;
-  /** Smashed a present. */
+  /** Smashed a present (a small boost: the session fires a level 1 blue boost). */
   smashed?: boolean;
   /** Bumped into a snowball or the sleigh. */
   bumped?: boolean;
@@ -1328,7 +1329,6 @@ export function createHazards(opts: {
         if (p.down > 0) continue;
         if (Math.hypot(s.x - p.x, s.z - p.z) < p.size * 0.75 + 1.1 && s.y < p.y + p.size * 1.3) {
           p.down = 14;
-          s.speed *= 0.9;
           ev.smashed = true;
           confetti?.burst(p.x, p.y + p.size * 0.6, p.z, 40, 6, 7, 1.6, 0xffffff);
           if (confetti)

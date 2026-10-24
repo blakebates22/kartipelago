@@ -46,6 +46,7 @@ import {
   type ItemEvent,
 } from "../items/world";
 import type { ItemsConfig } from "../items/config";
+import { activateBlue } from "../items/boosts";
 import { createItemView } from "../render/itemView";
 import { Racer as RacerView, motionOf } from "../render/racers/racer";
 import { DESIGNS, RACER_IDS, type RacerId } from "../render/racers/designs";
@@ -844,6 +845,11 @@ function buildSession(
         if (hz.burnt) e.racer.react("burn");
         if (hz.splashed === "deep") e.racer.react("splash");
         if (hz.struck) e.racer.react("burn");
+        // A present bursts into confetti and gives a small boost: a level 1 blue balloon's.
+        if (hz.smashed) {
+          activateBlue(e.state, 1, drive.throttle, cfg, itemsCfg);
+          if (i === 0 && !demo) sfx.blueBoost(itemsCfg.volume, 1, itemsCfg.blue3ChargeSec);
+        }
         if (hz.respawned) {
           loops?.reset(i);
           snapPrev(e);

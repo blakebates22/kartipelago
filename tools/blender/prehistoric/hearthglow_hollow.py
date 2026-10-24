@@ -3,26 +3,25 @@
 #
 #   python tools/blender/prehistoric/hearthglow_hollow.py      (the bpy module)
 #
-# A lap of about 2.55 km through a magical alpine village at twilight, all decorated
-# for Christmas, and up the mountain above it:
+# A short, twisting lap (about 1.7 km) through a magical alpine village at twilight, all
+# decorated for Christmas, and up the mountain above it (the version before is kept as
+# hearthglow_hollow_v2):
 #
-#   A  The Village Entrance: the start, under a great wooden Christmas arch, up a street
-#      of glowing cottages, market stalls and lantern posts, the giant tree ahead.
-#   B  The Village Square: down into the plaza and round the giant Christmas tree in a
-#      sweep of curves, past the frozen fountain, stalls, snowmen and presents.
-#   C  The Frozen River Crossing: north over an arched stone bridge above the frozen
-#      river (or, before it, a shortcut down onto the river ice: tighter, slippery and
-#      shorter), then west along the north bank.
-#   D  The Enchanted Forest: winding between towering pines strung with lights, past
-#      cabins and lanterns; giant snowballs roll across the road on a fixed beat.
-#   E  The Mountain Climb: a long climb up the mountainside on snowy roads and timber
-#      trestles, a hairpin, the village glowing below, a high trestle over the creek's
-#      gorge, to the bell tower at the summit.
-#   F  The Sleigh Run: a fast plunge south down a broad snowy chute under decorated
-#      arches, two jumps, and a sleigh that crosses the run on a fixed beat.
-#   G  The Covered Bridge and the Village Return: through a long lantern-lit covered
-#      bridge over the river, back through the village's lanes, and a last drift round
-#      onto the finish straight.
+#   A  The Village Square: from the start, under a great wooden Christmas arch, round the
+#      giant Christmas tree in a sweep of curves, past the frozen fountain, stalls,
+#      snowmen and presents (drive into a present: it bursts into confetti, and boosts
+#      you like a blue balloon).
+#   B  The Frozen River Crossing: north over an arched stone bridge above the frozen
+#      river, and out of the village.
+#   C  The Mountain Road: winding up through the lit pines in tight S-bends, giant
+#      snowballs rolling across on a fixed beat, to the bell tower at the summit.
+#   D  The Sleigh Run: a plunge down the far side, a jump, a sleigh crossing on a fixed
+#      beat, and a chain of S-bends down to the river.
+#   E  The Covered Bridge and the Village Return: through the lantern-lit covered bridge,
+#      down the west lane, along the bottom lane and a last drift onto the finish
+#      street. Or, for the brave: up a hidden ramp in an alley off the west lane, along
+#      the rooftops (two gaps to clear, and a long drop if you slip) and off the last
+#      roof onto the finish street just before the line.
 #
 # Every corner is a 32-60 m arc. Saves tracks-src/hearthglow_hollow.blend and exports
 # public/tracks/hearthglow_hollow/. The scenery is hearthglow_scenery.py, built from
@@ -41,49 +40,38 @@ TRACK_ID = "hearthglow_hollow"
 
 # ---------------------------------------------------------------- the layout
 
-START = (0.0, -180.0)
+START = (0.0, -75.0)
 LAYOUT = [
-    ("S", 120),  # 0  A: the entrance street, north
-    ("R", 40, 40),  # 1  B: down into the square...
+    ("S", 16),  # 0  the start line, right before the square
+    ("R", 40, 40),  # 1  A: into the square...
     ("L", 50, 120),  # 2  ...round the giant tree...
     ("R", 45, 80),  # 3  ...and out, north
-    ("S", 30),  # 4  C: the street to the bridge (the shortcut leaves here)
+    ("S", 30),  # 4  B: the street to the bridge
     ("S", 60),  # 5  the stone bridge over the frozen river
     ("S", 20),  # 6
-    ("L", 40, 90),  # 7  west along the north bank
-    ("S", 80),  # 8  the north lane (the shortcut comes back here)
-    ("R", 45, 60),  # 9  D: into the forest
-    ("S", 40),  # 10 the first snowball crossing
-    ("L", 40, 60),  # 11
-    ("R", 40, 90),  # 12
-    ("S", 40),  # 13 the second snowball crossing
-    ("R", 40, 90),  # 14 E: onto the mountainside, east
-    ("S", 130),  # 15 the climb
-    ("L", 32, 180),  # 16 the hairpin
-    ("S", 230),  # 17 the high road west, the village below; the creek trestle
-    ("L", 50, 90),  # 18 the summit and the bell tower
-    ("S", 80),  # 19 F: the sleigh run
-    ("R", 60, 40),  # 20
-    ("L", 60, 80),  # 21
-    ("R", 60, 40),  # 22
-    ("S", 80),  # 23 the first jump
-    ("S", 70),  # 24 the sleigh crossing
-    ("S", 90),  # 25 the second jump (stretched to close the loop)
-    ("L", 50, 90),  # 26 G: east...
-    ("S", 80),  # 27 ...through the covered bridge
-    ("S", 120),  # 28 the river lane (stretched to close the loop)
-    ("R", 40, 90),  # 29 south down the west lane
-    ("S", 110),  # 30
-    ("L", 45, 90),  # 31 east along the bottom lane
-    ("S", 40),  # 32
-    ("L", 45, 90),  # 33 the last drift, onto the finish straight
-    ("S", 40),  # 34
+    ("L", 40, 60),  # 7  C: out of the village and up into the pines...
+    ("S", 30),  # 8  the first snowball crossing
+    ("R", 35, 90),  # 9  ...winding up the mountain road in S-bends
+    ("L", 35, 130),  # 10
+    ("R", 35, 70),  # 11
+    ("S", 20),  # 12 the second snowball crossing
+    ("L", 40, 150),  # 13 the summit and the bell tower
+    ("S", 100),  # 14 D: the sleigh run: the jump and the sleigh (stretched to close the loop)
+    ("L", 40, 60),  # 15 a chain of S-bends down to the river
+    ("R", 40, 120),  # 16
+    ("L", 40, 60),  # 17
+    ("S", 120),  # 18 E: through the covered bridge
+    ("S", 200),  # 19 the west lane (the rooftop shortcut leaves on the left)
+    ("L", 45, 90),  # 20
+    ("S", 200),  # 21 the bottom lane (stretched to close the loop)
+    ("L", 30, 90),  # 22 the last drift, onto the finish street
+    ("S", 135),  # 23 the finish street, north to the line
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 25, 28, START, 90.0)
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 14, 21, START, 90.0)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
-# The two jumps on the sleigh run: (lip, landing).
-JUMPS = [(SEG[23] + 30, SEG[23] + 42), (SEG[25] + 38, SEG[25] + 50)]
+# The jump on the sleigh run: (lip, landing).
+JUMPS = [(SEG[14] + 48, SEG[14] + 62)]
 
 
 def _seg_point(i):
@@ -98,7 +86,7 @@ def _arc_centre(i):
 
 
 TREE = _arc_centre(2)  # the giant Christmas tree, in the middle of the square
-SUMMIT = _arc_centre(18)  # the bell tower stands inside the summit turn
+SUMMIT = _arc_centre(13)  # the bell tower stands inside the summit turn
 
 # Heights along the lap (metres along it, height); the road eases between them.
 J = JUMPS
@@ -111,24 +99,21 @@ ANCHORS = [
     (SEG[5], 4.2),  # the stone bridge, arched over the river
     (SEG[5] + 30, 5.0),
     (SEG[6], 4.2),
-    (SEG[7], 3.6),
-    (SEG[9], 4.0),
-    (SEG[12], 7.0),
-    (SEG[14], 11.0),
-    (SEG[15], 12.5),
-    (SEG[16], 23.0),
-    (SEG[17], 28.0),
-    (SEG[18], 49.0),
-    (SEG[19], 51.0),  # the summit
-    (J[0][0], 25.5),  # the first jump's lip
-    (J[0][1], 20.6),  # ...its landing
-    (J[1][0], 11.5),  # the second jump's lip
-    (J[1][1], 6.8),  # ...its landing
-    (SEG[26], 4.6),
-    (SEG[27], 4.4),  # the covered bridge
-    (SEG[28], 4.4),
-    (SEG[29], 3.4),
-    (SEG[31], 3.0),
+    (SEG[7], 4.0),
+    (SEG[9], 9.0),  # the mountain road
+    (SEG[10], 12.5),
+    (SEG[11], 18.5),
+    (SEG[13], 24.0),
+    (SEG[14], 26.0),  # the summit
+    (J[0][0], 21.5),  # the jump's lip
+    (J[0][1], 17.0),  # ...its landing
+    (SEG[15], 14.0),
+    (SEG[17], 8.0),
+    (SEG[18], 5.6),  # the covered bridge
+    (SEG[18] + 50, 5.2),
+    (SEG[19], 4.0),
+    (SEG[20], 3.2),
+    (SEG[22], 3.0),
     (LENGTH, 3.0),
 ]
 
@@ -152,11 +137,11 @@ def road_z(d, seg=None):
 def road_w(d, seg):
     if seg in (1, 2, 3):
         return 17.0  # the square
-    if seg in (19, 20, 21, 22, 23, 24, 25):
+    if seg in (14, 15, 16, 17):
         return 18.0  # the sleigh run's broad chute
-    if seg in (5, 27):
+    if seg in (5, 18):
         return 14.0  # the bridges
-    if seg in (15, 16, 17):
+    if seg in (8, 9, 10, 11, 12, 13):
         return 14.0  # the mountain road
     return 15.0
 
@@ -240,6 +225,67 @@ def mountainside(x, y, floor):
     return lerp(floor, max(floor, h), w)
 
 
+# The mountain the road winds up and the sleigh run comes down: a hill raised round those
+# roads (each point of them a cone of ground, falling away 0.3 m a metre beyond 12 m),
+# kept on a grid so it's quick to look up.
+_HILL = {}
+
+
+def _hill_grid():
+    if _HILL:
+        return _HILL
+    pts = []
+    d = 0.0
+    for i, (x, y, _, seg) in enumerate(PATH):
+        if i:
+            d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
+        if SEG[7] + 20 <= d <= SEG[18] and (not pts or d - pts[-1][3] >= 6.0):
+            pts.append((x, y, road_z(d) - 0.5, d))
+    x0, x1 = min(p[0] for p in pts) - 120, max(p[0] for p in pts) + 120
+    y0, y1 = min(p[1] for p in pts) - 120, max(p[1] for p in pts) + 120
+    cell = 4.0
+    nx, ny = int((x1 - x0) / cell) + 2, int((y1 - y0) / cell) + 2
+    poly = [(p[0], p[1]) for p in pts]
+
+    def inside(px, py):
+        hit = False
+        for (ax, ay), (bx, by) in zip(poly, poly[1:] + poly[:1]):
+            if (ay > py) != (by > py) and px < ax + (py - ay) * (bx - ax) / (by - ay):
+                hit = not hit
+        return hit
+
+    grid = []
+    for j in range(ny):
+        row = []
+        for i in range(nx):
+            gx, gy = x0 + i * cell, y0 + j * cell
+            h = max(z - 0.3 * max(0.0, math.hypot(gx - px, gy - py) - 12.0) for px, py, z, _ in pts)
+            if inside(gx, gy):
+                # Inside the loop of the mountain road: the mountain top, rising between
+                # the roads to a little above them.
+                ws = [(1.0 / max(1.0, (gx - px) ** 2 + (gy - py) ** 2), z) for px, py, z, _ in pts]
+                w = sum(a for a, _ in ws)
+                far = min(math.hypot(gx - px, gy - py) for px, py, _, _ in pts)
+                h = max(h, sum(a * z for a, z in ws) / w + 0.12 * max(0.0, far - 12.0))
+            row.append(h)
+        grid.append(row)
+    _HILL.update(x0=x0, y0=y0, cell=cell, nx=nx, ny=ny, grid=grid)
+    return _HILL
+
+
+def hill(x, y):
+    g = _hill_grid()
+    u, v = (x - g["x0"]) / g["cell"], (y - g["y0"]) / g["cell"]
+    if not (0 <= u < g["nx"] - 1 and 0 <= v < g["ny"] - 1):
+        return -99.0
+    i, j = int(u), int(v)
+    fu, fv = u - i, v - j
+    G = g["grid"]
+    a = lerp(G[j][i], G[j][i + 1], fu)
+    b = lerp(G[j + 1][i], G[j + 1][i + 1], fu)
+    return lerp(a, b, fv)
+
+
 def terrace(v, step=16.0):
     if v <= 0:
         return v
@@ -257,6 +303,7 @@ def land(x, y):
     h += 8.0 * sm((y - 200) / 200) * sm((-x - 60) / 120)
     north, west, east, south = mountains(x, y)
     h = mountainside(x, y, h)
+    h = max(h, hill(x, y))
     # The ridge the sleigh run comes down, west of the creek.
     ridge = sm((-x - 380) / 30) * max(0.0, (y + 40) * 0.1)
     h = max(h, 3.0 + ridge) if y > -60 else h
@@ -286,6 +333,10 @@ def classify(c, n, info):
     # The village square is paved (swept cobbles round the giant tree).
     if math.hypot(c.x - TREE[0], c.y - TREE[1]) < 86 and c.z < 6:
         return ("hearth_cobble", "snow_stone")
+    # Slip off the rooftops into the back gardens and you're put back (it's the price of
+    # the shortcut).
+    if info["d"] > 13 and roof_dist(c.x, c.y) < 9.0:
+        return ("summit_snow", "abyss")
     if info["d"] < 11:
         return ("summit_road", "packed_snow")
     return ("summit_snow", "deep_snow")
@@ -295,16 +346,57 @@ def underfloor_z(x, y):
     return min(land(x, y), natural(x, y)) - 0.35
 
 
-# The shortcut onto the frozen river: off the street before the stone bridge, down the
-# bank onto the ice, west along the river, and up the north bank onto the north lane.
-SHORTCUT = [(-57.0, 100.0), (-61.0, 116.0), (-78.0, 136.0), (-100.0, 150.0), (-122.0, 156.0), (-138.0, 162.0),
-            (-145.0, 180.0), (-148.0, 205.0), (-155.0, 228.0), (-166.0, 238.5), (-180.0, 241.0)]
+# The rooftop shortcut: off the west lane up a hidden ramp in an alley, along the roofs of
+# a row of cottages (eaves to eaves, two gaps to clear) in a long left-hand sweep, and
+# off the last roof, flying onto the finish street just before the line.
+ROOF_START = (-274.0, 0.0)  # on the west lane, heading south
+ROOF_LAYOUT = [("L", 30, 55), ("S", 220), ("L", 50, 90)]
+ROOF_PATH = kit.turtle(ROOF_LAYOUT, ROOF_START, 270.0, step=2.0)
+ROOF_Z = 10.4  # the boardwalk along the ridges (the first roofs; then a step down at each gap)
+ROOF_STEP = 1.5
+ROOF_RAMP = (6.0, 40.0)  # metres along the shortcut: the alley ramp up to the roofs
+ROOF_GAPS = [(0.45, 5.0), (0.74, 5.0)]  # (fraction of the roofs, gap length)
 
 
-def shortcut_z(i, n):
-    """Heights down onto the ice and back up: the street, the ice, the lane."""
-    zs = [2.6, 2.0, 0.2, -1.2, -1.4, -1.3, -0.6, 1.4, 3.0, 3.6, 3.7]
-    return zs[i]
+def roof_points():
+    """The shortcut's centre line: [(x, y, z, metres along)], every 2 m."""
+    out = []
+    d = 0.0
+    # (The west lane's height where the shortcut leaves it.)
+    z0 = road_z(SEG[19] + abs(_seg_point(19)[1] - ROOF_START[1]))
+    for i, (x, y, _, _) in enumerate(ROOF_PATH):
+        if i:
+            d += math.hypot(x - ROOF_PATH[i - 1][0], y - ROOF_PATH[i - 1][1])
+        a, b = ROOF_RAMP
+        if d <= a:
+            z = z0
+        elif d <= b:
+            z = lerp(z0, ROOF_Z, smooth((d - a) / (b - a)))
+        else:
+            # Each roof past a gap 1.5 m lower than the last (the cottages step down the
+            # lane), with a little kick at each gap's lip, so a kart at speed clears it.
+            z = ROOF_Z
+            for g0, g1 in roof_gaps():
+                if d >= g1:
+                    z -= ROOF_STEP
+                elif g0 - 5 <= d <= g0:
+                    z += 0.45 * ((d - (g0 - 5)) / 5) ** 2
+        out.append((x, y, z, d))
+    return out
+
+
+ROOF_LEN = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(ROOF_PATH, ROOF_PATH[1:]))
+
+
+def roof_gaps():
+    """The gaps in the boardwalk: [(from, to)] metres along the shortcut."""
+    a = ROOF_RAMP[1] + 10
+    span = ROOF_LEN - 10 - a
+    return [(a + span * f - g / 2, a + span * f + g / 2) for f, g in ROOF_GAPS]
+
+
+def roof_dist(x, y):
+    return _nearest(x, y, [(p[0], p[1]) for p in ROOF_PATH[::3]])[0]
 
 
 # ---------------------------------------------------------------- the course
@@ -365,8 +457,16 @@ def main():
             "deck_mat": ("timber_beam", "wall"),
             "ground": False,
         },
+        # The west lane where the rooftop shortcut leaves it: no snow wall on its left.
+        "lane": {"mat": "hearth_cobble", "shoulder": 1.4, "shoulder_mat": snowbank},
     }
     lift = {"lift": lambda u, n: 1.5 * max(0.0, (u - (n - 10)) / 10) ** 2}
+
+    roof_in = kit.s_near(c, *ROOF_START)
+    # Where the leap off the last roof comes down on the finish street (no snow wall on
+    # its left there, so you land on the road and not behind the wall).
+    rx, ry, _, rh = ROOF_PATH[-1]
+    roof_land = kit.s_near(c, rx + 14 * math.cos(math.radians(rh)), ry + 14 * math.sin(math.radians(rh)))
 
     def label(smp):
         x, y, s = smp.p.x, smp.p.y, smp.s
@@ -381,22 +481,22 @@ def main():
         above = smp.p.z - natural(x, y)
         if seg in (4, 5, 6) and above > 2.5:
             return "stonebridge"
-        if seg in (27, 28) and above > 2.5:
+        if seg == 18 and above > 2.5:
             return "covered"
         if seg in (1, 2, 3):
             return "square"
-        if seg in (15, 16, 17, 18) and above > 4.0:
+        if 8 <= seg <= 13 and above > 4.0:
             return "trestle"
-        if seg == 18 or seg == 19:
+        if seg == 13:
             return "summit"
-        if seg in (15, 16, 17):
+        if 7 <= seg <= 12:
             return "climb"
-        if 19 <= seg <= 26:
+        if 14 <= seg <= 17:
             return "sleighrun"
-        if 9 <= seg <= 14:
-            return "forest"
+        if roof_in - 24 <= s <= roof_in + 20 or roof_land - 45 <= s <= roof_land + 15:
+            return "lane"
         # Icy patches in the village lanes.
-        if (seg == 8 and s > SEG[8] + 30) or (seg == 30 and s < SEG[30] + 50):
+        if (seg == 19 and s > roof_in + 40) or (seg == 21 and s < SEG[21] + 50):
             return "icy"
         return "street"
 
@@ -409,8 +509,21 @@ def main():
         elif k != "street":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "street", max_len=200.0))
-    short = [(x, y, shortcut_z(i, len(SHORTCUT))) for i, (x, y) in enumerate(SHORTCUT)]
-    c.shortcut("River Shortcut", short, "river_ice_road", "icy_stone", width=10.0, shoulder=0.8, shoulder_mat=("river_ice", "ice"))
+
+    # The rooftop shortcut: the alley ramp, then the boardwalk along the ridges in three
+    # stretches (with the two gaps between), none of them meeting the land.
+    pts = roof_points()
+    (g1a, g1b), (g2a, g2b) = roof_gaps()
+    stretches = [(0.0, ROOF_RAMP[1] + 4), (ROOF_RAMP[1], g1a), (g1b, g2a), (g2b, ROOF_LEN)]
+    for k, (a, b) in enumerate(stretches):
+        run = [(x, y, z) for x, y, z, d in pts if a - 0.01 <= d <= b + 0.01]
+        if k == 0:
+            # (Onward 4 m onto the first roof, so the ramp and the boardwalk overlap.)
+            c.side_road("Rooftop Ramp", run, "plank_road", "road", width=8.0, shoulder=0.4, shoulder_mat=("plank_road", "road"),
+                        deck=2.0, deck_mat=("timber_beam", "wall"), ground=False)
+        else:
+            c.side_road("Rooftops %d" % k, run, "plank_road", "road", width=8.0, shoulder=0.4, shoulder_mat=("plank_road", "road"),
+                        deck=0.6, deck_mat=("timber_beam", "wall"), ground=False)
 
     X0, X1, Y0, Y1 = -620, 520, -460, 720
     c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0)
@@ -429,27 +542,26 @@ def main():
 
     c.start_line()
     S = lambda i: SEG[i]  # noqa: E731
-    # Zippers: off the start, out of the square, along the north lane, up the climb, on
-    # the high road, down the sleigh run and out of the covered bridge.
-    c.zipper(40, 0)
+    # Zippers: out of the square, up the mountain road, off the summit, down the S-bends,
+    # out of the covered bridge and along the bottom lane.
     c.zipper(S(4) + 6, 0)
-    c.zipper(S(15) + 50, 0)
-    c.zipper(S(17) + 120, 0)
-    c.zipper(S(19) + 30, 0)
-    c.zipper(S(28) + 20, 0)
-    for at, across in ((80, -4), (S(3) + 20, 0), (S(8) + 20, 3), (S(13) + 30, 0), (S(15) + 100, 0), (S(17) + 60, -3), (S(24) + 50, 0), (S(28) + 70, 0), (S(32) + 10, 0)):
+    c.zipper(S(9) + 10, 0)
+    c.zipper(S(14) + 10, 0)
+    c.zipper(S(16) + 40, 0)
+    c.zipper(S(19) + 70, 0)
+    c.zipper(S(21) + 80, 0)
+    for at, across in ((S(3) + 20, 0), (S(8) + 10, 3), (S(11) + 20, 0), (S(15) + 10, 0), (S(19) + 120, 0), (S(21) + 140, 0), (S(23) + 60, -3)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
-        (100, -4, "red"),
-        (100, 4, "green"),
-        (S(2) + 50, 0, "blue"),
-        (S(8) + 50, 0, "yellow"),
-        (S(14) + 30, 0, "rainbow"),
-        (S(17) + 180, 0, "red"),
-        (S(20) + 30, -4, "green"),
-        (S(20) + 30, 4, "blue"),
-        (S(26) + 40, 0, "yellow"),
-        (S(30) + 60, 0, "rainbow"),
+        (S(2) + 50, -4, "blue"),
+        (S(2) + 50, 4, "red"),
+        (S(8) + 20, 0, "yellow"),
+        (S(12) + 10, 0, "rainbow"),
+        (S(15) + 30, -4, "green"),
+        (S(15) + 30, 4, "blue"),
+        (S(19) + 40, 0, "red"),
+        (S(21) + 60, 0, "yellow"),
+        (S(23) + 40, 0, "rainbow"),
     ):
         c.balloon(at, across, col)
 
@@ -457,20 +569,20 @@ def main():
     for lip, land_ in JUMPS:
         c.entity("respawn", **{"from": round(lip - 30, 1), "to": round(land_ + 6, 1), "at": round(land_ + 30, 1)})
 
-    # Checkpoints: one in the middle of the stretch the shortcut skips, with a twin gate
-    # across the shortcut on the ice (either counts), and none elsewhere in that stretch.
-    s_in, s_out = kit.s_near(c, *SHORTCUT[0]), kit.s_near(c, *SHORTCUT[-1])
+    # Checkpoints: one in the middle of the stretch the rooftops skip, with a twin gate
+    # across the rooftops (either counts), and none elsewhere in that stretch.
+    s_in = roof_in
+    land_pt = pts[-1]
+    s_out = kit.s_near(c, land_pt[0] + 30 * math.cos(math.radians(ROOF_PATH[-1][2])), land_pt[1] + 30 * math.sin(math.radians(ROOF_PATH[-1][2])))
     apex = (s_in + s_out) / 2
-    # (With a gate just before and just after the stretch, no gap is long enough for the
-    # generator to fill one in inside it.)
     gates = c.checkpoints(
-        extra=[S(2), s_in - 5, apex, s_out + 5, S(9) + 30, S(12), S(14) + 40, S(16), S(17) + 100, S(18) + 20, J[0][0] - 50, J[0][1] + 40,
-               J[1][0] - 45, J[1][1] + 40, S(27) + 40, S(29) + 40, S(31) + 40],
+        extra=[S(2), S(5) + 30, S(8) + 10, S(10) + 20, S(12), S(14) + 20, J[0][1] + 40, S(16) + 30, S(18) + 50, s_in - 6, apex, s_out + 4],
         avoid=[(s_in - 2, apex - 6), (apex + 6, s_out + 2)],
         height=8.0,
     )
     main_gate = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
-    c.alt_gate(main_gate, "river_shortcut", [(x, y, z) for x, y, z in short[2:7]], width=22.0)
+    mid = int(len(pts) * 0.3)
+    c.alt_gate(main_gate, "rooftop_shortcut", [(x, y, z) for x, y, z, _ in pts[mid - 4 : mid + 4]], width=14.0)
 
     import hearthglow_scenery  # noqa: E402
 

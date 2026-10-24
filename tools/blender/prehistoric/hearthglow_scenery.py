@@ -65,7 +65,7 @@ def far_from_road(c, x, y, margin, s_skip=None):
             continue
         if (smp.p.x - x) ** 2 + (smp.p.y - y) ** 2 < (smp.w / 2 + margin) ** 2:
             return False
-    return all((q.p.x - x) ** 2 + (q.p.y - y) ** 2 > (q.w / 2 + margin) ** 2 for q in c.extra_ground)
+    return all((q.p.x - x) ** 2 + (q.p.y - y) ** 2 > (q.w / 2 + margin) ** 2 for q in c.extra_ground + getattr(c, "side_samples", []))
 
 
 def ground(c, ter, x, y, default=None):
@@ -108,18 +108,64 @@ def place_house(c, hh, ter, sc, x, y, rot, variant, coll="Village"):
     return True
 
 
+def rooftops(c, hh, ter, sc):
+    """The rooftop shortcut's row of cottages, eaves to eaves along its boardwalk (none
+    under its two gaps or its jumping-off plank), timber trestles under the alley ramp,
+    a woodpile hiding the ramp's foot, and lanterns along the ridges."""
+    pts = hh.roof_points()
+    gaps = hh.roof_gaps()
+    m = Mesh()
+    k = 0
+    d = hh.ROOF_RAMP[1] + 3.0
+    while d < hh.ROOF_LEN - 14.0:
+        if any(a - 4.5 < d < b + 4.5 for a, b in gaps):
+            d += 2.0
+            continue
+        i = min(range(len(pts)), key=lambda j: abs(pts[j][3] - d))
+        x, y = pts[i][0], pts[i][1]
+        a = math.radians(hh.ROOF_PATH[i][2])
+        z = ground(c, ter, x, y, 3.0)
+        # A cottage turned along the boardwalk (its ridge under it), scaled so the ridge
+        # sits just under the boards.
+        sc_ = (pts[i][2] - 0.3 - (z - 0.6)) / 9.1
+        c.place(hp.cottage(c, 1), x, y, z - 0.6, rot=a, scale=sc_, coll="Village", role="visual")
+        c.place(hp.cottage_block(c, 1), x, y, z - 0.6, rot=a, scale=sc_, coll="Blocks", role="collision")
+        sc.houses.append((x, y))
+        sc.warm.append((x, y, z + 3.0))
+        cx, cy, cz = hp.CHIMNEY[1]
+        sc.chimneys.append((x + cx * sc_ * math.cos(a) - (cy * sc_ + 3.5) * math.sin(a), y + cx * sc_ * math.sin(a) + (cy * sc_ + 3.5) * math.cos(a), z - 0.6 + cz * sc_))
+        if k % 3 == 1:
+            sc.lanterns.append((x, y, hh.ROOF_Z + 2.0))
+        k += 1
+        d += 9.0 * sc_ + 0.8
+    # Trestle legs under the alley ramp.
+    for x, y, z, d in pts:
+        if hh.ROOF_RAMP[0] + 4 < d < hh.ROOF_RAMP[1] + 4 and int(d) % 6 == 0 and z > 5.0:
+            a = math.radians(hh.ROOF_PATH[min(len(hh.ROOF_PATH) - 1, int(d / 2))][2])
+            gz = ground(c, ter, x, y, 3.0)
+            for side in (-1, 1):
+                lx, ly = x - math.sin(a) * side * 3.6, y + math.cos(a) * side * 3.6
+                k0 = len(m.bm.faces)
+                props.cuboid(m.bm, (lx, ly, (z - 0.8 + gz) / 2), (0.8, 0.8, z - 0.8 - gz), rot=a)
+                m.mark("timber_beam", k0)
+    m.build(c, "Rooftop Trestles", "Village", "both")
+    # A woodpile and a pine screening the ramp's foot from the west lane.
+    x, y = pts[3][0], pts[3][1]
+    for k, (dx, dy) in enumerate(((13.0, 7.0), (15.0, 12.0))):
+        z = ground(c, ter, x + dx, y + dy, 3.0)
+        c.place(hp.log(c, k % 2), x + dx, y + dy, z - 0.2, rot=0.5 + k, coll="Village")
+    c.place(hp.xmas_pine(c, 1, 10.0, lights=False), x + 17.0, y + 19.0, ground(c, ter, x + 17.0, y + 19.0, 3.0) - 0.3, coll="Village", role="visual")
+
+
 def streets(c, hh, ter, sc):
     """Cottages lining the village streets (facing them), a second row behind, and more
     filling the blocks between, so the streets read as streets."""
     S = hh.SEG
     stretches = [
-        (8.0, S[1] - 6, (-1, 1)),  # the entrance street
-        (S[4] - 10, S[5], (1,)),  # to the bridge (the shortcut leaves on the left)
-        (S[7] + 20, S[9] - 6, (1,)),  # the north lane (the river on its left)
-        (S[28] + 20, S[29] + 10, (-1, 1)),  # the river lane
-        (S[29] + 30, S[31], (-1, 1)),  # the west lane
-        (S[31] + 30, S[33], (-1, 1)),  # the bottom lane
-        (S[33] + 50, hh.LENGTH - 2, (-1, 1)),  # the finish straight
+        (S[4] - 10, S[5], (-1, 1)),  # to the bridge
+        (S[18] + 50, S[20], (-1, 1)),  # the west lane
+        (S[20] + 30, S[22], (-1, 1)),  # the bottom lane
+        (S[23] + 10, hh.LENGTH - 2, (-1, 1)),  # the finish street
     ]
     k = 0
     for s0, s1, sides in stretches:
@@ -158,7 +204,7 @@ def street_furniture(c, hh, ter, sc):
     across them, candy canes and present piles here and there."""
     S = hh.SEG
     post = hp.lantern_post(c)
-    village = [(4.0, S[1]), (S[3], S[9]), (S[27], hh.LENGTH - 4)]
+    village = [(4.0, S[1]), (S[3], S[7] + 20), (S[18] - 10, hh.LENGTH - 4)]
     for s0, s1 in village:
         s = s0
         k = 0
@@ -183,7 +229,7 @@ def street_furniture(c, hh, ter, sc):
     pile = [hp.present_pile(c, v) for v in range(3)]
     for k, s in enumerate(range(20, int(hh.LENGTH), 37)):
         q = c.at(s)
-        if hh.seg_of(s) in (5, 15, 16, 17, 18, 27):
+        if hh.seg_of(s) in (5, 9, 10, 11, 12, 13, 18):
             continue
         side = 1 if k % 2 else -1
         p = q.side(side * (q.w / 2 + 3.6))
@@ -452,14 +498,14 @@ def forest(c, hh, ter, sc):
         props.scatter(c, lo[v], 45, (-600, 500, -440, 700), lambda x, y, z: ok(x, y, z) and z > 8, ter, seed=30 + v, scale=(0.8, 1.6), coll="Pines", role="visual")
     props.scatter(c, lit[0], 26, (-250, 150, -320, 220), lambda x, y, z: ok(x, y, z) and math.hypot(x - hh.TREE[0], y - hh.TREE[1]) > 30, ter, seed=40, scale=(0.8, 1.2), coll="Pines", role="visual")
     # Log cabins in the forest, with lanterns by the road.
-    for k, (s, off) in enumerate(((hh.SEG[9] + 20, 24), (hh.SEG[11] + 10, -26), (hh.SEG[13] + 20, 24), (hh.SEG[14] + 30, -26), (hh.SEG[10] + 20, -25))):
+    for k, (s, off) in enumerate(((hh.SEG[8] + 15, 24), (hh.SEG[9] + 25, -26), (hh.SEG[10] + 40, 26), (hh.SEG[11] + 10, -26), (hh.SEG[12] + 10, -25))):
         q = c.at(s)
         p = q.side(off)
         place_house(c, hh, ter, sc, p.x, p.y, road_rot(q) + (math.pi if off > 0 else 0.0), 1, coll="Forest")
     post = hp.lantern_post(c)
-    s = hh.SEG[9]
+    s = hh.SEG[7]
     k = 0
-    while s < hh.SEG[15] + 120:
+    while s < hh.SEG[10]:
         q = c.at(s)
         side = 1 if k % 2 else -1
         p = q.side(side * (q.w / 2 + 2.6))
@@ -472,7 +518,7 @@ def forest(c, hh, ter, sc):
         k += 1
         s += 26.0
     for k in range(10):
-        s = hh.SEG[9] + 25 * k
+        s = hh.SEG[7] + 25 * k
         q = c.at(s)
         p = q.side((1 if k % 2 else -1) * (q.w / 2 + 9))
         z = ground(c, ter, p.x, p.y)
@@ -491,9 +537,9 @@ def mountain(c, hh, ter, sc):
     for h in (9, 19):
         sc.warm.append((sx, sy, sz + h))
     post = hp.lantern_post(c)
-    s = hh.SEG[15]
+    s = hh.SEG[10]
     k = 0
-    while s < hh.SEG[19] + 40:
+    while s < hh.SEG[14] + 30:
         q = c.at(s)
         p = q.side(q.w / 2 + 1.0, 1.0)
         c.place(post, p.x, p.y, p.z - 1.1, rot=road_rot(q), coll="Mountain", role="visual")
@@ -558,14 +604,14 @@ def sleigh_run(c, hh, ter, sc):
     """Decorated arches over the sleigh run, candy canes down its edges, the sleigh's
     crossing, and the jumps' snow banks."""
     S = hh.SEG
-    for k, s in enumerate((S[19] + 20, S[21] + 30, S[23] + 5, S[25] + 15)):
+    for k, s in enumerate((S[14] + 12, S[15] + 25, S[16] + 45, S[17] + 25)):
         q = c.at(s)
         c.place(hp.xmas_arch(c, q.w + 6.0, 9.0, False, k % 2), q.p.x, q.p.y, q.p.z - 0.3, rot=road_rot(q) + math.pi / 2, coll="Mountain")
         sc.warm.append((q.p.x, q.p.y, q.p.z + 8))
     cane = hp.candy_cane(c, 6.0)
-    s = S[19]
+    s = S[14]
     k = 0
-    while s < S[26]:
+    while s < S[18]:
         if not any(lip - 6 < s < land + 6 for lip, land in hh.JUMPS):
             q = c.at(s)
             side = 1 if k % 2 else -1
@@ -618,11 +664,12 @@ def build(c, hh):
 
     # The start: a great wooden Christmas arch with a checkered banner, and one more out of
     # the square and at the top of the entrance street.
-    for s, chk in ((0.0, True), (80.0, False), (S[3] + 30, False), (S[29] + 50, False)):
+    for s, chk in ((0.0, True), (S[3] + 30, False), (S[19] + 40, False), (S[23] + 30, False)):
         q = c.at(s)
         c.place(hp.xmas_arch(c, q.w + 8.0, 11.0, chk, 0), q.p.x, q.p.y, q.p.z - 0.3, rot=road_rot(q) + math.pi / 2, coll="Village")
         sc.warm.append((q.p.x, q.p.y, q.p.z + 10))
     square(c, hh, ter, sc)
+    rooftops(c, hh, ter, sc)
     streets(c, hh, ter, sc)
     street_furniture(c, hh, ter, sc)
     stone_bridge(c, hh, ter, sc)
@@ -637,7 +684,7 @@ def build(c, hh):
 
     # Moving parts. Snowballs roll across the forest road, downhill, two at each crossing
     # (one 3.5 s after the other).
-    for k, s in enumerate((S[10] + 22, S[13] + 22)):
+    for k, s in enumerate((S[8] + 15, S[12] + 10)):
         q = c.at(s)
         a, b = q.side(-34.0), q.side(34.0)
         za, zb = hh.natural(a.x, a.y), hh.natural(b.x, b.y)
@@ -648,7 +695,7 @@ def build(c, hh):
             bx, by, bz = c.game(b.x, b.y, zb)
             c.entity("snowball", ax=ax, ay=ay, az=az, bx=bx, by=by, bz=bz, r=2.6 - 0.5 * j, period=8.0, offset=1.5 + k * 2.7 + j * 4.0, travel=4.2)
     # The sleigh: across the sleigh run, from the creek side into the woods, every 13 s.
-    q = c.at(S[24] + 35)
+    q = c.at(hh.JUMPS[0][1] + 28)
     a, b = q.side(48.0), q.side(-48.0)
     ax, ay, az = c.game(a.x, a.y, hh.natural(a.x, a.y))
     bx, by, bz = c.game(b.x, b.y, hh.natural(b.x, b.y))
@@ -660,8 +707,9 @@ def build(c, hh):
         c.place(hp.lantern_post(c), p.x + q.t.x * 3, p.y + q.t.y * 3, z - 0.2, coll="Mountain", role="visual")
         sc.lanterns.append((p.x, p.y, z + 4.6))
     # Presents by the road (smash them: they come back).
-    spots = [(55, -1), (130, 1), (S[2] + 30, -1), (S[3] + 10, 1), (S[8] + 10, -1), (S[8] + 55, 1), (S[11] + 10, 1), (S[14] + 20, -1),
-             (S[20] + 20, 1), (S[22] + 30, -1), (S[26] + 30, 1), (S[28] + 60, -1), (S[30] + 30, 1), (S[30] + 80, -1), (S[32] + 20, 1), (S[34] + 20, -1)]
+    spots = [(S[2] + 30, -1), (S[2] + 80, 1), (S[3] + 10, 1), (S[6] + 5, -1), (S[8] + 5, 1), (S[9] + 30, -1), (S[11] + 20, 1), (S[12] + 5, -1),
+             (S[15] + 20, 1), (S[16] + 50, -1), (S[17] + 20, 1), (S[19] + 90, -1), (S[19] + 150, 1), (S[21] + 40, 1), (S[21] + 130, -1),
+             (S[23] + 30, -1), (S[23] + 80, 1)]
     for k, (s, side) in enumerate(spots):
         q = c.at(s)
         p = q.side(side * (q.w / 2 + 0.9))
