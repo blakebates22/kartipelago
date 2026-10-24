@@ -1,7 +1,7 @@
 /**
  * TRACK_SELECT, the Tracks menu (the "Ledger"): one screen on an ancient map. Bookmarks
- * for the worlds along the top; on the left a list: Trophy Race, then the world's
- * tracks; on the right the chosen one's picture, name and details.
+ * for the worlds along the top; on the left a list: the world's tracks, then Trophy
+ * Race; on the right the chosen one's picture, name and details.
  *
  * ◀ ▶ change world, ▲ ▼ move down the list, Enter picks. A track asks how to race it
  * (Race or Time Trial) in a small note; Trophy Race starts a cup (game/trophy.ts): all of
@@ -53,20 +53,18 @@ const STYLE: Record<string, IslandStyle> = {
 const styleOf = (w: WorldEntry): IslandStyle => STYLE[w.id] ?? "prehistoric";
 
 const entriesOf = (w: WorldEntry): Entry[] => [
-  { kind: "trophy" },
   ...trackTilesOf(w).map((track) => ({ kind: "track" as const, track })),
+  { kind: "trophy" },
 ];
 
 export function tracksMenu(game: Game): Screen {
   // Leaving a cup (or coming back after one) ends it.
   game.trophy = undefined;
   let wi = Math.max(0, WORLDS.indexOf(currentWorld(game.selection)));
-  let ei =
-    1 +
-    Math.max(
-      0,
-      trackTilesOf(WORLDS[wi]!).findIndex((t) => t.id === game.settings.last.track),
-    );
+  let ei = Math.max(
+    0,
+    trackTilesOf(WORLDS[wi]!).findIndex((t) => t.id === game.settings.last.track),
+  );
   let t = 0;
   /** The "how to race it" note: open, and which line is chosen. */
   let asking: { modes: TrackMode[]; i: number } | null = null;
@@ -162,15 +160,63 @@ export function tracksMenu(game: Game): Screen {
     ui.text(String(n), x + 1, y - 3, { color: INK, align: "center" });
   }
 
-  /** A track picture in an inked frame (a starry trophy for Trophy Race). */
+  /**
+   * Trophy Race's picture: the world's courses side by side behind a podium, gold cup
+   * on the top step, silver and bronze either side, confetti falling.
+   */
+  function trophyPicture(ui: UiLayer, x: number, y: number, w: number, h: number) {
+    const tracks = tracksOf(world()).filter((tr) => tr.preview && !tr.comingSoon);
+    const n = Math.max(1, tracks.length);
+    const sw = w / n;
+    ui.rect(x, y, w, h, "#3a2a50");
+    tracks.forEach((tr, i) => {
+      const img = preview(tr.preview!);
+      const x0 = Math.round(x + i * sw);
+      const x1 = Math.round(x + (i + 1) * sw);
+      // A slice from the middle of each course's picture.
+      if (img) {
+        const iw = img.naturalWidth;
+        const ih = img.naturalHeight;
+        const cw = Math.min(iw, (ih * (x1 - x0)) / h);
+        ui.g.drawImage(img, (iw - cw) / 2, 0, cw, ih, x0, y, x1 - x0, h);
+      }
+      if (i > 0) ui.rect(x0, y, 1, h, INK);
+    });
+    ui.rect(x, y, w, h, "#20142e", 0.45);
+    // The podium: 2nd, 1st, 3rd.
+    const s = Math.max(1, Math.floor(h / 34));
+    const bw = 18 * s;
+    const cx = x + w / 2;
+    const base = y + h - 3 * s;
+    const steps: [number, number, string, string][] = [
+      [cx - bw * 1.5, 9 * s, "#c9ced8", "2"],
+      [cx - bw * 0.5, 14 * s, "#f2c64a", "1"],
+      [cx + bw * 0.5, 6 * s, "#d8904a", "3"],
+    ];
+    for (const [sx, sh, c, label] of steps) {
+      ui.rect(sx - 1, base - sh - 1, bw + 2, sh + 2, INK);
+      ui.rect(sx, base - sh, bw, sh, c);
+      ui.rect(sx, base - sh, bw, s, "#ffffff", 0.5);
+      ui.text(label, sx + bw / 2, base - sh + 2 * s, { color: INK, align: "center" });
+    }
+    const shine = Math.sin(t * 3);
+    trophy(ui.g, cx - 6 * s, base - 14 * s - 16 * s, s, shine, "gold");
+    trophy(ui.g, cx - bw - 6 * s, base - 9 * s - 16 * s, s, shine, "silver");
+    trophy(ui.g, cx + bw - 6 * s, base - 6 * s - 16 * s, s, shine, "bronze");
+    // Confetti.
+    const colors = ["#ffd84a", "#ff6b8a", "#6bd6ff", "#9fe870", "#ffffff"];
+    for (let i = 0; i < 26; i++) {
+      const fx = x + ((i * 53 + 17) % w);
+      const fy = y + ((i * 31 + Math.floor(t * 18) * (1 + (i % 3))) % Math.max(1, h - 10));
+      ui.rect(fx, fy, s, s * 2, colors[i % colors.length]!);
+    }
+  }
+
+  /** A track picture in an inked frame (Trophy Race: the podium). */
   function picture(ui: UiLayer, e: Entry, x: number, y: number, w: number, h: number) {
     ui.rect(x - 2, y - 2, w + 4, h + 4, INK);
     if (e.kind === "trophy") {
-      ui.rect(x, y, w, h, "#3a2a50");
-      for (let i = 0; i < 18; i++)
-        ui.rect(x + ((i * 37) % w), y + ((i * 23) % h), 1, 1, i % 2 ? "#ffd84a" : "#ffffff");
-      const s = Math.max(1, Math.floor(h / 24));
-      trophy(ui.g, x + w / 2 - 6 * s, y + h / 2 - 8 * s, s, Math.sin(t * 3));
+      trophyPicture(ui, x, y, w, h);
       return;
     }
     const img = e.track.preview && !e.track.comingSoon ? preview(e.track.preview) : undefined;
@@ -232,7 +278,7 @@ export function tracksMenu(game: Game): Screen {
       );
       if (game.menuInput.pointer.clicked && ui.hover(x, 6, tw, h)) clicked = () => setWorld(i);
     });
-    // The list: Trophy Race, then the tracks.
+    // The list: the tracks, then Trophy Race.
     const lx = 14;
     const ly = 46;
     const lw = Math.round(ui.W * 0.4);
@@ -242,7 +288,7 @@ export function tracksMenu(game: Game): Screen {
       const y = ly + 6 + i * 32;
       if (on) ui.rect(lx + 2, y - 2, lw - 4, 28, "#ffd84a", 0.55);
       if (e.kind === "trophy") trophy(ui.g, lx + 8, y + 5, 1, on ? Math.sin(t * 3) : 0);
-      else stopMark(ui, lx + 14, y + 12, i, on, e.track.comingSoon);
+      else stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
       ui.text(nameOf(e), lx + 30, y + 4, { color: on ? "#8a2a1a" : INK });
       const sub =
         e.kind === "trophy"
