@@ -149,8 +149,12 @@ def far_natural(dg):
     return f
 
 
+def near(dg):
+    return getattr(dg, "NEAR", NEAR)
+
+
 def land(c, dg, sc):
-    X0, X1, Y0, Y1 = NEAR
+    X0, X1, Y0, Y1 = near(dg)
     ter = c.terrain("Land", X0, X1, Y0, Y1, 5.0, dg.natural, dg.classify, near=9.0, fade=6.0)
     sc.ground_obs = [ter]
     nat = far_natural(dg)
@@ -330,7 +334,8 @@ _MINE_TREE = {}
 
 def in_mine(c, dg, x, y, z):
     """Is (x, y, z) inside the mine (a tunnel, the workings, the cavern)?"""
-    if not (30.0 < x < 260.0 and 70.0 < y < 420.0) or z > 44.0:
+    bx0, bx1, by0, by1 = getattr(dg, "MINE_BOX", (30.0, 260.0, 70.0, 420.0))
+    if not (bx0 < x < bx1 and by0 < y < by1) or z > 44.0:
         return False
     cx, cy = dg.CAVERN
     if ((x - cx) / 50.0) ** 2 + ((y - cy) / 50.0) ** 2 < 1.0 and z < 42.0:
@@ -749,13 +754,14 @@ def ravine(c, sc, dg):
              bands=cs.SPIRE_BANDS, coll="Rocks")
     # Machinery and leftovers along the floor.
     S = dg.SEG
-    for k, (s, off, proto) in enumerate(((S[13] + 40, -19, "Winch"), (S[13] + 95, 18, "Ore Cart Tipped"), (S[13] + 120, -17, "Ore Heap 1"),
-                                         (S[12] + 20, -18, "Crate Stack 0"), (S[14] + 70, 18, "Ore Cart"), (S[15] + 30, -17, "Barrel 1"))):
+    junk = getattr(dg, "RAVINE_JUNK", None) or ((S[13] + 40, -19, "Winch"), (S[13] + 95, 18, "Ore Cart Tipped"), (S[13] + 120, -17, "Ore Heap 1"),
+                                                (S[12] + 20, -18, "Crate Stack 0"), (S[14] + 70, 18, "Ore Cart"), (S[15] + 30, -17, "Barrel 1"))
+    for k, (s, off, proto) in enumerate(junk):
         q = c.at(s)
         p = q.side(off)
         if clear(c, p.x, p.y, 3.0):
             sc.put(proto, p.x, p.y, dg.natural(p.x, p.y), road_rot(q) + k, coll="Ravine")
-    sc.whispers.append((250.0, 140.0, 14.0, 60.0))
+    sc.whispers.append(getattr(dg, "RAVINE_WHISPER", (250.0, 140.0, 14.0, 60.0)))
 
 
 def gt_face(m, mat, cx, cy, nx, ny, hw, z0, z1):
@@ -771,12 +777,13 @@ def rocks(c, sc, dg):
     """Crags on Hazard Ridge, hoodoos and boulders round the plateau, buttes and spires
     standing round the land."""
     import canyon_scenery as cs
-    for k, (x, y, rx, ry, top) in enumerate(((120.0, 320.0, 22.0, 16.0, 94.0), (185.0, 240.0, 18.0, 15.0, 88.0), (110.0, 180.0, 16.0, 12.0, 84.0),
-                                              (190.0, 150.0, 12.0, 10.0, 82.0))):
+    for k, (x, y, rx, ry, top) in enumerate(getattr(dg, "CRAGS", ((120.0, 320.0, 22.0, 16.0, 94.0), (185.0, 240.0, 18.0, 15.0, 88.0),
+                                                                   (110.0, 180.0, 16.0, 12.0, 84.0), (190.0, 150.0, 12.0, 10.0, 82.0)))):
         cs.butte(c, dg, "Crag %d" % k, x, y, rx, ry, top, base=dg.Z_RIDGE - 4.0, seed=20 + k, angle=k * 0.9, bands=cs.SPIRE_BANDS,
                  coll="Rocks")
-    for k, (x, y, rx, ry, top) in enumerate(((-420.0, 120.0, 40.0, 30.0, 85.0), (-380.0, 520.0, 34.0, 26.0, 80.0), (420.0, 180.0, 30.0, 40.0, 92.0),
-                                              (400.0, -200.0, 36.0, 28.0, 86.0), (-140.0, -260.0, 30.0, 24.0, 74.0), (380.0, 560.0, 26.0, 20.0, 88.0))):
+    for k, (x, y, rx, ry, top) in enumerate(getattr(dg, "BUTTES", ((-420.0, 120.0, 40.0, 30.0, 85.0), (-380.0, 520.0, 34.0, 26.0, 80.0),
+                                                                    (420.0, 180.0, 30.0, 40.0, 92.0), (400.0, -200.0, 36.0, 28.0, 86.0),
+                                                                    (-140.0, -260.0, 30.0, 24.0, 74.0), (380.0, 560.0, 26.0, 20.0, 88.0)))):
         if clear(c, x, y, max(rx, ry) * 1.5 + 10):
             cs.butte(c, dg, "Butte %d" % k, x, y, rx, ry, top, seed=40 + k, angle=k * 1.3, coll="Rocks")
     ter = sc.ground_obs
@@ -799,7 +806,8 @@ def _ok_plant(c, sc, dg, x, y, z, margin):
 def _scatter(c, sc, dg, proto, n, scale, ter, margin=6.0, seed=0, coll="Plants", area=None):
     from props import scatter
 
-    area = area or (NEAR[0] + 10, NEAR[1] - 10, NEAR[2] + 10, NEAR[3] - 10)
+    N = near(dg)
+    area = area or (N[0] + 10, N[1] - 10, N[2] + 10, N[3] - 10)
     return scatter(c, proto, n, area, lambda x, y, z: _ok_plant(c, sc, dg, x, y, z, margin), ter, seed=seed, scale=scale, role="visual",
                    coll=coll)
 
@@ -822,7 +830,8 @@ def road_furniture(c, sc, dg):
     S = dg.SEG
     L = c.length
     k = 0
-    for s in range(int(S[6]), int(S[16]), 34):
+    l0, l1 = getattr(dg, "LANTERNS", (S[6], S[16]))
+    for s in range(int(l0), int(l1), 34):
         q = c.at(s)
         k += 1
         if q.p.z - dg.natural(q.p.x, q.p.y) > 4.0:
@@ -841,7 +850,7 @@ def road_furniture(c, sc, dg):
         if k % 2 == 0:
             sc.lanterns.append((wx, wy, z + lz))
     # Chevrons round the outside of the big corners.
-    for seg, n in ((6, 6), (9, 3), (14, 3), (16, 3)):
+    for seg, n in getattr(dg, "CHEVRONS", ((6, 6), (9, 3), (14, 3), (16, 3))):
         sg = dg.LAYOUT[seg]
         s0 = S[seg]
         arc = sg[1] * math.radians(sg[2])
@@ -863,28 +872,12 @@ def gameplay(c, sc, dg):
     """Boosts, pickups, checkpoints (with a twin gate in the mine), the cart crossing and
     the haunt: ghosts, wisps, mist, lanterns, tumbleweeds, the windmill, the bell."""
     S = dg.SEG
-    for at, across in ((30, 0), (S[2] + 10, 0), (S[7] + 40, 0), (S[8] + 40, 0), (S[10] + 70, -2), (S[13] + 80, 0), (S[15] + 50, 0),
-                       (S[17] + 10, 0)):
-        c.zipper(at, across)
-    for at, across in ((80, 0), (S[3] + 30, 3), (S[5] + 25, -3), (S[6] + 120, 0), (S[7] + 150, 3), (S[8] + 100, 0), (S[11] + 40, 0),
-                       (S[13] + 130, -3), (S[16] + 20, 0)):
-        c.bananas(at, across, count=5, gap=2.6)
-    for at, across, col in ((95, -5, "red"), (95, 5, "blue"), (S[2] + 30, 0, "green"), (S[5] + 10, 0, "yellow"), (S[6] + 60, -4, "rainbow"),
-                            (S[6] + 60, 4, "red"), (S[7] + 100, 0, "blue"), (S[8] + 80, 0, "green"), (S[10] + 30, 0, "yellow"),
-                            (S[12] + 30, -4, "rainbow"), (S[12] + 30, 4, "red"), (S[14] + 30, 0, "blue"), (S[15] + 90, -4, "green"),
-                            (S[15] + 90, 4, "yellow")):
-        c.balloon(at, across, col)
-
     line = c.mine
-    a = kit.s_near(c, *line[0][:2])
-    b = kit.s_near(c, *line[-1][:2])
-    apex = S[10] + 100.0
-    gates = c.checkpoints(
-        extra=[S[1] + 30, S[3] + 20, S[5] + 20, S[6] + 80, S[6] + 160, S[7] + 120, a - 8, apex, b + 10, S[14] + 40, S[15] + 80,
-               S[16] + 40],
-        avoid=[(a - 2, apex - 8), (apex + 8, b + 2)],
-        height=9.0,
-    )
+    if hasattr(dg, "pickups"):
+        # The course's own boosts, pickups and checkpoints.
+        gates, apex = dg.pickups(c)
+    else:
+        gates, apex = _pickups(c, dg)
     main_gate = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
     # The twin gate: in the tunnel just before the chasm cavern, so a fall from the
     # spectral trestle puts you back there.
@@ -938,7 +931,7 @@ def gameplay(c, sc, dg):
     wx, wy, wz, wr = sc.windmill
     game_entity(c, "windmill", wx + math.cos(wr) * 1.4, wy + math.sin(wr) * 1.4, wz, heading=round(wr, 3), radius=3.2, speed=0.6, gusty=True)
     # Tumbleweeds blowing across the roads now and then (they roll through: no harm).
-    for k, s in enumerate((S[0] + 60, S[3] + 10, S[6] + 140, S[13] + 60, S[15] + 110, S[17] - 30)):
+    for k, s in enumerate(getattr(dg, "TUMBLEWEEDS", (S[0] + 60, S[3] + 10, S[6] + 140, S[13] + 60, S[15] + 110, S[17] - 30))):
         q = c.at(s % c.length)
         a_, b_ = q.side(-30.0), q.side(30.0)
         if k % 2:
@@ -953,8 +946,37 @@ def gameplay(c, sc, dg):
     # Dust behind the karts; dust blowing across the land; bats over the ridge.
     c.entity("dust", color="#b8704e", rate=0.9)
     c.entity("dustwind", rate=8, radius=60, color="#9a6a62")
-    for k, (x, y, z, r, n) in enumerate(((150.0, 260.0, 120.0, 70.0, 6), (gx, gy, 70.0, 50.0, 5), (230.0, -60.0, 70.0, 40.0, 4))):
+    birds = getattr(dg, "BIRDS", ((150.0, 260.0), (230.0, -60.0)))
+    for k, (x, y, z, r, n) in enumerate(((birds[0][0], birds[0][1], 120.0, 70.0, 6), (gx, gy, 70.0, 50.0, 5), (birds[1][0], birds[1][1], 70.0, 40.0, 4))):
         game_entity(c, "birds", x, y, z, radius=r, count=n, speed=round(0.35 + 0.05 * k, 2), seed=k + 1, color="#1e1424")
+
+
+def _pickups(c, dg):
+    """Dry Gulch's boosts, pickups and checkpoints (a twin gate in the mine)."""
+    S = dg.SEG
+    for at, across in ((30, 0), (S[2] + 10, 0), (S[7] + 40, 0), (S[8] + 40, 0), (S[10] + 70, -2), (S[13] + 80, 0), (S[15] + 50, 0),
+                       (S[17] + 10, 0)):
+        c.zipper(at, across)
+    for at, across in ((80, 0), (S[3] + 30, 3), (S[5] + 25, -3), (S[6] + 120, 0), (S[7] + 150, 3), (S[8] + 100, 0), (S[11] + 40, 0),
+                       (S[13] + 130, -3), (S[16] + 20, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((95, -5, "red"), (95, 5, "blue"), (S[2] + 30, 0, "green"), (S[5] + 10, 0, "yellow"), (S[6] + 60, -4, "rainbow"),
+                            (S[6] + 60, 4, "red"), (S[7] + 100, 0, "blue"), (S[8] + 80, 0, "green"), (S[10] + 30, 0, "yellow"),
+                            (S[12] + 30, -4, "rainbow"), (S[12] + 30, 4, "red"), (S[14] + 30, 0, "blue"), (S[15] + 90, -4, "green"),
+                            (S[15] + 90, 4, "yellow")):
+        c.balloon(at, across, col)
+
+    line = c.mine
+    a = kit.s_near(c, *line[0][:2])
+    b = kit.s_near(c, *line[-1][:2])
+    apex = S[10] + 100.0
+    gates = c.checkpoints(
+        extra=[S[1] + 30, S[3] + 20, S[5] + 20, S[6] + 80, S[6] + 160, S[7] + 120, a - 8, apex, b + 10, S[14] + 40, S[15] + 80,
+               S[16] + 40],
+        avoid=[(a - 2, apex - 8), (apex + 8, b + 2)],
+        height=9.0,
+    )
+    return gates, apex
 
 
 def _game_heading(rot):

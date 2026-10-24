@@ -1,4 +1,4 @@
-// Dry Gulch v3, the greybox of the new lap (tools/blender/prehistoric/dry_gulch_v3.py):
+// Dry Gulch v3, the new lap dressed like the current course (dry_gulch_v3.py):
 // through the graveyard, drifting between the buildings, the broken trestle, the ravine,
 // and the haunted mine (the shortcut) a little quicker than the way round.
 import { readFile } from "node:fs/promises";
@@ -12,7 +12,7 @@ const reader: PackageReader = async (file) => {
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Dry Gulch v3 (greybox)", () => {
+describe("Dry Gulch v3", () => {
   it("loads cleanly, with a jump on the trestle and a gate in the mine", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);

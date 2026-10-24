@@ -415,6 +415,16 @@ def along(c, s0, s1, side, setback, kinds, sc, m, dg, gap=(1.5, 4.0), seed=0, z=
     return out
 
 
+def streets(c, dg):
+    """Where the town's streets are along the lap (a course can say: dg.STREETS), and
+    how far back from the road's centre the buildings stand."""
+    S = dg.SEG
+    st = {"main": (S[17] + 4.0 - c.length, S[1] - 6.0), "side": (S[2], S[6]), "main_back": 17.5, "side_back": 15.5,
+          "square_back": 9.0 + 5.4, "dress": 12.4, "wagon": S[5] + 20.0}
+    st.update(getattr(dg, "STREETS", {}))
+    return st
+
+
 def town(c, sc, dg):
     """Main Street, the square, the saloon district and its side street."""
     S = dg.SEG
@@ -438,12 +448,13 @@ def town(c, sc, dg):
     ]
     # (The route's start is s = 0; Main Street runs from the end of the last corner,
     # through the line, to the square.)
-    a0 = S[17] + 4.0 - L
-    along(c, a0, S[1] - 6.0, -1, 17.5, west, sc, m, dg, seed=1)
-    along(c, a0 + 26.0, S[1] - 4.0, 1, 17.5, east, sc, m, dg, seed=2)
+    st = streets(c, dg)
+    a0, a1 = st["main"]
+    along(c, a0, a1, -1, st["main_back"], west, sc, m, dg, seed=1)
+    along(c, a0 + 26.0, a1 + 2.0, 1, st["main_back"], east, sc, m, dg, seed=2)
     # The saloon, on the outside of the corner at the square, facing it.
     cx, cy = dg.SQUARE
-    r = 60.0 + 9.0 + 5.4
+    r = dg.LAYOUT[1][1] + st["square_back"]
     a = math.radians(45.0)
     z = sc.ground(cx + math.cos(a) * r, cy + math.sin(a) * r)
     saloon(m, sc, cx + math.cos(a) * r, cy + math.sin(a) * r, z + 0.05, a - math.pi / 2)
@@ -461,8 +472,9 @@ def town(c, sc, dg):
         (8.0, 10.0, {"siding": "siding_grey", "lit": 0.2, "ghost": 0.25}),
         (10.0, 11.0, {"siding": "siding_red", "lit": 0.5}),
     ]
-    along(c, S[2] - 4.0, S[6] - 2.0, 1, 15.5, north, sc, m, dg, seed=3)
-    along(c, S[2] - 2.0, S[6] - 6.0, -1, 15.5, south, sc, m, dg, seed=4)
+    b0, b1 = st["side"]
+    along(c, b0 - 4.0, b1 - 2.0, 1, st["side_back"], north, sc, m, dg, seed=3)
+    along(c, b0 - 2.0, b1 - 6.0, -1, st["side_back"], south, sc, m, dg, seed=4)
     m.build(c, "Town Buildings", "Town", role="both")
 
 
@@ -500,7 +512,8 @@ def street_dressing(c, sc, dg):
     S = dg.SEG
     k = 0
     L = c.length
-    for s in list(range(int(S[17] - L) + 8, int(S[1]) - 8, 9)) + list(range(int(S[2]), int(S[6]) - 4, 8)):
+    st = streets(c, dg)
+    for s in list(range(int(st["main"][0]) + 4, int(st["main"][1]) - 2, 9)) + list(range(int(st["side"][0]), int(st["side"][1]) - 4, 8)):
         q = c.at(s % L)
         for side in (-1, 1):
             k += 1
@@ -508,7 +521,7 @@ def street_dressing(c, sc, dg):
             if r < 0.45:
                 continue
             nx, ny = (math.sin(road_rot(q)), -math.cos(road_rot(q)))
-            off = side * (12.4 + 0.6 * rnd(k))
+            off = side * (st["dress"] + 0.6 * rnd(k))
             x, y = q.p.x + nx * off, q.p.y + ny * off
             if not clear(c, x, y, 2.4):
                 continue
@@ -516,9 +529,9 @@ def street_dressing(c, sc, dg):
             rot = road_rot(q) + (0 if proto in ("Hitching Rail", "Water Trough", "Bench") else rnd(k) * 6.0)
             sc.put(proto, x, y, sc.ground(x, y), rot, coll="Town Props", role="both")
     # The abandoned wagon at the mouth of an alley in the side street, a wheel off.
-    q = c.at(S[5] + 20.0)
+    q = c.at(st["wagon"])
     nx, ny = math.sin(road_rot(q)), -math.cos(road_rot(q))
-    x, y = q.p.x - nx * 13.5, q.p.y - ny * 13.5
+    x, y = q.p.x - nx * (st["dress"] + 1.1), q.p.y - ny * (st["dress"] + 1.1)
     sc.put("Wagon Covered Broken", x, y, sc.ground(x, y), road_rot(q) + 0.25, coll="Town Props", role="both")
     sc.footprints.append((x, y, 4.0))
 
@@ -568,8 +581,9 @@ def back_lanes(c, sc, dg):
     m = Mesh()
     k = 0
     spots = []
-    for gx in range(-200, 40, 22):
-        for gy in range(232, 400, 24):
+    bx0, bx1, by0, by1 = getattr(dg, "BACK_LANES", (-200, 40, 232, 400))
+    for gx in range(bx0, bx1, 22):
+        for gy in range(by0, by1, 24):
             k += 1
             x = gx + 8.0 * (rnd(k * 3) - 0.5)
             y = gy + 8.0 * (rnd(k * 5) - 0.5)
@@ -592,9 +606,9 @@ def back_lanes(c, sc, dg):
                  lanterns=False)
     m.build(c, "Back Lanes", "Town", role="both")
     # The windmill, on the outskirts towards the graveyard.
-    wx, wy = -120.0, 395.0
+    wx, wy, wrd = getattr(dg, "WINDMILL", (-120.0, 395.0, 200.0))
     wz = sc.ground(wx, wy)
-    wr = math.radians(200.0)
+    wr = math.radians(wrd)
     cp.windmill_tower(c)
     sc.put("Windmill Tower", wx, wy, wz, wr, coll="Town Props", role="both")
     sc.windmill = (wx, wy, wz + 14.6, wr)
@@ -610,7 +624,9 @@ def graveyard(c, sc, dg):
     m = Mesh()
     # The fence: a ring of iron fence runs (a gap for the gate, facing town).
     n = 36
-    gate_a = math.atan2(-1.0, 0.6)
+    gate_a = getattr(dg, "GRAVE_GATE", math.atan2(-1.0, 0.6))
+    # Where the lap runs right through it, nothing stands in the road.
+    through = getattr(dg, "GRAVE_THROUGH", False)
     for k in range(n):
         a0, a1 = k * math.tau / n, (k + 1) * math.tau / n
         am = (a0 + a1) / 2
@@ -634,14 +650,20 @@ def graveyard(c, sc, dg):
                 continue
             if any(math.hypot(x - px, y - py) < 7 for px, py in CRYPTS_AT(gx, gy)) or abs(u) < 3.0:
                 continue
+            if through and not clear(c, x, y, 1.6):
+                continue
             proto = "Grave Cross %d" % (k % 3) if rnd(k * 13) < 0.35 else "Headstone %d" % (k % 6)
             sc.put(proto, x, y, sc.ground(x, y) - 0.15 * rnd(k * 17), gate_a + math.pi / 2 + 0.2 * (rnd(k * 19) - 0.5) - math.pi / 2,
                    scale=1.35 + 0.3 * rnd(k * 23), coll="Graveyard")
     for i, (x, y) in enumerate(CRYPTS_AT(gx, gy)):
+        if through and not clear(c, x, y, 4.5):
+            continue
         sc.put("Crypt %d" % (i % 2), x, y, sc.ground(x, y), gate_a - math.pi / 2 + (i - 1) * 0.5, scale=1.5, coll="Graveyard")
         sc.footprints.append((x, y, 4.0))
     for i, (dx, dy, v) in enumerate(((-18, 14, 1), (21, -8, 3), (6, 24, 0), (-24, -18, 2))):
         x, y = gx + dx, gy + dy
+        if through and not clear(c, x, y, 3.0):
+            continue
         sc.put("Dead Tree %d" % v, x, y, sc.ground(x, y), i * 1.7, scale=1.3, coll="Graveyard")
     # Green lanterns at the gate, and the light of the mist.
     for s in (-1, 1):
@@ -657,19 +679,23 @@ def graveyard(c, sc, dg):
             sc.green.append((x + math.cos(a) * 1.1, y + math.sin(a) * 1.1, sc.ground(x, y) + 3.5))
     # Boot Hill's overflow: old graves scattered on the outside of the bend too, so the
     # road runs right through the cemetery.
-    for k in range(70):
+    if hasattr(dg, "GRAVE_STRETCH"):
+        g0, g1, gside = dg.GRAVE_STRETCH
+    else:
         sg_ = dg.LAYOUT[6]
-        q = c.at(dg.SEG[6] + sg_[1] * math.radians(sg_[2]) * rnd(k * 7 + 1))
-        p = q.side(-(q.w / 2 + 5.0 + 16.0 * rnd(k * 11 + 2)))
+        g0, g1, gside = dg.SEG[6], dg.SEG[6] + sg_[1] * math.radians(sg_[2]), -1
+    for k in range(70):
+        q = c.at(g0 + (g1 - g0) * rnd(k * 7 + 1))
+        sd = gside if gside else (1 if k % 2 else -1)
+        p = q.side(sd * (q.w / 2 + 5.0 + 16.0 * rnd(k * 11 + 2)))
         if clear(c, p.x, p.y, 3.5) and sc.free(p.x, p.y, 1.0):
             proto = "Grave Cross %d" % (k % 3) if rnd(k * 13) < 0.5 else "Headstone %d" % (k % 6)
             sc.put(proto, p.x, p.y, sc.ground(p.x, p.y) - 0.1, road_rot(q) + math.pi / 2 + 0.4 * (rnd(k * 5) - 0.5), scale=1.3, coll="Graveyard")
     # Dead trees round the outside of the bend, black against the moon.
-    S = dg.SEG
-    sg = dg.LAYOUT[6]
     for k in range(9):
-        q = c.at(S[6] + sg[1] * math.radians(sg[2]) * (k + 0.5) / 9)
-        p = q.side(-(q.w / 2 + 9.0 + 6.0 * rnd(k * 3)))
+        q = c.at(g0 + (g1 - g0) * (k + 0.5) / 9)
+        sd = gside if gside else (1 if k % 2 else -1)
+        p = q.side(sd * (q.w / 2 + 9.0 + 6.0 * rnd(k * 3)))
         if clear(c, p.x, p.y, 4.0):
             sc.put("Dead Tree %d" % (k % 4), p.x, p.y, sc.ground(p.x, p.y), k * 1.3, scale=1.2 + 0.4 * rnd(k), coll="Graveyard")
     sc.green.append((gx, gy, sc.ground(gx, gy) + 2.0))
@@ -754,8 +780,7 @@ def mine_portal(c, sc, dg):
 def headframe(c, sc, dg):
     """The headframe over the old shaft on the ridge's north rim: a tall timber A-frame,
     its sheave wheel, an ore bin, and a chute running down the cliff."""
-    x, y = 150.0, 352.0
-    z = 66.0
+    x, y, z = getattr(dg, "HEADFRAME", (150.0, 352.0, 66.0))
     m = Mesh()
     H = 18.0
     for sx in (-1, 1):
@@ -785,12 +810,13 @@ def railway(c, sc, dg):
     the road on a tall timber trestle to the stamp mill. Rails on sleepers all the way,
     an ore cart that rolls along it now and then by itself."""
     S = dg.SEG
-    adit = (128.0, 96.0)
+    rw = getattr(dg, "RAILWAY", {})
+    adit = rw.get("adit", (128.0, 96.0))
     # Where the road climbs out of the ravine: the trestle crosses it here.
-    q = c.at(S[15] + 60.0)
+    q = c.at(rw.get("cross", S[15] + 60.0))
     cross = (q.p.x, q.p.y)
     mill = (cross[0] - 4.0, cross[1] - 95.0)
-    pts = [adit, (130.0, 40.0), (cross[0] + 2.0, cross[1] + 45.0), (cross[0], cross[1] - 6.0), (mill[0] + 2.0, mill[1] + 20.0), mill]
+    pts = [adit, rw.get("via", (130.0, 40.0)), (cross[0] + 2.0, cross[1] + 45.0), (cross[0], cross[1] - 6.0), (mill[0] + 2.0, mill[1] + 20.0), mill]
     dense = []
     for a, b in zip(pts, pts[1:]):
         n = max(1, int(math.dist(a, b) / 2.0))
@@ -854,7 +880,8 @@ def mine_approach(c, sc, dg):
     """Along the mine approach: ore bins, sheds, crates, a winch, lantern posts."""
     S = dg.SEG
     m = Mesh()
-    for k, s in enumerate(range(int(S[7] + 200), int(S[8]) - 10, 28)):
+    a0, a1 = getattr(dg, "APPROACH", (S[7] + 200, S[8] - 10))
+    for k, s in enumerate(range(int(a0), int(a1), 28)):
         q = c.at(s)
         nx, ny = math.sin(road_rot(q)), -math.cos(road_rot(q))
         x, y = q.p.x - nx * 20.0, q.p.y - ny * 20.0
@@ -862,6 +889,7 @@ def mine_approach(c, sc, dg):
             building(m, sc, x, y, sc.ground(x, y) + 0.05, road_rot(q), 8.0, 7.0, siding="siding_grey", false_front=False, porch=False,
                      roof="tin_roof", lit=0.3, ghost=0.2, seed=300 + k, lanterns=False)
     m.build(c, "Mine Sheds", "Mineworks", role="both")
-    for k, (dx, dy, proto) in enumerate(((20.0, 450.0, "Winch"), (-6.0, 452.0, "Ore Heap 0"), (32.0, 448.0, "Crate Stack 1"), (52.0, 446.0, "Ore Cart Tipped"))):
+    for k, (dx, dy, proto) in enumerate(getattr(dg, "APPROACH_PROPS", ((20.0, 450.0, "Winch"), (-6.0, 452.0, "Ore Heap 0"), (32.0, 448.0, "Crate Stack 1"),
+                                                                       (52.0, 446.0, "Ore Cart Tipped")))):
         if clear(c, dx, dy, 3.0):
             sc.put(proto, dx, dy, sc.ground(dx, dy), k * 1.3, coll="Mineworks")

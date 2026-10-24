@@ -1,24 +1,26 @@
-# Dry Gulch Ghost Town v3: the GREYBOX of the new lap (Blake's notes, 2026-10-23).
-# Driving first: the new lap, playable with plain shapes, so it can be driven and changed
-# quickly; the haunted town's look comes back once the lap is fun. Builds its own
-# package, dry_gulch_v3 (?track=dry_gulch_v3); the current Dry Gulch stays as it is.
+# Dry Gulch Ghost Town v3: the new lap (Blake's notes, 2026-10-23), dressed exactly like
+# the current Dry Gulch: the same haunted town, graveyard, Hazard Ridge and its mine,
+# ravine, trestles, props, light and haunt (gulch_scenery.py, gulch_town.py,
+# gulch_props.py), laid along the new road. Builds its own package, dry_gulch_v3
+# (?track=dry_gulch_v3); the current Dry Gulch stays as it is.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/dry_gulch_v3.py      (the bpy module)
 #
-# About 1.77 km (the current lap is 2.14 km), nearly all of it bends:
+# About 1.8 km (the current lap is 2.14 km), nearly all of it bends:
 #
 #   A  Main Street and the saloon district: north up Main Street, a drift left at the
 #      square, then a tight S-chicane drifting between the buildings.
-#   B  Through the graveyard (not round it): over its knoll, flicking between the graves.
+#   B  Through Boot Hill (not round it): over its knoll, flicking between the graves.
 #   C  The mine approach, east along the top of town. The shortcut leaves into the mine.
 #   D  The main way round: the Rickety Trestle over the glowing chasm (a broken span to
 #      jump), south along the rim and down the ravine's wall in S-bends, a weave round
 #      the rock pillars on the ravine floor, the hairpin round Dead Man's Rock, and up
-#      out of the ravine in an S, drifting back onto Main Street.
-#   The Haunted Mine (the shortcut): into the portal and down through winding tunnels,
-#   a drop into the old workings, through the glowing cavern and out of the broken
-#   gateway onto the ravine floor. About 90 m shorter than the way round (3-4 s).
+#      out of the ravine under the mine railway's trestle, drifting back onto Main Street.
+#   The Haunted Mine (the shortcut): into the portal, down the timbered tunnels, through
+#   the old workings (mind the runaway ore cart), across the spectral trestle over the
+#   chasm cavern (one stretch of rail broken away), out of the broken gateway onto the
+#   ravine floor.
 
 import math
 import os
@@ -27,7 +29,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
+from course_kit import lerp, smooth  # noqa: E402
 
 TRACK_ID = "dry_gulch_v3"
 
@@ -89,6 +91,12 @@ def _seg_point(i):
     return next(p for p in PATH if p[3] == i)
 
 
+def path_at(s):
+    """(x, y, heading degrees) of the layout s metres along the lap."""
+    k = min(range(len(PATH)), key=lambda i: abs(_D[i] - s))
+    return PATH[k][:3]
+
+
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
     sg = LAYOUT[i]
@@ -141,18 +149,23 @@ def road_w(d, seg):
 
 
 ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+S = SEG
+
+# ---------------------------------------------------------------- landmarks
+
+SQUARE = _arc_centre(1)  # the town square, inside the first corner
+_C33 = _arc_centre(33)
+CHAPEL = (_C33[0] + 8.0, _C33[1] + 8.0)  # inside the last corner
+WATER_TOWER = (-50.0, 46.0)  # behind Main Street's west side
+GRAVEYARD = ((_seg_point(8)[0] + _seg_point(10)[0]) / 2 + 4.0, (_seg_point(8)[1] + _seg_point(11)[1]) / 2)
+DEAD_MANS_ROCK = _arc_centre(28)
+Z_RIDGE = 72.0  # Hazard Ridge's top
 
 # ---------------------------------------------------------------- the land
 
-# The ravine: (x, y, half-width, floor). Deep in the north (the chasm the trestle
-# crosses), it runs south-east to the floor the road drives along, round Dead Man's
-# Rock, and climbs west to the town's level south of town.
-RAVINE = [
-    (130.0, 710.0, 70.0, -30.0), (130.0, 340.0, 60.0, -28.0), (145.0, 298.0, 52.0, -26.0), (185.0, 225.0, 44.0, -18.0),
-    (225.0, 160.0, 40.0, 4.0), (248.0, 106.0, 40.0, 10.5), (254.0, 10.0, 40.0, 11.0), (246.0, -100.0, 46.0, 11.5),
-    (220.0, -155.0, 48.0, 12.0), (160.0, -140.0, 40.0, 16.0), (100.0, -115.0, 32.0, 23.0), (40.0, -95.0, 24.0, 30.0),
-]
-WALLW = 22.0
+
+def sm(t):
+    return smooth(max(0.0, min(1.0, t)))
 
 
 def _seg_d(px, py, ax, ay, bx, by):
@@ -161,70 +174,158 @@ def _seg_d(px, py, ax, ay, bx, by):
     return math.hypot(px - ax - t * dx, py - ay - t * dy), t
 
 
+# The ravine: its centre line (x, y), half-width and floor. Deep in the north (the chasm
+# the Rickety Trestle crosses, glowing green), it runs south past Hazard Ridge, its floor
+# rising, bends west round Dead Man's Rock and climbs to the town's level south of town.
+RAVINE = [
+    (130.0, 1100.0, 80.0, -30.0), (130.0, 710.0, 70.0, -30.0), (130.0, 340.0, 60.0, -28.0), (145.0, 298.0, 52.0, -26.0),
+    (185.0, 225.0, 44.0, -18.0), (225.0, 160.0, 40.0, 4.0), (248.0, 106.0, 42.0, 10.5), (254.0, 10.0, 42.0, 11.0),
+    (246.0, -100.0, 48.0, 11.5), (220.0, -155.0, 50.0, 12.0), (160.0, -140.0, 40.0, 16.0), (100.0, -115.0, 32.0, 23.0),
+    (40.0, -95.0, 24.0, 30.0),
+]
+WALLW = 22.0  # how far a ravine wall runs from its rim to the floor
+
+
 def ravine_q(x, y):
+    """(distance from the ravine's centre line, its half-width there, its floor there,
+    and which side: +1 on its outer (east, then south) side, -1 on the town's)."""
     best = None
     for a, b in zip(RAVINE, RAVINE[1:]):
         d, t = _seg_d(x, y, a[0], a[1], b[0], b[1])
         if best is None or d < best[0]:
-            best = (d, lerp(a[2], b[2], t), lerp(a[3], b[3], t))
+            cross = (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0])
+            best = (d, lerp(a[2], b[2], t), lerp(a[3], b[3], t), 1.0 if cross > 0 else -1.0)
     return best
 
 
-def natural(x, y):
+def bands(u):
+    """A ravine wall, rim (0) to foot (1): sheer drops with ledges between."""
+    out = 0.0
+    for w, f in ((3.0, 0.32), (5.0, 0.06), (4.0, 0.3), (6.0, 0.08), (3.0, 0.2), (3.0, 0.04)):
+        out += f * sm(u / w)
+        u -= w
+        if u <= 0:
+            break
+    return min(1.0, out)
+
+
+def east_land(y):
+    """The mesa east of the ravine: low by the trestle, higher to the south."""
+    return lerp(31.5, 44.0, sm((229.0 - y) / 150.0))
+
+
+def plateau(x, y):
+    """The town's plateau, rolling gently, rising into low hills far out, and the higher
+    mesa across the ravine."""
     h = Z_TOWN + 0.8 * math.sin(x / 53.0 + 0.4) * math.cos(y / 61.0) + 0.5 * math.sin((x + y) / 29.0)
-    r = math.hypot(x - 20.0, (y - 80.0) * 0.8)
-    h += 25.0 * smooth((r - 380.0) / 160.0)
-    d, hw, floor = ravine_q(x, y)
-    if d < hw and floor < h:
-        u = (hw - d) / WALLW
-        h = lerp(h, floor, smooth(min(1.0, u)))
-    g = math.hypot(x - GRAVE[0], y - GRAVE[1])
-    h += 3.0 * (1.0 - smooth((g - 10.0) / 30.0))
+    r = math.hypot((x + 20.0) / 1.15, y - 120.0)
+    h += (16.0 + 5.0 * math.sin(x / 90.0) * math.cos(y / 70.0)) * sm((r - 420.0) / 240.0)
+    d, hw, _, side = ravine_q(x, y)
+    if side > 0 and d > hw - 4.0:
+        k = sm((d - hw + 4.0) / 14.0) * sm((x - 60.0) / 120.0)
+        h = lerp(h, east_land(y) + 1.2 * math.sin(y / 23.0 + x / 31.0), k)
     return h
 
 
-def classify(c, n, info):
-    d, hw, floor = ravine_q(c.x, c.y)
-    if c.z < 0.0 and d < hw:
-        return ("gulch_chasm", "abyss")  # the glowing chasm: back past the broken span
-    if n.z < 0.62:
-        return ("mine_rock", "wall")
-    if math.hypot(c.x - GRAVE[0], c.y - GRAVE[1]) < 42:
-        return ("graveyard_earth", "dirt")
-    if info["d"] < 10:
-        return ("gulch_verge", "dirt")
-    return ("gulch_sand", "loose_sand")
+def ravine_cut(x, y, top):
+    d, hw, floor, _ = ravine_q(x, y)
+    u = hw - d
+    if u <= 0.0 or floor >= top:
+        return None
+    z = top - (top - floor) * bands(u * 24.0 / WALLW)
+    if u > WALLW:
+        z = floor + 0.4 * math.sin(x / 7.0) * math.cos(y / 9.0)
+    return min(top, z)
 
 
-GRAVE = ((_seg_point(8)[0] + _seg_point(10)[0]) / 2 + 4.0, (_seg_point(8)[1] + _seg_point(11)[1]) / 2)
-DEAD_MANS_ROCK = _arc_centre(28)
+def natural(x, y):
+    """The land before it's shaped round the roads."""
+    h = plateau(x, y)
+    z = ravine_cut(x, y, h)
+    if z is not None:
+        h = z
+    # Boot Hill's knoll (the lap runs over it).
+    g = math.hypot(x - GRAVEYARD[0], y - GRAVEYARD[1])
+    h += 4.0 * (1.0 - sm((g - 18.0) / 34.0))
+    return h
 
-# Hazard Ridge: the mine is bored through it, between the mine approach and the ravine.
-RIDGE = [(40.0, 50.0), (48.0, 160.0), (28.0, 250.0), (80.0, 262.0), (132.0, 248.0), (160.0, 215.0), (185.0, 160.0),
-         (215.0, 105.0), (220.0, 50.0), (192.0, 16.0), (130.0, 6.0), (70.0, 20.0)]
 
-# The Haunted Mine: off the approach, through the ridge, onto the ravine floor.
-#   (x, y, z) waypoints; None z: on the road there.
+# ---------------------------------------------------------------- Hazard Ridge
+
+
+def _smooth_loop(pts, n=3):
+    for _ in range(n):
+        out = []
+        for a, b in zip(pts, pts[1:] + pts[:1]):
+            out.append((0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1]))
+            out.append((0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1]))
+        pts = out
+    return pts
+
+
+# Hazard Ridge's footprint (anticlockwise): between the mine approach, the town and the
+# ravine, the old mine bored through it. Its north face drops sheer into the chasm's
+# side, its east face into the ravine.
+RIDGE = _smooth_loop([
+    (70.0, 20.0), (130.0, 6.0), (192.0, 16.0), (220.0, 50.0), (215.0, 105.0), (185.0, 160.0), (160.0, 215.0),
+    (132.0, 248.0), (80.0, 262.0), (34.0, 250.0), (50.0, 160.0), (46.0, 60.0),
+], 3)
+RIDGE_C = (sum(p[0] for p in RIDGE) / len(RIDGE), sum(p[1] for p in RIDGE) / len(RIDGE))
+
+
+def _inside(poly, x, y):
+    c = False
+    n = len(poly)
+    j = n - 1
+    for i in range(n):
+        xi, yi = poly[i]
+        xj, yj = poly[j]
+        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi:
+            c = not c
+        j = i
+    return c
+
+
+def ridge_d(x, y):
+    """Signed distance to the ridge's foot: positive inside it."""
+    best = 1e9
+    for a, b in zip(RIDGE, RIDGE[1:] + RIDGE[:1]):
+        d, _ = _seg_d(x, y, a[0], a[1], b[0], b[1])
+        best = min(best, d)
+    return best if _inside(RIDGE, x, y) else -best
+
+
+# ---------------------------------------------------------------- the haunted mine
+
+# The shortcut through the mine: (x, y, z) waypoints, and what each stretch is (the
+# same plan as the current Dry Gulch's mine, waypoint for waypoint, so its dressing fits).
 MINE = [
-    (-10.0, 298.0, None),  # (on the approach)
-    (14.0, 284.0, 30.0),
-    (38.0, 262.0, 29.4),  # the portal
-    (62.0, 238.0, 28.4),  # winding down the tunnels...
-    (64.0, 210.0, 27.4),
-    (86.0, 192.0, 26.6),
-    (112.0, 180.0, 26.0),  # the drop into the workings
-    (128.0, 164.0, 20.5),
-    (146.0, 138.0, 18.5),  # the glowing cavern
-    (170.0, 122.0, 16.0),
-    (196.0, 110.0, 14.0),
-    (217.0, 98.0, 13.0),  # the broken gateway
-    (238.0, 88.0, 12.8),
-    (257.0, 74.0, None),  # (on the ravine floor)
+    (-10.0, 298.0, None, "approach"),  # (on the mine approach)
+    (14.0, 284.0, 30.4, "approach"),
+    (38.0, 262.0, 29.6, "tunnel"),  # the portal
+    (52.0, 240.0, 28.4, "tunnel"),
+    (60.0, 214.0, 27.4, "workings"),
+    (74.0, 192.0, 26.8, "workings"),  # the ore-cart crossing
+    (94.0, 176.0, 25.8, "tunnel"),
+    (110.0, 164.0, 24.4, "tunnel"),
+    (124.0, 150.0, 22.8, "trestle"),
+    (144.0, 136.0, 21.0, "trestle"),
+    (164.0, 126.0, 19.4, "trestle"),
+    (180.0, 118.0, 17.8, "tunnel"),
+    (194.0, 110.0, 15.8, "tunnel"),
+    (206.0, 104.0, 14.2, "tunnel"),
+    (222.0, 97.0, 13.4, "ravine"),  # the gateway
+    (240.0, 87.0, 12.9, "ravine"),
+    (257.0, 74.0, None, "ravine"),  # (on the ravine floor)
 ]
-CAVERN = (146.0, 138.0)
+CART_AT = 5
+PORTAL_AT = 2
+GATEWAY_AT = 14
+CAVERN = (153.0, 134.0)  # the chasm cavern's centre
+WORKINGS = (74.0, 192.0)
 
 
-def catmull(pts, every=1.0):
+def _catmull(pts, every=1.0):
     out = []
     n = len(pts)
     for i in range(n - 1):
@@ -234,39 +335,209 @@ def catmull(pts, every=1.0):
         k = max(2, int(math.dist(p1[:2], p2[:2]) / every))
         for j in range(k):
             t = j / k
-            out.append(tuple(0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t * t
-                                    + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t ** 3) for c in range(3)))
+            t2, t3 = t * t, t * t * t
+            out.append(tuple(
+                0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3)
+                for c in range(3)))
     out.append(tuple(pts[-1][:3]))
     return out
 
 
 def mine_line(c):
+    """The shortcut's centre line, dense: (x, y, z, kind) every metre, its ends on the
+    race line (and leaving and joining it along it)."""
     pts = []
-    for x, y, z in MINE:
+    for x, y, z, kind in MINE:
         if z is None:
             smp, _ = c.nearest(x, y)
             x, y, z = smp.p.x, smp.p.y, smp.p.z
         pts.append((x, y, z))
-    return catmull(pts, 2.0)
+    a, _ = c.nearest(*pts[0][:2])
+    b, _ = c.nearest(*pts[-1][:2])
+    pa = c.at(a.s - 16.0).p
+    pb = c.at(b.s + 16.0).p
+    dense = _catmull([(pa.x, pa.y, pa.z)] + pts + [(pb.x, pb.y, pb.z)])
+    i0 = min(range(len(dense)), key=lambda i: math.dist(dense[i][:2], pts[0][:2]))
+    i1 = min(range(len(dense)), key=lambda i: math.dist(dense[i][:2], pts[-1][:2]))
+    dense = dense[i0:i1 + 1]
+    marks = []
+    for k, (x, y, z, kind) in enumerate(MINE):
+        p = pts[k]
+        marks.append((min(range(len(dense)), key=lambda i: math.dist(dense[i][:2], p[:2])), kind))
+    out = []
+    for i, p in enumerate(dense):
+        kind = marks[0][1]
+        for j, kd in marks:
+            if j <= i:
+                kind = kd
+        out.append((p[0], p[1], p[2], kind))
+    return out
+
+
+def mine_index(line, k):
+    """Index into the dense line of MINE waypoint k."""
+    x, y = MINE[k][0], MINE[k][1]
+    return min(range(len(line)), key=lambda i: math.dist(line[i][:2], (x, y)))
+
+
+# ---------------------------------------------------------------- materials
+
+
+def classify(c, n, info):
+    if ridge_d(c.x, c.y) > 5.0:
+        return None  # under the ridge (its own rock stands here)
+    d, hw, floor, _ = ravine_q(c.x, c.y)
+    in_ravine = hw - d > 0.5
+    if in_ravine and c.z < 0.0:
+        return ("gulch_chasm", "abyss")  # the glowing chasm's floor: back on the road
+    if n.z < 0.55:
+        return (layer(c.z), "wall")
+    if n.z < 0.8:
+        return ("gulch_talus", "loose_sand")
+    if info["d"] < info["sample"].w / 2 + 1.5:
+        return ("gulch_verge", "dirt")
+    if in_ravine and c.z < floor + 3.0:
+        return ("gulch_wash", "dirt")
+    g = math.hypot(c.x - GRAVEYARD[0], c.y - GRAVEYARD[1])
+    if g < 50:
+        return ("graveyard_earth", "dirt")
+    return (ground_mat(c.x, c.y), "loose_sand")
+
+
+def ground_mat(x, y):
+    v = math.sin(x / 41.0 + 0.7) * math.cos(y / 37.0) + 0.5 * math.sin((x - y) / 23.0) + 0.25 * math.sin(x / 9.0 + y / 11.0)
+    if v > 0.95:
+        return "slickrock"
+    if v < -0.6:
+        return "red_sand"
+    return "gulch_sand"
+
+
+def layer(z):
+    """The rock's layers, top to bottom (the canyon's sandstones, darker at night)."""
+    if z > 50:
+        return "strata_cream"
+    if z > 26:
+        return "strata_orange" if int(z / 6) % 3 else "strata_red"
+    if z > 8:
+        return "strata_red"
+    if z > -10:
+        return "strata_rust"
+    return "strata_purple"
+
+
+_layer = layer  # (the name canyon_scenery's rock painters look for)
+
+
+def underfloor_z(x, y):
+    if ridge_d(x, y) > -2.0:
+        return None
+    d, hw, _, _ = ravine_q(x, y)
+    if hw - d > 2.0 and natural(x, y) < 0.0:
+        return None  # the chasm: its own floor
+    return natural(x, y) - 0.4
+
+
+def abyss_z(x, y):
+    """The invisible floor under the chasm: fall in anywhere and you're put back."""
+    if ridge_d(x, y) > -2.0:
+        return None
+    d, hw, floor, _ = ravine_q(x, y)
+    if hw - d < -6.0 or floor > 2.0:
+        return None
+    return floor - 1.0
+
+
+# ---------------------------------------------------------------- where things go
+# (gulch_town.py and gulch_scenery.py place the town, mineworks and haunt by these; see
+# the current Dry Gulch for what each is.)
+
+STREETS = {
+    "main": (SEG[34] + 4.0 - LENGTH, SEG[1] - 6.0),
+    "side": (SEG[2], SEG[7]),
+    "main_back": 16.5,
+    "side_back": 14.5,
+    "square_back": 9.0 + 5.4,
+    "dress": 11.0,
+    "wagon": SEG[5] + 16.0,
+}
+BACK_LANES = (-170, 10, 170, 275)
+WINDMILL = (-118.0, 270.0, 200.0)
+GRAVE_GATE = 0.0  # facing town, off the lap
+GRAVE_THROUGH = True
+GRAVE_STRETCH = (SEG[7], SEG[12], 0)  # both sides of the lane through it
+HEADFRAME = (96.0, 236.0, 66.0)
+RAILWAY = {"adit": (128.0, 1.0), "via": (128.0, -40.0), "cross": SEG[30] + 30.0}
+APPROACH = (SEG[12], SEG[16] - 10)
+APPROACH_PROPS = ((-40.0, 316.0, "Winch"), (-62.0, 318.0, "Ore Heap 0"), (-22.0, 316.0, "Crate Stack 1"), (6.0, 314.0, "Ore Cart Tipped"))
+NEAR = (-420.0, 480.0, -360.0, 640.0)
+MINE_BOX = (0.0, 260.0, 0.0, 300.0)
+CRAGS = ((100.0, 200.0, 20.0, 15.0, 94.0), (175.0, 75.0, 16.0, 14.0, 88.0), (90.0, 100.0, 16.0, 12.0, 84.0), (130.0, 45.0, 12.0, 10.0, 82.0))
+LANTERNS = (SEG[7], SEG[16])
+CHEVRONS = ((7, 3), (17, 3), (28, 5), (33, 3))
+RAVINE_JUNK = ((SEG[22] + 20, -18, "Crate Stack 0"), (SEG[23] + 10, 19, "Winch"), (SEG[26] + 10, 18, "Ore Cart Tipped"), (SEG[27] + 30, -17, "Ore Heap 1"),
+               (SEG[28] + 60, 18, "Ore Cart"), (SEG[29] + 30, -17, "Barrel 1"))
+RAVINE_WHISPER = (250.0, 20.0, 14.0, 60.0)
+TUMBLEWEEDS = (SEG[0] + 60, SEG[3] + 10, SEG[8] + 20, SEG[22] + 20, SEG[27] + 40, SEG[34] - 20)
+BIRDS = ((140.0, 150.0), (230.0, -120.0))
+
+
+def pickups(c):
+    """The new lap's boosts, pickups and checkpoints (gulch_scenery adds the mine's twin
+    gate)."""
+    S = lambda i: SEG[i]  # noqa: E731
+    # Zippers: up Main Street, out of the chicane, along the approach, onto the trestle
+    # (for the broken span), down the wall, along the floor, and up out of the ravine.
+    for at in (S(0) + 30, S(6) + 10, S(15) + 30, S(16) + 20, S(21) + 10, S(27) + 20, S(30) + 10):
+        c.zipper(at, 0)
+    for at, across in ((S(2) + 10, 0), (S(8) + 30, 0), (S(13) + 10, 0), (S(18) + 20, 0), (S(24) + 30, 0), (S(29) + 30, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S(0) + 70, -4, "red"), (S(0) + 70, 4, "blue"), (S(4) + 40, 0, "green"), (S(12) + 20, 0, "yellow"),
+                            (S(17) + 30, 0, "rainbow"), (S(22) + 20, -4, "red"), (S(22) + 20, 4, "blue"), (S(31) + 10, 0, "green")):
+        c.balloon(at, across, col)
+    # The broken span: fall in and you're put back past it.
+    c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
+    line = c.mine
+    s_in = kit.s_near(c, *line[0][:2])
+    s_out = kit.s_near(c, *line[-1][:2])
+    apex = (s_in + s_out) / 2
+    gates = c.checkpoints(
+        extra=[S(1) + 20, S(4) + 30, S(8) + 20, S(11) + 30, s_in - 8, apex, s_out + 8, S(24) + 30, S(28) + 50, S(30) + 30],
+        avoid=[(s_in - 4, apex - 8), (apex + 8, s_out + 4)],
+        height=10.0,
+    )
+    return gates, apex
+
+
+# ---------------------------------------------------------------- the course
 
 
 def main():
-    import props  # noqa: E402
+    from dry_gulch import mine_roads
 
-    c = kit.Course(TRACK_ID, "Dry Gulch Ghost Town (v3 greybox)", "dry_gulch")
+    c = kit.Course(TRACK_ID, "Dry Gulch Ghost Town", "dry_gulch")
     c.route(ROUTE, width=16.0, bank=7.0)
     verge = ("gulch_verge", "dirt")
-    timber = ("mine_timber", "wall")
+    fence = ("fence_rail", "wall")
+    timber = ("weathered_timber", "wall")
     c.kinds = {
-        "street": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.2, "shoulder_mat": ("board_walk", "road")},
-        "trail": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.6, "shoulder_mat": verge},
-        "trestle": {"mat": "board_walk", "surface": "road", "shoulder": 0.5, "shoulder_mat": ("board_walk", "road"), "barrier": 1.1,
+        "street": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.6, "shoulder_mat": verge},
+        "trail": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.8, "shoulder_mat": verge, "barrier": 1.0,
+                  "barrier_mat": fence},
+        # Boot Hill's lane: no fence (the cemetery's iron fence is round it).
+        "lane": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.6, "shoulder_mat": ("graveyard_earth", "dirt")},
+        "trestle": {"mat": "plank_deck", "shoulder": 0.6, "shoulder_mat": ("plank_deck", "road"), "barrier": 1.2,
                     "barrier_mat": timber, "deck": 1.8, "deck_mat": timber, "ground": False},
-        "ramp": {"mat": "board_walk", "surface": "road", "shoulder": 0.5, "shoulder_mat": ("board_walk", "road"), "barrier": 1.1,
+        "ramp": {"mat": "plank_deck", "shoulder": 0.6, "shoulder_mat": ("plank_deck", "road"), "barrier": 1.2,
                  "barrier_mat": timber, "deck": 1.8, "deck_mat": timber, "ground": False},
-        "ledge": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.0, "shoulder_mat": verge, "barrier": 1.0,
-                  "barrier_mat": timber, "deck": 3.0, "deck_mat": ("mine_rock", "wall")},
+        "ledge": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 1.2, "shoulder_mat": verge, "barrier": 1.1,
+                  "barrier_mat": fence, "deck": 3.0, "deck_mat": ("strata_red", "wall")},
+        "ravine": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 2.2, "shoulder_mat": verge},
+        "open": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 2.6, "shoulder_mat": verge},
     }
+    line = mine_line(c)
+    sa = kit.s_near(c, *line[0][:2])
+    sb = kit.s_near(c, *line[-1][:2])
 
     def label(smp):
         s = smp.s
@@ -276,11 +547,16 @@ def main():
         if seg == 16 and GAP[0] - 10 <= s < GAP[0]:
             return "ramp"
         x, y = smp.p.x, smp.p.y
-        d, hw, floor = ravine_q(x, y)
-        if seg in (15, 16, 17) and d < hw - 4 and floor < smp.p.z - 6:
+        if sa - 12 <= s <= sa + 62 or sb - 62 <= s <= sb + 12:
+            return "open"
+        if seg in (15, 16, 17) and natural(x, y) < smp.p.z - 5.0:
             return "trestle"
         if 18 <= seg <= 21:
             return "ledge"
+        if 22 <= seg <= 29:
+            return "ravine"
+        if 7 <= seg <= 11:
+            return "lane"
         if seg <= 6 or seg >= 33:
             return "street"
         return "trail"
@@ -291,154 +567,18 @@ def main():
             specials.append((s0, s1, None))
         elif k == "ramp":
             specials.append((s0, s1, "ramp", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2}))
-        elif k != "trail":
+        elif k != "street":
             specials.append((s0, s1, k))
-    c.roads(kit.plan(c, specials, "trail", max_len=200.0))
+    c.roads(kit.plan(c, specials, "street", max_len=200.0))
+    c.mine = line
+    mine_roads(c, line)
 
-    # The mine's floor: a road off the race line, through the ridge.
-    line = mine_line(c)
-    c.shortcut("Mine", [(x, y, z - 0.05) for x, y, z in line], "mine_floor", "packed_dirt", width=9.0, shoulder=0.6,
-               shoulder_mat=("mine_floor", "packed_dirt"))
+    import gulch_scenery  # noqa: E402
 
-    X0, X1, Y0, Y1 = -420, 480, -360, 760
-    c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=16.0, under=0.2)
-
-    def under(x, y):
-        return natural(x, y) - 0.4
-
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("gulch_sand", "loose_sand"))
-
-    # Hazard Ridge, the mine bored through it, and a shaft of green light over the cavern.
-    cx = sum(p[0] for p in RIDGE) / len(RIDGE)
-    cy = sum(p[1] for p in RIDGE) / len(RIDGE)
-    bm = bmesh.new()
-    rings = []
-    for z, k in ((0.0, 1.0), (Z_TOWN, 1.0), (52.0, 0.92), (66.0, 0.8), (70.0, 0.7)):
-        rings.append([bm.verts.new((cx + (x - cx) * k, cy + (y - cy) * k, z)) for x, y in RIDGE])
-    props.loft(bm, rings, cap_top=True, cap_bottom=True)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    ridge = c.mesh_object("Hazard Ridge", bm, "Rocks")
-    cut = bmesh.new()
-    rr = []
-    n = len(line)
-    for i, (x, y, z) in enumerate(line):
-        a = line[max(0, i - 1)]
-        b = line[min(n - 1, i + 1)]
-        t = Vector((b[0] - a[0], b[1] - a[1], 0)).normalized()
-        r = Vector((t.y, -t.x, 0))
-        p = Vector((x, y, z))
-        rr.append([cut.verts.new(p + r * o + Vector((0, 0, dz))) for o, dz in ((-6.0, -0.6), (6.0, -0.6), (6.0, 6.5), (3.6, 10.0), (-3.6, 10.0), (-6.0, 6.5))])
-    for lo, hi in zip(rr, rr[1:]):
-        for k in range(6):
-            cut.faces.new((lo[k], lo[(k + 1) % 6], hi[(k + 1) % 6], hi[k]))
-    cut.faces.new(rr[0])
-    cut.faces.new(list(reversed(rr[-1])))
-    bmesh.ops.recalc_face_normals(cut, faces=cut.faces)
-    props.loft(cut, [props.ring(cut, CAVERN, 16.0, 18.0, 12), props.ring(cut, CAVERN, 24.0, 90.0, 12)], cap_top=True, cap_bottom=True)
-    cutter = c.mesh_object("Mine Cutter", cut, "Rocks", "visual")
-    mod = ridge.modifiers.new("Mine", "BOOLEAN")
-    mod.operation = "DIFFERENCE"
-    mod.solver = "EXACT"
-    mod.object = cutter
-    kit.bpy.context.view_layer.objects.active = ridge
-    kit.bpy.ops.object.modifier_apply(modifier=mod.name)
-    kit.bpy.data.objects.remove(cutter)
-    c.paint_rock(ridge, ("mine_rock", "wall"), ("gulch_talus", "loose_sand"))
-    for i in range(8, len(line) - 8, 14):
-        x, y, z = line[i]
-        g = c.game(x, y, z + 5.5)
-        c.entity("torch", x=g[0], y=g[1], z=g[2])
-
-    # Dead Man's Rock, inside the hairpin, and the rock pillars the floor weaves round.
-    rk = c.rock_mass("Dead Mans Rock", DEAD_MANS_ROCK[0], DEAD_MANS_ROCK[1], 18.0, 16.0, 46.0, z0=0.0, n=14, seed=3)
-    c.paint_rock(rk, ("mine_rock", "wall"), ("gulch_talus", "loose_sand"))
-    for i in (24,):
-        px, py = _arc_centre(i)
-        pl = c.rock_mass("Pillar %d" % i, px, py, 9.0, 8.0, 34.0, z0=0.0, n=10, seed=i)
-        c.paint_rock(pl, ("mine_rock", "wall"), ("gulch_talus", "loose_sand"))
-    for i in (23, 25):
-        px, py = _arc_centre(i)
-        pl = c.rock_mass("Pillar %d" % i, px, py, 7.0, 6.0, 28.0, z0=0.0, n=10, seed=i)
-        c.paint_rock(pl, ("mine_rock", "wall"), ("gulch_talus", "loose_sand"))
-
-    # The town: buildings crowding the streets (the chicane drifts right between them).
-    bm = bmesh.new()
-    s = 6.0
-    k = 0
-    while s < SEG[7]:
-        q = c.at(s)
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 8.5))
-            if all(math.hypot(p.x - o.p.x, p.y - o.p.y) > o.w / 2 + 7.5 for o in c.S[:: 6]):
-                h = 7.0 + 3.0 * ((k + (side > 0)) % 3)
-                props.cuboid(bm, (p.x, p.y, q.p.z + h / 2 - 0.5), (9.0, 8.0, h), rot=math.atan2(q.t.y, q.t.x))
-        s += 12.0
-        k += 1
-    s = SEG[33]
-    while s < LENGTH - 6:
-        q = c.at(s)
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 8.5))
-            if all(math.hypot(p.x - o.p.x, p.y - o.p.y) > o.w / 2 + 7.5 for o in c.S[:: 6]):
-                props.cuboid(bm, (p.x, p.y, q.p.z + 4.0), (9.0, 8.0, 9.0), rot=math.atan2(q.t.y, q.t.x))
-        s += 12.0
-    town = c.mesh_object("Town", bm, "Props")
-    c.assign(town, c.lib("siding_brown", "wall"))
-    # The graveyard: headstones either side of the lane, close by.
-    bm = bmesh.new()
-    s = SEG[7] + 4
-    k = 0
-    while s < SEG[12]:
-        q = c.at(s)
-        for side in (-1, 1):
-            for off in (q.w / 2 + 3.0, q.w / 2 + 7.0, q.w / 2 + 11.0):
-                p = q.side(side * (off + (k % 2)))
-                props.cuboid(bm, (p.x, p.y, c.ground_z(p.x, p.y, list(c.coll("Terrain").objects)) or q.p.z), (0.5, 1.4, 2.2), rot=math.atan2(q.t.y, q.t.x))
-        s += 5.0
-        k += 1
-    stones = c.mesh_object("Graves", bm, "Props")
-    c.assign(stones, c.lib("tombstone", "wall"))
-
-    c.start_line()
-    S = lambda i: SEG[i]  # noqa: E731
-    # Zippers: up Main Street, out of the chicane, along the approach, onto the trestle
-    # (for the broken span), down the wall, along the floor, and up out of the ravine.
-    for at in (S(0) + 30, S(6) + 10, S(15) + 30, S(16) + 20, S(21) + 10, S(27) + 20, S(30) + 10):
-        c.zipper(at, 0)
-    for at, across in ((S(2) + 10, 0), (S(8) + 30, 0), (S(13) + 10, 0), (S(18) + 20, 0), (S(24) + 30, 0), (S(29) + 30, 0)):
-        c.bananas(at, across, count=5, gap=2.6)
-    for at, across, col in (
-        (S(0) + 70, -4, "red"),
-        (S(0) + 70, 4, "blue"),
-        (S(4) + 40, 0, "green"),
-        (S(12) + 20, 0, "yellow"),
-        (S(17) + 30, 0, "rainbow"),
-        (S(22) + 20, -4, "red"),
-        (S(22) + 20, 4, "blue"),
-        (S(31) + 10, 0, "green"),
-    ):
-        c.balloon(at, across, col)
-    # The broken span: fall in and you're put back past it.
-    c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
-
-    # Checkpoints: one in the middle of the stretch the mine skips, with a twin gate in the
-    # mine (either counts), and none elsewhere in that stretch.
-    s_in = kit.s_near(c, *MINE[0][:2])
-    s_out = kit.s_near(c, *MINE[-1][:2])
-    apex = (s_in + s_out) / 2
-    gates = c.checkpoints(
-        extra=[S(1) + 20, S(4) + 30, S(8) + 20, S(11) + 30, s_in - 8, apex, s_out + 8, S(24) + 30, S(28) + 50, S(30) + 30],
-        avoid=[(s_in - 4, apex - 8), (apex + 8, s_out + 4)],
-        height=10.0,
-    )
-    main_gate = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
-    mid = len(line) // 2
-    c.alt_gate(main_gate, "haunted_mine", line[mid - 2 : mid + 2], width=12.0)
-
-    kit.paint.shade_roads(c.pieces, 0.3)
+    gulch_scenery.build(c, sys.modules[__name__])
     c.finish()
     mine_len = sum(math.dist(a[:2], b[:2]) for a, b in zip(line, line[1:]))
-    print("lap", round(c.length, 1), "mine", round(mine_len, 1), "skips", round(s_out - s_in, 1))
+    print("lap", round(c.length, 1), "mine", round(mine_len, 1), "skips", round(sb - sa, 1))
 
 
 if __name__ == "__main__":

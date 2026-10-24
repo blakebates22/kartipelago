@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "dry_gulch_v3",
-  "name": "Dry Gulch Ghost Town (v3 greybox)",
+  "name": "Dry Gulch Ghost Town",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -12,90 +12,6 @@
     "laps": 3
   },
   "entities": [
-    {
-      "id": "torch_01",
-      "type": "torch",
-      "x": 2.36,
-      "y": 36.07,
-      "z": -291.35
-    },
-    {
-      "id": "torch_02",
-      "type": "torch",
-      "x": 26.01,
-      "y": 35.18,
-      "z": -273.62
-    },
-    {
-      "id": "torch_03",
-      "type": "torch",
-      "x": 47.97,
-      "y": 34.55,
-      "z": -253.32
-    },
-    {
-      "id": "torch_04",
-      "type": "torch",
-      "x": 63.59,
-      "y": 33.61,
-      "z": -230.0
-    },
-    {
-      "id": "torch_05",
-      "type": "torch",
-      "x": 68.71,
-      "y": 32.65,
-      "z": -203.95
-    },
-    {
-      "id": "torch_06",
-      "type": "torch",
-      "x": 93.43,
-      "y": 32.06,
-      "z": -188.25
-    },
-    {
-      "id": "torch_07",
-      "type": "torch",
-      "x": 118.47,
-      "y": 29.71,
-      "z": -174.9
-    },
-    {
-      "id": "torch_08",
-      "type": "torch",
-      "x": 135.92,
-      "y": 24.86,
-      "z": -151.95
-    },
-    {
-      "id": "torch_09",
-      "type": "torch",
-      "x": 155.76,
-      "y": 22.94,
-      "z": -130.23
-    },
-    {
-      "id": "torch_10",
-      "type": "torch",
-      "x": 181.27,
-      "y": 20.56,
-      "z": -116.58
-    },
-    {
-      "id": "torch_11",
-      "type": "torch",
-      "x": 206.81,
-      "y": 18.89,
-      "z": -103.88
-    },
-    {
-      "id": "torch_12",
-      "type": "torch",
-      "x": 232.42,
-      "y": 18.31,
-      "z": -90.96
-    },
     {
       "id": "zip_01",
       "type": "zipper",
@@ -254,6 +170,1057 @@
       "from": 852.0,
       "to": 886.0,
       "at": 902.0
+    },
+    {
+      "id": "minecart_01",
+      "type": "minecart",
+      "ax": 90.17,
+      "ay": 26.8,
+      "az": -206.92,
+      "bx": 57.83,
+      "by": 26.8,
+      "bz": -177.08,
+      "period": 7.0,
+      "offset": 1.5,
+      "travel": 3.0,
+      "warn": 1.8
+    },
+    {
+      "id": "railcart_01",
+      "type": "railcart",
+      "route": "Railway",
+      "period": 34.0,
+      "offset": 5.0,
+      "travel": 13.0,
+      "pause": 4.0
+    },
+    {
+      "id": "ghostrider_01",
+      "type": "ghostrider",
+      "route": "Ghost Rider Path",
+      "period": 38.0,
+      "offset": 10.0,
+      "travel": 14.0
+    },
+    {
+      "id": "ghost_01",
+      "type": "ghost",
+      "x": -16.2,
+      "y": 38.37,
+      "z": 20.0,
+      "heading": 1.571,
+      "look": "window",
+      "period": 14.0,
+      "offset": 7.0
+    },
+    {
+      "id": "ghost_02",
+      "type": "ghost",
+      "x": -16.2,
+      "y": 38.89,
+      "z": -67.1,
+      "heading": 1.571,
+      "look": "window",
+      "period": 14.0,
+      "offset": 7.0
+    },
+    {
+      "id": "ghost_03",
+      "type": "ghost",
+      "x": 17.2,
+      "y": 31.65,
+      "z": 16.0,
+      "heading": -1.571,
+      "look": "window",
+      "period": 17.0,
+      "offset": 4.0,
+      "scale": 0.8
+    },
+    {
+      "id": "ghost_04",
+      "type": "ghost",
+      "x": 17.2,
+      "y": 31.56,
+      "z": -45.39,
+      "heading": -1.571,
+      "look": "window",
+      "period": 17.0,
+      "offset": 4.0,
+      "scale": 0.8
+    },
+    {
+      "id": "ghost_05",
+      "type": "ghost",
+      "x": -4.17,
+      "y": 34.43,
+      "z": -138.61,
+      "heading": -0.785,
+      "look": "window",
+      "period": 11.0,
+      "offset": 2.0
+    },
+    {
+      "id": "ghost_06",
+      "type": "ghost",
+      "x": -45.0,
+      "y": 31.41,
+      "z": -102.0,
+      "heading": 1.571,
+      "look": "float",
+      "period": 19.0,
+      "offset": 9.0
+    },
+    {
+      "id": "ghost_07",
+      "type": "ghost",
+      "x": -244.01,
+      "y": 33.01,
+      "z": -220.22,
+      "heading": 1.571,
+      "look": "float",
+      "period": 13.0,
+      "offset": 0.0
+    },
+    {
+      "id": "ghost_08",
+      "type": "ghost",
+      "x": -217.01,
+      "y": 33.87,
+      "z": -194.22,
+      "heading": 1.571,
+      "look": "float",
+      "period": 16.0,
+      "offset": 4.0
+    },
+    {
+      "id": "ghost_09",
+      "type": "ghost",
+      "x": -209.01,
+      "y": 33.97,
+      "z": -232.22,
+      "heading": 1.571,
+      "look": "float",
+      "period": 19.0,
+      "offset": 8.0
+    },
+    {
+      "id": "ghost_10",
+      "type": "ghost",
+      "x": -237.01,
+      "y": 32.96,
+      "z": -184.22,
+      "heading": 1.571,
+      "look": "float",
+      "period": 22.0,
+      "offset": 12.0
+    },
+    {
+      "id": "ghost_11",
+      "type": "ghost",
+      "x": 61.37,
+      "y": 27.64,
+      "z": -227.77,
+      "heading": -2.904,
+      "look": "miner",
+      "period": 9.0,
+      "offset": 0.0,
+      "vanish": 22.0
+    },
+    {
+      "id": "ghost_12",
+      "type": "ghost",
+      "x": 52.09,
+      "y": 27.04,
+      "z": -202.91,
+      "heading": -2.654,
+      "look": "miner",
+      "period": 11.5,
+      "offset": 2.0,
+      "vanish": 22.0
+    },
+    {
+      "id": "ghost_13",
+      "type": "ghost",
+      "x": 108.71,
+      "y": 24.65,
+      "z": -171.94,
+      "heading": -2.213,
+      "look": "miner",
+      "period": 14.0,
+      "offset": 4.0,
+      "vanish": 22.0
+    },
+    {
+      "id": "ghost_14",
+      "type": "ghost",
+      "x": 204.61,
+      "y": 13.93,
+      "z": -98.7,
+      "heading": -1.994,
+      "look": "miner",
+      "period": 16.5,
+      "offset": 6.0,
+      "vanish": 22.0
+    },
+    {
+      "id": "ghost_15",
+      "type": "ghost",
+      "x": 135.0,
+      "y": 8.0,
+      "z": -142.0,
+      "heading": 1.571,
+      "look": "float",
+      "period": 12.0,
+      "offset": 0.0,
+      "drift": 6.0
+    },
+    {
+      "id": "ghost_16",
+      "type": "ghost",
+      "x": 167.0,
+      "y": 14.0,
+      "z": -124.0,
+      "heading": -2.712,
+      "look": "float",
+      "period": 15.0,
+      "offset": 3.5,
+      "drift": 6.0
+    },
+    {
+      "id": "ghost_17",
+      "type": "ghost",
+      "x": 157.0,
+      "y": 2.0,
+      "z": -154.0,
+      "heading": -0.712,
+      "look": "float",
+      "period": 18.0,
+      "offset": 7.0,
+      "drift": 6.0
+    },
+    {
+      "id": "ghost_18",
+      "type": "ghost",
+      "x": 200.67,
+      "y": 15.05,
+      "z": -113.77,
+      "heading": -0.477,
+      "look": "shadow",
+      "period": 16.0,
+      "offset": 3.0,
+      "scale": 2.4
+    },
+    {
+      "id": "wisps_01",
+      "type": "wisps",
+      "x": -35.0,
+      "y": 32.41,
+      "z": -100.0,
+      "radius": 14.0,
+      "count": 6
+    },
+    {
+      "id": "wisps_02",
+      "type": "wisps",
+      "x": -229.01,
+      "y": 33.11,
+      "z": -212.22,
+      "radius": 33.6,
+      "count": 10
+    },
+    {
+      "id": "wisps_03",
+      "type": "wisps",
+      "x": 153.0,
+      "y": -2.0,
+      "z": -134.0,
+      "radius": 34.0,
+      "count": 18
+    },
+    {
+      "id": "mist_01",
+      "type": "mist",
+      "x": -229.01,
+      "y": 30.61,
+      "z": -212.22,
+      "radius": 37.8,
+      "rate": 20
+    },
+    {
+      "id": "mist_02",
+      "type": "mist",
+      "x": 37.36,
+      "y": 29.6,
+      "z": -262.77,
+      "radius": 9.0,
+      "rate": 6
+    },
+    {
+      "id": "mist_03",
+      "type": "mist",
+      "x": 74.0,
+      "y": 26.8,
+      "z": -192.0,
+      "radius": 16.0,
+      "rate": 6
+    },
+    {
+      "id": "mist_04",
+      "type": "mist",
+      "x": 205.1,
+      "y": -1.84,
+      "z": -170.16,
+      "radius": 8.0,
+      "rate": 3
+    },
+    {
+      "id": "mist_05",
+      "type": "mist",
+      "x": 208.69,
+      "y": 13.34,
+      "z": 136.47,
+      "radius": 8.0,
+      "rate": 3
+    },
+    {
+      "id": "mist_06",
+      "type": "mist",
+      "x": 111.82,
+      "y": 21.27,
+      "z": 128.89,
+      "radius": 8.0,
+      "rate": 3
+    },
+    {
+      "id": "mist_07",
+      "type": "mist",
+      "x": 130.0,
+      "y": -26.78,
+      "z": -483.89,
+      "radius": 38.3,
+      "rate": 4
+    },
+    {
+      "id": "mist_08",
+      "type": "mist",
+      "x": 130.0,
+      "y": -26.44,
+      "z": -422.22,
+      "radius": 37.3,
+      "rate": 4
+    },
+    {
+      "id": "mist_09",
+      "type": "mist",
+      "x": 130.0,
+      "y": -26.11,
+      "z": -360.56,
+      "radius": 36.3,
+      "rate": 4
+    },
+    {
+      "id": "mist_10",
+      "type": "mist",
+      "x": 145.0,
+      "y": -24.0,
+      "z": -298.0,
+      "radius": 31.2,
+      "rate": 4
+    },
+    {
+      "id": "mist_11",
+      "type": "mist",
+      "x": 175.0,
+      "y": -18.0,
+      "z": -243.25,
+      "radius": 27.6,
+      "rate": 4
+    },
+    {
+      "id": "whispers_01",
+      "type": "whispers",
+      "x": -229.01,
+      "y": 32.61,
+      "z": -212.22,
+      "radius": 90.0
+    },
+    {
+      "id": "whispers_02",
+      "type": "whispers",
+      "x": 36.08,
+      "y": 32.6,
+      "z": -264.3,
+      "radius": 45.0
+    },
+    {
+      "id": "whispers_03",
+      "type": "whispers",
+      "x": 153.0,
+      "y": 10.0,
+      "z": -134.0,
+      "radius": 70.0
+    },
+    {
+      "id": "whispers_04",
+      "type": "whispers",
+      "x": 250.0,
+      "y": 14.0,
+      "z": -20.0,
+      "radius": 60.0
+    },
+    {
+      "id": "creak_01",
+      "type": "creak",
+      "x": 100.61,
+      "y": 32.0,
+      "z": -298.14,
+      "radius": 30.0
+    },
+    {
+      "id": "creak_02",
+      "type": "creak",
+      "x": 186.0,
+      "y": 32.0,
+      "z": -298.14,
+      "radius": 30.0
+    },
+    {
+      "id": "creak_03",
+      "type": "creak",
+      "x": 132.76,
+      "y": 21.98,
+      "z": -143.36,
+      "radius": 24.0
+    },
+    {
+      "id": "creak_04",
+      "type": "creak",
+      "x": 146.76,
+      "y": 20.77,
+      "z": -134.42,
+      "radius": 24.0
+    },
+    {
+      "id": "creak_05",
+      "type": "creak",
+      "x": 161.48,
+      "y": 19.62,
+      "z": -127.23,
+      "radius": 24.0
+    },
+    {
+      "id": "creak_06",
+      "type": "creak",
+      "x": 176.46,
+      "y": 18.2,
+      "z": -119.84,
+      "radius": 24.0
+    },
+    {
+      "id": "door_01",
+      "type": "door",
+      "x": -0.25,
+      "y": 29.98,
+      "z": -134.75,
+      "heading": -0.785,
+      "width": 2.4,
+      "period": 9.0
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": -10.0,
+      "y": 39.6,
+      "z": -2.2,
+      "flicker": true
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 10.0,
+      "y": 39.6,
+      "z": -2.2,
+      "flicker": true
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": -13.9,
+      "y": 32.87,
+      "z": 34.48,
+      "flicker": true
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": -13.9,
+      "y": 32.98,
+      "z": -1.21,
+      "flicker": true
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -13.9,
+      "y": 33.09,
+      "z": -12.68,
+      "flicker": true
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -13.9,
+      "y": 33.37,
+      "z": -40.17,
+      "flicker": true
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -13.9,
+      "y": 33.39,
+      "z": -52.62,
+      "flicker": true
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": 13.9,
+      "y": 33.45,
+      "z": -1.84,
+      "flicker": true
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": 13.9,
+      "y": 33.65,
+      "z": -25.1,
+      "flicker": true
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": 13.9,
+      "y": 33.65,
+      "z": -38.96,
+      "flicker": true
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": 13.9,
+      "y": 33.36,
+      "z": -63.22,
+      "flicker": true
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": 13.9,
+      "y": 33.07,
+      "z": -86.51,
+      "flicker": true
+    },
+    {
+      "id": "lantern_13",
+      "type": "lantern",
+      "x": -9.26,
+      "y": 32.53,
+      "z": -140.44,
+      "flicker": true
+    },
+    {
+      "id": "lantern_14",
+      "type": "lantern",
+      "x": -94.01,
+      "y": 33.93,
+      "z": -182.88,
+      "flicker": true
+    },
+    {
+      "id": "lantern_15",
+      "type": "lantern",
+      "x": -108.78,
+      "y": 34.0,
+      "z": -186.55,
+      "flicker": true
+    },
+    {
+      "id": "lantern_16",
+      "type": "lantern",
+      "x": -128.15,
+      "y": 34.09,
+      "z": -183.24,
+      "flicker": true
+    },
+    {
+      "id": "lantern_17",
+      "type": "lantern",
+      "x": -153.69,
+      "y": 32.19,
+      "z": -152.74,
+      "flicker": true
+    },
+    {
+      "id": "lantern_18",
+      "type": "lantern",
+      "x": -34.41,
+      "y": 32.45,
+      "z": -123.11,
+      "flicker": true
+    },
+    {
+      "id": "lantern_19",
+      "type": "lantern",
+      "x": -55.85,
+      "y": 33.68,
+      "z": -122.92,
+      "flicker": true
+    },
+    {
+      "id": "lantern_20",
+      "type": "lantern",
+      "x": -72.72,
+      "y": 33.93,
+      "z": -126.59,
+      "flicker": true
+    },
+    {
+      "id": "lantern_21",
+      "type": "lantern",
+      "x": -87.13,
+      "y": 33.83,
+      "z": -137.77,
+      "flicker": true
+    },
+    {
+      "id": "lantern_22",
+      "type": "lantern",
+      "x": -93.1,
+      "y": 32.37,
+      "z": -149.01,
+      "flicker": true
+    },
+    {
+      "id": "lantern_23",
+      "type": "lantern",
+      "x": -123.03,
+      "y": 32.45,
+      "z": -158.86,
+      "flicker": true
+    },
+    {
+      "id": "lantern_24",
+      "type": "lantern",
+      "x": -136.59,
+      "y": 33.42,
+      "z": -135.61,
+      "flicker": true
+    },
+    {
+      "id": "lantern_25",
+      "type": "lantern",
+      "x": -161.21,
+      "y": 33.22,
+      "z": -123.54,
+      "flicker": true
+    },
+    {
+      "id": "lantern_26",
+      "type": "lantern",
+      "x": -175.19,
+      "y": 32.93,
+      "z": -123.1,
+      "flicker": true
+    },
+    {
+      "id": "lantern_27",
+      "type": "lantern",
+      "x": -43.9,
+      "y": 47.63,
+      "z": -46.0,
+      "flicker": true
+    },
+    {
+      "id": "lantern_28",
+      "type": "lantern",
+      "x": 42.24,
+      "y": 36.4,
+      "z": -271.28,
+      "flicker": true
+    },
+    {
+      "id": "lantern_29",
+      "type": "lantern",
+      "x": 28.12,
+      "y": 36.4,
+      "z": -259.48,
+      "flicker": true
+    },
+    {
+      "id": "lantern_30",
+      "type": "lantern",
+      "x": 93.02,
+      "y": 34.4,
+      "z": -305.54,
+      "flicker": true
+    },
+    {
+      "id": "lantern_31",
+      "type": "lantern",
+      "x": 123.02,
+      "y": 34.49,
+      "z": -290.74,
+      "flicker": true
+    },
+    {
+      "id": "lantern_32",
+      "type": "lantern",
+      "x": 146.85,
+      "y": 34.27,
+      "z": -305.54,
+      "flicker": true
+    },
+    {
+      "id": "lantern_33",
+      "type": "lantern",
+      "x": 176.85,
+      "y": 34.4,
+      "z": -290.74,
+      "flicker": true
+    },
+    {
+      "id": "lantern_34",
+      "type": "lantern",
+      "x": 208.63,
+      "y": 34.38,
+      "z": -305.94,
+      "flicker": true
+    },
+    {
+      "id": "lantern_35",
+      "type": "lantern",
+      "x": 43.01,
+      "y": 35.67,
+      "z": -246.14,
+      "flicker": true
+    },
+    {
+      "id": "lantern_36",
+      "type": "lantern",
+      "x": 59.64,
+      "y": 34.88,
+      "z": -233.84,
+      "flicker": true
+    },
+    {
+      "id": "lantern_37",
+      "type": "lantern",
+      "x": 97.77,
+      "y": 32.08,
+      "z": -166.77,
+      "flicker": true
+    },
+    {
+      "id": "lantern_38",
+      "type": "lantern",
+      "x": 118.16,
+      "y": 30.72,
+      "z": -163.28,
+      "flicker": true
+    },
+    {
+      "id": "lantern_39",
+      "type": "lantern",
+      "x": 186.35,
+      "y": 23.34,
+      "z": -108.37,
+      "flicker": true
+    },
+    {
+      "id": "lantern_40",
+      "type": "lantern",
+      "x": 207.15,
+      "y": 21.1,
+      "z": -109.2,
+      "flicker": true
+    },
+    {
+      "id": "lantern_41",
+      "type": "lantern",
+      "x": 131.58,
+      "y": 24.16,
+      "z": -150.4,
+      "flicker": true
+    },
+    {
+      "id": "lantern_42",
+      "type": "lantern",
+      "x": 136.13,
+      "y": 23.24,
+      "z": -135.03,
+      "flicker": true
+    },
+    {
+      "id": "lantern_43",
+      "type": "lantern",
+      "x": 151.85,
+      "y": 22.35,
+      "z": -137.38,
+      "flicker": true
+    },
+    {
+      "id": "lantern_44",
+      "type": "lantern",
+      "x": 158.47,
+      "y": 21.49,
+      "z": -123.12,
+      "flicker": true
+    },
+    {
+      "id": "lantern_45",
+      "type": "lantern",
+      "x": 174.12,
+      "y": 20.47,
+      "z": -126.59,
+      "flicker": true
+    },
+    {
+      "id": "lantern_46",
+      "type": "lantern",
+      "x": -241.62,
+      "y": 34.39,
+      "z": -144.09,
+      "flicker": true
+    },
+    {
+      "id": "lantern_47",
+      "type": "lantern",
+      "x": -217.95,
+      "y": 34.44,
+      "z": -285.73,
+      "flicker": true
+    },
+    {
+      "id": "lantern_48",
+      "type": "lantern",
+      "x": -144.43,
+      "y": 33.12,
+      "z": -300.12,
+      "flicker": true
+    },
+    {
+      "id": "lantern_49",
+      "type": "lantern",
+      "x": -78.39,
+      "y": 33.85,
+      "z": -310.84,
+      "flicker": true
+    },
+    {
+      "id": "lantern_50",
+      "type": "lantern",
+      "x": -10.39,
+      "y": 34.0,
+      "z": -310.84,
+      "flicker": true
+    },
+    {
+      "id": "lantern_51",
+      "type": "lantern",
+      "x": 57.6,
+      "y": 34.69,
+      "z": -310.84,
+      "flicker": true
+    },
+    {
+      "id": "bell_01",
+      "type": "bell",
+      "x": 47.03,
+      "y": 54.58,
+      "z": 34.08,
+      "heading": 1.134,
+      "period": 31.0,
+      "offset": 12.0,
+      "ring": 4.0,
+      "scale": 1.3
+    },
+    {
+      "id": "windmill_01",
+      "type": "windmill",
+      "x": -119.32,
+      "y": 44.39,
+      "z": -269.52,
+      "heading": 3.491,
+      "radius": 3.2,
+      "speed": 0.6,
+      "gusty": true
+    },
+    {
+      "id": "tumbleweed_01",
+      "type": "tumbleweed",
+      "ax": -30.0,
+      "ay": 30.0,
+      "az": -60.0,
+      "bx": 30.0,
+      "by": 30.0,
+      "bz": -60.0,
+      "period": 17.0,
+      "offset": 0.0,
+      "travel": 6.0,
+      "r": 0.8
+    },
+    {
+      "id": "tumbleweed_02",
+      "type": "tumbleweed",
+      "ax": -55.38,
+      "ay": 30.0,
+      "az": -165.14,
+      "bx": -76.11,
+      "by": 30.0,
+      "bz": -108.83,
+      "period": 20.3,
+      "offset": 4.1,
+      "travel": 7.0,
+      "r": 0.8
+    },
+    {
+      "id": "tumbleweed_03",
+      "type": "tumbleweed",
+      "ax": -267.76,
+      "ay": 33.14,
+      "az": -190.66,
+      "bx": -207.76,
+      "by": 33.14,
+      "bz": -190.66,
+      "period": 23.6,
+      "offset": 8.2,
+      "travel": 8.0,
+      "r": 0.8
+    },
+    {
+      "id": "tumbleweed_04",
+      "type": "tumbleweed",
+      "ax": 226.96,
+      "ay": 13.76,
+      "az": -87.84,
+      "bx": 286.96,
+      "by": 13.76,
+      "bz": -87.84,
+      "period": 26.9,
+      "offset": 12.3,
+      "travel": 6.0,
+      "r": 0.8
+    },
+    {
+      "id": "tumbleweed_05",
+      "type": "tumbleweed",
+      "ax": 286.96,
+      "ay": 12.11,
+      "az": 93.82,
+      "bx": 226.96,
+      "by": 12.11,
+      "bz": 93.82,
+      "period": 30.2,
+      "offset": 16.4,
+      "travel": 7.0,
+      "r": 0.8
+    },
+    {
+      "id": "tumbleweed_06",
+      "type": "tumbleweed",
+      "ax": 31.74,
+      "ay": 29.52,
+      "az": 45.68,
+      "bx": -19.36,
+      "by": 29.52,
+      "bz": 77.13,
+      "period": 33.5,
+      "offset": 20.5,
+      "travel": 8.0,
+      "r": 0.8
+    },
+    {
+      "id": "ambience_01",
+      "type": "ambience",
+      "wind": 0.55,
+      "caves": [
+        [43.24, 33.25, -255.36, 13.0],
+        [48.46, 32.77, -247.06, 13.0],
+        [52.77, 32.32, -238.19, 13.0],
+        [55.64, 31.92, -228.5, 13.0],
+        [58.23, 31.56, -218.62, 13.0],
+        [62.23, 31.27, -209.43, 13.0],
+        [67.34, 31.06, -200.68, 13.0],
+        [73.35, 30.83, -192.74, 13.0],
+        [80.92, 30.49, -185.63, 13.0],
+        [89.35, 30.08, -179.43, 13.0],
+        [97.49, 29.55, -173.38, 13.0],
+        [105.47, 28.85, -167.62, 13.0],
+        [112.97, 28.08, -161.18, 13.0],
+        [119.94, 27.24, -153.74, 13.0],
+        [127.77, 26.43, -147.01, 13.0],
+        [136.24, 25.67, -140.96, 13.0],
+        [144.91, 24.92, -135.46, 13.0],
+        [154.25, 24.19, -130.62, 13.0],
+        [163.17, 23.47, -126.41, 13.0],
+        [172.84, 22.58, -121.65, 13.0],
+        [181.86, 21.57, -116.99, 13.0],
+        [190.69, 20.28, -111.86, 13.0],
+        [199.44, 18.99, -107.15, 13.0],
+        [208.56, 18.01, -102.86, 13.0],
+        [153.0, 0.0, -134.0, 42.0]
+      ]
+    },
+    {
+      "id": "dust_01",
+      "type": "dust",
+      "color": "#b8704e",
+      "rate": 0.9
+    },
+    {
+      "id": "dustwind_01",
+      "type": "dustwind",
+      "rate": 8,
+      "radius": 60,
+      "color": "#9a6a62"
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 140.0,
+      "y": 120.0,
+      "z": -150.0,
+      "radius": 70.0,
+      "count": 6,
+      "speed": 0.35,
+      "seed": 1,
+      "color": "#1e1424"
+    },
+    {
+      "id": "birds_02",
+      "type": "birds",
+      "x": -229.01,
+      "y": 70.0,
+      "z": -212.22,
+      "radius": 50.0,
+      "count": 5,
+      "speed": 0.4,
+      "seed": 2,
+      "color": "#1e1424"
+    },
+    {
+      "id": "birds_03",
+      "type": "birds",
+      "x": 230.0,
+      "y": 70.0,
+      "z": 120.0,
+      "radius": 40.0,
+      "count": 4,
+      "speed": 0.45,
+      "seed": 3,
+      "color": "#1e1424"
     }
   ],
   "generator": "tools/blender/prehistoric/dry_gulch_v3.py (re-running it rewrites entities)"
