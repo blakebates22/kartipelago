@@ -348,7 +348,7 @@ def hollow_tree(c, ss, glow_pts):
     props.loft(bm, col, cap_top=False)
     m.mark(("heartwood", "wall"), k0)
     k0 = len(bm.faces)
-    up = [props.ring(bm, (cx, cy), r, z, 40) for r, z in ((ri + 0.4, 64.0), (ro + 1.5, 64.0), (ro + 0.5, 90.0), (ro - 3.0, 120.0), (ro - 9.0, 150.0), (ro - 16.0, 168.0))]
+    up = [props.ring(bm, (cx, cy), r, tall(z), 40) for r, z in ((ri + 0.4, 64.0), (ro + 1.5, 64.0), (ro + 0.5, 90.0), (ro - 3.0, 120.0), (ro - 9.0, 150.0), (ro - 16.0, 168.0))]
     bm.faces.new(list(reversed(up[0])))  # the ceiling, facing down
     m.mark(("heartwood", "wall"), k0)
     k0 = len(bm.faces)
@@ -414,7 +414,7 @@ def hollow_tree(c, ss, glow_pts):
     for t, base in ((-31.0, S22), (31.0, S23)):
         p = P + d * t
         glow_pts.append((p.x, p.y, ss.road_z(base + t) + 4.0))
-    crown(c, cx, cy, 150.0, 1.0, 0)
+    crown(c, cx, cy, tall(150.0), 1.0, 0)
     roots(c, ss, cx, cy, ro + 4.0, ss.road_z(S22) - 0.5, 9)
     return shell, trunk
 
@@ -433,6 +433,12 @@ def roots(c, ss, cx, cy, r0, z0, n):
         props.tube(m.bm, [(cx + (r0 - 6) * math.cos(a), cy + (r0 - 6) * math.sin(a), z0 + 6.0), (mx_, my_, z0 + 2.5), (x1, y1, z0 - 1.5)], [5.0, 3.2, 1.0], n=7)
         m.mark(("giant_bark", "wall"), k0)
     m.build(c, "Roots %d %d" % (int(cx), int(cy)), "Trees", "both")
+
+
+def tall(z):
+    """The giants' heights above the great tree's ceiling (66 m), cut so the trees are a
+    quarter lower overall (Blake: they were a bit much)."""
+    return z if z <= 66.0 else 66.0 + (z - 66.0) * 0.6
 
 
 def crown(c, cx, cy, z, size, seed):
@@ -469,7 +475,7 @@ def giant_tree(c, cx, cy, z_ledge, seed):
     bm = m.bm
     r = 21.0
     rings = []
-    for j, z in enumerate((-6.0, 6.0, 12.0, 24.0, z_ledge - 6, z_ledge + 20, 100.0, 140.0, 152.0)):
+    for j, z in enumerate((-6.0, 6.0, 12.0, 24.0, z_ledge - 6, z_ledge + 20, tall(100.0), tall(140.0), tall(152.0))):
         rr = (r + 12.0 * math.exp(-max(0.0, z - 6.0) / 6.0)) * (1.0 - 0.0016 * max(0.0, z - 60))
         rings.append(props.ring(bm, (cx, cy), rr, z, 28, phase=0.13 * j))
     props.loft(bm, rings, cap_top=True)
@@ -481,7 +487,7 @@ def giant_tree(c, cx, cy, z_ledge, seed):
         props.tube(bm, [(cx + (r - 1) * math.cos(a), cy + (r - 1) * math.sin(a), z_ledge - 10.0), (cx + 30.0 * math.cos(a), cy + 30.0 * math.sin(a), z_ledge - 2.5)], [1.0, 0.7], n=5)
         m.mark(("heartwood", "wall"), k0)
     m.build(c, "Giant Tree %d %d" % (int(cx), int(cy)), "Trees", "both", flat=False)
-    crown(c, cx, cy, 150.0, 0.8, seed)
+    crown(c, cx, cy, tall(150.0), 0.8, seed)
     roots(c, None, cx, cy, r + 6.0, 9.0, 8)
 
 

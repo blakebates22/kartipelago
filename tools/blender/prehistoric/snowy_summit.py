@@ -48,11 +48,10 @@ START = (-38.0, -170.0)
 HELIX_R = 28.0  # the spiral inside the great tree
 HELIX_TURNS = 2
 HELIX_RISE = 15.0  # metres per turn
-# The spiral weaves as it climbs: three times a turn it swings in towards the column (up
-# to HELIX_WAVE metres) and back out to the wall, tightening and opening the bend, and
-# its climb comes in steps (a steeper kick, then a breather) rather than one even grade.
-HELIX_WAVE = 4.0
-HELIX_STEP = 0.9
+# (The spiral can weave in towards the column, HELIX_WAVE metres, and climb in steps,
+# HELIX_STEP: both off since it became a ride: Blake wants it a clean, fast spiral.)
+HELIX_WAVE = 0.0
+HELIX_STEP = 0.0
 LAYOUT = [
     ("S", 99),  # 0  1: the Frozen Bay, east across the lake
     ("L", 70, 40),  # 1  2: the Ice Archways
@@ -725,10 +724,10 @@ def main():
         s += 2.0
     q = c.at(s1)
     ride.append([round(v, 2) for v in c.game(q.p.x, q.p.y, q.p.z)] + [round(q.bank, 2)])
-    # (The boost runs out 60 m from the top, and the ride eases down to 22 m/s, so you come
-    # out onto the rope bridge fast but in control.)
-    c.entity("ride", id="tree_spiral", points=ride, width=13.0, minSpeed=28.0, outSpeed=22.0, commit=0.0, boostMult=1.35,
-             boostSec=round((R(HELIX[1]) - R(HELIX[0]) - 60.0) / 28.0, 1), gravity=0.0)
+    # (Much faster than a zipper, 38 m/s; the boost runs out 60 m from the top and the
+    # ride eases down to 26 m/s, so you come out onto the rope bridge fast but in control.)
+    c.entity("ride", id="tree_spiral", points=ride, width=13.0, minSpeed=38.0, outSpeed=26.0, commit=0.0, boostMult=1.75,
+             boostSec=round((R(HELIX[1]) - R(HELIX[0]) - 60.0) / 38.0, 1), gravity=0.0)
 
     # A missed jump drops you into the hot water, the gorge or the crevasse: you're put
     # down on its landing.
