@@ -33,29 +33,35 @@
     {
       "id": "zip_04",
       "type": "zipper",
-      "at": 832.7,
+      "at": 451.1,
       "across": 0
     },
     {
       "id": "zip_05",
       "type": "zipper",
+      "at": 832.7,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
       "at": 997.5,
       "across": -3
     },
     {
-      "id": "zip_06",
+      "id": "zip_07",
       "type": "zipper",
       "at": 1331.7,
       "across": 0
     },
     {
-      "id": "zip_07",
+      "id": "zip_08",
       "type": "zipper",
       "at": 1542.8,
       "across": 0
     },
     {
-      "id": "zip_08",
+      "id": "zip_09",
       "type": "zipper",
       "at": 1747.0,
       "across": 0

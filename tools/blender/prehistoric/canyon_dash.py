@@ -129,13 +129,42 @@ def _lin(d):
     return Z_RIM
 
 
+# Blake's review (Oct 23): rolling hills along the overlook, and on the Mesa Run a crest
+# and then a sharp one you hop off (a small jump: no gap, the road just drops away
+# faster than you fall).
+OVER_HILLS = (SEG[15] + 30, SEG[15] + 230, 3, 1.7)  # from, to, how many, how high
+MESA_CREST = (SEG[19] + 6, SEG[19] + 30, 1.4)  # a gentle crest
+MESA_KICK = (SEG[19] + 44, 22.0, 2.2, 14.0, 3.0)  # start, rise over, rise, fall over, fall
+
+
+def hills(d):
+    """The review's hills, on top of the eased anchors."""
+    z = 0.0
+    a, b, n, h = OVER_HILLS
+    if a <= d <= b:
+        z += h * math.sin(math.pi * n * (d - a) / (b - a)) ** 2
+    a, b, h = MESA_CREST
+    if a <= d <= b:
+        z += h * math.sin(math.pi * (d - a) / (b - a)) ** 2
+    a, up, rise, down, fall = MESA_KICK
+    if a <= d <= a + up:
+        z += rise * smooth((d - a) / up)
+    elif a + up < d <= a + up + down:
+        # Off the lip: down faster than it went up (a little lower than before, then back).
+        u = (d - a - up) / down
+        z += rise - fall * u ** 1.6
+    elif a + up + down < d <= a + up + down + 20.0:
+        z += (rise - fall) * (1 - smooth((d - a - up - down) / 20.0))
+    return z
+
+
 def road_z(d, seg=None):
     """The road's height d metres along the lap: the anchors, eased over 30 m (exactly
-    level across the bridge)."""
+    level across the bridge), and the review's hills."""
     for a, b in LEVEL:
         if a <= d <= b:
             return _lin(d)
-    return sum(_lin((d + k) % LENGTH if 0 <= d + k <= LENGTH else d + k) for k in range(-15, 16, 3)) / 11
+    return sum(_lin((d + k) % LENGTH if 0 <= d + k <= LENGTH else d + k) for k in range(-15, 16, 3)) / 11 + hills(d)
 
 
 def road_w(d, seg):
@@ -643,6 +672,12 @@ def main():
     trestle = (S[4] - 4, S[5] + 6)
     sc_a = kit.s_near(c, *BUTTE_SHORT[0])
     sc_b = kit.s_near(c, *BUTTE_SHORT[-1])
+    # No fence anywhere the slot's road runs beside the main road (Blake's review: the
+    # fence on the finish side was in the way coming out of the slot): from where the
+    # slot's road first comes within reach of the road's edge to where it leaves it.
+    near = [kit.s_near(c, x, y) for x, y in BUTTE_SHORT if c.nearest(x, y)[1] < 9.0 + 2.6 + 4.0 + 6.0]
+    open_from = min([sc_a - 22] + [s for s in near if s < (sc_a + sc_b) / 2])
+    open_to_from = min([sc_b - 22] + [s for s in near if s > (sc_a + sc_b) / 2]) - 14.0
 
     def label(smp):
         s = smp.s
@@ -662,7 +697,7 @@ def main():
             return "overlook"
         if seg in (18, 19) and upper_river(x, y) is not None and upper_river(x, y)[0] < 22:
             return "brink"
-        if abs(s - sc_a) < 22 or abs(s - sc_b) < 22:
+        if open_from <= s <= sc_a + 22 or open_to_from <= s <= sc_b + 22:
             return "open"
         if seg >= 18:
             return "mesa"

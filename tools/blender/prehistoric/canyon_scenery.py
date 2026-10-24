@@ -430,12 +430,71 @@ def buttes(c, sc, cd):
     cut(c, g, cutter)
     white_paint(g)
     strata_paint(c, g, cd)
+    rough_slot(c, g, pts, 4.8 + 1.0)
     sc.butte = g
     # A boulder wedged high in the slot.
     m = Mesh()
     mx, my = cd.BUTTE_SHORT[len(cd.BUTTE_SHORT) // 2]
     m.add(("strata_orange", "wall"), lambda bm: blob(bm, (mx, my, 84.0), 6.5, sx=0.9, sy=1.2, sz=0.8))
     m.build(c, "Chockstone", "Buttes", "visual")
+
+
+def rough_slot(c, solid, pts, half):
+    """The boolean leaves the slot's walls (and where it cuts the talus skirt) as big flat
+    planes. Break them up for the eye only: a visual copy of the butte with those faces
+    cut finer and pushed back into the rock by up to a metre, in lumps; the original
+    stays as the collision (so the slot drives exactly as before)."""
+    me = solid.data.copy()
+    look = kit.bpy.data.objects.new(solid.name + " Look", me)
+    look.matrix_world = solid.matrix_world.copy()
+    for coll in solid.users_collection:
+        coll.objects.link(look)
+    solid["kp_role"] = "collision"
+    look["kp_role"] = "visual"
+    line = [(x, y) for x, y, _ in pts]
+
+    def near(x, y):
+        best = (1e9, 0.0, 0.0)
+        for (ax, ay), (bx, by) in zip(line, line[1:]):
+            dx, dy = bx - ax, by - ay
+            t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)))
+            qx, qy = ax + t * dx, ay + t * dy
+            d = math.hypot(x - qx, y - qy)
+            if d < best[0]:
+                best = (d, qx, qy)
+        return best
+
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    faces = []
+    for f in bm.faces:
+        cx, cy, _ = f.calc_center_median()
+        if abs(f.normal.z) < 0.85 and near(cx, cy)[0] < half + 2.5:
+            faces.append(f)
+    bmesh.ops.triangulate(bm, faces=faces)
+    edges = {e for f in bm.faces for e in f.edges if all(near(v.co.x, v.co.y)[0] < half + 2.5 for v in e.verts)}
+    long = [e for e in edges if e.calc_length() > 2.5]
+    for _ in range(3):
+        if not long:
+            break
+        bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=False)
+        bm.edges.ensure_lookup_table()
+        long = [e for e in bm.edges if e.calc_length() > 2.5 and all(near(v.co.x, v.co.y)[0] < half + 2.5 for v in e.verts)]
+    bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+    for v in bm.verts:
+        d, qx, qy = near(v.co.x, v.co.y)
+        if d > half + 2.5 or d < 0.3:
+            continue
+        ox, oy = (v.co.x - qx) / d, (v.co.y - qy) / d
+        x, y, z = v.co
+        lump = 0.5 + 0.5 * math.sin(x * 0.55 + z * 0.8) * math.cos(y * 0.6 - z * 0.45)
+        push = 1.0 * lump * min(1.0, (half + 2.5 - d) / 1.5)
+        v.co.x += ox * push
+        v.co.y += oy * push
+    bm.to_mesh(me)
+    bm.free()
+    me.shade_flat()
+    return look
 
 
 def _short_z(c, cd, x, y):
@@ -749,9 +808,9 @@ def gameplay(c, sc, cd):
     """Boosts, pickups, checkpoints (with a twin gate in the butte's slot), and the
     living parts: dust, birds, the windmill, the waterfalls' spray and roar."""
     S = cd.SEG
-    # Zippers: off the start, down the wall, onto the bridge, out of the tunnel, along
+    # Zippers: off the start, down the wall, onto the bridge and along it, out of the tunnel, along
     # the overlook, off the head, out on the Mesa Run, and on the final rise.
-    for at, across in ((28, 0), (S[3] + 20, 0), (S[7] + 30, 0), (S[14] + 10, 0), (S[15] + 140, -3), (S[19] + 20, 0), (S[21] + 4, 0), (S[25] - 30, 0)):
+    for at, across in ((28, 0), (S[3] + 20, 0), (S[7] + 30, 0), (S[8] + 60, 0), (S[14] + 10, 0), (S[15] + 140, -3), (S[19] + 20, 0), (S[21] + 4, 0), (S[25] - 30, 0)):
         c.zipper(at, across)
     for at, across in ((70, 0), (S[4] + 30, 3), (S[8] + 40, -3), (S[8] + 110, 3), (S[11] + 20, 0), (S[15] + 60, 0), (S[16] + 30, 3), (S[20] + 20, 0), (S[23] + 30, -3)):
         c.bananas(at, across, count=5, gap=2.6)
