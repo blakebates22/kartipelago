@@ -36,7 +36,8 @@ import { bootScreen } from "./screens/title";
 import { loadingScreen } from "./screens/loading";
 
 const PARAMS = new URLSearchParams(location.search);
-const debugMode = PARAMS.has("debug");
+// ?debug (dev keys, the debug overlay, window.kp): only on the dev server.
+const debugMode = import.meta.env.DEV && PARAMS.has("debug");
 
 // ---------------------------------------------------------------- settings
 

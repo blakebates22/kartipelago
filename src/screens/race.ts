@@ -48,18 +48,19 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
   const startMusic = () => void game.audio.music.play(entry.music, { fade: 1.2, restart: true });
 
   // F2: the level review tool (or, while recording a driving line, stop and write it up).
+  // Only on the dev server (`npm run dev`): the published game doesn't have it.
   const openReview = () => {
     if (game.screens.top !== screen) return;
     if (isRecordingLine()) stopRecordingLine();
     game.screens.push(reviewScreen(game, session, entry));
   };
   const onKey = (e: KeyboardEvent) => {
-    if (e.code === "F2" && !e.repeat) {
+    if (import.meta.env.DEV && e.code === "F2" && !e.repeat) {
       e.preventDefault();
       openReview();
     }
   };
-  let autoReview = new URLSearchParams(location.search).has("review");
+  let autoReview = import.meta.env.DEV && new URLSearchParams(location.search).has("review");
 
   const screen: Screen = {
     id: "RACING",
@@ -496,13 +497,17 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
             },
           ]),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
-      {
-        label: "REVIEW TRACK",
-        action: () => {
-          game.screens.pop();
-          game.screens.push(reviewScreen(game, session, entry));
-        },
-      },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              label: "REVIEW TRACK",
+              action: () => {
+                game.screens.pop();
+                game.screens.push(reviewScreen(game, session, entry));
+              },
+            },
+          ]
+        : []),
       {
         label: "TRACK SELECT",
         action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
