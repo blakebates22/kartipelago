@@ -303,5 +303,9 @@
     "dinoSlow": 0.75,
     "waterfallRadius": 70,
     "volume": 0.6
+  },
+  "ghost": {
+    "hz": 30,
+    "opacity": 0.45
   }
 }

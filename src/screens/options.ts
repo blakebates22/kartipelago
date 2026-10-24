@@ -298,6 +298,16 @@ export function generalSettings(game: Game): Screen {
         set: (i) => (g().reduceMotion = i === 1),
       },
       {
+        kind: "choice",
+        label: "TIME TRIAL GHOST",
+        options: ["PERSONAL BEST", "OFF"],
+        get: () => (g().ghost === "off" ? 1 : 0),
+        set: (i) => {
+          g().ghost = i === 1 ? "off" : "best";
+          game.session?.setGhost(g().ghost);
+        },
+      },
+      {
         kind: "button",
         label: "RESET SETTINGS",
         value: () => "...",

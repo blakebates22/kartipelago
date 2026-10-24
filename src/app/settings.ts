@@ -26,6 +26,8 @@ export interface Settings {
   general: {
     /** Calmer menus: no bouncing, sliding or camera swoops. */
     reduceMotion: boolean;
+    /** Time Trial: race your personal best's ghost, or no ghost. */
+    ghost: "best" | "off";
   };
   /** Last picks, so the menus start where you left them. */
   last: { racer: RacerId; track: string; mode: "race" | "timeTrial" };
@@ -35,7 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   audio: { master: 0.8, music: 0.7, sfx: 0.8, voice: 0.8, musicOn: true, mono: false },
   video: { filtering: "soft", resolution: 360, aspect: "fill", scanlines: false },
-  general: { reduceMotion: false },
+  general: { reduceMotion: false, ghost: "best" },
   last: { racer: "tiko", track: "riverbend_palms", mode: "race" },
 };
 
@@ -73,7 +75,10 @@ export function sanitize(raw: unknown): Settings {
       aspect: oneOf(v.aspect, ["fill", "4:3"] as const, D.video.aspect),
       scanlines: bool(v.scanlines, D.video.scanlines),
     },
-    general: { reduceMotion: bool(g.reduceMotion, D.general.reduceMotion) },
+    general: {
+      reduceMotion: bool(g.reduceMotion, D.general.reduceMotion),
+      ghost: oneOf(g.ghost, ["best", "off"] as const, D.general.ghost),
+    },
     last: {
       racer: oneOf(l.racer, RACER_IDS, D.last.racer),
       track: typeof l.track === "string" ? l.track : D.last.track,

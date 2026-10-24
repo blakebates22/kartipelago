@@ -122,6 +122,12 @@ import {
 import type { createDebug } from "../debug";
 import type { createBoostLab } from "../debug/boostLab";
 import { createChaseCamera } from "../render/chaseCamera";
+import { basisOf, fingerprint, tiltOf, type GhostChoice, type GhostSample } from "./ghost";
+import { createGhostRunner, type GhostRunner } from "./ghostRunner";
+import { createGhostStore, type GhostStore } from "../app/ghostStore";
+
+/** Saved Time Trial ghosts (one store for the whole game). */
+let ghostStore: GhostStore | undefined;
 
 export type SessionScene = "track" | "practice" | "drift";
 
@@ -143,6 +149,10 @@ export interface SessionOptions {
   parkLoop?: number;
   /** Texture look for imported tracks. */
   lookMode: LookMode;
+  /** The course's id (track menu), for its saved Time Trial ghost. */
+  trackId?: string;
+  /** Time Trial: race your personal best ghost, or none. */
+  ghost?: GhostChoice;
   /**
    * If an imported track can't load: fall back to Drift Loop (the old URL behaviour),
    * instead of failing.
@@ -192,6 +202,9 @@ export interface HudState {
   /** Drift Park: loop name, current drift streak (laps), best streak, direction. */
   park?: { loop: string; streak: number; best: number; turning: "left" | "right" };
   toast?: string;
+  /** Time Trial: the ghost on or off, its (personal best) time, and the gap to it at the
+   * last checkpoint while that's showing (negative: ahead). */
+  ghost?: { on: boolean; best?: number; delta?: number };
 }
 
 /** The player's finished race. */
@@ -400,8 +413,14 @@ function buildSession(
   const itemsCfg = tuning.items as ItemsConfig;
   // Balloons and weapons: pickups, missiles and traps live in the item world.
   const itemWorld = createItemWorld(track, [], makeGround, solids, !OPEN);
+  // A Time Trial (racing on your own) keeps only the blue balloons: the boosts. The
+  // weapons and shields have nobody to use them on.
+  const timeTrial = SCENE === "track" && !opts.rivals && !demo && Boolean(track);
   for (const [t, s] of byRoute(trackData.balloons))
-    itemWorld.balloons.push(...createItemWorld(t, s, makeGround).balloons);
+    itemWorld.balloons.push(
+      ...createItemWorld(t, timeTrial ? s.filter((b) => b.color === "blue") : s, makeGround)
+        .balloons,
+    );
   const itemView = createItemView(root);
   /** Collected this step, for the render to show (effects run at frame rate). */
   const pickupsToShow: BananaPickup[] = [];
@@ -555,6 +574,91 @@ function buildSession(
     track ? createRace(track, tuning.race, entrants.length) : undefined;
   let race = newRace();
   placeKarts();
+
+  // Time Trial: record this run, and race your saved best's ghost (ghostRunner.ts).
+  const rollPivot = 0.98;
+  const ghost: GhostRunner | undefined =
+    timeTrial && race && opts.trackId
+      ? createGhostRunner({
+          root,
+          store: (ghostStore ??= createGhostStore()),
+          track: opts.trackId,
+          // The layout: the centre line, the gates, the boosts on it.
+          layout: fingerprint({
+            p: trackData.points
+              .filter((_, i) => i % 4 === 0)
+              .map((q) => [Math.round(q.x * 2), Math.round((q.y ?? 0) * 2), Math.round(q.z * 2)]),
+            g: race.course.length,
+            z: trackData.zippers?.map((z) => [z.at, z.across]),
+            b: trackData.balloons?.filter((b) => b.color === "blue").map((b) => [b.at, b.across]),
+          }),
+          // The physics: everything about how a kart drives.
+          physics: fingerprint({
+            v: tuning.vehicle,
+            p: tuning.physics,
+            c: tuning.collision,
+            s: tuning.stats,
+            laps: tuning.race.laps,
+          }),
+          racer: playerLook,
+          character: player.id,
+          hz: tuning.ghost.hz,
+          opacity: tuning.ghost.opacity,
+          choice: opts.ghost ?? "best",
+          flames: ghostFlames,
+          rollPivot,
+        })
+      : undefined;
+  /** The player's kart as the race draws it, for the ghost's recording. */
+  const ghostQ = new THREE.Quaternion();
+  const sampleYou = (): GhostSample => {
+    const s = you.state;
+    const lp = loops?.pose(0, 1);
+    if (lp) basisOf(lp.ux, lp.uy, lp.uz, lp.fx, lp.fy, lp.fz, ghostQ);
+    else tiltOf(s, ghostQ);
+    return {
+      t: 0,
+      x: lp ? lp.x : s.x,
+      y: lp ? lp.y : s.y,
+      z: lp ? lp.z : s.z,
+      qx: ghostQ.x,
+      qy: ghostQ.y,
+      qz: ghostQ.z,
+      qw: ghostQ.w,
+      roll: s.sharpRoll,
+      speed: s.speed,
+      steer: s.steerSmooth,
+      driftDir: s.driftDir,
+      slip: wrapAngle(s.heading - s.velAngle),
+      grounded: s.grounded,
+      throttle: s.throttleOn,
+      zipPhase: s.zipPhase,
+      zipEnhanced: s.zipEnhanced,
+      zipTime: s.zipTime,
+      zipSource: s.zipSource,
+      spinTime: s.spinTime,
+    };
+  };
+  /** The ghost's exhaust flame (the same colours as yours, without the trail effects). */
+  function ghostFlames(r: RacerView, s: GhostSample) {
+    const z = s.zipPhase;
+    const pushing = z === ZIP.ACTIVE || z === ZIP.ENDING;
+    const dying = z === ZIP.RECOVERY ? Math.max(0, 1 - s.zipTime / 0.5) : 0;
+    r.flame.visible = pushing || dying > 0;
+    r.core.visible = pushing && s.zipEnhanced && z !== ZIP.ENDING;
+    r.rainbowFlame(z === ZIP.ENDING, performance.now() / 1000);
+    const color = s.zipEnhanced ? ENHANCED_FLAME : (FLAME_COLORS[s.zipSource] ?? FLAME_COLORS[0]!);
+    if (z === ZIP.ENDING) r.flame.scale.setScalar(1.9);
+    else if (z === ZIP.ACTIVE) {
+      r.flameMat.color.set(color);
+      r.flame.scale.setScalar(s.zipEnhanced ? 1.35 : 1);
+    } else if (z === ZIP.RECOVERY) {
+      r.flameMat.color.set(color);
+      r.flame.scale.setScalar(0.25 + 0.4 * dying);
+    }
+    r.flameMat.opacity = (z === ZIP.RECOVERY ? 0.6 * dying : 0.9) * tuning.ghost.opacity;
+    if (r.flame.visible) r.animateFlame(performance.now() / 1000, pushing ? 0.7 : 0.1);
+  }
   /** The race position on the HUD, smoothed (see hud()). */
   let shownPlace = { shown: 1, pending: 1, since: 0 };
   /** Debug: the checkpoint gates drawn in the world (G toggles them). */
@@ -676,6 +780,8 @@ function buildSession(
     }
   }
 
+  /** The fixed step's length, for placing the ghost between steps. */
+  let lastDt = 1 / 120;
   /** Extra seconds before the countdown after a restart. */
   const RESTART_PAUSE = 0.5;
   function restart() {
@@ -702,8 +808,11 @@ function buildSession(
       resetItemWorld(itemWorld);
       if (course) resetCourse(course);
       finishedAt = undefined;
+      ghost?.takeNewBest();
+      ghost?.reset();
     }
     if (bananaAddRequested) {
+      ghost?.invalidate();
       gotBananas(0, bananaAddRequested);
       bananaAddRequested = 0;
     }
@@ -882,6 +991,19 @@ function buildSession(
         teleported(race, i, e.state); // a respawn never passes (or un-passes) a gate
       }
     });
+    if (ghost && race) {
+      const r = race.racers[0]!;
+      ghost.step(race.clock, r.best, r.finished, sampleYou);
+      if (r.finished && finishedAt === undefined)
+        void ghost.finish(
+          race.clock,
+          r.totalTime ?? race.clock,
+          r.lapTimes,
+          tuning.race.laps,
+          sampleYou,
+        );
+    }
+    lastDt = dt;
     // Over the line: the AI takes the wheel for a lap of honour while the results show.
     if (race && race.racers[0]!.finished && finishedAt === undefined) {
       finishedAt = race.clock;
@@ -1156,6 +1278,8 @@ function buildSession(
       resultsShown = anyDone;
     }
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
+    // The ghost, at the moment this frame shows (between the last two steps).
+    if (ghost && race) ghost.render(race.clock - (1 - alpha) * lastDt, frameSeconds);
     skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
@@ -1415,6 +1539,7 @@ function buildSession(
       bestLap: r.bestLap,
       totalTime: r.finished ? (r.totalTime ?? 0) : Math.max(0, race.clock),
       finished: r.finished,
+      ghost: ghost?.hud(race.clock),
     };
   }
 
@@ -1527,6 +1652,7 @@ function buildSession(
   function dispose() {
     if (disposed) return;
     disposed = true;
+    ghost?.dispose();
     skid?.stop();
     engine?.stop();
     boostFx.dispose();
@@ -1552,6 +1678,18 @@ function buildSession(
     reloadTrack,
     hud,
     result,
+    /** Time Trial: is there a ghost system here, and turn the ghost on or off. */
+    get timeTrial() {
+      return Boolean(ghost);
+    },
+    get ghostChoice(): GhostChoice | undefined {
+      return ghost?.choice;
+    },
+    setGhost(c: GhostChoice) {
+      ghost?.setChoice(c);
+    },
+    /** For tests and debugging: the ghost runner itself. */
+    ghostRunner: ghost,
     /** Seconds since the player finished (undefined while racing). */
     finishedFor: () => (finishedAt === undefined || !race ? undefined : race.clock - finishedAt),
     /**
@@ -1563,6 +1701,7 @@ function buildSession(
       if (!race) return;
       const r = race.racers[index];
       if (!r || r.finished) return;
+      if (index === 0) ghost?.invalidate();
       const clock = Math.max(race.clock, 30 + index);
       race.clock = clock;
       r.lapTimes = Array.from(
@@ -1594,6 +1733,7 @@ function buildSession(
      * counting down, it starts now.
      */
     placeYou(x: number, z: number, heading: number, y: number) {
+      ghost?.invalidate();
       const g = you.ground.at(x, z, y);
       const bananas = you.state.bananas;
       Object.assign(you.state, createKartState(x, z, heading, g.height));

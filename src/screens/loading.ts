@@ -72,6 +72,8 @@ export function loadingScreen(game: Game): Screen {
           packageId: entry.load.packageId,
           rivals: game.selection.mode === "race",
           racer: game.selection.racer,
+          trackId: entry.id,
+          ghost: game.settings.general.ghost,
         })
         .then((s) => {
           if (!alive || token !== game.screens.token) return s.dispose();

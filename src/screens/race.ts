@@ -15,7 +15,7 @@ import {
 } from "../review/reviewScreen";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
-import { submitResult, type NewRecords } from "../app/records";
+import { loadRecords, submitResult, type NewRecords } from "../app/records";
 import type { HudState, RaceResult, Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
 import { formatTime } from "../race/race";
@@ -44,6 +44,9 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
   let banner: { text: string; until: number } | undefined;
   let clock = 0;
   const practice = entry.modes.includes("practice");
+  /** Your best Time Trial on this course, for the HUD (refreshed after each race). */
+  const pbOf = () => loadRecords()[entry.id]?.best.timeTrial;
+  let pb = pbOf();
 
   const startMusic = () => void game.audio.music.play(entry.music, { fade: 1.2, restart: true });
 
@@ -143,6 +146,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
             result.bestLap,
           );
           showingResults = true;
+          pb = pbOf();
           // In a Trophy Race: the cup table (and on to the next track) instead.
           if (game.trophy && !cupOver(game.trophy))
             game.screens.push(trophyStandings(game, result, entry));
@@ -169,6 +173,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         game.trophy
           ? `TROPHY RACE ${game.trophy.raced + 1}/${game.trophy.tracks.length}`
           : undefined,
+        pb,
       );
     },
   };
@@ -349,6 +354,8 @@ function drawHud(
   t: number,
   /** In a Trophy Race: which race of the cup this is. */
   cup?: string,
+  /** Time Trial: your best time on this course. */
+  pb?: number,
 ) {
   const h = session.hud();
   const W = ui.W;
@@ -391,6 +398,25 @@ function drawHud(
         align: "right",
         ...big,
       });
+    // Time Trial: your personal best, and at each checkpoint how you stand against your
+    // ghost (green ahead, red behind).
+    if (h.ghost) {
+      const best = h.ghost.best ?? pb;
+      if (best !== undefined)
+        ui.text(`PB ${formatTime(best)}`, W - 8, 54, { color: PAL.gold, align: "right", ...big });
+      if (h.ghost.on) ui.text("GHOST", W - 8, 64, { color: "#bfe4ff", align: "right", ...big });
+      if (h.ghost.delta !== undefined && !h.finished) {
+        const d = h.ghost.delta;
+        const level = Math.abs(d) < 0.005;
+        const ahead = d < 0;
+        ui.text(`${level ? "" : ahead ? "-" : "+"}${Math.abs(d).toFixed(2)}`, W / 2, 30, {
+          scale: 2,
+          color: level ? PAL.cream : ahead ? "#5dff7a" : "#ff5a4a",
+          align: "center",
+          ...big,
+        });
+      }
+    }
   }
 
   // Bottom left: the item box (the held balloon's pixel icon) and the eggs (bananas, in
@@ -470,6 +496,7 @@ function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, sc
 // ---------------------------------------------------------------- pause
 
 function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () => void): Screen {
+  const ghostLabel = () => (game.settings.general.ghost === "off" ? "GHOST: OFF" : "GHOST: ON");
   const leave = (what: string, go: () => void) => () =>
     game.screens.push(
       confirmDialog(
@@ -496,6 +523,21 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
               },
             },
           ]),
+      // Time Trial: the ghost on or off, right here.
+      ...(session.timeTrial
+        ? [
+            {
+              label: ghostLabel(),
+              action: () => {
+                const g = game.settings.general;
+                g.ghost = g.ghost === "off" ? "best" : "off";
+                session.setGhost(g.ghost);
+                game.applySettings();
+                menu.items.find((i) => i.label.startsWith("GHOST"))!.label = ghostLabel();
+              },
+            },
+          ]
+        : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       ...(import.meta.env.DEV
         ? [
