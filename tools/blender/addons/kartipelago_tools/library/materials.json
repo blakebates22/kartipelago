@@ -1446,6 +1446,61 @@
       "tileMetres": 8
     },
     {
+      "id": "adobe",
+      "name": "Mud-brick Plaster",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "adobe.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "adobe_dark",
+      "name": "Mud-brick in Shade",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "adobe_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "tent_cloth",
+      "name": "Goat-hair Tent Cloth",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "tent_cloth.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.04
+      }
+    },
+    {
+      "id": "tent_cloth_red",
+      "name": "Red Tent Cloth",
+      "theme": "oasis_haven",
+      "surface": "wall",
+      "image": "tent_cloth_red.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.04
+      }
+    },
+    {
+      "id": "dune_crest",
+      "name": "Dune Ripples",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "dune_crest.png",
+      "wrap": "repeat",
+      "tileMetres": 10
+    },
+    {
       "id": "gold_cliff",
       "name": "Golden Cliffs",
       "theme": "oasis_haven",

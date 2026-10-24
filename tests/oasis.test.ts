@@ -1,8 +1,9 @@
 // Oasis Haven (Desert World, course 2): it's the Desert World's second course with its
-// own bright theme and music; it loads cleanly with its living water (a lagoon shader on
-// the lake, waterfalls, fountains, boats on paths round the lake, gulls) and the canal
-// passage's twin gate; the passage counts as the lap it skips; and the AI drives it in
-// 75-100 s a lap without ever ending up in the lake.
+// own bright theme and music; it loads cleanly under its turquoise sky, the spiral round
+// the watchtower passes over itself, there's a twin gate across the palm grove and the
+// grove counts as the stretch it skips; and the AI drives it without a respawn (over
+// the chute's jump too). The boats and fountains (oasis life) are the first version's,
+// kept as oasis_haven_v2.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
@@ -11,7 +12,6 @@ import { boatAt, jetVelocity, parseBoat, parseFountain, SPRAY_GRAVITY } from "..
 import { trackById } from "../src/game/tracks";
 import { WORLDS, trackTilesOf } from "../src/game/worlds";
 import { createRace, stepRacer, tickRace } from "../src/race/race";
-import { parseFx } from "../src/render/trackMaterials";
 import { createKartState } from "../src/vehicles/kart";
 import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
@@ -22,21 +22,15 @@ const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
-type Entity = { type: string } & Record<string, unknown>;
-const entitiesOf = (p: { meta: { entities?: unknown[] } }) => (p.meta.entities ?? []) as Entity[];
 const dt = 1 / 120;
 
-// The canal passage shortcut (game coordinates), from oasis_haven.py's SHORT.
-const PASSAGE: [number, number, number][] = [
-  [-189.8, 5.33, -43.8],
-  [-188.3, 3.24, -21.0],
-  [-187.0, 3.0, 1.9],
-  [-186.1, 3.0, 24.7],
-  [-185.8, 3.0, 47.6],
-  [-186.2, 3.0, 70.5],
-  [-187.0, 3.0, 93.3],
-  [-188.4, 3.0, 116.2],
-  [-189.9, 3.27, 139.0],
+// The palm-grove shortcut (game coordinates), from oasis_haven.py's SHORTCUT.
+const GROVE: [number, number, number][] = [
+  [100.0, 2.4, 153.6],
+  [136.0, 2.4, 150.6],
+  [192.9, 2.4, 148.6],
+  [249.9, 2.4, 150.6],
+  [285.9, 2.4, 153.6],
 ];
 
 describe("Oasis Haven", () => {
@@ -49,37 +43,25 @@ describe("Oasis Haven", () => {
     expect(SONGS[t.music]?.id).toBe("oasis");
   });
 
-  it("loads cleanly: living water, falls, fountains, boats, gulls, the passage's twin gate", async () => {
+  it("loads cleanly under a turquoise sky; the spiral passes over itself; the grove has its twin gate", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
-    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(6);
-    expect(p.trackData.balloons?.length).toBeGreaterThanOrEqual(10);
-    // The lake's material is living water (waves, glitter), and some plants sway: read
-    // the materials' extras straight from the visual GLB's JSON chunk.
-    const glb = new Uint8Array(await reader("visual.glb"));
-    const len = new DataView(glb.buffer, glb.byteOffset).getUint32(12, true);
-    const gltf = JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + len))) as {
-      materials: { extras?: Record<string, unknown> }[];
-    };
-    const fxs = gltf.materials.map((m) => parseFx(m.extras));
-    expect(fxs.some((f) => f && f.lagoon > 0)).toBe(true);
-    expect(fxs.some((f) => f && f.sway > 0)).toBe(true);
-    const es = entitiesOf(p);
-    expect(es.filter((e) => e.type === "waterfall").length).toBeGreaterThanOrEqual(8);
-    expect(es.filter((e) => e.type === "fountain").length).toBeGreaterThanOrEqual(4);
-    expect(es.filter((e) => e.type === "boat").length).toBeGreaterThanOrEqual(4);
-    expect(es.filter((e) => e.type === "partygoer").length).toBeGreaterThan(10);
-    // Every boat has its path on the water.
-    for (const b of es.filter((e) => e.type === "boat")) {
-      const cfg = parseBoat(b, p.route.routes)!;
-      expect(cfg, String(b.route)).toBeTruthy();
-      expect(cfg.path.length).toBeGreaterThan(50);
-    }
-    const routes = new Set((p.trackData.gates ?? []).map((g) => g.route));
-    expect(routes.has("canal_passage")).toBe(true);
+    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(5);
+    expect(p.trackData.balloons?.length).toBeGreaterThanOrEqual(8);
+    expect(p.look.skyDome?.top).toBe("#0f8fb0");
+    const pts = p.trackData.points;
+    let over = false;
+    for (const a of pts)
+      for (const b of pts)
+        if (Math.hypot(a.x - b.x, a.z - b.z) < 4 && (a.y ?? 0) - (b.y ?? 0) > 6) over = true;
+    expect(over).toBe(true);
+    const es = (p.meta.entities ?? []) as { type: string }[];
+    expect(es.filter((e) => e.type === "respawn")).toHaveLength(1);
+    expect(es.filter((e) => e.type === "torch").length).toBeGreaterThan(8);
+    expect(new Set((p.trackData.gates ?? []).map((g) => g.route)).has("palm_grove")).toBe(true);
   });
 
-  it("counts the canal passage shortcut as the stretch it skips", async () => {
+  it("counts the palm grove as the stretch it skips", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
     const rc = { ...tuning.race, laps: 2 };
@@ -102,7 +84,7 @@ describe("Oasis Haven", () => {
       }
       return best.dist;
     };
-    const cut = PASSAGE;
+    const cut = GROVE;
     const sIn = along(cut[0]![0], cut[0]![2]);
     const sOut = along(cut.at(-1)![0], cut.at(-1)![2]);
     expect(sOut).toBeGreaterThan(sIn);
@@ -144,18 +126,17 @@ describe("Oasis Haven", () => {
     expect(race.racers[0]!.lapTimes.length, `passed ${race.racers[0]!.passed}`).toBe(2);
   });
 
-  it("drives well: three AI laps of 75-100 s, never in the lake", async () => {
+  it("drives well: three AI laps of 55-80 s, no respawns, hardly a wall", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
-    const r = await aiLap(p, { laps: 3, surfaces: true, lapSeconds: 130 });
+    const r = await aiLap(p, { laps: 3, surfaces: true, zippers: true, lapSeconds: 130 });
     const racer = r.race.racers[0]!;
     expect(racer.lapTimes, `laps (respawns ${r.respawns})`).toHaveLength(3);
     for (const t of racer.lapTimes) {
-      expect(t).toBeGreaterThan(75);
-      expect(t).toBeLessThan(100);
+      expect(t).toBeGreaterThan(55);
+      expect(t).toBeLessThan(80);
     }
     expect(r.respawns).toBe(0);
-    expect(r.worstAbove).toBeLessThan(2.5);
-    expect(r.walls).toBeLessThan(300);
+    expect(r.walls).toBeLessThan(100);
   }, 240000);
 });
 

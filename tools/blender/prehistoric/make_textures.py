@@ -3736,6 +3736,81 @@ def gold_sand():
     return paint(f)
 
 
+def adobe():
+    # Mud-brick plaster for the oasis village: warm tan, patchy, with the odd crack and
+    # a brick or two showing where the plaster has fallen.
+    a, b = noise(4, 2, 4101), noise(16, 8, 4102)
+    cracks = speckle(4103, 14)
+    bricks = noise(4, 4, 4104)
+
+    def f(x, y):
+        if (x, y) in cracks or ((x - 1, y + 1) in cracks):
+            return "#9a6a40"
+        if bricks(x, y) > 0.88 and (y % 4 == 0 or (x + (y // 4) * 4) % 8 == 0):
+            return "#a8703e"
+        if bricks(x, y) > 0.88:
+            return "#c08048"
+        return pick(["#c8925a", "#d29e64", "#daa86e", "#e2b278", "#e8bc84"], 0.1 + a(x, y) * 0.5 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def adobe_dark():
+    # The same plaster in shade, and round the bases of walls (darker, dustier).
+    a, b = noise(4, 2, 4111), noise(16, 8, 4112)
+
+    def f(x, y):
+        return pick(["#9c6a40", "#a8744a", "#b27e52", "#bc8a5c"], a(x, y) * 0.5 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
+def tent_cloth():
+    # Nomad tent cloth: dark woven goat hair with cream and red stripes along it.
+    a = noise(16, 8, 4121)
+
+    def f(x, y):
+        k = y % 16
+        if k in (3, 4):
+            return "#e8d4a8"
+        if k == 5:
+            return "#b83a2a"
+        if k in (11,):
+            return "#c8a060"
+        weave = ((x + y) % 2) * 0.12
+        return pick(["#2e2018", "#3a2a1e", "#463424", "#52402c"], a(x, y) * 0.7 + weave)
+
+    return paint(f)
+
+
+def tent_cloth_red():
+    # A brighter tent: madder red with gold and indigo bands.
+    a = noise(16, 8, 4131)
+
+    def f(x, y):
+        k = y % 16
+        if k in (2, 3):
+            return "#e0a83a"
+        if k in (9, 10):
+            return "#2a3a6a"
+        if k == 11:
+            return "#e8d4a8"
+        return pick(["#8a2418", "#a02c1e", "#b43624", "#c0402a"], a(x, y) * 0.6 + ((x + y) % 2) * 0.15)
+
+    return paint(f)
+
+
+def dune_crest():
+    # Wind-sculpted sand on the dunes' faces: long ripples, lighter crests.
+    a, b = noise(4, 2, 4141), noise(16, 8, 4142)
+
+    def f(x, y):
+        rip = 0.5 + 0.5 * math.sin(y * 0.9 + 1.6 * math.sin(x * 0.2) + a(x, y) * 3)
+        return pick(["#dca060", "#e6ae6c", "#eebc7a", "#f4c886", "#fad696"], 0.05 + rip * 0.55 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
 def gold_cliff():
     # The basin's cliffs: golden and peach sandstone in bands.
     bands = ["#e0a86a", "#eab87a", "#d89458", "#f0c48a", "#d08a52"]
@@ -4624,6 +4699,11 @@ MATERIALS = [
     ("shore_foam", "Shore Foam", "oasis_haven", "water", shore_foam, 8, {"scrollU": 0.05, "scrollV": 0.0, "wave": 0.08, "wavePeriod": 3.2, "opacity": 0.75, "glow": 0.3}),
     ("lake_sand", "Lake Bed", "oasis_haven", "water", lake_sand, 8, None),
     ("gold_sand", "Golden Sand", "oasis_haven", "loose_sand", gold_sand, 8, None),
+    ("adobe", "Mud-brick Plaster", "oasis_haven", "wall", adobe, 4, None),
+    ("adobe_dark", "Mud-brick in Shade", "oasis_haven", "wall", adobe_dark, 4, None),
+    ("tent_cloth", "Goat-hair Tent Cloth", "oasis_haven", "wall", tent_cloth, 4, {"scrollU": 0, "scrollV": 0, "sway": 0.04}),
+    ("tent_cloth_red", "Red Tent Cloth", "oasis_haven", "wall", tent_cloth_red, 4, {"scrollU": 0, "scrollV": 0, "sway": 0.04}),
+    ("dune_crest", "Dune Ripples", "oasis_haven", "loose_sand", dune_crest, 10, None),
     ("gold_cliff", "Golden Cliffs", "oasis_haven", "wall", gold_cliff, 14, None),
     ("oasis_lawn", "Garden Lawn", "oasis_haven", "grass", oasis_lawn, 5, None),
     ("garden_soil", "Garden Path", "oasis_haven", "dirt", garden_soil, 5, None),

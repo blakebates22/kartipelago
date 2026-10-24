@@ -115,18 +115,17 @@ export const TRACKS: TrackEntry[] = [
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch_v3" },
   },
-  // The greybox of Oasis Haven's new lap (v3: back in the desert, nearly all bends), to
-  // drive before it's dressed: ?track=oasis_haven_v3. Not in any world's menu.
+  // The previous Oasis Haven (v2, the lakeside resort, before the redo back in the
+  // desert), kept playable with ?track=oasis_haven_v2. Not in any world's menu.
   {
-    id: "oasis_haven_v3",
-    name: "Oasis Haven (v3 greybox)",
-    description:
-      "The new lap in plain shapes: the pool, the camp, the butte, the dune sea and the watchtower.",
+    id: "oasis_haven_v2",
+    name: "Oasis Haven (v2)",
+    description: "The version before the redo.",
     preview: "previews/oasis_haven.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_haven",
     music: "oasis",
-    load: { scene: "track", packageId: "oasis_haven_v3" },
+    load: { scene: "track", packageId: "oasis_haven_v2" },
   },
   // The previous Bonebog Pyramid (v2, before Blake's driving notes), kept playable
   // with ?track=bonebog_pyramid_v2. Not in any world's menu.
@@ -249,7 +248,7 @@ export const TRACKS: TrackEntry[] = [
     id: "oasis_haven",
     name: "Oasis Haven",
     description:
-      "A turquoise lake, a waterfront market, terraces of fountains and a palace on top. Very fancy. Very fast.",
+      "A green pool in the deep desert: a nomad camp, a wind-carved arch, the dune sea and a spiral up the old watchtower.",
     preview: "previews/oasis_haven.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_haven",

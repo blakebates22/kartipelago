@@ -87,7 +87,7 @@ export const WORLDS: WorldEntry[] = [
       "frostveil_citadel_v2",
       "snowy_summit_v2",
       "hearthglow_hollow_v2",
-      "oasis_haven_v3",
+      "oasis_haven_v2",
       "dry_gulch_v3",
     ],
     testing: true,
