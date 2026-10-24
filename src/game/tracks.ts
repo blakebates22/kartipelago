@@ -139,7 +139,7 @@ export const TRACKS: TrackEntry[] = [
     load: { scene: "track", packageId: "snowy_summit_v2" },
   },
   // The previous Hearthglow Hollow (the long climb and sleigh run, before the shorter
-  // lap and the rooftop shortcut), kept playable with ?track=hearthglow_hollow_v2.
+  // lap and the shortcut), kept playable with ?track=hearthglow_hollow_v2.
   {
     id: "hearthglow_hollow_v2",
     name: "Hearthglow Hollow (v2)",
@@ -189,7 +189,7 @@ export const TRACKS: TrackEntry[] = [
     id: "hearthglow_hollow",
     name: "Hearthglow Hollow",
     description:
-      "A snowy village at dusk: round the big tree, up the winding mountain road, down the sleigh run, home over the rooftops.",
+      "A snowy village at dusk: round the big tree, up the winding mountain road, down the sleigh run and home through the old town (or its hidden back alley).",
     preview: "previews/hearthglow_hollow.jpg",
     modes: ["race", "timeTrial"],
     theme: "hearthglow",

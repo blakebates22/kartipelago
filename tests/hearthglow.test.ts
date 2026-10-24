@@ -2,8 +2,8 @@
 // theme (with stars) and music; it loads cleanly; its moving parts are where they should
 // be and keep to the race clock (snowballs and the sleigh cross the road, presents sit
 // by it, the bell swings); a snowball or the sleigh is a solid bump, a present bursts (for a boost) and
-// comes back; the rooftop shortcut counts as the lap it skips (and saves a lot); and the AI
-// drives it, in under a minute and a half.
+// comes back; the back-alley shortcut counts as the lap it skips (and saves a lot); and the AI
+// drives it, in about a minute.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
@@ -28,29 +28,33 @@ type Entity = { type: string } & Record<string, unknown>;
 const entitiesOf = (p: { meta: { entities?: unknown[] } }) => (p.meta.entities ?? []) as Entity[];
 const dt = 1 / 120;
 
-// The rooftop shortcut (game coordinates), from hearthglow_hollow.py's roof_points(): off
-// the west lane, up the alley ramp, along the rooftops, and the leap off the last roof
-// onto the finish street.
+// The back alley (game coordinates), from hearthglow_hollow.py's alley_points(): off the
+// old town's street just before the market chicane, through the old town between its
+// walls, round the icy dogleg and onto the finish street right before the line.
 const SHORTCUT: [number, number, number][] = [
-  [-274.0, 4.0, -0.0],
-  [-267.2, 6.5, 19.0],
-  [-251.4, 10.4, 31.5],
-  [-235.0, 10.4, 42.9],
-  [-218.6, 10.4, 54.4],
-  [-202.2, 10.4, 65.9],
-  [-185.8, 10.4, 77.3],
-  [-169.5, 10.4, 88.8],
-  [-153.1, 10.4, 100.3],
-  [-136.7, 8.9, 111.8],
-  [-120.3, 8.9, 123.2],
-  [-103.9, 8.9, 134.7],
-  [-87.5, 8.9, 146.2],
-  [-70.4, 7.4, 156.4],
-  [-50.6, 7.4, 159.8],
-  [-31.2, 7.4, 155.1],
-  [-15.1, 7.4, 143.2],
-  [-11.4, 7.4, 138.5],
-  [-3.3, 3.0, 127.0],
+  [-212.0, 3.3, -44.0],
+  [-208.9, 3.3, -27.5],
+  [-200.4, 3.3, -13.3],
+  [-191.2, 3.3, -0.2],
+  [-182.1, 3.3, 12.9],
+  [-172.9, 3.2, 26.0],
+  [-163.7, 3.2, 39.2],
+  [-154.5, 3.2, 52.3],
+  [-145.4, 3.2, 65.4],
+  [-136.2, 3.2, 78.5],
+  [-127.0, 3.2, 91.6],
+  [-119.4, 3.2, 106.5],
+  [-113.6, 3.1, 122.5],
+  [-104.4, 3.1, 135.6],
+  [-95.2, 3.1, 148.7],
+  [-85.2, 3.1, 161.2],
+  [-72.0, 3.1, 170.2],
+  [-56.6, 3.1, 174.6],
+  [-40.7, 3.0, 173.9],
+  [-25.7, 3.0, 168.2],
+  [-13.4, 3.0, 158.0],
+  [-4.5, 3.0, 144.7],
+  [-2.5, 3.0, 141.2],
 ];
 
 describe("Hearthglow Hollow", () => {
@@ -97,10 +101,13 @@ describe("Hearthglow Hollow", () => {
     const sleighs = es.filter((e) => e.type === "sleigh");
     expect(sleighs).toHaveLength(1);
     expect(crosses(sleighs[0]!)).toBe(true);
-    // Presents: beside the road, off the middle of it.
+    // Presents: beside the road, off the middle of it (and one in the back alley).
     const presents = es.filter((e) => e.type === "present");
     expect(presents.length).toBeGreaterThanOrEqual(10);
-    for (const g of presents) {
+    const inAlley = (g: Entity) =>
+      SHORTCUT.some(([x, , z]) => Math.hypot(x - (g.x as number), z - (g.z as number)) < 8);
+    expect(presents.filter(inAlley)).toHaveLength(1);
+    for (const g of presents.filter((e) => !inAlley(e))) {
       let near = pts[0]!;
       let nd = Infinity;
       for (const q of pts) {
@@ -120,7 +127,7 @@ describe("Hearthglow Hollow", () => {
     expect(es.some((e) => e.type === "snowfall")).toBe(true);
   });
 
-  it("counts the rooftop shortcut as the stretch it skips, and it saves at least 150 m", async () => {
+  it("counts the back alley as the stretch it skips, and it saves at least 150 m", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
     const rc = { ...tuning.race, laps: 2 };
@@ -146,13 +153,13 @@ describe("Hearthglow Hollow", () => {
     };
     const sIn = along(SHORTCUT[0]![0], SHORTCUT[0]![2]);
     const sOut = along(SHORTCUT.at(-1)![0], SHORTCUT.at(-1)![2]);
-    let roofs = 0;
+    let alley = 0;
     for (let i = 0; i + 1 < SHORTCUT.length; i++)
-      roofs += Math.hypot(
+      alley += Math.hypot(
         SHORTCUT[i + 1]![0] - SHORTCUT[i]![0],
         SHORTCUT[i + 1]![2] - SHORTCUT[i]![2],
       );
-    expect(sOut - sIn - roofs).toBeGreaterThan(150);
+    expect(sOut - sIn - alley).toBeGreaterThan(150);
     // One lap's path: the road to the shortcut, the shortcut, the road from it.
     const path: { x: number; y: number; z: number }[] = [];
     for (const q of track.samples)
@@ -202,8 +209,8 @@ describe("Hearthglow Hollow", () => {
     const racer = r.race.racers[0]!;
     expect(racer.lapTimes, `laps (respawns ${r.respawns})`).toHaveLength(3);
     for (const t of racer.lapTimes) {
-      expect(t).toBeGreaterThan(55);
-      expect(t).toBeLessThan(90);
+      expect(t).toBeGreaterThan(45);
+      expect(t).toBeLessThan(75);
     }
     expect(r.respawns).toBe(0);
     expect(r.worstAbove).toBeLessThan(2.5);
