@@ -18,6 +18,12 @@
 # (a sandstone feature, a grand pillar, a stone arch over the river), a kicker, a
 # footpath and a family of long-necks. v2.1 stays playable as riverbend_palms_v21.
 #
+# Version 2.3 is his second round: the footpath is a grassy trail that peters out at its
+# ends, the hairpin after the kicker is banked hard, no checkpoint can be missed on the
+# footpath or by cutting the hairpin, rocky edges along the stone arch, no ledge in
+# front of the waterfall (which now runs down), the sandstone feature in the valley's
+# own rock, and trees that don't twist.
+#
 # Saves tracks-src/riverbend_palms.blend and exports public/tracks/riverbend_palms/.
 
 import math
@@ -74,6 +80,22 @@ LAYOUT = [
     ("S", 60),  # 17
 ]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 7, 14, START, 90.0)
+
+
+def _seg_point(i):
+    return next(p for p in PATH if p[3] == i)
+
+
+def _arc_centre(i):
+    x, y, h, _ = _seg_point(i)
+    sg = LAYOUT[i]
+    a = math.radians(h + (90 if sg[0] == "L" else -90))
+    return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
+
+
+# The hairpin off the ridge is banked hard (v2.3: so you can carry the kicker's speed
+# round it instead of running wide into the grass).
+HAIRPIN = _arc_centre(9)
 
 
 def road_z(x, y):
@@ -326,7 +348,7 @@ def scenery(c):
     taken += rv.rock_feature(c, ter)
     taken += rv.grand_pillar(c, ter)
     taken += rv.stone_arch(c, ter, river_x, WATER_Z)
-    rv.wall_ledges(c, ter, natural)
+    rv.wall_ledges(c, ter, natural, avoid=[(river_x(FALLS_Y), FALLS_Y, 55.0)])
     palms = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
     trees = [props.jungle_tree(c, v) for v in range(2)]
     grand = [props.grand_tree(c, v) for v in range(3)]
@@ -376,7 +398,7 @@ def scenery(c):
 
 def main():
     c = kit.Course(TRACK_ID, "Riverbend Palms", "river_valley")
-    c.route(ROUTE, width=14.0, bank=7.0)
+    c.route(ROUTE, width=14.0, bank=7.0, banks=[(HAIRPIN[0], HAIRPIN[1], 40.0, 16.0)])
     c.kinds = {
         "road": {"mat": "valley_road", "shoulder": 1.5, "shoulder_mat": ("valley_grass", "dirt")},
         "bridge": {
@@ -459,13 +481,20 @@ def main():
     c.entity("waterfall", x=gx, y=gy, z=gz, top=FALLS_TOP, width=30, heading=0)
 
     # Checkpoints: after the bridge, over the ridge, after the ford, and one at the
-    # village bend with a twin gate across the shortcut (either counts).
+    # village bend with a twin gate across the shortcut (either counts). None in the
+    # stretch the footpath cuts, nor round the hairpin (you can cut its grass after the
+    # kicker): one before each and one after, which every line crosses.
     short = [(x, y, road_z(x, y)) for x, y in SHORTCUT]
     s_in, s_out = kit.s_near(c, *SHORTCUT[0]), kit.s_near(c, *SHORTCUT[-1])
     apex = (s_in + s_out) / 2
+    foot = [rv.B(*p) for p in rv.FOOTPATH_GAME]
+    f_in, f_out = kit.s_near(c, foot[0][0], foot[0][1]), kit.s_near(c, foot[-1][0], foot[-1][1])
+    kick = rv.B(-141.65, 8.91, 68.94)
+    k_s = kit.s_near(c, kick[0], kick[1])
+    h_in, h_out = kit.s_near(c, *_seg_point(9)[:2]), kit.s_near(c, *_seg_point(10)[:2])
     gates = c.checkpoints(
-        extra=[river[0][1] + 12, kit.s_near(c, -150, 0), river[1][1] + 12, apex],
-        avoid=[(s_in, apex - 12), (apex + 12, s_out)],
+        extra=[river[0][1] + 12, kit.s_near(c, -150, 0), river[1][1] + 12, apex, f_in - 22, f_out + 18, k_s - 12, h_out + 14],
+        avoid=[(s_in, apex - 12), (apex + 12, s_out), (f_in - 16, f_out + 12), (k_s - 6, h_out + 8)],
     )
     main = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
     c.alt_gate(main, "village_shortcut", short, width=26)

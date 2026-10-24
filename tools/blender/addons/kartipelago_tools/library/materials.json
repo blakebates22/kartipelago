@@ -3820,6 +3820,15 @@
       "tileMetres": 6
     },
     {
+      "id": "valley_trail",
+      "name": "Valley Trail",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "valley_trail.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
       "id": "valley_sand",
       "name": "Valley Sand",
       "theme": "river_valley",

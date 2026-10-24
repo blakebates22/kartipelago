@@ -94,6 +94,32 @@ def valley_road():
     return paint(f)
 
 
+def valley_trail():
+    """A footpath: the valley road's packed earth worn into the meadow, grass growing back
+    in tufts and patches through it (no wheel ruts)."""
+    dirt = ["#9a5a2c", "#b46c34", "#c98243", "#d99a55", "#e8b26a"]
+    grass = ["#2f8a2a", "#3fa332", "#55bb3a", "#6fcf45", "#8ade55"]
+    a, b = noise(4, 2, 121), noise(16, 8, 122)
+    patch = noise(16, 8, 123)
+    peb = speckle(124, 18)
+    tufts = speckle(125, 45)
+    tips = {(x, (y - 1) % H) for x, y in tufts}
+
+    def f(x, y):
+        v = 0.1 + a(x, y) * 0.6 + b(x, y) * 0.3
+        if patch(x, y) > 0.74:
+            return pick(grass, v)
+        if (x, y) in tips:
+            return pick(grass, 0.75)
+        if (x, y) in tufts:
+            return pick(grass, 0.3)
+        if (x, y) in peb:
+            return "#f2d39a"
+        return pick(dirt, 0.15 + a(x, y) * 0.55 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
 def valley_grass():
     pal = ["#2f8a2a", "#3fa332", "#55bb3a", "#6fcf45", "#8ade55"]
     a, b = noise(4, 2, 111), noise(16, 8, 112)
@@ -4817,6 +4843,7 @@ MATERIALS = [
     ("dino_scales", "Dino Scales", "beach_party", "wall", dino_scales, 1, None),
     ("valley_road", "Valley Road", "river_valley", "road", valley_road, 4, None),
     ("valley_grass", "Valley Grass", "river_valley", "grass", valley_grass, 6, None),
+    ("valley_trail", "Valley Trail", "river_valley", "road", valley_trail, 4, None),
     ("valley_sand", "Valley Sand", "river_valley", "sand", valley_sand, 5, None),
     (
         "valley_water",

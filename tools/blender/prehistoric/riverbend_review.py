@@ -266,9 +266,10 @@ def volcano(c, vp):
 # ---------------------------------------------------------------- the walls
 
 
-def wall_ledges(c, ter, natural, wall_r=210.0):
+def wall_ledges(c, ter, natural, wall_r=210.0, avoid=()):
     """Green ledges stepping round the valley walls: rock shelves with grassy tops that
-    jut from the cliffs at different heights, with shrubs and ferns on them."""
+    jut from the cliffs at different heights, with shrubs and ferns on them (none within
+    the (x, y, radius) circles in `avoid`: the waterfall's notch, say)."""
     bush = props.bush(c, 0)
     fern = props.fern(c)
     shelves = []
@@ -290,6 +291,8 @@ def wall_ledges(c, ter, natural, wall_r=210.0):
         z = natural(px, py)
         # Skip the river's notch and gorge.
         if not props.clear_of_road(c, px, py, 8) or z < 4:
+            continue
+        if any(math.hypot(px - ax, py - ay) < ar for ax, ay, ar in avoid):
             continue
         n += 1
         length = 16 + 18 * rnd(k * 5.1)
@@ -324,7 +327,8 @@ def rock_feature(c, ter):
     for i, (dx, dy, rx, ry, h) in enumerate(parts):
         rock = c.rock_mass("Sandstone Feature %d" % (i + 1), cx + dx, cy + dy, rx, ry, z + h, z0=z - 3, n=11, seed=40 + i * 3,
                            angle=0.6 * i, base=z)
-        c.paint_rock(rock, ("pale_sand", "wall"), ("valley_grass", "grass"))
+        # (The valley's own layered rock, so it matches the walls round it.)
+        c.paint_rock(rock, ("valley_cliff", "wall"), ("valley_grass", "grass"))
     return [(cx, cy, 12.0)]
 
 
@@ -394,6 +398,21 @@ def stone_arch(c, ter, river_x, water_z):
     c.assign(ob, c.lib("valley_cliff", "road"), deck)
     c.assign(ob, c.lib("valley_cliff", "wall"), sides)
     ob.data.shade_flat()
+    # Rocky edges: a ragged lip of boulders along both sides of the deck, so from the road
+    # it reads as a natural arch, not a bridge (the way over is still there between them).
+    stones = [boulder_shape(c, v) for v in (0, 2, 4, 6)]
+    for k in range(1, n):
+        t = k / n
+        x = a[0] + (b[0] - a[0]) * t
+        y = a[1] + 2.5 * math.sin(t * math.pi * 2)
+        base = za + (zb - za) * t
+        top = base + H * math.sin(t * math.pi) - 0.4 * (1 - math.sin(t * math.pi))
+        w = W * (1.0 + 0.25 * (1 - math.sin(t * math.pi)))
+        for side in (-1, 1):
+            j = k * 2 + (side > 0)
+            sc = 0.75 + 0.55 * rnd(j * 3.1)
+            c.place(stones[j % 4], x + (rnd(j * 1.7) - 0.5) * 1.2, y + side * (w / 2 - 0.35 * sc), top - 0.35 * sc,
+                    rot=rnd(j * 5.3) * math.tau, scale=sc, coll="Rocks", role="both")
     return [(a[0], a[1], 9.0), (b[0], b[1], 9.0), ((a[0] + b[0]) / 2, ycen, 14.0)]
 
 
@@ -444,11 +463,18 @@ FOOTPATH_GAME = [
 
 
 def footpath(c, line=None):
-    """A narrow footpath you can drive on at full speed: a winding strip of packed earth
-    and pebbles (its own look, not the road's), along the line Blake drove."""
+    """A narrow footpath you can drive on at full speed: a winding trail of packed earth
+    with grass sprinkled through it (its own look, not the road's), along the line Blake
+    drove."""
     pts = [B(*p) for p in (line or FOOTPATH_GAME)]
-    c.shortcut("Footpath", [(x, y, z - 0.05) for x, y, z in pts], "jungle_path", "road", width=3.6,
-               shoulder=0.6, shoulder_mat=("valley_grass", "grass"))
+    # A trail of packed earth with grass growing through it, petering out into the grass
+    # at both ends (it narrows to nothing rather than stopping square).
+    # (Its start is on the road's edge: it opens out from there, and narrows away into the
+    # meadow at its far end.)
+    w = [3.6] * len(pts)
+    w[0], w[-2], w[-1] = 2.6, 2.2, 0.5
+    c.shortcut("Footpath", [(x, y, z - 0.05, ww) for (x, y, z), ww in zip(pts, w)], "valley_trail", "road", width=3.6,
+               shoulder=0.3, shoulder_mat=("valley_trail", "road"))
 
 
 # ---------------------------------------------------------------- creatures

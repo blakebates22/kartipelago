@@ -36,13 +36,21 @@ def loft(bm, rings, cap_top=True, cap_bottom=False):
 def tube(bm, path, radii, n=6):
     """A tube along a list of points (bones, trunks)."""
     rings = []
+    side = None
     for i, p in enumerate(path):
         a = path[max(0, i - 1)]
         b = path[min(len(path) - 1, i + 1)]
         t = (Vector(b) - Vector(a)).normalized()
-        side = t.cross(Vector((0, 0, 1)))
-        if side.length < 1e-3:
-            side = Vector((1, 0, 0))
+        if side is None:
+            side = t.cross(Vector((0, 0, 1)))
+            if side.length < 1e-3:
+                side = Vector((1, 0, 0))
+        else:
+            # Carry the last ring's frame along (so a trunk that leans one way and then
+            # the other doesn't twist).
+            side = side - t * side.dot(t)
+            if side.length < 1e-3:
+                side = t.cross(Vector((0, 0, 1)))
         side.normalize()
         up = side.cross(t).normalized()
         r = radii[i] if isinstance(radii, (list, tuple)) else radii

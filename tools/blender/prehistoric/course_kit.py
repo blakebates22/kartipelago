@@ -138,13 +138,15 @@ class Course:
 
     # -------------------------------------------------------------- the route
 
-    def route(self, points, width=13.0, bank=8.0, bank_gain=40.0, spacing=1.0, sharp=(), flat=()):
+    def route(self, points, width=13.0, bank=8.0, bank_gain=40.0, spacing=1.0, sharp=(), flat=(), banks=()):
         """
         The race line through (x, y, z[, width]) control points, a closed loop. Banking is
         worked out from the curvature: up to `bank` degrees, into every turn. `sharp`:
         indices of points where the line may turn sharply (vector handles: the curve
         comes in and goes out straight, e.g. at a loop's ends); `flat`: (x, y, radius)
-        circles where the road is never banked.
+        circles where the road is never banked; `banks`: (x, y, radius, degrees) circles
+        where a turn is banked harder, up to that many degrees (easing in and out over
+        the outer third of the circle).
         """
         self.width = width
         cd = bpy.data.curves.new("Route", "CURVE")
@@ -185,7 +187,12 @@ class Course:
         tree.balance()
         for bp in sp.bezier_points:
             _, i, _ = tree.find(bp.co)
-            bp.tilt = math.radians(-clamp(ks[i] * bank_gain, -1, 1) * bank)
+            turn = clamp(ks[i] * bank_gain, -1, 1)
+            deg = bank
+            for bx, by, br, bd in banks:
+                w = smooth((br - math.hypot(bp.co.x - bx, bp.co.y - by)) / (br / 3))
+                deg = max(deg, lerp(bank, bd, w))
+            bp.tilt = math.radians(-turn * deg)
             if any(math.hypot(bp.co.x - fx, bp.co.y - fy) < fr for fx, fy, fr in flat):
                 bp.tilt = 0.0
         bpy.context.view_layer.update()
@@ -469,6 +476,8 @@ class Course:
         for bp, p in zip(sp.bezier_points, pts):
             bp.co = p[:3]
             bp.handle_left_type = bp.handle_right_type = "AUTO"
+            # (A fourth value: the width there, e.g. to taper a path's ends.)
+            bp.radius = (p[3] / width) if len(p) > 3 else 1.0
         sp.resolution_u = 12
         ob = bpy.data.objects.new(name, cd)
         self.coll("Roads").objects.link(ob)
@@ -483,7 +492,7 @@ class Course:
         materials.apply_to_road(ob, self.lib(*sm), "shoulder", se["tileMetres"], 0, materials.aspect(se))
         bpy.context.view_layer.update()
         for p in export.sample_route(ob, 1.0)["points"]:
-            smp = Sample(Vector((p["x"], -p["z"], p["y"])), width, 0.0, 0.0)
+            smp = Sample(Vector((p["x"], -p["z"], p["y"])), p.get("width", width), 0.0, 0.0)
             self.extra_ground.append(smp)
         return ob
 
