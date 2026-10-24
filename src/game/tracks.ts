@@ -102,6 +102,19 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },
+  // The greybox of Oasis Haven's new lap (v3: back in the desert, nearly all bends), to
+  // drive before it's dressed: ?track=oasis_haven_v3. Not in any world's menu.
+  {
+    id: "oasis_haven_v3",
+    name: "Oasis Haven (v3 greybox)",
+    description:
+      "The new lap in plain shapes: the pool, the camp, the butte, the dune sea and the watchtower.",
+    preview: "previews/oasis_haven.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "oasis_haven",
+    music: "oasis",
+    load: { scene: "track", packageId: "oasis_haven_v3" },
+  },
   // The previous Bonebog Pyramid (v2, before Blake's driving notes), kept playable
   // with ?track=bonebog_pyramid_v2. Not in any world's menu.
   {
