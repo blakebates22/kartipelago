@@ -102,6 +102,19 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },
+  // The greybox of Dry Gulch's new lap (v3: through the graveyard, drifting between the
+  // buildings, a wilder mine), to drive before it's dressed: ?track=dry_gulch_v3.
+  {
+    id: "dry_gulch_v3",
+    name: "Dry Gulch Ghost Town (v3 greybox)",
+    description:
+      "The new lap in plain shapes: the chicane, the graveyard, the broken trestle, the ravine and the mine.",
+    preview: "previews/dry_gulch.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dry_gulch",
+    music: "ghost",
+    load: { scene: "track", packageId: "dry_gulch_v3" },
+  },
   // The greybox of Oasis Haven's new lap (v3: back in the desert, nearly all bends), to
   // drive before it's dressed: ?track=oasis_haven_v3. Not in any world's menu.
   {

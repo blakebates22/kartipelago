@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "id": "dry_gulch_v3",
+  "name": "Dry Gulch Ghost Town (v3 greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 2.36,
+      "y": 36.07,
+      "z": -291.35
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 26.01,
+      "y": 35.18,
+      "z": -273.62
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 47.97,
+      "y": 34.55,
+      "z": -253.32
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 63.59,
+      "y": 33.61,
+      "z": -230.0
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": 68.71,
+      "y": 32.65,
+      "z": -203.95
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 93.43,
+      "y": 32.06,
+      "z": -188.25
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 118.47,
+      "y": 29.71,
+      "z": -174.9
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 135.92,
+      "y": 24.86,
+      "z": -151.95
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 155.76,
+      "y": 22.94,
+      "z": -130.23
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 181.27,
+      "y": 20.56,
+      "z": -116.58
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": 206.81,
+      "y": 18.89,
+      "z": -103.88
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 232.42,
+      "y": 18.31,
+      "z": -90.96
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 30.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 332.6,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 676.5,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 830.0,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1108.7,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1353.4,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1598.1,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 166.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 442.6,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 614.7,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 1022.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1254.8,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1563.1,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 70.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 70.0,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 252.6,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 574.7,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 970.0,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 1178.7,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1178.7,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1658.1,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 852.0,
+      "to": 886.0,
+      "at": 902.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/dry_gulch_v3.py (re-running it rewrites entities)"
+}
