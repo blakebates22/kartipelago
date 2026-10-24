@@ -293,9 +293,7 @@ export function tracksMenu(game: Game): Screen {
       const sub =
         e.kind === "trophy"
           ? `${tracksOf(world()).filter((tr) => !tr.comingSoon).length} RACES · MOST POINTS`
-          : e.track.comingSoon
-            ? ""
-            : details(e).lines[0]!;
+          : "";
       ui.text(sub, lx + 30, y + 14, { color: INK_SOFT });
       if (i < entries().length - 1)
         for (let k = lx + 6; k < lx + lw - 6; k += 3) ui.rect(k, y + 29, 1, 1, INK_SOFT);

@@ -95,33 +95,35 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak",
     name: "Ember Peak",
     description:
-      "A fast run across a smouldering volcanic field: a big jump over the lava river, a cave through the volcano, and a dragon from beyond the valley.",
+      "Across a smouldering volcanic field: a jump over the lava river and a cave through the volcano.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },
-  // The greybox of Dry Gulch's new lap (v3: through the graveyard, drifting between the
-  // buildings, a wilder mine), to drive before it's dressed: ?track=dry_gulch_v3.
+  // Dry Gulch's new lap (v3: through the graveyard, drifting between the buildings, the
+  // haunted mine), dressed like the current one, to try before it replaces it:
+  // ?track=dry_gulch_v3.
   {
     id: "dry_gulch_v3",
-    name: "Dry Gulch Ghost Town (v3 greybox)",
+    name: "Dry Gulch Ghost Town (v3)",
     description:
-      "The new lap in plain shapes: the chicane, the graveyard, the broken trestle, the ravine and the mine.",
+      "The new lap: the saloon chicane, through Boot Hill, the broken trestle, down the ravine and the haunted mine.",
     preview: "previews/dry_gulch.jpg",
     modes: ["race", "timeTrial"],
     theme: "dry_gulch",
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch_v3" },
   },
-  // The greybox of Impact Depths' new lap (v3: all the way down the pit, and the updraft
-  // back up), to drive before it's dressed: ?track=impact_depths_v3.
+  // Impact Depths' new lap (v3: down the pit under the cave roof the crater cracked open,
+  // world by world to the core, and the updraft back up), to try before it replaces the
+  // current one: ?track=impact_depths_v3.
   {
     id: "impact_depths_v3",
-    name: "Impact Depths (v3 greybox)",
+    name: "Impact Depths (v3)",
     description:
-      "The new lap in plain shapes: down the pit's terraces to the core, and the updraft back up.",
+      "Down the great pit under the cracked cave roof to the core, and the updraft back up.",
     preview: "previews/impact_depths.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_depths",
@@ -145,7 +147,7 @@ export const TRACKS: TrackEntry[] = [
     id: "snow_dragon_pass_v3",
     name: "Snow Dragon Pass (v3 greybox)",
     description:
-      "The new lap in plain shapes: the hairpin stack or the supply road, the broken bridge, the avalanche run, the ridge or the aqueduct, the spiral to the gate.",
+      "The new lap in plain shapes: the hairpin stack, the broken bridge, the avalanche run and the spiral.",
     preview: "previews/snow_dragon_pass.jpg",
     modes: ["race", "timeTrial"],
     theme: "snow_dragon_pass",
@@ -156,7 +158,7 @@ export const TRACKS: TrackEntry[] = [
     id: "celestial_dragon_festival_v3",
     name: "Celestial Dragon Festival (v3 greybox)",
     description:
-      "The new lap in plain shapes: the market chicane, the lagoon bridge, the shrine loop, the climb, the Star Leap and the observatory spiral.",
+      "The new lap in plain shapes: the shrine loop, the Star Leap and the observatory spiral.",
     preview: "previews/celestial_dragon_festival.jpg",
     modes: ["race", "timeTrial"],
     theme: "celestial_dragon_festival",
