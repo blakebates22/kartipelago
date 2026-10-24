@@ -29,6 +29,8 @@ import { titleScreen } from "./title";
 
 /** Roster slots still to come (the locked tiles). */
 const LOCKED = 0;
+/** Racers per row of the grid. */
+const COLS = 4;
 
 function shade(hex: string, k: number) {
   const n = parseInt(hex.slice(1), 16);
@@ -163,7 +165,7 @@ export function characterSelect(game: Game): Screen {
       align: "center",
     });
     // The grid: the racers, then the locked slots.
-    const cols = 4;
+    const cols = COLS;
     const tile = 46;
     const gap = 8;
     const gx = Math.round(Math.max(px + pw + 18, ui.W - 14 - cols * tile - (cols - 1) * gap));
@@ -261,7 +263,14 @@ export function characterSelect(game: Game): Screen {
           else highlight(a - index);
         } else if (a === "left") highlight(-1);
         else if (a === "right") highlight(1);
-        else if (a === "confirm") choose();
+        // Up and down move between the rows of the grid (wrapping top to bottom).
+        else if (a === "up" || a === "down") {
+          const rows = Math.ceil(N / COLS);
+          const row = Math.floor(index / COLS);
+          let to = ((row + (a === "down" ? 1 : -1) + rows) % rows) * COLS + (index % COLS);
+          if (to >= N) to = N - 1;
+          highlight(to - index);
+        } else if (a === "confirm") choose();
         else if (a === "back" && picked < 0) {
           game.sounds.back();
           game.screens.go(titleScreen(game, true));
@@ -283,7 +292,7 @@ export function characterSelect(game: Game): Screen {
           align: "center",
         });
       hints(ui, [
-        ["◀▶", "CHOOSE"],
+        ["◀▶▲▼", "CHOOSE"],
         ["ENTER", "CONFIRM"],
         ["ESC", "BACK"],
       ]);
