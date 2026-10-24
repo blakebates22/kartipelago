@@ -128,6 +128,41 @@ export const TRACKS: TrackEntry[] = [
     music: "depths",
     load: { scene: "track", packageId: "impact_depths_v3" },
   },
+  // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
+  // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
+  {
+    id: "dragon_isles_v3",
+    name: "Dragon Isles (v3 greybox)",
+    description:
+      "The new lap in plain shapes: the village chicane, the cliff hairpins, the broken bridge, the pillar jump and the harbour spiral.",
+    preview: "previews/dragon_isles.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragon_isles",
+    music: "dragon",
+    load: { scene: "track", packageId: "dragon_isles_v3" },
+  },
+  {
+    id: "snow_dragon_pass_v3",
+    name: "Snow Dragon Pass (v3 greybox)",
+    description:
+      "The new lap in plain shapes: the hairpin stack or the supply road, the broken bridge, the avalanche run, the ridge or the aqueduct, the spiral to the gate.",
+    preview: "previews/snow_dragon_pass.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "snow_dragon_pass",
+    music: "snow_dragon",
+    load: { scene: "track", packageId: "snow_dragon_pass_v3" },
+  },
+  {
+    id: "celestial_dragon_festival_v3",
+    name: "Celestial Dragon Festival (v3 greybox)",
+    description:
+      "The new lap in plain shapes: the market chicane, the lagoon bridge, the shrine loop, the climb, the Star Leap and the observatory spiral.",
+    preview: "previews/celestial_dragon_festival.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "celestial_dragon_festival",
+    music: "celestial",
+    load: { scene: "track", packageId: "celestial_dragon_festival_v3" },
+  },
   // The previous Oasis Haven (v2, the lakeside resort, before the redo back in the
   // desert), kept playable with ?track=oasis_haven_v2. Not in any world's menu.
   {

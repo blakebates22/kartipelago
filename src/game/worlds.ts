@@ -90,6 +90,9 @@ export const WORLDS: WorldEntry[] = [
       "oasis_haven_v2",
       "dry_gulch_v3",
       "impact_depths_v3",
+      "dragon_isles_v3",
+      "snow_dragon_pass_v3",
+      "celestial_dragon_festival_v3",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

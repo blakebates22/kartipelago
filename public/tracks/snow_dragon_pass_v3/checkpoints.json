@@ -1,0 +1,402 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    0.0,
+    50.0,
+    1.776
+   ],
+   "heading": 1.5708,
+   "width": 52.447,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     3.756,
+     49.974,
+     -0.0
+    ],
+    "heading": 1.5708
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    91.378,
+    45.019,
+    13.48
+   ],
+   "heading": 0.80076,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     94.589,
+     44.961,
+     16.538
+    ],
+    "heading": 2.32976
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    143.604,
+    41.841,
+    9.037
+   ],
+   "heading": 2.2781,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     147.09,
+     41.61,
+     6.51
+    ],
+    "heading": 0.72944
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    232.615,
+    40.0,
+    -21.346
+   ],
+   "heading": 2.68857,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     234.252,
+     40.0,
+     -25.003
+    ],
+    "heading": -2.04859
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    228.959,
+    53.217,
+    -180.732
+   ],
+   "heading": -2.07399,
+   "width": 48.986,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     226.121,
+     53.383,
+     -183.758
+    ],
+    "heading": 2.66238
+   }
+  },
+  {
+   "id": "cp04_frozen_supply_road",
+   "index": 4,
+   "route": "frozen_supply_road",
+   "position": [
+    366.438,
+    49.9,
+    -289.775
+   ],
+   "heading": -3.09126,
+   "width": 16.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     366.237,
+     49.9,
+     -293.77
+    ],
+    "heading": -3.09126
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    225.703,
+    61.761,
+    -359.32
+   ],
+   "heading": -1.5708,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     221.525,
+     61.725,
+     -359.32
+    ],
+    "heading": -1.5708
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    153.967,
+    61.035,
+    -370.6
+   ],
+   "heading": -2.22499,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     150.651,
+     60.999,
+     -372.963
+    ],
+    "heading": -0.6831
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    89.447,
+    61.013,
+    -367.478
+   ],
+   "heading": -0.94608,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     86.087,
+     61.069,
+     -365.339
+    ],
+    "heading": -2.49402
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    -20.8,
+    59.893,
+    -358.075
+   ],
+   "heading": -1.31698,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -24.616,
+     59.786,
+     -356.884
+    ],
+    "heading": 0.22961
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    -52.466,
+    56.176,
+    -306.974
+   ],
+   "heading": -0.02557,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -52.662,
+     55.819,
+     -303.003
+    ],
+    "heading": -1.56586
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    -71.444,
+    48.081,
+    -266.515
+   ],
+   "heading": -0.85569,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -74.352,
+     48.021,
+     -263.757
+    ],
+    "heading": 0.69011
+   }
+  },
+  {
+   "id": "cp11",
+   "index": 11,
+   "route": "main",
+   "position": [
+    -67.739,
+    38.954,
+    -182.873
+   ],
+   "heading": 0.80664,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -65.031,
+     38.949,
+     -180.012
+    ],
+    "heading": -0.74058
+   }
+  },
+  {
+   "id": "cp12",
+   "index": 12,
+   "route": "main",
+   "position": [
+    29.407,
+    34.791,
+    -93.083
+   ],
+   "heading": 0.01012,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     29.231,
+     34.675,
+     -89.129
+    ],
+    "heading": -1.53784
+   }
+  },
+  {
+   "id": "cp12_frozen_aqueduct",
+   "index": 12,
+   "route": "frozen_aqueduct",
+   "position": [
+    -99.48,
+    28.65,
+    -104.076
+   ],
+   "heading": -0.37483,
+   "width": 16.0,
+   "height": 6.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -100.945,
+     28.65,
+     -100.354
+    ],
+    "heading": -0.37482
+   }
+  },
+  {
+   "id": "cp13",
+   "index": 13,
+   "route": "main",
+   "position": [
+    -48.699,
+    27.42,
+    -16.502
+   ],
+   "heading": 0.48783,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -46.526,
+     27.822,
+     -12.981
+    ],
+    "heading": 2.03634
+   }
+  },
+  {
+   "id": "cp14",
+   "index": 14,
+   "route": "main",
+   "position": [
+    5.457,
+    33.75,
+    -14.369
+   ],
+   "heading": 2.5511,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     7.43,
+     34.14,
+     -17.875
+    ],
+    "heading": -2.18336
+   }
+  },
+  {
+   "id": "cp15",
+   "index": 15,
+   "route": "main",
+   "position": [
+    -47.849,
+    43.412,
+    -48.04
+   ],
+   "heading": -0.53934,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -49.688,
+     43.795,
+     -44.537
+    ],
+    "heading": 1.00766
+   }
+  }
+ ]
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "theme": "celestial_dragon_festival",
+  "sky": "#05060f",
+  "fog": {
+    "enabled": true,
+    "color": "#0c0c22",
+    "near": 420,
+    "far": 2600
+  },
+  "sun": {
+    "color": "#c8d0ff",
+    "intensity": 1.75,
+    "direction": [
+      0.36,
+      0.7,
+      0.6
+    ]
+  },
+  "ambient": {
+    "sky": "#9a9af0",
+    "ground": "#4a3a78",
+    "intensity": 1.6
+  },
+  "skyDome": {
+    "top": "#000003",
+    "horizon": "#15132e",
+    "bottom": "#07071a",
+    "sun": {
+      "color": "#fff6dc",
+      "size": 6,
+      "glow": "#a8a4e0",
+      "elevation": 38,
+      "face": "crescent"
+    },
+    "clouds": {
+      "count": 8,
+      "color": "#1c1a38",
+      "shade": "#09091c",
+      "seed": 611,
+      "low": 2,
+      "high": 9,
+      "drift": 0.002
+    },
+    "hills": {
+      "color": "#0a0a18",
+      "far": "#1c1a3a",
+      "height": 13,
+      "seed": 613,
+      "layers": 3,
+      "style": "karst"
+    },
+    "stars": {
+      "count": 1400,
+      "color": "#ffffff",
+      "seed": 617,
+      "low": 6
+    }
+  }
+}
