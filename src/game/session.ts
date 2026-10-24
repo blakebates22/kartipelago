@@ -212,7 +212,9 @@ interface Entrant {
   color: string;
   state: KartState;
   /** State at the previous step, for smooth rendering between steps. */
-  prev: { x: number; y: number; z: number; heading: number; velAngle: number };
+  prev: { x: number; y: number; z: number; heading: number; velAngle: number; roll: number };
+  /** The kart's tilt onto the ground (smoothed), before the sharp turn's roll goes on top. */
+  tiltQ: THREE.Quaternion;
   /** What you see: kart, character, exhaust flame and shadow (visual only). */
   racer: RacerView;
   /** The racer's root: follows the kart's position and tilt. */
@@ -457,7 +459,8 @@ function buildSession(
       ...e,
       look: i === 0 ? playerLook : rivalLook(i).id,
       state: createKartState(),
-      prev: { x: 0, y: 0, z: 0, heading: 0, velAngle: 0 },
+      prev: { x: 0, y: 0, z: 0, heading: 0, velAngle: 0, roll: 0 },
+      tiltQ: new THREE.Quaternion(),
       racer,
       mesh: racer.root,
       items: racerItems(),
@@ -519,7 +522,14 @@ function buildSession(
 
   const snapPrev = (e: Entrant) => {
     const s = e.state;
-    Object.assign(e.prev, { x: s.x, y: s.y, z: s.z, heading: s.heading, velAngle: s.velAngle });
+    Object.assign(e.prev, {
+      x: s.x,
+      y: s.y,
+      z: s.z,
+      heading: s.heading,
+      velAngle: s.velAngle,
+      roll: s.sharpRoll,
+    });
   };
   /** Put every kart in its starting spot. The player starts at the front of the grid. */
   const placeKarts = () => {
@@ -942,6 +952,11 @@ function buildSession(
   const tilt = { up: new THREE.Vector3(), fwd: new THREE.Vector3(), right: new THREE.Vector3() };
   const tiltBasis = new THREE.Matrix4();
   const tiltTarget = new THREE.Quaternion();
+  const rollQ = new THREE.Quaternion();
+  const rollShift = new THREE.Vector3();
+  const FORWARD = new THREE.Vector3(0, 0, 1);
+  /** Half the kart's width at the outer edge of its rear tyres (CHASSIS), m. */
+  const ROLL_PIVOT = 0.98;
   function renderKart(e: Entrant, alpha: number, frameSeconds: number) {
     const { state: s, prev: p, mesh } = e;
     const heading = p.heading + wrapAngle(s.heading - p.heading) * alpha;
@@ -958,6 +973,7 @@ function buildSession(
       tiltBasis.makeBasis(right, up, fwd);
       tiltTarget.setFromRotationMatrix(tiltBasis);
       mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-40 * frameSeconds));
+      e.tiltQ.copy(mesh.quaternion);
       e.racer.shadow.visible = false;
       e.racer.animate(frameSeconds, motionOf(s), nearestRival(e));
       flames(e, frameSeconds);
@@ -986,7 +1002,18 @@ function buildSession(
     fwd.crossVectors(right, up).normalize();
     tiltBasis.makeBasis(right, up, fwd);
     tiltTarget.setFromRotationMatrix(tiltBasis);
-    mesh.quaternion.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
+    e.tiltQ.slerp(tiltTarget, 1 - Math.exp(-14 * frameSeconds));
+    mesh.quaternion.copy(e.tiltQ);
+    // The sharp turn: the whole kart (chassis, wheels, driver) rolls onto its outside
+    // wheels, pivoting on their outer edge so they stay on the ground. Visual only.
+    const roll = p.roll + (s.sharpRoll - p.roll) * alpha;
+    if (roll !== 0) {
+      rollQ.setFromAxisAngle(FORWARD, roll);
+      mesh.quaternion.multiply(rollQ);
+      const px = -Math.sign(roll) * ROLL_PIVOT;
+      rollShift.set(px * (1 - Math.cos(roll)), -px * Math.sin(roll), 0).applyQuaternion(e.tiltQ);
+      mesh.position.add(rollShift);
+    }
 
     // The blob shadow stays on the ground under the kart, smaller the higher it flies.
     const r = e.racer;
@@ -1253,6 +1280,12 @@ function buildSession(
     debug.overlay.set("steer", input.state.steer);
     debug.overlay.set("air", s.grounded ? "-" : `${s.y.toFixed(1)} m`);
     debug.overlay.set("tap", `${Math.round(s.tapCharge * 100)}%`);
+    debug.overlay.set(
+      "sharp",
+      s.sharp > 0.01
+        ? `${Math.round(s.sharp * 100)}% roll ${((Math.abs(s.sharpRoll) * 180) / Math.PI).toFixed(0)}°`
+        : "-",
+    );
     const phases = ["normal", "ACTIVE", "ENDING (rainbow)", "recovery"];
     const youCfg = applyCharacter(tuning.vehicle, you.character, tuning.stats);
     debug.overlay.set("class", `${you.character.name} (1-${characters.length})`);
@@ -1306,6 +1339,7 @@ function buildSession(
       "arc",
       pathRate > 0.02 ? `${(Math.abs(s.speed) / pathRate).toFixed(0)} m` : "-",
     );
+    debug.overlay.set("yaw", `${((pathRate * 180) / Math.PI).toFixed(0)}°/s`);
     debug.overlay.set("offs", `${((s.driftOffset * 180) / Math.PI).toFixed(0)}°`);
     debug.overlay.set("spin", s.spinTime > 0 ? "SPIN" : `${s.counterTime.toFixed(2)}s`);
     const tiers = ["-", "light", "moderate", "CRASH"];

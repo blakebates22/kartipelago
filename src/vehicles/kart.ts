@@ -19,6 +19,14 @@
  *   release the offset eases back to zero, so the path settles onto where the nose
  *   points. Sustained hard countersteer can spin the kart out (optional).
  *
+ * The sharp turn (drift + brake + steer into the drift): steering in this game is a
+ * coefficient that depends on what you're doing: steerCoefNormal driving,
+ * steerCoefBrake braking, steerCoefDriftBrake braking in a drift. Holding the brake in a
+ * drift therefore turns the arc much tighter (and the slide angle a little deeper) while
+ * the brake still slows you, so it's a trade: the tight line for speed. The body rolls
+ * onto its outside wheels while it lasts (sharpRoll: a visual only, the physics stays a
+ * flat circle). See docs/sharp-turn.md.
+ *
  * See docs/milestones/M1-drive-a-box.md and docs/drift-model.md.
  *
  * Angles are radians around +Y. Forward is (sin h, cos h) on the X/Z plane, so h = 0
@@ -147,6 +155,32 @@ export interface KartConfig extends ZipperConfig, BananaConfig {
   airSteer: number;
   /** Top speed change per unit of slope, m/s: lower uphill, higher downhill. */
   slopeSpeed: number;
+  // The sharp turn (drift + brake + steer into the drift). See docs/sharp-turn.md.
+  /** Off = braking steers and tightens a drift as it did before (driftBrakeTighten). */
+  sharpTurn: boolean;
+  /** Steering coefficient driving normally (the reference: the others are relative to it). */
+  steerCoefNormal: number;
+  /** Steering coefficient braking (not drifting): steerCoefBrake / steerCoefNormal times the turn. */
+  steerCoefBrake: number;
+  /** Steering coefficient braking in a drift: the sharp turn's arc is this / normal times tighter. */
+  steerCoefDriftBrake: number;
+  /** The sharp turn needs at least this speed, m/s (the drift itself ends at driftMinSpeed). */
+  sharpMinSpeed: number;
+  /** ...and the stick at least this far into the drift (0..1). */
+  sharpMinSteer: number;
+  /** The tightest arc a sharp turn can carve, m: a floor, so it can't pivot on the spot. */
+  sharpMinRadius: number;
+  /** How fast the sharp turn takes hold, and lets go, per second. */
+  sharpResponse: number;
+  sharpRelease: number;
+  /** Slide angle (body to path) at full sharp turn, degrees (a drift's is driftOffsetDeg). */
+  sharpOffsetDeg: number;
+  /** Roll onto the outside wheels at full sharp turn, degrees (visual only). */
+  sharpLeanDeg: number;
+  /** Fastest the roll builds, degrees per second. */
+  sharpLeanRate: number;
+  /** How fast the roll eases back down, per second. */
+  sharpLeanReturn: number;
 }
 
 export interface KartState extends ZipperState {
@@ -179,6 +213,13 @@ export interface KartState extends ZipperState {
   /** Seconds of spin-out left, and which way it spins (+1 / -1). */
   spinTime: number;
   spinDir: number;
+  /** The sharp turn's hold, 0..1 (0 = none). */
+  sharp: number;
+  /**
+   * Body roll for the sharp turn's two wheels, radians about the kart's forward axis
+   * (three.js sense: positive lowers the driver's right). Visual only.
+   */
+  sharpRoll: number;
   // Throttle tapping.
   /** 0..1: how much of the tapping bonus is built up. */
   tapCharge: number;
@@ -241,6 +282,8 @@ export function createKartState(x = 0, z = 0, heading = 0, y = 0): KartState {
     counterTime: 0,
     spinTime: 0,
     spinDir: 0,
+    sharp: 0,
+    sharpRoll: 0,
     tapCharge: 0,
     throttleOn: false,
     sincePress: Infinity,
@@ -455,17 +498,42 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   const pathBefore = s.velAngle;
 
   const offsetModel = cfg.driftModel >= 1;
+  // The sharp turn takes hold while you brake in a drift, steering into it, fast enough
+  // and on the ground; it lets go when any of those stops.
+  const wantSharp =
+    cfg.sharpTurn &&
+    drifting &&
+    offsetModel &&
+    s.grounded &&
+    input.brake > 0 &&
+    input.steer * s.driftDir >= cfg.sharpMinSteer &&
+    s.speed >= cfg.sharpMinSpeed;
+  const sharpGoal = wantSharp ? Math.min(1, input.brake) : 0;
+  const sharpRate = sharpGoal > s.sharp ? cfg.sharpResponse : cfg.sharpRelease;
+  s.sharp += (sharpGoal - s.sharp) * (1 - Math.exp(-sharpRate * dt));
+  if (s.sharp < 1e-3 && sharpGoal === 0) s.sharp = 0;
+
   if (drifting && offsetModel) {
     // The stick steers the body, as a curvature, so a given stick position carves the
     // same arc at any speed.
     const into = s.steerSmooth * s.driftDir;
-    // Braking tightens the arc on top of the stick, for extra bite when you need it.
-    const tighten = 1 + cfg.driftBrakeTighten * input.brake;
-    const bodyRate = -s.driftDir * Math.abs(s.speed) * driftCurvature(into, cfg) * tighten;
+    // Braking tightens the arc on top of the stick, for extra bite when you need it. The
+    // sharp turn (into the drift) tightens it by the drift-brake steering coefficient.
+    let curvature = driftCurvature(into, cfg) * (1 + cfg.driftBrakeTighten * input.brake);
+    if (s.sharp > 0 && curvature > 0) {
+      const coef = lerp(cfg.steerCoefNormal, cfg.steerCoefDriftBrake, s.sharp);
+      const sharpK = Math.min(
+        driftCurvature(into, cfg) * (coef / cfg.steerCoefNormal),
+        1 / cfg.sharpMinRadius,
+      );
+      curvature = Math.max(curvature, sharpK);
+    }
+    const bodyRate = -s.driftDir * Math.abs(s.speed) * curvature;
     s.heading = wrapAngle(s.heading + bodyRate * steer * dt);
     // The path is the body plus an offset that builds to a fixed angle, independent of
-    // the stick, so steering doesn't swing the kart's visible angle around.
-    const target = s.driftDir * cfg.driftOffsetDeg * DEG;
+    // the stick, so steering doesn't swing the kart's visible angle around. A sharp turn
+    // slides a little deeper.
+    const target = s.driftDir * lerp(cfg.driftOffsetDeg, cfg.sharpOffsetDeg, s.sharp) * DEG;
     s.driftOffset += (target - s.driftOffset) * (1 - Math.exp(-cfg.driftOffsetRate * dt));
     s.velAngle = wrapAngle(s.heading + s.driftOffset);
     s.driftTime += dt;
@@ -502,7 +570,10 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     const abs = Math.abs(s.speed);
     const atSpeed = Math.min(1, abs / cfg.topSpeed);
     const rolling = Math.min(1, abs / cfg.turnFullSpeed);
-    const rate = (cfg.turnRate + (cfg.turnRateAtTop - cfg.turnRate) * atSpeed) * rolling;
+    let rate = (cfg.turnRate + (cfg.turnRateAtTop - cfg.turnRate) * atSpeed) * rolling;
+    // Braking (forward, on the ground) steers by the braking coefficient instead.
+    if (cfg.sharpTurn && s.grounded && input.brake > 0 && s.speed > REVERSE_BELOW)
+      rate *= lerp(1, cfg.steerCoefBrake / cfg.steerCoefNormal, Math.min(1, input.brake));
     // After an offset-model drift, normal steering can optionally fade back in as the
     // offset goes (driftRecoverSteer < 1); a spin-out restricts it further.
     let authority = 1;
@@ -562,7 +633,25 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     }
   }
 
+  stepSharpRoll(s, cfg, dt);
+
   s.x += Math.sin(s.velAngle) * s.speed * dt;
   s.z += Math.cos(s.velAngle) * s.speed * dt;
   return s;
+}
+
+/**
+ * The sharp turn's roll onto the outside wheels: it builds at no more than sharpLeanRate
+ * and eases back down. Turning right rolls the body onto its left wheels (a negative
+ * roll in three.js's sense), and the other way round. Flat in the air and in a spin.
+ */
+export function stepSharpRoll(s: KartState, cfg: KartConfig, dt: number) {
+  const on = s.driftDir !== 0 && s.grounded && s.spinTime <= 0;
+  const goal = on ? -s.driftDir * cfg.sharpLeanDeg * DEG * s.sharp : 0;
+  const building = Math.abs(goal) > Math.abs(s.sharpRoll) && goal * s.sharpRoll >= 0;
+  if (building) s.sharpRoll = moveToward(s.sharpRoll, goal, cfg.sharpLeanRate * DEG * dt);
+  else {
+    s.sharpRoll += (goal - s.sharpRoll) * (1 - Math.exp(-cfg.sharpLeanReturn * dt));
+    if (Math.abs(s.sharpRoll) < 1e-4 && goal === 0) s.sharpRoll = 0;
+  }
 }

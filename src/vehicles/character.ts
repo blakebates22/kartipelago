@@ -46,5 +46,6 @@ export function applyCharacter(base: KartConfig, ch: Character, scale: StatScale
     driftRadiusTight: base.driftRadiusTight / handling,
     driftRadiusCounter: base.driftRadiusCounter / handling,
     driftRadiusCounterOut: base.driftRadiusCounterOut / handling,
+    sharpMinRadius: base.sharpMinRadius / handling,
   };
 }

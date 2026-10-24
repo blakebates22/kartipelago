@@ -82,6 +82,21 @@ const cfg: KartConfig = {
   turnScrub: 0.12,
   airSteer: 0.12,
   slopeSpeed: 12,
+  // The sharp turn is off here, so these tests keep checking the drift on its own
+  // (tests/sharpTurn.test.ts covers it).
+  sharpTurn: false,
+  steerCoefNormal: 6,
+  steerCoefBrake: 12,
+  steerCoefDriftBrake: 18,
+  sharpMinSpeed: 8,
+  sharpMinSteer: 0.2,
+  sharpMinRadius: 7,
+  sharpResponse: 10,
+  sharpRelease: 8,
+  sharpOffsetDeg: 45,
+  sharpLeanDeg: 20,
+  sharpLeanRate: 250,
+  sharpLeanReturn: 8,
 };
 const dt = 1 / 120;
 
