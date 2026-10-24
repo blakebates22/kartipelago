@@ -102,19 +102,31 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak" },
   },
-  // Dry Gulch's new lap (v3: through the graveyard, drifting between the buildings, the
-  // haunted mine), dressed like the current one, to try before it replaces it:
-  // ?track=dry_gulch_v3.
+  // The first Dry Gulch (round Boot Hill, the long mine), replaced by the new lap on
+  // Oct 24, kept playable with ?track=dry_gulch_v2. Not in any world's menu.
   {
-    id: "dry_gulch_v3",
-    name: "Dry Gulch Ghost Town (v3)",
+    id: "dry_gulch_v2",
+    name: "Dry Gulch Ghost Town (v2)",
     description:
-      "The new lap: the saloon chicane, through Boot Hill, the broken trestle, down the ravine and the haunted mine.",
-    preview: "previews/dry_gulch.jpg",
+      "The first Dry Gulch: round Boot Hill, the Rickety Trestle and the long haunted mine.",
+    preview: "previews/dry_gulch_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "dry_gulch",
     music: "ghost",
-    load: { scene: "track", packageId: "dry_gulch_v3" },
+    load: { scene: "track", packageId: "dry_gulch_v2" },
+  },
+  // Aurora Rift's new lap (v3: about 20% shorter, more in the cave, less after it), to
+  // drive before it's dressed: ?track=aurora_rift_v3.
+  {
+    id: "aurora_rift_v3",
+    name: "Aurora Rift (v3 greybox)",
+    description:
+      "The new lap in plain shapes: down the ice wall, the cave's jump and loop, the frozen lake and the bridge.",
+    preview: "previews/aurora_rift.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "aurora_rift",
+    music: "aurora",
+    load: { scene: "track", packageId: "aurora_rift_v3" },
   },
   // Impact Depths' new lap (v3: down the pit under the cave roof the crater cracked open,
   // world by world to the core, and the updraft back up), to try before it replaces the

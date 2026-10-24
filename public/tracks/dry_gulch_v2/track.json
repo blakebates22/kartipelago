@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "dry_gulch",
+  "id": "dry_gulch_v2",
   "name": "Dry Gulch Ghost Town",
   "geometry": {
     "visual": "visual.glb",

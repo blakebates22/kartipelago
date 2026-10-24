@@ -1,4 +1,4 @@
-// Dry Gulch v3, the new lap dressed like the current course (dry_gulch_v3.py):
+// Dry Gulch's new lap (v3, tools/blender/prehistoric/dry_gulch.py), dressed like the first:
 // through the graveyard, drifting between the buildings, the broken trestle, the ravine,
 // and the haunted mine (the shortcut) a little quicker than the way round.
 import { readFile } from "node:fs/promises";
@@ -6,13 +6,13 @@ import { describe, expect, it } from "vitest";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "dry_gulch_v3";
+const id = "dry_gulch";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Dry Gulch v3", () => {
+describe("Dry Gulch (the new lap)", () => {
   it("loads cleanly, with a jump on the trestle and a gate in the mine", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);

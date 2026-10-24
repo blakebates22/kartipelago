@@ -36,7 +36,7 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "dry_gulch";
+const id = "dry_gulch_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -51,10 +51,10 @@ const minePath = (p: TrackPackage) =>
     .find((r) => r.id === "Haunted Mine Path")!
     .points.map((q) => ({ x: q.x, y: q.y, z: q.z }));
 
-describe("Dry Gulch Ghost Town", () => {
-  it("is the Desert World's third course, with its own night sky and music", async () => {
+describe("Dry Gulch Ghost Town v2 (the first lap, kept playable)", () => {
+  it("was the Desert World's third course (the new lap has its place), with its night sky and music", async () => {
     const w = WORLDS.find((x) => x.id === "desert")!;
-    expect(w.tracks.slice(0, 3)).toEqual(["canyon_dash", "oasis_haven", id]);
+    expect(w.tracks.slice(0, 3)).toEqual(["canyon_dash", "oasis_haven", "dry_gulch"]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
     expect(t.theme).toBe("dry_gulch");

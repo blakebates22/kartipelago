@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "dry_gulch_v3",
+  "id": "dry_gulch",
   "name": "Dry Gulch Ghost Town",
   "geometry": {
     "visual": "visual.glb",
@@ -1223,5 +1223,5 @@
       "color": "#1e1424"
     }
   ],
-  "generator": "tools/blender/prehistoric/dry_gulch_v3.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/dry_gulch.py (re-running it rewrites entities)"
 }
