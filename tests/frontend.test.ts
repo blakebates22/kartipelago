@@ -208,6 +208,7 @@ describe("worlds", () => {
       "hearthglow_hollow_v2",
       "oasis_haven_v2",
       "dry_gulch_v3",
+      "impact_depths_v3",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
       "riverbend_palms",

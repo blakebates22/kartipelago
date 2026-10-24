@@ -115,13 +115,26 @@ export const TRACKS: TrackEntry[] = [
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch_v3" },
   },
+  // The greybox of Impact Depths' new lap (v3: all the way down the pit, and the updraft
+  // back up), to drive before it's dressed: ?track=impact_depths_v3.
+  {
+    id: "impact_depths_v3",
+    name: "Impact Depths (v3 greybox)",
+    description:
+      "The new lap in plain shapes: down the pit's terraces to the core, and the updraft back up.",
+    preview: "previews/impact_depths.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "impact_depths",
+    music: "depths",
+    load: { scene: "track", packageId: "impact_depths_v3" },
+  },
   // The previous Oasis Haven (v2, the lakeside resort, before the redo back in the
   // desert), kept playable with ?track=oasis_haven_v2. Not in any world's menu.
   {
     id: "oasis_haven_v2",
     name: "Oasis Haven (v2)",
     description: "The version before the redo.",
-    preview: "previews/oasis_haven.jpg",
+    preview: "previews/oasis_haven_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_haven",
     music: "oasis",

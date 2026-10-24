@@ -1,0 +1,534 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    49.9,
+    30.0,
+    234.76
+   ],
+   "heading": 1.73712,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     53.593,
+     29.977,
+     234.029
+    ],
+    "heading": -3.00298
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    144.336,
+    29.327,
+    199.127
+   ],
+   "heading": 2.38875,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     147.008,
+     29.156,
+     196.173
+    ],
+    "heading": -2.35679
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    201.837,
+    29.029,
+    112.048
+   ],
+   "heading": 2.52874,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     204.063,
+     28.852,
+     108.893
+    ],
+    "heading": 1.18379
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    248.959,
+    28.286,
+    20.429
+   ],
+   "heading": 3.1026,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     248.827,
+     28.24,
+     16.409
+    ],
+    "heading": -1.63224
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    206.329,
+    19.982,
+    -61.768
+   ],
+   "heading": -1.36538,
+   "width": 53.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     202.56,
+     19.08,
+     -60.59
+    ],
+    "heading": 0.18445
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    187.474,
+    13.396,
+    -22.275
+   ],
+   "heading": 0.01023,
+   "width": 50.764,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     188.018,
+     13.199,
+     -18.402
+    ],
+    "heading": -1.53159
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    184.081,
+    7.152,
+    71.644
+   ],
+   "heading": -0.04776,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     183.741,
+     6.73,
+     75.826
+    ],
+    "heading": -1.59283
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    121.881,
+    1.462,
+    134.549
+   ],
+   "heading": -1.15116,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     118.084,
+     1.122,
+     136.293
+    ],
+    "heading": 0.38329
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    60.588,
+    -5.203,
+    187.236
+   ],
+   "heading": -0.92191,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     57.35,
+     -5.354,
+     189.582
+    ],
+    "heading": -2.46292
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    -15.511,
+    -10.847,
+    186.605
+   ],
+   "heading": -2.06367,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -19.19,
+     -11.26,
+     184.6
+    ],
+    "heading": 2.75729
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    -107.571,
+    -16.68,
+    162.087
+   ],
+   "heading": -1.99918,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -111.239,
+     -17.031,
+     160.186
+    ],
+    "heading": 2.7373
+   }
+  },
+  {
+   "id": "cp11",
+   "index": 11,
+   "route": "main",
+   "position": [
+    -141.505,
+    -27.052,
+    86.104
+   ],
+   "heading": 2.22858,
+   "width": 53.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -138.31,
+     -27.77,
+     84.08
+    ],
+    "heading": 0.67889
+   }
+  },
+  {
+   "id": "cp12",
+   "index": 12,
+   "route": "main",
+   "position": [
+    -96.66,
+    -33.175,
+    103.625
+   ],
+   "heading": 0.59999,
+   "width": 50.792,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -94.648,
+     -33.486,
+     107.5
+    ],
+    "heading": 2.13197
+   }
+  },
+  {
+   "id": "cp13",
+   "index": 13,
+   "route": "main",
+   "position": [
+    -51.271,
+    -37.03,
+    123.396
+   ],
+   "heading": 1.6146,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -46.949,
+     -37.344,
+     123.349
+    ],
+    "heading": 0.0709
+   }
+  },
+  {
+   "id": "cp14",
+   "index": 14,
+   "route": "main",
+   "position": [
+    21.261,
+    -42.737,
+    148.141
+   ],
+   "heading": 1.87001,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     24.979,
+     -43.022,
+     146.791
+    ],
+    "heading": -2.86524
+   }
+  },
+  {
+   "id": "cp15",
+   "index": 15,
+   "route": "main",
+   "position": [
+    124.221,
+    -52.632,
+    71.523
+   ],
+   "heading": 3.10998,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     124.268,
+     -52.91,
+     67.627
+    ],
+    "heading": -1.63176
+   }
+  },
+  {
+   "id": "cp16",
+   "index": 16,
+   "route": "main",
+   "position": [
+    107.738,
+    -64.033,
+    -44.364
+   ],
+   "heading": -1.36108,
+   "width": 53.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     104.253,
+     -64.59,
+     -43.299
+    ],
+    "heading": 0.18872
+   }
+  },
+  {
+   "id": "cp17",
+   "index": 17,
+   "route": "main",
+   "position": [
+    88.474,
+    -68.223,
+    -8.268
+   ],
+   "heading": -0.06226,
+   "width": 50.959,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     88.533,
+     -68.214,
+     -4.359
+    ],
+    "heading": -1.60998
+   }
+  },
+  {
+   "id": "cp18",
+   "index": 18,
+   "route": "main",
+   "position": [
+    37.43,
+    -75.696,
+    74.201
+   ],
+   "heading": -1.19521,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     33.933,
+     -76.006,
+     75.779
+    ],
+    "heading": 0.35178
+   }
+  },
+  {
+   "id": "cp19",
+   "index": 19,
+   "route": "main",
+   "position": [
+    -35.841,
+    -79.981,
+    79.099
+   ],
+   "heading": -2.36677,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -39.077,
+     -79.973,
+     76.194
+    ],
+    "heading": -0.81823
+   }
+  },
+  {
+   "id": "cp20",
+   "index": 20,
+   "route": "main",
+   "position": [
+    -73.139,
+    -84.585,
+    28.758
+   ],
+   "heading": 2.83807,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -71.786,
+     -84.663,
+     25.041
+    ],
+    "heading": 1.29166
+   }
+  },
+  {
+   "id": "cp21",
+   "index": 21,
+   "route": "main",
+   "position": [
+    -42.595,
+    -85.512,
+    -4.009
+   ],
+   "heading": 2.01072,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -38.91,
+     -85.59,
+     -5.56
+    ],
+    "heading": 0.46486
+   }
+  },
+  {
+   "id": "cp22",
+   "index": 22,
+   "route": "main",
+   "position": [
+    15.869,
+    32.0,
+    39.03
+   ],
+   "heading": -0.37075,
+   "width": 52.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     14.299,
+     32.0,
+     43.02
+    ],
+    "heading": -1.84567
+   }
+  },
+  {
+   "id": "cp23",
+   "index": 23,
+   "route": "main",
+   "position": [
+    6.895,
+    31.35,
+    154.105
+   ],
+   "heading": 0.19432,
+   "width": 50.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     7.717,
+     31.281,
+     158.137
+    ],
+    "heading": 1.70023
+   }
+  }
+ ]
+}
