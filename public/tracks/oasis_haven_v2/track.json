@@ -1,0 +1,725 @@
+{
+  "schemaVersion": 1,
+  "id": "oasis_haven_v2",
+  "name": "Oasis Haven (v2)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": 25.0,
+      "y": 14.62,
+      "z": -291.17,
+      "top": 27.5,
+      "width": 21.0,
+      "heading": 1.571
+    },
+    {
+      "id": "conga_01",
+      "type": "conga",
+      "x": -128.44,
+      "y": -0.68,
+      "z": 36.07,
+      "radius": 4.5,
+      "count": 6,
+      "speed": 1.2
+    },
+    {
+      "id": "boat_01",
+      "type": "boat",
+      "route": "Boat Path 1",
+      "speed": 3.6,
+      "start": 0.0,
+      "colors": ["#e02a2a", "#f6c03a"],
+      "scale": 1.0
+    },
+    {
+      "id": "boat_02",
+      "type": "boat",
+      "route": "Boat Path 2",
+      "speed": 3.0,
+      "start": 37.0,
+      "colors": ["#2a6ad8", "#f6f2e6"],
+      "scale": 1.15
+    },
+    {
+      "id": "boat_03",
+      "type": "boat",
+      "route": "Boat Path 3",
+      "speed": 3.2,
+      "start": 74.0,
+      "colors": ["#16a8a0", "#ff8a2a"],
+      "scale": 1.0
+    },
+    {
+      "id": "boat_04",
+      "type": "boat",
+      "route": "Boat Path 4",
+      "speed": 2.6,
+      "start": 111.0,
+      "colors": ["#e8388a", "#ffe050"],
+      "scale": 1.15
+    },
+    {
+      "id": "boat_05",
+      "type": "boat",
+      "route": "Boat Path 5",
+      "speed": 4.0,
+      "start": 148.0,
+      "colors": ["#f6f2e6", "#2a6ad8"],
+      "scale": 1.0
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 32,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 180.7,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 495.1,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 832.1,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1020.6,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1302.0,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1547.6,
+      "across": 0
+    },
+    {
+      "id": "zip_08",
+      "type": "zipper",
+      "at": 1979.4,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 80,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 255.7,
+      "across": -3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 392.5,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 569.3,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 739.9,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 952.1,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_07",
+      "type": "bananas",
+      "at": 1222.0,
+      "across": 3,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_08",
+      "type": "bananas",
+      "at": 1617.6,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "ban_09",
+      "type": "bananas",
+      "at": 1892.0,
+      "across": 0,
+      "count": 5,
+      "gap": 2.6
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 105,
+      "across": -5,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 105,
+      "across": 5,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 210.7,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 339.5,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 599.3,
+      "across": -4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 599.3,
+      "across": 4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 709.9,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 872.1,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1110.6,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 1322.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_11",
+      "type": "balloon",
+      "at": 1322.0,
+      "across": 4,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_12",
+      "type": "balloon",
+      "at": 1587.6,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_13",
+      "type": "balloon",
+      "at": 1822.3,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": 160.0,
+      "y": 30.2,
+      "z": -393.27,
+      "top": 41.9,
+      "width": 26.4,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": 160.0,
+      "y": 14.2,
+      "z": -332.27,
+      "top": 29.9,
+      "width": 33.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_04",
+      "type": "waterfall",
+      "x": 160.0,
+      "y": 0.2,
+      "z": -254.78,
+      "top": 13.9,
+      "width": 39.6,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_05",
+      "type": "waterfall",
+      "x": 186.0,
+      "y": 0.2,
+      "z": -254.8,
+      "top": 13.8,
+      "width": 9.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_06",
+      "type": "waterfall",
+      "x": -128.0,
+      "y": 30.2,
+      "z": -393.27,
+      "top": 41.9,
+      "width": 19.2,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_07",
+      "type": "waterfall",
+      "x": -128.0,
+      "y": 14.2,
+      "z": -332.27,
+      "top": 29.9,
+      "width": 24.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_08",
+      "type": "waterfall",
+      "x": -128.0,
+      "y": 0.2,
+      "z": -254.78,
+      "top": 13.9,
+      "width": 28.8,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_09",
+      "type": "waterfall",
+      "x": -154.0,
+      "y": 0.2,
+      "z": -254.8,
+      "top": 13.8,
+      "width": 9.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_10",
+      "type": "waterfall",
+      "x": 25.0,
+      "y": 0.2,
+      "z": -248.2,
+      "top": 28.8,
+      "width": 9.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_11",
+      "type": "waterfall",
+      "x": 54.66,
+      "y": 0.1,
+      "z": -185.83,
+      "top": 3.7,
+      "width": 10.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_12",
+      "type": "waterfall",
+      "x": -54.66,
+      "y": 0.1,
+      "z": -76.51,
+      "top": 3.7,
+      "width": 10.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_13",
+      "type": "waterfall",
+      "x": 54.66,
+      "y": 0.1,
+      "z": -76.51,
+      "top": 3.7,
+      "width": 10.0,
+      "heading": 0
+    },
+    {
+      "id": "fountain_01",
+      "type": "fountain",
+      "x": 15.0,
+      "y": 53.4,
+      "z": -424.0,
+      "height": 9.0,
+      "jets": 8,
+      "radius": 7.0
+    },
+    {
+      "id": "fountain_02",
+      "type": "fountain",
+      "x": -40.01,
+      "y": 8.28,
+      "z": 194.0,
+      "height": 6.0,
+      "jets": 6,
+      "radius": 4.0
+    },
+    {
+      "id": "fountain_03",
+      "type": "fountain",
+      "x": -40.01,
+      "y": 12.52,
+      "z": 236.0,
+      "height": 6.0,
+      "jets": 6,
+      "radius": 4.0
+    },
+    {
+      "id": "fountain_04",
+      "type": "fountain",
+      "x": -0.0,
+      "y": 12.34,
+      "z": -131.17,
+      "height": 5.0,
+      "jets": 8,
+      "radius": 3.2
+    },
+    {
+      "id": "fountain_05",
+      "type": "fountain",
+      "x": 250.61,
+      "y": 9.6,
+      "z": 74.86,
+      "height": 5.0,
+      "jets": 6,
+      "radius": 3.0
+    },
+    {
+      "id": "fountain_06",
+      "type": "fountain",
+      "x": 313.66,
+      "y": 9.58,
+      "z": -30.26,
+      "height": 5.0,
+      "jets": 6,
+      "radius": 3.0
+    },
+    {
+      "id": "partygoer_01",
+      "type": "partygoer",
+      "x": -130.76,
+      "y": -0.61,
+      "z": 192.68,
+      "heading": 0.0,
+      "variant": 0,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_02",
+      "type": "partygoer",
+      "x": -98.01,
+      "y": -0.62,
+      "z": 196.0,
+      "heading": 0.0,
+      "variant": 1,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_03",
+      "type": "partygoer",
+      "x": -63.0,
+      "y": -0.69,
+      "z": 196.0,
+      "heading": 0.0,
+      "variant": 2,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_04",
+      "type": "partygoer",
+      "x": -9.95,
+      "y": -0.64,
+      "z": 196.36,
+      "heading": 0.0,
+      "variant": 3,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_05",
+      "type": "partygoer",
+      "x": 20.18,
+      "y": 4.0,
+      "z": -142.19,
+      "heading": 3.642,
+      "variant": 4,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_06",
+      "type": "partygoer",
+      "x": 0.54,
+      "y": 4.0,
+      "z": -154.16,
+      "heading": 4.689,
+      "variant": 5,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_07",
+      "type": "partygoer",
+      "x": -19.64,
+      "y": 4.0,
+      "z": -143.13,
+      "heading": 5.736,
+      "variant": 0,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_08",
+      "type": "partygoer",
+      "x": -20.18,
+      "y": 4.0,
+      "z": -120.14,
+      "heading": 6.783,
+      "variant": 1,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_09",
+      "type": "partygoer",
+      "x": -0.54,
+      "y": 4.0,
+      "z": -108.17,
+      "heading": 7.83,
+      "variant": 2,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_10",
+      "type": "partygoer",
+      "x": 19.64,
+      "y": 4.0,
+      "z": -119.2,
+      "heading": 8.878,
+      "variant": 3,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_11",
+      "type": "partygoer",
+      "x": 183.5,
+      "y": 3.4,
+      "z": 73.46,
+      "heading": 2.895,
+      "variant": 4,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_12",
+      "type": "partygoer",
+      "x": 209.18,
+      "y": 3.38,
+      "z": 32.23,
+      "heading": 2.175,
+      "variant": 5,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_13",
+      "type": "partygoer",
+      "x": 231.02,
+      "y": 3.4,
+      "z": 7.56,
+      "heading": 2.66,
+      "variant": 0,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_14",
+      "type": "partygoer",
+      "x": 239.08,
+      "y": 3.4,
+      "z": -36.35,
+      "heading": 3.142,
+      "variant": 1,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_15",
+      "type": "partygoer",
+      "x": 239.95,
+      "y": 3.4,
+      "z": -59.26,
+      "heading": 3.199,
+      "variant": 2,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_16",
+      "type": "partygoer",
+      "x": 231.28,
+      "y": 3.4,
+      "z": -90.63,
+      "heading": 3.624,
+      "variant": 3,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_17",
+      "type": "partygoer",
+      "x": 1.0,
+      "y": 42.0,
+      "z": -444.0,
+      "heading": 1.571,
+      "variant": 4,
+      "dance": "wave"
+    },
+    {
+      "id": "partygoer_18",
+      "type": "partygoer",
+      "x": 8.0,
+      "y": 42.0,
+      "z": -444.0,
+      "heading": 1.571,
+      "variant": 5,
+      "dance": "chill"
+    },
+    {
+      "id": "partygoer_19",
+      "type": "partygoer",
+      "x": 15.0,
+      "y": 42.0,
+      "z": -444.0,
+      "heading": 1.571,
+      "variant": 0,
+      "dance": "sway"
+    },
+    {
+      "id": "partygoer_20",
+      "type": "partygoer",
+      "x": 22.0,
+      "y": 42.0,
+      "z": -444.0,
+      "heading": 1.571,
+      "variant": 1,
+      "dance": "bounce"
+    },
+    {
+      "id": "partygoer_21",
+      "type": "partygoer",
+      "x": 29.0,
+      "y": 42.0,
+      "z": -444.0,
+      "heading": 1.571,
+      "variant": 2,
+      "dance": "wave"
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 0.0,
+      "y": 45.0,
+      "z": 60.0,
+      "radius": 70.0,
+      "count": 3,
+      "speed": 0.2,
+      "seed": 4,
+      "color": "#f6f8fa"
+    },
+    {
+      "id": "birds_02",
+      "type": "birds",
+      "x": 110.0,
+      "y": 55.0,
+      "z": -190.0,
+      "radius": 50.0,
+      "count": 2,
+      "speed": 0.24,
+      "seed": 5,
+      "color": "#f6f8fa"
+    },
+    {
+      "id": "birds_03",
+      "type": "birds",
+      "x": -110.0,
+      "y": 50.0,
+      "z": -60.0,
+      "radius": 60.0,
+      "count": 3,
+      "speed": 0.28,
+      "seed": 6,
+      "color": "#f6f8fa"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 6,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/oasis_haven_v2.py (re-running it rewrites entities)"
+}
