@@ -48,117 +48,227 @@ class Mesh:
 # ------------------------------------------------------------------ props
 
 
+class Parts:
+    """Faces of one prop, gathered by material while it's built."""
+
+    def __init__(self, bm):
+        self.bm = bm
+        self.slots = {}
+
+    def add(self, mat, fn, *a, **k):
+        k0 = len(self.bm.faces)
+        fn(self.bm, *a, **k)
+        self.slots.setdefault(mat, []).extend(range(k0, len(self.bm.faces)))
+
+    def poly(self, mat, pts, both=False):
+        k0 = len(self.bm.faces)
+        vs = [self.bm.verts.new(p) for p in pts]
+        self.bm.faces.new(vs)
+        if both:
+            self.bm.faces.new([self.bm.verts.new(p) for p in reversed(pts)])
+        self.slots.setdefault(mat, []).extend(range(k0, len(self.bm.faces)))
+
+    def out(self, c):
+        return [(c.lib(m), f) for m, f in self.slots.items() if f]
+
+
+def _arch(cx, y, z0, w, h, n=6, point=0.3):
+    """The outline of a pointed arch (a doorway or window) on the plane at depth y,
+    from its sill z0, w wide and h tall: straight sides, then two arcs, each centred
+    `point` of the half-width across the middle, meeting in a point."""
+    e = point * w / 2
+    r = w / 2 + e
+    rise = math.sqrt(r * r - e * e)
+    spring = z0 + h - rise
+    top = math.acos(e / r)
+    right = [(cx - e + r * math.cos(top * k / n), y, spring + r * math.sin(top * k / n)) for k in range(n + 1)]
+    left = [(2 * cx - x, y, z) for x, y, z in reversed(right[:-1])]
+    return [(cx - w / 2, y, z0), (cx + w / 2, y, z0)] + right + left[: -1] + [(cx - w / 2, y, spring)]
+
+
+def _merlons(P, mat, x0, x1, y0, y1, z, every=1.3):
+    """Stepped merlons (two tiers) along the four edges of a roof at height z."""
+    def row(a, b, fixed, along_x):
+        n = max(2, int(abs(b - a) / every))
+        for i in range(n):
+            u = a + (b - a) * (i + 0.5) / n
+            x, y = (u, fixed) if along_x else (fixed, u)
+            P.add(mat, cuboid, (x, y, z + 0.3), (0.75, 0.42, 0.6) if along_x else (0.42, 0.75, 0.6))
+            P.add(mat, cuboid, (x, y, z + 0.8), (0.4, 0.42, 0.45) if along_x else (0.42, 0.4, 0.45))
+
+    row(x0, x1, y0, True)
+    row(x0, x1, y1, True)
+    row(y0, y1, x0, False)
+    row(y0, y1, x1, False)
+
+
 def house(c, variant=0, w=9.0, d=8.0, h=7.0):
-    """A mud-brick house: plastered walls (darker at the foot), a parapet with stepped
-    merlons, beam ends poking out under it, an arched door, small lit windows, and on
-    some a little dome or an upper room. Faces -Y (its door), origin at its foot."""
-    name = "Mud House %d %d %d" % (variant, int(w), int(h))
+    """A rich mud-brick town house: a ground floor and a set-back upper storey with a
+    terrace in front, stepped merlons in white plaster on every roof line over a blue
+    tiled frieze, a pointed-arch doorway in a framed, tiled surround with a studded
+    door and lanterns either side, pointed lit windows, a latticed wooden oriel on the
+    upper floor, and (by variant) a turquoise onion dome on a drum, a wind tower or a
+    hanging carpet. Faces -Y (its door), origin at its foot. Visual only: house_collider
+    is its solid."""
+    name = "Town House %d %d %d" % (variant, int(w), int(h))
 
     def build(bm):
-        out = []
-        cuboid(bm, (0, 0, h / 2), (w, d, h))
-        walls = _faces(bm, 0)
-        k = len(bm.faces)
-        cuboid(bm, (0, 0, 0.5), (w + 0.3, d + 0.3, 1.0))
-        foot = _faces(bm, k)
-        k = len(bm.faces)
-        # The parapet's merlons, stepped at the corners.
-        for i in range(int(w / 1.6)):
-            x = -w / 2 + 0.6 + i * (w - 1.2) / max(1, int(w / 1.6) - 1)
-            for y in (-d / 2 + 0.3, d / 2 - 0.3):
-                cuboid(bm, (x, y, h + 0.45), (0.7, 0.5, 0.9 + 0.5 * ((i in (0, int(w / 1.6) - 1)))))
-        for i in range(int(d / 1.6)):
-            y = -d / 2 + 0.6 + i * (d - 1.2) / max(1, int(d / 1.6) - 1)
-            for x in (-w / 2 + 0.3, w / 2 - 0.3):
-                cuboid(bm, (x, y, h + 0.45), (0.5, 0.7, 0.9))
-        if variant % 3 == 1:
-            cuboid(bm, (w * 0.18, d * 0.1, h + 1.6), (w * 0.45, d * 0.5, 3.2))
-        walls += _faces(bm, k)
-        k = len(bm.faces)
-        # Beam ends (vigas) under the parapet, front and back.
-        for i in range(int(w / 1.3)):
-            x = -w / 2 + 0.7 + i * 1.3
-            for y in (-d / 2 - 0.35, d / 2 + 0.35):
-                cuboid(bm, (x, y, h - 0.6), (0.28, 0.7, 0.28))
-        wood = _faces(bm, k)
-        k = len(bm.faces)
-        # The door: a dark arch.
-        door = [bm.verts.new(p) for p in ((-0.8, -d / 2 - 0.05, 0.0), (0.8, -d / 2 - 0.05, 0.0), (0.8, -d / 2 - 0.05, 2.2), (0.0, -d / 2 - 0.05, 2.9), (-0.8, -d / 2 - 0.05, 2.2))]
-        bm.faces.new(list(reversed(door)))
-        dark = _faces(bm, k)
-        k = len(bm.faces)
-        for i in range(2 if w > 7 else 1):
-            x = (-w / 4, w / 4)[i] if w > 7 else w / 4
-            for y, z in ((-d / 2 - 0.05, h * 0.62), (d / 2 + 0.05, h * 0.62)):
-                win = [bm.verts.new(p) for p in ((x - 0.45, y, z - 0.6), (x + 0.45, y, z - 0.6), (x + 0.45, y, z + 0.3), (x, y, z + 0.75), (x - 0.45, y, z + 0.3))]
-                bm.faces.new(win if y > 0 else list(reversed(win)))
-        lit = _faces(bm, k)
-        k = len(bm.faces)
-        if variant % 3 == 2:
-            op.dome(bm, -w * 0.2, 0.0, h, min(w, d) * 0.28, n=10, rings=4)
-        domes = _faces(bm, k)
-        out += [(c.lib("adobe"), walls), (c.lib("adobe_dark"), foot), (c.lib("weathered_timber"), wood), (c.lib("oasis_bark"), dark),
-                (c.lib("lantern_glow"), lit)]
-        if domes:
-            out.append((c.lib("adobe"), domes))
-        return out
+        P = Parts(bm)
+        h1 = h * 0.58
+        # The ground floor, its plinth, and the upper storey set back for a terrace.
+        P.add("adobe", cuboid, (0, 0, h1 / 2), (w, d, h1))
+        P.add("adobe_dark", cuboid, (0, 0, 0.45), (w + 0.3, d + 0.3, 0.9))
+        uw, ud = w * 0.72, d * 0.7
+        uy = d / 2 - ud / 2
+        P.add("adobe", cuboid, (w * 0.08 * (1 if variant % 2 else -1), uy, h1 + (h - h1) / 2), (uw, ud, h - h1))
+        ux = w * 0.08 * (1 if variant % 2 else -1)
+        # Tiled friezes under each roof line, and white plaster cornices over them.
+        P.add("tile_border", cuboid, (0, 0, h1 - 0.45), (w + 0.12, d + 0.12, 0.5))
+        P.add("white_plaster", cuboid, (0, 0, h1 + 0.05), (w + 0.35, d + 0.35, 0.22))
+        P.add("tile_border", cuboid, (ux, uy, h - 0.45), (uw + 0.12, ud + 0.12, 0.5))
+        P.add("white_plaster", cuboid, (ux, uy, h + 0.05), (uw + 0.35, ud + 0.35, 0.22))
+        _merlons(P, "white_plaster", -w / 2 + 0.25, w / 2 - 0.25, -d / 2 + 0.25, d / 2 - 0.25, h1 + 0.15)
+        _merlons(P, "white_plaster", ux - uw / 2 + 0.25, ux + uw / 2 - 0.25, uy - ud / 2 + 0.25, uy + ud / 2 - 0.25, h + 0.15)
+        # The doorway: a framed surround (white, then tile), a pointed arch, a studded door.
+        fy = -d / 2 - 0.2
+        P.add("white_plaster", cuboid, (0, -d / 2 - 0.08, 2.0), (3.2, 0.16, 4.0))
+        P.add("tile_border", cuboid, (0, -d / 2 - 0.12, 2.0), (2.7, 0.12, 3.6))
+        P.poly("door_wood", _arch(0.0, fy - 0.01, 0.0, 1.9, 3.3))
+        for i in range(3):
+            for j in range(4):
+                P.add("gold_trim", cuboid, (-0.55 + i * 0.55, fy - 0.04, 0.5 + j * 0.6), (0.1, 0.06, 0.1))
+        for side in (-1, 1):
+            P.add("iron", cuboid, (side * 1.9, -d / 2 - 0.3, 2.9), (0.08, 0.5, 0.08))
+            P.add("lantern_glow", blob, (side * 1.9, -d / 2 - 0.55, 2.6), 0.24, sz=1.5, subdiv=0)
+        # Pointed windows, lit, either side of the door and round the back.
+        for x in (-w / 2 + 1.5, w / 2 - 1.5):
+            P.poly("lantern_glow", _arch(x, -d / 2 - 0.03, h1 * 0.38, 0.9, 1.6))
+            P.poly("lantern_glow", list(reversed(_arch(x, d / 2 + 0.03, h1 * 0.38, 0.9, 1.6))))
+        # The upper storey: windows, and a latticed oriel over the door.
+        for x in (ux - uw / 2 + 1.2, ux + uw / 2 - 1.2):
+            P.poly("lantern_glow", _arch(x, uy - ud / 2 - 0.03, h1 + 0.8, 0.8, 1.5))
+        oy = uy - ud / 2
+        P.add("door_wood", cuboid, (ux, oy - 0.4, h1 + 0.6), (2.0, 0.85, 0.3))
+        P.add("door_wood", cuboid, (ux, oy - 0.4, h1 + 2.5), (2.2, 0.95, 0.25))
+        for sx in (-0.95, 0.95):
+            P.add("door_wood", cuboid, (ux + sx, oy - 0.75, h1 + 1.55), (0.14, 0.14, 1.9))
+        P.poly("lattice_window", [(ux - 0.9, oy - 0.8, h1 + 0.75), (ux + 0.9, oy - 0.8, h1 + 0.75), (ux + 0.9, oy - 0.8, h1 + 2.4), (ux - 0.9, oy - 0.8, h1 + 2.4)])
+        for sx in (-1, 1):
+            P.poly("lattice_window", [(ux + sx * 0.92, oy - 0.05, h1 + 0.75), (ux + sx * 0.92, oy - 0.78, h1 + 0.75), (ux + sx * 0.92, oy - 0.78, h1 + 2.4), (ux + sx * 0.92, oy - 0.05, h1 + 2.4)][:: -sx])
+        # Variants: a dome on a drum; a wind tower; a carpet hung over the terrace wall.
+        if variant % 4 in (1, 3):
+            dx, dy = ux - uw * 0.18, uy + ud * 0.1
+            r = min(uw, ud) * 0.3
+            P.add("white_plaster", lambda bm: oasis_props_cyl(bm, dx, dy, h, h + 1.1, r * 1.05, n=12))
+            P.add("tile_border", lambda bm: oasis_props_cyl(bm, dx, dy, h + 1.1, h + 1.35, r * 1.12, n=12))
+            P.add("dome_teal" if variant % 4 == 1 else "dome_blue", lambda bm: op.dome(bm, dx, dy, h + 1.35, r, h=r * 1.25, n=14, rings=6, onion=0.45))
+            P.add("gold_trim", lambda bm: op.finial(bm, dx, dy, h + 1.35 + r * 1.25 * 1.4, 0.7))
+        if variant % 4 == 2:
+            tx, ty = ux + uw / 2 - 1.0, uy + ud / 2 - 1.0
+            P.add("adobe", cuboid, (tx, ty, h + 2.2), (1.8, 1.8, 4.4))
+            P.add("white_plaster", cuboid, (tx, ty, h + 4.55), (2.2, 2.2, 0.3))
+            for a in range(4):
+                nx, ny = (0, -1, 0, 1)[a], (-1, 0, 1, 0)[a]
+                for k in (-0.45, 0.0, 0.45):
+                    cx, cy = tx + nx * 0.91 + (ny != 0) * k, ty + ny * 0.91 + (nx != 0) * k
+                    P.add("oasis_bark", cuboid, (cx, cy, h + 3.4), (0.22 if ny else 0.04, 0.22 if nx else 0.04, 1.6))
+            _merlons(P, "white_plaster", tx - 0.9, tx + 0.9, ty - 0.9, ty + 0.9, h + 4.7, every=0.9)
+        if variant % 4 in (0, 2):
+            cx = -w / 2 + 1.8 if variant % 2 == 0 else w / 2 - 1.8
+            P.poly("royal_carpet", [(cx - 0.9, -d / 2 - 0.2, h1 + 0.35), (cx + 0.9, -d / 2 - 0.2, h1 + 0.35), (cx + 0.9, -d / 2 - 0.24, h1 - 2.0), (cx - 0.9, -d / 2 - 0.24, h1 - 2.0)][::-1], both=True)
+        # A striped awning over the door on some.
+        if variant % 3 == 0:
+            P.poly("awning_teal", [(-1.7, -d / 2 - 0.2, 4.2), (1.7, -d / 2 - 0.2, 4.2), (1.7, -d / 2 - 1.5, 3.6), (-1.7, -d / 2 - 1.5, 3.6)][::-1], both=True)
+        return P.out(c)
 
     return c.proto(name, build) and name
 
 
-def tent(c, variant=0, w=10.0, d=8.0):
-    """A nomad tent: a broad low roof of woven cloth over three tall poles, its front
-    open (its back and sides pegged down), a rug and cushions inside and lanterns hung
-    from the front beam. Faces -Y (its open front), origin at its foot."""
-    name = "Nomad Tent %d" % variant
-    cloth = ("tent_cloth", "tent_cloth_red")[variant % 2]
+def oasis_props_cyl(bm, x, y, z0, z1, r, n=10):
+    loft(bm, [ring(bm, (x, y), r, z0, n), ring(bm, (x, y), r, z1, n)], cap_top=True, cap_bottom=False)
+
+
+def collider(c, w, d, h, y0=0.0, mat="adobe"):
+    """An invisible solid box (w across, d deep, h tall, its centre y0 along its depth):
+    what a prop's footprint is to the karts, so its trim and cloth don't catch them."""
+    name = "Collider %.1f %.1f %.1f %.1f %s" % (w, d, h, y0, mat)
 
     def build(bm):
-        H, E = 4.2, 1.5  # the poles' height and the eaves'
-        # The roof: peaks over three poles, sloping to the eaves all round.
-        xs = (-w / 2, -w / 4, 0.0, w / 4, w / 2)
-        zs = (E + 0.8, H, H - 0.7, H, E + 0.8)
-        front = [bm.verts.new((x, -d / 2, E)) for x in xs]
-        ridge = [bm.verts.new((x, 0.0, z)) for x, z in zip(xs, zs)]
-        back = [bm.verts.new((x, d / 2, E - 0.2)) for x in xs]
-        for i in range(4):
-            bm.faces.new((front[i], front[i + 1], ridge[i + 1], ridge[i]))
-            bm.faces.new((ridge[i], ridge[i + 1], back[i + 1], back[i]))
-        # The back and sides, pegged down to the sand.
-        foot_b = [bm.verts.new((x, d / 2 + 0.6, 0.0)) for x in xs]
-        for i in range(4):
-            bm.faces.new((back[i], back[i + 1], foot_b[i + 1], foot_b[i]))
-        for side, i in ((-1, 0), (1, 4)):
-            fl = bm.verts.new((side * (w / 2 + 0.5), -d / 2 + 0.5, 0.0))
-            bl = foot_b[i]
-            bm.faces.new((front[i], ridge[i], back[i], bl, fl) if side < 0 else (fl, bl, back[i], ridge[i], front[i]))
-        roof = _faces(bm, 0)
-        # Double-sided: the cloth seen from inside too.
-        k = len(bm.faces)
-        bm.faces.ensure_lookup_table()
-        for f in [bm.faces[i] for i in roof]:
-            bm.faces.new([bm.verts.new(v.co - f.normal * 0.05) for v in reversed(f.verts)])
-        inner = _faces(bm, k)
-        k = len(bm.faces)
-        for x in (-w / 4, w / 4):
-            tube(bm, [(x, 0.0, 0.0), (x, 0.0, H)], 0.12, n=5)
-        for x in (-w / 2 + 0.3, 0.0, w / 2 - 0.3):
-            tube(bm, [(x, -d / 2, 0.0), (x, -d / 2, E)], 0.1, n=4)
-        tube(bm, [(-w / 2, -d / 2, E), (w / 2, -d / 2, E)], 0.08, n=4)
-        poles = _faces(bm, k)
-        k = len(bm.faces)
-        cuboid(bm, (0, 0.3, 0.06), (w - 1.6, d - 1.4, 0.12))
-        rug = _faces(bm, k)
-        k = len(bm.faces)
-        for i in range(5):
-            blob(bm, (-w / 2 + 1.6 + i * (w - 3.2) / 4, d / 2 - 1.2, 0.35), 0.55, sx=1.4, sz=0.6, subdiv=0)
-        cushions = _faces(bm, k)
-        k = len(bm.faces)
+        cuboid(bm, (0, y0, h / 2), (w, d, h))
+        return [(c.lib(mat, "wall"), _faces(bm, 0))]
+
+    return c.proto(name, build) and name
+
+
+def tent(c, variant=0, w=14.0, d=9.0):
+    """A grand nomad pavilion: a long striped roof over three tall poles (gold finials
+    and pennants above), its back and sides pegged down with guy ropes, and a deep
+    canopy out front on its own poles, hung with a scalloped, tasselled valance. Inside,
+    a great carpet, heaps of cushions, a low brass table and lanterns. Faces -Y (its open
+    front), origin at the middle of its foot; the body spans y in (-d/2, d/2) and the
+    canopy reaches 2.5 m further out. Visual only: TENT_SOLID is its footprint."""
+    name = "Grand Tent %d" % variant
+    cloths = ("tent_cloth", "tent_cloth_red") if variant % 2 == 0 else ("tent_cloth_red", "tent_cloth")
+    trim = ("banner_red", "banner_royal")[variant % 2]
+
+    def build(bm):
+        P = Parts(bm)
+        H, E = 6.2, 2.6  # the poles' height and the eaves'
+        xs = [-w / 2 + w * i / 8 for i in range(9)]
+        # Peaks over the three poles (at -w/3, 0, w/3), dipping between.
+        def ridge_z(x):
+            return E + 1.0 + (H - E - 1.0) * max(0.0, 1 - min(abs(x - p) for p in (-w / 3, 0.0, w / 3)) / (w / 5)) ** 0.8
+
+        front = [(x, -d / 2, E) for x in xs]
+        ridge = [(x, 0.0, ridge_z(x)) for x in xs]
+        back = [(x, d / 2, E - 0.2) for x in xs]
+        foot = [(x, d / 2 + 0.8, 0.0) for x in xs]
+        for i in range(8):
+            m = cloths[i % 2]
+            P.poly(m, [front[i], front[i + 1], ridge[i + 1], ridge[i]], both=True)
+            P.poly(m, [ridge[i], ridge[i + 1], back[i + 1], back[i]], both=True)
+            P.poly(m, [back[i], back[i + 1], foot[i + 1], foot[i]], both=True)
+        for side, i in ((-1, 0), (1, 8)):
+            fl = (side * (w / 2 + 0.7), -d / 2 + 0.6, 0.0)
+            pts = [front[i], ridge[i], back[i], foot[i], fl]
+            P.poly(cloths[0], pts if side < 0 else pts[::-1], both=True)
+        # The canopy out front, sloping a little, and its valance.
+        cz0, cz1, cy = E + 0.1, E - 0.3, -d / 2 - 2.5
+        P.poly(cloths[1], [(-w / 2, -d / 2, cz0), (w / 2, -d / 2, cz0), (w / 2, cy, cz1), (-w / 2, cy, cz1)][::-1], both=True)
+        n = 14
+        for i in range(n):
+            x0, x1 = -w / 2 + w * i / n, -w / 2 + w * (i + 1) / n
+            P.poly(trim, [(x0, cy - 0.02, cz1), (x1, cy - 0.02, cz1), ((x0 + x1) / 2, cy - 0.02, cz1 - 0.6)], both=True)
+            P.add("gold_trim", blob, ((x0 + x1) / 2, cy - 0.04, cz1 - 0.72), 0.09, subdiv=0)
+        P.add("gold_trim", cuboid, (0, cy - 0.03, cz1 + 0.05), (w, 0.06, 0.12))
+        # Poles: the three tall ones (through the roof, finials and pennants on top), the
+        # canopy's, and the eave's.
         for x in (-w / 3, 0.0, w / 3):
-            loft(bm, [ring(bm, (x, -d / 2 + 0.1), r, z, 5) for r, z in ((0.05, E - 0.3), (0.22, E - 0.55), (0.22, E - 0.95), (0.05, E - 1.15))], cap_top=True, cap_bottom=True)
-        lamps = _faces(bm, k)
-        return [(c.lib(cloth), roof + inner), (c.lib("weathered_timber"), poles), (c.lib("rug"), rug), (c.lib("awning_sun"), cushions),
-                (c.lib("lantern_glow"), lamps)]
+            P.add("weathered_timber", tube, [(x, 0.0, 0.0), (x, 0.0, H + 1.6)], 0.14, n=6)
+            P.add("gold_trim", lambda bm, x=x: op.finial(bm, x, 0.0, H + 1.6, 0.5))
+            P.poly(trim, [(x, 0.0, H + 2.7), (x + 1.6, 0.0, H + 2.45), (x, 0.0, H + 2.15)], both=True)
+        for x in (-w / 2, -w / 6, w / 6, w / 2):
+            P.add("weathered_timber", tube, [(x, cy, 0.0), (x, cy, cz1)], 0.1, n=5)
+            P.add("gold_trim", blob, (x, cy, cz1 + 0.12), 0.16, subdiv=0)
+        P.add("weathered_timber", tube, [(-w / 2, -d / 2, E), (w / 2, -d / 2, E)], 0.08, n=4)
+        # Guy ropes out to pegs at the back and sides.
+        for x in (-w / 3, 0.0, w / 3):
+            P.add("rope_rail", tube, [(x, d / 2 * 0.6, ridge_z(x) * 0.8), (x, d / 2 + 3.5, 0.0)], 0.03, n=3)
+        for side in (-1, 1):
+            P.add("rope_rail", tube, [(side * w / 2, cy, cz1), (side * (w / 2 + 2.2), cy - 1.2, 0.0)], 0.03, n=3)
+        # Inside: the carpet, cushions, a low brass table, lanterns under the canopy.
+        P.add("royal_carpet", cuboid, (0, -0.6, 0.05), (w - 1.4, d + 1.6, 0.1))
+        for i in range(7):
+            x = -w / 2 + 1.4 + i * (w - 2.8) / 6
+            P.add(("awning_sun", "awning_red", "awning_teal")[i % 3], blob, (x, d / 2 - 1.0, 0.4), 0.6, sx=1.5, sz=0.6, subdiv=0)
+            if i % 2 == 0:
+                P.add(("awning_teal", "awning_sun")[i % 4 == 0], blob, (x + 0.4, d / 2 - 1.9, 0.3), 0.45, sx=1.2, sz=0.55, subdiv=0)
+        P.add("gold_trim", lambda bm: oasis_props_cyl(bm, 0.0, 0.2, 0.0, 0.45, 1.1, n=12))
+        P.add("gold_trim", lambda bm: oasis_props_cyl(bm, 0.0, 0.2, 0.45, 0.55, 1.35, n=12))
+        for x in (-w / 3, 0.0, w / 3):
+            P.add("iron", tube, [(x, cy + 0.3, cz1), (x, cy + 0.3, cz1 - 0.5)], 0.02, n=3)
+            P.add("lantern_glow", loft, [ring(bm, (x, cy + 0.3), r, z, 6) for r, z in ((0.05, cz1 - 0.5), (0.26, cz1 - 0.75), (0.26, cz1 - 1.15), (0.05, cz1 - 1.35))], cap_top=True, cap_bottom=True)
+        return P.out(c)
 
     return c.proto(name, build) and name
 
@@ -223,14 +333,17 @@ def village(c, oh, ter, sc):
             p = q.side(side * (q.w / 2 + 9.0 + 3 * (k % 2)))
             h = 6.0 + 2.5 * ((k + (side > 0)) % 3)
             rot = road_rot(q) + (math.pi if side > 0 else 0.0)
-            c.place(house(c, (k + (side > 0)) % 3, 9.0, 8.0, h), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="both")
+            c.place(house(c, (k + (side > 0)) % 4, 9.0, 8.0, h), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="visual")
+            c.place(collider(c, 9.0, 8.0, h), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="collision")
             sc["lights"].append((p.x, p.y, q.p.z + h * 0.6))
         s += 16.0
         k += 1
     q = c.at(oh.LENGTH - 30)
     for side in (-1, 1):
         p = q.side(side * (q.w / 2 + 10.0))
-        c.place(house(c, 1 + (side > 0), 10.0, 9.0, 8.0), p.x, p.y, q.p.z - 0.5, rot=road_rot(q) + (math.pi if side > 0 else 0.0), coll="Village", role="both")
+        rot = road_rot(q) + (math.pi if side > 0 else 0.0)
+        c.place(house(c, 1 + 2 * (side > 0), 10.0, 9.0, 8.0), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="visual")
+        c.place(collider(c, 10.0, 9.0, 8.0), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="collision")
     # Lantern posts along the street, a stall or two and some palms behind the houses.
     post = op.lantern_post(c)
     s = 4.0
@@ -287,14 +400,17 @@ def camp(c, oh, ter, sc):
     while s < oh.SEG[16]:
         q = c.at(s)
         side = 1 if k % 2 else -1
-        p = q.side(side * (q.w / 2 + 8.0))
+        # The canopy's front is where the greybox tent's front was (4 m off the road);
+        # the solid covers the canopy and the body.
+        p = q.side(side * (q.w / 2 + 11.0))
         rot = road_rot(q) + (math.pi if side > 0 else 0.0)
-        c.place(tent(c, k % 2), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="both")
+        c.place(tent(c, k % 2), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="visual")
+        c.place(collider(c, 14.0, 12.3, 3.0, -0.85, "tent_cloth"), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="collision")
         lp = q.side(side * (q.w / 2 + 2.2))
         sc["torches"].append((lp.x, lp.y, q.p.z + 3.2))
         sc["lanterns"].append((lp.x, lp.y, q.p.z + 3.2))
         if k % 2 == 0:
-            b = q.side(side * (q.w / 2 + 17.0))
+            b = q.side(side * (q.w / 2 + 21.0))
             z = ground(c, ter, b.x, b.y)
             if z is not None:
                 c.place(line, b.x, b.y, z - 0.1, rot=road_rot(q), coll="Camp", role="visual")
@@ -325,13 +441,22 @@ def pool(c, oh, ter, sc):
     import props  # noqa: E402
 
     palms = [op.palm(c, v, 10.0 + 1.5 * v) for v in range(4)]
+    # Only a palm's trunk is solid: its fronds are leaves, not something to land on.
+    trunk = "Palm Trunk Solid"
+
+    def _trunk(bm):
+        op._cyl(bm, 0.0, 0.0, 0.0, 6.0, 0.55, 0.45, n=8)
+        return [(c.lib("oasis_bark", "wall"), _faces(bm, 0))]
+
+    c.proto(trunk, _trunk)
     for k in range(22):
         a = k * math.tau / 22
         r = oh.POOL[2] + 9.0 + 4.0 * math.sin(k * 2.1)
         x, y = oh.POOL[0] + r * math.cos(a), oh.POOL[1] + r * math.sin(a)
         if props.clear_of_road(c, x, y, 3.0):
             z = ground(c, ter, x, y, 1.0)
-            c.place(palms[k % 4], x, y, z - 0.2, rot=a * 3, scale=0.9 + 0.3 * math.sin(k), coll="Grove", role="both")
+            c.place(palms[k % 4], x, y, z - 0.2, rot=a * 3, scale=0.9 + 0.3 * math.sin(k), coll="Grove", role="visual")
+            c.place(trunk, x, y, z - 0.2, coll="Grove", role="collision")
     for f, off in ((0.38, 1.8), (0.66, -1.8)):
         i = int(f * (len(oh.SHORTCUT) - 1))
         x0, y0 = oh.SHORTCUT[i]
@@ -339,7 +464,8 @@ def pool(c, oh, ter, sc):
         t = f * (len(oh.SHORTCUT) - 1) - i
         x, y = lerp(x0, x1, t), lerp(y0, y1, t) + off
         z = ground(c, ter, x, y, 2.0)
-        c.place(palms[(i + 1) % 4], x, y, z - 0.2, rot=f * 9, scale=1.1, coll="Grove", role="both")
+        c.place(palms[(i + 1) % 4], x, y, z - 0.2, rot=f * 9, scale=1.1, coll="Grove", role="visual")
+        c.place(trunk, x, y, z - 0.2, coll="Grove", role="collision")
     # More palms back from the grove, either side of the shortcut.
     for k in range(14):
         t = (k + 0.5) / 14

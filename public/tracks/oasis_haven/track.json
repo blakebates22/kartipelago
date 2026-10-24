@@ -170,50 +170,49 @@
       "across": 0
     },
     {
-      "id": "zip_05",
-      "type": "zipper",
-      "at": 1142.6,
-      "across": 0
-    },
-    {
       "id": "ban_01",
       "type": "bananas",
       "at": 323.8,
-      "across": 0,
-      "count": 5,
-      "gap": 2.6
+      "across": 4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_02",
       "type": "bananas",
       "at": 606.9,
-      "across": 0,
-      "count": 5,
-      "gap": 2.6
+      "across": 4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_03",
       "type": "bananas",
       "at": 869.0,
-      "across": 0,
-      "count": 5,
-      "gap": 2.6
+      "across": 4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_04",
       "type": "bananas",
       "at": 1038.4,
-      "across": 0,
-      "count": 5,
-      "gap": 2.6
+      "across": 4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "ban_05",
       "type": "bananas",
       "at": 1535.1,
-      "across": -3,
-      "count": 5,
-      "gap": 2.6
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
     },
     {
       "id": "bal_01",
@@ -266,6 +265,13 @@
     },
     {
       "id": "bal_08",
+      "type": "balloon",
+      "at": 1142.6,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_09",
       "type": "balloon",
       "at": 1281.5,
       "across": 0,

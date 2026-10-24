@@ -46,7 +46,7 @@ describe("Oasis Haven", () => {
   it("loads cleanly under a turquoise sky; the spiral passes over itself; the grove has its twin gate", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
-    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(5);
+    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(4);
     expect(p.trackData.balloons?.length).toBeGreaterThanOrEqual(8);
     expect(p.look.skyDome?.top).toBe("#0f8fb0");
     const pts = p.trackData.points;

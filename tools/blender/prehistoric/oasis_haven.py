@@ -268,9 +268,10 @@ def main():
 
     c.start_line()
     S = lambda i: SEG[i]  # noqa: E731
-    # Zippers: onto the sweep round the pool, out of it, out of the camp, west under the
-    # arch, and onto the spiral.
-    for at in (S(4) + 6, S(8) + 6, S(13) + 4, S(19) + 4, S(24) + 40):
+    # Zippers: onto the sweep round the pool, out of it, out of the camp, and west under
+    # the arch. (Onto the spiral there's a blue balloon instead: a zipper there was too
+    # much speed.)
+    for at in (S(4) + 6, S(8) + 6, S(13) + 4, S(19) + 4):
         c.zipper(at, 0)
     for at, across in ((S(6) + 40, 0), (S(11) + 30, 0), (S(18) + 40, 0), (S(22) + 30, 0), (S(28) + 10, -3)):
         c.bananas(at, across, count=5, gap=2.6)
@@ -282,6 +283,7 @@ def main():
         (S(17) + 10, 0, "rainbow"),
         (S(21) + 10, -4, "red"),
         (S(21) + 10, 4, "blue"),
+        (S(24) + 40, 0, "blue"),
         (S(25) + 120, 0, "green"),
     ):
         c.balloon(at, across, col)
