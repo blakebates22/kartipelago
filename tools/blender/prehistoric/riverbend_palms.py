@@ -24,6 +24,9 @@
 # front of the waterfall (which now runs down), the sandstone feature in the valley's
 # own rock, and trees that don't twist.
 #
+# Version 2.4 (Oct 24): the footpath and the ridge kicker are taken out for now (they
+# weren't working well; Blake will come back to them).
+#
 # Saves tracks-src/riverbend_palms.blend and exports public/tracks/riverbend_palms/.
 
 import math
@@ -431,8 +434,7 @@ def main():
     # A dirt shortcut through the village, cutting the last bend.
     c.shortcut("Village Shortcut", [(x, y, road_z(x, y) - 0.05) for x, y in SHORTCUT],
                "valley_road", "dirt", width=8.0, shoulder_mat=("valley_grass", "dirt"))
-    # v2.2: a narrow footpath you can drive on at full speed (Blake's recorded line).
-    rv.footpath(c)
+    # (v2.2's footpath, rv.footpath, is out for now (Oct 24: Blake will come back to it).)
 
     c.terrain("Valley", -250, 250, -250, 250, 3.3, natural, classify)
     # The river: shallow (slow, but you can splash across) by the ford, deep (you're
@@ -446,7 +448,7 @@ def main():
     c.ribbon("River South", south, 56, WATER_Z, c.lib("valley_water", "deep_water"), steps=4)
     c.start_line()
     scenery(c)
-    rv.corner_kicker(c)
+    # (v2.2's kicker on the ridge corner, rv.corner_kicker, is out for now too.)
 
     L = c.length
     # Gameplay: zippers on the final straight and off the bridge, bananas on the
