@@ -7,7 +7,8 @@
  * (characters.json), and every look uses the same kart chassis and physics.
  */
 
-export type RacerId = "tiko" | "brakka" | "pebble" | "zephyr";
+export type RacerId =
+  "tiko" | "brakka" | "pebble" | "zephyr" | "raptor" | "rex" | "brachio" | "stego";
 
 export interface RacerDesign {
   id: RacerId;
@@ -74,7 +75,60 @@ export const DESIGNS: Record<RacerId, RacerDesign> = {
     plate: "#c8402c",
     call: { inst: "flute", notes: [83, 86, 91] },
   },
+  raptor: {
+    id: "raptor",
+    name: "Raptor",
+    species: "velociraptor",
+    title: "Island Dasher",
+    bio: "HAS NEVER ONCE TAKEN THE LONG WAY ROUND. HAS TAKEN SEVERAL LONG WAYS BACK.",
+    quote: "CATCH ME IF YOU CAN!",
+    color: "#f7931e",
+    plate: "#1fb0b0",
+    call: { inst: "xylophone", notes: [84, 88, 91] },
+  },
+  rex: {
+    id: "rex",
+    name: "Rex",
+    species: "tyrannosaurus",
+    title: "Volcano Champ",
+    bio: "TELLS EVERYONE HE INVENTED RACING. NOBODY CAN PROVE HE DIDN'T.",
+    quote: "BOW TO THE KING!",
+    color: "#e2551e",
+    plate: "#3f9a34",
+    call: { inst: "bassoon", notes: [50, 55, 59] },
+  },
+  brachio: {
+    id: "brachio",
+    name: "Brachio",
+    species: "brachiosaurus",
+    title: "Treetop Cruiser",
+    bio: "SEES EVERY SHORTCUT FROM UP THERE. STOPS TO SAY HELLO TO EVERYONE ON THE WAY.",
+    quote: "WHAT'S OVER THERE?",
+    color: "#2aa8b0",
+    plate: "#f26a2a",
+    call: { inst: "marimba", notes: [67, 72, 76] },
+  },
+  stego: {
+    id: "stego",
+    name: "Stego",
+    species: "stegosaurus",
+    title: "Plateback Rambler",
+    bio: "NEVER IN A HURRY. SOMEHOW NEVER LATE. THE PLATES DO MOST OF THE TALKING.",
+    quote: "RELAX. WE'LL GET THERE.",
+    color: "#5aa83a",
+    plate: "#f26a1a",
+    call: { inst: "pizz", notes: [57, 60, 64] },
+  },
 };
 
 /** The racers in menu order. */
-export const RACER_IDS: RacerId[] = ["tiko", "brakka", "pebble", "zephyr"];
+export const RACER_IDS: RacerId[] = [
+  "tiko",
+  "brakka",
+  "pebble",
+  "zephyr",
+  "raptor",
+  "rex",
+  "brachio",
+  "stego",
+];

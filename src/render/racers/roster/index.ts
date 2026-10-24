@@ -9,10 +9,18 @@ import { TIKO } from "./tiko";
 import { BRAKKA } from "./brakka";
 import { PEBBLE } from "./pebble";
 import { ZEPHYR } from "./zephyr";
+import { RAPTOR } from "./raptor";
+import { REX } from "./rex";
+import { BRACHIO } from "./brachio";
+import { STEGO } from "./stego";
 
 export const BUILDS: Record<RacerId, RacerBuild> = {
   tiko: TIKO as unknown as RacerBuild,
   brakka: BRAKKA as unknown as RacerBuild,
   pebble: PEBBLE as unknown as RacerBuild,
   zephyr: ZEPHYR as unknown as RacerBuild,
+  raptor: RAPTOR as unknown as RacerBuild,
+  rex: REX as unknown as RacerBuild,
+  brachio: BRACHIO as unknown as RacerBuild,
+  stego: STEGO as unknown as RacerBuild,
 };

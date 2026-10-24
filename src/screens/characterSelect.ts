@@ -28,7 +28,7 @@ import { modeSelect } from "./modeSelect";
 import { titleScreen } from "./title";
 
 /** Roster slots still to come (the locked tiles). */
-const LOCKED = 4;
+const LOCKED = 0;
 
 function shade(hex: string, k: number) {
   const n = parseInt(hex.slice(1), 16);

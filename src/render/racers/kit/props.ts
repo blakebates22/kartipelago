@@ -27,6 +27,29 @@ export function leaf(length: number, width: number, color: string, rib: string) 
   return b.build();
 }
 
+/**
+ * A feather card (both faces), base at the origin, pointing along +Y: slim, pointed,
+ * shading from `base` at the root to `tip`, a dark band across near the tip.
+ */
+export function feather(length: number, width: number, base: string, tip: string, band?: string) {
+  const pts: [number, number][] = [];
+  const n = 6;
+  const half = (t: number) =>
+    Math.sin(Math.min(1, t * 1.3) * Math.PI * 0.75 + 0.2) * width * (1 - t * 0.5);
+  for (let i = 0; i <= n; i++) pts.push([half(i / n), (i / n) * length]);
+  for (let i = n - 1; i > 0; i--) pts.push([-half(i / n), (i / n) * length]);
+  const a = new THREE.Color(base);
+  const b = new THREE.Color(tip);
+  const k = band ? new THREE.Color(band) : null;
+  return new Build()
+    .add(card(pts), (p) => {
+      const t = p.y / length;
+      if (k && t > 0.62 && t < 0.72) return k;
+      return a.clone().lerp(b, Math.min(1, Math.max(0, (t - 0.2) * 1.6)));
+    })
+    .build();
+}
+
 /** A rounded backpack with a flap, a pocket and buckles, its back against +Z. */
 export function backpack(
   w: number,
@@ -88,7 +111,7 @@ export function goggles(
 
 // ------------------------------------------------------------------ emblems
 
-export type Emblem = "palm" | "footprint" | "spiral" | "wing";
+export type Emblem = "palm" | "footprint" | "spiral" | "wing" | "claw" | "fang" | "flower" | "leaf";
 
 /** Paint a kart emblem (32x32): a symbol on a disc, with an outline. */
 export function emblemTexture(kind: Emblem, c: { disc: string; ink: string; rim: string }) {
@@ -125,6 +148,43 @@ export function emblemTexture(kind: Emblem, c: { disc: string; ink: string; rim:
       const r = 1.2 + t * 10.8;
       const w = 1.3 + t * 0.9;
       p.ellipse(16 + Math.cos(a) * r, 16 + Math.sin(a) * r, w, w, c.ink);
+    }
+  } else if (kind === "claw") {
+    // Three claw slashes, curving down to the right.
+    for (const dx of [-6, 0, 6])
+      for (let t = 0; t <= 1; t += 0.02) {
+        const x = 11 + dx + t * 9;
+        const y = 6 + t * 19 + Math.sin(t * Math.PI) * -2;
+        const w = 2.4 * (1 - t * 0.75) + 0.4;
+        p.ellipse(x, y, w, w, c.ink);
+      }
+  } else if (kind === "fang") {
+    // A big curved fang.
+    p.fill((x, y) => {
+      const t = (y - 5) / 22;
+      if (t < 0 || t > 1) return false;
+      const cx = 15 + t * t * 4;
+      return Math.abs(x - cx) <= 6.5 * (1 - t) + 0.6;
+    }, c.ink);
+  } else if (kind === "flower") {
+    // A five-petal island flower.
+    for (let k = 0; k < 5; k++) {
+      const a = -Math.PI / 2 + (k * Math.PI * 2) / 5;
+      p.ellipse(16 + Math.cos(a) * 6.5, 16 + Math.sin(a) * 6.5, 4.6, 4.6, c.ink);
+    }
+    p.ellipse(16, 16, 3, 3, c.disc);
+  } else if (kind === "leaf") {
+    // A broad leaf on a stem, its veins showing.
+    p.fill((x, y) => {
+      const t = (y - 5) / 20;
+      if (t < 0 || t > 1) return false;
+      return Math.abs(x - 16) <= Math.sin(t * Math.PI) * 8.5;
+    }, c.ink);
+    p.line(16, 25, 16, 29, 2, c.ink);
+    p.line(16, 8, 16, 25, 1.2, c.disc);
+    for (const y of [12, 16, 20]) {
+      p.line(16, y + 2, 11, y - 1, 1, c.disc);
+      p.line(16, y + 2, 21, y - 1, 1, c.disc);
     }
   } else {
     // A swept wing: three feathers fanning back from a point.

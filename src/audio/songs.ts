@@ -252,7 +252,16 @@ export const SELECT_CHORDS =
   "G:4 Em:4 C:4 D:4 G:4 Em:4 Am7:2 D7:2 G:4 " + "C:4 D:4 Bm:4 Em:4 C:4 D:4 G/B:2 C:2 D7:4";
 
 /** The racer layers of "Pick Your Racer", by racer id. */
-export const RACER_STEMS = ["tiko", "brakka", "pebble", "zephyr"] as const;
+export const RACER_STEMS = [
+  "tiko",
+  "brakka",
+  "pebble",
+  "zephyr",
+  "raptor",
+  "rex",
+  "brachio",
+  "stego",
+] as const;
 
 function select(): Song {
   const ch = chart(SELECT_CHORDS);
@@ -322,6 +331,33 @@ function select(): Song {
       part("clarinet", "pebble", 1, shift(mel, 0, -12)),
       part("horn", "pebble", 0.55, pads(ch, 55, 4, 0.5)),
       part("marimba", "pebble", 0.5, stabs(ch, [1, 3], 55, 0.4, 0.55)),
+      // Raptor: a quick xylophone an octave up, snappy pizzicato offbeats, woodblocks.
+      part("xylophone", "raptor", 0.9, shift(mel, 0, 12)),
+      part("pizz", "raptor", 0.45, stabs(ch, [0.5, 1.5, 2.5, 3.5], 67, 0.2, 0.5)),
+      ...drumParts("raptor", 0.6, drums("w.ww.w.W", KIT, 0.5, T)),
+      // Rex: the tune on horns, low and proud, a stomping kick and a bassoon under it.
+      part("horn", "rex", 1, shift(mel, 0, -12)),
+      part("bassoon", "rex", 0.6, thirds),
+      ...drumParts("rex", 0.7, drums("K.K...K.", KIT, 0.5, T)),
+      // Brachio: a gentle clarinet, celesta drifting over it.
+      part("clarinet", "brachio", 0.9, mel),
+      part("celesta", "brachio", 0.4, arpeggio(ch, 1, [0, 1, 2, 1], 67, 0.6, 0.45)),
+      // Stego: laid-back: the tune on marimba an octave down, a lazy walking pizz bass.
+      part("marimba", "stego", 0.9, shift(mel, 0, -12)),
+      part(
+        "pizz",
+        "stego",
+        0.7,
+        bassLine(
+          ch,
+          [
+            [0, 1.5, "R"],
+            [2, 1.5, "5"],
+          ],
+          43,
+          0.6,
+        ),
+      ),
     ],
   };
 }
