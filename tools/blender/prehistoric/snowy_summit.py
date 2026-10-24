@@ -695,9 +695,7 @@ def main():
     c.zipper(S(10) - 8, 0)  # (into the caves' rollers)
     c.zipper(S(17) + 4, 0)
     c.zipper(S(29) + 40, 0)
-    # ...and three more: half-way up the spiral (rocket up the second turn), onto the
-    # second treetop bridge, and on the sweep home across the ice.
-    c.zipper(S(22) + 170, 0)
+    # ...and two more: onto the second treetop bridge, and on the sweep home across the ice.
     c.zipper(S(25) + 4, 0)
     c.zipper(S(35) + 24, 0)
     for at, across in ((70, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(22) + 120, 0), (S(25) + 30, 0), (S(30), 0), (S(35) + 40, 0)):
@@ -716,6 +714,21 @@ def main():
         (S(35) + 80, 0, "red"),
     ):
         c.balloon(at, across, col)
+
+    # The spiral is a ride (src/game/loops.ts): in at its foot, the kart is carried up both
+    # turns at full zipper speed, steering only across the road, and out at the top.
+    ride = []
+    s, s1 = R(HELIX[0]) + 1.0, R(HELIX[1]) - 1.0
+    while s < s1:
+        q = c.at(s)
+        ride.append([round(v, 2) for v in c.game(q.p.x, q.p.y, q.p.z)] + [round(q.bank, 2)])
+        s += 2.0
+    q = c.at(s1)
+    ride.append([round(v, 2) for v in c.game(q.p.x, q.p.y, q.p.z)] + [round(q.bank, 2)])
+    # (The boost runs out 60 m from the top, and the ride eases down to 22 m/s, so you come
+    # out onto the rope bridge fast but in control.)
+    c.entity("ride", id="tree_spiral", points=ride, width=13.0, minSpeed=28.0, outSpeed=22.0, commit=0.0, boostMult=1.35,
+             boostSec=round((R(HELIX[1]) - R(HELIX[0]) - 60.0) / 28.0, 1), gravity=0.0)
 
     # A missed jump drops you into the hot water, the gorge or the crevasse: you're put
     # down on its landing.

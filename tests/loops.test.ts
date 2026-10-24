@@ -16,6 +16,7 @@ import {
   loopHeight,
   loopPitch,
   parseLoop,
+  parseRide,
   type LoopPath,
 } from "../src/game/loops";
 import { trackById } from "../src/game/tracks";
@@ -310,4 +311,50 @@ describe("Loop Lab", () => {
     expect(r.inverted).toBeGreaterThan(100);
     expect(r.worstAbove).toBeLessThan(2);
   }, 60000);
+});
+
+describe("rides (a road of any shape: the spiral up Snowy Summit's great tree)", () => {
+  // Two turns of a 26 m spiral climbing 15 m a turn, entered heading +x (kart heading
+  // π/2), turning left; then 20 m on straight.
+  const pts: number[][] = [];
+  const R = 26;
+  const turns = 2;
+  const len = 2 * Math.PI * R * turns;
+  for (let s = 0; s <= len; s += 2) {
+    const a = s / R;
+    pts.push([R * Math.sin(a), 3 + (15 * a) / (2 * Math.PI), R - R * Math.cos(a), 0]);
+  }
+  for (let s = 2; s <= 20; s += 2) pts.push([s, 3 + 15 * turns, 0, 0]);
+  const RIDE = parseRide({
+    id: "spiral",
+    points: pts,
+    width: 13,
+    minSpeed: 28,
+    commit: 0,
+    boostMult: 1.35,
+    boostSec: 14,
+    gravity: 0,
+  })!;
+
+  it("is built from its points: entry, exit and headings", () => {
+    expect(RIDE.length).toBeGreaterThan(len);
+    expect(RIDE.heading).toBeCloseTo(Math.PI / 2, 1);
+    expect(RIDE.exitHeading).toBeCloseTo(Math.PI / 2, 2);
+    expect(RIDE.exit.y).toBeCloseTo(3 + 15 * turns, 3);
+    const f = loopFrame(RIDE, 40);
+    expect(Math.hypot(f.nx, f.ny, f.nz)).toBeCloseTo(1, 6);
+    expect(f.ny).toBeGreaterThan(0.95);
+  });
+
+  it("carries a kart up both turns at full zipper speed and hands it back at the top", () => {
+    const k = approach(RIDE, 6, 0, 18);
+    const r = drive(RIDE, k, () => full, 30);
+    expect(r.entered).toBe(true);
+    expect(r.exited).toBe(true);
+    expect(k.y).toBeCloseTo(3 + 15 * turns, 0);
+    expect(k.speed).toBeGreaterThan(27);
+    // About 330 m at ~28 m/s: twelve seconds or so, not the twenty-odd it takes on foot.
+    expect(r.t).toBeLessThan(14);
+    expect(r.minSpeed).toBeGreaterThan(17);
+  });
 });

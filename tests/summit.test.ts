@@ -1,6 +1,6 @@
 // Snowy Summit Pass (Frostveil Peaks, course 2): it's in the world with its own theme
 // and music; it loads cleanly; the road really spirals up inside the great tree (each
-// turn passing over the one below); every jump has a catch; the geysers blow on a fixed
+// turn passing over the one below, and it's a ride at full zipper speed); every jump has a catch; the geysers blow on a fixed
 // beat of the race clock and throw a kart in the column into the air (keeping its speed);
 // the mammoths walk their path on the lake; and the AI drives it lap after lap.
 import { readFile } from "node:fs/promises";
@@ -9,6 +9,7 @@ import tuning from "../assets/data/tuning.json";
 import { SONGS } from "../src/audio/songs";
 import { geyserLifts, geyserPhase, inColumn, parseGeyser } from "../src/game/geyser";
 import { createHazards, type HazardConfig, type Spot } from "../src/game/hazards";
+import { createLoops } from "../src/game/loops";
 import { trackById } from "../src/game/tracks";
 import { WORLDS, trackTilesOf } from "../src/game/worlds";
 import type { GroundQuery } from "../src/physics/ground";
@@ -72,6 +73,12 @@ describe("Snowy Summit Pass", () => {
     // second above it, and some of the second the exit high above).
     expect(stacked * 4).toBeGreaterThan(150);
     expect(maxStack).toBeGreaterThanOrEqual(1);
+    // ...and it's a ride (src/game/loops.ts): carried up both turns at full zipper speed.
+    const ride = entitiesOf(p).find((e) => e.type === "ride");
+    expect(ride).toBeDefined();
+    expect((ride!.points as unknown[]).length).toBeGreaterThan(120);
+    expect(ride!.minSpeed as number).toBeGreaterThanOrEqual(26);
+    expect(createLoops(entitiesOf(p), 1)?.paths.some((q) => q.path && q.length > 300)).toBe(true);
   });
 
   it("has geysers on a fixed beat (one in the road that throws you up) and two mammoths", async () => {

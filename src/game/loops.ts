@@ -32,6 +32,17 @@
  * taken over here), and normal driving resumes at either end with the kart's speed,
  * position and heading carried across exactly.
  *
+ * Rides use the same machinery on a road of any shape (a "ride" entity: its centre line
+ * as points). The spiral up inside Snowy Summit's great tree is one: it takes the kart up
+ * both turns at full zipper speed, steering only across the road, like a coaster:
+ *
+ *   { "type": "ride", "id": "tree_spiral", "points": [[x, y, z, bank?], ...] (the road's
+ *     centre, entry to exit, every metre or two; bank in degrees, + = its right side
+ *     lower, as the Blender kit banks roads), "width": 13, "minSpeed": 28, "outSpeed": 22, "commit": 0,
+ *     "boostMult": 1.35, "boostSec": 12, "gravity": 0 }
+ *
+ * On a ride the kart's race position is where it really is (the road is the race line).
+ *
  * Everything here is pure (no three.js): the session, the AI test and the renderer
  * share it.
  */
@@ -76,6 +87,14 @@ export interface LoopPath extends LoopDef {
   /** Entry axes: forward and the driver's right (horizontal). */
   fwd: { x: number; z: number };
   right: { x: number; z: number };
+  /** The direction of travel out of the exit, and its axes (a loop's are its entry's). */
+  exitHeading: number;
+  exitFwd: { x: number; z: number };
+  exitRight: { x: number; z: number };
+  /** A ride's least speed as it comes out (it eases down to it), m/s. */
+  outSpeed?: number;
+  /** A ride: its centre line (and the distance along it at each point). */
+  path?: { x: Float64Array; y: Float64Array; z: Float64Array; s: Float64Array; bank: Float64Array };
 }
 
 /** Where the road is at a distance along it, and which way it faces. */
@@ -168,6 +187,9 @@ export function buildLoop(def: LoopDef): LoopPath {
     ds,
     fwd,
     right,
+    exitHeading: def.heading,
+    exitFwd: fwd,
+    exitRight: right,
     exit: {
       x: def.x + fwd.x * ea + right.x * def.offset,
       y: def.y + eb,
@@ -176,10 +198,134 @@ export function buildLoop(def: LoopDef): LoopPath {
   };
 }
 
+/** A ride from a track.json "ride" entity: a road of any shape, given by its centre line. */
+export function parseRide(e: Record<string, unknown>): LoopPath | undefined {
+  const raw = Array.isArray(e.points) ? (e.points as unknown[]) : [];
+  const pts = raw.filter(
+    (q): q is number[] => Array.isArray(q) && q.length >= 3 && q.every((v) => Number.isFinite(v)),
+  );
+  if (pts.length < 3) return undefined;
+  const n = pts.length;
+  const path = {
+    x: new Float64Array(n),
+    y: new Float64Array(n),
+    z: new Float64Array(n),
+    s: new Float64Array(n),
+    bank: new Float64Array(n),
+  };
+  for (let i = 0; i < n; i++) {
+    const [x, y, z] = pts[i]!;
+    path.x[i] = x!;
+    path.y[i] = y!;
+    path.z[i] = z!;
+    path.bank[i] = ((pts[i]![3] ?? 0) * Math.PI) / 180;
+    if (i)
+      path.s[i] =
+        path.s[i - 1]! + Math.hypot(x! - path.x[i - 1]!, y! - path.y[i - 1]!, z! - path.z[i - 1]!);
+  }
+  const heading = Math.atan2(path.x[1]! - path.x[0]!, path.z[1]! - path.z[0]!);
+  const exitHeading = Math.atan2(path.x[n - 1]! - path.x[n - 2]!, path.z[n - 1]! - path.z[n - 2]!);
+  const axes = (h: number) => ({
+    fwd: { x: Math.sin(h), z: Math.cos(h) },
+    right: { x: -Math.cos(h), z: Math.sin(h) },
+  });
+  const a = axes(heading);
+  const b = axes(exitHeading);
+  return {
+    id: typeof e.id === "string" ? e.id : "ride",
+    x: path.x[0]!,
+    y: path.y[0]!,
+    z: path.z[0]!,
+    heading,
+    radius: 0,
+    ramp: 0,
+    offset: 0,
+    width: clamp(num(e.width, 14), 4, 60),
+    minSpeed: clamp(num(e.minSpeed, 24), 0, 100),
+    commit: Math.max(0, num(e.commit, 0)),
+    boostMult: Math.max(0, num(e.boostMult, 0)),
+    boostSec: Math.max(0, num(e.boostSec, 0)),
+    gravity: Math.max(0, num(e.gravity, 0)),
+    outSpeed: clamp(num(e.outSpeed, num(e.minSpeed, 24)), 0, 100),
+    length: path.s[n - 1]!,
+    k0: 0,
+    a: new Float64Array(0),
+    b: new Float64Array(0),
+    ds: 1,
+    fwd: a.fwd,
+    right: a.right,
+    exitHeading,
+    exitFwd: b.fwd,
+    exitRight: b.right,
+    exit: { x: path.x[n - 1]!, y: path.y[n - 1]!, z: path.z[n - 1]! },
+    path,
+  };
+}
+
+/** A ride's frame at distance s along its centre line (0 < s < length). */
+function rideFrame(p: LoopPath, s: number, f: LoopFrame): LoopFrame {
+  const P = p.path!;
+  const n = P.s.length;
+  let lo = 0;
+  let hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (P.s[mid]! <= s) lo = mid;
+    else hi = mid;
+  }
+  const t = (s - P.s[lo]!) / Math.max(1e-9, P.s[hi]! - P.s[lo]!);
+  f.px = P.x[lo]! + (P.x[hi]! - P.x[lo]!) * t;
+  f.py = P.y[lo]! + (P.y[hi]! - P.y[lo]!) * t;
+  f.pz = P.z[lo]! + (P.z[hi]! - P.z[lo]!) * t;
+  // Tangent: across the neighbouring points (smooth from one to the next).
+  const a = Math.max(0, lo - 1);
+  const b = Math.min(n - 1, hi + 1);
+  let tx = P.x[b]! - P.x[a]!;
+  let ty = P.y[b]! - P.y[a]!;
+  let tz = P.z[b]! - P.z[a]!;
+  const tl = Math.hypot(tx, ty, tz) || 1;
+  tx /= tl;
+  ty /= tl;
+  tz /= tl;
+  // Up: the world's up, square to the road.
+  let nx = -ty * tx;
+  let ny = 1 - ty * ty;
+  let nz = -ty * tz;
+  const nl = Math.hypot(nx, ny, nz) || 1;
+  nx /= nl;
+  ny /= nl;
+  nz /= nl;
+  let bx = ty * nz - tz * ny;
+  let by = tz * nx - tx * nz;
+  let bz = tx * ny - ty * nx;
+  // The road's bank: turn the across and up axes about the tangent (right side lower).
+  const th = P.bank[lo]! + (P.bank[hi]! - P.bank[lo]!) * t;
+  if (th !== 0) {
+    const c = Math.cos(th);
+    const sn = Math.sin(th);
+    const nb = [nx * c + bx * sn, ny * c + by * sn, nz * c + bz * sn];
+    [bx, by, bz] = [bx * c - nx * sn, by * c - ny * sn, bz * c - nz * sn];
+    [nx, ny, nz] = nb as [number, number, number];
+  }
+  f.tx = tx;
+  f.ty = ty;
+  f.tz = tz;
+  f.nx = nx;
+  f.ny = ny;
+  f.nz = nz;
+  f.bx = bx;
+  f.by = by;
+  f.bz = bz;
+  return f;
+}
+
 /** The road's frame at distance s (beyond either end it carries on straight). */
 export function loopFrame(p: LoopPath, s: number, out?: LoopFrame): LoopFrame {
   const f = out ?? ({} as LoopFrame);
-  const { fwd, right } = p;
+  const start = s <= 0;
+  const fwd = start ? p.fwd : p.exitFwd;
+  const right = start ? p.right : p.exitRight;
+  if (s > 0 && s < p.length && p.path) return rideFrame(p, s, f);
   if (s <= 0 || s >= p.length) {
     const o = s <= 0 ? { x: p.x, y: p.y, z: p.z } : p.exit;
     const along = s <= 0 ? s : s - p.length;
@@ -197,6 +343,7 @@ export function loopFrame(p: LoopPath, s: number, out?: LoopFrame): LoopFrame {
     f.bz = right.z;
     return f;
   }
+  const { fwd: lf, right: lr } = p;
   const at = s / p.ds;
   const i = Math.min(SAMPLES - 1, Math.floor(at));
   const t = at - i;
@@ -208,21 +355,21 @@ export function loopFrame(p: LoopPath, s: number, out?: LoopFrame): LoopFrame {
   const ca = Math.cos(phi);
   const sb = Math.sin(phi);
   const cc = (p.offset * shiftRate(u)) / p.length;
-  f.px = p.x + fwd.x * la + right.x * lc;
+  f.px = p.x + lf.x * la + lr.x * lc;
   f.py = p.y + lb;
-  f.pz = p.z + fwd.z * la + right.z * lc;
+  f.pz = p.z + lf.z * la + lr.z * lc;
   // Tangent: forward·cos φ + up·sin φ + right·(shift rate).
-  let tx = fwd.x * ca + right.x * cc;
+  let tx = lf.x * ca + lr.x * cc;
   let ty = sb;
-  let tz = fwd.z * ca + right.z * cc;
+  let tz = lf.z * ca + lr.z * cc;
   const tl = Math.hypot(tx, ty, tz);
   tx /= tl;
   ty /= tl;
   tz /= tl;
   // Normal = right × tangent (up at the entry, down at the top), then across = T × N.
-  let nx = 0 * tz - right.z * ty;
-  let ny = right.z * tx - right.x * tz;
-  let nz = right.x * ty - 0 * tx;
+  let nx = 0 * tz - lr.z * ty;
+  let ny = lr.z * tx - lr.x * tz;
+  let nz = lr.x * ty - 0 * tx;
   const nl = Math.hypot(nx, ny, nz);
   nx /= nl;
   ny /= nl;
@@ -296,6 +443,8 @@ const EDGE = 1.1;
 const ASSIST = 45;
 /** Safety net: a ride this long ends at the far end. */
 const MAX_RIDE = 25;
+/** A ride eases down to its outSpeed over this many metres before its exit. */
+const OUT_EASE = 45;
 /** Capture: how far from the line across, above or below, and how far off line. */
 const CATCH_SIDE = 1.5;
 const CATCH_HEIGHT = 2.5;
@@ -389,9 +538,19 @@ export function loopEntities(entities: unknown[]): LoopDef[] {
 
 /** Loops for a track's entities, for `karts` karts; undefined when it has none. */
 export function createLoops(entities: unknown[], karts: number): LoopSystem | undefined {
-  const defs = loopEntities(entities);
-  if (!defs.length) return undefined;
-  return createLoopSystem(defs.map(buildLoop), karts);
+  const paths = [...loopEntities(entities).map(buildLoop), ...rideEntities(entities)];
+  if (!paths.length) return undefined;
+  return createLoopSystem(paths, karts);
+}
+
+export function rideEntities(entities: unknown[]): LoopPath[] {
+  return entities
+    .filter(
+      (e): e is Record<string, unknown> =>
+        typeof e === "object" && e !== null && (e as { type?: unknown }).type === "ride",
+    )
+    .map(parseRide)
+    .filter((p): p is LoopPath => p !== undefined);
 }
 
 export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
@@ -432,7 +591,7 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
     k.y = fr.py;
     k.z = fr.pz + fr.bz * r.d;
     // Past either end the road is straight along the entry heading.
-    const base = p.heading + (r.dir > 0 ? 0 : Math.PI);
+    const base = r.dir > 0 ? p.exitHeading : p.heading + Math.PI;
     k.heading = wrap(base + r.rel);
     k.velAngle = k.heading;
     k.nx = 0;
@@ -454,8 +613,10 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
       for (const dir of [1, -1]) {
         const g = dir > 0 ? { x: p.x, y: p.y, z: p.z } : p.exit;
         // Gate normal points into the loop.
-        const nx = p.fwd.x * dir;
-        const nz = p.fwd.z * dir;
+        const gf = dir > 0 ? p.fwd : p.exitFwd;
+        const gr = dir > 0 ? p.right : p.exitRight;
+        const nx = gf.x * dir;
+        const nz = gf.z * dir;
         const pd = (before.x - g.x) * nx + (before.z - g.z) * nz;
         const qd = (k.x - g.x) * nx + (k.z - g.z) * nz;
         if (!(pd < 0 && qd >= 0)) continue;
@@ -463,10 +624,10 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
         const ax = before.x + (k.x - before.x) * t;
         const ay = before.y + (k.y - before.y) * t;
         const az = before.z + (k.z - before.z) * t;
-        const lat = (ax - g.x) * p.right.x + (az - g.z) * p.right.z;
+        const lat = (ax - g.x) * gr.x + (az - g.z) * gr.z;
         if (Math.abs(lat) > p.width / 2 + CATCH_SIDE) continue;
         if (Math.abs(ay - g.y) > CATCH_HEIGHT) continue;
-        const rel = wrap(k.heading - (p.heading + (dir > 0 ? 0 : Math.PI)));
+        const rel = wrap(k.heading - (dir > 0 ? p.heading : p.exitHeading + Math.PI));
         if (Math.abs(rel) > CATCH_ANGLE) continue;
         const r = rides[i]!;
         r.loop = li;
@@ -518,8 +679,15 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
       // Gravity along the road: slower going up, faster coming down.
       k.speed -= p.gravity * fr.ty * r.dir * dt;
       // Past the commit point the loop won't let you stall: it carries you round.
-      if (r.travelled > p.commit && k.speed < p.minSpeed)
-        k.speed = Math.min(p.minSpeed, k.speed + ASSIST * dt);
+      // (A ride eases off to outSpeed over its last OUT_EASE metres, so you come out
+      // under control.)
+      const left = r.dir > 0 ? p.length - r.s : r.s;
+      const least =
+        p.outSpeed !== undefined && left < OUT_EASE
+          ? p.outSpeed + (p.minSpeed - p.outSpeed) * (left / OUT_EASE)
+          : p.minSpeed;
+      if (r.travelled > p.commit && k.speed < least)
+        k.speed = Math.min(least, k.speed + ASSIST * dt);
       // Steering turns the kart across the road; let go and it lines back up.
       r.rel -= clamp(steer, -1, 1) * STEER_RATE * dt;
       if (Math.abs(steer) < 0.1) r.rel *= Math.exp(-CENTRE * dt);
@@ -544,6 +712,7 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
       const r = rides[i]!;
       if (r.loop < 0) return { x: k.x, y: k.y, z: k.z };
       const p = paths[r.loop]!;
+      if (p.path) return { x: k.x, y: k.y, z: k.z };
       const u = clamp(r.s / p.length, 0, 1);
       return {
         x: p.x + (p.exit.x - p.x) * u + p.right.x * r.d,
@@ -649,8 +818,10 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
         const p = paths[li]!;
         dir = r.lastDir;
         const g = dir > 0 ? p.exit : { x: p.x, y: p.y, z: p.z };
-        const along = ((k.x - g.x) * p.fwd.x + (k.z - g.z) * p.fwd.z) * dir;
-        const lat = (k.x - g.x) * p.right.x + (k.z - g.z) * p.right.z;
+        const gf = dir > 0 ? p.exitFwd : p.fwd;
+        const gr = dir > 0 ? p.exitRight : p.right;
+        const along = ((k.x - g.x) * gf.x + (k.z - g.z) * gf.z) * dir;
+        const lat = (k.x - g.x) * gr.x + (k.z - g.z) * gr.z;
         hold = along <= cam.distance + 2;
         if (along < -1 || Math.abs(lat) > p.width || (!hold && (!cam.keep || along > 80))) {
           r.last = -1;
