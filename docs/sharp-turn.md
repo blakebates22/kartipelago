@@ -1,9 +1,11 @@
 # The sharp turn
 
 Hold the brake in a drift while steering into it, and the kart pivots into a much tighter
-arc and rolls up onto its outside wheels. The brake still slows you, so it's a trade:
-you get the tight line and give up speed. Let go of the brake and the drift carries on
-as before. It uses the existing buttons: drift (Space / Shift, or a bumper), brake (S / ↓,
+arc and rolls up onto its outside wheels: a really tight drift on two wheels, that you
+can keep driving round as long as you like. The brake doesn't stop you here. It eases you
+down to a holding speed (`sharpHoldSpeed`, 85% of top speed) and keeps you there while
+you're on the throttle. The trade is the drift's speed bonus, which fades out while
+you're up on two wheels. Let go of the brake and you widen smoothly back into the drift. It uses the existing buttons: drift (Space / Shift, or a bumper), brake (S / ↓,
 or the left trigger / X) and steer.
 
 This is our own model, built from Blake's description of how the move feels and the
@@ -38,11 +40,14 @@ All of these, every physics step:
 
 Other parts:
 
-- `sharpMinRadius` (7 m) is the tightest arc it can carve, so it can't pivot on the spot.
+- `sharpHoldSpeed` (0.85): the speed it settles to, as a share of top speed (after any
+  banana slow-down). Above it, the brake eases you down to it at the drift's brake rate;
+  below it, the throttle brings you back up to it. Off the throttle, you slow as usual.
+- `sharpMinRadius` (9 m) is the tightest arc it can carve, so it can't pivot on the spot.
   Better handling characters get a smaller one, like their other arcs.
 - The slide angle deepens from `driftOffsetDeg` (40°) to `sharpOffsetDeg` (45°).
-- The drift's top-speed bonus (`driftSpeedMult`) and the spin-out on long hard
-  countersteer are unchanged.
+- The drift's top-speed bonus (`driftSpeedMult`) fades out with the hold, and comes back
+  as you let go. The spin-out on long hard countersteer is unchanged.
 
 ## The roll
 
@@ -62,11 +67,11 @@ its speed bonus). Measured over 0.4 s.
 | 1 steer                  | 22        | 22       | 13.8  | 92       | 0      | 13.8, 92              |
 | 2 brake + steer          | 22        | 5.8      | 3.8   | 205      | 0      | 7.3, 108              |
 | 3 drift                  | 25.3      | 25.3     | 29.9  | 49       | 0      | 29.9, 49              |
-| 4 drift + brake (sharp)  | 25.3      | 19.7     | 11.9  | 108      | 19.6   | 21.6, 60              |
+| 4 drift + brake (sharp)  | 25.3      | 19.7     | 12.0  | 107      | 19.6   | 21.6, 60              |
 | 5 sharp, half stick      | 25.3      | 19.7     | 14.3  | 90       | 19.6   | 25.5, 50              |
 | 6 drift + brake, counter | 25.3      | 19.7     | 65.3  | 20       | 0      | 65.3, 20              |
 | 7 sharp, then brake off  | 21.1      | 25.3     | 16.8  | 82       | 18.9   | 27.1, 51              |
-| 8 sharp held to a crawl  | 25.3      | 0.4      | 5.4   | 78       | 20     | 9.0, 47               |
+| 8 sharp held 3 s         | 25.3      | 18.7     | 9.4   | 117      | 20     | 9.0, 47 (brakes to 0) |
 
 The tests also check that it's the same at 60, 120 and 240 Hz, that nothing happens in the
 air, that countersteering with the brake doesn't spin you, and that `sharpTurn: false`

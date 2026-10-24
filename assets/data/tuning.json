@@ -92,10 +92,11 @@
     "steerCoefDriftBrake": 18,
     "sharpMinSpeed": 8,
     "sharpMinSteer": 0.2,
-    "sharpMinRadius": 7,
+    "sharpMinRadius": 9,
     "sharpResponse": 10,
     "sharpRelease": 8,
     "sharpOffsetDeg": 45,
+    "sharpHoldSpeed": 0.85,
     "sharpLeanDeg": 20,
     "sharpLeanRate": 250,
     "sharpLeanReturn": 8

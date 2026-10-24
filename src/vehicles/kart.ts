@@ -175,6 +175,9 @@ export interface KartConfig extends ZipperConfig, BananaConfig {
   sharpRelease: number;
   /** Slide angle (body to path) at full sharp turn, degrees (a drift's is driftOffsetDeg). */
   sharpOffsetDeg: number;
+  /** Holding speed on two wheels, as a share of top speed: braking in a sharp turn eases
+   * you down to it and holds it there (0: the brake just brakes, as it used to). */
+  sharpHoldSpeed: number;
   /** Roll onto the outside wheels at full sharp turn, degrees (visual only). */
   sharpLeanDeg: number;
   /** Fastest the roll builds, degrees per second. */
@@ -432,9 +435,12 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   updateDrift(s, input, cfg, dt);
   updateTapping(s, input, cfg, dt);
   const drifting = s.driftDir !== 0;
+  const offsetModel = cfg.driftModel >= 1;
   // Drifting is the fast way round: it raises top speed, and so does a boost pad. When
   // either ends, the extra speed bleeds off at the drag rate rather than vanishing.
-  const mult = Math.max(drifting ? cfg.driftSpeedMult : 1, s.boostTime > 0 ? s.boostMult : 1);
+  // (On two wheels in a sharp turn the drift's speed bonus fades out: that's its price.)
+  const driftMult = 1 + (cfg.driftSpeedMult - 1) * (1 - Math.min(1, s.sharp));
+  const mult = Math.max(drifting ? driftMult : 1, s.boostTime > 0 ? s.boostMult : 1);
   // Tapping stacks on top of drifting and boosts.
   const tapMult = 1 + cfg.tapBonus * s.tapCharge;
   // Bananas raise the throttle's top speed and acceleration (never a zipper's push).
@@ -460,12 +466,39 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
   s.steerSmooth +=
     (input.steer - s.steerSmooth) * (1 - Math.exp(-dt / Math.max(1e-3, cfg.driftSteerSmooth)));
 
+  // The sharp turn takes hold while you brake in a drift, steering into it, fast enough
+  // and on the ground; it lets go when any of those stops.
+  const wantSharp =
+    cfg.sharpTurn &&
+    drifting &&
+    offsetModel &&
+    s.grounded &&
+    input.brake > 0 &&
+    input.steer * s.driftDir >= cfg.sharpMinSteer &&
+    s.speed >= cfg.sharpMinSpeed;
+  const sharpGoal = wantSharp ? Math.min(1, input.brake) : 0;
+  const sharpRate = sharpGoal > s.sharp ? cfg.sharpResponse : cfg.sharpRelease;
+  s.sharp += (sharpGoal - s.sharp) * (1 - Math.exp(-sharpRate * dt));
+  if (s.sharp < 1e-3 && sharpGoal === 0) s.sharp = 0;
+  const sharpBrake = wantSharp && cfg.sharpHoldSpeed > 0;
+
   // Longitudinal: throttle, brake, reverse, coast. None of it applies in the air:
   // speed (including drift and boost speed) carries through a jump untouched.
   // Air allows only a little steering; a crash takes some away until it wears off.
   const steer = (s.grounded ? 1 : cfg.airSteer) * s.controlScale;
   if (!s.grounded) {
     // no change
+  } else if (sharpBrake) {
+    // The sharp turn: braking in a drift, steering into it, doesn't brake to a stop. It
+    // eases you down to its holding speed and keeps you there (the throttle brings you
+    // back up to it), so you can carve a tight drift on two wheels as long as you like.
+    const hold = cfg.topSpeed * banana.top * cfg.sharpHoldSpeed;
+    s.speed =
+      s.speed > hold
+        ? moveToward(s.speed, hold, cfg.brake * input.brake * cfg.driftBrakeDecel * dt)
+        : input.throttle > 0
+          ? Math.min(hold, s.speed + cfg.accel * banana.accel * input.throttle * dt)
+          : moveToward(s.speed, 0, cfg.drag * dt);
   } else if (input.brake > 0 && s.speed > REVERSE_BELOW) {
     // Braking mid-drift (offset model) is gentler: it's for tightening the line.
     const share = drifting && cfg.driftModel >= 1 ? cfg.driftBrakeDecel : 1;
@@ -496,22 +529,6 @@ export function stepKart(s: KartState, input: InputState, cfg: KartConfig, dt: n
     s.speed = moveToward(s.speed, 0, cfg.drag * dt);
   }
   const pathBefore = s.velAngle;
-
-  const offsetModel = cfg.driftModel >= 1;
-  // The sharp turn takes hold while you brake in a drift, steering into it, fast enough
-  // and on the ground; it lets go when any of those stops.
-  const wantSharp =
-    cfg.sharpTurn &&
-    drifting &&
-    offsetModel &&
-    s.grounded &&
-    input.brake > 0 &&
-    input.steer * s.driftDir >= cfg.sharpMinSteer &&
-    s.speed >= cfg.sharpMinSpeed;
-  const sharpGoal = wantSharp ? Math.min(1, input.brake) : 0;
-  const sharpRate = sharpGoal > s.sharp ? cfg.sharpResponse : cfg.sharpRelease;
-  s.sharp += (sharpGoal - s.sharp) * (1 - Math.exp(-sharpRate * dt));
-  if (s.sharp < 1e-3 && sharpGoal === 0) s.sharp = 0;
 
   if (drifting && offsetModel) {
     // The stick steers the body, as a curvature, so a given stick position carves the

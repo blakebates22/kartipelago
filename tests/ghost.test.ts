@@ -264,7 +264,9 @@ describe("ghost playback", () => {
     const g = ghostOf(rec.samples);
     const out = blankSample();
     expect(Math.min(...truth.map((p) => p.roll))).toBeLessThan(-0.3); // it did roll
-    for (const p of truth.slice(1, -1)) {
+    // (Up to the last snapshot: after it, the run is over and the ghost stops.)
+    const end = g.samples[g.samples.length - 1]!.t;
+    for (const p of truth.slice(1).filter((p) => p.t <= end)) {
       sampleGhost(g, p.t, out);
       // (Within 8 cm and 3.5 degrees of roll, even where the brake bites mid-arc.)
       expect(Math.hypot(out.x - p.x, out.z - p.z)).toBeLessThan(0.08);

@@ -94,6 +94,7 @@ const cfg: KartConfig = {
   sharpResponse: 10,
   sharpRelease: 8,
   sharpOffsetDeg: 45,
+  sharpHoldSpeed: 0.85,
   sharpLeanDeg: 20,
   sharpLeanRate: 250,
   sharpLeanReturn: 8,

@@ -101,10 +101,7 @@ const cases = {
     { sec: 0.3, input: { drift: true, brake: 1, steer: R } },
     { sec: MEASURE, input: { drift: true, steer: R } },
   ]),
-  "8 sharp held to a crawl": run([
-    ...enterDrift,
-    { sec: 3, input: { drift: true, brake: 1, steer: R } },
-  ]),
+  "8 sharp held 3 s": run([...enterDrift, { sec: 3, input: { drift: true, brake: 1, steer: R } }]),
 };
 
 describe("the sharp turn (drift + brake + steer)", () => {
@@ -166,18 +163,23 @@ describe("the sharp turn (drift + brake + steer)", () => {
     expect(Math.abs(c.s.sharpRoll) * DEG).toBeLessThan(5);
   });
 
-  it("held on, the brake slows the kart until the drift ends, then everything settles", () => {
-    const c = cases["8 sharp held to a crawl"];
-    expect(c.s.driftDir).toBe(0);
-    expect(c.s.sharp).toBeLessThan(0.05);
-    expect(Math.abs(c.s.sharpRoll) * DEG).toBeLessThan(1);
+  it("held on, it carves a tight drift on two wheels at its holding speed, as long as you like", () => {
+    const c = cases["8 sharp held 3 s"];
+    const hold = base.topSpeed * base.sharpHoldSpeed;
+    expect(c.s.driftDir).toBe(1);
+    expect(Math.abs(c.s.speed - hold)).toBeLessThan(0.3);
+    expect(c.s.sharp).toBeGreaterThan(0.95);
+    expect(Math.abs(c.s.sharpRoll) * DEG).toBeGreaterThan(base.sharpLeanDeg * 0.95);
+    expect(c.radius).toBeLessThan(cases["3 drift"].radius / 2.5);
     expect(c.trace.every((t) => t.spinTime === 0)).toBe(true);
-    // The sharp turn only ever held above its minimum speed.
-    for (let i = 1; i < c.trace.length; i++) {
-      const t = c.trace[i]!;
-      if (t.sharp > c.trace[i - 1]!.sharp)
-        expect(t.speed).toBeGreaterThanOrEqual(base.sharpMinSpeed - 0.5);
-    }
+  });
+
+  it("lifting off the throttle in it still slows you (it holds speed, it doesn't add it)", () => {
+    const c = run([
+      ...enterDrift,
+      { sec: 2, input: { drift: true, brake: 1, steer: R, throttle: 0 } },
+    ]);
+    expect(c.s.speed).toBeLessThan(base.topSpeed * base.sharpHoldSpeed - 5);
   });
 
   it("is the same at any physics rate", () => {
