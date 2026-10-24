@@ -885,7 +885,7 @@ function frostveil(): Song {
   return {
     id: "frostveil",
     title: "Frostveil Citadel",
-    role: "Frostveil Peaks",
+    role: "Snowy Peaks",
     bpm: 138,
     beats: 64,
     loop: true,
@@ -985,7 +985,7 @@ function summit(): Song {
   return {
     id: "summit",
     title: "Snowy Summit Pass",
-    role: "Frostveil Peaks",
+    role: "Snowy Peaks",
     bpm: 152,
     beats: 128,
     loop: true,
@@ -1087,7 +1087,7 @@ function hearthglow(): Song {
   return {
     id: "hearthglow",
     title: "Hearthglow Hollow",
-    role: "Frostveil Peaks",
+    role: "Snowy Peaks",
     bpm: 160,
     beats: 128,
     loop: true,
@@ -1190,7 +1190,7 @@ function aurora(): Song {
   return {
     id: "aurora",
     title: "Aurora Rift",
-    role: "Frostveil Peaks",
+    role: "Snowy Peaks",
     bpm: 148,
     beats: 128,
     loop: true,

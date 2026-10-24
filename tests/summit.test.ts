@@ -1,4 +1,4 @@
-// Snowy Summit Pass (Frostveil Peaks, course 2): it's in the world with its own theme
+// Snowy Summit Pass (Snowy Peaks, course 2): it's in the world with its own theme
 // and music; it loads cleanly; the road really spirals up inside the great tree (each
 // turn passing over the one below, and it's a ride at full zipper speed); every jump has a catch; the geysers blow on a fixed
 // beat of the race clock and throw a kart in the column into the air (keeping its speed);
@@ -27,7 +27,7 @@ type Entity = { type: string } & Record<string, unknown>;
 const entitiesOf = (p: { meta: { entities?: unknown[] } }) => (p.meta.entities ?? []) as Entity[];
 
 describe("Snowy Summit Pass", () => {
-  it("is Frostveil Peaks' second course, with its own bright theme and music", () => {
+  it("is Snowy Peaks' second course, with its own bright theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks.slice(0, 2)).toEqual(["frostveil_citadel", id]);
     expect(trackTilesOf(w)).toHaveLength(4);

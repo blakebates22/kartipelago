@@ -162,7 +162,7 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak_v2" },
   },
-  // Frostveil Peaks (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
+  // Snowy Peaks (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
   {
     id: "frostveil_citadel",
     name: "Frostveil Citadel",

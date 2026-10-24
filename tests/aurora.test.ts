@@ -1,4 +1,4 @@
-// Aurora Rift (Frostveil Peaks, course 4): it's in the world with its own night theme
+// Aurora Rift (Snowy Peaks, course 4): it's in the world with its own night theme
 // (with the aurora) and music; it loads cleanly with the Rift Loop, its living cavern
 // (falling icicles, cracking lake ice, flaring crystals, ice motes) and both shortcuts'
 // twin gates; the icicles and thin ice keep to their rules; either shortcut counts as
@@ -54,7 +54,7 @@ const THIN_ICE: [number, number, number][] = [
 ];
 
 describe("Aurora Rift", () => {
-  it("is Frostveil Peaks' fourth and last course, with its own night theme and music", () => {
+  it("is Snowy Peaks' fourth and last course, with its own night theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks).toEqual(["frostveil_citadel", "snowy_summit", "hearthglow_hollow", id]);
     const tiles = trackTilesOf(w);

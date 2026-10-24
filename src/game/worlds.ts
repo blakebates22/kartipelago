@@ -40,7 +40,7 @@ export const WORLDS: WorldEntry[] = [
   },
   {
     id: "frostveil",
-    name: "Frostveil Peaks",
+    name: "Snowy Peaks",
     tagline: "A lost citadel",
     description:
       "Snowbound mountains where an ancient civilization built temples, bridges and fortresses into the peaks.",

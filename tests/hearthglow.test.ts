@@ -1,4 +1,4 @@
-// Hearthglow Hollow (Frostveil Peaks, course 3): it's in the world with its own evening
+// Hearthglow Hollow (Snowy Peaks, course 3): it's in the world with its own evening
 // theme (with stars) and music; it loads cleanly; its moving parts are where they should
 // be and keep to the race clock (snowballs and the sleigh cross the road, presents sit
 // by it, the bell swings); a snowball or the sleigh is a solid bump, a present bursts (for a boost) and
@@ -58,7 +58,7 @@ const SHORTCUT: [number, number, number][] = [
 ];
 
 describe("Hearthglow Hollow", () => {
-  it("is Frostveil Peaks' third course, with its own evening theme and music", () => {
+  it("is Snowy Peaks' third course, with its own evening theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks.slice(0, 3)).toEqual(["frostveil_citadel", "snowy_summit", id]);
     const tiles = trackTilesOf(w);
