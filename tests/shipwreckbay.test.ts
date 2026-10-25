@@ -1,18 +1,18 @@
-// Shipwreck Bay, the beach world's second course (working name), a greybox
-// (tools/blender/prehistoric/shipwreck_bay.py): the rolling pier, through the galleon's
+// Shipwreck Bay (greybox, v2): the beach world's second course before its paint (kept aside,
+// tools/blender/prehistoric/shipwreck_bay_v2.py): the rolling pier, through the galleon's
 // hold, up the fallen mast and its jump over the river mouth (a lap around 28 s).
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { SURFACES, loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "shipwreck_bay";
+const id = "shipwreck_bay_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Shipwreck Bay (greybox)", () => {
+describe("Shipwreck Bay (greybox, v2)", () => {
   it("loads cleanly, with its jump", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);

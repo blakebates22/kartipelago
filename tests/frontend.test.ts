@@ -239,6 +239,7 @@ describe("worlds", () => {
       "celestial_dragon_festival_v2",
       "coral_cove_v2",
       "coral_cove",
+      "shipwreck_bay_v2",
       "shipwreck_bay",
       "volcano_isle",
       "splash_lagoon",

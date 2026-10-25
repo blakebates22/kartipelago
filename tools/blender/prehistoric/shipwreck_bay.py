@@ -1,6 +1,8 @@
-# Shipwreck Bay: the beach world's second course, a greybox to drive before it's dressed
-# (?track=shipwreck_bay; working name). Replaces the Sunset Reef greybox (Blake, Oct 25:
-# it played like a longer Coral Cove; this one has its own pieces).
+# Shipwreck Bay: the beach world's second course, painted (the Tropic Isles): a pirate
+# cove at golden hour. The greybox's lap exactly (kept as shipwreck_bay_v2): the same
+# roads, heights, surfaces, pier humps, mast jump, zippers and checkpoints; only the look
+# is new (wreck_scenery.py, tropic_textures.py). The greybox replaced the Sunset Reef one
+# (Blake, Oct 25: it played like a longer Coral Cove; this one has its own pieces).
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/shipwreck_bay.py      (the bpy module)
@@ -24,6 +26,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
+
+import wreck_scenery  # noqa: E402
 
 TRACK_ID = "shipwreck_bay"
 
@@ -173,6 +177,15 @@ def river_d(x, y):
     return min(_seg_d(x, y, a, b) for a, b in zip(RIVER, RIVER[1:])) - RIVER_HALF
 
 
+# The terrain's square; the land sinks into the sea over its outer 50 m (an island).
+BOUNDS = (-160, 360, -260, 240)
+
+
+def island_d(x, y):
+    x0, x1, y0, y1 = BOUNDS
+    return min(x - x0, x1 - x, y - y0, y1 - y)
+
+
 _PTS = None
 
 
@@ -210,6 +223,9 @@ def natural(x, y):
     w = river_d(x, y)
     if w < 6:
         h = lerp(h, WATER_Z - 2.2, smooth((6 - w) / 6))
+    e = island_d(x, y)
+    if e < 50:
+        h = lerp(h, WATER_Z - 3.0, smooth((50 - e) / 40))
     return h
 
 
@@ -260,8 +276,22 @@ def hull_shell(c, s0, s1, half=11.0, keel=-3.0, rail=6.5):
     return ob
 
 
+# The paint: each greybox material -> Shipwreck Bay's own (Course.lib keeps the old surface).
+PAINT = {
+    "beach_road": "wreck_road",
+    "beach_sand": "wreck_sand",
+    "wet_sand": "wreck_wet_sand",
+    "sea_water": "wreck_sea",
+    "wood_planks": "wreck_planks",
+    "tiki_wood": "wreck_rail",
+    "valley_cliff": "wreck_rock",
+}
+
+
 def main():
-    c = kit.Course(TRACK_ID, "Shipwreck Bay (greybox)", "beach_party")
+    kit.MAT_REMAP.clear()
+    kit.MAT_REMAP.update(PAINT)
+    c = kit.Course(TRACK_ID, "Shipwreck Bay", "shipwreck_bay")
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP)
     sand = ("beach_sand", "sand")
     planks = ("wood_planks", "road")
@@ -302,7 +332,7 @@ def main():
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "road", max_len=150.0))
 
-    X0, X1, Y0, Y1 = -160, 360, -260, 240
+    X0, X1, Y0, Y1 = BOUNDS
     ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2700.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
@@ -334,7 +364,7 @@ def main():
         height=8.0,
     )
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    wreck_scenery.build(c, sys.modules[__name__], ter)
     c.finish()
     print("lap", round(c.length, 1))
 

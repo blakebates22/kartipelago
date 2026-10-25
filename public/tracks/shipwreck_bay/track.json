@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "id": "shipwreck_bay",
+  "name": "Shipwreck Bay",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 43.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 167.2,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 287.2,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 103.9,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 421.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 511.9,
+      "across": -5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 628.8,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 24.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 24.0,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 142.4,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 375.4,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 481.1,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 311.5,
+      "to": 349.9,
+      "at": 361.9
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 120.0,
+      "y": 30.0,
+      "z": 100.0,
+      "radius": 50,
+      "count": 5,
+      "speed": 0.18,
+      "seed": 4,
+      "color": "#2a2420"
+    },
+    {
+      "id": "birds_02",
+      "type": "birds",
+      "x": 88.0,
+      "y": 34.0,
+      "z": -90.0,
+      "radius": 30,
+      "count": 4,
+      "speed": 0.22,
+      "seed": 8,
+      "color": "#f0e8d8"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 10,
+      "radius": 30
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 68.61,
+      "y": 5.51,
+      "z": 30.98
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 55.43,
+      "y": 5.51,
+      "z": 30.88
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 68.68,
+      "y": 5.21,
+      "z": 43.85
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 55.32,
+      "y": 5.21,
+      "z": 43.85
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": 68.59,
+      "y": 5.52,
+      "z": 56.72
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 55.41,
+      "y": 5.52,
+      "z": 56.72
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 68.47,
+      "y": 5.91,
+      "z": 69.63
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 55.53,
+      "y": 5.91,
+      "z": 69.62
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 146.97,
+      "y": 12.1,
+      "z": 96.6
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 147.11,
+      "y": 12.1,
+      "z": 111.4
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": 99.04,
+      "y": 8.0,
+      "z": 104.0
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 113.04,
+      "y": 8.0,
+      "z": 104.0
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 127.04,
+      "y": 8.0,
+      "z": 104.0
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 141.04,
+      "y": 8.0,
+      "z": 104.0
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 146.0,
+      "y": 14.41,
+      "z": -18.0
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 90.0,
+      "y": 15.5,
+      "z": -44.0
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": 107.0,
+      "y": 7.67,
+      "z": -32.6
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": 137.0,
+      "y": 7.09,
+      "z": -33.6
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": 121.0,
+      "y": 7.68,
+      "z": -35.6
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": 120.0,
+      "y": 7.42,
+      "z": -26.0
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": 77.13,
+      "y": 7.35,
+      "z": -84.32
+    },
+    {
+      "id": "torch_22",
+      "type": "torch",
+      "x": 99.13,
+      "y": 7.56,
+      "z": -84.32
+    },
+    {
+      "id": "torch_23",
+      "type": "torch",
+      "x": -6.8,
+      "y": 5.98,
+      "z": -104.4
+    },
+    {
+      "id": "torch_24",
+      "type": "torch",
+      "x": 19.2,
+      "y": 6.24,
+      "z": -107.4
+    },
+    {
+      "id": "torch_25",
+      "type": "torch",
+      "x": 45.2,
+      "y": 6.88,
+      "z": -104.4
+    },
+    {
+      "id": "torch_26",
+      "type": "torch",
+      "x": 71.2,
+      "y": 7.28,
+      "z": -107.4
+    },
+    {
+      "id": "torch_27",
+      "type": "torch",
+      "x": 97.2,
+      "y": 7.61,
+      "z": -104.4
+    },
+    {
+      "id": "torch_28",
+      "type": "torch",
+      "x": 123.2,
+      "y": 7.32,
+      "z": -107.4
+    }
+  ],
+  "generator": "tools/blender/prehistoric/shipwreck_bay.py (re-running it rewrites entities)"
+}

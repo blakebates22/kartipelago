@@ -166,18 +166,31 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "coral_cove_v2" },
   },
-  // The beach world's second course (working name), a greybox: a pirate cove, through a
-  // wrecked galleon and off its fallen mast. ?track=shipwreck_bay.
+  // The beach world's second course, painted (the Tropic Isles, Oct 25): the greybox's lap
+  // exactly, a pirate cove at golden hour. ?track=shipwreck_bay.
   {
     id: "shipwreck_bay",
-    name: "Shipwreck Bay (greybox)",
+    name: "Shipwreck Bay",
+    description:
+      "A pirate cove at sunset: over the rolling pier, through the wrecked galleon's hold, off her fallen mast and round Skull Rock.",
+    preview: "previews/shipwreck_bay.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "shipwreck_bay",
+    music: "title",
+    load: { scene: "track", packageId: "shipwreck_bay" },
+  },
+  // The Shipwreck Bay greybox (the painted course replaced it on 2026-10-25; the same lap):
+  // ?track=shipwreck_bay_v2.
+  {
+    id: "shipwreck_bay_v2",
+    name: "Shipwreck Bay (greybox, v2)",
     description:
       "Over the rolling pier, through the wrecked galleon's hold, up its fallen mast and off it over the river mouth.",
-    preview: "previews/shipwreck_bay.jpg",
+    preview: "previews/shipwreck_bay_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "beach_party",
     music: "title",
-    load: { scene: "track", packageId: "shipwreck_bay" },
+    load: { scene: "track", packageId: "shipwreck_bay_v2" },
   },
   // The first Dragonspire Keep (the old Dragon Isles; the painted v3 lap replaced it on
   // 2026-10-25): ?track=dragon_isles_v2.

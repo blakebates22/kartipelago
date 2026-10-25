@@ -90,6 +90,7 @@ describe("no holes in the world", () => {
     "coral_cove",
     "coral_cove_v2",
     "shipwreck_bay",
+    "shipwreck_bay_v2",
     "volcano_isle",
     "splash_lagoon",
   ])
