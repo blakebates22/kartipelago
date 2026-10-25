@@ -139,18 +139,32 @@ export const TRACKS: TrackEntry[] = [
     music: "depths",
     load: { scene: "track", packageId: "impact_depths_v2" },
   },
-  // The beach world's first course (working name), a greybox to drive before it's
-  // dressed: a really short lap, all three under a minute. ?track=coral_cove.
+  // The beach world's first course, painted (the Tropic Isles, Oct 25): the greybox's lap
+  // exactly, a bright tropical cove. A really short lap, all three under a minute.
+  // ?track=coral_cove.
   {
     id: "coral_cove",
-    name: "Coral Cove (greybox)",
+    name: "Coral Cove",
+    description:
+      "A sunny cove: over the boardwalk's jump across the channel, round the lighthouse on its rock, down the palm avenue to the beach.",
+    preview: "previews/coral_cove.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "coral_cove",
+    music: "title",
+    load: { scene: "track", packageId: "coral_cove" },
+  },
+  // The Coral Cove greybox (the painted course replaced it on 2026-10-25; the same lap):
+  // ?track=coral_cove_v2.
+  {
+    id: "coral_cove_v2",
+    name: "Coral Cove (greybox, v2)",
     description:
       "A short beach lap: the boardwalk jump over the channel, the lighthouse hairpin and back down to the sand.",
-    preview: "previews/coral_cove.jpg",
+    preview: "previews/coral_cove_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "beach_party",
     music: "title",
-    load: { scene: "track", packageId: "coral_cove" },
+    load: { scene: "track", packageId: "coral_cove_v2" },
   },
   // The beach world's second course (working name), a greybox: a pirate cove, through a
   // wrecked galleon and off its fallen mast. ?track=shipwreck_bay.

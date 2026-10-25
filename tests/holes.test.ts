@@ -88,6 +88,7 @@ describe("no holes in the world", () => {
     "bonebog_pyramid",
     "ember_peak",
     "coral_cove",
+    "coral_cove_v2",
     "shipwreck_bay",
     "volcano_isle",
     "splash_lagoon",

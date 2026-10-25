@@ -1,5 +1,8 @@
-# Coral Cove: a greybox of the beach world's first course, to drive before it's dressed
-# (?track=coral_cove; working name). A really short lap, all three under a minute.
+# Coral Cove: the beach world's first course, painted (the Tropic Isles). The greybox's
+# lap exactly (it's kept as coral_cove_v2): the same roads, heights, surfaces, jump,
+# zippers and checkpoints; only the look is new (cove_scenery.py, tropic_textures.py).
+# Blake: "i dont want it to change at all how it feels whatsoever". A really short lap,
+# all three under a minute.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/coral_cove.py      (the bpy module)
@@ -15,8 +18,10 @@
 #   5  Down off the headland: a right-hander, the palm straight west (a zipper), a left
 #      down the west side, and the last drift onto the line.
 #
-# Plain shapes: sand, the sea, the lagoon and its channel, the rock. The look comes once
-# the lap is fun.
+# The paint: a bright tropical cove at midday. Sand, sea, lagoon and rock are the
+# greybox's shapes in new materials (each keeps its old surface, so nothing drives
+# differently); the land falls away into the sea far from the road (an island, not a
+# square); the rest is scenery, clear of the road.
 
 import math
 import os
@@ -26,6 +31,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
+
+import cove_scenery  # noqa: E402
 
 TRACK_ID = "coral_cove"
 
@@ -145,6 +152,16 @@ def water_d(x, y):
     return min(lag, chan)
 
 
+# The terrain's square; the land sinks into the sea over its outer 50 m.
+BOUNDS = (-160, 300, -200, 260)
+
+
+def island_d(x, y):
+    """How far inside the terrain's square (the island's edge)."""
+    x0, x1, y0, y1 = BOUNDS
+    return min(x - x0, x1 - x, y - y0, y1 - y)
+
+
 _PTS = None
 
 
@@ -180,6 +197,9 @@ def natural(x, y):
     w = water_d(x, y)
     if w < 6:
         h = lerp(h, WATER_Z - 2.2, smooth((6 - w) / 6))
+    e = island_d(x, y)
+    if e < 50:
+        h = lerp(h, WATER_Z - 3.0, smooth((50 - e) / 40))
     return h
 
 
@@ -195,8 +215,22 @@ def classify(c, n, info):
     return ("beach_sand", "soft_sand")
 
 
+# The paint: each greybox material -> Coral Cove's own (Course.lib keeps the old surface).
+PAINT = {
+    "beach_road": "cove_road",
+    "beach_sand": "cove_sand",
+    "wet_sand": "cove_wet_sand",
+    "sea_water": "cove_sea",
+    "wood_planks": "cove_planks",
+    "tiki_wood": "cove_rail",
+    "valley_cliff": "cove_rock",
+}
+
+
 def main():
-    c = kit.Course(TRACK_ID, "Coral Cove (greybox)", "beach_party")
+    kit.MAT_REMAP.clear()
+    kit.MAT_REMAP.update(PAINT)
+    c = kit.Course(TRACK_ID, "Coral Cove", "coral_cove")
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP)
     sand = ("beach_sand", "sand")
     planks = ("wood_planks", "road")
@@ -234,7 +268,7 @@ def main():
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "road", max_len=150.0))
 
-    X0, X1, Y0, Y1 = -160, 300, -200, 260
+    X0, X1, Y0, Y1 = BOUNDS
     ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     # The sea out to the horizon, the lagoon and the channel (water to look at; the sand
@@ -270,7 +304,7 @@ def main():
         height=8.0,
     )
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    cove_scenery.build(c, sys.modules[__name__], ter)
     c.finish()
     print("lap", round(c.length, 1))
 

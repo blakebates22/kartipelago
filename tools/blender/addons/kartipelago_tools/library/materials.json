@@ -1251,6 +1251,108 @@
           }
         }
       }
+    },
+    {
+      "id": "coral_cove",
+      "name": "Coral Cove",
+      "description": "A bright tropical cove at midday: white-gold sand, turquoise shallows over pink and orange coral, a red-and-white lighthouse on the headland, sun-bleached boardwalks with rope rails, striped beach huts, palms and sea stacks offshore",
+      "environment": {
+        "sky": "#38b4f4",
+        "fog": {
+          "enabled": true,
+          "color": "#ccf2ff",
+          "near": 300,
+          "far": 1500
+        },
+        "sun": {
+          "color": "#fff8e2",
+          "intensity": 2.8,
+          "direction": [-0.35, 0.82, -0.45]
+        },
+        "ambient": {
+          "sky": "#e6f8ff",
+          "ground": "#e0c890",
+          "intensity": 1.3
+        },
+        "skyDome": {
+          "top": "#1478e0",
+          "horizon": "#c6f2ff",
+          "bottom": "#9ee8f0",
+          "sun": {
+            "color": "#fffbe8",
+            "size": 8,
+            "glow": "#fff3b0",
+            "elevation": 30
+          },
+          "clouds": {
+            "count": 26,
+            "color": "#ffffff",
+            "shade": "#cfe8ff",
+            "seed": 141,
+            "low": 5,
+            "high": 20,
+            "drift": 0.006
+          },
+          "hills": {
+            "color": "#2f8a5a",
+            "far": "#9ad8d0",
+            "height": 5,
+            "seed": 143,
+            "layers": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "shipwreck_bay",
+      "name": "Shipwreck Bay",
+      "description": "A pirate cove at golden hour: amber sand, a teal bay turning gold, the old galleon's dark planks and patched sails, Skull Rock, a log stockade, lanterns, barrels and treasure",
+      "environment": {
+        "sky": "#f2a25a",
+        "fog": {
+          "enabled": true,
+          "color": "#f6c08a",
+          "near": 260,
+          "far": 1300
+        },
+        "sun": {
+          "color": "#ffd29a",
+          "intensity": 2.4,
+          "direction": [0.75, 0.32, -0.55]
+        },
+        "ambient": {
+          "sky": "#ffd8b0",
+          "ground": "#8a5a3a",
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#4a5ab0",
+          "horizon": "#ffc27a",
+          "bottom": "#f0a070",
+          "sun": {
+            "color": "#fff0c0",
+            "size": 14,
+            "glow": "#ffb060",
+            "elevation": 9
+          },
+          "clouds": {
+            "count": 22,
+            "color": "#ffd0a0",
+            "shade": "#c06a70",
+            "seed": 151,
+            "low": 4,
+            "high": 18,
+            "drift": 0.005
+          },
+          "hills": {
+            "color": "#5a4a6a",
+            "far": "#c88a8a",
+            "height": 6,
+            "seed": 153,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -8096,6 +8198,519 @@
       "image": "cdf_abyss.png",
       "wrap": "repeat",
       "tileMetres": 14
+    },
+    {
+      "id": "cove_sand",
+      "name": "Cove Sand",
+      "theme": "coral_cove",
+      "surface": "sand",
+      "image": "cove_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "cove_road",
+      "name": "Cove Track",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "cove_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "cove_wet_sand",
+      "name": "Cove Wet Sand",
+      "theme": "coral_cove",
+      "surface": "sand",
+      "image": "cove_wet_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "cove_sea",
+      "name": "Cove Sea",
+      "theme": "coral_cove",
+      "surface": "water",
+      "image": "cove_sea.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.02,
+        "scrollV": 0.03,
+        "wave": 0.05,
+        "wavePeriod": 4,
+        "opacity": 0.86
+      }
+    },
+    {
+      "id": "cove_shallows",
+      "name": "Cove Shallows",
+      "theme": "coral_cove",
+      "surface": "water",
+      "image": "cove_shallows.png",
+      "wrap": "repeat",
+      "tileMetres": 8,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.01,
+        "wave": 0.04,
+        "wavePeriod": 6,
+        "opacity": 0.82,
+        "lagoon": 0.9
+      }
+    },
+    {
+      "id": "cove_reef",
+      "name": "Reef Surf",
+      "theme": "coral_cove",
+      "surface": "water",
+      "image": "cove_reef.png",
+      "wrap": "repeat",
+      "tileMetres": 5,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.1,
+        "wave": 0.1,
+        "wavePeriod": 3.4,
+        "opacity": 0.75,
+        "glow": 0.15
+      }
+    },
+    {
+      "id": "cove_planks",
+      "name": "Bleached Boardwalk",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "cove_planks.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cove_rail",
+      "name": "Rope Rail",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cove_post",
+      "name": "Piling",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_post.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cove_rock",
+      "name": "Cove Rock",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "cove_grass",
+      "name": "Dune Grass",
+      "theme": "coral_cove",
+      "surface": "grass",
+      "image": "cove_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "cove_hut_teal",
+      "name": "Hut Boards Teal",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_hut_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cove_hut_coral",
+      "name": "Hut Boards Coral",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_hut_coral.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cove_hut_sun",
+      "name": "Hut Boards Sun",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_hut_sun.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cove_white",
+      "name": "White Boards",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_white.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "cove_thatch",
+      "name": "Palm Thatch",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_thatch.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cove_awning_teal",
+      "name": "Awning Teal",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_awning_teal.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "cove_awning_coral",
+      "name": "Awning Coral",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_awning_coral.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "cove_awning_sun",
+      "name": "Awning Sun",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_awning_sun.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "cove_lighthouse",
+      "name": "Lighthouse Bands",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_lighthouse.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "cove_lamp",
+      "name": "Lighthouse Lamp",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_lamp.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 1.0,
+        "pulse": 0.25,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "cove_coral_pink",
+      "name": "Pink Coral",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_coral_pink.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "cove_coral_orange",
+      "name": "Orange Coral",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_coral_orange.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "cove_coral_violet",
+      "name": "Violet Coral",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_coral_violet.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "cove_flag",
+      "name": "Cove Flag",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_flag.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "cove_sign",
+      "name": "Cove Sign",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_sign.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "cove_metal",
+      "name": "Lantern Metal",
+      "theme": "coral_cove",
+      "surface": "wall",
+      "image": "cove_metal.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "wreck_sand",
+      "name": "Amber Sand",
+      "theme": "shipwreck_bay",
+      "surface": "sand",
+      "image": "wreck_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "wreck_road",
+      "name": "Cove Trail",
+      "theme": "shipwreck_bay",
+      "surface": "road",
+      "image": "wreck_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "wreck_wet_sand",
+      "name": "Bay Wet Sand",
+      "theme": "shipwreck_bay",
+      "surface": "sand",
+      "image": "wreck_wet_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "wreck_sea",
+      "name": "Golden Bay",
+      "theme": "shipwreck_bay",
+      "surface": "water",
+      "image": "wreck_sea.png",
+      "wrap": "repeat",
+      "tileMetres": 10,
+      "fx": {
+        "scrollU": 0.02,
+        "scrollV": 0.03,
+        "wave": 0.05,
+        "wavePeriod": 4.4,
+        "opacity": 0.88
+      }
+    },
+    {
+      "id": "wreck_planks",
+      "name": "Old Ship Planks",
+      "theme": "shipwreck_bay",
+      "surface": "road",
+      "image": "wreck_planks.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wreck_hull",
+      "name": "Galleon Hull",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_hull.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wreck_trim",
+      "name": "Hull Trim",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_trim.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "wreck_rail",
+      "name": "Ship's Rail",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_rail.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "wreck_post",
+      "name": "Old Piling",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_post.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "wreck_rock",
+      "name": "Bay Rock",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "wreck_skull",
+      "name": "Skull Stone",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_skull.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "wreck_sail",
+      "name": "Patched Sail",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_sail.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "wreck_flag",
+      "name": "Pirate Flag",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_flag.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
+    },
+    {
+      "id": "wreck_logs",
+      "name": "Stockade Logs",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_logs.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "wreck_thatch",
+      "name": "Old Thatch",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_thatch.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "wreck_gold",
+      "name": "Treasure",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35,
+        "pulse": 0.2,
+        "pulsePeriod": 2.6
+      }
+    },
+    {
+      "id": "wreck_iron",
+      "name": "Ship Iron",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_iron.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "wreck_lantern",
+      "name": "Lantern Glow",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_lantern.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.95,
+        "flicker": 0.12
+      }
+    },
+    {
+      "id": "wreck_grass",
+      "name": "Bay Grass",
+      "theme": "shipwreck_bay",
+      "surface": "grass",
+      "image": "wreck_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "wreck_moss",
+      "name": "Weed",
+      "theme": "shipwreck_bay",
+      "surface": "wall",
+      "image": "wreck_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.08
+      }
     }
   ]
 }

@@ -5078,6 +5078,12 @@ import cdf_textures  # noqa: E402
 MATERIALS += cdf_textures.materials(sys.modules[__name__])
 THEMES.append(cdf_textures.THEME)
 
+# The beach world's paint, the Tropic Isles: Coral Cove and Shipwreck Bay (Oct 25).
+import tropic_textures  # noqa: E402
+
+MATERIALS += tropic_textures.materials(sys.modules[__name__])
+THEMES += [tropic_textures.COVE, tropic_textures.WRECK]
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

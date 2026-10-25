@@ -1,18 +1,18 @@
-// Coral Cove, the beach world's first course (working name), a greybox
-// (tools/blender/prehistoric/coral_cove.py): a really short lap, all three laps under a
+// Coral Cove (greybox, v2): the beach world's first course before its paint (kept aside,
+// tools/blender/prehistoric/coral_cove_v2.py): a really short lap, all three laps under a
 // minute; the boardwalk's jump over the channel.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { SURFACES, loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "coral_cove";
+const id = "coral_cove_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Coral Cove (greybox)", () => {
+describe("Coral Cove (greybox, v2)", () => {
   it("loads cleanly, with its jump", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);

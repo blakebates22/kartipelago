@@ -237,6 +237,7 @@ describe("worlds", () => {
       "dragon_canyon_v2",
       "snow_dragon_pass_v2",
       "celestial_dragon_festival_v2",
+      "coral_cove_v2",
       "coral_cove",
       "shipwreck_bay",
       "volcano_isle",
