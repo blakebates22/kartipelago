@@ -187,7 +187,7 @@ export function compassRose(g: G, cx: number, cy: number, r: number) {
 
 // ---------------------------------------------------------------- islands
 
-export type IslandStyle = "prehistoric" | "frostveil" | "desert" | "dragon";
+export type IslandStyle = "prehistoric" | "frostveil" | "desert" | "dragon" | "beach";
 
 const islandCache = new Map<string, HTMLCanvasElement>();
 
@@ -212,12 +212,13 @@ export function island(style: IslandStyle, r: number): HTMLCanvasElement {
   const [cv, g] = canvas(S, S);
   c = cv;
   const o = S / 2;
-  const seed = { prehistoric: 11, frostveil: 23, desert: 37, dragon: 51 }[style];
+  const seed = { prehistoric: 11, frostveil: 23, desert: 37, dragon: 51, beach: 67 }[style];
   const land = {
     prehistoric: ["#6aa84a", "#5a9a3e", "#7fbc56"],
     frostveil: ["#e8eef4", "#cfdcea", "#f6f9fc"],
     desert: ["#e0a060", "#d48a4e", "#eab478"],
     dragon: ["#7cbc8a", "#68a878", "#94cca0"],
+    beach: ["#f4dc9a", "#ecd088", "#f8e8b4"],
   }[style];
   for (let y = 0; y < S; y++)
     for (let x = 0; x < S; x++) {
@@ -285,6 +286,28 @@ export function island(style: IslandStyle, r: number): HTMLCanvasElement {
       px(g, ox - 4 + Math.abs(y), oy + y, 8 - Math.abs(y) * 2, 1, "#4fb8d8");
     px(g, ox + 4, oy - 5, 1, 5, "#7a5a3a");
     px(g, ox + 2, oy - 6, 5, 1, "#3d8a34");
+  } else if (style === "beach") {
+    // A turquoise lagoon, palms, a red-and-white lighthouse on the point, a little wreck.
+    const [lx, ly] = at(-0.1, 0.05);
+    for (let y = -4; y <= 4; y++)
+      px(g, lx - 9 + Math.abs(y), ly + y, 18 - Math.abs(y) * 2, 1, y % 3 ? "#4fd0d8" : "#7ae0e0");
+    for (let i = 0; i < 9; i++) {
+      const [tx, ty] = at((hash(i, 7) - 0.5) * 1.3, (hash(i, 8) - 0.5) * 1.0);
+      if (Math.hypot(tx - lx, (ty - ly) * 2) < 12) continue;
+      px(g, tx, ty - 4, 1, 5, "#8a5a32");
+      px(g, tx - 2, ty - 5, 5, 1, "#3d9a3a");
+      px(g, tx - 1, ty - 6, 3, 1, "#5fbe4a");
+    }
+    const [hx, hy] = at(0.55, -0.35);
+    for (let k = 0; k < 9; k++)
+      px(g, hx, hy - k, 3, 1, Math.floor(k / 2) % 2 ? "#f4f2ea" : "#d83a34");
+    px(g, hx - 1, hy - 10, 5, 1, INK);
+    px(g, hx, hy - 12, 3, 2, "#ffe060");
+    const [wx, wy] = at(0.45, 0.5);
+    px(g, wx - 4, wy, 9, 2, "#5a3a22");
+    px(g, wx - 3, wy + 2, 7, 1, "#3a2414");
+    px(g, wx, wy - 6, 1, 6, "#5a3a22");
+    px(g, wx + 1, wy - 5, 3, 3, "#e8d8b0");
   } else {
     // Jade hills, a red bridge, pagodas, blossom.
     for (let i = 0; i < 8; i++) {

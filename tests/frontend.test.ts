@@ -238,8 +238,10 @@ describe("worlds", () => {
       "snow_dragon_pass_v2",
       "celestial_dragon_festival_v2",
       "coral_cove_v2",
-      "coral_cove",
       "shipwreck_bay_v2",
+    ]);
+    expect(WORLDS.find((w) => w.id === "beach")?.tracks).toEqual([
+      "coral_cove",
       "shipwreck_bay",
       "volcano_isle",
       "splash_lagoon",
@@ -259,6 +261,7 @@ describe("worlds", () => {
       "frostveil",
       "desert",
       "dragon",
+      "beach",
     ]);
     // Its tracks still load directly.
     expect(trackById("loop_lab")).toBeTruthy();

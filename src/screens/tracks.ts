@@ -22,7 +22,7 @@ import {
   type WorldEntry,
 } from "../game/worlds";
 import { formatTime } from "../race/race";
-import { wrap } from "../ui/font";
+import { textWidth, wrap } from "../ui/font";
 import type { UiLayer } from "../ui/layer";
 import { INK, INK_SOFT, island, parchment, trophy, type IslandStyle } from "../ui/mapArt";
 import { PAL } from "../ui/textures";
@@ -52,6 +52,7 @@ const STYLE: Record<string, IslandStyle> = {
   frostveil: "frostveil",
   desert: "desert",
   dragon: "dragon",
+  beach: "beach",
 };
 const styleOf = (w: WorldEntry): IslandStyle => STYLE[w.id] ?? "prehistoric";
 
@@ -256,35 +257,49 @@ export function tracksMenu(game: Game): Screen {
     return { body: e.track.description, lines };
   }
 
-  function draw(ui: UiLayer) {
-    ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
-    // The bookmarks: one per world.
+  /**
+   * The world picker: one wooden board per world across the top (Blake's pick of the
+   * layouts tried). Each board is as wide as its name needs, the spare width shared out.
+   * Returns where the track list goes.
+   */
+  function header(ui: UiLayer): { x: number; y: number; w: number } {
     const n = WORLDS.length;
-    const tw = Math.floor((ui.W - 24 - (n - 1) * 4) / n);
+    const img = (w: WorldEntry) => island(styleOf(w), 9);
+    const lineW = (w: WorldEntry) => Math.max(...w.name.toUpperCase().split(" ").map(textWidth));
+    const need = WORLDS.map((w) => img(w).width + 7 + lineW(w));
+    const spare = Math.max(0, ui.W - 24 - (n - 1) * 4 - need.reduce((a, b) => a + b, 0));
+    let x = 12;
     WORLDS.forEach((w, i) => {
       const on = i === wi;
-      const x = 12 + i * (tw + 4);
+      const tw = Math.floor(need[i]! + spare / n);
       const h = on ? 30 : 24;
       // Wooden boards like the other menus' signs: the chosen one in a gold frame with a
       // stripe of its world's colour, the rest darker.
       ui.panel(x, 6, tw, h, "wood", on ? "gold" : "dark");
       ui.rect(x + 3, 6 + h - 5, tw - 6, 2, on ? w.color : "#6a4a2a");
       if (!on) ui.rect(x + 2, 8, tw - 4, h - 4, "#1a1008", 0.25);
-      const img = island(styleOf(w), 9);
-      ui.image(img, x + 3, 6 + h / 2 - img.height / 2 - 1, img.width, img.height, false);
-      const label = wrap(w.name.toUpperCase(), tw - img.width - 8);
+      const im = img(w);
+      ui.image(im, x + 3, 6 + h / 2 - im.height / 2 - 1, im.width, im.height, false);
+      const label = wrap(w.name.toUpperCase(), Math.max(lineW(w), tw - im.width - 8));
       label.slice(0, 2).forEach((l, j) =>
-        ui.text(l, x + img.width + 4, 6 + (label.length > 1 ? 4 : 9) + j * 9, {
+        ui.text(l, x + im.width + 4, 6 + (label.length > 1 ? 4 : 9) + j * 9, {
           color: on ? PAL.gold : PAL.cream,
           outline: PAL.shadow,
         }),
       );
       if (game.menuInput.pointer.clicked && ui.hover(x, 6, tw, h)) clicked = () => setWorld(i);
+      x += tw + 4;
     });
+    return { x: 14, y: 46, w: Math.round(ui.W * 0.4) };
+  }
+
+  function draw(ui: UiLayer) {
+    ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
+    const L = header(ui);
     // The list: the tracks, then Trophy Race.
-    const lx = 14;
-    const ly = 46;
-    const lw = Math.round(ui.W * 0.4);
+    const lx = L.x;
+    const ly = L.y;
+    const lw = L.w;
     note(ui, lx, ly, lw, 170);
     entries().forEach((e, i) => {
       const on = i === ei;
@@ -311,13 +326,14 @@ export function tracksMenu(game: Game): Screen {
     const px = lx + lw + 14;
     const pw = ui.W - px - 14;
     const ph = Math.round(pw * 0.44);
-    picture(ui, e, px, 48, pw, ph);
-    ui.text(nameOf(e), px, 56 + ph, { scale: 2, color: "#8a2a1a" });
+    picture(ui, e, px, ly + 2, pw, ph);
+    const top = ly - 46;
+    ui.text(nameOf(e), px, 56 + top + ph, { scale: 2, color: "#8a2a1a" });
     const d = details(e);
     const body = wrap(d.body.toUpperCase(), pw).slice(0, 3);
-    body.forEach((l, i) => ui.text(l, px, 74 + ph + i * 9, { color: INK }));
+    body.forEach((l, i) => ui.text(l, px, 74 + top + ph + i * 9, { color: INK }));
     d.lines.forEach((l, i) =>
-      ui.text(l, px, 74 + ph + body.length * 9 + 4 + i * 9, {
+      ui.text(l, px, 74 + top + ph + body.length * 9 + 4 + i * 9, {
         color: i === 0 && e.kind === "trophy" ? "#8a2a1a" : INK_SOFT,
       }),
     );

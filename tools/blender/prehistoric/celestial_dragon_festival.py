@@ -185,7 +185,7 @@ def classify(c, n, info):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Celestial Dragon Festival", "moonstone_kingdom")
+    c = kit.Course(TRACK_ID, "Moonstone Kingdom", "moonstone_kingdom")
     c.route(ROUTE, width=16.0, bank=6.0)
     kerb = ("moon_kerb", "road")
     bal = ("moon_stone", "wall")

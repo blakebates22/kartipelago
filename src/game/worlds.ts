@@ -59,11 +59,20 @@ export const WORLDS: WorldEntry[] = [
   {
     id: "dragon",
     name: "Dragon Kingdom",
-    tagline: "A jade kingdom",
+    tagline: "Castles and dragons",
     description:
-      "A sunlit kingdom of karst islands in a turquoise lagoon: festival towns, temple gardens, waterfalls and a royal palace, all watched over by a great jade dragon.",
+      "A kingdom of castles, ruins and dragons: a keep at sunset, a jungle castle reclaimed by the trees, a fortress in a storm and a moonlit palace.",
     color: "#2fae8f",
     tracks: ["dragon_isles", "dragon_canyon", "snow_dragon_pass", "celestial_dragon_festival"],
+  },
+  {
+    id: "beach",
+    name: "Tropic Isles",
+    tagline: "Sun, sea and shipwrecks",
+    description:
+      "Sunny coves and lagoons: a lighthouse on the rocks, a pirate cove with its wreck, a dormant volcano and a seaside water park.",
+    color: "#22b4c8",
+    tracks: ["coral_cove", "shipwreck_bay", "volcano_isle", "splash_lagoon"],
   },
   {
     id: "test_world",
@@ -96,11 +105,7 @@ export const WORLDS: WorldEntry[] = [
       "snow_dragon_pass_v2",
       "celestial_dragon_festival_v2",
       "coral_cove_v2",
-      "coral_cove",
       "shipwreck_bay_v2",
-      "shipwreck_bay",
-      "volcano_isle",
-      "splash_lagoon",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

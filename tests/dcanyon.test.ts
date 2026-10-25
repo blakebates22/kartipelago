@@ -139,14 +139,17 @@ describe("Dragon Canyon (v2)", () => {
     // (Bonebog Pyramid's v3 lap, the new Oasis Haven and Emberdeep Hold's v3 lap, all
     // rebuilt from Blake's driving notes to be nearly all bends, turn harder still: they're
     // the exceptions.)
-    const others = VISIBLE_WORLDS.flatMap((w) => w.tracks).filter(
-      (t) =>
-        t !== id &&
-        t !== "dragon_canyon" && // the same lap, repainted
-        t !== "bonebog_pyramid" &&
-        t !== "oasis_haven" &&
-        t !== "snow_dragon_pass",
-    );
+    // (The Tropic Isles' courses are short sprints round coves, not compared.)
+    const others = VISIBLE_WORLDS.filter((w) => w.id !== "beach")
+      .flatMap((w) => w.tracks)
+      .filter(
+        (t) =>
+          t !== id &&
+          t !== "dragon_canyon" && // the same lap, repainted
+          t !== "bonebog_pyramid" &&
+          t !== "oasis_haven" &&
+          t !== "snow_dragon_pass",
+      );
     for (const t of others) {
       const p = await loadTrackPackage(readerFor(t), { visual: false }).catch(() => undefined);
       if (!p) continue;

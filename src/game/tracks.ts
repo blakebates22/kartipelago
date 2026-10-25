@@ -146,7 +146,7 @@ export const TRACKS: TrackEntry[] = [
     id: "coral_cove",
     name: "Coral Cove",
     description:
-      "A sunny cove: over the boardwalk's jump across the channel, round the lighthouse on its rock, down the palm avenue to the beach.",
+      "A sunny cove: the boardwalk's jump over the channel, round the lighthouse, down the palm avenue.",
     preview: "previews/coral_cove.jpg",
     modes: ["race", "timeTrial"],
     theme: "coral_cove",
@@ -172,7 +172,7 @@ export const TRACKS: TrackEntry[] = [
     id: "shipwreck_bay",
     name: "Shipwreck Bay",
     description:
-      "A pirate cove at sunset: over the rolling pier, through the wrecked galleon's hold, off her fallen mast and round Skull Rock.",
+      "A pirate cove at sunset: the rolling pier, the wrecked galleon's hold, her fallen mast, Skull Rock.",
     preview: "previews/shipwreck_bay.jpg",
     modes: ["race", "timeTrial"],
     theme: "shipwreck_bay",
@@ -211,7 +211,7 @@ export const TRACKS: TrackEntry[] = [
     id: "volcano_isle",
     name: "Volcano Isle (greybox)",
     description:
-      "Geysers on the hot-spring flats, jungle switchbacks, through the old lava tube and off the cliff over the lagoon.",
+      "Geysers on the hot flats, jungle switchbacks, the old lava tube and the cliff jump over the lagoon.",
     preview: "previews/volcano_isle.jpg",
     modes: ["race", "timeTrial"],
     theme: "beach_party",
@@ -369,7 +369,7 @@ export const TRACKS: TrackEntry[] = [
     id: "hearthglow_hollow",
     name: "Hearthglow Hollow",
     description:
-      "A snowy village at dusk: round the big tree, up the winding mountain road, down the sleigh run and home through the old town (or its hidden back alley).",
+      "A snowy village at dusk: round the big tree, up the mountain, down the sleigh run and home.",
     preview: "previews/hearthglow_hollow.jpg",
     modes: ["race", "timeTrial"],
     theme: "hearthglow",
@@ -380,7 +380,7 @@ export const TRACKS: TrackEntry[] = [
     id: "aurora_rift",
     name: "Aurora Rift",
     description:
-      "Into a cracked glacier: round the crystal Monolith, jump the broken bridge, loop the loop, out over the Rift.",
+      "Into a cracked glacier: round the Monolith, over the broken bridge, the loop, out over the Rift.",
     preview: "previews/aurora_rift.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_rift",
@@ -403,7 +403,7 @@ export const TRACKS: TrackEntry[] = [
     id: "oasis_haven",
     name: "Oasis Haven",
     description:
-      "A green pool in the deep desert: a nomad camp, a wind-carved arch, the dune sea and a spiral up the old watchtower.",
+      "A green pool in the deep desert: the nomad camp, a carved arch, the dunes and the old watchtower.",
     preview: "previews/oasis_haven.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_haven",
@@ -438,7 +438,7 @@ export const TRACKS: TrackEntry[] = [
     // sunset (it keeps the id, so its records carry on; ghosts are kept per layout).
     name: "Dragonspire Keep",
     description:
-      "Through the castle gate and town, up the cliff road, over the broken waterfall viaduct, round the keep and its red dragon, down the beacon tower to the docks.",
+      "Through the castle gate and town, over the waterfall viaduct, round the keep and its red dragon.",
     preview: "previews/dragon_isles.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragonspire_keep",
@@ -451,7 +451,7 @@ export const TRACKS: TrackEntry[] = [
     // ruins (the same lap; the first paint is dragon_canyon_v2).
     name: "Dragon Canyon",
     description:
-      "Hairpins stacked up the jungle cliffs, through the ruins and the crystal caverns, under the green dragon's tower. The most technical drifting course in the game.",
+      "Hairpins up jungle cliffs, through ruins and crystal caves. The game's most technical drift course.",
     preview: "previews/dragon_canyon.jpg",
     modes: ["race", "timeTrial"],
     theme: "emerald_kingdom",
@@ -465,7 +465,7 @@ export const TRACKS: TrackEntry[] = [
     // ghosts are kept per layout).
     name: "Emberdeep Hold",
     description:
-      "Out of the Outer Gate, up the mountain or through the Hall of Pillars, along the ramparts, over the broken bridge, down past the falls and up round the dragon on its gold.",
+      "A fortress in a storm: the Hall of Pillars, the broken bridge, round the dragon on its gold.",
     preview: "previews/snow_dragon_pass.jpg",
     modes: ["race", "timeTrial"],
     theme: "emberdeep_hold",
@@ -476,9 +476,9 @@ export const TRACKS: TrackEntry[] = [
     id: "celestial_dragon_festival",
     // Blake, Oct 25: the v3 greybox's lap painted as the Moonstone Kingdom, a moonlit
     // violet kingdom (the first lap is celestial_dragon_festival_v2).
-    name: "Celestial Dragon Festival",
+    name: "Moonstone Kingdom",
     description:
-      "A moonlit kingdom: over the glowing lake, round the winged dragon's fountain, up through the crystals and off the Star Leap, past the observatory to the palace.",
+      "A moonlit kingdom: over the glowing lake, up through the crystals, off the Star Leap to the palace.",
     preview: "previews/celestial_dragon_festival.jpg",
     modes: ["race", "timeTrial"],
     theme: "moonstone_kingdom",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "celestial_dragon_festival",
-  "name": "Celestial Dragon Festival",
+  "name": "Moonstone Kingdom",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",

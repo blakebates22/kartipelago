@@ -40,6 +40,7 @@ const ISLAND: Record<string, IslandStyle> = {
   frostveil: "frostveil",
   desert: "desert",
   dragon: "dragon",
+  beach: "beach",
 };
 
 export function loadingScreen(game: Game): Screen {
