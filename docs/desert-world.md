@@ -390,7 +390,7 @@ back to the sun.
   desert and its mesas, the crater, the Heart Shaft and its ascent terrace, and the
   caves as "tubes" (chains of nodes with a radius, floor and height). Three height
   fields make the world: the top surface, the caves' floor and their roof.
-- `impact_depths.py`: the route and its road kinds (bridges found where the ground
+- `impact_depths_v2.py` (the first lap; `impact_depths.py` is the current one, dressed by `impact_depths_dress.py`): the route and its road kinds (bridges found where the ground
   falls away).
 - `impact_scenery.py`: the land mesh, the caves' roofs and the desert over them, the
   rims of every opening (skylights, the cave mouth, the portal), water and lava, and the

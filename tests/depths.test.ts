@@ -29,7 +29,7 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "impact_depths";
+const id = "impact_depths_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -45,13 +45,13 @@ const wayPath = (p: TrackPackage) =>
     .points.map((q) => ({ x: q.x, y: q.y, z: q.z }));
 
 describe("Impact Depths", () => {
-  it("is the Desert World's fourth course, with its own theme and music", async () => {
+  it("was the Desert World's fourth course (the slot keeps the name), with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "desert")!;
-    expect(w.tracks).toEqual(["canyon_dash", "oasis_haven", "dry_gulch", id]);
+    expect(w.tracks).toEqual(["canyon_dash", "oasis_haven", "dry_gulch", "impact_depths"]);
     expect(w.comingSoon ?? []).toEqual([]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
-    expect(t.theme).toBe(id);
+    expect(t.theme).toBe("impact_depths");
     expect(SONGS[t.music]?.id).toBe("depths");
     expect(SONGS.depths!.loop).toBe(true);
     const p = await loadTrackPackage(reader, { visual: false });

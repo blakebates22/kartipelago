@@ -1180,6 +1180,7 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, c
             hs[i, j] = height(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny)
     lowest = self._lowest_surface()
     bm = bmesh.new()
+    zs = {}
     for j in range(ny):
         for i in range(nx):
             q = [hs[k] for k in ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1))]
@@ -1197,6 +1198,25 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, c
             # A hair of overlap, so neighbouring squares never leave a crack.
             e = 0.02
             bm.faces.new([bm.verts.new(v) for v in ((xa - e, ya - e, z), (xb + e, ya - e, z), (xb + e, yb + e, z), (xa - e, yb + e, z))])
+            zs[i, j] = z
+    # Where neighbouring squares step by more than a little (a cliff, a pit's edge), a
+    # face between them: else a kart on the lower one could drive under the higher one,
+    # with nothing beneath it.
+    for (i, j), z in zs.items():
+        for di, dj in ((1, 0), (0, 1)):
+            z2 = zs.get((i + di, j + dj))
+            if z2 is None or abs(z2 - z) < 0.5:
+                continue
+            lo, hi = min(z, z2), max(z, z2)
+            if di:
+                xe = x0 + (x1 - x0) * (i + 1) / nx
+                ya, yb = y0 + (y1 - y0) * j / ny, y0 + (y1 - y0) * (j + 1) / ny
+                quad = ((xe, ya, lo), (xe, yb, lo), (xe, yb, hi), (xe, ya, hi))
+            else:
+                ye = y0 + (y1 - y0) * (j + 1) / ny
+                xa, xb = x0 + (x1 - x0) * i / nx, x0 + (x1 - x0) * (i + 1) / nx
+                quad = ((xa, ye, lo), (xb, ye, lo), (xb, ye, hi), (xa, ye, hi))
+            bm.faces.new([bm.verts.new(v) for v in quad])
     ob = self.mesh_object(name, bm, "Collision", "collision")
     self.assign(ob, mat)
     return ob

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "impact_depths_v3";
+const id = "impact_depths";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;

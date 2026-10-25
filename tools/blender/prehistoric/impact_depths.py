@@ -1,37 +1,24 @@
-# Impact Depths: Desert World, course 4. Down through an asteroid's crater into the world
-# under the desert, and back up into the sun.
+# Impact Depths: the new lap (v3, Blake's notes, 2026-10-23): down deep. Greyboxed
+# first for driving, then dressed (impact_depths_dress.py); it replaced the first lap
+# in the Desert World on 2026-10-24, which is kept as impact_depths_v2 (impact_depths_v2.py,
+# ?track=impact_depths_v2).
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/impact_depths.py      (the bpy module)
 #
-# A lap of about 2.6 km (around two minutes). Long ago an asteroid fell on the desert;
-# its crater broke open a hidden world beneath. The race starts on the sunlit desert
-# and goes down, each level stranger than the last, then climbs back out:
+# The asteroid's crater has broken open a great pit, and the lap goes all the way down
+# it: about 2.3 km, 118 m from the rim to the bottom.
 #
-#   1  The Desert Approach: the start, on packed dirt between red mesas, under a rustic
-#      timber arch; the asteroid smoking in its crater straight ahead.
-#   2  The Colossal Crater: round the rim, then down its fractured inner wall on broad
-#      banked curves, the glowing asteroid below, into a cave mouth at the bottom.
-#   3  The Crystal Descent: a warm ochre hall of cyan, violet and rose crystal; a stone
-#      bridge over the underground river, a waterfall, the blue lake.
-#   4  The Lost World: a vast jungle cavern lit by shafts of sunlight through holes in
-#      its roof: ferns and cycads, a turquoise lake, ruins, triceratops grazing, raptors
-#      darting across the road, pterosaurs overhead, and a sauropod by the river bridge.
-#   5  The Volcanic Depths: a tunnel down into black rock and lava: causeways between
-#      lava rivers, lava falls, steam, lava geysers on a beat, rocks falling from the roof.
-#   6  The Dragon's Lair: round the dragon's crag above a lake of lava, the great beast
-#      watching, roaring, breathing fire across the broad bridge over the lava gorge.
-#   7  The Heart of the Earth: through a portal into the shaft at the world's centre,
-#      round the great pulsing core crystal (its ring road a boost), and...
-#   8  The Final Ascent: up a terrace spiralling round the shaft's wall, from crystal to
-#      sandstone to sunlight, out onto the desert, one fast curve to the line.
-#
-#   The Ancient Way (the shortcut): straight on where the main road turns into the Lost
-#   World, through a narrow ruined gateway, along a stone causeway across a hidden
-#   cavern's still black pool, and out onto the volcanic causeway.
-#
-# The land is impact_land.py (plain data, no Blender); the scenery impact_scenery.py and
-# impact_life.py, the kit impact_props.py.
+#   A  The rim: the start on the desert at the pit's edge, sweeping round it.
+#   B  Terrace one (the crystal wall): a hairpin over the edge and back round the pit's
+#      wall the other way, weaving, ducking into the rock.
+#   C  Terrace two (the jungle ledge): another hairpin, round the other way again, a
+#      jump over a crevasse.
+#   D  The bottom (the lava ring): a last hairpin down to the ring round the core, over
+#      the crests between the lava.
+#   E  The updraft: into the roaring column of wind beside the core, which shoots you up
+#      the corkscrew to the top in about 7 s, and out along the bridge across the pit
+#      to the rim and the line.
 
 import math
 import os
@@ -40,66 +27,518 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-import impact_land as L  # noqa: E402
+from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
 TRACK_ID = "impact_depths"
 
-ROUTE = kit.route_points_by(L.PATH, L.road_z, every=8.0, width=L.road_w)
-S = L.S
+# ---------------------------------------------------------------- the layout
+#
+# Built straight from the pit's geometry (its centre at the origin): the terraces are
+# arcs round it (radius gently weaving: sweeping S-bends), joined by hairpins; the
+# updraft is a corkscrew round the core's pillar; the bridge runs straight out to the
+# rim. PATH: (x, y, heading, segment) every metre or so, like the kit's turtle.
+
+R_RIM, R_T1, R_T2, R_BOT = 240.0, 190.0, 140.0, 90.0
+R_HELIX = 24.0
+TH_B = -90.0  # the bridge's bearing (and the start's)
+TERRACES = [
+    # (segment kind, radius, from bearing, to bearing, weave amplitude, weave count)
+    ("rim", R_RIM, TH_B + 12.0, 10.0, 10.0, 6),
+    ("t1", R_T1, 10.0, -140.0, 12.0, 7),
+    ("t2", R_T2, -140.0, 10.0, 10.0, 8),
+    ("bottom", R_BOT, 10.0, -140.0, 7.0, 6),
+]
+
+
+def _arc(r, a0, a1, amp, n, step=1.0):
+    """Points round the pit at radius r (weaving by amp, n times round a full turn) from
+    bearing a0 to a1 (degrees)."""
+    out = []
+    span = math.radians(a1 - a0)
+    k = max(8, int(abs(span) * r / step))
+    for i in range(k + 1):
+        t = i / k
+        a = math.radians(a0) + span * t
+        # The weave fades in and out at the ends (so the hairpins meet the true radius).
+        w = amp * math.sin(n * (a - math.radians(a0))) * min(1.0, 6 * t, 6 * (1 - t))
+        out.append(((r + w) * math.cos(a), (r + w) * math.sin(a)))
+    return out
+
+
+def _hairpin(r1, r2, a, step=1.0):
+    """A half circle at bearing a from radius r1 to r2 (it bulges in the direction you
+    were going)."""
+    rc = (r1 + r2) / 2
+    hr = abs(r1 - r2) / 2
+    cx, cy = rc * math.cos(math.radians(a)), rc * math.sin(math.radians(a))
+    ux, uy = math.cos(math.radians(a)), math.sin(math.radians(a))  # radial out
+    tx, ty = -uy, ux  # tangent (anticlockwise)
+    return ux, uy, tx, ty, cx, cy, hr
+
+
+def build_path():
+    segs = []  # lists of (x, y)
+    kinds = []
+    for k, (kind, r, a0, a1, amp, n) in enumerate(TERRACES):
+        segs.append(_arc(r, a0, a1, amp, n))
+        kinds.append(kind)
+        if k + 1 < len(TERRACES):
+            r2 = TERRACES[k + 1][1]
+            ux, uy, tx, ty, cx, cy, hr = _hairpin(r, r2, a1)
+            # Going anticlockwise (a1 > a0) the hairpin bulges anticlockwise.
+            sgn = 1.0 if a1 > a0 else -1.0
+            pts = []
+            m = max(12, int(math.pi * hr))
+            for i in range(m + 1):
+                t = i / m * math.pi
+                # From radius r (outer) round to r2 (inner).
+                o = hr * math.cos(t)
+                f = hr * math.sin(t)
+                pts.append((cx + ux * o + tx * f * sgn, cy + uy * o + ty * f * sgn))
+            segs.append(pts)
+            kinds.append("hairpin")
+    # The link from the bottom ring in towards the updraft: off the ring (heading
+    # clockwise at bearing -140), a right turn towards the centre, onto the corkscrew.
+    end = segs[-1][-1]
+    a = math.atan2(end[1], end[0])
+    # Spiral in from the ring's radius to the helix's over 70 degrees of bearing.
+    link = []
+    m = 80
+    for i in range(1, m + 1):
+        t = i / m
+        rr = lerp(R_BOT, R_HELIX, smooth(t))
+        aa = a - math.radians(70.0) * t
+        link.append((rr * math.cos(aa), rr * math.sin(aa)))
+    segs.append(link)
+    kinds.append("link")
+    # The corkscrew: clockwise (the way the link turns), 1.4 turns, from its bearing.
+    a0 = a - math.radians(70.0)
+    turns = 1.4
+    # End it so its exit, turning off it, points along the bridge's bearing.
+    helix = []
+    m = int(turns * 2 * math.pi * R_HELIX)
+    for i in range(1, m + 1):
+        t = i / m
+        aa = a0 - turns * 2 * math.pi * t
+        helix.append((R_HELIX * math.cos(aa), R_HELIX * math.sin(aa)))
+    segs.append(helix)
+    kinds.append("helix")
+    # Off the top: a curve out onto the bridge's line, and the bridge to the rim.
+    hx, hy = helix[-1]
+    bx, by = math.cos(math.radians(TH_B)), math.sin(math.radians(TH_B))
+    p0 = Vector((hx, hy, 0))
+    # Tangent at the helix's end (clockwise).
+    aa = a0 - turns * 2 * math.pi
+    t0 = Vector((math.sin(aa), -math.cos(aa), 0))
+    q = Vector((bx, by, 0)) * (R_HELIX + 70.0)
+    tq = Vector((bx, by, 0))
+    curve = []
+    m = 90
+    L0 = (q - p0).length
+    for i in range(1, m + 1):
+        t = i / m
+        h00, h10, h01, h11 = 2 * t**3 - 3 * t**2 + 1, t**3 - 2 * t**2 + t, -2 * t**3 + 3 * t**2, t**3 - t**2
+        p = p0 * h00 + t0 * (L0 * h10) + q * h01 + tq * (L0 * h11)
+        curve.append((p.x, p.y))
+    segs.append(curve)
+    kinds.append("exit")
+    # The bridge: out across the pit along its bearing, curving left at the far end onto
+    # the rim (where the lap starts).
+    r0 = R_HELIX + 70.0
+    a_rim = math.radians(TH_B + 12.0)
+    p1 = Vector((R_RIM * math.cos(a_rim), R_RIM * math.sin(a_rim), 0))
+    t1 = Vector((-math.sin(a_rim), math.cos(a_rim), 0))
+    p0 = Vector((bx, by, 0)) * r0
+    L1 = (p1 - p0).length
+    bridge = []
+    m = int(L1)
+    for i in range(1, m):
+        t = i / m
+        h00, h10, h01, h11 = 2 * t**3 - 3 * t**2 + 1, t**3 - 2 * t**2 + t, -2 * t**3 + 3 * t**2, t**3 - t**2
+        p = p0 * h00 + tq * (L1 * 0.9 * h10) + p1 * h01 + t1 * (L1 * 0.6 * h11)
+        bridge.append((p.x, p.y))
+    segs.append(bridge)
+    kinds.append("bridge")
+    # Into PATH, the rim first (the start is where the bridge lands on the rim).
+    order = list(range(len(segs)))
+    pts = []
+    for si in order:
+        for x, y in segs[si]:
+            if pts and math.hypot(x - pts[-1][0], y - pts[-1][1]) < 0.3:
+                continue
+            pts.append((x, y, si))
+    path = []
+    for i, (x, y, si) in enumerate(pts):
+        a = pts[max(0, i - 1)]
+        b = pts[min(len(pts) - 1, i + 1)]
+        h = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+        path.append((x, y, h, si))
+    return path, kinds
+
+
+PATH, KINDS = build_path()
+SEG = kit.segment_starts(PATH)
+_D = [0.0]
+for _a, _b in zip(PATH, PATH[1:]):
+    _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
+LENGTH = _D[-1] + math.hypot(PATH[0][0] - PATH[-1][0], PATH[0][1] - PATH[-1][1])
+K = {k: i for i, k in enumerate(KINDS) if k != "hairpin"}
+HP = [i for i, k in enumerate(KINDS) if k == "hairpin"]
+
+
+def seg_of(s):
+    k = 0
+    for i, d in SEG.items():
+        if d <= s:
+            k = max(k, i)
+    return k
+
+
+# ---------------------------------------------------------------- heights
+
+Z_RIM = 30.0
+Z_BOTTOM = -86.0
+Z_TOP = 32.0
+# Heights at segment starts (and the end of the lap); between them the road eases.
+HEIGHT = {
+    K["rim"]: Z_RIM, HP[0]: 26.0, K["t1"]: 14.0, HP[1]: -22.0, K["t2"]: -32.0, HP[2]: -60.0, K["bottom"]: -68.0,
+    K["link"]: -84.0, K["helix"]: Z_BOTTOM, K["exit"]: Z_TOP, K["bridge"]: Z_TOP,
+}
+# The crevasse jump on terrace two: (lip, landing).
+GAP = (SEG[K["t2"]] + 230.0, SEG[K["t2"]] + 241.0)
+CRESTS = {K["rim"]: (3, 1.6), K["t1"]: (4, 1.4), K["bottom"]: (4, 1.8)}
+
+
+def road_z(d, seg):
+    if seg == K["t2"] and GAP[0] - 14 <= d <= GAP[1] + 14:
+        z_lip = _base(GAP[0] - 14, seg) + 0.6
+        if d <= GAP[0]:
+            return lerp(_base(GAP[0] - 14, seg), z_lip + 0.4, (d - (GAP[0] - 14)) / 14)
+        if d <= GAP[1]:
+            return lerp(z_lip + 0.4, z_lip - 1.2, (d - GAP[0]) / (GAP[1] - GAP[0]))
+        return lerp(z_lip - 1.2, _base(GAP[1] + 14, seg), (d - GAP[1]) / 14)
+    z = _base(d, seg)
+    if seg in CRESTS:
+        a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
+        t = (d - a) / max(1e-6, b - a)
+        n, h = CRESTS[seg]
+        z += h * math.sin(t * math.pi * n) ** 2
+    return z
+
+
+def _base(d, seg):
+    a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
+    t = (d - a) / max(1e-6, b - a)
+    z0 = HEIGHT[seg]
+    z1 = HEIGHT.get(seg + 1, Z_RIM)
+    if seg == K["bridge"]:
+        return lerp(Z_TOP, Z_RIM, smooth(t))
+    if seg == K["helix"]:
+        return lerp(z0, z1, t)  # the corkscrew climbs steadily
+    return lerp(z0, z1, smooth(t) if seg in HP else t)
+
+
+def road_w(d, seg):
+    if seg == K["helix"]:
+        return 14.0
+    if seg == K["bridge"]:
+        return 14.0
+    if seg in HP:
+        return 17.0
+    return 16.0
+
+
+ROUTE = kit.route_points_by(PATH, road_z, every=6.0, width=road_w)
+# The plan's distances (SEG, GAP) are flat; the course measures along the road, which
+# is longer down the hairpins and up the corkscrew.
+TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
+
+# ---------------------------------------------------------------- the land
+
+
+def ring_z(kind, bearing):
+    """The height of a terrace's road at a bearing (radians), roughly (for the walls)."""
+    _, r, a0, a1, _, _ = next(t for t in TERRACES if t[0] == kind)
+    seg = K[kind]
+    a = math.degrees(bearing)
+    # The bearing along the terrace, unwrapped towards its range.
+    lo, hi = min(a0, a1), max(a0, a1)
+    while a < lo - 180:
+        a += 360
+    while a > hi + 180:
+        a -= 360
+    t = max(0.0, min(1.0, (a - a0) / (a1 - a0)))
+    return lerp(HEIGHT[seg], HEIGHT[seg + 1], t)
+
+
+def ring_r(kind, bearing):
+    """A terrace road's radius at a bearing (radians): its ring, weaving like _arc."""
+    _, r, a0, a1, amp, n = next(t for t in TERRACES if t[0] == kind)
+    a = math.degrees(bearing)
+    lo, hi = min(a0, a1), max(a0, a1)
+    while a < lo - 180:
+        a += 360
+    while a > hi + 180:
+        a -= 360
+    t = max(0.0, min(1.0, (a - a0) / (a1 - a0)))
+    w = amp * math.sin(n * math.radians(a - a0)) * min(1.0, 6 * t, 6 * (1 - t))
+    return r + w
+
+
+# The cave over the pit: its roof, the desert above it, and where the crater broke
+# through (the crack the sunlight pours in by) and a few smaller holes over the jungle.
+Z_DESERT = 112.0
+R_CAVE = 300.0
+
+
+def roof_z(x, y):
+    r = math.hypot(x, y)
+    return 96.0 - 34.0 * (r / 290.0) ** 2 + 3.0 * math.sin(x / 23.0) * math.cos(y / 19.0) + 1.5 * math.sin((x - y) / 11.0)
+
+
+# The crack: a jagged rift across the roof, from over the rim (by the start) across the
+# pit towards the far side, widest over the core.
+CRACK = [(-30.0, -262.0, 10.0), (-20.0, -200.0, 22.0), (-6.0, -120.0, 34.0), (6.0, -40.0, 40.0), (18.0, 30.0, 30.0),
+         (40.0, 100.0, 18.0), (70.0, 150.0, 8.0)]
+SKYLIGHTS = [(140.0 * math.cos(math.radians(a)), 140.0 * math.sin(math.radians(a)), rr)
+             for a, rr in ((-105.0, 9.0), (-40.0, 12.0), (-10.0, 7.0), (160.0, 10.0))]
+
+
+def _seg_d(px, py, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy + 1e-9)))
+    return math.hypot(px - ax - t * dx, py - ay - t * dy), t
+
+
+def opening(x, y):
+    """How far inside an opening in the roof (x, y) is, metres (negative: outside)."""
+    best = -1e9
+    jag = 4.0 * math.sin(x / 5.3 + y / 7.1) + 2.5 * math.sin(x / 2.9 - y / 3.7)
+    for a, b in zip(CRACK, CRACK[1:]):
+        d, t = _seg_d(x, y, a[0], a[1], b[0], b[1])
+        best = max(best, lerp(a[2], b[2], t) / 2 - d + jag)
+    for sx, sy, rr in SKYLIGHTS:
+        best = max(best, rr - math.hypot(x - sx, y - sy) + 0.4 * jag)
+    return best
+
+
+def zone(x, y):
+    """Which world a point is in, by how far down the pit it is."""
+    r = math.hypot(x, y)
+    if r > (R_RIM + R_T1) / 2:
+        return "crater"
+    if r > (R_T1 + R_T2) / 2:
+        return "crystal"
+    if r > (R_T2 + R_BOT) / 2:
+        return "jungle"
+    if r > R_HELIX + 18:
+        return "volcanic"
+    return "core"
+
+
+RINGS = ["rim", "t1", "t2", "bottom"]
+
+
+def _shape(x, y):
+    """(height, crack): the land, and the floor of a crack at the foot of a cliff (or
+    None). Each terrace is a ledge at its road's height. Off its inner side, a cliff
+    drops to the next terrace down, and at that cliff's foot, just off the lower road,
+    a crack down into the glow: fall off a ledge and you land in one, and you're put
+    back on the road (no rails to catch on, nowhere to be stranded)."""
+    r = math.hypot(x, y)
+    b = math.atan2(y, x)
+    desert = Z_RIM + 1.0 + 0.8 * math.sin(x / 41.0) * math.cos(y / 37.0)
+    rr = [ring_r(k, b) for k in RINGS]
+    zz = [ring_z(k, b) for k in RINGS]
+    if r >= rr[0] + 14:
+        # The cave's outer wall, up into the roof.
+        u = (r - rr[0] - 14) / 34.0
+        return lerp(desert, roof_z(x, y) + 4.0, smooth(min(1.0, max(0.0, u)) ** 0.8)), None
+    if r >= rr[0] - 12.0:
+        return zz[0] - 0.5, None
+    for k in range(3):
+        ra, za, rb, zb = rr[k], zz[k], rr[k + 1], zz[k + 1]
+        if r < rb - 12.0:
+            continue
+        e_hi = ra - (12.0 if ra - rb > 40 else 10.5)
+        # More room off the lower road's outside near its hairpins (where you swing wide).
+        lo_kind = TERRACES[k + 1]
+        near_pin = min(_bdist(b, lo_kind[2]), _bdist(b, lo_kind[3]))
+        e_lo = rb + 12.0 + 7.0 * (1.0 - smooth(min(1.0, max(0.0, (near_pin - 18.0) / 22.0))))
+        if lo_kind[0] == "t2":
+            # And after the crevasse jump's landing, where you come down fast and wide.
+            k_land = 1.0 - smooth(min(1.0, max(0.0, (_bdist(b, LANDING_B + 14.0) - 16.0) / 14.0)))
+            e_lo = max(e_lo, rb + 12.0 + 14.0 * k_land)
+        if r >= e_hi:
+            return za - 0.5, None
+        if r <= e_lo:
+            return zb - 0.5, None
+        # (From here out to the upper ledge: below the lower road, you're put back.)
+        span = e_hi - e_lo
+        # (Where two terraces weave close, the crack takes nearly all the room and the
+        # cliff stands sheer.)
+        tw = min(9.0, max(min(4.0, span - 0.8), 0.5 * span))
+        zf = zb - 18.0
+        if r < e_lo + tw:
+            u = (r - e_lo) / tw
+            # A steep lip down, the floor, and up into the cliff.
+            z = zf + (zb - 0.5 - zf) * (1.0 - smooth(min(1.0, u / 0.25)))
+            return z, zb
+        u = (r - e_lo - tw) / max(1.0, span - tw)
+        return lerp(zf, za - 1.5, smooth(min(1.0, u)) ** 0.6), zb
+    if r >= rr[3] - 14:
+        return zz[3] - 0.5, None
+    # Inside the bottom ring: the lava lake round the core.
+    return Z_BOTTOM - 8.0, None
+
+
+# The bearing (degrees) round the pit of the crevasse jump's landing on terrace two.
+LANDING_B = TERRACES[2][2] + math.degrees((GAP[1] - SEG[K["t2"]]) / R_T2)
+
+
+def _bdist(b, deg):
+    """Degrees between bearing b (radians) and a bearing in degrees."""
+    return abs((math.degrees(b) - deg + 180.0) % 360.0 - 180.0)
+
+
+def natural(x, y):
+    return _shape(x, y)[0]
+
+
+def crack_floor(x, y):
+    """In a crack (between a lower road and the cliff up to the next ledge): the lower
+    road's height there (anything well below it puts you back), else None."""
+    return _shape(x, y)[1]
+
+
+LAND = {
+    "crater": ("crater_rock", "crater_ground"),
+    "crystal": ("cave_ochre", "flowstone"),
+    "jungle": ("moss_rock", "fern_floor"),
+    "volcanic": ("black_rock", "lava_crust"),
+    "core": ("black_rock", "lava_crust"),
+}
+
+
+def classify(c, n, info):
+    if c.z < Z_BOTTOM - 4:
+        return ("lava_flow", "lava")
+    zb = crack_floor(c.x, c.y)
+    smp = info["sample"]
+    if zb is not None and c.z < min(zb, smp.p.z) - 4.0 and info["d"] > smp.w / 2 + 3.0:
+        # Down in a crack (its floor glowing, its walls dark), well below the road beside
+        # it: put back on the road.
+        return ("lava_flow" if c.z < zb - 12.0 else "black_rock", "lava")
+    rock, floor = LAND[zone(c.x, c.y)]
+    if n.z < 0.62:
+        return (rock, "wall")
+    if math.hypot(c.x, c.y) > R_RIM + 30:
+        return (rock, "wall")
+    if info["d"] < info["sample"].w / 2 + 1.5:
+        return ("crater_ground" if rock == "crater_rock" else floor, "dirt")
+    if zone(c.x, c.y) == "jungle":
+        return (floor, "grass")
+    if zone(c.x, c.y) == "crater":
+        g = math.sin(c.x / 9.0) * math.cos(c.y / 11.0) + 0.6 * math.sin((c.x + c.y) / 7.0)
+        return ("impact_glass" if g > 0.9 else floor, "loose_sand")
+    return (floor, "dirt")
 
 
 def main():
+    import props  # noqa: E402
+
     c = kit.Course(TRACK_ID, "Impact Depths", "impact_depths")
     c.route(ROUTE, width=16.0, bank=7.0)
-    stone = ("bridge_stone", "wall")
+    rock = ("crater_rock", "wall")
+    # No rails on the terraces (karts hopped them and were stranded): off the edge is a
+    # crack, and you're put back. The bridge and the corkscrew keep theirs.
     c.kinds = {
-        "desert": {"mat": "depths_road", "surface": "packed_dirt", "shoulder": 2.2, "shoulder_mat": ("desert_sand", "loose_sand")},
-        "crater": {"mat": "crater_road", "shoulder": 1.6, "shoulder_mat": ("crater_ground", "dirt"), "barrier": 0.8,
-                   "barrier_mat": ("crater_rock", "wall")},
+        "crater": {"mat": "crater_road", "shoulder": 1.6, "shoulder_mat": ("crater_ground", "dirt")},
         "crystal": {"mat": "cave_road", "shoulder": 1.6, "shoulder_mat": ("flowstone", "dirt")},
-        "crystal_bridge": {"mat": "bridge_stone", "shoulder": 0.8, "shoulder_mat": ("bridge_stone", "road"), "barrier": 1.2,
-                           "barrier_mat": stone, "deck": 3.0, "deck_mat": stone, "ground": False},
         "jungle": {"mat": "jungle_track", "surface": "packed_dirt", "shoulder": 1.8, "shoulder_mat": ("fern_floor", "grass")},
-        "jungle_bridge": {"mat": "causeway_stone", "shoulder": 0.8, "shoulder_mat": ("causeway_stone", "road"), "barrier": 1.2,
-                          "barrier_mat": ("ruin_moss", "wall"), "deck": 3.0, "deck_mat": ("ruin_moss", "wall"), "ground": False},
         "volcanic": {"mat": "basalt_slab", "shoulder": 1.5, "shoulder_mat": ("lava_crust", "dirt")},
-        "volcanic_bridge": {"mat": "basalt_slab", "shoulder": 0.8, "shoulder_mat": ("basalt_slab", "road"), "barrier": 1.1,
-                            "barrier_mat": ("black_rock", "wall"), "deck": 3.0, "deck_mat": ("black_rock", "wall"), "ground": False},
-        "lair": {"mat": "lair_road", "shoulder": 1.4, "shoulder_mat": ("ember_ash", "dirt")},
-        "lair_bridge": {"mat": "lair_road", "shoulder": 0.8, "shoulder_mat": ("lair_road", "road"), "barrier": 1.2,
-                        "barrier_mat": ("lair_rock", "wall"), "deck": 4.0, "deck_mat": ("lair_rock", "wall"), "ground": False},
-        "core": {"mat": "core_road", "shoulder": 1.0, "shoulder_mat": ("core_glass", "dirt"), "barrier": 1.0,
-                 "barrier_mat": ("core_glass", "wall")},
-        "ascent": {"mat": "spiral_road", "shoulder": 1.0, "shoulder_mat": ("spiral_road", "dirt"), "barrier": 1.0,
-                   "barrier_mat": ("strata_cream", "wall")},
-        "ascent_bridge": {"mat": "spiral_road", "shoulder": 1.0, "shoulder_mat": ("spiral_road", "road"), "barrier": 1.0,
-                          "barrier_mat": ("strata_cream", "wall"), "deck": 3.0, "deck_mat": ("strata_orange", "wall"), "ground": False},
+        "helix": {"mat": "core_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("core_glass", "road"), "barrier": 1.3,
+                  "barrier_mat": ("core_glass", "wall"), "deck": 2.0, "deck_mat": ("black_rock", "wall"), "ground": False},
+        "bridge": {"mat": "bridge_stone", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("bridge_stone", "road"), "barrier": 1.2,
+                   "barrier_mat": ("bridge_stone", "wall"), "deck": 3.0, "deck_mat": ("bridge_stone", "wall"), "ground": False},
+        "ramp": {"mat": "jungle_track", "surface": "packed_dirt", "shoulder": 1.8, "shoulder_mat": ("fern_floor", "grass")},
     }
-    bridge_kind = {5: "crystal_bridge", 6: "crystal_bridge", 11: "jungle_bridge", 12: "jungle_bridge", 13: "volcanic_bridge", 14: "lair_bridge",
-                   15: "lair_bridge", 16: "lair_bridge", 18: "ascent_bridge"}
-    road_kind = {"desert": "desert", "crater": "crater", "crystal": "crystal", "jungle": "jungle", "volcanic": "volcanic",
-                 "lair": "lair", "core": "core", "ascent": "ascent"}
+    world = {K["rim"]: "crater", HP[0]: "crystal", K["t1"]: "crystal", HP[1]: "jungle", K["t2"]: "jungle", HP[2]: "volcanic",
+             K["bottom"]: "volcanic", K["link"]: "volcanic"}
 
     def label(smp):
-        s = smp.s
-        seg = L.seg_of(s)
-        x, y = smp.p.x, smp.p.y
-        if seg in bridge_kind:
-            below = min(L.ground(x + ox, y + oy)[0] for ox, oy in ((0, 0), (4, 0), (-4, 0), (0, 4), (0, -4)))
-            if below < smp.p.z - 3.5:
-                return bridge_kind[seg]
-        z = L.zone_of(s)
-        if z == "core" and seg >= 18:
-            return "ascent"
-        return road_kind[z]
+        s = TO_PLAN(smp.s)
+        seg = seg_of(s)
+        if GAP[0] <= s <= GAP[1]:
+            return "gap"
+        if GAP[0] - 10 <= s < GAP[0]:
+            return "ramp"
+        if seg in (K["helix"], K["exit"]):
+            return "helix"
+        if seg == K["bridge"]:
+            # Onto the rim at the end: the rim's own road, so the start is on dirt.
+            return "crater" if s > LENGTH - 30 else "bridge"
+        return world.get(seg, "crater")
 
-    specials = [r for r in kit.runs(c, label) if r[2] != "desert"]
-    c.roads(kit.plan(c, specials, "desert", max_len=200.0))
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "ramp":
+            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+        elif k != "crater":
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "crater", max_len=200.0))
 
-    import impact_scenery  # noqa: E402
+    X0, X1, Y0, Y1 = -560, 560, -560, 560
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
 
-    impact_scenery.build(c, sys.modules[__name__])
+    def under(x, y):
+        return natural(x, y) - 0.4
+
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("crater_ground", "dirt"))
+
+    # The core: a pillar of glowing crystal in the lava, the updraft's corkscrew round it.
+    bm = bmesh.new()
+    props.loft(bm, [props.ring(bm, (0.0, 0.0), 14.0, Z_BOTTOM - 10, 10), props.ring(bm, (0.0, 0.0), 11.0, Z_TOP - 6, 10),
+                    props.ring(bm, (0.0, 0.0), 2.0, Z_TOP + 12, 10)], cap_top=True, cap_bottom=True)
+    core = c.mesh_object("Core Pillar", bm, "Rocks")
+    c.assign(core, c.lib("core_crystal", "wall"))
+
+    c.start_line()
+    S = {k: TO_ROAD(v) for k, v in SEG.items()}
+    # The updraft: a ride up the corkscrew (src/game/loops.ts), in at its foot and out
+    # at the top, carried the whole way at about 34 m/s (about 7 s).
+    a, b = TO_ROAD(SEG[K["helix"]]), TO_ROAD(SEG[K["exit"]] + 12)
+    ride = []
+    s = a
+    while s < b:
+        q = c.at(s)
+        ride.append([round(v, 2) for v in c.game(q.p.x, q.p.y, q.p.z)] + [round(q.bank, 2)])
+        s += 1.5
+    q = c.at(b)
+    ride.append([round(v, 2) for v in c.game(q.p.x, q.p.y, q.p.z)] + [round(q.bank, 2)])
+    c.entity("ride", id="updraft", points=ride, width=14.0, minSpeed=34.0, outSpeed=26.0, commit=0.0, boostMult=1.6,
+             boostSec=round((b - a - 40.0) / 34.0, 1), gravity=0.0)
+    # Zippers: along the rim, down each hairpin's exit, along the bottom, and across the
+    # bridge.
+    for at in (S[K["rim"]] + 120, S[K["t1"]] + 30, S[K["t1"]] + 300, S[K["t2"]] + 30, S[K["t2"]] + 300, S[K["bottom"]] + 30, S[K["bridge"]] + 30):
+        c.zipper(at, 0)
+    for at, across in ((S[K["rim"]] + 250, 0), (S[K["t1"]] + 150, -3), (S[K["t2"]] + 120, 3), (S[K["bottom"]] + 120, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S[K["rim"]] + 60, -4, "red"), (S[K["rim"]] + 60, 4, "blue"), (S[K["t1"]] + 220, 0, "green"), (S[K["t2"]] + 60, 0, "yellow"),
+                            (S[K["t2"]] + 300, -4, "rainbow"), (S[K["t2"]] + 300, 4, "red"), (S[K["bottom"]] + 180, 0, "blue")):
+        c.balloon(at, across, col)
+    g0, g1 = TO_ROAD(GAP[0]), TO_ROAD(GAP[1])
+    c.entity("respawn", **{"from": round(g0 - 20, 1), "to": round(g1 + 4, 1), "at": round(g1 + 20, 1)})
+    c.checkpoints(extra=[S[HP[0]] + 40, S[K["t1"]] + 200, S[HP[1]] + 40, S[K["t2"]] + 150, S[HP[2]] + 40, S[K["bottom"]] + 120, S[K["link"]] + 30,
+                         S[K["bridge"]] + 60], avoid=[(a - 4, b + 4)], height=12.0)
+
+    import impact_depths_dress  # noqa: E402
+
+    impact_depths_dress.build(c, sys.modules[__name__], ter)
     c.finish()
+    print("lap", round(c.length, 1), "updraft", round(b - a, 1), "m")
 
 
 if __name__ == "__main__":

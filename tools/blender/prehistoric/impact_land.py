@@ -1,5 +1,5 @@
 # Impact Depths: the land, as plain data and functions (no Blender), shared by the course
-# script (impact_depths.py), its scenery modules and the preview tools.
+# script (impact_depths_v2.py), its scenery modules and the preview tools.
 # SPDX-License-Identifier: MIT
 #
 # Three height fields on one grid make the whole world:

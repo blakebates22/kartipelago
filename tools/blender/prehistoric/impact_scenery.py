@@ -1,4 +1,4 @@
-# Impact Depths' land and its shell (see impact_depths.py and impact_land.py): the
+# Impact Depths' land and its shell (see impact_depths_v2.py and impact_land.py): the
 # ground you drive on, the caves' roofs and the desert over them, the openings' rims,
 # water and lava, the light, and the gameplay. The landmarks, plants and creatures'
 # homes are impact_life.py; the props impact_props.py.

@@ -1,4 +1,4 @@
-# Impact Depths v3's look (see impact_v3.py): the cave over the pit, the crack the crater
+# Impact Depths' look (see impact_depths.py): the cave over the pit, the crack the crater
 # broke in its roof (and the sunlight through it), and each terrace dressed as one of the
 # old Impact Depths' worlds on the way down: the crater's rim, the crystal halls, the
 # Lost World's jungle, the volcanic depths, the core. Built from the same props and

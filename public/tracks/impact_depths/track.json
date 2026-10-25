@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "impact_depths_v3",
+  "id": "impact_depths",
   "name": "Impact Depths",
   "geometry": {
     "visual": "visual.glb",

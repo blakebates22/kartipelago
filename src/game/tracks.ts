@@ -128,19 +128,17 @@ export const TRACKS: TrackEntry[] = [
     music: "aurora",
     load: { scene: "track", packageId: "aurora_rift_v3" },
   },
-  // Impact Depths' new lap (v3: down the pit under the cave roof the crater cracked open,
-  // world by world to the core, and the updraft back up), to try before it replaces the
-  // current one: ?track=impact_depths_v3.
+  // The first Impact Depths (the new lap replaced it on 2026-10-24): ?track=impact_depths_v2.
   {
-    id: "impact_depths_v3",
-    name: "Impact Depths (v3)",
+    id: "impact_depths_v2",
+    name: "Impact Depths (v2)",
     description:
-      "Down the great pit under the cracked cave roof to the core, and the updraft back up.",
-    preview: "previews/impact_depths.jpg",
+      "Dive into a smoking crater, down through crystal caves, a lost jungle and lava, to the Earth's core.",
+    preview: "previews/impact_depths_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_depths",
     music: "depths",
-    load: { scene: "track", packageId: "impact_depths_v3" },
+    load: { scene: "track", packageId: "impact_depths_v2" },
   },
   // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
   // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
@@ -332,7 +330,7 @@ export const TRACKS: TrackEntry[] = [
     id: "impact_depths",
     name: "Impact Depths",
     description:
-      "Dive into a smoking crater, down through crystal caves, a lost jungle and lava, to the Earth's core.",
+      "Down the great pit under the cracked cave roof to the core, and the updraft back up.",
     preview: "previews/impact_depths.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_depths",

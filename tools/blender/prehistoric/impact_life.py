@@ -1,4 +1,4 @@
-# Impact Depths' landmarks and life (see impact_depths.py): the shortcut's causeway, each
+# Impact Depths' landmarks and life (see impact_depths_v2.py): the shortcut's causeway, each
 # region's dressing (the desert outpost, the asteroid and its crater, the crystal halls,
 # the Lost World's plants and ruins, the volcanic depths, the dragon's crag, the core's
 # chamber, the ascent), the creatures' paths, and the gameplay entities.
