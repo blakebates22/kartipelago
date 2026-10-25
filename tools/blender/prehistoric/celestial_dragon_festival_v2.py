@@ -2,7 +2,7 @@
 # night of its greatest festival: the grand finale of the dragon kingdom.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/celestial_dragon_festival.py      (the bpy module)
+#   python tools/blender/prehistoric/celestial_dragon_festival_v2.py      (the bpy module)
 #
 # A lap of about 2.5 km (under two minutes) round the Palace Mount, at night, with
 # the sky filling with fireworks lap by lap (the game's festival: game/festival.ts).
@@ -41,14 +41,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import cdf_land as L  # noqa: E402
 
-TRACK_ID = "celestial_dragon_festival"
+TRACK_ID = "celestial_dragon_festival_v2"
 
 ROUTE = kit.route_points_by([(p[0], p[1], p[2], 0) for p in L.PATH], L.road_z, every=6.0, width=L.road_w)
 S = L.S
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Celestial Dragon Festival", "celestial_dragon_festival")
+    c = kit.Course(TRACK_ID, "Celestial Dragon Festival (v2)", "celestial_dragon_festival")
     c.route(ROUTE, width=18.0, bank=6.0)
     kerb = ("cdf_kerb", "road")
     bal = ("cdf_balustrade", "wall")
