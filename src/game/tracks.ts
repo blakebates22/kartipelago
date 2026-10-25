@@ -191,6 +191,19 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "volcano_isle" },
   },
+  // The beach world's fourth course (working name), a greybox: a seaside water park, the
+  // wave loop, the slide tower and its flume, the lazy river. ?track=splash_lagoon.
+  {
+    id: "splash_lagoon",
+    name: "Splash Lagoon (greybox)",
+    description:
+      "Round the Big Curl wave loop, up the slide tower and down the flume, then the lazy river's bend or its plank.",
+    preview: "previews/splash_lagoon.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "splash_lagoon" },
+  },
   // The first Dragon Canyon paint (the desert frontier; the Emerald Kingdom repaint replaced
   // it on 2026-10-25): ?track=dragon_canyon_v2.
   {

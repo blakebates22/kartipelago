@@ -240,6 +240,7 @@ describe("worlds", () => {
       "coral_cove",
       "shipwreck_bay",
       "volcano_isle",
+      "splash_lagoon",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
       "riverbend_palms",

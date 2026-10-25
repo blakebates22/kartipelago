@@ -98,6 +98,7 @@ export const WORLDS: WorldEntry[] = [
       "coral_cove",
       "shipwreck_bay",
       "volcano_isle",
+      "splash_lagoon",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

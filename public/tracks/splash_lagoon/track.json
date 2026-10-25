@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "id": "splash_lagoon",
+  "name": "Splash Lagoon (greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "loop_01",
+      "type": "loop",
+      "x": 110.0,
+      "y": 2.0,
+      "z": -0.0,
+      "heading": 1.570796,
+      "radius": 20.0,
+      "ramp": 24.0,
+      "offset": 16.0,
+      "width": 14.0,
+      "minSpeed": 14.0,
+      "commit": 18.0,
+      "boostMult": 1.45,
+      "boostSec": 2.2,
+      "gravity": 8.0,
+      "probe": [
+        [0.0, 110.0, 2.0, -0.0],
+        [17.96, 127.758, 3.995, 0.229],
+        [46.396, 141.636, 26.153, 2.825],
+        [74.832, 121.857, 43.185, 8.0],
+        [103.268, 102.079, 26.153, 13.175],
+        [131.704, 115.957, 3.995, 15.771],
+        [149.664, 133.715, 2.0, 16.0]
+      ]
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 65.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 244.7,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 403.9,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 168.6,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 308.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 569.4,
+      "across": -5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 780.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 24.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 24.0,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 199.6,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 395.9,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 706.0,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 817.7,
+      "across": 0,
+      "color": "red"
+    }
+  ],
+  "generator": "tools/blender/prehistoric/splash_lagoon.py (re-running it rewrites entities)"
+}
