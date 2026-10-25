@@ -33,7 +33,8 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "dragon_isles";
+// The first lap, kept as dragon_isles_v2 since the painted v3 lap took over the id.
+const id = "dragon_isles_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -48,15 +49,15 @@ const passagePath = (p: TrackPackage) =>
     .find((r) => r.id === "Courtyard Passage Path")!
     .points.map((q) => ({ x: q.x, y: q.y, z: q.z }));
 
-describe("Dragon Isles", () => {
+describe("Dragon Isles (Dragonspire Keep v2)", () => {
   it("opens the Dragon Kingdom, with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks[0]).toBe(id);
+    expect(w.tracks[0]).toBe("dragon_isles");
     expect(w.tracks.length + (w.comingSoon?.length ?? 0)).toBe(4);
     expect(w.hidden).toBeFalsy();
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
-    expect(t.theme).toBe(id);
+    expect(t.theme).toBe("dragon_isles");
     expect(SONGS[t.music]?.id).toBe("dragon");
     expect(SONGS.dragon!.loop).toBe(true);
     expect(SONGS.dragon!.bpm).toBeGreaterThan(140);

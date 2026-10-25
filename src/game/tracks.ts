@@ -165,19 +165,21 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "shipwreck_bay" },
   },
-  // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
-  // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
+  // The first Dragonspire Keep (the old Dragon Isles; the painted v3 lap replaced it on
+  // 2026-10-25): ?track=dragon_isles_v2.
   {
-    id: "dragon_isles_v3",
-    name: "Dragonspire Keep (v3 greybox)",
+    id: "dragon_isles_v2",
+    name: "Dragonspire Keep (v2)",
     description:
-      "The new lap in plain shapes: the village chicane, the cliff hairpins, the broken bridge, the pillar jump and the harbour spiral.",
-    preview: "previews/dragon_isles.jpg",
+      "Festival day on the karst isles: market streets, cliff roads, a huge waterfall bridge, a jade dragon above.",
+    preview: "previews/dragon_isles_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragon_isles",
     music: "dragon",
-    load: { scene: "track", packageId: "dragon_isles_v3" },
+    load: { scene: "track", packageId: "dragon_isles_v2" },
   },
+  // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
+  // corners), to drive before they're dressed: ?track=snow_dragon_pass_v3 and so on.
   {
     id: "snow_dragon_pass_v3",
     name: "Snow Dragon Pass (v3 greybox)",
@@ -364,14 +366,14 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "dragon_isles",
-    // (Blake, Oct 24: the course is Dragonspire Keep now; it keeps its id, so its
-    // records and ghosts carry on. The new lap, v3, gets painted as the keep.)
+    // Blake, Oct 24-25: Dragonspire Keep, the v3 greybox's lap painted as a castle at
+    // sunset (it keeps the id, so its records carry on; ghosts are kept per layout).
     name: "Dragonspire Keep",
     description:
-      "Festival day on the karst isles: market streets, cliff roads, a huge waterfall bridge, a jade dragon above.",
+      "Through the castle gate and town, up the cliff road, over the broken waterfall viaduct, round the keep and its red dragon, down the beacon tower to the docks.",
     preview: "previews/dragon_isles.jpg",
     modes: ["race", "timeTrial"],
-    theme: "dragon_isles",
+    theme: "dragonspire_keep",
     music: "dragon",
     load: { scene: "track", packageId: "dragon_isles" },
   },

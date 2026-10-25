@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { it } from "vitest";
 import { loadTrackPackage, type PackageReader } from "../../src/world/trackPackage";
 import { aiLap } from "../../tests/aiLap";
-const id = process.env.AUDIT_TRACK ?? "dragon_isles_v3";
+const id = process.env.AUDIT_TRACK ?? "dragon_isles";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;

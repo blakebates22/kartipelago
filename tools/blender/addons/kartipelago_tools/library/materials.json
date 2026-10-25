@@ -1033,6 +1033,63 @@
           }
         }
       }
+    },
+    {
+      "id": "dragonspire_keep",
+      "name": "Dragonspire Keep",
+      "description": "A dark-stone castle on its cliffs at sunset: grey-violet walls and slate spires, crimson dragon banners, torches and braziers, waterfalls into a mountain lake, a sea of cloud and snowy peaks beyond, and a red dragon on the highest tower",
+      "environment": {
+        "sky": "#7a4a8a",
+        "fog": {
+          "enabled": true,
+          "color": "#c4849a",
+          "near": 420,
+          "far": 2600
+        },
+        "sun": {
+          "color": "#ffc08a",
+          "intensity": 2.5,
+          "direction": [-0.62, 0.42, 0.66]
+        },
+        "ambient": {
+          "sky": "#b49ad8",
+          "ground": "#5a4048",
+          "intensity": 1.2
+        },
+        "skyDome": {
+          "top": "#2c2266",
+          "horizon": "#ff9a5a",
+          "bottom": "#e4889a",
+          "sun": {
+            "color": "#fff0c0",
+            "size": 11,
+            "glow": "#ffb070",
+            "elevation": 9
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#ffb48a",
+            "shade": "#8a5a9a",
+            "seed": 421,
+            "low": 3,
+            "high": 30,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#5a4a7a",
+            "far": "#b48ab4",
+            "height": 13,
+            "seed": 423,
+            "layers": 3
+          },
+          "stars": {
+            "count": 60,
+            "color": "#fff4e0",
+            "seed": 425,
+            "low": 48
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -6252,6 +6309,394 @@
         "wavePeriod": 11,
         "opacity": 0.55,
         "glow": 0.6
+      }
+    },
+    {
+      "id": "keep_flag",
+      "name": "Keep Flagstones",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_flag.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "keep_cobble",
+      "name": "Castle Town Cobbles",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_cobble.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "keep_path",
+      "name": "Cliff Path",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_path.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "keep_carpet",
+      "name": "Royal Carpet",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_carpet.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "keep_kerb",
+      "name": "Keep Kerb",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_kerb.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "keep_grass",
+      "name": "Sunset Grass",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "keep_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "keep_rock",
+      "name": "Keep Crag",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "keep_rock_moss",
+      "name": "Mossy Crag",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_rock_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 9
+    },
+    {
+      "id": "keep_shore",
+      "name": "Lake Shingle",
+      "theme": "dragonspire_keep",
+      "surface": "sand",
+      "image": "keep_shore.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "keep_pine",
+      "name": "Mountain Pine",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "keep_pine.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "keep_ashlar",
+      "name": "Keep Ashlar",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_ashlar.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_ashlar_dark",
+      "name": "Old Keep Ashlar",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_ashlar_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_slate",
+      "name": "Spire Slate",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_slate.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_roof",
+      "name": "Town Roof Tiles",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_roof.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_timber",
+      "name": "Half-Timbering",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_timber.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "keep_door",
+      "name": "Oak Door",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_door.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_window",
+      "name": "Lit Arched Windows",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_window.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.85,
+        "flicker": 0.12
+      }
+    },
+    {
+      "id": "keep_parapet",
+      "name": "Parapet Stone",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_parapet.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "keep_gold",
+      "name": "Gilded Trim",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.2
+      }
+    },
+    {
+      "id": "keep_iron",
+      "name": "Black Iron",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_iron.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "keep_barrel",
+      "name": "Barrel Staves",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_barrel.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "keep_dock",
+      "name": "Weathered Dock Boards",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "keep_dock.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "keep_crate",
+      "name": "Crate",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_crate.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "keep_banner",
+      "name": "Dragon Banner",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "keep_banner_dark",
+      "name": "Black Dragon Banner",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_banner_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "keep_flag_blue",
+      "name": "Blue Pennant",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_flag_blue.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.1
+      }
+    },
+    {
+      "id": "dragon_red",
+      "name": "Red Dragon Scales",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "dragon_red.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "dragon_wing",
+      "name": "Red Dragon Wing",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "dragon_wing.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "dragon_belly",
+      "name": "Dragon Belly",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "dragon_belly.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "keep_lake",
+      "name": "Sunset Lake",
+      "theme": "dragonspire_keep",
+      "surface": "deep_water",
+      "image": "keep_lake.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.01,
+        "wave": 0.04,
+        "wavePeriod": 6,
+        "opacity": 0.92,
+        "glow": 0.1
+      }
+    },
+    {
+      "id": "keep_lake_shallow",
+      "name": "Sunset Shallows",
+      "theme": "dragonspire_keep",
+      "surface": "water",
+      "image": "keep_lake_shallow.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.01,
+        "wave": 0.04,
+        "wavePeriod": 6,
+        "opacity": 0.88,
+        "glow": 0.1
+      }
+    },
+    {
+      "id": "keep_falls",
+      "name": "Keep Falls",
+      "theme": "dragonspire_keep",
+      "surface": "water",
+      "image": "keep_falls.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 1.2,
+        "wave": 0.03,
+        "wavePeriod": 1.3,
+        "opacity": 0.9,
+        "glow": 0.35
+      }
+    },
+    {
+      "id": "keep_cloud",
+      "name": "Sunset Cloud Sea",
+      "theme": "dragonspire_keep",
+      "surface": "water",
+      "image": "keep_cloud.png",
+      "wrap": "repeat",
+      "tileMetres": 34,
+      "fx": {
+        "scrollU": 0.004,
+        "scrollV": 0.0015,
+        "wave": 0.05,
+        "wavePeriod": 11,
+        "opacity": 0.85,
+        "glow": 0.5
+      }
+    },
+    {
+      "id": "keep_mist",
+      "name": "Falls Mist",
+      "theme": "dragonspire_keep",
+      "surface": "water",
+      "image": "keep_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 18,
+      "fx": {
+        "scrollU": 0.01,
+        "scrollV": -0.03,
+        "wave": 0.08,
+        "wavePeriod": 5,
+        "opacity": 0.38,
+        "glow": 0.4
+      }
+    },
+    {
+      "id": "keep_flame",
+      "name": "Torch Flame",
+      "theme": "dragonspire_keep",
+      "surface": "wall",
+      "image": "keep_flame.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0.15,
+        "scrollV": -1.4,
+        "wave": 0.1,
+        "wavePeriod": 0.5,
+        "glow": 1.0
       }
     },
     {

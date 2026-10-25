@@ -1,29 +1,29 @@
-# Dragon Isles v3: a greybox of a new lap, to drive before it's dressed (?track=dragon_isles_v3).
+# Dragonspire Keep: Dragon Kingdom, course 1. A castle on its cliffs at sunset.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/dragon_isles_v3.py      (the bpy module)
+#   python tools/blender/prehistoric/dragon_isles.py      (the bpy module)
 #
-# Blake: the first dragon course isn't fun to drive, and it's long; make the driving much
-# better and the lap about 20% shorter. This keeps the course's story in the same order,
-# in plain shapes, on a lap of about 2.15 km (from 2.69) that's nearly all corners:
+# The v3 greybox's lap (it was dragon_isles_v3.py), exactly: the same roads, heights, widths,
+# jumps, surfaces, barriers, pickups, boosts and checkpoints, painted from Blake's
+# Dragonspire Keep board (Oct 25): fantasy medieval, not the old Eastern kingdom.
+# keep_scenery.py dresses it; keep_props.py is the kit, keep_textures.py the paint.
 #
-#   1  The Grand Ceremonial Gate: the start, north.
-#   2  The Riverside Festival Village: an S-chicane through the market streets, a hop
-#      over the humped canal bridge, round the festival square.
-#   3  The Cliffside Ascent: two hairpins up the cliff, linked by ledges.
-#   4  The Great Waterfall Bridge: east over the gorge, and the bridge is broken in the
-#      middle: a jump over the falls (miss it and you're put back on the far side).
-#   5  The Temple Gardens: a dip-and-weave S round the temple (the Courtyard Passage, the
-#      shortcut, goes straight through).
-#   6  The Sky Paths: south along the karst pillars over the lagoon: a jump from pillar
-#      to pillar, then a weave across three more on rolling bridges.
-#   7  The Lantern Harbour: a spiral down round the last great pillar, one and a quarter
-#      turns, to the boardwalk; an S past the docks and the humped harbour bridge.
-#   8  The Ancient Dragon Passage: north through the headland's tunnel.
-#   9  The Grand Reveal and the Royal Approach: up onto the overlook and an S down to the
-#      gate and the line.
+#   1  The Castle Gate: the start, north under the gatehouse between its twin towers.
+#   2  The castle town: an S through the market streets, a hump over the town bridge,
+#      round the market square.
+#   3  The cliff road: two hairpins up the crag on ledges with parapets and torches.
+#   4  The Waterfall Viaduct: east over the gorge on arches, broken in the middle: a
+#      jump over the falls (miss it and you're put back on the far side).
+#   5  The Keep's courtyard: a dip-and-weave S round the fountain under the great keep
+#      (the Courtyard Passage, the shortcut, goes straight through).
+#   6  The high viaducts: south over the lake on arches between rock spires: a jump
+#      from span to span, then a weave on rolling bridges.
+#   7  The Beacon Tower: a spiral down round the last great crag, to the lakeside docks;
+#      an S past the boats and the humped harbour bridge.
+#   8  The tunnel through the headland, under its portcullis.
+#   9  The royal approach: up onto the overlook and down the red carpet to the gate.
 #
-# The current Dragon Isles is untouched (dragon_isles.py).
+# The first Dragonspire Keep lap (the old Dragon Isles) is kept as dragon_isles_v2.
 
 import math
 import os
@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "dragon_isles_v3"
+TRACK_ID = "dragon_isles"
 
 K = 1.08  # the whole plan, scaled
 START = (0.0, 0.0)
@@ -174,6 +174,19 @@ LAGOON_X = min(p[0] for p in PATH if p[3] in (18, 19, 20, 21)) - 45.0
 SEA = -6.0
 
 
+_DOCKS = [p for p in PATH if p[3] in (24, 25, 26, 27, 28)]
+_HY = {}
+
+
+def HARBOUR_Y(x):
+    """The docks' north edge at x (plus a margin), for the harbour's basin."""
+    k = int(round(x / 2.0))
+    if k not in _HY:
+        best = max((p[1] for p in _DOCKS if abs(p[0] - k * 2.0) < 6.0), default=-175.0)
+        _HY[k] = best + 15.0
+    return _HY[k]
+
+
 def natural(x, y):
     """The valley floor, the cliff up to the highland in the north, the gorge through it,
     and the lagoon (east, and south of the highland down to the harbour)."""
@@ -183,7 +196,10 @@ def natural(x, y):
     gorge = smooth((26.0 - abs(x - GORGE_X)) / 12.0) * smooth((y - (HIGH_Y - 40.0)) / 30.0)
     h = lerp(h, -3.0, gorge)
     lagoon = smooth((x - LAGOON_X) / 40.0) * smooth((y - SHORE_Y) / 30.0) * (1 - 0.0 * high)
-    h = lerp(h, SEA, lagoon)
+    # The harbour's basin, north of the docks (painting: the jetties need water; the docks
+    # have barriers both sides, so nothing here is reachable from the road).
+    basin = smooth((x - 92.0) / 16.0) * smooth((-44.0 - y) / 16.0) * smooth((y - HARBOUR_Y(x)) / 10.0)
+    h = lerp(h, SEA, max(lagoon, basin))
     return h
 
 
@@ -196,53 +212,44 @@ def classify(c, n, info):
     if in_drop(c.x, c.y, c.z):
         return ("canyon_river", "abyss")
     if c.z < 0.4:
-        return ("lagoon_shallow", "water") if c.z > -1.0 else ("lagoon", "deep_water")
+        return ("keep_lake_shallow", "water") if c.z > -1.0 else ("keep_lake", "deep_water")
     if n.z < 0.6:
-        return ("limestone", "wall")
+        return ("keep_rock", "wall")
     if info["d"] < 11:
-        return ("pale_sand", "dirt")
+        return ("keep_path", "dirt")
     if c.z < 1.6:
-        return ("pale_beach", "dirt")
-    return ("lush_grass", "grass")
-
-
-def box(bm, centre, size, rot=0.0):
-    import props  # noqa: E402
-
-    props.cuboid(bm, centre, size, rot=rot)
+        return ("keep_shore", "dirt")
+    return ("keep_grass", "grass")
 
 
 def main():
-    import props  # noqa: E402
-    from course_kit import bmesh  # noqa: E402
-
     def at(d):
         return c.at(TO_ROAD(d))
 
-    c = kit.Course(TRACK_ID, "Dragon Isles (v3 greybox)", "dragon_isles")
+    c = kit.Course(TRACK_ID, "Dragonspire Keep", "dragonspire_keep")
     c.route(ROUTE, width=16.0, bank=7.0)
-    curb = ("stone_curb", "road")
-    bal = ("isle_balustrade", "wall")
-    rail = ("red_rail", "wall")
-    stone = ("stone_base", "wall")
+    curb = ("keep_kerb", "road")
+    bal = ("keep_parapet", "wall")
+    rail = ("keep_parapet", "wall")
+    stone = ("keep_ashlar", "wall")
     c.kinds = {
-        "gate": {"mat": "isle_paving", "shoulder": 1.6, "shoulder_mat": curb},
-        "village": {"mat": "village_cobble", "shoulder": 1.2, "shoulder_mat": curb, "barrier": 1.0, "barrier_mat": rail},
-        "canal": {"mat": "isle_paving", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.2, "barrier_mat": bal, "deck": 2.4,
+        "gate": {"mat": "keep_flag", "shoulder": 1.6, "shoulder_mat": curb},
+        "village": {"mat": "keep_cobble", "shoulder": 1.2, "shoulder_mat": curb, "barrier": 1.0, "barrier_mat": rail},
+        "canal": {"mat": "keep_flag", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.2, "barrier_mat": bal, "deck": 2.4,
                   "deck_mat": stone, "ground": False},
-        "cliff": {"mat": "cliff_road", "shoulder": 1.2, "shoulder_mat": ("cliff_road", "dirt"), "barrier": 1.1, "barrier_mat": bal},
-        "bridge": {"mat": "isle_paving", "shoulder": 1.0, "shoulder_mat": curb, "barrier": 1.3, "barrier_mat": bal, "deck": 4.0,
+        "cliff": {"mat": "keep_path", "shoulder": 1.2, "shoulder_mat": ("keep_path", "dirt"), "barrier": 1.1, "barrier_mat": bal},
+        "bridge": {"mat": "keep_flag", "shoulder": 1.0, "shoulder_mat": curb, "barrier": 1.3, "barrier_mat": bal, "deck": 4.0,
                    "deck_mat": stone, "ground": False},
-        "kicker": {"mat": "isle_paving", "shoulder": 1.0, "shoulder_mat": curb, "deck": 4.0, "deck_mat": stone, "ground": False},
-        "temple": {"mat": "temple_flag", "shoulder": 1.6, "shoulder_mat": ("flowerbed", "grass")},
-        "sky": {"mat": "isle_paving", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.2, "barrier_mat": rail, "deck": 3.5,
+        "kicker": {"mat": "keep_flag", "shoulder": 1.0, "shoulder_mat": curb, "deck": 4.0, "deck_mat": stone, "ground": False},
+        "temple": {"mat": "keep_flag", "shoulder": 1.6, "shoulder_mat": ("keep_grass", "grass")},
+        "sky": {"mat": "keep_flag", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.2, "barrier_mat": rail, "deck": 3.5,
                 "deck_mat": stone, "ground": False},
-        "spiral": {"mat": "isle_paving", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.3, "barrier_mat": bal, "deck": 3.0,
+        "spiral": {"mat": "keep_flag", "shoulder": 0.8, "shoulder_mat": curb, "barrier": 1.3, "barrier_mat": bal, "deck": 3.0,
                    "deck_mat": stone, "ground": False},
-        "harbour": {"mat": "wood_dock", "shoulder": 1.0, "shoulder_mat": ("wood_dock", "road"), "barrier": 1.0,
+        "harbour": {"mat": "keep_dock", "shoulder": 1.0, "shoulder_mat": ("keep_dock", "road"), "barrier": 1.0,
                     "barrier_mat": ("weathered_timber", "wall")},
-        "passage": {"mat": "passage_stone", "shoulder": 1.0, "shoulder_mat": ("passage_stone", "dirt")},
-        "royal": {"mat": "royal_carpet", "shoulder": 2.0, "shoulder_mat": curb},
+        "passage": {"mat": "keep_flag", "shoulder": 1.0, "shoulder_mat": ("keep_path", "dirt")},
+        "royal": {"mat": "keep_carpet", "shoulder": 2.0, "shoulder_mat": curb},
     }
 
     def label(smp):
@@ -288,72 +295,39 @@ def main():
     # The Courtyard Passage: straight across the temple's S, at the road's height.
     za, zb = road_z(SEG[13], 13), road_z(SEG[16], 16)
     sc = [(x, y, lerp(za, zb, i / (len(COURTYARD) - 1)) - 0.05) for i, (x, y) in enumerate(COURTYARD)]
-    c.shortcut("Courtyard Passage", sc, "temple_flag", "road", width=10.0, shoulder=0.8, shoulder_mat=curb)
+    c.shortcut("Courtyard Passage", sc, "keep_flag", "road", width=10.0, shoulder=0.8, shoulder_mat=curb)
 
     X0, X1, Y0, Y1 = -220, 560, -320, 520
     ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
-    c.disc("Lagoon", (LAGOON_X + X1) / 2 + 40, (SHORE_Y + Y1) / 2, 520.0, 0.0, c.lib("lagoon", "deep_water"), n=48)
+    c.disc("Lagoon", (LAGOON_X + X1) / 2 + 40, (SHORE_Y + Y1) / 2, 520.0, 0.0, c.lib("keep_lake", "deep_water"), n=48)
 
     def under(x, y):
         return natural(x, y) - 0.4
 
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("lush_grass", "grass"))
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("keep_grass", "grass"))
 
     # Piers under every bridge, the sky paths' pillars, the spiral's great pillar.
     for piece in c.pieces:
         for kind, size, every in (("sky", 3.0, 26.0), ("bridge", 2.2, 18.0), ("spiral", 1.6, 14.0), ("canal", 1.0, 10.0), ("kicker", 2.2, 10.0)):
             if piece.name.endswith(kind):
-                kit.clear_piers(c, piece, [ter], every=every, mat=("limestone", "wall"), size=size, inset=size + 1.0)
+                kit.clear_piers(c, piece, [ter], every=every, mat=("keep_ashlar", "wall"), size=size, inset=size + 1.0)
     rad = LAYOUT[23][1]
     sp = c.rock_mass("Great Pillar", SPIRE[0], SPIRE[1], rad - 14.0, rad - 14.0, 62.0, z0=SEA - 2, n=20, seed=4)
-    c.paint_rock(sp, ("limestone", "wall"), ("lush_grass", "grass"))
+    c.paint_rock(sp, ("keep_rock", "wall"), ("keep_grass", "grass"))
     for k in range(9):
         d = SEG[18] + (SEG[23] - SEG[18]) * (k + 0.5) / 9
         q = at(d)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 16.0 + 6 * (k % 2)))
             r = c.rock_mass("Karst %d %d" % (k, side > 0), p.x, p.y, 7.0 + 2 * (k % 3), 6.0, q.p.z + 10 + 8 * ((k + side) % 3), z0=SEA - 2, n=12, seed=k * 3 + side)
-            c.paint_rock(r, ("limestone", "wall"), ("lush_grass", "grass"))
+            c.paint_rock(r, ("keep_rock", "wall"), ("keep_grass", "grass"))
 
     # The headland the passage bores through.
     q0, q1 = at(SEG[29] - 10), at(SEG[30] + 20)
     hx, hy = (q0.p.x + q1.p.x) / 2, (q0.p.y + q1.p.y) / 2
     head = c.rock_mass("Headland", hx, hy, 34.0, 30.0, 30.0, z0=-4.0, n=24, seed=7)
     c.tunnel(head, SEG[29] - 8, SEG[30] + 14, half=c.width / 2 + 2.5, height=10.0, pad=16.0)
-    c.paint_rock(head, ("limestone", "wall"), ("lush_grass", "grass"), floor=("passage_stone", "road"), floor_z=q0.p.z + 1.5)
-    # Plain blocks for the buildings: the village, the gate, the temple, the harbour.
-    bm = bmesh.new()
-    s = 30.0
-    k = 0
-    while s < SEG[7]:
-        q = at(s)
-        if not (SEG[4] - 4 <= s <= SEG[5] + 4):  # not on the canal bridge
-            for side in (-1, 1):
-                p = q.side(side * (q.w / 2 + 8.0 + 2 * (k % 2)))
-                h = 6.0 + 2.0 * ((k + (side > 0)) % 3)
-                box(bm, (p.x, p.y, q.p.z + h / 2 - 0.5), (8.0, 8.0, h), rot=math.atan2(q.t.y, q.t.x))
-        s += 14.0
-        k += 1
-    q = at(12.0)
-    for side in (-1, 1):
-        p = q.side(side * (q.w / 2 + 3.0))
-        box(bm, (p.x, p.y, q.p.z + 6.0), (4.0, 4.0, 13.0), rot=math.atan2(q.t.y, q.t.x))
-    box(bm, (q.p.x, q.p.y, q.p.z + 13.5), (4.0, q.w + 10.0, 2.5), rot=math.atan2(q.t.y, q.t.x))
-    zt = road_z(SEG[14], 14)
-    box(bm, (TEMPLE[0], TEMPLE[1], zt + 10.0), (12.0, 12.0, 22.0))
-    for k in range(5):
-        box(bm, (TEMPLE[0], TEMPLE[1], zt + 21.5 + 3.2 * k), (16.0 - 2.4 * k, 16.0 - 2.4 * k, 0.8))
-    s = SEG[24] + 6
-    k = 0
-    while s < SEG[28]:
-        q = at(s)
-        p = q.side(-(q.w / 2 + 9.0))  # the town on the shore side
-        box(bm, (p.x, p.y, q.p.z + 3.0), (9.0, 8.0, 6.0 + 2 * (k % 2)), rot=math.atan2(q.t.y, q.t.x))
-        s += 16.0
-        k += 1
-    blocks = c.mesh_object("Buildings", bm, "Props")
-    c.assign(blocks, c.lib("roof_jade", "wall"))
-
+    c.paint_rock(head, ("keep_rock", "wall"), ("keep_grass", "grass"), floor=("keep_flag", "road"), floor_z=q0.p.z + 1.5)
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
     # Zippers: out of the village onto the cliff, on the broken bridge's run-up, out of the
@@ -389,7 +363,9 @@ def main():
     m = COURTYARD[1]
     c.alt_gate(main_gate, "courtyard_passage", [(COURTYARD[0][0], COURTYARD[0][1], za), (m[0], m[1], (za + zb) / 2), (COURTYARD[2][0], COURTYARD[2][1], zb)], width=12.0)
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    import keep_scenery  # noqa: E402
+
+    keep_scenery.build(c, sys.modules[__name__], ter)
     c.finish()
     print("lap", round(c.length, 1))
 

@@ -13,7 +13,6 @@ const reader =
   };
 
 const COURSES: { id: string; respawns: number; gates: string[]; lap: [number, number] }[] = [
-  { id: "dragon_isles_v3", respawns: 2, gates: ["courtyard_passage"], lap: [60, 110] },
   {
     id: "snow_dragon_pass_v3",
     respawns: 1,

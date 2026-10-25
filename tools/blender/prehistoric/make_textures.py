@@ -5036,6 +5036,12 @@ import isles_textures  # noqa: E402
 MATERIALS += isles_textures.materials(sys.modules[__name__])
 THEMES.append(isles_textures.THEME)
 
+# Dragonspire Keep (Dragon Kingdom, course 1, painted Oct 25: the castle at sunset).
+import keep_textures  # noqa: E402
+
+MATERIALS += keep_textures.materials(sys.modules[__name__])
+THEMES.append(keep_textures.THEME)
+
 # Dragon Canyon (Dragon Kingdom, course 2).
 import dcanyon_textures  # noqa: E402
 
