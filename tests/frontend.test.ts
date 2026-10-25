@@ -69,24 +69,47 @@ describe("settings", () => {
 });
 
 describe("records", () => {
-  it("keeps the best lap and best race per track and mode", () => {
+  it("keeps only Time Trials: the best trial and best lap per track", () => {
     const store = memoryStorage();
+    // A race against the rivals is never a record.
     expect(submitResult("dino_demo", "race", 90, 29, store)).toMatchObject({
+      lap: false,
+      race: false,
+    });
+    expect(loadRecords(store).dino_demo).toBeUndefined();
+    expect(submitResult("dino_demo", "timeTrial", 99, 30, store)).toMatchObject({
       lap: true,
       race: true,
     });
-    expect(submitResult("dino_demo", "race", 95, 28, store)).toMatchObject({
+    expect(submitResult("dino_demo", "timeTrial", 101, 29.5, store)).toMatchObject({
       lap: true,
       race: false,
-      previousRace: 90,
+      previousRace: 99,
     });
-    expect(submitResult("dino_demo", "timeTrial", 99, 30, store)).toMatchObject({
+    // A race shows the Time Trial lap record to compare with, and changes nothing.
+    expect(submitResult("dino_demo", "race", 80, 25, store)).toMatchObject({
       lap: false,
-      race: true,
+      previousLap: 29.5,
     });
     const r = loadRecords(store).dino_demo!;
-    expect(r.bestLap).toBe(28);
-    expect(r.best).toEqual({ race: 90, timeTrial: 99 });
+    expect(r.bestLap).toBe(29.5);
+    expect(r.best).toEqual({ timeTrial: 99 });
+  });
+
+  it("brings over the old records' Time Trials (and laps only where no race was kept)", () => {
+    const store = memoryStorage();
+    store.setItem(
+      "kartipelago.records.v1",
+      JSON.stringify({
+        a: { bestLap: 20, best: { race: 70, timeTrial: 75 } },
+        b: { bestLap: 31, best: { timeTrial: 99 } },
+        c: { bestLap: 40, best: { race: 130 } },
+      }),
+    );
+    const r = loadRecords(store);
+    expect(r.a).toEqual({ bestLap: undefined, best: { timeTrial: 75 } });
+    expect(r.b).toEqual({ bestLap: 31, best: { timeTrial: 99 } });
+    expect(r.c).toBeUndefined();
   });
 });
 

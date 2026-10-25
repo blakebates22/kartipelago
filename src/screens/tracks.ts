@@ -44,6 +44,9 @@ export function preview(src: string): HTMLImageElement | undefined {
 
 type Entry = { kind: "trophy" } | { kind: "track"; track: TrackEntry };
 
+/** A best time not set yet. */
+const NO_TIME = "-:--.--";
+
 const STYLE: Record<string, IslandStyle> = {
   prehistoric: "prehistoric",
   frostveil: "frostveil",
@@ -245,11 +248,11 @@ export function tracksMenu(game: Game): Screen {
     }
     if (e.track.comingSoon) return { body: "Still being built. Coming soon!", lines: [] };
     const rec = records[e.track.id];
-    const lines: string[] = [];
-    if (rec?.best.race) lines.push(`BEST RACE ${formatTime(rec.best.race)}`);
-    if (rec?.best.timeTrial) lines.push(`BEST TRIAL ${formatTime(rec.best.timeTrial)}`);
-    if (rec?.bestLap) lines.push(`BEST LAP ${formatTime(rec.bestLap)}`);
-    if (!lines.length) lines.push("NO RECORD YET");
+    // Time Trials only (src/app/records.ts): a race against the rivals is never a record.
+    const lines = [
+      `BEST TRIAL ${rec?.best.timeTrial ? formatTime(rec.best.timeTrial) : NO_TIME}`,
+      `BEST LAP ${rec?.bestLap ? formatTime(rec.bestLap) : NO_TIME}`,
+    ];
     return { body: e.track.description, lines };
   }
 
@@ -290,10 +293,13 @@ export function tracksMenu(game: Game): Screen {
       if (e.kind === "trophy") trophy(ui.g, lx + 8, y + 5, 1, on ? Math.sin(t * 3) : 0);
       else stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
       ui.text(nameOf(e), lx + 30, y + 4, { color: on ? "#8a2a1a" : INK });
+      const trial = e.kind === "track" ? records[e.track.id]?.best.timeTrial : undefined;
       const sub =
         e.kind === "trophy"
           ? `${tracksOf(world()).filter((tr) => !tr.comingSoon).length} RACES · MOST POINTS`
-          : "";
+          : e.track.comingSoon
+            ? ""
+            : `BEST TRIAL ${trial ? formatTime(trial) : NO_TIME}`;
       ui.text(sub, lx + 30, y + 14, { color: INK_SOFT });
       if (i < entries().length - 1)
         for (let k = lx + 6; k < lx + lw - 6; k += 3) ui.rect(k, y + 29, 1, 1, INK_SOFT);
