@@ -5084,6 +5084,12 @@ import tropic_textures  # noqa: E402
 MATERIALS += tropic_textures.materials(sys.modules[__name__])
 THEMES += [tropic_textures.COVE, tropic_textures.WRECK]
 
+# The ruined courses (Adventure's treasure map challenge): Riverbend in ruins first.
+import ruin_textures  # noqa: E402
+
+MATERIALS += ruin_textures.materials(sys.modules[__name__])
+THEMES.append(ruin_textures.RIVERBEND)
+
 
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))

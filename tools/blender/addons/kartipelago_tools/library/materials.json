@@ -1353,6 +1353,50 @@
           }
         }
       }
+    },
+    {
+      "id": "riverbend_ruins",
+      "name": "Riverbend in Ruins",
+      "description": "The river valley after the dragons' attack: a hazy orange sky full of smoke, scorched meadows, sooty roads, charred bridges and smouldering embers",
+      "environment": {
+        "sky": "#c8865a",
+        "fog": {
+          "enabled": true,
+          "color": "#b48a72",
+          "near": 140,
+          "far": 760
+        },
+        "sun": {
+          "color": "#ffc890",
+          "intensity": 2.0,
+          "direction": [-0.45, 0.5, -0.7]
+        },
+        "ambient": {
+          "sky": "#e8c0a0",
+          "ground": "#4a3a2a",
+          "intensity": 1.15
+        },
+        "skyDome": {
+          "top": "#6a5a6a",
+          "horizon": "#e8a070",
+          "bottom": "#b07a5a",
+          "sun": {
+            "color": "#ffd8a0",
+            "size": 13,
+            "glow": "#ff9a50",
+            "elevation": 12
+          },
+          "clouds": {
+            "count": 46,
+            "color": "#8a7a74",
+            "shade": "#4a3e3e",
+            "seed": 307,
+            "low": 5,
+            "high": 22,
+            "drift": 0.009
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -8711,6 +8755,84 @@
         "scrollV": 0,
         "sway": 0.08
       }
+    },
+    {
+      "id": "ruin_ash",
+      "name": "Scorched Grass",
+      "theme": "riverbend_ruins",
+      "surface": "grass",
+      "image": "ruin_ash.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ruin_grass",
+      "name": "Singed Grass",
+      "theme": "riverbend_ruins",
+      "surface": "grass",
+      "image": "ruin_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ruin_road",
+      "name": "Sooty Road",
+      "theme": "riverbend_ruins",
+      "surface": "road",
+      "image": "ruin_road.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "ruin_char_planks",
+      "name": "Charred Planks",
+      "theme": "riverbend_ruins",
+      "surface": "road",
+      "image": "ruin_char_planks.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15,
+        "pulse": 0.25,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "ruin_char",
+      "name": "Charred Wood",
+      "theme": "riverbend_ruins",
+      "surface": "wall",
+      "image": "ruin_char.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "ruin_ember",
+      "name": "Embers",
+      "theme": "riverbend_ruins",
+      "surface": "wall",
+      "image": "ruin_ember.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.3,
+        "pulsePeriod": 2.2,
+        "flicker": 0.1
+      }
+    },
+    {
+      "id": "ruin_rubble",
+      "name": "Rubble",
+      "theme": "riverbend_ruins",
+      "surface": "wall",
+      "image": "ruin_rubble.png",
+      "wrap": "repeat",
+      "tileMetres": 3
     }
   ]
 }

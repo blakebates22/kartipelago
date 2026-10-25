@@ -46,7 +46,22 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     theme: "jungle_cascade",
     music: "riverbend",
+    ruin: "riverbend_palms_ruin",
     load: { scene: "track", packageId: "riverbend_palms" },
+  },
+  // Riverbend Palms in ruins (Adventure's treasure map challenge, after the dragons'
+  // attack): a shorter lap through the same valley, the burnt bridge's jump, a scorched
+  // track down the west meadow. Dev builds offer it from Riverbend's entry.
+  {
+    id: "riverbend_palms_ruin",
+    name: "Riverbend Palms (Ruined)",
+    description:
+      "The valley after the dragons came: jump the burnt bridge, race the scorched meadow, the ford.",
+    preview: "previews/riverbend_palms_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "riverbend_ruins",
+    music: "riverbend",
+    load: { scene: "track", packageId: "riverbend_palms_ruin" },
   },
   // The previous Riverbend Palms (v2.1, before Blake's first review round), kept
   // playable with ?track=riverbend_palms_v21. Not in any world's menu.

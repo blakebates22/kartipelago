@@ -1,0 +1,500 @@
+{
+  "schemaVersion": 1,
+  "id": "riverbend_palms_ruin",
+  "name": "Riverbend Palms (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 60,
+      "y": 0.72,
+      "z": 150
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 110,
+      "y": -0.21,
+      "z": 172
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 100,
+      "y": 0.87,
+      "z": 72
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 82,
+      "y": 0.5,
+      "z": -150
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -75,
+      "y": 0.86,
+      "z": -140
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 48,
+      "y": 1.26,
+      "z": 190
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -182,
+      "y": 10.88,
+      "z": 8
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 60,
+      "y": 1.92,
+      "z": 150
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 110,
+      "y": 0.99,
+      "z": 172
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 100,
+      "y": 2.07,
+      "z": 72
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 82,
+      "y": 1.7,
+      "z": -150
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -75,
+      "y": 2.06,
+      "z": -140
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 48,
+      "y": 2.46,
+      "z": 190
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -182,
+      "y": 12.08,
+      "z": 8
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 13.93,
+      "y": 3.76,
+      "z": -94.54
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 3.69,
+      "y": 0.79,
+      "z": -94.54
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -63.21,
+      "y": 1.24,
+      "z": -66.01
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -113.81,
+      "y": 2.43,
+      "z": 118.45
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -67.32,
+      "y": -0.65,
+      "z": -35.52
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -82.64,
+      "y": -0.66,
+      "z": 7.77
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -118.06,
+      "y": 1.88,
+      "z": 52.03
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -72.1,
+      "y": 1.11,
+      "z": -39.01
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -71.23,
+      "y": 1.48,
+      "z": 39.98
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -78.99,
+      "y": 1.51,
+      "z": 35.83
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": -163.89,
+      "y": 11.68,
+      "z": 16.55
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": -145.21,
+      "y": 9.95,
+      "z": 89.42
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": -141.64,
+      "y": 9.7,
+      "z": 94.49
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": 53.26,
+      "y": 2.23,
+      "z": 159.88
+    },
+    {
+      "id": "torch_22",
+      "type": "torch",
+      "x": 50.13,
+      "y": 1.93,
+      "z": 146.46
+    },
+    {
+      "id": "torch_23",
+      "type": "torch",
+      "x": 95.55,
+      "y": 1.99,
+      "z": 71.48
+    },
+    {
+      "id": "torch_24",
+      "type": "torch",
+      "x": 99.91,
+      "y": 2.06,
+      "z": 72.06
+    },
+    {
+      "id": "torch_25",
+      "type": "torch",
+      "x": 109.06,
+      "y": 1.62,
+      "z": -29.44
+    },
+    {
+      "id": "torch_26",
+      "type": "torch",
+      "x": 131.64,
+      "y": 1.23,
+      "z": -22.78
+    },
+    {
+      "id": "torch_27",
+      "type": "torch",
+      "x": -66.94,
+      "y": 2.11,
+      "z": -135.22
+    },
+    {
+      "id": "torch_28",
+      "type": "torch",
+      "x": -48.3,
+      "y": 1.61,
+      "z": -147.99
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": 13.93,
+      "y": 3.16,
+      "z": -94.54
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": -63.21,
+      "y": 0.64,
+      "z": -66.01
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": -67.32,
+      "y": -1.25,
+      "z": -35.52
+    },
+    {
+      "id": "campfire_11",
+      "type": "campfire",
+      "x": -118.06,
+      "y": 1.28,
+      "z": 52.03
+    },
+    {
+      "id": "campfire_12",
+      "type": "campfire",
+      "x": -71.23,
+      "y": 0.88,
+      "z": 39.98
+    },
+    {
+      "id": "campfire_13",
+      "type": "campfire",
+      "x": -163.89,
+      "y": 11.08,
+      "z": 16.55
+    },
+    {
+      "id": "campfire_14",
+      "type": "campfire",
+      "x": -141.64,
+      "y": 9.1,
+      "z": 94.49
+    },
+    {
+      "id": "campfire_15",
+      "type": "campfire",
+      "x": 50.13,
+      "y": 1.33,
+      "z": 146.46
+    },
+    {
+      "id": "campfire_16",
+      "type": "campfire",
+      "x": 99.91,
+      "y": 1.46,
+      "z": 72.06
+    },
+    {
+      "id": "campfire_17",
+      "type": "campfire",
+      "x": 131.64,
+      "y": 0.63,
+      "z": -22.78
+    },
+    {
+      "id": "campfire_18",
+      "type": "campfire",
+      "x": -48.3,
+      "y": 1.01,
+      "z": -147.99
+    },
+    {
+      "id": "chimney_01",
+      "type": "chimney",
+      "x": 60,
+      "y": 3.72,
+      "z": 150
+    },
+    {
+      "id": "chimney_02",
+      "type": "chimney",
+      "x": 110,
+      "y": 2.79,
+      "z": 172
+    },
+    {
+      "id": "chimney_03",
+      "type": "chimney",
+      "x": 100,
+      "y": 3.87,
+      "z": 72
+    },
+    {
+      "id": "chimney_04",
+      "type": "chimney",
+      "x": 82,
+      "y": 3.5,
+      "z": -150
+    },
+    {
+      "id": "chimney_05",
+      "type": "chimney",
+      "x": -75,
+      "y": 3.86,
+      "z": -140
+    },
+    {
+      "id": "chimney_06",
+      "type": "chimney",
+      "x": 48,
+      "y": 4.26,
+      "z": 190
+    },
+    {
+      "id": "chimney_07",
+      "type": "chimney",
+      "x": -182,
+      "y": 13.88,
+      "z": 8
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 841.2,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 220.3,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 473.7,
+      "across": 2
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 40,
+      "across": -4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 356.0,
+      "across": -4.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 731.8,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 859.2,
+      "across": 4.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 95,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 95,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 411.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 503.7,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 591.3,
+      "across": 3,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 246.3,
+      "to": 281.0,
+      "at": 293.0
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -6.54,
+      "y": -1.0,
+      "z": -221.0,
+      "top": 17.5,
+      "width": 30,
+      "heading": 0
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 50,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/riverbend_palms_ruin.py (re-running it rewrites entities)"
+}

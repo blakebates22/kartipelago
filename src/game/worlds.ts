@@ -104,6 +104,7 @@ export const WORLDS: WorldEntry[] = [
       "dragon_canyon_v2",
       "snow_dragon_pass_v2",
       "celestial_dragon_festival_v2",
+      "riverbend_palms_ruin",
       "coral_cove_v2",
       "shipwreck_bay_v2",
     ],
