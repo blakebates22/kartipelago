@@ -204,9 +204,9 @@ def main():
     c.kinds = {
         "road": {"mat": "beach_road", "shoulder": 1.6, "shoulder_mat": sand},
         "boardwalk": {"mat": "wood_planks", "surface": "road", "shoulder": 0.4, "shoulder_mat": planks, "barrier": 1.0,
-                      "barrier_mat": tiki, "deck": 2.0, "deck_mat": ("wood_planks", "wall"), "ground": False},
+                      "barrier_mat": tiki, "deck": 2.0, "deck_mat": ("wood_planks", "road"), "ground": False},
         "kicker": {"mat": "wood_planks", "surface": "road", "shoulder": 0.4, "shoulder_mat": planks, "deck": 2.0,
-                   "deck_mat": ("wood_planks", "wall"), "ground": False},
+                   "deck_mat": ("wood_planks", "road"), "ground": False},
         "headland": {"mat": "beach_road", "shoulder": 1.4, "shoulder_mat": ("valley_cliff", "road")},
     }
     lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
