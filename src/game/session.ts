@@ -73,7 +73,12 @@ import { createSceneryView } from "../render/sceneryView";
 import { bumpKarts } from "../physics/bump";
 import { createBoostFx } from "../render/boostFx";
 import { buildRacingLine } from "../ai/racingLine";
-import { createDriver, driveAi, type Driver } from "../ai/driver";
+import { createDriver, driveAi, type AiWorld, type Driver } from "../ai/driver";
+import { createAiDebug } from "../debug/aiDebug";
+import { aiItem } from "../ai/items";
+import { rivalSkill, type SkillConfig } from "../ai/skill";
+import rivalSetups from "../../assets/data/rivals.json";
+import { catchUp, type CatchUpConfig } from "../ai/catchup";
 import {
   canDrive,
   createRace,
@@ -239,6 +244,8 @@ interface Entrant {
   /** On a boost surface last step (imported tracks), so it fires once per visit. */
   onBoost?: boolean;
   driver?: Driver;
+  /** A rival's skill tier and racing style (for the AI debug view). */
+  style?: { tier: string; style: string };
 }
 
 /** Exhaust colour by boost source: zipper, blue 1, blue 2, blue 3. */
@@ -310,6 +317,11 @@ function buildSession(
   root.name = "session";
   stage.scene.add(root);
   stage.setEnvironment(pkg?.look);
+  // The rivals' minds drawn over them (dev server only): ?aidebug.
+  const aiDebug =
+    import.meta.env.DEV && new URLSearchParams(location.search).has("aidebug")
+      ? createAiDebug(root)
+      : undefined;
   const chase = createChaseCamera(stage.camera);
   const hudRoot = document.createElement("div");
   hudRoot.className = "session-hud";
@@ -463,13 +475,17 @@ function buildSession(
 
   const player = findCharacter(opts.character ?? roster.default);
   const rivals = track && opts.rivals ? roster.rivals : [];
+  // Each rival's skill and racing style (src/ai/skill.ts; tuning.ai.rivals by name).
+  const skills = rivals.map((r) => rivalSkill(r.name, rivalSetups as SkillConfig));
   const entrants: Entrant[] = [
     { name: DESIGNS[playerLook].name, character: player, color: player.color },
     ...rivals.map((r, i) => ({
       // The first rivals are the other racers; their alternate-paint cousins keep their
       // roster names.
       name: i < RACER_IDS.length - 1 ? DESIGNS[rivalLook(i + 1).id].name : r.name,
-      character: findCharacter(r.character),
+      // Every rival drives the player's kart: the racer you pick never changes the
+      // driving, so a race is won by how it's driven (src/ai/skill.ts), not by a kart.
+      character: player,
       color: r.color,
     })),
   ].map((e, i) => {
@@ -485,12 +501,17 @@ function buildSession(
       items: racerItems(),
       ground: makeGround(),
       driver:
-        (i > 0 || demo) && line ? createDriver(i > 0 ? lineFor(i) : line, i, tuning.ai) : undefined,
+        (i > 0 || demo) && line
+          ? createDriver(i > 0 ? lineFor(i) : line, i, tuning.ai, skills[i - 1]?.skill)
+          : undefined,
+      style: i > 0 ? skills[i - 1] : undefined,
     };
   });
   const you = entrants[0]!;
   // Loop-the-loops (src/game/loops.ts): each kart rides them in its own loop mode.
   const loops = pkg ? createLoops(pkg.meta.entities ?? [], entrants.length) : undefined;
+  /** Each kart's last spot on the road, grounded (respawn zones look it up too). */
+  const lastRoad = entrants.map(() => ({ x: NaN, y: NaN, z: NaN }));
   /** Where race logic sees each kart (on a loop: the straight from its entry to its exit). */
   const racePositions = () =>
     entrants.map((e, i) => (loops?.riding(i) ? loops.racePos(i, e.state) : e.state));
@@ -841,11 +862,21 @@ function buildSession(
       startRefHz: tuning.race.startRefHz,
     };
     const walls = { ...tuning.physics, ...tuning.collision, wallHeight: tuning.track.wallHeight };
+    const progressOfEarly = (j: number) => {
+      if (!race) return 0;
+      const at = loops?.riding(j) ? loops.racePos(j, entrants[j]!.state) : entrants[j]!.state;
+      return progress(race, j, at.x, at.z, at.y) * race.metresPerCheckpoint;
+    };
     // Rebuilt each step so live tuning edits apply immediately.
     const racers: Racer[] = entrants.map((e, i) => {
       let cfg = applyCharacter(tuning.vehicle, e.character, tuning.stats);
-      if (e.driver && (i > 0 || demo))
-        cfg = { ...cfg, topSpeed: cfg.topSpeed * tuning.ai.speedMult };
+      if (e.driver && (i > 0 || demo)) {
+        // The field's trim, the rival's own (tiny) pace, and the bounded catch-up.
+        const gap = race && i > 0 && !demo ? progressOfEarly(i) - progressOfEarly(0) : 0;
+        const trim = tuning.ai.speedMult * e.driver.skill.pace;
+        const assist = catchUp(gap, tuning.ai as CatchUpConfig);
+        cfg = { ...cfg, topSpeed: cfg.topSpeed * trim * assist };
+      }
       // Imported tracks: the surface under the wheels scales speed, acceleration and grip.
       if (pkg && e.state.grounded && !loops?.riding(i)) {
         const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
@@ -856,12 +887,28 @@ function buildSession(
     const progressOf = (j: number) => {
       if (!race) return 0;
       const at = loops?.riding(j) ? loops.racePos(j, entrants[j]!.state) : entrants[j]!.state;
-      return progress(race, j, at.x, at.z, at.y);
+      return progress(race, j, at.x, at.z, at.y) * race.metresPerCheckpoint;
     };
     const events: ItemEvent[] = [];
     if (!demo && boostLab.equip(you.items.held)) sfx.balloon(itemsCfg.volume, "new");
     const canGo = !race || canDrive(race);
 
+    // What the rivals can see of the race: the other karts, the pads, the traps.
+    const padsSeen = zippers.map((z) => ({ x: z.x, y: z.y, z: z.z }));
+    const aiWorldFor = (i: number): AiWorld => ({
+      others: entrants
+        .filter((_, j) => j !== i)
+        .map((o) => ({
+          x: o.state.x,
+          y: o.state.y,
+          z: o.state.z,
+          speed: o.state.speed,
+          heading: o.state.heading,
+          shield: o.items.shieldTime > 0,
+        })),
+      pads: padsSeen,
+      traps: itemWorld.traps,
+    });
     entrants.forEach((e, i) => {
       const { cfg } = racers[i]!;
       const onLoop = loops?.riding(i) ?? false;
@@ -874,8 +921,28 @@ function buildSession(
               tuning.ai,
               moment,
               loops?.aim(i, e.state),
+              aiWorldFor(i),
+              dt,
             )
           : held;
+      // Rivals use their items too (the same fireItem, ammo and rules as the player).
+      if (e.driver && i > 0 && race && canGo && !moment?.countdown) {
+        const it = aiItem(e.driver, i, racers, itemWorld, itemsCfg, progressOf, dt);
+        if (it.fire) {
+          const ev = fireItem(
+            itemWorld,
+            racers,
+            i,
+            it.lift ? 0 : want.throttle,
+            itemsCfg,
+            progressOf,
+          );
+          if (ev) {
+            events.push(ev);
+            if (ev.type === "fire" && ev.color === "blue") e.driver.boostTechnique = it.lift;
+          }
+        }
+      }
       // On a loop the AI holds the middle of the road.
       if (onLoop && e.driver) want = { ...want, steer: loops!.aiSteer(i) };
       if (i === 0 && !e.driver) {
@@ -959,8 +1026,11 @@ function buildSession(
       const under =
         pkg && !riding ? e.ground.at(e.state.x, e.state.z, e.state.y).surface : undefined;
       const lastGate = respawnSpot(race, i);
+      const road = lastRoad[i]!;
+      if (onRoad && !riding && e.state.grounded)
+        [road.x, road.y, road.z] = [e.state.x, e.state.y, e.state.z];
       if (hazards && !riding) {
-        const hz = hazards.stepKart(i, e.state, under, lastGate, dt);
+        const hz = hazards.stepKart(i, e.state, under, lastGate, dt, road);
         if (hz.burnt) e.racer.react("burn");
         if (hz.splashed === "deep") e.racer.react("splash");
         if (hz.struck) e.racer.react("burn");
@@ -979,10 +1049,13 @@ function buildSession(
         pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
       const fell =
         pkg && !riding && (e.state.y < pkg.killY || surfaceDef?.respawn)
-          ? (hazards?.respawnSpot(e.state.x, e.state.y, e.state.z) ?? lastGate)
+          ? (hazards?.respawnSpot(e.state.x, e.state.y, e.state.z, road) ?? lastGate)
           : undefined;
-      if (raceEvents.respawn || fell) {
-        const g = (raceEvents.respawn ?? fell)!;
+      // A rival lost off the road for a long while (src/ai/driver.ts): its checkpoint.
+      const lost = e.driver?.wantsRespawn && !riding ? lastGate : undefined;
+      if (e.driver) e.driver.wantsRespawn = false;
+      if (raceEvents.respawn || fell || lost) {
+        const g = (raceEvents.respawn ?? fell ?? lost)!;
         const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));
         e.state.bananas = bananas;
@@ -1280,6 +1353,22 @@ function buildSession(
     for (const e of entrants) renderKart(e, alpha, frameSeconds);
     // The ghost, at the moment this frame shows (between the last two steps).
     if (ghost && race) ghost.render(race.clock - (1 - alpha) * lastDt, frameSeconds);
+    aiDebug?.update(
+      entrants.flatMap((e, i) =>
+        e.driver && (i > 0 || demo)
+          ? [
+              {
+                i,
+                name: e.name,
+                driver: e.driver,
+                at: e.mesh.position,
+                speed: e.state.speed,
+                drifting: e.state.driftDir !== 0,
+              },
+            ]
+          : [],
+      ),
+    );
     skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
@@ -1658,6 +1747,7 @@ function buildSession(
     boostFx.dispose();
     abort.abort();
     hazards?.dispose();
+    aiDebug?.dispose();
     gateView?.dispose();
     stage.scene.remove(root);
     disposeObject(root);

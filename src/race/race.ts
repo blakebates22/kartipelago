@@ -115,6 +115,9 @@ export interface Race {
   open: boolean;
   /** The checkpoints, in order (each with one or more gates). */
   course: Checkpoint[];
+  /** Lap length over the checkpoints: progress() is in checkpoints, and times this it's
+   * roughly metres along the lap (for gaps between racers). */
+  metresPerCheckpoint: number;
   /** Each checkpoint's main gate, by index. */
   gates: Gate[];
   /** Track samples on the last 80 m before the line (x, z, metres before it): only for
@@ -214,6 +217,7 @@ export function createRace(
   return {
     open: Boolean(track.data.open),
     course,
+    metresPerCheckpoint: track.length / Math.max(1, course.length),
     gates: course.map((c) => c.gates[0]!),
     approach: track.samples
       .filter((p) => track.length - p.dist < 80)

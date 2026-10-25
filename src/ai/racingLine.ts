@@ -24,7 +24,21 @@ export interface RacingLine {
   heading: Float64Array;
   /** Signed curvature, 1/m: positive turns left, negative turns right. */
   curvature: Float64Array;
+  /** Road height at each point (for telling stacked roads apart). */
+  y: Float64Array;
+  /** The road's right (horizontal unit vector) at each point. */
+  rx: Float64Array;
+  rz: Float64Array;
+  /** How far a kart can move off the line to the left (negative) and right (positive)
+   * and still be on the road, metres (a little short of the edges). */
+  roomLeft: Float64Array;
+  roomRight: Float64Array;
+  /** The road's width at each point, metres. */
+  width: Float64Array;
 }
+
+/** Keep this far inside the road's edges when moving off the line, metres. */
+const EDGE = 1.4;
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -85,5 +99,16 @@ export function buildRacingLine(track: Track, cfg: LineConfig): RacingLine {
     const turn = wrap(heading[(i + c) % n]! - heading[(i - c + n) % n]!);
     curvature[i] = turn / (2 * c * spacing);
   }
-  return { n, spacing, x, z, heading, curvature };
+  const y = new Float64Array(n);
+  const roomLeft = new Float64Array(n);
+  const roomRight = new Float64Array(n);
+  const width = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    y[i] = s[i]!.pos.y;
+    const half = Math.max(0, s[i]!.width / 2 - EDGE);
+    roomRight[i] = Math.max(0, half - off[i]!);
+    roomLeft[i] = -Math.max(0, half + off[i]!);
+    width[i] = s[i]!.width;
+  }
+  return { n, spacing, x, z, heading, curvature, y, rx, rz, roomLeft, roomRight, width };
 }

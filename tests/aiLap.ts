@@ -2,6 +2,7 @@
 import tuning from "../assets/data/tuning.json";
 import { NEUTRAL } from "../src/core/input";
 import { createDriver, driveAi } from "../src/ai/driver";
+import type { AiSkill } from "../src/ai/skill";
 import { createLoops } from "../src/game/loops";
 import { buildRacingLine } from "../src/ai/racingLine";
 import { stepVertical } from "../src/physics/vertical";
@@ -33,6 +34,8 @@ export interface LapOptions {
   route?: string;
   /** Fire zipper pads (main route's and every lap route's) as a race does. */
   zippers?: boolean;
+  /** The driver's skill (src/ai/skill.ts); absent: the steady test driver. */
+  skill?: AiSkill;
 }
 
 /** Drive one kart round an imported track with the race's own AI driver. */
@@ -83,7 +86,7 @@ export async function aiLap(p: TrackPackage, opts: LapOptions = {}) {
       ]
     : [];
   let zips = 0;
-  const driver = createDriver(line, 1, ai);
+  const driver = createDriver(line, 1, ai, opts.skill);
   const ground = createMeshGround(p.collision);
   const start = track.start;
   const k = createKartState(start.x, start.z, start.heading, track.samples[0]!.pos.y);

@@ -211,8 +211,11 @@ describe("ghost playback", () => {
     let worst = 0;
     let worstAir = 0;
     let worstTurn = 0;
+    // (Up to the last snapshot: past it there's nothing to land on but the last pose.)
+    const tLast = rec.samples.at(-1)!.t;
     for (let i = 1; i < steps.length - 1; i++) {
       const q = steps[i]!;
+      if (q.t > tLast) break;
       sampleGhost(g, q.t, out);
       const err = Math.hypot(out.x - q.x, out.y - q.y, out.z - q.z);
       worst = Math.max(worst, err);

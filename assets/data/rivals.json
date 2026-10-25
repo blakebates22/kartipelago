@@ -1,0 +1,68 @@
+{
+  "about": "Rivals' skill and racing style (src/ai/skill.ts). tier: strong / good / weak, then each rival's own tendencies on top. difficulty: the whole field, -1 easier .. 1 harder.",
+  "difficulty": -0.4,
+  "rivals": {
+    "Bolt": {
+      "tier": "good",
+      "style": "aggressive overtaker",
+      "skill": {
+        "aggression": 0.9,
+        "tapping": 0.5
+      }
+    },
+    "Juniper": {
+      "tier": "strong",
+      "style": "corner ace",
+      "skill": {
+        "drift": 1.0,
+        "precision": 0.97,
+        "vision": 1.12,
+        "aggression": 0.55
+      }
+    },
+    "Tank": {
+      "tier": "good",
+      "style": "blocker",
+      "skill": {
+        "aggression": 0.8,
+        "tapping": 0.1,
+        "mistakes": 0.7
+      }
+    },
+    "Cobble": {
+      "tier": "good",
+      "style": "clean racer",
+      "skill": {
+        "mistakes": 0.35,
+        "precision": 0.9,
+        "items": 0.5,
+        "aggression": 0.35
+      }
+    },
+    "Comet": {
+      "tier": "good",
+      "style": "booster, inconsistent",
+      "skill": {
+        "boosting": 0.95,
+        "tapping": 0.6,
+        "mistakes": 1.4
+      }
+    },
+    "Thistle": {
+      "tier": "weak",
+      "style": "rookie",
+      "skill": {
+        "lineBias": 0.4
+      }
+    },
+    "Rook": {
+      "tier": "weak",
+      "style": "item-happy",
+      "skill": {
+        "items": 0.75,
+        "aggression": 0.6,
+        "lineBias": -0.4
+      }
+    }
+  }
+}

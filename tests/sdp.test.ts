@@ -240,9 +240,10 @@ describe("Snow Dragon Pass", () => {
     for (const [name, t] of Object.entries(times)) {
       if (t === best) continue;
       expect((t - best) / best, name).toBeGreaterThan(0.002);
-      // 4% (was 3.5%): the smaller zipper pads (5.25 x 4.5 m, from 7 x 6) shifted the
-      // route balance a touch.
-      expect((t - best) / best, name).toBeLessThan(0.04);
+      // 6% (was 4%, and 3.5% before the smaller zipper pads): the rewritten AI gains
+      // most on the Cliff Aqueduct (about 4 s a lap), so the spread to the Supply Ridge
+      // grew from 3.6% to 5.3%, the same road with a better driver.
+      expect((t - best) / best, name).toBeLessThan(0.06);
     }
   }, 600000);
 });

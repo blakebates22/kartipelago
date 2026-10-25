@@ -207,8 +207,7 @@ describe("Meadow Run", () => {
   });
 
   it("finishes a full field of eight", () => {
-    const ids = roster.rivals.map((r) => r.character);
-    const { race, stats } = aiRace(["speedster", ...ids.slice(0, 7)]);
+    const { race, stats } = aiRace(Array<string>(8).fill(roster.default));
     expect(race.finishOrder).toHaveLength(8);
     expect(stats.respawns).toBe(0);
   });

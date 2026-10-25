@@ -356,6 +356,9 @@ export interface HazardEvents {
   struck?: boolean;
 }
 
+/** A point in the world. */
+type Point3 = { x: number; y: number; z: number };
+
 export interface Hazards {
   /** Called once per kart per physics step, after it has moved. */
   stepKart(
@@ -364,6 +367,8 @@ export interface Hazards {
     surface: string | undefined,
     lastGate: Spot,
     dt: number,
+    /** Where the kart was last on the road, grounded (for the respawn zones). */
+    lastRoad?: Point3,
   ): HazardEvents;
   /** Once per physics step, after the karts: creatures walk. */
   step(karts: KartState[], dt: number): void;
@@ -373,8 +378,12 @@ export interface Hazards {
   handles(surface: string | undefined): boolean;
   /** The kart's visual sink into water, metres. */
   sinkOf(i: number): number;
-  /** Where a kart here should be put back, if a respawn zone says (else undefined). */
-  respawnSpot(x: number, y: number, z: number): Spot | undefined;
+  /**
+   * Where a kart here should be put back, if a respawn zone says (else undefined). A fall
+   * can land well below the road (a wash under a jump's gap), nearer a later stretch of
+   * the lap than the zone, so the kart's last spot on the road is tried too.
+   */
+  respawnSpot(x: number, y: number, z: number, lastRoad?: Point3): Spot | undefined;
   render(t: number, dt: number, listener: { x: number; y: number; z: number }): void;
   readonly dinos: { x: number; y: number; z: number }[];
   /** Where the flyers are (for tests and the camera). */
@@ -1158,11 +1167,20 @@ export function createHazards(opts: {
     return near;
   }
 
-  function respawnSpot(x: number, y: number, z: number): Spot | undefined {
-    if (!zones.length) return undefined;
+  function zoneAt(x: number, y: number, z: number): Spot | undefined {
     const p = nearestSample(x, y, z).dist;
     for (const zn of zones) if (p >= zn.from && p <= zn.to) return spotAt(zn.at);
     return undefined;
+  }
+
+  function respawnSpot(x: number, y: number, z: number, lastRoad?: Point3): Spot | undefined {
+    if (!zones.length) return undefined;
+    return (
+      zoneAt(x, y, z) ??
+      (lastRoad && Number.isFinite(lastRoad.x)
+        ? zoneAt(lastRoad.x, lastRoad.y, lastRoad.z)
+        : undefined)
+    );
   }
 
   function putBack(s: KartState, at: Spot) {
@@ -1290,7 +1308,7 @@ export function createHazards(opts: {
     handles: (surface) => surface === "lava" || surface === "deep_water",
     sinkOf: (i) => per[i]?.sink ?? 0,
     respawnSpot,
-    stepKart(i, s, surface, lastGate, dt) {
+    stepKart(i, s, surface, lastGate, dt, lastRoad) {
       const h = per[i]!;
       const ev: HazardEvents = {};
       h.immune = Math.max(0, h.immune - dt);
@@ -1302,7 +1320,7 @@ export function createHazards(opts: {
         return ev;
       }
       const ground = s.grounded ? surface : undefined;
-      const back = () => respawnSpot(s.x, s.y, s.z) ?? lastGate;
+      const back = () => respawnSpot(s.x, s.y, s.z, lastRoad) ?? lastGate;
       // ---- lava, and dragon fire: the burning bounce
       const t = raceClock();
       const scorched = ground === "lava";

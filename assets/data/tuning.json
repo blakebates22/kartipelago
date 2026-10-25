@@ -201,7 +201,12 @@
     "startSpreadFrames": 12,
     "lineMargin": 4.5,
     "lineSpan": 14,
-    "lineIterations": 200
+    "lineIterations": 200,
+    "planEvery": 0.2,
+    "catchupBand": 50,
+    "catchupRamp": 150,
+    "catchupMaxHelp": 0.025,
+    "catchupMaxHold": 0.045
   },
   "items": {
     "blue1Sec": 0.58,
@@ -254,7 +259,7 @@
     "hitImmuneSec": 1,
     "balloonRadius": 2.4,
     "balloonRespawnSec": 0.5,
-    "aiCollect": false,
+    "aiCollect": true,
     "volume": 0.3
   },
   "scenery": {
