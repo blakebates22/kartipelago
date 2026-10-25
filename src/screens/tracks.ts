@@ -13,7 +13,7 @@ import type { Screen } from "../app/app";
 import { loadRecords } from "../app/records";
 import { saveSettings } from "../app/settings";
 import { startCup } from "../game/trophy";
-import { MODE_LABELS, type TrackEntry, type TrackMode } from "../game/tracks";
+import { MODE_LABELS, trackById, type TrackEntry, type TrackMode } from "../game/tracks";
 import {
   VISIBLE_WORLDS as WORLDS,
   currentWorld,
@@ -71,7 +71,8 @@ export function tracksMenu(game: Game): Screen {
   );
   let t = 0;
   /** The "how to race it" note: open, and which line is chosen. */
-  let asking: { modes: TrackMode[]; i: number } | null = null;
+  let asking: { title: string; options: { label: string; run: () => void }[]; i: number } | null =
+    null;
   let clicked: (() => void) | undefined;
   const records = loadRecords();
   for (const w of WORLDS) for (const tr of trackTilesOf(w)) if (tr.preview) preview(tr.preview);
@@ -98,10 +99,33 @@ export function tracksMenu(game: Game): Screen {
     const e = entry();
     if (e.kind === "trophy") return startTrophy();
     if (e.track.comingSoon) return game.sounds.error();
-    const modes = e.track.modes.filter((m) => m !== "practice");
-    if (modes.length < 2) return start(e.track, modes[0] ?? e.track.modes[0]!);
+    const track = e.track;
+    const modes = track.modes.filter((m) => m !== "practice");
+    if (modes.length < 2) return pickMode(track, modes[0] ?? track.modes[0]!);
     game.sounds.confirm();
-    asking = { modes, i: Math.max(0, modes.indexOf(game.settings.last.mode)) };
+    asking = {
+      title: "HOW WILL YOU RACE?",
+      options: modes.map((m) => ({
+        label: `${MODE_LABELS[m].name} · ${MODE_LABELS[m].sub}`,
+        run: () => pickMode(track, m),
+      })),
+      i: Math.max(0, modes.indexOf(game.settings.last.mode)),
+    };
+  };
+  /** Dev builds: a course with a ruined version (the treasure map challenge's, see
+   * TrackEntry.ruin) asks which one to drive. */
+  const pickMode = (track: TrackEntry, mode: TrackMode) => {
+    const ruin = import.meta.env.DEV && track.ruin ? trackById(track.ruin) : undefined;
+    if (!ruin) return start(track, mode);
+    game.sounds.confirm();
+    asking = {
+      title: "WHICH VERSION? (DEV)",
+      options: [
+        { label: "STANDARD · THE FULL LAP", run: () => start(track, mode) },
+        { label: "RUINED · TREASURE MAP", run: () => start(ruin, mode, track) },
+      ],
+      i: 0,
+    };
   };
   const go = (track: TrackEntry, mode: TrackMode) => {
     game.selection.worldId = world().id;
@@ -110,8 +134,10 @@ export function tracksMenu(game: Game): Screen {
     game.sounds.start();
     game.screens.go(loadingScreen(game));
   };
-  const start = (track: TrackEntry, mode: TrackMode) => {
-    game.settings.last.track = track.id;
+  /** `listed`: the menu's own entry, when starting another version of it. */
+  const start = (track: TrackEntry, mode: TrackMode, listed = track) => {
+    asking = null;
+    game.settings.last.track = listed.id;
     if (mode !== "practice") game.settings.last.mode = mode;
     saveSettings(game.settings);
     go(track, mode);
@@ -344,27 +370,18 @@ export function tracksMenu(game: Game): Screen {
     if (!asking) return;
     ui.dim(0.35);
     const w = 150;
-    const h = 34 + asking.modes.length * 16;
+    const h = 34 + asking.options.length * 16;
     const x = Math.round(ui.W / 2 - w / 2);
     const y = Math.round(ui.H / 2 - h / 2);
     note(ui, x, y, w, h);
     ui.text(nameOf(entry()), x + w / 2, y + 6, { color: "#8a2a1a", align: "center" });
-    ui.text("HOW WILL YOU RACE?", x + w / 2, y + 16, { color: INK_SOFT, align: "center" });
-    const e = entry();
-    asking.modes.forEach((m, i) => {
+    ui.text(asking.title, x + w / 2, y + 16, { color: INK_SOFT, align: "center" });
+    asking.options.forEach((o, i) => {
       const yy = y + 30 + i * 16;
       const on = i === asking!.i;
       if (on) ui.rect(x + 8, yy - 3, w - 16, 14, "#ffd84a", 0.6);
-      ui.text(`${on ? "▶ " : ""}${MODE_LABELS[m].name} · ${MODE_LABELS[m].sub}`, x + w / 2, yy, {
-        color: INK,
-        align: "center",
-      });
-      if (
-        game.menuInput.pointer.clicked &&
-        ui.hover(x + 8, yy - 3, w - 16, 14) &&
-        e.kind === "track"
-      )
-        clicked = () => start(e.track, m);
+      ui.text(`${on ? "▶ " : ""}${o.label}`, x + w / 2, yy, { color: INK, align: "center" });
+      if (game.menuInput.pointer.clicked && ui.hover(x + 8, yy - 3, w - 16, 14)) clicked = o.run;
     });
   }
 
@@ -385,13 +402,10 @@ export function tracksMenu(game: Game): Screen {
         if (a === "back") return back();
         if (asking) {
           if (a === "up" || a === "down") {
-            asking.i =
-              (asking.i + (a === "up" ? -1 : 1) + asking.modes.length) % asking.modes.length;
+            const n = asking.options.length;
+            asking.i = (asking.i + (a === "up" ? -1 : 1) + n) % n;
             game.sounds.move();
-          } else if (a === "confirm") {
-            const e = entry();
-            if (e.kind === "track") return start(e.track, asking.modes[asking.i]!);
-          }
+          } else if (a === "confirm") return asking.options[asking.i]!.run();
           continue;
         }
         if (a === "left") setWorld(wi - 1);

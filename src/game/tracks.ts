@@ -30,6 +30,9 @@ export interface TrackEntry {
   legacyNumber?: number;
   /** A planned track: shown in track select as "Coming Soon", not playable yet. */
   comingSoon?: boolean;
+  /** Its ruined version (the treasure map challenge's short lap after the dragons'
+   * attack): a track id. Dev builds ask which to drive after Race / Time Trial. */
+  ruin?: string;
 }
 
 export const TRACKS: TrackEntry[] = [
