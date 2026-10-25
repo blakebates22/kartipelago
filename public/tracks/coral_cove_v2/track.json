@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "coral_cove",
-  "name": "Coral Cove (greybox)",
+  "id": "coral_cove_v2",
+  "name": "Coral Cove (greybox, v2)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -87,5 +87,5 @@
       "at": 184.3
     }
   ],
-  "generator": "tools/blender/prehistoric/coral_cove.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/coral_cove_v2.py (re-running it rewrites entities)"
 }
