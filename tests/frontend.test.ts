@@ -240,6 +240,11 @@ describe("worlds", () => {
       "riverbend_palms_ruin",
       "cascade_caverns_ruin",
       "bonebog_pyramid_ruin",
+      "boss_prehistoric",
+      "boss_snowy",
+      "boss_desert",
+      "boss_dragon",
+      "boss_tropic",
       "coral_cove_v2",
       "shipwreck_bay_v2",
     ]);

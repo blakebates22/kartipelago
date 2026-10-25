@@ -150,13 +150,15 @@ export function loadingScreen(game: Game): Screen {
         outline: PAL.shadow,
         align: "center",
       });
+      const laps = entry.laps ?? tuning.race.laps;
+      const lapsText = laps === 1 ? "ONE LONG LAP" : `${laps} LAPS`;
       const mode = game.trophy
         ? `TROPHY RACE · RACE ${game.trophy.raced + 1} OF ${game.trophy.tracks.length}`
         : game.selection.mode === "timeTrial"
-          ? `TIME TRIAL · ${tuning.race.laps} LAPS`
+          ? `TIME TRIAL · ${lapsText}`
           : game.selection.mode === "practice"
             ? "PRACTICE"
-            : `RACE · ${tuning.race.laps} LAPS · 8 RACERS`;
+            : `RACE · ${lapsText} · 8 RACERS`;
       ui.text(mode, W / 2, 48 + big * 9, {
         color: PAL.cream,
         outline: PAL.shadow,

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "boss_dragon",
+  "name": "The Citadel (boss, proto)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 20.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 844.2,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 1087.0,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 1351.5,
+      "across": 0
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 1140.9,
+      "to": 1182.5,
+      "at": 1196.5
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 71.0,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 341.9,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 576.8,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 814.2,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 1137.0,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 1331.5,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 1803.8,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 2044.2,
+      "across": 0,
+      "color": "green"
+    }
+  ],
+  "generator": "tools/blender/prehistoric/boss_dragon.py (re-running it rewrites entities)"
+}

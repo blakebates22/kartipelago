@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "boss_tropic",
+  "name": "Atoll Dash (boss, proto)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 20.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 223.9,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 417.2,
+      "across": 0
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 263.9,
+      "to": 300.3,
+      "at": 314.3
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 51.0,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 213.8,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 354.4,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 527.7,
+      "across": 0,
+      "color": "red"
+    }
+  ],
+  "generator": "tools/blender/prehistoric/boss_tropic.py (re-running it rewrites entities)"
+}

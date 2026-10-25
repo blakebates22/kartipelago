@@ -33,6 +33,9 @@ export interface TrackEntry {
   /** Its ruined version (the treasure map challenge's short lap after the dragons'
    * attack): a track id. Dev builds ask which to drive after Race / Time Trial. */
   ruin?: string;
+  /** Laps in a race, when not the usual (a boss race's one long lap). The package's
+   * track.json says the same (race.laps), which is what the race itself uses. */
+  laps?: number;
 }
 
 export const TRACKS: TrackEntry[] = [
@@ -263,6 +266,65 @@ export const TRACKS: TrackEntry[] = [
     theme: "beach_party",
     music: "title",
     load: { scene: "track", packageId: "volcano_isle" },
+  },
+  // Boss race prototypes, one per world (Blake, Oct 25: three of 3 laps, two of one long
+  // lap). Greyboxes in the Testing world: ?track=boss_<world>.
+  {
+    id: "boss_prehistoric",
+    name: "Tyrant's Gorge (boss, proto)",
+    description:
+      "Prehistoric boss race prototype, 3 laps: a figure of eight, over its own crossing and the gully jump.",
+    preview: "previews/boss_prehistoric.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "river_valley",
+    music: "riverbend",
+    load: { scene: "track", packageId: "boss_prehistoric" },
+  },
+  {
+    id: "boss_snowy",
+    name: "Avalanche Run (boss, proto)",
+    description:
+      "Snowy Peaks boss race prototype, one long lap: switchbacks down, the ski jump, the climb back.",
+    preview: "previews/boss_snowy.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "summit_pass",
+    music: "summit",
+    laps: 1,
+    load: { scene: "track", packageId: "boss_snowy" },
+  },
+  {
+    id: "boss_desert",
+    name: "Mesa Rush (boss, proto)",
+    description:
+      "Desert boss race prototype, 3 laps: banked sweepers round the mesa, the canyon jump, a chicane.",
+    preview: "previews/boss_desert.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "canyon_dash",
+    music: "canyon",
+    load: { scene: "track", packageId: "boss_desert" },
+  },
+  {
+    id: "boss_dragon",
+    name: "The Citadel (boss, proto)",
+    description:
+      "Dragon Kingdom boss race prototype, one long lap: the chasm bridge, the castle hill, the battlements leap.",
+    preview: "previews/boss_dragon.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragonspire_keep",
+    music: "dragon",
+    laps: 1,
+    load: { scene: "track", packageId: "boss_dragon" },
+  },
+  {
+    id: "boss_tropic",
+    name: "Atoll Dash (boss, proto)",
+    description:
+      "Tropic Isles boss race prototype, 3 laps: island hops by plank bridge, jump and causeway.",
+    preview: "previews/boss_tropic.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "boss_tropic" },
   },
   // The beach world's fourth course (working name), a greybox: a seaside water park, the
   // wave loop, the slide tower and its flume, the lazy river. ?track=splash_lagoon.

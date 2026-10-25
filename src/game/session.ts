@@ -313,6 +313,9 @@ function buildSession(
     window.addEventListener("keydown", fn, { signal: abort.signal });
 
   const trackData: TrackData = pkg ? pkg.trackData : (opts.trackData ?? ({} as TrackData));
+  /** Laps in a race: the track's own (track.json's race.laps: a boss race's one long lap,
+   * say), else the usual. */
+  const LAPS = pkg?.meta.race?.laps ?? tuning.race.laps;
   const root = new THREE.Group();
   root.name = "session";
   stage.scene.add(root);
@@ -531,7 +534,7 @@ function buildSession(
           clock: () => race?.clock ?? 0,
           lap: () => {
             const r = race?.racers[0];
-            return r ? { lap: r.lap, laps: tuning.race.laps, finished: r.finished } : undefined;
+            return r ? { lap: r.lap, laps: LAPS, finished: r.finished } : undefined;
           },
         })
       : undefined;
@@ -619,7 +622,7 @@ function buildSession(
             p: tuning.physics,
             c: tuning.collision,
             s: tuning.stats,
-            laps: tuning.race.laps,
+            laps: LAPS,
           }),
           racer: playerLook,
           character: player.id,
@@ -1068,13 +1071,7 @@ function buildSession(
       const r = race.racers[0]!;
       ghost.step(race.clock, r.best, r.finished, sampleYou);
       if (r.finished && finishedAt === undefined)
-        void ghost.finish(
-          race.clock,
-          r.totalTime ?? race.clock,
-          r.lapTimes,
-          tuning.race.laps,
-          sampleYou,
-        );
+        void ghost.finish(race.clock, r.totalTime ?? race.clock, r.lapTimes, LAPS, sampleYou);
     }
     lastDt = dt;
     // Over the line: the AI takes the wheel for a lap of honour while the results show.
@@ -1474,7 +1471,7 @@ function buildSession(
       const ev = r.lastEvent;
       debug.overlay.set(
         "race",
-        `lap ${Math.min(r.lap, tuning.race.laps)} (${r.completedLaps} done)  place ${order.indexOf(0) + 1}/${entrants.length}  route ${r.activeRoute}`,
+        `lap ${Math.min(r.lap, LAPS)} (${r.completedLaps} done)  place ${order.indexOf(0) + 1}/${entrants.length}  route ${r.activeRoute}`,
       );
       debug.overlay.set(
         "cp",
@@ -1581,7 +1578,7 @@ function buildSession(
         ? { color: you.items.held.color, level: you.items.held.level, ammo: you.items.held.ammo }
         : null,
       toast: toast?.text,
-      laps: tuning.race.laps,
+      laps: LAPS,
     };
     if (!race) {
       const on = park && streak ? (streak.loop >= 0 ? streak.loop : parkLoop) : 0;
@@ -1623,7 +1620,7 @@ function buildSession(
       sinceGo: race.phase === "countdown" ? 0 : race.clock,
       startTier: r.start?.tier,
       position: entrants.length > 1 ? shownPlace.shown : undefined,
-      lap: Math.min(r.lap, tuning.race.laps),
+      lap: Math.min(r.lap, LAPS),
       lapTime: lapClock(race, 0),
       bestLap: r.bestLap,
       totalTime: r.finished ? (r.totalTime ?? 0) : Math.max(0, race.clock),
@@ -1794,10 +1791,7 @@ function buildSession(
       if (index === 0) ghost?.invalidate();
       const clock = Math.max(race.clock, 30 + index);
       race.clock = clock;
-      r.lapTimes = Array.from(
-        { length: tuning.race.laps },
-        (_, i) => clock / tuning.race.laps + (i - 1) * 0.37,
-      );
+      r.lapTimes = Array.from({ length: LAPS }, (_, i) => clock / LAPS + (i - 1) * 0.37);
       r.bestLap = Math.min(...r.lapTimes);
       r.totalTime = clock;
       r.finished = true;
