@@ -178,6 +178,19 @@ export const TRACKS: TrackEntry[] = [
     music: "dragon",
     load: { scene: "track", packageId: "dragon_isles_v2" },
   },
+  // The beach world's third course (working name), a greybox: a tropical island, the
+  // volcano dormant behind it. ?track=volcano_isle.
+  {
+    id: "volcano_isle",
+    name: "Volcano Isle (greybox)",
+    description:
+      "Geysers on the hot-spring flats, jungle switchbacks, through the old lava tube and off the cliff over the lagoon.",
+    preview: "previews/volcano_isle.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "volcano_isle" },
+  },
   // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
   // corners), to drive before they're dressed: ?track=snow_dragon_pass_v3 and so on.
   {

@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "id": "volcano_isle",
+  "name": "Volcano Isle (greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 117.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 555.1,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 639.6,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 236.6,
+      "across": -4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 483.6,
+      "across": 4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 789.0,
+      "across": -5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 852.0,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 22.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 22.0,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 159.8,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 332.2,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 586.1,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 819.3,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": 58.93,
+      "y": 2.89,
+      "z": -29.37,
+      "r": 3.4,
+      "height": 16.0,
+      "period": 6.0,
+      "offset": 0.0,
+      "warn": 1.2,
+      "blast": 1.8,
+      "launch": 14.0
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": 67.5,
+      "y": 3.69,
+      "z": -50.96,
+      "r": 3.4,
+      "height": 16.0,
+      "period": 6.0,
+      "offset": 2.0,
+      "warn": 1.2,
+      "blast": 1.8,
+      "launch": 14.0
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": 62.32,
+      "y": 5.03,
+      "z": -69.17,
+      "r": 3.4,
+      "height": 16.0,
+      "period": 6.0,
+      "offset": 4.0,
+      "warn": 1.2,
+      "blast": 1.8,
+      "launch": 14.0
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 653.7,
+      "to": 700.1,
+      "at": 714.1
+    }
+  ],
+  "generator": "tools/blender/prehistoric/volcano_isle.py (re-running it rewrites entities)"
+}
