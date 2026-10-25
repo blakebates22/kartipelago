@@ -12,16 +12,18 @@ at GO**. The windows come from Blake's notes on the original's `handle_racer_top
 
 | First press                                   | Result         | Tier       |
 | --------------------------------------------- | -------------- | ---------- |
-| 30 or more frames before GO (0.5 s or more)   | no boost       | `early`    |
-| 15 to 29 frames before GO                     | weak boost     | `weak`     |
-| 1 to 14 frames before GO (about 17 to 233 ms) | strong boost   | `strong`   |
+| 35 or more frames before GO (0.58 s or more)  | no boost       | `early`    |
+| 20 to 34 frames before GO                     | weak boost     | `weak`     |
+| 1 to 19 frames before GO (about 17 to 317 ms) | strong boost   | `strong`   |
 | at or after GO                                | ordinary start | `none`     |
 | let go before GO (any press)                  | no boost       | `released` |
 
 - Only the first press counts. Let go before GO and the boost is lost for this start:
   pressing again doesn't earn another try, so tapping can't game it.
 - A throttle already held when GET READY appears isn't a press.
-- `race.startStrongFrames` (14) and `race.startWeakFrames` (29) set the window edges.
+- `race.startStrongFrames` (19) and `race.startWeakFrames` (34) set the window edges.
+  (Blake, Oct 25: five frames more lenient than the notes' 1-14 for a strong start; the
+  weak window moved along with it.)
 
 ### What the boost does
 

@@ -42,7 +42,7 @@ export interface AiConfig {
   /**
    * The start (race.ts): each rival first presses the throttle this many reference
    * frames before GO, give or take up to startSpreadFrames (fixed per rival, so starts
-   * repeat). Around 1-14 frames is a strong start, 15-29 weak, 0 an ordinary one: a
+   * repeat). Around 1-19 frames is a strong start, 20-34 weak, 0 an ordinary one: a
    * skill knob, not a guaranteed boost.
    */
   startAimFrames: number;

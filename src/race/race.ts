@@ -6,9 +6,12 @@
  * counts is how many frames (at a 60 fps reference) before GO you first press the
  * throttle, and that you're still holding it at GO.
  *
- *   30 or more frames early   no boost           (too early)
- *   15 to 29 frames early     weak boost
- *   1 to 14 frames early      strong boost       (about 17 to 233 ms before GO)
+ *   35 or more frames early   no boost           (too early)
+ *   20 to 34 frames early     weak boost
+ *   1 to 19 frames early      strong boost       (about 17 to 317 ms before GO)
+ *
+ * (Blake, Oct 25: the strong window is five frames more lenient than the notes' 1-14,
+ * and the weak window moved along with it.)
  *   at or after GO            no boost, an ordinary start
  *
  * Only the first press during GET READY counts: let go before GO and the boost is lost

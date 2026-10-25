@@ -189,8 +189,9 @@ const pressFrames = (frames: number) => (clock: number) => clock >= -frames / 60
 describe("start boost (GET READY... GO!)", () => {
   it("counts its windows at a 60 fps reference", () => {
     expect(cfg.startRefHz).toBe(60);
-    expect(cfg.startStrongFrames).toBe(14);
-    expect(cfg.startWeakFrames).toBe(29);
+    // Blake, Oct 25: the strong window five frames more lenient (it was 1-14).
+    expect(cfg.startStrongFrames).toBe(19);
+    expect(cfg.startWeakFrames).toBe(34);
   });
 
   it("1. holding from 40 frames before GO is too early: no boost", () => {
@@ -245,11 +246,11 @@ describe("start boost (GET READY... GO!)", () => {
     expect(boost).toBeUndefined();
   });
 
-  it("puts the window edges where the frames say (14 strong, 15 weak, 29 weak, 30 early)", () => {
-    expect(judgeStart(-14 / 60, true, cfg).tier).toBe("strong");
-    expect(judgeStart(-15 / 60, true, cfg).tier).toBe("weak");
-    expect(judgeStart(-29 / 60, true, cfg).tier).toBe("weak");
-    expect(judgeStart(-30 / 60, true, cfg).tier).toBe("early");
+  it("puts the window edges where the frames say (19 strong, 20 weak, 34 weak, 35 early)", () => {
+    expect(judgeStart(-19 / 60, true, cfg).tier).toBe("strong");
+    expect(judgeStart(-20 / 60, true, cfg).tier).toBe("weak");
+    expect(judgeStart(-34 / 60, true, cfg).tier).toBe("weak");
+    expect(judgeStart(-35 / 60, true, cfg).tier).toBe("early");
     expect(judgeStart(-1 / 60, true, cfg).tier).toBe("strong");
     expect(judgeStart(-0.004, true, cfg).tier).toBe("strong"); // inside the last frame
     expect(judgeStart(-5 / 60, false, cfg).tier).toBe("released");
@@ -295,9 +296,9 @@ describe("start boost (GET READY... GO!)", () => {
     };
     // GO is at wall time readySec (the race clock starts at -readySec with the loop).
     const goMs = cfg.readySec * 1000;
-    for (const before of [40, 20, 15.5, 13, 10, 2])
+    for (const before of [45, 25, 20.5, 18, 10, 2])
       for (const fps of [30, 60, 120, 144]) {
-        const want = before >= 30 ? "early" : before > 14 ? "weak" : "strong";
+        const want = before >= 35 ? "early" : before > 19 ? "weak" : "strong";
         expect(run(fps, goMs - (before / 60) * 1000), `${before} frames at ${fps} fps`).toBe(want);
       }
   });
