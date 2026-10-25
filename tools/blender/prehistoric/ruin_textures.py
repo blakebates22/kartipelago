@@ -65,6 +65,25 @@ BONEBOG = {
     },
 }
 
+EMBER = {
+    "id": "ember_ruins",
+    "name": "Ember Peak in Ruins",
+    "description": "The volcanic field after the eruption the dragons woke: a dark red sky full of ash, the volcano's flank slid down over the home straight, fires everywhere",
+    "environment": {
+        "sky": "#8a3a24",
+        "fog": {"enabled": True, "color": "#7a3a28", "near": 140, "far": 900},
+        "sun": {"color": "#ffb878", "intensity": 2.4, "direction": [0.5, 0.45, -0.7]},
+        "ambient": {"sky": "#f0a080", "ground": "#3a1e16", "intensity": 1.25},
+        "skyDome": {
+            "top": "#3a1418",
+            "horizon": "#ff8a40",
+            "bottom": "#8a3a24",
+            "sun": {"color": "#ffd0a0", "size": 12, "glow": "#ff7a30", "elevation": 14},
+            "clouds": {"count": 44, "color": "#6a4a44", "shade": "#2e1c1c", "seed": 317, "low": 6, "high": 24, "drift": 0.01},
+        },
+    },
+}
+
 
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle

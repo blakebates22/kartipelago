@@ -241,6 +241,7 @@ describe("worlds", () => {
       "riverbend_palms_ruin",
       "cascade_caverns_ruin",
       "bonebog_pyramid_ruin",
+      "ember_peak_ruin",
       "boss_prehistoric",
       "boss_snowy",
       "boss_desert",
@@ -269,8 +270,8 @@ describe("worlds", () => {
       "prehistoric",
       "frostveil",
       "desert",
-      "dragon",
       "beach",
+      "dragon",
     ]);
     // Its tracks still load directly.
     expect(trackById("loop_lab")).toBeTruthy();

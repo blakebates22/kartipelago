@@ -27,10 +27,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import Vector, lerp, smooth  # noqa: E402
 from mathutils import kdtree  # noqa: E402
 
-TRACK_ID = "ember_peak"
+# The ruin (ember_ruins.py): the volcano's flank has slid down over the home straight;
+# the road swings south round the landslide and rolls over its rubble. Otherwise the same.
+RUIN = ruin_mode.ON
+TRACK_ID = "ember_peak_ruin" if RUIN else "ember_peak"
 LAVA_Z = -1.5
 
 LAYOUT = [
@@ -51,7 +55,17 @@ LAYOUT = [
     ("L", 160, 12),  # 14 a flat-out kink
     ("R", 160, 12),  # 15 and over the lava bridge to the line
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 11, 13, (0.0, 0.0), 0.0)
+STANDARD_LAYOUT = list(LAYOUT)
+if RUIN:
+    # Blake: not shorter, a little longer, and the boring straight from the cave to the line
+    # made fast and exciting, like the beach courses. The landslide buries the old straight
+    # (13-15): out of the cave the road dives south-east round its toe, sweeps left and back
+    # right over the rubble's humps, and runs onto the lava bridge to the line. The cave
+    # (11) keeps its length, so everything up to it is exactly where it was.
+    LAYOUT[11] = ("S", 57.207720312251325)
+    LAYOUT[13:16] = [("S", 16), ("R", 42, 50), ("S", 22), ("L", 42, 120), ("R", 42, 80), ("L", 42, 10), ("S", 30)]
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 13 if RUIN else 11, 15 if RUIN else 13, (0.0, 0.0), 0.0)
+STANDARD_PATH = kit.close_turtle(STANDARD_LAYOUT, 11, 13, (0.0, 0.0), 0.0)[1]
 SEG = kit.segment_starts(PATH)
 LIP = SEG[4]
 LAND = SEG[5]
@@ -76,9 +90,31 @@ HEIGHT = [
     (14, 2.2),
     (15, 2.0),
 ]
+if RUIN:
+    HEIGHT[13:] = [(13, 3.0), (14, 3.0), (15, 2.6), (16, 2.4), (17, 2.2), (18, 2.1), (19, 2.0)]
+# The ruin's home run rolls over the landslide's rubble: crests (distance into the run, m)
+# the road rides up and over, each 2.2 m high and 28 m long (a light lift at speed).
+HUMPS = (10.0, 48.0, 92.0, 136.0) if RUIN else ()
+HOME = 13  # the home run's first segment
+
+
+def hump(d):
+    if not HUMPS:
+        return 0.0
+    u = d - SEG[HOME]
+    z = 0.0
+    for h in HUMPS:
+        t = (u - h) / 14.0
+        if -1.0 < t < 1.0:
+            z += 1.1 * (1.0 + math.cos(math.pi * t))
+    return z
 
 
 def road_z(d, seg):
+    return _road_z(d, seg) + hump(d)
+
+
+def _road_z(d, seg):
     if seg == 4:
         return lerp(21.0, 9.5, (d - LIP) / (LAND - LIP))
     for (s0, z0), (s1, z1) in zip(HEIGHT, HEIGHT[1:]):
@@ -107,7 +143,7 @@ def road_w(d, seg):
         return 24.0  # a wide landing: wherever you come down, you're on the road
     if seg == 3 and d > LIP - 14:
         return 18.0
-    if seg in (13, 14, 15, 0):
+    if seg >= 13 or seg == 0:
         return 16.0  # the home run and the start: wide and fast
     return 14.0
 
@@ -322,7 +358,7 @@ def _classify(c, n, info):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Ember Peak", "volcanic_apocalypse")
+    c = kit.Course(TRACK_ID, "Ember Peak (Ruined)" if RUIN else "Ember Peak", "ember_ruins" if RUIN else "volcanic_apocalypse")
     c.route(ROUTE, width=14.0, bank=7.0)
     wall = ("basalt_block", "wall")
     c.kinds = {
@@ -373,7 +409,7 @@ def main():
             return "landing"
         if in_volcano(x, y, 0.98):
             return "cave"
-        if seg in (13, 14, 15, 0) and abs(x - river_x(y)) < RIVER_HALF + 12:
+        if (seg >= 13 or seg == 0) and abs(x - river_x(y)) < RIVER_HALF + 12:
             return "lowbridge"
         if seg in (1, 2):
             return "ledge"
@@ -471,14 +507,14 @@ def main():
     # (None by the start: there's the start boost.)
     c.zipper(SEG[2] + 6, 0)
     c.zipper(SEG[13] - 2, 0)
-    c.zipper(SEG[14] + 25, 0)
-    for at, across in ((SEG[1] + 60, 0), (SEG[7] + 10, 0), (SEG[11] + 10, 0), (SEG[13] + 80, 0)):
+    c.zipper(SEG[15] + 2 if RUIN else SEG[14] + 25, 0)
+    for at, across in ((SEG[1] + 60, 0), (SEG[7] + 10, 0), (SEG[11] + 10, 0), (SEG[16] + 30, 2) if RUIN else (SEG[13] + 80, 0)):
         c.bananas(at, across, count=5, gap=2.6)
-    for at, across, col in ((SEG[1] + 20, -3, "red"), (SEG[1] + 20, 3, "blue"), (SEG[6] + 8, 0, "green"), (SEG[10] + 20, 0, "yellow"), (SEG[13] + 30, 0, "rainbow")):
+    for at, across, col in ((SEG[1] + 20, -3, "red"), (SEG[1] + 20, 3, "blue"), (SEG[6] + 8, 0, "green"), (SEG[10] + 20, 0, "yellow"), (SEG[16] + 20 if RUIN else SEG[13] + 30, 0, "rainbow")):
         c.balloon(at, across, col)
     # Missing the jump drops you in the lava: back out at the end of the landing.
     c.entity("respawn", **{"from": round(LIP - 30, 1), "to": round(LAND + 6, 1), "at": round(LAND + 30, 1)})
-    c.checkpoints(extra=[SEG[1] + 40, SEG[2], LAND + 34, SEG[8], SEG[11], SEG[13] + 20], height=10.0)
+    c.checkpoints(extra=[SEG[1] + 40, SEG[2], LAND + 34, SEG[8], SEG[11], SEG[13] + 20] + ([SEG[16] + 40, SEG[18]] if RUIN else []), height=10.0)
 
     # The dragon: from beyond the valley. It circles high, then swoops in low across the
     # jump just as you're in the air, and climbs away over the volcano (scenery only).
@@ -500,9 +536,13 @@ def main():
         keys.append([round(s_, 1), g[0], g[1], g[2]])
     c.entity("isles_dragon", keys=keys, length=round(c.length, 1), size=1.0, colors={"body": "#c8482a", "belly": "#ffcf6a"})
 
-    print("edge rails:", cascade_review.edge_rails(c, me, list(c.coll("Terrain").objects) + [rock]))
+    # The ruin's new home run: rubble along its drops, not carved rails (nothing new looks built).
+    new_road = (lambda s: 13 <= seg_of(s) <= 18) if RUIN else None
+    print("edge rails:", cascade_review.edge_rails(c, me, list(c.coll("Terrain").objects) + [rock], rubble=new_road))
     c.preset("sun", list(c.coll("Terrain").objects) + [rock], 0.35)
     kit.paint.shade_roads(c.pieces, 0.5)
+    if RUIN and ruin_mode.DRESS:
+        ruin_mode.DRESS(c, sys.modules[__name__])
     rep = c.finish()
     # The greybox's look: a sunset over ash (Blake's pick), written over the theme's.
     import json  # noqa: E402
@@ -510,7 +550,8 @@ def main():
     look_path = os.path.join(kit.TRACKS_DIR, TRACK_ID, "look.json")
     with open(look_path, encoding="utf-8") as f:
         look = json.load(f)
-    look.update(LOOK)
+    if not RUIN:
+        look.update(LOOK)
     with open(look_path, "w", encoding="utf-8") as f:
         json.dump(look, f, indent=2)
         f.write("\n")
@@ -600,7 +641,8 @@ def dress(c, ter, rock):
             c.place(vp.smoke_plume(c, 1, 120.0), x, y, 200 * sc - 30, rot=a, scale=sc * 0.8, coll="Sky", role="visual")
     for x, y, r, ht in CONES[:3]:
         c.place(vp.smoke_plume(c, 2, 60.0), x, y, ht - 6, rot=x, coll="Sky", role="visual")
-    c.entity("ashfall", rate=12, radius=40)
+    if not RUIN:
+        c.entity("ashfall", rate=12, radius=40)
 
 
 LOOK = {

@@ -1,7 +1,9 @@
 // The ruined courses (Adventure's treasure map challenge: each course after the dragons'
-// attack): riverbend_ruins.py, cascade_ruins.py, bonebog_ruins.py. The same places,
-// wrecked: shorter laps through them, offered in dev builds from each course's own menu
-// entry, quicker to drive, smoke and ash in the air.
+// attack): riverbend_ruins.py, cascade_ruins.py, bonebog_ruins.py, ember_ruins.py. The
+// same places, wrecked: new laps through them (most shorter), offered in dev builds from
+// each course's own menu entry, smoke and ash in the air. The sync rule (Blake): a ruin
+// is rebuilt whenever its standard course changes; each records the course scripts it
+// was built from, and a ruin left behind fails here.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { trackById } from "../src/game/tracks";
@@ -22,14 +24,17 @@ const lapLength = (pts: { x: number; z: number }[]) =>
   );
 type Entity = { type: string } & Record<string, unknown>;
 
-// [course, its ruin, its theme, the longest the ruin's lap may be (of the full lap's)]
-const RUINS: [string, string, string, number][] = [
-  ["riverbend_palms", "riverbend_palms_ruin", "riverbend_ruins", 0.9],
-  ["cascade_caverns", "cascade_caverns_ruin", "cascade_ruins", 0.92],
-  ["bonebog_pyramid", "bonebog_pyramid_ruin", "bonebog_ruins", 0.92],
+// [course, its ruin, its theme, the ruin's lap length (shortest, longest, of the full
+// lap's), the most its AI lap time may be (of the full lap's)]
+const RUINS: [string, string, string, [number, number], number][] = [
+  ["riverbend_palms", "riverbend_palms_ruin", "riverbend_ruins", [0.7, 0.9], 0.93],
+  ["cascade_caverns", "cascade_caverns_ruin", "cascade_ruins", [0.7, 0.92], 0.93],
+  ["bonebog_pyramid", "bonebog_pyramid_ruin", "bonebog_ruins", [0.7, 0.92], 0.93],
+  // Blake: Ember Peak's ruin is a little longer (an exciting home run, not a shortcut).
+  ["ember_peak", "ember_peak_ruin", "ember_ruins", [1.0, 1.15], 1.15],
 ];
 
-describe.each(RUINS)("%s's ruin", (full, ruin, theme, most) => {
+describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {
   it("is offered from the course's own entry, in its own theme", () => {
     expect(trackById(full)!.ruin).toBe(ruin);
     expect(trackById(ruin)!.theme).toBe(theme);
@@ -42,7 +47,7 @@ describe.each(RUINS)("%s's ruin", (full, ruin, theme, most) => {
     const a = lapLength(p.trackData.points);
     const b = lapLength(f.trackData.points);
     expect(a).toBeLessThan(most * b);
-    expect(a).toBeGreaterThan(0.7 * b);
+    expect(a).toBeGreaterThan(least * b);
     const es = (p.meta.entities ?? []) as Entity[];
     const n = (type: string) => es.filter((e) => e.type === type).length;
     expect(n("ashfall")).toBe(1);
@@ -56,6 +61,24 @@ describe.each(RUINS)("%s's ruin", (full, ruin, theme, most) => {
       expect(r.respawns).toBe(0);
       return r.race.racers[0]!.lapTimes[1]!;
     };
-    expect(await lap(ruin)).toBeLessThan(0.93 * (await lap(full)));
+    expect(await lap(ruin)).toBeLessThan(slowest * (await lap(full)));
   }, 300_000);
+
+  it("was built from the course scripts as they are now (the sync rule)", async () => {
+    const text = new TextDecoder().decode(
+      await readFile(new URL(`../public/tracks/${ruin}/track.json`, import.meta.url)),
+    );
+    const meta = JSON.parse(text) as { builtFrom?: Record<string, string> };
+    const from = meta.builtFrom ?? {};
+    // The standard course's own script is among them.
+    expect(Object.keys(from)).toContain(`${full}.py`);
+    for (const [file, sha] of Object.entries(from)) {
+      const bytes = await readFile(
+        new URL(`../tools/blender/prehistoric/${file}`, import.meta.url),
+      );
+      const hash = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);
+      const now = [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      expect(now, `${file} changed since ${ruin} was built: rebuild the ruin`).toBe(sha);
+    }
+  });
 });

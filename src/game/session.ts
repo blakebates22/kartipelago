@@ -117,6 +117,15 @@ import {
 import { boostChevrons, needleDeg, speedoValue } from "../render/speedo";
 import { applyCharacter, type Character } from "../vehicles/character";
 import {
+  autoCoinSpots,
+  coinsTaken,
+  collectCoins,
+  createCoinField,
+  createCoinView,
+  resetCoins,
+  type CoinSpot,
+} from "./coins";
+import {
   applyBoost,
   createKartState,
   slipAngle,
@@ -163,6 +172,20 @@ export interface SessionOptions {
    * instead of failing.
    */
   fallback?: boolean;
+  /** Adventure's treasure map challenge: silver coins on the course ("auto": four spread
+   * round the lap). */
+  coins?: CoinSpot[] | "auto";
+  /** Adventure: the field. How many rivals, their names on screen, and a top-speed
+   * multiplier for them (a boss's advantage; 1 = none). */
+  field?: {
+    count?: number;
+    names?: string[];
+    speed?: number;
+    /** The rivals' looks in order (alt: the alternate paint, a local cousin). */
+    looks?: { id: RacerId; alt: boolean }[];
+  };
+  /** Adventure: the player's name on screen (the Chosen One's race). */
+  playerName?: string;
 }
 
 export interface SessionContext {
@@ -210,6 +233,8 @@ export interface HudState {
   /** Time Trial: the ghost on or off, its (personal best) time, and the gap to it at the
    * last checkpoint while that's showing (negative: ahead). */
   ghost?: { on: boolean; best?: number; delta?: number };
+  /** Adventure: silver coins taken of all there are. */
+  coins?: { got: number; total: number };
 }
 
 /** The player's finished race. */
@@ -221,6 +246,8 @@ export interface RaceResult {
   bestLap: number;
   /** Everyone's finishing order (names and times), when racing the AI. */
   order: { name: string; racer: RacerId; time?: number; you: boolean; slot: number }[];
+  /** Adventure: silver coins taken of all there were. */
+  coins?: { got: number; total: number };
 }
 
 interface Entrant {
@@ -437,6 +464,12 @@ function buildSession(
         .balloons,
     );
   const itemView = createItemView(root);
+  // Adventure's silver coins (only the player takes them).
+  const coinField =
+    opts.coins && track
+      ? createCoinField(track, opts.coins === "auto" ? autoCoinSpots(track.length) : opts.coins)
+      : undefined;
+  const coinView = coinField ? createCoinView(root, coinField) : undefined;
   /** Collected this step, for the render to show (effects run at frame rate). */
   const pickupsToShow: BananaPickup[] = [];
   const lineOf = (t: Track) =>
@@ -466,6 +499,8 @@ function buildSession(
   // Rivals take the other racers' looks in turn; repeats get the alternate paint.
   const playerLook = opts.racer;
   const rivalLook = (i: number): { id: RacerId; alt: boolean } => {
+    const set = opts.field?.looks?.[i - 1];
+    if (set) return set;
     const others = RACER_IDS.filter((id) => id !== playerLook);
     return { id: others[(i - 1) % others.length]!, alt: i > others.length };
   };
@@ -477,15 +512,24 @@ function buildSession(
   };
 
   const player = findCharacter(opts.character ?? roster.default);
-  const rivals = track && opts.rivals ? roster.rivals : [];
+  const rivals =
+    track && opts.rivals ? roster.rivals.slice(0, opts.field?.count ?? roster.rivals.length) : [];
   // Each rival's skill and racing style (src/ai/skill.ts; tuning.ai.rivals by name).
   const skills = rivals.map((r) => rivalSkill(r.name, rivalSetups as SkillConfig));
   const entrants: Entrant[] = [
-    { name: DESIGNS[playerLook].name, character: player, color: player.color },
+    { name: opts.playerName ?? DESIGNS[playerLook].name, character: player, color: player.color },
     ...rivals.map((r, i) => ({
       // The first rivals are the other racers; their alternate-paint cousins keep their
-      // roster names.
-      name: i < RACER_IDS.length - 1 ? DESIGNS[rivalLook(i + 1).id].name : r.name,
+      // roster names. (Adventure can name them: a boss.)
+      name:
+        opts.field?.names?.[i] ??
+        (opts.field?.looks
+          ? opts.field.looks[i]?.alt
+            ? r.name
+            : DESIGNS[rivalLook(i + 1).id].name
+          : i < RACER_IDS.length - 1
+            ? DESIGNS[rivalLook(i + 1).id].name
+            : r.name),
       // Every rival drives the player's kart: the racer you pick never changes the
       // driving, so a race is won by how it's driven (src/ai/skill.ts), not by a kart.
       character: player,
@@ -830,6 +874,7 @@ function buildSession(
       }
       resetBananaField(bananaField);
       resetItemWorld(itemWorld);
+      if (coinField) resetCoins(coinField);
       if (course) resetCourse(course);
       finishedAt = undefined;
       ghost?.takeNewBest();
@@ -878,7 +923,8 @@ function buildSession(
         const gap = race && i > 0 && !demo ? progressOfEarly(i) - progressOfEarly(0) : 0;
         const trim = tuning.ai.speedMult * e.driver.skill.pace;
         const assist = catchUp(gap, tuning.ai as CatchUpConfig);
-        cfg = { ...cfg, topSpeed: cfg.topSpeed * trim * assist };
+        const boss = i > 0 && !demo ? (opts.field?.speed ?? 1) : 1;
+        cfg = { ...cfg, topSpeed: cfg.topSpeed * trim * assist * boss };
       }
       // Imported tracks: the surface under the wheels scales speed, acceleration and grip.
       if (pkg && e.state.grounded && !loops?.riding(i)) {
@@ -1131,6 +1177,15 @@ function buildSession(
     );
     for (const ev of events) itemFeedback(ev);
     stepBananaField(bananaField, tuning.bananas, dt);
+    if (coinField && race && race.phase === "racing" && !race.racers[0]!.finished) {
+      const got = collectCoins(coinField, you.state.x, you.state.y, you.state.z);
+      if (got) {
+        const n = coinsTaken(coinField);
+        const all = coinField.coins.length;
+        sfx.balloon(itemsCfg.volume, "new");
+        showToast(n === all ? `ALL ${all} SILVER COINS! NOW WIN!` : `SILVER COIN ${n}/${all}`, 1.6);
+      }
+    }
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
     const moved = Math.hypot(you.state.x - posBefore.x, you.state.z - posBefore.z);
     if (moved > 1e-3) pathCurvature = wrapAngle(you.state.velAngle - pathBefore) / moved;
@@ -1428,6 +1483,7 @@ function buildSession(
     for (const v of parkViews) v.render(tuning.track);
     for (const pk of pickupsToShow.splice(0)) bananaView.burst(pk);
     bananaView.render(bananaField, tuning.bananas, now, frameSeconds);
+    coinView?.render(now, frameSeconds);
     itemView.render(
       itemWorld,
       entrants.map((e) => e.mesh.position),
@@ -1579,6 +1635,7 @@ function buildSession(
         : null,
       toast: toast?.text,
       laps: LAPS,
+      coins: coinField ? { got: coinsTaken(coinField), total: coinField.coins.length } : undefined,
     };
     if (!race) {
       const on = park && streak ? (streak.loop >= 0 ? streak.loop : parkLoop) : 0;
@@ -1640,6 +1697,7 @@ function buildSession(
       totalTime: r.totalTime ?? 0,
       lapTimes: [...r.lapTimes],
       bestLap: r.bestLap ?? Math.min(...r.lapTimes),
+      coins: coinField ? { got: coinsTaken(coinField), total: coinField.coins.length } : undefined,
       order: order.map((i) => ({
         name: entrants[i]!.name,
         racer: entrants[i]!.look,
@@ -1746,6 +1804,7 @@ function buildSession(
     hazards?.dispose();
     aiDebug?.dispose();
     gateView?.dispose();
+    coinView?.dispose();
     stage.scene.remove(root);
     disposeObject(root);
     trackView?.dispose();
@@ -1838,6 +1897,8 @@ function buildSession(
     hazards,
     entrants,
     itemWorld,
+    /** Adventure's silver coins (tests and debugging). */
+    coins: coinField,
     zippers,
     root,
     get race() {

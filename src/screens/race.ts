@@ -28,6 +28,8 @@ import { VMenu, hints } from "./common";
 import { optionsScreen } from "./options";
 import { tracksMenu } from "./tracks";
 import { trophyStandings } from "./trophy";
+import { adventureHub, adventureResult } from "./adventure";
+import { runLabel } from "../adventure/run";
 import { cupOver } from "../game/trophy";
 import { titleScreen } from "./title";
 
@@ -150,6 +152,13 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
           // In a Trophy Race: the cup table (and on to the next track) instead.
           if (game.trophy && !cupOver(game.trophy))
             game.screens.push(trophyStandings(game, result, entry));
+          else if (game.adventure?.run && game.adventure.run.kind !== "cup")
+            game.screens.push(
+              adventureResult(game, result, entry, () => {
+                showingResults = false;
+                restart();
+              }),
+            );
           else
             game.screens.push(
               resultsScreen(game, result, rec, entry, restart, () => (showingResults = false)),
@@ -172,7 +181,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         clock,
         game.trophy
           ? `TROPHY RACE ${game.trophy.raced + 1}/${game.trophy.tracks.length}`
-          : undefined,
+          : runLabel(game.adventure?.run),
         pb,
       );
     },
@@ -362,6 +371,19 @@ function drawHud(
   const big = { outline: PAL.shadow };
   if (h.boost > 0) speedLines(ui, h.boost, h.rainbow ? null : h.boostColor, t);
   if (cup) ui.text(cup, ui.W / 2, 6, { color: PAL.gold, outline: PAL.shadow, align: "center" });
+  // Adventure's silver coins: how many you have.
+  if (h.coins) {
+    const all = h.coins.got >= h.coins.total;
+    const cx = 8;
+    const cy = 34;
+    ui.rect(cx, cy, 9, 9, PAL.shadow);
+    ui.rect(cx + 1, cy + 1, 7, 7, all ? "#ffffff" : "#c8d2dc");
+    ui.rect(cx + 3, cy + 2, 2, 5, "#8a96a4");
+    ui.text(`${h.coins.got}/${h.coins.total}`, cx + 13, cy + 1, {
+      color: all ? PAL.gold : PAL.cream,
+      outline: PAL.shadow,
+    });
+  }
   // Top left: position (or the mode).
   if (practice && h.park) {
     ui.text("DRIFT PARK", 8, 8, { color: PAL.gold, ...big });
@@ -534,10 +556,15 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
             },
           ]
         : []),
-      {
-        label: "TRACK SELECT",
-        action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
-      },
+      game.adventure?.run
+        ? {
+            label: "WORLD MAP",
+            action: leave("THE WORLD MAP", () => game.screens.go(adventureHub(game))),
+          }
+        : {
+            label: "TRACK SELECT",
+            action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
+          },
       {
         label: "MAIN MENU",
         action: leave("THE MAIN MENU", () => {

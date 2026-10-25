@@ -14,6 +14,7 @@ import type { ScreenManager } from "./app";
 import type { Settings } from "./settings";
 import type { SessionContext, SessionOptions, Session } from "../game/session";
 import type { TrackMode } from "../game/tracks";
+import type { AdventureState } from "../adventure/run";
 
 export interface Selection {
   racer: RacerId;
@@ -44,4 +45,6 @@ export interface Game {
   debugMode: boolean;
   /** The Trophy Race in progress, if any (game/trophy.ts). */
   trophy?: TrophyCup;
+  /** Adventure mode: the save, and the race being run for the story (src/adventure). */
+  adventure?: AdventureState;
 }

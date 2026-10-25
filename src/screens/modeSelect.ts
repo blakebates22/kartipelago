@@ -21,6 +21,7 @@ import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
 import { tracksMenu } from "./tracks";
+import { adventureHub } from "./adventure";
 
 export function modeSelect(game: Game): Screen {
   let focus = 0;
@@ -29,7 +30,7 @@ export function modeSelect(game: Game): Screen {
   const pick = (i: number) => {
     game.sounds.confirm();
     if (i === 0) game.screens.go(tracksMenu(game));
-    else game.screens.go(comingSoon(game));
+    else game.screens.go(adventureHub(game));
   };
   return {
     id: "MODE_SELECT",
@@ -70,7 +71,7 @@ export function modeSelect(game: Game): Screen {
       titlePlank(ui.g, ui.W, "CHOOSE A MODE", t, calm);
       const signs = [
         { label: "TRACKS", sub: "RACE ANY COURSE", icon: "flag" as const },
-        { label: "ADVENTURE", sub: "COMING SOON", icon: "map" as const, dim: true },
+        { label: "ADVENTURE", sub: "THE STORY (EARLY)", icon: "map" as const },
       ];
       const w = 128;
       const h = 80;

@@ -15,7 +15,8 @@ import { saveSettings } from "../app/settings";
 import { startCup } from "../game/trophy";
 import { MODE_LABELS, trackById, type TrackEntry, type TrackMode } from "../game/tracks";
 import {
-  VISIBLE_WORLDS as WORLDS,
+  VISIBLE_WORLDS,
+  WORLDS as ALL_WORLDS,
   currentWorld,
   trackTilesOf,
   tracksOf,
@@ -44,6 +45,12 @@ export function preview(src: string): HTMLImageElement | undefined {
 
 type Entry = { kind: "trophy" } | { kind: "track"; track: TrackEntry };
 
+/** The worlds along the top; dev builds add the Testing tab (prototypes, old versions,
+ * ruins, bosses), which players never see. */
+const WORLDS: WorldEntry[] = import.meta.env.DEV
+  ? [...VISIBLE_WORLDS, ...ALL_WORLDS.filter((w) => w.testing)]
+  : VISIBLE_WORLDS;
+
 /** A best time not set yet. */
 const NO_TIME = "-:--.--";
 
@@ -58,13 +65,14 @@ const styleOf = (w: WorldEntry): IslandStyle => STYLE[w.id] ?? "prehistoric";
 
 const entriesOf = (w: WorldEntry): Entry[] => [
   ...trackTilesOf(w).map((track) => ({ kind: "track" as const, track })),
-  { kind: "trophy" },
+  ...(w.testing ? [] : [{ kind: "trophy" as const }]),
 ];
 
 export function tracksMenu(game: Game): Screen {
   // Leaving a cup (or coming back after one) ends it.
   game.trophy = undefined;
-  let wi = Math.max(0, WORLDS.indexOf(currentWorld(game.selection)));
+  const testingAt = WORLDS.findIndex((w) => w.testing && w.id === game.selection.worldId);
+  let wi = testingAt >= 0 ? testingAt : Math.max(0, WORLDS.indexOf(currentWorld(game.selection)));
   let ei = Math.max(
     0,
     trackTilesOf(WORLDS[wi]!).findIndex((t) => t.id === game.settings.last.track),
@@ -291,10 +299,14 @@ export function tracksMenu(game: Game): Screen {
   function header(ui: UiLayer): { x: number; y: number; w: number } {
     const n = WORLDS.length;
     const img = (w: WorldEntry) => island(styleOf(w), 9);
-    const lineW = (w: WorldEntry) => Math.max(...w.name.toUpperCase().split(" ").map(textWidth));
-    const need = WORLDS.map((w) => img(w).width + 7 + lineW(w));
-    const spare = Math.max(0, ui.W - 24 - (n - 1) * 4 - need.reduce((a, b) => a + b, 0));
-    let x = 12;
+    const imgW = (w: WorldEntry) => (w.testing ? 0 : img(w).width);
+    const margin = WORLDS.some((w) => w.testing) ? 6 : 12;
+    // (Dev builds' Testing tab: a short label, so six boards fit.)
+    const title = (w: WorldEntry) => (w.testing ? "DEV" : w.name.toUpperCase());
+    const lineW = (w: WorldEntry) => Math.max(...title(w).split(" ").map(textWidth));
+    const need = WORLDS.map((w) => imgW(w) + 7 + lineW(w));
+    const spare = Math.max(0, ui.W - 2 * margin - (n - 1) * 4 - need.reduce((a, b) => a + b, 0));
+    let x = margin;
     WORLDS.forEach((w, i) => {
       const on = i === wi;
       const tw = Math.floor(need[i]! + spare / n);
@@ -305,10 +317,11 @@ export function tracksMenu(game: Game): Screen {
       ui.rect(x + 3, 6 + h - 5, tw - 6, 2, on ? w.color : "#6a4a2a");
       if (!on) ui.rect(x + 2, 8, tw - 4, h - 4, "#1a1008", 0.25);
       const im = img(w);
-      ui.image(im, x + 3, 6 + h / 2 - im.height / 2 - 1, im.width, im.height, false);
-      const label = wrap(w.name.toUpperCase(), Math.max(lineW(w), tw - im.width - 8));
+      if (!w.testing)
+        ui.image(im, x + 3, 6 + h / 2 - im.height / 2 - 1, im.width, im.height, false);
+      const label = wrap(title(w), Math.max(lineW(w), tw - imgW(w) - 8));
       label.slice(0, 2).forEach((l, j) =>
-        ui.text(l, x + im.width + 4, 6 + (label.length > 1 ? 4 : 9) + j * 9, {
+        ui.text(l, x + imgW(w) + 4, 6 + (label.length > 1 ? 4 : 9) + j * 9, {
           color: on ? PAL.gold : PAL.cream,
           outline: PAL.shadow,
         }),
@@ -327,26 +340,42 @@ export function tracksMenu(game: Game): Screen {
     const ly = L.y;
     const lw = L.w;
     note(ui, lx, ly, lw, 170);
-    entries().forEach((e, i) => {
-      const on = i === ei;
-      const y = ly + 6 + i * 32;
-      if (on) ui.rect(lx + 2, y - 2, lw - 4, 28, "#ffd84a", 0.55);
-      if (e.kind === "trophy") trophy(ui.g, lx + 8, y + 5, 1, on ? Math.sin(t * 3) : 0);
-      else stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
-      ui.text(nameOf(e), lx + 30, y + 4, { color: on ? "#8a2a1a" : INK });
-      const trial = e.kind === "track" ? records[e.track.id]?.best.timeTrial : undefined;
-      const sub =
-        e.kind === "trophy"
-          ? `${tracksOf(world()).filter((tr) => !tr.comingSoon).length} RACES · MOST POINTS`
-          : e.track.comingSoon
-            ? ""
-            : `BEST TRIAL ${trial ? formatTime(trial) : NO_TIME}`;
-      ui.text(sub, lx + 30, y + 14, { color: INK_SOFT });
-      if (i < entries().length - 1)
-        for (let k = lx + 6; k < lx + lw - 6; k += 3) ui.rect(k, y + 29, 1, 1, INK_SOFT);
-      if (game.menuInput.pointer.clicked && ui.hover(lx, y - 2, lw, 30))
-        clicked = () => (i === ei ? choose() : setEntry(i));
-    });
+    // A long list (dev builds' Testing tab): one line each, scrolling with the choice.
+    const all = entries();
+    const many = all.length > 5;
+    const rows = many ? 12 : all.length;
+    const first = many ? Math.max(0, Math.min(all.length - rows, ei - Math.floor(rows / 2))) : 0;
+    if (many)
+      all.slice(first, first + rows).forEach((e, k) => {
+        const i = first + k;
+        const on = i === ei;
+        const y = ly + 5 + k * 13.5;
+        if (on) ui.rect(lx + 2, y - 2, lw - 4, 12, "#ffd84a", 0.55);
+        ui.text(`${i + 1} ${nameOf(e)}`, lx + 8, y + 1, { color: on ? "#8a2a1a" : INK });
+        if (game.menuInput.pointer.clicked && ui.hover(lx, y - 2, lw, 13))
+          clicked = () => (i === ei ? choose() : setEntry(i));
+      });
+    else
+      all.forEach((e, i) => {
+        const on = i === ei;
+        const y = ly + 6 + i * 32;
+        if (on) ui.rect(lx + 2, y - 2, lw - 4, 28, "#ffd84a", 0.55);
+        if (e.kind === "trophy") trophy(ui.g, lx + 8, y + 5, 1, on ? Math.sin(t * 3) : 0);
+        else stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
+        ui.text(nameOf(e), lx + 30, y + 4, { color: on ? "#8a2a1a" : INK });
+        const trial = e.kind === "track" ? records[e.track.id]?.best.timeTrial : undefined;
+        const sub =
+          e.kind === "trophy"
+            ? `${tracksOf(world()).filter((tr) => !tr.comingSoon).length} RACES · MOST POINTS`
+            : e.track.comingSoon
+              ? ""
+              : `BEST TRIAL ${trial ? formatTime(trial) : NO_TIME}`;
+        ui.text(sub, lx + 30, y + 14, { color: INK_SOFT });
+        if (i < entries().length - 1)
+          for (let k = lx + 6; k < lx + lw - 6; k += 3) ui.rect(k, y + 29, 1, 1, INK_SOFT);
+        if (game.menuInput.pointer.clicked && ui.hover(lx, y - 2, lw, 30))
+          clicked = () => (i === ei ? choose() : setEntry(i));
+      });
     // The chosen one, large.
     const e = entry();
     const px = lx + lw + 14;

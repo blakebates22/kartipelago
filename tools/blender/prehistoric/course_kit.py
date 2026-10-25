@@ -877,6 +877,13 @@ class Course:
         meta["entities"] = self.entities
         if extra:
             meta.update(extra)
+        import ruin_mode  # noqa: E402
+
+        if ruin_mode.ON:
+            # The sync rule: a ruin records the course scripts it was built from, so a
+            # test can tell when the standard course has changed and the ruin needs
+            # rebuilding (tests/ruin.test.ts).
+            meta["builtFrom"] = ruin_mode.fingerprints(self.id)
         with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(meta, f, indent=2)
             f.write("\n")

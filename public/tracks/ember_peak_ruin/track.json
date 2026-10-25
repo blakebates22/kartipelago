@@ -1,0 +1,692 @@
+{
+  "schemaVersion": 1,
+  "id": "ember_peak_ruin",
+  "name": "Ember Peak (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "bubbles_01",
+      "type": "bubbles",
+      "x": -120,
+      "y": -1.3,
+      "z": -45,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_02",
+      "type": "bubbles",
+      "x": -55,
+      "y": -1.3,
+      "z": -40,
+      "r": 6,
+      "molten": true
+    },
+    {
+      "id": "bubbles_03",
+      "type": "bubbles",
+      "x": 25,
+      "y": -1.3,
+      "z": -45,
+      "r": 7,
+      "molten": true
+    },
+    {
+      "id": "bubbles_04",
+      "type": "bubbles",
+      "x": 125,
+      "y": -1.3,
+      "z": 45,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_05",
+      "type": "bubbles",
+      "x": 60,
+      "y": -1.3,
+      "z": 60,
+      "r": 7,
+      "molten": true
+    },
+    {
+      "id": "bubbles_06",
+      "type": "bubbles",
+      "x": 150,
+      "y": -1.3,
+      "z": -150,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_07",
+      "type": "bubbles",
+      "x": -100,
+      "y": -1.3,
+      "z": -175,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_08",
+      "type": "bubbles",
+      "x": -330,
+      "y": -1.3,
+      "z": 60,
+      "r": 9,
+      "molten": true
+    },
+    {
+      "id": "bubbles_09",
+      "type": "bubbles",
+      "x": 210,
+      "y": -1.3,
+      "z": 120,
+      "r": 10,
+      "molten": true
+    },
+    {
+      "id": "bubbles_10",
+      "type": "bubbles",
+      "x": -200,
+      "y": -1.3,
+      "z": -60,
+      "r": 6,
+      "molten": true
+    },
+    {
+      "id": "bubbles_11",
+      "type": "bubbles",
+      "x": 110,
+      "y": -1.3,
+      "z": -210,
+      "r": 8,
+      "molten": true
+    },
+    {
+      "id": "bubbles_12",
+      "type": "bubbles",
+      "x": -16.06,
+      "y": -1.3,
+      "z": 300,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_13",
+      "type": "bubbles",
+      "x": -8.31,
+      "y": -1.3,
+      "z": 250,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_14",
+      "type": "bubbles",
+      "x": -15.82,
+      "y": -1.3,
+      "z": 200,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_15",
+      "type": "bubbles",
+      "x": -13.31,
+      "y": -1.3,
+      "z": 150,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_16",
+      "type": "bubbles",
+      "x": -13.96,
+      "y": -1.3,
+      "z": 100,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_17",
+      "type": "bubbles",
+      "x": -17.42,
+      "y": -1.3,
+      "z": 50,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_18",
+      "type": "bubbles",
+      "x": -9.67,
+      "y": -1.3,
+      "z": 0,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_19",
+      "type": "bubbles",
+      "x": -16.27,
+      "y": -1.3,
+      "z": -50,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_20",
+      "type": "bubbles",
+      "x": -9.03,
+      "y": -1.3,
+      "z": -100,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_21",
+      "type": "bubbles",
+      "x": -14.0,
+      "y": -1.3,
+      "z": -150,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_22",
+      "type": "bubbles",
+      "x": -14.65,
+      "y": -1.3,
+      "z": -200,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_23",
+      "type": "bubbles",
+      "x": -12.33,
+      "y": -1.3,
+      "z": -250,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_24",
+      "type": "bubbles",
+      "x": -18.58,
+      "y": -1.3,
+      "z": -300,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_25",
+      "type": "bubbles",
+      "x": -9.93,
+      "y": -1.3,
+      "z": -350,
+      "r": 5.6000000000000005,
+      "molten": true
+    },
+    {
+      "id": "bubbles_26",
+      "type": "bubbles",
+      "x": -305.59,
+      "y": -1.3,
+      "z": 134.89,
+      "r": 4.800000000000001,
+      "molten": true
+    },
+    {
+      "id": "bubbles_27",
+      "type": "bubbles",
+      "x": 280,
+      "y": -1.3,
+      "z": -60,
+      "r": 5.2,
+      "molten": true
+    },
+    {
+      "id": "bubbles_28",
+      "type": "bubbles",
+      "x": -200,
+      "y": -1.3,
+      "z": -360,
+      "r": 4.4,
+      "molten": true
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -242.47,
+      "y": 8.53,
+      "z": -93.32
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -260.96,
+      "y": 10.24,
+      "z": -87.02
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -244.15,
+      "y": 9.27,
+      "z": -76.68
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -261.09,
+      "y": 9.41,
+      "z": -66.6
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -244.09,
+      "y": 9.28,
+      "z": -56.6
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -261.09,
+      "y": 9.15,
+      "z": -46.6
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -244.12,
+      "y": 8.93,
+      "z": -36.56
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -261.12,
+      "y": 9.66,
+      "z": -26.51
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -242.93,
+      "y": 7.91,
+      "z": -19.29
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -115.03,
+      "y": 1.34,
+      "z": 31.07
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -312.72,
+      "y": 1.71,
+      "z": -168.59
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -210.89,
+      "y": 2.41,
+      "z": -86.46
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -188.78,
+      "y": 1.56,
+      "z": -228.85
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -47.06,
+      "y": 2.74,
+      "z": 73.76
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": -215.54,
+      "y": 3.31,
+      "z": -101.79
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -104.59,
+      "y": 0.58,
+      "z": -208.66
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": -276.15,
+      "y": 1.38,
+      "z": -164.32
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": -212.18,
+      "y": 2.29,
+      "z": 79.81
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": -184.5,
+      "y": 0.86,
+      "z": -169.89
+    },
+    {
+      "id": "campfire_11",
+      "type": "campfire",
+      "x": 7.2,
+      "y": 1.42,
+      "z": 21.07
+    },
+    {
+      "id": "campfire_12",
+      "type": "campfire",
+      "x": 2.86,
+      "y": 0.03,
+      "z": 140.9
+    },
+    {
+      "id": "campfire_13",
+      "type": "campfire",
+      "x": -375.68,
+      "y": 6.41,
+      "z": -160.07
+    },
+    {
+      "id": "campfire_14",
+      "type": "campfire",
+      "x": -166.52,
+      "y": 3.0,
+      "z": 174.38
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": -149.22,
+      "y": 0.19,
+      "z": -134.3
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": -48.45,
+      "y": 1.76,
+      "z": 59.54
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": -211.64,
+      "y": 0.17,
+      "z": -35.59
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": -105.73,
+      "y": 0.44,
+      "z": -214.51
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": -146.15,
+      "y": -0.38,
+      "z": 90.89
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": -253.21,
+      "y": 0.32,
+      "z": -132.44
+    },
+    {
+      "id": "eruption_01",
+      "type": "eruption",
+      "x": -310.59,
+      "y": 115.0,
+      "z": -55.11,
+      "period": 12.0,
+      "offset": 2.0
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 188.9,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 657.6,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 714.7,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 111.0,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 346.7,
+      "across": 4.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 558.9,
+      "across": -4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 764.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 71.0,
+      "across": -3,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 71.0,
+      "across": 3,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 313.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 515.5,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 754.9,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 206.9,
+      "to": 260.9,
+      "at": 284.9
+    },
+    {
+      "id": "isles_dragon_01",
+      "type": "isles_dragon",
+      "keys": [
+        [0.0, -310.59, 155.0, -95.11],
+        [51.0, 150.0, 80.0, 60.0],
+        [182.9, 120.0, 55.0, -150.0],
+        [221.9, 26.5, 38.0, -154.0],
+        [245.9, -13.5, 29.0, -86.0],
+        [284.9, -43.5, 40.0, -14.0],
+        [463.8, -120.0, 70.0, 60.0],
+        [606.1, -350.59, 135.0, 4.89],
+        [922.4, -310.59, 155.0, -95.11]
+      ],
+      "length": 923.4,
+      "size": 1.0,
+      "colors": {
+        "body": "#c8482a",
+        "belly": "#ffcf6a"
+      }
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -144.72,
+      "y": 3.11,
+      "z": -7.51
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -95.28,
+      "y": 3.18,
+      "z": 9.96
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -129.15,
+      "y": 3.08,
+      "z": 38.98
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -137.68,
+      "y": 3.45,
+      "z": 34.41
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -56.37,
+      "y": 2.73,
+      "z": 32.51
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -58.48,
+      "y": 2.8,
+      "z": 31.27
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -195.72,
+      "y": 2.32,
+      "z": 36.84
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -209.62,
+      "y": 1.22,
+      "z": 34.54
+    },
+    {
+      "id": "campfire_15",
+      "type": "campfire",
+      "x": -144.72,
+      "y": 2.51,
+      "z": -7.51
+    },
+    {
+      "id": "campfire_16",
+      "type": "campfire",
+      "x": -129.15,
+      "y": 2.48,
+      "z": 38.98
+    },
+    {
+      "id": "campfire_17",
+      "type": "campfire",
+      "x": -56.37,
+      "y": 2.13,
+      "z": 32.51
+    },
+    {
+      "id": "campfire_18",
+      "type": "campfire",
+      "x": -195.72,
+      "y": 1.72,
+      "z": 36.84
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 30,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/ember_peak_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "ember_peak.py": "6c351ccbdb2c54845858dfba5c6206c5f1b52d56df67af99a28add23823bf4c5",
+    "ember_ruins.py": "4aa6e526c763a71df34bc578fbc0447463a226b3c4451b72cd1d491bf05adb3f"
+  }
+}

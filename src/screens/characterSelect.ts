@@ -16,6 +16,7 @@
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { saveSettings } from "../app/settings";
+import { loadUnlocked } from "../app/unlocks";
 import { RACER_STEMS } from "../audio/songs";
 import { DESIGNS, RACER_IDS, type RacerId } from "../render/racers/designs";
 import type { UiLayer } from "../ui/layer";
@@ -59,7 +60,13 @@ export function characterSelect(game: Game): Screen {
   const bgParam =
     typeof location !== "undefined" ? new URLSearchParams(location.search).get("selectbg") : null;
   const backdrop: SelectBackdrop = bgParam === "ruins" || bgParam === "vista" ? bgParam : "dawn";
+  // Four racers from the start; the others join your crew in Adventure (app/unlocks.ts).
+  const unlocked = loadUnlocked();
+  const open = (r: RacerId) => unlocked.has(r);
   let index = Math.max(0, RACER_IDS.indexOf(game.settings.last.racer));
+  if (!open(RACER_IDS[index]!)) index = 0;
+  /** A locked racer was picked: say how to unlock them, for a moment. */
+  let lockedNote = 0;
   let pp: PixelPortraits | undefined;
   let t = 0;
   let hop = 0;
@@ -80,6 +87,11 @@ export function characterSelect(game: Game): Screen {
 
   function choose() {
     if (picked >= 0) return;
+    if (!open(id())) {
+      game.sounds.error();
+      lockedNote = 2;
+      return;
+    }
     picked = 0;
     game.sounds.racerPicked(id());
     game.selection.racer = id();
@@ -118,6 +130,16 @@ export function characterSelect(game: Game): Screen {
 
   function bioBox(ui: UiLayer, x: number, y: number, w: number, h: number) {
     const d = DESIGNS[id()];
+    if (!open(id())) {
+      frame(ui, x, y, w, h, "#3a4068", "#0e1226");
+      wrap(
+        "BEAT THEIR KINGDOM'S CHAMPIONSHIP IN ADVENTURE AND THEY JOIN YOUR CREW, IN EVERY MODE.",
+        w - 16,
+      ).forEach((l, i) =>
+        ui.text(l, x + 8, y + 7 + i * 9, { color: lockedNote > 0 ? PAL.gold : PAL.cream }),
+      );
+      return;
+    }
     frame(ui, x, y, w, h, d.color, "#0e1226");
     const bio = wrap(d.bio, w - 16);
     bio.forEach((l, i) => ui.text(l, x + 8, y + 7 + i * 9, { color: PAL.cream }));
@@ -138,32 +160,47 @@ export function characterSelect(game: Game): Screen {
     frame(ui, px, py, pw, ph, d.color, shade(d.color, 0.22));
     // A floor ring under the kart.
     ui.rect(px + 20, py + 104, pw - 40, 6, shade(d.color, 0.4));
-    const big = pp!.draw(
-      id(),
-      {
-        w: 72,
-        h: 60,
-        view: "kart",
-        yaw: game.settings.general.reduceMotion ? 0.6 + t * 0.15 : t * 0.9,
-        levels: 8,
-      },
-      pose(id()),
-      1 / 60,
-      result(id()),
-    );
-    const lift = hop > 0 ? Math.round(Math.sin((hop / 0.3) * Math.PI) * 6) : 0;
-    ui.image(big, px + 3, py + 2 - lift, 144, 120, false);
-    ui.text(d.name.toUpperCase(), px + pw / 2, py + ph + 8, {
-      scale: 2,
-      color: d.color,
-      outline: PAL.shadow,
-      align: "center",
-    });
-    ui.text(d.title.toUpperCase(), px + pw / 2, py + ph + 26, {
-      color: PAL.cream,
-      outline: PAL.shadow,
-      align: "center",
-    });
+    if (!open(id())) {
+      mysteryEgg(ui.g, px + pw / 2, py + 58, 80, t, index, game.settings.general.reduceMotion);
+      ui.text("???", px + pw / 2, py + ph + 8, {
+        scale: 2,
+        color: "#8a90b8",
+        outline: PAL.shadow,
+        align: "center",
+      });
+      ui.text("JOINS YOUR CREW IN ADVENTURE", px + pw / 2, py + ph + 26, {
+        color: PAL.cream,
+        outline: PAL.shadow,
+        align: "center",
+      });
+    } else {
+      const big = pp!.draw(
+        id(),
+        {
+          w: 72,
+          h: 60,
+          view: "kart",
+          yaw: game.settings.general.reduceMotion ? 0.6 + t * 0.15 : t * 0.9,
+          levels: 8,
+        },
+        pose(id()),
+        1 / 60,
+        result(id()),
+      );
+      const lift = hop > 0 ? Math.round(Math.sin((hop / 0.3) * Math.PI) * 6) : 0;
+      ui.image(big, px + 3, py + 2 - lift, 144, 120, false);
+      ui.text(d.name.toUpperCase(), px + pw / 2, py + ph + 8, {
+        scale: 2,
+        color: d.color,
+        outline: PAL.shadow,
+        align: "center",
+      });
+      ui.text(d.title.toUpperCase(), px + pw / 2, py + ph + 26, {
+        color: PAL.cream,
+        outline: PAL.shadow,
+        align: "center",
+      });
+    }
     // The grid: the racers, then the locked slots.
     const cols = COLS;
     const tile = 46;
@@ -174,7 +211,25 @@ export function characterSelect(game: Game): Screen {
     for (let k = 0; k < slots; k++) {
       const x = gx + (k % cols) * (tile + gap);
       const y = gy + Math.floor(k / cols) * (tile + gap + 10);
-      if (k < N) {
+      if (k < N && !open(RACER_IDS[k]!)) {
+        // Not in your crew yet: a mystery egg (they hatch in Adventure).
+        const on = k === index;
+        frame(ui, x, y, tile, tile, on ? PAL.cream : "#2a2e4a", "#151830");
+        mysteryEgg(
+          ui.g,
+          x + tile / 2,
+          y + tile / 2 + 1,
+          30,
+          t,
+          k,
+          game.settings.general.reduceMotion,
+        );
+        ui.text("???", x + tile / 2, y + tile + 3, {
+          color: on ? PAL.cream : "#4a5078",
+          align: "center",
+        });
+        if (game.menuInput.pointer.clicked && ui.hover(x, y, tile, tile)) clicked = k;
+      } else if (k < N) {
         const r = RACER_IDS[k]!;
         const dd = DESIGNS[r];
         const on = k === index;
@@ -254,6 +309,7 @@ export function characterSelect(game: Game): Screen {
     frame(dt, actions) {
       t += dt;
       hop = Math.max(0, hop - dt);
+      lockedNote = Math.max(0, lockedNote - dt);
       const act: (string | number)[] = [...actions];
       if (clicked !== undefined) act.push(clicked);
       clicked = undefined;

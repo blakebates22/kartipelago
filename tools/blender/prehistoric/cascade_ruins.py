@@ -9,7 +9,8 @@
 # Cascade's own course: the bridge over the start, the torchlit tunnel, the leap through
 # the waterfall. Past the leap the north road is buried: a hairpin off the landing, then
 # straight down across the canyon and over the river on the old city's stones to the
-# start. About 960 m (the full lap is 1209 m; v2 of the ruin, ?track=cascade_caverns_ruin_v2,
+# start (a causeway of fallen stones, under the cliff that came down on the north road).
+# About 960 m (the full lap is 1209 m; v2 of the ruin, ?track=cascade_caverns_ruin_v2,
 # kept the north road and was 1071 m).
 # cascade_caverns.py lays the lap out (ruin_mode.ON); this adds the wreckage: the fallen
 # viaduct's broken piers and rubble where it stood, burnt patches in the jungle, charred
@@ -95,6 +96,33 @@ def dress(c, m):
             if clear(b[0], b[1], 9.0):
                 k += 1
                 rk.rubble_heap(c, b[0], b[1], z_at, n=9, spread=7.0, size=2.2, seed=k)
+    # The cliff that buried the north road: great rocks fallen off the north wall onto it.
+    d, nxt = 0.0, 0.0
+    for a, b in zip(m.STANDARD_PATH, m.STANDARD_PATH[1:]):
+        d += math.hypot(b[0] - a[0], b[1] - a[1])
+        if b[3] in (21, 22, 23) and d >= nxt:
+            nxt = d + 26.0
+            if clear(b[0], b[1] + 4.0, 12.0):
+                k += 1
+                z = z_at(b[0], b[1])
+                rock = c.rock_mass("Fallen Cliff %d" % k, b[0], b[1] + 4.0, 9.0, 7.0, z + 9.0 + 4.0 * rnd(k * 1.7), z0=z - 3.0, n=8,
+                                   seed=k, bands=[(1.0, 0.0), (0.9, 0.35), (0.7, 0.7), (0.35, 1.0)], base=z)
+                c.assign(rock, c.lib("canyon_rock_grey", "wall"))
+    # The causeway: the stones it's made of, heaped in the river either side.
+    q0 = m.SEG[25]
+    s_ = q0
+    while s_ < m.SEG[26]:
+        q = c.at(s_)
+        if abs(q.p.y - m.river_y(q.p.x)) < m.river_half(q.p.x) + 2:
+            for side in (-1, 1):
+                p = q.side(side * (q.w / 2 + 3.5))
+                rk.rubble_heap(c, p.x, p.y, lambda x, y: m.WATER_Z - 0.4, n=4, spread=3.0, size=1.9, role="visual", seed=int(s_) + side)
+        s_ += 7.0
+    # Where the start straight used to run on to the old climb: the viaduct's rubble.
+    for a, b in zip(m.STANDARD_PATH, m.STANDARD_PATH[1:]):
+        if b[3] == 0 and b[0] > -5.0 and clear(b[0], b[1], 8.0):
+            k += 1
+            rk.rubble_heap(c, b[0], b[1], z_at, n=8, spread=6.0, size=2.2, seed=k)
     fires = rk.scorch(c, BURNS, z_at, clear, per=6, wet=lambda x, y, z: z < m.WATER_Z + 0.4)
     print("charred trees", rk.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree", "Canopy Tree")))
     rk.emit(c, fires, glow_on=ter)

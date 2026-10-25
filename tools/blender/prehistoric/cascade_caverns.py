@@ -329,6 +329,20 @@ def main():
         },
     }
 
+    # The ruin's river crossing isn't a bridge: the north road's fallen stones, heaped in
+    # the river and driven over (the destruction rule: nothing new looks built).
+    c.kinds["causeway"] = {
+        "mat": "ruin_road",
+        "surface": "road",
+        "shoulder": 1.4,
+        "shoulder_mat": ("ruin_rubble", "road"),
+        "barrier": 0.6,
+        "barrier_mat": ("ruin_rubble", "wall"),
+        "deck": 3.0,
+        "deck_mat": ("ruin_rubble", "road"),
+        "ground": False,
+    }
+
     def seg_of(s):
         k = 0
         for i, d in SEG.items():
@@ -357,7 +371,7 @@ def main():
         if 5 <= seg <= 8:
             return "ledge"
         if seg == 25 and abs(y - river_y(x)) < river_half(x) + 16:
-            return "lowbridge"
+            return "causeway" if RUIN else "lowbridge"
         return "path"
 
     specials = []
@@ -441,7 +455,8 @@ def main():
 
     cascade_scenery.build(c, rock, t0, t1, sys.modules[__name__])
     # Rails wherever the road runs along a drop (Blake's notes 1, 2, 8, 9).
-    print("edge rails:", cascade_review.edge_rails(c, sys.modules[__name__], list(c.coll("Terrain").objects) + [rock]))
+    new_road = (lambda s: seg_of(s) >= 20 or seg_of(s) <= 4) if RUIN else None  # the ruin's own new stretches
+    print("edge rails:", cascade_review.edge_rails(c, sys.modules[__name__], list(c.coll("Terrain").objects) + [rock], rubble=new_road))
 
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter + [rock], 0.35)

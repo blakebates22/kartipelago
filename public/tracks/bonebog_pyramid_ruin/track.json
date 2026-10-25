@@ -1223,5 +1223,10 @@
       "radius": 40
     }
   ],
-  "generator": "tools/blender/prehistoric/bonebog_pyramid_ruin.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/bonebog_pyramid_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "bonebog_pyramid.py": "ec1cec23f4ce8c2586fc3f36d0565d47262a3312d4a7aef3fabb2bb512ae4d92",
+    "bonebog_ruins.py": "5f46ecc6cb77792912e7cd13799e52028f0c7cd847612dfdb43c22e920305078",
+    "bonebog_scenery.py": "173d11a75fafb3495b31617fd2b8182c13ad5300ddf5428b3998ed36b3e5d3ba"
+  }
 }

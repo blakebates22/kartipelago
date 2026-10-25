@@ -21,6 +21,8 @@ import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits"
 import { PAL } from "../ui/textures";
 import { raceScreen } from "./race";
 import { preview, tracksMenu } from "./tracks";
+import { sessionExtras } from "../adventure/run";
+import { loadUnlocked } from "../app/unlocks";
 
 const TIPS = [
   "HOLD DRIFT INTO A CORNER, THEN STEER TO TIGHTEN OR WIDEN YOUR ARC.",
@@ -75,6 +77,7 @@ export function loadingScreen(game: Game): Screen {
           racer: game.selection.racer,
           trackId: entry.id,
           ghost: game.settings.general.ghost,
+          ...sessionExtras(game.adventure?.run, game.selection.racer, loadUnlocked()),
         })
         .then((s) => {
           if (!alive || token !== game.screens.token) return s.dispose();

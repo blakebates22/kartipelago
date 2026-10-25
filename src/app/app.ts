@@ -37,7 +37,13 @@ export type ScreenId =
   | "GENERAL_SETTINGS"
   | "MUSIC_PLAYER"
   | "CREDITS"
-  | "ADVENTURE_COMING_SOON";
+  | "ADVENTURE_COMING_SOON"
+  | "ADVENTURE_HUB"
+  | "ADVENTURE_KINGDOM"
+  | "ADVENTURE_MAP"
+  | "ADVENTURE_SCENE"
+  | "ADVENTURE_RESULT"
+  | "ADVENTURE_DEV";
 
 export interface Screen {
   readonly id: ScreenId;

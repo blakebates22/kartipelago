@@ -30,6 +30,7 @@ import { hints } from "./common";
 import { loadingScreen } from "./loading";
 import { titleScreen } from "./title";
 import { tracksMenu } from "./tracks";
+import { adventureCupDone } from "./adventure";
 
 const ordinal = (n: number) =>
   `${n}${["TH", "ST", "ND", "RD"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
@@ -175,10 +176,15 @@ export function trophyPodium(game: Game): Screen {
     game.trophy = undefined;
     game.screens.go(to());
   };
-  const options: [string, () => void][] = [
-    ["TRACKS MENU", () => leave(() => tracksMenu(game))],
-    ["MAIN MENU", () => leave(() => titleScreen(game, true))],
-  ];
+  const options: [string, () => void][] = game.adventure?.run
+    ? [
+        ["CONTINUE", () => (game.sounds.confirm(), adventureCupDone(game, place))],
+        ["MAIN MENU", () => leave(() => titleScreen(game, true))],
+      ]
+    : [
+        ["TRACKS MENU", () => leave(() => tracksMenu(game))],
+        ["MAIN MENU", () => leave(() => titleScreen(game, true))],
+      ];
   let focus = 0;
   return {
     id: "TROPHY_PODIUM",

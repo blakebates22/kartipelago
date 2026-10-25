@@ -28,6 +28,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import ruin_mode  # noqa: E402
+
+ruin_mode.ON = True  # (Riverbend's own script doesn't lay out ruins; this marks the build)
+
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import props  # noqa: E402
 import riverbend_palms as rb  # noqa: E402  (the valley itself)

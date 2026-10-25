@@ -148,11 +148,13 @@ def underfloor_height(c, cc):
 RAILED = ("viaduct", "ramp", "landing", "lowbridge", "ledge")
 
 
-def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0):
+def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0, rubble=None):
     """Stone rails along every stretch of road with a drop beside it (land more than
     `drop` metres below the road's edge within `near` metres of it), where the road has
     no barrier of its own. Each rail is a low carved wall (what you see and hit) with a
-    taller invisible wall just behind it, so nobody hops over. Returns the stretches."""
+    taller invisible wall just behind it, so nobody hops over. Returns the stretches.
+    `rubble(s)`: where the road is new in a ruin, the rail is a heap of broken stones
+    instead (the destruction rule: nothing new looks built)."""
     pieces = []
     for p in c.pieces:
         s0, s1 = p["kp_from"], p["kp_to"]
@@ -206,6 +208,7 @@ def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0):
         if cur:
             runs.append((cur[0], cur[1], side))
     bm = bmesh.new()
+    rub = bmesh.new()
     inv = bmesh.new()
     kept = []
     for s0, s1, side in runs:
@@ -222,6 +225,15 @@ def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0):
             eb = qb.w / 2 + shoulder.get(k, 1.5) + 0.35
             pa, pb = qa.side(side * ea), qb.side(side * eb)
             mid = (pa + pb) / 2
+            if rubble and rubble((a + b) / 2):
+                # Broken stones: uneven heights, knocked askew.
+                ln = (pb - pa).length + 0.06
+                rot = math.atan2((pb - pa).y, (pb - pa).x) + 0.25 * math.sin(j * 2.3 + s0)
+                hgt = 0.7 + 0.6 * (0.5 + 0.5 * math.sin(j * 1.7 + s0 * 0.3))
+                props.cuboid(rub, (mid.x, mid.y, mid.z - 1.25 + hgt / 2), (ln * 0.9, 0.9, 2.5 + hgt), rot)
+                back = Vector((math.cos(rot + math.pi / 2), math.sin(rot + math.pi / 2), 0)) * side * 0.6
+                props.cuboid(inv, (mid.x + back.x, mid.y + back.y, mid.z + 0.9), (ln, 0.4, 5.0), rot)
+                continue
             ln = (pb - pa).length + 0.06
             rot = math.atan2((pb - pa).y, (pb - pa).x)
             # The carved wall: from 2.5 m down (into the slope) to 1.25 m above the road.
@@ -232,6 +244,12 @@ def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0):
             # The invisible wall: 3.4 m tall, just behind.
             back = Vector((math.cos(rot + math.pi / 2), math.sin(rot + math.pi / 2), 0)) * side * 0.6
             props.cuboid(inv, (mid.x + back.x, mid.y + back.y, mid.z + 0.9), (ln, 0.4, 5.0), rot)
+    if rub.faces:
+        ob = c.mesh_object("Rubble Rails", rub, "Bridge", "both")
+        c.assign(ob, c.lib("ruin_rubble", "wall"), range(len(ob.data.polygons)))
+        ob.data.shade_flat()
+    else:
+        rub.free()
     if bm.faces:
         ob = c.mesh_object("Edge Rails", bm, "Bridge", "both")
         bm_faces = len(ob.data.polygons)

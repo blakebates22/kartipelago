@@ -57,15 +57,6 @@ export const WORLDS: WorldEntry[] = [
     tracks: ["canyon_dash", "oasis_haven", "dry_gulch", "impact_depths"],
   },
   {
-    id: "dragon",
-    name: "Dragon Kingdom",
-    tagline: "Castles and dragons",
-    description:
-      "A kingdom of castles, ruins and dragons: a keep at sunset, a jungle castle reclaimed by the trees, a fortress in a storm and a moonlit palace.",
-    color: "#2fae8f",
-    tracks: ["dragon_isles", "dragon_canyon", "snow_dragon_pass", "celestial_dragon_festival"],
-  },
-  {
     id: "beach",
     name: "Tropic Isles",
     tagline: "Sun, sea and shipwrecks",
@@ -75,8 +66,17 @@ export const WORLDS: WorldEntry[] = [
     tracks: ["coral_cove", "shipwreck_bay", "volcano_isle", "splash_lagoon"],
   },
   {
+    id: "dragon",
+    name: "Dragon Kingdom",
+    tagline: "Castles and dragons",
+    description:
+      "A kingdom of castles, ruins and dragons: a keep at sunset, a jungle castle reclaimed by the trees, a fortress in a storm and a moonlit palace.",
+    color: "#2fae8f",
+    tracks: ["dragon_isles", "dragon_canyon", "snow_dragon_pass", "celestial_dragon_festival"],
+  },
+  {
     id: "test_world",
-    name: "Test World",
+    name: "Testing",
     tagline: "Prototypes",
     description:
       "Prototypes and practice: the material demo, the early test circuits and the drift park.",
@@ -108,6 +108,7 @@ export const WORLDS: WorldEntry[] = [
       "riverbend_palms_ruin",
       "cascade_caverns_ruin",
       "bonebog_pyramid_ruin",
+      "ember_peak_ruin",
       "boss_prehistoric",
       "boss_snowy",
       "boss_desert",

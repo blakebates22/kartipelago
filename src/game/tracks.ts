@@ -161,7 +161,21 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
     music: "ember",
+    ruin: "ember_peak_ruin",
     load: { scene: "track", packageId: "ember_peak" },
+  },
+  // Ember Peak in ruins (Adventure's treasure map challenge). Dev builds offer it from
+  // Ember Peak's own entry.
+  {
+    id: "ember_peak_ruin",
+    name: "Ember Peak (Ruined)",
+    description:
+      "The volcano's flank has slid over the home straight: swing round it, over its rubble.",
+    preview: "previews/ember_peak_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "ember_ruins",
+    music: "ember",
+    load: { scene: "track", packageId: "ember_peak_ruin" },
   },
   // The first Dry Gulch (round Boot Hill, the long mine), replaced by the new lap on
   // Oct 24, kept playable with ?track=dry_gulch_v2. Not in any world's menu.

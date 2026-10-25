@@ -691,5 +691,11 @@
       "radius": 40
     }
   ],
-  "generator": "tools/blender/prehistoric/cascade_caverns_ruin.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/cascade_caverns_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "cascade_caverns.py": "ad2e4803771ac220035e61f3837bb36c7c0b13a2e91d8c10cbc9d28472929843",
+    "cascade_review.py": "2a53a92deea1cc65c107155cf12f01f7def111f4c345ec7af5f85af63be92e66",
+    "cascade_ruins.py": "51ae3cffa313a215a67e5ac930e0fdbe38a397f6ab5e2e6bff139eef39c5d591",
+    "cascade_scenery.py": "7c9b7071a61dc6064d40a750b1464715f097ee5aad2d6118781b7edd9341004a"
+  }
 }
