@@ -27,6 +27,16 @@ BANNER = "keep_banner"
 PINE = "keep_pine"
 
 
+# A palette swap for another course (Emberdeep Hold builds the same castle kit in its own
+# stone): material id -> the id to use instead. Set before building any prototype.
+REMAP = {}
+
+
+def use_palette(remap):
+    REMAP.clear()
+    REMAP.update(remap)
+
+
 class Parts:
     """Faces of one prototype, gathered by material."""
 
@@ -41,7 +51,7 @@ class Parts:
         self.slots.setdefault(mat, []).extend(_faces(self.bm, k))
 
     def out(self):
-        return [(self.c.lib(m), f) for m, f in self.slots.items()]
+        return [(self.c.lib(REMAP.get(m, m)), f) for m, f in self.slots.items()]
 
 
 def fit_whole(c, name, faces):

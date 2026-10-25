@@ -1090,6 +1090,58 @@
           }
         }
       }
+    },
+    {
+      "id": "emberdeep_hold",
+      "name": "Emberdeep Hold",
+      "description": "A dragon-ruled fortress built into a dark mountain on a stormy night: weathered sandstone towers and battlements over black rock, red dragon banners, torchlit halls of pillars, waterfalls down the chasms, lightning over the peaks, and a red dragon on its hoard of gold",
+      "environment": {
+        "sky": "#232338",
+        "fog": {
+          "enabled": true,
+          "color": "#2c2a3e",
+          "near": 300,
+          "far": 1900
+        },
+        "sun": {
+          "color": "#b4c0ff",
+          "intensity": 1.5,
+          "direction": [0.45, 0.7, -0.55]
+        },
+        "ambient": {
+          "sky": "#7a7aa8",
+          "ground": "#4a3426",
+          "intensity": 1.15
+        },
+        "skyDome": {
+          "top": "#0e1020",
+          "horizon": "#3c3654",
+          "bottom": "#2a2636",
+          "sun": {
+            "color": "#e8ecff",
+            "size": 6,
+            "glow": "#5a6090",
+            "elevation": 34,
+            "face": "moon"
+          },
+          "clouds": {
+            "count": 46,
+            "color": "#3e3e5a",
+            "shade": "#1a1a2a",
+            "seed": 521,
+            "low": 2,
+            "high": 40,
+            "drift": 0.012
+          },
+          "hills": {
+            "color": "#1a1824",
+            "far": "#3a3650",
+            "height": 16,
+            "seed": 523,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -7065,6 +7117,182 @@
       "image": "sdp_gold_trim.png",
       "wrap": "repeat",
       "tileMetres": 2
+    },
+    {
+      "id": "ember_setts",
+      "name": "Worn Hold Paving",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "ember_setts.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "ember_flag",
+      "name": "Sandstone Flags",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "ember_flag.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "ember_path",
+      "name": "Mountain Track",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "ember_path.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ember_kerb",
+      "name": "Hold Kerb",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "ember_kerb.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "ember_rubble",
+      "name": "Rubble",
+      "theme": "emberdeep_hold",
+      "surface": "rubble",
+      "image": "ember_rubble.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ember_moss",
+      "name": "Mountain Moss",
+      "theme": "emberdeep_hold",
+      "surface": "grass",
+      "image": "ember_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "ember_rock",
+      "name": "Black Crag",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "ember_ashlar",
+      "name": "Weathered Sandstone",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_ashlar.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ember_ashlar_dark",
+      "name": "Old Hold Stone",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_ashlar_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ember_parapet",
+      "name": "Sandstone Parapet",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_parapet.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ember_pillar",
+      "name": "Fluted Pillar",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_pillar.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "ember_gold",
+      "name": "Dragon's Gold",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_gold.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35,
+        "pulse": 0.25,
+        "pulsePeriod": 3.0
+      }
+    },
+    {
+      "id": "ember_banner",
+      "name": "Emberdeep Banner",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "ember_flag_red",
+      "name": "Red Pennant",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_flag_red.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.12
+      }
+    },
+    {
+      "id": "ember_water",
+      "name": "Chasm Water",
+      "theme": "emberdeep_hold",
+      "surface": "water",
+      "image": "ember_water.png",
+      "wrap": "repeat",
+      "tileMetres": 12,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.08,
+        "wave": 0.04,
+        "wavePeriod": 4,
+        "opacity": 0.9,
+        "glow": 0.1
+      }
+    },
+    {
+      "id": "ember_glow",
+      "name": "Ember Cracks",
+      "theme": "emberdeep_hold",
+      "surface": "wall",
+      "image": "ember_glow.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.8,
+        "pulse": 0.3,
+        "pulsePeriod": 3.5
+      }
     },
     {
       "id": "cdf_paving",

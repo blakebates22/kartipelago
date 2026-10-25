@@ -234,7 +234,7 @@ describe("worlds", () => {
       "aurora_rift_v2",
       "impact_depths_v2",
       "dragon_isles_v2",
-      "snow_dragon_pass_v3",
+      "snow_dragon_pass_v2",
       "celestial_dragon_festival_v3",
       "coral_cove",
       "shipwreck_bay",

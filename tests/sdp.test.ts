@@ -28,7 +28,8 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "snow_dragon_pass";
+// The first lap, kept as snow_dragon_pass_v2 since the painted v3 lap took over the id.
+const id = "snow_dragon_pass_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -69,13 +70,18 @@ function sharedWith(
   return on / a.length;
 }
 
-describe("Snow Dragon Pass", () => {
+describe("Snow Dragon Pass (v2)", () => {
   it("is the Dragon Kingdom's third course, with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks).toEqual(["dragon_isles", "dragon_canyon", id, "celestial_dragon_festival"]);
+    expect(w.tracks).toEqual([
+      "dragon_isles",
+      "dragon_canyon",
+      "snow_dragon_pass",
+      "celestial_dragon_festival",
+    ]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
-    expect(t.theme).toBe(id);
+    expect(t.theme).toBe("snow_dragon_pass");
     expect(SONGS[t.music]?.id).toBe("snow_dragon");
     const p = await load();
     expect(p.look.fog?.far).toBeLessThan(1200); // the blizzard closes in (but see below)

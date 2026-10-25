@@ -1,45 +1,74 @@
-// Ember Peak, the redo (tools/blender/prehistoric/ember_peak.py): a short,
-// fast lap with a big jump over the lava river, a cave through the volcano and the
-// dragon from beyond the valley.
+// Emberdeep Hold (Dragon Kingdom, course 3; it keeps Snow Dragon Pass's id): the v3
+// greybox's lap painted as a fortress built into a dark mountain on a stormy night
+// (tools/blender/prehistoric/snow_dragon_pass.py, ember_scenery.py). It drives as the
+// greybox did (the jump, both other roads' gates, the zippers; deep snow became rubble,
+// which handles the same); it's dressed (torches, falls, the storm, the hall's air); and
+// an AI gets round without falling in.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseIslesDragon } from "../src/game/isles";
+import { parseAtmosphere } from "../src/game/depths";
+import { trackById } from "../src/game/tracks";
+import { WORLDS } from "../src/game/worlds";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "ember_peak";
+const id = "snow_dragon_pass";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
-type Ent = { type: string } & Record<string, unknown>;
+type Entity = { type: string } & Record<string, unknown>;
 
-describe("Ember Peak", () => {
-  it("loads cleanly: a short lap, wide everywhere, with the jump's respawn", async () => {
+describe("Emberdeep Hold", () => {
+  it("is the Dragon Kingdom's third course, painted, with the old lap kept aside", () => {
+    const w = WORLDS.find((x) => x.id === "dragon")!;
+    expect(w.tracks[2]).toBe(id);
+    const t = trackById(id)!;
+    expect(t.name).toBe("Emberdeep Hold");
+    expect(t.theme).toBe("emberdeep_hold");
+    expect(trackById("snow_dragon_pass_v2")?.load).toEqual({
+      scene: "track",
+      packageId: "snow_dragon_pass_v2",
+    });
+  });
+
+  it("drives as the greybox did: its jump, its zippers and both other roads' gates", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
-    const ents = (p.meta.entities ?? []) as Ent[];
-    expect(ents.some((e) => e.type === "respawn")).toBe(true);
-    expect(Math.min(...p.trackData.points.map((q) => q.width ?? 0))).toBeGreaterThanOrEqual(14);
-    expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(3);
+    expect(p.trackData.zippers?.length).toBe(5);
+    const es = (p.meta.entities ?? []) as Entity[];
+    expect(es.filter((e) => e.type === "respawn")).toHaveLength(1);
+    for (const g of ["frozen_supply_road", "frozen_aqueduct"])
+      expect(
+        p.trackData.gates?.some((x) => x.route === g),
+        g,
+      ).toBe(true);
+    // No snow left to throw powder: the off-road is rubble.
+    expect(p.collision.surfaces).toContain("rubble");
+    expect(p.collision.surfaces).not.toContain("deep_snow");
   });
 
-  it("has the dragon from beyond the valley, flying the whole lap", async () => {
+  it("is dressed: torches, falls, the storm and the hall's air", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
-    const e = ((p.meta.entities ?? []) as Ent[]).find((x) => x.type === "isles_dragon")!;
-    const d = parseIslesDragon(e)!;
-    expect(d.keys.length).toBeGreaterThanOrEqual(6);
+    const es = (p.meta.entities ?? []) as Entity[];
+    const n = (type: string) => es.filter((e) => e.type === type).length;
+    expect(n("torch")).toBeGreaterThan(40);
+    expect(n("waterfall")).toBeGreaterThanOrEqual(4);
+    expect(n("storm")).toBe(1);
+    expect(n("snowfall")).toBe(0);
+    const air = parseAtmosphere(es.find((e) => e.type === "atmosphere")!);
+    expect(Object.keys(air.zones)).toContain("hall");
   });
 
-  it("an AI lap clears the jump every time and takes about 30 seconds", async () => {
+  it("an AI gets round two laps without a respawn", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
-    const r = await aiLap(p, { laps: 3, surfaces: true, zippers: true, lapSeconds: 60 });
+    const r = await aiLap(p, { laps: 2, surfaces: true, zippers: true, lapSeconds: 150 });
     const laps = r.race.racers[0]!.lapTimes;
-    expect(laps.length).toBe(3);
+    expect(laps.length).toBe(2);
     expect(r.respawns).toBe(0);
-    // A flying lap (not the first, from the grid).
-    const lap = laps[2]!;
-    expect(lap).toBeGreaterThan(24);
-    expect(lap).toBeLessThan(42);
-  }, 120_000);
+    for (const t of laps) {
+      expect(t).toBeGreaterThan(55);
+      expect(t).toBeLessThan(100);
+    }
+  }, 300_000);
 });

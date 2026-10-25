@@ -37,6 +37,7 @@ SURFACES = [
     ("icy_stone", "Icy Stone", "Driveable but icy: much less grip"),
     ("packed_snow", "Packed Snow", "Driveable, a little slower and looser"),
     ("deep_snow", "Deep Snow", "Off-road: slow"),
+    ("rubble", "Rubble", "Off-road scree and rubble: slow (handles like deep snow, no powder)"),
     ("mud", "Mud", "Wet mud: slippery, a little slower"),
     ("water", "Water", "Shallow water: very slow"),
     ("deep_water", "Deep Water", "Too deep to drive: you're fished out at the last checkpoint"),

@@ -191,19 +191,21 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "volcano_isle" },
   },
-  // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
-  // corners), to drive before they're dressed: ?track=snow_dragon_pass_v3 and so on.
+  // The first Snow Dragon Pass (the painted v3 lap, Emberdeep Hold, replaced it on
+  // 2026-10-25): ?track=snow_dragon_pass_v2.
   {
-    id: "snow_dragon_pass_v3",
-    name: "Snow Dragon Pass (v3 greybox)",
+    id: "snow_dragon_pass_v2",
+    name: "Snow Dragon Pass (v2)",
     description:
-      "The new lap in plain shapes: the hairpin stack, the broken bridge, the avalanche run and the spiral.",
-    preview: "previews/snow_dragon_pass.jpg",
+      "A blizzard over the highest peaks. Pick your road twice, then climb to the citadel under the ice dragon.",
+    preview: "previews/snow_dragon_pass_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "snow_dragon_pass",
     music: "snow_dragon",
-    load: { scene: "track", packageId: "snow_dragon_pass_v3" },
+    load: { scene: "track", packageId: "snow_dragon_pass_v2" },
   },
+  // The greybox of the last dragon course's new lap (v3: about 20% shorter, nearly all
+  // corners), to drive before it's dressed: ?track=celestial_dragon_festival_v3.
   {
     id: "celestial_dragon_festival_v3",
     name: "Celestial Dragon Festival (v3 greybox)",
@@ -403,12 +405,15 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "snow_dragon_pass",
-    name: "Snow Dragon Pass",
+    // Blake, Oct 25: Emberdeep Hold, the v3 greybox's lap painted as a fortress built
+    // into a dark mountain on a stormy night (it keeps the id, so its records carry on;
+    // ghosts are kept per layout).
+    name: "Emberdeep Hold",
     description:
-      "A blizzard over the highest peaks. Pick your road twice, then climb to the citadel under the ice dragon.",
+      "Out of the Outer Gate, up the mountain or through the Hall of Pillars, along the ramparts, over the broken bridge, down past the falls and up round the dragon on its gold.",
     preview: "previews/snow_dragon_pass.jpg",
     modes: ["race", "timeTrial"],
-    theme: "snow_dragon_pass",
+    theme: "emberdeep_hold",
     music: "snow_dragon",
     load: { scene: "track", packageId: "snow_dragon_pass" },
   },

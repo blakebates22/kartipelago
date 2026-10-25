@@ -1,31 +1,31 @@
-# Snow Dragon Pass v3: a greybox of a new lap, to drive before it's dressed
-# (?track=snow_dragon_pass_v3).
+# Emberdeep Hold: Dragon Kingdom, course 3 (it keeps Snow Dragon Pass's id). A fortress
+# built into a dark mountain, on a stormy night.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/snow_dragon_pass_v3.py      (the bpy module)
+#   python tools/blender/prehistoric/snow_dragon_pass.py      (the bpy module)
 #
-# Blake: the third dragon course isn't fun to drive, and it's long; make the driving much
-# better and the lap about 20% shorter. The same story in the same order, in plain shapes,
-# on a lap of about 1.9 km (from 2.38) that's nearly all corners, with its two choices of
-# road kept:
+# The v3 greybox's lap (it was snow_dragon_pass_v3.py), exactly: the same roads, heights,
+# widths, the jump, the two other roads, surfaces (the off-road is `rubble`: deep snow's
+# handling without the powder), barriers, pickups and checkpoints; painted from Blake's
+# Emberdeep Hold board (Oct 25). ember_scenery.py dresses it with keep_props.py's castle
+# kit in Emberdeep's stone and ember_props.py; ember_textures.py is the paint.
 #
-#   1  The Frozen Gate: the start, east, down out of the gate.
-#   2  The Windy Village: an S down through the village.
+#   1  The Outer Gate: the start, east, down out of the gate.
+#   2  The lower town: an S down through its streets.
 #   3  First choice.
-#      The High Cliff Road (the lap): a stack of three hairpins up the mountain's face.
-#      The Frozen Supply Road: round the mountain's foot, wide and flowing, through the
-#      ice cavern: about as quick.
-#   4  Starvation Road: west along the top, a weave between the storehouses.
-#   5  The Broken Bridges: over the frozen gorge, a span missing: a jump (miss it and
-#      you're put back on the far side).
-#   6  The Avalanche Run: south, down the windswept pass, sweepers over crests.
+#      The Mountain Approach (the lap): a stack of three hairpins up the mountain's face.
+#      The Hall of Pillars: round the mountain's foot, through the torchlit hall.
+#   4  The Ramparts: west along the top, a weave between the barracks.
+#   5  The Cliff Bridge: over the chasm, a span missing: a jump (miss it and you're put
+#      back on the far side).
+#   6  The Waterfall Causeway: south, down past the falls, sweepers over crests.
 #   7  Second choice.
-#      The Monastery Ridge (the lap): a zigzag up over the monastery's bridge and down.
-#      The Frozen Aqueduct: straight on along the old channel, through its tunnel: a
-#      little quicker.
-#   8  The Final Ascent: a spiral up round the Dragon Citadel's bastion to the gate.
+#      The Courtyard (the lap): a zigzag over the courtyard's bridge and down.
+#      The Gatehouse Tunnel: straight on, under the portcullis.
+#   8  The Dragon's Perch: a spiral up round the bastion, the red dragon on its hoard on
+#      top, to the gate.
 #
-# The current Snow Dragon Pass is untouched (snow_dragon_pass.py).
+# The first lap is kept as snow_dragon_pass_v2.
 
 import math
 import os
@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "snow_dragon_pass_v3"
+TRACK_ID = "snow_dragon_pass"
 
 K = 1.05
 START = (0.0, 0.0)
@@ -189,45 +189,36 @@ def natural(x, y):
 
 def classify(c, n, info):
     if abs(c.x - GORGE_X) < 24.0 and c.y > 240.0 and c.z < 30.0:
-        return ("sdp_ice_channel", "abyss")
+        return ("ember_water", "abyss")
     if n.z < 0.5:
-        return ("sdp_slate", "wall")
+        return ("ember_rock", "wall")
     if n.z < 0.78:
-        return ("sdp_scree", "deep_snow")
+        return ("ember_rubble", "rubble")
     if info["d"] < info["sample"].w / 2 + 2.0:
-        return ("sdp_snowbank", "packed_snow")
-    return ("sdp_snowfield", "deep_snow")
-
-
-def box(bm, centre, size, rot=0.0):
-    import props  # noqa: E402
-
-    props.cuboid(bm, centre, size, rot=rot)
+        return ("ember_path", "packed_snow")
+    return ("ember_moss", "rubble") if n.z > 0.93 else ("ember_rubble", "rubble")
 
 
 def main():
-    import props  # noqa: E402
-    from course_kit import bmesh  # noqa: E402
-
-    def at(d):
-        return c.at(TO_ROAD(d))
-
-    c = kit.Course(TRACK_ID, "Snow Dragon Pass (v3 greybox)", "snow_dragon_pass")
+    c = kit.Course(TRACK_ID, "Emberdeep Hold", "emberdeep_hold")
     c.route(ROUTE, width=16.0, bank=7.0)
-    snowbank = ("sdp_snowbank", "packed_snow")
-    timber = ("timber_rail", "wall")
-    parapet = ("sdp_redwall", "wall")
+    # (The roads keep the greybox's surfaces: snow_stone and packed_snow are only handling
+    # numbers; deep snow, which throws powder, became rubble.)
+    snowbank = ("ember_path", "packed_snow")
+    timber = ("keep_barrel", "wall")
+    parapet = ("ember_parapet", "wall")
+    SS = "snow_stone"
     c.kinds = {
-        "gate": {"mat": "sdp_setts", "shoulder": 1.3, "shoulder_mat": ("kerb_redwhite", "road"), "barrier": 1.2, "barrier_mat": parapet},
-        "village": {"mat": "sdp_setts", "shoulder": 1.3, "shoulder_mat": snowbank, "barrier": 0.9, "barrier_mat": timber},
-        "road": {"mat": "sdp_road", "shoulder": 1.3, "shoulder_mat": snowbank},
-        "cliff": {"mat": "sdp_road", "shoulder": 1.3, "shoulder_mat": snowbank, "barrier": 1.2, "barrier_mat": parapet, "deck": 4.0,
-                  "deck_mat": ("sdp_slate", "wall")},
-        "bridge": {"mat": "sdp_setts", "shoulder": 1.3, "shoulder_mat": ("sdp_aqueduct", "road"), "barrier": 1.3, "barrier_mat": parapet,
+        "gate": {"mat": "ember_flag", "surface": SS, "shoulder": 1.3, "shoulder_mat": ("ember_kerb", "road"), "barrier": 1.2, "barrier_mat": parapet},
+        "village": {"mat": "ember_setts", "surface": SS, "shoulder": 1.3, "shoulder_mat": snowbank, "barrier": 0.9, "barrier_mat": timber},
+        "road": {"mat": "ember_path", "surface": SS, "shoulder": 1.3, "shoulder_mat": snowbank},
+        "cliff": {"mat": "ember_path", "surface": SS, "shoulder": 1.3, "shoulder_mat": snowbank, "barrier": 1.2, "barrier_mat": parapet, "deck": 4.0,
+                  "deck_mat": ("ember_ashlar_dark", "wall")},
+        "bridge": {"mat": "ember_flag", "surface": SS, "shoulder": 1.3, "shoulder_mat": ("ember_flag", "road"), "barrier": 1.3, "barrier_mat": parapet,
                    "deck": 4.0, "deck_mat": parapet, "ground": False},
-        "kicker": {"mat": "sdp_setts", "shoulder": 1.3, "shoulder_mat": ("sdp_aqueduct", "road"), "deck": 4.0, "deck_mat": parapet,
+        "kicker": {"mat": "ember_flag", "surface": SS, "shoulder": 1.3, "shoulder_mat": ("ember_flag", "road"), "deck": 4.0, "deck_mat": parapet,
                    "ground": False},
-        "spiral": {"mat": "sdp_setts", "shoulder": 1.0, "shoulder_mat": ("kerb_redwhite", "road"), "barrier": 1.3, "barrier_mat": parapet,
+        "spiral": {"mat": "ember_flag", "surface": SS, "shoulder": 1.0, "shoulder_mat": ("ember_kerb", "road"), "barrier": 1.3, "barrier_mat": parapet,
                    "deck": 3.0, "deck_mat": parapet, "ground": False},
     }
 
@@ -269,8 +260,8 @@ def main():
         c.shortcut(name, out, mat, "road", width=14.0, shoulder=1.0, shoulder_mat=snowbank)
         return za, zb
 
-    za1, zb1 = side_road("Frozen Supply Road", SUPPLY, 6, 16, "sdp_road")
-    za2, zb2 = side_road("Frozen Aqueduct", AQUEDUCT, 27, 32, "sdp_ice_channel")
+    za1, zb1 = side_road("Frozen Supply Road", SUPPLY, 6, 16, "ember_setts")
+    za2, zb2 = side_road("Frozen Aqueduct", AQUEDUCT, 27, 32, "ember_flag")
 
     X0, X1, Y0, Y1 = -260, 480, -160, 520
     ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
@@ -278,65 +269,16 @@ def main():
     def under(x, y):
         return natural(x, y) - 0.4
 
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("sdp_snowfield", "deep_snow"))
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("ember_rubble", "rubble"))
 
     for piece in c.pieces:
         for kind, size in (("bridge", 2.0), ("kicker", 2.0), ("spiral", 1.4)):
             if piece.name.endswith(kind):
-                kit.clear_piers(c, piece, [ter], every=14.0, mat=("sdp_slate", "wall"), size=size, inset=size + 1.0)
+                kit.clear_piers(c, piece, [ter], every=14.0, mat=("ember_ashlar", "wall"), size=size, inset=size + 1.0)
     # The bastion the spiral climbs round.
     rad = LAYOUT[33][1]
     bs = c.rock_mass("Bastion", BASTION[0], BASTION[1], rad - 14.0, rad - 14.0, 62.0, z0=10.0, n=20, seed=8)
-    c.paint_rock(bs, ("sdp_redwall", "wall"), ("sdp_snowfield", "deep_snow"))
-
-    # The ice cavern on the supply road, and the aqueduct's tunnel: arches over them.
-    bm = bmesh.new()
-    for pts, za, zb, f in ((SUPPLY, za1, zb1, 0.55), (AQUEDUCT, za2, zb2, 0.5)):
-        i = int(f * (len(pts) - 1))
-        (x0, y0), (x1, y1) = pts[i], pts[i + 1]
-        rot = math.atan2(y1 - y0, x1 - x0)
-        for k in range(6):
-            u = (k + 0.5) / 6
-            x, y = lerp(x0, x1, u), lerp(y0, y1, u)
-            z = lerp(za, zb, smooth(f)) - 0.5
-            nx, ny = -math.sin(rot), math.cos(rot)
-            for side in (-1, 1):
-                box(bm, (x + nx * side * 9.5, y + ny * side * 9.5, z + 4.0), (6.0, 2.0, 9.0), rot=rot)
-            box(bm, (x, y, z + 9.5), (6.0, 21.0, 2.0), rot=rot)
-    arches = c.mesh_object("Caverns", bm, "Props")
-    c.assign(arches, c.lib("glacier_ice", "wall"))
-
-    # Plain blocks: the village, the storehouses, the monastery, the gate.
-    bm = bmesh.new()
-    s = 24.0
-    k = 0
-    while s < SEG[5]:
-        q = at(s)
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 8.0 + 2 * (k % 2)))
-            h = 5.0 + 2.0 * ((k + (side > 0)) % 3)
-            box(bm, (p.x, p.y, q.p.z + h / 2 - 0.5), (8.0, 8.0, h), rot=math.atan2(q.t.y, q.t.x))
-        s += 14.0
-        k += 1
-    s = SEG[16] + 10
-    k = 0
-    while s < SEG[20] - 6:
-        q = at(s)
-        side = 1 if k % 2 else -1
-        p = q.side(side * (q.w / 2 + 9.0))
-        box(bm, (p.x, p.y, q.p.z + 2.5), (12.0, 8.0, 5.0), rot=math.atan2(q.t.y, q.t.x))
-        s += 22.0
-        k += 1
-    mc = _arc_centre(29)
-    zm = road_z(SEG[29], 29)
-    box(bm, (mc[0], mc[1], zm + 7.0), (14.0, 14.0, 16.0))
-    q = at(10.0)
-    for side in (-1, 1):
-        p = q.side(side * (q.w / 2 + 3.0))
-        box(bm, (p.x, p.y, q.p.z + 6.0), (4.0, 4.0, 13.0), rot=math.atan2(q.t.y, q.t.x))
-    box(bm, (q.p.x, q.p.y, q.p.z + 13.5), (4.0, q.w + 10.0, 2.5), rot=math.atan2(q.t.y, q.t.x))
-    blocks = c.mesh_object("Buildings", bm, "Props")
-    c.assign(blocks, c.lib("sdp_slate", "wall"))
+    c.paint_rock(bs, ("ember_rock", "wall"), ("ember_moss", "rubble"))
 
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
@@ -375,7 +317,9 @@ def main():
         c.alt_gate(main_gate, name, [(pts[j - 1][0], pts[j - 1][1], lerp(za, zb, 0.4)), (pts[j][0], pts[j][1], lerp(za, zb, 0.5)),
                                      (pts[j + 1][0], pts[j + 1][1], lerp(za, zb, 0.6))], width=16.0)
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    import ember_scenery  # noqa: E402
+
+    ember_scenery.build(c, sys.modules[__name__], ter, (za1, zb1), (za2, zb2))
     c.finish()
     print("lap", round(c.length, 1))
 

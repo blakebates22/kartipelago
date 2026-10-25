@@ -129,10 +129,11 @@ describe("Dragon Canyon", () => {
   it("turns harder per kilometre than any other course but Bonebog and Oasis Haven, with at least five hairpins", async () => {
     const mine = twistiness((await loadTrackPackage(reader, { visual: false })).trackData.points);
     expect(mine.hairpins).toBeGreaterThanOrEqual(5);
-    // (Bonebog Pyramid's v3 lap and the new Oasis Haven, both rebuilt from Blake's driving
-    // notes to be nearly all bends, turn harder still: they're the exceptions.)
+    // (Bonebog Pyramid's v3 lap, the new Oasis Haven and Emberdeep Hold's v3 lap, all
+    // rebuilt from Blake's driving notes to be nearly all bends, turn harder still: they're
+    // the exceptions.)
     const others = VISIBLE_WORLDS.flatMap((w) => w.tracks).filter(
-      (t) => t !== id && t !== "bonebog_pyramid" && t !== "oasis_haven",
+      (t) => t !== id && t !== "bonebog_pyramid" && t !== "oasis_haven" && t !== "snow_dragon_pass",
     );
     for (const t of others) {
       const p = await loadTrackPackage(readerFor(t), { visual: false }).catch(() => undefined);

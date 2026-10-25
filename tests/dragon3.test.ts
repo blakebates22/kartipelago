@@ -13,12 +13,6 @@ const reader =
   };
 
 const COURSES: { id: string; respawns: number; gates: string[]; lap: [number, number] }[] = [
-  {
-    id: "snow_dragon_pass_v3",
-    respawns: 1,
-    gates: ["frozen_supply_road", "frozen_aqueduct"],
-    lap: [55, 100],
-  },
   { id: "celestial_dragon_festival_v3", respawns: 1, gates: [], lap: [60, 105] },
 ];
 

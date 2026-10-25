@@ -39,6 +39,9 @@
  *               volcano erupting on a fixed beat of the race clock: a rumble, then a
  *               blast of glowing lava bombs and a flash of red light, with a fountain
  *               of fire between. Purely visual.
+ *   storm       { "type": "storm", "period": 9, "spread": 5, "distance": 900 } (see
+ *               game/storm.ts): lightning forking down round the horizon now and then, a
+ *               white-blue flash over everything and the thunder after. Purely visual.
  *   ashfall     { "type": "ashfall", "rate": 60, "radius": 40 }: grey ash drifting down
  *               and embers floating up round the camera. Purely visual.
  *   steam       { "type": "steam", "x", "y", "z" }: a vent puffing steam. Purely visual.
@@ -98,6 +101,7 @@ import type { RouteFile } from "../world/trackPackage";
 import { createDinoView, type DinoView } from "../render/dinosaur";
 import { createDepthsLife, hasDepthsLife, type DepthsLife } from "./depthsLife";
 import { createIslesLife, hasIslesLife, type IslesLife } from "./islesLife";
+import { createStormView, parseStorm } from "./storm";
 import { createSnowLife, hasSnowLife, type SnowLife } from "./snowLife";
 import { createFestivalLife, hasFestivalLife, type FestivalLife } from "./festivalLife";
 import { createMammothView } from "../render/mammoth";
@@ -481,6 +485,7 @@ export function createHazards(opts: {
     light?: THREE.PointLight;
   }[] = [];
   let ashfall: { rate: number; radius: number; acc: number } | undefined;
+  let storm: ReturnType<typeof createStormView> | undefined;
   const vents: { x: number; y: number; z: number; acc: number }[] = [];
   /** Geysers, and what they were doing last frame (for their cues). */
   const geysers: {
@@ -604,6 +609,8 @@ export function createHazards(opts: {
         group.add(er.light);
       }
       eruptions.push(er);
+    } else if (e.type === "storm") {
+      if (!opts.headless) storm = createStormView(group, parseStorm(e));
     } else if (e.type === "ashfall")
       ashfall = {
         rate: Math.max(0, num(e.rate, 60)),
@@ -1838,6 +1845,8 @@ export function createHazards(opts: {
         }
         bombs.step(dt);
       }
+      // The storm: lightning round the horizon, the flash, the thunder after it.
+      storm?.update(dt, listener, (loud) => opts.sfx?.rumble(vol() * loud));
       // Ash drifting down and embers floating up round the camera; steam from vents.
       if ((ashfall || vents.length) && !opts.headless) {
         ash ??= createParticles(group, { max: 700, size: 0.3, gravity: 0, opacity: 0.9 });

@@ -81,6 +81,12 @@
       "accel": 0.66,
       "grip": 0.78
     },
+    "rubble": {
+      "road": false,
+      "speed": 0.62,
+      "accel": 0.66,
+      "grip": 0.78
+    },
     "mud": {
       "road": true,
       "speed": 0.92,

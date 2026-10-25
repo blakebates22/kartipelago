@@ -96,7 +96,7 @@ def wall_torch_at(sc, x, y, z, rot, coll="Castle"):
 # ------------------------------------------------------------------ structures
 
 
-def arches(c, s0, s1, depth, every=26.0, pier=(4.5, 5.5), name="Viaduct", drop=3.4):
+def arches(c, s0, s1, depth, every=26.0, pier=(4.5, 5.5), name="Viaduct", drop=3.4, stone=STONE, accent=ACCENT):
     """Stone arches under a raised road from s0 to s1: a pier every `every` metres down
     `depth` metres, a round arch between each pair (the deck itself is the road's)."""
     m = Mesh()
@@ -105,8 +105,8 @@ def arches(c, s0, s1, depth, every=26.0, pier=(4.5, 5.5), name="Viaduct", drop=3
     for k in range(n + 1):
         q = c.at(s0 + L * k / n)
         top = q.p.z - drop
-        m.add(STONE, lambda bm, q=q, top=top: cuboid(bm, (q.p.x, q.p.y, top - depth / 2), (pier[0], pier[1], depth), road_rot(q)))
-        m.add(ACCENT, lambda bm, q=q, top=top: cuboid(bm, (q.p.x, q.p.y, top - 1.2), (pier[0] + 1.0, pier[1] + 1.0, 1.0), road_rot(q)))
+        m.add(stone, lambda bm, q=q, top=top: cuboid(bm, (q.p.x, q.p.y, top - depth / 2), (pier[0], pier[1], depth), road_rot(q)))
+        m.add(accent, lambda bm, q=q, top=top: cuboid(bm, (q.p.x, q.p.y, top - 1.2), (pier[0] + 1.0, pier[1] + 1.0, 1.0), road_rot(q)))
     for k in range(n):
         a, b = s0 + L * k / n, s0 + L * (k + 1) / n
         half = min(c.at(a).w, c.at(b).w) / 2 + 0.8
@@ -124,7 +124,7 @@ def arches(c, s0, s1, depth, every=26.0, pier=(4.5, 5.5), name="Viaduct", drop=3
                 for i in range(4):
                     bm.faces.new((lo[i], hi[i], hi[(i + 1) % 4], lo[(i + 1) % 4]))
 
-        m.add(STONE, arc)
+        m.add(stone, arc)
     return m.build(c, name + " Arches", "Bridges", "visual")
 
 

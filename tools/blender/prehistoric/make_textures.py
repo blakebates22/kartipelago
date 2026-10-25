@@ -5054,6 +5054,12 @@ import snow_textures  # noqa: E402
 MATERIALS += snow_textures.materials(sys.modules[__name__])
 THEMES.append(snow_textures.THEME)
 
+# Emberdeep Hold (Dragon Kingdom, course 3, painted Oct 25: the fortress in the storm).
+import ember_textures  # noqa: E402
+
+MATERIALS += ember_textures.materials(sys.modules[__name__])
+THEMES.append(ember_textures.THEME)
+
 # Celestial Dragon Festival (Dragon Kingdom, course 4).
 import cdf_textures  # noqa: E402
 
