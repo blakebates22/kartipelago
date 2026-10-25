@@ -156,7 +156,7 @@ export const TRACKS: TrackEntry[] = [
   // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
   {
     id: "dragon_isles_v3",
-    name: "Dragon Isles (v3 greybox)",
+    name: "Dragonspire Keep (v3 greybox)",
     description:
       "The new lap in plain shapes: the village chicane, the cliff hairpins, the broken bridge, the pillar jump and the harbour spiral.",
     preview: "previews/dragon_isles.jpg",
@@ -351,7 +351,9 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "dragon_isles",
-    name: "Dragon Isles",
+    // (Blake, Oct 24: the course is Dragonspire Keep now; it keeps its id, so its
+    // records and ghosts carry on. The new lap, v3, gets painted as the keep.)
+    name: "Dragonspire Keep",
     description:
       "Festival day on the karst isles: market streets, cliff roads, a huge waterfall bridge, a jade dragon above.",
     preview: "previews/dragon_isles.jpg",
