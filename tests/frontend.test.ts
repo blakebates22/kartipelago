@@ -237,6 +237,7 @@ describe("worlds", () => {
       "snow_dragon_pass_v3",
       "celestial_dragon_festival_v3",
       "coral_cove",
+      "sunset_reef",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
       "riverbend_palms",

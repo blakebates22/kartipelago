@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 coverage/
 *.log
@@ -14,3 +14,6 @@ Thumbs.db
 
 __pycache__/
 audit-out/
+
+# Clips from the F4 recorder (big videos: share them, don't commit them).
+reviews/*/clips/

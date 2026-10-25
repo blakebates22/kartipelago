@@ -152,6 +152,19 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "coral_cove" },
   },
+  // The beach world's second course (working name), a greybox: Coral Cove's feel, about
+  // half as long again. ?track=sunset_reef.
+  {
+    id: "sunset_reef",
+    name: "Sunset Reef (greybox)",
+    description:
+      "Up the beach, out along the reef pier and over the gap, round the sea stack and back through the sea arch.",
+    preview: "previews/sunset_reef.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "sunset_reef" },
+  },
   // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
   // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
   {
