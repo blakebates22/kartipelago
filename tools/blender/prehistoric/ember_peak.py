@@ -270,7 +270,38 @@ def base_floor(x, y):
 CAVE_S = [0.0, 0.0]
 
 
+# v4 (Blake, Oct 25: "it feels very different from the other levels... a mixture between
+# destruction and non destruction"): jungle meets lava. East of the lava river (the start,
+# the hairpin, the ledge) is the Prehistoric jungle the other courses know, green and
+# alive; the jump crosses the river into the volcano's reach (the S-bends down black lava
+# flows, the magma cave); the home run is a burnt strip already growing back. Only the
+# look: every surface you drive on, and off, is the same as before.
+def life(x, y):
+    """1 in the green jungle, 0 in the volcano's reach; about 0.5 on the burnt strip
+    along the home run."""
+    east = smooth((x - river_x(y) - 6.0) / 24.0)
+    regrow = 0.5 * smooth((34.0 - y) / 26.0) * smooth((x + 225.0) / 30.0)
+    cx, cy, rx, ry = VOLC
+    near = 1.0 - smooth((math.hypot((x - cx) / rx, (y - cy) / ry) - 1.0) / 0.5)
+    return max(east, regrow) * (1.0 - near)
+
+
 def classify(c, n, info):
+    got = _classify(c, n, info)
+    if got is None:
+        return None
+    mat, surface = got
+    v = life(c.x, c.y) + 0.08 * math.sin(c.x * 0.31 + c.y * 0.23)
+    if v > 0.62:
+        green = {"ash_soil": "valley_grass", "scorched_ground": "jungle_path", "ember_ash": "canyon_rock_moss"}
+    elif v > 0.32:
+        green = {"ash_soil": "ruin_grass", "scorched_ground": "jungle_path"}
+    else:
+        green = {}
+    return (green.get(mat, mat), surface)  # the same surface: it only looks different
+
+
+def _classify(c, n, info):
     if in_volcano(c.x, c.y, 0.86):
         return None  # the volcano is its own rock
     smp = info["sample"]
@@ -296,6 +327,7 @@ def main():
     wall = ("basalt_block", "wall")
     c.kinds = {
         "path": {"mat": "basalt_road", "shoulder": 1.5, "shoulder_mat": ("scorched_ground", "dirt")},
+        "jungle": {"mat": "valley_road", "surface": "road", "shoulder": 1.5, "shoulder_mat": ("valley_grass", "dirt")},
         "ledge": {"mat": "basalt_road", "shoulder": 1.0, "shoulder_mat": ("scorched_ground", "dirt"), "barrier": 1.2, "barrier_mat": wall},
         "ramp": {
             "mat": "basalt_road",
@@ -345,7 +377,7 @@ def main():
             return "lowbridge"
         if seg in (1, 2):
             return "ledge"
-        return "path"
+        return "jungle" if life(x, y) > 0.62 else "path"
 
     specials = []
     for s0, s1, k in kit.runs(c, label):
@@ -494,8 +526,10 @@ def dress(c, ter, rock):
 
     cx, cy, rx, ry = VOLC
 
-    def ok(m0, m1, zmax=12.0):
+    def ok(m0, m1, zmax=12.0, alive=(0.0, 0.55)):
         def f(x, y, z):
+            if not alive[0] <= life(x, y) <= alive[1]:
+                return False
             _, i, d = _tree.find((x, y, 0.0))
             if not (m0 < d < m1) or z > zmax or z < LAVA_Z + 1.0:
                 return False
@@ -525,6 +559,21 @@ def dress(c, ter, rock):
             z = c.ground_z(x, y, ter) or 1.0
             g = c.game(x, y, z + 0.5)
             c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    # The jungle east of the river, alive: palms, jungle and canopy trees, bushes, ferns
+    # and flowers (the Prehistoric valley's own), thinning into the burnt strip, where new
+    # ferns come up between the charred stumps.
+    green = (0.62, 1.01)
+    palms_ = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
+    for v, t in enumerate(palms_):
+        props.scatter(c, t, 26, area, ok(6, 120, alive=green), ter, seed=540 + v)
+    for v in range(2):
+        props.scatter(c, props.jungle_tree(c, v), 24, area, ok(14, 200, alive=green), ter, seed=550 + v, scale=(1.0, 1.6))
+    for v in range(3):
+        props.scatter(c, props.grand_tree(c, v), 5, area, ok(26, 220, alive=green), ter, seed=560 + v, scale=(1.1, 1.5))
+    for v in range(2):
+        props.scatter(c, props.bush(c, v), 40, area, ok(4, 120, alive=green), ter, seed=570 + v, role="visual", scale=(0.7, 1.5))
+    props.scatter(c, props.fern(c), 90, area, ok(3, 100, alive=(0.35, 1.01)), ter, seed=580, role="visual")
+    props.scatter(c, props.flowers(c), 80, area, ok(3, 90, alive=green), ter, seed=581, role="visual", sink=0.1)
     spires = [vp.obsidian_spire(c, v) for v in range(2)]
     for v, t in enumerate(spires):
         props.scatter(c, t, 6, area, ok(30, 260, zmax=20), ter, seed=530 + v, scale=(0.6, 1.1), sink=1.0, role="visual")
@@ -551,21 +600,23 @@ def dress(c, ter, rock):
             c.place(vp.smoke_plume(c, 1, 120.0), x, y, 200 * sc - 30, rot=a, scale=sc * 0.8, coll="Sky", role="visual")
     for x, y, r, ht in CONES[:3]:
         c.place(vp.smoke_plume(c, 2, 60.0), x, y, ht - 6, rot=x, coll="Sky", role="visual")
-    c.entity("ashfall", rate=40, radius=40)
+    c.entity("ashfall", rate=12, radius=40)
 
 
 LOOK = {
-    "sky": "#d0806a",
-    "fog": {"enabled": True, "color": "#b47866", "near": 220, "far": 1200},
-    "sun": {"color": "#ffc896", "intensity": 2.6, "direction": [-0.72, 0.28, -0.62]},
-    "ambient": {"sky": "#ffc0a8", "ground": "#4e3e3a", "intensity": 1.4},
+    # v4: a warm afternoon (the Prehistoric World's daylight), the volcano's plume and the
+    # far smoke the only darkness in it.
+    "sky": "#86bfe0",
+    "fog": {"enabled": True, "color": "#d8d0b8", "near": 260, "far": 1300},
+    "sun": {"color": "#fff0d0", "intensity": 2.6, "direction": [-0.6, 0.55, -0.58]},
+    "ambient": {"sky": "#eef0e0", "ground": "#4a5236", "intensity": 1.3},
     "skyDome": {
-        "top": "#5c4466",
-        "horizon": "#ffa070",
-        "bottom": "#c27a68",
-        "sun": {"color": "#fff2c8", "size": 15, "glow": "#ff9e60", "elevation": 5},
-        "clouds": {"count": 40, "color": "#b47a70", "shade": "#5e3e48", "seed": 41, "low": 5, "high": 26, "drift": 0.004},
-        "hills": {"color": "#4c3638", "far": "#9e6e66", "height": 10, "seed": 59, "layers": 2},
+        "top": "#3a88d0",
+        "horizon": "#f2d6a8",
+        "bottom": "#c8c4a0",
+        "sun": {"color": "#fff6dc", "size": 9, "glow": "#ffd890", "elevation": 22},
+        "clouds": {"count": 34, "color": "#f4f2ee", "shade": "#b8aca4", "seed": 41, "low": 6, "high": 26, "drift": 0.005},
+        "hills": {"color": "#3a5e36", "far": "#a8b4a0", "height": 10, "seed": 59, "layers": 2},
     },
 }
 

@@ -346,44 +346,44 @@
     {
       "id": "campfire_02",
       "type": "campfire",
-      "x": 94.74,
-      "y": 0.28,
-      "z": 10.58
-    },
-    {
-      "id": "campfire_03",
-      "type": "campfire",
       "x": -312.72,
       "y": 1.71,
       "z": -168.59
     },
     {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -210.89,
+      "y": 2.41,
+      "z": -86.46
+    },
+    {
       "id": "campfire_04",
       "type": "campfire",
-      "x": -229.11,
-      "y": 0.66,
-      "z": 36.16
+      "x": -188.78,
+      "y": 1.56,
+      "z": -228.85
     },
     {
       "id": "campfire_05",
       "type": "campfire",
-      "x": -227.37,
-      "y": 2.58,
-      "z": -255.77
+      "x": -91.43,
+      "y": 1.8,
+      "z": 110.15
     },
     {
       "id": "campfire_06",
       "type": "campfire",
-      "x": 152.17,
-      "y": 2.81,
-      "z": -122.9
+      "x": -113.15,
+      "y": 1.07,
+      "z": -63.03
     },
     {
       "id": "campfire_07",
       "type": "campfire",
-      "x": 67.31,
-      "y": 1.95,
-      "z": -207.13
+      "x": -230.32,
+      "y": 0.79,
+      "z": 42.8
     },
     {
       "id": "campfire_08",
@@ -395,110 +395,82 @@
     {
       "id": "campfire_09",
       "type": "campfire",
-      "x": -231.77,
-      "y": 1.55,
-      "z": 126.72
+      "x": -212.18,
+      "y": 2.29,
+      "z": 79.81
     },
     {
       "id": "campfire_10",
       "type": "campfire",
-      "x": 130.56,
-      "y": 2.91,
-      "z": 71.94
+      "x": -184.5,
+      "y": 0.86,
+      "z": -169.89
     },
     {
       "id": "campfire_11",
       "type": "campfire",
-      "x": -224.4,
-      "y": 3.03,
-      "z": 83.89
-    },
-    {
-      "id": "campfire_12",
-      "type": "campfire",
-      "x": 89.89,
-      "y": 2.04,
-      "z": -164.12
-    },
-    {
-      "id": "campfire_13",
-      "type": "campfire",
       "x": 7.2,
-      "y": 1.43,
+      "y": 1.42,
       "z": 21.07
     },
     {
-      "id": "campfire_14",
+      "id": "campfire_12",
       "type": "campfire",
       "x": 2.86,
       "y": 0.03,
       "z": 140.9
     },
     {
-      "id": "steam_01",
-      "type": "steam",
-      "x": 50.0,
-      "y": 10.88,
-      "z": -60.0
+      "id": "campfire_13",
+      "type": "campfire",
+      "x": -375.68,
+      "y": 6.41,
+      "z": -160.07
     },
     {
-      "id": "steam_02",
+      "id": "campfire_14",
+      "type": "campfire",
+      "x": -204.57,
+      "y": 1.57,
+      "z": -136.28
+    },
+    {
+      "id": "steam_01",
       "type": "steam",
       "x": -149.22,
       "y": 0.19,
       "z": -134.3
     },
     {
-      "id": "steam_03",
+      "id": "steam_02",
       "type": "steam",
       "x": -48.45,
       "y": 1.76,
       "z": 59.54
     },
     {
-      "id": "steam_04",
-      "type": "steam",
-      "x": 26.99,
-      "y": 1.49,
-      "z": -163.18
-    },
-    {
-      "id": "steam_05",
+      "id": "steam_03",
       "type": "steam",
       "x": -211.64,
       "y": 0.17,
       "z": -35.59
     },
     {
-      "id": "steam_06",
-      "type": "steam",
-      "x": 79.24,
-      "y": 1.06,
-      "z": 20.49
-    },
-    {
-      "id": "steam_07",
+      "id": "steam_04",
       "type": "steam",
       "x": -105.73,
       "y": 0.44,
       "z": -214.51
     },
     {
-      "id": "steam_08",
+      "id": "steam_05",
       "type": "steam",
       "x": -146.15,
       "y": -0.38,
       "z": 90.89
     },
     {
-      "id": "steam_09",
-      "type": "steam",
-      "x": 125.97,
-      "y": 0.98,
-      "z": -121.8
-    },
-    {
-      "id": "steam_10",
+      "id": "steam_06",
       "type": "steam",
       "x": -253.21,
       "y": 0.32,
@@ -516,7 +488,7 @@
     {
       "id": "ashfall_01",
       "type": "ashfall",
-      "rate": 40,
+      "rate": 12,
       "radius": 40
     },
     {
