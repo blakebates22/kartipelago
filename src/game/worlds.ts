@@ -89,7 +89,7 @@ export const WORLDS: WorldEntry[] = [
       "hearthglow_hollow_v2",
       "oasis_haven_v2",
       "dry_gulch_v2",
-      "aurora_rift_v3",
+      "aurora_rift_v2",
       "impact_depths_v2",
       "dragon_isles_v3",
       "snow_dragon_pass_v3",

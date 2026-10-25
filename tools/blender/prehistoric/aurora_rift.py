@@ -1,38 +1,28 @@
 # Aurora Rift: Frostveil Peaks, course 4. Down into a fractured glacier, through a
 # crystal cathedral and a loop-the-loop, across a mirror lake and back up under the
-# northern lights.
+# northern lights. The second lap (Blake, Oct 24: about 20% shorter, nearly all corners,
+# more going on in the cave and less after it), greyboxed for driving first and then
+# dressed like the first one (aurora_scenery.py); the first lap is kept as
+# aurora_rift_v2 (aurora_rift_v2.py, ?track=aurora_rift_v2).
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/aurora_rift.py      (the bpy module)
 #
-# A lap of about 2.45 km (around 90 s) in five connected regions, all one place: a great
-# glacier (the "massif", north) split from the snowfield (south) by the Rift, a chasm
-# running east-west whose floor is lost in glowing mist far below.
+# The same places in the same order, about 1.96 km:
 #
-#   1  The Shattered Entrance: the start on the snowfield beneath the aurora, east along
-#      the Rift's rim, a downhill run of banked turns carved into the ice wall over the
-#      chasm, north across a natural ice bridge, under a colossal ice arch and into a
-#      narrow tunnel that glows bluer and more crystalline the deeper it goes.
-#   2  The Crystal Cathedral: the tunnel bursts out into an immense cavern inside the
-#      glacier: an abyss in the middle, the Central Monolith (a crystal 290 m tall)
-#      rising from it, ledges and bridges at several heights, waterfalls, crystal
-#      forests, and the Rift Loop far across, framed by a hole in the ceiling open to
-#      the aurora. The road sweeps round the east wall (the cliffside drift), crosses
-#      the abyss on a suspended bridge, drifts round the Monolith (or cuts through its
-#      glowing crystal arch), bridges to the north wall, runs behind the giant waterfall
-#      curtain and out onto the causeway into the Loop.
-#   3  Mirror Lake: down a crystal tunnel to an underground frozen lake that mirrors the
-#      crystals and the ice columns rising from it; sweeping drifts across the ice, a
-#      thin-ice shortcut, and cracked patches that give way if you keep driving on them.
-#   4  The Aurora Ascent: up out of the lake through an ice tunnel, a fractured canyon
-#      under natural arches and a gallery looking down into the Cathedral, and out of a
-#      great opening in the glacier's face under the sky...
-#   5  ...onto the Great Rift Bridge over the open chasm, then the final descent: fast,
-#      broad curves back across the snowfield, the Rift and the glacier off to the left,
-#      and a last drift onto the finish straight.
+#   1  The Shattered Entrance: the start on the snowfield, east along the Rift's rim, and
+#      a tight S down the ice wall onto the natural ice bridge, north into the glacier.
+#   2  The Crystal Cathedral: out of the tunnel onto the cliffside drift, a hairpin round
+#      the Monolith, the broken bridge over the abyss (a jump), up onto the north wall
+#      and the causeway into the Rift Loop.
+#   3  Mirror Lake: down the crystal tunnel to the frozen lake, an S of drifts on the ice.
+#   4  The Aurora Ascent and the Great Rift Bridge: a long ice tunnel west, the climbing
+#      canyon south under its arches, out of the great opening and over the bridge.
+#   5  The final descent: an S back down the snowfield and the last drift to the line.
 #
-# Saves tracks-src/aurora_rift.blend and exports public/tracks/aurora_rift/. The scenery
-# is aurora_scenery.py, built from the kit in aurora_props.py.
+# The land is the first lap's: the snowfield (south), the Rift, and the glacier (the
+# massif, north) that the caverns are cut out of; only where its edges run is this
+# lap's. The driving is the greybox's: the same roads, kinds, pickups and checkpoints.
 
 import math
 import os
@@ -45,55 +35,53 @@ from course_kit import lerp, smooth  # noqa: E402
 
 TRACK_ID = "aurora_rift"
 
-# ---------------------------------------------------------------- the layout
-
-# The Rift Loop: radius of its circular part, easing length at each end, sideways shift.
 LOOP_R, LOOP_RAMP, LOOP_SHIFT = 24.0, 28.0, 18.0
-START = (0.0, -270.0)
+START = (0.0, -250.0)
 LAYOUT = [
-    ("S", 40),  # 0  the start, north across the snowfield
-    ("R", 45, 90),  # 1  east along the Rift's rim
-    ("S", 30),  # 2  down the ice wall over the chasm...
-    ("L", 45, 45),  # 3  ...banked turns carved into it...
-    ("R", 45, 45),  # 4
-    ("L", 40, 90),  # 5  ...and north
-    ("S", 70),  # 6  the natural ice bridge across the Rift, under the great ice arch
-    ("S", 65),  # 7  the tunnel into the glacier
-    ("S", 25),  # 8  the reveal: out into the Crystal Cathedral
-    ("L", 120, 50),  # 9  the cliffside drift round the east wall
-    ("S", 25),  # 10
-    ("L", 40, 90),  # 11 onto the suspended bridge
-    ("S", 70),  # 12 the bridge over the abyss
-    ("R", 50, 120),  # 13 the Monolith curve (the crystal arch shortcut cuts inside)
-    ("S", 60),  # 14 the ice bridge to the north wall
-    ("L", 40, 90),  # 15 into the waterfall gallery
-    ("S", 65),  # 16 behind the waterfall curtain
-    ("S", 55),  # 17 the causeway: the loop approach, the boost strip
-    ("LOOP", LOOP_R, LOOP_RAMP, LOOP_SHIFT),  # 18 the Rift Loop
-    ("S", 30),  # 19 out onto the far causeway
-    ("R", 40, 20),  # 20 into the crystal tunnel, down
-    ("S", 45),  # 21
-    ("L", 70, 50),  # 22 Mirror Lake: round the shore onto the ice
-    ("R", 80, 60),  # 23 sweeping out across the lake
-    ("L", 60, 100),  # 24 between the ice columns, off the ice, south
-    ("S", 60),  # 25 the ascent: the ice tunnel (stretched to close the lap)
-    ("L", 50, 90),  # 26 the fractured canyon, east
-    ("S", 45),  # 27 the gallery over the Cathedral
-    ("R", 45, 90),  # 28 south, out of the great opening
-    ("S", 120),  # 29 the Great Rift Bridge
-    ("L", 60, 90),  # 30 east
-    ("S", 80),  # 31 the final descent (stretched to close the lap)
-    ("R", 90, 30),  # 32
-    ("S", 40),  # 33
-    ("L", 90, 30),  # 34
-    ("S", 20),  # 35
-    ("L", 50, 90),  # 36 the last drift
-    ("S", 20),  # 37 onto the finish straight
+    ("S", 40),  # 0  1: the start, north across the snowfield
+    ("R", 40, 90),  # 1  east along the Rift's rim
+    ("L", 30, 50),  # 2  a tight S down the ice wall...
+    ("R", 30, 100),  # 3
+    ("L", 30, 140),  # 4  ...and north
+    ("S", 45),  # 5  the natural ice bridge across the Rift
+    ("S", 35),  # 6  the tunnel into the glacier, down
+    ("L", 35, 90),  # 7  2: the Cathedral: the cliffside drift, west
+    ("R", 28, 180),  # 8  the hairpin round the Monolith
+    ("S", 70),  # 9  the broken bridge over the abyss (the jump)
+    ("L", 35, 90),  # 10 up onto the north wall
+    ("S", 40),  # 11 the causeway: the loop approach
+    ("LOOP", LOOP_R, LOOP_RAMP, LOOP_SHIFT),  # 12 the Rift Loop
+    ("S", 25),  # 13
+    ("L", 35, 90),  # 14 3: down the crystal tunnel, west
+    ("R", 50, 70),  # 15 Mirror Lake: a weave of drifts on the ice
+    ("L", 50, 140),  # 16
+    ("R", 55, 70),  # 17
+    ("S", 60),  # 18 off the ice into the ascent (closes the lap)
+    ("L", 30, 90),  # 19 4: the climbing turn, south
+    ("S", 40),  # 20 up the canyon...
+    ("R", 40, 70),  # 21 ...weaving under the arches
+    ("L", 40, 140),  # 22
+    ("R", 40, 70),  # 23
+    ("S", 120),  # 24 out under the sky and over the Great Rift Bridge (closes the lap)
+    ("L", 45, 60),  # 25 5: the final descent, an S...
+    ("R", 45, 60),  # 26
+    ("L", 40, 90),  # 27 ...east
+    ("S", 40),  # 28
+    ("L", 40, 90),  # 29 the last drift
+    ("S", 30),  # 30 onto the finish straight
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 25, 31, START, 90.0)
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 18, 24, START, 90.0)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
-LOOP_SEG = 18
+LOOP_SEG = 12
+
+
+def seg_of(s):
+    k = 0
+    for i, d in SEG.items():
+        if d <= s:
+            k = max(k, i)
+    return k
 
 
 def _seg_point(i):
@@ -111,11 +99,9 @@ def _arc_centre(i):
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
 
-MONOLITH = _arc_centre(13)
-# The loop's entry (the end of the causeway) and its heading (turtle degrees).
+MONOLITH = _arc_centre(8)
 LOOP_IN = PATH[[k for k, p in enumerate(PATH) if p[3] == LOOP_SEG][0] - 1]
 LOOP_HEAD = LOOP_IN[2]
-LOOP_OUT = _seg_points(LOOP_SEG)[-1]
 
 # ---------------------------------------------------------------- heights
 
@@ -123,75 +109,46 @@ Z_START = 44.0  # the snowfield
 Z_CATH = 24.0  # the Cathedral's roads (and the Loop)
 Z_LAKE = 11.0  # Mirror Lake's ice
 Z_BRIDGE = 56.0  # the Great Rift Bridge
-ANCHORS = [
-    (0.0, Z_START),
-    (SEG[1] + 20, Z_START),
-    (SEG[2], 42.0),  # down the ice wall
-    (SEG[5], 35.0),
-    (SEG[6], 33.5),  # the ice bridge
-    (SEG[7], 32.5),
-    (SEG[8] - 5, Z_CATH),  # down the tunnel into the Cathedral
-    (SEG[19] + 8, Z_CATH),
-    (SEG[22], Z_LAKE + 0.4),  # down the crystal tunnel
-    (SEG[24] + 40, Z_LAKE + 0.4),
-    (SEG[26], 30.0),  # the ascent
-    (SEG[27], 40.0),
-    (SEG[28], 50.0),
-    (SEG[29], Z_BRIDGE),
-    (SEG[30], Z_BRIDGE),  # the Great Rift Bridge
-    (SEG[31], 55.0),
-    (SEG[32], 52.0),  # the final descent
-    (SEG[34], 47.0),
-    (SEG[36], Z_START),
-    (LENGTH, Z_START),
-]
-# Stretches that must be dead level: the Cathedral round the Loop, the lake.
-LEVEL = [(SEG[8] + 10, SEG[19] + 5), (SEG[22] + 6, SEG[24] + 36)]
+HEIGHT = {
+    0: Z_START, 1: Z_START, 2: 42.0, 3: 39.0, 4: 36.0, 5: 34.0, 6: 33.5, 7: Z_CATH + 3.0, 8: Z_CATH + 1.0,
+    9: Z_CATH + 1.0, 10: Z_CATH + 1.0, 11: Z_CATH, 12: Z_CATH, 13: Z_CATH, 14: Z_CATH, 15: Z_LAKE + 0.4,
+    16: Z_LAKE + 0.4, 17: Z_LAKE + 0.4, 18: Z_LAKE + 0.4, 19: 22.0, 20: 27.0, 21: 34.0, 22: 42.0, 23: 51.0,
+    24: Z_BRIDGE, 25: 53.0, 26: 50.0, 27: 47.0, 28: 46.0, 29: 45.0, 30: Z_START,
+}
+# The broken bridge's jump: (lip, landing) along the lap.
+LIP = SEG[9] + 30.0
+LAND = LIP + 10.0
 
 
-def _lin(d):
-    d = min(max(d, 0.0), LENGTH)
-    for (d0, z0), (d1, z1) in zip(ANCHORS, ANCHORS[1:]):
-        if d0 <= d <= d1:
-            return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
-    return Z_START
+def _base_z(d, seg):
+    a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
+    t = (d - a) / max(1e-6, b - a)
+    z0, z1 = HEIGHT[seg], HEIGHT.get(seg + 1, HEIGHT[0])
+    if seg == 24:
+        # Dead level across the bridge, easing down off its far end.
+        return lerp(Z_BRIDGE, z1, smooth(max(0.0, (d - (b - 30)) / 30.0)))
+    if seg in (11, 12, 13) or seg in (16, 17):
+        return z0
+    return lerp(z0, z1, smooth(t))
 
 
-def road_z(d, seg=None):
-    """The road's height d metres along the lap: the anchors, eased over 30 m (exactly
-    level round the Loop and on the lake)."""
-    for a, b in LEVEL:
-        if a <= d <= b:
-            return _lin(d)
-    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 2.5, 0.9)])
 
 
 def road_w(d, seg):
-    if seg in (0, 36, 37):
-        return 18.0  # the start and finish
-    if seg in (12, 14):
-        return 14.0  # the bridges in the Cathedral
-    if seg in (17, 18, 19):
+    if seg in (0, 30) or d < 40:
+        return 18.0
+    if seg in (11, 12, 13):
         return 14.0  # the causeway: as wide as the Loop
-    if seg in (22, 23, 24):
-        return 18.0  # Mirror Lake
-    if seg == 29:
-        return 15.0  # the Great Rift Bridge
-    if seg in (6, 7):
-        return 14.0  # the ice bridge and the tunnel
+    if seg in (15, 16, 17):
+        return 18.0  # the lake
+    if seg in (5, 6, 9):
+        return 15.0
     return 16.0
 
 
-ROUTE, SHARP, LOOPS = kit.route_with_loops(PATH, LAYOUT, road_z, every=10.0, width=road_w)
-
-
-def seg_of(s):
-    k = 0
-    for i, d in SEG.items():
-        if d <= s:
-            k = max(k, i)
-    return k
-
+ROUTE, SHARP, LOOPS = kit.route_with_loops(PATH, LAYOUT, road_z, every=8.0, width=road_w)
+TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
 
 # ---------------------------------------------------------------- the land
 
@@ -200,60 +157,24 @@ def sm(t):
     return smooth(max(0.0, min(1.0, t)))
 
 
-class Near:
-    """Distance from points to a polyline (the lap), fast: a grid of its points."""
-
-    def __init__(self, pts, cell=24.0):
-        self.cell = cell
-        self.pts = pts
-        self.grid = {}
-        for k, p in enumerate(pts):
-            self.grid.setdefault((int(p[0] // cell), int(p[1] // cell)), []).append(k)
-
-    def find(self, x, y, reach=2):
-        """(distance, index of the nearest point), or (inf, -1) if none nearby."""
-        gx, gy = int(x // self.cell), int(y // self.cell)
-        best = (float("inf"), -1)
-        for i in range(gx - reach, gx + reach + 1):
-            for j in range(gy - reach, gy + reach + 1):
-                for k in self.grid.get((i, j), ()):
-                    p = self.pts[k]
-                    d = (p[0] - x) ** 2 + (p[1] - y) ** 2
-                    if d < best[0]:
-                        best = (d, k)
-        return (math.sqrt(best[0]), best[1]) if best[1] >= 0 else best
-
-
-NEAR = Near(PATH)
-_D = [0.0]
-for _a, _b in zip(PATH, PATH[1:]):
-    _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
-
-
-def lap_near(x, y, reach=2):
-    """(distance to the lap, distance along it, segment) for the nearest lap point."""
-    d, k = NEAR.find(x, y, reach)
-    if k < 0:
-        return d, 0.0, -1
-    return d, _D[k], PATH[k][3]
-
-
-# The Rift: the chasm from west to east between the snowfield (south) and the glacier.
-RIFT_N = -95.0  # the glacier's face
-ABYSS = -150.0  # the floor, lost in mist
+# The Rift's band as the greybox laid out its kinds (the ice bridge, the Great Rift
+# Bridge): the dressed Rift's walls follow it.
+RIFT_Y = (_seg_point(5)[1] + _seg_point(6)[1]) / 2
+RIFT_HALF = 26.0
+ABYSS = -150.0  # the floor of the Rift and the Cathedral, lost in mist
+FACE = -92.0  # the glacier's south face (the Rift's north wall), on average
 
 
 def face_y(x):
-    """Where the glacier's south face is (the Rift's north wall): the chasm is widest in
-    the east, where the ice bridge crosses it, narrowest in the west under the Great Rift
-    Bridge."""
-    return lerp(RIFT_N, RIFT_N + 55.0, sm((x + 300.0) / 220.0)) + 3.0 * math.sin(x / 37.0) + 2.0 * math.sin(x / 13.0 + 1.0)
+    """Where the glacier's south face is: the ice bridge goes into it at the tunnel, the
+    Great Rift Bridge comes out of it."""
+    return FACE + 3.0 * math.sin(x / 37.0) + 2.0 * math.sin(x / 13.0 + 1.0)
 
 
-# The descent's line along the wall: road y for each metre of x (segments 1-5).
+# The descent's line along the wall: road y for each metre of x (the S, segments 2-4).
 _LEDGE = {}
 for _p in PATH:
-    if 1 <= _p[3] <= 5:
+    if 2 <= _p[3] <= 4:
         _k = int(round(_p[0]))
         _LEDGE[_k] = min(_LEDGE.get(_k, 1e9), _p[1])
 
@@ -261,15 +182,15 @@ for _p in PATH:
 def rim_y(x):
     """The Rift's south rim, where the snowfield breaks off. Along the ice-wall descent it
     hugs the road, so the road is carved into the wall with the chasm beside it."""
-    base = -186.0 + 4.0 * math.sin(x / 41.0) + 2.0 * math.sin(x / 11.0)
+    base = -145.0 + 4.0 * math.sin(x / 41.0) + 2.0 * math.sin(x / 11.0)
     ys = [_LEDGE[k] for k in range(int(x) - 2, int(x) + 3) if k in _LEDGE]
-    if ys and 25.0 <= x <= 175.0:
+    if ys and 30.0 <= x <= 170.0:
         return min(base + 8.0, min(ys) - 10.5)
     return base
 
 
 # The glacier (massif): from the Rift's north face to the north edge, west to east.
-MASSIF = (-780.0, 300.0, RIFT_N, 390.0)
+MASSIF = (-780.0, 340.0, FACE, 390.0)
 
 
 def in_massif(x, y, pad=0.0):
@@ -278,24 +199,22 @@ def in_massif(x, y, pad=0.0):
 
 
 def glacier_top(x, y):
-    """The glacier's surface (the massif's top, and the land round it): rising from its
-    broken south face to a great dome over the Cathedral, ridged and crevassed."""
-    rise = sm((y - RIFT_N) / 140.0)
-    dome = 50.0 * math.exp(-(((x + 60.0) / 300.0) ** 2) - ((y - 160.0) / 220.0) ** 2)
+    """The glacier's surface: rising from its broken south face to a great dome over the
+    caverns, ridged and crevassed."""
+    rise = sm((y - FACE) / 140.0)
+    dome = 50.0 * math.exp(-(((x - 40.0) / 300.0) ** 2) - ((y - 140.0) / 220.0) ** 2)
     ridges = 6.0 * math.sin(x / 47.0 + y / 61.0) + 4.0 * math.sin(x / 19.0 - y / 23.0)
     return 108.0 + 30.0 * rise + dome + ridges * (0.4 + 0.6 * rise)
 
 
 def snowfield(x, y):
     """The snowfield south of the Rift: level round the start, rising east into an ice
-    ridge over the descent's wall, and into mountains far off."""
+    ridge over the descent's wall, a high shoulder in the west where the Great Rift
+    Bridge lands, and mountains far off."""
     h = Z_START - 1.5 + 1.2 * math.sin(x / 31.0) * math.cos(y / 27.0)
-    # The ice ridge above the wall the descent is carved into.
     ridge = sm((x - 20.0) / 60.0) * sm((-120.0 - y) / 40.0 + 1.0) * sm((y + 330.0) / 60.0)
     h += 34.0 * ridge * sm((x - 10) / 120.0)
-    # The west: the Great Rift Bridge lands on a high shoulder.
-    h += 14.0 * sm((-260.0 - x) / 120.0) * sm((y + 330.0) / 120.0)
-    # Mountains all round the far edges.
+    h += 14.0 * sm((-100.0 - x) / 80.0) * sm((y + 330.0) / 100.0)
     far = max(0.0, x - 420.0) * 0.7 + max(0.0, -820.0 - x) * 0.7 + max(0.0, -430.0 - y) * 0.8
     h += min(260.0, far) + 30.0 * sm((far - 40.0) / 120.0) * (0.5 + 0.5 * math.sin(x / 53.0 + y / 41.0))
     return h
@@ -307,11 +226,9 @@ def natural(x, y):
         return ABYSS  # under the glacier (only seen through the Cathedral's abyss)
     fy, ry = face_y(x), rim_y(x)
     if y > fy:
-        # North of the Rift beyond the glacier's ends: more glacier.
-        return glacier_top(x, y)
+        return glacier_top(x, y)  # north of the Rift beyond the glacier's ends
     if y > ry:
-        # The Rift: sheer walls, a jagged floor far below.
-        return ABYSS + 6.0 * math.sin(x / 23.0) * math.cos(y / 17.0)
+        return ABYSS + 6.0 * math.sin(x / 23.0) * math.cos(y / 17.0)  # the Rift
     return snowfield(x, y)
 
 
@@ -319,58 +236,102 @@ def classify(c, n, info):
     if c.z < ABYSS + 30:
         return ("abyss_glow", "abyss")
     if n.z < 0.55:
-        if c.z > Z_START + 4 or c.y > RIFT_N - 20:
+        if c.z > Z_START + 4 or c.y > FACE - 20:
             return ("glacier_wall" if (int(c.z / 14) + int(c.x / 50)) % 3 == 0 else "rift_cliff", "wall")
         return ("rift_cliff" if (int(c.z / 9) + int(c.x / 40)) % 3 else "rift_rock", "wall")
     if info["d"] < 10.5:
         return ("rift_road", "snow_stone")
-    return ("rift_snow", "deep_snow")
+    # Off the road, packed snow (as the greybox drove).
+    return ("rift_snow", "packed_snow")
 
 
-# ---------------------------------------------------------------- shortcuts
+# ---------------------------------------------------------------- the dressing's spots
 
 
-def _arc_pts(cx, cy, r, a0, a1, n):
-    return [(cx + r * math.cos(a0 + (a1 - a0) * k / n), cy + r * math.sin(a0 + (a1 - a0) * k / n)) for k in range(n + 1)]
+def _cross(c, s0, test, limit=400.0):
+    """The first road distance from s0 where test(point) holds."""
+    s = s0
+    while s < s0 + limit and not test(c.at(s).p):
+        s += 1.0
+    return s
 
 
-def monolith_shortcut():
-    """Through the glowing crystal arch: a chord across the Monolith's island, inside the
-    curve, from where the road starts round it to where it leaves."""
-    a = _seg_points(13)
-    p0, p1 = a[0], a[-1]
-    cx, cy = MONOLITH
-    # Leave the road a little after the curve starts, rejoin a little before it ends.
-    k0, k1 = len(a) // 7, len(a) - 1 - len(a) // 7
-    q0, q1 = a[k0], a[k1]
-    pts = [(q0[0], q0[1])]
-    # Bow gently away from the Monolith (it mustn't graze the base crystals).
-    for t in (0.25, 0.5, 0.75):
-        x = q0[0] + (q1[0] - q0[0]) * t
-        y = q0[1] + (q1[1] - q0[1]) * t
-        dx, dy = x - cx, y - cy
-        dl = math.hypot(dx, dy) or 1.0
-        pull = 6.0 * math.sin(math.pi * t)
-        pts.append((x + dx / dl * pull, y + dy / dl * pull))
-    pts.append((q1[0], q1[1]))
-    return pts, (p0, p1)
+def scenery_spots(c, s_in, s_out):
+    """Where aurora_scenery.py puts things on this lap (road distances)."""
+    R = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
+    # Where the Great Rift Bridge leaves the glacier's face and reaches the far rim.
+    sf = _cross(c, R(24), lambda p: p.y < face_y(p.x))
+    sr = _cross(c, sf, lambda p: p.y < rim_y(p.x))
+    return {
+        "entrance_cut": (R(6) - 2, R(7) + 10),
+        "cath_segs": (7, 13),
+        "cath_extra": [(40.0, -10.0), (50.0, 110.0), (160.0, 170.0)],
+        "crystal_tunnel": (R(13) + 5, R(15) + 10),
+        "lake_segs": (15, 17),
+        "ice_tunnel": (R(17) + 30, R(19) + 10),  # from inside the lake cavern (no wall across the road)
+        "canyon_cut": (R(19) + 4, R(23) + 20),
+        "opening_cut": (R(23) + 14, sf + 22),
+        "face_fractures": (60.0, 215.0),
+        "snow_lamps": [(20.0, R(2), 26.0), (R(25) + 10, c.length - 30, 30.0)],
+        "ledge": (R(2), int((R(5) - R(2)) / 10)),
+        "ice_bridge": (R(5) - 2, R(5) + 10, R(7)),
+        "tunnel_end": R(7) + 4,
+        # The hairpin goes round the Monolith on a ledge: its pillar stays under the road
+        # (scenery only: the inside of the hairpin is the abyss, as the greybox drove).
+        "island_r": 44.0,
+        "island_drop": 6.0,
+        "island_role": "visual",
+        "mono_r": 12.0,
+        "mono_foot": 14.0,
+        # The broken bridge: arches either side of the gap it jumps.
+        "cath_bridges": [(R(9) - 4, lip - 1), (land + 1, R(10) + 4)],
+        "north_span": None,
+        "cath_ledges": [(R(7) + 8, R(8)), (R(10), R(11))],
+        "curtain": None,
+        "causeway": R(11) - 2,
+        "far_causeway": R(14),
+        "deco_spans": [(95.0, 40.0, 9.0, "High Bridge"), (205.0, -34.0, 7.0, "Low Bridge")],
+        "ascent_crystals": (R(18) + 24, R(19) + 6),
+        "canyon_arches": (R(20) + 14, R(21) + 30, R(22) + 50),
+        "canyon_lamps": (R(19) + 10, sf + 20),
+        "canyon_falls": R(20) + 6,
+        "opening_at": sf - 8,
+        "great_bridge": (sf - 6, sr + 6),
+        # No new hazards on the road (the greybox's driving): no falling ice there, no
+        # cracking ice on the lake's line.
+        "road_icicles": [],
+        "lake_crack": None,
+    }
 
 
-def lake_shortcut():
-    """The thin-ice shortcut: straight across the lake, inside the sweep."""
-    a = _seg_points(22)
-    b = _seg_points(24)
-    q0 = a[len(a) // 3]
-    q1 = b[len(b) * 2 // 3]
-    pts = []
-    for k in range(7):
-        t = k / 6
-        pts.append((q0[0] + (q1[0] - q0[0]) * t, q0[1] + (q1[1] - q0[1]) * t))
-    return pts
-
-
-MONO_SHORT, _ = monolith_shortcut()
-LAKE_SHORT = lake_shortcut()
+def pickups(c, s_in, s_out):
+    """The greybox's pickups, boosts, respawn zone and checkpoints (aurora_scenery.py
+    calls this instead of the first lap's)."""
+    lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
+    S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    # Zippers: down the ice wall onto the ice bridge, the jump's run-up, the causeway
+    # into the Loop (it needs speed), off the lake into the climb, onto the bridge.
+    for at in (S(5) + 5, TO_ROAD(LIP - 36), S(11) + 8, S(18) + 5, S(24) + 20):
+        c.zipper(at, 0)
+    for at, across in ((S(3) + 20, 0), (S(8) + 30, 0), (S(16) + 30, 0), (S(22) + 20, 0), (S(26) + 20, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in (
+        (S(1) + 20, -4, "red"),
+        (S(1) + 20, 4, "blue"),
+        (S(7) + 20, 0, "green"),
+        (S(14) + 20, 0, "yellow"),
+        (S(15) + 20, 0, "rainbow"),
+        (S(25) + 20, -4, "red"),
+        (S(25) + 20, 4, "blue"),
+    ):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(lip - 20, 1), "to": round(land + 4, 1), "at": round(land + 18, 1)})
+    c.checkpoints(
+        extra=[S(2), S(5) + 30, S(7) + 30, S(8) + 40, S(10) + 20, S(14) + 10, S(16) + 40, S(19) + 20, S(22), S(24) + 60, S(26)],
+        avoid=[(s_in - 6, s_out + 6), (lip - 14, land + 8)],
+        height=10.0,
+    )
 
 
 # ---------------------------------------------------------------- the course
@@ -385,79 +346,67 @@ def main():
     stone = ("rift_stone", "wall")
     ice_wall = ("glacier_wall", "wall")
     c.kinds = {
-        # On the snowfield: glacier road, snow banks.
-        "snowfield": {"mat": "rift_road", "shoulder": 1.8, "shoulder_mat": snowbank, "barrier": 0.8, "barrier_mat": ("rift_snow", "wall")},
-        # Carved into the Rift's ice wall: amber edge lamps on the chasm side.
+        "snowfield": {"mat": "rift_road", "shoulder": 1.8, "shoulder_mat": snowbank},
         "ledge": {"mat": "rift_road", "shoulder": 1.0, "shoulder_mat": snowbank, "barrier": 1.0, "barrier_mat": lamps,
                   "deck": 7.0, "deck_mat": ("rift_cliff", "wall"), "ground": False},
-        # The natural ice bridge over the Rift.
         "icebridge": {"mat": "rift_road", "shoulder": 1.0, "shoulder_mat": ("glacier_wall", "snow_stone"), "barrier": 0.9,
                       "barrier_mat": ice_wall, "deck": 9.0, "deck_mat": ice_wall, "ground": False},
-        # Tunnels and galleries in the ice.
-        "tunnel": {"mat": "rift_road", "shoulder": 1.2, "shoulder_mat": ("cavern_ice", "snow_stone"), "barrier": 0.7, "barrier_mat": lamps},
-        # The Cathedral's cliff ledges and the causeways: lamps along the abyss.
+        "tunnel": {"mat": "rift_road", "shoulder": 1.2, "shoulder_mat": ("cavern_ice", "snow_stone")},
         "cathedral": {"mat": "rift_road", "shoulder": 1.0, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.0, "barrier_mat": lamps,
                       "deck": 8.0, "deck_mat": ("rift_rock", "wall"), "ground": False},
-        "causeway": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.1, "barrier_mat": lamps,
-                     "deck": 4.5, "deck_mat": stone, "ground": False, "exact": True},
-        # The suspended stone bridge, and the ice bridge to the north wall.
         "bridge": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.2, "barrier_mat": stone,
                    "deck": 3.5, "deck_mat": stone, "ground": False},
-        "icespan": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("glacier_wall", "snow_stone"), "barrier": 1.0, "barrier_mat": ice_wall,
-                    "deck": 6.0, "deck_mat": ice_wall, "ground": False},
-        # The Monolith's island.
-        "island": {"mat": "rift_road", "shoulder": 1.6, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 0.9, "barrier_mat": lamps,
-                   "deck": 6.0, "deck_mat": ("rift_rock", "wall"), "ground": False},
-        # Mirror Lake: slippery clear ice.
+        "kicker": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "deck": 3.5, "deck_mat": stone,
+                   "ground": False},
+        "causeway": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.1, "barrier_mat": lamps,
+                     "deck": 4.5, "deck_mat": stone, "ground": False, "exact": True},
         "lake": {"mat": "rift_ice_road", "shoulder": 2.0, "shoulder_mat": ("mirror_ice", "ice")},
-        # The ascent, and the Great Rift Bridge.
-        "climb": {"mat": "rift_road", "shoulder": 1.2, "shoulder_mat": snowbank, "barrier": 0.9, "barrier_mat": lamps},
-        "greatbridge": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.3, "barrier_mat": ("rift_carved", "wall"),
-                        "deck": 4.0, "deck_mat": stone, "ground": False},
+        "climb": {"mat": "rift_road", "shoulder": 1.2, "shoulder_mat": snowbank},
+        "greatbridge": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.3,
+                        "barrier_mat": ("rift_carved", "wall"), "deck": 4.0, "deck_mat": stone, "ground": False},
     }
     s_in = kit.s_near(c, ex, ey)
     s_out = kit.s_near(c, xx, xy)
+    lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
 
     def label(smp):
         s = smp.s
-        if s_in <= s <= s_out:
+        if s_in <= s <= s_out or lip <= s <= land:
             return "gap"
-        seg = seg_of(s)
-        if seg in (2, 3, 4) or (seg == 1 and s > SEG[1] + 40) or (seg == 5 and s < SEG[5] + 20):
+        if lip - 12 <= s < lip:
+            return "kicker"
+        seg = seg_of(TO_PLAN(s))
+        x, y = smp.p.x, smp.p.y
+        if seg in (2, 3, 4):
             return "ledge"
+        if seg == 5:
+            return "icebridge" if abs(y - RIFT_Y) < RIFT_HALF + 4 else "tunnel"
         if seg == 6:
-            return "icebridge" if smp.p.y < face_y(smp.p.x) - 4 else "tunnel"
-        if seg == 7 or (seg == 8 and s < SEG[8] + 8):
             return "tunnel"
-        if seg in (8, 9, 10, 11):
+        if seg in (7, 8, 10):
             return "cathedral"
-        if seg == 12:
+        if seg == 9:
             return "bridge"
-        if seg == 13:
-            return "island"
-        if seg == 14:
-            return "icespan"
-        if seg in (15, 16):
-            return "cathedral"
-        if seg in (17, 19) or seg == LOOP_SEG:
+        if seg in (11, 12, 13):
             return "causeway"
-        if seg in (20, 21) or (seg == 22 and s < SEG[22] + 15):
+        if seg == 14:
             return "tunnel"
-        if seg in (22, 23) or (seg == 24 and s < SEG[24] + 60):
+        if seg in (15, 16, 17):
             return "lake"
-        if seg in (24, 25, 26, 27, 28):
+        if seg in (18, 19, 20, 21, 22, 23):
             return "climb"
-        if seg == 29:
-            return "greatbridge"
+        if seg == 24:
+            return "greatbridge" if abs(y - RIFT_Y) < RIFT_HALF + 6 else "climb"
         return "snowfield"
 
     specials = []
     for s0, s1, k in kit.runs(c, label):
         if k == "gap":
             specials.append((s0, s1, None))
+        elif k == "kicker":
+            specials.append((s0, s1, "kicker", {"lift": lambda u, n: 0.6 * max(0.0, (u - (n - 8)) / 8) ** 2}))
         elif k != "snowfield":
             specials.append((s0, s1, k))
-    # The roads stop exactly at the Loop's ends.
     snap = lambda v: s_in if abs(v - s_in) < 3 else s_out if abs(v - s_out) < 3 else v  # noqa: E731
     specials = [(snap(a), snap(b)) + tuple(rest) for a, b, *rest in specials]
     c.roads(kit.plan(c, specials, "snowfield", max_len=200.0))
@@ -466,17 +415,11 @@ def main():
     c.loop(lp, road_mat=("rift_road", "snow_stone"), side_mat=("glacier_wall", "wall"), rail_mat=("rift_stone", "wall"),
            glow_mat=("edge_amber", "wall"), thickness=1.8, rail=1.0, min_speed=15.0, commit=20.0, boost=(1.4, 2.0), gravity=8.0)
 
-    # The shortcuts: through the Monolith's crystal arch (cut stone on the island), and
-    # across the thin ice on Mirror Lake.
-    mono = [(x, y, Z_CATH) for x, y in MONO_SHORT]
-    c.shortcut("Crystal Arch", mono, "rift_ice_road", "icy_stone", width=9.0, shoulder=0.6, shoulder_mat=("rift_stone", "snow_stone"))
-    lake = [(x, y, Z_LAKE + 0.25) for x, y in LAKE_SHORT]
-    c.shortcut("Thin Ice", lake, "thin_ice", "ice", width=8.0, shoulder=0.5, shoulder_mat=("thin_ice", "ice"))
-
     import aurora_scenery  # noqa: E402
 
     aurora_scenery.build(c, sys.modules[__name__], lp, s_in, s_out)
     c.finish()
+    print("lap", round(c.length, 1))
 
 
 if __name__ == "__main__":

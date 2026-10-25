@@ -277,42 +277,42 @@ def glacier(c, ar, cell=12.0):
     return c.mesh_object("Glacier", bm, "Glacier")
 
 
-def caverns(c, ar, s_in, s_out):
+def caverns(c, ar, P):
     """Cut the caverns out of the glacier. Returns (solid, info) where info has the
     Cathedral's and the lake cavern's outlines (for dressing them)."""
-    S = ar.SEG
     solid = glacier(c, ar)
     info = {}
     # 1. The entrance tunnel: from the face, growing taller and wider toward the Cathedral.
-    t0 = S[6] + 45
-    t1 = S[8] + 6
+    t0, t1 = P["entrance_cut"]
     apply_cut(c, solid, route_cutter(c, t0, t1, tunnel_prof(12.5, 15.0), pad=14.0, wobble=0.12, name="Entrance",
                                      grow=lambda t: 1.0 + 0.6 * t ** 3))
     # 2. The Crystal Cathedral: a vast hall round the roads from the reveal to the Loop,
     # reaching south-west under the ascent's gallery; a domed roof.
     pts = []
+    a, b = P["cath_segs"]
     for p in ar.PATH:
-        if 8 <= p[3] <= 19:
+        if a <= p[3] <= b:
             pts.append((p[0], p[1]))
     # The Loop's own footprint, and the abyss reaching south and west.
     lp_pts = [(ar.LOOP_IN[0] + dx, ar.LOOP_IN[1] + dy) for dx in (-40, 40) for dy in (-40, 40)]
-    extra = [(-430.0, 0.0), (-300.0, -20.0), (-120.0, 25.0), (60.0, 30.0)]
+    extra = P["cath_extra"]
     ring, centre = outline(pts + lp_pts + extra, 22.0, n=96, wobble=0.25, seed=3)
     info["cathedral"] = (ring, centre)
     apply_cut(c, solid, chamber_cutter(c, ring, centre, ar.ABYSS - 60, ar.Z_CATH + 62, ar.Z_CATH + 128, wobble=1.0, seed=3, name="Cathedral"))
     # 3. The crystal tunnel down to the lake.
-    apply_cut(c, solid, route_cutter(c, S[19] + 5, S[22] + 10, tunnel_prof(12.0, 14.0), pad=10.0, wobble=0.15, name="Crystal Tunnel"))
+    apply_cut(c, solid, route_cutter(c, *P["crystal_tunnel"], tunnel_prof(12.0, 14.0), pad=10.0, wobble=0.15, name="Crystal Tunnel"))
     # 4. Mirror Lake's cavern.
-    lpts = [(p[0], p[1]) for p in ar.PATH if 21 <= p[3] <= 24] + [(x, y) for x, y in ar.LAKE_SHORT]
+    a, b = P["lake_segs"]
+    lpts = [(p[0], p[1]) for p in ar.PATH if a <= p[3] <= b] + [(x, y) for x, y in getattr(ar, "LAKE_SHORT", [])]
     lring, lcentre = outline(lpts, 34.0, n=72, wobble=0.3, seed=7)
     info["lake"] = (lring, lcentre)
     apply_cut(c, solid, chamber_cutter(c, lring, lcentre, ar.Z_LAKE - 9.0, ar.Z_LAKE + 30, ar.Z_LAKE + 64, wobble=1.2, seed=7, name="Lake Cavern"))
     # 5. The ascent: an ice tunnel up from the lake, a fractured canyon open to the sky
     # (the cutter rises clear of the glacier's top), a gallery and the great opening.
-    apply_cut(c, solid, route_cutter(c, S[24] + 40, S[26] + 10, tunnel_prof(12.0, 15.0), pad=8.0, wobble=0.15, name="Ice Tunnel"))
+    apply_cut(c, solid, route_cutter(c, *P["ice_tunnel"], tunnel_prof(12.0, 15.0), pad=8.0, wobble=0.15, name="Ice Tunnel"))
     canyon = [(-11.0, -1.0), (11.0, -1.0), (13.0, 30.0), (24.0, 200.0), (-24.0, 200.0), (-13.0, 30.0)]
-    apply_cut(c, solid, route_cutter(c, S[26] + 4, S[27] + 20, canyon, pad=6.0, wobble=0.1, name="Canyon"))
-    apply_cut(c, solid, route_cutter(c, S[27] + 14, S[29] + 22, tunnel_prof(16.0, 30.0), pad=6.0, wobble=0.12, name="Great Opening",
+    apply_cut(c, solid, route_cutter(c, *P["canyon_cut"], canyon, pad=6.0, wobble=0.1, name="Canyon"))
+    apply_cut(c, solid, route_cutter(c, *P["opening_cut"], tunnel_prof(16.0, 30.0), pad=6.0, wobble=0.12, name="Great Opening",
                                      grow=lambda t: 1.0 + 0.5 * t))
     # 6. Holes in the roof: over the Loop (the aurora frames it), over the Monolith, and
     # a long fracture; and where the lake cavern's roof has fallen in.
@@ -341,7 +341,7 @@ def caverns(c, ar, s_in, s_out):
         apply_cut(c, solid, shaft(c, lcentre[0] + dx, lcentre[1] + dy, ar.Z_LAKE + 40, 400, r, seed=9 + k, name="Lake Opening"))
     # 7. Fractures in the face: slits from the Rift into the Cathedral (its glow shows
     # through them from the bridges).
-    for k, x in enumerate((-300.0, -200.0, -40.0)):
+    for k, x in enumerate(P["face_fractures"]):
         apply_cut(c, solid, slab(c, (x, -40.0, ar.Z_CATH + 10), (5.0 + k, 170.0, 110.0), 0.12 * (k - 1), name="Face Fracture"))
     paint_glacier(c, ar, solid, info)
     return solid, info
@@ -518,11 +518,11 @@ def ice_span(c, sc, s0, s1, depth=14.0, name="Ice Span"):
     return ob
 
 
-def island(c, sc, ar, r_top=66.0, gaps=()):
+def island(c, sc, ar, r_top=66.0, gaps=(), drop=0.25, role="both"):
     """The Monolith's island: a pillar of rock rising from the abyss, its top level with the
     road (a little under it), a low parapet round its rim with gaps for the bridges."""
     mx, my = ar.MONOLITH
-    z = ar.Z_CATH - 0.25
+    z = ar.Z_CATH - drop
     bm = bmesh.new()
     n = 48
     rings = []
@@ -534,7 +534,7 @@ def island(c, sc, ar, r_top=66.0, gaps=()):
             ring.append(bm.verts.new((mx + r_top * f * math.cos(a), my + r_top * f * math.sin(a), zz)))
         rings.append(ring)
     loft(bm, rings, cap_top=True, cap_bottom=True)
-    ob = c.mesh_object("Monolith Island", bm, "Island", "both")
+    ob = c.mesh_object("Monolith Island", bm, "Island", role)
     top = [p.index for p in ob.data.polygons if p.normal.z > 0.9]
     side = [p.index for p in ob.data.polygons if p.normal.z <= 0.9]
     c.assign(ob, c.lib("rift_rock", "snow_stone"), top)
@@ -557,7 +557,7 @@ def island(c, sc, ar, r_top=66.0, gaps=()):
         if k % 6 == 0:
             sc.put(ap.lantern_post(c), cxp, cyp, z, rot=mid, coll="Bridges")
             sc.warm.append((cxp, cyp, z + 2.4))
-    m.build(c, "Island Parapet", "Island", "both")
+    m.build(c, "Island Parapet", "Island", role)
     return ob
 
 
@@ -567,40 +567,42 @@ def monolith(c, sc, ar):
     glowing gold at its foot."""
     mx, my = ar.MONOLITH
     z0 = ar.ABYSS - 10
+    R = sc.p["mono_r"]
+    f = R / 22.0
     m = Mesh()
-    m.add(("monolith_core", "wall"), lambda bm: ap.shard(bm, (mx, my, z0), (0.015, 0.02, 1), 330.0, 22.0, n=6, tip=0.16, twist=0.3, flare=0.7))
+    m.add(("monolith_core", "wall"), lambda bm: ap.shard(bm, (mx, my, z0), (0.015, 0.02, 1), 330.0, R, n=6, tip=0.16, twist=0.3, flare=0.7))
     # Secondary shafts leaning against it, and branches growing out at several heights.
     for k in range(3):
         a = k * math.tau / 3 + 0.9
-        m.add(("monolith_core", "wall"), lambda bm, a=a, k=k: ap.shard(bm, (mx + 20 * math.cos(a), my + 20 * math.sin(a), z0 + 20),
-                                                                     (0.12 * math.cos(a), 0.12 * math.sin(a), 1), 190.0 + 40 * k, 9.0, n=6, tip=0.18, twist=a))
+        m.add(("monolith_core", "wall"), lambda bm, a=a, k=k: ap.shard(bm, (mx + 20 * f * math.cos(a), my + 20 * f * math.sin(a), z0 + 20),
+                                                                     (0.12 * math.cos(a), 0.12 * math.sin(a), 1), 190.0 + 40 * k, 9.0 * f, n=6, tip=0.18, twist=a))
     for k in range(12):
         a = k * 2.2 + 0.4
         zz = ar.Z_CATH + 22 + k * 9
-        r = 22.0 * (1 - 0.3 * (zz - z0) / 330.0)
+        r = R * (1 - 0.3 * (zz - z0) / 330.0)
         mat = ("crystal_violet2" if k % 3 == 1 else "crystal_magenta" if k % 3 == 2 else "crystal_cyan", "wall")
         m.add(mat, lambda bm, a=a, zz=zz, r=r, k=k: ap.shard(bm, (mx + r * 0.8 * math.cos(a), my + r * 0.8 * math.sin(a), zz),
-                                                       (math.cos(a), math.sin(a), 1.0 + 0.25 * (k % 3)), 40.0 + 10 * (k % 3), 5.0, n=6, tip=0.2, twist=a))
+                                                       (math.cos(a), math.sin(a), 1.0 + 0.25 * (k % 3)), (40.0 + 10 * (k % 3)) * f, 5.0 * f, n=6, tip=0.2, twist=a))
     # Below the island: crystals down the shaft into the mist.
     for k in range(5):
         a = k * 1.3 + 1.0
         zz = -20.0 - k * 22
-        m.add(("crystal_teal", "wall"), lambda bm, a=a, zz=zz: ap.shard(bm, (mx + 13 * math.cos(a), my + 13 * math.sin(a), zz),
+        m.add(("crystal_teal", "wall"), lambda bm, a=a, zz=zz: ap.shard(bm, (mx + 13 * f * math.cos(a), my + 13 * f * math.sin(a), zz),
                                                                       (math.cos(a), math.sin(a), 0.9), 30.0, 3.6, n=6, tip=0.22, twist=a))
     m.build(c, "Central Monolith", "Monolith", "visual")
     # Its foot on the island: amber crystals glowing gold, cyan clusters (kept clear of
     # the road ring and the crystal-arch shortcut).
     for k in range(9):
         a = k * math.tau / 9 + 0.2
-        r = 28.0 + 3.0 * (k % 2)
+        r = sc.p["mono_foot"] + 3.0 * (k % 2)
         x, y = mx + r * math.cos(a), my + r * math.sin(a)
-        if not clear(c, x, y, 3.0, [ar.MONO_SHORT]):
+        if not clear(c, x, y, 3.0, [getattr(ar, "MONO_SHORT", [])]):
             continue
         sc.put(ap.amber_cluster(c, k % 3, 7.0 + 2 * (k % 2)), x, y, ar.Z_CATH - 0.3, rot=a, coll="Monolith")
         sc.warm.append((x, y, ar.Z_CATH + 4))
     for k in range(8):
         a = k * math.tau / 8
-        sc.cold.append((mx + 30 * math.cos(a), my + 30 * math.sin(a), ar.Z_CATH + 2))
+        sc.cold.append((mx + (R + 8) * math.cos(a), my + (R + 8) * math.sin(a), ar.Z_CATH + 2))
     for k in range(6):
         sc.cold.append((mx, my, ar.Z_CATH + 20 + k * 25))
 
@@ -719,7 +721,7 @@ def entrance(c, sc, ar):
     """The Shattered Entrance: the start gate, the snowfield's ice spikes and lanterns, the
     Rift's rim, the ice bridge, the great ice arch over the tunnel mouth, the tunnel's
     crystals (more and brighter the deeper it goes)."""
-    S = ar.SEG
+    P = sc.p
     # The start gate: two carved pylons topped with crystals, a banner between them.
     q = c.at(0.0)
     m = Mesh()
@@ -744,7 +746,7 @@ def entrance(c, sc, ar):
             sc.put(ap.snow_rock(c, k % 3, 3.0 + 2 * rnd(k)), x, y, z - 0.6, rot=k, coll="Snowfield")
         else:
             sc.put(ap.ice_spike(c, k % 4, 10.0 + 14 * rnd(k * 5)), x, y, z - 1.0, rot=k * 0.7, coll="Snowfield")
-    for s in list(range(20, int(S[2]), 26)) + list(range(int(S[30]), int(ar.LENGTH) - 30, 30)):
+    for s in [s for a, b, step in P["snow_lamps"] for s in range(int(a), int(b), int(step))]:
         q = c.at(s)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 2.6))
@@ -766,8 +768,9 @@ def entrance(c, sc, ar):
         if k % 3 == 0 and clear(c, x, y - 6, 8):
             sc.put(ap.ice_spike(c, k % 4, 9.0 + 9 * rnd(k * 7)), x, y - 6, z - 1.0, rot=k, coll="Rift")
     # The descent's ledge: icicles under its edge, crystals in the wall.
-    for k in range(int((S[6] - S[1]) / 10)):
-        q = c.at(S[1] + 30 + k * 10)
+    l0, ln = P["ledge"]
+    for k in range(ln):
+        q = c.at(l0 + k * 10)
         p = q.side(-(q.w / 2 + 1.0))
         sc.put(ap.icicle_fringe(c, k % 3, 9.0, 5.0), p.x, p.y, q.p.z - 7.0, rot=road_rot(q), coll="Rift")
         if k % 3 == 1:
@@ -775,14 +778,14 @@ def entrance(c, sc, ar):
             sc.put(ap.fan(c, k % 4, 9.0, ap.CRYSTALS[k % 4]), w.x, w.y, q.p.z + 3.0, rot=road_rot(q) + math.pi, coll="Rift")
             sc.cold.append((w.x, w.y, q.p.z + 6))
     # The natural ice bridge over the Rift, and the great ice arch over the tunnel mouth.
-    s_face = S[6]
-    while c.at(s_face).p.y < ar.face_y(c.at(s_face).p.x) - 6 and s_face < S[7] + 40:
+    b0, s_face, s_lim = P["ice_bridge"]
+    while c.at(s_face).p.y < ar.face_y(c.at(s_face).p.x) - 6 and s_face < s_lim:
         s_face += 1.0
-    ice_span(c, sc, S[5] + 20, s_face - 2, depth=26.0, name="Rift Ice Bridge")
+    ice_span(c, sc, b0, s_face - 2, depth=26.0, name="Rift Ice Bridge")
     q = c.at(s_face - 4)
     sc.put(_big_arch(c, 46.0, 40.0), q.p.x, q.p.y, q.p.z - 1.0, rot=road_rot(q) + math.pi / 2, coll="Rift")
     # The tunnel: crystals along its walls and roof, denser and bigger toward the end.
-    t0, t1 = s_face + 4, S[8] + 4
+    t0, t1 = s_face + 4, P["tunnel_end"]
     k = 0
     s = t0
     while s < t1:
@@ -836,24 +839,28 @@ def cathedral(c, sc, ar, info, lp, s_in, s_out):
     """The Crystal Cathedral: the Monolith and its island, the bridges, the waterfall
     curtain, the Loop's pedestal, crystal forests round the walls and down in the abyss,
     crystals hanging from the roof, mist layers."""
-    S = ar.SEG
+    P = sc.p
     ring, centre = info["cathedral"]
     mx, my = ar.MONOLITH
-    # The island: open where the bridge (12) arrives and the ice span (14) leaves.
+    # The island: open where the bridges arrive and leave.
     # (Wherever the road crosses the rim, with room either side.)
     gaps = []
+    rt = P["island_r"]
     for smp in c.S:
         r = math.hypot(smp.p.x - mx, smp.p.y - my)
-        if 60.0 <= r <= 70.0 and abs(smp.p.z - ar.Z_CATH) < 3:
+        if rt - 6.0 <= r <= rt + 4.0 and abs(smp.p.z - ar.Z_CATH) < 3:
             gaps.append((math.atan2(smp.p.y - my, smp.p.x - mx), (smp.w / 2 + 4.0) / r))
-    island(c, sc, ar, gaps=gaps)
+    island(c, sc, ar, r_top=rt, gaps=gaps, drop=P["island_drop"], role=P["island_role"])
     monolith(c, sc, ar)
-    crystal_arch(c, sc, ar)
+    if getattr(ar, "MONO_SHORT", None):
+        crystal_arch(c, sc, ar)
     # The suspended bridge (stone arches), the ice span to the north wall.
-    arch_bridge(c, sc, S[12] - 6, S[13] + 4, 120.0, every=26.0, name="Cathedral Bridge")
-    ice_span(c, sc, S[14] - 4, S[15] + 4, depth=26.0, name="North Ice Span")
+    for k, (a, b) in enumerate(P["cath_bridges"]):
+        arch_bridge(c, sc, a, b, 120.0, every=26.0, name="Cathedral Bridge %d" % k if k else "Cathedral Bridge")
+    if P["north_span"]:
+        ice_span(c, sc, *P["north_span"], depth=26.0, name="North Ice Span")
     # The ledges round the east wall and along the north wall: icicles and lamps.
-    for a, b in ((S[8] + 8, S[11] + 20), (S[15], S[17])):
+    for a, b in P["cath_ledges"]:
         k = 0
         s = a
         while s < b:
@@ -868,19 +875,20 @@ def cathedral(c, sc, ar, info, lp, s_in, s_out):
             s += 12.0
             k += 1
     # The waterfall curtain over the north-wall gallery.
-    curtain(c, sc, ar, S[16] + 2, S[17] - 4)
-    for k in range(10):
-        q = c.at(S[16] + 6 + k * 7.5)
+    if P["curtain"]:
+        curtain(c, sc, ar, *P["curtain"])
+    for k in range(P["curtain_needles"] if P["curtain"] else 0):
+        q = c.at(P["curtain"][0] + 4 + k * 7.5)
         w = q.side(q.w / 2 + 3.0)
         sc.put(ap.needles(c, k % 3, 8.0 + 5 * (k % 2), ap.CRYSTALS[k % 4]), w.x, w.y, q.p.z - 0.5, rot=k, coll="Cathedral")
         sc.cold.append((w.x, w.y, q.p.z + 4))
         sc.shimmer.append((w.x, w.y, q.p.z + 0.5, k))
     # The causeway to the Loop: arches under it; the Loop's pedestal; crystals framing it.
-    arch_bridge(c, sc, S[17] - 2, s_in, 120.0, every=22.0, name="Causeway", lamps=10.0)
-    arch_bridge(c, sc, s_out, S[20], 120.0, every=22.0, name="Far Causeway", lamps=10.0)
+    arch_bridge(c, sc, P["causeway"], s_in, 120.0, every=22.0, name="Causeway", lamps=10.0)
+    arch_bridge(c, sc, s_out, P["far_causeway"], 120.0, every=22.0, name="Far Causeway", lamps=10.0)
     loop_pedestal(c, sc, ar, lp)
-    for k in range(int((s_in - S[17]) / 9)):
-        q = c.at(S[17] + 4 + k * 9)
+    for k in range(int((s_in - P["causeway"] - 2) / 9)):
+        q = c.at(P["causeway"] + 6 + k * 9)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 1.0))
             sc.shimmer.append((p.x, p.y, q.p.z + 0.9, k * 2 + (side > 0)))
@@ -893,7 +901,7 @@ def cathedral(c, sc, ar, info, lp, s_in, s_out):
         dl = math.hypot(dx, dy) or 1
         # Step in from the wall a little.
         px, py = x + dx / dl * 10, y + dy / dl * 10
-        if not clear(c, px, py, 10.0, [ar.MONO_SHORT]):
+        if not clear(c, px, py, 10.0, [getattr(ar, "MONO_SHORT", [])]):
             continue
         r = rnd(k * 13)
         if k % 9 == 0:
@@ -980,8 +988,8 @@ def lake(c, sc, ar, info):
     """Mirror Lake: the ice (a driving surface, part clear: the cavern's floor far below
     shows through, with everything round it reflected upside down), ice columns rising
     from it, crystals round its shores, icicles and crystals hanging from its roof."""
-    S = ar.SEG
     lring, lcentre = info["lake"]
+    short = getattr(ar, "LAKE_SHORT", [])
     cx, cy = lcentre
     # The ice: the cavern's outline pulled in a little (the walls meet it).
     inner = [(cx + (x - cx) * 0.97, cy + (y - cy) * 0.97) for x, y in lring]
@@ -992,7 +1000,7 @@ def lake(c, sc, ar, info):
         a = k * 2.399
         rr = 120 * math.sqrt(rnd(k * 3 + 2))
         x, y = cx + rr * math.cos(a), cy + rr * math.sin(a)
-        if not inside(inner, x, y) or not clear(c, x, y, 12.0, [ar.LAKE_SHORT]):
+        if not inside(inner, x, y) or not clear(c, x, y, 12.0, [short]):
             continue
         sc.put(ap.ice_column(c, cols % 4, 70.0, 5.5 + 2 * rnd(k)), x, y, ar.Z_LAKE - 0.5, rot=k, coll="Lake", mirror=True)
         sc.cold.append((x, y, ar.Z_LAKE + 3))
@@ -1006,7 +1014,7 @@ def lake(c, sc, ar, info):
         dx, dy = cx - x, cy - y
         dl = math.hypot(dx, dy) or 1
         px, py = x + dx / dl * 8, y + dy / dl * 8
-        if not clear(c, px, py, 7.0, [ar.LAKE_SHORT]):
+        if not clear(c, px, py, 7.0, [short]):
             continue
         if k % 4 == 0:
             sc.put(ap.spire_cluster(c, k % 4, 26 + 16 * rnd(k), ap.CRYSTALS[k % 4], ap.CRYSTALS[(k + 1) % 4]), px, py, ar.Z_LAKE - 1, rot=k, coll="Lake", mirror=True)
@@ -1039,10 +1047,10 @@ def lake(c, sc, ar, info):
 def ascent(c, sc, ar):
     """The Aurora Ascent: crystals up the ice tunnel, natural arches over the canyon, falls
     down its walls, then the great opening in the glacier's face."""
-    S = ar.SEG
-    s = S[24] + 44
+    P = sc.p
+    s, s_end = P["ascent_crystals"]
     k = 0
-    while s < S[26] + 6:
+    while s < s_end:
         q = c.at(s)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 3.0))
@@ -1052,13 +1060,13 @@ def ascent(c, sc, ar):
         k += 1
     # The canyon: natural ice arches across it, crystals up its walls, frozen falls,
     # lanterns along the climb.
-    for k, s in enumerate((S[26] + 14, S[26] + 46, S[27] + 10)):
+    for k, s in enumerate(P["canyon_arches"]):
         q = c.at(s)
         sc.put(ap.ice_arch_big(c, 30.0, 17.0 + 3 * k), q.p.x, q.p.y, q.p.z - 1.0, rot=road_rot(q) + math.pi / 2, coll="Canyon")
         sc.cold.append((q.p.x, q.p.y, q.p.z + 16))
-    s = S[25] + 10
+    s, s_end = P["canyon_lamps"]
     k = 0
-    while s < S[28] + 30:
+    while s < s_end:
         q = c.at(s)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 0.9))
@@ -1075,12 +1083,12 @@ def ascent(c, sc, ar):
         s += 12.0
         k += 1
     for k in range(5):
-        q = c.at(S[26] + 6 + k * 16)
+        q = c.at(P["canyon_falls"] + k * 16)
         side = 1 if k % 2 else -1
         p = q.side(side * 12.5)
         falls_sheet(c, p.x, p.y, q.p.z + 46, q.p.z + 1, 7.0, (-q.r.x * side, -q.r.y * side), name="Canyon Falls", bulge=1.5)
     # The great opening: crystals round its mouth.
-    q = c.at(S[28] + 50)
+    q = c.at(P["opening_at"])
     for side in (-1, 1):
         p = q.side(side * 26.0)
         sc.put(ap.spire_cluster(c, 1 + (side > 0), 40.0, ap.CYAN if side < 0 else ap.VIOLET, ap.TEAL), p.x, p.y, q.p.z - 4, rot=side, coll="Canyon")
@@ -1090,7 +1098,6 @@ def ascent(c, sc, ar):
 def rift(c, sc, ar):
     """The Rift itself: frozen falls down the glacier's face, crystals in it, mist far
     below, crystal gardens on the chasm's floor, the Great Rift Bridge."""
-    S = ar.SEG
     for k in range(9):
         x = -740 + k * 115.0 + 30 * rnd(k)
         smp, d = c.nearest(x, ar.face_y(x))
@@ -1114,9 +1121,10 @@ def rift(c, sc, ar):
             y = (ar.rim_y(x) + ar.face_y(x)) / 2
             sc.put(ap.garden(c, k % 4, 16.0), x + 30, y, ar.ABYSS + 4, rot=k, coll="Abyss")
     # The Great Rift Bridge: tall carved piers down into the mist, lanterns, crystals.
-    arch_bridge(c, sc, S[29] - 6, S[30] + 6, 160.0, every=28.0, pier=(9.0, 11.0), name="Great Rift Bridge", lamps=10.0)
+    g0, g1 = sc.p["great_bridge"]
+    arch_bridge(c, sc, g0, g1, 160.0, every=28.0, pier=(9.0, 11.0), name="Great Rift Bridge", lamps=10.0)
     for k in range(5):
-        q = c.at(S[29] + k * 28.0)
+        q = c.at(g0 + 6 + k * (g1 - g0 - 12) / 4)
         for side in (-1, 1):
             p = q.side(side * 8.0)
             sc.put(ap.fan(c, k % 4, 8.0, ap.CRYSTALS[(k + side) % 4]), p.x, p.y, q.p.z - 14.0, rot=road_rot(q) + (math.pi / 2) * side, coll="Bridges")
@@ -1141,11 +1149,64 @@ def game_entity(c, kind, x, y, z, **extra):
     c.entity(kind, x=gx, y=gy, z=gz, **extra)
 
 
-def build(c, ar, lp, s_in, s_out):
+def spots(c, ar, s_in, s_out):
+    """Where things go along the lap: the first Aurora Rift's, unless the course module
+    has its own (`scenery_spots(c, s_in, s_out)`, which may set any of these). Lap
+    distances are road distances (c.at)."""
     S = ar.SEG
+    L = ar.LENGTH
+    P = {
+        # Cut out of the glacier.
+        "entrance_cut": (S[6] + 45, S[8] + 6),
+        "cath_segs": (8, 19),
+        "cath_extra": [(-430.0, 0.0), (-300.0, -20.0), (-120.0, 25.0), (60.0, 30.0)],
+        "crystal_tunnel": (S[19] + 5, S[22] + 10),
+        "lake_segs": (21, 24),
+        "ice_tunnel": (S[24] + 40, S[26] + 10),
+        "canyon_cut": (S[26] + 4, S[27] + 20),
+        "opening_cut": (S[27] + 14, S[29] + 22),
+        "face_fractures": (-300.0, -200.0, -40.0),
+        # The Shattered Entrance.
+        "snow_lamps": [(20.0, S[2], 26.0), (S[30], L - 30, 30.0)],
+        "ledge": (S[1] + 30, int((S[6] - S[1]) / 10)),
+        "ice_bridge": (S[5] + 20, S[6], S[7] + 40),
+        "tunnel_end": S[8] + 4,
+        # The Cathedral.
+        "island_r": 66.0,
+        "island_drop": 0.25,
+        "island_role": "both",
+        "mono_r": 22.0,
+        "mono_foot": 28.0,
+        "cath_bridges": [(S[12] - 6, S[13] + 4)],
+        "north_span": (S[14] - 4, S[15] + 4),
+        "cath_ledges": [(S[8] + 8, S[11] + 20), (S[15], S[17])],
+        "curtain": (S[16] + 2, S[17] - 4),
+        "curtain_needles": 10,
+        "causeway": S[17] - 2,
+        "far_causeway": S[20],
+        "deco_spans": [(-130.0, 40.0, 9.0, "High Bridge"), (70.0, -34.0, 7.0, "Low Bridge")],
+        # The ascent and the Great Rift Bridge.
+        "ascent_crystals": (S[24] + 44, S[26] + 6),
+        "canyon_arches": (S[26] + 14, S[26] + 46, S[27] + 10),
+        "canyon_lamps": (S[25] + 10, S[28] + 30),
+        "canyon_falls": S[26] + 6,
+        "opening_at": S[28] + 50,
+        "great_bridge": (S[29] - 6, S[30] + 6),
+        # Hazards on the road: falling ice in the tunnel and canyon, a cracking patch
+        # at the edge of the lake's line.
+        "road_icicles": [(S[25] + 12, -3.0), (S[25] + 40, 3.5), (S[26] + 50, 0.0)],
+        "lake_crack": S[23] + 40,
+    }
+    if hasattr(ar, "scenery_spots"):
+        P.update(ar.scenery_spots(c, s_in, s_out))
+    return P
+
+
+def build(c, ar, lp, s_in, s_out):
     X0, X1, Y0, Y1 = -1000.0, 620.0, -560.0, 700.0
     sc = Scene(c, ar)
-    solid, info = caverns(c, ar, s_in, s_out)
+    sc.p = spots(c, ar, s_in, s_out)
+    solid, info = caverns(c, ar, sc.p)
     c.terrain("Land", X0, X1, Y0, Y1, 8.0, ar.natural, ar.classify, near=8.5, fade=7.0)
 
     def under(x, y):
@@ -1184,8 +1245,17 @@ def gameplay(c, sc, ar, s_in, s_out):
     """Pickups, boosts, checkpoints (with twin gates on both shortcuts), and the living
     parts: crystals that flare as you pass, ice motes in the air, falling ice, cracking
     ice on the lake, the lanterns' light."""
+    if hasattr(ar, "pickups"):
+        # The course's own pickups, boosts and checkpoints.
+        ar.pickups(c, s_in, s_out)
+    else:
+        first_pickups(c, ar, s_in, s_out)
+    living(c, sc, ar)
+
+
+def first_pickups(c, ar, s_in, s_out):
+    """The first Aurora Rift's pickups, boosts and checkpoints."""
     S = ar.SEG
-    L = ar.LENGTH
     # Zippers: off the start, down the ice wall, round the cliffside drift, the boost
     # strip into the Loop, off the lake, up the canyon, off the Great Rift Bridge, and
     # down the final descent.
@@ -1219,6 +1289,10 @@ def gameplay(c, sc, ar, s_in, s_out):
         mid = len(pts) // 2
         c.alt_gate(main_gate, route, [(x, y, z) for x, y in pts[mid - 1:mid + 2]], width=16.0)
 
+
+def living(c, sc, ar):
+    """The living parts: crystals that flare as you pass, ice motes in the air, falling
+    ice, cracking ice on the lake, the lanterns' light."""
     # Crystals that flare as you pass (along the gallery and the causeway).
     cols = ["#5ae8ff", "#b07aff", "#4affd0", "#ff6ad0"]
     for x, y, z, k in sc.shimmer:
@@ -1227,32 +1301,33 @@ def gameplay(c, sc, ar, s_in, s_out):
     c.entity("sparkles", rate=36, radius=34)
     # Falling ice: icicles that drop on a fixed beat where the roof hangs low (the ice
     # tunnel and the canyon; a ring on the road warns), and a few out over the abyss.
-    for k, (s, across) in enumerate(((S[25] + 12, -3.0), (S[25] + 40, 3.5), (S[26] + 50, 0.0))):
+    for k, (s, across) in enumerate(sc.p["road_icicles"]):
         q = c.at(s)
         p = q.side(across)
         game_entity(c, "icicle", p.x, p.y, q.p.z, top=round(q.p.z + 14.0, 1), period=9.0, offset=round(2.0 + k * 3.1, 2), warn=1.6, r=3.2)
-    ring, centre = sc_info_ring(c, ar)
+    ring, centre = sc_info_ring(c, ar, sc.p["cath_segs"])
     for k in range(5):
         a = k * 1.3
         x, y = centre[0] + 120 * math.cos(a), centre[1] + 90 * math.sin(a)
         if clear(c, x, y, 20):
             game_entity(c, "icicle", x, y, ar.Z_CATH - 20, top=round(ar.Z_CATH + 70, 1), period=7.0 + k, offset=k * 1.7, warn=0.0, r=4.0, decor=True)
     # Cracking ice: patches on the thin-ice shortcut, and one at the edge of the main line.
-    for k, f in enumerate((0.3, 0.7)):
-        pts = ar.LAKE_SHORT
+    pts = getattr(ar, "LAKE_SHORT", [])
+    for k, f in enumerate((0.3, 0.7) if pts else ()):
         x = pts[0][0] + (pts[-1][0] - pts[0][0]) * f
         y = pts[0][1] + (pts[-1][1] - pts[0][1]) * f
         game_entity(c, "thin_ice", x, y, ar.Z_LAKE + 0.3, r=6.5, hold=7.0)
-    q = c.at(S[23] + 40)
-    p = q.side(5.5)
-    game_entity(c, "thin_ice", p.x, p.y, ar.Z_LAKE + 0.45, r=5.5, hold=6.0)
+    if sc.p["lake_crack"] is not None:
+        q = c.at(sc.p["lake_crack"])
+        p = q.side(5.5)
+        game_entity(c, "thin_ice", p.x, p.y, ar.Z_LAKE + 0.45, r=5.5, hold=6.0)
     # Lanterns: the nearest few light the scene.
     for x, y, z in sc.lanterns:
         game_entity(c, "lantern", x, y, z)
 
 
-def sc_info_ring(c, ar):
-    pts = [(p[0], p[1]) for p in ar.PATH if 8 <= p[3] <= 19]
+def sc_info_ring(c, ar, segs=(8, 19)):
+    pts = [(p[0], p[1]) for p in ar.PATH if segs[0] <= p[3] <= segs[1]]
     h = hull(pts)
     cx = sum(p[0] for p in h) / len(h)
     cy = sum(p[1] for p in h) / len(h)
@@ -1319,7 +1394,7 @@ def multilevel(c, sc, ar, info):
                 ys.append(ay + (by - ay) * (x - ax) / (bx - ax))
         return min(ys), max(ys)
 
-    lo, hi = wall_hits(-130.0)
-    deco_span(c, sc, ar, ring, -138.0, lo - 6, -122.0, hi + 6, ar.Z_CATH + 40, name="High Bridge")
-    lo2, hi2 = wall_hits(70.0)
-    deco_span(c, sc, ar, ring, 64.0, lo2 - 6, 76.0, hi2 + 6, ar.Z_CATH - 34, width=7.0, name="Low Bridge")
+    for x, dz, width, name in sc.p["deco_spans"]:
+        lo, hi = wall_hits(x)
+        half = 8.0 if width >= 9.0 else 6.0
+        deco_span(c, sc, ar, ring, x - half, lo - 6, x + half, hi + 6, ar.Z_CATH + dz, width=width, name=name)

@@ -1,5 +1,6 @@
-// Aurora Rift (Snowy Peaks, course 4): it's in the world with its own night theme
-// (with the aurora) and music; it loads cleanly with the Rift Loop, its living cavern
+// Aurora Rift (v2), the first lap (Snowy Peaks' course 4 until 2026-10-24): its world slot
+// keeps the name; it has its own night theme (with the aurora) and music; it loads
+// cleanly with the Rift Loop, its living cavern
 // (falling icicles, cracking lake ice, flaring crystals, ice motes) and both shortcuts'
 // twin gates; the icicles and thin ice keep to their rules; either shortcut counts as
 // the lap it skips; and the AI drives it, through the Loop every lap.
@@ -26,7 +27,7 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "aurora_rift";
+const id = "aurora_rift_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -54,9 +55,14 @@ const THIN_ICE: [number, number, number][] = [
 ];
 
 describe("Aurora Rift", () => {
-  it("is Snowy Peaks' fourth and last course, with its own night theme and music", () => {
+  it("was Snowy Peaks' fourth and last course (the slot keeps the name), with its own night theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
-    expect(w.tracks).toEqual(["frostveil_citadel", "snowy_summit", "hearthglow_hollow", id]);
+    expect(w.tracks).toEqual([
+      "frostveil_citadel",
+      "snowy_summit",
+      "hearthglow_hollow",
+      "aurora_rift",
+    ]);
     const tiles = trackTilesOf(w);
     expect(tiles).toHaveLength(4);
     expect(tiles.some((t) => t.comingSoon)).toBe(false);

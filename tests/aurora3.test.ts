@@ -1,17 +1,18 @@
-// Aurora Rift v3, the greybox of the new lap (tools/blender/prehistoric/aurora_rift_v3.py):
-// about 20% shorter, the cave's jump and loop, the frozen lake and the Great Rift Bridge.
+// Aurora Rift, the second lap (tools/blender/prehistoric/aurora_rift.py, dressed by
+// aurora_scenery.py): about 20% shorter, the cave's jump and loop, the frozen lake and
+// the Great Rift Bridge; it drives as its greybox did.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "aurora_rift_v3";
+const id = "aurora_rift";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Aurora Rift v3 (greybox)", () => {
+describe("Aurora Rift (the second lap)", () => {
   it("loads cleanly, with its loop and its jump", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);

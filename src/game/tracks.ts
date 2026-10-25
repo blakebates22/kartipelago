@@ -115,18 +115,17 @@ export const TRACKS: TrackEntry[] = [
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch_v2" },
   },
-  // Aurora Rift's new lap (v3: about 20% shorter, more in the cave, less after it), to
-  // drive before it's dressed: ?track=aurora_rift_v3.
+  // The first Aurora Rift (the new lap replaced it on 2026-10-24): ?track=aurora_rift_v2.
   {
-    id: "aurora_rift_v3",
-    name: "Aurora Rift (v3 greybox)",
+    id: "aurora_rift_v2",
+    name: "Aurora Rift (v2)",
     description:
-      "The new lap in plain shapes: down the ice wall, the cave's jump and loop, the frozen lake and the bridge.",
-    preview: "previews/aurora_rift.jpg",
+      "Inside a cracked glacier: a crystal cathedral, a loop over the abyss, a bridge under the northern lights.",
+    preview: "previews/aurora_rift_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_rift",
     music: "aurora",
-    load: { scene: "track", packageId: "aurora_rift_v3" },
+    load: { scene: "track", packageId: "aurora_rift_v2" },
   },
   // The first Impact Depths (the new lap replaced it on 2026-10-24): ?track=impact_depths_v2.
   {
@@ -285,7 +284,7 @@ export const TRACKS: TrackEntry[] = [
     id: "aurora_rift",
     name: "Aurora Rift",
     description:
-      "Inside a cracked glacier: a crystal cathedral, a loop over the abyss, a bridge under the northern lights.",
+      "Into a cracked glacier: round the crystal Monolith, jump the broken bridge, loop the loop, out over the Rift.",
     preview: "previews/aurora_rift.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_rift",
