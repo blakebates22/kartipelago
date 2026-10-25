@@ -149,7 +149,7 @@ def lanes(c, sc):
     """The branch roads, built from their laps' own points: open (and a hair lower than
     the main road) where they leave and rejoin it, railed between, bored through rock
     in their tunnels, raised clear of the land over drops."""
-    import dry_gulch
+    import dry_gulch_v2 as dry_gulch  # lane() lives with the first Dry Gulch lap
 
     c.lane_samples = []
     c.lane_ways = []

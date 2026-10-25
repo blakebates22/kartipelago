@@ -1142,6 +1142,115 @@
           }
         }
       }
+    },
+    {
+      "id": "emerald_kingdom",
+      "name": "Emerald Kingdom",
+      "description": "An overgrown jungle castle and its ruins in late-afternoon sun: mossy carved stone, giant trees and roots, green banners with a gold spiral, turquoise rivers and falls, glowing green crystals in the caves, and a green dragon on the old watchtower",
+      "environment": {
+        "sky": "#7ab8d8",
+        "fog": {
+          "enabled": true,
+          "color": "#bcd8c4",
+          "near": 380,
+          "far": 2300
+        },
+        "sun": {
+          "color": "#ffe4b0",
+          "intensity": 2.5,
+          "direction": [-0.55, 0.62, 0.55]
+        },
+        "ambient": {
+          "sky": "#bcdcd0",
+          "ground": "#4a6a3a",
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#3a86c4",
+          "horizon": "#f2e2b4",
+          "bottom": "#c4dcc0",
+          "sun": {
+            "color": "#fff6d8",
+            "size": 9,
+            "glow": "#ffe0a0",
+            "elevation": 22
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#fff8ec",
+            "shade": "#c8d8d4",
+            "seed": 621,
+            "low": 3,
+            "high": 28,
+            "drift": 0.004
+          },
+          "hills": {
+            "color": "#3e6a4a",
+            "far": "#9ac0ac",
+            "height": 12,
+            "seed": 623,
+            "layers": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "moonstone_kingdom",
+      "name": "Moonstone Kingdom",
+      "description": "A moonlit violet kingdom under a huge pale moon: moonstone walls and violet spires, purple crescent banners, a lake glowing blue, floating islands with castles and falls, crystal caverns, an observatory with a great armillary sphere, and a purple dragon on the palace tower",
+      "environment": {
+        "sky": "#2a2a6a",
+        "fog": {
+          "enabled": true,
+          "color": "#3a3a78",
+          "near": 380,
+          "far": 2300
+        },
+        "sun": {
+          "color": "#c8d4ff",
+          "intensity": 1.8,
+          "direction": [0.5, 0.62, -0.6]
+        },
+        "ambient": {
+          "sky": "#9a9ae0",
+          "ground": "#3a3060",
+          "intensity": 1.3
+        },
+        "skyDome": {
+          "top": "#120e3a",
+          "horizon": "#5a4a9a",
+          "bottom": "#3a3478",
+          "sun": {
+            "color": "#f4f0ff",
+            "size": 22,
+            "glow": "#8a8ad8",
+            "elevation": 28,
+            "face": "moon"
+          },
+          "clouds": {
+            "count": 22,
+            "color": "#6a62b0",
+            "shade": "#2a2460",
+            "seed": 721,
+            "low": 3,
+            "high": 26,
+            "drift": 0.003
+          },
+          "hills": {
+            "color": "#2a2458",
+            "far": "#5a52a0",
+            "height": 12,
+            "seed": 723,
+            "layers": 3
+          },
+          "stars": {
+            "count": 220,
+            "color": "#f0f0ff",
+            "seed": 725,
+            "low": 6
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -6752,6 +6861,237 @@
       }
     },
     {
+      "id": "em_road",
+      "name": "Overgrown Flagstones",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "em_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "em_setts",
+      "name": "Old Kingdom Setts",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "em_setts.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "em_kerb",
+      "name": "Mossy Kerb",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "em_kerb.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "em_ledge",
+      "name": "Jungle Path",
+      "theme": "emerald_kingdom",
+      "surface": "dirt",
+      "image": "em_ledge.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
+      "id": "em_verge",
+      "name": "Leafy Verge",
+      "theme": "emerald_kingdom",
+      "surface": "dirt",
+      "image": "em_verge.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "em_jungle_grass",
+      "name": "Jungle Grass",
+      "theme": "emerald_kingdom",
+      "surface": "grass",
+      "image": "em_jungle_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "em_forest_floor",
+      "name": "Forest Floor",
+      "theme": "emerald_kingdom",
+      "surface": "loose_sand",
+      "image": "em_forest_floor.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "em_river_bank",
+      "name": "River Pebbles",
+      "theme": "emerald_kingdom",
+      "surface": "sand",
+      "image": "em_river_bank.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "em_cliff",
+      "name": "Mossy Crag",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_cliff.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "em_cliff_shade",
+      "name": "Shaded Mossy Crag",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_cliff_shade.png",
+      "wrap": "repeat",
+      "tileMetres": 14
+    },
+    {
+      "id": "em_ruin_wall",
+      "name": "Ruined Ashlar",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_ruin_wall.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "em_temple_block",
+      "name": "Carved Temple Stone",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_temple_block.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "em_moss_stone",
+      "name": "Moss-Grown Statue Stone",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_moss_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "em_roof_moss",
+      "name": "Mossy Slate",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_roof_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "em_wood_dark",
+      "name": "Old Timber",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_wood_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "em_root_bark",
+      "name": "Giant Root Bark",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_root_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "em_canvas_green",
+      "name": "Green Canvas",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_canvas_green.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "em_plaster_moss",
+      "name": "Mossy Plaster",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_plaster_moss.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "em_banner",
+      "name": "Emerald Banner",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "em_crystal",
+      "name": "Glow Crystal",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_crystal.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.3,
+        "pulsePeriod": 3.6
+      }
+    },
+    {
+      "id": "em_crystal_violet",
+      "name": "Violet Glow Crystal",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_crystal_violet.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.9,
+        "pulse": 0.3,
+        "pulsePeriod": 4.2
+      }
+    },
+    {
+      "id": "em_dragon_green",
+      "name": "Green Dragon Scales",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_dragon_green.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "em_dragon_wing",
+      "name": "Green Dragon Wing",
+      "theme": "emerald_kingdom",
+      "surface": "wall",
+      "image": "em_dragon_wing.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
       "id": "frontier_road",
       "name": "Frontier Road",
       "theme": "dragon_canyon",
@@ -7293,6 +7633,205 @@
         "pulse": 0.3,
         "pulsePeriod": 3.5
       }
+    },
+    {
+      "id": "moon_paving",
+      "name": "Moonstone Paving",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "moon_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "moon_tiles",
+      "name": "Moon Tiles",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "moon_tiles.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "moon_kerb",
+      "name": "Moonstone Kerb",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "moon_kerb.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "moon_grass",
+      "name": "Moonlit Grass",
+      "theme": "moonstone_kingdom",
+      "surface": "grass",
+      "image": "moon_grass.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "moon_rock",
+      "name": "Moon Crag",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_rock.png",
+      "wrap": "repeat",
+      "tileMetres": 12
+    },
+    {
+      "id": "moon_stone",
+      "name": "Moonstone Ashlar",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_stone.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "moon_stone_dark",
+      "name": "Old Moonstone",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_stone_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "moon_slate",
+      "name": "Violet Slate",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_slate.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "moon_silver",
+      "name": "Silver Trim",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_silver.png",
+      "wrap": "repeat",
+      "tileMetres": 1,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "moon_window",
+      "name": "Moonlit Windows",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_window.png",
+      "wrap": "repeat",
+      "tileMetres": 4,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.8,
+        "flicker": 0.05
+      }
+    },
+    {
+      "id": "moon_banner",
+      "name": "Crescent Banner",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_banner.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "sway": 0.06
+      }
+    },
+    {
+      "id": "moon_lake",
+      "name": "Glowing Lake",
+      "theme": "moonstone_kingdom",
+      "surface": "deep_water",
+      "image": "moon_lake.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.01,
+        "wave": 0.04,
+        "wavePeriod": 6,
+        "opacity": 0.9,
+        "glow": 0.45
+      }
+    },
+    {
+      "id": "moon_lake_shallow",
+      "name": "Glowing Shallows",
+      "theme": "moonstone_kingdom",
+      "surface": "water",
+      "image": "moon_lake_shallow.png",
+      "wrap": "repeat",
+      "tileMetres": 14,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.01,
+        "wave": 0.04,
+        "wavePeriod": 6,
+        "opacity": 0.86,
+        "glow": 0.45
+      }
+    },
+    {
+      "id": "moon_crystal",
+      "name": "Blue Moon Crystal",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_crystal.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.95,
+        "pulse": 0.3,
+        "pulsePeriod": 3.8
+      }
+    },
+    {
+      "id": "moon_crystal_violet",
+      "name": "Violet Moon Crystal",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "moon_crystal_violet.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.95,
+        "pulse": 0.3,
+        "pulsePeriod": 4.4
+      }
+    },
+    {
+      "id": "dragon_purple",
+      "name": "Purple Dragon Scales",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "dragon_purple.png",
+      "wrap": "repeat",
+      "tileMetres": 1.5
+    },
+    {
+      "id": "dragon_purple_wing",
+      "name": "Purple Dragon Wing",
+      "theme": "moonstone_kingdom",
+      "surface": "wall",
+      "image": "dragon_purple_wing.png",
+      "wrap": "repeat",
+      "tileMetres": 4
     },
     {
       "id": "cdf_paving",

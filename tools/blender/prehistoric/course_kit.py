@@ -77,6 +77,11 @@ class Sample:
         return self.p + self.r * o + Vector((0, 0, -o * math.tan(math.radians(self.bank)) + up))
 
 
+# A repaint: library material id -> the id to paint instead (Course.lib keeps the old
+# material's surface). Dragon Canyon's Emerald Kingdom paint sets it.
+MAT_REMAP = {}
+
+
 class Course:
     def __init__(self, track_id, name, environment, fog=True):
         bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -127,6 +132,13 @@ class Course:
         return ob
 
     def lib(self, mat_id, surface=None):
+        new = MAT_REMAP.get(mat_id)
+        if new:
+            # A repaint (MAT_REMAP): the new texture, but always the old one's surface, so
+            # the driving can't change.
+            if surface is None:
+                surface = materials.entry(mat_id)["surface"]
+            mat_id = new
         return materials.get_material(materials.entry(mat_id), surface)
 
     def assign(self, ob, mat, faces=None, size=None):

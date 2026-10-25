@@ -5042,6 +5042,12 @@ import keep_textures  # noqa: E402
 MATERIALS += keep_textures.materials(sys.modules[__name__])
 THEMES.append(keep_textures.THEME)
 
+# Dragon Canyon's new paint, the Emerald Kingdom (Dragon Kingdom, course 2, Oct 25).
+import emerald_textures  # noqa: E402
+
+MATERIALS += emerald_textures.materials(sys.modules[__name__])
+THEMES.append(emerald_textures.THEME)
+
 # Dragon Canyon (Dragon Kingdom, course 2).
 import dcanyon_textures  # noqa: E402
 
@@ -5059,6 +5065,12 @@ import ember_textures  # noqa: E402
 
 MATERIALS += ember_textures.materials(sys.modules[__name__])
 THEMES.append(ember_textures.THEME)
+
+# Celestial Dragon Festival's new paint, the Moonstone Kingdom (course 4, Oct 25).
+import moon_textures  # noqa: E402
+
+MATERIALS += moon_textures.materials(sys.modules[__name__])
+THEMES.append(moon_textures.THEME)
 
 # Celestial Dragon Festival (Dragon Kingdom, course 4).
 import cdf_textures  # noqa: E402

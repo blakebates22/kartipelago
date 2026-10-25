@@ -132,7 +132,7 @@ def area_of(biome):
 def shortcut(c, sc):
     """The shortcut's road: through the gateway, along the causeway over the black pool,
     round onto the volcanic causeway."""
-    import dry_gulch
+    import dry_gulch_v2 as dry_gulch  # lane() lives with the first Dry Gulch lap
 
     n = len(L.SHORTCUT_LINE)
     pts = [(x, y, L.shortcut_z(i / (n - 1))) for i, (x, y) in enumerate(L.SHORTCUT_LINE)]

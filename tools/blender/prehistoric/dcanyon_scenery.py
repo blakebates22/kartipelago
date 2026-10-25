@@ -250,7 +250,7 @@ def light(c, sc):
 
 
 def shortcut(c, sc):
-    import dry_gulch
+    import dry_gulch_v2 as dry_gulch  # lane() lives with the first Dry Gulch lap
 
     pts, a, b = L.SERVICE, L.SERVICE_A, L.SERVICE_B
     sc.short = (pts, a, b)

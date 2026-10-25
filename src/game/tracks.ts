@@ -191,6 +191,19 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "volcano_isle" },
   },
+  // The first Dragon Canyon paint (the desert frontier; the Emerald Kingdom repaint replaced
+  // it on 2026-10-25): ?track=dragon_canyon_v2.
+  {
+    id: "dragon_canyon_v2",
+    name: "Dragon Canyon (v2)",
+    description:
+      "Golden-hour hairpins stacked up the cliffs. The most technical drifting course in the game.",
+    preview: "previews/dragon_canyon_v2.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragon_canyon",
+    music: "dragon_canyon",
+    load: { scene: "track", packageId: "dragon_canyon_v2" },
+  },
   // The first Snow Dragon Pass (the painted v3 lap, Emberdeep Hold, replaced it on
   // 2026-10-25): ?track=snow_dragon_pass_v2.
   {
@@ -394,12 +407,14 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "dragon_canyon",
+    // Blake, Oct 25: repainted as the Emerald Kingdom, an overgrown jungle castle and its
+    // ruins (the same lap; the first paint is dragon_canyon_v2).
     name: "Dragon Canyon",
     description:
-      "Golden-hour hairpins stacked up the cliffs. The most technical drifting course in the game.",
+      "Hairpins stacked up the jungle cliffs, through the ruins and the crystal caverns, under the green dragon's tower. The most technical drifting course in the game.",
     preview: "previews/dragon_canyon.jpg",
     modes: ["race", "timeTrial"],
-    theme: "dragon_canyon",
+    theme: "emerald_kingdom",
     music: "dragon_canyon",
     load: { scene: "track", packageId: "dragon_canyon" },
   },

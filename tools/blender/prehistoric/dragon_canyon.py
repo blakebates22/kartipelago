@@ -1,5 +1,7 @@
-# Dragon Canyon: Dragon Kingdom, course 2. The kingdom's desert frontier at golden hour,
-# and the most technical, drift-hungry lap in the game.
+# Dragon Canyon: Dragon Kingdom, course 2, painted as the Emerald Kingdom (Blake's boards,
+# Oct 25: an overgrown jungle castle and its ruins; emerald.py). The same lap, land and
+# collision as the first paint (kept as dragon_canyon_v2), and the most technical,
+# drift-hungry lap in the game.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/dragon_canyon.py      (the bpy module)
@@ -47,7 +49,13 @@ S = L.S
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Dragon Canyon", "dragon_canyon")
+    import dcanyon_props  # noqa: E402
+    import dcanyon_town  # noqa: E402
+    import emerald  # noqa: E402
+    import isles_props  # noqa: E402
+
+    c = kit.Course(TRACK_ID, "Dragon Canyon", "emerald_kingdom")
+    emerald.install(dcanyon_town, isles_props, dcanyon_props)
     c.route(ROUTE, width=14.0, bank=6.0)
     kerb = ("kerb_redwhite", "road")
     timber = ("weathered_timber", "wall")

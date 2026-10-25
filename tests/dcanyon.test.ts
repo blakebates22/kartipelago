@@ -19,7 +19,9 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "dragon_canyon";
+// The first paint, kept as dragon_canyon_v2 since the Emerald Kingdom repaint took over
+// the id (the same lap: see emerald.test.ts).
+const id = "dragon_canyon_v2";
 const readerFor =
   (track: string): PackageReader =>
   async (file) => {
@@ -83,13 +85,18 @@ function twistiness(points: { x: number; z: number }[]) {
   return { perKm: ((total * 180) / Math.PI / length) * 1000, hairpins, length };
 }
 
-describe("Dragon Canyon", () => {
+describe("Dragon Canyon (v2)", () => {
   it("is the Dragon Kingdom's second course, with its own theme and music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks).toEqual(["dragon_isles", id, "snow_dragon_pass", "celestial_dragon_festival"]);
+    expect(w.tracks).toEqual([
+      "dragon_isles",
+      "dragon_canyon",
+      "snow_dragon_pass",
+      "celestial_dragon_festival",
+    ]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
-    expect(t.theme).toBe(id);
+    expect(t.theme).toBe("dragon_canyon");
     expect(SONGS[t.music]?.id).toBe("dragon_canyon");
     expect(SONGS.dragon_canyon!.bpm).toBeGreaterThan(SONGS.dragon!.bpm);
     const p = await loadTrackPackage(reader, { visual: false });
@@ -133,7 +140,12 @@ describe("Dragon Canyon", () => {
     // rebuilt from Blake's driving notes to be nearly all bends, turn harder still: they're
     // the exceptions.)
     const others = VISIBLE_WORLDS.flatMap((w) => w.tracks).filter(
-      (t) => t !== id && t !== "bonebog_pyramid" && t !== "oasis_haven" && t !== "snow_dragon_pass",
+      (t) =>
+        t !== id &&
+        t !== "dragon_canyon" && // the same lap, repainted
+        t !== "bonebog_pyramid" &&
+        t !== "oasis_haven" &&
+        t !== "snow_dragon_pass",
     );
     for (const t of others) {
       const p = await loadTrackPackage(readerFor(t), { visual: false }).catch(() => undefined);

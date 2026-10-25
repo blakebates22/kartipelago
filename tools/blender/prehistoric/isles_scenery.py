@@ -288,7 +288,7 @@ def light(c, sc):
 
 def shortcut(c, sc):
     """The Courtyard Passage: straight through the temple's courtyard."""
-    import dry_gulch
+    import dry_gulch_v2 as dry_gulch  # lane() lives with the first Dry Gulch lap
 
     dry_gulch.lane(c, "Courtyard Passage", L.SHORTCUT, "temple_flag", "road", width=11.0, shoulder=1.0,
                    shoulder_mat=("flowerbed", "grass"), step=4.0)
