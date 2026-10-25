@@ -1,7 +1,7 @@
 # Dragon Isles: Dragon Kingdom, course 1. A festival lap of a kingdom ruled by dragons.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/dragon_isles.py      (the bpy module)
+#   python tools/blender/prehistoric/dragon_isles_v2.py      (the bpy module)
 #
 # A lap of about 2.7 km (around two minutes) on a sunny festival day, round a kingdom
 # of karst mountains rising out of a turquoise lagoon. A great jade-and-gold dragon flies
@@ -39,14 +39,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import isles_land as L  # noqa: E402
 
-TRACK_ID = "dragon_isles"
+TRACK_ID = "dragon_isles_v2"
 
 ROUTE = kit.route_points_by(L.PATH, L.road_z, every=8.0, width=L.road_w)
 S = L.S
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Dragon Isles", "dragon_isles")
+    c = kit.Course(TRACK_ID, "Dragonspire Keep (v2)", "dragon_isles")
     c.route(ROUTE, width=16.0, bank=7.0)
     curb = ("stone_curb", "road")
     bal = ("isle_balustrade", "wall")

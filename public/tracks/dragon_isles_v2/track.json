@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "dragon_isles",
-  "name": "Dragon Isles",
+  "id": "dragon_isles_v2",
+  "name": "Dragonspire Keep (v2)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
