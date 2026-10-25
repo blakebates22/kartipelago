@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "snow_dragon_pass",
-  "name": "Snow Dragon Pass",
+  "id": "snow_dragon_pass_v2",
+  "name": "Snow Dragon Pass (v2)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",

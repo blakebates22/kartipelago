@@ -2,7 +2,7 @@
 # blizzard, and a lap that splits twice: half of it shared, half of it a choice of roads.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/snow_dragon_pass.py      (the bpy module)
+#   python tools/blender/prehistoric/snow_dragon_pass_v2.py      (the bpy module)
 #
 # A network of mountain roads (about 2.35-2.4 km a lap, whichever way you go):
 #
@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import snow_land as L  # noqa: E402
 
-TRACK_ID = "snow_dragon_pass"
+TRACK_ID = "snow_dragon_pass_v2"
 M = L.MAIN
 
 ROUTE = kit.route_points_by([(p[0], p[1], 0.0, 0) for p in M.path], lambda d, seg=None: L.road_z(M, d), every=6.0,
@@ -44,7 +44,7 @@ ROUTE = kit.route_points_by([(p[0], p[1], 0.0, 0) for p in M.path], lambda d, se
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Snow Dragon Pass", "snow_dragon_pass")
+    c = kit.Course(TRACK_ID, "Snow Dragon Pass (v2)", "snow_dragon_pass")
     c.route(ROUTE, width=16.0, bank=5.0)
     snowbank = ("sdp_snowbank", "packed_snow")
     timber = ("weathered_timber", "wall")
