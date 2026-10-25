@@ -52,6 +52,24 @@ Every note gets:
 
 Notes are pink (red if important) until they're done, then green with a tick.
 
+## Clips (F4)
+
+On the dev server the game keeps filming the last 20-40 seconds of play, with the sound.
+Press **F4** (fn + F4 on a Mac) anywhere, in a race or in the review tool, and that stretch
+is saved:
+
+```
+reviews/<trackId>/clips/<date>_<time>.mp4    the video (or .webm), the HUD in it, and a
+                                             strip of readings under it (time, speed,
+                                             height, vertical speed, ground, zipper, boost)
+reviews/<trackId>/clips/<date>_<time>.json   your kart's whole state every frame
+```
+
+A note appears top left saying where it went. The clips folder isn't committed (videos are
+big); tell Claude the file name and Claude reads it from the folder. Claude watches the
+video by pulling frames out of it, and can replay the moment from the JSON. `?noclips`
+turns the recorder off. The code is `src/debug/clipRecorder.ts`.
+
 ## Where notes go (for Claude)
 
 With the dev server running, each note is written straight into the repo:

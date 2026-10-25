@@ -9,6 +9,8 @@ import path from "node:path";
  *   POST   /__review/<track>/note           { trackName, note, shot? }  -> the saved note
  *   DELETE /__review/<track>/note/<id>
  *   GET    /__review/<track>/shots/<file>
+ *   POST   /__clips/<track>/<file>         a clip from the F4 recorder (debug/clipRecorder.ts),
+ *                                          saved as reviews/<track>/clips/<file>
  */
 export function reviewStore() {
   return {
@@ -30,6 +32,25 @@ export function reviewStore() {
         );
       };
       server.middlewares.use((req, res, next) => {
+        const c = /^\/__clips\/([^/?]+)\/([^/?]+)$/.exec(req.url ?? "");
+        if (c && req.method === "POST") {
+          const track = decodeURIComponent(c[1]);
+          const file = decodeURIComponent(c[2]);
+          if (!safe(track) || !/^[A-Za-z0-9_-]+\.(webm|mp4|json)$/.test(file)) {
+            res.statusCode = 400;
+            return res.end("bad clip name");
+          }
+          const parts = [];
+          req.on("data", (b) => parts.push(b));
+          req.on("end", () => {
+            const dir = path.join(root, track, "clips");
+            fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(path.join(dir, file), Buffer.concat(parts));
+            server.config.logger.info(`clip: saved reviews/${track}/clips/${file}`);
+            res.end("ok");
+          });
+          return;
+        }
         const m = /^\/__review\/([^/?]+)(?:\/(note|shots)(?:\/([^/?]+))?)?/.exec(req.url ?? "");
         if (!m) return next();
         const track = decodeURIComponent(m[1]);

@@ -20,6 +20,7 @@ import { createInput } from "./core/input";
 import { createStage } from "./render/stage";
 import { createDebug } from "./debug";
 import { createBoostLab } from "./debug/boostLab";
+import { createClipRecorder } from "./debug/clipRecorder";
 import { createAudioEngine } from "./audio/engine";
 import { createSfx } from "./audio/sfx";
 import { createUiSounds } from "./audio/uiSounds";
@@ -211,6 +212,18 @@ else if (fromUrl) {
   screens.go(loadingScreen(game));
 } else screens.go(bootScreen(game));
 
+// F4 saves the last 20-40 s of play as a video (dev server only; ?noclips turns it off).
+const clips =
+  import.meta.env.DEV && !PARAMS.has("noclips")
+    ? createClipRecorder({
+        view: stage.renderer.domElement,
+        hud: app.querySelector("canvas.ui-layer"),
+        audio: () => audio.recordStream(),
+        session: () => game.session,
+        trackId: () => game.session && game.selection.trackId,
+      })
+    : undefined;
+
 // ---------------------------------------------------------------- the loop
 
 const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
@@ -224,6 +237,7 @@ const loop = createLoop(tuning.loop.physicsHz, tuning.loop.maxStepsPerFrame, {
     screens.frame(dt);
     screens.render3d(alpha, frameSeconds);
     screens.draw(dt);
+    clips?.frame();
   },
 });
 

@@ -342,9 +342,23 @@ export function createAudioEngine(initial: AudioSettings) {
     });
   }
 
+  let tap: MediaStreamAudioDestinationNode | undefined;
+
   return {
     get context() {
       return ctx;
+    },
+    /**
+     * Everything you hear (before the master volume), as a stream: for the dev clip
+     * recorder (debug/clipRecorder.ts). Made the first time it's asked for.
+     */
+    recordStream(): MediaStream | undefined {
+      if (!ctx || !buses) return undefined;
+      if (!tap) {
+        tap = ctx.createMediaStreamDestination();
+        for (const b of Object.values(buses)) b.connect(tap);
+      }
+      return tap.stream;
     },
     sample,
     /** Fetch and decode a recorded sound ahead of time. */
