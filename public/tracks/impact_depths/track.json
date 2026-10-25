@@ -773,5 +773,5 @@
       "radius": 40
     }
   ],
-  "generator": "tools/blender/prehistoric/impact_depths_v3.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/impact_depths.py (re-running it rewrites entities)"
 }

@@ -67,16 +67,13 @@ async function holes(id: string) {
   return found;
 }
 
-// Known, waiting for a rebuild: at the new Impact Depths' pit edge the underfloor steps
-// 66 m in one cell with no face between (course_kit's underfloor_flat now seals steps).
-const KNOWN: Record<string, string[]> = { impact_depths: ["165,-58"] };
-
 describe("no holes in the world", () => {
   for (const id of [
     "frostveil_citadel",
     "snowy_summit",
     "hearthglow_hollow",
     "aurora_rift",
+    "aurora_rift_v2",
     "canyon_dash",
     "oasis_haven",
     "dry_gulch",
@@ -94,7 +91,7 @@ describe("no holes in the world", () => {
     it(
       id,
       async () => {
-        const h = (await holes(id)).filter((k) => !KNOWN[id]?.includes(k));
+        const h = await holes(id);
         expect(h.slice(0, 20), `${h.length} holes`).toEqual([]);
       },
       120000,
