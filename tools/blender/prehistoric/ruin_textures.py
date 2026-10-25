@@ -84,6 +84,26 @@ EMBER = {
     },
 }
 
+FROST = {
+    "id": "frost_ruins",
+    "name": "Frostveil in Ruins",
+    "description": "The citadel after the dragons came: moonlight through smoke, fires burning in the snow, the Bridge of Giants fallen into the valley",
+    "environment": {
+        "sky": "#3a3466",
+        "fog": {"enabled": True, "color": "#8a7a9a", "near": 120, "far": 760},
+        "sun": {"color": "#c4c6f0", "intensity": 1.7, "direction": [-0.35, 0.8, 0.48]},
+        "ambient": {"sky": "#b0a8d8", "ground": "#4a3a52", "intensity": 1.4},
+        "skyDome": {
+            "top": "#1a1a48",
+            "horizon": "#c8906a",
+            "bottom": "#7a6a8a",
+            "sun": {"color": "#f4f0ff", "size": 9, "glow": "#d8b0a0", "elevation": 24},
+            "clouds": {"count": 34, "color": "#8a7a8a", "shade": "#4a3a4a", "seed": 319, "low": 8, "high": 26, "drift": 0.006},
+            "hills": {"color": "#5a5a90", "far": "#9a8aa8", "height": 17, "seed": 31, "layers": 3},
+        },
+    },
+}
+
 
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle

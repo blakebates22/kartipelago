@@ -32,9 +32,15 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "frostveil_citadel"
+# The ruin (frostveil_ruins.py): the Bridge of Giants has fallen into the start valley and
+# the climb, the Serpent Gate and the high town are cut off; the lap runs up the bridge's
+# rubble across the east hillside to the frozen gorge's jump and back through the lower
+# town. Everything else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "frostveil_citadel_ruin" if RUIN else "frostveil_citadel"
 PLATEAU_Z = 54.0
 
 # ---------------------------------------------------------------- the layout
@@ -74,14 +80,55 @@ LAYOUT = [
     ("R", 40, 90),  # 30 round onto the start straight
     ("S", 18),  # 31 (stretched to close the loop)
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 29, 31, START, 90.0)
+STANDARD_LAYOUT = list(LAYOUT)
+STANDARD_PATH = kit.close_turtle(STANDARD_LAYOUT, 29, 31, START, 90.0)[1]
+if RUIN:
+    # Blake: at least half as long, and fast like the beach courses, up ramps of castle
+    # rubble. The start straight (a jink round the first fallen stones), a right onto the
+    # bridge's fallen spans (0-8: rubble humps climbing the east hillside), a rubble
+    # kicker over a broken arch (9-11), round onto the old run-up to the gorge jump, which
+    # is the course's own (13-15), and back west through the lower town in S-bends
+    # (16-23). The head's two straights are solved so the run-up is exactly where it was.
+    LAYOUT = [
+        ("S", 51.96326700849578),  # 0  the start straight, north
+        ("L", 36, 20),  # 1  a jink round the bridge's first fallen stones
+        ("R", 36, 40),  # 2
+        ("L", 36, 20),  # 3
+        ("R", 34, 90),  # 4  right, under where the bridge stood
+        ("S", 13.144099656144341),  # 5  up onto its fallen spans
+        ("L", 40, 30),  # 6  across the east hillside over the rubble
+        ("R", 40, 60),  # 7
+        ("L", 40, 30),  # 8
+        ("S", 24),  # 9  a rubble ramp up a broken arch...
+        ("S", 10),  # 10 ...and off its end (the gap)
+        ("S", 30),  # 11 the landing
+        ("R", 40, 90),  # 12 round onto the old run-up
+        ("S", 60),  # 13 the run-up (the course's own)
+        ("S", 16),  # 14 the gap over the frozen gorge
+        ("S", 36),  # 15 the landing
+        ("R", 40, 90),  # 16 into the lower town
+        ("S", 16),  # 17
+        ("L", 36, 60),  # 18 S-bends through its rubble
+        ("R", 36, 120),  # 19
+        ("L", 36, 60),  # 20
+        ("S", 10.0),  # 21 (closes the loop)
+        ("R", 40, 90),  # 22 round onto the start
+        ("S", 16.8),  # 23 (closes the loop)
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 21, 23, START, 90.0)
+else:
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 29, 31, START, 90.0)
 SEG = kit.segment_starts(PATH)
-LIP = SEG[26]
-LAND = SEG[27]
+STANDARD_SEG = kit.segment_starts(STANDARD_PATH)
+LIP = SEG[14 if RUIN else 26]
+LAND = SEG[15 if RUIN else 27]
+# The ruin's rubble kicker: off a broken arch, over a short gap.
+KICK_LIP = SEG[10] if RUIN else None
+KICK_LAND = SEG[11] if RUIN else None
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 
 # Heights along the lap (metres along it, height); the road eases between them.
-ANCHORS = [
+ANCHORS = [] if RUIN else [
     (0.0, 0.0),
     (SEG[1] + 10, 0.4),
     (SEG[7], 31.5),
@@ -97,6 +144,36 @@ ANCHORS = [
     (SEG[30], 1.5),
     (LENGTH, 0.0),
 ]
+if RUIN:
+    # Up the rubble over the east hillside, off the kicker, round onto the old run-up
+    # (the jump's heights are the course's own), down through the lower town.
+    ANCHORS = [
+        (0.0, 0.0),
+        (SEG[4], 3.0),
+        (SEG[6], 11.0),
+        (SEG[8], 22.0),
+        (SEG[9], 25.0),
+        (KICK_LIP, 29.0),
+        (KICK_LAND, 25.5),
+        (SEG[12], 26.0),
+        (SEG[13], 23.0),
+        (LIP, 21.5),
+        (LAND, 14.5),
+        (SEG[16], 11.5),
+        (SEG[22], 1.5),
+        (LENGTH, 0.0),
+    ]
+# The ruin's humps: rubble the road rides over (distance along the lap, height, length).
+HUMPS = [(SEG[5] + 6, 1.6, 22), (SEG[7] + 10, 1.8, 24), (SEG[8] + 4, 1.4, 20), (SEG[17] + 10, 1.6, 22), (SEG[19] + 30, 1.8, 24), (SEG[21] + 4, 1.4, 20)] if RUIN else []
+
+
+def hump(d):
+    z = 0.0
+    for at, h, ln in HUMPS:
+        t = (d - at) / (ln / 2)
+        if -1 < t < 1:
+            z += h * 0.5 * (1 + math.cos(math.pi * t))
+    return z
 
 
 def _lin(d):
@@ -112,10 +189,18 @@ def road_z(d, seg):
     # height is smoothed over 30 m, so grades change gently.
     if LIP - 14 <= d <= LAND + 14:
         return _lin(d)
-    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+    if RUIN and KICK_LIP - 24 <= d <= KICK_LAND + 10:
+        return _lin(d)
+    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11 + hump(d)
 
 
 def road_w(d, seg):
+    if RUIN:
+        if seg in (11, 15):
+            return 24.0  # wide landings
+        if seg in (9, 13) and (d > SEG[10] - 24 if seg == 9 else d > LIP - 34):
+            return 18.0
+        return 15.0
     if seg == 27:
         return 24.0  # a wide landing
     if seg == 25 and d > LIP - 34:
@@ -230,8 +315,27 @@ def land(x, y):
     return h
 
 
+# The ruin's kicker jumps a broken arch's gap: a trench across the hillside under it
+# (bottomless, like the gorge), so the jump isn't into the hill.
+KICK_GAP = None
+if RUIN:
+    _gp = [p for p in PATH if p[3] == 10]
+    KICK_GAP = ((_gp[0][0] + _gp[-1][0]) / 2, (_gp[0][1] + _gp[-1][1]) / 2)
+
+
+def trench(x, y):
+    """0..1: how far into the kicker's trench (x, y) is."""
+    if KICK_GAP is None:
+        return 0.0
+    d = abs(x - KICK_GAP[0])  # the gap runs east: the trench runs north-south across it
+    return sm((7.0 - d) / 4.0) * sm((24.0 - abs(y - KICK_GAP[1])) / 6.0)
+
+
 def natural(x, y):
     h = land(x, y)
+    k = trench(x, y)
+    if k > 0:
+        h = lerp(h, 12.0, k)
     d, hw, bed = channel(x, y)
     if d < hw + 12:
         h = lerp(h, bed, sm((hw + 12 - d) / 12))
@@ -265,7 +369,7 @@ def classify(c, n, info):
     if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 18 and c.z > smp.p.z - 1.0:
         return None
     # The chasm's and gorges' floors are bottomless: touching them puts you back.
-    if c.z < -12 or (c.z < 0 and _nearest(c.x, c.y, GORGE)[0] < 10):
+    if c.z < -12 or (c.z < 0 and _nearest(c.x, c.y, GORGE)[0] < 10) or (trench(c.x, c.y) > 0.5 and c.z < 18):
         return ("frost_rock", "abyss")
     if n.z < 0.62:
         return ("frost_cliff" if (int(c.z / 7) + int(c.x / 40)) % 2 else "frost_rock", "wall")
@@ -280,7 +384,7 @@ def classify(c, n, info):
 def in_abyss(x, y, margin=0.0):
     """Over the chasm, the north gorge or the frozen gorge (and their walls)."""
     d, hw, bed = channel(x, y)
-    return d < hw + 13 + margin or _nearest(x, y, GORGE)[0] < 16 + margin
+    return d < hw + 13 + margin or _nearest(x, y, GORGE)[0] < 16 + margin or trench(x, y) > 0.3
 
 
 def underfloor_z(x, y):
@@ -310,7 +414,7 @@ def seg_of(s):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Frostveil Citadel", "frost_citadel")
+    c = kit.Course(TRACK_ID, "Frostveil Citadel (Ruined)" if RUIN else "Frostveil Citadel", "frost_ruins" if RUIN else "frost_citadel")
     c.route(ROUTE, width=15.0, bank=6.0)
     carved = ("citadel_carved", "wall")
     stone = ("citadel_stone", "wall")
@@ -365,8 +469,41 @@ def main():
         },
         "landing": {"mat": "snow_stone_road", "shoulder": 1.0, "shoulder_mat": ("citadel_stone", "snow_stone"), "barrier": 1.4, "barrier_mat": stone},
     }
+    if RUIN:
+        # The ruin's new road: the bridge's fallen stones and the rubble of the climb,
+        # packed down by the snow (nothing new looks built).
+        rubble = ("ruin_rubble", "snow_stone")
+        c.kinds["rubble"] = {"mat": "packed_snow_road", "shoulder": 1.8, "shoulder_mat": rubble}
+        c.kinds["rubble_ramp"] = {
+            "mat": "snow_stone_road",
+            "surface": "road",
+            "shoulder": 0.8,
+            "shoulder_mat": rubble,
+            "deck": 6.0,
+            "deck_mat": ("citadel_stone", "snow_stone"),
+            "ground": False,
+        }
+
+    def ruin_label(smp):
+        s = smp.s
+        seg = seg_of(s)
+        if LIP <= s <= LAND or KICK_LIP <= s <= KICK_LAND:
+            return "gap"
+        if seg == 13 and s >= LIP - 34:
+            return "ramp"
+        if seg == 9 and s >= KICK_LIP - 24:
+            return "rubble_ramp"
+        if seg in (11, 15):
+            return "landing"
+        if 16 <= seg <= 23:
+            return "lower"
+        if seg == 0:
+            return "road"
+        return "rubble"
 
     def label(smp):
+        if RUIN:
+            return ruin_label(smp)
         x, y, s = smp.p.x, smp.p.y, smp.s
         seg = seg_of(s)
         if LIP <= s <= LAND:
@@ -401,15 +538,19 @@ def main():
     for s0, s1, k in kit.runs(c, label):
         if k == "gap":
             specials.append((s0, s1, None))
-        elif k == "ramp":
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 1.0 * max(0.0, (u - (n - 10)) / 10) ** 2}))
+        elif k in ("ramp", "rubble_ramp"):
+            specials.append((s0, s1, k, {"lift": lambda u, n: 1.0 * max(0.0, (u - (n - 10)) / 10) ** 2}))
         elif k != "road":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "road"))
 
-    inside = kit.crossings(c, lambda smp: in_tunnel_rock(smp.p.x, smp.p.y, 1.0), margin=0)
-    t0, t1 = max(inside, key=lambda r: r[1] - r[0])
-    TUNNEL_S[:] = [t0 - 16, t1 + 16]
+    if RUIN:
+        t0 = t1 = 0.0  # the Serpent Gate has fallen in: no tunnel
+        TUNNEL_S[:] = [-1.0, -1.0]
+    else:
+        inside = kit.crossings(c, lambda smp: in_tunnel_rock(smp.p.x, smp.p.y, 1.0), margin=0)
+        t0, t1 = max(inside, key=lambda r: r[1] - r[0])
+        TUNNEL_S[:] = [t0 - 16, t1 + 16]
     X0, X1, Y0, Y1 = -420, 420, -420, 400
     c.terrain("Mountains", X0, X1, Y0, Y1, 5.0, natural, classify, near=9.0, fade=20.0)
     # The hidden floors only where a kart could ever be: within 80 m of the road.
@@ -426,18 +567,29 @@ def main():
     (cx, cy), rx, ry = TUNNEL
     rock = c.rock_mass("Serpent Rock", cx, cy, rx, ry, 108.0, z0=-104.0, n=36, seed=7,
                        bands=[(1.0, 0.0), (1.0, 0.45), (0.97, 0.5), (0.95, 0.72), (0.9, 0.76), (0.82, 1.0)])
-    c.tunnel(rock, t0, t1, half=c.width / 2 + 3.4, height=11.5, pad=14.0)
+    if not RUIN:
+        c.tunnel(rock, t0, t1, half=c.width / 2 + 3.4, height=11.5, pad=14.0)
     c.paint_rock(rock, ("frost_cliff", "wall"), ("snow_ground", "deep_snow"), floor=("citadel_dark", "snow_stone"), top_z=60, floor_z=56)
     floor = []
     s = t0 - 22
-    while s <= t1 + 22:
+    while not RUIN and s <= t1 + 22:
         q = c.at(s)
         floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.4) + 14, q.p.z - 0.25))
         s += 2.0
-    c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("citadel_dark", "snow_stone"), coll="Collision", role="collision", steps=4)
+    if floor:
+        c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("citadel_dark", "snow_stone"), coll="Collision", role="collision", steps=4)
 
     c.start_line()
     L = c.length
+    if RUIN:
+        ruin_gameplay(c)
+        ruin_mode.DRESS(c, sys.modules[__name__], rock)
+        ter = list(c.coll("Terrain").objects)
+        c.preset("sun", ter + [rock], 0.3)
+        c.preset("bottoms", ter, 0.55)
+        kit.paint.shade_roads(c.pieces, 0.6)
+        c.finish()
+        return
     # Zippers: off the start, on the bridge, on the courtyard's exit, and
     # half-way down the descent (as the S-bends open out).
     c.zipper(40, 0)
@@ -475,6 +627,19 @@ def main():
     c.preset("bottoms", ter, 0.55)
     kit.paint.shade_roads(c.pieces, 0.6)
     c.finish()
+
+
+def ruin_gameplay(c):
+    """The ruin's zippers, items, respawns and checkpoints."""
+    c.zipper(SEG[5] + 2, 0)  # onto the rubble
+    c.zipper(SEG[17] + 2, 0)  # into the lower town's S-bends
+    for at, across in ((SEG[7] + 20, -2), (SEG[13] + 10, 0), (SEG[19] + 20, 2)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((30, -4, "red"), (30, 4, "blue"), (SEG[6] + 10, 0, "green"), (SEG[12] + 30, 0, "yellow"), (SEG[18] + 10, 0, "rainbow")):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(LIP - 40, 1), "to": round(LAND + 8, 1), "at": round(LAND + 30, 1)})
+    c.entity("respawn", **{"from": round(KICK_LIP - 20, 1), "to": round(KICK_LAND + 6, 1), "at": round(KICK_LAND + 24, 1)})
+    c.checkpoints(extra=[SEG[4], SEG[7], KICK_LAND + 24, SEG[13], LAND + 30, SEG[19], SEG[22]], height=10.0)
 
 
 if __name__ == "__main__":

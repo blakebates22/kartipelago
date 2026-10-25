@@ -13,6 +13,7 @@ import { RAPTOR } from "./raptor";
 import { REX } from "./rex";
 import { BRACHIO } from "./brachio";
 import { STEGO } from "./stego";
+import { DRAGON } from "./dragon";
 
 export const BUILDS: Record<RacerId, RacerBuild> = {
   tiko: TIKO as unknown as RacerBuild,
@@ -23,4 +24,5 @@ export const BUILDS: Record<RacerId, RacerBuild> = {
   rex: REX as unknown as RacerBuild,
   brachio: BRACHIO as unknown as RacerBuild,
   stego: STEGO as unknown as RacerBuild,
+  dragon: DRAGON as unknown as RacerBuild,
 };

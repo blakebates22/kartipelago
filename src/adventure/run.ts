@@ -59,13 +59,21 @@ export function sessionExtras(
   if (run.kind === "cup") return { field: { looks: kingdomField(run.kingdom, player, crew) } };
   if (run.kind === "boss") {
     const b = kingdomById(run.kingdom)!.boss!;
-    return { field: { count: 1, names: [b.name], speed: b.speed } };
+    return {
+      field: {
+        count: 1,
+        names: [b.name],
+        speed: b.speed,
+        looks: [{ id: "dragon", alt: false, palette: b.name.toLowerCase() }],
+      },
+    };
   }
   if (run.kind === "king")
     return {
       field: {
         count: 1,
         names: [DRAGON.king.name],
+        looks: [{ id: "dragon", alt: false, palette: "king" }],
         speed: run.chosen ? DRAGON.king.chosenSpeed : DRAGON.king.speed,
       },
       ...(run.chosen && { playerName: DRAGON.chosen.name }),

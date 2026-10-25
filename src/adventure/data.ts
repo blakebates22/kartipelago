@@ -75,7 +75,7 @@ export const KINGDOMS: Kingdom[] = [
     name: "Snow Kingdom",
     worldId: "frostveil",
     courses: [
-      { track: "frostveil_citadel" },
+      { track: "frostveil_citadel", ruin: "frostveil_citadel_ruin" },
       { track: "snowy_summit" },
       { track: "hearthglow_hollow" },
       { track: "aurora_rift" },

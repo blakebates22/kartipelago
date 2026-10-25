@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MIT
 
 import math
+from contextlib import contextmanager
 
 import props
 from aurora_scenery import game_entity
@@ -108,3 +109,69 @@ def emit(c, fires, smoke_every=2, glow_on=None, color=(1.6, 0.9, 0.5)):
         game_entity(c, "campfire", x, y, z - 0.6)
     if glow_on:
         c.glow(glow_on, fires, 9.0, color, base=1.0)
+
+
+# ---------------------------------------------------------------- the old lap's scenery
+
+
+def ghost_route(c, route, **kw):
+    """Sample a course's STANDARD route without keeping it (the ruin's own route stays
+    the course's). Returns what `ghost` needs. Call after the ruin's c.route()."""
+    import bpy
+
+    real = (c.S, c.length, c.route_ob, c.width)
+    c.route(route, **kw)
+    g = (c.S, c.length)
+    bpy.data.objects.remove(c.route_ob, do_unlink=True)
+    c.S, c.length, c.route_ob, c.width = real
+    c._near_tree = None
+    return g
+
+
+@contextmanager
+def ghost(c, g):
+    """Inside: c.at(), c.nearest() and friends follow the standard lap, so the course's
+    own scenery code places its landmarks where they always were (the sync rule: the
+    ruin is built from the course's scenery, not a copy). Anything placed also keeps
+    clear of the ruin's real road (it's added to c.extra_ground meanwhile)."""
+    real = (c.S, c.length, c.extra_ground)
+    c.S, c.length = g
+    c._near_tree = None
+    c.extra_ground = list(real[2]) + real[0][::2]
+    try:
+        yield
+    finally:
+        c.S, c.length, c.extra_ground = real
+        c._near_tree = None
+
+
+def clear_new_road(c, colls, margin=2.5, height=9.0):
+    """Remove anything in `colls` standing on the ruin's real road (old scenery placed
+    from the standard lap that the new road now runs through). Returns how many."""
+    import bpy
+
+    gone = 0
+    for name in colls:
+        for ob in list(c.coll(name).objects):
+            if ob.type != "MESH":
+                continue
+            mw = ob.matrix_world
+            corners = [mw @ kit_vec(v) for v in ob.bound_box]
+            xs = [p.x for p in corners]
+            ys = [p.y for p in corners]
+            zs = [p.z for p in corners]
+            cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+            r = max(max(xs) - min(xs), max(ys) - min(ys)) / 2
+            if r > 40:
+                continue  # big merged scenery: left alone
+            smp, d = c.nearest(cx, cy)
+            if d < smp.w / 2 + margin + r * 0.7 and min(zs) < smp.p.z + height and max(zs) > smp.p.z - 2:
+                bpy.data.objects.remove(ob, do_unlink=True)
+                gone += 1
+    return gone
+
+
+def kit_vec(v):
+    from mathutils import Vector
+
+    return Vector(v)

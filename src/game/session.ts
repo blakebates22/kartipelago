@@ -116,6 +116,7 @@ import {
 } from "../world/driftPark";
 import { boostChevrons, needleDeg, speedoValue } from "../render/speedo";
 import { applyCharacter, type Character } from "../vehicles/character";
+import { DRAGON_PALETTES } from "../render/racers/roster/dragon";
 import {
   autoCoinSpots,
   coinsTaken,
@@ -181,8 +182,9 @@ export interface SessionOptions {
     count?: number;
     names?: string[];
     speed?: number;
-    /** The rivals' looks in order (alt: the alternate paint, a local cousin). */
-    looks?: { id: RacerId; alt: boolean }[];
+    /** The rivals' looks in order (alt: the alternate paint, a local cousin; palette: a
+     * dragon's colours, render/racers/roster/dragon.ts). */
+    looks?: { id: RacerId; alt: boolean; palette?: string }[];
   };
   /** Adventure: the player's name on screen (the Chosen One's race). */
   playerName?: string;
@@ -498,7 +500,7 @@ function buildSession(
 
   // Rivals take the other racers' looks in turn; repeats get the alternate paint.
   const playerLook = opts.racer;
-  const rivalLook = (i: number): { id: RacerId; alt: boolean } => {
+  const rivalLook = (i: number): { id: RacerId; alt: boolean; palette?: string } => {
     const set = opts.field?.looks?.[i - 1];
     if (set) return set;
     const others = RACER_IDS.filter((id) => id !== playerLook);
@@ -506,7 +508,8 @@ function buildSession(
   };
   const makeRacer = (i: number): RacerView => {
     const look = i === 0 ? { id: playerLook, alt: false } : rivalLook(i);
-    const r = new RacerView(look.id, { alt: look.alt, seed: i * 17 + 5 });
+    const palette = "palette" in look && look.palette ? DRAGON_PALETTES[look.palette] : undefined;
+    const r = new RacerView(look.id, { alt: look.alt, seed: i * 17 + 5, palette });
     root.add(r.root, r.shadow);
     return r;
   };

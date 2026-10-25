@@ -486,7 +486,21 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     theme: "frost_citadel",
     music: "frostveil",
+    ruin: "frostveil_citadel_ruin",
     load: { scene: "track", packageId: "frostveil_citadel" },
+  },
+  // Frostveil Citadel in ruins (Adventure's treasure map challenge). Dev builds offer it
+  // from Frostveil's own entry.
+  {
+    id: "frostveil_citadel_ruin",
+    name: "Frostveil Citadel (Ruined)",
+    description:
+      "The Bridge of Giants lies in the valley: up its fallen spans, off a broken arch, over the gorge.",
+    preview: "previews/frostveil_citadel_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "frost_ruins",
+    music: "frostveil",
+    load: { scene: "track", packageId: "frostveil_citadel_ruin" },
   },
   {
     id: "snowy_summit",

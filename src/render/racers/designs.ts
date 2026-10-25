@@ -8,7 +8,16 @@
  */
 
 export type RacerId =
-  "tiko" | "brakka" | "pebble" | "zephyr" | "raptor" | "rex" | "brachio" | "stego";
+  | "tiko"
+  | "brakka"
+  | "pebble"
+  | "zephyr"
+  | "raptor"
+  | "rex"
+  | "brachio"
+  | "stego"
+  /** Adventure's dragons (a placeholder racer, never in the menus: see RACER_IDS). */
+  | "dragon";
 
 export interface RacerDesign {
   id: RacerId;
@@ -31,6 +40,17 @@ export interface RacerDesign {
 }
 
 export const DESIGNS: Record<RacerId, RacerDesign> = {
+  dragon: {
+    id: "dragon",
+    name: "Dragon",
+    species: "dragon",
+    title: "Adventure's dragons (placeholder)",
+    bio: "A STAND-IN FOR THE DRAGONS UNTIL THEIR OWN MODEL IS BUILT.",
+    quote: "BURN IT ALL.",
+    color: "#c8282a",
+    plate: "#3a1416",
+    call: { inst: "bassoon", notes: [40, 43, 47] },
+  },
   tiko: {
     id: "tiko",
     name: "Tiko",

@@ -8,6 +8,7 @@
  */
 import * as THREE from "three";
 import type { RacerId } from "./designs";
+import type { Palette } from "./roster/types";
 import { BUILDS } from "./roster";
 import { CHASSIS, buildKart, type KartModel } from "./kit/chassis";
 import type { RiderRig } from "./kit/rig";
@@ -59,10 +60,10 @@ export class Racer {
   readonly id: RacerId;
   private lowKart: KartModel;
 
-  constructor(id: RacerId, opts: { alt?: boolean; seed?: number } = {}) {
+  constructor(id: RacerId, opts: { alt?: boolean; seed?: number; palette?: Palette } = {}) {
     this.id = id;
     const build = BUILDS[id];
-    const palette = opts.alt ? build.palettes.alt : build.palettes.main;
+    const palette = opts.palette ?? (opts.alt ? build.palettes.alt : build.palettes.main);
     const kit = build.kart(palette);
     this.kart = buildKart(kit, 0);
     this.rig = build.rider(palette);

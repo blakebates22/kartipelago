@@ -66,7 +66,7 @@ describe("the story data", () => {
       track: "riverbend_palms_ruin",
       standIn: false,
     });
-    expect(coinCourse(KINGDOMS[1]!.courses[0]!, exists).standIn).toBe(true);
+    expect(coinCourse(KINGDOMS[1]!.courses[1]!, exists).standIn).toBe(true);
   });
 
   it("four coins spread round the lap", () => {

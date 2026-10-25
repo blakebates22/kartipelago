@@ -19,6 +19,7 @@ import "./styles.css";
 import { DESIGNS, RACER_IDS, type RacerId } from "./render/racers/designs";
 import { Racer, type AnimState, type RacerMotion } from "./render/racers/racer";
 import { STATES } from "./render/racers/animator";
+import { DRAGON_PALETTES } from "./render/racers/roster/dragon";
 import { applyRetroLook } from "./render/retro";
 
 const app = document.getElementById("app")!;
@@ -44,7 +45,8 @@ scene.add(road);
 
 const params = new URLSearchParams(location.search);
 const state = {
-  racer: ((RACER_IDS as string[]).includes(params.get("racer") ?? "")
+  // (?racer=dragon&dragon=cinderjaw|rimefang|scorchwind|tidewyrm|king: Adventure's dragons.)
+  racer: (([...RACER_IDS, "dragon"] as string[]).includes(params.get("racer") ?? "")
     ? params.get("racer")
     : "tiko") as RacerId,
   alt: params.has("alt"),
@@ -73,7 +75,11 @@ function rebuild() {
     }));
   else list = [{ id: state.racer, x: 0, turn: 0 }];
   racers = list.map(({ id, x, turn }, i) => {
-    const r = new Racer(id, { alt: state.alt, seed: i + 3 });
+    const r = new Racer(id, {
+      alt: state.alt,
+      seed: i + 3,
+      palette: id === "dragon" ? DRAGON_PALETTES[params.get("dragon") ?? "cinderjaw"] : undefined,
+    });
     r.root.position.x = x;
     r.root.rotation.y = turn;
     scene.add(r.root, r.shadow);

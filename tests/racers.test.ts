@@ -3,6 +3,7 @@
  * keeps its hands on the wheel, stays inside its kart, has its own silhouette, stays
  * within the triangle budget, and animates from the physics state without touching it.
  */
+import { DRAGON_PALETTES } from "../src/render/racers/roster/dragon";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { Racer, type RacerMotion } from "../src/render/racers/racer";
@@ -53,9 +54,20 @@ function run(r: Racer, m: RacerMotion, seconds = 1.5) {
 
 describe("the racers", () => {
   it("lists the same racers everywhere: designs, builds and the select music", () => {
-    expect(Object.keys(DESIGNS).sort()).toEqual([...RACER_IDS].sort());
-    expect(Object.keys(BUILDS).sort()).toEqual([...RACER_IDS].sort());
+    // (Plus Adventure's dragons: a racer for the bosses, never in the menus.)
+    const all = [...RACER_IDS, "dragon"].sort();
+    expect(Object.keys(DESIGNS).sort()).toEqual(all);
+    expect(Object.keys(BUILDS).sort()).toEqual(all);
     expect([...RACER_STEMS].sort()).toEqual([...RACER_IDS].sort());
+  });
+
+  it("builds the dragons in every dragon's colours", () => {
+    for (const palette of Object.values(DRAGON_PALETTES)) {
+      const r = new Racer("dragon", { palette });
+      expect(triangles(r.high)).toBeGreaterThan(3000);
+      expect(triangles(r.high)).toBeLessThan(14000);
+      expect(r.rig.wings).toHaveLength(2);
+    }
   });
 
   for (const id of RACER_IDS)
