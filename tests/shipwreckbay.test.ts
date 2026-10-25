@@ -1,18 +1,18 @@
-// Sunset Reef, the beach world's second course (working name), a greybox
-// (tools/blender/prehistoric/sunset_reef.py): Coral Cove's feel, about half as long again
-// (a lap around 28 s); the pier's jump over the gap in the reef.
+// Shipwreck Bay, the beach world's second course (working name), a greybox
+// (tools/blender/prehistoric/shipwreck_bay.py): the rolling pier, through the galleon's
+// hold, up the fallen mast and its jump over the river mouth (a lap around 28 s).
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { SURFACES, loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "sunset_reef";
+const id = "shipwreck_bay";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Sunset Reef (greybox)", () => {
+describe("Shipwreck Bay (greybox)", () => {
   it("loads cleanly, with its jump", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
@@ -25,7 +25,7 @@ describe("Sunset Reef (greybox)", () => {
     expect(SURFACES.soft_sand!.drag).toBeGreaterThan(2);
   });
 
-  it("is quick: an AI's laps take about half as long again as Coral Cove's, without a respawn", async () => {
+  it("is quick: an AI's laps take about 28 s, without a respawn", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     const r = await aiLap(p, { laps: 3, surfaces: true, zippers: true, lapSeconds: 40 });
     const laps = r.race.racers[0]!.lapTimes;

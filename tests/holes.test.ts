@@ -88,7 +88,7 @@ describe("no holes in the world", () => {
     "bonebog_pyramid",
     "ember_peak",
     "coral_cove",
-    "sunset_reef",
+    "shipwreck_bay",
   ])
     it(
       id,
