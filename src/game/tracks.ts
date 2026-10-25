@@ -84,7 +84,21 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     theme: "jungle_cascade",
     music: "cascade",
+    ruin: "cascade_caverns_ruin",
     load: { scene: "track", packageId: "cascade_caverns" },
+  },
+  // Cascade Caverns in ruins (Adventure's treasure map challenge, after the dragons' attack). Dev
+  // builds offer it from Cascade Caverns's own entry.
+  {
+    id: "cascade_caverns_ruin",
+    name: "Cascade Caverns (Ruined)",
+    description:
+      "The canyon after the dragons came: climb the fallen viaduct, the temple bridge, the tunnel, the leap.",
+    preview: "previews/cascade_caverns_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "cascade_ruins",
+    music: "cascade",
+    load: { scene: "track", packageId: "cascade_caverns_ruin" },
   },
   // The previous Cascade Caverns (v2, before Blake's first review round), kept
   // playable with ?track=cascade_caverns_v2. Not in any world's menu.
@@ -107,7 +121,21 @@ export const TRACKS: TrackEntry[] = [
     modes: ["race", "timeTrial"],
     theme: "bonebog_swamp",
     music: "bonebog",
+    ruin: "bonebog_pyramid_ruin",
     load: { scene: "track", packageId: "bonebog_pyramid" },
+  },
+  // Bonebog Pyramid in ruins (Adventure's treasure map challenge, after the dragons' attack). Dev
+  // builds offer it from Bonebog Pyramid's own entry.
+  {
+    id: "bonebog_pyramid_ruin",
+    name: "Bonebog Pyramid (Ruined)",
+    description:
+      "The swamp after the dragons came: ride the fallen great tree's trunk to the pyramid, then the hall's jump.",
+    preview: "previews/bonebog_pyramid_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "bonebog_ruins",
+    music: "bonebog",
+    load: { scene: "track", packageId: "bonebog_pyramid_ruin" },
   },
   {
     id: "ember_peak",

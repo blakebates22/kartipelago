@@ -31,9 +31,13 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
-TRACK_ID = "bonebog_pyramid"
+# The ruin (bonebog_ruins.py): the great tree has fallen; no spiral, the lap rides its
+# trunk straight to the pyramid. Otherwise the same course.
+RUIN = ruin_mode.ON
+TRACK_ID = "bonebog_pyramid_ruin" if RUIN else "bonebog_pyramid"
 WATER_Z = 0.0
 
 # ---------------------------------------------------------------- the layout
@@ -72,7 +76,13 @@ LAYOUT = [
     ("L", 31.5, 100),  # 29 north onto the dike
     ("S", 7),  # 30
 ]
+STANDARD_LAYOUT = list(LAYOUT)
+if RUIN:
+    # Segments 14-17 (to the tree, the spiral, the treehouse village, the drop) become the
+    # ride along the fallen trunk: four segments still, so the rest keep their numbers.
+    LAYOUT[14:18] = [("S", 19), ("L", 40, 60), ("S", 16), ("R", 40, 60)]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 21, 28, START, 90.0)
+STANDARD_PATH = kit.close_turtle(STANDARD_LAYOUT, 21, 28, START, 90.0)[1]
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 
@@ -86,6 +96,8 @@ HEIGHT = {
     12: 5.0, 13: 10.0, 14: 9.5, 15: 9.0, 16: 19.0, 17: 14.0, 18: 8.6, 19: 8.6, 20: 8.6, 21: 8.6,
     22: 7.4, 23: 6.2, 24: 5.2, 25: 4.6, 26: 4.0, 27: 3.6, 28: 3.2, 29: 2.8, 30: 2.6,
 }
+if RUIN:
+    HEIGHT.update({15: 10.2, 16: 10.6, 17: 9.6})  # along the trunk, over its hump
 
 
 def road_z(d, seg):
@@ -146,8 +158,8 @@ SHRINE = (10.0, 12.0, 12.0)  # half-sizes and height of the shrine on top
 INSIDE = (SEG[18], SEG[21])  # the route inside the pyramid
 
 # The great tree, at the spiral's centre.
-_h0 = next(p for p in PATH if p[3] == 15)
-SPIRAL_R = LAYOUT[15][1]
+_h0 = next(p for p in STANDARD_PATH if p[3] == 15)
+SPIRAL_R = STANDARD_LAYOUT[15][1]
 TREE = (_h0[0], _h0[1] - SPIRAL_R)
 
 
@@ -330,7 +342,7 @@ def great_tree(c, lights):
 def main():
     import props  # noqa: E402
 
-    c = kit.Course(TRACK_ID, "Bonebog Pyramid", "bonebog_swamp")
+    c = kit.Course(TRACK_ID, "Bonebog Pyramid (Ruined)" if RUIN else "Bonebog Pyramid", "bonebog_ruins" if RUIN else "bonebog_swamp")
     c.route(ROUTE, width=14.5, bank=6.0)
     rail = ("bog_rail", "wall")
     stone_rail = ("bog_carved", "wall")
@@ -359,6 +371,9 @@ def main():
             "deck_mat": ("bog_stone", "wall"),
             "ground": False,
         },
+        "burnt": dict(board, mat="ruin_char_planks", surface="road", shoulder_mat=("ruin_char_planks", "road"), barrier_mat=("ruin_char", "wall")),
+        "trunk": {"mat": "bog_root", "surface": "road", "shoulder": 0.4, "shoulder_mat": ("bog_root", "road"), "barrier": 0.6,
+                  "barrier_mat": ("bog_root", "wall"), "deck": 1.0, "deck_mat": ("bog_root", "road"), "ground": False},
         "temple": {"mat": "bog_paving", "surface": "road", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road")},
         "ramp": {"mat": "bog_paving", "surface": "road", "shoulder": 2.5, "shoulder_mat": ("bog_dark_stone", "road"), "barrier": 1.0, "barrier_mat": stone_rail},
     }
@@ -374,6 +389,10 @@ def main():
             return "temple"
         if seg in (0, 29, 30) or (seg == 1 and s < SEG[1] + 20):
             return "dike"
+        if RUIN and (7 <= seg <= 10 or 23 <= seg <= 24):
+            return "burnt"  # boardwalks the dragons set alight
+        if RUIN and 14 <= seg <= 17:
+            return "trunk" if seg >= 15 else "boardwalk"
         if seg == 17:
             return "causeway"
         if seg in (12, 13, 21):
@@ -431,7 +450,7 @@ def main():
     c.zipper(SEG[17] + 5, 0)
     c.zipper(SEG[20] + 4, 0)
     c.zipper(SEG[21] + 13, 0)
-    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[8] + 20, 0), (SEG[15] + 80, 0), (SEG[18] + 30, 0), (SEG[26] + 10, 0)):
+    for at, across in ((95, -3), (SEG[3] + 20, 0), (SEG[8] + 20, 0), (SEG[16] + 8, 0) if RUIN else (SEG[15] + 80, 0), (SEG[18] + 30, 0), (SEG[26] + 10, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
         (75, -4, "red"),
@@ -446,16 +465,20 @@ def main():
         c.balloon(at, across, col)
     # Missing the hall's jump drops you in the river: back out past it.
     c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
-    c.checkpoints(extra=[SEG[2] + 10, SEG[6] + 30, SEG[9], SEG[12] + 30, SEG[15] + 60, SEG[15] + 140, SEG[17], SEG[19] + 10, SEG[21] + 10, SEG[25], SEG[27]], height=10.0)
+    spiral = [SEG[16]] if RUIN else [SEG[15] + 60, SEG[15] + 140]
+    c.checkpoints(extra=[SEG[2] + 10, SEG[6] + 30, SEG[9], SEG[12] + 30, *spiral, SEG[17], SEG[19] + 10, SEG[21] + 10, SEG[25], SEG[27]], height=10.0)
 
     lights = []
-    great_tree(c, lights)
+    if not RUIN:
+        great_tree(c, lights)
     for x, y, z in lights:
         g = c.game(x, y, z)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
     bonebog_scenery.build(c, pyr, me)
 
     kit.paint.shade_roads(c.pieces, 0.35)
+    if RUIN and ruin_mode.DRESS:
+        ruin_mode.DRESS(c, me)
     c.finish()
     print("lap", round(c.length, 1))
 

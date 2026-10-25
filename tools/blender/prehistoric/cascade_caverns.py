@@ -21,9 +21,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import props  # noqa: E402
+import ruin_mode  # noqa: E402
 from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
-TRACK_ID = "cascade_caverns"
+# The ruin (cascade_ruins.py): the viaduct and the ledge have fallen; the lap climbs their
+# rubble straight across the canyon to the temple bridge. Otherwise the same course.
+RUIN = ruin_mode.ON
+TRACK_ID = "cascade_caverns_ruin" if RUIN else "cascade_caverns"
 WATER_Z = -1.6
 
 # ---------------------------------------------------------------- the layout
@@ -59,7 +63,14 @@ LAYOUT = [
     ("L", 40, 90),  # 26 under the temple bridge
     ("S", 20),  # 27
 ]
+STANDARD_LAYOUT = list(LAYOUT)
+if RUIN:
+    # Segments 1-8 (the viaduct's sweep round the east end and the ledge) become the climb
+    # north across the canyon; 5-8 are left as stubs so the later segments keep their
+    # numbers (the scenery and gameplay below are placed by them).
+    LAYOUT[1:9] = [("L", 30, 90), ("S", 45), ("L", 30, 90), ("S", 47), ("S", 0.5), ("S", 0.5), ("S", 0.5), ("S", 0.5)]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 12, 25, START, 0.0)
+STANDARD_PATH = kit.close_turtle(STANDARD_LAYOUT, 12, 25, START, 0.0)[1]
 SEG = kit.segment_starts(PATH)
 LIP = SEG[18]
 LAND = SEG[19]
@@ -86,6 +97,9 @@ HEIGHT = [
     (26, 1.4),
     (27, 0.3),
 ]
+if RUIN:
+    # The climb: off the canyon floor, up the rubble over the river, onto the bridge.
+    HEIGHT[1:5] = [(1, 0.4), (2, 3.0), (3, 8.4), (4, 12.6)]
 
 
 def road_z(d, seg):
@@ -260,7 +274,7 @@ def underfloor_z(x, y):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Cascade Caverns", "jungle_cascade")
+    c = kit.Course(TRACK_ID, "Cascade Caverns (Ruined)" if RUIN else "Cascade Caverns", "cascade_ruins" if RUIN else "jungle_cascade")
     c.route(ROUTE, width=14.0, bank=7.0)
     stone = ("ruin_stone", "wall")
     c.kinds = {
@@ -324,6 +338,8 @@ def main():
         above = smp.p.z - natural(x, y)
         if 9 <= seg <= 11 and above > 3.0:
             return "viaduct"
+        if RUIN and 1 <= seg <= 8:
+            return "viaduct" if above > 3.0 else "path"  # the rubble climb
         if seg == 4 and above > 3.0:
             return "viaduct"
         if 5 <= seg <= 8:
@@ -380,14 +396,17 @@ def main():
     # Gameplay: a zipper down the start straight, one along the ledge, one onto the
     # run-up to the leap (so everyone reaches the lip at about the same speed).
     c.zipper(40, 0)
-    c.zipper(kit.s_near(c, 20, 62), 0)
+    if RUIN:
+        c.zipper(SEG[2] + 4, 0)  # up the rubble climb
+    else:
+        c.zipper(kit.s_near(c, 20, 62), 0)
     c.zipper(SEG[17] + 6, 0)
-    for at, across in ((SEG[1] + 10, 0), (SEG[5] + 10, 2), (SEG[10] + 45, 0), (SEG[15] + 10, -2), (SEG[23] + 15, 0)):
+    for at, across in ((SEG[1] + 10, 0), (SEG[3] + 10, 2) if RUIN else (SEG[5] + 10, 2), (SEG[10] + 45, 0), (SEG[15] + 10, -2), (SEG[23] + 15, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in (
         (SEG[3], -3, "red"),
         (SEG[3], 3, "blue"),
-        (SEG[8] + 10, 0, "green"),
+        (SEG[4] + 10, 0, "green") if RUIN else (SEG[8] + 10, 0, "green"),
         (SEG[13] + 10, 0, "yellow"),
         (SEG[21] + 10, 0, "rainbow"),
     ):
@@ -401,7 +420,8 @@ def main():
     # tunnel, well past the leap's landing, along the north road and over the low bridge.
     # Tall gates, so nobody can fly over one.
     c.checkpoints(
-        extra=[SEG[5], SEG[8], SEG[10] + 50, SEG[13], SEG[16] + 30, LAND + 52, SEG[23] + 20, SEG[26]],
+        extra=([SEG[2] + 20, SEG[4] + 10] if RUIN else [SEG[5], SEG[8]])
+        + [SEG[10] + 50, SEG[13], SEG[16] + 30, LAND + 52, SEG[23] + 20, SEG[26]],
         height=10.0,
     )
 
@@ -416,6 +436,8 @@ def main():
     c.preset("bottoms", ter, 0.5)
     c.preset("cover", [rock], 0.6)
     kit.paint.shade_roads(c.pieces, 0.6)
+    if RUIN and ruin_mode.DRESS:
+        ruin_mode.DRESS(c, sys.modules[__name__])
     c.finish()
 
 

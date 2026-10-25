@@ -1,0 +1,695 @@
+{
+  "schemaVersion": 1,
+  "id": "cascade_caverns_ruin",
+  "name": "Cascade Caverns (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 40,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 112.1,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 628.6,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 71.0,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 163.1,
+      "across": 4.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 344.5,
+      "across": -4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 534.1,
+      "across": -4.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 846.7,
+      "across": -4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 153.1,
+      "across": -3,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 153.1,
+      "across": 3,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 210.2,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 475.5,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 812.1,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 642.6,
+      "to": 706.6,
+      "at": 742.6
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -75.58,
+      "y": 21.65,
+      "z": 102.78
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -89.1,
+      "y": 19.53,
+      "z": 90.57
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -94.14,
+      "y": 21.31,
+      "z": 108.27
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -102.84,
+      "y": 20.37,
+      "z": 91.69
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -110.74,
+      "y": 20.14,
+      "z": 108.23
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -119.66,
+      "y": 21.07,
+      "z": 92.22
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -124.44,
+      "y": 19.61,
+      "z": 109.97
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -137.41,
+      "y": 20.69,
+      "z": 96.99
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -137.97,
+      "y": 20.32,
+      "z": 115.31
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -151.49,
+      "y": 19.45,
+      "z": 103.12
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -155.03,
+      "y": 20.79,
+      "z": 121.19
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -164.86,
+      "y": 19.46,
+      "z": 105.67
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -172.33,
+      "y": 20.02,
+      "z": 122.34
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -180.38,
+      "y": 19.8,
+      "z": 105.77
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -188.44,
+      "y": 19.76,
+      "z": 122.35
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -196.45,
+      "y": 19.76,
+      "z": 105.75
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -204.42,
+      "y": 20.02,
+      "z": 122.5
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": -211.86,
+      "y": 19.05,
+      "z": 105.53
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": -222.72,
+      "y": 20.69,
+      "z": 120.4
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": -223.42,
+      "y": 18.63,
+      "z": 102.22
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": -239.57,
+      "y": 20.63,
+      "z": 110.87
+    },
+    {
+      "id": "torch_22",
+      "type": "torch",
+      "x": -153.2,
+      "y": 58.02,
+      "z": 94.3
+    },
+    {
+      "id": "torch_23",
+      "type": "torch",
+      "x": -162.0,
+      "y": 58.02,
+      "z": 94.3
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -245.74,
+      "y": -1.6,
+      "z": 10.36,
+      "top": 26,
+      "width": 34,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_02",
+      "type": "waterfall",
+      "x": 40.0,
+      "y": 5.54,
+      "z": 80.66,
+      "top": 29.3,
+      "width": 13.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_03",
+      "type": "waterfall",
+      "x": 130.0,
+      "y": 2.94,
+      "z": 90.94,
+      "top": 35.9,
+      "width": 13.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_04",
+      "type": "waterfall",
+      "x": -70.0,
+      "y": 0.24,
+      "z": -66.71,
+      "top": 9.2,
+      "width": 22.623587123200007,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_05",
+      "type": "waterfall",
+      "x": 100.0,
+      "y": -0.22,
+      "z": -90.11,
+      "top": 27.1,
+      "width": 13.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_06",
+      "type": "waterfall",
+      "x": 187.0,
+      "y": -1.6,
+      "z": -0.17,
+      "top": 36.0,
+      "width": 28.0,
+      "heading": 0
+    },
+    {
+      "id": "waterfall_07",
+      "type": "waterfall",
+      "x": -274.0,
+      "y": -4.6,
+      "z": 9.0,
+      "top": 30.0,
+      "width": 16.0,
+      "heading": 0
+    },
+    {
+      "id": "pterosaur_01",
+      "type": "pterosaur",
+      "route": "Flyer Path",
+      "speed": 13.0,
+      "scale": 1.6
+    },
+    {
+      "id": "torch_24",
+      "type": "torch",
+      "x": 106.76,
+      "y": 1.2,
+      "z": 30.07
+    },
+    {
+      "id": "torch_25",
+      "type": "torch",
+      "x": 114.2,
+      "y": 1.07,
+      "z": 34.87
+    },
+    {
+      "id": "torch_26",
+      "type": "torch",
+      "x": 84.72,
+      "y": 1.45,
+      "z": 49.96
+    },
+    {
+      "id": "torch_27",
+      "type": "torch",
+      "x": 86.0,
+      "y": 1.51,
+      "z": 36.97
+    },
+    {
+      "id": "torch_28",
+      "type": "torch",
+      "x": 75.92,
+      "y": 1.45,
+      "z": 31.58
+    },
+    {
+      "id": "torch_29",
+      "type": "torch",
+      "x": 85.25,
+      "y": 1.52,
+      "z": -43.59
+    },
+    {
+      "id": "torch_30",
+      "type": "torch",
+      "x": 82.19,
+      "y": 1.52,
+      "z": -45.39
+    },
+    {
+      "id": "torch_31",
+      "type": "torch",
+      "x": 86.18,
+      "y": 1.42,
+      "z": -30.11
+    },
+    {
+      "id": "torch_32",
+      "type": "torch",
+      "x": 20.38,
+      "y": 0.97,
+      "z": -20.46
+    },
+    {
+      "id": "torch_33",
+      "type": "torch",
+      "x": 25.74,
+      "y": 0.98,
+      "z": -29.57
+    },
+    {
+      "id": "torch_34",
+      "type": "torch",
+      "x": 28.66,
+      "y": 1.07,
+      "z": -25.42
+    },
+    {
+      "id": "torch_35",
+      "type": "torch",
+      "x": -15.39,
+      "y": 1.23,
+      "z": -22.09
+    },
+    {
+      "id": "torch_36",
+      "type": "torch",
+      "x": -17.9,
+      "y": 1.45,
+      "z": -32.83
+    },
+    {
+      "id": "torch_37",
+      "type": "torch",
+      "x": -15.08,
+      "y": 1.39,
+      "z": -30.59
+    },
+    {
+      "id": "torch_38",
+      "type": "torch",
+      "x": 9.9,
+      "y": 1.21,
+      "z": 20.07
+    },
+    {
+      "id": "torch_39",
+      "type": "torch",
+      "x": 16.95,
+      "y": 1.28,
+      "z": 16.86
+    },
+    {
+      "id": "torch_40",
+      "type": "torch",
+      "x": 18.45,
+      "y": 0.89,
+      "z": 27.15
+    },
+    {
+      "id": "torch_41",
+      "type": "torch",
+      "x": 82.57,
+      "y": 0.93,
+      "z": 11.9
+    },
+    {
+      "id": "torch_42",
+      "type": "torch",
+      "x": 33.51,
+      "y": 2.01,
+      "z": -75.81
+    },
+    {
+      "id": "torch_43",
+      "type": "torch",
+      "x": -36.55,
+      "y": 1.15,
+      "z": 18.61
+    },
+    {
+      "id": "torch_44",
+      "type": "torch",
+      "x": -36.92,
+      "y": 1.19,
+      "z": 20.94
+    },
+    {
+      "id": "torch_45",
+      "type": "torch",
+      "x": -21.92,
+      "y": 1.17,
+      "z": 60.64
+    },
+    {
+      "id": "torch_46",
+      "type": "torch",
+      "x": -22.82,
+      "y": 1.15,
+      "z": 62.38
+    },
+    {
+      "id": "torch_47",
+      "type": "torch",
+      "x": -23.57,
+      "y": 1.14,
+      "z": 55.41
+    },
+    {
+      "id": "torch_48",
+      "type": "torch",
+      "x": -149.9,
+      "y": 1.29,
+      "z": -54.89
+    },
+    {
+      "id": "torch_49",
+      "type": "torch",
+      "x": -151.27,
+      "y": 1.37,
+      "z": -44.35
+    },
+    {
+      "id": "torch_50",
+      "type": "torch",
+      "x": -151.03,
+      "y": 1.2,
+      "z": -63.56
+    },
+    {
+      "id": "torch_51",
+      "type": "torch",
+      "x": -208.49,
+      "y": 2.1,
+      "z": 39.04
+    },
+    {
+      "id": "torch_52",
+      "type": "torch",
+      "x": -195.62,
+      "y": 0.9,
+      "z": 43.07
+    },
+    {
+      "id": "torch_53",
+      "type": "torch",
+      "x": -205.62,
+      "y": 1.21,
+      "z": 43.76
+    },
+    {
+      "id": "torch_54",
+      "type": "torch",
+      "x": -127.43,
+      "y": 0.63,
+      "z": -16.98
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 106.76,
+      "y": 0.6,
+      "z": 30.07
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 84.72,
+      "y": 0.85,
+      "z": 49.96
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 75.92,
+      "y": 0.85,
+      "z": 31.58
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 82.19,
+      "y": 0.92,
+      "z": -45.39
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": 20.38,
+      "y": 0.37,
+      "z": -20.46
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 28.66,
+      "y": 0.47,
+      "z": -25.42
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -17.9,
+      "y": 0.85,
+      "z": -32.83
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": 9.9,
+      "y": 0.61,
+      "z": 20.07
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": 18.45,
+      "y": 0.29,
+      "z": 27.15
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": 33.51,
+      "y": 1.41,
+      "z": -75.81
+    },
+    {
+      "id": "campfire_11",
+      "type": "campfire",
+      "x": -36.92,
+      "y": 0.59,
+      "z": 20.94
+    },
+    {
+      "id": "campfire_12",
+      "type": "campfire",
+      "x": -22.82,
+      "y": 0.55,
+      "z": 62.38
+    },
+    {
+      "id": "campfire_13",
+      "type": "campfire",
+      "x": -149.9,
+      "y": 0.69,
+      "z": -54.89
+    },
+    {
+      "id": "campfire_14",
+      "type": "campfire",
+      "x": -151.03,
+      "y": 0.6,
+      "z": -63.56
+    },
+    {
+      "id": "campfire_15",
+      "type": "campfire",
+      "x": -195.62,
+      "y": 0.3,
+      "z": 43.07
+    },
+    {
+      "id": "campfire_16",
+      "type": "campfire",
+      "x": -127.43,
+      "y": 0.03,
+      "z": -16.98
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 40,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/cascade_caverns_ruin.py (re-running it rewrites entities)"
+}

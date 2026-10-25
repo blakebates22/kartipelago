@@ -5088,7 +5088,7 @@ THEMES += [tropic_textures.COVE, tropic_textures.WRECK]
 import ruin_textures  # noqa: E402
 
 MATERIALS += ruin_textures.materials(sys.modules[__name__])
-THEMES.append(ruin_textures.RIVERBEND)
+THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG]
 
 
 def thumb(im):

@@ -1397,6 +1397,108 @@
           }
         }
       }
+    },
+    {
+      "id": "cascade_ruins",
+      "name": "Cascade in Ruins",
+      "description": "The jungle canyon after the dragons' attack: smoke hanging in the canyon, a hazy amber light, burnt patches in the jungle, the viaduct fallen",
+      "environment": {
+        "sky": "#b89070",
+        "fog": {
+          "enabled": true,
+          "color": "#a08c74",
+          "near": 60,
+          "far": 380
+        },
+        "sun": {
+          "color": "#ffd8a8",
+          "intensity": 1.8,
+          "direction": [-0.4, 0.8, 0.3]
+        },
+        "ambient": {
+          "sky": "#e0ccb0",
+          "ground": "#3a3a22",
+          "intensity": 1.2
+        },
+        "skyDome": {
+          "top": "#6a6a78",
+          "horizon": "#e0b080",
+          "bottom": "#a08c74",
+          "sun": {
+            "color": "#ffe0b0",
+            "size": 10,
+            "glow": "#ffa860",
+            "elevation": 26
+          },
+          "clouds": {
+            "count": 34,
+            "color": "#8a8078",
+            "shade": "#4a4440",
+            "seed": 311,
+            "low": 10,
+            "high": 28,
+            "drift": 0.008
+          },
+          "hills": {
+            "color": "#2a3a24",
+            "far": "#8a8a74",
+            "height": 13,
+            "seed": 4,
+            "layers": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "bonebog_ruins",
+      "name": "Bonebog in Ruins",
+      "description": "The swamp after the dragons' attack: the great tree fallen, smoke over the water, a red-gold dusk, burnt boardwalks and charred mangroves",
+      "environment": {
+        "sky": "#c0805a",
+        "fog": {
+          "enabled": true,
+          "color": "#8a7a5a",
+          "near": 60,
+          "far": 520
+        },
+        "sun": {
+          "color": "#ffc088",
+          "intensity": 2.1,
+          "direction": [-0.55, 0.5, 0.55]
+        },
+        "ambient": {
+          "sky": "#e0c0a0",
+          "ground": "#34402a",
+          "intensity": 1.2
+        },
+        "skyDome": {
+          "top": "#5a4a6a",
+          "horizon": "#f0a060",
+          "bottom": "#8a7a5a",
+          "sun": {
+            "color": "#ffe0b0",
+            "size": 12,
+            "glow": "#ff9050",
+            "elevation": 10
+          },
+          "clouds": {
+            "count": 34,
+            "color": "#8a7068",
+            "shade": "#4a3a3a",
+            "seed": 313,
+            "low": 8,
+            "high": 24,
+            "drift": 0.007
+          },
+          "hills": {
+            "color": "#2a3a1c",
+            "far": "#7a6a4a",
+            "height": 24,
+            "seed": 41,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [

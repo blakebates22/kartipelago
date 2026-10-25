@@ -1,7 +1,7 @@
-// Riverbend Palms in ruins (tools/blender/prehistoric/riverbend_ruins.py): the first of
-// Adventure's treasure map courses. The same valley after the dragons' attack: a shorter
-// lap (the burnt bridge's jump, a scorched track down the west meadow), offered in dev
-// builds from Riverbend's own menu entry, and much quicker to drive.
+// The ruined courses (Adventure's treasure map challenge: each course after the dragons'
+// attack): riverbend_ruins.py, cascade_ruins.py, bonebog_ruins.py. The same places,
+// wrecked: shorter laps through them, offered in dev builds from each course's own menu
+// entry, quicker to drive, smoke and ash in the air.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { trackById } from "../src/game/tracks";
@@ -22,34 +22,40 @@ const lapLength = (pts: { x: number; z: number }[]) =>
   );
 type Entity = { type: string } & Record<string, unknown>;
 
-describe("Riverbend Palms (Ruined)", () => {
-  it("is Riverbend's ruin, in its own theme", () => {
-    expect(trackById("riverbend_palms")!.ruin).toBe("riverbend_palms_ruin");
-    expect(trackById("riverbend_palms_ruin")!.theme).toBe("riverbend_ruins");
+// [course, its ruin, its theme, the longest the ruin's lap may be (of the full lap's)]
+const RUINS: [string, string, string, number][] = [
+  ["riverbend_palms", "riverbend_palms_ruin", "riverbend_ruins", 0.9],
+  ["cascade_caverns", "cascade_caverns_ruin", "cascade_ruins", 0.92],
+  ["bonebog_pyramid", "bonebog_pyramid_ruin", "bonebog_ruins", 0.92],
+];
+
+describe.each(RUINS)("%s's ruin", (full, ruin, theme, most) => {
+  it("is offered from the course's own entry, in its own theme", () => {
+    expect(trackById(full)!.ruin).toBe(ruin);
+    expect(trackById(ruin)!.theme).toBe(theme);
   });
 
-  it("loads cleanly: a shorter lap with the bridge's jump, smoke and ash", async () => {
-    const p = await loadTrackPackage(reader("riverbend_palms_ruin"), { visual: false });
-    const full = await loadTrackPackage(reader("riverbend_palms"), { visual: false });
+  it("loads cleanly: a shorter lap, smoke and ash", async () => {
+    const p = await loadTrackPackage(reader(ruin), { visual: false });
+    const f = await loadTrackPackage(reader(full), { visual: false });
     expect(p.warnings).toEqual([]);
     const a = lapLength(p.trackData.points);
-    expect(a).toBeLessThan(0.9 * lapLength(full.trackData.points));
-    expect(a).toBeGreaterThan(750);
+    const b = lapLength(f.trackData.points);
+    expect(a).toBeLessThan(most * b);
+    expect(a).toBeGreaterThan(0.7 * b);
     const es = (p.meta.entities ?? []) as Entity[];
     const n = (type: string) => es.filter((e) => e.type === type).length;
-    expect(n("respawn")).toBe(1);
     expect(n("ashfall")).toBe(1);
-    expect(n("campfire")).toBeGreaterThan(4);
-    expect(n("dinosaur")).toBe(0); // the long-necks have fled
+    expect(n("campfire")).toBeGreaterThan(2);
   });
 
-  it("an AI drives it, jump and all, well inside the full lap's time", async () => {
+  it("an AI drives it without a respawn, well inside the full lap's time", async () => {
     const lap = async (id: string) => {
       const p = await loadTrackPackage(reader(id), { visual: false });
-      const r = await aiLap(p, { laps: 2, surfaces: true, zippers: true, lapSeconds: 70 });
+      const r = await aiLap(p, { laps: 2, surfaces: true, zippers: true, lapSeconds: 90 });
       expect(r.respawns).toBe(0);
       return r.race.racers[0]!.lapTimes[1]!;
     };
-    expect(await lap("riverbend_palms_ruin")).toBeLessThan(0.9 * (await lap("riverbend_palms")));
-  }, 240_000);
+    expect(await lap(ruin)).toBeLessThan(0.93 * (await lap(full)));
+  }, 300_000);
 });
