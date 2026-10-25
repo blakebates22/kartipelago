@@ -94,6 +94,7 @@ export const WORLDS: WorldEntry[] = [
       "dragon_isles_v3",
       "snow_dragon_pass_v3",
       "celestial_dragon_festival_v3",
+      "coral_cove",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

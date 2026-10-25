@@ -139,6 +139,19 @@ export const TRACKS: TrackEntry[] = [
     music: "depths",
     load: { scene: "track", packageId: "impact_depths_v2" },
   },
+  // The beach world's first course (working name), a greybox to drive before it's
+  // dressed: a really short lap, all three under a minute. ?track=coral_cove.
+  {
+    id: "coral_cove",
+    name: "Coral Cove (greybox)",
+    description:
+      "A short beach lap: the boardwalk jump over the channel, the lighthouse hairpin and back down to the sand.",
+    preview: "previews/coral_cove.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "coral_cove" },
+  },
   // The greyboxes of the dragon courses' new laps (v3: about 20% shorter, nearly all
   // corners), to drive before they're dressed: ?track=dragon_isles_v3 and so on.
   {

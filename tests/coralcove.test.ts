@@ -1,0 +1,33 @@
+// Coral Cove, the beach world's first course (working name), a greybox
+// (tools/blender/prehistoric/coral_cove.py): a really short lap, all three laps under a
+// minute; the boardwalk's jump over the channel.
+import { readFile } from "node:fs/promises";
+import { describe, expect, it } from "vitest";
+import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
+import { aiLap } from "./aiLap";
+
+const id = "coral_cove";
+const reader: PackageReader = async (file) => {
+  const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
+  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+};
+
+describe("Coral Cove (greybox)", () => {
+  it("loads cleanly, with its jump", async () => {
+    const p = await loadTrackPackage(reader, { visual: false });
+    expect(p.warnings).toEqual([]);
+    expect(p.trackData.zippers?.length).toBe(2);
+    const es = (p.meta.entities ?? []) as { type: string }[];
+    expect(es.filter((e) => e.type === "respawn")).toHaveLength(1);
+  });
+
+  it("is quick: an AI's three laps take under a minute, without a respawn", async () => {
+    const p = await loadTrackPackage(reader, { visual: false });
+    const r = await aiLap(p, { laps: 3, surfaces: true, zippers: true, lapSeconds: 40 });
+    const laps = r.race.racers[0]!.lapTimes;
+    expect(laps.length).toBe(3);
+    expect(r.respawns).toBe(0);
+    expect(laps.reduce((a, b) => a + b, 0)).toBeLessThan(60);
+    for (const t of laps) expect(t).toBeGreaterThan(14);
+  }, 120_000);
+});
