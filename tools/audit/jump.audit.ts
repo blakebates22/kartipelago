@@ -26,9 +26,10 @@ it("jump", async () => {
   };
   const p = await loadTrackPackage(reader, { visual: false });
   const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
-  const zone = (p.meta.entities ?? []).find((e) => (e as { type: string }).type === "respawn") as {
-    from: number;
-  };
+  // ZONE=n: the course's n-th jump (respawn zone), from 0.
+  const zone = (p.meta.entities ?? []).filter((e) => (e as { type: string }).type === "respawn")[
+    Number(process.env.ZONE ?? 0)
+  ] as { from: number };
   const lip = zone.from + 20;
   const ch = roster.characters.find((c) => c.id === roster.default) as Character;
   const cfg = applyCharacter(tuning.vehicle as KartConfig, ch, tuning.stats);

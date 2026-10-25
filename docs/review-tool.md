@@ -54,7 +54,9 @@ Notes are pink (red if important) until they're done, then green with a tick.
 
 ## Clips (F4)
 
-On the dev server the game keeps filming the last 20-40 seconds of play, with the sound.
+Off until you turn it on: the review tool's **● CLIPS** button (the choice is remembered
+in this browser), so it costs nothing while you just play. While it's on, the game keeps
+filming the last 20-40 seconds of play, with the sound.
 Press **F4** (fn + F4 on a Mac) anywhere, in a race or in the review tool, and that stretch
 is saved:
 

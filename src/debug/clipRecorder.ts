@@ -3,8 +3,10 @@
  * saved as a video, with the sound, and beside it a JSON file of your kart's state every
  * frame, so a bug can be watched and then replayed exactly.
  *
- * Two recorders run all the time, half a cycle apart, each restarting every CYCLE
- * seconds; F4 takes whichever has been running longer. Each frame the game's 3D view and
+ * It's off until you turn it on (the review tool's CLIPS button, F2; the choice is
+ * remembered in this browser), so it costs nothing while you just play. While it's on,
+ * two recorders run, half a cycle apart, each restarting every CYCLE seconds; F4 takes
+ * whichever has been running longer. Each frame the game's 3D view and
  * the HUD are drawn into one canvas with a line of readings under it (time, speed,
  * height, vertical speed, on the ground, zipper, boost), and that canvas is what's filmed.
  *
@@ -22,6 +24,15 @@ const MIN_W = 960;
 const STRIP = 22;
 
 type Sample = Record<string, number | boolean | string>;
+
+const PREF = "kartipelago.clips";
+
+/** The recorder's switch, for the review tool's button (set once the recorder exists). */
+export const clipSwitch = {
+  available: false,
+  on: false,
+  set(_on: boolean) {},
+};
 
 export interface ClipSources {
   view: HTMLCanvasElement;
@@ -69,6 +80,7 @@ export function createClipRecorder(src: ClipSources) {
     since: number;
     chunks: Blob[];
     onStop?: (b: Blob) => void;
+    dead?: boolean;
   }
   const recs: Rec[] = [];
 
@@ -88,6 +100,7 @@ export function createClipRecorder(src: ClipSources) {
       if (e.data.size) r.chunks.push(e.data);
     };
     mr.onstop = () => {
+      if (r.dead) return;
       const blob = new Blob(r.chunks, { type: type || "video/webm" });
       const done = r.onStop;
       r.onStop = undefined;
@@ -99,8 +112,42 @@ export function createClipRecorder(src: ClipSources) {
 
   /** Browsers only allow sound after a key or click, so filming starts on the first one. */
   let gestured = false;
+  let enabled = false;
+  try {
+    enabled = localStorage.getItem(PREF) === "on";
+  } catch {
+    // no storage: off
+  }
+  const stopAll = () => {
+    for (const r of recs) {
+      r.dead = true;
+      if (r.mr.state !== "inactive") r.mr.stop();
+    }
+    recs.length = 0;
+    // The canvas's video track only (the sound's tap is kept for next time).
+    stream?.getVideoTracks().forEach((t) => t.stop());
+    stream = undefined;
+    samples.length = 0;
+  };
+  const setEnabled = (on: boolean) => {
+    if (on === enabled) return;
+    enabled = on;
+    try {
+      localStorage.setItem(PREF, on ? "on" : "off");
+    } catch {
+      // not remembered
+    }
+    if (!on) stopAll();
+    clipSwitch.on = on;
+    say(on ? "Clip recorder ON: F4 saves the last 20-40 s" : "Clip recorder off", 3);
+  };
+  clipSwitch.available = true;
+  clipSwitch.on = enabled;
+  clipSwitch.set = setEnabled;
+
   const ensureStarted = () => {
-    if (stream || !gestured || !comp.width || typeof MediaRecorder === "undefined") return;
+    if (stream || !enabled || !gestured || !comp.width || typeof MediaRecorder === "undefined")
+      return;
     stream = comp.captureStream(FPS);
     const a = src.audio();
     if (a) for (const t of a.getAudioTracks()) stream.addTrack(t);
@@ -110,8 +157,10 @@ export function createClipRecorder(src: ClipSources) {
       begin(first);
     }
     // The second starts half a cycle later.
+    const mine = stream;
     setTimeout(
       () => {
+        if (!enabled || stream !== mine) return;
         const second = makeRec();
         if (second) {
           recs.push(second);
@@ -125,7 +174,7 @@ export function createClipRecorder(src: ClipSources) {
   // Restart any recorder that has run a whole cycle (unless it's being saved).
   setInterval(() => {
     for (const r of recs)
-      if (!r.onStop && r.mr.state === "recording" && now() - r.since > CYCLE) {
+      if (!r.dead && !r.onStop && r.mr.state === "recording" && now() - r.since > CYCLE) {
         r.onStop = () => {};
         r.mr.stop();
       }
@@ -147,6 +196,10 @@ export function createClipRecorder(src: ClipSources) {
   };
 
   const save = () => {
+    if (!enabled) {
+      say("Clip recorder is off: turn it on in the review tool (F2, CLIPS)", 5);
+      return;
+    }
     const r = recs
       .filter((q) => q.mr.state === "recording" && !q.onStop)
       .sort((a, b) => a.since - b.since)[0];
@@ -198,6 +251,7 @@ export function createClipRecorder(src: ClipSources) {
   return {
     /** Call after the frame is drawn (3D view and HUD). */
     frame() {
+      if (!enabled) return;
       const vw = src.view.width;
       const vh = src.view.height;
       if (!vw || !vh) return;

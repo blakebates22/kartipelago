@@ -23,6 +23,7 @@
 import * as THREE from "three";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
+import { clipSwitch } from "../debug/clipRecorder";
 import type { Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
 import type { UiLayer } from "../ui/layer";
@@ -206,6 +207,16 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     session.showToast("● RECORDING YOUR LINE: F2 TO STOP", 3);
     leave();
   };
+  const clipsLabel = () => `● CLIPS: ${clipSwitch.on ? "ON" : "OFF"}`;
+  const clipsBtn = el("button", {
+    textContent: clipsLabel(),
+    title: "The clip recorder: while it's on, F4 saves the last 20-40 seconds as a video",
+  });
+  clipsBtn.hidden = !clipSwitch.available;
+  clipsBtn.onclick = () => {
+    clipSwitch.set(!clipSwitch.on);
+    clipsBtn.textContent = clipsLabel();
+  };
   const kartBtn = el("button", { textContent: "K TO KART" });
   kartBtn.onclick = () => toKart();
   const exportBtn = el("button", { textContent: "EXPORT" });
@@ -221,7 +232,7 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     banner,
     tools,
     hintEl,
-    el("div", { cls: "row" }, recordBtn, kartBtn, exportBtn, driveBtn),
+    el("div", { cls: "row" }, recordBtn, clipsBtn, kartBtn, exportBtn, driveBtn),
     list,
     el("footer", {
       innerHTML:
