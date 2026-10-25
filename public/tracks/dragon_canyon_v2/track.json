@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "dragon_canyon",
-  "name": "Dragon Canyon",
+  "id": "dragon_canyon_v2",
+  "name": "Dragon Canyon (v2)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
