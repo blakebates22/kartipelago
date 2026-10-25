@@ -7,7 +7,10 @@
 # The dragons brought down the viaduct and the ledge at the east end: the lap climbs their
 # rubble straight north across the canyon (over the river) to the temple bridge, then runs
 # Cascade's own course: the bridge over the start, the torchlit tunnel, the leap through
-# the waterfall, the north road and the low bridge. About 1070 m (the full lap is 1209 m).
+# the waterfall. Past the leap the north road is buried: a hairpin off the landing, then
+# straight down across the canyon and over the river on the old city's stones to the
+# start. About 960 m (the full lap is 1209 m; v2 of the ruin, ?track=cascade_caverns_ruin_v2,
+# kept the north road and was 1071 m).
 # cascade_caverns.py lays the lap out (ruin_mode.ON); this adds the wreckage: the fallen
 # viaduct's broken piers and rubble where it stood, burnt patches in the jungle, charred
 # trees, fires, smoke and ash, the jungle elsewhere untouched.
@@ -32,7 +35,8 @@ from course_kit import rnd  # noqa: E402
 # few patches further west.
 BURNS = [(110.0, -10.0, 34.0), (85.0, -50.0, 26.0), (80.0, 40.0, 26.0), (30.0, 25.0, 18.0), (-10.0, 30.0, 16.0),
          (10.0, -20.0, 16.0), (70.0, -5.0, 18.0), (25.0, 70.0, 16.0), (-45.0, -15.0, 14.0), (-20.0, -60.0, 14.0),
-         (-150.0, 55.0, 20.0), (-200.0, -40.0, 18.0), (-120.0, 20.0, 16.0), (-170.0, 85.0, 16.0)]
+         (-150.0, 55.0, 20.0), (-200.0, -40.0, 18.0), (-120.0, 20.0, 16.0), (-170.0, 85.0, 16.0),
+         (-135.0, 88.0, 16.0)]
 burn = rk.burns_fn(BURNS)
 
 _classify = cc.classify
@@ -82,6 +86,15 @@ def dress(c, m):
                                bands=[(1.0, 0.0), (1.0, 0.8), (0.8, 0.9), (0.5, 1.0)], base=z)
             c.assign(pier, c.lib("ruin_stone", "wall"))
         rk.rubble_heap(c, x + 3.0, y - 2.0, z_at, n=7, spread=6.0, size=1.8, seed=k)
+    # The north road, buried where the cliff came down on it: heaps of rock along it.
+    d, nxt = 0.0, 0.0
+    for a, b in zip(m.STANDARD_PATH, m.STANDARD_PATH[1:]):
+        d += math.hypot(b[0] - a[0], b[1] - a[1])
+        if b[3] in (21, 22, 23, 24) and d >= nxt:
+            nxt = d + 18.0
+            if clear(b[0], b[1], 9.0):
+                k += 1
+                rk.rubble_heap(c, b[0], b[1], z_at, n=9, spread=7.0, size=2.2, seed=k)
     fires = rk.scorch(c, BURNS, z_at, clear, per=6, wet=lambda x, y, z: z < m.WATER_Z + 0.4)
     print("charred trees", rk.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree", "Canopy Tree")))
     rk.emit(c, fires, glow_on=ter)

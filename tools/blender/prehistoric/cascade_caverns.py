@@ -68,8 +68,18 @@ if RUIN:
     # Segments 1-8 (the viaduct's sweep round the east end and the ledge) become the climb
     # north across the canyon; 5-8 are left as stubs so the later segments keep their
     # numbers (the scenery and gameplay below are placed by them).
-    LAYOUT[1:9] = [("L", 30, 90), ("S", 45), ("L", 30, 90), ("S", 47), ("S", 0.5), ("S", 0.5), ("S", 0.5), ("S", 0.5)]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 12, 25, START, 0.0)
+    # v2 of the ruin (Blake: "after the waterfall jump, we cut to the finish line quicker",
+    # about 20% shorter than the full lap): the start straight and the climb's top are 30 m
+    # shorter (the course past them stays where it was), and past the leap the north road
+    # is gone: a hairpin off the landing, then straight down across the canyon, over the
+    # river on the old city's fallen stones, to the start. 20-27 keep their numbers (21 and
+    # 22 are stubs). The tunnel's straight (12) keeps the length it had, so everything from
+    # the bridge to the landing is exactly where it was.
+    LAYOUT[0] = ("S", 30)
+    LAYOUT[1:9] = [("L", 30, 90), ("S", 45), ("L", 30, 90), ("S", 17), ("S", 0.5), ("S", 0.5), ("S", 0.5), ("S", 0.5)]
+    LAYOUT[12] = ("S", 14.401454264062872)
+    LAYOUT[20:28] = [("R", 34, 140), ("S", 0.5), ("S", 0.5), ("S", 50), ("L", 60, 10), ("S", 80), ("L", 30, 40), ("S", 20)]
+LAYOUT, PATH = kit.close_turtle(LAYOUT, 23 if RUIN else 12, 25, START, 0.0)
 STANDARD_PATH = kit.close_turtle(STANDARD_LAYOUT, 12, 25, START, 0.0)[1]
 SEG = kit.segment_starts(PATH)
 LIP = SEG[18]
@@ -100,6 +110,8 @@ HEIGHT = [
 if RUIN:
     # The climb: off the canyon floor, up the rubble over the river, onto the bridge.
     HEIGHT[1:5] = [(1, 0.4), (2, 3.0), (3, 8.4), (4, 12.6)]
+    # Off the plateau round the hairpin, then gently down to the river and the start.
+    HEIGHT[-7:] = [(20, 7.0), (21, 4.6), (23, 4.0), (24, 2.8), (25, 2.6), (26, 1.4), (27, 0.3)]
 
 
 def road_z(d, seg):
@@ -395,7 +407,7 @@ def main():
     L = c.length
     # Gameplay: a zipper down the start straight, one along the ledge, one onto the
     # run-up to the leap (so everyone reaches the lip at about the same speed).
-    c.zipper(40, 0)
+    c.zipper(12 if RUIN else 40, 0)
     if RUIN:
         c.zipper(SEG[2] + 4, 0)  # up the rubble climb
     else:

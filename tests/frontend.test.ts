@@ -224,6 +224,7 @@ describe("worlds", () => {
       "drift_park",
       "riverbend_palms_v21",
       "cascade_caverns_v2",
+      "cascade_caverns_ruin_v2",
       "ember_peak_v2",
       "bonebog_pyramid_v2",
       "frostveil_citadel_v2",

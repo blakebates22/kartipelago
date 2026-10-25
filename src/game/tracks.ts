@@ -103,6 +103,18 @@ export const TRACKS: TrackEntry[] = [
     music: "cascade",
     load: { scene: "track", packageId: "cascade_caverns_ruin" },
   },
+  // The first Cascade ruin (it kept the north road after the leap; the cut back to the start
+  // replaced it on 2026-10-25): ?track=cascade_caverns_ruin_v2. Not in any world's menu.
+  {
+    id: "cascade_caverns_ruin_v2",
+    name: "Cascade Caverns (Ruined, v2)",
+    description: "The first ruin, with the north road after the leap.",
+    preview: "previews/cascade_caverns_ruin_v2.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "cascade_ruins",
+    music: "cascade",
+    load: { scene: "track", packageId: "cascade_caverns_ruin_v2" },
+  },
   // The previous Cascade Caverns (v2, before Blake's first review round), kept
   // playable with ?track=cascade_caverns_v2. Not in any world's menu.
   {
