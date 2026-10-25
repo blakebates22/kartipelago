@@ -217,18 +217,18 @@ export const TRACKS: TrackEntry[] = [
     music: "snow_dragon",
     load: { scene: "track", packageId: "snow_dragon_pass_v2" },
   },
-  // The greybox of the last dragon course's new lap (v3: about 20% shorter, nearly all
-  // corners), to drive before it's dressed: ?track=celestial_dragon_festival_v3.
+  // The first Celestial Dragon Festival (the painted v3 lap, the Moonstone Kingdom,
+  // replaced it on 2026-10-25): ?track=celestial_dragon_festival_v2.
   {
-    id: "celestial_dragon_festival_v3",
-    name: "Celestial Dragon Festival (v3 greybox)",
+    id: "celestial_dragon_festival_v2",
+    name: "Celestial Dragon Festival (v2)",
     description:
-      "The new lap in plain shapes: the shrine loop, the Star Leap and the observatory spiral.",
-    preview: "previews/celestial_dragon_festival.jpg",
+      "The grand finale on festival night: leap among the stars while fireworks fill the sky, more every lap.",
+    preview: "previews/celestial_dragon_festival_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "celestial_dragon_festival",
     music: "celestial",
-    load: { scene: "track", packageId: "celestial_dragon_festival_v3" },
+    load: { scene: "track", packageId: "celestial_dragon_festival_v2" },
   },
   // The previous Oasis Haven (v2, the lakeside resort, before the redo back in the
   // desert), kept playable with ?track=oasis_haven_v2. Not in any world's menu.
@@ -434,12 +434,14 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "celestial_dragon_festival",
+    // Blake, Oct 25: the v3 greybox's lap painted as the Moonstone Kingdom, a moonlit
+    // violet kingdom (the first lap is celestial_dragon_festival_v2).
     name: "Celestial Dragon Festival",
     description:
-      "The grand finale on festival night: leap among the stars while fireworks fill the sky, more every lap.",
+      "A moonlit kingdom: over the glowing lake, round the winged dragon's fountain, up through the crystals and off the Star Leap, past the observatory to the palace.",
     preview: "previews/celestial_dragon_festival.jpg",
     modes: ["race", "timeTrial"],
-    theme: "celestial_dragon_festival",
+    theme: "moonstone_kingdom",
     music: "celestial",
     load: { scene: "track", packageId: "celestial_dragon_festival" },
   },

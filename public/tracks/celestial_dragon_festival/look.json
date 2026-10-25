@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "theme": "moonstone_kingdom",
+  "sky": "#2a2a6a",
+  "fog": {
+    "enabled": true,
+    "color": "#3a3a78",
+    "near": 380,
+    "far": 2300
+  },
+  "sun": {
+    "color": "#c8d4ff",
+    "intensity": 1.8,
+    "direction": [
+      0.5,
+      0.62,
+      -0.6
+    ]
+  },
+  "ambient": {
+    "sky": "#9a9ae0",
+    "ground": "#3a3060",
+    "intensity": 1.3
+  },
+  "skyDome": {
+    "top": "#120e3a",
+    "horizon": "#5a4a9a",
+    "bottom": "#3a3478",
+    "sun": {
+      "color": "#f4f0ff",
+      "size": 22,
+      "glow": "#8a8ad8",
+      "elevation": 28,
+      "face": "moon"
+    },
+    "clouds": {
+      "count": 22,
+      "color": "#6a62b0",
+      "shade": "#2a2460",
+      "seed": 721,
+      "low": 3,
+      "high": 26,
+      "drift": 0.003
+    },
+    "hills": {
+      "color": "#2a2458",
+      "far": "#5a52a0",
+      "height": 12,
+      "seed": 723,
+      "layers": 3
+    },
+    "stars": {
+      "count": 220,
+      "color": "#f0f0ff",
+      "seed": 725,
+      "low": 6
+    }
+  }
+}

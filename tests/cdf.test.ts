@@ -32,7 +32,9 @@ import { buildTrack } from "../src/world/track";
 import { loadTrackPackage, type PackageReader, type TrackPackage } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
-const id = "celestial_dragon_festival";
+// The first lap, kept as celestial_dragon_festival_v2 since the painted v3 lap (the
+// Moonstone Kingdom) took over the id.
+const id = "celestial_dragon_festival_v2";
 const reader: PackageReader = async (file) => {
   const b = await readFile(new URL(`../public/tracks/${id}/${file}`, import.meta.url));
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
@@ -43,14 +45,14 @@ let pkg: TrackPackage | undefined;
 const load = async () => (pkg ??= await loadTrackPackage(reader, { visual: false }));
 const one = (p: TrackPackage, type: string) => entitiesOf(p).find((e) => e.type === type)!;
 
-describe("Celestial Dragon Festival", () => {
+describe("Celestial Dragon Festival (v2)", () => {
   it("is the Dragon Kingdom's fourth course, with its own theme and its three-layer music", async () => {
     const w = WORLDS.find((x) => x.id === "dragon")!;
-    expect(w.tracks.at(-1)).toBe(id);
+    expect(w.tracks.at(-1)).toBe("celestial_dragon_festival");
     expect(w.comingSoon ?? []).toEqual([]);
     expect(trackTilesOf(w)).toHaveLength(4);
     const t = trackById(id)!;
-    expect(t.theme).toBe(id);
+    expect(t.theme).toBe("celestial_dragon_festival");
     const song = SONGS[t.music]!;
     expect(song.id).toBe("celestial");
     expect(song.stems).toEqual(["rise", "finale"]);

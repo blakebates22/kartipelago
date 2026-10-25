@@ -1,30 +1,32 @@
-# Celestial Dragon Festival v3: a greybox of a new lap, to drive before it's dressed
-# (?track=celestial_dragon_festival_v3).
+# Celestial Dragon Festival: Dragon Kingdom, course 4, painted as the Moonstone Kingdom
+# (Blake's two boards, Oct 25): a moonlit violet kingdom under a huge moon.
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/celestial_dragon_festival_v3.py      (the bpy module)
+#   python tools/blender/prehistoric/celestial_dragon_festival.py      (the bpy module)
 #
-# Blake: the last dragon course isn't fun to drive, and it's long; make the driving much
-# better and the lap about 20% shorter. The same story in the same order, in plain shapes,
-# on a lap of about 2.05 km (from 2.56) that's nearly all corners, round the Palace Mount:
+# The v3 greybox's lap (it was celestial_dragon_festival_v3.py), exactly: the same roads,
+# heights, widths, the Star Leap, surfaces, barriers, pickups and checkpoints. moon_scenery.py
+# dresses it with keep_props.py's castle kit in moonstone (a palette swap); moon_textures.py
+# is the paint.
 #
-#   1  The Festival Gate: the start, east along the gate's terrace.
-#   2  The Lantern Market: a chicane down through the night market to the water.
-#   3  The Waterfall Bridge: north over the lagoon on a long S of a bridge, then S-bends
-#      up the shore.
-#   4  The Great Dragon Shrine: a loop right round the golden dragon, climbing, that
-#      crosses over its own way in.
-#   5  The Celestial Climb: west, up the north face in big S-bends.
-#   6  The Star Bridge and the Star Leap: west along the bridge over the Cloud Chasm, up
-#      the ramp and off the broken end (miss it and you're put back on the landing).
-#   7  The Observatory Spiral: right, round the pinnacle, climbing, and out over the
-#      Star Bridge's far end.
-#   8  The Palace Terraces: south, a weave through the upper gardens.
-#   9  The Procession Causeway: the broad way down.
-#  10  The Fireworks Overlook and the Final Ascension: along the cliff's edge, a rise
-#      round the bastion, and down onto the straight to the line.
+#   1  The Moonstone Gate: the start, east along the gate's terrace.
+#   2  The lantern town: a chicane down through its streets to the lake.
+#   3  The Lake Bridge: north over the glowing lake on a long S, then S-bends up the
+#      shore past ruined arches.
+#   4  The Palace Courtyard: a loop right round the winged dragon's fountain, climbing,
+#      that crosses over its own way in.
+#   5  The Crystal Climb: west, up the north face in big S-bends past crystal outcrops.
+#   6  The Star Bridge and the Star Leap: west along the bridge over the Cloud Chasm, the
+#      floating islands round it, up the ramp and off the broken end (miss it and you're
+#      put back on the landing).
+#   7  The Observatory Spiral: right, round the pinnacle and its great armillary sphere.
+#   8  The Palace Terraces: south, a weave through the upper gardens under the palace and
+#      the purple dragon on its tower.
+#   9  The Procession Causeway: the broad way down, crescent banners either side.
+#  10  The Overlook and the Final Ascension: along the cliff's edge, a rise round the
+#      bastion, and down onto the straight to the line.
 #
-# The current Celestial Dragon Festival is untouched (celestial_dragon_festival.py).
+# The first lap is kept as celestial_dragon_festival_v2.
 
 import math
 import os
@@ -35,7 +37,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "celestial_dragon_festival_v3"
+TRACK_ID = "celestial_dragon_festival"
 
 K = 1.13
 START = (0.0, 0.0)
@@ -172,46 +174,34 @@ def classify(c, n, info):
     if c.z < -12.0:
         return ("cdf_abyss", "abyss")
     if c.z < -1.0:
-        return ("cdf_lagoon", "deep_water")
+        return ("moon_lake", "deep_water")
     if n.z < 0.6:
-        return ("cdf_karst", "wall")
+        return ("moon_rock", "wall")
     if n.z < 0.8:
-        return ("limestone_moss", "dirt")
+        return ("moon_rock", "dirt")
     if c.z < 1.2:
         return ("pale_beach", "sand")
-    return ("cdf_grass", "grass")
-
-
-def box(bm, centre, size, rot=0.0):
-    import props  # noqa: E402
-
-    props.cuboid(bm, centre, size, rot=rot)
+    return ("moon_grass", "grass")
 
 
 def main():
-    import props  # noqa: E402
-    from course_kit import bmesh  # noqa: E402
-
-    def at(d):
-        return c.at(TO_ROAD(d))
-
-    c = kit.Course(TRACK_ID, "Celestial Dragon Festival (v3 greybox)", "celestial_dragon_festival")
+    c = kit.Course(TRACK_ID, "Celestial Dragon Festival", "moonstone_kingdom")
     c.route(ROUTE, width=16.0, bank=6.0)
-    kerb = ("cdf_kerb", "road")
-    bal = ("cdf_balustrade", "wall")
-    lanterns = ("cdf_lantern_rail", "wall")
-    marble = ("cdf_marble", "wall")
+    kerb = ("moon_kerb", "road")
+    bal = ("moon_stone", "wall")
+    lanterns = ("moon_stone_dark", "wall")
+    marble = ("moon_stone", "wall")
     c.kinds = {
-        "gate": {"mat": "cdf_paving", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
-        "market": {"mat": "cdf_paving", "shoulder": 1.4, "shoulder_mat": kerb, "barrier": 1.0, "barrier_mat": lanterns},
-        "bridge": {"mat": "cdf_paving", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 4.5,
+        "gate": {"mat": "moon_paving", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
+        "market": {"mat": "moon_paving", "shoulder": 1.4, "shoulder_mat": kerb, "barrier": 1.0, "barrier_mat": lanterns},
+        "bridge": {"mat": "moon_paving", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 4.5,
                    "deck_mat": marble, "ground": False},
-        "plaza": {"mat": "cdf_paving", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.0, "barrier_mat": bal},
-        "high": {"mat": "cdf_celestial", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.2, "barrier_mat": bal},
-        "high_bridge": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 5.0,
+        "plaza": {"mat": "moon_paving", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.0, "barrier_mat": bal},
+        "high": {"mat": "moon_tiles", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.2, "barrier_mat": bal},
+        "high_bridge": {"mat": "moon_tiles", "shoulder": 1.0, "shoulder_mat": kerb, "barrier": 1.3, "barrier_mat": bal, "deck": 5.0,
                         "deck_mat": marble, "ground": False},
-        "ramp": {"mat": "cdf_celestial", "shoulder": 1.0, "shoulder_mat": kerb, "deck": 6.0, "deck_mat": marble, "ground": False},
-        "royal": {"mat": "cdf_royal", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
+        "ramp": {"mat": "moon_tiles", "shoulder": 1.0, "shoulder_mat": kerb, "deck": 6.0, "deck_mat": marble, "ground": False},
+        "royal": {"mat": "moon_tiles", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
     }
 
     def label(smp):
@@ -251,54 +241,23 @@ def main():
 
     X0, X1, Y0, Y1 = -260, 560, -160, 560
     ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
-    c.disc("Lagoon", LAGOON_X + 160.0, MOUNT[1] - 120.0, 240.0, -1.5, c.lib("cdf_lagoon", "deep_water"), n=40)
+    c.disc("Lagoon", LAGOON_X + 160.0, MOUNT[1] - 120.0, 240.0, -1.5, c.lib("moon_lake", "deep_water"), n=40)
 
     def under(x, y):
         return natural(x, y) - 0.4
 
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("cdf_grass", "grass"))
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("moon_grass", "grass"))
 
     for piece in c.pieces:
         for kind, size in (("high_bridge", 2.2), ("bridge", 2.0), ("ramp", 2.2)):
             if piece.name.endswith(kind) and not (kind == "bridge" and piece.name.endswith("high_bridge")):
-                kit.clear_piers(c, piece, [ter], every=14.0, mat=("cdf_marble", "wall"), size=size, inset=size + 1.0)
+                kit.clear_piers(c, piece, [ter], every=14.0, mat=("moon_stone", "wall"), size=size, inset=size + 1.0)
 
-    # The golden dragon on its plinth inside the loop, the observatory pinnacle inside the
-    # spiral, the palace on the mount, and plain blocks along the market and terraces.
-    bm = bmesh.new()
-    zs = road_z(SEG[14], 14)
-    box(bm, (SHRINE[0], SHRINE[1], zs - 4.0), (20.0, 20.0, 12.0))
-    box(bm, (SHRINE[0], SHRINE[1], zs + 8.0), (6.0, 18.0, 14.0))
+    # The observatory pinnacle inside the spiral (the shrine, the palace and the town are
+    # moon_scenery's).
     zp = road_z(SEG[23], 23)
     pin = c.rock_mass("Observatory Pinnacle", PINNACLE[0], PINNACLE[1], LAYOUT[23][1] - 14.0, LAYOUT[23][1] - 14.0, zp + 40.0, z0=-40.0, n=18, seed=6)
-    c.paint_rock(pin, ("cdf_karst", "wall"), ("cdf_grass", "grass"))
-    zt = road_z(SEG[25], 25)
-    box(bm, (MOUNT[0], MOUNT[1], zt + 25.0), (60.0, 40.0, 50.0))
-    s = 6.0
-    k = 0
-    while s < SEG[4]:
-        q = at(s)
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 8.0))
-            box(bm, (p.x, p.y, q.p.z + 2.5), (7.0, 7.0, 5.0 + 2 * (k % 2)), rot=math.atan2(q.t.y, q.t.x))
-        s += 13.0
-        k += 1
-    s = SEG[25]
-    k = 0
-    while s < SEG[28]:
-        q = at(s)
-        p = q.side((1 if k % 2 else -1) * (q.w / 2 + 9.0))
-        box(bm, (p.x, p.y, q.p.z + 3.0), (10.0, 8.0, 6.0), rot=math.atan2(q.t.y, q.t.x))
-        s += 18.0
-        k += 1
-    q = at(12.0)
-    for side in (-1, 1):
-        p = q.side(side * (q.w / 2 + 3.0))
-        box(bm, (p.x, p.y, q.p.z + 7.0), (4.0, 4.0, 15.0), rot=math.atan2(q.t.y, q.t.x))
-    box(bm, (q.p.x, q.p.y, q.p.z + 15.0), (4.0, q.w + 10.0, 2.5), rot=math.atan2(q.t.y, q.t.x))
-    blocks = c.mesh_object("Buildings", bm, "Props")
-    c.assign(blocks, c.lib("cdf_gold", "wall"))
-
+    c.paint_rock(pin, ("moon_rock", "wall"), ("moon_grass", "grass"))
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
     # Zippers: out of the market onto the bridge, up the shore, out of the shrine's loop,
@@ -326,7 +285,9 @@ def main():
         height=10.0,
     )
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    import moon_scenery  # noqa: E402
+
+    moon_scenery.build(c, sys.modules[__name__], ter)
     c.finish()
     print("lap", round(c.length, 1))
 
