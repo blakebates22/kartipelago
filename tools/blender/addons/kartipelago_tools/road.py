@@ -31,6 +31,7 @@ SURFACES = [
     ("grass", "Grass", "Off-road: slower"),
     ("sand", "Sand", "Off-road: much slower"),
     ("loose_sand", "Loose Sand", "Off-road desert sand: slower, but not a trap"),
+    ("soft_sand", "Soft Sand", "Off-road beach sand: slow, and arriving fast doesn't carry you far across it"),
     ("ice", "Ice", "Slippery"),
     ("snow_stone", "Snowy Stone", "Driveable road dusted with snow: a touch less grip"),
     ("icy_stone", "Icy Stone", "Driveable but icy: much less grip"),

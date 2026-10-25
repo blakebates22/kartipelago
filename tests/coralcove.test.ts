@@ -3,7 +3,7 @@
 // minute; the boardwalk's jump over the channel.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
+import { SURFACES, loadTrackPackage, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
 
 const id = "coral_cove";
@@ -19,6 +19,10 @@ describe("Coral Cove (greybox)", () => {
     expect(p.trackData.zippers?.length).toBe(2);
     const es = (p.meta.entities ?? []) as { type: string }[];
     expect(es.filter((e) => e.type === "respawn")).toHaveLength(1);
+    // Off the road it's soft sand (cutting across mustn't pay), the shoulders plain sand.
+    expect(p.collision.surfaces).toContain("soft_sand");
+    expect(p.collision.surfaces).toContain("sand");
+    expect(SURFACES.soft_sand!.drag).toBeGreaterThan(2);
   });
 
   it("is quick: an AI's three laps take under a minute, without a respawn", async () => {

@@ -190,7 +190,9 @@ def classify(c, n, info):
         return ("wet_sand", "deep_water")
     if c.z < WATER_Z + 0.6:
         return ("wet_sand", "sand")
-    return ("beach_sand", "sand")
+    # Soft sand off the road (Blake: cutting across it mustn't pay); the road's own
+    # shoulders stay ordinary sand.
+    return ("beach_sand", "soft_sand")
 
 
 def main():

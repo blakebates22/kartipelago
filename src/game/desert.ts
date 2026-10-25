@@ -26,6 +26,7 @@ export const DUSTY: Record<string, number> = {
   dirt: 0.8,
   loose_sand: 1,
   sand: 1,
+  soft_sand: 1,
 };
 
 export interface DustConfig {

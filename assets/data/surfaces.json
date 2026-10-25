@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. A surface is chosen separately from the texture: the same picture can be road in one place and grass in another. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost. respawn: touching it puts you back at the last checkpoint (deep water, lava, and abyss: the invisible floor of a bottomless chasm).",
+  "about": "Gameplay surfaces, by the semantic id a Blender material carries in its kp_surface property. A surface is chosen separately from the texture: the same picture can be road in one place and grass in another. speed, accel and grip multiply the kart's own top speed, acceleration and grip while it's on the surface (1 = unchanged). drag multiplies how fast speed above the surface's top speed bleeds away (soft sand: arriving fast doesn't carry you far across it). road: counts as on the track. wall: always collides as a wall. boost: driving onto it starts a zipper boost. respawn: touching it puts you back at the last checkpoint (deep water, lava, and abyss: the invisible floor of a bottomless chasm).",
   "surfaces": {
     "road": {
       "road": true,
@@ -43,6 +43,13 @@
       "speed": 0.74,
       "accel": 0.78,
       "grip": 0.84
+    },
+    "soft_sand": {
+      "road": false,
+      "speed": 0.5,
+      "accel": 0.55,
+      "grip": 0.75,
+      "drag": 3.5
     },
     "ice": {
       "road": true,

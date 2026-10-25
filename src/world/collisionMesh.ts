@@ -30,6 +30,9 @@ export interface SurfaceDef {
   speed?: number;
   accel?: number;
   grip?: number;
+  /** Multiplier on the kart's drag: how fast speed above the surface's top speed bleeds
+   * away (soft sand stops a fast kart that cuts across it within a few metres). */
+  drag?: number;
 }
 
 export type SurfaceTable = Record<string, SurfaceDef>;
@@ -438,16 +441,22 @@ export function deepestWall(
 }
 
 /** A kart's config on a surface: its speed, acceleration and grip scaled. */
-export function applySurface<T extends { topSpeed: number; accel: number; grip: number }>(
-  cfg: T,
-  def: SurfaceDef | undefined,
-): T {
-  if (!def || ((def.speed ?? 1) === 1 && (def.accel ?? 1) === 1 && (def.grip ?? 1) === 1))
+export function applySurface<
+  T extends { topSpeed: number; accel: number; grip: number; drag?: number },
+>(cfg: T, def: SurfaceDef | undefined): T {
+  if (
+    !def ||
+    ((def.speed ?? 1) === 1 &&
+      (def.accel ?? 1) === 1 &&
+      (def.grip ?? 1) === 1 &&
+      (def.drag ?? 1) === 1)
+  )
     return cfg;
   return {
     ...cfg,
     topSpeed: cfg.topSpeed * (def.speed ?? 1),
     accel: cfg.accel * (def.accel ?? 1),
     grip: cfg.grip * (def.grip ?? 1),
+    ...(cfg.drag !== undefined && def.drag !== undefined ? { drag: cfg.drag * def.drag } : {}),
   };
 }
