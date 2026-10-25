@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "shipwreck_bay",
-  "name": "Shipwreck Bay (greybox)",
+  "id": "shipwreck_bay_v2",
+  "name": "Shipwreck Bay (greybox, v2)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -109,5 +109,5 @@
       "at": 361.9
     }
   ],
-  "generator": "tools/blender/prehistoric/shipwreck_bay.py (re-running it rewrites entities)"
+  "generator": "tools/blender/prehistoric/shipwreck_bay_v2.py (re-running it rewrites entities)"
 }
