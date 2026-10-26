@@ -77,6 +77,9 @@ def game_entity(c, kind, x, y, z, **extra):
 # ------------------------------------------------------------------ the glacier and its caves
 
 
+NAVE_H = 22.0  # the caves' vault (the old caves were 13 m high)
+
+
 def glacier(c, ss, t0, t1):
     """The glacier the Crystal Caves run through: a dome of layered blue ice, cut through
     along the route, with a solid floor under the tunnel."""
@@ -84,7 +87,9 @@ def glacier(c, ss, t0, t1):
     rock = c.rock_mass("Glacier", cx, cy, rx, ry, ss.GLACIER_TOP, z0=-10.0, n=40, seed=11, angle=ang,
                        bands=[(1.0, 0.0), (1.0, 0.4), (0.96, 0.46), (0.93, 0.7), (0.86, 0.75), (0.7, 0.92), (0.45, 1.0)])
     half = c.width / 2 + 3.6
-    c.tunnel(rock, t0, t1, half=half, height=13.0, pad=16.0)
+    # (Blake's review: a cathedral of ice inside, the drive the same: the vault is twice
+    # the old caves' height, NAVE_H; cathedral_nave() builds its columns and ribs.)
+    c.tunnel(rock, t0, t1, half=half, height=NAVE_H, pad=16.0)
     c.paint_rock(rock, ("berg_ice", "wall"), ("summit_snow", "deep_snow"), floor=("crystal_road", "snow_stone"), top_z=40, floor_z=30)
     floor = []
     s = t0 - 24
@@ -97,6 +102,78 @@ def glacier(c, ss, t0, t1):
         s += 2.0
     c.ribbon("Cave Floor", floor, 26, 0, c.lib("crystal_road", "snow_stone"), coll="Collision", role="collision", steps=4)
     return rock
+
+
+def cathedral_nave(c, ss, t0, t1, blue, violet):
+    """Inside the glacier, a nave of ice (Blake's review: make it a cathedral, the drive
+    inside the same): clustered columns of the lake's turquoise ice standing in the
+    walls every 15 m, pointed ribs of glowing crystal springing from them across the
+    vault, tall lancet windows of blue and violet crystal glowing between them, and a
+    crystal chandelier hanging from every other rib."""
+    import volcano_props as vp
+
+    half = c.width / 2 + 3.6
+    wall_top = NAVE_H * 0.62  # (c.tunnel's profile: straight walls, then the vault)
+    m = Mesh()
+    s = t0 + 8.0
+    k = 0
+    while s < t1 - 6.0:
+        q = c.at(s)
+        if not ss.in_glacier(q.p.x, q.p.y, 0.9):
+            s += 15.0
+            continue
+        rot = road_rot(q)
+        across = rot + math.pi / 2
+        z0 = q.p.z - 0.6
+        for side in (-1, 1):
+            # The column: a shaft in the wall (only its face stands out, 0.6 m), two
+            # slimmer shafts beside it, a capital where the rib springs.
+            c0 = q.side(side * (half + 0.3))
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (c0.x, c0.y, z0 + wall_top / 2), (1.8, 2.0, wall_top), across)
+            for off in (-1.5, 1.5):
+                cc = c0 + q.t * off + q.r * (-side * 0.2)
+                props.cuboid(m.bm, (cc.x, cc.y, z0 + wall_top / 2), (1.2, 0.8, wall_top), across)
+            m.mark(("berg_ice", "wall"), k0)
+            k0 = len(m.bm.faces)
+            cap = q.side(side * (half - 0.1))
+            props.cuboid(m.bm, (cap.x, cap.y, z0 + wall_top + 0.4), (1.4, 3.6, 0.8), across)
+            props.cuboid(m.bm, (cap.x, cap.y, z0 + 0.4), (1.4, 3.6, 0.8), across)
+            m.mark("crystal_blue", k0)
+            # The lancet window halfway to the next column: a tall pointed panel of
+            # glowing crystal flush with the wall.
+            w = c.at(s + 7.5)
+            if ss.in_glacier(w.p.x, w.p.y, 0.9):
+                wp = w.side(side * (half - 0.05))
+                wa = road_rot(w) + math.pi / 2
+                mat = "crystal_violet" if (k + (side > 0)) % 3 == 0 else "crystal_blue"
+                k0 = len(m.bm.faces)
+                props.cuboid(m.bm, (wp.x, wp.y, w.p.z + 6.0), (0.3, 2.4, 8.0), wa)
+                res = bmesh.ops.create_cone(m.bm, cap_ends=True, segments=4, radius1=1.7, radius2=0.0, depth=2.4)
+                for v in res["verts"]:
+                    lx, ly = v.co.x, v.co.y
+                    v.co = Vector((wp.x + lx * 0.12 * math.cos(wa) - ly * math.sin(wa), wp.y + lx * 0.12 * math.sin(wa) + ly * math.cos(wa), w.p.z + 11.2 + v.co.z))
+                m.mark(mat, k0)
+                (violet if mat == "crystal_violet" else blue).append((wp.x - math.cos(wa) * side * 1.5, wp.y - math.sin(wa) * side * 1.5, w.p.z + 7.0))
+        # The rib: up the vault from each capital to the crown, just under the roof.
+        k0 = len(m.bm.faces)
+        pts = [(half - 0.4, wall_top + 0.3), (half * 0.62 - 0.2, NAVE_H - 0.7), (0.0, NAVE_H - 0.5)]
+        for side in (-1, 1):
+            chain = [q.side(side * a, b - 0.6) for a, b in pts]
+            for a_, b_ in zip(chain, chain[1:]):
+                mid = (a_ + b_) / 2
+                L = (b_ - a_).length
+                tilt = math.atan2(b_.z - a_.z, math.hypot(b_.x - a_.x, b_.y - a_.y))
+                props.cuboid(m.bm, (mid.x, mid.y, mid.z), (L + 0.6, 1.0, 0.9), math.atan2(b_.y - a_.y, b_.x - a_.x), (0.0, -tilt))
+        m.mark("crystal_blue", k0)
+        if k % 2 == 0:
+            top = q.side(0.0, NAVE_H - 1.6)
+            ob = c.place(vp.crystals(c, "crystal_blue", k % 3), top.x, top.y, top.z, rot=rot, scale=0.8, coll="Caves", role="visual")
+            ob.rotation_euler = (math.pi, 0, rot)
+            blue.append((top.x, top.y, top.z - 3.0))
+        s += 15.0
+        k += 1
+    m.build(c, "Ice Nave", "Caves", "both")
 
 
 def ice_cathedral(c, ss, t0, t1):
@@ -155,7 +232,7 @@ def cave_dressing(c, ss, rock, t0, t1, blue, violet):
         (violet if mat == "crystal_violet" else blue).append((p.x, p.y, p.z + 3.0))
         if k % 2 == 0:
             # Hanging from the roof.
-            r = q.side(-side * 3.0, 11.6)
+            r = q.side(-side * 4.0, NAVE_H - 0.5)
             ob = c.place(vp.crystals(c, "crystal_blue", (k + 1) % 3), r.x, r.y, r.z, rot=tilt_rot, scale=0.6, coll="Caves", role="visual")
             ob.rotation_euler = (math.pi, 0, tilt_rot)
             blue.append((r.x, r.y, r.z - 2))
@@ -1056,6 +1133,7 @@ def build(c, rock, t0, t1, ss, ruin=None):
     flags = sp.Bunting()
 
     cave_dressing(c, ss, rock, t0, t1, blue, violet)
+    cathedral_nave(c, ss, t0, t1, blue, violet)
     ice_cathedral(c, ss, t0, t1)
     water = lake(c, ss, ter)
     hot_springs(c, ss, ter, geysers)
