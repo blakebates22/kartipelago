@@ -576,9 +576,11 @@ def main():
         if z is None:
             return None
         g = c.ground_z(x, y, mountains)
-        # (No land here, cut away over the tunnel's approach: no floor either; one at the
-        # natural height stood up as a wall across the road.)
-        return None if g is None else min(z, g - 0.35)
+        if g is None:
+            # No land here (cut away over the tunnel's approach): a floor just under the
+            # road, not at the natural height (that stood up as a wall across the road).
+            return min(z, c.nearest(x, y)[0].p.z - 0.5)
+        return min(z, g - 0.35)
 
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 4.0, near(under_land), c.lib("snow_ground", "deep_snow"),
                       clamp_where=lambda x, y: not in_tunnel_rock(x, y, 2.5))
