@@ -78,9 +78,17 @@ export class VMenu {
     return used;
   }
 
-  draw(ui: UiLayer, x: number, y: number, w: number, h: number, gap = 4, scale = 1) {
+  /** The first row shown, when only `rows` of them fit (the list scrolls to the focus). */
+  top = 0;
+
+  draw(ui: UiLayer, x: number, y: number, w: number, h: number, gap = 4, scale = 1, rows?: number) {
+    if (rows !== undefined) {
+      this.top = Math.min(Math.max(this.top, this.focus - rows + 1), this.focus);
+      this.top = Math.max(0, Math.min(this.top, this.items.length - rows));
+    }
     this.items.forEach((it, i) => {
-      const by = y + i * (h + gap);
+      if (rows !== undefined && (i < this.top || i >= this.top + rows)) return;
+      const by = y + (i - (rows !== undefined ? this.top : 0)) * (h + gap);
       const r = ui.button(x, by, w, h, it.label, {
         focused: i === this.focus,
         disabled: it.disabled,

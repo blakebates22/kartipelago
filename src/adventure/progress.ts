@@ -243,14 +243,14 @@ export function coinRaceFinished(
   if (!all && !won)
     return {
       progressed: false,
-      lines: [`COINS ${coins.got}/${coins.total} AND NOT 1ST.`, "GET ALL 4 AND WIN."],
+      lines: [`FRAGMENTS ${coins.got}/${coins.total} AND NOT 1ST.`, "GET ALL 4 AND WIN."],
     };
   if (!all)
     return {
       progressed: false,
-      lines: [`YOU WON, BUT COINS ${coins.got}/${coins.total}.`, "GET ALL 4 AND WIN."],
+      lines: [`YOU WON, BUT FRAGMENTS ${coins.got}/${coins.total}.`, "GET ALL 4 AND WIN."],
     };
-  return { progressed: false, lines: ["ALL 4 COINS, BUT YOU HAVE TO WIN TOO."] };
+  return { progressed: false, lines: ["ALL 4 FRAGMENTS, BUT YOU HAVE TO WIN TOO."] };
 }
 
 export function bossFinished(

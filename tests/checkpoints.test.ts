@@ -18,6 +18,7 @@ import { createKartState } from "../src/vehicles/kart";
 import { buildTrack, type Track } from "../src/world/track";
 import { loadTrackPackage, parseCheckpoints, type PackageReader } from "../src/world/trackPackage";
 import { aiLap } from "./aiLap";
+import { TRACKS } from "../src/game/tracks";
 
 const cfg = { ...tuning.race, laps: 3 };
 const dt = 1 / 120;
@@ -425,5 +426,28 @@ describe("checkpoint progression (acceptance)", () => {
     expect(gates.map((g) => g.id)).toEqual(["cp00", "cp01"]);
     expect(gates[0]!.left).toBe(15);
     expect(warnings.join(" ")).toContain("cp07_x");
+  });
+});
+
+describe("respawns", () => {
+  // Every course's respawn spots face along the road, the way its gate faces (they once
+  // came out of the exporter turned by up to 90 degrees: you were put back sideways).
+  const ids = [...new Set(TRACKS.flatMap((t) => (t.load.packageId ? [t.load.packageId] : [])))];
+  it.each(ids)("%s puts you back facing along the road", async (id) => {
+    let text: string;
+    try {
+      const b = await readFile(new URL(`../public/tracks/${id}/checkpoints.json`, import.meta.url));
+      text = new TextDecoder().decode(b as Uint8Array);
+    } catch {
+      return; // (no checkpoints.json: gates come from the route)
+    }
+    const doc = JSON.parse(text) as {
+      checkpoints: { id: string; heading: number; respawn?: { heading: number } }[];
+    };
+    for (const g of doc.checkpoints) {
+      if (!g.respawn) continue;
+      const d = Math.abs(((g.respawn.heading - g.heading + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+      expect(d, `${id} ${g.id}`).toBeLessThan(0.6);
+    }
   });
 });

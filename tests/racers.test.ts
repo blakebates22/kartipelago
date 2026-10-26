@@ -48,7 +48,9 @@ function riderBounds(r: Racer) {
 
 /** Run the animator for a while in one motion state. */
 function run(r: Racer, m: RacerMotion, seconds = 1.5) {
-  for (let t = 0; t < seconds; t += 1 / 60) r.anim.step(1 / 60, m, r.kart, { x: 2, z: 3 });
+  for (let t = 0; t < seconds; t += 1 / 60)
+    if (r.boss) r.animate(1 / 60, m, null);
+    else r.anim.step(1 / 60, m, r.kart, { x: 2, z: 3 });
   r.root.updateMatrixWorld(true);
 }
 
@@ -67,6 +69,30 @@ describe("the racers", () => {
       expect(triangles(r.high)).toBeGreaterThan(3000);
       expect(triangles(r.high)).toBeLessThan(14000);
       expect(r.rig.wings).toHaveLength(2);
+    }
+  });
+
+  it("races the bosses as huge dragons on foot: no kart, several karts long", () => {
+    for (const palette of Object.values(DRAGON_PALETTES)) {
+      const r = new Racer("dragon", { palette, boss: true });
+      expect(r.boss).toBeDefined();
+      expect(r.root.children).toContain(r.boss!.root);
+      expect(r.root.children).not.toContain(r.lod);
+      const n = triangles(r.root);
+      expect(n).toBeGreaterThan(3000);
+      expect(n).toBeLessThan(24000);
+      // Bounding along, galloping and in the air, it stays whole and on its feet.
+      for (const m of [
+        motion(),
+        motion({ speed: 25, throttle: true, steer: 0.6 }),
+        motion({ speed: 25, grounded: false }),
+      ]) {
+        run(r, m, 0.6);
+        const b = new THREE.Box3().setFromObject(r.boss!.root);
+        expect(b.max.z - b.min.z, "length").toBeGreaterThan(CHASSIS.length * 4);
+        expect(b.max.y, "height").toBeGreaterThan(3.5);
+        expect(Number.isFinite(b.min.y)).toBe(true);
+      }
     }
   });
 

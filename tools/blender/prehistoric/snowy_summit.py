@@ -38,9 +38,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "snowy_summit"
+# The ruin (snowy_ruins.py): the dragons brought the great hollow tree down. It fell
+# towards the start, across the forest and over the crevasse, and with it went the spiral,
+# the treetop bridges and the lookout road. The lap runs in at the tree's old door, across
+# its broken stump, straight through its fallen trunk like a tunnel, off the trunk's
+# shattered top over the crevasse, and down onto the glacier fields. Everything else (the
+# land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "snowy_summit_ruin" if RUIN else "snowy_summit"
 
 # ---------------------------------------------------------------- the layout
 
@@ -91,7 +99,25 @@ LAYOUT = [
     ("L", 70, 90),  # 35 the Glacier Fields
     ("S", 20),  # 36 onto the start (stretched to close the loop)
 ]
-LAYOUT, PATH = kit.close_turtle(LAYOUT, 29, 36, START, 0.0)
+STANDARD_LAYOUT, STANDARD_PATH = kit.close_turtle(LAYOUT, 29, 36, START, 0.0)
+LAYOUT, PATH = STANDARD_LAYOUT, STANDARD_PATH
+if RUIN:
+    # Blake: about half as long; the great tree destroyed and fallen towards the start,
+    # and we drive through it like a tunnel. The course's own lap as far as the tree's
+    # door (0-21), then across the stump (22), through the trunk (23), off its broken top
+    # over the crevasse (24) and round onto the old landing and the glacier fields, which
+    # are the course's own (26-29: the same arc and straight home as 35-36).
+    LAYOUT = STANDARD_LAYOUT[:22] + [
+        ("L", 40, 25),  # 22 across the stump, lining up with the fallen trunk
+        ("S", 194.27),  # 23 through the trunk, and out along its shattered top
+        ("S", 16),  # 24 the gap, over the crevasse
+        ("S", 8.7),  # 25 the landing, on the crown's limbs (closes the loop)
+        ("L", 50, 35),  # 26 onto the old landing
+        ("S", 27.0),  # 27 (closes the loop)
+        ("L", 70, 90),  # 28 the Glacier Fields
+        ("S", STANDARD_LAYOUT[36][1]),  # 29 onto the start
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 25, 27, START, 0.0)
 
 
 def _weave(path):
@@ -116,22 +142,25 @@ def _weave(path):
     return [tuple(p) for p in out]
 
 
-PATH = _weave(PATH)
+STANDARD_PATH = _weave(STANDARD_PATH)
+if not RUIN:
+    PATH = STANDARD_PATH
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
-# The three jumps: (lip, landing) along the lap.
-JUMPS = [(SEG[6], SEG[7]), (SEG[18], SEG[19]), (SEG[33], SEG[34])]
-HELIX = (SEG[22], SEG[23])
+# The three jumps: (lip, landing) along the lap. (The ruin's last is off the fallen
+# trunk's top, over the crevasse further east.)
+JUMPS = [(SEG[6], SEG[7]), (SEG[18], SEG[19]), (SEG[24], SEG[25]) if RUIN else (SEG[33], SEG[34])]
+HELIX = (-99.0, -98.0) if RUIN else (SEG[22], SEG[23])
 
 
-def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+def _seg_point(i, path=None):
+    return next(p for p in (path or STANDARD_PATH) if p[3] == i)
 
 
 def _arc_centre(i):
-    """The centre of arc segment i."""
+    """The centre of the standard lap's arc segment i (the landmarks stay put in the ruin)."""
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STANDARD_LAYOUT[i]
     side = 90 if sg[0] == "L" else -90
     a = math.radians(h + side)
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
@@ -145,7 +174,7 @@ TREE1_R = (37.0, 42.0)  # its trunk wall: inside and outside radius at the road
 TREE_R = 21.0  # the other two giants' trunks
 
 # Heights along the lap (metres along it, height); the road eases between them.
-ANCHORS = [
+ANCHORS = [] if RUIN else [
     (0.0, 0.6),
     (SEG[4], 0.6),
     (SEG[5], 1.4),
@@ -172,6 +201,73 @@ ANCHORS = [
     (SEG[35], 0.6),
     (LENGTH, 0.6),
 ]
+if RUIN:
+    # The course's own heights to the tree's door; level across the stump and through the
+    # trunk (it lies on the forest floor), up its shattered top to the lip, down off the
+    # crevasse onto the crown's limbs and the old landing, and the lake.
+    ANCHORS = [
+        (0.0, 0.6),
+        (SEG[4], 0.6),
+        (SEG[5], 1.4),
+        (SEG[6], 3.4),
+        (SEG[7], 0.8),
+        (SEG[8], 0.9),
+        (SEG[9], 3.5),
+        (SEG[13], 21.0),
+        (SEG[14], 22.0),
+        (SEG[17], 22.6),
+        (SEG[18], 23.2),
+        (SEG[19], 15.5),
+        (SEG[20], 12.0),
+        (SEG[22], 10.0),
+        (SEG[23], 10.4),
+        (SEG[24] - 44, 11.0),
+        (SEG[24], 14.5),  # the trunk's broken top: the lip
+        (SEG[25], 5.5),  # ...the landing, on the crown's limbs (9 m under the lip)
+        (SEG[26], 4.5),
+        (SEG[27], 3.0),
+        (SEG[28], 0.6),
+        (LENGTH, 0.6),
+    ]
+
+# The fallen trunk (the ruin): it lies along the straight through it (segment 23), from
+# just outside the stump's wall to its shattered top over the crevasse. TRUNK: (x, y) of
+# the straight's start, its heading (unit vector), and where along it the trunk begins
+# and ends. Its hollow is BORE wide; the road runs on the rotten floor, AXIS under its
+# middle; its top is split open the last OPEN metres (only its lower half lies there).
+TRUNK = None
+TRUNK_BORE, TRUNK_AXIS, TRUNK_OPEN = 13.0, 8.0, 40.0
+if RUIN:
+    _a = _seg_point(23, PATH)
+    _d = (math.cos(math.radians(_a[2])), math.sin(math.radians(_a[2])))
+    _tx, _ty = TREE1[0] - _a[0], TREE1[1] - _a[1]
+    _along, _lat = _tx * _d[0] + _ty * _d[1], _tx * _d[1] - _ty * _d[0]
+    _out = _along + math.sqrt(max(0.0, (TREE1_R[1] + 2.0) ** 2 - _lat**2))
+    TRUNK = ((_a[0], _a[1]), _d, _out + 1.0, SEG[24] - SEG[23] + 3.0)
+
+
+def trunk_at(x, y):
+    """(along the trunk from the straight's start, across it), or None off it."""
+    if TRUNK is None:
+        return None
+    (ax, ay), (dx, dy), t0, t1 = TRUNK
+    t = (x - ax) * dx + (y - ay) * dy
+    return t, (x - ax) * dy - (y - ay) * dx
+
+
+def trunk_radius(t):
+    """The fallen trunk's outer radius, t metres along the straight (it tapers)."""
+    (_, _, t0, t1) = TRUNK
+    u = max(0.0, min(1.0, (t - t0) / (t1 - t0)))
+    return lerp(33.0, 25.0, u)
+
+
+def in_trunk(x, y, margin=0.0):
+    p = trunk_at(x, y)
+    if p is None:
+        return False
+    t0, t1 = TRUNK[2], TRUNK[3]
+    return t0 - margin <= p[0] <= t1 + margin and abs(p[1]) < trunk_radius(p[0]) + margin
 
 
 def _lin(d):
@@ -212,6 +308,11 @@ def bridge_sag(d):
 
 
 def road_z(d, seg=None):
+    if RUIN and d >= SEG[22]:
+        # Level through the trunk (a straight slope), the lip's kick, the drop beyond.
+        if d <= SEG[25] + 14:
+            return _lin(d)
+        return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
     if HELIX[0] <= d <= HELIX[1]:
         # The spiral's steps: four a turn (the same on each, so they stack evenly).
         turn = (HELIX[1] - HELIX[0]) / HELIX_TURNS
@@ -222,12 +323,20 @@ def road_z(d, seg=None):
     z = sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
     # Icy rollers through the caves' S-bends, and down the plunge from the lookout.
     z += _rollers(d, SEG[10] - 4, SEG[13] - 6, 1.7, 34.0)
+    if RUIN:
+        return z
     z += _rollers(d, SEG[29] + 16, SEG[30] - 2, 1.6, 30.0)
     z += _rollers(d, SEG[32] + 2, SEG[33] - 40, 1.4, 28.0)
     return z + bridge_sag(d)
 
 
 def road_w(d, seg):
+    if RUIN and seg >= 22:
+        if seg in (25, 26):
+            return 22.0  # the landing
+        if seg == 23 and d > SEG[24] - 34:
+            return 17.0  # the ramp, up the trunk's shattered top
+        return 18.0 if seg >= 27 else 15.0
     if seg in (0, 35, 36):
         return 18.0  # the open lake
     if seg in (7, 19, 34):
@@ -466,6 +575,8 @@ def classify(c, n, info):
     if in_glacier(c.x, c.y, 0.8) or in_tree1(c.x, c.y, 1.5):
         return None
     smp = info["sample"]
+    if RUIN and in_trunk(c.x, c.y) and info["d"] < 16:
+        return ("forest_road", "dirt")  # the rotten floor inside the fallen trunk
     if HIDE_S[0] <= smp.s <= HIDE_S[1] and info["d"] < 18 and c.z > smp.p.z - 1.0:
         return None
     if c.z < -6:
@@ -507,7 +618,7 @@ def abyss_z(x, y):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Snowy Summit Pass", "summit_pass")
+    c = kit.Course(TRACK_ID, "Snowy Summit Pass (Ruined)" if RUIN else "Snowy Summit Pass", "summit_ruins" if RUIN else "summit_pass")
     c.route(ROUTE, width=15.0, bank=6.0)
     _match_route(c)
     rope = ("rope_rail", "wall")
@@ -599,6 +710,34 @@ def main():
         },
         "snowlanding": {"mat": "summit_road", "shoulder": 1.6, "shoulder_mat": snowbank},
     }
+    if RUIN:
+        rotten = ("heartwood", "dirt")
+        c.kinds.update({
+            # Across the stump's floor, where the spiral began.
+            "stump": {"mat": "forest_road", "shoulder": 2.0, "shoulder_mat": rotten},
+            # Through the fallen trunk, on its rotten floor (its walls are the tunnel's).
+            "hollow": {"mat": "forest_road", "shoulder": 1.6, "shoulder_mat": rotten},
+            # Up its shattered top and out over the crevasse.
+            "logramp": {
+                "mat": "forest_road",
+                "shoulder": 0.8,
+                "shoulder_mat": rotten,
+                "deck": 4.0,
+                "deck_mat": ("giant_bark", "wall"),
+                "ground": False,
+            },
+            # The landing: the crown's great limbs lying across the crevasse's far side.
+            "limbs": {
+                "mat": "plank_road",
+                "shoulder": 0.8,
+                "shoulder_mat": ("heartwood", "road"),
+                "barrier": 1.2,
+                "barrier_mat": ("giant_bark", "wall"),
+                "deck": 4.0,
+                "deck_mat": ("giant_bark", "wall"),
+                "ground": False,
+            },
+        })
 
     lift = {"lift": lambda u, n: 1.5 * max(0.0, (u - (n - 10)) / 10) ** 2}
 
@@ -644,11 +783,28 @@ def main():
             return "shore"
         return "lake"
 
+    def ruin_label(smp):
+        x, y, s = smp.p.x, smp.p.y, L(smp.s)
+        seg = seg_of(s)
+        if seg < 21 or (seg == 21 and not in_tree1(x, y, 6.0)):
+            return label(smp)
+        if JUMPS[2][0] <= s <= JUMPS[2][1]:
+            return "gap"
+        if seg in (21, 22) or (seg == 23 and in_tree1(x, y, 6.0)):
+            return "stump"
+        if seg == 23:
+            return "logramp" if s >= SEG[24] - 34 else "hollow"
+        if in_abyss(x, y, 3.0):
+            return "limbs"
+        if seg in (25, 26, 27):
+            return "snowlanding"
+        return "lake"
+
     specials = []
-    for s0, s1, k in kit.runs(c, label):
+    for s0, s1, k in kit.runs(c, ruin_label if RUIN else label):
         if k == "gap":
             specials.append((s0, s1, None))
-        elif k in ("ramp", "stoneramp", "snowramp"):
+        elif k in ("ramp", "stoneramp", "snowramp", "logramp"):
             specials.append((s0, s1, k, lift))
         elif k != "lake":
             specials.append((s0, s1, k))
@@ -686,6 +842,15 @@ def main():
     rock = summit_scenery.glacier(c, sys.modules[__name__], t0, t1)
 
     c.start_line()
+    if RUIN:
+        ruin_gameplay(c)
+        wreck = ruin_mode.DRESS(c, sys.modules[__name__], rock, t0, t1)
+        ter = list(c.coll("Terrain").objects)
+        c.preset("sun", ter + [rock] + wreck, 0.25)
+        c.preset("bottoms", ter, 0.4)
+        kit.paint.shade_roads(c.pieces, 0.35)
+        c.finish()
+        return
     S = lambda i: R(SEG[i])  # noqa: E731
     # Zippers: off the start, before the terraces, on the cave's long climb, at the
     # canyon jump's run-up (for a huge leap), and down the plunge to the bluff.
@@ -751,6 +916,39 @@ def main():
     c.preset("bottoms", ter, 0.4)
     kit.paint.shade_roads(c.pieces, 0.35)
     c.finish()
+
+
+def ruin_gameplay(c):
+    """The ruin's zippers, items, respawns and checkpoints: the course's own to the tree,
+    then through the trunk and on the glacier fields (where the course's own were)."""
+    S = lambda i: R(SEG[i])  # noqa: E731
+    # (And one up the trunk's shattered top, for the leap over the crevasse.)
+    for at in (50, S(4) - 6, S(10) - 8, S(17) + 4, S(23) + 70, S(24) - 38, S(28) + 24):
+        c.zipper(at, 0)
+    for at, across in ((70, -4), (S(2) + 10, 0), (S(9) + 10, 0), (S(14) + 20, 2), (S(21) + 10, 0), (S(23) + 120, 0), (S(28) + 40, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in (
+        (92, -4, "red"),
+        (92, 4, "blue"),
+        (S(3) + 10, 0, "green"),
+        (S(8) + 30, 0, "yellow"),
+        (S(11) + 50, 0, "rainbow"),
+        (S(19) + 30, -4, "red"),
+        (S(19) + 30, 4, "blue"),
+        (S(23) + 40, 0, "green"),
+        (S(26) + 10, 0, "yellow"),
+        (S(28) + 80, 0, "red"),
+    ):
+        c.balloon(at, across, col)
+    for lip, land_ in JUMPS:
+        lip, land_ = R(lip), R(land_)
+        c.entity("respawn", **{"from": round(lip - 40, 1), "to": round(land_ + 8, 1), "at": round(land_ + 36, 1)})
+    J = [(R(a), R(b)) for a, b in JUMPS]
+    c.checkpoints(
+        extra=[S(2), J[0][0] - 60, J[0][1] + 46, S(10) + 10, S(11) + 70, S(14) + 20, J[1][0] - 66, J[1][1] + 48, S(21),
+               S(23) + 50, J[2][0] - 66, J[2][1] + 40, S(28) + 60],
+        height=9.0,
+    )
 
 
 if __name__ == "__main__":

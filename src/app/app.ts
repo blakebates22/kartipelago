@@ -43,7 +43,8 @@ export type ScreenId =
   | "ADVENTURE_MAP"
   | "ADVENTURE_SCENE"
   | "ADVENTURE_RESULT"
-  | "ADVENTURE_DEV";
+  | "ADVENTURE_DEV"
+  | "ADVENTURE_SCENES";
 
 export interface Screen {
   readonly id: ScreenId;

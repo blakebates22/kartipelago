@@ -18,7 +18,7 @@ export interface AdventureCourse {
   track: string;
   /** Its ruined version (track id), once built. Until then the standard course stands in. */
   ruin?: string;
-  /** Silver coin spots on the ruin (default: four spread round the lap). */
+  /** Map fragment spots on the ruin (default: four spread round the lap). */
   coins?: CoinSpot[];
 }
 
@@ -56,7 +56,7 @@ export const KINGDOMS: Kingdom[] = [
       { track: "bonebog_pyramid", ruin: "bonebog_pyramid_ruin" },
       { track: "ember_peak", ruin: "ember_peak_ruin" },
     ],
-    boss: { name: "Cinderjaw", track: "boss_prehistoric", speed: 1.03 },
+    boss: { name: "Cinderjaw", track: "boss_prehistoric", speed: 1.0 },
     tool: { id: "valley_tool", name: "Valley Tool" },
     champion: { name: "Rex", look: "rex" },
     next: "snow",
@@ -76,11 +76,11 @@ export const KINGDOMS: Kingdom[] = [
     worldId: "frostveil",
     courses: [
       { track: "frostveil_citadel", ruin: "frostveil_citadel_ruin" },
-      { track: "snowy_summit" },
+      { track: "snowy_summit", ruin: "snowy_summit_ruin" },
       { track: "hearthglow_hollow" },
       { track: "aurora_rift" },
     ],
-    boss: { name: "Rimefang", track: "boss_snowy", speed: 1.03 },
+    boss: { name: "Rimefang", track: "boss_snowy", speed: 1.0 },
     tool: { id: "snow_tool", name: "Snow Tool" },
     champion: { name: "Brachio", look: "brachio" },
     next: "desert",
@@ -104,7 +104,7 @@ export const KINGDOMS: Kingdom[] = [
       { track: "dry_gulch" },
       { track: "impact_depths" },
     ],
-    boss: { name: "Scorchwind", track: "boss_desert", speed: 1.03 },
+    boss: { name: "Scorchwind", track: "boss_desert", speed: 1.0 },
     tool: { id: "desert_tool", name: "Desert Tool" },
     champion: { name: "Stego", look: "stego" },
     next: "beach",
@@ -128,7 +128,7 @@ export const KINGDOMS: Kingdom[] = [
       { track: "volcano_isle" },
       { track: "splash_lagoon" },
     ],
-    boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.03 },
+    boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.0 },
     tool: { id: "beach_tool", name: "Beach Tool" },
     champion: { name: "Raptor", look: "raptor" },
     next: "dragon",
@@ -157,7 +157,7 @@ export const DRAGON = {
   ] as AdventureCourse[],
   /** The final race. In the first, scripted race his advantage can't be beaten
    * (`speed`); as the Chosen One, the placeholder ability cancels it (`chosenSpeed`). */
-  king: { name: "King Pyrrhax", track: "boss_dragon", speed: 1.45, chosenSpeed: 1.04 },
+  king: { name: "King Pyrrhax", track: "boss_dragon", speed: 1.45, chosenSpeed: 1.0 },
   chosen: { name: "Aurin", ability: "AURIN'S LIGHT" },
   minigame: null,
   scenes: {

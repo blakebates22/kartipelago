@@ -173,7 +173,7 @@ export interface SessionOptions {
    * instead of failing.
    */
   fallback?: boolean;
-  /** Adventure's treasure map challenge: silver coins on the course ("auto": four spread
+  /** Adventure's treasure map challenge: map fragments on the course ("auto": four spread
    * round the lap). */
   coins?: CoinSpot[] | "auto";
   /** Adventure: the field. How many rivals, their names on screen, and a top-speed
@@ -183,8 +183,12 @@ export interface SessionOptions {
     names?: string[];
     speed?: number;
     /** The rivals' looks in order (alt: the alternate paint, a local cousin; palette: a
-     * dragon's colours, render/racers/roster/dragon.ts). */
-    looks?: { id: RacerId; alt: boolean; palette?: string }[];
+     * dragon's colours, render/racers/roster/dragon.ts; boss: a huge dragon on foot,
+     * render/racers/bossDragon.ts). */
+    looks?: { id: RacerId; alt: boolean; palette?: string; boss?: boolean }[];
+    /** The rivals' catch-up instead of the field's (a boss waits for you more, like the
+     * old kart racers' bosses: src/ai/catchup.ts). */
+    catchUp?: Partial<CatchUpConfig>;
   };
   /** Adventure: the player's name on screen (the Chosen One's race). */
   playerName?: string;
@@ -235,7 +239,7 @@ export interface HudState {
   /** Time Trial: the ghost on or off, its (personal best) time, and the gap to it at the
    * last checkpoint while that's showing (negative: ahead). */
   ghost?: { on: boolean; best?: number; delta?: number };
-  /** Adventure: silver coins taken of all there are. */
+  /** Adventure: map fragments taken of all there are. */
   coins?: { got: number; total: number };
 }
 
@@ -248,7 +252,7 @@ export interface RaceResult {
   bestLap: number;
   /** Everyone's finishing order (names and times), when racing the AI. */
   order: { name: string; racer: RacerId; time?: number; you: boolean; slot: number }[];
-  /** Adventure: silver coins taken of all there were. */
+  /** Adventure: map fragments taken of all there were. */
   coins?: { got: number; total: number };
 }
 
@@ -345,6 +349,8 @@ function buildSession(
   /** Laps in a race: the track's own (track.json's race.laps: a boss race's one long lap,
    * say), else the usual. */
   const LAPS = pkg?.meta.race?.laps ?? tuning.race.laps;
+  /** The race rules with the course's own lap count (a one-lap boss race ends after one). */
+  const raceRules = () => ({ ...tuning.race, laps: LAPS });
   const root = new THREE.Group();
   root.name = "session";
   stage.scene.add(root);
@@ -466,7 +472,7 @@ function buildSession(
         .balloons,
     );
   const itemView = createItemView(root);
-  // Adventure's silver coins (only the player takes them).
+  // Adventure's map fragments (only the player takes them).
   const coinField =
     opts.coins && track
       ? createCoinField(track, opts.coins === "auto" ? autoCoinSpots(track.length) : opts.coins)
@@ -500,7 +506,9 @@ function buildSession(
 
   // Rivals take the other racers' looks in turn; repeats get the alternate paint.
   const playerLook = opts.racer;
-  const rivalLook = (i: number): { id: RacerId; alt: boolean; palette?: string } => {
+  const rivalLook = (
+    i: number,
+  ): { id: RacerId; alt: boolean; palette?: string; boss?: boolean } => {
     const set = opts.field?.looks?.[i - 1];
     if (set) return set;
     const others = RACER_IDS.filter((id) => id !== playerLook);
@@ -509,7 +517,8 @@ function buildSession(
   const makeRacer = (i: number): RacerView => {
     const look = i === 0 ? { id: playerLook, alt: false } : rivalLook(i);
     const palette = "palette" in look && look.palette ? DRAGON_PALETTES[look.palette] : undefined;
-    const r = new RacerView(look.id, { alt: look.alt, seed: i * 17 + 5, palette });
+    const boss = "boss" in look && look.boss;
+    const r = new RacerView(look.id, { alt: look.alt, seed: i * 17 + 5, palette, boss });
     root.add(r.root, r.shadow);
     return r;
   };
@@ -642,7 +651,7 @@ function buildSession(
   };
 
   const newRace = (): Race | undefined =>
-    track ? createRace(track, tuning.race, entrants.length) : undefined;
+    track ? createRace(track, raceRules(), entrants.length) : undefined;
   let race = newRace();
   placeKarts();
 
@@ -925,7 +934,7 @@ function buildSession(
         // The field's trim, the rival's own (tiny) pace, and the bounded catch-up.
         const gap = race && i > 0 && !demo ? progressOfEarly(i) - progressOfEarly(0) : 0;
         const trim = tuning.ai.speedMult * e.driver.skill.pace;
-        const assist = catchUp(gap, tuning.ai as CatchUpConfig);
+        const assist = catchUp(gap, { ...(tuning.ai as CatchUpConfig), ...opts.field?.catchUp });
         const boss = i > 0 && !demo ? (opts.field?.speed ?? 1) : 1;
         cfg = { ...cfg, topSpeed: cfg.topSpeed * trim * assist * boss };
       }
@@ -1063,7 +1072,7 @@ function buildSession(
         riding ? { ...e.state, ...loops!.racePos(i, e.state) } : e.state,
         onRoad,
         want.throttle,
-        tuning.race,
+        raceRules(),
         dt,
       );
       if (raceEvents.boost) {
@@ -1186,7 +1195,10 @@ function buildSession(
         const n = coinsTaken(coinField);
         const all = coinField.coins.length;
         sfx.balloon(itemsCfg.volume, "new");
-        showToast(n === all ? `ALL ${all} SILVER COINS! NOW WIN!` : `SILVER COIN ${n}/${all}`, 1.6);
+        showToast(
+          n === all ? `ALL ${all} MAP FRAGMENTS! NOW WIN!` : `MAP FRAGMENT ${n}/${all}`,
+          1.6,
+        );
       }
     }
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
@@ -1900,7 +1912,7 @@ function buildSession(
     hazards,
     entrants,
     itemWorld,
-    /** Adventure's silver coins (tests and debugging). */
+    /** Adventure's map fragments (tests and debugging). */
     coins: coinField,
     zippers,
     root,

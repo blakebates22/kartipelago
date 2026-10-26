@@ -6,6 +6,7 @@
  * heading, speed, drift, boosts, hits) and adds motion on top through child transforms.
  * It never writes back to the physics.
  */
+import { BOSS_SHADOW, BossDragon, type BossPalette } from "./bossDragon";
 import * as THREE from "three";
 import type { RacerId } from "./designs";
 import type { Palette } from "./roster/types";
@@ -60,7 +61,13 @@ export class Racer {
   readonly id: RacerId;
   private lowKart: KartModel;
 
-  constructor(id: RacerId, opts: { alt?: boolean; seed?: number; palette?: Palette } = {}) {
+  /** A boss (Adventure): a huge dragon on foot instead of the kart and rider. */
+  readonly boss?: BossDragon;
+
+  constructor(
+    id: RacerId,
+    opts: { alt?: boolean; seed?: number; palette?: Palette; boss?: boolean } = {},
+  ) {
     this.id = id;
     const build = BUILDS[id];
     const palette = opts.palette ?? (opts.alt ? build.palettes.alt : build.palettes.main);
@@ -83,7 +90,10 @@ export class Racer {
 
     this.lod.addLevel(this.high, 0);
     this.lod.addLevel(this.lowGroup, LOD_DISTANCE);
-    this.root.add(this.lod);
+    if (opts.boss) {
+      this.boss = new BossDragon(palette as unknown as BossPalette);
+      this.root.add(this.boss.root);
+    } else this.root.add(this.lod);
 
     // Exhaust flame: shows boosts (the session colours it by boost source and phase). A
     // jet: the coloured outer flame (glowing, additive), a hot yellow-white flame inside
@@ -149,7 +159,16 @@ export class Racer {
     );
     this.core.position.copy(this.flame.position).add(new THREE.Vector3(0, 0, -0.38));
     this.core.visible = false;
-    this.root.add(this.flame, this.core);
+    if (this.boss) {
+      // A boss's boosts are fire out of its mouth: the flame turned to point forward.
+      const breath = new THREE.Group();
+      breath.rotation.y = Math.PI;
+      breath.scale.setScalar(2.4);
+      this.flame.position.set(0, 0, 0);
+      this.core.position.set(0, 0, -0.38);
+      breath.add(this.flame, this.core);
+      this.boss.mouth.add(breath);
+    } else this.root.add(this.flame, this.core);
 
     this.shadow = new THREE.Mesh(
       new THREE.PlaneGeometry(2.2, 3).rotateX(-Math.PI / 2),
@@ -246,7 +265,9 @@ export class Racer {
     sh.quaternion.setFromUnitVectors(SH_UP, SH_N);
     SH_Q.setFromAxisAngle(SH_UP, heading);
     sh.quaternion.multiply(SH_Q);
-    sh.scale.setScalar(Math.max(0.4, 1 - Math.max(0, above) * 0.08));
+    sh.scale.setScalar(
+      Math.max(0.4, 1 - Math.max(0, above) * 0.08) * (this.boss ? BOSS_SHADOW : 1),
+    );
     (sh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1 - Math.max(0, above) / 12);
   }
 
@@ -261,11 +282,13 @@ export class Racer {
 
   /** React to a course hazard: a yelp and a jolt (burn) or a big-eyed bob (splash). */
   react(kind: "burn" | "splash") {
+    this.boss?.react();
     this.anim.react(kind);
   }
 
   /** The race is over: `place` 1..n celebrates or slumps; null clears it. */
   setResult(place: number | null, of?: number) {
+    this.boss?.setResult(place);
     this.anim.setResult(place, of);
   }
 
@@ -274,6 +297,10 @@ export class Racer {
    * racer's local frame (x across, z forward), if one is close enough to glance at.
    */
   animate(dt: number, m: RacerMotion, rival: { x: number; z: number } | null) {
+    if (this.boss) {
+      this.boss.step(dt, m);
+      return;
+    }
     if (this.lod.getCurrentLevel() !== 0) {
       // Far away: the wheels are baked in; nothing to do.
       return;

@@ -47,6 +47,17 @@ export function kingdomField(
   return out.slice(0, 7);
 }
 
+/**
+ * A boss waits for you (Blake couldn't beat them): well ahead it eases right off, so a
+ * clean lap with your boosts always catches it; behind, it pushes a little harder.
+ */
+export const BOSS_CATCH_UP = {
+  catchupBand: 25,
+  catchupRamp: 90,
+  catchupMaxHold: 0.12,
+  catchupMaxHelp: 0.03,
+};
+
 /** What a race needs from Adventure (merged into the session's options). */
 export function sessionExtras(
   run: AdventureRun | undefined,
@@ -64,7 +75,8 @@ export function sessionExtras(
         count: 1,
         names: [b.name],
         speed: b.speed,
-        looks: [{ id: "dragon", alt: false, palette: b.name.toLowerCase() }],
+        looks: [{ id: "dragon", alt: false, palette: b.name.toLowerCase(), boss: true }],
+        catchUp: BOSS_CATCH_UP,
       },
     };
   }
@@ -73,7 +85,8 @@ export function sessionExtras(
       field: {
         count: 1,
         names: [DRAGON.king.name],
-        looks: [{ id: "dragon", alt: false, palette: "king" }],
+        looks: [{ id: "dragon", alt: false, palette: "king", boss: true }],
+        catchUp: BOSS_CATCH_UP,
         speed: run.chosen ? DRAGON.king.chosenSpeed : DRAGON.king.speed,
       },
       ...(run.chosen && { playerName: DRAGON.chosen.name }),

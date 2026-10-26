@@ -47,8 +47,15 @@ class Mesh:
         return ob
 
 
+# The ruin's wreckage (snowy_ruins.py sets it): blocked(x, y, margin) is true where the
+# fallen tree lies, so nothing the course's scenery places stands in it.
+BLOCKED = None
+
+
 def far_from_road(c, x, y, margin, s_skip=None):
     """No road (other than the stretch s_skip) within `margin` of (x, y) (2D)."""
+    if BLOCKED is not None and BLOCKED(x, y, margin):
+        return False
     for smp in c.S:
         if s_skip and s_skip[0] <= smp.s <= s_skip[1]:
             continue
@@ -246,12 +253,16 @@ def ice_arches(c, ss):
 # ------------------------------------------------------------------ the giant trees
 
 
-def hollow_tree(c, ss, glow_pts):
+def hollow_tree(c, ss, glow_pts, stump=None):
     """The great hollow tree (84 m across at the road): a thick shell of bark outside and
     golden heartwood inside, an arched doorway where the road comes in at the bottom and
     another where it leaves 30 m up, knotholes letting the sunlight in, a heartwood
     column in the middle the spiral winds round, a floor, a ceiling, beams under every
-    turn of the spiral, and above it all the trunk climbing to a vast crown."""
+    turn of the spiral, and above it all the trunk climbing to a vast crown.
+
+    `stump` (the ruin): only what's left after it fell, {"top": the broken wall's height
+    at an angle (radians), "breach": (x, y, z) -> where the fall tore the wall out}: the
+    shell to its charred, jagged break, the floor, the column's stump and the roots."""
     cx, cy = ss.TREE1
     ri, ro = ss.TREE1_R
     P = Vector(next(p for p in ss.PATH if p[3] == 22)[:2])
@@ -286,6 +297,9 @@ def hollow_tree(c, ss, glow_pts):
 
     N = 80
     zs = [-4.0 + 2.0 * j for j in range(36)]  # -4 .. 66
+    if stump:
+        hi = max(stump["top"](i * math.tau / 72) for i in range(72))
+        zs = [z for z in zs if z <= hi + 2.0]
     m = Mesh()
     bm = m.bm
 
@@ -306,7 +320,9 @@ def hollow_tree(c, ss, glow_pts):
             zc = (zs[j] + zs[j + 1]) / 2
             x, y = cx + (ri + 2.5) * math.cos(a0), cy + (ri + 2.5) * math.sin(a0)
             present[i, j] = not (opening(x, y, zc) or knothole(math.degrees(a0) % 360, zc))
-    bark, wood = [], []
+            if stump and (zc > stump["top"](a0) or stump["breach"](x, y, zc)):
+                present[i, j] = False
+    bark, wood, char = [], [], []
     for (i, j), on in present.items():
         if not on:
             continue
@@ -330,10 +346,14 @@ def hollow_tree(c, ss, glow_pts):
                 q = (vo[i1, j], vo[i, j], vi[i, j], vi[i1, j])
             k1 = len(bm.faces)
             bm.faces.new(q)
-            wood.append(k1)
+            (char if stump and edge != "b" else wood).append(k1)
     m.slots[("giant_bark", "wall")] = bark
     m.slots[("heartwood", "wall")] = wood
+    if char:
+        m.slots[("ruin_char", "wall")] = char
     shell = m.build(c, "Great Tree Shell", "Trees", "both", flat=False)
+    if stump:
+        return shell, _stump_inside(c, ss, glow_pts, cx, cy, ri, ro, stump)
 
     # The floor, the column, the ceiling and the trunk above it.
     m = Mesh()
@@ -417,6 +437,37 @@ def hollow_tree(c, ss, glow_pts):
     crown(c, cx, cy, tall(150.0), 1.0, 0)
     roots(c, ss, cx, cy, ro + 4.0, ss.road_z(S22) - 0.5, 9)
     return shell, trunk
+
+
+def _stump_inside(c, ss, glow_pts, cx, cy, ri, ro, stump):
+    """The ruin's stump: its floor, the column snapped off low and charred, glowing moss
+    and fungi on what's left of the walls, and the roots."""
+    m = Mesh()
+    bm = m.bm
+    zf = ss.road_z(ss.SEG[22]) - 0.45
+    k0 = len(bm.faces)
+    bm.faces.new(props.ring(bm, (cx, cy), ri + 5.0, zf, 48))
+    m.mark(("forest_road", "dirt"), k0)
+    k0 = len(bm.faces)
+    col = [props.ring(bm, (cx, cy), 11.0 + 1.5 * math.exp(-(z - zf) / 4), z, 24, phase=0.1 * j) for j, z in enumerate((zf - 1, zf + 4, zf + 9))]
+    props.loft(bm, col, cap_top=False)
+    m.mark(("heartwood", "wall"), k0)
+    k0 = len(bm.faces)
+    top = [bm.verts.new((cx + 11.2 * math.cos(a), cy + 11.2 * math.sin(a), zf + 9 + (2.5 if k % 2 else -1.0) + 2 * rnd(k)))
+           for k, a in enumerate(i * math.tau / 24 + 0.05 for i in range(24))]
+    bm.faces.new(top)
+    m.mark("ruin_ember", k0)
+    for k in range(18):
+        a = k * 2.4
+        z = zf + 3 + (k * 1.7) % 9
+        r = 11.6 if k % 2 else ri - 0.3
+        k0 = len(bm.faces)
+        props.blob(bm, (cx + r * math.cos(a), cy + r * math.sin(a), z), 1.6 + 0.8 * rnd(k), sx=1.0, sy=1.0, sz=0.5, subdiv=1)
+        m.mark("glow_moss", k0)
+        glow_pts.append((cx + r * math.cos(a), cy + r * math.sin(a), z))
+    inside = m.build(c, "Great Tree Stump", "Trees", "both")
+    roots(c, ss, cx, cy, ro + 4.0, zf - 0.05, 9)
+    return inside
 
 
 def roots(c, ss, cx, cy, r0, z0, n):
@@ -641,12 +692,13 @@ def lerp_z(a, b, t):
     return a + (b - a) * t
 
 
-def bridges_and_flags(c, ss, ter, flags):
+def bridges_and_flags(c, ss, ter, flags, bridges=True):
     """Bunting along the treetop bridges and round the ledges (from posts on the rails),
-    over the start, across the canyon, and round the lookout, with its hut and cairns."""
+    over the start, across the canyon, and round the lookout, with its hut and cairns.
+    (Without `bridges`, none on the bridges: the ruin's are gone.)"""
     S = ss.SEG
     post = sp.flag_pole(c, 4.5)
-    for i0, i1 in ((24, 25), (25, 26), (26, 27), (27, 28)):
+    for i0, i1 in ((24, 25), (25, 26), (26, 27), (27, 28)) if bridges else ():
         s = S[i0] + 4
         prev = None
         while s < S[i1] - 2:
@@ -706,11 +758,12 @@ def bridges_and_flags(c, ss, ter, flags):
 # ------------------------------------------------------------------ the canyons, the ridge and the ruins
 
 
-def canyons(c, ss, ter):
-    """The Wind Canyons: chevrons on the bends, an ice arch over the road, and frozen
-    falls down into the gorge either side of the jump."""
+def canyons(c, ss, ter, ridge=True):
+    """The Wind Canyons: chevrons on the bends (and on the ridge road's, with `ridge`), an
+    ice arch over the road, and frozen falls down into the gorge either side of the jump."""
     S = ss.SEG
-    for s_, side in ((S[15] + 12, 1), (S[16] + 12, -1), (S[20] + 10, -1), (S[30] + 14, -1), (S[31] + 14, 1)):
+    bends = [(S[15] + 12, 1), (S[16] + 12, -1), (S[20] + 10, -1)] + ([(S[30] + 14, -1), (S[31] + 14, 1)] if ridge else [])
+    for s_, side in bends:
         q = c.at(s_)
         p = q.side(side * (q.w / 2 + 3.0))
         z = ground(c, ter, p.x, p.y, q.p.z)
@@ -764,7 +817,12 @@ def mammoth_path(c, ss):
 # ------------------------------------------------------------------ build
 
 
-def build(c, rock, t0, t1, ss):
+def build(c, rock, t0, t1, ss, ruin=None):
+    """The course's scenery. `ruin` (snowy_ruins.py): what the dragons left, {"stump":
+    see hollow_tree, "blocked": see BLOCKED}; the great tree is a stump, and the rope
+    bridge, the treetop bridges' bunting and the ridge road's chevrons went with it."""
+    global BLOCKED
+    BLOCKED = ruin["blocked"] if ruin else None
     ter = list(c.coll("Terrain").objects)
     blue, violet, tree_glow, geysers = [], [], [], []
     flags = sp.Bunting()
@@ -773,13 +831,14 @@ def build(c, rock, t0, t1, ss):
     water = lake(c, ss, ter)
     hot_springs(c, ss, ter, geysers)
     ice_arches(c, ss)
-    shell, trunk = hollow_tree(c, ss, tree_glow)
+    shell, trunk = hollow_tree(c, ss, tree_glow, stump=ruin and ruin["stump"])
     for k, (tree, seg) in enumerate(((ss.TREE2, 24), (ss.TREE3, 26))):
         giant_tree(c, tree[0], tree[1], ss.road_z(ss.SEG[seg] + 30), k + 1)
     forest(c, ss, ter)
-    hut = bridges_and_flags(c, ss, ter, flags)
-    rope_bridge(c, ss)
-    canyons(c, ss, ter)
+    hut = bridges_and_flags(c, ss, ter, flags, bridges=not ruin)
+    if not ruin:
+        rope_bridge(c, ss)
+    canyons(c, ss, ter, ridge=not ruin)
     ruins(c, ss, ter)
     sky_islands(c)
     mammoth_path(c, ss)

@@ -371,14 +371,16 @@ function drawHud(
   const big = { outline: PAL.shadow };
   if (h.boost > 0) speedLines(ui, h.boost, h.rainbow ? null : h.boostColor, t);
   if (cup) ui.text(cup, ui.W / 2, 6, { color: PAL.gold, outline: PAL.shadow, align: "center" });
-  // Adventure's silver coins: how many you have.
+  // Adventure's map fragments: how many you have (a little torn scrap of parchment).
   if (h.coins) {
     const all = h.coins.got >= h.coins.total;
     const cx = 8;
     const cy = 34;
     ui.rect(cx, cy, 9, 9, PAL.shadow);
-    ui.rect(cx + 1, cy + 1, 7, 7, all ? "#ffffff" : "#c8d2dc");
-    ui.rect(cx + 3, cy + 2, 2, 5, "#8a96a4");
+    ui.rect(cx + 1, cy + 1, 7, 7, all ? "#fff0c0" : "#e8cf98");
+    ui.rect(cx + 6, cy + 1, 2, 2, PAL.shadow);
+    ui.rect(cx + 2, cy + 5, 3, 1, "#8a2a1a");
+    ui.rect(cx + 3, cy + 4, 1, 3, "#8a2a1a");
     ui.text(`${h.coins.got}/${h.coins.total}`, cx + 13, cy + 1, {
       color: all ? PAL.gold : PAL.cream,
       outline: PAL.shadow,

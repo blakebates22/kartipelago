@@ -120,10 +120,13 @@ def add_respawn(gate, location, heading_dir):
     e.rotation_euler = (math.radians(-90), 0.0, math.atan2(-heading_dir[0], heading_dir[1]))
     e["kp_respawn"] = True
     e["kp_role"] = "editor"
+    # Parented keeping its transform exactly. (Setting matrix_world under the gate
+    # doesn't: the gate is scaled unevenly (its width and height), so a marker turned even
+    # slightly from it picks up a shear the marker can't hold, and its arrow swung round
+    # by up to 90 degrees: respawns facing sideways.)
     bpy.context.view_layer.update()
-    mw = e.matrix_world.copy()
     e.parent = gate
-    e.matrix_world = mw
+    e.matrix_parent_inverse = gate.matrix_world.inverted()
     return e
 
 

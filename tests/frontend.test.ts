@@ -243,6 +243,7 @@ describe("worlds", () => {
       "bonebog_pyramid_ruin",
       "ember_peak_ruin",
       "frostveil_citadel_ruin",
+      "snowy_summit_ruin",
       "boss_prehistoric",
       "boss_snowy",
       "boss_desert",

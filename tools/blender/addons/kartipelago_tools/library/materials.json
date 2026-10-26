@@ -1594,6 +1594,57 @@
           }
         }
       }
+    },
+    {
+      "id": "summit_ruins",
+      "name": "Snowy Summit in Ruins",
+      "description": "The frozen lake after the dragons felled the great tree: the bright day gone hazy with smoke, the sun a pale disc, fires in the forest and on the fallen trunk",
+      "environment": {
+        "sky": "#a0a4b4",
+        "fog": {
+          "enabled": true,
+          "color": "#b8aca4",
+          "near": 150,
+          "far": 900
+        },
+        "sun": {
+          "color": "#ffe0c0",
+          "intensity": 2.2,
+          "direction": [0.42, 0.74, 0.52]
+        },
+        "ambient": {
+          "sky": "#dcdce6",
+          "ground": "#6a6472",
+          "intensity": 1.3
+        },
+        "skyDome": {
+          "top": "#5a6484",
+          "horizon": "#e8c0a0",
+          "bottom": "#c8bcb4",
+          "sun": {
+            "color": "#fff0d8",
+            "size": 10,
+            "glow": "#ffc890",
+            "elevation": 30
+          },
+          "clouds": {
+            "count": 40,
+            "color": "#9a9090",
+            "shade": "#5a5050",
+            "seed": 323,
+            "low": 8,
+            "high": 26,
+            "drift": 0.007
+          },
+          "hills": {
+            "color": "#8a90a8",
+            "far": "#c0bcc4",
+            "height": 16,
+            "seed": 67,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [

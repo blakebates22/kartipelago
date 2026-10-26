@@ -73,12 +73,19 @@ function rebuild() {
       x: (i - 1.5) * 3.2,
       turn,
     }));
+  // (&boss: the dragon as a boss races, on foot, with a kart beside it for size.)
+  else if (params.has("boss"))
+    list = [
+      { id: state.racer, x: 2.5, turn: 0 },
+      { id: "tiko", x: -5.5, turn: 0 },
+    ];
   else list = [{ id: state.racer, x: 0, turn: 0 }];
   racers = list.map(({ id, x, turn }, i) => {
     const r = new Racer(id, {
       alt: state.alt,
       seed: i + 3,
       palette: id === "dragon" ? DRAGON_PALETTES[params.get("dragon") ?? "cinderjaw"] : undefined,
+      boss: id === "dragon" && params.has("boss"),
     });
     r.root.position.x = x;
     r.root.rotation.y = turn;
@@ -168,9 +175,11 @@ function setView(name: string) {
   state.view = name;
   const v = VIEWS[name] ?? VIEWS.threeQuarter!;
   const wide = state.lineup || state.turnaround;
-  const k = wide && name !== "gameplay" ? 2.1 : 1;
-  camera.position.set(v[0] * k, v[1] * (wide ? 1.15 : 1), v[2] * k);
-  controls.target.set(0, v[3], name === "gameplay" ? 4 : 0);
+  // (A boss is huge: stand well back.)
+  const boss = params.has("boss") ? 4 : 1;
+  const k = (wide && name !== "gameplay" ? 2.1 : 1) * boss;
+  camera.position.set(v[0] * k, v[1] * (wide ? 1.15 : 1) * boss, v[2] * k);
+  controls.target.set(0, v[3] * boss * 0.8, name === "gameplay" ? 4 : 0);
   camera.fov = name === "gameplay" ? 65 : 40;
   camera.updateProjectionMatrix();
   controls.update();

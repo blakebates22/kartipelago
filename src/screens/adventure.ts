@@ -48,7 +48,7 @@ import {
   type AdventureSave,
 } from "../adventure/progress";
 import type { AdventureRun } from "../adventure/run";
-import { CAST, sceneById, type Scene } from "../adventure/scenes";
+import { CAST, SCENES, sceneById, type Scene } from "../adventure/scenes";
 import type { RaceResult } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
 import { startCup } from "../game/trophy";
@@ -68,6 +68,30 @@ import { DESIGNS } from "../render/racers/designs";
 
 const store = () => safeStorage();
 const exists = (id: string) => Boolean(trackById(id));
+
+/**
+ * Dev builds: go anywhere (Blake). Every kingdom and every race in it is open whatever
+ * the story says, so any part can be tried and retried; results still count. On unless
+ * the dev menu turns it off.
+ */
+const FREE_KEY = "kartipelago.adventure.devFree";
+export function freeRoam(): boolean {
+  if (!import.meta.env.DEV) return false;
+  try {
+    return store()?.getItem(FREE_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+function setFreeRoam(on: boolean) {
+  try {
+    store()?.setItem(FREE_KEY, on ? "on" : "off");
+  } catch {
+    // (no storage: stays as it was)
+  }
+}
+/** A kingdom you can go into: reached in the story, or anywhere in free roam. */
+const canVisit = (s: AdventureSave, id: KingdomId) => freeRoam() || unlocked(s, id);
 
 /** The Adventure state on the game, loaded (or started) the first time it's needed. */
 export function adventureOf(game: Game) {
@@ -94,7 +118,8 @@ const SPOT: Record<KingdomId, [number, number]> = {
 const nameOf = (id: KingdomId) => (id === "dragon" ? DRAGON.name : kingdomById(id)!.name);
 
 function statusOf(s: AdventureSave, id: KingdomId): string {
-  if (!unlocked(s, id)) return "NOT REACHED YET";
+  if (!unlocked(s, id))
+    return freeRoam() ? "NOT REACHED YET (DEV: OPEN ANYWAY)" : "NOT REACHED YET";
   if (id === "dragon") {
     const p = dragonPhase(s);
     return {
@@ -151,7 +176,7 @@ export function adventureHub(game: Game): Screen {
       game.sounds.confirm();
       return game.screens.go(devMenu(game));
     }
-    if (!unlocked(a.save, id)) return game.sounds.error();
+    if (!canVisit(a.save, id)) return game.sounds.error();
     game.sounds.confirm();
     a.at = id;
     game.screens.go(kingdomScreen(game, id));
@@ -205,7 +230,7 @@ export function adventureHub(game: Game): Screen {
       if (reached.length > 1) dashedRoute(ui.g, reached.map(pos));
       STORY_ORDER.forEach((id, i) => {
         const [x, y] = pos(id);
-        const open = unlocked(a.save, id);
+        const open = canVisit(a.save, id);
         const on = focus === i;
         const img = island(STYLE[id], on ? 22 : 19);
         // The kingdoms not reached yet: faint on the chart, a question mark over them.
@@ -269,6 +294,7 @@ export function adventureHub(game: Game): Screen {
 function kingdomScreen(game: Game, id: KingdomId): Screen {
   const a = adventureOf(game);
   const s = a.save;
+  const free = freeRoam();
   const items: { label: string; sub?: string; disabled?: boolean; action: () => void }[] = [];
   const back = () => game.screens.go(adventureHub(game));
   const scene = (sid: string, then: () => void) => game.screens.go(sceneScreen(game, sid, then));
@@ -279,7 +305,7 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
     items.push({
       label: `${s.cups.dragon ? done : ""}CHAMPIONSHIP: THE FIRST VISIT`,
       sub: "ITS FOUR COURSES, A TROPHY RACE",
-      disabled: p !== "first",
+      disabled: !free && p !== "first",
       action: () =>
         launch(game, { kind: "cup", kingdom: "dragon" }, originals[0]!, {
           name: DRAGON.name,
@@ -300,7 +326,7 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
       sub: ruins.some((r) => r.standIn)
         ? "ITS RUINED COURSES (STAND-INS FOR NOW)"
         : "ITS RUINED COURSES",
-      disabled: p !== "final",
+      disabled: !free && p !== "final",
       action: () =>
         launch(game, { kind: "cup", kingdom: "dragon_final" }, ruins[0]!.track, {
           name: `${DRAGON.name} (Ruined)`,
@@ -319,12 +345,37 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
           game.screens.go(characterSelect(game));
         },
       });
-    items.push({
-      label: `${s.kingWon ? done : ""}RACE THE DRAGON KING`,
-      sub: s.kingLost ? `AS ${DRAGON.chosen.name.toUpperCase()}` : DRAGON.king.name.toUpperCase(),
-      disabled: p !== "king" && p !== "done",
-      action: () => launch(game, { kind: "king", chosen: s.kingLost }, DRAGON.king.track),
-    });
+    if (free) {
+      // Both of the King's races, whichever the story is at.
+      items.push({
+        label: "RACE THE DRAGON KING (FIRST RACE)",
+        sub: "DEV: THE SCRIPTED RACE YOU CAN'T WIN",
+        action: () => launch(game, { kind: "king", chosen: false }, DRAGON.king.track),
+      });
+      items.push({
+        label: `${s.kingWon ? done : ""}RACE THE DRAGON KING AS ${DRAGON.chosen.name.toUpperCase()}`,
+        sub: "DEV: THE REMATCH",
+        action: () => launch(game, { kind: "king", chosen: true }, DRAGON.king.track),
+      });
+      KINGDOMS.forEach((k) =>
+        items.push({
+          label: `${s.returns[k.id] ? done : ""}RETURN TASK: ${k.returnTask!.label}`,
+          sub: `DEV: ${nameOf(k.id).toUpperCase()}'S TASK`,
+          action: () =>
+            scene(k.returnTask!.scene, () => {
+              completeReturn(s, k.id);
+              persist(game);
+              game.screens.go(kingdomScreen(game, id));
+            }),
+        }),
+      );
+    } else
+      items.push({
+        label: `${s.kingWon ? done : ""}RACE THE DRAGON KING`,
+        sub: s.kingLost ? `AS ${DRAGON.chosen.name.toUpperCase()}` : DRAGON.king.name.toUpperCase(),
+        disabled: p !== "king" && p !== "done",
+        action: () => launch(game, { kind: "king", chosen: s.kingLost }, DRAGON.king.track),
+      });
   } else {
     const k = kingdomById(id)!;
     const ph = kingdomPhase(s, k);
@@ -347,9 +398,9 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
       items.push({
         label: `${s.pieces[c.track] ? done : ""}${name.toUpperCase()} (RUINED)`,
         sub: cc.standIn
-          ? "4 SILVER COINS · STAND-IN: THE RUIN ISN'T BUILT YET"
-          : "4 SILVER COINS AND 1ST PLACE",
-        disabled: ph === "championship" || ph === "locked",
+          ? "4 MAP FRAGMENTS · STAND-IN: THE RUIN ISN'T BUILT YET"
+          : "4 MAP FRAGMENTS AND 1ST PLACE",
+        disabled: !free && (ph === "championship" || ph === "locked"),
         action: () =>
           launch(game, { kind: "coins", kingdom: id, course: c.track, ...cc }, cc.track),
       });
@@ -357,7 +408,7 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
     items.push({
       label: `THE MAP (${piecesOf(s, k)}/4)`,
       sub: `TO THE ${nameOf(k.next!).toUpperCase()}`,
-      disabled: ph === "championship",
+      disabled: !free && ph === "championship",
       action: () => game.screens.go(mapScreen(game, k)),
     });
     items.push({
@@ -366,15 +417,15 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
         ph === "coins" || ph === "championship"
           ? "FINISH THE MAP FIRST"
           : "THE DRAGON OF THIS KINGDOM",
-      disabled: ph === "coins" || ph === "championship",
+      disabled: !free && (ph === "coins" || ph === "championship"),
       action: () =>
         scene(k.scenes.boss, () => launch(game, { kind: "boss", kingdom: id }, k.boss!.track)),
     });
-    if (returnOpen(s, k) || s.returns[id])
+    if (free || returnOpen(s, k) || s.returns[id])
       items.push({
         label: `${s.returns[id] ? done : ""}${k.returnTask!.label}`,
         sub: `PLACEHOLDER TASK WITH ${k.returnTask!.who.toUpperCase()}`,
-        disabled: Boolean(s.returns[id]),
+        disabled: !free && Boolean(s.returns[id]),
         action: () =>
           scene(k.returnTask!.scene, () => {
             completeReturn(s, id);
@@ -503,15 +554,18 @@ function mapScreen(game: Game, k: Kingdom): Screen {
 // ---------------------------------------------------------------- scenes
 
 /** Play a story scene, then `then` (it marks the scene seen and saves first). */
-export function sceneScreen(game: Game, id: string, then: () => void): Screen {
+export function sceneScreen(game: Game, id: string, then: () => void, record = true): Screen {
   const a = adventureOf(game);
   const sc: Scene | undefined = sceneById(id);
   let i = 0;
   let t = 0;
   let pp: PixelPortraits | undefined;
   const finish = () => {
-    markSeen(a.save, id);
-    persist(game);
+    // (Watched from the dev menu's list: the story doesn't count it as seen.)
+    if (record) {
+      markSeen(a.save, id);
+      persist(game);
+    }
     then();
   };
   // A new adventure as one of the crew who joined later: a "what if" story (placeholder).
@@ -789,7 +843,7 @@ export function adventureResult(
       );
       ui.text(entry.name.toUpperCase(), ui.W / 2, y + 38, { color: INK_SOFT, align: "center" });
       if (result.coins)
-        ui.text(`SILVER COINS ${result.coins.got}/${result.coins.total}`, ui.W / 2, y + 52, {
+        ui.text(`MAP FRAGMENTS ${result.coins.got}/${result.coins.total}`, ui.W / 2, y + 52, {
           color: result.coins.got >= result.coins.total ? "#2a6a2a" : "#8a2a1a",
           align: "center",
         });
@@ -914,6 +968,20 @@ function devMenu(game: Game): Screen {
       },
     },
   ];
+  items.unshift(
+    {
+      label: "WATCH ANY SCENE (AS OFTEN AS YOU LIKE)",
+      action: () => game.screens.go(sceneList(game)),
+    },
+    {
+      label: freeRoam() ? "GO ANYWHERE: ON (TURN OFF)" : "GO ANYWHERE: OFF (TURN ON)",
+      action: () => {
+        setFreeRoam(!freeRoam());
+        game.sounds.confirm();
+        game.screens.go(devMenu(game));
+      },
+    },
+  );
   const menu = new VMenu(game, items, () => game.screens.go(adventureHub(game)));
   return {
     id: "ADVENTURE_DEV",
@@ -932,10 +1000,44 @@ function devMenu(game: Game): Screen {
         color: PAL.cream,
         align: "center",
       });
-      menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3);
+      menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3, 1, 12);
       hints(ui, [
         ["▲▼", "CHOOSE"],
         ["ENTER", "JUMP"],
+        ["ESC", "BACK"],
+      ]);
+    },
+  };
+}
+
+/** Dev builds: every scene in the story, to watch again and again (nothing is saved). */
+function sceneList(game: Game, at = 0): Screen {
+  const all = Object.values(SCENES);
+  const menu = new VMenu(
+    game,
+    all.map((sc, i) => ({
+      label: sc.id.toUpperCase().replace(/_/g, " "),
+      action: () =>
+        game.screens.go(sceneScreen(game, sc.id, () => game.screens.go(sceneList(game, i)), false)),
+    })),
+    () => game.screens.go(devMenu(game)),
+  );
+  menu.focus = at;
+  return {
+    id: "ADVENTURE_SCENES",
+    seeThrough: false,
+    frame(_dt, actions) {
+      menu.handle(actions);
+    },
+    draw(ui) {
+      ui.rect(0, 0, ui.W, ui.H, "#1d2a34");
+      ui.text("EVERY SCENE", ui.W / 2, 6, { color: PAL.gold, outline: INK, align: "center" });
+      const sc = all[menu.focus];
+      if (sc) ui.text(sc.title.toUpperCase(), ui.W / 2, 16, { color: PAL.cream, align: "center" });
+      menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3, 1, 12);
+      hints(ui, [
+        ["▲▼", "CHOOSE"],
+        ["ENTER", "WATCH"],
         ["ESC", "BACK"],
       ]);
     },

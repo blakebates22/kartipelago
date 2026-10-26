@@ -34,6 +34,9 @@ const RUINS: [string, string, string, [number, number], number][] = [
   ["ember_peak", "ember_peak_ruin", "ember_ruins", [1.0, 1.15], 1.15],
   // Blake: at least half as long, and fast like the beach courses.
   ["frostveil_citadel", "frostveil_citadel_ruin", "frost_ruins", [0.35, 0.5], 0.55],
+  // Blake: much shorter, the great tree fallen and driven through like a tunnel. (About
+  // two thirds: the course's first two thirds come before the tree.)
+  ["snowy_summit", "snowy_summit_ruin", "summit_ruins", [0.6, 0.72], 0.75],
 ];
 
 describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {

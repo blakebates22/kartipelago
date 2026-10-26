@@ -102,7 +102,7 @@ const scenes: Scene[] = [
     { who: "elder", text: "HE WENT TO FACE THEM ALONE. BUT HE LEFT US A WAY TO FOLLOW." },
     {
       who: "elder",
-      text: "A MAP, TORN IN FOUR, HIDDEN ON OUR RUINED COURSES. FIND THE SILVER COINS AND WIN.",
+      text: "A MAP, TORN TO PIECES, SCATTERED OVER OUR RUINED COURSES. GATHER EVERY FRAGMENT AND WIN.",
     },
   ]),
   S("valley_map", "The Map Is Whole", { color: "#c8a060" }, [
@@ -211,7 +211,7 @@ for (const k of KINGDOMS) {
           { who: d, text: "THIS KINGDOM BELONGS TO THE DRAGON KING NOW." },
           {
             who: champ ?? "elder",
-            text: "OUR COURSES ARE IN RUINS... BUT LOOK: SILVER COINS. THE CHOSEN ONE WAS HERE.",
+            text: "OUR COURSES ARE IN RUINS... BUT LOOK: SCRAPS OF A MAP. THE CHOSEN ONE WAS HERE.",
           },
         ],
       ),

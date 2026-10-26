@@ -512,6 +512,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "summit_pass",
     music: "summit",
     load: { scene: "track", packageId: "snowy_summit" },
+    ruin: "snowy_summit_ruin",
+  },
+  {
+    id: "snowy_summit_ruin",
+    name: "Snowy Summit Pass (Ruined)",
+    description:
+      "The great tree has fallen: across its stump, through its hollow trunk, off its broken top over the crevasse.",
+    preview: "previews/snowy_summit_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "summit_ruins",
+    music: "summit",
+    load: { scene: "track", packageId: "snowy_summit_ruin" },
   },
   {
     id: "hearthglow_hollow",

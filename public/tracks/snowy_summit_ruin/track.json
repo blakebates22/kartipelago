@@ -1,0 +1,638 @@
+{
+  "schemaVersion": 1,
+  "id": "snowy_summit_ruin",
+  "name": "Snowy Summit Pass (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 50,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 224.8,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 488.9,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 862.2,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 1119.9,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1206.3,
+      "across": 0
+    },
+    {
+      "id": "zip_07",
+      "type": "zipper",
+      "at": 1355.1,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 70,
+      "across": -6.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 158.9,
+      "across": -4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 453.8,
+      "across": -4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 765.4,
+      "across": -4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 997.4,
+      "across": 4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1169.9,
+      "across": 4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 92,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 92,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 198.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 403.1,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 594.9,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 946.1,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 946.1,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 1089.9,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1283.5,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 1411.1,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 270.8,
+      "to": 331.0,
+      "at": 359.0
+    },
+    {
+      "id": "respawn_02",
+      "type": "respawn",
+      "from": 858.3,
+      "to": 924.1,
+      "at": 952.1
+    },
+    {
+      "id": "respawn_03",
+      "type": "respawn",
+      "from": 1204.3,
+      "to": 1270.7,
+      "at": 1298.7
+    },
+    {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": 202.19,
+      "y": 1.02,
+      "z": 113.87,
+      "r": 4.2,
+      "height": 22.0,
+      "period": 7.0,
+      "offset": 0.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 15.0
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": 262.03,
+      "y": -0.3,
+      "z": 113.87,
+      "r": 5.5,
+      "height": 26.0,
+      "period": 7.0,
+      "offset": 2.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 15.0
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": 186.2,
+      "y": 1.2,
+      "z": 89.87,
+      "r": 3.5,
+      "height": 19.097498112303583,
+      "period": 11.0,
+      "offset": 1.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_04",
+      "type": "geyser",
+      "x": 216.19,
+      "y": 1.2,
+      "z": 135.87,
+      "r": 3.5,
+      "height": 20.728495564995683,
+      "period": 9.0,
+      "offset": 2.7,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_05",
+      "type": "geyser",
+      "x": 287.91,
+      "y": 1.2,
+      "z": 87.87,
+      "r": 3.5,
+      "height": 22.517053649324225,
+      "period": 10.0,
+      "offset": 4.4,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_06",
+      "type": "geyser",
+      "x": 313.13,
+      "y": 1.2,
+      "z": 137.89,
+      "r": 3.5,
+      "height": 21.130662230709277,
+      "period": 11.0,
+      "offset": 6.1,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_07",
+      "type": "geyser",
+      "x": 373.06,
+      "y": 2.6,
+      "z": 112.75,
+      "r": 3.5,
+      "height": 21.666706383344717,
+      "period": 9.0,
+      "offset": 7.8,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_08",
+      "type": "geyser",
+      "x": 338.2,
+      "y": 10.09,
+      "z": 58.27,
+      "r": 3.5,
+      "height": 20.04481929591566,
+      "period": 10.0,
+      "offset": 9.5,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "geyser_09",
+      "type": "geyser",
+      "x": 165.09,
+      "y": 1.2,
+      "z": 145.63,
+      "r": 3.5,
+      "height": 23.92387249704916,
+      "period": 11.0,
+      "offset": 11.2,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 148.68,
+      "y": -0.2,
+      "z": 100.95
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 176.36,
+      "y": -0.2,
+      "z": 134.82
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 198.32,
+      "y": -0.2,
+      "z": 93.98
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 220.32,
+      "y": -0.2,
+      "z": 133.35
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 242.28,
+      "y": -0.2,
+      "z": 94.74
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 264.1,
+      "y": -0.2,
+      "z": 135.31
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 286.04,
+      "y": -0.2,
+      "z": 89.35
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": 307.91,
+      "y": -0.2,
+      "z": 136.9
+    },
+    {
+      "id": "steam_09",
+      "type": "steam",
+      "x": 324.29,
+      "y": -0.2,
+      "z": 93.22
+    },
+    {
+      "id": "steam_10",
+      "type": "steam",
+      "x": 362.49,
+      "y": -0.2,
+      "z": 114.99
+    },
+    {
+      "id": "steam_11",
+      "type": "steam",
+      "x": 344.27,
+      "y": -0.2,
+      "z": 77.52
+    },
+    {
+      "id": "steam_12",
+      "type": "steam",
+      "x": 382.26,
+      "y": -0.2,
+      "z": 60.82
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -110.33,
+      "y": 47.0,
+      "z": -210.32
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.7,
+      "scale": 1.0,
+      "model": "mammoth"
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.7,
+      "scale": 0.55,
+      "model": "mammoth",
+      "start": 14.0
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -160.32,
+      "y": 17.58,
+      "z": 3.51
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -187.2,
+      "y": -1.13,
+      "z": 43.33
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -155.84,
+      "y": 6.0,
+      "z": 75.63
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -151.6,
+      "y": -3.27,
+      "z": 41.51
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -18.79,
+      "y": 46.69,
+      "z": -85.49
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -53.74,
+      "y": 44.91,
+      "z": -54.72
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -68.73,
+      "y": 43.14,
+      "z": -10.62
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -95.01,
+      "y": 44.02,
+      "z": 7.14
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 73.7,
+      "y": 20.35,
+      "z": -137.55
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 34.81,
+      "y": 19.35,
+      "z": -165.36
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -2.39,
+      "y": 15.96,
+      "z": -135.33
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 16.59,
+      "y": 21.75,
+      "z": -91.45
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 63.95,
+      "y": 15.02,
+      "z": -98.01
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 45.28,
+      "y": 11.2,
+      "z": -135.51
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 37.14,
+      "y": 11.2,
+      "z": -102.29
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -144.09,
+      "y": 1.92,
+      "z": 63.31
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -136.52,
+      "y": 3.26,
+      "z": 51.35
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -160.32,
+      "y": 16.98,
+      "z": 3.51
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -155.84,
+      "y": 5.4,
+      "z": 75.63
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -18.79,
+      "y": 46.09,
+      "z": -85.49
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -68.73,
+      "y": 42.54,
+      "z": -10.62
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 73.7,
+      "y": 19.75,
+      "z": -137.55
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -2.39,
+      "y": 15.36,
+      "z": -135.33
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": 63.95,
+      "y": 14.42,
+      "z": -98.01
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": 37.14,
+      "y": 10.6,
+      "z": -102.29
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": -136.52,
+      "y": 2.66,
+      "z": 51.35
+    },
+    {
+      "id": "snowfall_01",
+      "type": "snowfall",
+      "rate": 60,
+      "radius": 40
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 24,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/snowy_summit_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "snowy_ruins.py": "5a9d39bfbeabe390561fc590ecc711756e623666e9c6dcbfad805f77256051df",
+    "snowy_summit.py": "ed0522617b98246a9849d7fa075a283e96622caf3122922bb451f9774fcc8ca0",
+    "summit_props.py": "7cfcbabb3c79eca8da7bdbeddc0a7dbaacdf99df067b02589be02ea9a36a1618",
+    "summit_scenery.py": "dc7850ca69bf0fe81a2ed701039b449430d6350ed103a801349b304f6faaf3cf"
+  }
+}
