@@ -347,6 +347,26 @@ export const REGIONS: Region[] = [
         locked: "SCORCHWIND'S DRIFTS BURY THE DUST ROAD: BEAT HIM FIRST",
       },
     ],
+    puzzles: [
+      // The Crater Stones: a sandstone vault on the crater's floor, its gate looking west
+      // up the road in. Press the four stones round the crater within 30 seconds.
+      {
+        id: "crater_stones",
+        label: "THE CRATER STONES",
+        look: "stone",
+        hint: "THE CRATER STONES! PRESS THE OTHER 3 BEFORE THE DRUMS STOP",
+        switches: [
+          { x: -52.33, z: -52.33 },
+          { x: 52.33, z: -52.33 },
+          { x: 52.33, z: 52.33 },
+          { x: -52.33, z: 52.33 },
+        ],
+        radius: 3.5,
+        seconds: 30,
+        gate: { x: -8, z: 0, heading: -Math.PI / 2, width: 9 },
+        prize: { kind: "key", x: 0, z: 0 },
+      },
+    ],
   },
   {
     // The doc's fourth region (tools/blender/prehistoric/beach_region.py, a greybox): an
@@ -415,6 +435,27 @@ export const REGIONS: Region[] = [
         z: -445,
         radius: 8,
         heading: 0,
+      },
+    ],
+    puzzles: [
+      // The Tiki Gongs: a tiki hut in the north-east, its door shut. Strike the three
+      // gongs in order; the clue is their torches (one in the north-west, two on the east
+      // beach, three on the south-west beach). A wrong gong and they all go quiet.
+      {
+        id: "tiki_gongs",
+        label: "THE TIKI GONGS",
+        look: "gong",
+        hint: "STRIKE THE GONGS FROM THE FEWEST TORCHES TO THE MOST",
+        ordered: true,
+        switches: [
+          { x: -127.5, z: -220.84, lanterns: 1 },
+          { x: 246.2, z: 43.41, lanterns: 2 },
+          { x: -122.5, z: 212.18, lanterns: 3 },
+        ],
+        radius: 3.5,
+        seconds: 0,
+        gate: { x: 205.06, z: -205.06, heading: -Math.PI / 4, width: 9 },
+        prize: { kind: "key", x: 212.13, z: -212.13 },
       },
     ],
   },

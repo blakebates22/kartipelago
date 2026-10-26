@@ -27,6 +27,44 @@
       "z": 620.0,
       "period": 15.0,
       "offset": 2.0
+    },
+    {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "tiki_gongs",
+      "x": 205.06,
+      "z": -205.06,
+      "heading": -0.7853981633974485,
+      "width": 9.0,
+      "prize_x": 212.13,
+      "prize_z": -212.13
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "tiki_gongs",
+      "index": 0,
+      "x": -127.5,
+      "z": -220.84,
+      "lanterns": 1
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "tiki_gongs",
+      "index": 1,
+      "x": 246.2,
+      "z": 43.41,
+      "lanterns": 2
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "tiki_gongs",
+      "index": 2,
+      "x": -122.5,
+      "z": 212.18,
+      "lanterns": 3
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region.py (re-running it rewrites entities)"

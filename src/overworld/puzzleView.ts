@@ -58,7 +58,8 @@ export function createPuzzleView(
   const bellG = new THREE.CylinderGeometry(0.5, 1.6, 2.2, 14, 1, true);
   const lampPostG = new THREE.BoxGeometry(0.3, 3.2, 0.3);
   const lampG = new THREE.BoxGeometry(0.7, 0.8, 0.7);
-  geos.push(postG, beamBarG, bellG, lampPostG, lampG);
+  const gongG = new THREE.CylinderGeometry(1.9, 1.9, 0.3, 20);
+  geos.push(postG, beamBarG, bellG, gongG, lampPostG, lampG);
   const woodM = mat(new THREE.MeshLambertMaterial({ color: 0x6a4a2a }));
   const lampM = mat(new THREE.MeshBasicMaterial({ color: 0xffd070 }));
   const switches = p.switches.map((s) => {
@@ -85,7 +86,7 @@ export function createPuzzleView(
     group.add(plate, beam);
     let bell: THREE.Object3D | undefined;
     let bellM: THREE.MeshLambertMaterial | undefined;
-    if (p.look === "bell") {
+    if (p.look !== "stone") {
       const frame = new THREE.Group();
       frame.position.set(s.x, y, s.z);
       frame.rotation.y = bellHeading(s);
@@ -100,7 +101,8 @@ export function createPuzzleView(
       bellM = mat(new THREE.MeshLambertMaterial({ color: 0x8a6a3a, side: THREE.DoubleSide }));
       const pivot = new THREE.Group();
       pivot.position.y = 7.6;
-      const b = new THREE.Mesh(bellG, bellM);
+      const b = new THREE.Mesh(p.look === "gong" ? gongG : bellG, bellM);
+      if (p.look === "gong") b.rotation.x = Math.PI / 2;
       b.position.y = -1.3;
       pivot.add(b);
       frame.add(pivot);

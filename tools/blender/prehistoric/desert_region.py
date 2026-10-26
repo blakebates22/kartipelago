@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
+import puzzle_kit  # noqa: E402
 
 TRACK_ID = "desert_region"
 FLOOR_Z = 2.0
@@ -210,6 +211,13 @@ def main():
     rot = math.radians(DUST_ROAD[0]) + math.pi / 2
     c.assign(c.rock_mass("Sand Drift", x, y, 14.0, 6.0, FLOOR_Z + 12.0, z0=FLOOR_Z - 1.0, n=12, seed=9, angle=rot,
                          bands=[(1.0, 0.0), (0.8, 0.5), (0.5, 1.0)], base=FLOOR_Z), c.lib("pale_sand", "wall"))
+
+    # The Crater Stones (src/overworld/puzzles.ts): a sandstone vault on the crater's floor,
+    # its gate looking west up the road in, and four switch stones round the rim.
+    puzzle_kit.pen(c, "crater_stones", "Vault", 0.0, 0.0, math.pi, 8.0, 4.5, ("sandstone_block", "wall"), natural(0.0, 0.0),
+                   height=5.0)
+    puzzle_kit.switches(c, "crater_stones", [polar(a, 74.0) for a in (135.0, 45.0, -45.0, -135.0)], natural,
+                        ring_mat=("crater_rock", "wall"))
 
     # The pass's far end, back up towards the snow: it bends out of sight.
     box(c, "Pass Bend", PASS_X0 - 4, 0.0, 6.0, PASS_HW + 24.0, FLOOR_Z - 2.0, RIM_Z, ("frost_cliff", "wall"))

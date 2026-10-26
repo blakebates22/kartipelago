@@ -41,6 +41,49 @@
       "z": -0.0
     },
     {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "crater_stones",
+      "x": -8.0,
+      "z": -0.0,
+      "heading": -1.5707963267948968,
+      "width": 9.0,
+      "prize_x": 0.0,
+      "prize_z": -0.0
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 0,
+      "x": -52.33,
+      "z": -52.33
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 1,
+      "x": 52.33,
+      "z": -52.33
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 2,
+      "x": 52.33,
+      "z": 52.33
+    },
+    {
+      "id": "puzzle_switch_04",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 3,
+      "x": -52.33,
+      "z": 52.33
+    },
+    {
       "id": "dust_01",
       "type": "dust",
       "color": "#d89a6a",

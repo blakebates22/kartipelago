@@ -26,8 +26,8 @@ export interface Puzzle {
   id: string;
   /** Its name on screen. */
   label: string;
-  /** What the switches are: stones in the ground, or bells in a frame. */
-  look: "stone" | "bell";
+  /** What the switches are: stones in the ground, or bells or gongs in a frame. */
+  look: "stone" | "bell" | "gong";
   /** The switches (game coordinates), in their order when `ordered`. */
   switches: PuzzleSwitch[];
   /** How close counts as on a switch, metres. */
@@ -124,7 +124,7 @@ export function gateSolid(p: Puzzle, groundY: number) {
 
 /** A bell's frame posts (they're solid): either side of it, across the way it faces. */
 export function bellPosts(p: Puzzle) {
-  if (p.look !== "bell") return [];
+  if (p.look === "stone") return [];
   return p.switches.flatMap((s) => {
     const h = bellHeading(s);
     return [-1, 1].map((side) => ({

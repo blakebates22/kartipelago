@@ -130,6 +130,12 @@ export function createUiSounds(audio: AudioEngine) {
         ["bell", 67 + [0, 4, 7, 12][Math.min(3, n - 1)]!, 0, 1.2, 0.9],
         ["celesta", 79 + [0, 4, 7, 12][Math.min(3, n - 1)]!, 0, 0.6, 0.6],
       ]),
+    gong: (n: number) =>
+      audio.notes("sfx", [
+        ["tom", 38 + n * 3, 0, 0.5, 1],
+        ["bell", 55 + [0, 3, 7, 10][Math.min(3, n - 1)]!, 0, 1.6, 0.8],
+        ["crash", 0, 0.02, 1.2, 0.35],
+      ]),
     drum: (hurry: boolean) =>
       audio.notes("sfx", [["tom", hurry ? 52 : 45, 0, 0.12, hurry ? 0.75 : 0.55]], 0.7),
     stonesReset: () =>

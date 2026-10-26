@@ -108,6 +108,7 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
         for (const e of stepPuzzle(it.p, it.st, x, z, dt)) {
           if (e.kind === "press") {
             if (it.p.look === "bell") game.sounds.bell(e.count);
+            else if (it.p.look === "gong") game.sounds.gong(e.count);
             else game.sounds.stone(e.count);
             if (e.count === 1 && it.p.switches.length > 1) say(it.p.hint);
             lastBeat = Math.ceil(it.st.left);
@@ -116,7 +117,7 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
             say(
               e.wrong
                 ? `WRONG ONE! ${it.p.hint}`
-                : `TOO SLOW! THE ${it.p.look === "bell" ? "BELLS FELL SILENT" : "STONES ROSE AGAIN"}`,
+                : `TOO SLOW! THE ${it.p.look === "stone" ? "STONES ROSE AGAIN" : `${it.p.look.toUpperCase()}S FELL SILENT`}`,
             );
           } else {
             game.sounds.solved();

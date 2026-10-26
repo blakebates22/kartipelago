@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
+import puzzle_kit  # noqa: E402
 
 TRACK_ID = "beach_region"
 FLOOR_Z = 2.0
@@ -49,6 +50,10 @@ WRECK = (-145.0, 290.0)
 SPLASH = (150.0, CLIFF_R - 30.0)
 LAIR = (8.0, CLIFF_R + 6.0)  # Tidewyrm's lair: the boss gateway (east headland)
 VOLCANO = (-90.0, 620.0)
+# The Tiki Gongs (src/overworld/puzzles.ts): a tiki hut in the north-east, its door shut,
+# and three gongs to strike in order (their torches: one, two, three) round the island.
+HUT = (45.0, 300.0)
+GONGS = [(120.0, 255.0), (-10.0, 250.0), (-120.0, 245.0)]
 
 
 def ring_r(a):
@@ -158,7 +163,8 @@ def main():
         a = k * math.tau / 40 + 0.37 * math.sin(k * 1.9)
         r = (SHORE_R - 18 if south(a) > 0.5 else CLIFF_R - 25) + 9 * math.sin(k * 2.7)
         px, py = polar(math.degrees(a), r)
-        if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0)) < 7:
+        if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0,
+                                                    HUT[0], *(a for a, _ in GONGS))) < 7:
             continue  # (clear of the roads out)
         g = natural(px, py)
         box(c, "Palm %d" % k, px, py, 0.5, 0.5, g - 1.0, g + 10.0, ("palm_bark", "wall"))
@@ -222,6 +228,11 @@ def main():
     for k in range(8):
         x, y = polar(-90.0 + 3.0 * math.sin(k * 1.7), STACKS_R + 30.0 + k * 22.0)
         cone(c, "Reef Rock %d" % k, x, y, 4.0, WATER_Z - 2.0, 2.6, ("isle_rock", "wall"), segs=5, role="visual")
+
+    # The Tiki Gongs' hut (its door is the game's) and where the gongs hang.
+    puzzle_kit.pen(c, "tiki_gongs", "Tiki Hut", *polar(*HUT), math.radians(HUT[0]) + math.pi, 10.0, 4.5, ("tiki_wood", "wall"),
+                   FLOOR_Z, roof=("thatch", "wall"))
+    puzzle_kit.switches(c, "tiki_gongs", [polar(*g) for g in GONGS], natural, lanterns=[1, 2, 3])
 
     # The Dust Road's far end, back up towards the desert: it bends out of sight.
     box(c, "Road Bend", 0.0, ROAD_Y0 + 4, ROAD_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("valley_cliff", "wall"))
