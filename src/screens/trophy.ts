@@ -31,6 +31,7 @@ import { loadingScreen } from "./loading";
 import { titleScreen } from "./title";
 import { tracksMenu } from "./tracks";
 import { adventureCupDone } from "./adventure";
+import { overworldLoading } from "./overworld";
 
 const ordinal = (n: number) =>
   `${n}${["TH", "ST", "ND", "RD"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
@@ -74,9 +75,13 @@ export function trophyStandings(game: Game, result: RaceResult, entry: TrackEntr
   const last = cupOver(cup);
   let t = 0;
   let pp: PixelPortraits | undefined;
+  // A championship toured in the overworld: back to the region between races (you drive
+  // to the next one's gateway).
+  const tour = game.overworld?.adventure ? game.overworld : undefined;
   const go = () => {
     game.sounds.confirm();
     if (last) return game.screens.go(trophyPodium(game));
+    if (tour) return game.screens.go(overworldLoading(game, tour.region, tour.at, true));
     const next = trackById(nextTrack(cup)!);
     if (!next) return game.screens.go(trophyPodium(game));
     game.selection.trackId = next.id;
@@ -148,7 +153,7 @@ export function trophyStandings(game: Game, result: RaceResult, entry: TrackEntr
         const shown = Math.round((before.get(r.slot) ?? 0) + gained * k);
         ui.text(`${shown}`, x + w - 18, ry + 2, { scale: 1, color: INK, align: "right" });
       });
-      const label = last ? "TO THE PODIUM" : "NEXT RACE";
+      const label = last ? "TO THE PODIUM" : tour ? "ON TO THE NEXT RACE" : "NEXT RACE";
       const r = ui.button(x + w / 2 - 60, y + 186, 120, 18, label, { focused: true });
       if (r.clicked && t > 0.5) go();
       hints(ui, [["ENTER", last ? "PODIUM" : "NEXT RACE"]]);

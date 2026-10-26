@@ -521,6 +521,9 @@ function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, sc
 /** Back to the overworld region you came from, out of the gateway you went in by. */
 function backToOverworld(game: Game) {
   const o = game.overworld!;
+  // (Adventure: leaving a race gives it up, a championship too.)
+  if (o.adventure && game.adventure) game.adventure.run = undefined;
+  game.trophy = undefined;
   game.screens.go(overworldLoading(game, o.region, o.at));
 }
 
@@ -583,6 +586,7 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
         label: "MAIN MENU",
         action: leave("THE MAIN MENU", () => {
           game.trophy = undefined;
+          game.overworld = undefined;
           game.screens.go(titleScreen(game, true));
         }),
       },

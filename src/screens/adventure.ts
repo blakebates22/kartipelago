@@ -67,6 +67,7 @@ import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
 import { overworldLoading } from "./overworld";
+import { regionOfKingdom } from "../overworld/regions";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
 
@@ -250,7 +251,7 @@ function statusOf(s: AdventureSave, id: KingdomId): string {
 }
 
 /** Start a race (or a cup's first race) for the story. */
-function launch(
+export function launch(
   game: Game,
   run: AdventureRun,
   track: string,
@@ -271,6 +272,7 @@ export function adventureHub(game: Game): Screen {
   const a = adventureOf(game);
   a.run = undefined;
   game.trophy = undefined;
+  game.overworld = undefined;
   const dev = import.meta.env.DEV;
   const spots: (KingdomId | "dev")[] = [...STORY_ORDER, ...(dev ? (["dev"] as const) : [])];
   let focus = Math.max(0, spots.indexOf(a.at ?? "valley"));
@@ -285,6 +287,9 @@ export function adventureHub(game: Game): Screen {
     if (!canVisit(a.save, id)) return game.sounds.error();
     game.sounds.confirm();
     a.at = id;
+    // A kingdom with its overworld region built: drive it (its board is in the pause menu).
+    const region = id === "dragon" ? undefined : regionOfKingdom(id);
+    if (region) return game.screens.go(overworldLoading(game, region.id, undefined, true));
     game.screens.go(kingdomScreen(game, id));
   };
   return {
@@ -397,7 +402,7 @@ export function adventureHub(game: Game): Screen {
 
 // ---------------------------------------------------------------- a kingdom
 
-function kingdomScreen(game: Game, id: KingdomId): Screen {
+export function kingdomScreen(game: Game, id: KingdomId): Screen {
   const a = adventureOf(game);
   const s = a.save;
   const free = freeRoam();
@@ -908,6 +913,10 @@ export function adventureResult(
     a.run = undefined;
     const kd = run.kind === "king" ? "dragon" : run.kingdom;
     a.at = kd === "dragon_final" ? "dragon" : kd;
+    // From the overworld: back out of its gateway (unless the story has a scene to show:
+    // the world map plays it).
+    const o = game.overworld;
+    if (o && !dueScene(s)) return game.screens.go(overworldLoading(game, o.region, o.at, true));
     game.screens.go(adventureHub(game));
   };
   const menu = new VMenu(game, [

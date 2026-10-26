@@ -11,6 +11,7 @@
  *
  * Positions are game coordinates (x, z; heading 0 faces +z, the kart's convention).
  */
+import type { KingdomId } from "../adventure/data";
 
 export interface Gateway {
   id: string;
@@ -33,6 +34,8 @@ export interface Region {
   music: string;
   /** The kingdom's world, for the colours (game/worlds.ts). */
   worldId: string;
+  /** The Adventure kingdom it is (src/adventure/data.ts): the story runs through it. */
+  kingdom?: KingdomId;
   spawn: { x: number; z: number; heading: number };
   gateways: Gateway[];
 }
@@ -46,6 +49,7 @@ export const REGIONS: Region[] = [
     packageId: "valley_region",
     music: "riverbend",
     worldId: "prehistoric",
+    kingdom: "valley",
     // At the camp, facing north up the north spoke.
     spawn: { x: 0, z: 8, heading: Math.PI },
     gateways: [
@@ -112,6 +116,9 @@ export const REGIONS: Region[] = [
 ];
 
 export const regionById = (id: string) => REGIONS.find((r) => r.id === id);
+
+/** The region an Adventure kingdom is driven in, once it's built. */
+export const regionOfKingdom = (k: KingdomId) => REGIONS.find((r) => r.kingdom === k);
 
 /** Is (x, z) inside the gateway's trigger (by `extra` metres more)? */
 export const inGateway = (g: Gateway, x: number, z: number, extra = 0) =>

@@ -27,12 +27,17 @@ import { loadingScreen } from "./loading";
 import { titleScreen } from "./title";
 import { confirmDialog, drawHud } from "./race";
 import { optionsScreen } from "./options";
+import { adventureHub, adventureOf, kingdomScreen, launch } from "./adventure";
+import { kingdomById } from "../adventure/data";
+import { coinCourse, kingdomPhase, objective } from "../adventure/progress";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
 export interface OverworldState {
   region: string;
   at?: string;
+  /** Adventure mode: the story runs through the region (the gateways open its races). */
+  adventure?: boolean;
 }
 
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
@@ -52,7 +57,12 @@ const entryOf = (r: Region): TrackEntry => ({
   load: { scene: "track", packageId: r.packageId },
 });
 
-export function overworldLoading(game: Game, regionId: string, at?: string): Screen {
+export function overworldLoading(
+  game: Game,
+  regionId: string,
+  at?: string,
+  adventure = game.overworld?.adventure ?? false,
+): Screen {
   const region = regionById(regionId)!;
   let ready: Session | undefined;
   let failed: string | undefined;
@@ -63,7 +73,7 @@ export function overworldLoading(game: Game, regionId: string, at?: string): Scr
     seeThrough: false,
     enter() {
       game.ui.interactive = false;
-      game.overworld = { region: region.id, at };
+      game.overworld = { region: region.id, at, adventure: adventure && Boolean(region.kingdom) };
       game.audio.music.stop(0.6);
       game.audio.music.prepare(region.music);
       const token = game.screens.token;
@@ -268,6 +278,9 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         outline: PAL.shadow,
         align: "center",
       });
+      // Adventure: what to do next, under the plaque.
+      const goal = game.overworld?.adventure ? storyGoal(game, region) : undefined;
+      if (goal) ui.text(goal, 8, 28, { color: PAL.cream, outline: PAL.shadow });
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
@@ -275,14 +288,92 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   return screen;
 }
 
-/** A course's card at its gateway: standard or ruined, your best times, GO or back. */
+/** Adventure: what the story asks of this region's gateways now. `go` is undefined
+ * when this gateway has nothing to race yet (the championship is at another one). */
+interface StoryOffer {
+  /** The course the card shows. */
+  track: string;
+  note: string;
+  go?: () => void;
+}
+
+function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefined {
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  const course = k?.courses.find((c) => c.track === g.track);
+  if (!k || !course) return undefined;
+  const a = adventureOf(game);
+  const s = a.save;
+  const ph = kingdomPhase(s, k);
+  const back = () => (game.overworld = { region: region.id, at: g.id, adventure: true });
+  if (ph === "locked") return { track: g.track, note: "NOT REACHED YET" };
+  if (ph === "championship") {
+    const cup = game.trophy && a.run?.kind === "cup" ? game.trophy : undefined;
+    const raced = cup?.raced ?? 0;
+    const next = k.courses[raced]!;
+    const n = `RACE ${raced + 1} OF ${k.courses.length}`;
+    if (next.track !== g.track)
+      return {
+        track: g.track,
+        note: `THE CHAMPIONSHIP'S ${n} IS AT ${(trackById(next.track)?.name ?? next.track).toUpperCase()}`,
+      };
+    return {
+      track: g.track,
+      note: `THE CHAMPIONSHIP · ${n}`,
+      go: () => {
+        back();
+        if (!cup) {
+          const tracks = k.courses.map((c) => c.track);
+          return launch(game, { kind: "cup", kingdom: k.id }, tracks[0]!, {
+            name: k.name,
+            worldId: worldById(k.worldId)!.id,
+            tracks,
+          });
+        }
+        game.selection.trackId = next.track;
+        game.selection.mode = "race";
+        game.screens.go(loadingScreen(game));
+      },
+    };
+  }
+  // After the championship: the ruined course and its map fragments.
+  const cc = coinCourse(course, (id) => Boolean(trackById(id)));
+  const found = Boolean(s.pieces[course.track]);
+  return {
+    track: cc.track,
+    note: found
+      ? "ITS MAP PIECE IS FOUND · RACE IT AGAIN"
+      : "THE RUIN: GATHER ITS 4 MAP FRAGMENTS AND FINISH 1ST",
+    go: () => {
+      back();
+      launch(game, { kind: "coins", kingdom: k.id, course: course.track, ...cc }, cc.track);
+    },
+  };
+}
+
+/** Adventure: the region's goal, for the HUD. */
+function storyGoal(game: Game, region: Region): string | undefined {
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  if (!k) return undefined;
+  const a = adventureOf(game);
+  if (kingdomPhase(a.save, k) === "championship") {
+    const raced = game.trophy && a.run?.kind === "cup" ? game.trophy.raced : 0;
+    const next = trackById(k.courses[raced]!.track);
+    return `THE CHAMPIONSHIP, RACE ${raced + 1} OF ${k.courses.length}: ${(next?.name ?? "").toUpperCase()}`;
+  }
+  return objective(a.save);
+}
+
+/** A course's card at its gateway: standard or ruined, your best times, GO or back.
+ * (Adventure: what the story asks there instead.) */
 function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
-  const std = trackById(g.track)!;
-  const ruin = std.ruin ? trackById(std.ruin) : undefined;
+  const story = game.overworld?.adventure ? storyOffer(game, region, g) : undefined;
+  const std = trackById(story?.track ?? g.track)!;
+  const ruin = !story && std.ruin ? trackById(std.ruin) : undefined;
   const choices = ruin ? [std, ruin] : [std];
   let pick = 0;
   let clicked = -1;
   const go = () => {
+    if (story) return story.go?.();
     const e = choices[pick]!;
     game.overworld = { region: region.id, at: g.id };
     game.selection.trackId = e.id;
@@ -292,7 +383,7 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
   const menu = new VMenu(
     game,
     [
-      { label: "GO!", action: go },
+      ...(story && !story.go ? [] : [{ label: "GO!", action: go }]),
       { label: "BACK OUT", action: () => game.screens.pop() },
     ],
     () => game.screens.pop(),
@@ -332,15 +423,17 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
         outline: PAL.ink,
         align: "center",
       });
-      // Standard / ruined tabs.
-      choices.forEach((c, i) => {
-        const tw = 90;
-        const tx = ui.W / 2 + (i - (choices.length - 1) / 2) * (tw + 6) - tw / 2;
-        const r = ui.button(tx, y + 28, tw, 14, c === std ? "STANDARD" : "RUINED", {
-          focused: i === pick,
+      // Standard / ruined tabs (Adventure: the story's note instead).
+      if (story) ui.text(story.note, ui.W / 2, y + 31, { color: "#8a2a1a", align: "center" });
+      else
+        choices.forEach((c, i) => {
+          const tw = 90;
+          const tx = ui.W / 2 + (i - (choices.length - 1) / 2) * (tw + 6) - tw / 2;
+          const r = ui.button(tx, y + 28, tw, 14, c === std ? "STANDARD" : "RUINED", {
+            focused: i === pick,
+          });
+          if (r.clicked) clicked = i;
         });
-        if (r.clicked) clicked = i;
-      });
       const lines = wrap(e.description.toUpperCase(), w - 20).slice(0, 4);
       lines.forEach((l, i) => ui.text(l, x + 10, y + 50 + i * 9, { color: PAL.ink }));
       const rec = loadRecords()[e.id];
@@ -361,10 +454,25 @@ function overworldPause(game: Game, region: Region): Screen {
     game.overworld = undefined;
     game.screens.go(titleScreen(game, true));
   };
+  const story = game.overworld?.adventure && region.kingdom ? region.kingdom : undefined;
   const menu = new VMenu(
     game,
     [
       { label: "RESUME", action: () => resume() },
+      // Adventure: the kingdom's board (every step of its story, the ones the region
+      // doesn't have yet: the map, the dragon, the task) and the world map.
+      ...(story
+        ? [
+            {
+              label: "KINGDOM BOARD",
+              action: () => {
+                game.overworld = undefined;
+                game.screens.go(kingdomScreen(game, story));
+              },
+            },
+            { label: "WORLD MAP", action: () => game.screens.go(adventureHub(game)) },
+          ]
+        : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       {
         label: "MAIN MENU",
@@ -396,7 +504,7 @@ function overworldPause(game: Game, region: Region): Screen {
       ui.dim(0.45);
       const w = 140;
       const x = ui.W / 2 - w / 2;
-      ui.panel(x, 50, w, 120, "wood", "gold");
+      ui.panel(x, 50, w, story ? 168 : 120, "wood", "gold");
       ui.text("PAUSED", ui.W / 2, 60, {
         scale: 2,
         color: PAL.gold,
