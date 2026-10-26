@@ -39,6 +39,55 @@ export interface Region {
 
 export const REGIONS: Region[] = [
   {
+    // The doc's first region (tools/blender/prehistoric/valley_region.py, a greybox): a
+    // cliff-ringed bowl, a ring road round it and spokes in to Elder Mossback's camp.
+    id: "dinosaur_valley",
+    name: "Dinosaur Valley",
+    packageId: "valley_region",
+    music: "riverbend",
+    worldId: "prehistoric",
+    // At the camp, facing north up the north spoke.
+    spawn: { x: 0, z: 8, heading: Math.PI },
+    gateways: [
+      // By the ford where the west spoke crosses the river.
+      {
+        id: "riverbend",
+        track: "riverbend_palms",
+        x: -128,
+        z: 24,
+        radius: 6,
+        heading: Math.PI,
+      },
+      // In the cave mouth beside the falls, north-east, at the end of the cave road.
+      {
+        id: "cascade",
+        track: "cascade_caverns",
+        x: 252,
+        z: -211.5,
+        radius: 6,
+        heading: Math.atan2(-0.766, 0.643),
+      },
+      // On the bog's shore, the pyramid's tip out in the water, south-west.
+      {
+        id: "bonebog",
+        track: "bonebog_pyramid",
+        x: -196.6,
+        z: 196.6,
+        radius: 6,
+        heading: Math.atan2(0.707, -0.707),
+      },
+      // At the lava-lit tunnel in the south-east cliff, the volcano beyond.
+      {
+        id: "ember",
+        track: "ember_peak",
+        x: 252,
+        z: 211.5,
+        radius: 6,
+        heading: Math.atan2(-0.766, -0.643),
+      },
+    ],
+  },
+  {
     id: "test_valley",
     name: "Dinosaur Valley (test)",
     packageId: "riverbend_palms",

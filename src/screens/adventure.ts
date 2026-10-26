@@ -1066,11 +1066,11 @@ function devMenu(game: Game): Screen {
       },
     },
     {
-      // The overworld's first step: free roam in a test region with two gateways.
-      label: "OVERWORLD (TEST): FREE ROAM",
+      // The overworld's first region (a greybox): free roam with its four gateways.
+      label: "OVERWORLD: DINOSAUR VALLEY",
       action: () => {
         game.sounds.confirm();
-        game.screens.go(overworldLoading(game, "test_valley"));
+        game.screens.go(overworldLoading(game, "dinosaur_valley"));
       },
     },
     {

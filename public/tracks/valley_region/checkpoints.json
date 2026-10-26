@@ -1,0 +1,248 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    229.673,
+    1.6,
+    -0.0
+   ],
+   "heading": 3.00168,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     230.176,
+     1.6,
+     -3.697
+    ],
+    "heading": 3.01154
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    201.339,
+    1.6,
+    -122.616
+   ],
+   "heading": -2.53647,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     199.084,
+     1.6,
+     -125.796
+    ],
+    "heading": -2.51218
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    97.115,
+    2.396,
+    -195.626
+   ],
+   "heading": -1.89336,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     93.233,
+     2.116,
+     -196.883
+    ],
+    "heading": -1.87507
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    -30.171,
+    1.6,
+    -214.691
+   ],
+   "heading": -1.5523,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -34.291,
+     1.6,
+     -214.601
+    ],
+    "heading": -1.54507
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    -152.323,
+    1.6,
+    -178.729
+   ],
+   "heading": -0.96244,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -155.672,
+     1.6,
+     -176.316
+    ],
+    "heading": -0.92979
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    -219.912,
+    1.6,
+    -71.754
+   ],
+   "heading": -0.17574,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -220.511,
+     1.6,
+     -68.13
+    ],
+    "heading": -0.15279
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    -206.592,
+    1.607,
+    55.356
+   ],
+   "heading": 0.32308,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -205.395,
+     1.776,
+     58.9
+    ],
+    "heading": 0.32942
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    -146.055,
+    1.594,
+    168.562
+   ],
+   "heading": 0.69831,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -143.346,
+     1.597,
+     171.71
+    ],
+    "heading": 0.7224
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    -37.463,
+    1.6,
+    234.034
+   ],
+   "heading": 1.41214,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -33.426,
+     1.6,
+     234.636
+    ],
+    "heading": 1.43207
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    86.07,
+    1.6,
+    207.792
+   ],
+   "heading": 2.1183,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     89.743,
+     1.6,
+     205.518
+    ],
+    "heading": 2.13301
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    177.959,
+    1.6,
+    117.652
+   ],
+   "heading": 2.52125,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     180.356,
+     1.6,
+     114.246
+    ],
+    "heading": 2.53513
+   }
+  }
+ ]
+}

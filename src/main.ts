@@ -207,7 +207,7 @@ if (PARAMS.get("shot")) screens.go(shotScreen(PARAMS.get("shot")!));
 else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureHub(game));
 // ?overworld (dev server only): free roam in the overworld's test region.
 else if (import.meta.env.DEV && PARAMS.has("overworld"))
-  screens.go(overworldLoading(game, PARAMS.get("overworld") || "test_valley"));
+  screens.go(overworldLoading(game, PARAMS.get("overworld") || "dinosaur_valley"));
 else if (fromUrl) {
   // Straight into a race: the frontend is one Escape (pause) away.
   game.selection.trackId = fromUrl.entry.id;
