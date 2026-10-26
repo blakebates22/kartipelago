@@ -85,7 +85,7 @@ def glacier(c, ss, t0, t1):
                        bands=[(1.0, 0.0), (1.0, 0.4), (0.96, 0.46), (0.93, 0.7), (0.86, 0.75), (0.7, 0.92), (0.45, 1.0)])
     half = c.width / 2 + 3.6
     c.tunnel(rock, t0, t1, half=half, height=13.0, pad=16.0)
-    c.paint_rock(rock, ("glacier_ice", "wall"), ("summit_snow", "deep_snow"), floor=("crystal_road", "snow_stone"), top_z=40, floor_z=30)
+    c.paint_rock(rock, ("berg_ice", "wall"), ("summit_snow", "deep_snow"), floor=("crystal_road", "snow_stone"), top_z=40, floor_z=30)
     floor = []
     s = t0 - 24
     while s <= t1 + 24:
@@ -97,6 +97,74 @@ def glacier(c, ss, t0, t1):
         s += 2.0
     c.ribbon("Cave Floor", floor, 26, 0, c.lib("crystal_road", "snow_stone"), coll="Collision", role="collision", steps=4)
     return rock
+
+
+def cutting_walls(c, ss):
+    """Where the caves' approaches are cut through the land outside the glacier, walls
+    of ice line both sides of the cutting from the road up to the land's edge, so there
+    are no holes beside the road (Blake's review: holes there, both sides)."""
+    m = Mesh()
+    s = ss.HIDE_S[0]
+    while s <= ss.HIDE_S[1]:
+        q = c.at(s)
+        if ss.in_glacier(q.p.x, q.p.y, 1.02):
+            s += 4.0
+            continue  # (inside, the glacier is the wall)
+        for side in (-1, 1):
+            p = q.side(side * 17.0)
+            if ss.in_glacier(p.x, p.y, 0.98) or not far_from_road(c, p.x, p.y, 9.0):
+                continue
+            edge = q.side(side * 20.5)
+            top = min(ss.natural(edge.x, edge.y), ss.natural(p.x, p.y)) + 0.4
+            if top < q.p.z + 1.0:
+                continue  # (the land falls away there)
+            base = q.p.z - 1.5
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (p.x, p.y, (base + top) / 2), (6.0, 4.2, top - base), math.atan2(q.t.y, q.t.x) + math.pi / 2)
+            m.mark(("berg_ice", "wall"), k0)
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (p.x, p.y, top + 0.15), (6.2, 4.4, 0.3), math.atan2(q.t.y, q.t.x) + math.pi / 2)
+            m.mark("summit_snow", k0)
+        s += 4.0
+    m.build(c, "Cutting Walls", "Caves", "both")
+
+
+def ice_cathedral(c, ss, t0, t1):
+    """The glacier as an ice cathedral (Blake's review: keep the drive inside, make it
+    look like a cathedral of ice): spires of the lake's turquoise ice along its crest,
+    taller towards the middle, and a great pointed arch framing each mouth of the caves."""
+    (cx, cy), rx, ry, ang = ss.GLACIER
+    ca, sa = math.cos(ang), math.sin(ang)
+    m = Mesh()
+    for k in range(-4, 5):
+        t = k / 5.0
+        lx, ly = 0.0, t * ry * 0.8
+        x, y = cx + lx * ca - ly * sa, cy + lx * sa + ly * ca
+        h = 26.0 + 22.0 * (1 - abs(t))
+        for off in ((0.0, 0.0), (rx * 0.35, 0.0), (-rx * 0.35, 0.0)) if k % 2 == 0 else ((0.0, 0.0),):
+            px, py = x + off[0] * ca, y + off[0] * sa
+            hh = h * (1.0 if off == (0.0, 0.0) else 0.6)
+            k0 = len(m.bm.faces)
+            res = bmesh.ops.create_cone(m.bm, cap_ends=True, segments=6, radius1=4.5 if off == (0.0, 0.0) else 3.0, radius2=0.0, depth=hh)
+            for v in res["verts"]:
+                v.co = Vector((px + v.co.x, py + v.co.y, ss.GLACIER_TOP - 6.0 + hh / 2 + v.co.z))
+            m.mark(("berg_ice", "wall"), k0)
+    for s_ in (t0, t1):
+        q = c.at(s_)
+        rot = math.atan2(q.t.y, q.t.x) + math.pi / 2
+        for side in (-1, 1):
+            p = q.side(side * (c.width / 2 + 6.0))
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (p.x, p.y, q.p.z + 9.0), (3.0, 3.0, 20.0), rot)
+            m.mark(("berg_ice", "wall"), k0)
+            for j in range(6):
+                # The arch's two sides leaning in to a point.
+                u = (j + 0.5) / 6
+                pp = q.side(side * (c.width / 2 + 6.0) * (1 - u))
+                k0 = len(m.bm.faces)
+                props.cuboid(m.bm, (pp.x, pp.y, q.p.z + 19.0 + 9.0 * math.sin(u * math.pi / 2)), (2.6, 3.4, 2.4), rot)
+                m.mark(("berg_ice", "wall"), k0)
+    m.build(c, "Ice Cathedral", "Caves", "visual")
 
 
 def cave_dressing(c, ss, rock, t0, t1, blue, violet):
@@ -194,11 +262,12 @@ def lake(c, ss, ter):
             c.place(sp.iceberg(c, v), x, y, -0.2, rot=rnd(i * 5) * math.tau, scale=0.8 + 0.5 * rnd(i * 3), coll="Lake")
 
     # The shipwreck, listing in the ice south of the bay road.
-    ob = c.place(sp.shipwreck(c), 58.0, -238.0, -1.6, rot=0.35, coll="Lake")
+    # (Blake's review: way bigger and grander.)
+    ob = c.place(sp.shipwreck(c), 64.0, -252.0, -3.2, rot=0.35, scale=2.2, coll="Lake")
     ob.rotation_euler = (0.17, -0.06, 0.35)
-    for k in range(9):
-        a = k * 0.7 + 0.2
-        x, y = 58.0 + 22 * math.cos(a) * (0.9 + 0.3 * rnd(k)), -238.0 + 9 * math.sin(a) * (1.0 + 0.4 * rnd(k * 3))
+    for k in range(12):
+        a = k * 0.55 + 0.2
+        x, y = 64.0 + 46 * math.cos(a) * (0.9 + 0.3 * rnd(k)), -252.0 + 19 * math.sin(a) * (1.0 + 0.4 * rnd(k * 3))
         fl = c.place(sp.floe(c, k % 4), x, y, -0.2, rot=rnd(k * 7) * 6, scale=0.5 + 0.3 * rnd(k), coll="Lake")
         fl.rotation_euler = (0.25 * (rnd(k * 5) - 0.5), 0.3 * (rnd(k * 9) - 0.5), rnd(k * 7) * 6)
     return water
@@ -218,7 +287,9 @@ def hot_springs(c, ss, ter, geysers):
     c.place(sp.geyser_cone(c, 2), q.p.x, q.p.y, -1.6, coll="Springs", role="visual")
     geysers.append((q.p.x, q.p.y, -0.3, 5.5, 26.0, 2.0, True))
     # More round about (they blow, but nowhere near the road).
-    spots = [(S[4] + 10, -24), (S[4] + 40, 22), (S[7] + 20, -26), (S[7] + 45, 24), (S[8] + 40, 26), (S[9] + 10, -24), (S[3] + 20, 30)]
+    spots = [(S[4] + 10, -24), (S[4] + 40, 22), (S[7] + 20, -26), (S[7] + 45, 24), (S[8] + 40, 26), (S[9] + 10, -24), (S[3] + 20, 30),
+             # (More: Blake's review.)
+             (S[4] + 60, -30), (S[5] + 10, 30), (S[6] + 20, -28), (S[8] + 10, -30), (S[3] + 50, -32), (S[9] + 40, 30)]
     for k, (s, off) in enumerate(spots):
         q = c.at(s)
         p = q.side(off)
@@ -304,12 +375,13 @@ def hollow_tree(c, ss, glow_pts, stump=None):
     bm = m.bm
 
     def r_out(z):
-        return ro + 9.0 * math.exp(-max(0.0, z - 6.0) / 5.0) + 0.8 * math.sin(z / 3.1)
+        # (Blake's review: a sequoia, not a fat bulb: a smaller buttressed foot.)
+        return ro + 6.0 * math.exp(-max(0.0, z - 4.0) / 4.0) + 0.5 * math.sin(z / 3.1)
 
     vo, vi = {}, {}
     for i in range(N):
         a = i * math.tau / N
-        wob = 1.0 + 0.025 * math.sin(a * 7) + 0.015 * math.sin(a * 13 + 1)
+        wob = 1.0 + 0.02 * math.sin(a * 7) + 0.035 * math.cos(a * 18)  # fluted bark
         for j, z in enumerate(zs):
             vo[i, j] = bm.verts.new((cx + r_out(z) * wob * math.cos(a), cy + r_out(z) * wob * math.sin(a), z))
             vi[i, j] = bm.verts.new((cx + ri * math.cos(a), cy + ri * math.sin(a), z))
@@ -322,7 +394,7 @@ def hollow_tree(c, ss, glow_pts, stump=None):
             present[i, j] = not (opening(x, y, zc) or knothole(math.degrees(a0) % 360, zc))
             if stump and (zc > stump["top"](a0) or stump["breach"](x, y, zc)):
                 present[i, j] = False
-    bark, wood, char = [], [], []
+    bark, wood, char, rings_dark = [], [], [], []
     for (i, j), on in present.items():
         if not on:
             continue
@@ -331,7 +403,9 @@ def hollow_tree(c, ss, glow_pts, stump=None):
         bm.faces.new((vo[i, j], vo[i1, j], vo[i1, j + 1], vo[i, j + 1]))
         bark.append(k0)
         bm.faces.new((vi[i, j + 1], vi[i1, j + 1], vi[i1, j], vi[i, j]))
-        wood.append(k0 + 1)
+        # (Blake's review: the same texture all the way up the spiral was dizzying.)
+        # Rings of darker grain every few metres up the inside wall.
+        (rings_dark if int(((zs[j] + zs[j + 1]) / 2) / 7.0) % 3 == 1 else wood).append(k0 + 1)
         # Jambs where the next cell is missing (or at the top and bottom).
         for (ni, nj), edge in (((i1, j), "r"), (((i - 1) % N, j), "l"), ((i, j + 1), "t"), ((i, j - 1), "b")):
             if present.get((ni, nj), False):
@@ -349,6 +423,8 @@ def hollow_tree(c, ss, glow_pts, stump=None):
             (char if stump and edge != "b" else wood).append(k1)
     m.slots[("giant_bark", "wall")] = bark
     m.slots[("heartwood", "wall")] = wood
+    if rings_dark:
+        m.slots[("giant_bark", "wall")] = bark + rings_dark
     if char:
         m.slots[("ruin_char", "wall")] = char
     shell = m.build(c, "Great Tree Shell", "Trees", "both", flat=False)
@@ -392,14 +468,25 @@ def hollow_tree(c, ss, glow_pts, stump=None):
         props.cuboid(bm, (cx + rel.x * 24.5, cy + rel.y * 24.5, zb), (26.0, 1.4, 1.2), rot=a)
         props.cuboid(bm, (cx + rel.x * (ri - 1.0), cy + rel.y * (ri - 1.0), zb - 2.5), (1.4, 1.4, 6.0), rot=a)
         m.mark(("heartwood", "wall"), k0)
+    # (Blake's review: the yellow blobs should be mushrooms.) Clusters of toadstools on
+    # the column and round the walls, glowing faintly.
     for k in range(18):
         a = k * 2.4
         z = zf + 3 + (k * 3.1) % 50
         r = 11.6 if k % 2 else ri - 0.3
-        k0 = len(bm.faces)
-        props.blob(bm, (cx + r * math.cos(a), cy + r * math.sin(a), z), 1.6 + 0.8 * rnd(k), sx=1.0, sy=1.0, sz=0.5, subdiv=1)
-        m.mark("glow_moss", k0)
-        glow_pts.append((cx + r * math.cos(a), cy + r * math.sin(a), z))
+        out = 1.0 if k % 2 else -1.0  # (away from the column, or in from the wall)
+        for j in range(3):
+            aj = a + (j - 1) * 0.05
+            rr = r + out * (0.6 + 0.5 * j)
+            x, y = cx + rr * math.cos(aj), cy + rr * math.sin(aj)
+            h = 1.0 + 0.6 * ((k + j) % 3)
+            k0 = len(bm.faces)
+            props.cuboid(bm, (x, y, z + h / 2 - 0.2), (0.35, 0.35, h), rot=aj)
+            m.mark(("sinter", "wall"), k0)
+            k0 = len(bm.faces)
+            props.blob(bm, (x, y, z + h), 0.7 + 0.25 * j, sx=1.0, sy=1.0, sz=0.45, subdiv=1)
+            m.mark("mushroom_cap", k0)
+        glow_pts.append((cx + r * math.cos(a), cy + r * math.sin(a), z + 1.0))
     # Shelf fungi glowing on the walls, high above the rails.
     for k in range(16):
         a = k * 2.05 + 0.4
@@ -411,7 +498,7 @@ def hollow_tree(c, ss, glow_pts, stump=None):
         bm.faces.new(rim)
         for j in range(6):
             bm.faces.new((rim[j + 1], rim[j], under))
-        m.mark("glow_moss", k0)
+        m.mark("mushroom_cap", k0)
         glow_pts.append((cx + (r - 1.5) * math.cos(a), cy + (r - 1.5) * math.sin(a), z))
     m.build(c, "Great Tree Beams", "Trees", "visual")
     # Sunbeams slanting in through the knotholes.
@@ -434,7 +521,7 @@ def hollow_tree(c, ss, glow_pts, stump=None):
     for t, base in ((-31.0, S22), (31.0, S23)):
         p = P + d * t
         glow_pts.append((p.x, p.y, ss.road_z(base + t) + 4.0))
-    crown(c, cx, cy, tall(150.0), 1.0, 0)
+    sequoia_crown(c, cx, cy, tall(150.0), 0)
     roots(c, ss, cx, cy, ro + 4.0, ss.road_z(S22) - 0.5, 9)
     return shell, trunk
 
@@ -478,7 +565,9 @@ def roots(c, ss, cx, cy, r0, z0, n):
         a = k * math.tau / n + 0.3
         x1, y1 = cx + (r0 + 22) * math.cos(a), cy + (r0 + 22) * math.sin(a)
         mx_, my_ = cx + (r0 + 8) * math.cos(a), cy + (r0 + 8) * math.sin(a)
-        if not (far_from_road(c, x1, y1, 4.0) and far_from_road(c, mx_, my_, 4.0)):
+        x0, y0 = cx + (r0 - 6) * math.cos(a), cy + (r0 - 6) * math.sin(a)
+        # (Blake's review: karts got stuck between a root and the trunk by the road.)
+        if not (far_from_road(c, x1, y1, 10.0) and far_from_road(c, mx_, my_, 10.0) and far_from_road(c, x0, y0, 8.0)):
             continue
         k0 = len(m.bm.faces)
         props.tube(m.bm, [(cx + (r0 - 6) * math.cos(a), cy + (r0 - 6) * math.sin(a), z0 + 6.0), (mx_, my_, z0 + 2.5), (x1, y1, z0 - 1.5)], [5.0, 3.2, 1.0], n=7)
@@ -519,16 +608,48 @@ def crown(c, cx, cy, z, size, seed):
     return m.build(c, "Crown %d %d" % (int(cx), int(cy)), "Canopy", "visual", flat=False)
 
 
+def sequoia_crown(c, cx, cy, z, seed):
+    """A sequoia's crown: short limbs and a narrow, dense, rounded cone of dark green in
+    stacked layers, snow on the upper ones."""
+    m = Mesh()
+    bm = m.bm
+    for k in range(6):
+        a = k * math.tau / 6 + seed
+        z0 = z - 6 + 7 * (k % 3)
+        k0 = len(bm.faces)
+        props.tube(bm, [(cx + 14 * math.cos(a), cy + 14 * math.sin(a), z0), (cx + 24 * math.cos(a), cy + 24 * math.sin(a), z0 + 5)], [2.6, 1.2], n=6)
+        m.mark(("giant_bark", "wall"), k0)
+    for j in range(6):
+        rr = 30.0 - j * 4.4
+        zz = z + 4 + j * 9.0
+        k0 = len(bm.faces)
+        props.blob(bm, (cx, cy, zz), rr, sz=0.42, subdiv=2)
+        m.mark("pine_bright", k0)
+        if j >= 3:
+            k0 = len(bm.faces)
+            sp._cap(bm, (cx, cy, zz + rr * 0.32), rr * 0.6, 1.4)
+            m.mark("summit_snow", k0)
+    return m.build(c, "Sequoia Crown %d %d" % (int(cx), int(cy)), "Canopy", "visual", flat=False)
+
+
 def giant_tree(c, cx, cy, z_ledge, seed):
-    """One of the other giants (42 m across at the ledge): a flared trunk, its ledge's
-    brackets, and a crown far above."""
+    """One of the other giants, a sequoia (Blake's review: they looked fat and lumpy):
+    a straight, slowly tapering column of fluted red bark, a buttressed foot, the ledge's
+    brackets, and a narrow crown far above. Still 42 m across at the ledge."""
     m = Mesh()
     bm = m.bm
     r = 21.0
     rings = []
-    for j, z in enumerate((-6.0, 6.0, 12.0, 24.0, z_ledge - 6, z_ledge + 20, tall(100.0), tall(140.0), tall(152.0))):
-        rr = (r + 12.0 * math.exp(-max(0.0, z - 6.0) / 6.0)) * (1.0 - 0.0016 * max(0.0, z - 60))
-        rings.append(props.ring(bm, (cx, cy), rr, z, 28, phase=0.13 * j))
+    zs = (-6.0, 2.0, 8.0, 16.0, z_ledge - 6, z_ledge + 20, tall(100.0), tall(130.0), tall(150.0), tall(160.0))
+    for j, z in enumerate(zs):
+        base = r + 7.0 * math.exp(-max(0.0, z - 2.0) / 5.0)  # the buttressed foot
+        rr = base * (1.0 - 0.0028 * max(0.0, z - z_ledge))
+        ring = []
+        for i in range(36):
+            a = i * math.tau / 36
+            flute = 1.0 + 0.045 * math.cos(a * 12 + seed) + (0.06 * math.cos(a * 5 + seed) if z < 10 else 0.0)
+            ring.append(bm.verts.new((cx + rr * flute * math.cos(a), cy + rr * flute * math.sin(a), z)))
+        rings.append(ring)
     props.loft(bm, rings, cap_top=True)
     m.mark(("giant_bark", "wall"), 0)
     # Brackets under the ledge.
@@ -538,7 +659,7 @@ def giant_tree(c, cx, cy, z_ledge, seed):
         props.tube(bm, [(cx + (r - 1) * math.cos(a), cy + (r - 1) * math.sin(a), z_ledge - 10.0), (cx + 30.0 * math.cos(a), cy + 30.0 * math.sin(a), z_ledge - 2.5)], [1.0, 0.7], n=5)
         m.mark(("heartwood", "wall"), k0)
     m.build(c, "Giant Tree %d %d" % (int(cx), int(cy)), "Trees", "both", flat=False)
-    crown(c, cx, cy, tall(150.0), 0.8, seed)
+    sequoia_crown(c, cx, cy, tall(150.0), seed)
     roots(c, None, cx, cy, r + 6.0, 9.0, 8)
 
 
@@ -567,10 +688,32 @@ def forest(c, ss, ter):
     def slopes(x, y, z):
         return far_from_road(c, x, y, 7.0) and ss.lake_k(x, y) > 1.12 and 1.5 < z < 70 and not ss.in_glacier(x, y, 1.1)
 
+    placed = []
     for v in range(3):
-        props.scatter(c, sp.pine(c, v + 3, 11.0 + 3 * v), 42, (-480, 480, -460, 30), slopes, ter, seed=80 + v, scale=(0.8, 1.5), coll="Pines", role="visual")
-        props.scatter(c, sp.pine(c, v + 3, 11.0 + 3 * v), 26, (140, 480, 30, 460), slopes, ter, seed=90 + v, scale=(0.8, 1.4), coll="Pines", role="visual")
+        placed += props.scatter(c, sp.pine(c, v + 3, 11.0 + 3 * v), 42, (-480, 480, -460, 30), slopes, ter, seed=80 + v, scale=(0.8, 1.5), coll="Pines", role="visual")
+        placed += props.scatter(c, sp.pine(c, v + 3, 11.0 + 3 * v), 26, (140, 480, 30, 460), slopes, ter, seed=90 + v, scale=(0.8, 1.4), coll="Pines", role="visual")
         props.scatter(c, sp.boulder(c, v), 18, (-480, 480, -460, 460), slopes, ter, seed=100 + v, scale=(0.7, 1.6), coll="Pines")
+        # More evergreens on the low ground north of the bay (Blake's review).
+        placed += props.scatter(c, sp.pine(c, v, 12.0 + 3 * v), 10, (-50, 70, -50, 40), slopes, ter, seed=110 + v, scale=(0.9, 1.5), coll="Pines", role="visual")
+    # A rock ledge under every tree standing on a steep slope (Blake's review: trees on
+    # the walls need ledges to stand on).
+    m = Mesh()
+    n = 0
+    for x, y in placed:
+        z = ground(c, ter, x, y, None)
+        if z is None:
+            continue
+        zs = [ground(c, ter, x + dx, y + dy, z) for dx, dy in ((3, 0), (-3, 0), (0, 3), (0, -3))]
+        if max(zs) - min(zs) < 3.0:
+            continue
+        k0 = len(m.bm.faces)
+        props.cuboid(m.bm, (x, y, z - 1.0), (4.6, 4.2, 2.4), rnd(n * 2.1) * 6, (0.05, -0.04))
+        m.mark(("summit_rock", "wall"), k0)
+        k0 = len(m.bm.faces)
+        props.cuboid(m.bm, (x, y, z + 0.28), (4.8, 4.4, 0.35), rnd(n * 2.1) * 6, (0.05, -0.04))
+        m.mark("summit_snow", k0)
+        n += 1
+    m.build(c, "Tree Ledges", "Pines", "visual")
     # Mid-sized giants (35-40 m) whose crowns crowd the treetop bridges.
     for k, (x, y) in enumerate(((-40, 170), (-60, 95), (-150, 190), (-75, 205), (-150, 115), (-30, 230), (-165, 290), (40, 230), (-200, 160))):
         if not far_from_road(c, x, y, 14.0):
@@ -593,13 +736,24 @@ def forest(c, ss, ter):
 # ------------------------------------------------------------------ bridges, the lookout and flags
 
 
+def rope_spans(c):
+    """The road's rope-bridge stretches, (s0, s1) in road distance."""
+    return sorted((p["kp_from"], p["kp_to"]) for p in c.pieces if "ropebridge" in p.name)
+
+
 def rope_bridge(c, ss):
-    """The swinging rope bridge out of the great tree, built plank by plank (its road
-    piece is collision only): loose planks with gaps between them, a few missing, laid
-    on rope stringers; rope handrails netted down to the planks; big log posts at both
-    ends with the main ropes slung from their tops; broken planks dangling underneath
-    and one hanger snapped. It sags in the middle and looks ready to go."""
-    s0, s1 = ss.R(ss.SEG[23] + 33), ss.R(ss.SEG[24])
+    """Every rope-bridge span (the one out of the great tree, and the spans of the
+    treetop bridges between their solid sections: Blake's review)."""
+    for k, (s0, s1) in enumerate(rope_spans(c)):
+        _rope_span(c, ss, s0, s1, "Rope Bridge %d" % (k + 1), worn=k == 0)
+
+
+def _rope_span(c, ss, s0, s1, name, worn=False):
+    """A swinging rope bridge built plank by plank (its road piece is collision only):
+    loose planks with gaps between them, a few missing, laid on rope stringers; rope
+    handrails netted down to the planks; big log posts at both ends with the main ropes
+    slung from their tops; on the `worn` one, broken planks dangling underneath and one
+    hanger snapped. It sags in the middle and looks ready to go."""
     m = Mesh()
     bm = m.bm
     rope = "rope_rail"
@@ -642,12 +796,13 @@ def rope_bridge(c, ss):
         tube(top, 0.08)
         tube(mid, 0.05)
         for j in range(len(top) - 1):
-            if side > 0 and j == len(top) // 2:
+            if worn and side > 0 and j == len(top) // 2:
                 continue  # one hanger's snapped
             a, b = (top[j], foot[j + 1]) if j % 2 == 0 else (foot[j], top[j + 1])
             tube([a, b], 0.03, n=4)
-        snap = top[len(top) // 2]
-        tube([snap, snap + Vector((0.15, 0.1, -0.7))], 0.03, n=4)
+        if worn:
+            snap = top[len(top) // 2]
+            tube([snap, snap + Vector((0.15, 0.1, -0.7))], 0.03, n=4)
     # The posts, and the main ropes slung from their tops to the handrails mid-span.
     tops = []
     for s_, lean in ((s0 - 0.6, -0.12), (s1 + 0.6, 0.12)):
@@ -678,14 +833,14 @@ def rope_bridge(c, ss):
         for i in range(2, n - 1, 3):
             tube([pts[i], rail[min(i, len(rail) - 1)]], 0.03, n=4)
     # Two broken planks hanging underneath by a rope.
-    for t, side in ((0.35, 1), (0.66, -1)):
+    for t, side in ((0.35, 1), (0.66, -1)) if worn else ():
         q = c.at(s0 + (s1 - s0) * t)
         e = q.side(side * (half - 0.8), -1.7)
         k0 = len(bm.faces)
         props.cuboid(bm, (e.x, e.y, e.z), (0.62, 0.14, 2.6), rot=road_rot(q), tilt=(0.25 * side, 0.15))
         m.mark("plank_road", k0)
         tube([e + Vector((0, 0, 1.3)), q.side(side * (half - 0.4), -0.2)], 0.035, n=4)
-    m.build(c, "Rope Bridge", "Bridges", "visual", flat=False)
+    m.build(c, name, "Bridges", "visual", flat=False)
 
 
 def lerp_z(a, b, t):
@@ -698,11 +853,15 @@ def bridges_and_flags(c, ss, ter, flags, bridges=True):
     (Without `bridges`, none on the bridges: the ruin's are gone.)"""
     S = ss.SEG
     post = sp.flag_pole(c, 4.5)
+    spans = rope_spans(c)
     for i0, i1 in ((24, 25), (25, 26), (26, 27), (27, 28)) if bridges else ():
         s = S[i0] + 4
         prev = None
         while s < S[i1] - 2:
             q = c.at(s)
+            if any(a - 1.0 <= s <= b + 1.0 for a, b in spans):
+                s += 12.0
+                continue  # (no flag posts on the rope spans: nothing to stand them on)
             pair = []
             for side in (-1, 1):
                 p = q.side(side * (q.w / 2 + 0.7))
@@ -779,6 +938,50 @@ def canyons(c, ss, ter, ridge=True):
         wp.ice_fall(c, "Gorge Icefall %d" % k, x, y, q.p.z + 14.0, -12.0, 14.0, facing=(0.0, -1.0 if dy > 0 else 1.0), coll="Canyons")
 
 
+def grand_ramp(c, ss, ter):
+    """The ice ramp off the ridge made grand (Blake's review): ice piers under it down to
+    the ground, a balustrade of ice posts with snow caps along both sides, and a pair of
+    tall ice pillars with spires where it begins."""
+    spans = sorted((p["kp_from"], p["kp_to"]) for p in c.pieces if p.name.endswith("snowramp"))
+    if not spans:
+        return
+    s0, s1 = spans[0]
+    m = Mesh()
+    s = s0 + 2.0
+    k = 0
+    while s < s1 - 1.0:
+        q = c.at(s)
+        rot = math.atan2(q.t.y, q.t.x)
+        for side in (-1, 1):
+            p = q.side(side * (q.w / 2 + 1.6))
+            g = ground(c, ter, p.x, p.y, q.p.z - 8.0)
+            if k % 3 == 0 and q.p.z - g > 2.0:
+                k0 = len(m.bm.faces)
+                props.cuboid(m.bm, (p.x, p.y, (g - 1.0 + q.p.z - 0.5) / 2), (2.8, 2.8, q.p.z - 0.5 - (g - 1.0)), rot)
+                m.mark(("berg_ice", "wall"), k0)
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (p.x, p.y, q.p.z + 0.9), (0.9, 0.9, 1.8), rot)
+            m.mark(("berg_ice", "wall"), k0)
+            k0 = len(m.bm.faces)
+            sp._cap(m.bm, (p.x, p.y, q.p.z + 1.9), 0.7, 0.35)
+            m.mark("summit_snow", k0)
+        s += 4.0
+        k += 1
+    q = c.at(s0)
+    for side in (-1, 1):
+        p = q.side(side * (q.w / 2 + 3.5))
+        g = ground(c, ter, p.x, p.y, q.p.z)
+        k0 = len(m.bm.faces)
+        props.cuboid(m.bm, (p.x, p.y, (g + q.p.z + 14.0) / 2), (3.4, 3.4, q.p.z + 14.0 - g), 0.0)
+        m.mark(("berg_ice", "wall"), k0)
+        k0 = len(m.bm.faces)
+        res = bmesh.ops.create_cone(m.bm, cap_ends=True, segments=6, radius1=2.6, radius2=0.0, depth=8.0)
+        for v in res["verts"]:
+            v.co = Vector((p.x + v.co.x, p.y + v.co.y, q.p.z + 18.0 + v.co.z))
+        m.mark(("berg_ice", "wall"), k0)
+    m.build(c, "Grand Ice Ramp", "Canyons", "visual")
+
+
 def ruins(c, ss, ter):
     """The Polar Ruins on the glacier fields: a colossal mammoth skull beside the road,
     its tusks arching over it, ribs and frozen towers round about."""
@@ -802,6 +1005,61 @@ def sky_islands(c):
     """Floating ice islands high over the plateau and the lake's far shore."""
     for k, (x, y, z) in enumerate(((250.0, 30.0, 100.0), (200.0, -360.0, 80.0), (430.0, 230.0, 130.0), (-80.0, 400.0, 125.0), (-340.0, 110.0, 105.0), (-300.0, -360.0, 85.0))):
         c.place(sp.floating_island(c, k % 3), x, y, z, rot=k * 1.1, scale=0.6 + 0.15 * (k % 2), coll="Sky", role="visual")
+
+
+def _keep(c, name, x, y, z0, towers, walls, height=14.0, coll="Ruins"):
+    """A ruined little castle: round towers (summit_props.tower_ruin) at `towers`
+    offsets, broken curtain walls between the ones listed in `walls`, snow on top."""
+    m = Mesh()
+    pts = [(x + dx, y + dy) for dx, dy in towers]
+    for i, j in walls:
+        (ax, ay), (bx, by) = pts[i], pts[j]
+        ln = math.hypot(bx - ax, by - ay)
+        rot = math.atan2(by - ay, bx - ax)
+        n = max(1, int(ln / 6))
+        for k in range(n):
+            t = (k + 0.5) / n
+            h = height * (0.35 + 0.65 * rnd(k * 3.1 + i * 7 + j))  # broken to different heights
+            px, py = ax + (bx - ax) * t, ay + (by - ay) * t
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (px, py, z0 + h / 2 - 1.0), (ln / n + 0.2, 2.6, h + 2.0), rot=rot)
+            m.mark(("frost_stone", "wall"), k0)
+            k0 = len(m.bm.faces)
+            props.cuboid(m.bm, (px, py, z0 + h - 1.0 + 0.15), (ln / n + 0.4, 2.9, 0.3), rot=rot)
+            m.mark("summit_snow", k0)
+    m.build(c, name, coll, "both")
+    for k, (px, py) in enumerate(pts):
+        c.place(sp.tower_ruin(c, k % 3, height + 6.0 + 4.0 * (k % 2)), px, py, z0 - 1.0, rot=rnd(k + len(name)) * 6, coll=coll)
+
+
+def lake_castles(c, ss, ter):
+    """Castle ruins (Blake's review): ruined keeps standing out of the frozen lake, an
+    abandoned castle on the shore to the south-east, and old ruins high on the
+    mountain to the north-east. All clear of the road."""
+    for k, (x, y) in enumerate(((-190.0, -205.0), (-120.0, -320.0), (150.0, -320.0), (230.0, -190.0), (-250.0, -90.0))):
+        if not far_from_road(c, x, y, 30.0) or ss.lake_k(x, y) > 0.95:
+            continue
+        _keep(c, "Lake Keep %d" % k, x, y, -0.4, [(-9, -9), (9, -9), (9, 9), (-9, 9)][: 3 + k % 2], [(0, 1), (1, 2)] + ([(2, 3)] if k % 2 else []), height=10.0 + 2 * (k % 3))
+    # The abandoned castle on the south-east shore.
+    x, y = 296.0, -274.0
+    z = ground(c, ter, x, y, 9.0)
+    if far_from_road(c, x, y, 40.0):
+        _keep(c, "Abandoned Castle", x, y, z, [(-22, -18), (22, -18), (22, 18), (-22, 18), (0, 26)], [(0, 1), (1, 2), (2, 3), (3, 0)], height=16.0)
+        k = Mesh()
+        k0 = len(k.bm.faces)
+        props.cuboid(k.bm, (x, y + 4, z + 9.0), (18.0, 14.0, 20.0))
+        k.mark(("frost_stone", "wall"), k0)
+        k0 = len(k.bm.faces)
+        props.cuboid(k.bm, (x, y + 4, z + 19.2), (18.6, 14.6, 0.5))
+        k.mark("summit_snow", k0)
+        k.build(c, "Abandoned Keep", "Ruins", "both")
+    # Old ruins high on the mountain to the north-east.
+    x, y = 279.0, 253.0
+    z = ground(c, ter, x, y, 44.0)
+    _keep(c, "High Ruins", x, y, z, [(-12, 0), (12, 4), (0, 16)], [(0, 1)], height=9.0)
+    for k in range(5):
+        a = k * 1.3
+        c.place(sp.ruin_column(c, k), x + 22 * math.cos(a), y + 22 * math.sin(a), ground(c, ter, x + 22 * math.cos(a), y + 22 * math.sin(a), z) - 0.3, coll="Ruins")
 
 
 def mammoth_path(c, ss):
@@ -828,6 +1086,8 @@ def build(c, rock, t0, t1, ss, ruin=None):
     flags = sp.Bunting()
 
     cave_dressing(c, ss, rock, t0, t1, blue, violet)
+    cutting_walls(c, ss)
+    ice_cathedral(c, ss, t0, t1)
     water = lake(c, ss, ter)
     hot_springs(c, ss, ter, geysers)
     ice_arches(c, ss)
@@ -839,8 +1099,11 @@ def build(c, rock, t0, t1, ss, ruin=None):
     if not ruin:
         rope_bridge(c, ss)
     canyons(c, ss, ter, ridge=not ruin)
+    if not ruin:
+        grand_ramp(c, ss, ter)
     ruins(c, ss, ter)
-    sky_islands(c)
+    # (No floating ice islands: Blake's review.)
+    lake_castles(c, ss, ter)
     mammoth_path(c, ss)
     flags.build(c)
 

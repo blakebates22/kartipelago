@@ -15,7 +15,7 @@ from props import _faces, blob, cuboid, loft, ring, tube
 from volcano_props import prism
 
 SNOW = "summit_snow"
-ICE = "glacier_ice"
+ICE = "berg_ice"  # (the lake's turquoise: Blake's review)
 ROCK = "summit_rock"
 BONE = "mammoth_bone"
 STONE = "frost_stone"
@@ -197,7 +197,7 @@ def ice_arch(c, span=26.0, height=15.0, variant=0):
         snow = _faces(bm, k0)
         k1 = len(bm.faces)
         _icicles(bm, [(pts[k][0], pts[k][1] + 0.5 * (k % 2), pts[k][2] - radii[k] * 0.8) for k in range(4, n - 3)], 2.6, variant)
-        return [(c.lib(ICE), ice), (c.lib(SNOW), snow), (c.lib("icefall_blue"), _faces(bm, k1))]
+        return [(c.lib(ICE), ice), (c.lib(SNOW), snow), (c.lib("berg_ice"), _faces(bm, k1))]
 
     return _p(c, name, build)
 
@@ -231,7 +231,7 @@ def floating_island(c, variant=0):
             a = variant + j * 2.1
             x, y = r * 1.05 * math.cos(a), r * 0.9 * math.sin(a)
             tube(bm, [(x, y, 0.5), (x * 1.08, y * 1.08, -5.0), (x * 1.02, y * 1.02, -11.0 - 3 * j)], [1.4, 1.1, 0.4], n=5)
-        return [(c.lib(ICE), rock), (c.lib(SNOW), snow), (c.lib("icefall_blue"), _faces(bm, k1))]
+        return [(c.lib(ICE), rock), (c.lib(SNOW), snow), (c.lib("berg_ice"), _faces(bm, k1))]
 
     return _p(c, name, build)
 
@@ -400,11 +400,19 @@ def tusk_gate(c, span=36.0, height=15.0):
         sx0 = -(span / 2 + 10.0)  # the skull's centre
         # The skull, facing +X: a tall domed crown, the face sloping down to the tusk
         # sockets, cheekbones, dark eye sockets and nasal opening.
-        blob(bm, (sx0, 0, 10.5), 7.5, sx=0.78, sy=0.88, sz=1.2, subdiv=2)
-        blob(bm, (sx0 + 4.5, 0, 6.5), 5.2, sx=0.72, sy=1.0, sz=1.0, subdiv=2)
+        # (Blake's review: more fidelity.) Smoother, with a brow ridge over the eyes, the
+        # twin domes of the crown, the lower jaw half sunk in the ice, and molars.
+        blob(bm, (sx0, 0, 10.5), 7.5, sx=0.78, sy=0.88, sz=1.2, subdiv=3)
         for side in (-1, 1):
-            tube(bm, [(sx0 + 4.0, side * 3.4, 6.0), (sx0 + 9.5, side * 4.6, 2.0)], [2.6, 2.2], n=8)
-            blob(bm, (sx0 + 1.5, side * 6.2, 7.0), 2.4, sx=0.8, sy=0.55, sz=1.1, subdiv=1)
+            blob(bm, (sx0 - 0.5, side * 2.6, 17.5), 3.6, sx=0.9, sy=0.8, sz=0.7, subdiv=2)  # the crown's domes
+            blob(bm, (sx0 + 4.0, side * 4.6, 12.2), 2.0, sx=1.0, sy=0.9, sz=0.45, subdiv=2)  # brow ridge
+        blob(bm, (sx0 + 4.5, 0, 6.5), 5.2, sx=0.72, sy=1.0, sz=1.0, subdiv=3)
+        blob(bm, (sx0 + 2.5, 0, 0.6), 4.2, sx=1.0, sy=1.1, sz=0.45, subdiv=2)  # the lower jaw
+        for side in (-1, 1):
+            tube(bm, [(sx0 + 4.0, side * 3.4, 6.0), (sx0 + 7.0, side * 4.0, 4.2), (sx0 + 9.5, side * 4.6, 2.0)], [2.6, 2.4, 2.2], n=12)
+            blob(bm, (sx0 + 1.5, side * 6.2, 7.0), 2.4, sx=0.8, sy=0.55, sz=1.1, subdiv=2)
+            for t in range(3):
+                blob(bm, (sx0 + 3.6 + t * 1.1, side * 2.4, 1.8), 0.6, sx=1.0, sy=0.7, sz=0.8, subdiv=1)  # molars
         bone = _faces(bm, 0)
         k0 = len(bm.faces)
         for side in (-1, 1):
@@ -417,7 +425,7 @@ def tusk_gate(c, span=36.0, height=15.0):
         for side in (-1, 1):
             pts, radii = [], []
             x0, x1 = sx0 + 9.5, span / 2 + 7.0
-            m = 20
+            m = 32
             for k in range(m + 1):
                 t = k / m
                 x = x0 + (x1 - x0) * t
@@ -425,7 +433,7 @@ def tusk_gate(c, span=36.0, height=15.0):
                 y = side * (4.6 + 4.5 * t)
                 pts.append((x, y, z))
                 radii.append(2.1 - 1.65 * t ** 1.3)
-            tube(bm, pts, radii, n=8)
+            tube(bm, pts, radii, n=12)
         ivory = _faces(bm, k1)
         k2 = len(bm.faces)
         _cap(bm, (sx0 - 0.5, 0, 19.0), 5.5, 1.2, sx=1.0, sy=1.1)

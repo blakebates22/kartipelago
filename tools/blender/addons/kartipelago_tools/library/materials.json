@@ -4477,6 +4477,34 @@
       }
     },
     {
+      "id": "berg_ice",
+      "name": "Berg Ice",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "berg_ice.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.25
+      }
+    },
+    {
+      "id": "mushroom_cap",
+      "name": "Mushroom Cap",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "mushroom_cap.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.35
+      }
+    },
+    {
       "id": "warm_falls",
       "name": "Warm Falls",
       "theme": "summit_pass",

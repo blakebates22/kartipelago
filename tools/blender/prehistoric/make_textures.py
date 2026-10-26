@@ -1968,6 +1968,24 @@ def glacier_ice():
     return paint(f)
 
 
+def berg_ice():
+    # Snowy Summit's icebergs, ice arches and glacier faces, in the frozen lake's own
+    # turquoise (Blake's review: they should match the lake): layered strata, bright
+    # bands and darker seams.
+    pal = ["#3cbcd2", "#52cadc", "#6cd6e4", "#8ae2ec", "#aaecf2"]
+    a = noise(8, 2, 2252)
+
+    def f(x, y):
+        band = math.sin((y + a(x, y) * 8) / H * math.tau * 3)
+        if band > 0.93:
+            return "#eafcff"
+        if band < -0.95:
+            return "#2a9ab4"
+        return pick(pal, 0.45 + band * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
 def crystal_blue():
     a = noise(4, 8, 2261)
 
@@ -2142,15 +2160,32 @@ def giant_bark():
 
 
 def heartwood():
-    # Inside the great tree: golden heartwood with grain lines.
-    pal = ["#b8823e", "#c8944a", "#d8a65a", "#e6b86c", "#f0ca82"]
+    # Inside the great tree: dark heartwood with grain lines (Blake's review: the inside
+    # a bit darker brown).
+    pal = ["#6a4024", "#784a2a", "#865432", "#94603a", "#a26c44"]
     a = noise(8, 2, 2381)
 
     def f(x, y):
         grain = math.sin(y * 0.8 + a(x, y) * 9)
         if grain > 0.9:
-            return "#8e5a26"
+            return "#3e2412"
         return pick(pal, 0.4 + grain * 0.3 + a(x, y) * 0.2)
+
+    return paint(f)
+
+
+def mushroom_cap():
+    # Toadstool caps growing in the great tree: rusty red-brown, cream spots, a paler rim.
+    pal = ["#8a2e1e", "#a23a24", "#b8482c", "#c85a34"]
+    a = noise(4, 2, 2385)
+    spots = speckle(2386, 22)
+
+    def f(x, y):
+        if (x, y) in spots or ((x + 1) % W, y) in spots or (x, (y + 1) % H) in spots:
+            return "#f2e6c8"
+        if y > H - 4:
+            return "#e0b890"
+        return pick(pal, 0.3 + a(x, y) * 0.6)
 
     return paint(f)
 
@@ -4869,6 +4904,8 @@ MATERIALS = [
     ("glow_moss", "Glowing Moss", "summit_pass", "wall", glow_moss, 3, {"scrollU": 0, "scrollV": 0, "wave": 0.03, "wavePeriod": 3, "glow": 0.75}),
     ("steam_mist", "Steam", "summit_pass", "wall", steam_mist, 10, {"scrollU": 0.004, "scrollV": -0.05, "wave": 0.05, "wavePeriod": 5, "opacity": 0.42, "glow": 0.5}),
     ("icefall_blue", "Icefall", "summit_pass", "wall", icefall_blue, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.3}),
+    ("berg_ice", "Berg Ice", "summit_pass", "wall", berg_ice, 6, {"scrollU": 0, "scrollV": 0, "glow": 0.25}),
+    ("mushroom_cap", "Mushroom Cap", "summit_pass", "wall", mushroom_cap, 2, {"scrollU": 0, "scrollV": 0, "glow": 0.35}),
     ("warm_falls", "Warm Falls", "summit_pass", "water", warm_falls, 6, {"scrollU": 0.0, "scrollV": 1.0, "wave": 0.03, "wavePeriod": 1.4, "opacity": 0.9, "glow": 0.3}),
     ("mammoth_fur", "Mammoth Fur", "summit_pass", "wall", mammoth_fur, 2, None),
     ("basalt_road", "Basalt Road", "volcanic_apocalypse", "road", basalt_road, 4, None),

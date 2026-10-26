@@ -559,6 +559,18 @@ def natural(x, y):
 HIDE_S = [0.0, 0.0]  # the stretch of road inside the glacier (set in main)
 
 
+def bridge_support(s):
+    """On the treetop bridges (segments 25 and 27): is the plan distance s on one of the
+    solid sections (a planked deck on posts) rather than a rope span? Solid at each end,
+    and a short section every 46 m between (the zippers are on solid sections)."""
+    for seg in (25, 27):
+        a, b = SEG[seg], SEG[seg + 1]
+        if a <= s < b:
+            u = s - a
+            return u < 14.0 or b - s < 10.0 or (u % 46.0) < 10.0
+    return True
+
+
 def in_tree1(x, y, extra=0.0):
     return math.hypot(x - TREE1[0], y - TREE1[1]) < TREE1_R[0] + extra
 
@@ -586,7 +598,7 @@ def classify(c, n, info):
             return ("sinter", "dirt")  # the bed under the hot water
         return ("lake_ice", "ice")
     if n.z < 0.62 and lake_k(c.x, c.y) < 1.0:
-        return ("glacier_ice", "wall")  # the edge of the ice, round the melted end
+        return ("berg_ice", "wall")  # the edge of the ice, round the melted end
     if n.z < 0.62:
         if c.z > 70 and n.z > 0.3:
             return ("summit_snow", "wall")  # snow plastered on the high mountains
@@ -639,7 +651,7 @@ def main():
         },
         "landing": {"mat": "summit_stone_road", "shoulder": 1.4, "shoulder_mat": ("sinter", "dirt")},
         "shore": {"mat": "summit_stone_road", "shoulder": 1.8, "shoulder_mat": snowbank},
-        "cave": {"mat": "crystal_road", "shoulder": 3.0, "shoulder_mat": ("glacier_ice", "snow_stone")},
+        "cave": {"mat": "crystal_road", "shoulder": 3.0, "shoulder_mat": ("berg_ice", "snow_stone")},
         "canyon": {"mat": "summit_stone_road", "shoulder": 1.4, "shoulder_mat": snowbank},
         "stoneramp": {
             "mat": "summit_stone_road",
@@ -703,9 +715,9 @@ def main():
             "shoulder": 0.8,
             "shoulder_mat": snowbank,
             "barrier": 1.2,
-            "barrier_mat": ("glacier_ice", "wall"),
+            "barrier_mat": ("berg_ice", "wall"),
             "deck": 6.0,
-            "deck_mat": ("glacier_ice", "wall"),
+            "deck_mat": ("berg_ice", "wall"),
             "ground": False,
         },
         "snowlanding": {"mat": "summit_road", "shoulder": 1.6, "shoulder_mat": snowbank},
@@ -767,6 +779,8 @@ def main():
             return "spiral"
         if seg == 23 and s >= SEG[23] + 33:
             return "ropebridge"
+        if seg in (25, 27) and not bridge_support(s):
+            return "ropebridge"  # (Blake's review: mostly rope bridge, solid sections between)
         if seg in (23, 25, 27):
             return "bridge"
         if seg in (24, 26):
@@ -870,8 +884,8 @@ def main():
         (S(3) + 10, 0, "green"),
         (S(8) + 30, 0, "yellow"),
         (S(11) + 50, 0, "rainbow"),
-        (S(19) + 30, -4, "red"),
-        (S(19) + 30, 4, "blue"),
+        (S(19) + 70, -3, "red"),  # (Blake's review: the pair at S(19) + 30 was nearly impossible to reach)
+        (S(19) + 70, 3, "blue"),
         (S(22) + 240, 0, "green"),
         (S(26) + 30, 0, "yellow"),
         (S(31) + 20, 0, "rainbow"),
@@ -933,8 +947,8 @@ def ruin_gameplay(c):
         (S(3) + 10, 0, "green"),
         (S(8) + 30, 0, "yellow"),
         (S(11) + 50, 0, "rainbow"),
-        (S(19) + 30, -4, "red"),
-        (S(19) + 30, 4, "blue"),
+        (S(19) + 70, -3, "red"),  # (Blake's review: the pair at S(19) + 30 was nearly impossible to reach)
+        (S(19) + 70, 3, "blue"),
         (S(23) + 40, 0, "green"),
         (S(26) + 10, 0, "yellow"),
         (S(28) + 80, 0, "red"),
