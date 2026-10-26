@@ -73,6 +73,17 @@
       "width": 9.0,
       "prize_x": 126.79,
       "prize_z": 271.89
+    },
+    {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 281.08,
+      "z": -75.32,
+      "heading": -1.3089969389957472,
+      "width": 9.0,
+      "prize_x": 289.78,
+      "prize_z": -77.65
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region.py (re-running it rewrites entities)"

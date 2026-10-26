@@ -117,30 +117,30 @@
     {
       "id": "campfire_13",
       "type": "campfire",
-      "x": 105.73,
-      "y": 2.02,
-      "z": -30.16
+      "x": -56.61,
+      "y": 0.52,
+      "z": 24.72
     },
     {
       "id": "campfire_14",
       "type": "campfire",
-      "x": 51.57,
-      "y": 2.07,
-      "z": -61.6
+      "x": 32.53,
+      "y": 2.14,
+      "z": -60.44
     },
     {
       "id": "campfire_15",
       "type": "campfire",
-      "x": 41.2,
-      "y": 0.97,
-      "z": -179.69
+      "x": 175.14,
+      "y": 2.02,
+      "z": 63.53
     },
     {
       "id": "campfire_16",
       "type": "campfire",
-      "x": -39.2,
-      "y": 2.15,
-      "z": 186.26
+      "x": 133.12,
+      "y": 2.04,
+      "z": 56.46
     },
     {
       "id": "campfire_17",
@@ -215,10 +215,21 @@
       "width": 9.0,
       "prize_x": 126.79,
       "prize_z": 271.89
+    },
+    {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 281.08,
+      "z": -75.32,
+      "heading": -1.3089969389957472,
+      "width": 9.0,
+      "prize_x": 289.78,
+      "prize_z": -77.65
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_region.py": "1f6b55df393dc4783c1f30f679974c2e8a9721062b1e0476640268ad59777591"
+    "valley_region.py": "1cf29458ed26443a17788251a8776da8c117a975e866fd6628430e19cbee6a75"
   }
 }

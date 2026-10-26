@@ -271,3 +271,45 @@ export function createObstacleView(
     },
   };
 }
+
+/** A treasure chest (a region's secret): shut and gleaming until found, then open. */
+export function createChestView(
+  root: THREE.Object3D,
+  spot: { x: number; z: number },
+  heading: number,
+  groundAt: (x: number, z: number) => number,
+) {
+  const group = new THREE.Group();
+  group.position.set(spot.x, groundAt(spot.x, spot.z), spot.z);
+  group.rotation.y = heading;
+  const wood = new THREE.MeshLambertMaterial({ color: 0x7a4a24 });
+  const gold = new THREE.MeshLambertMaterial({ color: GOLD, emissive: 0x503008 });
+  const bodyG = new THREE.BoxGeometry(2.4, 1.3, 1.6);
+  const lidG = new THREE.BoxGeometry(2.5, 0.5, 1.7);
+  const bandG = new THREE.BoxGeometry(0.25, 1.9, 1.75);
+  const body = new THREE.Mesh(bodyG, wood);
+  body.position.y = 0.65 + 1.2;
+  const lid = new THREE.Group();
+  lid.position.set(0, 1.3 + 1.2, -0.8);
+  const lidM = new THREE.Mesh(lidG, wood);
+  lidM.position.set(0, 0.25, 0.8);
+  lid.add(lidM);
+  for (const x of [-0.8, 0.8]) {
+    const b = new THREE.Mesh(bandG, gold);
+    b.position.set(x, 0.95 + 1.2, 0);
+    group.add(b);
+  }
+  group.add(body, lid);
+  root.add(group);
+  return {
+    set open(v: boolean) {
+      lid.rotation.x = v ? -1.9 : 0;
+    },
+    dispose() {
+      root.remove(group);
+      for (const g of [bodyG, lidG, bandG]) g.dispose();
+      wood.dispose();
+      gold.dispose();
+    },
+  };
+}

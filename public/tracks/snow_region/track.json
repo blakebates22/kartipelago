@@ -75,6 +75,17 @@
       "prize_z": -259.81
     },
     {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 252.01,
+      "z": 145.5,
+      "heading": -2.0943951023931953,
+      "width": 9.0,
+      "prize_x": 259.81,
+      "prize_z": 150.0
+    },
+    {
       "id": "snowfall_01",
       "type": "snowfall",
       "rate": 60,

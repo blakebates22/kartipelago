@@ -106,6 +106,25 @@ describe("overworld regions", () => {
         ).toBeLessThan(0.1);
       }
     }
+    // The secrets: the same check, and each needs a later kingdom's tool.
+    for (const r of REGIONS.filter((r) => r.secret)) {
+      const sc = r.secret!;
+      for (const pkg of [r.packageId, r.ruinPackageId!]) {
+        const meta = JSON.parse(readFileSync(`public/tracks/${pkg}/track.json`, "utf8"));
+        const gate = (meta.entities as Record<string, number | string>[]).find(
+          (e) => e.type === "puzzle_gate" && e.puzzle === "secret",
+        )!;
+        expect(gate, pkg).toBeDefined();
+        expect(
+          Math.hypot(sc.gate.x - (gate.x as number), sc.gate.z - (gate.z as number)),
+        ).toBeLessThan(0.1);
+        expect(Math.abs(sc.gate.heading - (gate.heading as number))).toBeLessThan(0.01);
+        expect(
+          Math.hypot(sc.spot.x - (gate.prize_x as number), sc.spot.z - (gate.prize_z as number)),
+        ).toBeLessThan(0.1);
+      }
+      expect(sc.tool, r.id).not.toBe(r.kingdom);
+    }
     // Each kingdom's own tool clears its own yard's obstacle, one kind each.
     expect(REGIONS.filter((r) => r.returnTask).map((r) => r.returnTask!.obstacle)).toEqual([
       "rockfall",

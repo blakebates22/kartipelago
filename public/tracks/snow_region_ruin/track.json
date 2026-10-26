@@ -75,6 +75,17 @@
       "prize_z": -259.81
     },
     {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 252.01,
+      "z": 145.5,
+      "heading": -2.0943951023931953,
+      "width": 9.0,
+      "prize_x": 259.81,
+      "prize_z": 150.0
+    },
+    {
       "id": "snowfall_01",
       "type": "snowfall",
       "rate": 60,
@@ -83,6 +94,6 @@
   ],
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "snow_region.py": "f5972361ab63be17e0badffb7042103e308b09e8a843aafbf45e1fa175ffaeb6"
+    "snow_region.py": "df2bc31ace99474c7b61464d12f272f49d732d9782cbe9f658b08b4a24b4f067"
   }
 }

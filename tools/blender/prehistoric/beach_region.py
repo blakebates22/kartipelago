@@ -65,6 +65,9 @@ GONGS = [(120.0, 255.0), (-10.0, 250.0), (-120.0, 245.0)]
 # Raptor's cove (Act V's return task): a walled yard in the west, its way in cut off by a
 # deep channel the Beach Tool gets you over.
 RETURN = (175.0, 300.0)
+# A secret (src/overworld/regions.ts secret): a smugglers' cave in the north, behind a rockfall (the Valley Tool's): a later kingdom's tool opens it on
+# the way back, a treasure chest inside.
+SECRET = (108.0, 300.0)
 
 
 def ring_r(a):
@@ -189,7 +192,7 @@ def main():
         r = (SHORE_R - 18 if south(a) > 0.5 else CLIFF_R - 25) + 9 * math.sin(k * 2.7)
         px, py = polar(math.degrees(a), r)
         if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0, CAUSEWAY[0],
-                                                    HUT[0], RETURN[0], *(a for a, _ in GONGS))) < 7:
+                                                    HUT[0], RETURN[0], SECRET[0], *(a for a, _ in GONGS))) < 7:
             continue  # (clear of the roads out)
         g = natural(px, py)
         if RUIN and k % 3:
@@ -258,6 +261,8 @@ def main():
     dress(c)
     puzzle_kit.pen(c, "return", "Cove Yard", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("tiki_wood", "wall"), natural(*polar(*RETURN)), height=5.0)
+    puzzle_kit.pen(c, "secret", "Smugglers Cave", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("isle_rock", "wall"),
+                   natural(*polar(*SECRET)), height=6.0)
 
     # The Dust Road's far end, back up towards the desert: it bends out of sight.
     box(c, "Road Bend", 0.0, ROAD_Y0 + 4, ROAD_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("valley_cliff", "wall"))
@@ -285,7 +290,7 @@ def ruined(c):
              segs=5)
 
     # Wreckage the wave left up the beach: planks, crates, a stove-in boat (off the roads).
-    avoid = (CORAL[0], PIER[0], WRECK[0], RETURN[0], CAUSEWAY[0], *(a for a, _ in GONGS), 0.0, 180.0)
+    avoid = (CORAL[0], PIER[0], WRECK[0], RETURN[0], SECRET[0], CAUSEWAY[0], *(a for a, _ in GONGS), 0.0, 180.0)
     for k, (x, y) in enumerate(ruin.ring_spots(14, 246.0, 285.0, 11, avoid)):
         if south(math.atan2(y, x)) < 0.5:
             continue
@@ -303,7 +308,8 @@ def dress(c):
     vx, vy, vr = VILLAGE
     taken = paint.Taken([(vx, vy, vr + 12.0), (*polar(*CORAL), 26.0), (*polar(PIER[0], PIER[1]), 16.0),
                          (*polar(*WRECK), 30.0), (*polar(*SPLASH), 26.0), (*polar(*LAIR), 26.0), (*polar(*HUT), 18.0),
-                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*SECRET), 16.0),
+                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
                          *((*polar(*g), 12.0) for g in GONGS), (0.0, 0.0, LAGOON_R + 16.0)])
 
     def dry(x, y):

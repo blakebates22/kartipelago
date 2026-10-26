@@ -95,6 +95,17 @@
       "prize_z": -172.07
     },
     {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 75.32,
+      "z": -281.08,
+      "heading": -0.2617993877991493,
+      "width": 9.0,
+      "prize_x": 77.65,
+      "prize_z": -289.78
+    },
+    {
       "id": "dust_01",
       "type": "dust",
       "color": "#d89a6a",

@@ -34,6 +34,9 @@ export interface AdventureSave {
   puzzles: Record<string, boolean>;
   /** The kingdoms' hidden keys found (each opens its mini-game slot one day). */
   keys: Partial<Record<KingdomId, boolean>>;
+  /** The regions' secrets found (treasure chests behind later tools' obstacles), by
+   * region id. */
+  secrets: Record<string, boolean>;
   /** Where you were in the overworld (the region, and the gateway you last came out of):
    * opening the file takes you back there. */
   where?: { region: string; at?: string };
@@ -58,6 +61,7 @@ export const newSave = (): AdventureSave => ({
   returns: {},
   puzzles: {},
   keys: {},
+  secrets: {},
   finalCup: false,
   kingLost: false,
   kingWon: false,
@@ -90,6 +94,7 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   s.returns = flags(r.returns);
   s.puzzles = flags(r.puzzles);
   s.keys = flags(r.keys);
+  s.secrets = flags(r.secrets);
   s.finalCup = r.finalCup === true;
   s.kingLost = r.kingLost === true;
   s.kingWon = r.kingWon === true;

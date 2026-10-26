@@ -69,6 +69,9 @@ STONES = [(112.0, 268.0), (137.0, 160.0), (162.0, 270.0)]
 # The Elder's lookout (Act V's return task, src/overworld/regions.ts): a walled hollow in
 # the south-east meadow, its way in blocked by a rockfall the Valley Tool clears.
 RETURN = (-65.0, 300.0)
+# A secret (src/overworld/regions.ts secret): a grotto in the east meadow, walled with Rimefang's ice (the Snow Tool's): a later kingdom's tool opens it on
+# the way back, a treasure chest inside.
+SECRET = (15.0, 300.0)
 
 
 def polar(a_deg, r):
@@ -316,6 +319,8 @@ def main():
     three_stones(c)
     puzzle_kit.pen(c, "return", "Lookout", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("valley_cliff", "wall"), natural(*polar(*RETURN)), height=6.0)
+    puzzle_kit.pen(c, "secret", "Grotto", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("valley_cliff", "wall"),
+                   natural(*polar(*SECRET)), height=6.0)
     dress(c)
     # (Raced too: the champion's challenge, once round the ring, from this line.)
     c.start_line()
@@ -354,7 +359,7 @@ def ruined(c):
         c.entity("campfire", x=gx, y=gy, z=gz)
     # Scorched ground and smoke round the valley floor (off the roads), rubble heaped at
     # the cave and tunnel mouths.
-    avoid = (0.0, 90.0, 180.0, -90.0, CAVE[0], TUNNEL[0], SCAR[0], 225.0, PEN[0], RETURN[0],
+    avoid = (0.0, 90.0, 180.0, -90.0, CAVE[0], TUNNEL[0], SCAR[0], 225.0, PEN[0], RETURN[0], SECRET[0],
              *(a for a, _ in STONES))
     burns = ruin.ring_spots(14, 60.0, 195.0, 3, avoid) + ruin.ring_spots(10, 258.0, 312.0, 4, avoid)
     burns = [(x, y) for x, y in burns if river_d(x, y) > RIVER_HW + 14]
@@ -380,7 +385,8 @@ def dress(c):
     the undergrowth burnt away."""
     taken = paint.Taken([(0.0, 0.0, CAMP_R + 4.0), (*polar(*CAVE), 26.0), (*polar(*TUNNEL), 26.0), (*FORD, 20.0),
                          (BOG[0], BOG[1], BOG[2] + 8.0), (*PYRAMID, 18.0), (*polar(*PEN), 18.0),
-                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*SECRET), 16.0),
+                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
                          *((*polar(a, r), 10.0) for a, r in STONES)])
     bx, by, br = BOG
 

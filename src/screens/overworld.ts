@@ -18,6 +18,7 @@ import { loadRecords } from "../app/records";
 import {
   inGateway,
   OBSTACLE_TEXT,
+  REGIONS,
   regionAsIs,
   regionById,
   type Gateway,
@@ -65,7 +66,7 @@ import {
   stepPuzzle,
   type Puzzle,
 } from "../overworld/puzzles";
-import { createObstacleView, createPuzzleView } from "../overworld/puzzleView";
+import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -302,6 +303,65 @@ function regionCrew(game: Game, session: Session, region: Region) {
   return {
     dispose() {
       for (const r of made) r.dispose(session.root);
+    },
+  };
+}
+
+/** Dev free roam: secrets found, for this visit. */
+const devSecrets = new Set<string>();
+
+/** A region's secret: its yard's obstacle (a later kingdom's tool clears it; dev free
+ * roam: open in the ruined region), and the treasure chest inside (drive into it). */
+function regionSecret(game: Game, session: Session, region: Region) {
+  const sc = region.secret;
+  if (!sc) return undefined;
+  const story = game.overworld?.adventure ? adventureOf(game) : undefined;
+  const open = story ? Boolean(story.save.bosses[sc.tool]) : Boolean(game.overworld?.ruined);
+  const found = () => (story ? Boolean(story.save.secrets[region.id]) : devSecrets.has(region.id));
+  const you = session.entrants[0]!;
+  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
+  const view = createObstacleView(session.root, sc.obstacle, sc.gate, groundAt);
+  view.shown = !open;
+  if (!open) session.solids.push(gateSolid({ gate: sc.gate }, groundAt(sc.gate.x, sc.gate.z)));
+  const chest = createChestView(session.root, sc.spot, sc.gate.heading, groundAt);
+  chest.open = found();
+  const tool = kingdomById(sc.tool)?.tool?.name.toUpperCase() ?? "ANOTHER KINGDOM'S TOOL";
+  let near = false;
+  let banner: { text: string; t: number } | undefined;
+  return {
+    step(x: number, z: number, dt: number) {
+      if (banner && (banner.t -= dt) <= 0) banner = undefined;
+      const now = !open && Math.hypot(x - sc.gate.x, z - sc.gate.z) < sc.gate.width + 4;
+      if (now && !near)
+        banner = { text: `${OBSTACLE_TEXT[sc.obstacle]}. THE ${tool} COULD CLEAR IT.`, t: 3.5 };
+      near = now;
+      if (open && !found() && Math.hypot(x - sc.spot.x, z - sc.spot.z) < 3.5) {
+        if (story) {
+          story.save.secrets[region.id] = true;
+          persist(game);
+        } else devSecrets.add(region.id);
+        chest.open = true;
+        game.sounds.keyFound();
+        const n = story ? Object.keys(story.save.secrets).length : devSecrets.size;
+        const of = REGIONS.filter((r) => r.secret).length;
+        banner = { text: `A SECRET CHEST! (${n} OF ${of} FOUND)`, t: 4 };
+      }
+    },
+    draw(ui: UiLayer) {
+      if (banner)
+        wrap(banner.text, ui.W - 60)
+          .slice(0, 2)
+          .forEach((l, i) =>
+            ui.text(l, ui.W / 2, ui.H / 2 - 28 + i * 10, {
+              color: PAL.gold,
+              outline: PAL.shadow,
+              align: "center",
+            }),
+          );
+    },
+    dispose() {
+      view.dispose();
+      chest.dispose();
     },
   };
 }
@@ -677,6 +737,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let blockers: ReturnType<typeof regionBlockers> | undefined;
   let map: ReturnType<typeof regionMap> | undefined;
   let crew: ReturnType<typeof regionCrew> | undefined;
+  let secret: ReturnType<typeof regionSecret> | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -721,6 +782,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       returnGate = regionReturnGate(game, session, region);
       blockers = regionBlockers(game, session, region);
       crew = regionCrew(game, session, region);
+      secret = regionSecret(game, session, region);
       map = regionMap(session, region, [
         ...(challenge ? [challenge] : []),
         ...(taskMark ? [taskMark] : []),
@@ -748,6 +810,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       returnGate?.dispose();
       blockers?.dispose();
       crew?.dispose();
+      secret?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
@@ -766,6 +829,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles?.step(s.x, s.z, dt, clock);
       returnGate?.step(s.x, s.z, dt);
       blockers?.step(s.x, s.z, dt, clock);
+      secret?.step(s.x, s.z, dt);
       if (inside && !inGateway(inside, s.x, s.z, 3)) inside = undefined;
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
@@ -810,6 +874,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles?.draw(ui);
       returnGate?.draw(ui);
       blockers?.draw(ui);
+      secret?.draw(ui);
       map?.draw(ui, clock);
     },
   };

@@ -61,6 +61,9 @@ BELLS = [(205.0, 150.0, 1), (240.0, 70.0, 2), (250.0, 268.0, 3)]  # angle, radiu
 # Brachio's hot spring (Act V's return task): a walled yard in the north-east, its way in
 # frozen shut with ice the Snow Tool melts.
 RETURN = (60.0, 300.0)
+# A secret (src/overworld/regions.ts secret): an old store in the south-east, buried under a drift (the Desert Tool's): a later kingdom's tool opens it on
+# the way back, a treasure chest inside.
+SECRET = (-30.0, 300.0)
 
 
 def ring_r(a):
@@ -197,6 +200,8 @@ def main():
     ice_bells(c)
     puzzle_kit.pen(c, "return", "Hot Spring", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("frost_stone", "wall"), natural(*polar(*RETURN)), height=6.0)
+    puzzle_kit.pen(c, "secret", "Old Store", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("frost_stone", "wall"),
+                   natural(*polar(*SECRET)), height=6.0)
 
     # The gorge's far end, back towards the valley: it bends out of sight.
     box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
@@ -231,7 +236,7 @@ def ruined(c):
         px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
         cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, FLOOR_Z - 1.0, 10.0 + 8.0 * (1 - abs(t)) + 4.0 * math.sin(k * 2.1),
              ("glacier_ice", "wall"), segs=5)
-    avoid = (0.0, 90.0, 180.0, -90.0, FROZEN_PASS[0], LAIR[0], HUT[0], RETURN[0], *(a for a, _, _ in BELLS))
+    avoid = (0.0, 90.0, 180.0, -90.0, FROZEN_PASS[0], LAIR[0], HUT[0], RETURN[0], SECRET[0], *(a for a, _, _ in BELLS))
     spots = ruin.ring_spots(18, 140.0, 188.0, 5, avoid) + ruin.ring_spots(14, 250.0, 312.0, 6, avoid)
     vx, vy, vr = VILLAGE
     spots = [(x, y) for x, y in spots if math.hypot(x - vx, y - vy) > vr + 16]
@@ -245,7 +250,8 @@ def dress(c):
     vx, vy, vr = VILLAGE
     taken = paint.Taken([(vx, vy, vr + 18.0), (*polar(*CITADEL), 30.0), (*polar(*TREE), 34.0), (*polar(*RIFT), 36.0),
                          (*polar(*FROZEN_PASS), 22.0), (*polar(*HUT), 18.0), (*polar(*RETURN), 18.0),
-                         (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*LAIR), 26.0),
+                         (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*LAIR), 26.0), (*polar(*SECRET), 16.0),
+                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
                          *((*polar(a, r), 12.0) for a, r, _ in BELLS)])
 
     def open_ground(x, y):

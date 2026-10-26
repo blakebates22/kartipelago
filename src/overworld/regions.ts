@@ -84,6 +84,10 @@ export interface Region {
    * blocked by an obstacle the kingdom's own tool clears (the overworld doc's tool
    * gates: each tool opens one kind of obstacle). */
   returnTask?: ReturnSpot;
+  /** A secret (Banjo-style backtracking): a walled yard you can see on the way out, its
+   * way in blocked by an obstacle a later kingdom's tool clears, a treasure chest
+   * inside. */
+  secret?: ReturnSpot & { tool: KingdomId };
 }
 
 export type ObstacleKind = "rockfall" | "ice" | "drift" | "water";
@@ -113,6 +117,13 @@ export const REGIONS: Region[] = [
     name: "Dinosaur Valley",
     packageId: "valley_region",
     ruinPackageId: "valley_region_ruin",
+    // A secret, for the way back: a grotto in the east meadow, walled with ice the Snow Tool melts.
+    secret: {
+      obstacle: "ice",
+      tool: "snow",
+      gate: { x: 281.08, z: -75.32, heading: -1.309, width: 9 },
+      spot: { x: 289.78, z: -77.65 },
+    },
     // Act V's return task: The Elder's lookout, a walled hollow in the south-east meadow: a rockfall blocks its way in.
     returnTask: {
       obstacle: "rockfall",
@@ -221,6 +232,13 @@ export const REGIONS: Region[] = [
     name: "Snow Kingdom",
     packageId: "snow_region",
     ruinPackageId: "snow_region_ruin",
+    // A secret, for the way back: an old store in the south-east, buried under a drift the Desert Tool blows away.
+    secret: {
+      obstacle: "drift",
+      tool: "desert",
+      gate: { x: 252.01, z: 145.5, heading: -2.0944, width: 9 },
+      spot: { x: 259.81, z: 150.0 },
+    },
     // Act V's return task: Brachio's hot spring, a walled yard in the north-east: its way in is frozen shut.
     returnTask: {
       obstacle: "ice",
@@ -328,6 +346,13 @@ export const REGIONS: Region[] = [
     name: "Desert World",
     packageId: "desert_region",
     ruinPackageId: "desert_region_ruin",
+    // A secret, for the way back: a sunken garden in the north, cut off by deep water the Beach Tool gets you over.
+    secret: {
+      obstacle: "water",
+      tool: "beach",
+      gate: { x: 75.32, z: -281.08, heading: -0.2618, width: 9 },
+      spot: { x: 77.65, z: -289.78 },
+    },
     // Act V's return task: Stego's old well, a walled yard in the north-west: a drift buries its way in.
     returnTask: {
       obstacle: "drift",
@@ -440,6 +465,13 @@ export const REGIONS: Region[] = [
     name: "Tropic Isles",
     packageId: "beach_region",
     ruinPackageId: "beach_region_ruin",
+    // A secret, for the way back: a smugglers' cave in the north, behind a rockfall the Valley Tool shifts.
+    secret: {
+      obstacle: "rockfall",
+      tool: "valley",
+      gate: { x: -89.92, z: -276.76, heading: 0.3142, width: 9 },
+      spot: { x: -92.71, z: -285.32 },
+    },
     // Act V's return task: Raptor's cove, a walled yard in the west: a deep channel cuts off its way in.
     returnTask: {
       obstacle: "water",

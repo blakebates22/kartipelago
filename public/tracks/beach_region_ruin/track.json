@@ -76,11 +76,22 @@
       "width": 9.0,
       "prize_x": -298.86,
       "prize_z": -26.15
+    },
+    {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": -89.92,
+      "z": -276.76,
+      "heading": 0.3141592653589791,
+      "width": 9.0,
+      "prize_x": -92.71,
+      "prize_z": -285.32
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
-    "beach_region.py": "f0615e4c6135eb9fd58a20e70f7396be1dfe017e163a8639e17730863e385f56"
+    "beach_region.py": "3e329636a32c2f79e7506815bc0cf628551eb0d9255d39f53176ea41b8f97640"
   }
 }

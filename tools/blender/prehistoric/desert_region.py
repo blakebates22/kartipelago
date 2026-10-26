@@ -56,6 +56,9 @@ DUST_ROAD = (-90.0, CLIFF_R + 6.0)  # the way on, south
 # Stego's old well (Act V's return task): a walled yard in the north-west, its way in
 # buried under a drift the Desert Tool blows away.
 RETURN = (145.0, 300.0)
+# A secret (src/overworld/regions.ts secret): a sunken garden in the north, cut off by deep water (the Beach Tool's): a later kingdom's tool opens it on
+# the way back, a treasure chest inside.
+SECRET = (75.0, 300.0)
 
 
 def ring_r(a):
@@ -225,6 +228,8 @@ def main():
     crater_stones(c)
     puzzle_kit.pen(c, "return", "Well Yard", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("adobe", "wall"), natural(*polar(*RETURN)), height=5.0)
+    puzzle_kit.pen(c, "secret", "Sunken Garden", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("sandstone_block", "wall"),
+                   natural(*polar(*SECRET)), height=5.0)
 
     # The pass's far end, back up towards the snow: it bends out of sight.
     box(c, "Pass Bend", PASS_X0 - 4, 0.0, 6.0, PASS_HW + 24.0, FLOOR_Z - 2.0, RIM_Z, ("frost_cliff", "wall"))
@@ -263,7 +268,7 @@ def ruined(c):
     rot = math.radians(DUST_ROAD[0]) + math.pi / 2
     box(c, "Dust Road Cut", x, y, 7.0, 1.5, FLOOR_Z - 1.0, FLOOR_Z + 16.0, ("dark_corridor", "wall"), rot=rot, role="visual")
     # Drifts blown across the fields (off the roads).
-    avoid = (0.0, 180.0, CANYON[0], OASIS[0], GULCH[0], LAIR[0], DUST_ROAD[0], RETURN[0], 45.0, 135.0, -45.0, -135.0)
+    avoid = (0.0, 180.0, CANYON[0], OASIS[0], GULCH[0], LAIR[0], DUST_ROAD[0], RETURN[0], SECRET[0], 45.0, 135.0, -45.0, -135.0)
     for k, (x, y) in enumerate(ruin.ring_spots(12, 95.0, 190.0, 8, avoid) + ruin.ring_spots(8, 255.0, 300.0, 9, avoid)):
         c.assign(c.rock_mass("Drift %d" % k, x, y, 7.0 + k % 4, 4.0 + k % 3, natural(x, y) + 2.5 + k % 3, z0=natural(x, y) - 1.0,
                              n=10, seed=20 + k, angle=k * 0.7, bands=[(1.0, 0.0), (0.7, 0.6), (0.4, 1.0)],
@@ -280,7 +285,8 @@ def dress(c):
     ox, oy = polar(*OASIS)
     taken = paint.Taken([(px, py, pr + 16.0), (0.0, 0.0, CRATER_R + 16.0), (*polar(*CANYON), 26.0), (ox, oy, 30.0),
                          (*polar(GULCH[0], GULCH[1] - 20.0), 34.0), (*polar(*LAIR), 34.0), (*polar(*DUST_ROAD), 22.0),
-                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*SECRET), 16.0),
+                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
                          *((*polar(a, 74.0), 10.0) for a in (135.0, 45.0, -45.0, -135.0))])
 
     def open_ground(x, y):

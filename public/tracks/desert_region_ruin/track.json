@@ -95,6 +95,17 @@
       "prize_z": -172.07
     },
     {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": 75.32,
+      "z": -281.08,
+      "heading": -0.2617993877991493,
+      "width": 9.0,
+      "prize_x": 77.65,
+      "prize_z": -289.78
+    },
+    {
       "id": "dust_01",
       "type": "dust",
       "color": "#d89a6a",
@@ -121,6 +132,6 @@
   ],
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "desert_region.py": "309fdddbcef282d1968a9a9a5848d377e60a2c2a330fc545070f64af0f7fcdd3"
+    "desert_region.py": "93623ec1306d31fd7460d7e003e35285846f9b2f0b0bf0fa87dedcad93d046a6"
   }
 }

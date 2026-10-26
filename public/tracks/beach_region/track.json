@@ -132,6 +132,17 @@
       "width": 9.0,
       "prize_x": -298.86,
       "prize_z": -26.15
+    },
+    {
+      "id": "puzzle_gate_03",
+      "type": "puzzle_gate",
+      "puzzle": "secret",
+      "x": -89.92,
+      "z": -276.76,
+      "heading": 0.3141592653589791,
+      "width": 9.0,
+      "prize_x": -92.71,
+      "prize_z": -285.32
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region.py (re-running it rewrites entities)"
