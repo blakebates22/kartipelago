@@ -37,9 +37,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "canyon_dash"
+# The ruin (canyon_ruins.py): the dragons broke the Great Canyon Bridge in the middle and
+# wrecked the canyon's far side. You jump the gap; past it the north mesa's lobe has come
+# down (the pass is buried), so a steep cutting through the rockslide dives down the
+# gorge's north wall to the river, the fallen rock crosses it, and another wrecked
+# tunnel (its roof caved in) climbs the far wall back up to the south rim. Everything
+# else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "canyon_dash_ruin" if RUIN else "canyon_dash"
 
 # ---------------------------------------------------------------- the layout
 
@@ -75,19 +83,21 @@ LAYOUT = [
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 15, 19, START, 180.0)
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+# (The standard lap: the canyon's landmarks are laid out from it, in the ruin too.)
+STD_LAYOUT, STD_PATH, STD_SEG = LAYOUT, PATH, SEG
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STD_PATH if p[3] == i)
 
 
 def _seg_points(i):
-    return [p for p in PATH if p[3] == i]
+    return [p for p in STD_PATH if p[3] == i]
 
 
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
@@ -100,7 +110,7 @@ Z_RIM = 56.0  # the south rim's plateau (the start)
 Z_TERRACE = 24.0  # the terrace at the foot of the descent, and the bridge
 Z_RIVER = -40.0  # the river at the bottom of the inner gorge
 Z_EAST = 50.0  # the eastern plateau
-ANCHORS = [
+ANCHORS = STANDARD_ANCHORS = [
     (0.0, Z_RIM),
     (SEG[1] + 20, Z_RIM),
     (SEG[3], 51.0),  # down the wall
@@ -168,6 +178,10 @@ def road_z(d, seg=None):
 
 
 def road_w(d, seg):
+    if RUIN and seg >= 9:
+        if seg in (15, 16):
+            return 16.0  # across the river
+        return 20.0 if seg >= 21 else 15.0
     if seg in (0, 25, 24):
         return 20.0  # the start and finish: room for the pack
     if seg in (8,):
@@ -205,7 +219,7 @@ def wob(x, seed=0.0, a=1.0):
 # The road's y for each metre of x along given segments (for edges that hug it).
 def _track_y(segs, pick=min):
     out = {}
-    for p in PATH:
+    for p in STD_PATH:
         if p[3] in segs:
             k = int(round(p[0]))
             out[k] = pick(out.get(k, p[1]), p[1]) if k in out else p[1]
@@ -426,20 +440,50 @@ def inner_scale(x):
 
 
 def natural(x, y):
-    """The land before it's shaped round the roads: the inner gorge cut into it all."""
+    """The land before it's shaped round the roads: the inner gorge cut into it all (and
+    in the ruin, the rockslides the wrecked tunnels run down)."""
     h = natural_outer(x, y)
     u = gorge_u(x, y)
     if u > 0:
         k = inner_scale(x)
         h = min(h, steps(u, h, Z_RIVER, [(w * k, f) for w, f in INNER_BANDS]))
+    if RUIN_SLIDE:
+        h = min(h, slide(x, y))
     return h
+
+
+# The ruin's rockslides: where the mesa's lobe and the gorge's walls came down, the land
+# falls away round the ruin's cuttings in slopes of rubble (a talus cone round each point
+# of their road). Kept on a grid, built the first time it's needed.
+RUIN_SLIDE = []  # [(x, y, z)] along the ruin's cuttings (set below in the ruin)
+_SLIDE = {}
+SLIDE_GRADE, SLIDE_FLAT = 0.62, 12.0
+
+
+def slide(x, y):
+    g = _SLIDE
+    if not g:
+        xs = [p[0] for p in RUIN_SLIDE]
+        ys = [p[1] for p in RUIN_SLIDE]
+        g.update(x0=min(xs) - 120, y0=min(ys) - 120, cell=4.0)
+        g["nx"] = int((max(xs) + 120 - g["x0"]) / 4.0) + 2
+        g["ny"] = int((max(ys) + 120 - g["y0"]) / 4.0) + 2
+        g["grid"] = [[min(z + SLIDE_GRADE * max(0.0, math.hypot(g["x0"] + i * 4.0 - px, g["y0"] + j * 4.0 - py) - SLIDE_FLAT)
+                          for px, py, z in RUIN_SLIDE) for i in range(g["nx"])] for j in range(g["ny"])]
+    u, v = (x - g["x0"]) / g["cell"], (y - g["y0"]) / g["cell"]
+    if not (0 <= u < g["nx"] - 1 and 0 <= v < g["ny"] - 1):
+        return 1e9
+    i, j = int(u), int(v)
+    fu, fv = u - i, v - j
+    G = g["grid"]
+    return lerp(lerp(G[j][i], G[j][i + 1], fu), lerp(G[j + 1][i], G[j + 1][i + 1], fu), fv)
 
 
 def _ravine_under(s, length=60.0, out=40.0):
     """A side ravine crossing the road at s: from the plateau behind (left) down past the
     road to the terrace (right)."""
-    k = min(range(len(PATH)), key=lambda i: abs(_D[i] - s))
-    x, y, h, _ = PATH[k]
+    k = min(range(len(STD_PATH)), key=lambda i: abs(_D[i] - s))
+    x, y, h, _ = STD_PATH[k]
     a = math.radians(h)
     rx, ry = math.sin(a), -math.cos(a)  # the road's right
     z = road_z(s)
@@ -460,15 +504,15 @@ def in_gorge_deep(x, y):
 
 # The tunnel's stretch of road: the land above it there is hidden (the tunnel's rock
 # stands over it).
-TUNNEL_S = (SEG[13] - 6.0, SEG[14] + 4.0)
+TUNNEL_S = (STD_SEG[13] - 6.0, STD_SEG[14] + 4.0)
 
 
 def tunnel_rock():
     """The tunnel's rock: (centre x, y, heading, half-length, half-width) of the block of
     the mesa bridging the slot over the road (the land under it is left out)."""
     s0, s1 = TUNNEL_S
-    k = min(range(len(PATH)), key=lambda i: abs(_D[i] - (s0 + s1) / 2))
-    x, y, h, _ = PATH[k]
+    k = min(range(len(STD_PATH)), key=lambda i: abs(_D[i] - (s0 + s1) / 2))
+    x, y, h, _ = STD_PATH[k]
     return x, y, math.radians(h), (s1 - s0) / 2 + 16.0, 34.0
 
 
@@ -486,8 +530,9 @@ WALL_SPANS = {"south": [], "north": [], "east": []}
 
 
 def walled(x, y, pad=0.4):
-    """Is (x, y) on one of the wall meshes (so the land grid leaves it out)?"""
-    if gorge_u(x, y) > pad:
+    """Is (x, y) on one of the wall meshes (so the land grid leaves it out)? (In the ruin
+    the gorge's walls are down in a rockslide across RUIN_OPEN: the land grid has them.)"""
+    if gorge_u(x, y) > pad and not (RUIN_OPEN and RUIN_OPEN[0] <= x <= RUIN_OPEN[1]):
         return True
     for side, rim, width in (("south", south_rim, sum(w for w, _ in OUTER_BANDS)), ("north", north_rim, sum(w for w, _ in MESA_BANDS))):
         for a, b in WALL_SPANS[side]:
@@ -512,7 +557,11 @@ def classify(c, n, info):
     if c.z > smp.p.z + 0.8 and under_tunnel_rock(c.x, c.y):
         return None
     zt = terrace_z(c.x)
-    if SEG[11] - 10 <= smp.s <= SEG[15] + 10 and n.z < 0.85 and c.z > smp.p.z + 0.6:
+    if RUIN and info["d"] < 14.0 and c.z < smp.p.z + 1.5:
+        # Beside the ruin's road down in the gorge: the rockslide's rubble (no abyss).
+        return ("talus", "dirt")
+    cut = (SEG[11] - 10, SEG[22] + 10) if RUIN else (SEG[11] - 10, SEG[15] + 10)
+    if cut[0] <= smp.s <= cut[1] and n.z < 0.85 and c.z > smp.p.z + 0.6:
         # The pass's walls rise straight from the road's edge: rock, all the way down.
         return ("strata_orange" if c.z > 30 else "strata_red", "wall")
     if gorge_u(c.x, c.y) > 2.0 and c.z < min(zt, natural(c.x, c.y) + 1) - 8.0:
@@ -608,7 +657,7 @@ def _butte():
     for rx in (56.0, 52.0, 48.0, 44.0, 40.0, 36.0, 32.0):
         for ry in (34.0, 30.0, 27.0, 24.0, 21.0):
             ok = True
-            for p in PATH:
+            for p in STD_PATH:
                 if p[3] not in (21, 22, 23, 24, 25):
                     continue
                 dx, dy = p[0] - mx, p[1] - my
@@ -631,11 +680,70 @@ def _butte():
 BUTTE, BUTTE_ANGLE, BUTTE_SIZE = _butte()
 
 
+# ---------------------------------------------------------------- the ruin's lap
+
+RUIN_OPEN = None  # (x0, x1): where the gorge's walls are down (the ruin)
+RUIN_RIM_OPEN = {}  # {side: (x0, x1)}: where the rim walls are down (the ruin)
+if RUIN:
+    # Blake: the bridge broken (jump it); the far side wrecked: a steep tunnel down to
+    # the river, rubble across it, another wrecked tunnel back up to the top (about a
+    # fifth shorter: diving 60 m and climbing 90 m takes road). The course's own lap
+    # over the bridge (0-8), then right along the foot of the fallen mesa (9-10), down
+    # the cutting to the river (11-15), across it on the rockfall (16-17), and up the
+    # wrecked tunnel (18-21) onto the rim and the start (22-23).
+    LAYOUT = STD_LAYOUT[:9] + [
+        ("R", 30, 90),  # 9  off the bridge, east
+        ("S", 20),  # 10 along the fallen mesa's foot
+        ("R", 100, 35),  # 11 the dive...
+        ("S", 118),  # 12
+        ("L", 100, 35),  # 13 ...down to the river
+        ("S", 20),  # 14 the riverside
+        ("R", 30, 90),  # 15 across the river on the rockfall
+        ("S", 10),  # 16
+        ("L", 30, 90),  # 17 into the wrecked tunnel, east
+        ("S", 120),  # 18 the climb
+        ("R", 40, 90),  # 19 round, south, still climbing...
+        ("S", 10),  # 20 (closes the loop)
+        ("R", 40, 90),  # 21 ...out onto the rim, west
+        ("S", 100),  # 22 to the line (closes the loop)
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 20, 22, START, 180.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    # The broken bridge's gap (12 m, over the gorge's middle), and the sagged far half.
+    LIP = SEG[8] + 57.0
+    LAND = LIP + 12.0
+    Z_LOW = Z_RIVER + 4.0  # the river road, on the rockfall
+    ANCHORS = [a for a in STANDARD_ANCHORS if a[0] <= SEG[7] + 25] + [
+        (LIP, Z_TERRACE),
+        (LAND, Z_TERRACE - 4.0),  # the far half, sagged at its broken end
+        (SEG[9], Z_TERRACE - 1.0),
+        (SEG[11], Z_TERRACE - 2.0),
+        (SEG[14], Z_LOW),
+        (SEG[17], Z_LOW),
+        (SEG[21], Z_RIM - 1.5),
+        (LENGTH, Z_RIM),
+    ]
+    LEVEL = [(SEG[7] + 25, SEG[9] + 10)]
+    OVER_HILLS = (0.0, 1.0, 1, 0.0)
+    MESA_CREST = (0.0, 1.0, 0.0)
+    MESA_KICK = (-100.0, 1.0, 0.0, 1.0, 0.0)
+    ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+    RUIN_OPEN = (-175.0, 175.0)
+    _d = 0.0
+    for _i, (_x, _y, _h, _sg) in enumerate(PATH):
+        if _i:
+            _d += math.hypot(_x - PATH[_i - 1][0], _y - PATH[_i - 1][1])
+        if SEG[10] <= _d <= SEG[21] and (not RUIN_SLIDE or math.hypot(_x - RUIN_SLIDE[-1][0], _y - RUIN_SLIDE[-1][1]) >= 6.0):
+            RUIN_SLIDE.append((_x, _y, road_z(_d) - 0.6))
+    RUIN_RIM_OPEN = {"north": (-200.0, 60.0), "south": (120.0, 380.0)}
+
+
 # ---------------------------------------------------------------- the course
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Canyon Dash", "canyon_dash")
+    c = kit.Course(TRACK_ID, "Canyon Dash (Ruined)" if RUIN else "Canyon Dash", "canyon_ruins" if RUIN else "canyon_dash")
     c.route(ROUTE, width=18.0, bank=7.0)
     fence = ("fence_rail", "wall")
     verge = ("dash_shoulder", "dirt")
@@ -670,6 +778,9 @@ def main():
     }
     S = SEG
     trestle = (S[4] - 4, S[5] + 6)
+    if RUIN:
+        ruin_course(c, trestle)
+        return
     sc_a = kit.s_near(c, *BUTTE_SHORT[0])
     sc_b = kit.s_near(c, *BUTTE_SHORT[-1])
     # No fence anywhere the slot's road runs beside the main road (Blake's review: the
@@ -716,6 +827,71 @@ def main():
 
     canyon_scenery.build(c, sys.modules[__name__])
     c.finish()
+
+
+def ruin_course(c, trestle):
+    """The ruin's roads and gameplay (canyon_ruins.py builds the land and the wreckage)."""
+    S = SEG
+    rubble = ("talus", "dirt")
+    c.kinds.update({
+        # The cuttings through the rockslide, down to the river and back up.
+        "slide": {"mat": "dash_road", "shoulder": 1.6, "shoulder_mat": rubble},
+        # The rockfall across the river: boulders under a rough deck.
+        "causeway": {"mat": "dash_road", "shoulder": 1.0, "shoulder_mat": rubble, "deck": 3.5, "deck_mat": ("strata_red", "wall"),
+                     "ground": False},
+        # The broken bridge's lip: the deck kicks up at its broken end.
+        "kicker": {"mat": "plank_deck", "shoulder": 0.6, "shoulder_mat": ("plank_deck", "road"), "barrier": 1.3,
+                   "barrier_mat": ("weathered_timber", "wall"), "deck": 2.2, "deck_mat": ("weathered_timber", "wall"), "ground": False},
+    })
+
+    def label(smp):
+        s = smp.s
+        seg = seg_of(s)
+        x, y = smp.p.x, smp.p.y
+        if LIP <= s <= LAND:
+            return "gap"
+        if LIP - 12 <= s < LIP:
+            return "kicker"
+        if trestle[0] <= s <= trestle[1]:
+            return "trestle"
+        if seg in (2, 3, 4, 5, 6) or (seg == 7 and s < S[7] + 10):
+            return "ledge"
+        if gorge_u(x, y) > -3.0 and seg in (7, 8):
+            return "bridge"
+        if seg in (7, 9, 10):
+            return "terrace"
+        if seg in (15, 16) and gorge_u(x, y) > 40.0:
+            return "causeway"
+        if 11 <= seg <= 20:
+            return "slide"
+        return "plateau"
+
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "kicker":
+            specials.append((s0, s1, k, {"lift": lambda u, n: 1.4 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+        elif k != "plateau":
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "plateau", max_len=200.0))
+    ruin_mode.DRESS(c, sys.modules[__name__])
+    c.finish()
+
+
+def ruin_gameplay(c):
+    """The ruin's zippers, items, respawn and checkpoints."""
+    S = SEG
+    for at in (28, S[3] + 20, LIP - 22, S[12] + 20, S[18] + 10, S[21] + 10):
+        c.zipper(at, 0)
+    for at, across in ((70, 0), (S[4] + 30, 3), (S[9] + 20, 0), (S[14] + 10, 0), (S[18] + 80, 0), (S[22] + 40, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((90, -5, "red"), (90, 5, "blue"), (S[3] + 50, 0, "green"), (S[7] + 10, 0, "yellow"), (S[10] + 10, 0, "rainbow"),
+                            (S[13] + 20, 0, "blue"), (S[17] + 10, -4, "green"), (S[17] + 10, 4, "red"), (S[19] + 20, 0, "yellow")):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(LIP - 30, 1), "to": round(LAND + 6, 1), "at": round(LAND + 24, 1)})
+    c.checkpoints(extra=[S[2] + 10, S[4], S[6] + 10, S[8] + 20, LAND + 30, S[10], S[12] + 40, S[14] + 10, S[17], S[18] + 60, S[19] + 30, S[22] + 20],
+                  avoid=[(LIP - 16, LAND + 10)], height=10.0)
 
 
 def _short_z(c, x, y):

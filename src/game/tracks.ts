@@ -582,6 +582,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "canyon_dash",
     music: "canyon",
     load: { scene: "track", packageId: "canyon_dash" },
+    ruin: "canyon_dash_ruin",
+  },
+  {
+    id: "canyon_dash_ruin",
+    name: "Canyon Dash (Ruined)",
+    description:
+      "The great bridge is broken: jump the gap, dive through the rockslide to the river, climb the wrecked tunnel home.",
+    preview: "previews/canyon_dash_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "canyon_ruins",
+    music: "canyon",
+    load: { scene: "track", packageId: "canyon_dash_ruin" },
   },
   {
     id: "oasis_haven",
@@ -593,6 +605,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "oasis_haven",
     music: "oasis",
     load: { scene: "track", packageId: "oasis_haven" },
+    ruin: "oasis_haven_ruin",
+  },
+  {
+    id: "oasis_haven_ruin",
+    name: "Oasis Haven (Ruined)",
+    description:
+      "The watchtower has toppled: round the burnt camp by the dragon's scorch, over the fallen arch, up the tower and off its top.",
+    preview: "previews/oasis_haven_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "oasis_ruins",
+    music: "oasis",
+    load: { scene: "track", packageId: "oasis_haven_ruin" },
   },
   {
     id: "dry_gulch",

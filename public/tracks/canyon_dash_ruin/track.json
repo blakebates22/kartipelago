@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "id": "canyon_dash_ruin",
+  "name": "Canyon Dash (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 28,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 124.0,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 426.1,
+      "across": 0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 689.3,
+      "across": 0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 982.6,
+      "across": 0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1176.8,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 70,
+      "across": -6.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 217.8,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 561.1,
+      "across": -4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 858.3,
+      "across": -4.5,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1052.6,
+      "across": -4.5,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_06",
+      "type": "bananas",
+      "at": 1269.7,
+      "across": 7.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 90,
+      "across": -5,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 90,
+      "across": 5,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 154.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 299.0,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 598.2,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 807.3,
+      "across": 0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 935.5,
+      "across": -4,
+      "color": "green"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 935.5,
+      "across": 4,
+      "color": "red"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 1112.6,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "respawn_01",
+      "type": "respawn",
+      "from": 418.1,
+      "to": 466.1,
+      "at": 484.1
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 327.15,
+      "y": 57.52,
+      "z": 148.39
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 337.84,
+      "y": 56.82,
+      "z": 132.54
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 228.2,
+      "y": 58.08,
+      "z": 167.71
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 332.77,
+      "y": 57.08,
+      "z": 114.81
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -195.48,
+      "y": 24.71,
+      "z": 8.77
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -195.48,
+      "y": 21.5,
+      "z": -2.72
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -81.89,
+      "y": 30.31,
+      "z": -153.2
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -141.76,
+      "y": 22.56,
+      "z": -101.68
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 289.67,
+      "y": 42.31,
+      "z": 86.87
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -208.19,
+      "y": 23.2,
+      "z": -120.49
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -211.06,
+      "y": 23.2,
+      "z": -101.05
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 153.63,
+      "y": 39.98,
+      "z": 167.51
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -63.4,
+      "y": 13.56,
+      "z": -113.07
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -57.1,
+      "y": 20.4,
+      "z": -123.04
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 327.15,
+      "y": 56.92,
+      "z": 148.39
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 228.2,
+      "y": 57.48,
+      "z": 167.71
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -195.48,
+      "y": 24.11,
+      "z": 8.77
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -81.89,
+      "y": 29.71,
+      "z": -153.2
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": 289.67,
+      "y": 41.71,
+      "z": 86.87
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": -211.06,
+      "y": 22.6,
+      "z": -101.05
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -63.4,
+      "y": 12.96,
+      "z": -113.07
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 20,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/canyon_dash_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "canyon_dash.py": "beb35b5d3e6201769e1daedf43bf660f6b73bf067d699fabd772953d6c1ea16b",
+    "canyon_props.py": "d888b93a4570c60100be2f22e3a37f816ea881cea449c1816ba57a3f2afb5181",
+    "canyon_ruins.py": "9439a7901361de8899ca1b5f7654efb5cee91688fed31c56a39272549a818a8a",
+    "canyon_scenery.py": "1da6f6672129e3a03d820e3fba80b69eae21ebf168b236bd7550a01e45b638f1",
+    "canyon_walls.py": "635872098f2a16d03dd0e3de9178dac6dba5c7ffb4b061110ecef667bd01c5b8"
+  }
+}

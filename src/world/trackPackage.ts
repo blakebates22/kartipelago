@@ -475,6 +475,37 @@ async function parseGlb(buf: ArrayBuffer, name: string): Promise<THREE.Object3D>
 
 export const SURFACES = surfacesFile.surfaces as SurfaceTable;
 
+/**
+ * Take the grid bars off a course's start line (Blake: dark lines where the racers
+ * start). Courses built before the Blender kit stopped drawing them have, in the "Start
+ * Line" mesh, a bar in front of each slot: small quads painted from one corner of the
+ * checker texture (u 0.01-0.11, v 0.02-0.2, flipped in glTF). Those triangles go; the
+ * checkered line stays. Returns how many triangles went.
+ */
+export function stripStartGrid(scene: THREE.Object3D): number {
+  let gone = 0;
+  scene.traverse((o) => {
+    if (!(o instanceof THREE.Mesh) || !/^Start[ _]Line/.test(o.name)) return; // (the loader may write "Start_Line")
+    const g = o.geometry as THREE.BufferGeometry;
+    const uv = g.getAttribute("uv");
+    if (!uv) return;
+    const index = g.index ? Array.from(g.index.array) : [...Array(uv.count).keys()];
+    const bar = (i: number) => {
+      const u = uv.getX(i);
+      const v = uv.getY(i);
+      return u > 0.005 && u < 0.115 && ((v > 0.015 && v < 0.205) || (v > 0.795 && v < 0.985));
+    };
+    const keep: number[] = [];
+    for (let t = 0; t + 2 < index.length; t += 3) {
+      const [a, b, c] = [index[t]!, index[t + 1]!, index[t + 2]!];
+      if (bar(a) && bar(b) && bar(c)) gone++;
+      else keep.push(a, b, c);
+    }
+    if (keep.length !== index.length) g.setIndex(keep);
+  });
+  return gone;
+}
+
 /** Load and check a whole package. Throws a TrackError for anything fatal. */
 export async function loadTrackPackage(
   read: PackageReader,
@@ -522,6 +553,7 @@ export async function loadTrackPackage(
   } else if (meta.geometry.look) warnings.push(`${lookFile}: missing, using the default look`);
   const visual = visBuf ? await parseGlb(visBuf, meta.geometry.visual) : new THREE.Group();
   applyEdits(visual, edits);
+  stripStartGrid(visual);
   visual.name = `track:${meta.id}`;
   const materials = prepareTrackMaterials(visual, opts.mode ?? "authentic", {
     sun: look.sun?.direction,

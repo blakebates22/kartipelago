@@ -29,9 +29,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "dry_gulch"
+# The ruin (dry_gulch_ruins.py): the mine is gone. Its chasm cavern fell in, and Hazard
+# Ridge, hollowed by the mine, slumped into it: a landslide runs from the mine approach
+# (where the portal was) down through the ridge's broken middle to the ravine's bend,
+# over the crack where the cavern's roof fell in. No shortcut, no trestle, no rim road;
+# the town burns. Everything else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "dry_gulch_ruin" if RUIN else "dry_gulch"
 
 START = (0.0, 0.0)
 LAYOUT = [
@@ -77,6 +84,8 @@ LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]
 _D = [0.0]
 for _a, _b in zip(PATH, PATH[1:]):
     _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
+# (The standard lap: the town's landmarks are laid out from it, in the ruin too.)
+STD_LAYOUT, STD_PATH, STD_SEG, STD_LENGTH = LAYOUT, PATH, SEG, LENGTH
 
 
 def seg_of(s):
@@ -88,18 +97,18 @@ def seg_of(s):
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STD_PATH if p[3] == i)
 
 
 def path_at(s):
-    """(x, y, heading degrees) of the layout s metres along the lap."""
-    k = min(range(len(PATH)), key=lambda i: abs(_D[i] - s))
-    return PATH[k][:3]
+    """(x, y, heading degrees) of the (standard) layout s metres along the lap."""
+    k = min(range(len(STD_PATH)), key=lambda i: abs(_D[i] - s))
+    return STD_PATH[k][:3]
 
 
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
@@ -119,6 +128,8 @@ CRESTS = {8: (1, 2.4), 9: (1, 0.9), 10: (1, 0.9), 22: (1, 1.0), 26: (1, 1.2), 27
 
 
 def road_z(d, seg):
+    if RUIN and LAYOUT is not STD_LAYOUT:
+        return _ruin_z(d, seg)
     if seg == 16:
         if GAP[0] <= d <= GAP[1]:
             return lerp(Z_TRESTLE + 0.6, Z_TRESTLE - 0.4, (d - GAP[0]) / (GAP[1] - GAP[0]))
@@ -135,6 +146,10 @@ def road_z(d, seg):
 
 
 def road_w(d, seg):
+    if RUIN and seg >= 15:
+        if seg == 23:
+            return 18.0  # Main Street
+        return 18.0 if 16 <= seg <= 18 else 16.0  # the landslide: wide and rough
     if seg in (0, 34):
         return 18.0  # Main Street: room for the pack
     if 2 <= seg <= 6:
@@ -247,7 +262,27 @@ def natural(x, y):
     # Boot Hill's knoll (the lap runs over it).
     g = math.hypot(x - GRAVEYARD[0], y - GRAVEYARD[1])
     h += 4.0 * (1.0 - sm((g - 18.0) / 34.0))
+    if CRACK:
+        # (The ruin) the crack where the chasm cavern's roof fell in: sheer, deep.
+        dc = crack_d(x, y)
+        if dc < 9.0:
+            h = lerp(h, -30.0, sm((9.0 - dc) / 4.0))
     return h
+
+
+def crack_d(x, y):
+    """(The ruin) how far (x, y) is from the crack's line."""
+    return min(_seg_d(x, y, a[0], a[1], b[0], b[1])[0] for a, b in zip(CRACK, CRACK[1:])) if CRACK else 1e9
+
+
+def slide_d(x, y):
+    """(The ruin) how far (x, y) is from the landslide's road."""
+    return min(math.hypot(x - p[0], y - p[1]) for p in SLIDE) if SLIDE else 1e9
+
+
+def in_pit(x, y):
+    """(The ruin) over the pit where the chasm cavern's roof fell in."""
+    return bool(CRACK) and ((x - CAVERN[0]) / 36.0) ** 2 + ((y - CAVERN[1]) / 28.0) ** 2 < 1.0
 
 
 # ---------------------------------------------------------------- Hazard Ridge
@@ -395,6 +430,17 @@ def classify(c, n, info):
     # Under the ridge its own rock stands, so no land there; only so far in as its
     # fluted foot can reach (10 m), except along the mine, where nothing may block it.
     rd = ridge_d(c.x, c.y)
+    if RUIN and slide_d(c.x, c.y) < 34.0:
+        # The landslide through the ridge's broken middle: land, the crack's abyss.
+        if crack_d(c.x, c.y) < 6.0 and c.z < -6.0:
+            return ("gulch_chasm", "abyss")
+        if n.z < 0.55:
+            return (layer(c.z), "wall")
+        if info["d"] < info["sample"].w / 2 + 1.5:
+            return ("gulch_talus", "loose_sand")
+        return ("gulch_talus" if n.z < 0.9 else "red_sand", "loose_sand")
+    if RUIN and (in_pit(c.x, c.y) or crack_d(c.x, c.y) < 9.0) and rd > -10.0:
+        return None  # the pit and the crack: open down to the chasm
     if rd > 10.0 or (rd > 5.0 and _near_mine(c.x, c.y)):
         return None
     d, hw, floor, _ = ravine_q(c.x, c.y)
@@ -441,7 +487,9 @@ _layer = layer  # (the name canyon_scenery's rock painters look for)
 
 
 def underfloor_z(x, y):
-    if ridge_d(x, y) > -2.0:
+    if RUIN and (crack_d(x, y) < 9.0 or in_pit(x, y)):
+        return None
+    if ridge_d(x, y) > -2.0 and not (RUIN and slide_d(x, y) < 30.0):
         return None
     d, hw, _, _ = ravine_q(x, y)
     if hw - d > 2.0 and natural(x, y) < 0.0:
@@ -451,7 +499,10 @@ def underfloor_z(x, y):
 
 def abyss_z(x, y):
     """The invisible floor under the chasm: fall in anywhere and you're put back (right
-    up under the ridge's foot too, where the chasm's wall meets it)."""
+    up under the ridge's foot too, where the chasm's wall meets it; in the ruin, under
+    the crack and the pit where the cavern's roof fell in)."""
+    if RUIN and (crack_d(x, y) < 10.0 or in_pit(x, y)):
+        return -31.0
     if ridge_d(x, y) > 8.0:
         return None
     d, hw, floor, _ = ravine_q(x, y)
@@ -494,9 +545,101 @@ TUMBLEWEEDS = (SEG[0] + 60, SEG[3] + 10, SEG[8] + 20, SEG[22] + 20, SEG[27] + 40
 BIRDS = ((140.0, 150.0), (230.0, -120.0))
 
 
+# ---------------------------------------------------------------- the ruin's lap
+
+CRACK = []  # the ruin: [(x, y)] down the crack where the chasm cavern's roof fell in
+SLIDE = []  # the ruin: [(x, y, z)] along the landslide's road
+if RUIN:
+    # The course's own lap through town, Boot Hill and along the mine approach (0-14);
+    # then where the portal was, down the landslide through the ridge's broken middle
+    # (15-17) to the ravine's bend (18), and the course's own climb out of it into town
+    # (19-23).
+    LAYOUT = STD_LAYOUT[:15] + [
+        ("S", 52),  # 15 along the approach to where the portal was (closes the loop)
+        ("R", 80, 60),  # 16 over the lip, down into the slide...
+        ("S", 338),  # 17 ...down through the ridge, over the crack (closes the loop)
+        ("R", 50, 120),  # 18 round at the foot, into the ravine's bend
+    ] + list(STD_LAYOUT[30:])
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 15, 17, START, 90.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    _RD = [0.0]
+    for _a, _b in zip(PATH, PATH[1:]):
+        _RD.append(_RD[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
+    # The crack: where the slide passes nearest the cavern, from the cavern's middle out
+    # past the road. 12 m to jump, downhill.
+    _k = min((i for i, p in enumerate(PATH) if p[3] == 17), key=lambda i: math.hypot(PATH[i][0] - CAVERN[0], PATH[i][1] - CAVERN[1]))
+    _px, _py = PATH[_k][0], PATH[_k][1]
+    _ux, _uy = _px - CAVERN[0], _py - CAVERN[1]
+    _ul = math.hypot(_ux, _uy)
+    CRACK = [(CAVERN[0] + _ux * f, CAVERN[1] + _uy * f) for f in [i / 10 for i in range(0, 11)] + [(_ul + 10 * j) / _ul for j in (1, 2, 3)]]
+    GAP = (_RD[_k] - 6.0, _RD[_k] + 6.0)
+    HEIGHT = dict(HEIGHT)
+    HEIGHT.update({15: 30.5, 16: 30.0, 17: 29.0, 18: 16.0, 19: 16.0, 20: 22.0, 21: 25.5, 22: 28.5, 23: 30.0})
+    CRESTS = {k: v for k, v in CRESTS.items() if k < 15}
+    CRESTS.update({19: (1, 1.0)})
+    STREETS = dict(STREETS, main=(SEG[23] + 4.0 - LENGTH, SEG[1] - 6.0))
+
+
+def _ruin_z(d, seg):
+    """The ruin's road: down the landslide in humps of fallen rock, over the crack, round
+    at its foot; elsewhere the course's own."""
+    if 16 <= seg <= 18:
+        a, b = SEG[16], SEG[19]
+        t = (d - a) / (b - a)
+        z = lerp(HEIGHT[16], HEIGHT[19], smooth(t))
+        # Humps of the slide's debris (not near the crack).
+        if GAP[0] - 20 > d or d > GAP[1] + 20:
+            z += 1.5 * math.sin(t * math.pi * 7) ** 2 * (1 - t) ** 0.5
+        # The crack: a kicker up to the lip, the far side a little lower.
+        if GAP[0] - 10 <= d < GAP[0]:
+            z += 0.6 * smooth((d - (GAP[0] - 10)) / 10)
+        elif GAP[0] <= d <= GAP[1]:
+            z += lerp(0.6, -1.0, (d - GAP[0]) / (GAP[1] - GAP[0]))
+        elif GAP[1] < d <= GAP[1] + 12:
+            z -= 1.0 * (1 - smooth((d - GAP[1]) / 12))
+        return z
+    a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
+    t = (d - a) / max(1e-6, b - a)
+    z = lerp(HEIGHT[seg], HEIGHT.get(seg + 1, HEIGHT[0]), smooth(t))
+    if seg in CRESTS:
+        n, h = CRESTS[seg]
+        z += h * math.sin(t * math.pi * n) ** 2
+    return z
+
+
+if RUIN:
+    ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+    S = SEG
+    for _i, (_x, _y, _h, _sg) in enumerate(PATH):
+        if 16 <= _sg <= 18 and (not SLIDE or math.hypot(_x - SLIDE[-1][0], _y - SLIDE[-1][1]) >= 6.0):
+            SLIDE.append((_x, _y, road_z(_RD[_i], _sg)))
+    TUMBLEWEEDS = (S[0] + 60, S[3] + 10, S[8] + 20, S[17] + 100, S[17] + 260, S[23] - 20)
+
+
+def ruin_pickups(c):
+    """The ruin's boosts, pickups, respawn and checkpoints (no mine, no twin gate)."""
+    S = SEG
+    for at in (S[0] + 30, S[6] + 10, S[15] + 20, S[17] + 40, GAP[0] - 30, S[19] + 10):
+        c.zipper(at, 0)
+    for at, across in ((S[2] + 10, 0), (S[8] + 30, 0), (S[13] + 10, 0), (S[17] + 150, 0), (S[17] + 260, -3), (S[20] + 10, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S[0] + 70, -4, "red"), (S[0] + 70, 4, "blue"), (S[4] + 40, 0, "green"), (S[12] + 20, 0, "yellow"),
+                            (S[16] + 30, 0, "rainbow"), (S[17] + 230, -4, "red"), (S[17] + 230, 4, "blue"), (S[20] + 20, 0, "green")):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(GAP[0] - 20, 1), "to": round(GAP[1] + 4, 1), "at": round(GAP[1] + 20, 1)})
+    gates = c.checkpoints(
+        extra=[S[1] + 20, S[4] + 30, S[8] + 20, S[11] + 30, S[15] + 20, S[17] + 60, GAP[1] + 20, S[17] + 250, S[18] + 60, S[20] + 20],
+        height=10.0,
+    )
+    return gates, None
+
+
 def pickups(c):
     """The new lap's boosts, pickups and checkpoints (gulch_scenery adds the mine's twin
     gate)."""
+    if RUIN:
+        return ruin_pickups(c)
     S = lambda i: SEG[i]  # noqa: E731
     # Zippers: up Main Street, out of the chicane, along the approach, onto the trestle
     # (for the broken span), down the wall, along the floor, and up out of the ravine.
@@ -527,7 +670,7 @@ def pickups(c):
 def main():
     from dry_gulch_v2 import mine_roads
 
-    c = kit.Course(TRACK_ID, "Dry Gulch Ghost Town", "dry_gulch")
+    c = kit.Course(TRACK_ID, "Dry Gulch Ghost Town (Ruined)" if RUIN else "Dry Gulch Ghost Town", "gulch_ruins" if RUIN else "dry_gulch")
     c.route(ROUTE, width=16.0, bank=7.0)
     verge = ("gulch_verge", "dirt")
     fence = ("fence_rail", "wall")
@@ -547,6 +690,9 @@ def main():
         "ravine": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 2.2, "shoulder_mat": verge},
         "open": {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 2.6, "shoulder_mat": verge},
     }
+    if RUIN:
+        ruin_course(c)
+        return
     line = mine_line(c)
     sa = kit.s_near(c, *line[0][:2])
     sb = kit.s_near(c, *line[-1][:2])
@@ -591,6 +737,37 @@ def main():
     c.finish()
     mine_len = sum(math.dist(a[:2], b[:2]) for a, b in zip(line, line[1:]))
     print("lap", round(c.length, 1), "mine", round(mine_len, 1), "skips", round(sb - sa, 1))
+
+
+def ruin_course(c):
+    """The ruin's roads (dry_gulch_ruins.py builds the land, the town and the wreckage)."""
+    c.kinds["slide"] = {"mat": "gulch_road", "surface": "packed_dirt", "shoulder": 2.6, "shoulder_mat": ("gulch_talus", "loose_sand")}
+
+    def label(smp):
+        s = smp.s
+        seg = seg_of(s)
+        if GAP[0] <= s <= GAP[1]:
+            return "gap"
+        if 16 <= seg <= 18:
+            return "slide"
+        if 19 <= seg <= 20:
+            return "ravine"
+        if 7 <= seg <= 11:
+            return "lane"
+        if seg <= 6 or seg >= 22:
+            return "street"
+        return "trail"
+
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k != "street":
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "street", max_len=200.0))
+    ruin_mode.DRESS(c, sys.modules[__name__])
+    c.finish()
+    print("lap", round(c.length, 1))
 
 
 if __name__ == "__main__":

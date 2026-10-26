@@ -99,8 +99,8 @@ export const KINGDOMS: Kingdom[] = [
     name: "Desert Kingdom",
     worldId: "desert",
     courses: [
-      { track: "canyon_dash" },
-      { track: "oasis_haven" },
+      { track: "canyon_dash", ruin: "canyon_dash_ruin" },
+      { track: "oasis_haven", ruin: "oasis_haven_ruin" },
       { track: "dry_gulch" },
       { track: "impact_depths" },
     ],

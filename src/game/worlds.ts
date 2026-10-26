@@ -113,6 +113,8 @@ export const WORLDS: WorldEntry[] = [
       "snowy_summit_ruin",
       "hearthglow_hollow_ruin",
       "aurora_rift_ruin",
+      "canyon_dash_ruin",
+      "oasis_haven_ruin",
       "boss_prehistoric",
       "boss_snowy",
       "boss_desert",

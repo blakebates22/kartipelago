@@ -172,6 +172,70 @@ AURORA = {
 }
 
 
+CANYON = {
+    "id": "canyon_ruins",
+    "name": "Canyon Dash in Ruins",
+    "description": "The canyon after the dragons came: a hazy orange afternoon full of dust and smoke, the great bridge broken, rockslides down the far side",
+    "environment": {
+        "sky": "#c8844a",
+        "fog": {"enabled": True, "color": "#c49a7a", "near": 320, "far": 1900},
+        "sun": {"color": "#ffc888", "intensity": 2.7, "direction": [-0.62, 0.52, 0.58]},
+        "ambient": {"sky": "#e8b890", "ground": "#7a3a2c", "intensity": 1.25},
+        "skyDome": {
+            "top": "#6a4a5a",
+            "horizon": "#f0a060",
+            "bottom": "#c89478",
+            "sun": {"color": "#ffe0b0", "size": 11, "glow": "#ff9a50", "elevation": 16},
+            "clouds": {"count": 36, "color": "#9a7a6a", "shade": "#5a3a30", "seed": 341, "low": 8, "high": 30, "drift": 0.008},
+            "hills": {"color": "#a0604c", "far": "#c89a8a", "height": 5, "seed": 103, "layers": 3, "style": "mesas"},
+        },
+    },
+}
+
+
+OASIS = {
+    "id": "oasis_ruins",
+    "name": "Oasis Haven in Ruins",
+    "description": "The oasis after the dragons came: a smoky amber dusk, the watchtower toppled, the camp burnt, ash on the wind",
+    "environment": {
+        "sky": "#b8785a",
+        "fog": {"enabled": True, "color": "#b89a84", "near": 300, "far": 1800},
+        "sun": {"color": "#ffb878", "intensity": 2.6, "direction": [0.55, 0.45, -0.7]},
+        "ambient": {"sky": "#e0b494", "ground": "#6a3a2a", "intensity": 1.25},
+        "skyDome": {
+            "top": "#4a4a62",
+            "horizon": "#e89a62",
+            "bottom": "#c8987a",
+            "sun": {"color": "#ffd8a8", "size": 12, "glow": "#ff8a48", "elevation": 12},
+            "clouds": {"count": 40, "color": "#8a6a62", "shade": "#4a302c", "seed": 353, "low": 8, "high": 30, "drift": 0.008},
+            "hills": {"color": "#9a5e4c", "far": "#c0948a", "height": 5, "seed": 109, "layers": 3, "style": "mesas"},
+        },
+    },
+}
+
+
+GULCH = {
+    "id": "gulch_ruins",
+    "name": "Dry Gulch in Ruins",
+    "description": "The ghost town burning under the full moon: smoke across the stars, the sky glowing orange over Main Street, the ridge slumped into the green chasm",
+    "environment": {
+        "sky": "#1e1030",
+        "fog": {"enabled": True, "color": "#4a2a3a", "near": 260, "far": 1500},
+        "sun": {"color": "#c4b8ff", "intensity": 1.5, "direction": [-0.22, 0.62, -0.75]},
+        "ambient": {"sky": "#9a6ab8", "ground": "#6a3a3a", "intensity": 1.55},
+        "skyDome": {
+            "top": "#0a0620",
+            "horizon": "#c8502e",
+            "bottom": "#3a1a2a",
+            "sun": {"color": "#f4e2ca", "size": 10, "glow": "#c08a6a", "elevation": 21, "face": "moon"},
+            "clouds": {"count": 34, "color": "#5a3a4a", "shade": "#2a1420", "seed": 359, "low": 4, "high": 30, "drift": 0.006},
+            "hills": {"color": "#2a1424", "far": "#6a2e3e", "height": 7, "seed": 157, "layers": 3, "style": "mesas"},
+            "stars": {"count": 400, "color": "#ffffff", "seed": 163, "low": 14},
+        },
+    },
+}
+
+
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle
 

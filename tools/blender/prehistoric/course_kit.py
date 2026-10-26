@@ -790,19 +790,8 @@ class Course:
             f = bm.faces.new((verts[0][k], verts[0][k + 1], verts[1][k + 1], verts[1][k]))
             for loop, (u, v) in zip(f.loops, ((k, 0), (k + 1, 0), (k + 1, 1), (k, 1))):
                 loop[uv].uv = (u / 4, v / 2)
-        # The grid: a white bar in front of each starting slot, matching the game's own
-        # grid (src/race/grid.ts: rows 7 m apart from 5 m back, columns 4.5 m off the
-        # centre, the right-hand column half a row further back).
-        for slot in range(8):
-            back = 5 + (slot // 2) * 7 + (slot % 2) * 3.5 - 1.3
-            side = -1 if slot % 2 == 0 else 1
-            q = self.at(-back)
-            o = side * 4.5
-            corners = [q.side(o - 1.7, 0.04) - q.t * 0.25, q.side(o + 1.7, 0.04) - q.t * 0.25,
-                       q.side(o + 1.7, 0.04) + q.t * 0.25, q.side(o - 1.7, 0.04) + q.t * 0.25]
-            f = bm.faces.new([bm.verts.new(v) for v in corners])
-            for loop, uvp in zip(f.loops, ((0.01, 0.02), (0.11, 0.02), (0.11, 0.2), (0.01, 0.2))):
-                loop[uv].uv = uvp
+        # (No grid bars in front of the slots: Blake, Oct 25, they read as dark lines. The
+        # game strips them from courses built before: trackPackage.ts, stripStartGrid.)
         ob = self.mesh_object("Start Line", bm, "Markings", "visual")
         ob.data.materials.append(self.lib(mat_id))
         materials.ensure_paint(ob.data)

@@ -134,8 +134,11 @@ def gorge(c, cd, far_x=-2560.0):
         x -= 4.0 if x > -440 else 10.0 if x > -900 else 20.0
     xs.reverse()
     far = Strip()
+    gone = getattr(cd, "RUIN_OPEN", None)  # (the ruin: the walls down in a rockslide there)
     for x in xs:
         sec = gorge_section(cd, x, bands, far=x < -420)
+        if gone and gone[0] <= x <= gone[1]:
+            sec = None
         if x >= -460:
             strip.add(sec)
         if x <= -440:
@@ -222,6 +225,9 @@ def rim_walls(c, cd):
             while x <= x1:
                 col = rim_section(c, cd, side, x, far=x < -420)
                 ok = col is not None and (x < -420 or _clear_of_roads(c, col))
+                gone = getattr(cd, "RUIN_RIM_OPEN", {}).get(side)  # (the ruin: down in a rockslide)
+                if gone and gone[0] <= x <= gone[1]:
+                    ok = False
                 if x >= -460:
                     strip.add(col if ok else None)
                 if x <= -440:

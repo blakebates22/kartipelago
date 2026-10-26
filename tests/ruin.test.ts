@@ -41,6 +41,10 @@ const RUINS: [string, string, string, [number, number], number][] = [
   ["hearthglow_hollow", "hearthglow_hollow_ruin", "hearth_ruins", [0.5, 0.62], 0.65],
   // Blake: about 45% shorter, the whole cavern decimated, the Loop's top half missing.
   ["aurora_rift", "aurora_rift_ruin", "aurora_ruins", [0.45, 0.6], 0.62],
+  // Blake: keep it, about 22% shorter (jump the broken bridge, dive to the river, climb out).
+  ["canyon_dash", "canyon_dash_ruin", "canyon_ruins", [0.7, 0.82], 0.8],
+  // Blake: about the same length, but it drives quite differently and more fun.
+  ["oasis_haven", "oasis_haven_ruin", "oasis_ruins", [0.95, 1.03], 1.05],
 ];
 
 describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {

@@ -3,6 +3,7 @@
 // road, flying, reversing and respawning, the way the race steps them.
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
+import * as THREE from "three";
 import tuning from "../assets/data/tuning.json";
 import { crossGate, planeDist, type CheckpointGate } from "../src/race/checkpoints";
 import {
@@ -449,5 +450,37 @@ describe("respawns", () => {
       const d = Math.abs(((g.respawn.heading - g.heading + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
       expect(d, `${id} ${g.id}`).toBeLessThan(0.6);
     }
+  });
+});
+
+describe("the start line", () => {
+  it("loses the old grid bars (Blake: dark lines at the start) but keeps the checkers", async () => {
+    const { stripStartGrid } = await import("../src/world/trackPackage");
+    // Two checker quads (u 0..0.25, 0.25..0.5) and a grid bar (u 0.01..0.11), glTF's
+    // flipped v, as the old exports have them.
+    const uv: number[] = [];
+    const pos: number[] = [];
+    const quad = (u0: number, u1: number, v0: number, v1: number) => {
+      for (const [u, v] of [
+        [u0, v0],
+        [u1, v0],
+        [u1, v1],
+        [u0, v0],
+        [u1, v1],
+        [u0, v1],
+      ])
+        (uv.push(u!, v!), pos.push(u! * 10, 0, v! * 10));
+    };
+    quad(0, 0.25, 1, 0.5);
+    quad(0.25, 0.5, 1, 0.5);
+    quad(0.01, 0.11, 0.98, 0.8);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    const line = new THREE.Mesh(g);
+    line.name = "Start Line";
+    const scene = new THREE.Group().add(line);
+    expect(stripStartGrid(scene)).toBe(2);
+    expect(g.index!.count / 3).toBe(4);
   });
 });

@@ -390,9 +390,10 @@ def village(c, oh, ter, sc):
 # ------------------------------------------------------------------ the camp
 
 
-def camp(c, oh, ter, sc):
+def camp(c, oh, ter, sc, make=None):
     """The nomad camp along the weave: a tent where each of the greybox's stood, a
-    lantern by each, rugs airing on lines and a campfire in the middle."""
+    lantern by each, rugs airing on lines and a campfire in the middle. (`make(c, k)`:
+    another tent in each one's place: the ruin's burnt ones.)"""
     s = oh.SEG[10] + 8
     k = 0
     fire = None
@@ -404,7 +405,7 @@ def camp(c, oh, ter, sc):
         # the solid covers the canopy and the body.
         p = q.side(side * (q.w / 2 + 11.0))
         rot = road_rot(q) + (math.pi if side > 0 else 0.0)
-        c.place(tent(c, k % 2), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="visual")
+        c.place((make or tent)(c, k % 2), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="visual")
         c.place(collider(c, 14.0, 12.3, 3.0, -0.85, "tent_cloth"), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="collision")
         lp = q.side(side * (q.w / 2 + 2.2))
         sc["torches"].append((lp.x, lp.y, q.p.z + 3.2))
@@ -488,12 +489,15 @@ def pool(c, oh, ter, sc):
 # ------------------------------------------------------------------ rock
 
 
-def butte_and_arch(c, oh, ter):
+def butte_and_arch(c, oh, ter, span=True):
     """The butte inside the hairpin, banded like the canyons, and the wind-carved arch
-    over the road beyond it (its legs where the greybox's stood)."""
+    over the road beyond it (its legs where the greybox's stood). (No span: only the
+    butte, the ruin's arch has fallen.)"""
     bt = c.rock_mass("Butte", oh.BUTTE[0], oh.BUTTE[1], 15.0, 14.0, 34.0, z0=-4, n=18, seed=5,
                      bands=[(1.15, 0.0), (1.0, 0.1), (0.92, 0.45), (0.88, 0.5), (0.86, 0.9), (0.8, 1.0)])
     c.paint_rock(bt, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+    if not span:
+        return
     q = c.at(oh.SEG[19] + 20)
     rot = road_rot(q)
     legs = []
@@ -591,19 +595,33 @@ def dunes(c, oh, ter):
 # ------------------------------------------------------------------ build
 
 
-def build(c, oh):
+def build(c, oh, ruin=None):
+    """The oasis. (`ruin`: {"tent": the burnt tent}; then the arch and the watchtower are
+    left to the ruin, and its lights and merging too: returns what finish needs.)"""
     ter = list(c.coll("Terrain").objects)
     sc = {"lights": [], "lanterns": [], "torches": [], "fires": []}
     village(c, oh, ter, sc)
-    camp(c, oh, ter, sc)
+    camp(c, oh, ter, sc, make=ruin and ruin["tent"])
     pool(c, oh, ter, sc)
-    butte_and_arch(c, oh, ter)
+    butte_and_arch(c, oh, ter, span=not ruin)
+    if ruin:
+        dunes(c, oh, ter)
+        return sc
     watchtower(c, oh)
     dunes(c, oh, ter)
+    finish(c, sc)
+
+
+def finish(c, sc, keep=lambda x, y: True):
+    """The lanterns' and the campfire's game lights, and the props merged."""
     for x, y, z in sc["lanterns"]:
+        if not keep(x, y):
+            continue
         g = c.game(x, y, z)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
     for x, y, z in sc["fires"]:
+        if not keep(x, y):
+            continue
         g = c.game(x, y, z)
         c.entity("campfire", x=g[0], y=g[1], z=g[2])
     groups = ("Village", "Camp", "Grove", "Dunes")

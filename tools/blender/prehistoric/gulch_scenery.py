@@ -878,22 +878,23 @@ def gameplay(c, sc, dg):
         gates, apex = dg.pickups(c)
     else:
         gates, apex = _pickups(c, dg)
-    main_gate = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
-    # The twin gate: in the tunnel just before the chasm cavern, so a fall from the
-    # spectral trestle puts you back there.
-    k = dg.mine_index(line, 7)
-    pts = [line[k - 4][:3], line[k][:3], line[k + 4][:3]]
-    c.alt_gate(main_gate, "haunted_mine", pts, width=13.0, height=8.0)
     sc.apex = apex
-    # The shortcut's line, as a path (route.json): for tools and tests.
-    c.path_curve("Haunted Mine Path", [p[:3] for p in line[::4]] + [line[-1][:3]], closed=False)
-
-    # ---- the runaway ore cart across the old workings (solid: a knock and a slowdown)
-    cx, cy, cz, ch = sc.cart
-    rx, ry = math.cos(ch - math.pi / 2), math.sin(ch - math.pi / 2)
-    A = c.game(cx - rx * 22.0, cy - ry * 22.0, cz)
-    B = c.game(cx + rx * 22.0, cy + ry * 22.0, cz)
-    c.entity("minecart", ax=A[0], ay=A[1], az=A[2], bx=B[0], by=B[1], bz=B[2], period=7.0, offset=1.5, travel=3.0, warn=1.8)
+    if apex is not None:  # (none in the ruin: the mine is gone)
+        main_gate = min(gates.items(), key=lambda kv: abs(kv[0] - apex))[1]
+        # The twin gate: in the tunnel just before the chasm cavern, so a fall from the
+        # spectral trestle puts you back there.
+        k = dg.mine_index(line, 7)
+        pts = [line[k - 4][:3], line[k][:3], line[k + 4][:3]]
+        c.alt_gate(main_gate, "haunted_mine", pts, width=13.0, height=8.0)
+        # The shortcut's line, as a path (route.json): for tools and tests.
+        c.path_curve("Haunted Mine Path", [p[:3] for p in line[::4]] + [line[-1][:3]], closed=False)
+    if getattr(sc, "cart", None):
+        # ---- the runaway ore cart across the old workings (solid: a knock and a slowdown)
+        cx, cy, cz, ch = sc.cart
+        rx, ry = math.cos(ch - math.pi / 2), math.sin(ch - math.pi / 2)
+        A = c.game(cx - rx * 22.0, cy - ry * 22.0, cz)
+        B = c.game(cx + rx * 22.0, cy + ry * 22.0, cz)
+        c.entity("minecart", ax=A[0], ay=A[1], az=A[2], bx=B[0], by=B[1], bz=B[2], period=7.0, offset=1.5, travel=3.0, warn=1.8)
     # ---- an ore cart rolling along the mine railway by itself now and then
     rp = sc.railway
     c.path_curve("Railway", [(x, y, z) for x, y, z in rp[::3]] + [rp[-1]], closed=False)

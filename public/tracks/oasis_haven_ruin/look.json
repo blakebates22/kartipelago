@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "theme": "oasis_ruins",
+  "sky": "#b8785a",
+  "fog": {
+    "enabled": true,
+    "color": "#b89a84",
+    "near": 300,
+    "far": 1800
+  },
+  "sun": {
+    "color": "#ffb878",
+    "intensity": 2.6,
+    "direction": [
+      0.55,
+      0.45,
+      -0.7
+    ]
+  },
+  "ambient": {
+    "sky": "#e0b494",
+    "ground": "#6a3a2a",
+    "intensity": 1.25
+  },
+  "skyDome": {
+    "top": "#4a4a62",
+    "horizon": "#e89a62",
+    "bottom": "#c8987a",
+    "sun": {
+      "color": "#ffd8a8",
+      "size": 12,
+      "glow": "#ff8a48",
+      "elevation": 12
+    },
+    "clouds": {
+      "count": 40,
+      "color": "#8a6a62",
+      "shade": "#4a302c",
+      "seed": 353,
+      "low": 8,
+      "high": 30,
+      "drift": 0.008
+    },
+    "hills": {
+      "color": "#9a5e4c",
+      "far": "#c0948a",
+      "height": 5,
+      "seed": 109,
+      "layers": 3,
+      "style": "mesas"
+    }
+  }
+}
