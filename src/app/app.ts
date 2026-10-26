@@ -44,7 +44,10 @@ export type ScreenId =
   | "ADVENTURE_SCENE"
   | "ADVENTURE_RESULT"
   | "ADVENTURE_DEV"
-  | "ADVENTURE_SCENES";
+  | "ADVENTURE_SCENES"
+  | "OVERWORLD_LOADING"
+  | "OVERWORLD"
+  | "GATEWAY";
 
 export interface Screen {
   readonly id: ScreenId;

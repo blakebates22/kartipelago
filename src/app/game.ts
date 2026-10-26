@@ -15,6 +15,7 @@ import type { Settings } from "./settings";
 import type { SessionContext, SessionOptions, Session } from "../game/session";
 import type { TrackMode } from "../game/tracks";
 import type { AdventureState } from "../adventure/run";
+import type { OverworldState } from "../screens/overworld";
 
 export interface Selection {
   racer: RacerId;
@@ -47,4 +48,6 @@ export interface Game {
   trophy?: TrophyCup;
   /** Adventure mode: the save, and the race being run for the story (src/adventure). */
   adventure?: AdventureState;
+  /** In the overworld (screens/overworld.ts): a race goes back to the region after. */
+  overworld?: OverworldState;
 }

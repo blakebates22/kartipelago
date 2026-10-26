@@ -192,6 +192,10 @@ export interface SessionOptions {
   };
   /** Adventure: the player's name on screen (the Chosen One's race). */
   playerName?: string;
+  /** The overworld (src/overworld): drive the course's land freely. No countdown, no laps
+   * to finish, no clock on screen, no rivals and no Time Trial (the race underneath only
+   * keeps the respawns working). */
+  freeRoam?: boolean;
 }
 
 export interface SessionContext {
@@ -350,7 +354,10 @@ function buildSession(
    * say), else the usual. */
   const LAPS = pkg?.meta.race?.laps ?? tuning.race.laps;
   /** The race rules with the course's own lap count (a one-lap boss race ends after one). */
-  const raceRules = () => ({ ...tuning.race, laps: LAPS });
+  const raceRules = () =>
+    opts.freeRoam
+      ? { ...tuning.race, laps: 1_000_000, readySec: 0 }
+      : { ...tuning.race, laps: LAPS };
   const root = new THREE.Group();
   root.name = "session";
   stage.scene.add(root);
@@ -465,7 +472,7 @@ function buildSession(
   const itemWorld = createItemWorld(track, [], makeGround, solids, !OPEN);
   // A Time Trial (racing on your own) keeps only the blue balloons: the boosts. The
   // weapons and shields have nobody to use them on.
-  const timeTrial = SCENE === "track" && !opts.rivals && !demo && Boolean(track);
+  const timeTrial = SCENE === "track" && !opts.rivals && !demo && !opts.freeRoam && Boolean(track);
   for (const [t, s] of byRoute(trackData.balloons))
     itemWorld.balloons.push(
       ...createItemWorld(t, timeTrial ? s.filter((b) => b.color === "blue") : s, makeGround)
@@ -650,8 +657,12 @@ function buildSession(
     });
   };
 
-  const newRace = (): Race | undefined =>
-    track ? createRace(track, raceRules(), entrants.length) : undefined;
+  const newRace = (): Race | undefined => {
+    const r = track ? createRace(track, raceRules(), entrants.length) : undefined;
+    // (Free roam: leaving the road is the point, so it never puts you back.)
+    if (r && opts.freeRoam) r.open = true;
+    return r;
+  };
   let race = newRace();
   placeKarts();
 
@@ -1652,7 +1663,7 @@ function buildSession(
       laps: LAPS,
       coins: coinField ? { got: coinsTaken(coinField), total: coinField.coins.length } : undefined,
     };
-    if (!race) {
+    if (!race || opts.freeRoam) {
       const on = park && streak ? (streak.loop >= 0 ? streak.loop : parkLoop) : 0;
       return {
         ...base,

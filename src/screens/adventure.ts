@@ -66,6 +66,7 @@ import { loadingScreen } from "./loading";
 import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
+import { overworldLoading } from "./overworld";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
 
@@ -1062,6 +1063,14 @@ function devMenu(game: Game): Screen {
       action: () => {
         setAllUnlocked(false);
         game.sounds.confirm();
+      },
+    },
+    {
+      // The overworld's first step: free roam in a test region with two gateways.
+      label: "OVERWORLD (TEST): FREE ROAM",
+      action: () => {
+        game.sounds.confirm();
+        game.screens.go(overworldLoading(game, "test_valley"));
       },
     },
     {

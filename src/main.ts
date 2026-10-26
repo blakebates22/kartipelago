@@ -14,6 +14,7 @@
  *   ?debug                                developer keys and window.kp
  */
 import { adventureHub } from "./screens/adventure";
+import { overworldLoading } from "./screens/overworld";
 import "./styles.css";
 import { tuning } from "./core/tuning";
 import { createLoop } from "./core/loop";
@@ -204,6 +205,9 @@ function shotScreen(id: string): Screen {
 if (PARAMS.get("shot")) screens.go(shotScreen(PARAMS.get("shot")!));
 // ?adventure (dev server only): straight to the Adventure world map.
 else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureHub(game));
+// ?overworld (dev server only): free roam in the overworld's test region.
+else if (import.meta.env.DEV && PARAMS.has("overworld"))
+  screens.go(overworldLoading(game, PARAMS.get("overworld") || "test_valley"));
 else if (fromUrl) {
   // Straight into a race: the frontend is one Escape (pause) away.
   game.selection.trackId = fromUrl.entry.id;

@@ -29,6 +29,7 @@ import { optionsScreen } from "./options";
 import { tracksMenu } from "./tracks";
 import { trophyStandings } from "./trophy";
 import { adventureHub, adventureResult } from "./adventure";
+import { overworldLoading } from "./overworld";
 import { runLabel } from "../adventure/run";
 import { cupOver } from "../game/trophy";
 import { titleScreen } from "./title";
@@ -354,7 +355,7 @@ function eggCounter(ui: UiLayer, count: number, x: number, y: number, t: number)
   });
 }
 
-function drawHud(
+export function drawHud(
   ui: UiLayer,
   session: Session,
   entry: TrackEntry,
@@ -517,6 +518,12 @@ function popWord(ui: UiLayer, word: string, cx: number, y: number, t: number, sc
   });
 }
 
+/** Back to the overworld region you came from, out of the gateway you went in by. */
+function backToOverworld(game: Game) {
+  const o = game.overworld!;
+  game.screens.go(overworldLoading(game, o.region, o.at));
+}
+
 // ---------------------------------------------------------------- pause
 
 function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () => void): Screen {
@@ -558,15 +565,20 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
             },
           ]
         : []),
-      game.adventure?.run
+      game.overworld
         ? {
-            label: "WORLD MAP",
-            action: leave("THE WORLD MAP", () => game.screens.go(adventureHub(game))),
+            label: "OVERWORLD",
+            action: leave("THE OVERWORLD", () => backToOverworld(game)),
           }
-        : {
-            label: "TRACK SELECT",
-            action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
-          },
+        : game.adventure?.run
+          ? {
+              label: "WORLD MAP",
+              action: leave("THE WORLD MAP", () => game.screens.go(adventureHub(game))),
+            }
+          : {
+              label: "TRACK SELECT",
+              action: leave("TRACK SELECT", () => game.screens.go(tracksMenu(game))),
+            },
       {
         label: "MAIN MENU",
         action: leave("THE MAIN MENU", () => {
@@ -688,8 +700,16 @@ function resultsScreen(
         restart();
       },
     },
-    { label: "TRACK SELECT", action: () => game.screens.go(tracksMenu(game)) },
-    { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
+    game.overworld
+      ? { label: "OVERWORLD", action: () => backToOverworld(game) }
+      : { label: "TRACK SELECT", action: () => game.screens.go(tracksMenu(game)) },
+    {
+      label: "MAIN MENU",
+      action: () => {
+        game.overworld = undefined;
+        game.screens.go(titleScreen(game, true));
+      },
+    },
   ]);
   const solo = result.position === undefined;
   let clicked = -1;
