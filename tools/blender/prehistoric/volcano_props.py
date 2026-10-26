@@ -325,40 +325,96 @@ def crag(c, variant=0):
 
 
 def far_volcano(c, variant=0):
-    """A distant volcano for the horizon: a simple cone (about 200 m tall at scale 1)
-    with a glowing crater and lava streaks down its sides (origin at its foot)."""
+    """A distant volcano for the horizon (about 200 m tall at scale 1, origin at its
+    foot): a concave cone in bands of rock (dark obsidian at the foot, grey ash up the
+    flanks, red-brown cinders near the top), a crater dipping inside its rim with a glow
+    in it, and lava runs painted down its own faces (not stuck on), meandering and
+    thinning towards the foot. (Blake, Ember Peak review: the old streaks floated off the
+    cone and looked cheesy.)"""
     name = "Far Volcano %d" % variant
 
     def build(bm):
-        n = 14
+        n = 28
         H = 200.0
         R = 340.0
+        # (radius fraction, height fraction): a concave profile, the rim, the crater's dip.
+        prof = [(1.0, -0.1), (0.8, 0.08), (0.6, 0.24), (0.43, 0.44), (0.3, 0.64), (0.2, 0.84), (0.15, 0.97), (0.13, 1.0), (0.1, 0.93)]
         rings = []
-        for k, (f, z) in enumerate(((1.0, -20), (0.72, H * 0.22), (0.44, H * 0.58), (0.2, H * 0.92), (0.14, H))):
-            rr = R * f
-            rings.append([bm.verts.new((rr * (1 + 0.08 * math.sin(i * 2.3 + variant + k)) * math.cos(i * math.tau / n), rr * (1 + 0.08 * math.cos(i * 1.7 + variant)) * math.sin(i * math.tau / n), z)) for i in range(n)])
-        for lo, hi in zip(rings, rings[1:]):
+        for k, (f, zf) in enumerate(prof):
+            ring = []
+            for i in range(n):
+                a = i * math.tau / n
+                w = 1 + 0.07 * math.sin(a * 3 + variant + k * 0.7) + 0.04 * math.sin(a * 7 + variant * 2)
+                ring.append(bm.verts.new((R * f * w * math.cos(a), R * f * w * math.sin(a), H * zf)))
+            rings.append(ring)
+        # Lava runs: for each, the angular column it fills on each band (meandering).
+        runs = [(variant * 1.3 + s * math.tau / 3 + 0.4, 0.9 - 0.25 * s) for s in range(3)]
+
+        def lava(i, k):
+            if k >= len(prof) - 3:
+                return False  # the rim and crater are their own
+            for a0, reach in runs:
+                if k / (len(prof) - 1) < 1 - reach:
+                    continue
+                col = (a0 + 0.25 * math.sin(k * 1.7 + a0)) / math.tau * n
+                if abs(((i - col + n / 2) % n) - n / 2) < (0.9 if k > 3 else 0.6):
+                    return True
+            return False
+
+        bands = {"base": [], "ash": [], "cinder": [], "lava": [], "rim": []}
+        for k, (lo, hi) in enumerate(zip(rings, rings[1:])):
             for i in range(n):
                 bm.faces.new((lo[i], lo[(i + 1) % n], hi[(i + 1) % n], hi[i]))
-        rock = _faces(bm, 0)
+                if k >= len(prof) - 3:
+                    key = "rim"
+                elif lava(i, k):
+                    key = "lava"
+                else:
+                    key = "base" if k < 2 else "ash" if k < 4 else "cinder"
+                bands[key].append(len(bm.faces) - 1)
         k0 = len(bm.faces)
         bm.faces.new(rings[-1])
-        glow = _faces(bm, k0)
-        k1 = len(bm.faces)
-        # Lava streaks down the flanks.
-        for s in range(4):
-            a = s * math.tau / 4 + 0.5 + variant
-            pts = []
-            for k in range(6):
-                t = k / 5
-                rr = R * (0.14 + 0.62 * t)
-                z = H - H * 0.9 * t ** 1.1 + 2.0
-                pts.append((rr * math.cos(a + 0.1 * math.sin(t * 5)), rr * math.sin(a + 0.1 * math.sin(t * 5)), z))
-            for p0, p1 in zip(pts, pts[1:]):
-                d = Vector(p1) - Vector(p0)
-                side = d.cross(Vector((0, 0, 1))).normalized() * (5.0 + 3 * rnd(s))
-                bm.faces.new([bm.verts.new(v) for v in (Vector(p0) - side, Vector(p0) + side, Vector(p1) + side * 1.4, Vector(p1) - side * 1.4)])
-        streaks = _faces(bm, k1)
-        return [(c.lib("obsidian_cliff"), rock), (c.lib("fire_glow"), glow), (c.lib("lava_falls"), streaks)]
+        glow = list(range(k0, len(bm.faces)))
+        return [(c.lib("obsidian_cliff"), bands["base"]), (c.lib("ember_ash"), bands["ash"]), (c.lib("magma_rock"), bands["cinder"]),
+                (c.lib("lava_falls"), bands["lava"]), (c.lib("obsidian_cliff"), bands["rim"]), (c.lib("fire_glow"), glow)]
+
+    return _p(c, name, build)
+
+
+def scorched_jungle_tree(c, variant=0, burning=False):
+    """A jungle tree the lava has just reached (Blake, Ember Peak review: the trees by
+    the lava should be the jungle's own, freshly burnt, some green still on them): a
+    charred trunk, part of its crown burnt black, the rest still green, and if
+    `burning`, flames in the burnt part."""
+    name = "Scorched Jungle Tree %d%s" % (variant, " Burning" if burning else "")
+
+    def build(bm):
+        h = 8.0 + 1.5 * variant
+        tube(bm, [(0, 0, -0.4), (0.3, 0, h * 0.5), (-0.2, 0.2, h)], [0.75, 0.55, 0.42], n=6)
+        for k in range(2):
+            a = k * 2.6 + variant
+            tube(bm, [(0, 0, h * 0.62), (2.4 * math.cos(a), 2.4 * math.sin(a), h * 0.62 + 1.6)], [0.22, 0.1], n=4)
+        trunk = _faces(bm, 0)
+        crowns = ((0, 0, h + 1.2, 3.6), (2.2, 1.0, h - 0.4, 2.6), (-2.0, -1.2, h - 0.2, 2.8), (0.4, -2.2, h + 0.4, 2.4))
+        green_n = 2 if variant % 2 == 0 else 1
+        out = [(c.lib("charred_bark"), trunk)]
+        groups = {"green": [], "burnt": [], "fire": []}
+        for i, (dx, dy, dz, r) in enumerate(crowns):
+            k0 = len(bm.faces)
+            if i < green_n:
+                blob(bm, (dx, dy, dz), r, sz=0.7, subdiv=1)
+                groups["green"] += _faces(bm, k0)
+            else:
+                blob(bm, (dx * 0.9, dy * 0.9, dz - 0.4), r * 0.7, sz=0.55, subdiv=1)  # burnt down to a husk
+                groups["burnt"] += _faces(bm, k0)
+                if burning:
+                    k1 = len(bm.faces)
+                    prism(bm, (dx, dy, dz - 0.2), (dx, dy, dz + 1.6), r * 0.55, r * 0.2, n=6, phase=i, tip=(dx, dy, dz + 3.0))
+                    groups["fire"] += _faces(bm, k1)
+        out.append((c.lib("jungle_leafcover"), groups["green"]))
+        out.append((c.lib("charred_bark"), groups["burnt"]))
+        if groups["fire"]:
+            out.append((c.lib("burning_leaves"), groups["fire"]))
+        return out
 
     return _p(c, name, build)

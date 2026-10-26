@@ -148,13 +148,14 @@ def underfloor_height(c, cc):
 RAILED = ("viaduct", "ramp", "landing", "lowbridge", "ledge")
 
 
-def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0, rubble=None):
+def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0, rubble=None, skip=None):
     """Stone rails along every stretch of road with a drop beside it (land more than
     `drop` metres below the road's edge within `near` metres of it), where the road has
     no barrier of its own. Each rail is a low carved wall (what you see and hit) with a
     taller invisible wall just behind it, so nobody hops over. Returns the stretches.
     `rubble(s)`: where the road is new in a ruin, the rail is a heap of broken stones
-    instead (the destruction rule: nothing new looks built)."""
+    instead (the destruction rule: nothing new looks built). `skip(s)`: stretches that
+    get no rails at all (a tunnel, say)."""
     pieces = []
     for p in c.pieces:
         s0, s1 = p["kp_from"], p["kp_to"]
@@ -181,7 +182,7 @@ def edge_rails(c, cc, ter, every=2.0, drop=2.6, near=6.0, rubble=None):
     s = 0.0
     while s < c.length:
         k = kind_at(s)
-        if k is not None and (k not in RAILED or near_joint(s)):
+        if k is not None and (k not in RAILED or near_joint(s)) and not (skip and skip(s)):
             q = c.at(s)
             for side in (-1, 1):
                 edge = q.w / 2 + shoulder.get(k, 1.5)

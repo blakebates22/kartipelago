@@ -1612,16 +1612,38 @@ def croc_skin():
 
 
 def basalt_road():
-    # A dark volcanic road: charcoal grit, ash-grey dust, the odd glowing cinder.
+    # A dark volcanic road: charcoal grit, ash-grey dust, the odd glowing cinder; cracks
+    # where the heat split it, a few of them still glowing deep down, and paler patches
+    # of settled ash (Blake, Ember Peak review: the charred roads were too plain).
     pal = ["#3a302c", "#463a34", "#52443c", "#5e4e44", "#6a584c"]
     a, b = noise(4, 2, 2001), noise(16, 8, 2002)
+    patch = noise(3, 2, 2004)
     cinder = speckle(2003, 9)
+    # Cracks: short wandering random walks (wrapping, so the tile still tiles).
+    r = rng(2005)
+    crack, hot = set(), set()
+    for k in range(5):
+        x, y = int(r() * W), int(r() * H)
+        dx, dy = (1, 0) if r() < 0.5 else (0, 1)
+        for _ in range(8 + int(r() * 14)):
+            crack.add((x % W, y % H))
+            if k < 2 and r() < 0.35:
+                hot.add((x % W, y % H))
+            if r() < 0.4:
+                dx, dy = (dy, dx) if r() < 0.5 else (dx, dy)
+            x += dx if dx else (1 if r() < 0.5 else -1) * (r() < 0.3)
+            y += dy if dy else (1 if r() < 0.5 else -1) * (r() < 0.3)
 
     def f(x, y):
+        if (x, y) in hot:
+            return "#e8641c"
+        if (x, y) in crack:
+            return "#1c1614"
         if (x, y) in cinder:
             return "#ff8a2a"
         rut = 0.1 if x % 32 in (8, 9, 23, 24) else 0
-        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35 - rut)
+        ash = 0.18 if patch(x, y) > 0.72 else 0
+        return pick(pal, 0.2 + a(x, y) * 0.45 + b(x, y) * 0.35 - rut + ash)
 
     return paint(f)
 

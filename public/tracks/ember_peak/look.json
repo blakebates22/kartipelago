@@ -5,8 +5,8 @@
   "fog": {
     "enabled": true,
     "color": "#d8d0b8",
-    "near": 260,
-    "far": 1300
+    "near": 300,
+    "far": 1700
   },
   "sun": {
     "color": "#fff0d0",

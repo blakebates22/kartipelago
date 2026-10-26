@@ -174,6 +174,7 @@ import {
   type WispsView,
 } from "../render/hauntFx";
 import { createParticles } from "../render/particles";
+import { createLavaBombs, type LavaBombs } from "../render/lavaBombs";
 import {
   createIcicleView,
   createShimmerView,
@@ -514,6 +515,8 @@ export function createHazards(opts: {
   const chimneys: { x: number; y: number; z: number; acc: number }[] = [];
   let confetti: ReturnType<typeof createParticles> | undefined;
   let bombs: ReturnType<typeof createParticles> | undefined;
+  let rocks: LavaBombs | undefined;
+  let bombSmoke: ReturnType<typeof createParticles> | undefined;
   let ash: ReturnType<typeof createParticles> | undefined;
   let glowing: ReturnType<typeof createParticles> | undefined;
   const flyers: (Flyer & { x: number; y: number; z: number })[] = [];
@@ -1800,7 +1803,9 @@ export function createHazards(opts: {
       // Eruptions: on their beat of the race clock, a rumble, then a blast of lava bombs
       // arcing out of the crater and a red flash; a fountain of fire in between.
       if (eruptions.length && !opts.headless) {
-        bombs ??= createParticles(group, { max: 900, size: 11, gravity: -16, additive: true });
+        bombs ??= createParticles(group, { max: 500, size: 6, gravity: -16, additive: true });
+        rocks ??= createLavaBombs(group, 260);
+        bombSmoke ??= createParticles(group, { max: 600, size: 4.5, gravity: 1.2, opacity: 0.55 });
         const rc = raceClock();
         for (const er of eruptions) {
           const beat = Math.floor((rc - er.offset) / er.period);
@@ -1812,25 +1817,53 @@ export function createHazards(opts: {
           }
           // The blast, 1.2 s after the rumble.
           const blast = u - 1.2;
-          if (blast >= 0 && blast < dt + 1e-6)
-            for (let k = 0; k < 220; k++) {
+          if (blast >= 0 && blast < dt + 1e-6) {
+            // Lava bombs: tumbling lumps of molten rock, cooling as they fall, smoking.
+            for (let k = 0; k < 70; k++) {
               const a = Math.random() * Math.PI * 2;
-              const sp = 12 + Math.random() * 30;
-              bombs.emit(
+              const sp = 10 + Math.random() * 28;
+              rocks.emit(
                 er.x,
                 er.y + 5,
                 er.z,
                 Math.cos(a) * sp,
-                55 + Math.random() * 55,
+                50 + Math.random() * 50,
                 Math.sin(a) * sp,
-                4 + Math.random() * 3,
-                Math.random() < 0.5 ? 0xffb030 : 0xff5a14,
+                1.6 + Math.random() * 3.2,
+                4.5 + Math.random() * 2.5,
               );
             }
+            // And a burst of fire round the crater's mouth.
+            for (let k = 0; k < 60; k++) {
+              const a = Math.random() * Math.PI * 2;
+              const sp = 6 + Math.random() * 14;
+              bombs.emit(
+                er.x,
+                er.y + 4,
+                er.z,
+                Math.cos(a) * sp,
+                25 + Math.random() * 30,
+                Math.sin(a) * sp,
+                1.6,
+                0xff7a20,
+              );
+            }
+          }
           if (er.light)
             er.light.intensity = blast >= 0 && blast < 2.5 ? 9000 * Math.exp(-blast * 1.8) : 0;
-          // The fountain, always going.
-          const n = Math.min(6, Math.floor(Math.random() + dt * 40));
+          // The fountain, always going: molten clots and a little fire.
+          if (Math.random() < dt * 10)
+            rocks.emit(
+              er.x + (Math.random() - 0.5) * 16,
+              er.y,
+              er.z + (Math.random() - 0.5) * 16,
+              (Math.random() - 0.5) * 8,
+              30 + Math.random() * 20,
+              (Math.random() - 0.5) * 8,
+              0.8 + Math.random() * 1.4,
+              2.8,
+            );
+          const n = Math.min(3, Math.floor(Math.random() + dt * 14));
           for (let k = 0; k < n; k++)
             bombs.emit(
               er.x + (Math.random() - 0.5) * 20,
@@ -1844,6 +1877,20 @@ export function createHazards(opts: {
             );
         }
         bombs.step(dt);
+        const sm = bombSmoke;
+        rocks.step(dt, (x, y, z) =>
+          sm.emit(
+            x,
+            y,
+            z,
+            (Math.random() - 0.5) * 1.5,
+            1 + Math.random(),
+            (Math.random() - 0.5) * 1.5,
+            2.2,
+            0x4a4040,
+          ),
+        );
+        bombSmoke.step(dt);
       }
       // The storm: lightning round the horizon, the flash, the thunder after it.
       storm?.update(dt, listener, (loud) => opts.sfx?.rumble(vol() * loud));
@@ -2449,6 +2496,8 @@ export function createHazards(opts: {
       for (const p of party) p.view?.dispose();
       spray?.dispose();
       snow?.dispose();
+      rocks?.dispose();
+      bombSmoke?.dispose();
       glowing?.dispose();
       fire?.dispose();
       bombs?.dispose();

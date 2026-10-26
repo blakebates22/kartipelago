@@ -4,7 +4,8 @@
 #
 #   python tools/blender/prehistoric/ember_ruins.py      (the bpy module)
 #
-# The eruption the dragons woke brought the volcano's flank down over the home straight.
+# The eruption the dragons woke brought the flank of the lava tube's ridge down over the
+# home straight.
 # Out of the magma cave the road dives south-east round the landslide's toe, sweeps left
 # and back right over the humps of its rubble, and runs onto the lava bridge to the line
 # (Blake: not shorter, a little longer; the boring straight made fast and exciting, like

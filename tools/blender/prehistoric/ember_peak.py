@@ -11,14 +11,26 @@
 #   1  The big banked hairpin, climbing 15 m.
 #   2  The cliff ledge, west, high above the start (a zipper).
 #   3  THE BIG JUMP: up a straight stone ramp and over the same lava river, about
-#      18 m across and 11 m down (the dragon swoops over you in the air).
+#      18 m across and 11 m down.
 #   4  The S-bends: a tight, deep drift chain down the obsidian slope.
-#   5  The magma cave: through the volcano's flank.
+#   5  The lava tube: through the rocky ridge at the volcano's foot.
 #   6  The home run: flat out (a zipper), a fast kink, over the lava bridge to the line.
 #
-# Round it, open country: ash and cooled lava to the horizon, cinder cones, far
-# volcanoes, the lava river winding across with three more feeding it, bubbling lava
-# pits, burning and charred trees, obsidian spires and steam vents.
+# Round it, open country: ash and cooled lava to the horizon, cinder cones, the volcano
+# itself to the west and far volcanoes, the lava river winding across with three more
+# feeding it, bubbling lava pits and lava geysers, freshly burnt jungle trees, volcanic
+# boulders and steam vents.
+#
+# Blake's review (Oct 26), first pass: the dragon gone; the obsidian spires gone; the
+# burnt pines replaced by the jungle's own trees, freshly scorched with green still on
+# them; no flowers on the roads; the low hollows in the field were painted as magma rock
+# (and drove as walls: the "glitching in the lava"): they're ground now; burnt bands
+# between the lava and the grass; more trees, boulders and lava geysers in the bare
+# fields; cracks in the charred roads (basalt_road); and the tunnel no longer goes
+# through the volcano: the volcano is its own cone to the west, painted in bands with
+# lava running down it, and the tunnel is a lava tube through the low ridge at its foot,
+# its approaches cleared so nothing catches a kart. Far volcanoes pushed back (their
+# slopes reached the course) and rebuilt.
 
 import math
 import os
@@ -172,10 +184,19 @@ def river_x(y):
 RIVER_HALF = 7.0
 RIVER_Y = (-70.0, 175.0)
 
-# The volcano: a great cone west of the loop, its east flank holding the magma cave.
+# The lava tube's ridge: a low rocky ridge west of the loop, the tube through its east
+# side (VOLC keeps its old name: the tunnel, the cave's paint and the land go by it).
 _cave = _at(11, 0.5)
 VOLC = (_cave[0] - 58.0, _cave[1], 85.0, 70.0)  # centre x, y, radius x, y
-VOLC_H = 115.0
+VOLC_H = 46.0  # (the ridge's top; it was the volcano's, 115)
+# The volcano itself: its own cone further west, clear of the road (scenery).
+BIG = (VOLC[0] - 175.0, VOLC[1] + 60.0, 150.0, 130.0)
+BIG_H = 175.0
+
+
+def in_big(x, y, grow=1.0):
+    cx, cy, rx, ry = BIG
+    return ((x - cx) / (rx * grow)) ** 2 + ((y - cy) / (ry * grow)) ** 2 < 1
 
 
 def in_volcano(x, y, shrink=1.0):
@@ -220,7 +241,7 @@ def embankment(x, y):
 
 
 # Cinder cones round the field, well away from the road (x, y, foot radius, height).
-CONES = [(330, 260, 110, 70), (-120, 380, 120, 60), (260, -260, 100, 55), (-420, -240, 110, 70), (-470, 170, 115, 85), (370, 20, 80, 45)]
+CONES = [(330, 260, 110, 70), (-120, 380, 120, 60), (260, -260, 100, 55), (-420, -240, 110, 70), (370, 20, 80, 45)]  # (the one at -470, 170 is the volcano now)
 
 
 def cones(x, y):
@@ -276,7 +297,17 @@ PITS = [
     for p in [(-120, 45, 8), (-55, 40, 6), (25, 45, 7), (125, -45, 9), (-160, -60, 8), (60, -60, 7), (-40, -70, 6), (150, 150, 9),
               (-100, 175, 8), (-330, -60, 9), (210, -120, 10), (-30, 160, 6), (-200, 60, 6), (110, 210, 8)]
     if _far_from_road(p[0], p[1], p[2] + 20) and river_dist(p[0], p[1])[0] > p[2] + 18 and not in_volcano(p[0], p[1], 1.15)
+    and not in_big(p[0], p[1], 1.1)
 ]
+
+
+def lava_edge(x, y):
+    """How far from the nearest lava's edge (river or pit), in metres."""
+    rd, hw = river_dist(x, y)
+    e = rd - hw
+    for px, py, pr in PITS:
+        e = min(e, math.hypot(x - px, y - py) - pr)
+    return e
 
 
 def natural(x, y):
@@ -328,6 +359,9 @@ def classify(c, n, info):
         return None
     mat, surface = got
     v = life(c.x, c.y) + 0.08 * math.sin(c.x * 0.31 + c.y * 0.23)
+    # (Review) no grass up against the lava: a burnt band between, ragged at its edge.
+    heat = 1.0 - smooth((lava_edge(c.x, c.y) - 6.0 + 3.0 * math.sin(c.x * 0.21 - c.y * 0.17)) / 14.0)
+    v -= 0.75 * heat
     if v > 0.62:
         green = {"ash_soil": "valley_grass", "scorched_ground": "jungle_path", "ember_ash": "canyon_rock_moss"}
     elif v > 0.32:
@@ -345,10 +379,13 @@ def _classify(c, n, info):
         return None
     if n.z < 0.62:
         return ("ember_ash", "wall")
-    if c.z < LAVA_Z + 0.6:
-        return ("magma_rock", "wall")
+    edge = lava_edge(c.x, c.y)
+    if c.z < LAVA_Z + 0.6 and edge < 10:
+        return ("magma_rock", "wall")  # (the lava's banks; a low hollow out in the field is ground)
     if river_dist(c.x, c.y)[0] < river_dist(c.x, c.y)[1] + 14 and info["d"] > 10:
-        return ("obsidian", "wall") if c.z < 1.0 else ("lava_crust", "dirt")  # cooled lava along the rivers
+        return ("obsidian", "wall") if c.z < 1.0 and edge < 10 else ("lava_crust", "dirt")  # cooled lava along the rivers
+    if edge < 8 and info["d"] > 10:
+        return ("lava_crust", "dirt")  # and round the pits
     if info["d"] < 12:
         return ("scorched_ground", "dirt")
     return ("ash_soil", "sand")
@@ -469,13 +506,16 @@ def main():
             g = c.game(pts[j][0], pts[j][1], LAVA_Z + 0.2)
             c.entity("bubbles", x=g[0], y=g[1], z=g[2], r=hw * 0.8, molten=True)
 
-    # The volcano, with the magma cave cut through its flank.
+    # The ridge at the volcano's foot, the lava tube cut through it, and its approaches
+    # cleared (the review: a kart caught on the rock beside the road out of the tube).
     cx, cy, rx, ry = VOLC
-    rock = c.rock_mass("Volcano", cx, cy, rx, ry, VOLC_H, z0=-4.0, n=36, seed=5,
-                       bands=[(1.0, 0.0), (1.0, 0.12), (0.86, 0.2), (0.7, 0.4), (0.5, 0.65), (0.3, 0.88), (0.2, 1.0)])
+    rock = c.rock_mass("Tube Ridge", cx, cy, rx, ry, VOLC_H, z0=-4.0, n=36, seed=5,
+                       bands=[(1.0, 0.0), (0.97, 0.24), (0.88, 0.42), (0.74, 0.62), (0.56, 0.82), (0.4, 0.95), (0.3, 1.0)])
     c.tunnel(rock, t0, t1, half=c.width / 2 + 3.0, height=10.0, pad=14.0)
-    c.paint_rock(rock, ("ember_ash", "wall"), ("magma_rock", "wall"), floor=("cave_rock", "road"), top_z=VOLC_H - 8, floor_z=14)
-    c.disc("Crater Lava", cx, cy, rx * 0.17, VOLC_H + 0.3, c.lib("volcano_lava", "lava"), role="visual", n=20, wobble=0.15)
+    for a, b in ((t0 - 80.0, t0 - 14.0), (t1 + 14.0, t1 + 80.0)):
+        c.tunnel(rock, a, b, half=c.width / 2 + 3.0, height=60.0, pad=0.0)
+    c.paint_rock(rock, ("ember_ash", "wall"), ("magma_rock", "wall"), floor=("cave_rock", "road"), top_z=VOLC_H - 6, floor_z=14)
+    volcano(c)
     floor = []
     s = t0 - 22
     while s <= t1 + 22:
@@ -516,29 +556,13 @@ def main():
     c.entity("respawn", **{"from": round(LIP - 30, 1), "to": round(LAND + 6, 1), "at": round(LAND + 30, 1)})
     c.checkpoints(extra=[SEG[1] + 40, SEG[2], LAND + 34, SEG[8], SEG[11], SEG[13] + 20] + ([SEG[16] + 40, SEG[18]] if RUIN else []), height=10.0)
 
-    # The dragon: from beyond the valley. It circles high, then swoops in low across the
-    # jump just as you're in the air, and climbs away over the volcano (scenery only).
-    gx = GAP_X
-    keys_b = [
-        (0.0, cx, cy + 40, VOLC_H + 40),
-        (SEG[1], 150.0, -60.0, 80.0),
-        (SEG[2], 120.0, 150.0, 55.0),
-        (LIP - 15, gx + 40, LEDGE_Y + 70, 38.0),
-        ((LIP + LAND) / 2, gx, LEDGE_Y + 2, 29.0),
-        (LAND + 30, gx - 30, LEDGE_Y - 70, 40.0),
-        (SEG[9], -120.0, -60.0, 70.0),
-        (SEG[12], cx - 40, cy - 60, VOLC_H + 20),
-        (c.length - 1, cx, cy + 40, VOLC_H + 40),
-    ]
-    keys = []
-    for s_, x, y, z in keys_b:
-        g = c.game(x, y, z)
-        keys.append([round(s_, 1), g[0], g[1], g[2]])
-    c.entity("isles_dragon", keys=keys, length=round(c.length, 1), size=1.0, colors={"body": "#c8482a", "belly": "#ffcf6a"})
+    # (The review: no dragon flying round this course.)
 
     # The ruin's new home run: rubble along its drops, not carved rails (nothing new looks built).
+    # (The review: no rails inside the tube.)
     new_road = (lambda s: 13 <= seg_of(s) <= 18) if RUIN else None
-    print("edge rails:", cascade_review.edge_rails(c, me, list(c.coll("Terrain").objects) + [rock], rubble=new_road))
+    in_tube = lambda s: CAVE_S[0] <= s <= CAVE_S[1]  # noqa: E731
+    print("edge rails:", cascade_review.edge_rails(c, me, list(c.coll("Terrain").objects) + [rock], rubble=new_road, skip=in_tube))
     c.preset("sun", list(c.coll("Terrain").objects) + [rock], 0.35)
     kit.paint.shade_roads(c.pieces, 0.5)
     if RUIN and ruin_mode.DRESS:
@@ -556,6 +580,48 @@ def main():
         json.dump(look, f, indent=2)
         f.write("\n")
     print("lap", round(c.length, 1), "m;", rep.get("route_points"), "route points")
+
+
+def volcano(c):
+    """The volcano (the review: it was one texture all over, and the road ran through
+    it): its own cone west of the ridge, concave, banded dark obsidian at the foot, grey
+    ash up the flanks and red-brown cinders near the top, a crater dipping inside its
+    rim with lava in it, and lava running down its flanks in meandering streams."""
+    bx, by, brx, bry = BIG
+    bands = [(1.0, 0.0), (0.82, 0.1), (0.64, 0.24), (0.48, 0.42), (0.34, 0.62), (0.24, 0.82), (0.18, 0.95), (0.16, 1.0), (0.12, 0.93)]
+    rock = c.rock_mass("Volcano", bx, by, brx, bry, BIG_H, z0=-6.0, n=48, seed=9, bands=bands)
+    # Lava streams: (heading from the summit, how far down they reach as a fraction).
+    runs = [(0.2, 0.82), (0.95, 0.6), (1.9, 0.75), (2.9, 0.5), (4.1, 0.7), (5.2, 0.55)]
+    groups = {"obsidian": [], "ash": [], "cinder": [], "rim": [], "lava": []}
+    mw = rock.matrix_world
+    for p in rock.data.polygons:
+        w = mw @ p.center
+        f = max(0.0, w.z) / BIG_H
+        if p.normal.z > 0.9 and f > 0.9:
+            groups["lava"].append(p.index)  # the crater floor
+            continue
+        a = math.atan2((w.y - by) / bry, (w.x - bx) / brx)
+        lava = False
+        for h0, reach in runs:
+            da = (a - h0 - 0.18 * math.sin(f * 9.0 + h0) + math.pi) % math.tau - math.pi
+            if 1.0 - reach < f < 0.9 and abs(da) < 0.07 + 0.05 * f:
+                lava = True
+        if lava:
+            groups["lava"].append(p.index)
+        elif f > 0.9:
+            groups["rim"].append(p.index)
+        elif f > 0.58:
+            groups["cinder"].append(p.index)
+        elif f > 0.16:
+            groups["ash"].append(p.index)
+        else:
+            groups["obsidian"].append(p.index)
+    for key, mat in (("obsidian", ("obsidian", "wall")), ("ash", ("ember_ash", "wall")), ("cinder", ("magma_rock", "wall")), ("rim", ("obsidian_cliff", "wall")),
+                     ("lava", ("volcano_lava", "lava"))):
+        if groups[key]:
+            c.assign(rock, c.lib(*mat), groups[key])
+    rock.data.shade_flat()
+    return rock
 
 
 def dress(c, ter, rock):
@@ -579,21 +645,53 @@ def dress(c, ter, rock):
                 return False
             if any(math.hypot(x - px, y - py) < pr + 6 for px, py, pr in PITS):
                 return False
+            if in_big(x, y, 1.08):
+                return False
+            # Nothing big on a steep bank (the review: a tree hanging off a slope).
+            if abs(natural(x + 3, y) - natural(x - 3, y)) + abs(natural(x, y + 3) - natural(x, y - 3)) > 4.0:
+                return False
             return not in_volcano(x, y, 1.12)
 
         return f
 
     area = (-620, 470, -430, 530)
-    burning = [vp.burnt_pine(c, v, burning=True) for v in range(2)]
-    charred = [vp.burnt_pine(c, v, burning=False) for v in range(2)]
+    # (The review: the jungle's own trees, freshly scorched, some green still on them; not
+    # bare pines. More of them, to fill the bare fields.)
+    burning = [vp.scorched_jungle_tree(c, v, burning=True) for v in range(2)]
+    charred = [vp.scorched_jungle_tree(c, v, burning=False) for v in range(2)]
     palms = [vp.burnt_palm(c, v) for v in range(2)]
     fires = []
     for v, t in enumerate(burning):
-        fires += props.scatter(c, t, 14, area, ok(14, 160), ter, seed=500 + v, scale=(0.9, 1.3), sink=0.3)
+        fires += props.scatter(c, t, 16, area, ok(14, 160), ter, seed=500 + v, scale=(1.0, 1.4), sink=0.3)
     for v, t in enumerate(charred):
-        props.scatter(c, t, 24, area, ok(12, 260), ter, seed=510 + v, scale=(0.8, 1.3), sink=0.3)
+        props.scatter(c, t, 36, area, ok(12, 260), ter, seed=510 + v, scale=(0.9, 1.5), sink=0.3)
     for v, t in enumerate(palms):
-        props.scatter(c, t, 14, area, ok(12, 200), ter, seed=520 + v, scale=(0.9, 1.4), sink=0.2)
+        props.scatter(c, t, 18, area, ok(12, 200), ter, seed=520 + v, scale=(0.9, 1.4), sink=0.2)
+    # Volcanic boulders strewn over the burnt fields (bombs from the volcano, cooled).
+    k = 0
+    for j in range(140):
+        x = area[0] + (area[1] - area[0]) * (0.5 + 0.5 * math.sin(j * 12.9898) * 0.999)
+        y = area[2] + (area[3] - area[2]) * (0.5 + 0.5 * math.sin(j * 78.233 + 1.0) * 0.999)
+        z = c.ground_z(x, y, ter)
+        if z is None or not ok(16, 240, alive=(0.0, 0.6))(x, y, z) or k >= 34:
+            continue
+        k += 1
+        r = 1.6 + 2.2 * (0.5 + 0.5 * math.sin(j * 3.1))
+        b = c.rock_mass("Volcanic Boulder %d" % k, x, y, r, r * 0.8, z + r * 1.1, z0=z - 1.0, n=7, seed=700 + j, angle=j,
+                        bands=[(1.0, 0.0), (0.9, 0.45), (0.6, 0.85), (0.3, 1.0)], base=z)
+        c.assign(b, c.lib("obsidian", "wall"))
+        b["kp_role"] = "visual" if r < 2.2 else "both"
+    print("volcanic boulders", k)
+    # Lava geysers out in the bare fields (they blow now and then: don't be on one).
+    gk = 0
+    for x, y in ((-90.0, 165.0), (-127.0, -75.0), (150.0, -140.0), (-200.0, -150.0), (60.0, 130.0)):
+        z = c.ground_z(x, y, ter)
+        if z is None or not _far_from_road(x, y, 22.0) or lava_edge(x, y) < 6.0:
+            continue
+        g = c.game(x, y, z)
+        c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.0, height=14.0, period=7.0, offset=round(gk * 1.7, 2), warn=1.4, blast=1.6, launch=0.0, lava=True)
+        gk += 1
+    print("lava geysers", gk)
     # Smoke and embers off the burning trees (the nearest few to the road).
     for k, (x, y) in enumerate(fires):
         if k % 2 == 0:
@@ -612,12 +710,11 @@ def dress(c, ter, rock):
     for v in range(3):
         props.scatter(c, props.grand_tree(c, v), 5, area, ok(26, 220, alive=green), ter, seed=560 + v, scale=(1.1, 1.5))
     for v in range(2):
-        props.scatter(c, props.bush(c, v), 40, area, ok(4, 120, alive=green), ter, seed=570 + v, role="visual", scale=(0.7, 1.5))
-    props.scatter(c, props.fern(c), 90, area, ok(3, 100, alive=(0.35, 1.01)), ter, seed=580, role="visual")
-    props.scatter(c, props.flowers(c), 80, area, ok(3, 90, alive=green), ter, seed=581, role="visual", sink=0.1)
-    spires = [vp.obsidian_spire(c, v) for v in range(2)]
-    for v, t in enumerate(spires):
-        props.scatter(c, t, 6, area, ok(30, 260, zmax=20), ter, seed=530 + v, scale=(0.6, 1.1), sink=1.0, role="visual")
+        props.scatter(c, props.bush(c, v), 40, area, ok(10, 120, alive=green), ter, seed=570 + v, role="visual", scale=(0.7, 1.5))
+    # (The review: no flowers on the roads or the bridges: everything small stands off them.)
+    props.scatter(c, props.fern(c), 90, area, ok(10, 100, alive=(0.35, 1.01)), ter, seed=580, role="visual")
+    props.scatter(c, props.flowers(c), 80, area, ok(11, 90, alive=green), ter, seed=581, role="visual", sink=0.1)
+    # (The obsidian spires are gone: the review found them strange.)
     # Steam vents out in the field.
     for k in range(10):
         a = k * 2.4
@@ -627,14 +724,16 @@ def dress(c, ter, rock):
             g = c.game(x, y, z)
             c.entity("steam", x=g[0], y=g[1], z=g[2])
     # The volcano erupts now and then, its smoke towering over the field.
-    g = c.game(cx, cy, VOLC_H)
+    bx, by = BIG[0], BIG[1]
+    g = c.game(bx, by, BIG_H)
     c.entity("eruption", x=g[0], y=g[1], z=g[2], period=12.0, offset=2.0)
-    c.place(vp.smoke_plume(c, 0, 140.0), cx, cy, VOLC_H - 2, rot=0.3, coll="Sky", role="visual")
-    # The horizon: far volcanoes all round, smoking, and the cinder cones' smoke.
+    c.place(vp.smoke_plume(c, 0, 140.0), bx, by, BIG_H - 2, rot=0.3, coll="Sky", role="visual")
+    # The horizon: far volcanoes all round, smoking, and the cinder cones' smoke. (Far
+    # enough now that their slopes never reach the course: the review drove into one.)
     for k in range(7):
         a = 0.4 + k * math.tau / 7
-        r = 700 + 100 * math.sin(k * 1.7)
-        sc = 1.4 + 0.5 * (k % 3) / 2
+        r = 1150 + 120 * math.sin(k * 1.7)
+        sc = 1.0 + 0.5 * (k % 3) / 2
         x, y = -60 + r * math.cos(a), 50 + r * math.sin(a)
         c.place(vp.far_volcano(c, k % 2), x, y, -20, rot=a, scale=sc, coll="Sky", role="visual")
         if k % 2 == 0:
@@ -649,7 +748,7 @@ LOOK = {
     # v4: a warm afternoon (the Prehistoric World's daylight), the volcano's plume and the
     # far smoke the only darkness in it.
     "sky": "#86bfe0",
-    "fog": {"enabled": True, "color": "#d8d0b8", "near": 260, "far": 1300},
+    "fog": {"enabled": True, "color": "#d8d0b8", "near": 300, "far": 1700},
     "sun": {"color": "#fff0d0", "intensity": 2.6, "direction": [-0.6, 0.55, -0.58]},
     "ambient": {"sky": "#eef0e0", "ground": "#4a5236", "intensity": 1.3},
     "skyDome": {

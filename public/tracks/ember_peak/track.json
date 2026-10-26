@@ -337,6 +337,81 @@
       "z": -19.29
     },
     {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": -90.0,
+      "y": 1.22,
+      "z": -165.0,
+      "r": 3.0,
+      "height": 14.0,
+      "period": 7.0,
+      "offset": 0.0,
+      "warn": 1.4,
+      "blast": 1.6,
+      "launch": 0.0,
+      "lava": true
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": -127.0,
+      "y": 0.22,
+      "z": 75.0,
+      "r": 3.0,
+      "height": 14.0,
+      "period": 7.0,
+      "offset": 1.7,
+      "warn": 1.4,
+      "blast": 1.6,
+      "launch": 0.0,
+      "lava": true
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": 150.0,
+      "y": 1.08,
+      "z": 140.0,
+      "r": 3.0,
+      "height": 14.0,
+      "period": 7.0,
+      "offset": 3.4,
+      "warn": 1.4,
+      "blast": 1.6,
+      "launch": 0.0,
+      "lava": true
+    },
+    {
+      "id": "geyser_04",
+      "type": "geyser",
+      "x": -200.0,
+      "y": 1.54,
+      "z": 150.0,
+      "r": 3.0,
+      "height": 14.0,
+      "period": 7.0,
+      "offset": 5.1,
+      "warn": 1.4,
+      "blast": 1.6,
+      "launch": 0.0,
+      "lava": true
+    },
+    {
+      "id": "geyser_05",
+      "type": "geyser",
+      "x": 60.0,
+      "y": 0.7,
+      "z": -130.0,
+      "r": 3.0,
+      "height": 14.0,
+      "period": 7.0,
+      "offset": 6.8,
+      "warn": 1.4,
+      "blast": 1.6,
+      "launch": 0.0,
+      "lava": true
+    },
+    {
       "id": "campfire_01",
       "type": "campfire",
       "x": -115.03,
@@ -388,51 +463,65 @@
     {
       "id": "campfire_08",
       "type": "campfire",
+      "x": -251.57,
+      "y": 2.92,
+      "z": 88.63
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
       "x": -276.15,
       "y": 1.38,
       "z": -164.32
     },
     {
-      "id": "campfire_09",
+      "id": "campfire_10",
       "type": "campfire",
       "x": -212.18,
       "y": 2.29,
       "z": 79.81
     },
     {
-      "id": "campfire_10",
+      "id": "campfire_11",
       "type": "campfire",
       "x": -184.5,
       "y": 0.86,
       "z": -169.89
     },
     {
-      "id": "campfire_11",
+      "id": "campfire_12",
       "type": "campfire",
       "x": 7.2,
       "y": 1.42,
       "z": 21.07
     },
     {
-      "id": "campfire_12",
+      "id": "campfire_13",
       "type": "campfire",
       "x": 2.86,
       "y": 0.03,
       "z": 140.9
     },
     {
-      "id": "campfire_13",
-      "type": "campfire",
-      "x": -375.68,
-      "y": 6.41,
-      "z": -160.07
-    },
-    {
       "id": "campfire_14",
       "type": "campfire",
-      "x": -204.57,
-      "y": 1.57,
-      "z": -136.28
+      "x": -60.38,
+      "y": 1.49,
+      "z": -249.97
+    },
+    {
+      "id": "campfire_15",
+      "type": "campfire",
+      "x": -79.81,
+      "y": 6.39,
+      "z": -69.49
+    },
+    {
+      "id": "campfire_16",
+      "type": "campfire",
+      "x": -216.84,
+      "y": 1.85,
+      "z": -71.73
     },
     {
       "id": "steam_01",
@@ -479,9 +568,9 @@
     {
       "id": "eruption_01",
       "type": "eruption",
-      "x": -310.59,
-      "y": 115.0,
-      "z": -55.11,
+      "x": -485.59,
+      "y": 175.0,
+      "z": -115.11,
       "period": 12.0,
       "offset": 2.0
     },
@@ -586,27 +675,6 @@
       "from": 206.9,
       "to": 260.9,
       "at": 284.9
-    },
-    {
-      "id": "isles_dragon_01",
-      "type": "isles_dragon",
-      "keys": [
-        [0.0, -310.59, 155.0, -95.11],
-        [51.0, 150.0, 80.0, 60.0],
-        [182.9, 120.0, 55.0, -150.0],
-        [221.9, 26.5, 38.0, -154.0],
-        [245.9, -13.5, 29.0, -86.0],
-        [284.9, -43.5, 40.0, -14.0],
-        [463.8, -120.0, 70.0, 60.0],
-        [606.1, -350.59, 135.0, 4.89],
-        [880.8, -310.59, 155.0, -95.11]
-      ],
-      "length": 881.8,
-      "size": 1.0,
-      "colors": {
-        "body": "#c8482a",
-        "belly": "#ffcf6a"
-      }
     }
   ],
   "generator": "tools/blender/prehistoric/ember_peak.py (re-running it rewrites entities)"
