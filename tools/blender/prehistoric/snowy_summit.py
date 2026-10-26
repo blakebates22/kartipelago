@@ -559,6 +559,22 @@ def natural(x, y):
 HIDE_S = [0.0, 0.0]  # the stretch of road inside the glacier (set in main)
 
 
+def cut_land(c):
+    """The land the terrain is built from: natural, but where the road runs into and out
+    of the glacier it's cut down in a cutting, the land meeting the road's edge and
+    climbing away from it in steep banks (Blake's review: holes beside the road where
+    the land had been cut away; v1 walled them with blocks of ice)."""
+
+    def h(x, y):
+        z = natural(x, y)
+        smp, d = c.nearest(x, y)
+        if d > 70 or not (HIDE_S[0] - 30 <= smp.s <= HIDE_S[1] + 30):
+            return z
+        return min(z, smp.p.z - 0.3 + max(0.0, d - (smp.w / 2 + 2.0)) * 1.4)
+
+    return h
+
+
 def bridge_support(s):
     """On the treetop bridges (segments 25 and 27): is the plan distance s on one of the
     solid sections (a planked deck on posts) rather than a rope span? Solid at each end,
@@ -584,13 +600,12 @@ def in_abyss(x, y, margin=0.0):
 
 
 def classify(c, n, info):
-    if in_glacier(c.x, c.y, 0.8) or in_tree1(c.x, c.y, 1.5):
+    # (Under the glacier: its ice stands on the full ellipse up to above the caves' roof.)
+    if in_glacier(c.x, c.y, 0.97) or in_tree1(c.x, c.y, 1.5):
         return None
     smp = info["sample"]
     if RUIN and in_trunk(c.x, c.y) and info["d"] < 16:
         return ("forest_road", "dirt")  # the rotten floor inside the fallen trunk
-    if HIDE_S[0] <= smp.s <= HIDE_S[1] and info["d"] < 18 and c.z > smp.p.z - 1.0:
-        return None
     if c.z < -6:
         return ("summit_rock", "abyss")  # the gorge's and crevasse's floors put you back
     if lake_k(c.x, c.y) < 1.0 and c.z < 0.3:
@@ -832,7 +847,7 @@ def main():
     HIDE_S[:] = [t0 - 16, t1 + 16]
 
     X0, X1, Y0, Y1 = -520, 520, -480, 480
-    c.terrain("Land", X0, X1, Y0, Y1, 5.5, natural, classify, near=9.0, fade=18.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 5.5, cut_land(c), classify, near=9.0, fade=18.0)
 
     def near(fn, m=64.0):
         return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < m else None

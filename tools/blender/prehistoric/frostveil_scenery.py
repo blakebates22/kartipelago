@@ -300,36 +300,6 @@ def serpent_gate(c, cc, lights, s):
         lights.add((p.x, p.y, base + 5.6))
 
 
-def cutting_walls(c, cc, lights, t0, t1):
-    """Where the tunnel's approaches are cut through the land (outside the rock), stone
-    retaining walls line both sides of the cutting from the road up to the land's edge,
-    so there's no hole beside the road (Blake's review: holes round the tunnel's west
-    end)."""
-    k = Blocks()
-    s = cc.TUNNEL_S[0]
-    while s <= cc.TUNNEL_S[1]:
-        q = c.at(s)
-        if cc.in_tunnel_rock(q.p.x, q.p.y, 1.02):
-            s += 4.0
-            continue  # (inside, the rock is the wall)
-        for side in (-1, 1):
-            p = q.side(side * 17.0)
-            # (Clear of every road by its whole thickness: on the bends into the tunnel a
-            # wall beside one stretch stood in the next one.)
-            if cc.in_tunnel_rock(p.x, p.y, 0.98) or not props.clear_of_road(c, p.x, p.y, 9.0):
-                continue
-            edge = q.side(side * 20.5)
-            top = min(cc.natural(edge.x, edge.y), cc.natural(p.x, p.y)) + 0.4
-            if top < q.p.z + 1.0:
-                continue  # (the land falls away there: no wall hanging over the drop)
-            base = q.p.z - 1.5
-            k.box(STONE, (p.x, p.y, (base + top) / 2), (6.0, 4.2, top - base), rot=road_rot(q) + math.pi / 2, snow=True)
-            k.box(CARVED, (q.side(side * 13.9).x, q.side(side * 13.9).y, q.p.z + 2.6), (0.4, 4.2, 1.0), rot=road_rot(q) + math.pi / 2, snow=False)
-        s += 4.0
-    if k.groups:
-        k.build(c, "Cutting Walls", "Citadel", "both")
-
-
 def tunnel_dressing(c, cc, lights, s0, s1, half):
     """Inside the serpent: pilasters down both walls with a torch on every other one, a
     carved frieze, icicles hanging from the roof, fallen blocks, and glowing doorways
@@ -870,8 +840,6 @@ def build(c, rock, t0, t1, cc):
     serpent_gate(c, cc, lights, t0 + 2.0)
     tunnel_dressing(c, cc, lights, t0 + 8, t1 - 4, half)
     c.glow([rock], [p for p in lights.points if cc.in_tunnel_rock(p[0], p[1], 1.1)], 11.0, (1.25, 0.9, 0.55), base=0.4, region=lambda w: cc.in_tunnel_rock(w.x, w.y, 1.0) and w.z < 75)
-    if t1 > t0:
-        cutting_walls(c, cc, lights, t0, t1)
     # E: the courtyard and the hall.
     q = c.at(cc.SEG[14])
     center = q.p + q.r * 60.0

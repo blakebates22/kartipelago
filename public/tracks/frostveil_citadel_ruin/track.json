@@ -801,8 +801,8 @@
   ],
   "generator": "tools/blender/prehistoric/frostveil_citadel_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "frostveil_citadel.py": "c44054ec245b460ac1010f57b627a732a5ac9c2168fb0d03164dde9df0ce4d29",
+    "frostveil_citadel.py": "832e5346e1745314564f8ac05d9b367eed5be1e730beb9571d18d4104aa4f779",
     "frostveil_ruins.py": "3066998cd6ef0b5b308810abe2cc08d1fd617aa7a0954d7cd1ffd7390b9de0c9",
-    "frostveil_scenery.py": "7e1593889735fb18235c5f56a47a628337a71ab25db1d08bb33f5a38f3dc52ef"
+    "frostveil_scenery.py": "e97d20b8c170a3c744d1af9f1c2d54061a1375bd4492ccd12ed76434547b4219"
   }
 }

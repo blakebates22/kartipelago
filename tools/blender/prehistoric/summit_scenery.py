@@ -99,36 +99,6 @@ def glacier(c, ss, t0, t1):
     return rock
 
 
-def cutting_walls(c, ss):
-    """Where the caves' approaches are cut through the land outside the glacier, walls
-    of ice line both sides of the cutting from the road up to the land's edge, so there
-    are no holes beside the road (Blake's review: holes there, both sides)."""
-    m = Mesh()
-    s = ss.HIDE_S[0]
-    while s <= ss.HIDE_S[1]:
-        q = c.at(s)
-        if ss.in_glacier(q.p.x, q.p.y, 1.02):
-            s += 4.0
-            continue  # (inside, the glacier is the wall)
-        for side in (-1, 1):
-            p = q.side(side * 17.0)
-            if ss.in_glacier(p.x, p.y, 0.98) or not far_from_road(c, p.x, p.y, 9.0):
-                continue
-            edge = q.side(side * 20.5)
-            top = min(ss.natural(edge.x, edge.y), ss.natural(p.x, p.y)) + 0.4
-            if top < q.p.z + 1.0:
-                continue  # (the land falls away there)
-            base = q.p.z - 1.5
-            k0 = len(m.bm.faces)
-            props.cuboid(m.bm, (p.x, p.y, (base + top) / 2), (6.0, 4.2, top - base), math.atan2(q.t.y, q.t.x) + math.pi / 2)
-            m.mark(("berg_ice", "wall"), k0)
-            k0 = len(m.bm.faces)
-            props.cuboid(m.bm, (p.x, p.y, top + 0.15), (6.2, 4.4, 0.3), math.atan2(q.t.y, q.t.x) + math.pi / 2)
-            m.mark("summit_snow", k0)
-        s += 4.0
-    m.build(c, "Cutting Walls", "Caves", "both")
-
-
 def ice_cathedral(c, ss, t0, t1):
     """The glacier as an ice cathedral (Blake's review: keep the drive inside, make it
     look like a cathedral of ice): spires of the lake's turquoise ice along its crest,
@@ -1086,7 +1056,6 @@ def build(c, rock, t0, t1, ss, ruin=None):
     flags = sp.Bunting()
 
     cave_dressing(c, ss, rock, t0, t1, blue, violet)
-    cutting_walls(c, ss)
     ice_cathedral(c, ss, t0, t1)
     water = lake(c, ss, ter)
     hot_springs(c, ss, ter, geysers)

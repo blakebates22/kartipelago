@@ -362,14 +362,29 @@ def in_tunnel_rock(x, y, shrink=1.0):
 TUNNEL_S = [0.0, 0.0]
 
 
+def cut_land(c):
+    """The land the terrain is built from: natural, but where the road runs into and out
+    of the tunnel rock it's cut down through the massif in a cutting, the land meeting
+    the road's edge and climbing away from it in steep banks (Blake's review: holes
+    beside the road where the land had been cut away; v1 walled them with blocks)."""
+
+    def h(x, y):
+        z = natural(x, y)
+        if TUNNEL_S[1] <= 0:
+            return z
+        smp, d = c.nearest(x, y)
+        if d > 70 or not (TUNNEL_S[0] - 30 <= smp.s <= TUNNEL_S[1] + 30):
+            return z
+        return min(z, smp.p.z - 0.3 + max(0.0, d - (smp.w / 2 + 2.0)) * 1.4)
+
+    return h
+
+
 def classify(c, n, info):
-    if in_tunnel_rock(c.x, c.y, 0.8):
+    # (Under the rock: its walls stand on the full ellipse up to above the tunnel's roof.)
+    if in_tunnel_rock(c.x, c.y, 0.97 if TUNNEL_S[1] > 0 else 0.8):
         return None
     smp = info["sample"]
-    # (The approaches are cut through the land too: retaining walls line the cutting,
-    # frostveil_scenery.cutting_walls, so it doesn't show holes.)
-    if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 18 and c.z > smp.p.z - 1.0:
-        return None
     # The chasm's and gorges' floors are bottomless: touching them puts you back.
     if c.z < -12 or (c.z < 0 and _nearest(c.x, c.y, GORGE)[0] < 10) or (trench(c.x, c.y) > 0.5 and c.z < 18):
         return ("frost_rock", "abyss")
@@ -396,7 +411,9 @@ def in_abyss(x, y, margin=0.0):
 
 def underfloor_z(x, y):
     # (Overlapping the abyss floor by a few metres, so there's no crack between them.)
-    if in_tunnel_rock(x, y, 0.8) or in_abyss(x, y, -5.0):
+    # (Under the tunnel rock too, at the road's level (under_land): the rock's mouths are
+    # cut open, and a floor that stopped at the rock's edge left holes inside them.)
+    if in_abyss(x, y, -5.0):
         return None
     return min(land(x, y), natural(x, y)) - 0.35
 
@@ -559,7 +576,7 @@ def main():
         t0, t1 = max(inside, key=lambda r: r[1] - r[0])
         TUNNEL_S[:] = [t0 - 16, t1 + 16]
     X0, X1, Y0, Y1 = -420, 420, -420, 400
-    c.terrain("Mountains", X0, X1, Y0, Y1, 5.0, natural, classify, near=9.0, fade=20.0)
+    c.terrain("Mountains", X0, X1, Y0, Y1, 5.0, cut_land(c), classify, near=9.0, fade=20.0)
     # The hidden floors only where a kart could ever be: within 80 m of the road.
 
     def near(fn):
@@ -577,8 +594,8 @@ def main():
             return None
         g = c.ground_z(x, y, mountains)
         if g is None:
-            # No land here (cut away over the tunnel's approach): a floor just under the
-            # road, not at the natural height (that stood up as a wall across the road).
+            # No land here (under the tunnel rock): a floor just under the road, not at the
+            # natural height (that stood up as a wall across the road).
             return min(z, c.nearest(x, y)[0].p.z - 0.5)
         return min(z, g - 0.35)
 

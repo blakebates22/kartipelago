@@ -399,7 +399,7 @@
       "id": "geyser_15",
       "type": "geyser",
       "x": 392.2,
-      "y": 12.94,
+      "y": 1.5,
       "z": 28.34,
       "r": 3.5,
       "height": 21.83776683644828,
@@ -715,8 +715,8 @@
   "generator": "tools/blender/prehistoric/snowy_summit_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "snowy_ruins.py": "5a9d39bfbeabe390561fc590ecc711756e623666e9c6dcbfad805f77256051df",
-    "snowy_summit.py": "68d594ba587f4b95a32cec82f4b75181e59c1733cc219b8c4c6ad667ceb06a12",
+    "snowy_summit.py": "c0a6c153a847bce19b3100f842cb1fe16b4f46bc17089f4417f8c67e270f16bf",
     "summit_props.py": "f2f9cfb03d4953f83e91a699340dde8491a96a9205a393d05ecdc728566f4d38",
-    "summit_scenery.py": "f41a9f03198dbf6ccd7d02a48363dc9c7c57cfd16c0944c8745a834c6d0bedc0"
+    "summit_scenery.py": "46d4116f5f1829de951d927a7beb415140560a5e5eead04abc7eb6448243d019"
   }
 }
