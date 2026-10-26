@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "id": "desert_region_ruin",
+  "name": "Desert World (greybox, ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -290.0,
+      "y": 2.3,
+      "z": -0.0
+    },
+    {
+      "id": "tumbleweed_01",
+      "type": "tumbleweed",
+      "ax": 215.85575219373078,
+      "ay": 3.0,
+      "az": 155.01911113762046,
+      "bx": 190.14424780626922,
+      "by": 3.0,
+      "bz": 185.66088886237955,
+      "period": 13.0,
+      "offset": 0.0,
+      "travel": 6.0,
+      "r": 0.8
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 0.0,
+      "y": -7.0,
+      "z": -0.0
+    },
+    {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "crater_stones",
+      "x": -8.0,
+      "z": -0.0,
+      "heading": -1.5707963267948968,
+      "width": 9.0,
+      "prize_x": 0.0,
+      "prize_z": -0.0
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 0,
+      "x": -52.33,
+      "z": -52.33
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 1,
+      "x": 52.33,
+      "z": -52.33
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 2,
+      "x": 52.33,
+      "z": 52.33
+    },
+    {
+      "id": "puzzle_switch_04",
+      "type": "puzzle_switch",
+      "puzzle": "crater_stones",
+      "index": 3,
+      "x": -52.33,
+      "z": 52.33
+    },
+    {
+      "id": "puzzle_gate_02",
+      "type": "puzzle_gate",
+      "puzzle": "return",
+      "x": -236.73,
+      "z": -165.76,
+      "heading": 0.9599310885968817,
+      "width": 9.0,
+      "prize_x": -245.75,
+      "prize_z": -172.07
+    },
+    {
+      "id": "dust_01",
+      "type": "dust",
+      "color": "#d89a6a",
+      "rate": 1.0
+    },
+    {
+      "id": "dustwind_01",
+      "type": "dustwind",
+      "rate": 22,
+      "radius": 60,
+      "color": "#e0a878"
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": -150.0,
+      "y": 40.0,
+      "z": -120.0,
+      "radius": 70.0,
+      "count": 3,
+      "speed": 0.16,
+      "seed": 1
+    }
+  ],
+  "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "desert_region.py": "7bcb3cd4ffec4cdb50926954979386ed1c5866cf8239d87d765161c1e288b15d"
+  }
+}
