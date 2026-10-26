@@ -30,6 +30,9 @@ from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import puzzle_kit  # noqa: E402
 import region_ruin as ruin  # noqa: E402
+import canyon_props as cp  # noqa: E402
+import oasis_props as op  # noqa: E402
+import region_paint as paint  # noqa: E402
 
 # (--ruin: Desert World after Scorchwind's attack. Only the ruin has his lair, and his
 # drift burying the Dust Road; the trading post is wrecked and sand drifts across the
@@ -230,6 +233,7 @@ def main():
     gx, gy, gz = c.game(-150.0, 120.0, 40.0)
     c.entity("birds", x=gx, y=gy, z=gz, radius=70.0, count=3, speed=0.16, seed=1)
 
+    dress(c)
     # (Raced too: the champion's challenge, once round the ring, from this line.)
     c.start_line()
     gates = c.checkpoints(height=10.0)
@@ -264,6 +268,66 @@ def ruined(c):
         c.assign(c.rock_mass("Drift %d" % k, x, y, 7.0 + k % 4, 4.0 + k % 3, natural(x, y) + 2.5 + k % 3, z0=natural(x, y) - 1.0,
                              n=10, seed=20 + k, angle=k * 0.7, bands=[(1.0, 0.0), (0.7, 0.6), (0.4, 1.0)],
                              base=natural(x, y) - 1.0), c.lib("pale_sand", "wall"))
+
+
+def dress(c):
+    """The paint pass: Canyon Dash's desert flora (saguaros, Joshua trees, barrel cacti,
+    agave, sagebrush, dry grass) and boulders and hoodoos over the basin, the oasis's
+    palms and cypresses round its pool, barrels and crates at the trading post. After
+    Scorchwind: the cacti and trees blown flat (most gone, the rest stumps), the
+    undergrowth stripped."""
+    px, py, pr = POST
+    ox, oy = polar(*OASIS)
+    taken = paint.Taken([(px, py, pr + 16.0), (0.0, 0.0, CRATER_R + 16.0), (*polar(*CANYON), 26.0), (ox, oy, 30.0),
+                         (*polar(GULCH[0], GULCH[1] - 20.0), 34.0), (*polar(*LAIR), 34.0), (*polar(*DUST_ROAD), 22.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         *((*polar(a, 74.0), 10.0) for a in (135.0, 45.0, -45.0, -135.0))])
+
+    def open_ground(x, y):
+        r = math.hypot(x, y)
+        return CRATER_R + 10 < r < CLIFF_R - 10 and not (x < -250 and abs(y) < PASS_HW + 12)
+
+    def foot(x, y):
+        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+
+    g = natural
+    for v in range(3):
+        paint.scatter(c, cp.boulder(c, v), 14, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.4))
+    for v in range(2):
+        paint.scatter(c, cp.hoodoo(c, v, 12.0 + 6.0 * v), 5, CLIFF_R, open_ground, g, taken, 95 + v, room=12.0)
+    # Round the oasis's pool: palms and cypresses (it's water: they stay, even after).
+    for v in range(2):
+        paint.scatter(c, op.palm(c, v, 10.0 + 2.0 * v), 6, CLIFF_R,
+                      lambda x, y: 18.0 < math.hypot(x - ox, y - oy) < 32.0 and open_ground(x, y), g, paint.Taken(), 70 + v,
+                      room=4.0)
+    tall = [cp.saguaro(c, v) for v in range(3)] + [cp.joshua_tree(c, v) for v in range(2)]
+    low = [cp.barrel_cactus(c, v) for v in range(2)] + [cp.agave(c, v) for v in range(2)]
+    if RUIN:
+        # Scorchwind's storm tore through: a few broken stems stand, the rest is bare.
+        for v, t in enumerate(tall):
+            paint.scatter(c, t, 8, CLIFF_R, open_ground, g, taken, 10 + v, room=6.0)
+        for k in range(40):
+            a, r = k * 2.39996, 70.0 + (k * 41) % 250
+            x, y = r * math.cos(a), r * math.sin(a)
+            if open_ground(x, y) and taken.clear(x, y, 3.0) and paint.road_clear(c, x, y, 4.0):
+                ruin.stump(c, "Snapped Cactus %d" % k, x, y, g(x, y), ("weathered_timber", "wall"), h=0.6 + (k % 3) * 0.5,
+                           r=0.4)
+                taken.add(x, y, 2.0)
+        return
+    for v, t in enumerate(tall):
+        paint.scatter(c, t, 26, CLIFF_R, open_ground, g, taken, 10 + v, room=6.0, scale=(0.9, 1.5))
+    for v, t in enumerate(low):
+        paint.scatter(c, t, 40, CLIFF_R, open_ground, g, taken, 30 + v, room=2.5, role="visual")
+    for v in range(2):
+        paint.scatter(c, cp.sagebrush(c, v), 120, CLIFF_R, open_ground, g, taken, 40 + v, room=2.0, role="visual")
+        paint.scatter(c, cp.dry_grass(c, v), 140, CLIFF_R, open_ground, g, taken, 50 + v, room=1.5, role="visual")
+    # The trading post's barrels and crates, stacked by the stalls.
+    crate = cp.crates(c, 0)
+    for k in range(5):
+        a = k * math.tau / 5 + 0.3
+        x, y = px + (pr - 4.0) * math.cos(a), py + (pr - 4.0) * math.sin(a)
+        if abs(math.sin(a)) > 0.35:
+            c.place(crate, x, y, FLOOR_Z, rot=a)
 
 
 def crater_stones(c):
