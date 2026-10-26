@@ -228,6 +228,19 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: Math.PI,
       },
+      // The Frozen Pass, east past the glacier: on to Desert World.
+      {
+        id: "frozen_pass",
+        label: "THE FROZEN PASS · TO DESERT WORLD",
+        to: "desert_world",
+        toPassage: "frozen_pass",
+        x: 288.7,
+        z: -153.5,
+        radius: 8,
+        heading: Math.atan2(-0.883, 0.469),
+        opensAfter: "snow",
+        locked: "RIMEFANG'S ICE WALLS THE PASS SHUT: BEAT HIM FIRST",
+      },
     ],
 
     puzzles: [
@@ -250,6 +263,75 @@ export const REGIONS: Region[] = [
         seconds: 0,
         gate: { x: -199.4, z: 199.4, heading: (3 * Math.PI) / 4, width: 9 },
         prize: { kind: "key", x: -206.48, z: 206.48 },
+      },
+    ],
+  },
+  {
+    // The doc's third region (tools/blender/prehistoric/desert_region.py, a greybox): a
+    // red-rock basin ringed by mesas, a meteor crater in the middle, Stego's trading post
+    // by the Frozen Pass.
+    id: "desert_world",
+    name: "Desert World",
+    packageId: "desert_region",
+    music: "canyon",
+    worldId: "desert",
+    kingdom: "desert",
+    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
+    // At the trading post, facing east to the ring.
+    spawn: { x: -290, z: 0, heading: Math.PI / 2 },
+    gateways: [
+      // At the slot canyon in the north cliff.
+      {
+        id: "canyon",
+        track: "canyon_dash",
+        x: -56.8,
+        z: -322.0,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((100 * Math.PI) / 180), Math.sin((100 * Math.PI) / 180)),
+      },
+      // On the lawn by the palm-ringed pool, north-east.
+      {
+        id: "oasis",
+        track: "oasis_haven",
+        x: 200.7,
+        z: -168.4,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((40 * Math.PI) / 180), Math.sin((40 * Math.PI) / 180)),
+      },
+      // At the end of the ghost town's false-front street, south-east.
+      {
+        id: "gulch",
+        track: "dry_gulch",
+        x: 222.9,
+        z: 187.1,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((-40 * Math.PI) / 180), Math.sin((-40 * Math.PI) / 180)),
+      },
+      // On the crater's rim in the middle of the basin.
+      { id: "impact", track: "impact_depths", x: -60, z: 0, radius: 6, heading: -Math.PI / 2 },
+      // Scorchwind's lair: a rock arch in the south-west cliff, the dust devil before it.
+      {
+        id: "lair",
+        track: "boss_desert",
+        x: -231.2,
+        z: 231.2,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((-135 * Math.PI) / 180), Math.sin((-135 * Math.PI) / 180)),
+        boss: true,
+        label: "SCORCHWIND'S LAIR",
+      },
+    ],
+    passages: [
+      // Back up the Frozen Pass to the Snow Kingdom.
+      {
+        id: "frozen_pass",
+        label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
+        to: "snow_kingdom",
+        toPassage: "frozen_pass",
+        x: -445,
+        z: 0,
+        radius: 8,
+        heading: Math.PI / 2,
       },
     ],
   },

@@ -930,6 +930,17 @@ export const TRACKS: TrackEntry[] = [
     laps: 1,
   },
   {
+    id: "desert_region",
+    name: "Desert World",
+    description: "The champion's challenge: 1 on 1, once round the crater.",
+    preview: "previews/canyon_dash.jpg",
+    modes: ["race"],
+    theme: "canyon_dash",
+    music: "canyon",
+    load: { scene: "track", packageId: "desert_region" },
+    laps: 1,
+  },
+  {
     id: "drift_park",
     name: "Drift Park",
     description:

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "desert_region",
+  "name": "Desert World (greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -290.0,
+      "y": 2.3,
+      "z": -0.0
+    },
+    {
+      "id": "tumbleweed_01",
+      "type": "tumbleweed",
+      "ax": 215.85575219373078,
+      "ay": 3.0,
+      "az": 155.01911113762046,
+      "bx": 190.14424780626922,
+      "by": 3.0,
+      "bz": 185.66088886237955,
+      "period": 13.0,
+      "offset": 0.0,
+      "travel": 6.0,
+      "r": 0.8
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 0.0,
+      "y": -7.0,
+      "z": -0.0
+    },
+    {
+      "id": "dust_01",
+      "type": "dust",
+      "color": "#d89a6a",
+      "rate": 1.0
+    },
+    {
+      "id": "dustwind_01",
+      "type": "dustwind",
+      "rate": 10,
+      "radius": 60,
+      "color": "#e0a878"
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": -150.0,
+      "y": 40.0,
+      "z": -120.0,
+      "radius": 70.0,
+      "count": 3,
+      "speed": 0.16,
+      "seed": 1
+    }
+  ],
+  "generator": "tools/blender/prehistoric/desert_region.py (re-running it rewrites entities)"
+}
