@@ -40,8 +40,10 @@ import {
   adventureHub,
   adventureOf,
   freeRoam,
+  journeyBegun,
   kingdomScreen,
   launch,
+  peekWorldMap,
   persist,
   sceneScreen,
 } from "./adventure";
@@ -1309,7 +1311,12 @@ function overworldPause(game: Game, region: Region): Screen {
                 game.screens.go(kingdomScreen(game, story));
               },
             },
-            { label: "WORLD MAP", action: () => game.screens.go(adventureHub(game)) },
+            // (No world map until the journey begins; dev builds can peek.)
+            ...(journeyBegun(adventureOf(game).save)
+              ? [{ label: "WORLD MAP", action: () => game.screens.go(adventureHub(game)) }]
+              : import.meta.env.DEV
+                ? [{ label: "WORLD MAP (DEV)", action: () => peekWorldMap(game) }]
+                : []),
           ]
         : []),
       // Dev free roam: the region before or after its dragon's attack.

@@ -123,6 +123,34 @@ export function startFile(game: Game, racer: RacerId) {
   const a = adventureOf(game);
   a.save.racer = racer;
   persist(game);
+  goHome(game);
+}
+
+/**
+ * Has the journey begun? Blake (Oct 26): the world map isn't there until it does,
+ * otherwise you'd know other kingdoms exist before the reveal. It begins when Cinderjaw
+ * falls (his fire split the valley's cliff: the Burnt Gorge shows the world beyond).
+ */
+export const journeyBegun = (s: AdventureSave) => Boolean(s.bosses.valley);
+
+/** The overworld region the story is in now: where you last were, else the region of the
+ * first kingdom still to free (all four freed: the Dragon Kingdom). */
+export function storyRegion(s: AdventureSave) {
+  const w = s.where && regionById(s.where.region) ? s.where : undefined;
+  if (w) return { region: w.region, at: w.at };
+  const k = KINGDOMS.find((k) => kingdomPhase(s, k) !== "done");
+  const r = regionOfKingdom(k ? k.id : "dragon");
+  return r ? { region: r.id } : undefined;
+}
+
+/** On with the story: its next scene if one is due (the new file's opening first), then
+ * straight into the overworld region you're progressing through. */
+export function goHome(game: Game) {
+  const s = adventureOf(game).save;
+  const due = dueScene(s);
+  if (due) return game.screens.go(sceneScreen(game, due, () => goHome(game)));
+  const at = storyRegion(s);
+  if (at) return game.screens.go(overworldLoading(game, at.region, at.at, true));
   game.screens.go(adventureHub(game));
 }
 
@@ -156,12 +184,8 @@ export function adventureFiles(game: Game, erasing = false): Screen {
     const a = openFile(game, i);
     // A new file (or one from before files had racers) picks its racer first.
     if (!a.save.racer) return game.screens.go(characterSelect(game, { adventure: i }));
-    // Back where you were in the overworld (unless the story has a scene to show first:
-    // the world map plays it).
-    const w = a.save.where;
-    if (w && regionById(w.region) && !dueScene(a.save))
-      return game.screens.go(overworldLoading(game, w.region, w.at, true));
-    game.screens.go(adventureHub(game));
+    // Its next scene if one's due, then back where you were in the overworld.
+    goHome(game);
   };
   const back = () =>
     erasing ? game.screens.go(adventureFiles(game, false)) : game.screens.go(modeSelect(game));
@@ -276,6 +300,14 @@ export function launch(
 
 // ---------------------------------------------------------------- the world map
 
+/** Dev builds: open the world map once even before the journey begins (the pause menu's
+ * dev entry). */
+let worldMapPeek = false;
+export const peekWorldMap = (game: Game) => {
+  worldMapPeek = true;
+  game.screens.go(adventureHub(game));
+};
+
 export function adventureHub(game: Game): Screen {
   const a = adventureOf(game);
   a.run = undefined;
@@ -308,7 +340,11 @@ export function adventureHub(game: Game): Screen {
       void game.audio.music.play("map", { fade: 1 });
       // The story's next turn plays first.
       const due = dueScene(a.save);
-      if (due) game.screens.go(sceneScreen(game, due, () => game.screens.go(adventureHub(game))));
+      if (due)
+        return game.screens.go(sceneScreen(game, due, () => game.screens.go(adventureHub(game))));
+      // Until the journey begins there's no world map: straight on into the overworld.
+      if (!journeyBegun(a.save) && !worldMapPeek) return goHome(game);
+      worldMapPeek = false;
     },
     frame(dt, actions) {
       t += dt;
@@ -937,10 +973,11 @@ export function adventureResult(
     const kd = run.kind === "king" ? "dragon" : run.kingdom;
     a.at = kd === "dragon_final" ? "dragon" : kd;
     // From the overworld: back out of its gateway (unless the story has a scene to show:
-    // the world map plays it).
+    // it plays, then on into the overworld).
     const o = game.overworld;
     if (o && !dueScene(s)) return game.screens.go(overworldLoading(game, o.region, o.at, true));
-    game.screens.go(adventureHub(game));
+    if (o) s.where = { region: o.region, ...(o.at ? { at: o.at } : {}) };
+    goHome(game);
   };
   const menu = new VMenu(game, [
     { label: "CONTINUE", action: home },
