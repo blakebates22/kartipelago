@@ -190,8 +190,13 @@ POND_R = _pond_r()
 
 
 def sea_d(x, y):
-    """How far out to sea (negative: on land): south of the beach."""
-    return (-42.0 + 2.5 * math.sin(x / 23.0)) - y
+    """How far out to sea (negative: on land): south of the beach, and (the paint) round
+    the rest of the headland's rounded shore, so the land never ends in a straight cut."""
+    south = (-42.0 + 2.5 * math.sin(x / 23.0)) - y
+    cx, cy, ax, ay = 65.0, 100.0, 215.0, 165.0
+    u, v = abs(x - cx) / ax, abs(y - cy) / ay
+    shore = ((u**4 + v**4) ** 0.25 - 1.0) * min(ax, ay) + 4.0 * math.sin(x / 19.0 + y / 27.0)
+    return max(south, shore)
 
 
 def natural(x, y):
@@ -319,6 +324,10 @@ def main():
     ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2600.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
+    # (The paint: the sea all round the headland.)
+    c.ribbon("Sea North", [(x, 1500.0) for x in range(-1600, 1801, 200)], 2600.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
+    c.ribbon("Sea West", [(-1200.0, y) for y in range(-60, 261, 80)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
+    c.ribbon("Sea East", [(1380.0, y) for y in range(-60, 261, 80)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     c.disc("Lazy River", POND_C[0], POND_C[1], POND_R + 3.0, WATER_Z, c.lib("lagoon_shallow", "deep_water"), role="visual", n=32)
     px, py, pr = SPLASH_POOL
     c.disc("Splash Pool", px, py, pr + 2.0, WATER_Z, c.lib("lagoon_shallow", "deep_water"), role="visual", n=24)

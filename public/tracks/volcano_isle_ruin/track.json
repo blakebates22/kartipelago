@@ -13,6 +13,15 @@
   },
   "entities": [
     {
+      "id": "eruption_01",
+      "type": "eruption",
+      "x": 76.73,
+      "y": 232.0,
+      "z": -646.73,
+      "period": 11.0,
+      "offset": 4.0
+    },
+    {
       "id": "zip_01",
       "type": "zipper",
       "at": 128.0,
@@ -750,7 +759,7 @@
   "generator": "tools/blender/prehistoric/volcano_isle_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "isle_scenery.py": "0e8191dd9a8a13f0cbc226c91abfd37f5e80707eb8e8749ad164937ef84d4235",
-    "volcano_isle.py": "7db5b8b8ace9b61c64a13ca5295ee9fd78cc743ff61b655484a9323a57adcfae",
+    "volcano_isle.py": "f034275f51d5fe8c5b1019a694465a7c842eb520b07e13440e7550457193a097",
     "volcano_isle_ruins.py": "b8bcdc6e9ad172eb8389d3708da6b6e5eda23d797d67f8cf791d75cfc5547746",
     "volcano_props.py": "e96efc0f7f28c24d755350970073398b59146efbc6ecb503e4d24a9072dd2274"
   }

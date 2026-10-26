@@ -155,6 +155,16 @@
       "radius": 3.698249833802796
     },
     {
+      "id": "fountain_03",
+      "type": "fountain",
+      "x": 100.0,
+      "y": 8.09,
+      "z": -100.0,
+      "height": 1.5,
+      "jets": 8,
+      "radius": 3.2
+    },
+    {
       "id": "birds_01",
       "type": "birds",
       "x": 60.0,
@@ -237,8 +247,8 @@
   ],
   "generator": "tools/blender/prehistoric/splash_lagoon_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "lagoon_scenery.py": "e6083288cfbbd95f7d9824cbdec9b7b042f93e2a366754b2f4b09a22e7e57dbf",
-    "splash_lagoon.py": "229a80192a6df5217b27ef8774772c49fc30c619e98b436aa03818d0dd7264da",
+    "lagoon_scenery.py": "e55370f37afbdc6cd195a5ef58046b3b521c7cad5f6f9f70834e3efc0dc5ac96",
+    "splash_lagoon.py": "c11e75d74d1fd94372cea27047a93a20b9a72050faec9d35d0bf3dd76eef25ba",
     "splash_lagoon_ruins.py": "3ede24811491fc497504dc659cfdee1f6ac76e605b074fb1c387d2118f87ccbe"
   }
 }

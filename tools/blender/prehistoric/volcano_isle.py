@@ -156,7 +156,9 @@ def sea_d(x, y):
     """How far out to sea (negative: on land): south of the beach and west of the cliff."""
     south = (-16.0 + 2.5 * math.sin(x / 23.0)) - y
     west = (_gap[0] - 48.0 + 3.0 * math.sin(y / 19.0)) - x
-    return max(south, west)
+    # (The paint: the island's east shore too, so the land never ends in a straight cut.)
+    east = x - (240.0 + 8.0 * math.sin(y / 23.0) + 5.0 * math.cos(y / 11.0))
+    return max(south, west, east)
 
 
 def lagoon_d(x, y):
@@ -199,6 +201,40 @@ def near_road_z(x, y):
         if dd < bd:
             bd, best = dd, pz
     return best, math.sqrt(bd)
+
+
+def volcano_top(c, volcano):
+    """The paint (the volcano read as a green hill): jungle only on its lower slopes,
+    bare grey ash and black rock above, a lake of lava in the crater, lava running down
+    its south face towards the course, and an eruption now and then."""
+    vx, vy = VOLCANO
+    rx, ry, h = 300.0, 260.0, 230.0
+    ash, rock = c.lib("lava_crust", "wall"), c.lib("isle_rock", "wall")
+    up = [p.index for p in volcano.data.polygons if p.center.z > 120.0]
+    c.assign(volcano, ash, [i for i in up if volcano.data.polygons[i].normal.z > 0.5])
+    c.assign(volcano, rock, [i for i in up if volcano.data.polygons[i].normal.z <= 0.5])
+    c.disc("Crater Lava", vx, vy, 0.24 * min(rx, ry), h + 0.4, c.lib("volcano_lava"), coll="Rocks", role="visual", n=24,
+           wobble=0.1, seed=4)
+    bands = [(1.0, 0.0), (0.82, 0.25), (0.62, 0.5), (0.44, 0.75), (0.3, 0.95), (0.26, 1.0)]
+
+    def r_at(f):
+        for (r0, f0), (r1, f1) in zip(bands, bands[1:]):
+            if f0 <= f <= f1:
+                return lerp(r0, r1, (f - f0) / (f1 - f0))
+        return bands[-1][0]
+
+    for k, a_deg in enumerate((-100.0, -78.0, -122.0)):
+        a = math.radians(a_deg)
+        pts = []
+        f = 0.99
+        while f > 0.42 + 0.08 * k:
+            r = r_at(f) * 1.015
+            pts.append((vx + r * rx * math.cos(a + 0.05 * math.sin(f * 9)), vy + r * ry * math.sin(a + 0.05 * math.sin(f * 9)),
+                        10.0 - 6.0 * (0.99 - f), f * h + 0.6))
+            f -= 0.03
+        c.ribbon("Lava Run %d" % k, pts, 8.0, 0.0, c.lib("volcano_lava"), coll="Rocks", role="visual", steps=2)
+    gx, gy, gz = c.game(vx, vy, h + 2.0)
+    c.entity("eruption", x=gx, y=gy, z=gz, period=11.0, offset=4.0)
 
 
 def natural(x, y):
@@ -304,6 +340,9 @@ def main():
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2700.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     c.ribbon("Sea West", [(-1260.0, y) for y in range(-1400, 1401, 200)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
+    # (The paint: the sea round the east shore and behind the island, under the volcano.)
+    c.ribbon("Sea East", [(1330.0, y) for y in range(-1400, 1401, 200)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
+    c.ribbon("Sea North", [(x, 1500.0) for x in range(-1600, 1801, 200)], 2300.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     cx, cy, rx, ry = LAGOON
     c.disc("Lagoon", cx, cy, rx + 4, WATER_Z, c.lib("sea_water"), role="visual")
     for k, (x, y, r) in enumerate(SPRINGS):
@@ -322,6 +361,7 @@ def main():
                           bands=[(1.0, 0.0), (0.82, 0.25), (0.62, 0.5), (0.44, 0.75), (0.3, 0.95), (0.26, 1.0)])
     volcano["kp_role"] = "visual"
     c.paint_rock(volcano, ("isle_rock", "wall"), ("isle_jungle", "grass"))
+    volcano_top(c, volcano)
 
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731

@@ -13,6 +13,15 @@
   },
   "entities": [
     {
+      "id": "eruption_01",
+      "type": "eruption",
+      "x": 76.73,
+      "y": 232.0,
+      "z": -646.73,
+      "period": 11.0,
+      "offset": 4.0
+    },
+    {
       "id": "zip_01",
       "type": "zipper",
       "at": 117.0,
