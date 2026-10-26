@@ -1459,12 +1459,15 @@ def _course_loop(
     boost=(1.45, 2.2),
     gravity=8.0,
     name="Loop",
+    gaps=(),
 ):
     """
     Build a loop-the-loop's visible road (a solid deck with low rails along both edges,
     lit edge strips, a rock or ice underside) and add the "loop" entity that the game
     rides karts round with. The road is visual only: on the loop the kart follows the
     curve itself (src/game/loops.ts), so it never touches collision geometry there.
+    `gaps`: stretches of it that are gone ((from, to) as fractions of its length: a ruin's
+    loop with its top broken away). The game still rides karts across them.
     Returns the deck object.
     """
     bm = bmesh.new()
@@ -1496,6 +1499,8 @@ def _course_loop(
         for (a0, u0), (a1, u1) in zip(pts, pts[1:]):
             lens.append(lens[-1] + math.hypot(a1 - a0, u1 - u0))
         for k in range(n):
+            if any(g0 <= (k + 0.5) / n <= g1 for g0, g1 in gaps):
+                continue
             v0 = lp.L * k / n / tile
             v1 = lp.L * (k + 1) / n / tile
             for j in range(len(pts) - 1):

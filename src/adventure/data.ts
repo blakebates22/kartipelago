@@ -78,7 +78,7 @@ export const KINGDOMS: Kingdom[] = [
       { track: "frostveil_citadel", ruin: "frostveil_citadel_ruin" },
       { track: "snowy_summit", ruin: "snowy_summit_ruin" },
       { track: "hearthglow_hollow", ruin: "hearthglow_hollow_ruin" },
-      { track: "aurora_rift" },
+      { track: "aurora_rift", ruin: "aurora_rift_ruin" },
     ],
     boss: { name: "Rimefang", track: "boss_snowy", speed: 1.0 },
     tool: { id: "snow_tool", name: "Snow Tool" },

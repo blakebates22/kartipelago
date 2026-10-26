@@ -245,6 +245,7 @@ describe("worlds", () => {
       "frostveil_citadel_ruin",
       "snowy_summit_ruin",
       "hearthglow_hollow_ruin",
+      "aurora_rift_ruin",
       "boss_prehistoric",
       "boss_snowy",
       "boss_desert",

@@ -558,6 +558,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "aurora_rift",
     music: "aurora",
     load: { scene: "track", packageId: "aurora_rift" },
+    ruin: "aurora_rift_ruin",
+  },
+  {
+    id: "aurora_rift_ruin",
+    name: "Aurora Rift (Ruined)",
+    description:
+      "The glacier's roof has fallen: round the Monolith, over the broken bridge, round the broken Loop, back over the fallen ice.",
+    preview: "previews/aurora_rift_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "aurora_ruins",
+    music: "aurora",
+    load: { scene: "track", packageId: "aurora_rift_ruin" },
   },
   // Desert World (src/game/worlds.ts), built by tools/blender/prehistoric/canyon_*.py.
   {

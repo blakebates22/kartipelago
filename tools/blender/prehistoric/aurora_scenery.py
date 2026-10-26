@@ -277,9 +277,10 @@ def glacier(c, ar, cell=12.0):
     return c.mesh_object("Glacier", bm, "Glacier")
 
 
-def caverns(c, ar, P):
+def caverns(c, ar, P, more=None):
     """Cut the caverns out of the glacier. Returns (solid, info) where info has the
-    Cathedral's and the lake cavern's outlines (for dressing them)."""
+    Cathedral's and the lake cavern's outlines (for dressing them). `more(solid)`: more
+    cuts before it's painted (the ruin's fallen roof)."""
     solid = glacier(c, ar)
     info = {}
     # 1. The entrance tunnel: from the face, growing taller and wider toward the Cathedral.
@@ -343,6 +344,8 @@ def caverns(c, ar, P):
     # through them from the bridges).
     for k, x in enumerate(P["face_fractures"]):
         apply_cut(c, solid, slab(c, (x, -40.0, ar.Z_CATH + 10), (5.0 + k, 170.0, 110.0), 0.12 * (k - 1), name="Face Fracture"))
+    if more:
+        more(solid)
     paint_glacier(c, ar, solid, info)
     return solid, info
 

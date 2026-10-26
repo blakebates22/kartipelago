@@ -1,0 +1,292 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    161.93,
+    29.56,
+    74.0
+   ],
+   "heading": 3.14159,
+   "width": 51.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     161.931,
+     29.074,
+     70.231
+    ],
+    "heading": 3.14119
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    156.046,
+    26.424,
+    39.521
+   ],
+   "heading": -2.56042,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     153.478,
+     26.203,
+     36.193
+    ],
+    "heading": -2.42456
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    99.1,
+    25.0,
+    -0.737
+   ],
+   "heading": -3.04284,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     98.908,
+     25.0,
+     -4.762
+    ],
+    "heading": 3.13302
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    117.66,
+    25.0,
+    -30.715
+   ],
+   "heading": 1.90371,
+   "width": 52.513,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     121.9,
+     25.0,
+     -31.54
+    ],
+    "heading": 1.75807
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    216.674,
+    24.705,
+    -38.102
+   ],
+   "heading": 2.1628,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     220.013,
+     24.593,
+     -40.649
+    ],
+    "heading": 2.29822
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    231.93,
+    24.0,
+    -80.393
+   ],
+   "heading": -3.14117,
+   "width": 50.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     231.93,
+     24.0,
+     -84.756
+    ],
+    "heading": -3.14159
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    269.107,
+    24.118,
+    -193.859
+   ],
+   "heading": 2.13099,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     272.648,
+     24.138,
+     -195.788
+    ],
+    "heading": 2.00493
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    329.93,
+    24.516,
+    -146.386
+   ],
+   "heading": -0.0,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     329.93,
+     24.528,
+     -142.249
+    ],
+    "heading": -0.0
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    329.93,
+    25.114,
+    -78.646
+   ],
+   "heading": -0.0,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     329.93,
+     25.165,
+     -74.685
+    ],
+    "heading": -0.0
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    329.93,
+    26.754,
+    41.261
+   ],
+   "heading": -0.0,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     329.93,
+     26.79,
+     45.144
+    ],
+    "heading": -0.0
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    276.508,
+    28.004,
+    129.0
+   ],
+   "heading": -1.5708,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     272.334,
+     28.01,
+     129.0
+    ],
+    "heading": -1.5708
+   }
+  },
+  {
+   "id": "cp11",
+   "index": 11,
+   "route": "main",
+   "position": [
+    249.191,
+    28.029,
+    129.0
+   ],
+   "heading": -1.5708,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     245.156,
+     28.031,
+     129.0
+    ],
+    "heading": -1.5708
+   }
+  },
+  {
+   "id": "cp12",
+   "index": 12,
+   "route": "main",
+   "position": [
+    174.167,
+    28.521,
+    117.842
+   ],
+   "heading": -2.34074,
+   "width": 53.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     171.182,
+     28.624,
+     114.582
+    ],
+    "heading": -2.44065
+   }
+  }
+ ]
+}

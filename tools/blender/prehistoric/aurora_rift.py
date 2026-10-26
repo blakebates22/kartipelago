@@ -31,9 +31,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "aurora_rift"
+# The ruin (aurora_ruins.py): the dragons brought the glacier's roof down. The caverns lie
+# open to the sky, the ice bridge's tunnel is a cutting, Mirror Lake's cavern and the
+# ascent are buried, and the Loop has lost half its top. The lap stays in the wrecked
+# Cathedral: in at the old tunnel, round the Monolith, over the broken bridge, along the
+# causeway and round the Loop (it still carries you across the missing top), then back
+# over the fallen ice: down the Cathedral's broken east end and along the glacier's face,
+# fallen into the Rift. Everything else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "aurora_rift_ruin" if RUIN else "aurora_rift"
 
 LOOP_R, LOOP_RAMP, LOOP_SHIFT = 24.0, 28.0, 18.0
 START = (0.0, -250.0)
@@ -71,9 +80,30 @@ LAYOUT = [
     ("S", 30),  # 30 onto the finish straight
 ]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 18, 24, START, 90.0)
+STANDARD_LAYOUT, STANDARD_PATH = LAYOUT, PATH
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 LOOP_SEG = 12
+if RUIN:
+    # Blake: about 45% shorter, the whole cavern decimated, the Loop's top half missing.
+    # The course's own road from 20 m into the old tunnel to the Loop's exit (0-7: its
+    # segments 6-13, exactly where they were), then the way back over the fallen ice
+    # (8-13). The start is in the tunnel.
+    _p6 = next(p for p in STANDARD_PATH if p[3] == 6)
+    START_IN = 20.0
+    START = (_p6[0], _p6[1] + START_IN)
+    LAYOUT = [("S", STANDARD_LAYOUT[6][1] - START_IN)] + STANDARD_LAYOUT[7:14] + [
+        ("R", 40, 180),  # 8  round through the Cathedral's broken east end...
+        ("S", 248.69),  # 9  ...south down it over the fallen ice (closes the loop)
+        ("R", 40, 90),  # 10 out over the Rift, west...
+        ("S", 88.0),  # 11 ...along the glacier's face, fallen into it (closes the loop)
+        ("R", 40, 90),  # 12 north, onto the ice bridge's end
+        ("S", 15),  # 13 into the old tunnel to the line
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 9, 11, START, 90.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    LOOP_SEG = 6
 
 
 def seg_of(s):
@@ -85,22 +115,23 @@ def seg_of(s):
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STANDARD_PATH if p[3] == i)
 
 
 def _seg_points(i):
-    return [p for p in PATH if p[3] == i]
+    return [p for p in STANDARD_PATH if p[3] == i]
 
 
 def _arc_centre(i):
+    """The centre of the standard lap's arc segment i (the landmarks stay put in the ruin)."""
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STANDARD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
 
 MONOLITH = _arc_centre(8)
-LOOP_IN = PATH[[k for k, p in enumerate(PATH) if p[3] == LOOP_SEG][0] - 1]
+LOOP_IN = STANDARD_PATH[[k for k, p in enumerate(STANDARD_PATH) if p[3] == 12][0] - 1]
 LOOP_HEAD = LOOP_IN[2]
 
 # ---------------------------------------------------------------- heights
@@ -118,12 +149,25 @@ HEIGHT = {
 # The broken bridge's jump: (lip, landing) along the lap.
 LIP = SEG[9] + 30.0
 LAND = LIP + 10.0
+if RUIN:
+    # The course's own heights, segment for segment, to the Loop's exit; then gently up
+    # over the fallen ice to the tunnel's height at the line.
+    _std_h = HEIGHT
+    Z_LINE = lerp(_std_h[6], _std_h[7], smooth(START_IN / STANDARD_LAYOUT[6][1]))
+    HEIGHT = {0: Z_LINE, **{i - 6: _std_h[i] for i in range(7, 14)}, 8: Z_CATH, 9: Z_CATH + 0.5, 10: Z_CATH + 3.0,
+              11: Z_CATH + 4.0, 12: Z_LINE - 1.5, 13: Z_LINE - 0.5}
+    LIP = SEG[3] + 30.0
+    LAND = LIP + 10.0
 
 
 def _base_z(d, seg):
     a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
     t = (d - a) / max(1e-6, b - a)
     z0, z1 = HEIGHT[seg], HEIGHT.get(seg + 1, HEIGHT[0])
+    if RUIN:
+        if seg in (5, 6, 7):
+            return z0  # the causeway and the Loop, level
+        return lerp(z0, z1, smooth(t))
     if seg == 24:
         # Dead level across the bridge, easing down off its far end.
         return lerp(Z_BRIDGE, z1, smooth(max(0.0, (d - (b - 30)) / 30.0)))
@@ -136,6 +180,10 @@ road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 2.5, 0.9)])
 
 
 def road_w(d, seg):
+    if RUIN:
+        if seg in (5, 6, 7):
+            return 14.0  # the causeway: as wide as the Loop
+        return 15.0 if seg in (0, 3) else 17.0
     if seg in (0, 30) or d < 40:
         return 18.0
     if seg in (11, 12, 13):
@@ -159,7 +207,7 @@ def sm(t):
 
 # The Rift's band as the greybox laid out its kinds (the ice bridge, the Great Rift
 # Bridge): the dressed Rift's walls follow it.
-RIFT_Y = (_seg_point(5)[1] + _seg_point(6)[1]) / 2
+RIFT_Y = (_seg_point(5)[1] + _seg_point(6)[1]) / 2  # (the standard lap's)
 RIFT_HALF = 26.0
 ABYSS = -150.0  # the floor of the Rift and the Cathedral, lost in mist
 FACE = -92.0  # the glacier's south face (the Rift's north wall), on average
@@ -173,7 +221,7 @@ def face_y(x):
 
 # The descent's line along the wall: road y for each metre of x (the S, segments 2-4).
 _LEDGE = {}
-for _p in PATH:
+for _p in STANDARD_PATH:
     if 2 <= _p[3] <= 4:
         _k = int(round(_p[0]))
         _LEDGE[_k] = min(_LEDGE.get(_k, 1e9), _p[1])
@@ -338,7 +386,7 @@ def pickups(c, s_in, s_out):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Aurora Rift", "aurora_rift")
+    c = kit.Course(TRACK_ID, "Aurora Rift (Ruined)" if RUIN else "Aurora Rift", "aurora_ruins" if RUIN else "aurora_rift")
     (ex, ey, _), (xx, xy, _) = LOOPS[0]
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP, flat=[(ex, ey, 46), (xx, xy, 46)])
     lamps = ("edge_amber", "wall")
@@ -365,11 +413,36 @@ def main():
         "greatbridge": {"mat": "rift_road", "shoulder": 0.8, "shoulder_mat": ("rift_stone", "snow_stone"), "barrier": 1.3,
                         "barrier_mat": ("rift_carved", "wall"), "deck": 4.0, "deck_mat": stone, "ground": False},
     }
+    if RUIN:
+        # The new road over the fallen ice: slabs of the glacier lying across the abyss.
+        c.kinds["icefall"] = {"mat": "rift_road", "shoulder": 1.0, "shoulder_mat": ("glacier_wall", "snow_stone"), "barrier": 1.0,
+                              "barrier_mat": ice_wall, "deck": 10.0, "deck_mat": ice_wall, "ground": False}
     s_in = kit.s_near(c, ex, ey)
     s_out = kit.s_near(c, xx, xy)
     lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
 
+    def ruin_label(smp):
+        s = smp.s
+        if s_in <= s <= s_out or lip <= s <= land:
+            return "gap"
+        if lip - 12 <= s < lip:
+            return "kicker"
+        seg = seg_of(TO_PLAN(s))
+        if seg in (0, 13):
+            return "tunnel"
+        if seg in (1, 2, 4):
+            return "cathedral"
+        if seg == 3:
+            return "bridge"
+        if seg in (5, 6, 7):
+            return "causeway"
+        if seg == 12:
+            return "icebridge" if abs(smp.p.y - RIFT_Y) < RIFT_HALF + 4 else "tunnel"
+        return "icefall"
+
     def label(smp):
+        if RUIN:
+            return ruin_label(smp)
         s = smp.s
         if s_in <= s <= s_out or lip <= s <= land:
             return "gap"
@@ -412,14 +485,48 @@ def main():
     c.roads(kit.plan(c, specials, "snowfield", max_len=200.0))
 
     lp = kit.LoopPath(ex, ey, Z_CATH, LOOP_HEAD, LOOP_R, LOOP_RAMP, LOOP_SHIFT, 14.0)
+    # (The ruin's Loop has lost the top of its far side; the game still carries you over.)
     c.loop(lp, road_mat=("rift_road", "snow_stone"), side_mat=("glacier_wall", "wall"), rail_mat=("rift_stone", "wall"),
-           glow_mat=("edge_amber", "wall"), thickness=1.8, rail=1.0, min_speed=15.0, commit=20.0, boost=(1.4, 2.0), gravity=8.0)
+           glow_mat=("edge_amber", "wall"), thickness=1.8, rail=1.0, min_speed=15.0, commit=20.0, boost=(1.4, 2.0), gravity=8.0,
+           gaps=[(0.42, 0.68)] if RUIN else ())
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], lp, s_in, s_out)
+        c.finish()
+        print("lap", round(c.length, 1))
+        return
 
     import aurora_scenery  # noqa: E402
 
     aurora_scenery.build(c, sys.modules[__name__], lp, s_in, s_out)
     c.finish()
     print("lap", round(c.length, 1))
+
+
+def ruin_pickups(c, s_in, s_out):
+    """The ruin's zippers, items, respawn zone and checkpoints."""
+    lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
+    S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    # Zippers: the jump's run-up, the causeway into the Loop (it needs speed), down the
+    # fallen east end, along the fallen face.
+    for at in (TO_ROAD(LIP - 36), S(5) + 8, S(9) + 60, S(11) + 10):
+        c.zipper(at, 0)
+    for at, across in ((S(2) + 30, 0), (S(9) + 140, 0), (S(11) + 50, 2)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in (
+        (S(1) + 20, 0, "green"),
+        (S(4) + 20, -3, "red"),
+        (S(4) + 20, 3, "blue"),
+        (S(8) + 50, 0, "rainbow"),
+        (S(9) + 200, 0, "yellow"),
+        (S(12) + 20, 0, "red"),
+    ):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(lip - 20, 1), "to": round(land + 4, 1), "at": round(land + 18, 1)})
+    c.checkpoints(
+        extra=[S(1) + 20, S(2) + 40, S(4) + 20, S(8) + 40, S(9) + 80, S(9) + 200, S(11) + 40, S(12) + 30],
+        avoid=[(s_in - 6, s_out + 6), (lip - 14, land + 8)],
+        height=10.0,
+    )
 
 
 if __name__ == "__main__":
