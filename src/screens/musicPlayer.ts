@@ -25,6 +25,9 @@ export function musicPlayer(game: Game): Screen {
   let loop = true;
   let clicked: (() => void) | undefined;
   const rows = CATALOG.length + 2; // songs, LOOP, VOLUME
+  // The list scrolls: VISIBLE rows at a time, the window following the focus.
+  const VISIBLE = 10;
+  let top = 0;
 
   const status = () =>
     preparing ? "PREPARING..." : paused ? "PAUSED" : playing ? "PLAYING" : "STOPPED";
@@ -144,9 +147,18 @@ export function musicPlayer(game: Game): Screen {
         outline: PAL.shadow,
         align: "right",
       });
-      // The list.
+      // The list: a window of VISIBLE rows round the focus, arrows when there's more.
+      if (focus < CATALOG.length) {
+        if (focus < top + 2) top = focus - 2;
+        if (focus > top + VISIBLE - 3) top = focus - VISIBLE + 3;
+      }
+      top = Math.max(0, Math.min(CATALOG.length - VISIBLE, top));
+      const arrow = { color: PAL.gold, outline: PAL.shadow };
+      if (top > 0) ui.text("▲", x + 4, y + 64, arrow);
+      if (top + VISIBLE < CATALOG.length) ui.text("▼", x + 4, y + 64 + (VISIBLE - 1) * 11, arrow);
       CATALOG.forEach((c, i) => {
-        const ry = y + 64 + i * 11;
+        if (i < top || i >= top + VISIBLE) return;
+        const ry = y + 64 + (i - top) * 11;
         const on = focus === i;
         if (on) ui.rect(x + 10, ry - 2, w - 20, 11, "#1d120a", 0.5);
         const mark = c.id === (paused?.id ?? playing) ? "♪" : " ";
@@ -165,7 +177,7 @@ export function musicPlayer(game: Game): Screen {
         }
       });
       // Loop and volume.
-      const cy = y + 64 + CATALOG.length * 11 + 4;
+      const cy = y + 64 + VISIBLE * 11 + 6;
       const onLoop = focus === CATALOG.length;
       const onVol = focus === CATALOG.length + 1;
       if (onLoop) ui.rect(x + 10, cy - 2, 120, 11, "#1d120a", 0.5);

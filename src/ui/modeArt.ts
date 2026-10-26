@@ -3,7 +3,7 @@
  *
  * - a vista from a stone terrace: the Prehistoric island on the left (volcano,
  *   waterfalls off green cliffs, a palm islet), open sea in the middle, and the desert
- *   mesas and a Dragon Kingdom pagoda with an arched bridge on the right, a serpent
+ *   mesas and the Dragon Kingdom's castle towers with an arched bridge on the right, a
  *   dragon gliding through the sky above it;
  * - a jungle tree with hanging vines framing the top left, and a friendly long-necked
  *   dinosaur on a broken temple plinth below it;
@@ -204,28 +204,28 @@ function paintVista(W: number, H: number): HTMLCanvasElement {
   px(g, W - 70, wallTop(W - 70), 5, TERRACE - wallTop(W - 70), "#bfe6f7");
   px(g, W - 69, wallTop(W - 70), 1, TERRACE - wallTop(W - 70), "#ffffff");
   if (layout === 2) {
-    // The Dragon Kingdom's jade cliffs beyond the canyon, its pagodas on top; the
+    // The Dragon Kingdom's cliffs beyond the canyon, its castle towers on top; the
     // canyon's natural arch in front.
     jadeCliff(g, W - 84, W, wallTop, TERRACE);
-    pagoda(g, W - 16, wallTop(W - 16), 1.3);
-    pagoda(g, W - 46, wallTop(W - 46), 0.95);
-    pagoda(g, W - 74, wallTop(W - 74), 0.75);
+    castleTower(g, W - 16, wallTop(W - 16), 1.3);
+    castleTower(g, W - 46, wallTop(W - 46), 0.95);
+    castleTower(g, W - 74, wallTop(W - 74), 0.75);
     naturalArch(g, W - 128, wallTop(W - 128) + 1, 34, 30);
   } else if (layout === 3) {
     // The canyon on its own, a natural arch on its lowest terrace.
     naturalArch(g, W - 128, wallTop(W - 128) + 1, 34, 30);
     naturalArch(g, W - 62, wallTop(W - 62) + 1, 26, 22);
   } else {
-    // Pagodas on the high terraces.
-    pagoda(g, W - 16, wallTop(W - 16), 1.3);
-    pagoda(g, W - 46, wallTop(W - 46), 0.95);
-    pagoda(g, W - 76, wallTop(W - 76), 0.75);
-    pagoda(g, W - 108, wallTop(W - 108), 0.6);
+    // The Dragon Kingdom's castle towers on the high terraces.
+    castleTower(g, W - 16, wallTop(W - 16), 1.3);
+    castleTower(g, W - 46, wallTop(W - 46), 0.95);
+    castleTower(g, W - 76, wallTop(W - 76), 0.75);
+    castleTower(g, W - 108, wallTop(W - 108), 0.6);
     // An arched bridge from the lowest terrace to the cliff.
     arches(g, W - 132, W - 104, wallTop(W - 104) + 4);
   }
   // Four corners: the Dragon Kingdom as a floating island high over the canyon.
-  if (layout === 3) floatingIsland(g, W - 44, 78, 18, pagoda);
+  if (layout === 3) floatingIsland(g, W - 44, 78, 18, castleTower);
 
   // ---- the jungle tree, top left
   const tx = 14;
@@ -291,38 +291,36 @@ function palm(g: G, x: number, y: number, s: number) {
     }
 }
 
-function pagoda(g: G, x: number, y: number, s: number) {
-  const tiers = 3;
-  let w = 22 * s;
-  let yy = y;
-  // Base wall.
-  px(g, x - w / 2, yy - 4 * s, w, 6 * s, "#e8dcc4");
-  px(g, x - w / 2, yy - 4 * s, w, 1, "#ffffff");
-  yy -= 4 * s;
-  for (let t = 0; t < tiers; t++) {
-    const bodyH = 6 * s;
-    px(g, x - w / 2 + 3 * s, yy - bodyH, w - 6 * s, bodyH, "#b8322a");
-    for (let k = 0; k < 3; k++)
-      px(
-        g,
-        x - w / 2 + 5 * s + k * ((w - 10 * s) / 2),
-        yy - bodyH + 2 * s,
-        2 * s,
-        2 * s,
-        "#ffd36a",
-      );
-    yy -= bodyH;
-    // Upturned roof.
-    const rw = w + 6 * s;
-    px(g, x - rw / 2, yy - 2 * s, rw, 2 * s, "#2f4f7a");
-    px(g, x - rw / 2 - 1, yy - 3 * s, 2 * s, 1 * s + 1, "#2f4f7a");
-    px(g, x + rw / 2 - 2 * s + 1, yy - 3 * s, 2 * s, 1 * s + 1, "#2f4f7a");
-    px(g, x - rw / 2 + 2 * s, yy - 4 * s, rw - 4 * s, 2 * s, "#3d6496");
-    px(g, x - rw / 2, yy, rw, 1, "#f7c948");
-    yy -= 4 * s;
-    w *= 0.75;
+/** A Dragon Kingdom castle tower (Dragonspire Keep's look): a grey-violet stone tower on
+ * a wall, battlements, lit windows, a slate cone spire and a crimson banner. */
+function castleTower(g: G, x: number, y: number, s: number) {
+  const wall = 22 * s;
+  px(g, x - wall / 2, y - 5 * s, wall, 6 * s, "#8e88a4");
+  px(g, x - wall / 2, y - 5 * s, wall, 1, "#b4aec6");
+  for (let k = 0; k < wall; k += 4 * s) px(g, x - wall / 2 + k, y - 7 * s, 2 * s, 2 * s, "#8e88a4");
+  const bw = 10 * s;
+  const bh = 20 * s;
+  const top = y - 5 * s - bh;
+  px(g, x - bw / 2, top, bw, bh, "#8a84a0");
+  px(g, x - bw / 2, top, 2 * s, bh, "#a49eb8");
+  px(g, x + bw / 2 - 2 * s, top, 2 * s, bh, "#6e6886");
+  for (let k = 0; k < 2; k++) px(g, x - s, top + 5 * s + k * 7 * s, 2 * s, 3 * s, "#ffd36a");
+  // Battlements.
+  px(g, x - bw / 2 - s, top - s, bw + 2 * s, 2 * s, "#9a94ae");
+  for (let k = 0; k < 4; k++)
+    px(g, x - bw / 2 - s + k * ((bw - s) / 3), top - 3 * s, 2 * s, 2 * s, "#9a94ae");
+  // The spire: a slate cone, lit on one side.
+  const sh = 14 * s;
+  for (let r = 0; r < sh; r++) {
+    const half = ((bw / 2) * (sh - r)) / sh;
+    px(g, x - half, top - 3 * s - r, half, 1, "#56628a");
+    px(g, x, top - 3 * s - r, half, 1, "#3e4a6e");
   }
-  px(g, x - 1, yy - 4 * s, 2, 4 * s, "#f7c948");
+  // A crimson banner from its tip.
+  const tip = top - 3 * s - sh;
+  px(g, x, tip - 4 * s, 1, 4 * s, "#3a2a2a");
+  px(g, x + 1, tip - 4 * s, 4 * s, 2 * s, "#c8302a");
+  px(g, x + 1, tip - 2 * s, 2 * s, s, "#a82420");
 }
 
 function arches(g: G, x0: number, x1: number, y: number) {

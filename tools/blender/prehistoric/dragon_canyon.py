@@ -41,8 +41,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 import dcanyon_land as L  # noqa: E402
+import ruin_mode  # noqa: E402
 
-TRACK_ID = "dragon_canyon"
+# The ruin (dragon_canyon_ruins.py; dcanyon_land.py lays its lap out): the blast tore the
+# canyon apart; the lap keeps the hairpins, the broken Canyon Bridge (a jump) and the
+# Skeleton Pass, then runs down the slip the blast cut, over the river on fused rock,
+# home.
+RUIN = ruin_mode.ON
+TRACK_ID = "dragon_canyon_ruin" if RUIN else "dragon_canyon"
 
 ROUTE = kit.route_points_by([(p[0], p[1], p[2], 0) for p in L.PATH], L.road_z, every=6.0, width=L.road_w)
 S = L.S
@@ -54,7 +60,7 @@ def main():
     import emerald  # noqa: E402
     import isles_props  # noqa: E402
 
-    c = kit.Course(TRACK_ID, "Dragon Canyon", "emerald_kingdom")
+    c = kit.Course(TRACK_ID, "Dragon Canyon (Ruined)" if RUIN else "Dragon Canyon", "emerald_ruins" if RUIN else "emerald_kingdom")
     emerald.install(dcanyon_town, isles_props, dcanyon_props)
     c.route(ROUTE, width=14.0, bank=6.0)
     kerb = ("kerb_redwhite", "road")
@@ -75,9 +81,19 @@ def main():
         "river": {"mat": "frontier_road", "shoulder": 1.2, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": timber},
     }
     zone_kind = {"outpost": "outpost", "hairpins": "ledge", "descent": "ledge", "skeleton": "skeleton", "quarry": "quarry",
-                 "caverns": "cavern", "bridges": "ledge", "oasis": "oasis", "river": "river", "watchtower": "ledge", "twist": "ledge"}
+                 "caverns": "cavern", "bridges": "ledge", "oasis": "oasis", "river": "river", "watchtower": "ledge", "twist": "ledge",
+                 "slip": "slip"}
+    if RUIN:
+        c.kinds["slip"] = {"mat": "frontier_road", "shoulder": 1.6, "shoulder_mat": ("canyon_scree", "loose_sand")}
+        c.kinds["kicker"] = {"mat": "imperial_setts", "shoulder": 0.8, "shoulder_mat": kerb, "deck": 4.0, "deck_mat": stone, "ground": False}
 
     def label(smp):
+        if RUIN:
+            a, b = L.BREAK
+            if a <= smp.s <= b:
+                return "gap"
+            if a - 12 <= smp.s < a:
+                return "kicker"
         x, y = smp.p.x, smp.p.y
         below = min(L.ground(x + ox, y + oy) for ox, oy in ((0, 0), (5, 0), (-5, 0), (0, 5), (0, -5)))
         if below < smp.p.z - 3.5:
@@ -86,13 +102,34 @@ def main():
             return "quarry_open"
         return zone_kind[L.zone_of(smp.s)]
 
-    specials = [r for r in kit.runs(c, label) if r[2] != "ledge"]
+    specials = [r if r[2] != "kicker" else (r[0], r[1], "kicker", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2})
+                for r in kit.runs(c, label) if r[2] != "ledge"]
+    specials = [(r[0], r[1], None) if r[2] == "gap" else r for r in specials]
     c.roads(kit.plan(c, specials, "ledge", max_len=180.0))
 
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__])
+        ruin_gameplay(c)
+        c.finish()
+        return
     import dcanyon_scenery  # noqa: E402
 
     dcanyon_scenery.build(c, sys.modules[__name__])
     c.finish()
+
+
+def ruin_gameplay(c):
+    """The ruin's boosts, pickups, respawn and checkpoints."""
+    for at in (S["c1"] + 10, L.BREAK[0] - 34, S["k1"] + 10, S["f1"] - 30, S["f2"] + 10):
+        c.zipper(at, 0)
+    for at, across in ((S["h1b"] + 10, 0), (S["n3"] + 10, 0), (S["k2"] + 20, 3), (S["f1"] + 40, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((20.0, -4, "red"), (20.0, 4, "blue"), (S["h2a"] + 10, 0, "green"), (S["n3"] + 30, 0, "yellow"),
+                            (S["k3"] + 10, -4, "rainbow"), (S["k3"] + 10, 4, "red"), (S["f1"] + 90, 0, "blue")):
+        c.balloon(at, across, col)
+    a, b = L.BREAK
+    c.entity("respawn", **{"from": round(a - 20, 1), "to": round(b + 4, 1), "at": round(b + 18, 1)})
+    c.checkpoints(extra=[S["h1a"], S["h2a"], S["n1"], S["n3"], S["k2"], S["f1"], S["f2"], S["x5"]], avoid=[(a - 14, b + 8)], height=10.0)
 
 
 if __name__ == "__main__":

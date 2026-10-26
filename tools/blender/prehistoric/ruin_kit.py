@@ -175,3 +175,20 @@ def kit_vec(v):
     from mathutils import Vector
 
     return Vector(v)
+
+
+def tube_between(bm, a, b, ra, rb, n=14):
+    """A closed tapering cylinder from a to b."""
+    from mathutils import Vector
+
+    ax = (b - a).normalized()
+    up = Vector((0, 0, 1))
+    u = ax.cross(up).normalized()
+    v = u.cross(ax).normalized()
+    rings = []
+    for p, r in ((a, ra), (b, rb)):
+        rings.append([bm.verts.new(p + (u * math.cos(k * math.tau / n) + v * math.sin(k * math.tau / n)) * r) for k in range(n)])
+    for k in range(n):
+        bm.faces.new((rings[0][k], rings[0][(k + 1) % n], rings[1][(k + 1) % n], rings[1][k]))
+    bm.faces.new(list(reversed(rings[0])))
+    bm.faces.new(rings[1])

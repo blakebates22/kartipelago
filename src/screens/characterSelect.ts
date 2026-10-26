@@ -26,7 +26,8 @@ import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits"
 import { mysteryEgg, selectBackdrop, type SelectBackdrop } from "../ui/selectArt";
 import { hints } from "./common";
 import { modeSelect } from "./modeSelect";
-import { titleScreen } from "./title";
+import { tracksMenu } from "./tracks";
+import { adventureFiles, startFile } from "./adventure";
 
 /** Roster slots still to come (the locked tiles). */
 const LOCKED = 0;
@@ -55,7 +56,10 @@ function frame(
   ui.rect(x + 3, y + 3, w - 6, h - 6, fill ?? "#12162e");
 }
 
-export function characterSelect(game: Game): Screen {
+/** `adventure`: picking the racer for that Adventure save file (kept for its whole story);
+ * otherwise for Tracks mode. */
+export function characterSelect(game: Game, opts: { adventure?: number } = {}): Screen {
+  const forFile = opts.adventure;
   // The backdrop: a jungle at dawn (?selectbg=ruins|vista shows the other options).
   const bgParam =
     typeof location !== "undefined" ? new URLSearchParams(location.search).get("selectbg") : null;
@@ -151,7 +155,12 @@ export function characterSelect(game: Game): Screen {
   function drawRoster(ui: UiLayer) {
     const d = DESIGNS[id()];
     selectBackdrop(ui.g, ui.W, ui.H, backdrop, t, game.settings.general.reduceMotion);
-    banner(ui, "SELECT RACER", 6, "#c8322a");
+    banner(
+      ui,
+      forFile === undefined ? "SELECT RACER" : `FILE ${forFile + 1}: YOUR RACER`,
+      6,
+      "#c8322a",
+    );
     // The big portrait, turning.
     const px = 14;
     const py = 34;
@@ -329,12 +338,15 @@ export function characterSelect(game: Game): Screen {
         } else if (a === "confirm") choose();
         else if (a === "back" && picked < 0) {
           game.sounds.back();
-          game.screens.go(titleScreen(game, true));
+          game.screens.go(forFile === undefined ? modeSelect(game) : adventureFiles(game));
         }
       }
       if (picked >= 0) {
         picked += dt;
-        if (picked > 1.4) game.screens.go(modeSelect(game));
+        if (picked > 1.4) {
+          if (forFile === undefined) game.screens.go(tracksMenu(game));
+          else startFile(game, id());
+        }
       }
     },
     draw(ui) {

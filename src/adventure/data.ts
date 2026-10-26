@@ -101,8 +101,8 @@ export const KINGDOMS: Kingdom[] = [
     courses: [
       { track: "canyon_dash", ruin: "canyon_dash_ruin" },
       { track: "oasis_haven", ruin: "oasis_haven_ruin" },
-      { track: "dry_gulch" },
-      { track: "impact_depths" },
+      { track: "dry_gulch", ruin: "dry_gulch_ruin" },
+      { track: "impact_depths", ruin: "impact_depths_ruin" },
     ],
     boss: { name: "Scorchwind", track: "boss_desert", speed: 1.0 },
     tool: { id: "desert_tool", name: "Desert Tool" },
@@ -123,10 +123,10 @@ export const KINGDOMS: Kingdom[] = [
     name: "Beach Kingdom",
     worldId: "beach",
     courses: [
-      { track: "coral_cove" },
-      { track: "shipwreck_bay" },
-      { track: "volcano_isle" },
-      { track: "splash_lagoon" },
+      { track: "coral_cove", ruin: "coral_cove_ruin" },
+      { track: "shipwreck_bay", ruin: "shipwreck_bay_ruin" },
+      { track: "volcano_isle", ruin: "volcano_isle_ruin" },
+      { track: "splash_lagoon", ruin: "splash_lagoon_ruin" },
     ],
     boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.0 },
     tool: { id: "beach_tool", name: "Beach Tool" },
@@ -150,10 +150,10 @@ export const DRAGON = {
   name: "Dragon Kingdom",
   worldId: "dragon",
   courses: [
-    { track: "dragon_isles" },
-    { track: "dragon_canyon" },
-    { track: "snow_dragon_pass" },
-    { track: "celestial_dragon_festival" },
+    { track: "dragon_isles", ruin: "dragon_isles_ruin" },
+    { track: "dragon_canyon", ruin: "dragon_canyon_ruin" },
+    { track: "snow_dragon_pass", ruin: "snow_dragon_pass_ruin" },
+    { track: "celestial_dragon_festival", ruin: "celestial_dragon_festival_ruin" },
   ] as AdventureCourse[],
   /** The final race. In the first, scripted race his advantage can't be beaten
    * (`speed`); as the Chosen One, the placeholder ability cancels it (`chosenSpeed`). */

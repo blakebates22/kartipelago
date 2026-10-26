@@ -382,7 +382,13 @@ def project(ob, faces=None):
     """
     Re-project the UVs of `faces` (polygon indices; None = every face that has a tile
     size) from their stored kp_uv_size / kp_uv_rot / kp_uv_aspect. Returns the count.
+
+    The same projection as planar(), face by face, done in bulk with numpy (reading a UV
+    loop one at a time from Python costs about a tenth of a millisecond each, which made a
+    big ground mesh take most of an hour).
     """
+    import numpy as np
+
     me = ob.data
     size = me.attributes.get("kp_uv_size")
     if size is None:
@@ -390,24 +396,55 @@ def project(ob, faces=None):
     rot = me.attributes.get("kp_uv_rot")
     asp = me.attributes.get("kp_uv_aspect")
     uv = me.uv_layers.active or me.uv_layers.new(name="UVMap")
-    mw = ob.matrix_world
-    nm = mw.inverted_safe().transposed().to_3x3()
-    verts, loops = me.vertices, me.loops
-    polys = me.polygons if faces is None else [me.polygons[i] for i in faces]
-    count = 0
-    for p in polys:
-        s = size.data[p.index].value
-        if s <= 0:
-            continue
-        a = asp.data[p.index].value if asp else 0.5
-        r = math.radians(rot.data[p.index].value) if rot else 0.0
-        c, sn = math.cos(r), math.sin(r)
-        n = (nm @ p.normal).normalized()
-        for li in p.loop_indices:
-            u, v = planar(n, mw @ verts[loops[li].vertex_index].co)
-            uv.data[li].uv = ((u * c - v * sn) / s, (u * sn + v * c) / (s * max(a, 1e-3)))
-        count += 1
-    return count
+    npoly, nloop, nvert = len(me.polygons), len(me.loops), len(me.vertices)
+    if npoly == 0:
+        return 0
+
+    def get(coll, attr, n, width=1, dtype=np.float32):
+        a = np.empty(n * width, dtype=dtype)
+        coll.foreach_get(attr, a)
+        return a.reshape(n, width) if width > 1 else a
+
+    S = get(size.data, "value", npoly)
+    A = get(asp.data, "value", npoly) if asp else np.full(npoly, 0.5, np.float32)
+    R = get(rot.data, "value", npoly) if rot else np.zeros(npoly, np.float32)
+    pick = np.arange(npoly) if faces is None else np.asarray(list(faces), dtype=np.int64)
+    if pick.size == 0:
+        return 0
+    pick = pick[S[pick] > 0]
+    if pick.size == 0:
+        return 0
+    # Normals to world space (the inverse transpose), normalised: as planar() is given.
+    mw = np.array(ob.matrix_world, dtype=np.float32)
+    nm = np.array(ob.matrix_world.inverted_safe().transposed().to_3x3(), dtype=np.float32)
+    N = get(me.polygons, "normal", npoly, 3)[pick] @ nm.T
+    N /= np.maximum(np.linalg.norm(N, axis=1, keepdims=True), 1e-12)
+    start = get(me.polygons, "loop_start", npoly, dtype=np.int64)[pick]
+    total = get(me.polygons, "loop_total", npoly, dtype=np.int64)[pick]
+    # Every loop of the picked faces, and which picked face it belongs to.
+    owner = np.repeat(np.arange(pick.size), total)
+    li = np.repeat(start - np.cumsum(total) + total, total) + np.arange(int(total.sum()))
+    vi = get(me.loops, "vertex_index", nloop, dtype=np.int64)[li]
+    co = get(me.vertices, "co", nvert, 3)[vi]
+    P = co @ mw[:3, :3].T + mw[:3, 3]
+    n = N[owner]
+    ax, ay, az = np.abs(n[:, 0]), np.abs(n[:, 1]), np.abs(n[:, 2])
+    floor = (az >= ax) & (az >= ay)
+    xwall = ~floor & (ax >= ay)
+    ywall = ~floor & ~xwall
+    u = np.where(floor, P[:, 0], np.where(xwall, np.where(n[:, 0] > 0, P[:, 1], -P[:, 1]), np.where(n[:, 1] > 0, -P[:, 0], P[:, 0])))
+    v = np.where(floor, P[:, 1], P[:, 2])
+    del ywall
+    r = np.radians(R[pick].astype(np.float64))[owner]
+    c, sn = np.cos(r), np.sin(r)
+    s = S[pick].astype(np.float64)[owner]
+    a = np.maximum(A[pick].astype(np.float64)[owner], 1e-3)
+    u, v = u.astype(np.float64), v.astype(np.float64)
+    out = get(uv.data, "uv", nloop, 2)
+    out[li, 0] = (u * c - v * sn) / s
+    out[li, 1] = (u * sn + v * c) / (s * a)
+    uv.data.foreach_set("uv", out.ravel())
+    return int(pick.size)
 
 
 def assign_faces(ob, mat, faces, size, rot_deg, asp):

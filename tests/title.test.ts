@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
 import { createHazards, type HazardConfig } from "../src/game/hazards";
-import { TITLE_TRACK, TRACKS } from "../src/game/tracks";
+import { TITLE_MONTAGE, TITLE_TRACK, TRACKS, trackById } from "../src/game/tracks";
 import { WORLDS } from "../src/game/worlds";
 import { createMeshGround } from "../src/world/collisionMesh";
 import { buildTrack } from "../src/world/track";
@@ -17,7 +17,21 @@ const reader: PackageReader = async (file) => {
   return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 };
 
-describe("Party Beach (the title screen's course)", () => {
+describe("the title montage", () => {
+  it("shows real courses from every world, each in the main game", () => {
+    for (const t of TITLE_MONTAGE) {
+      expect(trackById(t), t).toBeDefined();
+      expect(
+        WORLDS.some((w) => w.tracks.includes(t)),
+        t,
+      ).toBe(true);
+    }
+    const worlds = new Set(TITLE_MONTAGE.map((t) => WORLDS.find((w) => w.tracks.includes(t))!.id));
+    expect(worlds.size).toBe(5);
+  });
+});
+
+describe("Party Beach (the title screen's fallback course)", () => {
   it("is only on the title screen: not in track select", () => {
     expect(TRACKS.some((t) => t.id === id)).toBe(false);
     expect(WORLDS.some((w) => w.tracks.includes(id))).toBe(false);

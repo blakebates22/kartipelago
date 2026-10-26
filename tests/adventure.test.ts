@@ -15,6 +15,8 @@ import {
   kingFinished,
   kingdomPhase,
   loadAdventure,
+  eraseAdventure,
+  SLOTS,
   markSeen,
   newSave,
   objective,
@@ -60,13 +62,18 @@ describe("the story data", () => {
     expect(sceneById("intro")).toBeDefined();
   });
 
-  it("the valley's built ruins are used; the others stand in", () => {
+  it("every course's ruin is built and used; one that isn't would stand in", () => {
     const v = KINGDOMS[0]!;
     expect(coinCourse(v.courses[0]!, exists)).toEqual({
       track: "riverbend_palms_ruin",
       standIn: false,
     });
-    expect(coinCourse(KINGDOMS[2]!.courses[2]!, exists).standIn).toBe(true);
+    for (const c of [...KINGDOMS.flatMap((k) => k.courses), ...DRAGON.courses])
+      expect(coinCourse(c, exists).standIn, c.track).toBe(false);
+    expect(coinCourse({ track: "coral_cove" }, exists)).toEqual({
+      track: "coral_cove",
+      standIn: true,
+    });
   });
 
   it("four coins spread round the lap", () => {
@@ -176,6 +183,31 @@ describe("the save", () => {
     expect(j.pieces).toEqual({});
     mem.set("kartipelago.adventure.v1", "not json");
     expect(loadAdventure(store)).toBeUndefined();
+  });
+
+  it("three files, each with its own story and racer; file 1 is the old save", () => {
+    const mem = new Map<string, string>();
+    const store = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => void mem.set(k, v),
+      removeItem: (k: string) => void mem.delete(k),
+    };
+    expect(SLOTS).toBe(3);
+    const a = newSave();
+    a.racer = "tiko";
+    cupFinished(a, "valley", 1);
+    const b = newSave();
+    b.racer = "pebble";
+    saveAdventure(a, store, 0);
+    saveAdventure(b, store, 2);
+    expect(mem.has("kartipelago.adventure.v1")).toBe(true);
+    expect(loadAdventure(store, 0)).toEqual(a);
+    expect(loadAdventure(store, 1)).toBeUndefined();
+    expect(loadAdventure(store, 2)!.racer).toBe("pebble");
+    expect(loadAdventure(store, 2)!.cups).toEqual({});
+    eraseAdventure(store, 2);
+    expect(loadAdventure(store, 2)).toBeUndefined();
+    expect(loadAdventure(store, 0)).toEqual(a);
   });
 });
 

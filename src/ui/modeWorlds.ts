@@ -1,13 +1,13 @@
 /**
  * The other worlds in the "Choose a mode" vista (see modeArt.ts), so all four can be seen
  * from the terrace: Frostveil's snowy peaks, the Desert's red-rock canyon with a natural
- * arch, the Dragon Kingdom's jade cliffs (or a floating island with a pagoda).
+ * arch, the Dragon Kingdom's jade cliffs (or a floating island with a castle tower).
  *
  * Arrangements (1 is the default; ?vista=0|2|3 shows the others):
  *   1  peaks on the horizon: a snowy range behind the sea in the middle; the canyon on
- *      the right with the pagodas on its high terraces.
+ *      the right with the castle towers on its high terraces.
  *   2  side by side: a snow peak beside the volcano on the left; on the right the red
- *      canyon and its arch, then jade cliffs with the pagodas.
+ *      canyon and its arch, then cliffs with the castle towers.
  *   3  four corners: volcano left, snowy range behind the sea, canyon and arch right, a
  *      floating Dragon Kingdom island high in the sky.
  *
@@ -93,13 +93,13 @@ export function naturalArch(g: G, x: number, base: number, w: number, h: number)
   px(g, x + leg, top + span, w - leg * 2, 1, "#8a4026");
 }
 
-/** A floating island of the Dragon Kingdom: jade turf, a hanging rock root, a pagoda. */
+/** A floating island of the Dragon Kingdom: jade turf, a hanging rock root, a castle tower. */
 export function floatingIsland(
   g: G,
   cx: number,
   cy: number,
   r: number,
-  pagoda: (g: G, x: number, y: number, s: number) => void,
+  tower: (g: G, x: number, y: number, s: number) => void,
 ) {
   // The rock underneath, tapering to a point, with roots and a waterfall.
   for (let y = 0; y < r * 1.4; y++) {
@@ -115,13 +115,13 @@ export function floatingIsland(
     const hgt = 3 + Math.round(Math.sin(x * 0.4) * 1);
     px(g, cx + x, cy - hgt, 1, hgt + 1, Math.abs(x) % 5 < 3 ? "#5aa874" : "#4f9a68");
   }
-  // Blossom trees and the pagoda.
+  // Blossom trees and the tower.
   for (const tx of [-r * 0.7, r * 0.75]) {
     px(g, cx + tx, cy - 7, 1, 4, "#5a3a22");
     px(g, cx + tx - 3, cy - 11, 7, 4, "#f2a0c0");
     px(g, cx + tx - 2, cy - 12, 5, 1, "#f8c0d8");
   }
-  pagoda(g, cx - 2, cy - 2, 0.85);
+  tower(g, cx - 2, cy - 2, 0.85);
 }
 
 /** Recolour part of the canyon wall as jade cliffs (the Dragon Kingdom's), with strata. */

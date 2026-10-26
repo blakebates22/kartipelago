@@ -35,9 +35,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "celestial_dragon_festival"
+# The ruin (celestial_dragon_festival_ruins.py): the Chosen One's sacrifice split the
+# Palace Mount. From the gate the lap turns north into the split and runs up through the
+# mount's broken heart, west along the chasm's edge (a crack the blast tore across it: a
+# leap), and down the terraces and the causeway home. About half the lap. Everything else
+# is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "celestial_dragon_festival_ruin" if RUIN else "celestial_dragon_festival"
 
 K = 1.13
 START = (0.0, 0.0)
@@ -115,9 +122,15 @@ def _base_z(d, seg):
 
 # The Star Leap: up the ramp, the gap, a landing in a dip 3 m below the road.
 road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 3.0, 1.2)], run=14.0)
+# (The standard lap: the kingdom's landmarks are laid out from it, in the ruin too.)
+STD_LAYOUT, STD_PATH, STD_SEG, STD_LENGTH, STD_HEIGHT = LAYOUT, PATH, SEG, LENGTH, HEIGHT
 
 
 def road_w(d, seg):
+    if RUIN and LAYOUT is not STD_LAYOUT:
+        if seg in (0, 10) or d < 40:
+            return 20.0
+        return 17.0 if seg in (2, 4) else 16.0
     if seg in (0, 32) or d < 40:
         return 20.0
     if seg in (14, 23):
@@ -136,25 +149,73 @@ TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STD_PATH if p[3] == i)
 
 
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
 
 SHRINE = _arc_centre(14)  # the golden dragon, inside the loop
 PINNACLE = _arc_centre(23)  # the observatory, inside the spiral
-MOUNT = (sum(p[0] for p in PATH) / len(PATH), sum(p[1] for p in PATH) / len(PATH))
-_lp = next(p for p in PATH if p[3] == 22)
+MOUNT = (sum(p[0] for p in STD_PATH) / len(STD_PATH), sum(p[1] for p in STD_PATH) / len(STD_PATH))
+_lp = next(p for p in STD_PATH if p[3] == 22)
 CHASM_Y = _lp[1]  # the Cloud Chasm, along under the Star Bridge
-LAGOON_X = max(p[0] for p in PATH if p[3] in (3, 4)) - 10.0
+LAGOON_X = max(p[0] for p in STD_PATH if p[3] in (3, 4)) - 10.0
+
+# ---------------------------------------------------------------- the ruin's lap
+
+NEW = []  # (the ruin) [(x, y, z)] along its new road: the land meets it
+CRACK = None  # (the ruin) the crack across the chasm's edge the lap leaps: (x, y)
+if RUIN:
+    LAYOUT = [STD_LAYOUT[0]] + [
+        ("L", 50.0, 90),  # 1  north from the gate
+        ("S", 250.0),  # 2  up through the split mount
+        ("L", 50.0, 90),  # 3  west
+        ("S", 117.0),  # 4  along the chasm's edge: the leap (closes the loop)
+        ("L", 40.0, 90),  # 5  south
+        ("S", 207.0),  # 6  down past the terraces (closes the loop)
+    ] + list(STD_LAYOUT[29:])  # 7-10: the overlook, round the bastion, the line
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 4, 6, START, 0.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    LIP = SEG[4] + 0.55 * (SEG[5] - SEG[4]) - 5.0
+    LAND = LIP + 11.0
+    HEIGHT = {0: 20.0, 1: 20.0, 2: 24.0, 3: 44.0, 4: 48.0, 5: 47.0, 6: 46.0}
+    HEIGHT.update({k + 7: STD_HEIGHT[k + 29] for k in range(4)})
+    CRESTS = {2: (2, 1.2), 6: (2, 1.4), 9: (1, 1.5)}
+    road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 3.0, 1.2)], run=14.0)
+    ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+    TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
+    _d = 0.0
+    for _i, (_x, _y, _h, _sg) in enumerate(PATH):
+        if _i:
+            _d += math.hypot(_x - PATH[_i - 1][0], _y - PATH[_i - 1][1])
+        if 1 <= _sg <= 6 and (not NEW or math.hypot(_x - NEW[-1][0], _y - NEW[-1][1]) >= 5.0):
+            NEW.append((_x, _y, road_z(_d, _sg)))
+        if CRACK is None and _d >= (LIP + LAND) / 2:
+            CRACK = (_x, _y)
 
 
 def natural(x, y):
+    h = _natural(x, y)
+    if NEW:
+        # (The ruin) the split through the mount: the land meets the new road, sheer
+        # within a few metres where the mount stands over it; the crack at the leap.
+        best = min(NEW, key=lambda p: (p[0] - x) ** 2 + (p[1] - y) ** 2)
+        d = math.hypot(best[0] - x, best[1] - y)
+        if d < 60.0:
+            k = smooth((d - 14.0) / (12.0 if h > best[2] + 10 else 40.0))
+            h = lerp(best[2] - 0.6, h, k)
+        if abs(x - CRACK[0]) < 6.0 and abs(y - CRACK[1]) < 30.0:
+            h = lerp(h, -40.0, smooth((6.0 - abs(x - CRACK[0])) / 2.5))
+    return h
+
+
+def _natural(x, y):
     """The Palace Mount in the middle of the lap, the lagoon to the south-east, the Cloud
     Chasm along the north-west, the cliff edge west."""
     h = 8.0 + 1.0 * math.sin(x / 25.0) * math.cos(y / 19.0)
@@ -166,7 +227,7 @@ def natural(x, y):
     h = lerp(h, -40.0, chasm)
     # Low ground round the shrine, so its loop's way in runs under the loop in the open.
     ds = math.hypot(x - SHRINE[0], y - SHRINE[1])
-    h = lerp(h, 4.0, smooth((LAYOUT[14][1] + 40.0 - ds) / 25.0))
+    h = lerp(h, 4.0, smooth((STD_LAYOUT[14][1] + 40.0 - ds) / 25.0))
     return h
 
 
@@ -185,7 +246,7 @@ def classify(c, n, info):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Moonstone Kingdom", "moonstone_kingdom")
+    c = kit.Course(TRACK_ID, "Moonstone Kingdom (Ruined)" if RUIN else "Moonstone Kingdom", "moon_ruins" if RUIN else "moonstone_kingdom")
     c.route(ROUTE, width=16.0, bank=6.0)
     kerb = ("moon_kerb", "road")
     bal = ("moon_stone", "wall")
@@ -203,6 +264,10 @@ def main():
         "ramp": {"mat": "moon_tiles", "shoulder": 1.0, "shoulder_mat": kerb, "deck": 6.0, "deck_mat": marble, "ground": False},
         "royal": {"mat": "moon_tiles", "shoulder": 1.6, "shoulder_mat": kerb, "barrier": 1.1, "barrier_mat": lanterns},
     }
+
+    if RUIN:
+        ruin_course(c)
+        return
 
     def label(smp):
         s = TO_PLAN(smp.s)
@@ -288,6 +353,61 @@ def main():
     import moon_scenery  # noqa: E402
 
     moon_scenery.build(c, sys.modules[__name__], ter)
+    c.finish()
+    print("lap", round(c.length, 1))
+
+
+def ruin_course(c):
+    """The ruin's roads, land and gameplay (celestial_dragon_festival_ruins.py dresses it)."""
+    kerb = ("moon_kerb", "road")
+    c.kinds["split"] = {"mat": "moon_tiles", "shoulder": 1.6, "shoulder_mat": ("moon_rock", "dirt")}
+    c.kinds["ramp"] = {"mat": "moon_tiles", "shoulder": 1.0, "shoulder_mat": kerb}
+
+    def label(smp):
+        s = TO_PLAN(smp.s)
+        seg = seg_of(s)
+        if LIP <= s <= LAND:
+            return "gap"
+        if LIP - 14 <= s < LIP:
+            return "ramp"
+        if 1 <= seg <= 6:
+            return "split"
+        if seg in (7, 8):
+            return "plaza"
+        if seg == 9:
+            return "royal"
+        return "gate"
+
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "ramp":
+            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 0.8 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+        elif k != "plaza":
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "plaza", max_len=200.0))
+    X0, X1, Y0, Y1 = -260, 560, -160, 560
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    c.disc("Lagoon", LAGOON_X + 160.0, MOUNT[1] - 120.0, 240.0, -1.5, c.lib("moon_lake", "deep_water"), n=40)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("moon_grass", "grass"))
+    zp = STD_HEIGHT[23]
+    pin = c.rock_mass("Observatory Pinnacle", PINNACLE[0], PINNACLE[1], STD_LAYOUT[23][1] - 14.0, STD_LAYOUT[23][1] - 14.0, zp + 40.0, z0=-40.0, n=18,
+                      seed=6)
+    c.paint_rock(pin, ("moon_rock", "wall"), ("moon_grass", "grass"))
+    ruin_mode.DRESS(c, sys.modules[__name__], ter)
+    c.start_line()
+    S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    for at in (S(1) + 10, S(2) + 120, TO_ROAD(LIP - 40), S(6) + 20):
+        c.zipper(at, 0)
+    for at, across in ((S(2) + 60, 0), (S(4) + 10, 3), (S(6) + 120, 0), (S(8) + 20, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S(0) + 30, -4, "red"), (S(0) + 30, 4, "blue"), (S(2) + 180, 0, "green"), (S(5) + 20, 0, "yellow"),
+                            (S(6) + 80, -4, "rainbow"), (S(6) + 80, 4, "red"), (S(9) + 20, 0, "blue")):
+        c.balloon(at, across, col)
+    c.entity("respawn", **{"from": round(TO_ROAD(LIP - 20), 1), "to": round(TO_ROAD(LAND + 4), 1), "at": round(TO_ROAD(LAND + 18), 1)})
+    c.checkpoints(extra=[S(1) + 20, S(2) + 90, S(2) + 200, S(3) + 30, S(5) + 20, S(6) + 100, S(8)], avoid=[(TO_ROAD(LIP - 16), TO_ROAD(LAND + 8))],
+                  height=10.0)
     c.finish()
     print("lap", round(c.length, 1))
 

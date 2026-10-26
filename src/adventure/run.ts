@@ -19,6 +19,8 @@ export type AdventureRun =
 
 export interface AdventureState {
   save: AdventureSave;
+  /** Which save file (0-2) it is. */
+  slot: number;
   run?: AdventureRun;
   /** The kingdom the hub last showed. */
   at?: KingdomId;

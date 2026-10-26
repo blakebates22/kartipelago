@@ -20,8 +20,8 @@ import { triceratops } from "../ui/modeRuins";
 import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
-import { tracksMenu } from "./tracks";
-import { adventureHub } from "./adventure";
+import { adventureFiles } from "./adventure";
+import { titleScreen } from "./title";
 
 export function modeSelect(game: Game): Screen {
   let focus = 0;
@@ -29,8 +29,9 @@ export function modeSelect(game: Game): Screen {
   let clicked = -1;
   const pick = (i: number) => {
     game.sounds.confirm();
-    if (i === 0) game.screens.go(tracksMenu(game));
-    else game.screens.go(adventureHub(game));
+    // Tracks: pick a racer, then a course. Adventure: pick a file (each has its racer).
+    if (i === 0) game.screens.go(characterSelect(game));
+    else game.screens.go(adventureFiles(game));
   };
   return {
     id: "MODE_SELECT",
@@ -55,7 +56,7 @@ export function modeSelect(game: Game): Screen {
         } else if (a === "confirm") return pick(focus);
         else if (a === "back") {
           game.sounds.back();
-          return game.screens.go(characterSelect(game));
+          return game.screens.go(titleScreen(game, true));
         }
       }
     },

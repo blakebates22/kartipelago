@@ -205,7 +205,7 @@ if RUIN:
     TLAND = TLIP + 12.0
     LIP = SEG[27] - (STD_SEG[28] - STD_LIP)
     LAND = LIP + 14.0
-    HEIGHT = dict(HEIGHT)
+    HEIGHT = {k: v for k, v in HEIGHT.items() if k < len(LAYOUT)}
     HEIGHT.update({10: 3.0, 11: 3.4, 12: 3.8, 13: 4.4, 14: 5.0, 15: 5.4, 24: 9.0, 25: 11.0, 26: 15.0, 27: 4.0})
     CRESTS = {k: v for k, v in CRESTS.items() if k < 24}
     CRESTS.update({11: (1, 1.2), 13: (2, 1.4)})

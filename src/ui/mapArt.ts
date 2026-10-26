@@ -2,7 +2,7 @@
  * Ancient-map art for the track menus, painted in code at the UI's low resolution:
  * aged parchment (mottled, stained, creased, its edges burnt and torn), inked sea curls,
  * a compass rose, little ships, and each world drawn as an island vignette (jungle and
- * volcano, snowy peaks, red mesas, jade hills and pagodas) with an inked route round it.
+ * volcano, snowy peaks, red mesas, jade hills and castle towers) with an inked route round it.
  *
  * Still parts are painted once and cached. All original artwork (Blake's reference map
  * was mood only).
@@ -309,22 +309,27 @@ export function island(style: IslandStyle, r: number): HTMLCanvasElement {
     px(g, wx, wy - 6, 1, 6, "#5a3a22");
     px(g, wx + 1, wy - 5, 3, 3, "#e8d8b0");
   } else {
-    // Jade hills, a red bridge, pagodas, blossom.
+    // Jade hills, a red bridge, castle towers, blossom.
     for (let i = 0; i < 8; i++) {
       const [hx, hy] = at(-0.6 + i * 0.17, -0.2 + (i % 3) * 0.15);
       for (let k = 0; k < 6; k++)
         px(g, hx - k, hy + k, k * 2 + 1, 1, k % 2 ? "#4f9a68" : "#5aa874");
     }
-    const pagoda = (x: number, y: number, s: number) => {
-      for (let tier = 0; tier < 3; tier++) {
-        const w = (9 - tier * 2) * s;
-        px(g, x - w / 2 - 1, y - tier * 4 * s, w + 2, 1, "#2a5a9a");
-        px(g, x - w / 2 + 1, y - tier * 4 * s + 1, w - 2, 3 * s, "#c8322a");
+    // Castle towers (Dragonspire Keep's look): grey-violet stone, slate spires, a banner.
+    const tower = (x: number, y: number, s: number) => {
+      px(g, x - 2 * s, y - 7 * s, 4 * s, 7 * s, "#8a84a0");
+      px(g, x - 2 * s, y - 7 * s, s, 7 * s, "#a49eb8");
+      px(g, x - 3 * s, y - 8 * s, 6 * s, s, "#9a94ae");
+      for (let r = 0; r < 6 * s; r++) {
+        const half = Math.max(0, Math.round((3 * s * (6 * s - r)) / (6 * s)));
+        px(g, x - half, y - 8 * s - r - 1, half * 2 || 1, 1, r % 2 ? "#3e4a6e" : "#4a567c");
       }
-      px(g, x, y - 12 * s, 1, 2, "#f2c64a");
+      px(g, x, y - 15 * s, 1, 2, "#3a2a2a");
+      px(g, x + 1, y - 15 * s, 2, 1, "#c8302a");
+      px(g, x - s + 1, y - 4 * s, 1, 2, "#ffd36a");
     };
-    pagoda(...at(0.15, -0.05), 1);
-    pagoda(...at(-0.35, 0.3), 0.7);
+    tower(...at(0.15, -0.05), 1);
+    tower(...at(-0.35, 0.3), 0.7);
     const [bx, by] = at(0.25, 0.4);
     for (let k = -6; k <= 6; k++)
       px(g, bx + k, by - Math.round(Math.sqrt(36 - k * k) * 0.5), 1, 2, "#d8402a");

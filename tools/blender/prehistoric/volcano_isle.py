@@ -1,5 +1,8 @@
-# Volcano Isle: the beach world's third course, a greybox to drive before it's dressed
-# (?track=volcano_isle; working name).
+# Volcano Isle: the beach world's third course, painted (the Tropic Isles). The greybox's
+# lap exactly (it's kept as volcano_isle_v2): the same roads, heights, surfaces, geysers,
+# jump, zippers and checkpoints; only the look is new (isle_scenery.py,
+# tropic_textures.py): a tropical island on a clear morning, black sand, jungle, hot
+# springs, a fishing village, the dormant volcano behind.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/volcano_isle.py      (the bpy module)
@@ -23,9 +26,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "volcano_isle"
+import isle_scenery  # noqa: E402
+
+# The ruin (volcano_isle_ruins.py): Tidewyrm's raid woke the volcano, and a flow came down
+# over the hot-spring flats and buried the road there. The new road runs 7 m east on the
+# flow's cooled crust: a wider sweeper onto the flats, a tighter turn up into the jungle,
+# live lava beside it where the old road was. Everything else is the course's own (the
+# same segments, numbers and heights; the lap the same length).
+RUIN = ruin_mode.ON
+TRACK_ID = "volcano_isle_ruin" if RUIN else "volcano_isle"
 
 START = (0.0, 0.0)
 LAYOUT = [
@@ -55,7 +67,11 @@ LAYOUT = [
     ("L", 26, 50),  # 23
     ("S", 20),  # 24 ...and the line (closes the lap)
 ]
+STD_LAYOUT = list(LAYOUT)
+if RUIN:
+    LAYOUT[1:5] = [("L", 47, 90), ("S", 25), ("R", 19, 90), ("S", 6)]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 19, 24, START, 0.0)
+STD_PATH = kit.close_turtle(STD_LAYOUT, 19, 24, START, 0.0)[1]
 SEG = kit.segment_starts(PATH)
 LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 
@@ -148,6 +164,17 @@ def lagoon_d(x, y):
     return (math.hypot((x - cx) / rx, (y - cy) / ry) - 1.0) * min(rx, ry)
 
 
+# (The ruin) the old road over the flats, under the lava now: its centreline.
+OLD_FLATS = [(p[0], p[1]) for p in STD_PATH if 1 <= p[3] <= 3]
+
+
+def lava_d(x, y):
+    """How far from the old flats road's edge (negative: on it); far away off the ruin."""
+    if not RUIN:
+        return 1e9
+    return min(math.hypot(x - a, y - b) for a, b in OLD_FLATS) - 9.0
+
+
 def springs_d(x, y):
     return min(math.hypot(x - a, y - b) - r for a, b, r in SPRINGS)
 
@@ -190,6 +217,10 @@ def natural(x, y):
     sp = springs_d(x, y)
     if sp < 3 and d > 10:
         h = lerp(h, z - 1.6, smooth((3 - sp) / 3))
+    if RUIN and d > 9.6:
+        lv = lava_d(x, y)
+        if lv < 4:  # the flow, a little below the crust road, its edges heaped
+            h = lerp(h, z - 0.5, smooth((4 - lv) / 4))
     return h
 
 
@@ -200,12 +231,32 @@ def classify(c, n, info):
         return ("wet_sand", "deep_water")
     if c.z < WATER_Z + 0.6:
         return ("wet_sand", "sand")
+    if RUIN and lava_d(c.x, c.y) < 0:
+        # (info["d"]: how far from the road) live lava clear of the new road's shoulders; crust
+        # between, and along the flow's edges.
+        return ("lava_flow", "lava") if info["d"] > 11.0 and lava_d(c.x, c.y) < -1.0 else ("lava_crust", "soft_sand")
     # Soft ground off the road (cutting across mustn't pay); the shoulders stay sand.
+    # (The paint: black sand by the sea, jungle up the island's flanks; the same surface.)
+    if c.z > 4.5 and sea_d(c.x, c.y) < -16 and lagoon_d(c.x, c.y) > 4:
+        return ("isle_moss" if n.z < 0.85 else "isle_jungle", "soft_sand")
     return ("beach_sand", "soft_sand")
 
 
+# The paint: each greybox material -> Volcano Isle's own (Course.lib keeps the old surface).
+PAINT = {
+    "beach_road": "isle_road",
+    "beach_sand": "isle_sand",
+    "wet_sand": "isle_wet_sand",
+    "sea_water": "isle_sea",
+    "tiki_wood": "isle_rail",
+    "valley_cliff": "isle_rock",
+}
+
+
 def main():
-    c = kit.Course(TRACK_ID, "Volcano Isle (greybox)", "beach_party")
+    kit.MAT_REMAP.clear()
+    kit.MAT_REMAP.update(PAINT)
+    c = kit.Course(TRACK_ID, "Volcano Isle (Ruined)" if RUIN else "Volcano Isle", "isle_ruins" if RUIN else "volcano_isle")
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP)
     sand = ("beach_sand", "sand")
     rock = ("valley_cliff", "road")
@@ -215,6 +266,8 @@ def main():
         "tube": {"mat": "beach_road", "shoulder": 1.0, "shoulder_mat": rock},
         "ledge": {"mat": "beach_road", "shoulder": 1.0, "shoulder_mat": rock, "barrier": 1.0, "barrier_mat": ("valley_cliff", "wall")},
         "kicker": {"mat": "beach_road", "shoulder": 1.0, "shoulder_mat": rock},
+        # (The ruin) the new road over the flats, on the flow's cooled crust.
+        "crust": {"mat": "basalt_road", "shoulder": 1.6, "shoulder_mat": ("lava_crust", "sand")},
     }
     lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
     t0, t1 = TO_ROAD(TUBE[0]), TO_ROAD(TUBE[1])
@@ -228,6 +281,8 @@ def main():
         if t0 <= s <= t1:
             return "tube"
         seg = seg_of(TO_PLAN(s))
+        if RUIN and seg in (1, 2, 3):
+            return "crust"
         if seg in (5, 6, 7):
             return "jungle"
         if seg in (16, 17, 18, 19) and s < lip:
@@ -245,7 +300,7 @@ def main():
     c.roads(kit.plan(c, specials, "road", max_len=150.0))
 
     X0, X1, Y0, Y1 = -260, 300, -200, 380
-    c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
+    ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2700.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     c.ribbon("Sea West", [(-1260.0, y) for y in range(-1400, 1401, 200)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
@@ -261,12 +316,12 @@ def main():
     span = math.hypot(_t1[0] - _t0[0], _t1[1] - _t0[1]) / 2 - 4.0
     hill = c.rock_mass("Tube Hill", hx, hy, span, 48.0, 50.0, z0=-4.0, n=24, seed=11)
     c.tunnel(hill, t0 + 6, t1 - 4, half=c.width / 2 + 2.5, height=9.5, pad=14.0)
-    c.paint_rock(hill, ("valley_cliff", "wall"), ("beach_sand", "sand"), floor=("beach_road", "road"), floor_z=road_z(SEG[11], 11) - 3.0)
+    c.paint_rock(hill, ("valley_cliff", "wall"), ("isle_jungle", "sand"), floor=("isle_tube", "road"), floor_z=road_z(SEG[11], 11) - 3.0)
     vx, vy = VOLCANO
     volcano = c.rock_mass("Volcano", vx, vy, 300.0, 260.0, 230.0, z0=-10.0, n=28, seed=3,
                           bands=[(1.0, 0.0), (0.82, 0.25), (0.62, 0.5), (0.44, 0.75), (0.3, 0.95), (0.26, 1.0)])
     volcano["kp_role"] = "visual"
-    c.assign(volcano, c.lib("valley_cliff", "wall"))
+    c.paint_rock(volcano, ("isle_rock", "wall"), ("isle_jungle", "grass"))
 
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
@@ -291,7 +346,9 @@ def main():
         height=8.0,
     )
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    sc = isle_scenery.build(c, sys.modules[__name__], ter)
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], sc)
     c.finish()
     print("lap", round(c.length, 1))
 

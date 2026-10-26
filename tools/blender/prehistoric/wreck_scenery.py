@@ -81,7 +81,10 @@ def galleon(sc):
     qm = c.at(mid)
     rot = math.atan2(qm.t.y, qm.t.x) - math.pi / 2  # the ship's length along the road
     # Masts: the foremast broken, the mainmast whole with its sails, the mizzen torn.
+    ruin = getattr(m, "RUIN", False)  # (the ruin: her back broken, the mainmast gone with it)
     for s, h, broken in ((h0 + 12.0, 14.0, True), (mid, 18.0, False), (h1 - 12.0, 13.0, False)):
+        if ruin and s == mid:
+            continue
         q = c.at(s)
         sc.put(tp.mast(c, h, broken), q.p.x, q.p.y, deck(s) - 0.4, rot=rot, coll="Galleon", role="visual")
         if not broken:
@@ -314,5 +317,8 @@ def build(c, m, ter):
     nature(sc)
     for x, y, z in sc.flames:
         game_entity(c, "torch", x, y, z)
+    if getattr(m, "RUIN", False):
+        return sc  # (the ruin lights it, with its own wreckage)
     light(sc)
     print("wreck scenery: props", c.prop_count, "flames", len(sc.flames))
+    return sc

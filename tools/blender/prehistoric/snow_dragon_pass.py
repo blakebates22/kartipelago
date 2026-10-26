@@ -34,9 +34,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "snow_dragon_pass"
+# The ruin (snow_dragon_pass_ruins.py): the Chosen One's sacrifice split the mountain in
+# two. Down out of the gate and the lower town as ever, then the lap turns into the split
+# and runs straight through the mountain's heart, swings south along the ridge the blast
+# heaved up on its west side, and comes round to the gate where the bastion stood (it was
+# thrown down). About half the lap. Everything else is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "snow_dragon_pass_ruin" if RUIN else "snow_dragon_pass"
 
 K = 1.05
 START = (0.0, 0.0)
@@ -116,9 +123,15 @@ def _base_z(d, seg):
 
 # The broken bridge: a kicker, the gap, a landing in a dip 2.5 m below the road.
 road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 2.5, 0.9)])
+# (The standard lap: the hold's landmarks are laid out from it, in the ruin too.)
+STD_LAYOUT, STD_PATH, STD_SEG, STD_LENGTH, STD_HEIGHT = LAYOUT, PATH, SEG, LENGTH, HEIGHT
 
 
 def road_w(d, seg):
+    if RUIN and LAYOUT is not STD_LAYOUT:
+        if seg == 0 or d < 40:
+            return 20.0
+        return 15.0 if seg in (1, 2, 3, 4) else 17.0 if seg == 8 else 16.0
     if seg in (0, 34) or d < 40:
         return 20.0
     if seg in (1, 2, 3, 4):
@@ -135,44 +148,87 @@ TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STD_PATH if p[3] == i)
 
 
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
 
 _D = [0.0]
-for _a, _b in zip(PATH, PATH[1:]):
+for _a, _b in zip(STD_PATH, STD_PATH[1:]):
     _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
 
 
 def _at(d):
     i = min(range(len(_D)), key=lambda k: abs(_D[k] - d))
-    return PATH[i]
+    return STD_PATH[i]
 
 
 BASTION = _arc_centre(33)
 GORGE_X = _at(LIP + 6.5)[0]  # the frozen gorge runs north-south under the broken bridge
-PEAK = (sum(p[0] for p in PATH) / len(PATH) + 20.0, sum(p[1] for p in PATH) / len(PATH) + 20.0)
+PEAK = (sum(p[0] for p in STD_PATH) / len(STD_PATH) + 20.0, sum(p[1] for p in STD_PATH) / len(STD_PATH) + 20.0)
 
 # The Frozen Supply Road: round the east of the hairpin stack, from the start of seg 6 to
 # Starvation Road, wide and flowing.
 _a6, _a16 = _seg_point(6), _seg_point(16)
-_east = max(p[0] for p in PATH if p[3] in (8, 9, 10, 11, 12)) + 34.0
+_east = max(p[0] for p in STD_PATH if p[3] in (8, 9, 10, 11, 12)) + 34.0
 SUPPLY = [(_a6[0], _a6[1] + 4.0), (_a6[0] + 30.0, _a6[1] + 40.0), (_east, _a6[1] + 90.0), (_east + 6.0, (_a6[1] + _a16[1]) / 2 + 30.0),
           (_east, _a16[1] - 10.0), (_east - 36.0, _a16[1] + 17.0), (_a16[0] + 8.0, _a16[1] + 15.0), (_a16[0] - 16.0, _a16[1] + 1.0)]
 # The Frozen Aqueduct: west of the monastery's zigzag, from seg 27 to seg 32.
 _a27, _a32 = _seg_point(27), _seg_point(32)
-_west = min(p[0] for p in PATH if p[3] in (25, 26)) - 34.0
+_west = min(p[0] for p in STD_PATH if p[3] in (25, 26)) - 34.0
 AQUEDUCT = [(_a27[0], _a27[1] + 4.0), (_west + 10.0, _a27[1] - 25.0), (_west, (_a27[1] + _a32[1]) / 2), (_west + 10.0, _a32[1] + 18.0),
             (_a32[0], _a32[1] - 2.0)]
 
 
+# ---------------------------------------------------------------- the ruin's lap
+
+NEW = []  # (the ruin) [(x, y, z)] along its new road, every few metres: the land meets it
+if RUIN:
+    LAYOUT = STD_LAYOUT[:6] + [
+        ("S", 21.0),  # 6  north, to the split's mouth
+        ("L", 50.0, 45),  # 7  into the split
+        ("S", 250.0),  # 8  straight through the mountain's heart (closes the loop)
+        ("L", 50.0, 135),  # 9  out onto the heaved ridge, south
+        ("S", 200.0),  # 10 along it (closes the loop)
+        ("L", 40.0, 90),  # 11 round where the bastion stood, onto the gate
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 8, 10, START, 0.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    HEIGHT = {k: STD_HEIGHT[k] for k in range(6)}
+    HEIGHT.update({6: 40.0, 7: 42.0, 8: 44.0, 9: 54.0, 10: 56.0, 11: 53.0})
+    CRESTS = {2: (1, 0.8), 8: (3, 1.2), 10: (2, 1.6)}
+    LIP, LAND = -1e9, -1e9  # (no broken bridge on the ruin's lap)
+    road_z = kit.with_jumps(_base_z, seg_of, [])
+    ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+    TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
+    _d = 0.0
+    for _i, (_x, _y, _h, _sg) in enumerate(PATH):
+        if _i:
+            _d += math.hypot(_x - PATH[_i - 1][0], _y - PATH[_i - 1][1])
+        if _sg >= 6 and (not NEW or math.hypot(_x - NEW[-1][0], _y - NEW[-1][1]) >= 5.0):
+            NEW.append((_x, _y, road_z(_d, _sg)))
+
+
 def natural(x, y):
+    h = _natural(x, y)
+    if NEW:
+        # (The ruin) the split through the mountain, and the ridge heaved up beside the
+        # gorge: the land meets the new road, sheer within a few metres.
+        best = min(NEW, key=lambda p: (p[0] - x) ** 2 + (p[1] - y) ** 2)
+        d = math.hypot(best[0] - x, best[1] - y)
+        if d < 60.0:
+            k = smooth((d - 14.0) / (12.0 if h > best[2] + 10 else 40.0))
+            h = lerp(best[2] - 0.6, h, k)
+    return h
+
+
+def _natural(x, y):
     """The mountainside: rising to the north, a great peak in the middle of the lap, the
     frozen gorge through the top, falling away to the west."""
     h = 36.0 + 0.075 * y + 1.5 * math.sin(x / 21.0) * math.cos(y / 17.0)
@@ -183,7 +239,7 @@ def natural(x, y):
     h -= 14.0 * smooth((-x - 60.0) / 80.0)
     # The spiral climbs out of a hollow round the bastion's foot.
     db = math.hypot(x - BASTION[0], y - BASTION[1])
-    h = lerp(h, 18.0, smooth((LAYOUT[33][1] + 26.0 - db) / 16.0))
+    h = lerp(h, 18.0, smooth((STD_LAYOUT[33][1] + 26.0 - db) / 16.0))
     return h
 
 
@@ -200,7 +256,7 @@ def classify(c, n, info):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Emberdeep Hold", "emberdeep_hold")
+    c = kit.Course(TRACK_ID, "Emberdeep Hold (Ruined)" if RUIN else "Emberdeep Hold", "ember_hold_ruins" if RUIN else "emberdeep_hold")
     c.route(ROUTE, width=16.0, bank=7.0)
     # (The roads keep the greybox's surfaces: snow_stone and packed_snow are only handling
     # numbers; deep snow, which throws powder, became rubble.)
@@ -221,6 +277,10 @@ def main():
         "spiral": {"mat": "ember_flag", "surface": SS, "shoulder": 1.0, "shoulder_mat": ("ember_kerb", "road"), "barrier": 1.3, "barrier_mat": parapet,
                    "deck": 3.0, "deck_mat": parapet, "ground": False},
     }
+
+    if RUIN:
+        ruin_course(c, snowbank)
+        return
 
     def label(smp):
         s = TO_PLAN(smp.s)
@@ -320,6 +380,40 @@ def main():
     import ember_scenery  # noqa: E402
 
     ember_scenery.build(c, sys.modules[__name__], ter, (za1, zb1), (za2, zb2))
+    c.finish()
+    print("lap", round(c.length, 1))
+
+
+def ruin_course(c, snowbank):
+    """The ruin's roads, land and gameplay (snow_dragon_pass_ruins.py dresses it)."""
+    c.kinds["split"] = {"mat": "ember_path", "surface": "snow_stone", "shoulder": 1.6, "shoulder_mat": ("ember_rubble", "rubble")}
+
+    def label(smp):
+        seg = seg_of(TO_PLAN(smp.s))
+        if seg in (1, 2, 3, 4):
+            return "village"
+        if seg >= 7:
+            return "split"
+        if seg == 0:
+            return "gate"
+        return "road"
+
+    specials = [r for r in kit.runs(c, label) if r[2] != "road"]
+    c.roads(kit.plan(c, specials, "road", max_len=200.0))
+    X0, X1, Y0, Y1 = -260, 480, -160, 520
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("ember_rubble", "rubble"))
+    ruin_mode.DRESS(c, sys.modules[__name__], ter)
+    c.start_line()
+    S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    for at in (S(5) + 4, S(8) + 20, S(8) + 170, S(10) + 30):
+        c.zipper(at, 0)
+    for at, across in ((S(2) + 20, 0), (S(8) + 100, 3), (S(10) + 100, 0)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S(1) + 20, -4, "red"), (S(1) + 20, 4, "blue"), (S(7) + 20, 0, "green"), (S(8) + 130, -4, "yellow"),
+                            (S(8) + 130, 4, "rainbow"), (S(10) + 60, 0, "red")):
+        c.balloon(at, across, col)
+    c.checkpoints(extra=[S(2), S(5) + 30, S(8) + 60, S(8) + 180, S(9) + 40, S(10) + 80, S(11) + 20], height=10.0)
     c.finish()
     print("lap", round(c.length, 1))
 

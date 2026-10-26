@@ -45,6 +45,26 @@ const RUINS: [string, string, string, [number, number], number][] = [
   ["canyon_dash", "canyon_dash_ruin", "canyon_ruins", [0.7, 0.82], 0.8],
   // Blake: about the same length, but it drives quite differently and more fun.
   ["oasis_haven", "oasis_haven_ruin", "oasis_ruins", [0.95, 1.03], 1.05],
+  // Blake: minimal; the lighthouse fallen across the road, rubble to avoid; the jump untouched.
+  ["coral_cove", "coral_cove_ruin", "cove_ruins", [0.95, 1.05], 1.25],
+  // Blake: minimal; the galleon split open, rubble to avoid.
+  ["shipwreck_bay", "shipwreck_bay_ruin", "wreck_ruins", [0.95, 1.05], 1.1],
+  // Blake: remade by the sacrifice's blast, at least 50% shorter (this one is 52%: the harbour and the passage are fixed).
+  ["dragon_isles", "dragon_isles_ruin", "keep_ruins", [0.5, 0.56], 0.6],
+  // Blake: reworked by the blast, the Dragon Kingdom's most fun drive kept fun; at least half the lap.
+  ["dragon_canyon", "dragon_canyon_ruin", "emerald_ruins", [0.45, 0.55], 0.55],
+  // Blake: about 20% shorter, the mine destroyed (no shortcut), the town in flames, a new path opened by the destruction.
+  ["dry_gulch", "dry_gulch_ruin", "gulch_ruins", [0.72, 0.88], 0.88],
+  // Blake: the ceiling caved in; the broken descent road is many jumps; falling rock with a warning shadow.
+  ["impact_depths", "impact_depths_ruin", "impact_ruins", [0.97, 1.03], 1.03],
+  // Blake: the Dragon Kingdom's ruins are new courses, every change explained by the blast; at least half the lap.
+  ["snow_dragon_pass", "snow_dragon_pass_ruin", "ember_hold_ruins", [0.45, 0.56], 0.6],
+  // Blake: the Dragon Kingdom's ruins are new courses, every change explained by the blast; at least half the lap.
+  ["celestial_dragon_festival", "celestial_dragon_festival_ruin", "moon_ruins", [0.42, 0.58], 0.6],
+  // Blake: Tropic Isles ruins change little: one decent change each, plus rubble to avoid.
+  ["volcano_isle", "volcano_isle_ruin", "isle_ruins", [0.98, 1.02], 1.03],
+  // Blake: Tropic Isles ruins change little: one decent change each, plus rubble to avoid.
+  ["splash_lagoon", "splash_lagoon_ruin", "splash_ruins", [0.98, 1.02], 1.05],
 ];
 
 describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {
@@ -70,7 +90,7 @@ describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) =>
   it("an AI drives it without a respawn, well inside the full lap's time", async () => {
     const lap = async (id: string) => {
       const p = await loadTrackPackage(reader(id), { visual: false });
-      const r = await aiLap(p, { laps: 2, surfaces: true, zippers: true, lapSeconds: 90 });
+      const r = await aiLap(p, { laps: 2, surfaces: true, zippers: true, lapSeconds: 120 });
       expect(r.respawns).toBe(0);
       return r.race.racers[0]!.lapTimes[1]!;
     };

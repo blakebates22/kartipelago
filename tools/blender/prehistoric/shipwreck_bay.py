@@ -25,11 +25,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
 import wreck_scenery  # noqa: E402
 
-TRACK_ID = "shipwreck_bay"
+# The ruin (shipwreck_bay_ruins.py): the galleon's back is broken. Her hull has split
+# open amidships, the two halves pulled apart, and the hold's floor goes with it: you
+# jump the break, the sea below. Her cargo is strewn over the road. Everything else is
+# the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "shipwreck_bay_ruin" if RUIN else "shipwreck_bay"
 
 START = (0.0, 0.0)
 LAYOUT = [
@@ -113,7 +119,11 @@ def _base_z(d, seg):
     return z
 
 
-road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 1.0, 0.7)])
+# (The ruin) the break amidships: (lip, landing), and cargo heaps in the road: (plan
+# distance, side).
+SPLIT = ((HULL[0] + HULL[1]) / 2 - 4.5, (HULL[0] + HULL[1]) / 2 + 4.5) if RUIN else None
+CARGO = [(SEG[9] + 60.0, 1), (SEG[13] + 20.0, -1), (SEG[16] + 30.0, 1)] if RUIN else []
+road_z = kit.with_jumps(_base_z, seg_of, [(LIP, LAND, 1.0, 0.7)] + ([(SPLIT[0], SPLIT[1], 0.8, 0.5)] if RUIN else []))
 
 
 def road_w(d, seg):
@@ -177,6 +187,8 @@ def river_d(x, y):
     return min(_seg_d(x, y, a, b) for a, b in zip(RIVER, RIVER[1:])) - RIVER_HALF
 
 
+_SPLIT_AT = _plan_point((SPLIT[0] + SPLIT[1]) / 2) if SPLIT else None
+
 # The terrain's square; the land sinks into the sea over its outer 50 m (an island).
 BOUNDS = (-160, 360, -260, 240)
 
@@ -223,6 +235,10 @@ def natural(x, y):
     w = river_d(x, y)
     if w < 6:
         h = lerp(h, WATER_Z - 2.2, smooth((6 - w) / 6))
+    if SPLIT:
+        # (The ruin) the sea in through the break amidships.
+        dsp = math.hypot(x - _SPLIT_AT[0], y - _SPLIT_AT[1])
+        h = lerp(h, WATER_Z - 2.4, smooth((13.0 - dsp) / 5.0))
     e = island_d(x, y)
     if e < 50:
         h = lerp(h, WATER_Z - 3.0, smooth((50 - e) / 40))
@@ -240,9 +256,14 @@ def classify(c, n, info):
     return ("beach_sand", "soft_sand")
 
 
-def hull_shell(c, s0, s1, half=11.0, keel=-3.0, rail=6.5):
+def hull_shell(c, s0, s1, half=11.0, keel=-3.0, rail=6.5, split=None):
     """The galleon, plain: a shell round the hold (open at the breaches), its deck over
-    the road (visual: the road runs under it)."""
+    the road (visual: the road runs under it). (`split`: (s0, s1) where she has broken in
+    two: nothing there.)"""
+    if split:
+        a = hull_shell(c, s0, split[0], half, keel, rail)
+        hull_shell(c, split[1], s1, half, keel, rail)
+        return a
     from course_kit import Vector, bmesh
 
     bm = bmesh.new()
@@ -291,7 +312,7 @@ PAINT = {
 def main():
     kit.MAT_REMAP.clear()
     kit.MAT_REMAP.update(PAINT)
-    c = kit.Course(TRACK_ID, "Shipwreck Bay", "shipwreck_bay")
+    c = kit.Course(TRACK_ID, "Shipwreck Bay (Ruined)" if RUIN else "Shipwreck Bay", "wreck_ruins" if RUIN else "shipwreck_bay")
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP)
     sand = ("beach_sand", "sand")
     planks = ("wood_planks", "road")
@@ -306,12 +327,13 @@ def main():
                  "deck_mat": ("palm_bark", "road"), "ground": False},
     }
     lip, land = TO_ROAD(LIP), TO_ROAD(LAND)
+    sp0, sp1 = (TO_ROAD(SPLIT[0]), TO_ROAD(SPLIT[1])) if SPLIT else (-1.0, -2.0)
     h0, h1 = TO_ROAD(HULL[0]), TO_ROAD(HULL[1])
     m0 = TO_ROAD(SEG[8]) + 6
 
     def label(smp):
         s = smp.s
-        if lip <= s <= land:
+        if lip <= s <= land or sp0 <= s <= sp1:
             return "gap"
         if m0 <= s < lip:
             return "mast"
@@ -344,7 +366,7 @@ def main():
         for kind, size, every in (("pier", 0.9, 7.0), ("mast", 1.2, 9.0)):
             if piece.name.endswith(kind):
                 kit.clear_piers(c, piece, [ter], every=every, mat=("palm_bark", "wall"), size=size, inset=size + 0.6)
-    hull_shell(c, h0 - 6.0, h1 + 4.0)
+    hull_shell(c, h0 - 6.0, h1 + 4.0, split=(TO_ROAD(SPLIT[0]) - 1.0, TO_ROAD(SPLIT[1]) + 1.0) if SPLIT else None)
     rock = c.rock_mass("Skull Rock", SKULL_ROCK[0], SKULL_ROCK[1], 9.0, 8.0, 16.0, z0=0.0, n=10, seed=4)
     c.assign(rock, c.lib("valley_cliff", "wall"))
 
@@ -358,13 +380,17 @@ def main():
     for at, across, col in ((S(0) + 24, -4, "red"), (S(0) + 24, 4, "blue"), (S(3) + 12, 0, "green"), (S(9) + 50, 0, "yellow"), (S(12) + 8, 0, "rainbow")):
         c.balloon(at, across, col)
     c.entity("respawn", **{"from": round(lip - 20, 1), "to": round(land + 4, 1), "at": round(land + 16, 1)})
+    if SPLIT:
+        c.entity("respawn", **{"from": round(sp0 - 14, 1), "to": round(sp1 + 3, 1), "at": round(sp1 + 12, 1)})
     c.checkpoints(
-        extra=[S(1) + 20, S(3) + 10, (h0 + h1) / 2, S(8) + 10, S(10) + 10, S(13) + 10, S(16) + 10],
-        avoid=[(lip - 14, land + 8)],
+        extra=[S(1) + 20, S(3) + 10, (h0 + h1) / 2 if not SPLIT else sp1 + 14, S(8) + 10, S(10) + 10, S(13) + 10, S(16) + 10],
+        avoid=[(lip - 14, land + 8)] + ([(sp0 - 10, sp1 + 6)] if SPLIT else []),
         height=8.0,
     )
 
-    wreck_scenery.build(c, sys.modules[__name__], ter)
+    sc = wreck_scenery.build(c, sys.modules[__name__], ter)
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], sc)
     c.finish()
     print("lap", round(c.length, 1))
 

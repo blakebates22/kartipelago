@@ -574,7 +574,7 @@ if RUIN:
     _ul = math.hypot(_ux, _uy)
     CRACK = [(CAVERN[0] + _ux * f, CAVERN[1] + _uy * f) for f in [i / 10 for i in range(0, 11)] + [(_ul + 10 * j) / _ul for j in (1, 2, 3)]]
     GAP = (_RD[_k] - 6.0, _RD[_k] + 6.0)
-    HEIGHT = dict(HEIGHT)
+    HEIGHT = {k: v for k, v in HEIGHT.items() if k < 15}
     HEIGHT.update({15: 30.5, 16: 30.0, 17: 29.0, 18: 16.0, 19: 16.0, 20: 22.0, 21: 25.5, 22: 28.5, 23: 30.0})
     CRESTS = {k: v for k, v in CRESTS.items() if k < 15}
     CRESTS.update({19: (1, 1.0)})
@@ -591,13 +591,14 @@ def _ruin_z(d, seg):
         # Humps of the slide's debris (not near the crack).
         if GAP[0] - 20 > d or d > GAP[1] + 20:
             z += 1.5 * math.sin(t * math.pi * 7) ** 2 * (1 - t) ** 0.5
-        # The crack: a kicker up to the lip, the far side a little lower.
-        if GAP[0] - 10 <= d < GAP[0]:
-            z += 0.6 * smooth((d - (GAP[0] - 10)) / 10)
+        # The crack: a kicker up to the lip, the far side well below it (the slide
+        # slumped there), so a kart lands on it, not into its edge.
+        if GAP[0] - 12 <= d < GAP[0]:
+            z += 1.2 * smooth((d - (GAP[0] - 12)) / 12)
         elif GAP[0] <= d <= GAP[1]:
-            z += lerp(0.6, -1.0, (d - GAP[0]) / (GAP[1] - GAP[0]))
-        elif GAP[1] < d <= GAP[1] + 12:
-            z -= 1.0 * (1 - smooth((d - GAP[1]) / 12))
+            z += lerp(1.2, -2.6, (d - GAP[0]) / (GAP[1] - GAP[0]))
+        elif GAP[1] < d <= GAP[1] + 18:
+            z -= 2.6 * (1 - smooth((d - GAP[1]) / 18))
         return z
     a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
     t = (d - a) / max(1e-6, b - a)

@@ -30,11 +30,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
 import cove_scenery  # noqa: E402
 
-TRACK_ID = "coral_cove"
+# The ruin (coral_cove_ruins.py): the lighthouse has fallen off its rock across the road
+# out of the hairpin, and the road rides up over its broken tower; rubble from the
+# headland lies in the road here and there. The jump is untouched (Blake: it must not
+# change how it feels at all). Everything else is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "coral_cove_ruin" if RUIN else "coral_cove"
 
 START = (0.0, 0.0)
 LAYOUT = [
@@ -84,7 +90,20 @@ LIP = SEG[2] + 30.0
 LAND = LIP + 10.0
 
 
+# (The ruin) the fallen lighthouse across the road out of the hairpin: (at, height,
+# length) along the plan; rubble heaps in the road: (plan distance, side).
+TOPPLE = (SEG[4] + 3.0, 2.4, 14.0) if RUIN else None
+RUBBLE = [(SEG[5] + 30.0, 1), (SEG[7] + 18.0, -1), (SEG[9] + 20.0, 1)] if RUIN else []
+
+
 def _base_z(d, seg):
+    if TOPPLE and abs(d - TOPPLE[0]) < TOPPLE[2] / 2:
+        z = _base_z0(d, seg_of(d))
+        return z + TOPPLE[1] * math.cos(math.pi * (d - TOPPLE[0]) / TOPPLE[2]) ** 2
+    return _base_z0(d, seg)
+
+
+def _base_z0(d, seg):
     a, b = SEG[seg], SEG.get(seg + 1, LENGTH)
     t = (d - a) / max(1e-6, b - a)
     z0, z1 = HEIGHT[seg], HEIGHT.get(seg + 1, HEIGHT[0])
@@ -230,7 +249,7 @@ PAINT = {
 def main():
     kit.MAT_REMAP.clear()
     kit.MAT_REMAP.update(PAINT)
-    c = kit.Course(TRACK_ID, "Coral Cove", "coral_cove")
+    c = kit.Course(TRACK_ID, "Coral Cove (Ruined)" if RUIN else "Coral Cove", "cove_ruins" if RUIN else "coral_cove")
     c.route(ROUTE, width=16.0, bank=6.0, sharp=SHARP)
     sand = ("beach_sand", "sand")
     planks = ("wood_planks", "road")
@@ -304,7 +323,9 @@ def main():
         height=8.0,
     )
 
-    cove_scenery.build(c, sys.modules[__name__], ter)
+    sc = cove_scenery.build(c, sys.modules[__name__], ter)
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], sc)
     c.finish()
     print("lap", round(c.length, 1))
 

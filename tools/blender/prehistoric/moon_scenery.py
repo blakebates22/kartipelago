@@ -417,7 +417,8 @@ def light(sc):
     kit.paint.shade_roads(c.pieces + getattr(c, "lanes", []), 0.3)
 
 
-def build(c, dk, ter):
+def build(c, dk, ter, ruin=False):
+    """(`ruin`: returns the scene before its lights, for the ruin's dressing.)"""
     kp.use_palette(PALETTE)
     sc = Scene(c, dk, ter)
     sc.glows = []
@@ -432,6 +433,8 @@ def build(c, dk, ter):
     palace(sc)
     terraces(sc)
     nature(sc)
+    if ruin:
+        return sc
     for x, y, z in sc.flames:
         game_entity(c, "torch", x, y, z)
     for x, y, z in sc.glows:
@@ -440,3 +443,4 @@ def build(c, dk, ter):
     atmosphere(c, dk)
     light(sc)
     print("moon scenery: props", c.prop_count, "flames", len(sc.flames))
+    return sc

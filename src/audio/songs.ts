@@ -2078,7 +2078,7 @@ function dragon(): Song {
   ];
   return {
     id: "dragon",
-    title: "Dragon Isles",
+    title: "Dragonspire Keep",
     role: "Dragon Kingdom",
     bpm: 152,
     beats: 128,
@@ -2319,7 +2319,7 @@ function snowDragon(): Song {
   ];
   return {
     id: "snow_dragon",
-    title: "Snow Dragon Pass",
+    title: "Emberdeep Hold",
     role: "Dragon Kingdom",
     bpm: 150,
     beats: 128,
@@ -2427,7 +2427,7 @@ function celestial(): Song {
   ];
   return {
     id: "celestial",
-    title: "Celestial Dragon Festival",
+    title: "Moonstone Kingdom",
     role: "Dragon Kingdom",
     bpm: 144,
     beats: 128,
@@ -2492,5 +2492,12 @@ export const SONGS: Record<string, Song> = {
 /** The music player's list: composed pieces, then planned ones not written yet. */
 export const CATALOG: { id: string; title: string; role: string; available: boolean }[] = [
   ...Object.values(SONGS).map((s) => ({ id: s.id, title: s.title, role: s.role, available: true })),
+  // Planned: the Tropic Isles' own pieces (their courses use the title theme for now), the
+  // dragons' boss races (they borrow their kingdom's), and Adventure's map.
+  { id: "coral_cove", title: "Coral Cove", role: "Tropic Isles", available: false },
+  { id: "shipwreck_bay", title: "Shipwreck Bay", role: "Tropic Isles", available: false },
+  { id: "volcano_isle", title: "Volcano Isle", role: "Tropic Isles", available: false },
+  { id: "splash_lagoon", title: "Splash Lagoon", role: "Tropic Isles", available: false },
+  { id: "boss", title: "Dragon Race", role: "Boss races", available: false },
   { id: "adventure", title: "Adventure Map", role: "Adventure mode", available: false },
 ];

@@ -27,9 +27,15 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 
-TRACK_ID = "impact_depths"
+# The ruin (impact_depths_ruins.py): much of the cave's roof has come down. The same lap,
+# but the terraces' roads are broken where the roof fell through them (a run of jumps on
+# the way down), the sky shows through great holes, and rock keeps falling from their
+# edges (a shadow on the road first). Everything else is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "impact_depths_ruin" if RUIN else "impact_depths"
 
 # ---------------------------------------------------------------- the layout
 #
@@ -207,9 +213,34 @@ HEIGHT = {
 # The crevasse jump on terrace two: (lip, landing).
 GAP = (SEG[K["t2"]] + 230.0, SEG[K["t2"]] + 241.0)
 CRESTS = {K["rim"]: (3, 1.6), K["t1"]: (4, 1.4), K["bottom"]: (4, 1.8)}
+# (The ruin) where the fallen roof broke the terraces' roads: (lip, landing) in the
+# plan's distances, the course's own crevasse among them.
+BREAKS = []
+HOLES = []  # (the ruin) [(x, y, ux, uy, z)]: each break's middle, the road's way there, its height
+if RUIN:
+    BREAKS = sorted([GAP] + [(SEG[K[k]] + at, SEG[K[k]] + at + 11.0) for k, at in (("rim", 190.0), ("t1", 180.0), ("t1", 380.0),
+                                                                                    ("t2", 100.0), ("bottom", 150.0))])
+
+
+def _break_z(d, seg):
+    """(The ruin) the road over one of the breaks, else None: a kicker up to the lip, the
+    landing well below it."""
+    for g0, g1 in BREAKS:
+        if g0 - 14 <= d <= g1 + 16:
+            z_lip = _base(g0 - 14, seg) + 0.6
+            if d <= g0:
+                return lerp(_base(g0 - 14, seg), z_lip + 0.4, (d - (g0 - 14)) / 14)
+            if d <= g1:
+                return lerp(z_lip + 0.4, z_lip - 2.0, (d - g0) / (g1 - g0))
+            return lerp(z_lip - 2.0, _base(g1 + 16, seg), smooth((d - g1) / 16))
+    return None
 
 
 def road_z(d, seg):
+    if BREAKS:
+        z = _break_z(d, seg)
+        if z is not None:
+            return z
     if seg == K["t2"] and GAP[0] - 14 <= d <= GAP[1] + 14:
         z_lip = _base(GAP[0] - 14, seg) + 0.6
         if d <= GAP[0]:
@@ -249,6 +280,12 @@ def road_w(d, seg):
 
 
 ROUTE = kit.route_points_by(PATH, road_z, every=6.0, width=road_w)
+if RUIN:
+    for _g0, _g1 in BREAKS:
+        _m = (_g0 + _g1) / 2
+        _i = min(range(len(PATH)), key=lambda i: abs(_D[i] - _m))
+        _h = math.radians(PATH[_i][2])
+        HOLES.append((PATH[_i][0], PATH[_i][1], math.cos(_h), math.sin(_h), road_z(_g0, seg_of(_g0))))
 # The plan's distances (SEG, GAP) are flat; the course measures along the road, which
 # is longer down the hairpins and up the corkscrew.
 TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
@@ -308,6 +345,13 @@ def _seg_d(px, py, ax, ay, bx, by):
     dx, dy = bx - ax, by - ay
     t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy + 1e-9)))
     return math.hypot(px - ax - t * dx, py - ay - t * dy), t
+
+
+if RUIN:
+    # Where the roof came down: great holes over the terraces (and the ones already
+    # there, wider).
+    SKYLIGHTS = [(x, y, r * 1.8) for x, y, r in SKYLIGHTS] + [
+        (150.0 * math.cos(math.radians(a)), 150.0 * math.sin(math.radians(a)), rr) for a, rr in ((-62.0, 46.0), (38.0, 40.0), (118.0, 34.0), (172.0, 50.0))]
 
 
 def opening(x, y):
@@ -402,7 +446,21 @@ def _bdist(b, deg):
 
 
 def natural(x, y):
-    return _shape(x, y)[0]
+    h = _shape(x, y)[0]
+    hb = in_break(x, y)
+    if hb is not None:
+        h = min(h, hb - 24.0)  # (the ruin) down through the broken ledge
+    return h
+
+
+def in_break(x, y):
+    """(The ruin) the road's height at a break whose hole (x, y) is over, else None."""
+    for hx, hy, ux, uy, z in HOLES:
+        dx, dy = x - hx, y - hy
+        along, across = dx * ux + dy * uy, -dx * uy + dy * ux
+        if (along / 6.5) ** 2 + (across / 15.0) ** 2 < 1.0:
+            return z
+    return None
 
 
 def crack_floor(x, y):
@@ -423,6 +481,10 @@ LAND = {
 def classify(c, n, info):
     if c.z < Z_BOTTOM - 4:
         return ("lava_flow", "lava")
+    hb = in_break(c.x, c.y)
+    if hb is not None and c.z < hb - 5.0:
+        # Down through a break in the ledge, the glow far below: put back on the road.
+        return ("lava_flow" if c.z < hb - 16.0 else "black_rock", "lava")
     zb = crack_floor(c.x, c.y)
     smp = info["sample"]
     if zb is not None and c.z < min(zb, smp.p.z) - 4.0 and info["d"] > smp.w / 2 + 3.0:
@@ -447,7 +509,7 @@ def classify(c, n, info):
 def main():
     import props  # noqa: E402
 
-    c = kit.Course(TRACK_ID, "Impact Depths", "impact_depths")
+    c = kit.Course(TRACK_ID, "Impact Depths (Ruined)" if RUIN else "Impact Depths", "impact_ruins" if RUIN else "impact_depths")
     c.route(ROUTE, width=16.0, bank=7.0)
     rock = ("crater_rock", "wall")
     # No rails on the terraces (karts hopped them and were stranded): off the edge is a
@@ -469,9 +531,9 @@ def main():
     def label(smp):
         s = TO_PLAN(smp.s)
         seg = seg_of(s)
-        if GAP[0] <= s <= GAP[1]:
+        if any(g0 <= s <= g1 for g0, g1 in BREAKS or [GAP]):
             return "gap"
-        if GAP[0] - 10 <= s < GAP[0]:
+        if any(g0 - 10 <= s < g0 for g0, g1 in BREAKS or [GAP]):
             return "ramp"
         if seg in (K["helix"], K["exit"]):
             return "helix"
@@ -485,7 +547,9 @@ def main():
         if k == "gap":
             specials.append((s0, s1, None))
         elif k == "ramp":
-            specials.append((s0, s1, "ramp", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+            # (The ruin's kickers lift harder: the AI fell short of the roof's breaks.)
+            lift = 1.3 if RUIN else 0.9
+            specials.append((s0, s1, "ramp", {"lift": lambda u, n, lift=lift: lift * max(0.0, (u - (n - 8)) / 8) ** 2}))
         elif k != "crater":
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "crater", max_len=200.0))
@@ -524,19 +588,26 @@ def main():
     # bridge.
     for at in (S[K["rim"]] + 120, S[K["t1"]] + 30, S[K["t1"]] + 300, S[K["t2"]] + 30, S[K["t2"]] + 300, S[K["bottom"]] + 30, S[K["bridge"]] + 30):
         c.zipper(at, 0)
+    # (The ruin) a zipper into every break the roof made (the crevasse has its own).
+    for gp0, _gp1 in BREAKS:
+        if (gp0, _gp1) != GAP:
+            c.zipper(TO_ROAD(gp0) - 22.0, 0)
     for at, across in ((S[K["rim"]] + 250, 0), (S[K["t1"]] + 150, -3), (S[K["t2"]] + 120, 3), (S[K["bottom"]] + 120, 0)):
         c.bananas(at, across, count=5, gap=2.6)
     for at, across, col in ((S[K["rim"]] + 60, -4, "red"), (S[K["rim"]] + 60, 4, "blue"), (S[K["t1"]] + 220, 0, "green"), (S[K["t2"]] + 60, 0, "yellow"),
                             (S[K["t2"]] + 300, -4, "rainbow"), (S[K["t2"]] + 300, 4, "red"), (S[K["bottom"]] + 180, 0, "blue")):
         c.balloon(at, across, col)
-    g0, g1 = TO_ROAD(GAP[0]), TO_ROAD(GAP[1])
-    c.entity("respawn", **{"from": round(g0 - 20, 1), "to": round(g1 + 4, 1), "at": round(g1 + 20, 1)})
+    for gp0, gp1 in BREAKS or [GAP]:
+        g0, g1 = TO_ROAD(gp0), TO_ROAD(gp1)
+        c.entity("respawn", **{"from": round(g0 - 20, 1), "to": round(g1 + 4, 1), "at": round(g1 + 20, 1)})
     c.checkpoints(extra=[S[HP[0]] + 40, S[K["t1"]] + 200, S[HP[1]] + 40, S[K["t2"]] + 150, S[HP[2]] + 40, S[K["bottom"]] + 120, S[K["link"]] + 30,
                          S[K["bridge"]] + 60], avoid=[(a - 4, b + 4)], height=12.0)
 
     import impact_depths_dress  # noqa: E402
 
-    impact_depths_dress.build(c, sys.modules[__name__], ter)
+    d = impact_depths_dress.build(c, sys.modules[__name__], ter)
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], d)
     c.finish()
     print("lap", round(c.length, 1), "updraft", round(b - a, 1), "m")
 

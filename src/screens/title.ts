@@ -2,20 +2,22 @@
  * BOOT and TITLE.
  *
  * Boot is a moment's splash while the title demo loads (any key skips it). The title
- * shows the logo bouncing in over a live demo race on Party Beach, a dinosaur beach
- * party (the AI drives every kart, the camera circles your racer), "PRESS START", and
- * then the main menu: Play, Options, Music and Credits.
+ * shows the logo bouncing in over a montage of live demo races (Blake: the opening
+ * should show the range of the game's courses, not a level you can't play): a few
+ * seconds on each of a run of real courses from every world, the AI driving every kart
+ * and the camera circling your racer, cut through black. Then "PRESS START" and the
+ * main menu: Play, Options, Music and Credits. Party Beach stands in if none loads.
  */
 import type { Game } from "../app/game";
 import type { MenuAction } from "../app/menuInput";
 import type { Screen } from "../app/app";
 import type { Session } from "../game/session";
-import { TITLE_TRACK, trackById } from "../game/tracks";
+import { TITLE_MONTAGE, TITLE_TRACK, trackById } from "../game/tracks";
 import { landscape, logo } from "../ui/backdrops";
 import type { UiLayer } from "../ui/layer";
 import { PAL } from "../ui/textures";
 import { VMenu, hints } from "./common";
-import { characterSelect } from "./characterSelect";
+import { modeSelect } from "./modeSelect";
 import { optionsScreen } from "./options";
 import { musicPlayer } from "./musicPlayer";
 import { creditsScreen } from "./credits";
@@ -48,6 +50,10 @@ export function bootScreen(game: Game): Screen {
   };
 }
 
+/** Seconds on each course, and the fade through black between them. */
+const CLIP = 11;
+const FADE = 0.5;
+
 export function titleScreen(game: Game, startInMenu = false): Screen {
   let t = 0;
   let mode: "press" | "menu" = startInMenu ? "menu" : "press";
@@ -57,11 +63,19 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
   /** No demo track would load: the painted landscape stands in. */
   let failed = false;
   let alive = true;
+  /** The montage: which course is next, how long this one has shown, and whether any
+   * has (from then on the logo and menu stay up while the next one loads). */
+  let clip = 0;
+  /** When this course appeared (wall-clock ms: a slow machine still cuts on time). */
+  let clipAt = 0;
+  const onClip = () => (performance.now() - clipAt) / 1000;
+  let everShown = false;
+  let loading = false;
   const calm = () => game.settings.general.reduceMotion;
   const menu = new VMenu(
     game,
     [
-      { label: "PLAY", action: () => game.screens.go(characterSelect(game)) },
+      { label: "PLAY", action: () => game.screens.go(modeSelect(game)) },
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       { label: "MUSIC", action: () => game.screens.push(musicPlayer(game)) },
       { label: "CREDITS", action: () => game.screens.push(creditsScreen(game)) },
@@ -71,8 +85,18 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
 
   async function loadDemo() {
     const token = game.screens.token;
-    // Party Beach, falling back to the test tracks if it can't load.
-    const tries = [TITLE_TRACK, trackById("dino_demo")!, trackById("drift_loop")!];
+    loading = true;
+    // The montage's next course (any that won't load are skipped), then Party Beach and
+    // the test tracks as the last resort.
+    const montage = TITLE_MONTAGE.map((_, k) => TITLE_MONTAGE[(clip + k) % TITLE_MONTAGE.length]!)
+      .map((id) => trackById(id))
+      .filter((e): e is NonNullable<typeof e> => Boolean(e));
+    const tries = [
+      ...montage.slice(0, 3),
+      TITLE_TRACK,
+      trackById("dino_demo")!,
+      trackById("drift_loop")!,
+    ];
     for (const entry of tries) {
       try {
         const s = await game.createSession({
@@ -87,13 +111,29 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
           s.dispose();
           return;
         }
+        // Into the race a little (the grid and the countdown are the same on every
+        // course): a few seconds, different each time, run while the screen is black.
+        const k = TITLE_MONTAGE.indexOf(entry.id);
+        if (k >= 0) for (let i = 0, n = (8 + ((k * 5) % 12)) * 120; i < n; i++) s.update(1 / 120);
         session = s;
+        clipAt = performance.now();
+        everShown = true;
+        loading = false;
+        clip = k >= 0 ? (k + 1) % TITLE_MONTAGE.length : clip;
         return;
       } catch (err) {
         console.warn("[title] demo track failed to load:", err);
       }
     }
-    failed = true;
+    loading = false;
+    if (!everShown) failed = true;
+  }
+
+  /** Cut to the montage's next course (the current one has had its few seconds). */
+  function nextClip() {
+    session?.dispose();
+    session = undefined;
+    void loadDemo();
   }
 
   return {
@@ -122,9 +162,10 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
     },
     frame(dt, actions: MenuAction[]) {
       t += dt;
-      if (session) shown += dt;
+      if (everShown) shown += dt;
+      if (session && onClip() >= CLIP && !loading) nextClip();
       // Nothing to press until there's something to see.
-      if (!session && !failed) return;
+      if (!everShown && !failed) return;
       if (mode === "press") {
         if (
           actions.some((a) => a === "confirm" || a === "pause") ||
@@ -139,9 +180,16 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
       // Until the demo race is ready the screen stays black (no logo or menu over an
       // empty screen, and no painted landscape flashing up); then the race, the logo and
       // the menu all fade in together.
-      if (!session && !failed) {
+      if (!everShown && !failed) {
         ui.rect(0, 0, ui.W, ui.H, "#0b0710");
         return;
+      }
+      // Between courses: black (the logo and menu stay up).
+      if (!session && !failed) ui.rect(0, 0, ui.W, ui.H, "#0b0710");
+      else if (session && !failed) {
+        const c = onClip();
+        const a = Math.max(1 - c / FADE, (c - (CLIP - FADE)) / FADE, 0);
+        if (a > 0) ui.rect(0, 0, ui.W, ui.H, "#0b0710", Math.min(1, a));
       }
       if (failed) landscape(ui.g, ui.W, ui.H, t, calm());
       // The logo's bounce-in starts when it can be seen.
@@ -183,7 +231,7 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
           color: "#e8d5b0",
           shadow: PAL.shadow,
         });
-      // Fading in from black: the scene and the logo together.
+      // Fading in from black the first time: the scene and the logo together.
       if (!failed && shown < 0.6) ui.rect(0, 0, ui.W, ui.H, "#0b0710", 1 - shown / 0.6);
     },
   };

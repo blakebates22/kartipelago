@@ -34,6 +34,9 @@ export interface AdventureSave {
   kingWon: boolean;
   /** Scenes already shown (each plays once; the scene list can replay them). */
   seen: string[];
+  /** The file's racer: picked when the file starts, kept to the ending (Blake: one racer
+   * per adventure). Missing in files from before files had one: picked on opening. */
+  racer?: string;
 }
 
 export const newSave = (): AdventureSave => ({
@@ -48,7 +51,11 @@ export const newSave = (): AdventureSave => ({
   seen: [],
 });
 
+/** Save files: three, like the cartridge games. File 1 keeps the original key, so a save
+ * from before files existed opens as file 1. */
+export const SLOTS = 3;
 const KEY = "kartipelago.adventure.v1";
+const slotKey = (slot: number) => (slot === 0 ? KEY : `${KEY}.${slot + 1}`);
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 const flags = (v: unknown): Record<string, boolean> => {
@@ -71,31 +78,37 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   s.kingLost = r.kingLost === true;
   s.kingWon = r.kingWon === true;
   s.seen = Array.isArray(r.seen) ? r.seen.filter((x): x is string => typeof x === "string") : [];
+  if (typeof r.racer === "string") s.racer = r.racer;
   return s;
 }
 
 export function loadAdventure(
   storage: Pick<Store, "getItem"> | undefined,
+  slot = 0,
 ): AdventureSave | undefined {
   try {
-    const raw = storage?.getItem(KEY);
+    const raw = storage?.getItem(slotKey(slot));
     return raw ? sanitizeSave(JSON.parse(raw)) : undefined;
   } catch {
     return undefined;
   }
 }
 
-export function saveAdventure(s: AdventureSave, storage: Pick<Store, "setItem"> | undefined) {
+export function saveAdventure(
+  s: AdventureSave,
+  storage: Pick<Store, "setItem"> | undefined,
+  slot = 0,
+) {
   try {
-    storage?.setItem(KEY, JSON.stringify(s));
+    storage?.setItem(slotKey(slot), JSON.stringify(s));
   } catch {
     // Storage full or blocked: progress still counts for this visit.
   }
 }
 
-export function eraseAdventure(storage: Pick<Store, "removeItem"> | undefined) {
+export function eraseAdventure(storage: Pick<Store, "removeItem"> | undefined, slot = 0) {
   try {
-    storage?.removeItem(KEY);
+    storage?.removeItem(slotKey(slot));
   } catch {
     // Nothing to erase.
   }

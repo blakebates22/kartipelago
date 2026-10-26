@@ -468,7 +468,9 @@ def light(sc):
     kit.paint.shade_roads(c.pieces + getattr(c, "lanes", []), 0.3)
 
 
-def build(c, dk, ter, z1, z2):
+def build(c, dk, ter, z1, z2, ruin=False):
+    """(`ruin`: no bastion's perch (the ruin's bastion is down); returns the scene before
+    its lights, for the ruin's dressing.)"""
     kp.use_palette(PALETTE)
     sc = Scene(c, dk, ter)
     gate(sc)
@@ -480,10 +482,13 @@ def build(c, dk, ter, z1, z2):
     causeway(sc)
     courtyard(sc)
     tunnel(sc, z2)
-    perch(sc)
+    if not ruin:
+        perch(sc)
     mountain(sc)
     far(sc)
     nature(sc)
+    if ruin:
+        return sc
     for x, y, z in sc.flames:
         game_entity(c, "torch", x, y, z)
     for x, y, z, top, w, h in sc.falls:
@@ -493,3 +498,4 @@ def build(c, dk, ter, z1, z2):
     atmosphere(c, dk, z1, z2)
     light(sc)
     print("ember scenery: props", c.prop_count, "flames", len(sc.flames))
+    return sc

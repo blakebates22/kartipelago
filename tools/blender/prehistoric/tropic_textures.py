@@ -46,6 +46,48 @@ WRECK = {
 }
 
 
+ISLE = {
+    "id": "volcano_isle",
+    "name": "Volcano Isle",
+    "description": "A tropical island on a clear morning: black volcanic sand, deep blue sea and a turquoise lagoon, jungle up the flanks, steaming hot springs, a fishing village of stilt huts, and the dormant volcano behind it all",
+    "environment": {
+        "sky": "#5ab8f0",
+        "fog": {"enabled": True, "color": "#d4eef4", "near": 320, "far": 1700},
+        "sun": {"color": "#fff4d8", "intensity": 2.7, "direction": [0.42, 0.78, -0.46]},
+        "ambient": {"sky": "#d8f0ff", "ground": "#6a5a48", "intensity": 1.3},
+        "skyDome": {
+            "top": "#1868d0",
+            "horizon": "#d0f0f6",
+            "bottom": "#8ad8e4",
+            "sun": {"color": "#fffbe8", "size": 9, "glow": "#ffeab0", "elevation": 38},
+            "clouds": {"count": 28, "color": "#ffffff", "shade": "#c8dcf0", "seed": 157, "low": 6, "high": 24, "drift": 0.006},
+            "hills": {"color": "#2a6a46", "far": "#88c0b8", "height": 6, "seed": 159, "layers": 2},
+        },
+    },
+}
+
+
+SPLASH = {
+    "id": "splash_lagoon",
+    "name": "Splash Lagoon",
+    "description": "A seaside water park on a bright summer afternoon: candy-coloured slides and pools, the slide tower over the beach, striped cabanas and umbrellas, palms, bunting, and the Big Curl breaking over it all",
+    "environment": {
+        "sky": "#46c4f8",
+        "fog": {"enabled": True, "color": "#d8f4ff", "near": 320, "far": 1600},
+        "sun": {"color": "#fffaf0", "intensity": 2.9, "direction": [-0.3, 0.84, -0.44]},
+        "ambient": {"sky": "#e8f8ff", "ground": "#e8d0a8", "intensity": 1.35},
+        "skyDome": {
+            "top": "#1a86e8",
+            "horizon": "#d4f6ff",
+            "bottom": "#a8ecf4",
+            "sun": {"color": "#fffbe8", "size": 8, "glow": "#fff6c0", "elevation": 46},
+            "clouds": {"count": 20, "color": "#ffffff", "shade": "#d8ecff", "seed": 161, "low": 6, "high": 24, "drift": 0.006},
+            "hills": {"color": "#3a9a6a", "far": "#a8e0d8", "height": 4, "seed": 163, "layers": 2},
+        },
+    },
+}
+
+
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle
     W, H = 64, 32
@@ -369,7 +411,7 @@ def materials(mt):
 
         return paint(f)
 
-    T, R = "coral_cove", "shipwreck_bay"
+    T, R, I, P = "coral_cove", "shipwreck_bay", "volcano_isle", "splash_lagoon"
     SAND = ["#e8cf96", "#f0dca8", "#f6e6ba", "#faefcc", "#fff6de"]
     PL = ["#6e7a7e", "#808c8e", "#94a09e", "#a8b2ac", "#c0c8bc"]
     out = [
@@ -426,5 +468,41 @@ def materials(mt):
         ("wreck_lantern", "Lantern Glow", R, "wall", lambda: lamp(["#c86a20", "#e88a30", "#ffb04a", "#ffe0a0"]), 1, GLOW(0.95, flicker=0.12)),
         ("wreck_grass", "Bay Grass", R, "grass", lambda: sand(["#5a7a3a", "#6a8a42", "#7e9a4c", "#a8a868", "#c8b07a"], 8151, 2, 0, 20), 5, None),
         ("wreck_moss", "Weed", R, "wall", lambda: solid(["#2a4a2a", "#345a30", "#3e6a36", "#4a7a3e"], 8161, (8, 4)), 2, SWAY),
+        # Volcano Isle
+        ("isle_sand", "Black Sand", I, "sand", lambda: sand(["#2a2a2e", "#36363a", "#424246", "#505052", "#62605c"], 9001, 6, 0, 12), 6, None),
+        ("isle_road", "Island Track", I, "road", lambda: road(["#6a4a36", "#7a5840", "#88644a", "#967256", "#a48262"], "#c0a07a", 9011), 4, None),
+        ("isle_wet_sand", "Wet Black Sand", I, "sand", lambda: sand(["#18181c", "#202024", "#2a2a2e", "#36363a"], 9021, 4, 0, 6, False), 5, None),
+        ("isle_sea", "Island Sea", I, "water", lambda: water(["#0a5a9a", "#0e6eae", "#1a86c0", "#38a6d0", "#78cce0"], 9031),
+         10, {"scrollU": 0.02, "scrollV": 0.03, "wave": 0.05, "wavePeriod": 4.2, "opacity": 0.86}),
+        ("isle_lagoon", "Island Lagoon", I, "water", lambda: shallows(["#18b8c8", "#2ac6d2", "#46d4da", "#6ae2e2"], "#5a5a56", 9041),
+         8, {"scrollU": 0.006, "scrollV": 0.01, "wave": 0.04, "wavePeriod": 6, "opacity": 0.82, "lagoon": 0.9}),
+        ("isle_spring", "Hot Spring", I, "water", lambda: shallows(["#7ad8d0", "#8ee2d8", "#a6ece2", "#c4f4ec"], "#e8e0c8", 9051),
+         5, {"scrollU": 0.004, "scrollV": 0.008, "wave": 0.03, "wavePeriod": 3, "opacity": 0.9, "glow": 0.15}),
+        ("isle_rock", "Basalt", I, "wall", lambda: rock(["#26262a", "#323236", "#3e3e40", "#4c4a4a", "#5c5856"], 9061, "#4a7a42"), 8, None),
+        ("isle_tube", "Lava Tube Rock", I, "wall", lambda: rock(["#1a1416", "#24191a", "#2e2020", "#3a2824", "#4a3028"], 9071, "#c8602a"), 6, None),
+        ("isle_jungle", "Jungle Floor", I, "grass", lambda: sand(["#2a5a26", "#346a2c", "#3e7a32", "#4a8a3a", "#5a9a44"], 9081, 0, 4, 10), 5, None),
+        ("isle_moss", "Moss", I, "grass", lambda: sand(["#3a6a2a", "#4a7a32", "#5a8a3c", "#6e9a48"], 9091, 0, 0, 6, False), 4, None),
+        ("isle_huts", "Stilt Hut Boards", I, "wall", lambda: boards(["#8a6040", "#9a6e4a", "#aa7e56", "#ba8e62"], "#4a3020", 9101), 3, None),
+        ("isle_thatch", "Island Thatch", I, "wall", lambda: thatch(["#6a5426", "#8a6e32", "#a4863e", "#bc9c4c", "#d0b05c"], 9111), 2, None),
+        ("isle_rail", "Island Rope Rail", I, "wall", lambda: rope_rail(["#4a3626", "#5a442e", "#6c5438"], "#d8c49a", "#9a8460", "#3a3a3a", 9121), 2, None),
+        ("isle_net", "Fishing Net", I, "wall", lambda: stripes("#c8b88a", "#6a5a3a", 9131, w=4), 2, SWAY),
+        # Splash Lagoon
+        ("splash_path", "Park Paving", P, "road", lambda: road(["#d8a890", "#e2b6a0", "#eac2ac", "#f0ceb8", "#f6dac6"], "#fff0e0", 9501), 4, None),
+        ("splash_sand", "Park Sand", P, "sand", lambda: sand(["#f0d8a0", "#f6e2b2", "#faeac2", "#fdf2d4", "#fff8e6"], 9511, 10, 6, 6), 6, None),
+        ("splash_wet_sand", "Park Wet Sand", P, "sand", lambda: sand(["#c8aa72", "#d4b882", "#dec490", "#e8d2a2"], 9521, 4, 2, 4, False), 5, None),
+        ("splash_sea", "Summer Sea", P, "water", lambda: water(["#0a90d0", "#14a6dc", "#28bce4", "#52d2ea", "#98e8f2"], 9531),
+         10, {"scrollU": 0.02, "scrollV": 0.03, "wave": 0.05, "wavePeriod": 4, "opacity": 0.86}),
+        ("splash_pool", "Pool Water", P, "water", lambda: shallows(["#22c0e8", "#38ccec", "#54d8f0", "#76e4f4"], "#e8f8ff", 9541),
+         6, {"scrollU": 0.008, "scrollV": 0.012, "wave": 0.03, "wavePeriod": 3.4, "opacity": 0.85, "lagoon": 0.9}),
+        ("splash_tile", "Pool Tile", P, "wall", lambda: stripes("#e8f6fa", "#3ab4d8", 9551, w=4), 2, None),
+        ("splash_deck", "Park Decking", P, "road", lambda: planks(["#c08a5a", "#cc9866", "#d8a672", "#e2b480", "#ecc290"], "#7a5030", 9561), 3, None),
+        ("splash_slide_red", "Slide Red", P, "wall", lambda: solid(["#e8402e", "#f04e36", "#f6623e", "#fa764a"], 9571), 2, None),
+        ("splash_slide_blue", "Slide Blue", P, "wall", lambda: solid(["#2a6ae8", "#3478f0", "#4488f6", "#5a9cfa"], 9581), 2, None),
+        ("splash_slide_yellow", "Slide Yellow", P, "wall", lambda: solid(["#f4b820", "#f8c430", "#fcd040", "#ffdc5a"], 9591), 2, None),
+        ("splash_slide_green", "Slide Green", P, "wall", lambda: solid(["#34b858", "#40c464", "#4ed070", "#62dc80"], 9601), 2, None),
+        ("splash_cabana", "Cabana Stripes", P, "wall", lambda: stripes("#f06a8a", "#fff6ee", 9611, edge="#f06a8a"), 2, SWAY),
+        ("splash_grass", "Park Lawn", P, "grass", lambda: sand(["#4aa840", "#56b448", "#62c050", "#72cc5c", "#86d46c"], 9621, 0, 0, 8), 5, None),
+        ("splash_rock", "Park Rock", P, "wall", lambda: rock(["#8a7a6a", "#9a8a78", "#ac9c88", "#beae98", "#d0c0a8"], 9631, "#e8e0d0"), 8, None),
+        ("isle_ember", "Old Lava Glow", I, "wall", lambda: coral(["#8a2a10", "#b8401a", "#e06424", "#ff9a3a"], "#ffe0a0", 9141), 1.5, GLOW(0.5, 0.3, 4.0)),
     ]
     return out

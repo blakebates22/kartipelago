@@ -1,5 +1,7 @@
-# Splash Lagoon: the beach world's fourth course, a greybox to drive before it's dressed
-# (?track=splash_lagoon; working name).
+# Splash Lagoon: the beach world's fourth course, painted (the Tropic Isles). The
+# greybox's lap exactly (it's kept as splash_lagoon_v2): the same roads, heights,
+# surfaces, loop, plank, zippers and checkpoints; only the look is new
+# (lagoon_scenery.py, tropic_textures.py): a seaside water park on a summer afternoon.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/splash_lagoon.py      (the bpy module)
@@ -24,9 +26,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "splash_lagoon"
+import lagoon_scenery  # noqa: E402
+
+# The ruin (splash_lagoon_ruins.py): Tidewyrm's raid toppled the slide tower down the
+# length of its climbing ramp; the lap now climbs its wreck to the flume (the same line,
+# the same heights). Pool tiles and park junk lie in the road. Everything else is the
+# course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "splash_lagoon_ruin" if RUIN else "splash_lagoon"
 
 LOOP_R, LOOP_RAMP, LOOP_SHIFT = 20.0, 24.0, 16.0
 START = (0.0, 0.0)
@@ -211,7 +221,22 @@ def classify(c, n, info):
     if c.z < WATER_Z + 0.6:
         return ("wet_sand", "sand")
     # Soft ground off the road (cutting across mustn't pay); the shoulders stay sand.
+    # (The paint: lawns inland, sand by the sea; the same surface.)
+    if sea_d(c.x, c.y) < -40 and info["d"] > info["sample"].w / 2 + 6:
+        return ("splash_grass", "soft_sand")
     return ("beach_sand", "soft_sand")
+
+
+# The paint: each greybox material -> Splash Lagoon's own (Course.lib keeps the old surface).
+PAINT = {
+    "beach_road": "splash_path",
+    "beach_sand": "splash_sand",
+    "wet_sand": "splash_wet_sand",
+    "sea_water": "splash_sea",
+    "lagoon_shallow": "splash_pool",
+    "wood_planks": "splash_deck",
+    "valley_cliff": "splash_rock",
+}
 
 
 def box(c, name, cx, cy, hx, hy, z0, z1, mat, role="both"):
@@ -227,7 +252,9 @@ def box(c, name, cx, cy, hx, hy, z0, z1, mat, role="both"):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Splash Lagoon (greybox)", "beach_party")
+    kit.MAT_REMAP.clear()
+    kit.MAT_REMAP.update(PAINT)
+    c = kit.Course(TRACK_ID, "Splash Lagoon (Ruined)" if RUIN else "Splash Lagoon", "splash_ruins" if RUIN else "splash_lagoon")
     (ex, ey, _), (xx, xy, _) = LOOPS[0]
     banks = [(_arc_centre(i)[0], _arc_centre(i)[1], 44.0, 18.0) for i in (9, 10, 11, 12)]
     # The lazy river's bend stays level, so the plank leaves and rejoins it flush.
@@ -241,6 +268,9 @@ def main():
         "straight": {"mat": "beach_road", "shoulder": 1.6, "shoulder_mat": sand, "exact": True},
         "ramp": {"mat": "wood_planks", "surface": "road", "shoulder": 0.4, "shoulder_mat": planks, "barrier": 1.0,
                  "barrier_mat": tiki, "deck": 2.0, "deck_mat": planks, "ground": False},
+        # (The ruin) the toppled tower's side, the way up: its panels, no rails.
+        "wreck": {"mat": "splash_slide_yellow", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("splash_slide_red", "road"), "deck": 3.0,
+                  "deck_mat": ("splash_slide_red", "road"), "ground": False},
         "flume": {"mat": "party_teal", "surface": "road", "shoulder": 0.4, "shoulder_mat": ("party_white", "road"),
                   "barrier": 2.2, "barrier_mat": ("party_white", "wall"), "deck": 1.6, "deck_mat": ("party_teal", "road"),
                   "ground": False},
@@ -257,7 +287,7 @@ def main():
         if s_in - 60 <= s < s_in or s_out < s <= s_out + 45:
             return "straight"
         if r0 <= s < t0:
-            return "ramp"
+            return "wreck" if RUIN else "ramp"
         if t0 <= s < f1:
             return "flume"
         return "road"
@@ -295,12 +325,13 @@ def main():
 
     # Posts under the ramp, the tower deck and the flume; the tower itself inside its turn.
     for piece in c.pieces:
-        for kind, size, every in (("ramp", 0.9, 8.0), ("flume", 0.8, 7.0)):
+        for kind, size, every in (("ramp", 0.9, 8.0), ("flume", 0.8, 7.0), ("wreck", 1.6, 9.0)):
             if piece.name.endswith(kind):
                 kit.clear_piers(c, piece, [ter], every=every, mat=("party_white", "wall"), size=size, inset=size + 0.6)
     tx, ty = TOWER
-    box(c, "Slide Tower", tx, ty, 9.0, 9.0, 0.0, TOP + 9.0, ("party_yellow", "wall"))
-    box(c, "Slide Tower Canopy", tx, ty, 12.0, 12.0, TOP + 9.0, TOP + 10.0, ("party_red", "wall"), role="visual")
+    if not RUIN:  # (the ruin's has toppled: splash_lagoon_ruins.py)
+        box(c, "Slide Tower", tx, ty, 9.0, 9.0, 0.0, TOP + 9.0, ("party_yellow", "wall"))
+        box(c, "Slide Tower Canopy", tx, ty, 12.0, 12.0, TOP + 9.0, TOP + 10.0, ("party_red", "wall"), role="visual")
 
     c.start_line()
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
@@ -329,7 +360,9 @@ def main():
                [(lerp(CUT[0][0], mid[0], 0.5), lerp(CUT[0][1], mid[1], 0.5), zm), (mid[0], mid[1], zm),
                 (lerp(mid[0], CUT[1][0], 0.5), lerp(mid[1], CUT[1][1], 0.5), zm)], width=10.0)
 
-    kit.paint.shade_roads(c.pieces, 0.3)
+    sc = lagoon_scenery.build(c, sys.modules[__name__], ter)
+    if RUIN:
+        ruin_mode.DRESS(c, sys.modules[__name__], sc)
     c.finish()
     print("lap", round(c.length, 1), "pond r", round(POND_R, 1))
 

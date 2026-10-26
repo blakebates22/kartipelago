@@ -10,7 +10,16 @@
 
 import math
 
+import ruin_mode
 from impact_land import clamp, lerp, noise, seg_dist, sm  # noqa: F401  (shared helpers)
+
+# The ruin (dragon_canyon_ruins.py): the sacrifice's blast tore the canyon apart. The lap
+# keeps its best (the cliffside hairpins, the Canyon Bridge, now broken: a jump; the
+# Skeleton Pass), then the blast's own road: the mesa's flank split and slid, and the
+# lap runs down the slip, over the river on rock the blast fused across it, and up to the
+# gate. About half the lap.
+RUIN = ruin_mode.ON
+STD = None  # (the ruin) the standard course's land module (dragon_canyon_ruins.py sets it)
 
 
 def rnd(k):
@@ -102,6 +111,13 @@ def fillet_path(V, step=1.0):
     return pts
 
 
+STD_CORNERS = CORNERS
+if RUIN:
+    CORNERS = CORNERS[:12] + [
+        (190.0, -10.0, 44.0, "f1"),  # down the slip, over the fused river
+        (64.0, -82.0, 34.0, "f2"),  # west up the far side
+        (0.0, -82.0, 28.0, "x5"),  # right onto the straight to the gate
+    ]
 PATH = fillet_path(CORNERS)
 _D = [0.0]
 for _a, _b in zip(PATH, PATH[1:]):
@@ -173,7 +189,7 @@ def nearest(x, y, near=None):
 
 # ---------------------------------------------------------------- heights
 
-ANCHORS = [  # (corner, fraction through it, z)
+STD_ANCHORS = ANCHORS = [  # (corner, fraction through it, z)
     ("start", 0.0, 30.0),
     ("c1", 0.0, 30.5),
     ("n2", 0.0, 52.0),  # up the ledges to the top: the Canyon Bridge
@@ -190,6 +206,15 @@ ANCHORS = [  # (corner, fraction through it, z)
     ("x4b", 0.3, 36.0),  # ...round the Dragon's Coil...
     ("x5", 0.4, 30.5),  # ...and down to the gate
 ]
+if RUIN:
+    ANCHORS = [a for a in STD_ANCHORS if a[0] in NAMES and a[0] not in ("x5",)] + [
+        ("k3", 0.6, 30.0),
+        ("f1", 0.5, 16.0),  # the fused rock over the river
+        ("f2", 0.4, 24.0),
+        ("x5", 0.4, 30.5),
+    ]
+    # The Canyon Bridge, broken by the blast: (lip, landing).
+    BREAK = (at("n2", 0.55) - 6.0, at("n2", 0.55) + 6.0)
 _A = sorted((at(n, f), z) for n, f, z in ANCHORS) + [(LENGTH, ANCHORS[0][2])]
 
 
@@ -202,7 +227,16 @@ def _lin(d):
 
 
 def road_z(d, seg=None):
-    return sum(_lin(d + k) for k in range(-12, 13, 3)) / 9.0
+    z = sum(_lin(d + k) for k in range(-12, 13, 3)) / 9.0
+    if RUIN:
+        a, b = BREAK
+        if a - 12 <= d < a:
+            z += 0.9 * ((d - (a - 12)) / 12) ** 2
+        elif a <= d <= b:
+            z += lerp(0.9, -2.0, (d - a) / (b - a))
+        elif b < d <= b + 16:
+            z -= 2.0 * (1 - sm((d - b) / 16))
+    return z
 
 
 WIDE = {"b1", "b2", "n2", "r1", "r2"}  # the sweeping bridges and the sprint
@@ -328,6 +362,8 @@ def ground(x, y):
 
 
 def _service_line():
+    if RUIN:
+        return [], -1e9, -1e9  # (the ruin: the quarry is gone)
     """The Service Road: off the Skeleton Pass's last bend, straight through the loading
     yard (under a stone arch), back onto the road where it turns south into the mesa.
     Narrow and dusty; it cuts the quarry's big right-left."""
@@ -350,7 +386,7 @@ def _service_line():
 
 
 SERVICE, SERVICE_A, SERVICE_B = _service_line()
-SERVICE_LEN = sum(math.dist(p[:2], q[:2]) for p, q in zip(SERVICE, SERVICE[1:]))
+SERVICE_LEN = sum(math.dist(p[:2], q[:2]) for p, q in zip(SERVICE, SERVICE[1:])) if SERVICE else 0.0
 
 
 def open_sides(s):
@@ -361,20 +397,26 @@ def open_sides(s):
 
 # ---------------------------------------------------------------- zones
 
-ZONES = [  # (lap distance, zone)
-    (0.0, "outpost"),
-    (S["c1"], "hairpins"),
-    (S["n1"], "descent"),
-    (S["k1"] - 10.0, "skeleton"),
-    (S["q1"] - 10.0, "quarry"),
-    (at("q2", 0.85), "caverns"),
-    (at("t1", 0.75), "bridges"),
-    (S["o1"] + 10.0, "oasis"),
-    (S["r1"], "river"),
-    (S["w0"] + 20.0, "watchtower"),
-    (S["x1"] + 10.0, "twist"),
-    (at("x5", 0.3), "outpost"),
-]
+if not RUIN:
+    ZONES = [  # (lap distance, zone)
+        (0.0, "outpost"),
+        (S["c1"], "hairpins"),
+        (S["n1"], "descent"),
+        (S["k1"] - 10.0, "skeleton"),
+        (S["q1"] - 10.0, "quarry"),
+        (at("q2", 0.85), "caverns"),
+        (at("t1", 0.75), "bridges"),
+        (S["o1"] + 10.0, "oasis"),
+        (S["r1"], "river"),
+        (S["w0"] + 20.0, "watchtower"),
+        (S["x1"] + 10.0, "twist"),
+        (at("x5", 0.3), "outpost"),
+    ]
+
+
+if RUIN:
+    ZONES = [(0.0, "outpost"), (S["c1"], "hairpins"), (S["n1"], "descent"), (S["k1"] - 10.0, "skeleton"), (S["f1"] - 20.0, "slip"),
+             (at("x5", 0.3), "outpost")]
 
 
 def zone_of(s):

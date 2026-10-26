@@ -119,8 +119,9 @@ def headland(sc):
     the headland beyond."""
     c, m = sc.c, sc.dk
     lx, ly = m.LIGHTHOUSE
-    sc.put(tp.lighthouse(c), lx, ly, 12.2, coll="Headland", role="visual")
-    sc.lamps.append((lx, ly, 12.2 + 17.8))
+    if not getattr(m, "RUIN", False):  # (the ruin's has fallen: coral_cove_ruins.py)
+        sc.put(tp.lighthouse(c), lx, ly, 12.2, coll="Headland", role="visual")
+        sc.lamps.append((lx, ly, 12.2 + 17.8))
     # Well back from the hairpin, so its run-off stays open sand (as in the greybox).
     x, y = lx - 2.0, ly + 58.0
     if clear_of(c, x, y, 5.0):
@@ -245,5 +246,8 @@ def build(c, m, ter):
     nature(sc)
     for x, y, z in sc.flames:
         game_entity(c, "torch", x, y, z)
+    if getattr(m, "RUIN", False):
+        return sc  # (the ruin lights it, with its own wreckage)
     light(sc)
     print("cove scenery: props", c.prop_count, "flames", len(sc.flames))
+    return sc

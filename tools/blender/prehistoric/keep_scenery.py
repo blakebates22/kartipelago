@@ -643,7 +643,8 @@ def light(sc):
     kit.paint.shade_roads(c.pieces + getattr(c, "lanes", []), 0.3)
 
 
-def build(c, dk, ter):
+def build(c, dk, ter, ruin=False):
+    """(`ruin`: the ruin's dressing goes on: returns the scene before the lights.)"""
     sc = Scene(c, dk, ter)
     gate(sc)
     town(sc)
@@ -657,6 +658,8 @@ def build(c, dk, ter):
     royal(sc)
     clouds(sc)
     nature(sc)
+    if ruin:
+        return sc
     for x, y, z in sc.flames:
         game_entity(c, "torch", x, y, z)
     for x, y, z, top, w, h in sc.falls:
@@ -665,3 +668,4 @@ def build(c, dk, ter):
     atmosphere(c, dk)
     light(sc)
     print("keep scenery: props", c.prop_count, "flames", len(sc.flames))
+    return sc

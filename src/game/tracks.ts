@@ -227,6 +227,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "coral_cove",
     music: "title",
     load: { scene: "track", packageId: "coral_cove" },
+    ruin: "coral_cove_ruin",
+  },
+  {
+    id: "coral_cove_ruin",
+    name: "Coral Cove (Ruined)",
+    description:
+      "The lighthouse has fallen across the road: over its broken tower, round the rubble, the boardwalk jump as ever.",
+    preview: "previews/coral_cove_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "cove_ruins",
+    music: "title",
+    load: { scene: "track", packageId: "coral_cove_ruin" },
   },
   // The Coral Cove greybox (the painted course replaced it on 2026-10-25; the same lap):
   // ?track=coral_cove_v2.
@@ -253,6 +265,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "shipwreck_bay",
     music: "title",
     load: { scene: "track", packageId: "shipwreck_bay" },
+    ruin: "shipwreck_bay_ruin",
+  },
+  {
+    id: "shipwreck_bay_ruin",
+    name: "Shipwreck Bay (Ruined)",
+    description:
+      "The galleon's back is broken: over the pier, jump the break in her hold, up the fallen mast, round her strewn cargo.",
+    preview: "previews/shipwreck_bay_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "wreck_ruins",
+    music: "title",
+    load: { scene: "track", packageId: "shipwreck_bay_ruin" },
   },
   // The Shipwreck Bay greybox (the painted course replaced it on 2026-10-25; the same lap):
   // ?track=shipwreck_bay_v2.
@@ -280,18 +304,43 @@ export const TRACKS: TrackEntry[] = [
     music: "dragon",
     load: { scene: "track", packageId: "dragon_isles_v2" },
   },
-  // The beach world's third course (working name), a greybox: a tropical island, the
-  // volcano dormant behind it. ?track=volcano_isle.
+  // The beach world's third course, painted (the Tropic Isles, Oct 26): the greybox's lap
+  // exactly, a tropical island, the volcano dormant behind it. ?track=volcano_isle.
   {
     id: "volcano_isle",
-    name: "Volcano Isle (greybox)",
+    name: "Volcano Isle",
     description:
       "Geysers on the hot flats, jungle switchbacks, the old lava tube and the cliff jump over the lagoon.",
     preview: "previews/volcano_isle.jpg",
     modes: ["race", "timeTrial"],
-    theme: "beach_party",
+    theme: "volcano_isle",
     music: "title",
     load: { scene: "track", packageId: "volcano_isle" },
+    ruin: "volcano_isle_ruin",
+  },
+  {
+    id: "volcano_isle_ruin",
+    name: "Volcano Isle (Ruined)",
+    description:
+      "The island after Tidewyrm's raid woke its volcano: a lava flow buried the road over the hot-spring flats, so the lap runs on its cooled crust beside live lava; volcanic bombs in the road.",
+    preview: "previews/volcano_isle_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "isle_ruins",
+    music: "title",
+    load: { scene: "track", packageId: "volcano_isle_ruin" },
+  },
+  // The Volcano Isle greybox (the painted course replaced it on 2026-10-26; the same lap):
+  // ?track=volcano_isle_v2.
+  {
+    id: "volcano_isle_v2",
+    name: "Volcano Isle (greybox, v2)",
+    description:
+      "Geysers on the hot flats, jungle switchbacks, the old lava tube and the cliff jump over the lagoon.",
+    preview: "previews/volcano_isle_v2.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "volcano_isle_v2" },
   },
   // Boss race prototypes, one per world (Blake, Oct 25: three of 3 laps, two of one long
   // lap). Greyboxes in the Testing world: ?track=boss_<world>.
@@ -352,18 +401,43 @@ export const TRACKS: TrackEntry[] = [
     music: "title",
     load: { scene: "track", packageId: "boss_tropic" },
   },
-  // The beach world's fourth course (working name), a greybox: a seaside water park, the
-  // wave loop, the slide tower and its flume, the lazy river. ?track=splash_lagoon.
+  // The beach world's fourth course, painted (the Tropic Isles, Oct 26): the greybox's lap
+  // exactly, a seaside water park. ?track=splash_lagoon.
   {
     id: "splash_lagoon",
-    name: "Splash Lagoon (greybox)",
+    name: "Splash Lagoon",
     description:
       "Round the Big Curl wave loop, up the slide tower and down the flume, then the lazy river's bend or its plank.",
     preview: "previews/splash_lagoon.jpg",
     modes: ["race", "timeTrial"],
-    theme: "beach_party",
+    theme: "splash_lagoon",
     music: "title",
     load: { scene: "track", packageId: "splash_lagoon" },
+    ruin: "splash_lagoon_ruin",
+  },
+  {
+    id: "splash_lagoon_ruin",
+    name: "Splash Lagoon (Ruined)",
+    description:
+      "The water park after Tidewyrm's raid: the slide tower toppled down its climbing ramp, so the lap climbs the wreck to the flume; pool tiles and park junk in the road.",
+    preview: "previews/splash_lagoon_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "splash_ruins",
+    music: "title",
+    load: { scene: "track", packageId: "splash_lagoon_ruin" },
+  },
+  // The Splash Lagoon greybox (the painted course replaced it on 2026-10-26; the same lap):
+  // ?track=splash_lagoon_v2.
+  {
+    id: "splash_lagoon_v2",
+    name: "Splash Lagoon (greybox, v2)",
+    description:
+      "Round the Big Curl wave loop, up the slide tower and down the flume, then the lazy river's bend or its plank.",
+    preview: "previews/splash_lagoon_v2.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "title",
+    load: { scene: "track", packageId: "splash_lagoon_v2" },
   },
   // The first Dragon Canyon paint (the desert frontier; the Emerald Kingdom repaint replaced
   // it on 2026-10-25): ?track=dragon_canyon_v2.
@@ -628,6 +702,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "dry_gulch",
     music: "ghost",
     load: { scene: "track", packageId: "dry_gulch" },
+    ruin: "dry_gulch_ruin",
+  },
+  {
+    id: "dry_gulch_ruin",
+    name: "Dry Gulch (Ruined)",
+    description:
+      "The ghost town after Scorchwind's raid: the mine destroyed, the town in flames, and a landslide through the ridge opens a new road, with a jump over the crack into the fallen cavern.",
+    preview: "previews/dry_gulch_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "gulch_ruins",
+    music: "ghost",
+    load: { scene: "track", packageId: "dry_gulch_ruin" },
   },
   {
     id: "impact_depths",
@@ -639,6 +725,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "impact_depths",
     music: "depths",
     load: { scene: "track", packageId: "impact_depths" },
+    ruin: "impact_depths_ruin",
+  },
+  {
+    id: "impact_depths_ruin",
+    name: "Impact Depths (Ruined)",
+    description:
+      "The crater after Scorchwind's raid: the cavern roof caved in, the terrace roads broken into jump after jump on the way down, rocks still falling (watch for their shadows), lava under the holes.",
+    preview: "previews/impact_depths_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "impact_ruins",
+    music: "depths",
+    load: { scene: "track", packageId: "impact_depths_ruin" },
   },
   {
     id: "dragon_isles",
@@ -652,6 +750,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "dragonspire_keep",
     music: "dragon",
     load: { scene: "track", packageId: "dragon_isles" },
+    ruin: "dragon_isles_ruin",
+  },
+  {
+    id: "dragon_isles_ruin",
+    name: "Dragonspire Keep (Ruined)",
+    description:
+      "Remade by the sacrifice: past the gate, south over the split, across the heaved lake bed, round the Beacon crag, home.",
+    preview: "previews/dragon_isles_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "keep_ruins",
+    music: "dragon",
+    load: { scene: "track", packageId: "dragon_isles_ruin" },
   },
   {
     id: "dragon_canyon",
@@ -665,6 +775,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "emerald_kingdom",
     music: "dragon_canyon",
     load: { scene: "track", packageId: "dragon_canyon" },
+    ruin: "dragon_canyon_ruin",
+  },
+  {
+    id: "dragon_canyon_ruin",
+    name: "Dragon Canyon (Ruined)",
+    description:
+      "The canyon torn apart by the Chosen One's sacrifice: the Cliffside Hairpins, a jump over the broken Canyon Bridge, then down the slid mesa flank, across the river on fused rock, up to the Dragon Gate.",
+    preview: "previews/dragon_canyon_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "emerald_ruins",
+    music: "dragon_canyon",
+    load: { scene: "track", packageId: "dragon_canyon_ruin" },
   },
   {
     id: "snow_dragon_pass",
@@ -679,6 +801,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "emberdeep_hold",
     music: "snow_dragon",
     load: { scene: "track", packageId: "snow_dragon_pass" },
+    ruin: "snow_dragon_pass_ruin",
+  },
+  {
+    id: "snow_dragon_pass_ruin",
+    name: "Emberdeep Hold (Ruined)",
+    description:
+      "The mountain split in two by the Chosen One's sacrifice: out of the Outer Gate, straight through the mountain's heart between its halves, along the heaved-up ridge, round to where the bastion stood.",
+    preview: "previews/snow_dragon_pass_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "ember_hold_ruins",
+    music: "snow_dragon",
+    load: { scene: "track", packageId: "snow_dragon_pass_ruin" },
   },
   {
     id: "celestial_dragon_festival",
@@ -692,6 +826,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "moonstone_kingdom",
     music: "celestial",
     load: { scene: "track", packageId: "celestial_dragon_festival" },
+    ruin: "celestial_dragon_festival_ruin",
+  },
+  {
+    id: "celestial_dragon_festival_ruin",
+    name: "Moonstone Kingdom (Ruined)",
+    description:
+      "The moonstone city cracked apart by the Chosen One's sacrifice: a new road across the split stones, a jump over the crack, then the kingdom's own last stretch home.",
+    preview: "previews/celestial_dragon_festival_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "moon_ruins",
+    music: "celestial",
+    load: { scene: "track", packageId: "celestial_dragon_festival_ruin" },
   },
   // Test World.
   {
@@ -789,6 +935,22 @@ export const TITLE_TRACK: TrackEntry = {
   load: { scene: "track", packageId: "beach_party" },
 };
 
+/** The title screen's opening montage (screens/title.ts): courses from every world, in an order that keeps changing the
+ * scenery (beach, snow, desert, jungle, castle, cave...). */
+export const TITLE_MONTAGE = [
+  "coral_cove",
+  "frostveil_citadel",
+  "canyon_dash",
+  "riverbend_palms",
+  "dragon_isles",
+  "aurora_rift",
+  "splash_lagoon",
+  "ember_peak",
+  "oasis_haven",
+  "hearthglow_hollow",
+  "dragon_canyon",
+  "cascade_caverns",
+];
 export const MODE_LABELS: Record<TrackMode, { name: string; sub: string }> = {
   race: { name: "RACE", sub: "8 KARTS · 3 LAPS" },
   timeTrial: { name: "TIME TRIAL", sub: "SOLO · 3 LAPS" },

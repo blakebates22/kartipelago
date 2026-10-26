@@ -11,8 +11,13 @@ DRESS = None
 ALSO = {
     "snowy": ("summit_",),
     "dry": ("gulch_",),
-    "dragon": ("dcanyon_", "isles_"),
-    "celestial": ("cdf_",),
+    "dragon": ("dcanyon_", "isles_", "keep_", "emerald"),
+    "celestial": ("cdf_", "moon_", "keep_"),
+    "coral": ("cove_",),
+    "snow": ("ember_", "keep_"),
+    "volcano": ("isle_",),
+    "splash": ("lagoon_",),
+    "shipwreck": ("wreck_",),
 }
 
 

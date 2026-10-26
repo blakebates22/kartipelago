@@ -236,6 +236,196 @@ GULCH = {
 }
 
 
+IMPACT = {
+    "id": "impact_ruins",
+    "name": "Impact Depths in Ruins",
+    "description": "The pit after its roof fell in: a dusty, smoky afternoon pouring down great holes, ash in the shafts of light, the depths glowing through the haze",
+    "environment": {
+        "sky": "#b88a5e",
+        "fog": {"enabled": True, "color": "#c4a07e", "near": 300, "far": 1900},
+        "sun": {"color": "#ffd8a0", "intensity": 2.7, "direction": [-0.34, 0.86, -0.38]},
+        "ambient": {"sky": "#d8b898", "ground": "#7a4a32", "intensity": 1.25},
+        "skyDome": {
+            "top": "#5a6a8a",
+            "horizon": "#f0b070",
+            "bottom": "#c89a78",
+            "sun": {"color": "#ffe8c0", "size": 10, "glow": "#ffb060", "elevation": 52},
+            "clouds": {"count": 34, "color": "#9a7a6a", "shade": "#5a3a30", "seed": 367, "low": 8, "high": 30, "drift": 0.008},
+            "hills": {"color": "#a0644c", "far": "#c89a86", "height": 5, "seed": 213, "layers": 3, "style": "mesas"},
+        },
+    },
+}
+
+
+COVE = {
+    "id": "cove_ruins",
+    "name": "Coral Cove in Ruins",
+    "description": "The cove after Tidewyrm's raid: a stormy late afternoon, smoke drifting off the headland, the lighthouse down, the sea grey-green under heavy cloud",
+    "environment": {
+        "sky": "#7a9aa8",
+        "fog": {"enabled": True, "color": "#a8b8b4", "near": 260, "far": 1300},
+        "sun": {"color": "#ffd8b0", "intensity": 2.4, "direction": [-0.35, 0.62, -0.7]},
+        "ambient": {"sky": "#c8d8dc", "ground": "#b09a78", "intensity": 1.3},
+        "skyDome": {
+            "top": "#3a5a78",
+            "horizon": "#e8b88a",
+            "bottom": "#7aa8a8",
+            "sun": {"color": "#fff0d8", "size": 9, "glow": "#ffc890", "elevation": 18},
+            "clouds": {"count": 40, "color": "#9aa0a4", "shade": "#5a6068", "seed": 373, "low": 5, "high": 22, "drift": 0.01},
+            "hills": {"color": "#2f6a4a", "far": "#88a8a0", "height": 5, "seed": 143, "layers": 2},
+        },
+    },
+}
+
+
+WRECK = {
+    "id": "wreck_ruins",
+    "name": "Shipwreck Bay in Ruins",
+    "description": "The pirate cove after Tidewyrm's raid: a blood-orange dusk under smoke, the galleon broken in two, fires along the beach",
+    "environment": {
+        "sky": "#c86a4a",
+        "fog": {"enabled": True, "color": "#c8907a", "near": 260, "far": 1300},
+        "sun": {"color": "#ffb070", "intensity": 2.4, "direction": [-0.6, 0.3, -0.74]},
+        "ambient": {"sky": "#e0a888", "ground": "#8a5a3a", "intensity": 1.3},
+        "skyDome": {
+            "top": "#4a3a5a",
+            "horizon": "#ff9a50",
+            "bottom": "#a8706a",
+            "sun": {"color": "#ffd8a0", "size": 12, "glow": "#ff8040", "elevation": 8},
+            "clouds": {"count": 40, "color": "#7a5a5a", "shade": "#3a2a30", "seed": 379, "low": 5, "high": 22, "drift": 0.01},
+            "hills": {"color": "#3a4a3a", "far": "#9a7a7a", "height": 5, "seed": 151, "layers": 2},
+        },
+    },
+}
+
+
+ISLE = {
+    "id": "isle_ruins",
+    "name": "Volcano Isle in Ruins",
+    "description": "The island after Tidewyrm's raid woke its volcano: a sulphur-yellow noon under an ash plume, lava crusting across the flats, the village burnt, steam off the lagoon",
+    "environment": {
+        "sky": "#b89a6a",
+        "fog": {"enabled": True, "color": "#c8a888", "near": 240, "far": 1200},
+        "sun": {"color": "#ffd890", "intensity": 2.3, "direction": [0.42, 0.78, -0.46]},
+        "ambient": {"sky": "#e8c8a0", "ground": "#5a3020", "intensity": 1.25},
+        "skyDome": {
+            "top": "#5a4a5a",
+            "horizon": "#f0b878",
+            "bottom": "#a08070",
+            "sun": {"color": "#fff0c0", "size": 10, "glow": "#ffb060", "elevation": 34},
+            "clouds": {"count": 44, "color": "#6a5a58", "shade": "#2a2024", "seed": 383, "low": 6, "high": 26, "drift": 0.012},
+            "hills": {"color": "#3a3a2a", "far": "#a08a7a", "height": 6, "seed": 159, "layers": 2},
+        },
+    },
+}
+
+
+SPLASH = {
+    "id": "splash_ruins",
+    "name": "Splash Lagoon in Ruins",
+    "description": "The water park after Tidewyrm's raid: an overcast, drizzly afternoon, the slide tower toppled, the pools drained and murky, smoke from the cabanas",
+    "environment": {
+        "sky": "#8aa4b4",
+        "fog": {"enabled": True, "color": "#b0c0c4", "near": 240, "far": 1200},
+        "sun": {"color": "#f0e8d8", "intensity": 2.2, "direction": [-0.3, 0.84, -0.44]},
+        "ambient": {"sky": "#d0dce0", "ground": "#a89878", "intensity": 1.3},
+        "skyDome": {
+            "top": "#4a6680",
+            "horizon": "#d8e0e0",
+            "bottom": "#8ab0b4",
+            "sun": {"color": "#fff8e8", "size": 8, "glow": "#e8e0c8", "elevation": 40},
+            "clouds": {"count": 46, "color": "#a0a8ac", "shade": "#5a6268", "seed": 389, "low": 5, "high": 22, "drift": 0.01},
+            "hills": {"color": "#3a6a52", "far": "#90aaa4", "height": 4, "seed": 163, "layers": 2},
+        },
+    },
+}
+
+
+KEEP = {
+    "id": "keep_ruins",
+    "name": "Dragonspire Keep Remade",
+    "description": "The castle after the Chosen One's sacrifice: a strange gold-and-violet dusk, the land split and heaved, light still pouring from the sky where the blast tore it",
+    "environment": {
+        "sky": "#8a6ab8",
+        "fog": {"enabled": True, "color": "#b89ac8", "near": 300, "far": 1800},
+        "sun": {"color": "#ffd8a0", "intensity": 2.6, "direction": [-0.4, 0.55, -0.73]},
+        "ambient": {"sky": "#d8c0f0", "ground": "#6a4a5a", "intensity": 1.35},
+        "skyDome": {
+            "top": "#3a2a6a",
+            "horizon": "#ffb878",
+            "bottom": "#a07ab0",
+            "sun": {"color": "#fff0c8", "size": 14, "glow": "#ffd090", "elevation": 14},
+            "clouds": {"count": 36, "color": "#c8a0d8", "shade": "#5a3a6a", "seed": 383, "low": 6, "high": 28, "drift": 0.008},
+            "hills": {"color": "#4a3a6a", "far": "#a888c0", "height": 6, "seed": 171, "layers": 3},
+        },
+    },
+}
+
+
+EMERALD = {
+    "id": "emerald_ruins",
+    "name": "Dragon Canyon Remade",
+    "description": "The canyon after the Chosen One's sacrifice: the jungle castle's canyon torn open under a gold-and-violet afterglow, the river steaming where the blast fused rock across it",
+    "environment": {
+        "sky": "#9a6aa8",
+        "fog": {"enabled": True, "color": "#c09aa8", "near": 300, "far": 1800},
+        "sun": {"color": "#ffd090", "intensity": 2.6, "direction": [-0.7, 0.3, -0.65]},
+        "ambient": {"sky": "#e0c0e0", "ground": "#6a4a3a", "intensity": 1.3},
+        "skyDome": {
+            "top": "#3a2a5a",
+            "horizon": "#ffa868",
+            "bottom": "#a07090",
+            "sun": {"color": "#fff0c0", "size": 14, "glow": "#ffc070", "elevation": 12},
+            "clouds": {"count": 34, "color": "#c098c0", "shade": "#5a3a5a", "seed": 389, "low": 6, "high": 28, "drift": 0.008},
+            "hills": {"color": "#5a3a4a", "far": "#b08aa0", "height": 6, "seed": 173, "layers": 3, "style": "mesas"},
+        },
+    },
+}
+
+
+HOLD = {
+    "id": "ember_hold_ruins",
+    "name": "Emberdeep Hold Remade",
+    "description": "The mountain fortress after the Chosen One's sacrifice: the mountain split in two, embers glowing in its heart, the storm torn open on a violet dawn",
+    "environment": {
+        "sky": "#4a3a6a",
+        "fog": {"enabled": True, "color": "#6a4a6a", "near": 260, "far": 1500},
+        "sun": {"color": "#ffc8a0", "intensity": 2.0, "direction": [-0.22, 0.62, -0.75]},
+        "ambient": {"sky": "#a88ad0", "ground": "#5a3a3a", "intensity": 1.45},
+        "skyDome": {
+            "top": "#1a1438",
+            "horizon": "#ff8a5a",
+            "bottom": "#4a2a4a",
+            "sun": {"color": "#ffe0c0", "size": 12, "glow": "#ff9a60", "elevation": 10},
+            "clouds": {"count": 40, "color": "#6a4a7a", "shade": "#2a1a3a", "seed": 397, "low": 6, "high": 30, "drift": 0.01},
+            "hills": {"color": "#2a1a2e", "far": "#6a4a6a", "height": 7, "seed": 179, "layers": 3},
+        },
+    },
+}
+
+
+MOON = {
+    "id": "moon_ruins",
+    "name": "Moonstone Kingdom Remade",
+    "description": "The moonlit kingdom after the Chosen One's sacrifice: the Palace Mount split open, crystal shards glowing in the rubble, the huge moon low and red-gold through drifting ash",
+    "environment": {
+        "sky": "#2a2048",
+        "fog": {"enabled": True, "color": "#4a3a6a", "near": 300, "far": 1700},
+        "sun": {"color": "#ffd8b0", "intensity": 1.7, "direction": [-0.3, 0.6, -0.74]},
+        "ambient": {"sky": "#9a8ad8", "ground": "#4a3a5a", "intensity": 1.5},
+        "skyDome": {
+            "top": "#0a0820",
+            "horizon": "#c06a6a",
+            "bottom": "#3a2a4a",
+            "sun": {"color": "#ffd8a8", "size": 22, "glow": "#e08a6a", "elevation": 14, "face": "moon"},
+            "clouds": {"count": 30, "color": "#5a4a7a", "shade": "#2a1a42", "seed": 401, "low": 6, "high": 30, "drift": 0.006},
+            "hills": {"color": "#1a1430", "far": "#4a3a6a", "height": 6, "seed": 181, "layers": 3},
+            "stars": {"count": 500, "color": "#ffffff", "seed": 187, "low": 12},
+        },
+    },
+}
+
+
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle
 

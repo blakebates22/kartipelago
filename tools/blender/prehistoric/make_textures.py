@@ -5082,13 +5082,13 @@ THEMES.append(cdf_textures.THEME)
 import tropic_textures  # noqa: E402
 
 MATERIALS += tropic_textures.materials(sys.modules[__name__])
-THEMES += [tropic_textures.COVE, tropic_textures.WRECK]
+THEMES += [tropic_textures.COVE, tropic_textures.WRECK, tropic_textures.ISLE, tropic_textures.SPLASH]
 
 # The ruined courses (Adventure's treasure map challenge): Riverbend in ruins first.
 import ruin_textures  # noqa: E402
 
 MATERIALS += ruin_textures.materials(sys.modules[__name__])
-THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG, ruin_textures.EMBER, ruin_textures.FROST, ruin_textures.SUMMIT, ruin_textures.HEARTH, ruin_textures.AURORA, ruin_textures.CANYON, ruin_textures.OASIS, ruin_textures.GULCH]
+THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG, ruin_textures.EMBER, ruin_textures.FROST, ruin_textures.SUMMIT, ruin_textures.HEARTH, ruin_textures.AURORA, ruin_textures.CANYON, ruin_textures.OASIS, ruin_textures.GULCH, ruin_textures.IMPACT, ruin_textures.COVE, ruin_textures.WRECK, ruin_textures.ISLE, ruin_textures.SPLASH, ruin_textures.KEEP, ruin_textures.EMERALD, ruin_textures.HOLD, ruin_textures.MOON]
 
 
 def thumb(im):

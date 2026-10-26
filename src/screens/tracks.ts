@@ -29,7 +29,7 @@ import { INK, INK_SOFT, island, parchment, trophy, type IslandStyle } from "../u
 import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { loadingScreen } from "./loading";
-import { modeSelect } from "./modeSelect";
+import { characterSelect } from "./characterSelect";
 
 const images = new Map<string, HTMLImageElement>();
 /** Track pictures, loaded once and kept (they're small). */
@@ -167,7 +167,7 @@ export function tracksMenu(game: Game): Screen {
       return game.sounds.back();
     }
     game.sounds.back();
-    game.screens.go(modeSelect(game));
+    game.screens.go(characterSelect(game));
   };
 
   // ---------------------------------------------------------------- drawing

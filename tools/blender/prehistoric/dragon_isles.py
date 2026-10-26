@@ -32,9 +32,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "dragon_isles"
+# The ruin (dragon_isles_ruins.py): the Chosen One's sacrifice remade the kingdom. Past the
+# gate and the town's first bend, the market streets are torn up; the lap turns south
+# across the lowland over a split in the ground, east across the lake bed the blast heaved
+# up dry, round the foot of the Beacon crag, and home by the harbour and the passage as
+# ever. About half the lap. Everything else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "dragon_isles_ruin" if RUIN else "dragon_isles"
 
 K = 1.08  # the whole plan, scaled
 START = (0.0, 0.0)
@@ -86,7 +93,7 @@ SKY_LAND = SKY_LIP + 10.0
 GAPS = ((FALLS_LIP, FALLS_LAND), (SKY_LIP, SKY_LAND))
 
 # Heights at segment starts; between them the road eases. The spiral drops steadily.
-HEIGHT = {
+HEIGHT = STD_HEIGHT = {
     0: 8.0, 1: 8.0, 2: 7.2, 3: 6.6, 4: 6.5, 5: 6.5, 6: 6.6, 7: 7.0, 8: 14.0, 9: 20.0, 10: 27.0,
     11: 34.0, 12: 41.0, 13: 41.5, 14: 39.0, 15: 39.0, 16: 42.0, 17: 43.0, 18: 43.0, 19: 41.0,
     20: 40.0, 21: 39.0, 22: 38.0, 23: 37.0, 24: 4.0, 25: 3.6, 26: 3.6, 27: 3.8, 28: 4.4,
@@ -118,9 +125,15 @@ def _base_z(d, seg):
 # The jumps: a kicker, the gap, and a landing in a dip below the road (2.5-3 m), so an
 # ordinary run-up clears it.
 road_z = kit.with_jumps(_base_z, seg_of, [(FALLS_LIP, FALLS_LAND, 2.5, 0.9), (SKY_LIP, SKY_LAND, 3.0, 0.9)])
+# (The standard lap: the kingdom's landmarks are laid out from it, in the ruin too.)
+STD_LAYOUT, STD_PATH, STD_SEG, STD_LENGTH = LAYOUT, PATH, SEG, LENGTH
 
 
 def road_w(d, seg):
+    if RUIN and LAYOUT is not STD_LAYOUT:
+        if seg in (0, 15) or d < 40:
+            return 20.0
+        return 15.0 if seg in (1, 12) else 16.0
     if seg in (0, 32) or d < 40:
         return 20.0  # the start: room for the pack
     if seg in (1, 2, 3, 4, 5, 6):
@@ -139,24 +152,24 @@ TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STD_PATH if p[3] == i)
 
 
 def _arc_centre(i):
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
 
 _D = [0.0]
-for _a, _b in zip(PATH, PATH[1:]):
+for _a, _b in zip(STD_PATH, STD_PATH[1:]):
     _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
 
 
 def _at(d):
     i = min(range(len(_D)), key=lambda k: abs(_D[k] - d))
-    return PATH[i]
+    return STD_PATH[i]
 
 
 SPIRE = _arc_centre(23)  # the last great pillar the spiral winds round
@@ -168,13 +181,13 @@ _p13, _p16 = _seg_point(13), _seg_point(16)
 COURTYARD = [(_p13[0] - 4.0, _p13[1]), ((_p13[0] + _p16[0]) / 2, (_p13[1] + _p16[1]) / 2 + 2.0), (_p16[0] + 4.0, _p16[1])]
 
 # The plan's regions (see the header): the lagoon to the east, the highland north.
-HIGH_Y = min(p[1] for p in PATH if p[3] == 11) - 4.0  # the cliff top
-SHORE_Y = max(p[1] for p in PATH if p[3] == 24) + 26.0  # the harbour's waterfront
-LAGOON_X = min(p[0] for p in PATH if p[3] in (18, 19, 20, 21)) - 45.0
+HIGH_Y = min(p[1] for p in STD_PATH if p[3] == 11) - 4.0  # the cliff top
+SHORE_Y = max(p[1] for p in STD_PATH if p[3] == 24) + 26.0  # the harbour's waterfront
+LAGOON_X = min(p[0] for p in STD_PATH if p[3] in (18, 19, 20, 21)) - 45.0
 SEA = -6.0
 
 
-_DOCKS = [p for p in PATH if p[3] in (24, 25, 26, 27, 28)]
+_DOCKS = [p for p in STD_PATH if p[3] in (24, 25, 26, 27, 28)]
 _HY = {}
 
 
@@ -187,7 +200,60 @@ def HARBOUR_Y(x):
     return _HY[k]
 
 
+# ---------------------------------------------------------------- the ruin's lap
+
+SPLIT_LINE = []  # (the ruin) the split in the ground the lap jumps: [(x, y)]
+HEAVE = None  # (the ruin) the heaved lake bed: (x0, x1, y0, y1)
+if RUIN:
+    LAYOUT = STD_LAYOUT[:2] + [
+        ("R", 40.0, 120),  # 2  out of the town's first bend, south: the torn market
+        ("S", 140.0),  # 3  across the lowland, over the split (closes the loop)
+        ("L", 34.0, 90),  # 4  east
+        ("S", 175.0),  # 5  across the heaved lake bed (closes the loop)
+        ("R", STD_LAYOUT[23][1], 180),  # 6  round the Beacon crag's foot
+    ] + list(STD_LAYOUT[24:])  # 7-15: the harbour, the passage, the royal approach
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 3, 5, START, 90.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    SPLIT = (SEG[3] + 70.0, SEG[3] + 82.0)
+    GAPS = (SPLIT,)
+    HEIGHT = {0: 8.0, 1: 8.0, 2: 7.4, 3: 6.0, 4: 5.0, 5: 5.0, 6: 4.4}
+    HEIGHT.update({k + 7: STD_HEIGHT[k + 24] for k in range(9)})
+    CRESTS = {0: (1, 0.6), 3: (2, 1.2), 5: (3, 2.2), 10: (1, 3.2)}
+    road_z = kit.with_jumps(_base_z, seg_of, [(SPLIT[0], SPLIT[1], 2.5, 0.9)])
+    ROUTE = kit.route_points_by(PATH, road_z, every=8.0, width=road_w)
+    TO_ROAD, TO_PLAN = kit.along(PATH, road_z)
+    _sx = [p for p in PATH if p[3] == 3]
+    _mid = min(_sx, key=lambda p: abs(p[1] - _sx[0][1] + (SPLIT[0] + SPLIT[1]) / 2 - SEG[3]))
+    SPLIT_LINE = [(_mid[0] - 50.0, _mid[1] + 6.0), (_mid[0] - 20.0, _mid[1] - 2.0), (_mid[0] + 20.0, _mid[1] + 3.0), (_mid[0] + 60.0, _mid[1] - 4.0)]
+    _s5 = [p for p in PATH if p[3] == 5]
+    HEAVE = (_s5[0][0] - 10.0, _s5[-1][0] + 4.0, _s5[0][1] - 34.0, _s5[0][1] + 30.0)
+
+
+def split_d(x, y):
+    """(The ruin) how far (x, y) is from the split's line."""
+    best = 1e9
+    for a, b in zip(SPLIT_LINE, SPLIT_LINE[1:]):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        t = max(0.0, min(1.0, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy)))
+        best = min(best, math.hypot(x - a[0] - t * dx, y - a[1] - t * dy))
+    return best
+
+
 def natural(x, y):
+    h = _natural(x, y)
+    if HEAVE:
+        # (The ruin) the lake bed thrown up dry in tilted slabs, and the split.
+        x0, x1, y0, y1 = HEAVE
+        k = smooth((x - x0) / 20.0) * smooth((x1 - x) / 20.0) * smooth((y - y0) / 14.0) * smooth((y1 - y) / 14.0)
+        slab = 3.0 + 2.0 * math.sin(x / 17.0) + 1.2 * math.sin((x - y) / 9.0)
+        h = lerp(h, max(h, slab), k)
+        if split_d(x, y) < 10.0:
+            h = lerp(h, -14.0, smooth((10.0 - split_d(x, y)) / 4.0))
+    return h
+
+
+def _natural(x, y):
     """The valley floor, the cliff up to the highland in the north, the gorge through it,
     and the lagoon (east, and south of the highland down to the harbour)."""
     h = 5.0 + 1.0 * math.sin(x / 31.0) * math.cos(y / 27.0) + 0.6 * math.sin((x + y) / 13.0)
@@ -204,7 +270,10 @@ def natural(x, y):
 
 
 def in_drop(x, y, z):
-    """Fallen off the broken bridge or the pillar jump (put back past it)."""
+    """Fallen off the broken bridge or the pillar jump (put back past it); in the ruin,
+    down the split."""
+    if SPLIT_LINE and z < -4.0 and split_d(x, y) < 8.0:
+        return True
     return z < 1.0 and (abs(x - GORGE_X) < 24.0 and y > HIGH_Y - 40.0)
 
 
@@ -222,11 +291,26 @@ def classify(c, n, info):
     return ("keep_grass", "grass")
 
 
+def pillars(c, m):
+    """The spiral's great pillar and the karst spires along the sky paths (m: the standard
+    course; in the ruin, under the standard lap's ghost)."""
+    rad = m.STD_LAYOUT[23][1]
+    sp = c.rock_mass("Great Pillar", m.SPIRE[0], m.SPIRE[1], rad - 14.0, rad - 14.0, 62.0, z0=SEA - 2, n=20, seed=4)
+    c.paint_rock(sp, ("keep_rock", "wall"), ("keep_grass", "grass"))
+    for k in range(9):
+        d = m.STD_SEG[18] + (m.STD_SEG[23] - m.STD_SEG[18]) * (k + 0.5) / 9
+        q = c.at(m.TO_ROAD(d))
+        for side in (-1, 1):
+            p = q.side(side * (q.w / 2 + 16.0 + 6 * (k % 2)))
+            r = c.rock_mass("Karst %d %d" % (k, side > 0), p.x, p.y, 7.0 + 2 * (k % 3), 6.0, q.p.z + 10 + 8 * ((k + side) % 3), z0=SEA - 2, n=12, seed=k * 3 + side)
+            c.paint_rock(r, ("keep_rock", "wall"), ("keep_grass", "grass"))
+
+
 def main():
     def at(d):
         return c.at(TO_ROAD(d))
 
-    c = kit.Course(TRACK_ID, "Dragonspire Keep", "dragonspire_keep")
+    c = kit.Course(TRACK_ID, "Dragonspire Keep (Ruined)" if RUIN else "Dragonspire Keep", "keep_ruins" if RUIN else "dragonspire_keep")
     c.route(ROUTE, width=16.0, bank=7.0)
     curb = ("keep_kerb", "road")
     bal = ("keep_parapet", "wall")
@@ -251,6 +335,10 @@ def main():
         "passage": {"mat": "keep_flag", "shoulder": 1.0, "shoulder_mat": ("keep_path", "dirt")},
         "royal": {"mat": "keep_carpet", "shoulder": 2.0, "shoulder_mat": curb},
     }
+
+    if RUIN:
+        ruin_course(c)
+        return
 
     def label(smp):
         s = TO_PLAN(smp.s)
@@ -311,16 +399,7 @@ def main():
         for kind, size, every in (("sky", 3.0, 26.0), ("bridge", 2.2, 18.0), ("spiral", 1.6, 14.0), ("canal", 1.0, 10.0), ("kicker", 2.2, 10.0)):
             if piece.name.endswith(kind):
                 kit.clear_piers(c, piece, [ter], every=every, mat=("keep_ashlar", "wall"), size=size, inset=size + 1.0)
-    rad = LAYOUT[23][1]
-    sp = c.rock_mass("Great Pillar", SPIRE[0], SPIRE[1], rad - 14.0, rad - 14.0, 62.0, z0=SEA - 2, n=20, seed=4)
-    c.paint_rock(sp, ("keep_rock", "wall"), ("keep_grass", "grass"))
-    for k in range(9):
-        d = SEG[18] + (SEG[23] - SEG[18]) * (k + 0.5) / 9
-        q = at(d)
-        for side in (-1, 1):
-            p = q.side(side * (q.w / 2 + 16.0 + 6 * (k % 2)))
-            r = c.rock_mass("Karst %d %d" % (k, side > 0), p.x, p.y, 7.0 + 2 * (k % 3), 6.0, q.p.z + 10 + 8 * ((k + side) % 3), z0=SEA - 2, n=12, seed=k * 3 + side)
-            c.paint_rock(r, ("keep_rock", "wall"), ("keep_grass", "grass"))
+    pillars(c, sys.modules[__name__])
 
     # The headland the passage bores through.
     q0, q1 = at(SEG[29] - 10), at(SEG[30] + 20)
@@ -366,6 +445,74 @@ def main():
     import keep_scenery  # noqa: E402
 
     keep_scenery.build(c, sys.modules[__name__], ter)
+    c.finish()
+    print("lap", round(c.length, 1))
+
+
+def ruin_course(c):
+    """The ruin's roads, land and gameplay (dragon_isles_ruins.py dresses it)."""
+    rubble = ("keep_rock", "dirt")
+    c.kinds.update({
+        "torn": {"mat": "keep_path", "shoulder": 1.6, "shoulder_mat": rubble},
+        "lakebed": {"mat": "keep_shore", "surface": "dirt", "shoulder": 1.8, "shoulder_mat": rubble},
+        "kicker": {"mat": "keep_path", "shoulder": 1.4, "shoulder_mat": rubble},
+    })
+
+    def label(smp):
+        s = TO_PLAN(smp.s)
+        seg = seg_of(s)
+        for lip, land in GAPS:
+            if lip <= s <= land:
+                return "gap"
+            if lip - 12 <= s < lip:
+                return "kicker"
+        if seg == 1:
+            return "village"
+        if seg in (2, 3, 4):
+            return "torn"
+        if seg in (5, 6):
+            return "lakebed"
+        if 7 <= seg <= 11:
+            return "harbour"
+        if seg in (12, 13):
+            return "passage"
+        if seg in (14, 15) and s > SEG[14] + 20:
+            return "royal"
+        return "gate"
+
+    specials = []
+    for s0, s1, k in kit.runs(c, label):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "kicker":
+            specials.append((s0, s1, "kicker", {"lift": lambda u, n: 0.9 * max(0.0, (u - (n - 8)) / 8) ** 2}))
+        elif k != "gate":
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "gate", max_len=200.0))
+    X0, X1, Y0, Y1 = -220, 560, -320, 520
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    c.disc("Lagoon", (LAGOON_X + X1) / 2 + 40, (SHORE_Y + Y1) / 2, 520.0, 0.0, c.lib("keep_lake", "deep_water"), n=48)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("keep_grass", "grass"))
+    S = lambda i: TO_ROAD(SEG[i])  # noqa: E731
+    # The headland the passage bores through, as ever.
+    q0, q1 = c.at(S(12) - 10), c.at(S(13) + 20)
+    hx, hy = (q0.p.x + q1.p.x) / 2, (q0.p.y + q1.p.y) / 2
+    head = c.rock_mass("Headland", hx, hy, 34.0, 30.0, 30.0, z0=-4.0, n=24, seed=7)
+    c.tunnel(head, SEG[12] - 8, SEG[13] + 14, half=c.width / 2 + 2.5, height=10.0, pad=16.0)
+    c.paint_rock(head, ("keep_rock", "wall"), ("keep_grass", "grass"), floor=("keep_flag", "road"), floor_z=q0.p.z + 1.5)
+    ruin_mode.DRESS(c, sys.modules[__name__], ter)
+    c.start_line()
+    for at in (S(2) + 10, TO_ROAD(SPLIT[0] - 30), S(5) + 10, S(11) + 10):
+        c.zipper(at, 0)
+    for at, across in ((S(3) + 20, 0), (S(5) + 80, 3), (S(8) + 20, 0), (S(14) + 20, -3)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in ((S(1) + 20, -4, "red"), (S(1) + 20, 4, "blue"), (S(3) + 110, 0, "green"), (S(5) + 40, 0, "yellow"),
+                            (S(5) + 130, -4, "rainbow"), (S(5) + 130, 4, "red"), (S(9) + 20, 0, "blue")):
+        c.balloon(at, across, col)
+    for lip, land in GAPS:
+        c.entity("respawn", **{"from": round(TO_ROAD(lip - 20), 1), "to": round(TO_ROAD(land + 4), 1), "at": round(TO_ROAD(land + 18), 1)})
+    c.checkpoints(extra=[S(2) + 20, S(3) + 40, S(4) + 20, S(5) + 60, S(6) + 40, S(8), S(12), S(14)],
+                  avoid=[(TO_ROAD(lip - 14), TO_ROAD(land + 8)) for lip, land in GAPS], height=10.0)
     c.finish()
     print("lap", round(c.length, 1))
 

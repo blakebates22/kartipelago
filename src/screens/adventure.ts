@@ -3,6 +3,8 @@
  * placeholder art and words; the rules are src/adventure/progress.ts, the story
  * src/adventure/data.ts and scenes.ts):
  *
+ * - ADVENTURE_FILES: the three save files. Each keeps its own story and its own racer
+ *   (picked when the file starts, kept to the ending); erase one from here.
  * - ADVENTURE_HUB: the world map. The five kingdoms on an old chart, the ones not reached
  *   yet in fog, the story's next step along the top, the tools you carry along the
  *   bottom. (It stands in for the drivable overworld to come.)
@@ -41,6 +43,7 @@ import {
   objective,
   piecesOf,
   returnOpen,
+  SLOTS,
   saveAdventure,
   toolsOf,
   championsOf,
@@ -64,7 +67,7 @@ import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
-import { DESIGNS } from "../render/racers/designs";
+import { DESIGNS, type RacerId } from "../render/racers/designs";
 
 const store = () => safeStorage();
 const exists = (id: string) => Boolean(trackById(id));
@@ -93,12 +96,113 @@ function setFreeRoam(on: boolean) {
 /** A kingdom you can go into: reached in the story, or anywhere in free roam. */
 const canVisit = (s: AdventureSave, id: KingdomId) => freeRoam() || unlocked(s, id);
 
-/** The Adventure state on the game, loaded (or started) the first time it's needed. */
+/** The Adventure state on the game: the open file (file 1 if none was opened yet). */
 export function adventureOf(game: Game) {
-  if (!game.adventure) game.adventure = { save: loadAdventure(store()) ?? newSave() };
+  if (!game.adventure) game.adventure = { save: loadAdventure(store(), 0) ?? newSave(), slot: 0 };
   return game.adventure;
 }
-const persist = (game: Game) => saveAdventure(adventureOf(game).save, store());
+const persist = (game: Game) => {
+  const a = adventureOf(game);
+  saveAdventure(a.save, store(), a.slot);
+};
+
+/** Open a save file: its story, and its racer for every race in it. */
+export function openFile(game: Game, slot: number) {
+  game.adventure = { save: loadAdventure(store(), slot) ?? newSave(), slot };
+  const r = game.adventure.save.racer;
+  if (r && r in DESIGNS) game.selection.racer = r as RacerId;
+  return game.adventure;
+}
+
+/** Start the open file with this racer (the character select's pick), then the story. */
+export function startFile(game: Game, racer: RacerId) {
+  const a = adventureOf(game);
+  a.save.racer = racer;
+  persist(game);
+  game.screens.go(adventureHub(game));
+}
+
+/** The file chooser: three files, each its racer and where its story stands. */
+export function adventureFiles(game: Game, erasing = false): Screen {
+  const files = Array.from({ length: SLOTS }, (_, i) => loadAdventure(store(), i));
+  let armed = -1;
+  const label = (i: number) => {
+    const f = files[i];
+    if (!f) return `FILE ${i + 1}: NEW ADVENTURE`;
+    const who = f.racer && f.racer in DESIGNS ? DESIGNS[f.racer as RacerId].name : "NO RACER YET";
+    return `FILE ${i + 1}: ${who.toUpperCase()}`;
+  };
+  const sub = (i: number) => {
+    const f = files[i];
+    if (erasing)
+      return f ? (armed === i ? "ENTER AGAIN TO ERASE IT FOR GOOD" : "ERASE THIS FILE") : "EMPTY";
+    return f ? objective(f) : "START THE STORY: PICK YOUR RACER FOR THIS FILE";
+  };
+  const open = (i: number) => {
+    if (erasing) {
+      if (!files[i]) return game.sounds.error();
+      if (armed !== i) {
+        armed = i;
+        return;
+      }
+      eraseAdventure(store(), i);
+      if (game.adventure?.slot === i) game.adventure = undefined;
+      return game.screens.go(adventureFiles(game, false));
+    }
+    const a = openFile(game, i);
+    // A new file (or one from before files had racers) picks its racer first.
+    if (!a.save.racer) return game.screens.go(characterSelect(game, { adventure: i }));
+    game.screens.go(adventureHub(game));
+  };
+  const back = () =>
+    erasing ? game.screens.go(adventureFiles(game, false)) : game.screens.go(modeSelect(game));
+  const items = files.map((_, i) => ({ label: label(i), action: () => open(i) }));
+  items.push({
+    label: erasing ? "DONE ERASING" : "ERASE A FILE",
+    action: () => game.screens.go(adventureFiles(game, !erasing)),
+  });
+  const menu = new VMenu(game, items, back);
+  return {
+    id: "ADVENTURE_FILES",
+    seeThrough: false,
+    enter() {
+      game.ui.interactive = true;
+      void game.audio.music.play("map", { fade: 1 });
+    },
+    frame(_dt, actions) {
+      const before = menu.focus;
+      menu.handle(actions);
+      if (menu.focus !== before) armed = -1;
+    },
+    draw(ui) {
+      ui.image(parchment(ui.W, ui.H, { compass: true, ships: false }), 0, 0, ui.W, ui.H, false);
+      ui.text(erasing ? "ERASE A FILE" : "ADVENTURE", ui.W / 2, 8, {
+        scale: 2,
+        color: PAL.coral,
+        outline: INK,
+        align: "center",
+      });
+      ui.text(erasing ? "CHOOSE THE FILE TO ERASE" : "CHOOSE A FILE", ui.W / 2, 26, {
+        color: INK,
+        align: "center",
+      });
+      const w = Math.min(300, ui.W - 40);
+      const x = Math.round(ui.W / 2 - w / 2);
+      menu.items.forEach((it, i) => (it.label = i < SLOTS ? label(i) : it.label));
+      menu.draw(ui, x, 44, w, 22, 8);
+      const note = menu.focus < SLOTS ? sub(menu.focus) : erasing ? "BACK TO THE FILES" : "";
+      const lines = wrap(note, w - 10);
+      lines.forEach((l, j) =>
+        ui.text(l, ui.W / 2, 44 + (SLOTS + 1) * 30 + 6 + j * 9, { color: INK, align: "center" }),
+      );
+      hints(ui, [
+        ["▲▼", "CHOOSE"],
+        ["ENTER", erasing ? "ERASE" : "OPEN"],
+        ["ESC", "BACK"],
+      ]);
+    },
+  };
+}
 
 const STYLE: Record<KingdomId, IslandStyle> = {
   valley: "prehistoric",
@@ -208,7 +312,7 @@ export function adventureHub(game: Game): Screen {
         } else if (act === "confirm") return pick(focus);
         else if (act === "back") {
           game.sounds.back();
-          return game.screens.go(modeSelect(game));
+          return game.screens.go(adventureFiles(game));
         }
       }
     },
@@ -339,10 +443,10 @@ function kingdomScreen(game: Game, id: KingdomId): Screen {
         label: "START A NEW ADVENTURE",
         sub: "THE STORY FROM THE START; YOUR CREW STAYS. PICK ANY OF THEM AS YOUR RACER.",
         action: () => {
-          eraseAdventure(store());
+          eraseAdventure(store(), a.slot);
           a.save = newSave();
           a.at = "valley";
-          game.screens.go(characterSelect(game));
+          game.screens.go(characterSelect(game, { adventure: a.slot }));
         },
       });
     if (free) {
@@ -911,7 +1015,7 @@ function devMenu(game: Game): Screen {
     },
   });
   const items: Item[] = [
-    jump("RESET: A NEW ADVENTURE", () => eraseAdventure(store())),
+    jump("RESET: A NEW ADVENTURE", () => eraseAdventure(store(), adventureOf(game).slot)),
     jump("VALLEY: CHAMPIONSHIP WON", () => (s.cups.valley = true)),
     jump("VALLEY: MAP DONE (BOSS NEXT)", () => {
       s.cups.valley = true;
