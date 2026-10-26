@@ -36,9 +36,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import ruin_mode  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 
-TRACK_ID = "hearthglow_hollow"
+# The ruin (hearthglow_ruins.py): the dragons burned the village. The stone bridge has
+# fallen into the river, so the mountain, the sleigh run and the covered bridge are cut
+# off; the lap turns west out of the square along the burnt riverside, into the old town
+# and down the back alley, which the fire and the falling houses have opened into a
+# street of rubble, home. Everything else (the land, the landmarks) is the course's own.
+RUIN = ruin_mode.ON
+TRACK_ID = "hearthglow_hollow_ruin" if RUIN else "hearthglow_hollow"
 
 # ---------------------------------------------------------------- the layout
 
@@ -77,22 +84,24 @@ LAYOUT = [
     ("S", 50),  # 30 the finish street, north to the line
 ]
 LAYOUT, PATH = kit.close_turtle(LAYOUT, 26, 28, START, 90.0)
-SEG = kit.segment_starts(PATH)
-LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+STANDARD_LAYOUT, STANDARD_PATH = LAYOUT, PATH
+SEG = STANDARD_SEG = kit.segment_starts(PATH)
+LENGTH = STANDARD_LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
 # The jump on the sleigh run: (lip, landing).
-JUMPS = [(SEG[14] + 26, SEG[14] + 38)]
+JUMPS = STANDARD_JUMPS = [(SEG[14] + 26, SEG[14] + 38)]
 # The zippers (metres along the lap): out of the square to the bridge, onto the climb,
 # down onto the covered bridge, out of the market chicane and along the bottom lane.
 ZIPPERS = [SEG[4] + 6, SEG[8] + 3, SEG[17] + 6, SEG[26] + 8, SEG[28] + 20]
 
 
 def _seg_point(i):
-    return next(p for p in PATH if p[3] == i)
+    return next(p for p in STANDARD_PATH if p[3] == i)
 
 
 def _arc_centre(i):
+    """The centre of the standard lap's arc segment i (the landmarks stay put in the ruin)."""
     x, y, h, _ = _seg_point(i)
-    sg = LAYOUT[i]
+    sg = STANDARD_LAYOUT[i]
     a = math.radians(h + (90 if sg[0] == "L" else -90))
     return (x + sg[1] * math.cos(a), y + sg[1] * math.sin(a))
 
@@ -102,7 +111,7 @@ SUMMIT = _arc_centre(13)  # the bell tower stands inside the summit turn
 
 # Heights along the lap (metres along it, height); the road eases between them.
 J = JUMPS
-ANCHORS = [
+ANCHORS = STANDARD_ANCHORS = [
     (0.0, 3.0),
     (SEG[1], 3.0),
     (SEG[2], 2.0),  # down into the square
@@ -130,25 +139,94 @@ ANCHORS = [
     (SEG[24], 3.0),
     (LENGTH, 3.0),
 ]
+HUMPS = []
+
+if RUIN:
+    # Blake: the ruined city as the course, a fast speedrun-feel lap (not as wild as the
+    # first beach course: there are four map fragments to collect). The course's own lap
+    # through the square (0-3); the stone bridge is down, so west along the burnt
+    # riverside (4-5), south into the old town (6-7), and down the back alley, opened into
+    # a street by the fallen houses (8-12: the alley's own line), round onto the finish
+    # street (13-14). The head's straights are solved so the lap meets the alley exactly.
+    _R1, _R2 = 30.0, 40.0
+    _ax, _ay = _seg_point(4)[:2]
+    LAYOUT = STANDARD_LAYOUT[:4] + [
+        ("L", _R1, 90),  # 4  west, short of the fallen bridge
+        ("S", (_ax - _R1) + 212.0 - _R2),  # 5  along the burnt riverside (to x = -212, the alley's)
+        ("L", _R2, 90),  # 6  south into the old town
+        ("S", _ay + _R1 - _R2 - 44.0),  # 7  down its street to the alley
+        ("L", 45, 35),  # 8  into the alley: its own line from here...
+        ("S", 140),  # 9  (closes the loop)
+        ("R", 25, 30),  # 10 the icy dogleg
+        ("L", 25, 30),  # 11
+        ("S", 40),  # 12
+        ("L", 50, 145),  # 13 ...and round onto the finish street
+        ("S", 10),  # 14 (closes the loop)
+    ]
+    LAYOUT, PATH = kit.close_turtle(LAYOUT, 9, 14, START, 90.0)
+    SEG = kit.segment_starts(PATH)
+    LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
+    JUMPS = []
+    # Zippers: along the riverside, down the alley, round the last sweep.
+    ZIPPERS = [SEG[5] + 8, SEG[9] + 30, SEG[13] + 24]
+    ANCHORS = [
+        (0.0, 3.0),
+        (SEG[1], 3.0),
+        (SEG[2], 2.0),
+        (SEG[3], 2.0),
+        (SEG[4], 2.6),
+        (SEG[5], 3.2),
+        (SEG[6], 3.6),
+        (SEG[8], 3.4),
+        (SEG[13], 3.0),
+        (LENGTH, 3.0),
+    ]
+    # Rubble the road rides over (distance along the lap, height, length): the burnt
+    # cottages' fallen walls on the riverside, the houses fallen into the alley.
+    HUMPS = [(SEG[5] + 28, 1.5, 20), (SEG[5] + 62, 1.7, 22), (SEG[9] + 60, 1.4, 20), (SEG[9] + 104, 1.6, 22)]
 
 
-def _lin(d):
-    d = min(max(d, 0.0), LENGTH)
-    for (d0, z0), (d1, z1) in zip(ANCHORS, ANCHORS[1:]):
-        if d0 <= d <= d1:
-            return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
-    return 3.0
+def hump(d):
+    z = 0.0
+    for at, h, ln in HUMPS:
+        t = (d - at) / (ln / 2)
+        if -1 < t < 1:
+            z += h * 0.5 * (1 + math.cos(math.pi * t))
+    return z
 
 
-def road_z(d, seg=None):
-    # The jumps' run-ups, gaps and landings are straight slopes; elsewhere heights ease
-    # over 30 m.
-    if any(lip - 34 <= d <= land + 14 for lip, land in JUMPS):
-        return _lin(d)
-    return sum(_lin(d + k) for k in range(-15, 16, 3)) / 11
+def _heights(anchors, length, jumps, humps):
+    """road_z for a lap: its anchors, eased over 30 m (straight through its jumps)."""
+
+    def lin(d):
+        d = min(max(d, 0.0), length)
+        for (d0, z0), (d1, z1) in zip(anchors, anchors[1:]):
+            if d0 <= d <= d1:
+                return lerp(z0, z1, (d - d0) / max(1e-6, d1 - d0))
+        return 3.0
+
+    def road_z(d, seg=None):
+        # The jumps' run-ups, gaps and landings are straight slopes; elsewhere heights
+        # ease over 30 m.
+        if any(lip - 34 <= d <= land + 14 for lip, land in jumps):
+            return lin(d)
+        return sum(lin(d + k) for k in range(-15, 16, 3)) / 11 + (hump(d) if humps else 0.0)
+
+    return lin, road_z
+
+
+_lin, road_z = _heights(ANCHORS, LENGTH, JUMPS, HUMPS)
+# The standard lap's heights (the land round the mountain road is shaped by them).
+_, standard_road_z = _heights(STANDARD_ANCHORS, STANDARD_LENGTH, STANDARD_JUMPS, [])
 
 
 def road_w(d, seg):
+    if RUIN:
+        if seg in (1, 2, 3):
+            return 17.0  # the square
+        if 8 <= seg <= 12:
+            return 14.0  # the alley, opened up
+        return 16.0 if seg in (4, 5, 6, 7) else 15.0
     if seg in (1, 2, 3):
         return 17.0  # the square
     if seg in (14, 15, 16, 17):
@@ -250,11 +328,12 @@ def _hill_grid():
         return _HILL
     pts = []
     d = 0.0
-    for i, (x, y, _, seg) in enumerate(PATH):
+    P, S = STANDARD_PATH, STANDARD_SEG
+    for i, (x, y, _, seg) in enumerate(P):
         if i:
-            d += math.hypot(x - PATH[i - 1][0], y - PATH[i - 1][1])
-        if SEG[8] <= d <= SEG[18] and (not pts or d - pts[-1][3] >= 6.0):
-            pts.append((x, y, road_z(d) - 0.5, d))
+            d += math.hypot(x - P[i - 1][0], y - P[i - 1][1])
+        if S[8] <= d <= S[18] and (not pts or d - pts[-1][3] >= 6.0):
+            pts.append((x, y, standard_road_z(d) - 0.5, d))
     x0, x1 = min(p[0] for p in pts) - 120, max(p[0] for p in pts) + 120
     y0, y1 = min(p[1] for p in pts) - 120, max(p[1] for p in pts) + 120
     cell = 4.0
@@ -388,7 +467,7 @@ def alley_dist(x, y):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Hearthglow Hollow", "hearthglow")
+    c = kit.Course(TRACK_ID, "Hearthglow Hollow (Ruined)" if RUIN else "Hearthglow Hollow", "hearth_ruins" if RUIN else "hearthglow")
     c.route(ROUTE, width=15.0, bank=6.0)
     snowbank = ("summit_snow", "packed_snow")
     fence = ("timber_rail", "wall")
@@ -447,6 +526,9 @@ def main():
         "lane": {"mat": "hearth_cobble", "shoulder": 1.4, "shoulder_mat": snowbank},
     }
     lift = {"lift": lambda u, n: 1.5 * max(0.0, (u - (n - 10)) / 10) ** 2}
+    if RUIN:
+        ruin_course(c, stone)
+        return
 
     alley = alley_points()
     alley_in = kit.s_near(c, *ALLEY_START)
@@ -570,6 +652,69 @@ def main():
     import hearthglow_scenery  # noqa: E402
 
     hearthglow_scenery.build(c, sys.modules[__name__])
+    ter = list(c.coll("Terrain").objects)
+    c.preset("sun", ter, 0.2)
+    c.preset("bottoms", ter, 0.3)
+    kit.paint.shade_roads(c.pieces, 0.3)
+    c.finish()
+
+
+def ruin_course(c, stone):
+    """The ruin's roads, land, gameplay and wreckage (hearthglow_ruins.py dresses it)."""
+    rubble = ("ruin_rubble", "snow_stone")
+    snowbank = ("summit_snow", "packed_snow")
+    c.kinds.update({
+        # Through the burnt riverside: packed snow over the cottages' rubble.
+        "rubble": {"mat": "summit_road", "shoulder": 1.8, "shoulder_mat": rubble},
+        # The alley, opened up: its cobbles, the fallen houses' rubble along its sides.
+        "alley": {"mat": "hearth_cobble", "shoulder": 1.6, "shoulder_mat": rubble},
+        "alley_ice": {"mat": "icy_cobble", "shoulder": 1.6, "shoulder_mat": rubble},
+    })
+    ice0, ice1 = SEG[8] + ALLEY_ICE[0], SEG[8] + ALLEY_ICE[1]
+
+    def label(smp):
+        s = smp.s
+        seg = seg_of(s)
+        if seg in (1, 2, 3):
+            return "square"
+        if seg in (4, 5, 6):
+            return "rubble"
+        if 8 <= seg <= 12:
+            return "alley_ice" if ice0 <= s <= ice1 else "alley"
+        if seg == 13 and s < SEG[13] + 40:
+            return "alley"
+        return "street"
+
+    specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label) if k != "street"]
+    c.roads(kit.plan(c, specials, "street", max_len=200.0))
+
+    X0, X1, Y0, Y1 = -620, 520, -460, 720
+    c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0)
+
+    def under(x, y):
+        nat = natural(x, y)
+        w, z = c.road_height(x, y, 9.0, 18.0, 0.2, nat)
+        return min(underfloor_z(x, y), lerp(nat, z, w) - 0.6) if c.nearest(x, y)[1] < 64.0 else None
+
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, under, c.lib("summit_snow", "deep_snow"))
+    c.start_line()
+    S = lambda i: SEG[i]  # noqa: E731
+    for at in ZIPPERS:
+        c.zipper(at, 0)
+    for at, across in ((S(3) + 20, 0), (S(5) + 45, 3), (S(9) + 80, 0), (S(12) + 10, 0), (S(14) - 2, -3)):
+        c.bananas(at, across, count=5, gap=2.6)
+    for at, across, col in (
+        (S(2) + 50, -4, "blue"),
+        (S(2) + 50, 4, "red"),
+        (S(5) + 80, 0, "yellow"),
+        (S(8) + 20, 0, "rainbow"),
+        (S(9) + 130, -3, "green"),
+        (S(9) + 130, 3, "blue"),
+        (S(13) + 60, 0, "red"),
+    ):
+        c.balloon(at, across, col)
+    c.checkpoints(extra=[S(2), S(4), S(5) + 50, S(7), S(9) + 50, S(10), S(13), S(13) + 70], height=8.0)
+    ruin_mode.DRESS(c, sys.modules[__name__])
     ter = list(c.coll("Terrain").objects)
     c.preset("sun", ter, 0.2)
     c.preset("bottoms", ter, 0.3)

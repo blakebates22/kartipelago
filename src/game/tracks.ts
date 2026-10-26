@@ -535,6 +535,18 @@ export const TRACKS: TrackEntry[] = [
     theme: "hearthglow",
     music: "hearthglow",
     load: { scene: "track", packageId: "hearthglow_hollow" },
+    ruin: "hearthglow_hollow_ruin",
+  },
+  {
+    id: "hearthglow_hollow_ruin",
+    name: "Hearthglow Hollow (Ruined)",
+    description:
+      "The village burned: past the scorched tree, along the burnt riverside, down the alley the fallen houses opened.",
+    preview: "previews/hearthglow_hollow_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "hearth_ruins",
+    music: "hearthglow",
+    load: { scene: "track", packageId: "hearthglow_hollow_ruin" },
   },
   {
     id: "aurora_rift",

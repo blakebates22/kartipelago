@@ -77,7 +77,7 @@ export const KINGDOMS: Kingdom[] = [
     courses: [
       { track: "frostveil_citadel", ruin: "frostveil_citadel_ruin" },
       { track: "snowy_summit", ruin: "snowy_summit_ruin" },
-      { track: "hearthglow_hollow" },
+      { track: "hearthglow_hollow", ruin: "hearthglow_hollow_ruin" },
       { track: "aurora_rift" },
     ],
     boss: { name: "Rimefang", track: "boss_snowy", speed: 1.0 },

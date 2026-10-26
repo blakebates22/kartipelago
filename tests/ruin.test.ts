@@ -37,6 +37,8 @@ const RUINS: [string, string, string, [number, number], number][] = [
   // Blake: much shorter, the great tree fallen and driven through like a tunnel. (About
   // two thirds: the course's first two thirds come before the tree.)
   ["snowy_summit", "snowy_summit_ruin", "summit_ruins", [0.6, 0.72], 0.75],
+  // Blake: the ruined city as a fast, speedrun-feel course (about Volcano Isle's length).
+  ["hearthglow_hollow", "hearthglow_hollow_ruin", "hearth_ruins", [0.5, 0.62], 0.65],
 ];
 
 describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {

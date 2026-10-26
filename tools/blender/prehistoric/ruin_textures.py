@@ -126,6 +126,52 @@ SUMMIT = {
 }
 
 
+HEARTH = {
+    "id": "hearth_ruins",
+    "name": "Hearthglow in Ruins",
+    "description": "The Christmas village after the dragons came: the twilight turned smoky red with fire, the stars dimmed by smoke, burning cottages, the stone bridge in the river",
+    "environment": {
+        "sky": "#3a2250",
+        "fog": {"enabled": True, "color": "#6a4a6a", "near": 160, "far": 900},
+        "sun": {"color": "#d8b8e8", "intensity": 1.7, "direction": [-0.38, 0.72, 0.58]},
+        "ambient": {"sky": "#b896d8", "ground": "#5a3a5a", "intensity": 1.5},
+        "skyDome": {
+            "top": "#140a2a",
+            "horizon": "#e0784a",
+            "bottom": "#7a4a6a",
+            "sun": {"color": "#f6e8ff", "size": 5, "glow": "#d8a0b0", "elevation": 34},
+            "clouds": {"count": 30, "color": "#7a5a6a", "shade": "#3a2a3a", "seed": 331, "low": 4, "high": 18, "drift": 0.006},
+            "hills": {"color": "#3a2a5a", "far": "#8a5a8a", "height": 15, "seed": 73, "layers": 3},
+            "stars": {"count": 250, "color": "#ffffff", "seed": 79, "low": 14},
+        },
+    },
+}
+
+
+AURORA = {
+    "id": "aurora_ruins",
+    "name": "Aurora Rift in Ruins",
+    "description": "The glacier after the dragons brought its roof down: the caverns open to the night, the northern lights blazing through the smoke of fires burning on the ice",
+    "environment": {
+        "sky": "#140c2c",
+        "fog": {"enabled": True, "color": "#3a2448", "near": 220, "far": 1300},
+        "sun": {"color": "#c8c0ff", "intensity": 1.6, "direction": [0.3, 0.78, -0.55]},
+        "ambient": {"sky": "#9a98f0", "ground": "#3a2440", "intensity": 1.55},
+        "skyDome": {
+            "top": "#060420",
+            "horizon": "#a8402c",
+            "bottom": "#2a1430",
+            "sun": {"color": "#f4f0ff", "size": 3.5, "glow": "#d8a8c0", "elevation": 40},
+            "clouds": {"count": 22, "color": "#4a2c3c", "shade": "#20101c", "seed": 337, "low": 3, "high": 12, "drift": 0.005},
+            "hills": {"color": "#141030", "far": "#5a3c70", "height": 17, "seed": 89, "layers": 3},
+            "stars": {"count": 500, "color": "#ffffff", "seed": 97, "low": 10},
+            "aurora": {"count": 9, "seed": 5, "low": 16, "high": 85, "speed": 1.2, "intensity": 1.4, "azimuth": 160,
+                       "colors": ["#2effa0", "#36d8ff", "#9a5aff", "#ff4ab8"]},
+        },
+    },
+}
+
+
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle
 

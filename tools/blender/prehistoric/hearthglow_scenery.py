@@ -649,19 +649,25 @@ def waters(c, hh, ter, sc):
 # ------------------------------------------------------------------ build
 
 
-def build(c, hh):
+def build(c, hh, ruin=False):
+    """The village. `ruin` (hearthglow_ruins.py): what the dragons left of it (placed along
+    the standard lap): no alley (it's the ruin's road now), no arches, presents, snowballs
+    or sleigh where the lap no longer goes. It returns the scene unfinished: the ruin adds
+    its wreckage, then calls finish."""
     ter = list(c.coll("Terrain").objects)
     sc = Scene()
     S = hh.SEG
 
     # The start: a great wooden Christmas arch with a checkered banner, and more out of the
     # square, into the old town and down the west lane.
-    for s, chk in ((0.0, True), (S[3] + 30, False), (S[19] + 8, False), (S[26] + 50, False)):
+    arches = ((0.0, True), (S[3] + 30, False)) + (() if ruin else ((S[19] + 8, False), (S[26] + 50, False)))
+    for s, chk in arches:
         q = c.at(s)
         c.place(hp.xmas_arch(c, q.w + 8.0, 11.0, chk, 0), q.p.x, q.p.y, q.p.z - 0.3, rot=road_rot(q) + math.pi / 2, coll="Village")
         sc.warm.append((q.p.x, q.p.y, q.p.z + 10))
     square(c, hh, ter, sc)
-    alley(c, hh, ter, sc)
+    if not ruin:
+        alley(c, hh, ter, sc)
     streets(c, hh, ter, sc)
     street_furniture(c, hh, ter, sc)
     stone_bridge(c, hh, ter, sc)
@@ -674,6 +680,8 @@ def build(c, hh):
     waters(c, hh, ter, sc)
     sc.lights.build(c)
 
+    if ruin:
+        return sc  # (the ruin adds its wreckage, then calls finish)
     # Moving parts. Snowballs roll across the forest road, downhill, two at each crossing
     # (one 3.5 s after the other).
     for k, s in enumerate((S[8] + 12, S[12] + 10)):
@@ -716,6 +724,11 @@ def build(c, hh):
     n = math.hypot(tx, ty) or 1.0
     px, py = x + ty / n * (hh.ALLEY_W / 2 - 1.4), y - tx / n * (hh.ALLEY_W / 2 - 1.4)
     game_entity(c, "present", px, py, ground(c, ter, px, py, 3.0), size=2.0, variant=len(spots), heading=round(math.atan2(ty, tx), 3))
+    return finish(c, ter, sc)
+
+
+def finish(c, ter, sc):
+    """The lanterns, chimney smoke, falling snow, and the joined copies and their glow."""
     # Lanterns (the nearest light the scene), chimney smoke, falling snow.
     for x, y, z in sc.lanterns:
         game_entity(c, "lantern", x, y, z)
