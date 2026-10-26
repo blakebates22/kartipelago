@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "theme": "isle_ruins",
+  "sky": "#b89a6a",
+  "fog": {
+    "enabled": true,
+    "color": "#c8a888",
+    "near": 240,
+    "far": 1200
+  },
+  "sun": {
+    "color": "#ffd890",
+    "intensity": 2.3,
+    "direction": [
+      0.42,
+      0.78,
+      -0.46
+    ]
+  },
+  "ambient": {
+    "sky": "#e8c8a0",
+    "ground": "#5a3020",
+    "intensity": 1.25
+  },
+  "skyDome": {
+    "top": "#5a4a5a",
+    "horizon": "#f0b878",
+    "bottom": "#a08070",
+    "sun": {
+      "color": "#fff0c0",
+      "size": 10,
+      "glow": "#ffb060",
+      "elevation": 34
+    },
+    "clouds": {
+      "count": 44,
+      "color": "#6a5a58",
+      "shade": "#2a2024",
+      "seed": 383,
+      "low": 6,
+      "high": 26,
+      "drift": 0.012
+    },
+    "hills": {
+      "color": "#3a3a2a",
+      "far": "#a08a7a",
+      "height": 6,
+      "seed": 159,
+      "layers": 2
+    }
+  }
+}

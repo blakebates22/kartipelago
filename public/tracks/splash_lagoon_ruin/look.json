@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "theme": "splash_ruins",
+  "sky": "#8aa4b4",
+  "fog": {
+    "enabled": true,
+    "color": "#b0c0c4",
+    "near": 240,
+    "far": 1200
+  },
+  "sun": {
+    "color": "#f0e8d8",
+    "intensity": 2.2,
+    "direction": [
+      -0.3,
+      0.84,
+      -0.44
+    ]
+  },
+  "ambient": {
+    "sky": "#d0dce0",
+    "ground": "#a89878",
+    "intensity": 1.3
+  },
+  "skyDome": {
+    "top": "#4a6680",
+    "horizon": "#d8e0e0",
+    "bottom": "#8ab0b4",
+    "sun": {
+      "color": "#fff8e8",
+      "size": 8,
+      "glow": "#e8e0c8",
+      "elevation": 40
+    },
+    "clouds": {
+      "count": 46,
+      "color": "#a0a8ac",
+      "shade": "#5a6268",
+      "seed": 389,
+      "low": 5,
+      "high": 22,
+      "drift": 0.01
+    },
+    "hills": {
+      "color": "#3a6a52",
+      "far": "#90aaa4",
+      "height": 4,
+      "seed": 163,
+      "layers": 2
+    }
+  }
+}

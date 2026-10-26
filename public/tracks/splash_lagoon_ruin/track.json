@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 1,
+  "id": "splash_lagoon_ruin",
+  "name": "Splash Lagoon (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "loop_01",
+      "type": "loop",
+      "x": 110.0,
+      "y": 2.0,
+      "z": -0.0,
+      "heading": 1.570796,
+      "radius": 20.0,
+      "ramp": 24.0,
+      "offset": 16.0,
+      "width": 14.0,
+      "minSpeed": 14.0,
+      "commit": 18.0,
+      "boostMult": 1.45,
+      "boostSec": 2.2,
+      "gravity": 8.0,
+      "probe": [
+        [0.0, 110.0, 2.0, -0.0],
+        [17.96, 127.758, 3.995, 0.229],
+        [46.396, 141.636, 26.153, 2.825],
+        [74.832, 121.857, 43.185, 8.0],
+        [103.268, 102.079, 26.153, 13.175],
+        [131.704, 115.957, 3.995, 15.771],
+        [149.664, 133.715, 2.0, 16.0]
+      ]
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 65.0,
+      "across": 0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 244.7,
+      "across": 0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 403.9,
+      "across": 0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 168.6,
+      "across": 4.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 308.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 569.4,
+      "across": -5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 780.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 24.0,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 24.0,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 199.6,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 395.9,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 706.0,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 817.7,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "fountain_01",
+      "type": "fountain",
+      "x": 8.48,
+      "y": 0.3,
+      "z": -164.57,
+      "height": 3.0,
+      "jets": 6,
+      "radius": 3.0
+    },
+    {
+      "id": "fountain_02",
+      "type": "fountain",
+      "x": -50.05,
+      "y": 0.3,
+      "z": -74.25,
+      "height": 3.0,
+      "jets": 6,
+      "radius": 3.698249833802796
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 60.0,
+      "y": 40.0,
+      "z": -60.0,
+      "radius": 60,
+      "count": 5,
+      "speed": 0.2,
+      "seed": 3,
+      "color": "#ffffff"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 10,
+      "radius": 30
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 207.71,
+      "y": 3.5,
+      "z": -138.0
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -37.54,
+      "y": 2.87,
+      "z": -87.24
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -41.34,
+      "y": -0.8,
+      "z": -71.73
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 161.73,
+      "y": 3.91,
+      "z": -29.76
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": 159.85,
+      "y": 4.76,
+      "z": -40.02
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 207.71,
+      "y": 2.9,
+      "z": -138.0
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -41.34,
+      "y": -1.4,
+      "z": -71.73
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 159.85,
+      "y": 4.16,
+      "z": -40.02
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 12,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/splash_lagoon_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "lagoon_scenery.py": "e6083288cfbbd95f7d9824cbdec9b7b042f93e2a366754b2f4b09a22e7e57dbf",
+    "splash_lagoon.py": "229a80192a6df5217b27ef8774772c49fc30c619e98b436aa03818d0dd7264da",
+    "splash_lagoon_ruins.py": "3ede24811491fc497504dc659cfdee1f6ac76e605b074fb1c387d2118f87ccbe"
+  }
+}

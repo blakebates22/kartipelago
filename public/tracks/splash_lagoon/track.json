@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "splash_lagoon",
-  "name": "Splash Lagoon (greybox)",
+  "name": "Splash Lagoon",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -133,6 +133,44 @@
       "at": 817.7,
       "across": 0,
       "color": "red"
+    },
+    {
+      "id": "fountain_01",
+      "type": "fountain",
+      "x": 8.48,
+      "y": 0.3,
+      "z": -164.57,
+      "height": 3.0,
+      "jets": 6,
+      "radius": 3.0
+    },
+    {
+      "id": "fountain_02",
+      "type": "fountain",
+      "x": -50.05,
+      "y": 0.3,
+      "z": -74.25,
+      "height": 3.0,
+      "jets": 6,
+      "radius": 3.698249833802796
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 60.0,
+      "y": 40.0,
+      "z": -60.0,
+      "radius": 60,
+      "count": 5,
+      "speed": 0.2,
+      "seed": 3,
+      "color": "#ffffff"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 10,
+      "radius": 30
     }
   ],
   "generator": "tools/blender/prehistoric/splash_lagoon.py (re-running it rewrites entities)"
