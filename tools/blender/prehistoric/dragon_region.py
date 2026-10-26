@@ -28,6 +28,11 @@ import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import region_ruin as ruin  # noqa: E402
+import keep_props as kp  # noqa: E402
+import props  # noqa: E402
+import region_paint as paint  # noqa: E402
+import ruin_kit  # noqa: E402
+import summit_props as sp  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("dragon_region")
@@ -73,7 +78,14 @@ def classify(c, n, info):
         return ("keep_rock", "wall")
     if RUIN and math.hypot(c.x, c.y) < SQUARE_R + 4:
         return ("lava_crust", "dirt")
+    if RUIN and burn(c.x, c.y) > 0.55:
+        return ("scorched_ground", "dirt")
     return ("keep_grass", "grass")
+
+
+def burn(x, y):
+    """Where the sacrifice's fire fell (0 none .. 1)."""
+    return 0.55 + 0.45 * math.sin(x / 61.0 - 0.7) * math.cos(y / 43.0 + 1.1)
 
 
 def road_z(x, y):
@@ -103,6 +115,45 @@ def gate(c, name, a, r, mat, width=8.0, height=12.0, towers=0.0, roof=None):
                 cone(c, "%s Tower Roof %d" % (name, side), tx, ty, 5.5, z0 + towers, 9.0, roof, segs=4, role="visual")
     box(c, name + " Lintel", x, y, width + 2.5, 3.0, z0 + height, z0 + height + 3.5, mat, rot=rot)
     return x, y, z0
+
+
+def dress(c):
+    """The paint pass: Dragonspire's dark mountain pines and green broadleaves over the
+    basin, bushes and flowers, banner poles along the spokes and up to the Citadel. After
+    the sacrifice: the same trees charred where the fire fell, the undergrowth burnt."""
+    hx, hy, hr = HARBOUR
+    taken = paint.Taken([(0.0, 0.0, SQUARE_R + 10.0), (hx, hy, hr + 22.0), (*polar(KEEP[0], KEEP[1] + 20.0), 34.0),
+                         (*polar(*CANYON), 30.0), (*polar(*HOLD), 30.0), (*polar(*MOON), 30.0), (*polar(*CITADEL), 34.0)])
+
+    def open_ground(x, y):
+        r = math.hypot(x, y)
+        return SQUARE_R + 10 < r < CLIFF_R - 10 and not (abs(x) < CAUSE_HW + 12 and y < -250)
+
+    def foot(x, y):
+        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+
+    g = natural
+    for v in range(2):
+        paint.scatter(c, sp.boulder(c, v), 14, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.2))
+    for v in range(3):
+        paint.scatter(c, kp.pine(c, v, 9.0 + 3.0 * v), 60, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(1.0, 1.6))
+    for v in range(2):
+        paint.scatter(c, sp.broadleaf(c, v, frosted=False), 30, CLIFF_R, open_ground, g, taken, 20 + v, room=6.0,
+                      scale=(1.0, 1.5))
+        paint.scatter(c, props.bush(c, v), 90, CLIFF_R, open_ground, g, taken, 30 + v, room=2.5, role="visual")
+    paint.scatter(c, props.flowers(c), 160, CLIFF_R, open_ground, g, taken, 40, room=1.5, role="visual", sink=0.1)
+    # Banner poles either side of the spokes and of the road up to the Citadel.
+    pole = kp.banner_pole(c)
+    for a in (0.0, 90.0, 180.0, -90.0):
+        for k in range(3):
+            for side in (-1, 1):
+                x, y = polar(a, SQUARE_R + 20.0 + k * 50.0)
+                rot = math.radians(a) + math.pi / 2
+                x, y = x + side * 8.0 * math.cos(rot), y + side * 8.0 * math.sin(rot)
+                c.place(pole, x, y, g(x, y), rot=rot)
+    if RUIN:
+        ruin_kit.char_trees(c, burn, ("Keep Pine", "Broadleaf"), chance=0.85, threshold=0.3)
+        ruin.burn_away(c, burn, ("Bush", "Flowers"), threshold=0.3)
 
 
 def main():
@@ -211,6 +262,8 @@ def main():
             for side in (-1, 1):
                 x, y = polar(a + side * 6.0, r - 16.0)
                 ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, natural, ("keep_rock", "wall"), seed=int(a) + side)
+
+    dress(c)
 
     # The Causeway's far end, back over the sea towards Tropic Isles: it fades into the
     # sea mist (a wall of rock closes the view).
