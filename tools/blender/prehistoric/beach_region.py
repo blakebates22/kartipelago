@@ -31,6 +31,9 @@ from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import puzzle_kit  # noqa: E402
 import region_ruin as ruin  # noqa: E402
+import beach_props as bp  # noqa: E402
+import props  # noqa: E402
+import region_paint as paint  # noqa: E402
 
 # (--ruin: Tropic Isles after Tidewyrm's attack. Only the ruin has his sea cave; his wave
 # has flattened the village, snapped the palms and strewn wreckage up the beach.)
@@ -192,8 +195,7 @@ def main():
         if RUIN and k % 3:
             ruin.stump(c, "Palm %d" % k, px, py, g, ("palm_bark", "wall"), h=2.0 + k % 4, r=0.5)
             continue
-        box(c, "Palm %d" % k, px, py, 0.5, 0.5, g - 1.0, g + 10.0, ("palm_bark", "wall"))
-        cone(c, "Palm Crown %d" % k, px, py, 4.5, g + 9.0, 2.0, ("fern_floor", "wall"), segs=5, role="visual")
+        c.place(bp.coconut_palm(c, k % 3), px, py, g - 0.2, rot=k * 1.7)
 
     # Coral Cove: coral heads in the shallows off the beach.
     for k in range(6):
@@ -253,6 +255,7 @@ def main():
         cone(c, "Reef Rock %d" % k, x, y, 4.0, WATER_Z - 2.0, 2.6, ("isle_rock", "wall"), segs=5, role="visual")
 
     tiki_gongs(c)
+    dress(c)
     puzzle_kit.pen(c, "return", "Cove Yard", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("tiki_wood", "wall"), natural(*polar(*RETURN)), height=5.0)
 
@@ -290,6 +293,56 @@ def ruined(c):
     x, y = polar(-75.0, 296.0)
     box(c, "Stove-in Boat", x, y, 5.0, 1.8, WATER_Z - 0.5, FLOOR_Z - 0.5, ("wreck_planks", "wall"), rot=0.9)
     ruin.scorch(c, "Seaweed", ruin.ring_spots(10, 240.0, 280.0, 12, avoid), natural, ("fern_floor", "grass"), r=(3.0, 7.0))
+
+
+def dress(c):
+    """The paint pass: Coral Cove's coconut palms, umbrellas, deck chairs, towels and
+    canoes along the beach, shells and starfish in the sand, the valley's jungle trees,
+    bushes and ferns on the hills' side, tiki torches round the village. After
+    Tidewyrm's wave: the palms snapped off, the beach things swept away, wreckage."""
+    vx, vy, vr = VILLAGE
+    taken = paint.Taken([(vx, vy, vr + 12.0), (*polar(*CORAL), 26.0), (*polar(PIER[0], PIER[1]), 16.0),
+                         (*polar(*WRECK), 30.0), (*polar(*SPLASH), 26.0), (*polar(*LAIR), 26.0), (*polar(*HUT), 18.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         *((*polar(*g), 12.0) for g in GONGS), (0.0, 0.0, LAGOON_R + 16.0)])
+
+    def dry(x, y):
+        r = math.hypot(x, y)
+        return LAGOON_R + 16 < r < CLIFF_R - 10 and natural(x, y) > WATER_Z + 0.5 and not (abs(x) < ROAD_HW + 10 and y > 250)
+
+    def beach(x, y):
+        return dry(x, y) and south(math.atan2(y, x)) > 0.5 and math.hypot(x, y) > SHORE_R - 40
+
+    def jungle(x, y):
+        return dry(x, y) and south(math.atan2(y, x)) < 0.4
+
+    g = natural
+    snapped = lambda x, y, z, s: ruin.stump(c, "Snapped Palm %d %d" % (int(x), int(y)), x, y, z, ("palm_bark", "wall"),
+                                            h=1.5 + 2.0 * s, r=0.45)
+    for v in range(3):
+        paint.scatter(c, bp.coconut_palm(c, v), 14, CLIFF_R, beach, g, taken, 10 + v, room=5.0,
+                      instead=snapped if RUIN else None)
+        paint.scatter(c, bp.coconut_palm(c, v), 10, CLIFF_R, jungle, g, taken, 15 + v, room=5.0,
+                      instead=snapped if RUIN else None)
+    for v in range(2):
+        paint.scatter(c, props.jungle_tree(c, v), 40, CLIFF_R, jungle, g, taken, 20 + v, room=5.0, scale=(1.0, 1.7))
+        paint.scatter(c, props.bush(c, v), 60, CLIFF_R, jungle, g, taken, 30 + v, room=2.5, role="visual")
+    paint.scatter(c, props.fern(c), 120, CLIFF_R, jungle, g, taken, 35, room=1.5, role="visual")
+    for k, p in enumerate((bp.starfish(c, 0), bp.starfish(c, 1), bp.shell(c))):
+        paint.scatter(c, p, 25, CLIFF_R, beach, g, taken, 40 + k, room=1.0, role="visual", sink=0.05)
+    if RUIN:
+        return
+    for k, (p, n) in enumerate(((bp.umbrella(c, 0), 8), (bp.umbrella(c, 1), 8), (bp.deck_chair(c, 0), 10),
+                                (bp.towel(c, 0), 10), (bp.towel(c, 1), 10), (bp.canoe(c, 0), 4))):
+        paint.scatter(c, p, n, CLIFF_R, beach, g, taken, 50 + k, room=3.0, role="visual", sink=0.05)
+    torch = bp.tiki_torch(c, 0)
+    for k in range(10):
+        a = k * math.tau / 10 + 0.31
+        x, y = vx + (vr + 1.5) * math.cos(a), vy + (vr + 1.5) * math.sin(a)
+        if abs(math.cos(a)) > 0.3:
+            c.place(torch, x, y, g(x, y))
+            gx, gy, gz = c.game(x, y, g(x, y) + 2.6)
+            c.entity("torch", x=gx, y=gy, z=gz)
 
 
 def tiki_gongs(c):

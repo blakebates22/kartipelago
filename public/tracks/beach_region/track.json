@@ -67,6 +67,62 @@
       "lanterns": 3
     },
     {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 26.19,
+      "y": 4.6,
+      "z": -298.39
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 16.26,
+      "y": 4.6,
+      "z": -312.18
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -16.07,
+      "y": 4.6,
+      "z": -312.32
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -26.12,
+      "y": 4.57,
+      "z": -298.61
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -26.19,
+      "y": 4.57,
+      "z": -281.61
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -16.26,
+      "y": 4.59,
+      "z": -267.82
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 16.07,
+      "y": 4.6,
+      "z": -267.68
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 26.12,
+      "y": 4.6,
+      "z": -281.39
+    },
+    {
       "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "return",
