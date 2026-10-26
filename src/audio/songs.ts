@@ -2462,6 +2462,271 @@ function celestial(): Song {
   };
 }
 
+// ---------------------------------------------------------------- the Tropic Isles
+//
+// The beach world's four pieces (until now they borrowed the title theme): a calypso for
+// Coral Cove, a sea shanty for Shipwreck Bay, island drums under a smoking mountain for
+// Volcano Isle, a bouncy splash for the water park. All original.
+
+const ISLE_KIT: Record<string, InstrumentId> = {
+  ...KIT,
+  d: "djembe",
+  l: "logdrum",
+};
+
+export const COVE_MELODY = bars(
+  "C5:1 A4:.5 C5:.5 F5:1.5 E5:.5",
+  "A5:.5 G5:.5 F5:1 C5:2",
+  "D5:.5 F5:.5 Bb5:1.5 A5:.5 F5:1",
+  "G5:1 E5:.5 G5:.5 C6:1 r:1",
+  "C5:.5 C5:.5 F5:.5 A5:.5 C6:1 A5:1",
+  "D6:.5 C6:.5 A5:1 F5:1 D5:1",
+  "Bb5:.5 A5:.5 G5:1 D5:1 G5:1",
+  "E5:.5 F5:.5 G5:1 C5:1 E5:1",
+  "F5:1 D5:.5 F5:.5 Bb5:1 D6:1",
+  "C6:.5 Bb5:.5 G5:1 E5:1 C5:1",
+  "A5:.5 G5:.5 E5:1 C5:1 A4:1",
+  "D5:.5 E5:.5 F5:1 A5:1 D6:1",
+  "G5:1 Bb5:.5 A5:.5 G5:1 D5:1",
+  "E5:.5 G5:.5 C6:1 G5:1 E5:1",
+  "F5:1 A5:1 C6:1 A5:1",
+  "F6:2 r:2",
+);
+export const COVE_CHORDS = "F:4 F:4 Bb:4 C:4 F:4 Dm:4 Gm:4 C:4 Bb:4 C:4 Am:4 Dm:4 Gm:4 C:4 F:4 F:4";
+
+/** "Coral Cove": a sunny calypso in F, 132 BPM. Steel pan on the tune, the marimba
+ * skipping along under it, an off-beat strum, and a lazy island groove. */
+function coralCove(): Song {
+  const ch = chart(COVE_CHORDS);
+  const mel = seq(COVE_MELODY, 0, 0.82);
+  const b = mel.filter((n) => n.t >= 32);
+  const skip: [number, number, string][] = [
+    [0, 0.75, "R"],
+    [0.75, 0.25, "5"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "5"],
+    [2, 0.75, "R"],
+    [2.75, 0.25, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "coral_cove",
+    title: "Coral Cove",
+    role: "Tropic Isles",
+    bpm: 132,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("steelpan", "base", 1, mel),
+      part("flute", "base", 0.45, shift(b, 0, 12)),
+      part("marimba", "base", 0.55, arpeggio(ch, 0.5, [0, 1, 2, 1, 0, 2, 1, 2], 60, 0.4, 0.5)),
+      part("pizz", "base", 0.55, stabs(ch, [0.5, 1.5, 2.5, 3.5], 60, 0.2, 0.45)),
+      part("pad", "base", 0.35, pads(ch, 55, 4, 0.35)),
+      part("bass", "base", 1, bassLine(ch, skip, 29, 0.85)),
+      ...drumParts("base", 0.8, drums("K.....k.K.....k.", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.55, drums("....S.......S...", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.5, drums("..b.bb.b..b.bbb.", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.3, drums("....t.......t...", ISLE_KIT, 0.25, 8, 32)),
+    ],
+  };
+}
+
+export const WRECK_MELODY = bars(
+  "A4:.5 D5:.5 D5:.5 E5:.5 F5:1 D5:1",
+  "F5:.5 E5:.5 D5:1 A4:2",
+  "G4:.5 Bb4:.5 D5:1 G5:1 D5:1",
+  "E5:.5 D5:.5 C#5:1 A4:1 E4:1",
+  "A4:.5 D5:.5 F5:.5 A5:.5 D6:1 A5:1",
+  "C6:.5 A5:.5 F5:1 C5:1 F5:1",
+  "G5:.5 E5:.5 C5:1 E5:1 G5:1",
+  "A5:1.5 G5:.5 E5:1 C#5:1",
+  "D5:.5 F5:.5 Bb5:1 F5:1 D5:1",
+  "E5:.5 G5:.5 C6:1 G5:1 E5:1",
+  "F5:.5 E5:.5 D5:1 F5:1 A5:1",
+  "C#6:.5 B5:.5 A5:1 E5:1 C#5:1",
+  "D5:.5 G5:.5 Bb5:1.5 A5:.5 G5:1",
+  "E5:.5 F5:.5 E5:1 C#5:1 A4:1",
+  "D5:1 F5:1 A5:1 F5:1",
+  "D5:2 r:2",
+);
+export const WRECK_CHORDS =
+  "Dm:4 Dm:4 Gm:4 A:4 Dm:4 F:4 C:4 A:4 Bb:4 C:4 Dm:4 A:4 Gm:4 A:4 Dm:4 Dm:4";
+
+/** "Shipwreck Bay": a sea shanty in D minor, 138 BPM, for the pirate cove at sunset. The
+ * clarinet sings it like a squeezebox, the horns join for the chorus, a stomping bass
+ * and a rolling tom like a ship's drum. */
+function shipwreckBay(): Song {
+  const ch = chart(WRECK_CHORDS);
+  const mel = seq(WRECK_MELODY, 0, 0.84);
+  const b = mel.filter((n) => n.t >= 32);
+  const stomp: [number, number, string][] = [
+    [0, 1, "R"],
+    [1, 1, "5"],
+    [2, 1, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "shipwreck_bay",
+    title: "Shipwreck Bay",
+    role: "Tropic Isles",
+    bpm: 138,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("clarinet", "base", 1, mel),
+      part("horn", "base", 0.6, shift(b, 0, -12)),
+      part("pizz", "base", 0.6, stabs(ch, [1, 3], 57, 0.3, 0.5)),
+      part("strings", "base", 0.3, pads(ch, 55, 4, 0.35)),
+      part("bell", "base", 0.25, arpeggio(ch, 2, [2, 1], 74, 1.5, 0.35)),
+      part("bass", "base", 1, bassLine(ch, stomp, 26, 0.85)),
+      ...drumParts("base", 0.85, drums("K.......K.......", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("....S.......S..s", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.5, drums("O..o..o.O..o.ooo", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.4, drums("w...w...w...w...", ISLE_KIT, 0.25, 8, 32)),
+    ],
+  };
+}
+
+export const VOLCANO_MELODY = bars(
+  "E5:.5 G5:.5 B5:1 E6:1 B5:1",
+  "G5:.5 F#5:.5 E5:1 B4:2",
+  "C5:.5 E5:.5 G5:1 C6:1 G5:1",
+  "A5:.5 F#5:.5 D5:1 F#5:1 A5:1",
+  "B5:.5 B5:.5 G5:.5 E5:.5 B5:1 E6:1",
+  "D6:.5 B5:.5 G5:1 D5:1 G5:1",
+  "E5:.5 A5:.5 C6:1 A5:1 E5:1",
+  "F#5:.5 E5:.5 D#5:1 B4:1 F#5:1",
+  "G5:1 E5:.5 G5:.5 C6:1 E6:1",
+  "F#6:.5 E6:.5 D6:1 A5:1 F#5:1",
+  "E6:.5 D6:.5 B5:1 G5:1 E5:1",
+  "E5:.5 F#5:.5 G5:1 C6:1 E6:1",
+  "A5:1 C6:.5 B5:.5 A5:1 E5:1",
+  "D#6:.5 C#6:.5 B5:1 F#5:1 D#5:1",
+  "E5:1 G5:1 B5:1 E6:1",
+  "E6:2 r:2",
+);
+export const VOLCANO_CHORDS =
+  "Em:4 Em:4 C:4 D:4 Em:4 G:4 Am:4 B:4 C:4 D:4 Em:4 C:4 Am:4 B:4 Em:4 Em:4";
+
+/** "Volcano Isle": island drums under a smoking mountain, E minor, 148 BPM. The pan
+ * flute calls over a log-drum ostinato and a low drone, brass stabs like the mountain
+ * rumbling, hand drums driving it on. */
+function volcanoIsle(): Song {
+  const ch = chart(VOLCANO_CHORDS);
+  const mel = seq(VOLCANO_MELODY, 0, 0.84);
+  const b = mel.filter((n) => n.t >= 32);
+  const logs = arpeggio(ch, 0.5, [0, 1, 0, 2, 0, 1, 2, 1], 48, 0.4, 0.62);
+  const drone = bassLine(ch, [[0, 3.9, "R"]], 28, 0.7);
+  const drive: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.5, "R"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "volcano_isle",
+    title: "Volcano Isle",
+    role: "Tropic Isles",
+    bpm: 148,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("panflute", "base", 1, mel),
+      part("steelpan", "base", 0.4, shift(b, 0, -12)),
+      part("logdrum", "base", 0.85, logs),
+      part("drone", "base", 0.6, drone),
+      part("brass", "base", 0.45, stabs(ch, [0, 2.5], 52, 0.25, 0.55)),
+      part(
+        "bass",
+        "base",
+        0.85,
+        bassLine(
+          ch.filter((c) => c.t >= 32),
+          drive,
+          28,
+          0.8,
+        ),
+      ),
+      ...drumParts("base", 0.85, drums("K...k.....K.k...", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.7, drums("D..d..D.d.D..dd.", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.5, drums("....o..o....o.oo", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.4, drums("hhhHhhhHhhhHhhhH", ISLE_KIT, 0.25, 8, 32)),
+    ],
+  };
+}
+
+export const SPLASH_MELODY = bars(
+  "D5:.5 G5:.5 B5:1 D6:1 B5:1",
+  "G5:.5 A5:.5 B5:1 G5:2",
+  "E5:.5 G5:.5 C6:1 E6:1 C6:1",
+  "D6:.5 C6:.5 A5:1 F#5:1 D5:1",
+  "B4:.5 D5:.5 G5:.5 B5:.5 D6:1 B5:1",
+  "E6:.5 D6:.5 B5:1 G5:1 E5:1",
+  "G5:.5 A5:.5 G5:1 E5:1 C5:1",
+  "F#5:.5 G5:.5 A5:1 D6:1 r:1",
+  "G5:1 B5:.5 A5:.5 G5:1 E5:1",
+  "E5:.5 F#5:.5 G5:1 C6:1 G5:1",
+  "B5:.5 C6:.5 D6:1 B5:1 G5:1",
+  "A5:1 F#5:.5 A5:.5 D6:1 F#6:1",
+  "G6:.5 E6:.5 C6:1 G5:1 E5:1",
+  "F#5:.5 E5:.5 D5:1 F#5:1 A5:1",
+  "G5:1 B5:1 D6:1 B5:1",
+  "G6:2 r:2",
+);
+export const SPLASH_CHORDS = "G:4 G:4 C:4 D:4 G:4 Em:4 C:4 D:4 Em:4 C:4 G:4 D:4 C:4 D:4 G:4 G:4";
+
+/** "Splash Lagoon": a bouncy splash in G, 156 BPM, for the water park. The xylophone
+ * leads, bubbles of celesta and marimba run up the chords, the brass whoops for the
+ * second half, a bongo-and-shaker beat. */
+function splashLagoon(): Song {
+  const ch = chart(SPLASH_CHORDS);
+  const mel = seq(SPLASH_MELODY, 0, 0.82);
+  const b = mel.filter((n) => n.t >= 32);
+  const bounce: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "8"],
+    [2, 0.5, "R"],
+    [2.75, 0.25, "5"],
+    [3, 0.5, "8"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "splash_lagoon",
+    title: "Splash Lagoon",
+    role: "Tropic Isles",
+    bpm: 156,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("xylophone", "base", 1, mel),
+      part("brass", "base", 0.5, shift(b, 0, -12)),
+      part("celesta", "base", 0.35, arpeggio(ch, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 67, 0.2, 0.4)),
+      part("marimba", "base", 0.45, arpeggio(ch, 0.5, [0, 2, 1, 2], 55, 0.4, 0.5)),
+      part("pizz", "base", 0.4, stabs(ch, [0.5, 1.5, 2.5, 3.5], 60, 0.15, 0.4)),
+      part("pad", "base", 0.3, pads(ch, 55, 4, 0.35)),
+      part("bass", "base", 1, bassLine(ch, bounce, 31, 0.85)),
+      ...drumParts("base", 0.85, drums("K.....k.K.......", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("....S.......S...", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums("hHhhhHhhhHhhhHhh", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.55, drums("b.bb..b.b.bb..bb", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.35, drums("c...............", ISLE_KIT, 0.25, 1, 32)),
+    ],
+  };
+}
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -2487,6 +2752,10 @@ export const SONGS: Record<string, Song> = {
   bonebog: bonebog(),
   ember: ember(),
   ember_classic: emberClassic(),
+  coral_cove: coralCove(),
+  shipwreck_bay: shipwreckBay(),
+  volcano_isle: volcanoIsle(),
+  splash_lagoon: splashLagoon(),
 };
 
 /** The music player's list order: the menus' pieces, then each world's in the Tracks menu's
@@ -2513,12 +2782,7 @@ const rank = (role: string) => {
 /** The music player's list: composed pieces and planned ones not written yet, by group. */
 export const CATALOG: { id: string; title: string; role: string; available: boolean }[] = [
   ...Object.values(SONGS).map((s) => ({ id: s.id, title: s.title, role: s.role, available: true })),
-  // Planned: the Tropic Isles' own pieces (their courses use the title theme for now), the
-  // dragons' boss races (they borrow their kingdom's), and Adventure's map.
-  { id: "coral_cove", title: "Coral Cove", role: "Tropic Isles", available: false },
-  { id: "shipwreck_bay", title: "Shipwreck Bay", role: "Tropic Isles", available: false },
-  { id: "volcano_isle", title: "Volcano Isle", role: "Tropic Isles", available: false },
-  { id: "splash_lagoon", title: "Splash Lagoon", role: "Tropic Isles", available: false },
+  // Planned: the dragons' boss races (they borrow their kingdom's), and Adventure's map.
   { id: "boss", title: "Dragon Race", role: "Boss races", available: false },
   { id: "adventure", title: "Adventure Map", role: "Adventure mode", available: false },
 ].sort((x, y) => rank(x.role) - rank(y.role));

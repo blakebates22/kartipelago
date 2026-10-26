@@ -41,6 +41,10 @@ const melodies: [string, string, number][] = [
   ["bonebog", S.BONEBOG_MELODY, 64],
   ["ember", S.EMBER_MELODY, 128],
   ["ember_classic", S.EMBER_CLASSIC_MELODY, 64],
+  ["coral_cove", S.COVE_MELODY, 64],
+  ["shipwreck_bay", S.WRECK_MELODY, 64],
+  ["volcano_isle", S.VOLCANO_MELODY, 64],
+  ["splash_lagoon", S.SPLASH_MELODY, 64],
 ];
 const charts: [string, string, number, string][] = [
   [
@@ -63,6 +67,10 @@ const charts: [string, string, number, string][] = [
   ["bonebog", S.BONEBOG_CHORDS, 64, S.BONEBOG_MELODY],
   ["ember", S.EMBER_CHORDS, 128, S.EMBER_MELODY],
   ["ember_classic", S.EMBER_CLASSIC_CHORDS, 64, S.EMBER_CLASSIC_MELODY],
+  ["coral_cove", S.COVE_CHORDS, 64, S.COVE_MELODY],
+  ["shipwreck_bay", S.WRECK_CHORDS, 64, S.WRECK_MELODY],
+  ["volcano_isle", S.VOLCANO_CHORDS, 64, S.VOLCANO_MELODY],
+  ["splash_lagoon", S.SPLASH_CHORDS, 64, S.SPLASH_MELODY],
 ];
 
 describe("the soundtrack", () => {
