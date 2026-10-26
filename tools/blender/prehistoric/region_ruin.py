@@ -82,3 +82,14 @@ def ring_spots(n, r0, r1, seed, avoid=(), clear=9.0):
         r = rnd.uniform(r0, r1)
         out.append((r * math.cos(math.radians(a)), r * math.sin(math.radians(a))))
     return out
+
+
+def burn_away(c, burn, prefixes, threshold=0.3):
+    """Delete the undergrowth (props by name or prototype) where the fire fell."""
+    import bpy
+
+    gone = [ob for ob in list(bpy.data.objects) if ob.type == "MESH" and burn(ob.location.x, ob.location.y) > threshold
+            and any((ob.data.name[5:] if ob.data.name.startswith("Prop ") else ob.name).startswith(p) for p in prefixes)]
+    for ob in gone:
+        bpy.data.objects.remove(ob, do_unlink=True)
+    return len(gone)

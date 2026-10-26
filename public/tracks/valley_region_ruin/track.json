@@ -219,6 +219,6 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_region.py": "d8643d75ee2c7281639388ea943327a2b29f78d3a5b5d7b9c36bdaf48b4160f3"
+    "valley_region.py": "1f6b55df393dc4783c1f30f679974c2e8a9721062b1e0476640268ad59777591"
   }
 }

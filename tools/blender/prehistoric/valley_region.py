@@ -31,6 +31,9 @@ import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import bmesh, lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
+import props  # noqa: E402
+import region_paint as paint  # noqa: E402
+import ruin_kit  # noqa: E402
 
 # (--ruin: the valley after Cinderjaw's attack. Only the ruin has the Burnt Gorge his fire
 # split through the north cliff, the burnt trench and his Scar in the south.)
@@ -132,6 +135,8 @@ def classify(c, n, info):
         return ("lava_crust", "dirt")
     if c.z < WATER_Z + 0.3:
         return ("valley_sand", "water")  # (the river's wadeable)
+    if RUIN and burn(c.x, c.y) > 0.5:
+        return ("scorched_ground", "dirt")
     return ("valley_grass", "grass")
 
 
@@ -266,8 +271,8 @@ def main():
             box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, FLOOR_Z - 1.0, FLOOR_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
             ruin.smoke(c, hx, hy, FLOOR_Z + 2.5)
             continue
-        box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("weathered_timber", "wall"), rot=a)
-        cone(c, "Hut Roof %d" % k, hx, hy, 5.2, FLOOR_Z + 4.0, 3.4, ("thatch", "wall"), segs=6, role="visual")
+        # (Riverbend's own huts: painted walls, thatch, a dark doorway facing the fire.)
+        c.place(props.hut(c), hx, hy, FLOOR_Z, rot=a + math.pi)
     c.entity("campfire", **dict(zip(("x", "y", "z"), c.game(0.0, 0.0, natural(0, 0) + 0.2))))
 
     # The landmarks the gateways stand at.
@@ -311,6 +316,7 @@ def main():
     three_stones(c)
     puzzle_kit.pen(c, "return", "Lookout", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
                    ("valley_cliff", "wall"), natural(*polar(*RETURN)), height=6.0)
+    dress(c)
     # (Raced too: the champion's challenge, once round the ring, from this line.)
     c.start_line()
     gates = c.checkpoints(height=10.0)
@@ -359,6 +365,70 @@ def ruined(c):
         for side in (-1, 1):
             x, y = polar(a + side * 5.5, r - 14.0)
             ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, natural, ("valley_cliff", "wall"), seed=int(a) + side)
+
+
+def burn(x, y):
+    """Where Cinderjaw's fire fell (0 none .. 1): most of the valley, a few green patches
+    left."""
+    return 0.6 + 0.45 * math.sin(x / 53.0 + 1.3) * math.cos(y / 47.0 - 0.4)
+
+
+def dress(c):
+    """The paint pass: the valley's jungle (Riverbend's palms, trees, bushes, ferns and
+    flowers) over the open ground, palms along the river and the roads, boulders at the
+    cliffs' feet, totems at the camp. After the attack: charred trees, stumps and logs,
+    the undergrowth burnt away."""
+    taken = paint.Taken([(0.0, 0.0, CAMP_R + 4.0), (*polar(*CAVE), 26.0), (*polar(*TUNNEL), 26.0), (*FORD, 20.0),
+                         (BOG[0], BOG[1], BOG[2] + 8.0), (*PYRAMID, 18.0), (*polar(*PEN), 18.0),
+                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0),
+                         *((*polar(a, r), 10.0) for a, r in STONES)])
+    bx, by, br = BOG
+
+    def open_ground(x, y):
+        r = math.hypot(x, y)
+        if r > CLIFF_R - 10 or river_d(x, y) < RIVER_HW + 6 or math.hypot(x - bx, y - by) < br + 6:
+            return False
+        if RUIN and ((abs(x) < 34 and y < -190) or (abs(x - gorge_x(y)) < GORGE_HW + 14 and y > 230)):
+            return False  # (the burnt trench and the gorge's mouth)
+        return True
+
+    def bank(x, y):
+        return open_ground(x, y) and river_d(x, y) < RIVER_HW + 22
+
+    def foot(x, y):
+        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+
+    g = natural
+    rocks = [props.boulder(c, "valley_cliff", v) for v in range(3)]
+    for v, b in enumerate(rocks):
+        paint.scatter(c, b, 12, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.4))
+    grand = [props.grand_tree(c, v) for v in range(3)]
+    trees = [props.jungle_tree(c, v) for v in range(2)]
+    palms = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
+    for v, t in enumerate(grand):
+        paint.scatter(c, t, 5, CLIFF_R - 30, open_ground, g, taken, 60 + v, room=14.0, scale=(1.3, 1.8))
+    for v, p in enumerate(palms):
+        paint.scatter(c, p, 22, CLIFF_R, bank, g, taken, 20 + v, room=4.0, scale=(0.9, 1.4))
+        paint.scatter(c, p, 30, CLIFF_R, open_ground, g, taken, 10 + v, room=4.0, near_road=(4.0, 14.0), scale=(0.9, 1.4))
+    for v, t in enumerate(trees):
+        paint.scatter(c, t, 90, CLIFF_R, open_ground, g, taken, 30 + v, room=5.0, scale=(1.1, 1.9))
+    for v in range(2):
+        paint.scatter(c, props.bush(c, v), 160, CLIFF_R, open_ground, g, taken, 70 + v, room=2.5, role="visual",
+                      scale=(0.7, 1.5))
+    paint.scatter(c, props.fern(c), 350, CLIFF_R, open_ground, g, taken, 40, room=1.5, role="visual")
+    paint.scatter(c, props.flowers(c), 350, CLIFF_R, open_ground, g, taken, 41, room=1.5, role="visual", sink=0.1)
+    # Totems either side of each spoke where it leaves the camp.
+    tot = props.totem(c)
+    for a in (0.0, 90.0, 180.0, -90.0):
+        for side in (-1, 1):
+            x, y = polar(a + side * 14.0, CAMP_R + 6.0)
+            c.place(tot, x, y, g(x, y) - 0.2, rot=math.radians(a) - math.pi / 2)
+    if RUIN:
+        # Cinderjaw's fire: the same trees where it fell are charred stems (the courses'
+        # way: ruin_kit.char_trees), the undergrowth burnt away, logs fallen.
+        ruin_kit.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree"), chance=0.85, threshold=0.3)
+        ruin.burn_away(c, burn, ("Fern", "Flowers", "Bush"), threshold=0.3)
+        paint.scatter(c, props.log(c, 0), 40, CLIFF_R, open_ground, g, taken, 13, room=5.0, role="visual", sink=0.3)
 
 
 def three_stones(c):
