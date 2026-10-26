@@ -333,6 +333,89 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: Math.PI / 2,
       },
+      // The Dust Road south, under Scorchwind's drifts: on to Tropic Isles.
+      {
+        id: "dust_road",
+        label: "THE DUST ROAD · TO TROPIC ISLES",
+        to: "tropic_isles",
+        toPassage: "dust_road",
+        x: 0,
+        z: 327,
+        radius: 8,
+        heading: Math.PI,
+        opensAfter: "desert",
+        locked: "SCORCHWIND'S DRIFTS BURY THE DUST ROAD: BEAT HIM FIRST",
+      },
+    ],
+  },
+  {
+    // The doc's fourth region (tools/blender/prehistoric/beach_region.py, a greybox): an
+    // island, jungle hills round the north, a long beach round the south into the
+    // shallows, a lagoon in the middle, Raptor's boardwalk village where the Dust Road
+    // comes in.
+    id: "tropic_isles",
+    name: "Tropic Isles",
+    packageId: "beach_region",
+    music: "coral_cove",
+    worldId: "beach",
+    kingdom: "beach",
+    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
+    // In the village, facing south to the ring.
+    spawn: { x: 0, z: -290, heading: 0 },
+    gateways: [
+      // On the beach by the coral heads, south-east.
+      {
+        id: "coral",
+        track: "coral_cove",
+        x: 224.4,
+        z: 157.2,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((-35 * Math.PI) / 180), Math.sin((-35 * Math.PI) / 180)),
+      },
+      // At the end of the pier, pointing out to the smoking island offshore.
+      { id: "volcano", track: "volcano_isle", x: 0, z: 343, radius: 6, heading: Math.PI },
+      // By the wrecked hull on the beach, south-west.
+      {
+        id: "wreck",
+        track: "shipwreck_bay",
+        x: -226.1,
+        z: 158.3,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((-145 * Math.PI) / 180), Math.sin((-145 * Math.PI) / 180)),
+      },
+      // At the water park's slide tower against the hills, north-west.
+      {
+        id: "splash",
+        track: "splash_lagoon",
+        x: -252.0,
+        z: -145.5,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((150 * Math.PI) / 180), Math.sin((150 * Math.PI) / 180)),
+      },
+      // Tidewyrm's lair: a sea cave in the east headland.
+      {
+        id: "lair",
+        track: "boss_tropic",
+        x: 323.8,
+        z: -45.5,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((8 * Math.PI) / 180), Math.sin((8 * Math.PI) / 180)),
+        boss: true,
+        label: "TIDEWYRM'S LAIR",
+      },
+    ],
+    passages: [
+      // Back up the Dust Road to Desert World.
+      {
+        id: "dust_road",
+        label: "THE DUST ROAD · BACK TO DESERT WORLD",
+        to: "desert_world",
+        toPassage: "dust_road",
+        x: 0,
+        z: -445,
+        radius: 8,
+        heading: 0,
+      },
     ],
   },
   {

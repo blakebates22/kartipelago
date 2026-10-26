@@ -941,6 +941,17 @@ export const TRACKS: TrackEntry[] = [
     laps: 1,
   },
   {
+    id: "beach_region",
+    name: "Tropic Isles",
+    description: "The champion's challenge: 1 on 1, once round the lagoon.",
+    preview: "previews/coral_cove.jpg",
+    modes: ["race"],
+    theme: "coral_cove",
+    music: "coral_cove",
+    load: { scene: "track", packageId: "beach_region" },
+    laps: 1,
+  },
+  {
     id: "drift_park",
     name: "Drift Park",
     description:

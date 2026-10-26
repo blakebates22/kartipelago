@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "beach_region",
+  "name": "Tropic Isles (greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 0.0,
+      "y": 2.3,
+      "z": -290.0
+    },
+    {
+      "id": "eruption_01",
+      "type": "eruption",
+      "x": 0.0,
+      "y": 132.0,
+      "z": 620.0,
+      "period": 15.0,
+      "offset": 2.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/beach_region.py (re-running it rewrites entities)"
+}
