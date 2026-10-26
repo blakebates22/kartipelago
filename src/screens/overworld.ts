@@ -44,11 +44,12 @@ import {
   persist,
   sceneScreen,
 } from "./adventure";
-import { kingdomById } from "../adventure/data";
+import { DRAGON, KINGDOMS, kingdomById, type KingdomId } from "../adventure/data";
 import {
   championWon,
   coinCourse,
   completeReturn,
+  dragonPhase,
   kingdomPhase,
   objective,
   piecesOf,
@@ -390,9 +391,16 @@ export function overworldLoading(
   // The region before or after its dragon's attack.
   const k = full.kingdom ? kingdomById(full.kingdom) : undefined;
   const story = adventure && Boolean(full.kingdom);
+  // (Adventure: once the kingdom's champion has joined you and the dragon struck; the
+  // Dragon Kingdom after the sacrifice, at the end of its first championship.)
+  const save = story ? adventureOf(game).save : undefined;
   const ruined =
     Boolean(full.ruinPackageId) &&
-    (story && k ? championWon(adventureOf(game).save, k) : Boolean(game.overworld?.ruined));
+    (save
+      ? full.kingdom === "dragon"
+        ? Boolean(save.cups.dragon)
+        : Boolean(k && championWon(save, k))
+      : Boolean(game.overworld?.ruined));
   const region = regionAsIs(full, ruined);
   let ready: Session | undefined;
   let failed: string | undefined;
@@ -705,7 +713,119 @@ interface StoryOffer {
   go?: () => void;
 }
 
+/** A championship toured gateway to gateway: race n of the cup at its gateway (the
+ * standings send you back out between races). */
+function tourOffer(
+  game: Game,
+  region: Region,
+  g: Gateway,
+  cup: { kingdom: KingdomId | "dragon_final"; name: string; worldId: string; tracks: string[] },
+  title: string,
+): StoryOffer | undefined {
+  const i = cup.tracks.indexOf(g.track);
+  if (i < 0) return undefined;
+  const a = adventureOf(game);
+  const on =
+    game.trophy && a.run?.kind === "cup" && a.run.kingdom === cup.kingdom ? game.trophy : undefined;
+  const raced = on?.raced ?? 0;
+  const next = cup.tracks[raced]!;
+  const n = `RACE ${raced + 1} OF ${cup.tracks.length}`;
+  if (next !== g.track)
+    return {
+      track: g.track,
+      note: `${title}'S ${n} IS AT ${(trackById(next)?.name ?? next).toUpperCase()}`,
+    };
+  return {
+    track: next,
+    note: `${title} · ${n}`,
+    go: () => {
+      game.overworld = { region: region.id, at: g.id, adventure: true };
+      if (!on)
+        return launch(game, { kind: "cup", kingdom: cup.kingdom }, cup.tracks[0]!, {
+          name: cup.name,
+          worldId: cup.worldId,
+          tracks: cup.tracks,
+        });
+      game.selection.trackId = next;
+      game.selection.mode = "race";
+      game.screens.go(loadingScreen(game));
+    },
+  };
+}
+
+/** Adventure: the Dragon Kingdom's gateways, by where the story is (adventure.ts's
+ * board for it does the same): the first visit's championship, the kingdom in ruins
+ * while you go home, the last championship over its ruined courses, then the King. */
+function dragonOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefined {
+  const s = adventureOf(game).save;
+  const p = dragonPhase(s);
+  const king = DRAGON.king.name.toUpperCase();
+  if (g.king) {
+    if (p !== "king" && p !== "done")
+      return { track: g.track, note: `${king} WAITS IN HIS CITADEL. NOT YET` };
+    return {
+      track: g.track,
+      note: p === "done" ? `${king} IS BEATEN · RACE HIM AGAIN` : `RACE ${king}!`,
+      go: () => {
+        game.overworld = { region: region.id, at: g.id, adventure: true };
+        launch(game, { kind: "king", chosen: s.kingLost }, DRAGON.king.track);
+      },
+    };
+  }
+  if (!DRAGON.courses.some((c) => c.track === g.track)) return undefined;
+  if (p === "locked") return { track: g.track, note: "NOT REACHED YET" };
+  if (p === "first")
+    return tourOffer(
+      game,
+      region,
+      g,
+      {
+        kingdom: "dragon",
+        name: DRAGON.name,
+        worldId: DRAGON.worldId,
+        tracks: DRAGON.courses.map((c) => c.track),
+      },
+      "THE CHAMPIONSHIP",
+    );
+  if (p === "return") {
+    const left = KINGDOMS.filter((k) => !s.returns[k.id]).length;
+    return {
+      track: g.track,
+      note: `THE KINGDOM LIES IN RUINS. GO HOME: ${left} TASK${left === 1 ? "" : "S"} LEFT IN THE FOUR KINGDOMS`,
+    };
+  }
+  const ruins = DRAGON.courses.map((c) => coinCourse(c, (id) => Boolean(trackById(id))).track);
+  const at = DRAGON.courses.findIndex((c) => c.track === g.track);
+  if (p === "final")
+    return tourOffer(
+      game,
+      region,
+      { ...g, track: ruins[at]! },
+      {
+        kingdom: "dragon_final",
+        name: `${DRAGON.name} (Ruined)`,
+        worldId: DRAGON.worldId,
+        tracks: ruins,
+      },
+      "THE LAST CHAMPIONSHIP",
+    );
+  return {
+    track: ruins[at]!,
+    note: p === "king" ? `${king} WAITS IN HIS CITADEL` : "THE KINGDOMS ARE FREE · RACE IT AGAIN",
+    go:
+      p === "done"
+        ? () => {
+            game.overworld = { region: region.id, at: g.id, adventure: true };
+            game.selection.trackId = ruins[at]!;
+            game.selection.mode = "race";
+            game.screens.go(loadingScreen(game));
+          }
+        : undefined,
+  };
+}
+
 function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefined {
+  if (region.kingdom === "dragon") return dragonOffer(game, region, g);
   const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
   const course = k?.courses.find((c) => c.track === g.track);
   if (!k || (!course && !g.boss)) return undefined;

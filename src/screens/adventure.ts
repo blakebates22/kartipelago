@@ -291,7 +291,7 @@ export function adventureHub(game: Game): Screen {
     game.sounds.confirm();
     a.at = id;
     // A kingdom with its overworld region built: drive it (its board is in the pause menu).
-    const region = id === "dragon" ? undefined : regionOfKingdom(id);
+    const region = regionOfKingdom(id);
     if (region) return game.screens.go(overworldLoading(game, region.id, undefined, true));
     game.screens.go(kingdomScreen(game, id));
   };

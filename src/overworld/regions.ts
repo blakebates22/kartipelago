@@ -29,6 +29,8 @@ export interface Gateway {
   boss?: boolean;
   /** The name on its board, when it isn't the course's. */
   label?: string;
+  /** The Dragon King's Citadel (his race), in the Dragon Kingdom. */
+  king?: boolean;
 }
 
 /** A way on to another region (the doc's passages): a gorge, a pass, a causeway. */
@@ -504,6 +506,21 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: 0,
       },
+      // Tidewyrm's Causeway, out through the sea stacks: on to the Dragon Kingdom.
+      {
+        id: "causeway",
+        label: "TIDEWYRM'S CAUSEWAY · TO THE DRAGON KINGDOM",
+        to: "dragon_kingdom",
+        toPassage: "causeway",
+        x: 199.0,
+        z: 344.7,
+        radius: 8,
+        heading: Math.atan2(-0.5, -0.866),
+        ruinOnly: true,
+        blocker: { kind: "water", width: 14 },
+        opensAfter: "beach",
+        locked: "THE REEF LIES UNDER DEEP WATER, HELD DOWN BY TIDEWYRM: BEAT HIM FIRST",
+      },
     ],
     puzzles: [
       // The Tiki Gongs: a tiki hut in the north-east, its door shut. Strike the three
@@ -524,6 +541,83 @@ export const REGIONS: Region[] = [
         seconds: 0,
         gate: { x: 205.06, z: -205.06, heading: -Math.PI / 4, width: 9 },
         prize: { kind: "key", x: 212.13, z: -212.13 },
+      },
+    ],
+  },
+  {
+    // The last region (tools/blender/prehistoric/dragon_region.py, a greybox): far over
+    // the horizon at the end of Tidewyrm's Causeway. A green basin ringed by dark crags,
+    // Dragonfire Square in the middle, King Pyrrhax's Citadel on the north cliff. Ruined
+    // after the sacrifice (the end of its first championship).
+    id: "dragon_kingdom",
+    name: "Dragon Kingdom",
+    packageId: "dragon_region",
+    ruinPackageId: "dragon_region_ruin",
+    music: "dragon",
+    worldId: "dragon",
+    kingdom: "dragon",
+    // At the harbour where the Causeway comes in, facing north to the ring.
+    spawn: { x: 0, z: 285, heading: Math.PI },
+    gateways: [
+      // At the gate under Dragonspire Keep's tower on its crag, north-west.
+      {
+        id: "keep",
+        track: "dragon_isles",
+        x: -219.1,
+        z: -183.8,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((140 * Math.PI) / 180), Math.sin((140 * Math.PI) / 180)),
+      },
+      // At the overgrown jungle castle's gate in the east cliff.
+      {
+        id: "canyon",
+        track: "dragon_canyon",
+        x: 322.0,
+        z: -56.8,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((10 * Math.PI) / 180), Math.sin((10 * Math.PI) / 180)),
+      },
+      // At Emberdeep Hold's fortress gate cut into the mountain, north-east.
+      {
+        id: "hold",
+        track: "snow_dragon_pass",
+        x: 187.6,
+        z: -267.9,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((55 * Math.PI) / 180), Math.sin((55 * Math.PI) / 180)),
+      },
+      // Before the moon gate among the violet lanterns, west.
+      {
+        id: "moon",
+        track: "celestial_dragon_festival",
+        x: -259.4,
+        z: 94.4,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((200 * Math.PI) / 180), Math.sin((200 * Math.PI) / 180)),
+      },
+      // King Pyrrhax's Citadel on the north cliff: the King's race.
+      {
+        id: "citadel",
+        track: "boss_dragon",
+        x: -56.8,
+        z: -322.0,
+        radius: 6,
+        heading: Math.atan2(-Math.cos((100 * Math.PI) / 180), Math.sin((100 * Math.PI) / 180)),
+        king: true,
+        label: "KING PYRRHAX'S CITADEL",
+      },
+    ],
+    passages: [
+      // Back along Tidewyrm's Causeway to Tropic Isles.
+      {
+        id: "causeway",
+        label: "TIDEWYRM'S CAUSEWAY · BACK TO TROPIC ISLES",
+        to: "tropic_isles",
+        toPassage: "causeway",
+        x: 0,
+        z: 445,
+        radius: 8,
+        heading: Math.PI,
       },
     ],
   },

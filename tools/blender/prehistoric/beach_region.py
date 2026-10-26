@@ -54,6 +54,7 @@ WRECK = (-145.0, 290.0)
 SPLASH = (150.0, CLIFF_R - 30.0)
 LAIR = (8.0, CLIFF_R + 6.0)  # Tidewyrm's lair: the boss gateway (east headland)
 VOLCANO = (-90.0, 620.0)
+CAUSEWAY = (-60.0, 398.0)  # Tidewyrm's Causeway: the reef road out to the Dragon Kingdom
 # The Tiki Gongs (src/overworld/puzzles.ts): a tiki hut in the north-east, its door shut,
 # and three gongs to strike in order (their torches: one, two, three) round the island.
 HUT = (45.0, 300.0)
@@ -142,6 +143,13 @@ def main():
     c.side_road("Village Road", line((vx, vy - vr + 2), ring_end(90.0)), "beach_road", "road", **trail)
     # Out from the ring to the landmarks.
     outs = [("Coral Road", CORAL), ("Wreck Road", WRECK), ("Splash Road", SPLASH)] + ([("Lair Road", LAIR)] if RUIN else [])
+    if RUIN:
+        # Tidewyrm's Causeway: the reef raised into a road, out through the sea stacks (the
+        # deep channel across its end is the game's: regions.ts blocker, gone once he falls).
+        a = CAUSEWAY[0]
+        c.side_road("Tidewyrm's Causeway", line(ring_end(a), polar(*CAUSEWAY), every=6.0), "beach_road", "road", width=10.0,
+                    shoulder=0.6, shoulder_mat=("isle_rock", "road"), barrier=0.6, barrier_mat=("isle_rock", "wall"),
+                    deck=1.4, deck_mat=("isle_rock", "wall"), ground=False)
     for name, (a, r) in outs:
         c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "beach_road", "road", **trail)
     a, r0, r1 = PIER
@@ -177,7 +185,7 @@ def main():
         a = k * math.tau / 40 + 0.37 * math.sin(k * 1.9)
         r = (SHORE_R - 18 if south(a) > 0.5 else CLIFF_R - 25) + 9 * math.sin(k * 2.7)
         px, py = polar(math.degrees(a), r)
-        if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0,
+        if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0, CAUSEWAY[0],
                                                     HUT[0], RETURN[0], *(a for a, _ in GONGS))) < 7:
             continue  # (clear of the roads out)
         g = natural(px, py)
@@ -229,12 +237,19 @@ def main():
     n = int((a1 - a0) * STACKS_R / 13.0)
     for k in range(n + 1):
         a = lerp(a0, a1, k / n)
+        if RUIN and abs(math.degrees(a) - CAUSEWAY[0]) < 2.6:
+            continue  # (the Causeway's way out)
         r = STACKS_R + 8.0 * math.sin(k * 1.3)
         x, y = r * math.cos(a), r * math.sin(a)
         cone(c, "Sea Stack %d" % k, x, y, 8.5, WATER_Z - 3.0, 14.0 + 8.0 * abs(math.sin(k * 0.77)), ("isle_rock", "wall"),
              segs=6)
+    if RUIN:
+        # (Behind the Causeway's way out, more stacks close it in: the passage is the end.)
+        for k in range(5):
+            x, y = polar(CAUSEWAY[0] - 6.0 + 3.0 * k, STACKS_R + 34.0)
+            cone(c, "Causeway Stack %d" % k, x, y, 8.5, WATER_Z - 3.0, 18.0, ("isle_rock", "wall"), segs=6)
     for k in range(8):
-        x, y = polar(-90.0 + 3.0 * math.sin(k * 1.7), STACKS_R + 30.0 + k * 22.0)
+        x, y = polar(CAUSEWAY[0] + 3.0 * math.sin(k * 1.7), STACKS_R + 60.0 + k * 22.0)
         cone(c, "Reef Rock %d" % k, x, y, 4.0, WATER_Z - 2.0, 2.6, ("isle_rock", "wall"), segs=5, role="visual")
 
     tiki_gongs(c)
@@ -267,12 +282,12 @@ def ruined(c):
              segs=5)
 
     # Wreckage the wave left up the beach: planks, crates, a stove-in boat (off the roads).
-    avoid = (CORAL[0], PIER[0], WRECK[0], RETURN[0], *(a for a, _ in GONGS), 0.0, 180.0)
+    avoid = (CORAL[0], PIER[0], WRECK[0], RETURN[0], CAUSEWAY[0], *(a for a, _ in GONGS), 0.0, 180.0)
     for k, (x, y) in enumerate(ruin.ring_spots(14, 246.0, 285.0, 11, avoid)):
         if south(math.atan2(y, x)) < 0.5:
             continue
         ruin.rubble(c, "Wreckage %d" % k, x, y, natural, ("wreck_planks", "wall"), n=5, spread=4.0, size=1.1, seed=30 + k)
-    x, y = polar(-60.0, 296.0)
+    x, y = polar(-75.0, 296.0)
     box(c, "Stove-in Boat", x, y, 5.0, 1.8, WATER_Z - 0.5, FLOOR_Z - 0.5, ("wreck_planks", "wall"), rot=0.9)
     ruin.scorch(c, "Seaweed", ruin.ring_spots(10, 240.0, 280.0, 12, avoid), natural, ("fern_floor", "grass"), r=(3.0, 7.0))
 

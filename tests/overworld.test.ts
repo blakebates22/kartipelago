@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { REGIONS, inGateway, regionById } from "../src/overworld/regions";
 import { trackById } from "../src/game/tracks";
-import { KINGDOMS } from "../src/adventure/data";
+import { DRAGON, KINGDOMS } from "../src/adventure/data";
 import { regionAsIs, regionOfKingdom } from "../src/overworld/regions";
 import { gateSolid, newPuzzleState, stepPuzzle } from "../src/overworld/puzzles";
 
@@ -16,6 +16,14 @@ describe("overworld regions", () => {
       for (const g of r.gateways) expect(trackById(g.track), g.id).toBeDefined();
     }
     expect(new Set(REGIONS.map((r) => r.id)).size).toBe(REGIONS.length);
+  });
+
+  it("join up: every passage leads to one back in the region it goes to", () => {
+    for (const r of REGIONS)
+      for (const p of r.passages ?? []) {
+        const back = regionById(p.to)?.passages?.find((q) => q.id === p.toPassage);
+        expect(back?.to, `${r.id}.${p.id}`).toBe(r.id);
+      }
   });
 
   it("open a gateway's card only inside its circle", () => {
@@ -36,6 +44,15 @@ describe("overworld regions", () => {
       expect(r.gateways.find((g) => g.boss)?.track, k.id).toBe(k.boss!.track);
     }
     expect(regionOfKingdom("valley")?.id).toBe("dinosaur_valley");
+    // The Dragon Kingdom: its four courses and the King's Citadel.
+    const d = regionOfKingdom("dragon")!;
+    expect(
+      d.gateways
+        .filter((g) => !g.king)
+        .map((g) => g.track)
+        .sort(),
+    ).toEqual(DRAGON.courses.map((c) => c.track).sort());
+    expect(d.gateways.find((g) => g.king)?.track).toBe(DRAGON.king.track);
   });
 
   it("put each puzzle's gate and switches where the region's build put them (ruined too)", () => {
@@ -71,7 +88,7 @@ describe("overworld regions", () => {
   });
 
   it("put each return task's yard where the region's build put it", () => {
-    for (const r of REGIONS.filter((r) => r.kingdom)) {
+    for (const r of REGIONS.filter((r) => r.kingdom && r.kingdom !== "dragon")) {
       const rt = r.returnTask!;
       expect(rt, r.id).toBeDefined();
       for (const pkg of [r.packageId, r.ruinPackageId!]) {
@@ -114,7 +131,7 @@ describe("overworld regions", () => {
   });
 
   it("show the dragons' lairs and the ways they broke open only after the attack", () => {
-    for (const r of REGIONS.filter((r) => r.kingdom)) {
+    for (const r of REGIONS.filter((r) => r.kingdom && r.kingdom !== "dragon")) {
       const before = regionAsIs(r, false);
       const after = regionAsIs(r, true);
       expect(

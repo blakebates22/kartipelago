@@ -80,6 +80,6 @@
   ],
   "generator": "tools/blender/prehistoric/beach_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "beach_region.py": "3ed8c32e28e288928a4a492d56f24a3ec1844aae11c1298fad23087c92513f6d"
+    "beach_region.py": "4b0d7a998a035fe0b8ab5477881e66f55377da859c77b19336f3bdeea817d033"
   }
 }
