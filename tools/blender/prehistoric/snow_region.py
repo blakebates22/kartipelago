@@ -29,6 +29,9 @@ from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
+import hearthglow_props as hp  # noqa: E402
+import region_paint as paint  # noqa: E402
+import summit_props as sp  # noqa: E402
 
 # (--ruin: the Snow Kingdom after Rimefang's attack. Only the ruin has his lair, and his
 # ice walling the Frozen Pass shut; the village and the great tree are frozen over.)
@@ -151,8 +154,8 @@ def main():
             box(c, "House %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("hearth_stone", "wall"), rot=a)
             box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, FLOOR_Z - 1.0, FLOOR_Z + 6.5, ("berg_ice", "wall"), rot=a + 0.08)
             continue
-        box(c, "House %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 5.0, ("hearth_stone", "wall"), rot=a)
-        cone(c, "House Roof %d" % k, hx, hy, 6.0, FLOOR_Z + 5.0, 4.0, ("pine_snow", "wall"), segs=4, role="visual")
+        # (Hearthglow's own cottages, their fronts to the square.)
+        c.place(hp.cottage(c, k % 4), hx, hy, FLOOR_Z, rot=a - math.pi / 2)
     tx, ty = vx + 18.0, vy - 6.0
     box(c, "Great Tree Trunk", tx, ty, 1.6, 1.6, FLOOR_Z - 1.0, FLOOR_Z + 8.0, ("weathered_timber", "wall"))
     for k, (r, z) in enumerate(((7.0, 6.0), (5.5, 10.0), (3.8, 13.5))):
@@ -199,6 +202,7 @@ def main():
     box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
     c.entity("snowfall", rate=60, radius=60)
 
+    dress(c)
     # (Raced too: the champion's challenge, once round the ring, from this line.)
     c.start_line()
     gates = c.checkpoints(height=10.0)
@@ -232,6 +236,57 @@ def ruined(c):
     vx, vy, vr = VILLAGE
     spots = [(x, y) for x, y in spots if math.hypot(x - vx, y - vy) > vr + 16]
     ruin.shards(c, "Ice Shard", spots, natural, ("glacier_ice", "wall"), seed=7)
+
+
+def dress(c):
+    """The paint pass: Snowy Summit's snowy pines, frosted broadleaves and shrubs over the
+    basin, boulders at the peaks' feet, lantern posts and snowmen round the village.
+    After the attack: the pines frozen into ice, the shrubs gone."""
+    vx, vy, vr = VILLAGE
+    taken = paint.Taken([(vx, vy, vr + 18.0), (*polar(*CITADEL), 30.0), (*polar(*TREE), 34.0), (*polar(*RIFT), 36.0),
+                         (*polar(*FROZEN_PASS), 22.0), (*polar(*HUT), 18.0), (*polar(*RETURN), 18.0),
+                         (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*LAIR), 26.0),
+                         *((*polar(a, r), 12.0) for a, r, _ in BELLS)])
+
+    def open_ground(x, y):
+        r = math.hypot(x, y)
+        if r < LAKE_R + 8 or r > CLIFF_R - 10:
+            return False
+        return not (abs(x - gorge_x(y)) < GORGE_HW + 12 and y < -250)
+
+    def foot(x, y):
+        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+
+    g = natural
+    for v in range(2):
+        paint.scatter(c, sp.boulder(c, v), 14, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.2))
+    pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=True) for v in range(3)]
+    if RUIN:
+        # Rimefang's frost: the pines stand frozen in ice, nothing else grows.
+        for v, p in enumerate(pines):
+            for x, y in paint.scatter(c, p, 40, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(0.9, 1.4),
+                                      road_margin=7.0):
+                cone(c, "Frozen Pine %d %d" % (v, int(x)), x, y, 3.2, g(x, y) - 0.5, 9.0 + 3.0 * v, ("glacier_ice", "wall"), segs=6,
+                     role="visual")
+        return
+    for v, p in enumerate(pines):
+        paint.scatter(c, p, 70, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0)
+        paint.scatter(c, p, 18, CLIFF_R, open_ground, g, taken, 20 + v, room=4.0, near_road=(6.0, 14.0))
+    for v in range(2):
+        paint.scatter(c, sp.broadleaf(c, v, frosted=True), 25, CLIFF_R, open_ground, g, taken, 30 + v, room=5.0,
+                      road_margin=7.0)
+        paint.scatter(c, sp.shrub(c, v), 90, CLIFF_R, open_ground, g, taken, 40 + v, room=2.5, role="visual",
+                      scale=(0.7, 1.4))
+    # Round the village: lantern posts along the road in, snowmen in the fields.
+    post = hp.lantern_post(c, 0)
+    for k in range(3):  # (up the road to just short of the ring)
+        for side in (-1, 1):
+            x, y = vx + side * 7.0, vy + vr + 4.0 + k * 9.0
+            c.place(post, x, y, g(x, y))
+            gx, gy, gz = c.game(x, y, g(x, y) + 4.6)
+            c.entity("lantern", x=gx, y=gy, z=gz)
+    paint.scatter(c, hp.snowman(c, 0), 8, CLIFF_R, lambda x, y: open_ground(x, y) and math.hypot(x - vx, y - vy) < 110, g,
+                  taken, 50, room=3.0)
 
 
 def ice_bells(c):

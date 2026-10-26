@@ -79,6 +79,48 @@
       "type": "snowfall",
       "rate": 60,
       "radius": 60
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": -7.0,
+      "y": 6.44,
+      "z": 251.0
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 7.0,
+      "y": 6.48,
+      "z": 251.0
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": -7.0,
+      "y": 6.02,
+      "z": 242.0
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": 7.0,
+      "y": 6.2,
+      "z": 242.0
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -7.0,
+      "y": 6.08,
+      "z": 233.0
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": 7.0,
+      "y": 6.26,
+      "z": 233.0
     }
   ],
   "generator": "tools/blender/prehistoric/snow_region.py (re-running it rewrites entities)"

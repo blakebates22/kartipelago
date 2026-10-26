@@ -83,6 +83,6 @@
   ],
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "snow_region.py": "c5b1f9d50c45bf4d60afc65569d601064f8a3e3b0d870e597c0a8f199e0e6d3b"
+    "snow_region.py": "f5972361ab63be17e0badffb7042103e308b09e8a843aafbf45e1fa175ffaeb6"
   }
 }
