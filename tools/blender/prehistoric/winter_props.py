@@ -533,10 +533,10 @@ def icicles(c, variant=0, length=2.0):
 def ice_fall(c, name, x, y, top, foot, width, facing=(0.0, -1.0), coll="Waterfalls"):
     """A frozen waterfall down a cliff: a curtain of chunky ice columns of different
     widths, bulging out as they fall, with icicles along the top. `facing` is the way it
-    faces (out from the cliff)."""
+    faces (out from the cliff; local +Y here)."""
     k = Blocks()
     fx, fy = facing
-    rot = math.atan2(fy, fx) - math.pi / 2  # local -Y faces out: columns run along local X
+    rot = math.atan2(fy, fx) - math.pi / 2  # local +Y faces out: columns run along local X
     ca, sa = math.cos(rot), math.sin(rot)
     n = max(4, int(width / 2.2))
     for i in range(n):
@@ -544,7 +544,7 @@ def ice_fall(c, name, x, y, top, foot, width, facing=(0.0, -1.0), coll="Waterfal
         w = width / n * (0.9 + 0.5 * rnd(i * 3.1))
         h = (top - foot) * (0.82 + 0.18 * rnd(i * 5.7))
         bulge = 1.2 + 2.0 * (1 - (2 * u) ** 2) + 0.8 * rnd(i)
-        lx, ly = u * width, -bulge
+        lx, ly = u * width, bulge  # (out from the cliff: it was -bulge, into the rock)
         cx, cy = x + lx * ca - ly * sa, y + lx * sa + ly * ca
         k.box("ice", (cx, cy, top - h / 2), (w, 1.6 + rnd(i * 2) * 1.4, h), rot=rot, snow=False)
         # A frozen splash at the foot.

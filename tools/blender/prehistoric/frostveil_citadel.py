@@ -366,13 +366,20 @@ def classify(c, n, info):
     if in_tunnel_rock(c.x, c.y, 0.8):
         return None
     smp = info["sample"]
+    # (The approaches are cut through the land too: retaining walls line the cutting,
+    # frostveil_scenery.cutting_walls, so it doesn't show holes.)
     if TUNNEL_S[0] <= smp.s <= TUNNEL_S[1] and info["d"] < 18 and c.z > smp.p.z - 1.0:
         return None
     # The chasm's and gorges' floors are bottomless: touching them puts you back.
     if c.z < -12 or (c.z < 0 and _nearest(c.x, c.y, GORGE)[0] < 10) or (trench(c.x, c.y) > 0.5 and c.z < 18):
         return ("frost_rock", "abyss")
     if n.z < 0.62:
-        return ("frost_cliff" if (int(c.z / 7) + int(c.x / 40)) % 2 else "frost_rock", "wall")
+        # The cliffs in strata (Blake's review: the walls should be as grand as the falls):
+        # wavy bands of pale and dark rock, snow lying on the ledges between them.
+        if n.z > 0.45:
+            return ("snow_ground", "wall")
+        band = int((c.z + 5.0 * math.sin(c.x / 23.0) + 4.0 * math.cos(c.y / 19.0)) / 9.0) % 4
+        return (("frost_cliff", "frost_rock", "frost_cliff", "frost_stone")[band], "wall")
     px, py, pr = POND
     if math.hypot(c.x - px, c.y - py) < pr and c.z < 0:
         return ("frost_pool", "ice")
@@ -559,7 +566,21 @@ def main():
         return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < 80 else None
 
     # (Kept under every road, except round the tunnel rock, whose walls it seals.)
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 4.0, near(underfloor_z), c.lib("snow_ground", "deep_snow"),
+    # (Kept under the land too: where the land is pulled down to a road cut lower than the
+    # natural ground, a floor at the natural height poked through it beside the road, and
+    # karts hopped over it: Blake's review, by the courtyard.)
+    mountains = [o for o in c.coll("Terrain").objects if o.name.startswith("Mountains")]
+
+    def under_land(x, y):
+        z = underfloor_z(x, y)
+        if z is None:
+            return None
+        g = c.ground_z(x, y, mountains)
+        # (No land here, cut away over the tunnel's approach: no floor either; one at the
+        # natural height stood up as a wall across the road.)
+        return None if g is None else min(z, g - 0.35)
+
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 4.0, near(under_land), c.lib("snow_ground", "deep_snow"),
                       clamp_where=lambda x, y: not in_tunnel_rock(x, y, 2.5))
     c.underfloor_flat("Abyss Floor", X0, X1, Y0, Y1, 4.0, near(abyss_z), c.lib("frost_rock", "abyss"))
 
