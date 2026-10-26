@@ -1,6 +1,6 @@
 # Bonebog Pyramid
 
-The Prehistoric World's third course, rebuilt as a signature track: a living
+Dinosaur Valley's third course, rebuilt as a signature track: a living
 prehistoric swamp under a vast canopy, a dinosaur graveyard, and a colossal overgrown
 pyramid that you drive straight through. About 1.63 km a lap (an AI lap is about 70 s).
 

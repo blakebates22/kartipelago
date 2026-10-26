@@ -1053,8 +1053,8 @@ function devMenu(game: Game): Screen {
       for (const c of kingdomById("valley")!.courses) s.pieces[c.track] = true;
     }),
     jump("SNOW KINGDOM OPEN", () => free("valley")),
-    jump("DESERT KINGDOM OPEN", () => ["valley", "snow"].forEach((k) => free(k as KingdomId))),
-    jump("BEACH KINGDOM OPEN", () =>
+    jump("DESERT WORLD OPEN", () => ["valley", "snow"].forEach((k) => free(k as KingdomId))),
+    jump("TROPIC ISLES OPEN", () =>
       ["valley", "snow", "desert"].forEach((k) => free(k as KingdomId)),
     ),
     jump("DRAGON KINGDOM OPEN", () => KINGDOMS.forEach((k) => free(k.id))),

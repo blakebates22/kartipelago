@@ -1,6 +1,6 @@
 # Ember Peak: the Volcanic Apocalypse
 
-The Prehistoric World's fourth course, rebuilt as its most dangerous and dramatic:
+Dinosaur Valley's fourth course, rebuilt as its most dangerous and dramatic:
 racing through a volcanic landscape at the start of an enormous eruption. About 2.4 km
 a lap (an AI lap is about 106 s), climbing from the plain to 74 m and back.
 
@@ -92,7 +92,7 @@ Everything is in `tools/blender/prehistoric/`, on the course kit:
 Run `python tools/blender/prehistoric/ember_peak.py` (with the bpy module) to rebuild
 `tracks-src/ember_peak.blend` and `public/tracks/ember_peak/`.
 
-**Tests:** `tests/ember.test.ts` (in the Prehistoric World with its own music, a real
+**Tests:** `tests/ember.test.ts` (in Dinosaur Valley with its own music, a real
 climb, 15-25 s in the caverns, the dragon and the eruption), `tests/dragon.test.ts`
 (the schedule, fairness, the zone, and the shared burn), `tests/holes.test.ts`, and
 `tests/prehistoric.test.ts` (three clean AI laps; Ember's lap limit is 120 s).

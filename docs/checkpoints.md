@@ -101,7 +101,7 @@ for a quarter of a second, so it doesn't flicker.
 
 | Track                                            | Checkpoints                                                                       |
 | ------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Prehistoric World (4 courses)                    | `checkpoints.json`, placed by each course script (see below), editable in Blender |
+| Dinosaur Valley (4 courses)                      | `checkpoints.json`, placed by each course script (see below), editable in Blender |
 | Dino Demo                                        | `checkpoints.json` from `build_dino_demo.py`                                      |
 | Drift Loop, Ribbon Ridge, Meadow Run             | `checkpoints` lists in `assets/data/track*.json` (distance along the lap)         |
 | Bridge Test (and any Blender track without them) | placed automatically from the route when it loads                                 |

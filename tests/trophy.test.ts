@@ -21,7 +21,7 @@ describe("trophy race", () => {
   });
 
   it("runs every track of the world in order, then ends", () => {
-    const cup = startCup("prehistoric", "Prehistoric World", ["a", "b", "c", "d"]);
+    const cup = startCup("prehistoric", "Dinosaur Valley", ["a", "b", "c", "d"]);
     expect(nextTrack(cup)).toBe("a");
     for (const t of ["a", "b", "c", "d"]) {
       expect(nextTrack(cup)).toBe(t);

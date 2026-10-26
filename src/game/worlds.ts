@@ -31,7 +31,7 @@ export interface WorldEntry {
 export const WORLDS: WorldEntry[] = [
   {
     id: "prehistoric",
-    name: "Prehistoric World",
+    name: "Dinosaur Valley",
     tagline: "A lost valley",
     description:
       "A lost valley of sunny rivers, roaring waterfalls, misty fossil swamps and a smoking volcano.",
@@ -40,7 +40,7 @@ export const WORLDS: WorldEntry[] = [
   },
   {
     id: "frostveil",
-    name: "Snowy Peaks",
+    name: "Snow Kingdom",
     tagline: "A lost citadel",
     description:
       "Snowbound mountains where an ancient civilization built temples, bridges and fortresses into the peaks.",

@@ -1,7 +1,7 @@
-# Worlds, and the Prehistoric World
+# Worlds, and Dinosaur Valley (the Prehistoric world)
 
 Tracks mode now goes **Mode Select → World Select → Track Select → race**. This page
-covers the world registry, the four Prehistoric World courses, how they're built in
+covers the world registry, the four Dinosaur Valley courses, how they're built in
 Blender, the hazards and creatures they use, and their music.
 
 Everything here is original work for this MIT-licensed project: the layouts, models,
@@ -13,18 +13,18 @@ prehistoric worlds late-90s console racers loved. Nothing is copied from any gam
 `src/game/worlds.ts` lists the worlds. Each has a stable `id`, a name, a tagline, a
 description, a banner colour and its track ids, in menu order:
 
-| World             | Id            | Tracks                                                                                                                                                                                           |
-| ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Prehistoric World | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
-| Snowy Peaks       | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
-| Desert World      | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town, Impact Depths                                                                                                                                    |
-| Dragon Kingdom    | `dragon`      | Dragon Isles, then three Coming Soon tiles (see [dragon-kingdom.md](dragon-kingdom.md))                                                                                                          |
-| Test World        | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
+| World           | Id            | Tracks                                                                                                                                                                                           |
+| --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dinosaur Valley | `prehistoric` | Riverbend Palms, Cascade Caverns, Bonebog Pyramid, Ember Peak                                                                                                                                    |
+| Snow Kingdom    | `frostveil`   | Frostveil Citadel, Snowy Summit Pass, Hearthglow Hollow, Aurora Rift                                                                                                                             |
+| Desert World    | `desert`      | Canyon Dash, Oasis Haven, Dry Gulch Ghost Town, Impact Depths                                                                                                                                    |
+| Dragon Kingdom  | `dragon`      | Dragon Isles, then three Coming Soon tiles (see [dragon-kingdom.md](dragon-kingdom.md))                                                                                                          |
+| Test World      | `test_world`  | Dino Demo, Drift Loop, Ribbon Ridge, Meadow Run, Bridge Test, Loop Lab, Drift Park (hidden from the menus for now: `hidden: true` in `src/game/worlds.ts`; its tracks still load with `?track=`) |
 
 - Every track belongs to exactly one world (a test checks this).
 - Track ids are unchanged, so records and `?track=` links still work.
 - World Select opens on the world you picked last, otherwise on your last track's world.
-  New players start on Prehistoric World.
+  New players start on Dinosaur Valley.
 - To add a world, add an entry. Its tracks go in `src/game/tracks.ts` as usual.
 - A world's `comingSoon` names show in track select as locked "Coming Soon" tiles after
   its real tracks (the Dragon Kingdom has three). See [frostveil-peaks.md](frostveil-peaks.md).

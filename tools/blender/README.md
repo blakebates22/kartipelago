@@ -51,9 +51,9 @@ The **Checkpoints** panel places the invisible gates a lap is made of: Generate 
 Route, Add, Renumber, Next/Previous, Show/Hide. They export to `checkpoints.json` and never
 go into the GLBs. See [docs/checkpoints.md](../../docs/checkpoints.md).
 
-## Prehistoric World
+## Dinosaur Valley
 
-The four Prehistoric World courses are built by scripts in `prehistoric/`, on a shared
+The four Dinosaur Valley courses are built by scripts in `prehistoric/`, on a shared
 toolkit (`course_kit.py`, `props.py`). Each saves `tracks-src/<id>.blend` and exports
 `public/tracks/<id>/`:
 

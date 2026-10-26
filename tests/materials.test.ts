@@ -65,7 +65,7 @@ describe("material library (Blender add-on)", () => {
       expect(library.materials.slice(0, 16).filter((m) => m.theme === t)).toHaveLength(4);
   });
 
-  it("adds the Prehistoric World textures, each in a known theme with unique ids", () => {
+  it("adds the Dinosaur Valley textures, each in a known theme with unique ids", () => {
     const ids = library.materials.map((m) => m.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of [

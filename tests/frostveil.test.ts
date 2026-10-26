@@ -1,4 +1,4 @@
-// Snowy Peaks: the world is listed with its first course and three locked ones, and
+// Snow Kingdom: the world is listed with its first course and three locked ones, and
 // Frostveil Citadel can be raced: it loads cleanly, the race's AI drives three laps,
 // every checkpoint gate counts whatever line you take (hugging either edge, or high in
 // the air over the jump), and the deep drops put you back on the road.
@@ -22,7 +22,7 @@ const reader: PackageReader = async (file) => {
 const dt = 1 / 120;
 const cfg = { ...tuning.race, laps: 3 };
 
-describe("Snowy Peaks", () => {
+describe("Snow Kingdom", () => {
   it("is a world with Frostveil Citadel first, then its other courses", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks[0]).toBe(id);

@@ -10,7 +10,7 @@
  *   race        "Lakeside Dash"     racing: quick and bouncy
  *   fanfare     "Finish Line!"      the results jingle (doesn't loop)
  *
- * And a theme per Prehistoric World course:
+ * And a theme per Dinosaur Valley course:
  *
  *   riverbend   "Riverbend Palms"   F major, 138: a beach party. Steel pan lead, strummed
  *                                   marimba off-beats, brass hits, a whistling flute,
@@ -582,7 +582,7 @@ function riverbend(): Song {
   return {
     id: "riverbend",
     title: "Riverbend Palms",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 138,
     beats: 64,
     loop: true,
@@ -660,7 +660,7 @@ function riverbendClassic(): Song {
   return {
     id: "riverbend_classic",
     title: "Riverbend Palms (Classic)",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 132,
     beats: 64,
     loop: true,
@@ -762,7 +762,7 @@ function cascade(): Song {
   return {
     id: "cascade",
     title: "Cascade Caverns",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 128,
     beats: 64,
     loop: true,
@@ -843,7 +843,7 @@ function cascadeClassic(): Song {
   return {
     id: "cascade_classic",
     title: "Cascade Caverns (Classic)",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 142,
     beats: 64,
     loop: true,
@@ -921,7 +921,7 @@ function frostveil(): Song {
   return {
     id: "frostveil",
     title: "Frostveil Citadel",
-    role: "Snowy Peaks",
+    role: "Snow Kingdom",
     bpm: 138,
     beats: 64,
     loop: true,
@@ -1021,7 +1021,7 @@ function summit(): Song {
   return {
     id: "summit",
     title: "Snowy Summit Pass",
-    role: "Snowy Peaks",
+    role: "Snow Kingdom",
     bpm: 152,
     beats: 128,
     loop: true,
@@ -1123,7 +1123,7 @@ function hearthglow(): Song {
   return {
     id: "hearthglow",
     title: "Hearthglow Hollow",
-    role: "Snowy Peaks",
+    role: "Snow Kingdom",
     bpm: 160,
     beats: 128,
     loop: true,
@@ -1226,7 +1226,7 @@ function aurora(): Song {
   return {
     id: "aurora",
     title: "Aurora Rift",
-    role: "Snowy Peaks",
+    role: "Snow Kingdom",
     bpm: 148,
     beats: 128,
     loop: true,
@@ -1521,7 +1521,7 @@ function bonebog(): Song {
   return {
     id: "bonebog",
     title: "Bonebog Pyramid",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 116,
     beats: 64,
     loop: true,
@@ -1585,7 +1585,7 @@ function emberClassic(): Song {
   return {
     id: "ember_classic",
     title: "Ember Peak (Classic)",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 158,
     beats: 64,
     loop: true,
@@ -1685,7 +1685,7 @@ function ember(): Song {
   return {
     id: "ember",
     title: "Ember Peak",
-    role: "Prehistoric World",
+    role: "Dinosaur Valley",
     bpm: 160,
     beats: 128,
     loop: true,
@@ -2994,8 +2994,8 @@ const ROLE_ORDER = [
   "Mode & track select",
   "Racing",
   "Results",
-  "Prehistoric World",
-  "Snowy Peaks",
+  "Dinosaur Valley",
+  "Snow Kingdom",
   "Desert World",
   "Tropic Isles",
   "Dragon Kingdom",

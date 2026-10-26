@@ -39,7 +39,7 @@ export interface TrackEntry {
 }
 
 export const TRACKS: TrackEntry[] = [
-  // Prehistoric World (src/game/worlds.ts), built by tools/blender/prehistoric/.
+  // Dinosaur Valley (src/game/worlds.ts), built by tools/blender/prehistoric/.
   {
     id: "riverbend_palms",
     name: "Riverbend Palms",
@@ -359,7 +359,7 @@ export const TRACKS: TrackEntry[] = [
     id: "boss_snowy",
     name: "Avalanche Run (boss, proto)",
     description:
-      "Snowy Peaks boss race prototype, one long lap: switchbacks down, the ski jump, the climb back.",
+      "Snow Kingdom boss race prototype, one long lap: switchbacks down, the ski jump, the climb back.",
     preview: "previews/boss_snowy.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_pass",
@@ -550,7 +550,7 @@ export const TRACKS: TrackEntry[] = [
     music: "ember",
     load: { scene: "track", packageId: "ember_peak_v2" },
   },
-  // Snowy Peaks (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
+  // Snow Kingdom (src/game/worlds.ts), built by tools/blender/prehistoric/frostveil_*.py.
   {
     id: "frostveil_citadel",
     name: "Frostveil Citadel",

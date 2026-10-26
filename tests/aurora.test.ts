@@ -1,4 +1,4 @@
-// Aurora Rift (v2), the first lap (Snowy Peaks' course 4 until 2026-10-24): its world slot
+// Aurora Rift (v2), the first lap (Snow Kingdom' course 4 until 2026-10-24): its world slot
 // keeps the name; it has its own night theme (with the aurora) and music; it loads
 // cleanly with the Rift Loop, its living cavern
 // (falling icicles, cracking lake ice, flaring crystals, ice motes) and both shortcuts'
@@ -55,7 +55,7 @@ const THIN_ICE: [number, number, number][] = [
 ];
 
 describe("Aurora Rift", () => {
-  it("was Snowy Peaks' fourth and last course (the slot keeps the name), with its own night theme and music", () => {
+  it("was Snow Kingdom' fourth and last course (the slot keeps the name), with its own night theme and music", () => {
     const w = WORLDS.find((x) => x.id === "frostveil")!;
     expect(w.tracks).toEqual([
       "frostveil_citadel",

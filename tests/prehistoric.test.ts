@@ -1,4 +1,4 @@
-// The Prehistoric World courses: each loads, and the race's own AI drives three full
+// The Dinosaur Valley courses: each loads, and the race's own AI drives three full
 // laps on it, through every checkpoint, with the surfaces applied, without falling out
 // of the world or getting stuck.
 import { existsSync } from "node:fs";

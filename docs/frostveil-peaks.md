@@ -1,4 +1,4 @@
-# Snowy Peaks (the world; was "Frostveil Peaks")
+# Snow Kingdom (the world; was "Snow Kingdom", and before that "Frostveil Peaks")
 
 A prehistoric winter world: snowbound mountains where an ancient civilization built
 temples, bridges and fortresses into the peaks. Its courses are **Frostveil Citadel**
