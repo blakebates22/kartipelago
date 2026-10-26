@@ -243,6 +243,17 @@ describe("riding a loop", () => {
     expect(drive(LOOP, wide, () => full, 0.5).entered).toBe(false);
   });
 
+  it("carries a kart spinning out as it reaches the loop round it, by where it's going", () => {
+    // (Blake: a rival hit just as it entered spun out and went straight through.)
+    const k = approach(LOOP, 4);
+    k.heading = LOOP.heading + 2.5;
+    k.spinTime = 1.2;
+    const r = drive(LOOP, k, () => NEUTRAL);
+    expect(r.entered).toBe(true);
+    expect(r.exited).toBe(true);
+    expect(r.minNy).toBeLessThan(-0.99);
+  });
+
   it("rides a wrong-way kart round backwards, from the exit to the entry", () => {
     const k = createKartState(
       LOOP.exit.x + LOOP.fwd.x * 6,

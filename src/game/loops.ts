@@ -608,6 +608,11 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
 
   function capture(i: number, k: KartState, before: { x: number; y: number; z: number }) {
     if (k.speed <= 0) return undefined;
+    // Lined up by where it's going, not where it's facing: a kart spinning out (hit as
+    // it reaches the loop, Blake) still travels into it, and is carried round.
+    const mx = k.x - before.x;
+    const mz = k.z - before.z;
+    const travel = Math.hypot(mx, mz) > 1e-4 ? Math.atan2(mx, mz) : k.heading;
     for (let li = 0; li < paths.length; li++) {
       const p = paths[li]!;
       for (const dir of [1, -1]) {
@@ -627,8 +632,9 @@ export function createLoopSystem(paths: LoopPath[], karts: number): LoopSystem {
         const lat = (ax - g.x) * gr.x + (az - g.z) * gr.z;
         if (Math.abs(lat) > p.width / 2 + CATCH_SIDE) continue;
         if (Math.abs(ay - g.y) > CATCH_HEIGHT) continue;
-        const rel = wrap(k.heading - (dir > 0 ? p.heading : p.exitHeading + Math.PI));
+        const rel = wrap(travel - (dir > 0 ? p.heading : p.exitHeading + Math.PI));
         if (Math.abs(rel) > CATCH_ANGLE) continue;
+        k.spinTime = 0; // (the loop straightens it out)
         const r = rides[i]!;
         r.loop = li;
         r.dir = dir;
