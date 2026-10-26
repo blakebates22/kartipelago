@@ -213,10 +213,11 @@ const STYLE: Record<KingdomId, IslandStyle> = {
 };
 /** Where each kingdom sits on the chart (fractions of the screen). */
 const SPOT: Record<KingdomId, [number, number]> = {
-  valley: [0.14, 0.7],
-  snow: [0.3, 0.36],
-  desert: [0.5, 0.64],
-  beach: [0.7, 0.74],
+  // (Their names sit under them: keep the lowest clear of the status note at the bottom.)
+  valley: [0.14, 0.66],
+  snow: [0.3, 0.34],
+  desert: [0.5, 0.6],
+  beach: [0.7, 0.66],
   dragon: [0.84, 0.36],
 };
 const nameOf = (id: KingdomId) => (id === "dragon" ? DRAGON.name : kingdomById(id)!.name);

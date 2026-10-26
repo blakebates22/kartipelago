@@ -1,5 +1,6 @@
 // The Tracks menu shows three lines of a course's description under its picture (see
-// src/screens/tracks.ts): every course in the menus must fit them on a 16:9 screen.
+// src/screens/tracks.ts): every course in the menus, and its ruin, must fit them on a 16:9
+// screen.
 import { describe, expect, it } from "vitest";
 import { trackById } from "../src/game/tracks";
 import { VISIBLE_WORLDS } from "../src/game/worlds";
@@ -12,10 +13,12 @@ describe("track descriptions", () => {
     const pw = W - (14 + Math.round(W * 0.4) + 14) - 14;
     const long: string[] = [];
     for (const w of VISIBLE_WORLDS)
-      for (const id of w.tracks) {
-        const t = trackById(id);
-        if (t && wrap(t.description.toUpperCase(), pw).length > 3) long.push(id);
-      }
+      for (const id of w.tracks)
+        // The course and its ruin (the ruin's card shows the same three lines).
+        for (const tid of [id, trackById(id)?.ruin]) {
+          const t = tid ? trackById(tid) : undefined;
+          if (t && wrap(t.description.toUpperCase(), pw).length > 3) long.push(t.id);
+        }
     expect(long).toEqual([]);
   });
 });

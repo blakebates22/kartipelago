@@ -59,7 +59,7 @@ export const TRACKS: TrackEntry[] = [
     id: "riverbend_palms_ruin",
     name: "Riverbend Palms (Ruined)",
     description:
-      "The valley after the dragons came: jump the burnt bridge, race the scorched meadow, the ford.",
+      "After Cinderjaw's raid: jump the burnt bridge, race across the scorched meadow, splash through the ford.",
     preview: "previews/riverbend_palms_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "riverbend_ruins",
@@ -96,7 +96,7 @@ export const TRACKS: TrackEntry[] = [
     id: "cascade_caverns_ruin",
     name: "Cascade Caverns (Ruined)",
     description:
-      "The canyon after the dragons came: climb the fallen viaduct, the temple bridge, the tunnel, the leap.",
+      "After Cinderjaw's raid: up the fallen viaduct, over the temple bridge, the tunnel and the leap.",
     preview: "previews/cascade_caverns_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "cascade_ruins",
@@ -145,7 +145,7 @@ export const TRACKS: TrackEntry[] = [
     id: "bonebog_pyramid_ruin",
     name: "Bonebog Pyramid (Ruined)",
     description:
-      "The swamp after the dragons came: ride the fallen great tree's trunk to the pyramid, then the hall's jump.",
+      "After Cinderjaw's raid: ride the fallen great tree's trunk to the pyramid, then jump the broken hall.",
     preview: "previews/bonebog_pyramid_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "bonebog_ruins",
@@ -156,7 +156,7 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak",
     name: "Ember Peak",
     description:
-      "Across a smouldering volcanic field: a jump over the lava river and a cave through the volcano.",
+      "A jungle overrun by lava: geysers, a jump over the lava river and a lava tube through the ridge.",
     preview: "previews/ember_peak.jpg",
     modes: ["race", "timeTrial"],
     theme: "volcanic_apocalypse",
@@ -170,7 +170,7 @@ export const TRACKS: TrackEntry[] = [
     id: "ember_peak_ruin",
     name: "Ember Peak (Ruined)",
     description:
-      "The volcano's flank has slid over the home straight: swing round it, over its rubble.",
+      "After Cinderjaw's raid: the volcano's flank has slid over the home straight. Swing round it, over its rubble.",
     preview: "previews/ember_peak_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "ember_ruins",
@@ -233,7 +233,7 @@ export const TRACKS: TrackEntry[] = [
     id: "coral_cove_ruin",
     name: "Coral Cove (Ruined)",
     description:
-      "The lighthouse has fallen across the road: over its broken tower, round the rubble, the boardwalk jump as ever.",
+      "After Tidewyrm's raid: over the lighthouse fallen across the road, then the boardwalk jump as ever.",
     preview: "previews/coral_cove_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "cove_ruins",
@@ -271,7 +271,7 @@ export const TRACKS: TrackEntry[] = [
     id: "shipwreck_bay_ruin",
     name: "Shipwreck Bay (Ruined)",
     description:
-      "The galleon's back is broken: over the pier, jump the break in her hold, up the fallen mast, round her strewn cargo.",
+      "After Tidewyrm's raid: the galleon's back is broken. Over the pier, jump the break in her hold, up the fallen mast.",
     preview: "previews/shipwreck_bay_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "wreck_ruins",
@@ -322,7 +322,7 @@ export const TRACKS: TrackEntry[] = [
     id: "volcano_isle_ruin",
     name: "Volcano Isle (Ruined)",
     description:
-      "The island after Tidewyrm's raid woke its volcano: a lava flow buried the road over the hot-spring flats, so the lap runs on its cooled crust beside live lava; volcanic bombs in the road.",
+      "Tidewyrm's raid woke the volcano: the road runs on the lava flow's cooled crust beside live lava. Mind the bombs.",
     preview: "previews/volcano_isle_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "isle_ruins",
@@ -419,7 +419,7 @@ export const TRACKS: TrackEntry[] = [
     id: "splash_lagoon_ruin",
     name: "Splash Lagoon (Ruined)",
     description:
-      "The water park after Tidewyrm's raid: the slide tower toppled down its climbing ramp, so the lap climbs the wreck to the flume; pool tiles and park junk in the road.",
+      "After Tidewyrm's raid: the slide tower toppled. Climb its wreck to the flume, past pool tiles and park junk.",
     preview: "previews/splash_lagoon_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "splash_ruins",
@@ -569,7 +569,7 @@ export const TRACKS: TrackEntry[] = [
     id: "frostveil_citadel_ruin",
     name: "Frostveil Citadel (Ruined)",
     description:
-      "The Bridge of Giants lies in the valley: up its fallen spans, off a broken arch, over the gorge.",
+      "After Rimefang's raid: the Bridge of Giants lies in the valley. Up its fallen spans, off a broken arch.",
     preview: "previews/frostveil_citadel_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "frost_ruins",
@@ -592,7 +592,7 @@ export const TRACKS: TrackEntry[] = [
     id: "snowy_summit_ruin",
     name: "Snowy Summit Pass (Ruined)",
     description:
-      "The great tree has fallen: across its stump, through its hollow trunk, off its broken top over the crevasse.",
+      "After Rimefang's raid: the great tree has fallen. Across its stump, through its hollow trunk, off its broken top.",
     preview: "previews/snowy_summit_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_ruins",
@@ -615,7 +615,7 @@ export const TRACKS: TrackEntry[] = [
     id: "hearthglow_hollow_ruin",
     name: "Hearthglow Hollow (Ruined)",
     description:
-      "The village burned: past the scorched tree, along the burnt riverside, down the alley the fallen houses opened.",
+      "After Rimefang's raid: the village burned. Down the burnt riverside and the alley the fallen houses opened.",
     preview: "previews/hearthglow_hollow_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "hearth_ruins",
@@ -638,7 +638,7 @@ export const TRACKS: TrackEntry[] = [
     id: "aurora_rift_ruin",
     name: "Aurora Rift (Ruined)",
     description:
-      "The glacier's roof has fallen: round the Monolith, over the broken bridge, round the broken Loop, back over the fallen ice.",
+      "After Rimefang's raid: the glacier's roof fell. Round the Monolith and the broken Loop, over the fallen ice.",
     preview: "previews/aurora_rift_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_ruins",
@@ -662,7 +662,7 @@ export const TRACKS: TrackEntry[] = [
     id: "canyon_dash_ruin",
     name: "Canyon Dash (Ruined)",
     description:
-      "The great bridge is broken: jump the gap, dive through the rockslide to the river, climb the wrecked tunnel home.",
+      "After Scorchwind's raid: jump the broken bridge, dive through the rockslide, climb the wrecked tunnel.",
     preview: "previews/canyon_dash_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "canyon_ruins",
@@ -685,7 +685,7 @@ export const TRACKS: TrackEntry[] = [
     id: "oasis_haven_ruin",
     name: "Oasis Haven (Ruined)",
     description:
-      "The watchtower has toppled: round the burnt camp by the dragon's scorch, over the fallen arch, up the tower and off its top.",
+      "After Scorchwind's raid: past the burnt camp, over the fallen arch, up the toppled tower and off its top.",
     preview: "previews/oasis_haven_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_ruins",
@@ -706,9 +706,9 @@ export const TRACKS: TrackEntry[] = [
   },
   {
     id: "dry_gulch_ruin",
-    name: "Dry Gulch (Ruined)",
+    name: "Dry Gulch Ghost Town (Ruined)",
     description:
-      "The ghost town after Scorchwind's raid: the mine destroyed, the town in flames, and a landslide through the ridge opens a new road, with a jump over the crack into the fallen cavern.",
+      "After Scorchwind's raid: the mine gone, the town in flames, a landslide's new road and a jump over the crack.",
     preview: "previews/dry_gulch_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "gulch_ruins",
@@ -731,7 +731,7 @@ export const TRACKS: TrackEntry[] = [
     id: "impact_depths_ruin",
     name: "Impact Depths (Ruined)",
     description:
-      "The crater after Scorchwind's raid: the cavern roof caved in, the terrace roads broken into jump after jump on the way down, rocks still falling (watch for their shadows), lava under the holes.",
+      "After Scorchwind's raid: the roof caved in. Jump the broken terraces down; watch for falling rocks' shadows.",
     preview: "previews/impact_depths_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_ruins",
@@ -756,7 +756,7 @@ export const TRACKS: TrackEntry[] = [
     id: "dragon_isles_ruin",
     name: "Dragonspire Keep (Ruined)",
     description:
-      "Remade by the sacrifice: past the gate, south over the split, across the heaved lake bed, round the Beacon crag, home.",
+      "Remade by the Chosen One's sacrifice: over the split, across the heaved lake bed, round the Beacon crag, home.",
     preview: "previews/dragon_isles_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "keep_ruins",
@@ -781,7 +781,7 @@ export const TRACKS: TrackEntry[] = [
     id: "dragon_canyon_ruin",
     name: "Dragon Canyon (Ruined)",
     description:
-      "The canyon torn apart by the Chosen One's sacrifice: the Cliffside Hairpins, a jump over the broken Canyon Bridge, then down the slid mesa flank, across the river on fused rock, up to the Dragon Gate.",
+      "Torn apart by the Chosen One's sacrifice: the hairpins, the broken Canyon Bridge, down the slid mesa.",
     preview: "previews/dragon_canyon_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "emerald_ruins",
@@ -807,7 +807,7 @@ export const TRACKS: TrackEntry[] = [
     id: "snow_dragon_pass_ruin",
     name: "Emberdeep Hold (Ruined)",
     description:
-      "The mountain split in two by the Chosen One's sacrifice: out of the Outer Gate, straight through the mountain's heart between its halves, along the heaved-up ridge, round to where the bastion stood.",
+      "Split by the Chosen One's sacrifice: straight through the mountain's heart, along the heaved ridge, to the bastion.",
     preview: "previews/snow_dragon_pass_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "ember_hold_ruins",
@@ -832,7 +832,7 @@ export const TRACKS: TrackEntry[] = [
     id: "celestial_dragon_festival_ruin",
     name: "Moonstone Kingdom (Ruined)",
     description:
-      "The moonstone city cracked apart by the Chosen One's sacrifice: a new road across the split stones, a jump over the crack, then the kingdom's own last stretch home.",
+      "Cracked apart by the Chosen One's sacrifice: across the split stones, over the crack, the last stretch home.",
     preview: "previews/celestial_dragon_festival_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "moon_ruins",

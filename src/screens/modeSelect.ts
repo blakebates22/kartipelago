@@ -1,12 +1,9 @@
 /**
  * MODE_SELECT: two wooden signboards, TRACKS and ADVENTURE, on a stone terrace looking
  * out over the island, the sea and the Dragon Kingdom (art in ui/modeArt.ts).
- * ADVENTURE_COMING_SOON: a treasure-map teaser with a Back button. Adventure itself
- * isn't built yet; nothing here pretends it is.
  */
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
-import { treasureMap } from "../ui/backdrops";
 import {
   PLINTH,
   TRIKE_FEET,
@@ -104,49 +101,6 @@ export function modeSelect(game: Game): Screen {
         ["ENTER", "SELECT"],
         ["ESC", "BACK"],
       ]);
-    },
-  };
-}
-
-export function comingSoon(game: Game): Screen {
-  let t = 0;
-  let clicked = false;
-  const back = () => {
-    game.sounds.back();
-    game.screens.go(modeSelect(game));
-  };
-  return {
-    id: "ADVENTURE_COMING_SOON",
-    seeThrough: false,
-    frame(dt, actions) {
-      t += dt;
-      if (clicked || actions.some((a) => a === "back" || a === "confirm")) back();
-    },
-    draw(ui) {
-      ui.rect(0, 0, ui.W, ui.H, "#2f6f9a");
-      const w = 300;
-      const h = 196;
-      const x = Math.round(ui.W / 2 - w / 2);
-      const y = 18;
-      ui.panel(x, y, w, h, "parchment", "ink");
-      treasureMap(ui.g, x + 8, y + 26, w - 16, 118, t);
-      ui.text("ADVENTURE", ui.W / 2, y + 8, {
-        scale: 2,
-        color: PAL.coral,
-        outline: PAL.ink,
-        align: "center",
-      });
-      ui.text("COMING SOON!", ui.W / 2, y + 148, { scale: 2, color: PAL.ink, align: "center" });
-      ui.text("AN ISLAND TO EXPLORE, RACES TO WIN AND SECRETS", ui.W / 2, y + 168, {
-        color: PAL.inkSoft,
-        align: "center",
-      });
-      ui.text("TO FIND. FOR NOW, HEAD TO TRACKS MODE!", ui.W / 2, y + 177, {
-        color: PAL.inkSoft,
-        align: "center",
-      });
-      const r = ui.button(ui.W / 2 - 40, ui.H - 26, 80, 18, "BACK", { focused: true });
-      if (r.clicked) clicked = true;
     },
   };
 }

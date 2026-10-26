@@ -1824,7 +1824,7 @@ function ghost(): Song {
   ];
   return {
     id: "ghost",
-    title: "Dry Gulch",
+    title: "Dry Gulch Ghost Town",
     role: "Desert World",
     bpm: 132,
     beats: 128,
@@ -2489,7 +2489,28 @@ export const SONGS: Record<string, Song> = {
   ember_classic: emberClassic(),
 };
 
-/** The music player's list: composed pieces, then planned ones not written yet. */
+/** The music player's list order: the menus' pieces, then each world's in the Tracks menu's
+ * order (src/game/worlds.ts), then the rest. Pieces keep their order within a group. */
+const ROLE_ORDER = [
+  "Title & menus",
+  "Racer select",
+  "Mode & track select",
+  "Racing",
+  "Results",
+  "Prehistoric World",
+  "Snowy Peaks",
+  "Desert World",
+  "Tropic Isles",
+  "Dragon Kingdom",
+  "Boss races",
+  "Adventure mode",
+];
+const rank = (role: string) => {
+  const i = ROLE_ORDER.indexOf(role);
+  return i < 0 ? ROLE_ORDER.length : i;
+};
+
+/** The music player's list: composed pieces and planned ones not written yet, by group. */
 export const CATALOG: { id: string; title: string; role: string; available: boolean }[] = [
   ...Object.values(SONGS).map((s) => ({ id: s.id, title: s.title, role: s.role, available: true })),
   // Planned: the Tropic Isles' own pieces (their courses use the title theme for now), the
@@ -2500,4 +2521,4 @@ export const CATALOG: { id: string; title: string; role: string; available: bool
   { id: "splash_lagoon", title: "Splash Lagoon", role: "Tropic Isles", available: false },
   { id: "boss", title: "Dragon Race", role: "Boss races", available: false },
   { id: "adventure", title: "Adventure Map", role: "Adventure mode", available: false },
-];
+].sort((x, y) => rank(x.role) - rank(y.role));
