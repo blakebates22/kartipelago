@@ -9,12 +9,17 @@
 
 import math
 
-from valley_region import box, cone, polar
+
+def _shapes():
+    from valley_region import box, cone
+
+    return box, cone
 
 
 def pen(c, puzzle, name, px, py, facing, half, gap, mat, floor, roof=None, height=6.0):
     """A pen at (px, py) whose gateway looks along `facing` (radians, Blender), `gap` metres
     half wide; walls of `mat` standing on `floor`. Returns the gate's middle (Blender)."""
+    box, cone = _shapes()
     fx, fy = math.cos(facing), math.sin(facing)
     sx, sy = -fy, fx
     t = 0.8
@@ -40,6 +45,7 @@ def pen(c, puzzle, name, px, py, facing, half, gap, mat, floor, roof=None, heigh
 def switches(c, puzzle, spots, ground, ring_mat=None, lanterns=None):
     """The switches' entities (Blender (x, y) spots), and a ring of three standing stones
     round each one when `ring_mat` is given."""
+    _, cone = _shapes()
     for k, (x, y) in enumerate(spots):
         gx, _, gz = c.game(x, y, 0.0)
         extra = {"lanterns": lanterns[k]} if lanterns else {}
@@ -51,4 +57,4 @@ def switches(c, puzzle, spots, ground, ring_mat=None, lanterns=None):
                      ground(x, y) - 1.0, 4.5, ring_mat, segs=5)
 
 
-__all__ = ["pen", "switches", "polar"]
+__all__ = ["pen", "switches"]

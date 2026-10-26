@@ -99,6 +99,10 @@ describe("no holes in the world", () => {
     "snow_region",
     "desert_region",
     "beach_region",
+    "valley_region_ruin",
+    "snow_region_ruin",
+    "desert_region_ruin",
+    "beach_region_ruin",
   ])
     it(
       id,

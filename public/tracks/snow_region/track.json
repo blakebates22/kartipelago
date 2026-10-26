@@ -64,6 +64,17 @@
       "lanterns": 3
     },
     {
+      "id": "puzzle_gate_02",
+      "type": "puzzle_gate",
+      "puzzle": "return",
+      "x": 144.5,
+      "z": -250.28,
+      "heading": -0.5235987755982994,
+      "width": 9.0,
+      "prize_x": 150.0,
+      "prize_z": -259.81
+    },
+    {
       "id": "snowfall_01",
       "type": "snowfall",
       "rate": 60,

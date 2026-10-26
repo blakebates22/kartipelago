@@ -29,8 +29,13 @@ import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import puzzle_kit  # noqa: E402
+import region_ruin as ruin  # noqa: E402
 
-TRACK_ID = "desert_region"
+# (--ruin: Desert World after Scorchwind's attack. Only the ruin has his lair, and his
+# drift burying the Dust Road; the trading post is wrecked and sand drifts across the
+# basin.)
+RUIN = ruin.ON
+TRACK_ID = ruin.track_id("desert_region")
 FLOOR_Z = 2.0
 RING_R = 222.0
 CLIFF_R = 335.0
@@ -45,6 +50,9 @@ OASIS = (40.0, 290.0)
 GULCH = (-40.0, CLIFF_R - 30.0)
 LAIR = (-135.0, CLIFF_R + 6.0)  # Scorchwind's lair: the boss gateway (south-west)
 DUST_ROAD = (-90.0, CLIFF_R + 6.0)  # the way on, south
+# Stego's old well (Act V's return task): a walled yard in the north-west, its way in
+# buried under a drift the Desert Tool blows away.
+RETURN = (145.0, 300.0)
 
 
 def ring_r(a):
@@ -97,7 +105,7 @@ def line(a, b, every=8.0, z=road_z):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Desert World (greybox)", "canyon_dash")
+    c = kit.Course(TRACK_ID, "Desert World (greybox, ruined)" if RUIN else "Desert World (greybox)", "canyon_dash")
     ring = []
     for k in range(48):
         a = k * math.tau / 48
@@ -121,8 +129,10 @@ def main():
     c.side_road("Post Road", line((px + pr - 2, py), ring_end(180.0)), "dash_road", "road", **trail)
     c.side_road("Crater Road", line(ring_end(180.0), polar(180.0, CRATER_R + 12.0)), "dash_road", "road", **trail)
     # Out from the ring to the landmarks.
-    for name, (a, r) in (("Canyon Road", CANYON), ("Oasis Road", OASIS), ("Gulch Street", GULCH), ("Lair Road", LAIR),
-                         ("Dust Road", DUST_ROAD)):
+    outs = [("Canyon Road", CANYON), ("Oasis Road", OASIS), ("Gulch Street", GULCH)]
+    if RUIN:
+        outs += [("Lair Road", LAIR), ("Dust Road", DUST_ROAD)]
+    for name, (a, r) in outs:
         c.side_road(name, line(ring_end(a), polar(a, r - (28.0 if name == "Oasis Road" else 12.0))), "dash_road", "road", **trail)
 
     X0, X1, Y0, Y1 = -480, 470, -470, 470
@@ -136,15 +146,28 @@ def main():
         if abs(math.sin(a)) < 0.3:
             continue  # (clear of the road through the square)
         hx, hy = px + (pr + 6) * math.cos(a), py + (pr + 6) * math.sin(a)
+        if RUIN:
+            # Blown down: the walls broken off low, the awnings gone, sand piled against them.
+            box(c, "Stall %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 1.6 + 0.8 * (k % 2), ("adobe", "wall"), rot=a)
+            ruin.rubble(c, "Stall Rubble %d" % k, hx + 3.0 * math.cos(a), hy + 3.0 * math.sin(a), natural, ("adobe", "wall"),
+                        n=5, spread=3.0, size=0.9, seed=k)
+            continue
         box(c, "Stall %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 4.5, ("adobe", "wall"), rot=a)
         box(c, "Stall Awning %d" % k, hx, hy, 5.2, 4.2, FLOOR_Z + 4.5, FLOOR_Z + 5.0, ("tin_roof", "wall"), rot=a,
             role="visual")
     tx, ty = px - 10.0, py + 16.0
-    for sx in (-1, 1):
+    if RUIN:
+        # The water tower toppled: its tank on its side in the sand, legs snapped.
+        box(c, "Water Tower Tank", tx - 6.0, ty + 3.0, 3.0, 2.5, FLOOR_Z - 0.5, FLOOR_Z + 4.5, ("weathered_timber", "wall"),
+            rot=0.5)
+        for sx in (-1, 1):
+            ruin.stump(c, "Water Tower Leg %d" % sx, tx + sx * 2.2, ty - 2.2, FLOOR_Z, ("weathered_timber", "wall"), h=2.0, r=0.3)
+    for sx in ((-1, 1) if not RUIN else ()):
         for sy in (-1, 1):
             box(c, "Water Tower Leg %d%d" % (sx, sy), tx + sx * 2.2, ty + sy * 2.2, 0.3, 0.3, FLOOR_Z - 1.0, FLOOR_Z + 9.0,
                 ("weathered_timber", "wall"))
-    box(c, "Water Tower Tank", tx, ty, 3.0, 3.0, FLOOR_Z + 9.0, FLOOR_Z + 14.0, ("weathered_timber", "wall"), role="visual")
+    if not RUIN:
+        box(c, "Water Tower Tank", tx, ty, 3.0, 3.0, FLOOR_Z + 9.0, FLOOR_Z + 14.0, ("weathered_timber", "wall"), role="visual")
     gx, gy, gz = c.game(px, py, FLOOR_Z + 0.3)
     c.entity("campfire", x=gx, y=gy, z=gz)
 
@@ -194,6 +217,30 @@ def main():
     gx, gy, gz = c.game(0.0, 0.0, FLOOR_Z - 9.0)
     c.entity("steam", x=gx, y=gy, z=gz)
 
+    if RUIN:
+        ruined(c)
+    crater_stones(c)
+    puzzle_kit.pen(c, "return", "Well Yard", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
+                   ("adobe", "wall"), natural(*polar(*RETURN)), height=5.0)
+
+    # The pass's far end, back up towards the snow: it bends out of sight.
+    box(c, "Pass Bend", PASS_X0 - 4, 0.0, 6.0, PASS_HW + 24.0, FLOOR_Z - 2.0, RIM_Z, ("frost_cliff", "wall"))
+    c.entity("dust", color="#d89a6a", rate=1.0)
+    c.entity("dustwind", rate=22 if RUIN else 10, radius=60, color="#e0a878")
+    gx, gy, gz = c.game(-150.0, 120.0, 40.0)
+    c.entity("birds", x=gx, y=gy, z=gz, radius=70.0, count=3, speed=0.16, seed=1)
+
+    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    c.start_line()
+    gates = c.checkpoints(height=10.0)
+    kit.paint.shade_roads(c.pieces, 0.3)
+    c.finish(extra={"race": {"laps": 1}})
+    print("ring", round(c.length, 1), "gates", len(gates))
+
+
+def ruined(c):
+    """After Scorchwind's attack: his lair, his drift over the Dust Road, and drifts of sand
+    blown across the basin."""
     # Scorchwind's lair: a rock arch in the south-west cliff, a dust devil turning before it.
     x, y = polar(*LAIR)
     rot = math.radians(LAIR[0]) + math.pi / 2
@@ -206,32 +253,26 @@ def main():
         z = FLOOR_Z + k * 6.0
         cone(c, "Dust Devil %d" % k, x - 20 * math.cos(math.radians(LAIR[0])), y - 20 * math.sin(math.radians(LAIR[0])),
              2.0 + k * 1.8, z, 8.0, ("pale_sand", "wall"), segs=8, role="visual")
-    # The Dust Road south: buried under a sand drift until Scorchwind falls.
+    # The Dust Road south (Scorchwind's drift across it is the game's: regions.ts blocker,
+    # which breaks open when he falls); where it leaves the basin, a dark cut in the cliff.
     x, y = polar(*DUST_ROAD)
     rot = math.radians(DUST_ROAD[0]) + math.pi / 2
-    c.assign(c.rock_mass("Sand Drift", x, y, 14.0, 6.0, FLOOR_Z + 12.0, z0=FLOOR_Z - 1.0, n=12, seed=9, angle=rot,
-                         bands=[(1.0, 0.0), (0.8, 0.5), (0.5, 1.0)], base=FLOOR_Z), c.lib("pale_sand", "wall"))
+    box(c, "Dust Road Cut", x, y, 7.0, 1.5, FLOOR_Z - 1.0, FLOOR_Z + 16.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+    # Drifts blown across the fields (off the roads).
+    avoid = (0.0, 180.0, CANYON[0], OASIS[0], GULCH[0], LAIR[0], DUST_ROAD[0], RETURN[0], 45.0, 135.0, -45.0, -135.0)
+    for k, (x, y) in enumerate(ruin.ring_spots(12, 95.0, 190.0, 8, avoid) + ruin.ring_spots(8, 255.0, 300.0, 9, avoid)):
+        c.assign(c.rock_mass("Drift %d" % k, x, y, 7.0 + k % 4, 4.0 + k % 3, natural(x, y) + 2.5 + k % 3, z0=natural(x, y) - 1.0,
+                             n=10, seed=20 + k, angle=k * 0.7, bands=[(1.0, 0.0), (0.7, 0.6), (0.4, 1.0)],
+                             base=natural(x, y) - 1.0), c.lib("pale_sand", "wall"))
 
+
+def crater_stones(c):
     # The Crater Stones (src/overworld/puzzles.ts): a sandstone vault on the crater's floor,
     # its gate looking west up the road in, and four switch stones round the rim.
     puzzle_kit.pen(c, "crater_stones", "Vault", 0.0, 0.0, math.pi, 8.0, 4.5, ("sandstone_block", "wall"), natural(0.0, 0.0),
                    height=5.0)
     puzzle_kit.switches(c, "crater_stones", [polar(a, 74.0) for a in (135.0, 45.0, -45.0, -135.0)], natural,
                         ring_mat=("crater_rock", "wall"))
-
-    # The pass's far end, back up towards the snow: it bends out of sight.
-    box(c, "Pass Bend", PASS_X0 - 4, 0.0, 6.0, PASS_HW + 24.0, FLOOR_Z - 2.0, RIM_Z, ("frost_cliff", "wall"))
-    c.entity("dust", color="#d89a6a", rate=1.0)
-    c.entity("dustwind", rate=10, radius=60, color="#e0a878")
-    gx, gy, gz = c.game(-150.0, 120.0, 40.0)
-    c.entity("birds", x=gx, y=gy, z=gz, radius=70.0, count=3, speed=0.16, seed=1)
-
-    # (Raced too: the champion's challenge, once round the ring, from this line.)
-    c.start_line()
-    gates = c.checkpoints(height=10.0)
-    kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
 
 
 if __name__ == "__main__":

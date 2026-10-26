@@ -29,8 +29,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import bmesh, lerp, smooth  # noqa: E402
+import region_ruin as ruin  # noqa: E402
+import puzzle_kit  # noqa: E402
 
-TRACK_ID = "valley_region"
+# (--ruin: the valley after Cinderjaw's attack. Only the ruin has the Burnt Gorge his fire
+# split through the north cliff, the burnt trench and his Scar in the south.)
+RUIN = ruin.ON
+TRACK_ID = ruin.track_id("valley_region")
 WATER_Z = -0.8
 RING_R = 225.0
 CAMP_R = 30.0
@@ -58,6 +63,9 @@ PEN = (136.0, 300.0)  # angle (degrees), radius: the pen's middle
 PEN_HALF = 10.0
 PEN_GAP = 4.5  # half the gateway's width
 STONES = [(112.0, 268.0), (137.0, 160.0), (162.0, 270.0)]
+# The Elder's lookout (Act V's return task, src/overworld/regions.ts): a walled hollow in
+# the south-east meadow, its way in blocked by a rockfall the Valley Tool clears.
+RETURN = (-65.0, 300.0)
 
 
 def polar(a_deg, r):
@@ -99,7 +107,7 @@ def natural(x, y):
         h = lerp(h, WATER_Z - 0.9, smooth((br + 10 - db) / 10))
     # The Burnt Gorge: the split in the north cliff (Cinderjaw's fire), its floor rising
     # gently to the far end, where the way on to the Snow Kingdom begins.
-    g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - 250.0) / 40.0)
+    g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - 250.0) / 40.0) if RUIN else 0.0
     if g > 0:
         h = lerp(h, FLOOR_Z + 0.04 * max(0.0, y - 330.0), g)
     return h
@@ -113,14 +121,14 @@ def gorge_x(y):
 def classify(c, n, info):
     if n.z < 0.62:
         # The gorge's walls are scorched black.
-        if c.y > 260 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
+        if RUIN and c.y > 260 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
             return ("obsidian_cliff", "wall")
         return ("valley_cliff", "wall")
     bx, by, br = BOG
     if math.hypot(c.x - bx, c.y - by) < br + 2 and c.z < WATER_Z + 0.4:
         return ("bog_mud", "mud")
     # The burnt trench up to Cinderjaw's Scar.
-    if c.y < -200 and abs(c.x) < 20 + 6 * math.sin(c.y / 13.0):
+    if RUIN and c.y < -200 and abs(c.x) < 20 + 6 * math.sin(c.y / 13.0):
         return ("lava_crust", "dirt")
     if c.z < WATER_Z + 0.3:
         return ("valley_sand", "water")  # (the river's wadeable)
@@ -167,7 +175,7 @@ def line(a, b, every=8.0, z=None):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Dinosaur Valley (greybox)", "mirror_lake")
+    c = kit.Course(TRACK_ID, "Dinosaur Valley (greybox, ruined)" if RUIN else "Dinosaur Valley (greybox)", "mirror_lake")
     # The ring road, counter-clockwise from due east.
     ring = []
     for k in range(48):
@@ -219,14 +227,16 @@ def main():
         a0 = math.radians(a)
         c.side_road(name, line(spoke_end(a), polar(a, r - 10.0)), "valley_trail", "road", width=10.0, shoulder=1.2,
                     shoulder_mat=grass)
-    # Up the burnt trench to Cinderjaw's Scar (south).
-    c.side_road("Scar Road", line(spoke_end(SCAR[0]), polar(SCAR[0], SCAR[1] - 18.0)), "valley_trail", "road", width=10.0,
-                shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
-    # The Burnt Gorge's road, on from the north spoke's end at the ring.
-    gx0, gy0 = spoke_end(90.0)
-    gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.04 * max(0.0, y - 330.0)) for y in range(int(gy0) + 4, int(GORGE_END) + 1, 8)]
-    c.side_road("Burnt Gorge Road", [(gx0, gy0, road_z(gx0, gy0))] + gorge, "valley_trail", "road", width=10.0, shoulder=1.2,
-                shoulder_mat=grass)
+    if RUIN:
+        # Up the burnt trench to Cinderjaw's Scar (south).
+        c.side_road("Scar Road", line(spoke_end(SCAR[0]), polar(SCAR[0], SCAR[1] - 18.0)), "valley_trail", "road",
+                    width=10.0, shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
+        # The Burnt Gorge's road, on from the north spoke's end at the ring.
+        gx0, gy0 = spoke_end(90.0)
+        gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.04 * max(0.0, y - 330.0))
+                 for y in range(int(gy0) + 4, int(GORGE_END) + 1, 8)]
+        c.side_road("Burnt Gorge Road", [(gx0, gy0, road_z(gx0, gy0))] + gorge, "valley_trail", "road", width=10.0,
+                    shoulder=1.2, shoulder_mat=grass)
     bx, by, br = BOG
     shore = (bx + (br + 4) * math.cos(math.radians(45)), by + (br + 4) * math.sin(math.radians(45)))
     c.side_road("Bog Road", line(spoke_end(225.0), shore), "valley_trail", "road", width=10.0, shoulder=1.2,
@@ -251,6 +261,11 @@ def main():
     for k in range(4):
         a = k * math.tau / 4 + math.pi / 4  # (on the diagonals, clear of the four spokes)
         hx, hy = (CAMP_R - 8) * math.cos(a), (CAMP_R - 8) * math.sin(a)
+        if RUIN:
+            # Burnt out: blackened walls, the roofs gone, still smoking.
+            box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, FLOOR_Z - 1.0, FLOOR_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
+            ruin.smoke(c, hx, hy, FLOOR_Z + 2.5)
+            continue
         box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("weathered_timber", "wall"), rot=a)
         cone(c, "Hut Roof %d" % k, hx, hy, 5.2, FLOOR_Z + 4.0, 3.4, ("thatch", "wall"), segs=6, role="visual")
     c.entity("campfire", **dict(zip(("x", "y", "z"), c.game(0.0, 0.0, natural(0, 0) + 0.2))))
@@ -284,9 +299,29 @@ def main():
     for k, (dx, dy) in enumerate(((14, 18), (-16, 22), (18, -20), (-12, -24))):
         fx, fy = FORD
         g = natural(fx + dx, fy + dy)
+        if RUIN:
+            ruin.stump(c, "Ford Palm %d" % k, fx + dx, fy + dy, g, h=3.0 + k, r=0.5)
+            continue
         box(c, "Ford Palm %d" % k, fx + dx, fy + dy, 0.5, 0.5, g - 1.0, g + 9.0, ("weathered_timber", "wall"))
         cone(c, "Ford Palm Crown %d" % k, fx + dx, fy + dy, 4.0, g + 8.0, 2.0, ("valley_grass", "wall"), segs=5, role="visual")
 
+    if RUIN:
+        ruined(c)
+    # The Three Stones' pen and switches, and the return task's hollow (in both).
+    three_stones(c)
+    puzzle_kit.pen(c, "return", "Lookout", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
+                   ("valley_cliff", "wall"), natural(*polar(*RETURN)), height=6.0)
+    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    c.start_line()
+    gates = c.checkpoints(height=10.0)
+    kit.paint.shade_roads(c.pieces, 0.3)
+    c.finish(extra={"race": {"laps": 1}})
+    print("ring", round(c.length, 1), "gates", len(gates))
+
+
+def ruined(c):
+    """After Cinderjaw's attack: his Scar and its trench, the Burnt Gorge, scorched
+    ground, smoke and wreckage round the valley."""
     # Cinderjaw's Scar: a black crater torn in the cliff's foot, lava in it, still burning.
     sx, sy = polar(*SCAR)
     for k in range(9):
@@ -311,7 +346,22 @@ def main():
         x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
         gx, gy, gz = c.game(x, y, FLOOR_Z + 0.04 * max(0.0, y - 330.0) + 0.2)
         c.entity("campfire", x=gx, y=gy, z=gz)
+    # Scorched ground and smoke round the valley floor (off the roads), rubble heaped at
+    # the cave and tunnel mouths.
+    avoid = (0.0, 90.0, 180.0, -90.0, CAVE[0], TUNNEL[0], SCAR[0], 225.0, PEN[0], RETURN[0],
+             *(a for a, _ in STONES))
+    burns = ruin.ring_spots(14, 60.0, 195.0, 3, avoid) + ruin.ring_spots(10, 258.0, 312.0, 4, avoid)
+    burns = [(x, y) for x, y in burns if river_d(x, y) > RIVER_HW + 14]
+    ruin.scorch(c, "Scorch", burns, natural)
+    for k, (x, y) in enumerate(burns[::3]):
+        ruin.smoke(c, x, y, natural(x, y) + 0.2)
+    for name, (a, r) in (("Cave", CAVE), ("Tunnel", TUNNEL)):
+        for side in (-1, 1):
+            x, y = polar(a + side * 5.5, r - 14.0)
+            ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, natural, ("valley_cliff", "wall"), seed=int(a) + side)
 
+
+def three_stones(c):
     # The Three Stones: the pen (its gate is the game's, src/overworld/puzzles.ts, which
     # sinks it once all three switches are pressed in time) and a ring of standing stones
     # round each switch.
@@ -344,13 +394,6 @@ def main():
             b = j * math.tau / 3 + k
             cone(c, "Switch %d Stone %d" % (k, j), x + 7.0 * math.cos(b), y + 7.0 * math.sin(b), 1.1, natural(x, y) - 1.0,
                  4.5, stone, segs=5)
-
-    # (Raced too: the champion's challenge, once round the ring, from this line.)
-    c.start_line()
-    gates = c.checkpoints(height=10.0)
-    kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
 
 
 if __name__ == "__main__":

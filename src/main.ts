@@ -205,10 +205,13 @@ function shotScreen(id: string): Screen {
 if (PARAMS.get("shot")) screens.go(shotScreen(PARAMS.get("shot")!));
 // ?adventure (dev server only): straight to the Adventure world map.
 else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureHub(game));
-// ?overworld (dev server only): free roam in the overworld's test region.
-else if (import.meta.env.DEV && PARAMS.has("overworld"))
-  screens.go(overworldLoading(game, PARAMS.get("overworld") || "dinosaur_valley"));
-else if (fromUrl) {
+// ?overworld[=region][&ruined] (dev server only): free roam in an overworld region (as it
+// is after its dragon's attack, with &ruined).
+else if (import.meta.env.DEV && PARAMS.has("overworld")) {
+  const region = PARAMS.get("overworld") || "dinosaur_valley";
+  game.overworld = { region, ruined: PARAMS.has("ruined") };
+  screens.go(overworldLoading(game, region));
+} else if (fromUrl) {
   // Straight into a race: the frontend is one Escape (pause) away.
   game.selection.trackId = fromUrl.entry.id;
   game.selection.mode = fromUrl.mode;

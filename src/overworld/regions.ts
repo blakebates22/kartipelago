@@ -24,7 +24,8 @@ export interface Gateway {
   radius: number;
   /** Which way the arch faces: you come back out of it this way after a race. */
   heading: number;
-  /** The kingdom's dragon's lair (its boss race), not one of its four courses. */
+  /** The kingdom's dragon's lair (its boss race), not one of its four courses: only in
+   * the ruined region (it appears with the attack). */
   boss?: boolean;
   /** The name on its board, when it isn't the course's. */
   label?: string;
@@ -42,10 +43,16 @@ export interface Passage {
   radius: number;
   /** Which way you face coming out of it into this region. */
   heading: number;
+  /** It's only there in the ruined region (what the dragon's attack broke open). */
+  ruinOnly?: boolean;
   /** Adventure: it opens once this kingdom's dragon has fallen (dev free roam: always). */
   opensAfter?: KingdomId;
   /** What's in the way until then. */
   locked?: string;
+  /** What stands across the way on until then, on the passage itself (shown, solid, and
+   * the passage won't open; it breaks open the first time you come back after the dragon
+   * falls). */
+  blocker?: { kind: ObstacleKind | "fire"; width: number };
 }
 
 export interface Region {
@@ -53,6 +60,10 @@ export interface Region {
   name: string;
   /** The track package whose land the region drives on. */
   packageId: string;
+  /** The region after its dragon's attack (the overworld doc's two states, like the
+   * courses): the same land wrecked, with the dragon's lair and the way on it broke
+   * open. Built by the same script (`--ruin`). */
+  ruinPackageId?: string;
   /** Its music (game/tracks.ts music ids). */
   music: string;
   /** The kingdom's world, for the colours (game/worlds.ts). */
@@ -67,7 +78,30 @@ export interface Region {
   challenge?: { x: number; z: number; heading: number };
   /** Its switches and puzzles (src/overworld/puzzles.ts). */
   puzzles?: Puzzle[];
+  /** Act V: where the kingdom's return task happens, in a walled yard whose way in is
+   * blocked by an obstacle the kingdom's own tool clears (the overworld doc's tool
+   * gates: each tool opens one kind of obstacle). */
+  returnTask?: ReturnSpot;
 }
+
+export type ObstacleKind = "rockfall" | "ice" | "drift" | "water";
+
+export interface ReturnSpot {
+  /** What's in the way (the kingdom's tool clears it). */
+  obstacle: ObstacleKind;
+  /** The yard's way in (the build's puzzle_gate "return"). */
+  gate: { x: number; z: number; heading: number; width: number };
+  /** Where the task waits, inside. */
+  spot: { x: number; z: number };
+}
+
+/** What each obstacle is, on screen. */
+export const OBSTACLE_TEXT: Record<ObstacleKind, string> = {
+  rockfall: "A ROCKFALL BLOCKS THE WAY IN",
+  ice: "THE WAY IN IS FROZEN SHUT",
+  drift: "A SAND DRIFT BURIES THE WAY IN",
+  water: "A DEEP CHANNEL CUTS OFF THE WAY IN",
+};
 
 export const REGIONS: Region[] = [
   {
@@ -76,6 +110,13 @@ export const REGIONS: Region[] = [
     id: "dinosaur_valley",
     name: "Dinosaur Valley",
     packageId: "valley_region",
+    ruinPackageId: "valley_region_ruin",
+    // Act V's return task: The Elder's lookout, a walled hollow in the south-east meadow: a rockfall blocks its way in.
+    returnTask: {
+      obstacle: "rockfall",
+      gate: { x: 122.14, z: 261.92, heading: -2.7053, width: 9 },
+      spot: { x: 126.79, z: 271.89 },
+    },
     music: "riverbend",
     worldId: "prehistoric",
     kingdom: "valley",
@@ -142,6 +183,8 @@ export const REGIONS: Region[] = [
         z: -440,
         radius: 8,
         heading: 0,
+        ruinOnly: true,
+        blocker: { kind: "fire", width: 30 },
         opensAfter: "valley",
         locked: "CINDERJAW'S FIRE SPLIT THE CLIFF, BUT THE GORGE STILL BURNS: BEAT HIM FIRST",
       },
@@ -175,6 +218,13 @@ export const REGIONS: Region[] = [
     id: "snow_kingdom",
     name: "Snow Kingdom",
     packageId: "snow_region",
+    ruinPackageId: "snow_region_ruin",
+    // Act V's return task: Brachio's hot spring, a walled yard in the north-east: its way in is frozen shut.
+    returnTask: {
+      obstacle: "ice",
+      gate: { x: 144.5, z: -250.28, heading: -0.5236, width: 9 },
+      spot: { x: 150.0, z: -259.81 },
+    },
     music: "hearthglow",
     worldId: "frostveil",
     kingdom: "snow",
@@ -238,6 +288,8 @@ export const REGIONS: Region[] = [
         z: -153.5,
         radius: 8,
         heading: Math.atan2(-0.883, 0.469),
+        ruinOnly: true,
+        blocker: { kind: "ice", width: 13 },
         opensAfter: "snow",
         locked: "RIMEFANG'S ICE WALLS THE PASS SHUT: BEAT HIM FIRST",
       },
@@ -273,6 +325,13 @@ export const REGIONS: Region[] = [
     id: "desert_world",
     name: "Desert World",
     packageId: "desert_region",
+    ruinPackageId: "desert_region_ruin",
+    // Act V's return task: Stego's old well, a walled yard in the north-west: a drift buries its way in.
+    returnTask: {
+      obstacle: "drift",
+      gate: { x: -236.73, z: -165.76, heading: 0.9599, width: 9 },
+      spot: { x: -245.75, z: -172.07 },
+    },
     music: "canyon",
     worldId: "desert",
     kingdom: "desert",
@@ -343,6 +402,8 @@ export const REGIONS: Region[] = [
         z: 327,
         radius: 8,
         heading: Math.PI,
+        ruinOnly: true,
+        blocker: { kind: "drift", width: 13 },
         opensAfter: "desert",
         locked: "SCORCHWIND'S DRIFTS BURY THE DUST ROAD: BEAT HIM FIRST",
       },
@@ -376,6 +437,13 @@ export const REGIONS: Region[] = [
     id: "tropic_isles",
     name: "Tropic Isles",
     packageId: "beach_region",
+    ruinPackageId: "beach_region_ruin",
+    // Act V's return task: Raptor's cove, a walled yard in the west: a deep channel cuts off its way in.
+    returnTask: {
+      obstacle: "water",
+      gate: { x: -287.9, z: -25.19, heading: 1.4835, width: 9 },
+      spot: { x: -298.86, z: -26.15 },
+    },
     music: "coral_cove",
     worldId: "beach",
     kingdom: "beach",
@@ -484,6 +552,14 @@ export const REGIONS: Region[] = [
 ];
 
 export const regionById = (id: string) => REGIONS.find((r) => r.id === id);
+
+/** What of the region is there in its standard or ruined state: the lairs and the ways
+ * the dragons broke open only after the attack. */
+export const regionAsIs = (r: Region, ruined: boolean): Region => ({
+  ...r,
+  gateways: r.gateways.filter((g) => ruined || !g.boss),
+  passages: (r.passages ?? []).filter((p) => ruined || !p.ruinOnly),
+});
 
 /** The region an Adventure kingdom is driven in, once it's built. */
 export const regionOfKingdom = (k: KingdomId) => REGIONS.find((r) => r.kingdom === k);

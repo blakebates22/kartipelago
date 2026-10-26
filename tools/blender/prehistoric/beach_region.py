@@ -30,8 +30,12 @@ import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
 import puzzle_kit  # noqa: E402
+import region_ruin as ruin  # noqa: E402
 
-TRACK_ID = "beach_region"
+# (--ruin: Tropic Isles after Tidewyrm's attack. Only the ruin has his sea cave; his wave
+# has flattened the village, snapped the palms and strewn wreckage up the beach.)
+RUIN = ruin.ON
+TRACK_ID = ruin.track_id("beach_region")
 FLOOR_Z = 2.0
 WATER_Z = -0.8
 RING_R = 220.0
@@ -54,6 +58,9 @@ VOLCANO = (-90.0, 620.0)
 # and three gongs to strike in order (their torches: one, two, three) round the island.
 HUT = (45.0, 300.0)
 GONGS = [(120.0, 255.0), (-10.0, 250.0), (-120.0, 245.0)]
+# Raptor's cove (Act V's return task): a walled yard in the west, its way in cut off by a
+# deep channel the Beach Tool gets you over.
+RETURN = (175.0, 300.0)
 
 
 def ring_r(a):
@@ -110,7 +117,7 @@ def line(a, b, every=8.0, z=road_z):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Tropic Isles (greybox)", "coral_cove")
+    c = kit.Course(TRACK_ID, "Tropic Isles (greybox, ruined)" if RUIN else "Tropic Isles (greybox)", "coral_cove")
     ring = []
     for k in range(48):
         a = k * math.tau / 48
@@ -134,7 +141,8 @@ def main():
     c.side_road("Dust Road", road, "beach_road", "road", **trail)
     c.side_road("Village Road", line((vx, vy - vr + 2), ring_end(90.0)), "beach_road", "road", **trail)
     # Out from the ring to the landmarks.
-    for name, (a, r) in (("Coral Road", CORAL), ("Wreck Road", WRECK), ("Splash Road", SPLASH), ("Lair Road", LAIR)):
+    outs = [("Coral Road", CORAL), ("Wreck Road", WRECK), ("Splash Road", SPLASH)] + ([("Lair Road", LAIR)] if RUIN else [])
+    for name, (a, r) in outs:
         c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "beach_road", "road", **trail)
     a, r0, r1 = PIER
     c.side_road("Pier Road", line(ring_end(a), polar(a, r0 + 2.0)), "beach_road", "road", **trail)
@@ -154,6 +162,12 @@ def main():
         if abs(math.cos(a)) < 0.3:
             continue  # (clear of the road through the square)
         hx, hy = vx + (vr + 6) * math.cos(a), vy + (vr + 6) * math.sin(a)
+        if RUIN:
+            # Flattened by the wave: a stump of wall, the thatch strewn beside it.
+            box(c, "Hut %d" % k, hx, hy, 3.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 1.4, ("tiki_wood", "wall"), rot=a)
+            ruin.rubble(c, "Hut Wreck %d" % k, hx + 4 * math.cos(a), hy + 4 * math.sin(a), natural, ("thatch", "wall"), n=4,
+                        spread=3.0, size=1.0, seed=k)
+            continue
         box(c, "Hut %d" % k, hx, hy, 3.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("tiki_wood", "wall"), rot=a)
         cone(c, "Hut Roof %d" % k, hx, hy, 5.5, FLOOR_Z + 4.0, 4.0, ("thatch", "wall"), segs=6, role="visual")
     gx, gy, gz = c.game(vx, vy, FLOOR_Z + 0.3)
@@ -164,9 +178,12 @@ def main():
         r = (SHORE_R - 18 if south(a) > 0.5 else CLIFF_R - 25) + 9 * math.sin(k * 2.7)
         px, py = polar(math.degrees(a), r)
         if min(abs(math.degrees(a) - g) % 360 for g in (CORAL[0], PIER[0], WRECK[0], SPLASH[0], LAIR[0], 90.0,
-                                                    HUT[0], *(a for a, _ in GONGS))) < 7:
+                                                    HUT[0], RETURN[0], *(a for a, _ in GONGS))) < 7:
             continue  # (clear of the roads out)
         g = natural(px, py)
+        if RUIN and k % 3:
+            ruin.stump(c, "Palm %d" % k, px, py, g, ("palm_bark", "wall"), h=2.0 + k % 4, r=0.5)
+            continue
         box(c, "Palm %d" % k, px, py, 0.5, 0.5, g - 1.0, g + 10.0, ("palm_bark", "wall"))
         cone(c, "Palm Crown %d" % k, px, py, 4.5, g + 9.0, 2.0, ("fern_floor", "wall"), segs=5, role="visual")
 
@@ -203,17 +220,8 @@ def main():
             y + (k - 1) * 6.0 * math.sin(rot) + 3 * math.sin(rot - math.pi / 2), 1.2, 8.0, FLOOR_Z + 4.0 + 4 * k,
             FLOOR_Z + 5.0 + 4 * k, (m, "wall"), rot=rot, role="visual")
 
-    # Tidewyrm's lair: a sea cave in the east headland, rocks heaped round its mouth.
-    x, y = polar(*LAIR)
-    rot = math.radians(LAIR[0]) + math.pi / 2
-    box(c, "Lair Mouth", x, y, 8.0, 2.0, FLOOR_Z - 1.0, FLOOR_Z + 12.0, ("dark_corridor", "wall"), rot=rot, role="visual")
-    for k in range(7):
-        t = (k - 3) / 3.0
-        if abs(t) < 0.4:
-            continue
-        px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
-        cone(c, "Lair Rock %d" % k, px, py, 3.5 + abs(t) * 1.5, FLOOR_Z - 1.0, 9.0 + 7.0 * (1 - abs(t)), ("isle_rock", "wall"),
-             segs=5)
+    if RUIN:
+        ruined(c)
 
     # The reef: sea stacks all round the south, the edge of the drivable shallows, and a
     # line of reef rocks running out to sea through them (the causeway, one day).
@@ -229,10 +237,9 @@ def main():
         x, y = polar(-90.0 + 3.0 * math.sin(k * 1.7), STACKS_R + 30.0 + k * 22.0)
         cone(c, "Reef Rock %d" % k, x, y, 4.0, WATER_Z - 2.0, 2.6, ("isle_rock", "wall"), segs=5, role="visual")
 
-    # The Tiki Gongs' hut (its door is the game's) and where the gongs hang.
-    puzzle_kit.pen(c, "tiki_gongs", "Tiki Hut", *polar(*HUT), math.radians(HUT[0]) + math.pi, 10.0, 4.5, ("tiki_wood", "wall"),
-                   FLOOR_Z, roof=("thatch", "wall"))
-    puzzle_kit.switches(c, "tiki_gongs", [polar(*g) for g in GONGS], natural, lanterns=[1, 2, 3])
+    tiki_gongs(c)
+    puzzle_kit.pen(c, "return", "Cove Yard", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
+                   ("tiki_wood", "wall"), natural(*polar(*RETURN)), height=5.0)
 
     # The Dust Road's far end, back up towards the desert: it bends out of sight.
     box(c, "Road Bend", 0.0, ROAD_Y0 + 4, ROAD_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("valley_cliff", "wall"))
@@ -243,6 +250,38 @@ def main():
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}})
     print("ring", round(c.length, 1), "gates", len(gates))
+
+
+def ruined(c):
+    """After Tidewyrm's attack: his sea cave, and the wave's wreckage up the beach."""
+    # Tidewyrm's lair: a sea cave in the east headland, rocks heaped round its mouth.
+    x, y = polar(*LAIR)
+    rot = math.radians(LAIR[0]) + math.pi / 2
+    box(c, "Lair Mouth", x, y, 8.0, 2.0, FLOOR_Z - 1.0, FLOOR_Z + 12.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+    for k in range(7):
+        t = (k - 3) / 3.0
+        if abs(t) < 0.4:
+            continue
+        px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
+        cone(c, "Lair Rock %d" % k, px, py, 3.5 + abs(t) * 1.5, FLOOR_Z - 1.0, 9.0 + 7.0 * (1 - abs(t)), ("isle_rock", "wall"),
+             segs=5)
+
+    # Wreckage the wave left up the beach: planks, crates, a stove-in boat (off the roads).
+    avoid = (CORAL[0], PIER[0], WRECK[0], RETURN[0], *(a for a, _ in GONGS), 0.0, 180.0)
+    for k, (x, y) in enumerate(ruin.ring_spots(14, 246.0, 285.0, 11, avoid)):
+        if south(math.atan2(y, x)) < 0.5:
+            continue
+        ruin.rubble(c, "Wreckage %d" % k, x, y, natural, ("wreck_planks", "wall"), n=5, spread=4.0, size=1.1, seed=30 + k)
+    x, y = polar(-60.0, 296.0)
+    box(c, "Stove-in Boat", x, y, 5.0, 1.8, WATER_Z - 0.5, FLOOR_Z - 0.5, ("wreck_planks", "wall"), rot=0.9)
+    ruin.scorch(c, "Seaweed", ruin.ring_spots(10, 240.0, 280.0, 12, avoid), natural, ("fern_floor", "grass"), r=(3.0, 7.0))
+
+
+def tiki_gongs(c):
+    # The Tiki Gongs' hut (its door is the game's) and where the gongs hang.
+    puzzle_kit.pen(c, "tiki_gongs", "Tiki Hut", *polar(*HUT), math.radians(HUT[0]) + math.pi, 10.0, 4.5, ("tiki_wood", "wall"),
+                   FLOOR_Z, roof=("thatch", "wall"))
+    puzzle_kit.switches(c, "tiki_gongs", [polar(*g) for g in GONGS], natural, lanterns=[1, 2, 3])
 
 
 if __name__ == "__main__":

@@ -84,6 +84,17 @@
       "z": 52.33
     },
     {
+      "id": "puzzle_gate_02",
+      "type": "puzzle_gate",
+      "puzzle": "return",
+      "x": -236.73,
+      "z": -165.76,
+      "heading": 0.9599310885968817,
+      "width": 9.0,
+      "prize_x": -245.75,
+      "prize_z": -172.07
+    },
+    {
       "id": "dust_01",
       "type": "dust",
       "color": "#d89a6a",

@@ -17,6 +17,8 @@ import type { Screen } from "../app/app";
 import { loadRecords } from "../app/records";
 import {
   inGateway,
+  OBSTACLE_TEXT,
+  regionAsIs,
   regionById,
   type Gateway,
   type Passage,
@@ -43,7 +45,15 @@ import {
   sceneScreen,
 } from "./adventure";
 import { kingdomById } from "../adventure/data";
-import { championWon, coinCourse, kingdomPhase, objective, piecesOf } from "../adventure/progress";
+import {
+  championWon,
+  coinCourse,
+  completeReturn,
+  kingdomPhase,
+  objective,
+  piecesOf,
+  returnOpen,
+} from "../adventure/progress";
 import {
   bellPosts,
   gateSolid,
@@ -51,7 +61,7 @@ import {
   stepPuzzle,
   type Puzzle,
 } from "../overworld/puzzles";
-import { createPuzzleView } from "../overworld/puzzleView";
+import { createObstacleView, createPuzzleView } from "../overworld/puzzleView";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -60,6 +70,9 @@ export interface OverworldState {
   at?: string;
   /** Adventure mode: the story runs through the region (the gateways open its races). */
   adventure?: boolean;
+  /** Dev free roam: drive the regions as they are after the attack (Adventure decides
+   * that itself: once the kingdom's champion has joined you). */
+  ruined?: boolean;
 }
 
 /** Dev free roam (not an Adventure file): puzzles solved and keys found, for this visit. */
@@ -192,6 +205,164 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
   };
 }
 
+/** Act V's return task's yard: its tool obstacle (solid, shown, until the kingdom's tool
+ * is in the bag; dev free roam: in the ruined region) and what it says when you meet it. */
+function regionReturnGate(game: Game, session: Session, region: Region) {
+  const rt = region.returnTask;
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  if (!rt || !k) return undefined;
+  const story = game.overworld?.adventure ? adventureOf(game) : undefined;
+  const open = story ? Boolean(story.save.bosses[k.id]) : Boolean(game.overworld?.ruined);
+  const you = session.entrants[0]!;
+  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
+  const view = createObstacleView(session.root, rt.obstacle, rt.gate, groundAt);
+  view.shown = !open;
+  if (!open) session.solids.push(gateSolid({ gate: rt.gate }, groundAt(rt.gate.x, rt.gate.z)));
+  let near = false;
+  let banner = 0;
+  const tool = k.tool?.name.toUpperCase() ?? "A TOOL";
+  return {
+    step(x: number, z: number, dt: number) {
+      banner = Math.max(0, banner - dt);
+      const now = !open && Math.hypot(x - rt.gate.x, z - rt.gate.z) < rt.gate.width + 4;
+      if (now && !near) banner = 3.5;
+      near = now;
+    },
+    draw(ui: UiLayer) {
+      if (banner > 0)
+        wrap(`${OBSTACLE_TEXT[rt.obstacle]}. THE ${tool} COULD CLEAR IT ONE DAY.`, ui.W - 60)
+          .slice(0, 2)
+          .forEach((l, i) =>
+            ui.text(l, ui.W / 2, ui.H / 2 - 40 + i * 10, {
+              color: PAL.cream,
+              outline: PAL.shadow,
+              align: "center",
+            }),
+          );
+    },
+    dispose: () => view.dispose(),
+  };
+}
+
+/** The passages' blockers (the fire in the Burnt Gorge, Rimefang's ice, Scorchwind's
+ * drift): solid and shown until the dragon falls (dev free roam: never), and the first
+ * time you come back after that they break open while you watch. */
+function regionBlockers(game: Game, session: Session, region: Region) {
+  const story = game.overworld?.adventure ? adventureOf(game) : undefined;
+  const you = session.entrants[0]!;
+  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
+  let banner: { text: string; t: number } | undefined;
+  const items = (region.passages ?? []).flatMap((p) => {
+    const b = p.blocker;
+    if (!b || !p.opensAfter) return [];
+    const open = !story || Boolean(story.save.bosses[p.opensAfter]);
+    const seen = `opened:${region.id}.${p.id}`;
+    const breaking = Boolean(story) && open && !story!.save.seen.includes(seen);
+    if (open && !breaking) return [];
+    const gate = { x: p.x, z: p.z, heading: p.heading, width: b.width };
+    const view = createObstacleView(session.root, b.kind, gate, groundAt);
+    const solid = gateSolid({ gate }, groundAt(p.x, p.z));
+    if (!open) session.solids.push(solid);
+    if (breaking) {
+      story!.save.seen.push(seen);
+      persist(game);
+      banner = { text: `${p.label.split(" · ")[0]} IS OPEN!`, t: 4 };
+      game.sounds.solved();
+    }
+    return [{ p, view, open, sink: 0, near: false }];
+  });
+  return {
+    step(x: number, z: number, dt: number, t: number) {
+      if (banner && (banner.t -= dt) <= 0) banner = undefined;
+      for (const it of items) {
+        it.view.flicker(t);
+        if (it.open) {
+          // Breaking open: a moment's pause, then it sinks away.
+          it.sink = Math.min(1, it.sink + dt / 2.5);
+          it.view.sunk = Math.max(0, it.sink * 1.4 - 0.4);
+          continue;
+        }
+        const now = Math.hypot(x - it.p.x, z - it.p.z) < it.p.blocker!.width / 2 + 8;
+        if (now && !it.near) banner = { text: it.p.locked ?? "NOT YET", t: 3.5 };
+        it.near = now;
+      }
+    },
+    /** Is this passage still shut behind its blocker? */
+    shut: (id: string) => items.some((it) => it.p.id === id && !it.open),
+    draw(ui: UiLayer) {
+      if (banner)
+        wrap(banner.text, ui.W - 60)
+          .slice(0, 2)
+          .forEach((l, i) =>
+            ui.text(l, ui.W / 2, ui.H / 2 - 52 + i * 10, {
+              color: PAL.gold,
+              outline: PAL.shadow,
+              align: "center",
+            }),
+          );
+    },
+    dispose() {
+      for (const it of items) it.view.dispose();
+    },
+  };
+}
+
+/** Act V: the return task, waiting in its yard (once the Dragon Kingdom sends you home). */
+function returnOf(game: Game, region: Region) {
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  if (!k?.returnTask || !region.returnTask || !game.overworld?.adventure) return undefined;
+  return returnOpen(adventureOf(game).save, k) ? k : undefined;
+}
+
+/** The return task's card: the placeholder scene, then back out into the region. */
+function returnCard(game: Game, region: Region): Screen {
+  const k = returnOf(game, region)!;
+  const go = () =>
+    game.screens.go(
+      sceneScreen(game, k.returnTask!.scene, () => {
+        completeReturn(adventureOf(game).save, k.id);
+        persist(game);
+        game.screens.go(overworldLoading(game, region.id, "return", true));
+      }),
+    );
+  const menu = new VMenu(
+    game,
+    [
+      { label: "GO", action: go },
+      { label: "NOT YET", action: () => game.screens.pop() },
+    ],
+    () => game.screens.pop(),
+  );
+  return {
+    id: "GATEWAY",
+    enter() {
+      game.ui.interactive = true;
+    },
+    frame(_dt, actions) {
+      menu.handle(actions);
+    },
+    draw(ui) {
+      ui.dim(0.4);
+      const w = 260;
+      const h = 90;
+      const x = Math.round(ui.W / 2 - w / 2);
+      const y = Math.round(ui.H / 2 - h / 2) - 8;
+      ui.panel(x, y, w, h, "parchment", "ink");
+      ui.text(k.returnTask!.label, ui.W / 2, y + 8, {
+        scale: 2,
+        color: PAL.coral,
+        outline: PAL.ink,
+        align: "center",
+      });
+      ui.text(`A PLACEHOLDER TASK WITH ${k.returnTask!.who.toUpperCase()}.`, ui.W / 2, y + 30, {
+        color: PAL.ink,
+        align: "center",
+      });
+      menu.draw(ui, x + 60, y + h - 38, w - 120, 14, 4);
+    },
+  };
+}
+
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
 const PROBE_Y = 200;
 
@@ -215,7 +386,14 @@ export function overworldLoading(
   at?: string,
   adventure = game.overworld?.adventure ?? false,
 ): Screen {
-  const region = regionById(regionId)!;
+  const full = regionById(regionId)!;
+  // The region before or after its dragon's attack.
+  const k = full.kingdom ? kingdomById(full.kingdom) : undefined;
+  const story = adventure && Boolean(full.kingdom);
+  const ruined =
+    Boolean(full.ruinPackageId) &&
+    (story && k ? championWon(adventureOf(game).save, k) : Boolean(game.overworld?.ruined));
+  const region = regionAsIs(full, ruined);
   let ready: Session | undefined;
   let failed: string | undefined;
   let alive = true;
@@ -225,14 +403,19 @@ export function overworldLoading(
     seeThrough: false,
     enter() {
       game.ui.interactive = false;
-      game.overworld = { region: region.id, at, adventure: adventure && Boolean(region.kingdom) };
+      game.overworld = {
+        region: region.id,
+        at,
+        adventure: story,
+        ruined: story ? undefined : ruined,
+      };
       game.audio.music.stop(0.6);
       game.audio.music.prepare(region.music);
       const token = game.screens.token;
       game
         .createSession({
           scene: "track",
-          packageId: region.packageId,
+          packageId: (ruined && region.ruinPackageId) || region.packageId,
           rivals: false,
           racer: game.selection.racer,
           freeRoam: true,
@@ -377,6 +560,8 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let clock = 0;
   let removeGateways: (() => void) | undefined;
   let puzzles: ReturnType<typeof regionPuzzles> | undefined;
+  let returnGate: ReturnType<typeof regionReturnGate> | undefined;
+  let blockers: ReturnType<typeof regionBlockers> | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -384,16 +569,27 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   const champ = game.overworld?.adventure ? challengeOf(game, region) : undefined;
   const challenge =
     champ && region.challenge ? { id: "challenge", radius: 6, ...region.challenge } : undefined;
+  // Act V: the return task, inside its yard (you come back out of the yard after it).
+  const task = returnOf(game, region);
+  const rt = region.returnTask;
+  const taskSpot = rt
+    ? { id: "return", radius: 4, x: rt.spot.x, z: rt.spot.z, heading: rt.gate.heading }
+    : undefined;
+  const taskMark = task ? taskSpot : undefined;
+  const marks = [
+    ...region.gateways,
+    ...(region.passages ?? []),
+    ...(challenge ? [challenge] : []),
+    ...(taskMark ? [taskMark] : []),
+  ];
 
   const screen: Screen = {
     id: "OVERWORLD",
     enter() {
       game.session = session;
       game.ui.interactive = false;
-      removeGateways = buildGateways(
-        session,
-        region,
-        challenge
+      removeGateways = buildGateways(session, region, [
+        ...(challenge
           ? [
               {
                 ...challenge,
@@ -401,15 +597,16 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
                 world: region.worldId,
               },
             ]
-          : [],
-      );
+          : []),
+        ...(taskMark && task
+          ? [{ ...taskMark, label: task.returnTask!.label, world: region.worldId }]
+          : []),
+      ]);
       puzzles = regionPuzzles(game, session, region);
+      returnGate = regionReturnGate(game, session, region);
+      blockers = regionBlockers(game, session, region);
       // Back out of the gateway you raced, or at the region's spawn.
-      const from = [
-        ...region.gateways,
-        ...(region.passages ?? []),
-        ...(challenge ? [challenge] : []),
-      ].find((g) => g.id === at);
+      const from = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === at);
       const you = session.entrants[0]!;
       if (from) {
         const x = from.x + Math.sin(from.heading) * (from.radius + 6);
@@ -428,6 +625,8 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     exit() {
       removeGateways?.();
       puzzles?.dispose();
+      returnGate?.dispose();
+      blockers?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
@@ -444,13 +643,18 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       }
       const s = session.entrants[0]!.state;
       puzzles?.step(s.x, s.z, dt, clock);
+      returnGate?.step(s.x, s.z, dt);
+      blockers?.step(s.x, s.z, dt, clock);
       if (inside && !inGateway(inside, s.x, s.z, 3)) inside = undefined;
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
-        const p = (region.passages ?? []).find((p) => inGateway(p, s.x, s.z));
+        const p = (region.passages ?? []).find(
+          (p) => inGateway(p, s.x, s.z) && !blockers?.shut(p.id),
+        );
         const ch = challenge && inGateway(challenge, s.x, s.z) ? challenge : undefined;
-        if (g || p || ch) {
-          inside = g ?? p ?? ch;
+        const tk = taskMark && inGateway(taskMark, s.x, s.z) ? taskMark : undefined;
+        if (g || p || ch || tk) {
+          inside = g ?? p ?? ch ?? tk;
           s.speed = 0;
           game.sounds.confirm();
           game.screens.push(
@@ -458,7 +662,9 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
               ? gatewayCard(game, region, g)
               : p
                 ? passageCard(game, p)
-                : challengeCard(game, region),
+                : ch
+                  ? challengeCard(game, region)
+                  : returnCard(game, region),
           );
         }
       }
@@ -481,12 +687,12 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       const goal = game.overworld?.adventure ? storyGoal(game, region) : undefined;
       if (goal) ui.text(goal, 8, 28, { color: PAL.cream, outline: PAL.shadow });
       puzzles?.draw(ui);
+      returnGate?.draw(ui);
+      blockers?.draw(ui);
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
-  inside = [...region.gateways, ...(region.passages ?? []), ...(challenge ? [challenge] : [])].find(
-    (g) => g.id === at,
-  );
+  inside = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === at);
   return screen;
 }
 
@@ -656,7 +862,7 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
   const go = () => {
     if (story) return story.go?.();
     const e = choices[pick]!;
-    game.overworld = { region: region.id, at: g.id };
+    game.overworld = { region: region.id, at: g.id, ruined: game.overworld?.ruined };
     game.selection.trackId = e.id;
     game.selection.mode = "race";
     game.screens.go(loadingScreen(game));
@@ -736,7 +942,12 @@ function passageCard(game: Game, p: Passage): Screen {
   const s = story ? adventureOf(game).save : undefined;
   const open = !s || !p.opensAfter || freeRoam() || Boolean(s.bosses[p.opensAfter]);
   const go = () => {
-    game.overworld = { region: p.to, at: p.toPassage, adventure: story };
+    game.overworld = {
+      region: p.to,
+      at: p.toPassage,
+      adventure: story,
+      ruined: game.overworld?.ruined,
+    };
     game.screens.go(overworldLoading(game, p.to, p.toPassage, story));
   };
   const menu = new VMenu(
@@ -802,6 +1013,18 @@ function overworldPause(game: Game, region: Region): Screen {
             { label: "WORLD MAP", action: () => game.screens.go(adventureHub(game)) },
           ]
         : []),
+      // Dev free roam: the region before or after its dragon's attack.
+      ...(!story && region.ruinPackageId
+        ? [
+            {
+              label: game.overworld?.ruined ? "SHOW IT STANDARD" : "SHOW IT RUINED",
+              action: () => {
+                game.overworld = { region: region.id, ruined: !game.overworld?.ruined };
+                game.screens.go(overworldLoading(game, region.id, undefined, false));
+              },
+            },
+          ]
+        : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       {
         label: "MAIN MENU",
@@ -833,7 +1056,7 @@ function overworldPause(game: Game, region: Region): Screen {
       ui.dim(0.45);
       const w = 140;
       const x = ui.W / 2 - w / 2;
-      ui.panel(x, 50, w, story ? 168 : 120, "wood", "gold");
+      ui.panel(x, 50, w, story ? 168 : region.ruinPackageId ? 144 : 120, "wood", "gold");
       ui.text("PAUSED", ui.W / 2, 60, {
         scale: 2,
         color: PAL.gold,

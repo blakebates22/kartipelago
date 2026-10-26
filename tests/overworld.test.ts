@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { REGIONS, inGateway, regionById } from "../src/overworld/regions";
 import { trackById } from "../src/game/tracks";
 import { KINGDOMS } from "../src/adventure/data";
-import { regionOfKingdom } from "../src/overworld/regions";
+import { regionAsIs, regionOfKingdom } from "../src/overworld/regions";
 import { gateSolid, newPuzzleState, stepPuzzle } from "../src/overworld/puzzles";
 
 describe("overworld regions", () => {
@@ -38,30 +38,96 @@ describe("overworld regions", () => {
     expect(regionOfKingdom("valley")?.id).toBe("dinosaur_valley");
   });
 
-  it("put each puzzle's gate and switches where the region's build put them", () => {
+  it("put each puzzle's gate and switches where the region's build put them (ruined too)", () => {
     for (const r of REGIONS)
-      for (const p of r.puzzles ?? []) {
-        const meta = JSON.parse(readFileSync(`public/tracks/${r.packageId}/track.json`, "utf8"));
-        const ents = (meta.entities as Record<string, unknown>[]).filter((e) => e.puzzle === p.id);
-        const gate = ents.find((e) => e.type === "puzzle_gate")!;
-        expect(gate, p.id).toBeDefined();
-        expect(
-          Math.hypot(p.gate.x - (gate.x as number), p.gate.z - (gate.z as number)),
-        ).toBeLessThan(0.1);
-        expect(Math.abs(p.gate.heading - (gate.heading as number))).toBeLessThan(0.01);
-        expect(p.gate.width).toBe(gate.width);
-        if (p.prize)
+      for (const p of r.puzzles ?? [])
+        for (const pkg of [r.packageId, ...(r.ruinPackageId ? [r.ruinPackageId] : [])]) {
+          const meta = JSON.parse(readFileSync(`public/tracks/${pkg}/track.json`, "utf8"));
+          const ents = (meta.entities as Record<string, unknown>[]).filter(
+            (e) => e.puzzle === p.id,
+          );
+          const gate = ents.find((e) => e.type === "puzzle_gate")!;
+          expect(gate, p.id).toBeDefined();
           expect(
-            Math.hypot(p.prize.x - (gate.prize_x as number), p.prize.z - (gate.prize_z as number)),
+            Math.hypot(p.gate.x - (gate.x as number), p.gate.z - (gate.z as number)),
           ).toBeLessThan(0.1);
-        const sw = ents.filter((e) => e.type === "puzzle_switch");
-        expect(sw.length, p.id).toBe(p.switches.length);
-        for (const e of sw) {
-          const s = p.switches[e.index as number]!;
-          expect(Math.hypot(s.x - (e.x as number), s.z - (e.z as number))).toBeLessThan(0.1);
-          expect(s.lanterns).toBe(e.lanterns);
+          expect(Math.abs(p.gate.heading - (gate.heading as number))).toBeLessThan(0.01);
+          expect(p.gate.width).toBe(gate.width);
+          if (p.prize)
+            expect(
+              Math.hypot(
+                p.prize.x - (gate.prize_x as number),
+                p.prize.z - (gate.prize_z as number),
+              ),
+            ).toBeLessThan(0.1);
+          const sw = ents.filter((e) => e.type === "puzzle_switch");
+          expect(sw.length, p.id).toBe(p.switches.length);
+          for (const e of sw) {
+            const s = p.switches[e.index as number]!;
+            expect(Math.hypot(s.x - (e.x as number), s.z - (e.z as number))).toBeLessThan(0.1);
+            expect(s.lanterns).toBe(e.lanterns);
+          }
         }
+  });
+
+  it("put each return task's yard where the region's build put it", () => {
+    for (const r of REGIONS.filter((r) => r.kingdom)) {
+      const rt = r.returnTask!;
+      expect(rt, r.id).toBeDefined();
+      for (const pkg of [r.packageId, r.ruinPackageId!]) {
+        const meta = JSON.parse(readFileSync(`public/tracks/${pkg}/track.json`, "utf8"));
+        const gate = (meta.entities as Record<string, number | string>[]).find(
+          (e) => e.type === "puzzle_gate" && e.puzzle === "return",
+        )!;
+        expect(gate, pkg).toBeDefined();
+        expect(
+          Math.hypot(rt.gate.x - (gate.x as number), rt.gate.z - (gate.z as number)),
+        ).toBeLessThan(0.1);
+        expect(Math.abs(rt.gate.heading - (gate.heading as number))).toBeLessThan(0.01);
+        expect(
+          Math.hypot(rt.spot.x - (gate.prize_x as number), rt.spot.z - (gate.prize_z as number)),
+        ).toBeLessThan(0.1);
       }
+    }
+    // Each kingdom's own tool clears its own yard's obstacle, one kind each.
+    expect(REGIONS.filter((r) => r.returnTask).map((r) => r.returnTask!.obstacle)).toEqual([
+      "rockfall",
+      "ice",
+      "drift",
+      "water",
+    ]);
+  });
+
+  it("have a ruined state built from the same script, and up to date with it (the sync rule)", async () => {
+    for (const r of REGIONS.filter((r) => r.kingdom)) {
+      expect(r.ruinPackageId, r.id).toBe(`${r.packageId}_ruin`);
+      const meta = JSON.parse(readFileSync(`public/tracks/${r.ruinPackageId}/track.json`, "utf8"));
+      const from = meta.builtFrom as Record<string, string>;
+      expect(Object.keys(from), r.id).toContain(`${r.packageId}.py`);
+      for (const [file, sha] of Object.entries(from)) {
+        const bytes = readFileSync(`tools/blender/prehistoric/${file}`);
+        const hash = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);
+        const now = [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+        expect(now, `${r.ruinPackageId}: rebuild it (${file} changed)`).toBe(sha);
+      }
+    }
+  });
+
+  it("show the dragons' lairs and the ways they broke open only after the attack", () => {
+    for (const r of REGIONS.filter((r) => r.kingdom)) {
+      const before = regionAsIs(r, false);
+      const after = regionAsIs(r, true);
+      expect(
+        before.gateways.some((g) => g.boss),
+        r.id,
+      ).toBe(false);
+      expect(after.gateways.filter((g) => g.boss).length, r.id).toBe(1);
+      expect(before.gateways.length, r.id).toBe(4);
+      expect(after.passages!.length).toBe((r.passages ?? []).length);
+      // The way back to the region before is there in both; the way on only after.
+      expect(before.passages!.every((p) => !p.ruinOnly)).toBe(true);
+    }
+    expect(regionAsIs(regionById("dinosaur_valley")!, false).passages).toEqual([]);
   });
 });
 

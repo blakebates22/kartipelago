@@ -27,8 +27,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
 from valley_region import box, cone, polar  # noqa: E402
+import region_ruin as ruin  # noqa: E402
+import puzzle_kit  # noqa: E402
 
-TRACK_ID = "snow_region"
+# (--ruin: the Snow Kingdom after Rimefang's attack. Only the ruin has his lair, and his
+# ice walling the Frozen Pass shut; the village and the great tree are frozen over.)
+RUIN = ruin.ON
+TRACK_ID = ruin.track_id("snow_region")
 FLOOR_Z = 2.0
 RING_R = 215.0
 LAKE_R = 125.0
@@ -50,6 +55,9 @@ HUT = (225.0, 292.0)  # angle (degrees), radius: the hut's middle
 HUT_HALF = 10.0
 HUT_GAP = 4.5
 BELLS = [(205.0, 150.0, 1), (240.0, 70.0, 2), (250.0, 268.0, 3)]  # angle, radius, lanterns
+# Brachio's hot spring (Act V's return task): a walled yard in the north-east, its way in
+# frozen shut with ice the Snow Tool melts.
+RETURN = (60.0, 300.0)
 
 
 def ring_r(a):
@@ -97,7 +105,7 @@ def line(a, b, every=8.0, z=road_z):
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Snow Kingdom (greybox)", "summit_pass")
+    c = kit.Course(TRACK_ID, "Snow Kingdom (greybox, ruined)" if RUIN else "Snow Kingdom (greybox)", "summit_pass")
     ring = []
     for k in range(48):
         a = k * math.tau / 48
@@ -120,8 +128,10 @@ def main():
     c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
     c.side_road("Village Road", line((vx, vy + vr - 2), ring_end(-90.0)), "packed_snow_road", "road", **trail)
     # Out from the ring to the landmarks.
-    for name, (a, r) in (("Citadel Road", CITADEL), ("Tree Road", TREE), ("Rift Road", RIFT), ("Pass Road", FROZEN_PASS),
-                         ("Lair Road", LAIR)):
+    outs = [("Citadel Road", CITADEL), ("Tree Road", TREE), ("Rift Road", RIFT)]
+    if RUIN:
+        outs += [("Pass Road", FROZEN_PASS), ("Lair Road", LAIR)]
+    for name, (a, r) in outs:
         c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "packed_snow_road", "road", **trail)
 
     X0, X1, Y0, Y1 = -470, 470, -480, 470
@@ -136,12 +146,18 @@ def main():
         if abs(math.cos(a)) < 0.3:
             continue  # (clear of the road through the square)
         hx, hy = vx + (vr + 6) * math.cos(a), vy + (vr + 6) * math.sin(a)
+        if RUIN:
+            # Frozen solid: each house sealed in a block of Rimefang's ice, its roof gone.
+            box(c, "House %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("hearth_stone", "wall"), rot=a)
+            box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, FLOOR_Z - 1.0, FLOOR_Z + 6.5, ("berg_ice", "wall"), rot=a + 0.08)
+            continue
         box(c, "House %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 5.0, ("hearth_stone", "wall"), rot=a)
         cone(c, "House Roof %d" % k, hx, hy, 6.0, FLOOR_Z + 5.0, 4.0, ("pine_snow", "wall"), segs=4, role="visual")
     tx, ty = vx + 18.0, vy - 6.0
     box(c, "Great Tree Trunk", tx, ty, 1.6, 1.6, FLOOR_Z - 1.0, FLOOR_Z + 8.0, ("weathered_timber", "wall"))
     for k, (r, z) in enumerate(((7.0, 6.0), (5.5, 10.0), (3.8, 13.5))):
-        cone(c, "Great Tree %d" % k, tx, ty, r, FLOOR_Z + z, 5.0, ("pine_snow", "wall"), segs=8, role="visual")
+        cone(c, "Great Tree %d" % k, tx, ty, r, FLOOR_Z + z, 5.0, ("glacier_ice" if RUIN else "pine_snow", "wall"), segs=8,
+             role="visual")
     gx, gy, gz = c.game(vx, vy, FLOOR_Z + 0.3)
     c.entity("campfire", x=gx, y=gy, z=gz)
 
@@ -173,10 +189,32 @@ def main():
         FLOOR_Z + 20.0, ("icefall_blue", "wall"), rot=rot, role="visual")
     gx, gy, gz = c.game(x, y, FLOOR_Z + 30.0)
     c.entity("sparkles", rate=12, radius=30)
-    # The Frozen Pass: walled with Rimefang's ice (the way on, once he falls).
+    if RUIN:
+        ruined(c)
+    ice_bells(c)
+    puzzle_kit.pen(c, "return", "Hot Spring", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
+                   ("frost_stone", "wall"), natural(*polar(*RETURN)), height=6.0)
+
+    # The gorge's far end, back towards the valley: it bends out of sight.
+    box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
+    c.entity("snowfall", rate=60, radius=60)
+
+    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    c.start_line()
+    gates = c.checkpoints(height=10.0)
+    kit.paint.shade_roads(c.pieces, 0.3)
+    c.finish(extra={"race": {"laps": 1}})
+    print("ring", round(c.length, 1), "gates", len(gates))
+
+
+def ruined(c):
+    """After Rimefang's attack: his lair, the road to the Frozen Pass (his ice across it is
+    the game's: regions.ts blocker, which breaks open when he falls), and ice shards
+    driven into the fields."""
+    # (Where the pass leaves the basin, the cliff's foot: a dark cleft behind the ice.)
     x, y = polar(*FROZEN_PASS)
     rot = math.radians(FROZEN_PASS[0]) + math.pi / 2
-    box(c, "Frozen Pass Ice", x, y, 9.0, 3.0, FLOOR_Z - 1.0, FLOOR_Z + 18.0, ("berg_ice", "wall"), rot=rot)
+    box(c, "Frozen Pass Cleft", x, y, 7.0, 1.5, FLOOR_Z - 1.0, FLOOR_Z + 16.0, ("dark_corridor", "wall"), rot=rot, role="visual")
 
     # Rimefang's lair: an ice cave in the north-west cliff, jagged ice round its mouth.
     x, y = polar(*LAIR)
@@ -189,7 +227,14 @@ def main():
         px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
         cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, FLOOR_Z - 1.0, 10.0 + 8.0 * (1 - abs(t)) + 4.0 * math.sin(k * 2.1),
              ("glacier_ice", "wall"), segs=5)
+    avoid = (0.0, 90.0, 180.0, -90.0, FROZEN_PASS[0], LAIR[0], HUT[0], RETURN[0], *(a for a, _, _ in BELLS))
+    spots = ruin.ring_spots(18, 140.0, 188.0, 5, avoid) + ruin.ring_spots(14, 250.0, 312.0, 6, avoid)
+    vx, vy, vr = VILLAGE
+    spots = [(x, y) for x, y in spots if math.hypot(x - vx, y - vy) > vr + 16]
+    ruin.shards(c, "Ice Shard", spots, natural, ("glacier_ice", "wall"), seed=7)
 
+
+def ice_bells(c):
     # The Ice Bells' hut (its ice door is the game's) and where the bells hang.
     px, py = polar(*HUT)
     ia = math.radians(HUT[0]) + math.pi  # facing in, towards the lake
@@ -217,17 +262,6 @@ def main():
         x, y = polar(a, r)
         gx, gy, gz = c.game(x, y, 0.0)
         c.entity("puzzle_switch", puzzle="ice_bells", index=k, x=gx, z=gz, lanterns=n)
-
-    # The gorge's far end, back towards the valley: it bends out of sight.
-    box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
-    c.entity("snowfall", rate=60, radius=60)
-
-    # (Raced too: the champion's challenge, once round the ring, from this line.)
-    c.start_line()
-    gates = c.checkpoints(height=10.0)
-    kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
 
 
 if __name__ == "__main__":

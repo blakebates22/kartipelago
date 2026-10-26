@@ -65,6 +65,17 @@
       "x": -122.5,
       "z": 212.18,
       "lanterns": 3
+    },
+    {
+      "id": "puzzle_gate_02",
+      "type": "puzzle_gate",
+      "puzzle": "return",
+      "x": -287.9,
+      "z": -25.19,
+      "heading": 1.48352986419518,
+      "width": 9.0,
+      "prize_x": -298.86,
+      "prize_z": -26.15
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region.py (re-running it rewrites entities)"

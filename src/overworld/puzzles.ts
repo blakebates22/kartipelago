@@ -109,7 +109,7 @@ export function stepPuzzle(
 }
 
 /** The gate's collision (a box across the gateway, its length along `heading`). */
-export function gateSolid(p: Puzzle, groundY: number) {
+export function gateSolid(p: Pick<Puzzle, "gate">, groundY: number) {
   return {
     kind: "box" as const,
     look: "boundary" as const,
