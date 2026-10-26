@@ -1918,6 +1918,9 @@ function buildSession(
     autopilot() {
       if (line && !you.driver) you.driver = createDriver(line, 0, tuning.ai);
     },
+    /** The solid things karts hit besides the track's own collision (the overworld adds
+     * its puzzles' gates here, and takes them away again when they open). */
+    solids,
     /** For tests and debugging (?debug). */
     /** Course hazards and creatures (Blender tracks), for the debug tools. */
     hazards,

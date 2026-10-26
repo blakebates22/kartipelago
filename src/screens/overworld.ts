@@ -39,10 +39,13 @@ import {
   freeRoam,
   kingdomScreen,
   launch,
+  persist,
   sceneScreen,
 } from "./adventure";
 import { kingdomById } from "../adventure/data";
-import { coinCourse, kingdomPhase, objective, piecesOf } from "../adventure/progress";
+import { championWon, coinCourse, kingdomPhase, objective, piecesOf } from "../adventure/progress";
+import { gateSolid, newPuzzleState, stepPuzzle, type Puzzle } from "../overworld/puzzles";
+import { createPuzzleView } from "../overworld/puzzleView";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -51,6 +54,123 @@ export interface OverworldState {
   at?: string;
   /** Adventure mode: the story runs through the region (the gateways open its races). */
   adventure?: boolean;
+}
+
+/** Dev free roam (not an Adventure file): puzzles solved and keys found, for this visit. */
+const devSolved = new Set<string>();
+const devKeys = new Set<string>();
+
+/** The region's puzzles while you drive it: their state, their things in the scene and
+ * the gates' collision (src/overworld/puzzles.ts). */
+function regionPuzzles(game: Game, session: Session, region: Region) {
+  const story = game.overworld?.adventure ? adventureOf(game) : undefined;
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  const key = (p: Puzzle) => `${region.id}.${p.id}`;
+  const you = session.entrants[0]!;
+  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
+  let banner: { text: string; t: number } | undefined;
+  let lastBeat = 0;
+  const items = (region.puzzles ?? []).map((p) => {
+    const st = newPuzzleState(
+      p,
+      story ? Boolean(story.save.puzzles[key(p)]) : devSolved.has(key(p)),
+    );
+    const solid = gateSolid(p, groundAt(p.gate.x, p.gate.z));
+    if (!st.solved) session.solids.push(solid);
+    return { p, st, solid, view: createPuzzleView(session.root, p, groundAt) };
+  });
+  // The kingdom's hidden key shows once its champion has joined you (the valley's: once
+  // its championship is won); dev free roam always.
+  const keyShown = () => !story || !k || championWon(story.save, k);
+  const keyTaken = () =>
+    story ? Boolean(region.kingdom && story.save.keys[region.kingdom]) : devKeys.has(region.id);
+  const say = (text: string) => (banner = { text, t: 3.5 });
+  return {
+    step(x: number, z: number, dt: number, t: number) {
+      if (banner && (banner.t -= dt) <= 0) banner = undefined;
+      for (const it of items) {
+        for (const e of stepPuzzle(it.p, it.st, x, z, dt)) {
+          if (e.kind === "press") {
+            game.sounds.stone(e.count);
+            if (e.count === 1 && it.p.switches.length > 1)
+              say(
+                `${it.p.label}! PRESS THE OTHER ${it.p.switches.length - 1} BEFORE THE DRUMS STOP`,
+              );
+            lastBeat = Math.ceil(it.st.left);
+          } else if (e.kind === "reset") {
+            game.sounds.stonesReset();
+            say("TOO SLOW! THE STONES ROSE AGAIN");
+          } else {
+            game.sounds.solved();
+            const i = session.solids.indexOf(it.solid);
+            if (i >= 0) session.solids.splice(i, 1);
+            if (story) {
+              story.save.puzzles[key(it.p)] = true;
+              persist(game);
+            } else devSolved.add(key(it.p));
+            say(
+              it.p.prize && !keyShown()
+                ? "THE GATE IS OPEN... BUT THE PLINTH INSIDE IS BARE, FOR NOW"
+                : "THE GATE IS OPEN!",
+            );
+          }
+        }
+        // The drums, once a second while they run (faster near the end).
+        if (it.st.left > 0) {
+          const beat = Math.ceil(it.st.left * (it.st.left < 5 ? 2 : 1));
+          if (beat !== lastBeat) {
+            lastBeat = beat;
+            game.sounds.drum(it.st.left < 5);
+          }
+        }
+        // The prize: drive into it.
+        const pr = it.p.prize;
+        if (
+          pr &&
+          it.st.solved &&
+          keyShown() &&
+          !keyTaken() &&
+          Math.hypot(x - pr.x, z - pr.z) < 3.5
+        ) {
+          game.sounds.keyFound();
+          if (story && region.kingdom) {
+            story.save.keys[region.kingdom] = true;
+            persist(game);
+          } else devKeys.add(region.id);
+          say(`YOU FOUND ${region.name.toUpperCase()}'S HIDDEN KEY!`);
+        }
+        it.view.update(it.st, keyTaken(), keyShown(), t, dt);
+      }
+    },
+    draw(ui: UiLayer) {
+      const running = items.find((it) => it.st.left > 0);
+      if (running) {
+        const n = running.st.pressed.filter(Boolean).length;
+        const text = `${running.p.label} ${n}/${running.p.switches.length}`;
+        const w = ui.textWidth(text) + 20;
+        ui.panel(ui.W / 2 - w / 2, 6, w, 30, "wood", "gold");
+        ui.text(text, ui.W / 2, 10, { color: PAL.cream, outline: PAL.shadow, align: "center" });
+        ui.text(running.st.left.toFixed(1), ui.W / 2, 21, {
+          color: running.st.left < 5 ? PAL.coral : PAL.gold,
+          outline: PAL.shadow,
+          align: "center",
+        });
+      }
+      if (banner)
+        wrap(banner.text, ui.W - 60)
+          .slice(0, 2)
+          .forEach((l, i) =>
+            ui.text(l, ui.W / 2, ui.H / 2 - 40 + i * 10, {
+              color: PAL.gold,
+              outline: PAL.shadow,
+              align: "center",
+            }),
+          );
+    },
+    dispose() {
+      for (const it of items) it.view.dispose();
+    },
+  };
 }
 
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
@@ -237,6 +357,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   const entry = entryOf(region);
   let clock = 0;
   let removeGateways: (() => void) | undefined;
+  let puzzles: ReturnType<typeof regionPuzzles> | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -263,6 +384,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
             ]
           : [],
       );
+      puzzles = regionPuzzles(game, session, region);
       // Back out of the gateway you raced, or at the region's spawn.
       const from = [
         ...region.gateways,
@@ -286,6 +408,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
     exit() {
       removeGateways?.();
+      puzzles?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
@@ -301,6 +424,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         return;
       }
       const s = session.entrants[0]!.state;
+      puzzles?.step(s.x, s.z, dt, clock);
       if (inside && !inGateway(inside, s.x, s.z, 3)) inside = undefined;
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
@@ -337,6 +461,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       // Adventure: what to do next, under the plaque.
       const goal = game.overworld?.adventure ? storyGoal(game, region) : undefined;
       if (goal) ui.text(goal, 8, 28, { color: PAL.cream, outline: PAL.shadow });
+      puzzles?.draw(ui);
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)

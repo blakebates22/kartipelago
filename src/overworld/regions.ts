@@ -12,6 +12,7 @@
  * Positions are game coordinates (x, z; heading 0 faces +z, the kart's convention).
  */
 import type { KingdomId } from "../adventure/data";
+import type { Puzzle } from "./puzzles";
 
 export interface Gateway {
   id: string;
@@ -64,6 +65,8 @@ export interface Region {
   /** Adventure: where the champion waits to race you 1 on 1 once round the ring (beside
    * its start line; game/tracks.ts has the region as a race under its package's id). */
   challenge?: { x: number; z: number; heading: number };
+  /** Its switches and puzzles (src/overworld/puzzles.ts). */
+  puzzles?: Puzzle[];
 }
 
 export const REGIONS: Region[] = [
@@ -141,6 +144,26 @@ export const REGIONS: Region[] = [
         heading: 0,
         opensAfter: "valley",
         locked: "CINDERJAW'S FIRE SPLIT THE CLIFF, BUT THE GORGE STILL BURNS: BEAT HIM FIRST",
+      },
+    ],
+    puzzles: [
+      // The Three Stones: an old stone pen in the north-west meadow, its gate shut. Press
+      // the three switch stones round the meadow (one by the gorge's mouth, one in the
+      // meadow inside the ring, one out west) before the drums stop and the gate sinks.
+      // Behind it: the valley's hidden key. (The build's puzzle_gate and puzzle_switch
+      // entities are checked against these in tests/overworld.test.ts.)
+      {
+        id: "three_stones",
+        label: "THE THREE STONES",
+        switches: [
+          { x: -100.39, z: -248.49 },
+          { x: -117.02, z: -109.12 },
+          { x: -256.79, z: -83.43 },
+        ],
+        radius: 3.5,
+        seconds: 30,
+        gate: { x: -208.61, z: -201.45, heading: 0.803, width: 9 },
+        prize: { kind: "key", x: -215.8, z: -208.4 },
       },
     ],
   },

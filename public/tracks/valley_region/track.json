@@ -85,6 +85,41 @@
       "x": -13.73,
       "y": 4.4,
       "z": -400.0
+    },
+    {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "three_stones",
+      "x": -208.61,
+      "z": -201.45,
+      "heading": 0.8028514559173912,
+      "width": 9.0,
+      "prize_x": -215.8,
+      "prize_z": -208.4
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "three_stones",
+      "index": 0,
+      "x": -100.39,
+      "z": -248.49
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "three_stones",
+      "index": 1,
+      "x": -117.02,
+      "z": -109.12
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "three_stones",
+      "index": 2,
+      "x": -256.79,
+      "z": -83.43
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region.py (re-running it rewrites entities)"

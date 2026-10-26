@@ -105,7 +105,7 @@ export function adventureOf(game: Game) {
   if (!game.adventure) game.adventure = { save: loadAdventure(store(), 0) ?? newSave(), slot: 0 };
   return game.adventure;
 }
-const persist = (game: Game) => {
+export const persist = (game: Game) => {
   const a = adventureOf(game);
   saveAdventure(a.save, store(), a.slot);
 };

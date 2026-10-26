@@ -116,6 +116,40 @@ export function createUiSounds(audio: AudioEngine) {
         ["brass", 72, 0.14, 0.12, 0.8],
         ["brass", 79, 0.28, 0.45, 0.9],
       ]),
+    /** The overworld's puzzles (src/overworld/puzzles.ts): a switch stone pressed (each
+     * one higher), the drums beating while they run, the stones popping back up, the
+     * puzzle solved, and its prize. */
+    stone: (n: number) =>
+      audio.notes("sfx", [
+        ["tom", 45 + n * 5, 0, 0.2, 0.9],
+        ["marimba", 67 + n * 5, 0, 0.12],
+        ["marimba", 74 + n * 5, 0.08, 0.3],
+      ]),
+    drum: (hurry: boolean) =>
+      audio.notes("sfx", [["tom", hurry ? 52 : 45, 0, 0.12, hurry ? 0.75 : 0.55]], 0.7),
+    stonesReset: () =>
+      audio.notes("sfx", [
+        ["bassoon", 50, 0, 0.15, 0.8],
+        ["bassoon", 46, 0.15, 0.15, 0.8],
+        ["bassoon", 41, 0.3, 0.4, 0.8],
+      ]),
+    solved: () =>
+      audio.notes("sfx", [
+        ["tom", 40, 0, 0.6, 1],
+        ["brass", 67, 0.1, 0.15, 0.8],
+        ["brass", 72, 0.25, 0.15, 0.8],
+        ["brass", 76, 0.4, 0.15, 0.8],
+        ["brass", 79, 0.55, 0.6, 0.9],
+        ["crash", 0, 0.55, 0.8, 0.5],
+      ]),
+    keyFound: () =>
+      audio.notes("sfx", [
+        ["celesta", 84, 0, 0.12],
+        ["celesta", 88, 0.08, 0.12],
+        ["celesta", 91, 0.16, 0.12],
+        ["celesta", 96, 0.24, 0.5],
+        ["xylophone", 96, 0.24, 0.5, 0.6],
+      ]),
   };
 }
 

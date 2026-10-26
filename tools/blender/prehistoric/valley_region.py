@@ -52,6 +52,12 @@ TUNNEL = (-40.0, CLIFF_R + 8.0)
 PYRAMID = (-240.0, -242.0)
 FORD = (-148.0, 2.0)
 SCAR = (-90.0, CLIFF_R + 4.0)  # Cinderjaw's Scar: the boss gateway (south)
+# The Three Stones (the first Banjo-style puzzle, src/overworld/puzzles.ts): an old stone
+# pen in the north-west meadow, its gate shut, and three switch stones round the meadow.
+PEN = (136.0, 300.0)  # angle (degrees), radius: the pen's middle
+PEN_HALF = 10.0
+PEN_GAP = 4.5  # half the gateway's width
+STONES = [(112.0, 268.0), (137.0, 160.0), (162.0, 270.0)]
 
 
 def polar(a_deg, r):
@@ -305,6 +311,39 @@ def main():
         x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
         gx, gy, gz = c.game(x, y, FLOOR_Z + 0.04 * max(0.0, y - 330.0) + 0.2)
         c.entity("campfire", x=gx, y=gy, z=gz)
+
+    # The Three Stones: the pen (its gate is the game's, src/overworld/puzzles.ts, which
+    # sinks it once all three switches are pressed in time) and a ring of standing stones
+    # round each switch.
+    px, py = polar(*PEN)
+    ia = math.radians(PEN[0]) + math.pi  # facing in, towards the camp
+    fx, fy = math.cos(ia), math.sin(ia)  # the front
+    sx, sy = -fy, fx  # across
+    stone = ("sandstone_block", "wall")
+    t = 0.8
+    for k, (cx, cy, hx, hy) in enumerate((
+            (-PEN_HALF, 0.0, t, PEN_HALF + t),  # back
+            (0.0, PEN_HALF, PEN_HALF + t, t),  # sides
+            (0.0, -PEN_HALF, PEN_HALF + t, t),
+            (PEN_HALF, (PEN_HALF + PEN_GAP) / 2, t, (PEN_HALF - PEN_GAP) / 2 + t),  # front, either side of the gate
+            (PEN_HALF, -(PEN_HALF + PEN_GAP) / 2, t, (PEN_HALF - PEN_GAP) / 2 + t))):
+        wx, wy = px + cx * fx + cy * sx, py + cx * fy + cy * sy
+        box(c, "Pen Wall %d" % k, wx, wy, hx, hy, FLOOR_Z - 2.0, FLOOR_Z + 5.0, stone, rot=ia)
+    for side in (-1, 1):
+        gx, gy = px + PEN_HALF * fx + side * (PEN_GAP + 0.9) * sx, py + PEN_HALF * fy + side * (PEN_GAP + 0.9) * sy
+        box(c, "Pen Gatepost %d" % side, gx, gy, 1.2, 1.2, FLOOR_Z - 2.0, FLOOR_Z + 8.0, stone, rot=ia)
+    box(c, "Pen Plinth", px, py, 1.0, 1.0, FLOOR_Z - 1.0, FLOOR_Z + 1.2, stone, rot=ia)
+    gx, gy, gz = c.game(px + PEN_HALF * fx, py + PEN_HALF * fy, FLOOR_Z)
+    c.entity("puzzle_gate", puzzle="three_stones", x=gx, z=gz, heading=math.atan2(fx, -fy), width=2 * PEN_GAP,
+             prize_x=c.game(px, py, 0)[0], prize_z=c.game(px, py, 0)[2])
+    for k, (a, r) in enumerate(STONES):
+        x, y = polar(a, r)
+        gx, gy, gz = c.game(x, y, natural(x, y))
+        c.entity("puzzle_switch", puzzle="three_stones", index=k, x=gx, z=gz)
+        for j in range(3):
+            b = j * math.tau / 3 + k
+            cone(c, "Switch %d Stone %d" % (k, j), x + 7.0 * math.cos(b), y + 7.0 * math.sin(b), 1.1, natural(x, y) - 1.0,
+                 4.5, stone, segs=5)
 
     # (Raced too: the champion's challenge, once round the ring, from this line.)
     c.start_line()

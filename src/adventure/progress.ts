@@ -30,6 +30,10 @@ export interface AdventureSave {
   duels: Partial<Record<KingdomId, boolean>>;
   /** Act V: return objectives done. */
   returns: Partial<Record<KingdomId, boolean>>;
+  /** The overworld's puzzles solved ("<region>.<puzzle>": src/overworld/puzzles.ts). */
+  puzzles: Record<string, boolean>;
+  /** The kingdoms' hidden keys found (each opens its mini-game slot one day). */
+  keys: Partial<Record<KingdomId, boolean>>;
   /** The second visit to the Dragon Kingdom: its ruined courses' cup. */
   finalCup: boolean;
   /** The scripted first race against the King (always lost), then the Chosen One's. */
@@ -49,6 +53,8 @@ export const newSave = (): AdventureSave => ({
   bosses: {},
   duels: {},
   returns: {},
+  puzzles: {},
+  keys: {},
   finalCup: false,
   kingLost: false,
   kingWon: false,
@@ -79,6 +85,8 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   s.bosses = flags(r.bosses);
   s.duels = flags(r.duels);
   s.returns = flags(r.returns);
+  s.puzzles = flags(r.puzzles);
+  s.keys = flags(r.keys);
   s.finalCup = r.finalCup === true;
   s.kingLost = r.kingLost === true;
   s.kingWon = r.kingWon === true;
