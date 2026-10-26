@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "snow_region",
+  "name": "Snow Kingdom (greybox)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 0.0,
+      "y": 2.3,
+      "z": 285.0
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 12,
+      "radius": 30
+    },
+    {
+      "id": "snowfall_01",
+      "type": "snowfall",
+      "rate": 60,
+      "radius": 60
+    }
+  ],
+  "generator": "tools/blender/prehistoric/snow_region.py (re-running it rewrites entities)"
+}

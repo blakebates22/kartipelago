@@ -15,7 +15,13 @@ import * as THREE from "three";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { loadRecords } from "../app/records";
-import { inGateway, regionById, type Gateway, type Region } from "../overworld/regions";
+import {
+  inGateway,
+  regionById,
+  type Gateway,
+  type Passage,
+  type Region,
+} from "../overworld/regions";
 import type { Session } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
 import { worldById, worldOfTrack } from "../game/worlds";
@@ -27,7 +33,7 @@ import { loadingScreen } from "./loading";
 import { titleScreen } from "./title";
 import { confirmDialog, drawHud } from "./race";
 import { optionsScreen } from "./options";
-import { adventureHub, adventureOf, kingdomScreen, launch } from "./adventure";
+import { adventureHub, adventureOf, freeRoam, kingdomScreen, launch } from "./adventure";
 import { kingdomById } from "../adventure/data";
 import { coinCourse, kingdomPhase, objective } from "../adventure/progress";
 
@@ -136,11 +142,20 @@ function buildGateways(session: Session, region: Region) {
   const stone = new THREE.MeshLambertMaterial({ color: 0x8a7a66 });
   const made: THREE.Material[] = [stone];
   const geos: THREE.BufferGeometry[] = [];
-  for (const g of region.gateways) {
-    const entry = trackById(g.track);
-    const color = new THREE.Color(
-      worldById(worldOfTrack(g.track)?.id ?? region.worldId)?.color ?? "#e0a040",
-    );
+  const marks = [
+    ...region.gateways.map((g) => ({
+      ...g,
+      label: trackById(g.track)?.name ?? g.track,
+      world: worldOfTrack(g.track)?.id ?? region.worldId,
+    })),
+    ...(region.passages ?? []).map((p) => ({
+      ...p,
+      label: `TO ${(regionById(p.to)?.name ?? p.to).toUpperCase()}`,
+      world: regionById(p.to)?.worldId ?? region.worldId,
+    })),
+  ];
+  for (const g of marks) {
+    const color = new THREE.Color(worldById(g.world)?.color ?? "#e0a040");
     const y = you.ground.at(g.x, g.z, PROBE_Y).height;
     const arch = new THREE.Group();
     arch.position.set(g.x, y, g.z);
@@ -183,7 +198,7 @@ function buildGateways(session: Session, region: Region) {
     cx.font = "bold 44px monospace";
     cx.textAlign = "center";
     cx.textBaseline = "middle";
-    cx.fillText((entry?.name ?? g.track).toUpperCase(), 256, 50, 480);
+    cx.fillText(g.label.toUpperCase(), 256, 50, 480);
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     const boardM = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
@@ -210,8 +225,9 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   const entry = entryOf(region);
   let clock = 0;
   let removeGateways: (() => void) | undefined;
-  /** The gateway you're standing in (its card doesn't open again until you leave it). */
-  let inside: Gateway | undefined;
+  /** The gateway (or passage) you're standing in (its card doesn't open again until you
+   * leave it). */
+  let inside: Gateway | Passage | undefined;
 
   const screen: Screen = {
     id: "OVERWORLD",
@@ -220,7 +236,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       game.ui.interactive = false;
       removeGateways = buildGateways(session, region);
       // Back out of the gateway you raced, or at the region's spawn.
-      const from = region.gateways.find((g) => g.id === at);
+      const from = [...region.gateways, ...(region.passages ?? [])].find((g) => g.id === at);
       const you = session.entrants[0]!;
       if (from) {
         const x = from.x + Math.sin(from.heading) * (from.radius + 6);
@@ -256,11 +272,12 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       if (inside && !inGateway(inside, s.x, s.z, 3)) inside = undefined;
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
-        if (g) {
-          inside = g;
+        const p = (region.passages ?? []).find((p) => inGateway(p, s.x, s.z));
+        if (g || p) {
+          inside = g ?? p;
           s.speed = 0;
           game.sounds.confirm();
-          game.screens.push(gatewayCard(game, region, g));
+          game.screens.push(g ? gatewayCard(game, region, g) : passageCard(game, p!));
         }
       }
     },
@@ -284,7 +301,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
-  inside = region.gateways.find((g) => g.id === at);
+  inside = [...region.gateways, ...(region.passages ?? [])].find((g) => g.id === at);
   return screen;
 }
 
@@ -444,6 +461,54 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
         ...(choices.length > 1 ? ([["◀▶", "STANDARD / RUINED"]] as [string, string][]) : []),
         ["ENTER", "SELECT"],
         ["ESC", "BACK OUT"],
+      ]);
+    },
+  };
+}
+
+/** A passage's card: on to the next region, or what's still in the way. */
+function passageCard(game: Game, p: Passage): Screen {
+  const story = game.overworld?.adventure;
+  const s = story ? adventureOf(game).save : undefined;
+  const open = !s || !p.opensAfter || freeRoam() || Boolean(s.bosses[p.opensAfter]);
+  const go = () => {
+    game.overworld = { region: p.to, at: p.toPassage, adventure: story };
+    game.screens.go(overworldLoading(game, p.to, p.toPassage, story));
+  };
+  const menu = new VMenu(
+    game,
+    [
+      ...(open ? [{ label: "ON YOU GO", action: go }] : []),
+      { label: "BACK", action: () => game.screens.pop() },
+    ],
+    () => game.screens.pop(),
+  );
+  return {
+    id: "GATEWAY",
+    enter() {
+      game.ui.interactive = true;
+    },
+    frame(_dt, actions) {
+      menu.handle(actions);
+    },
+    draw(ui) {
+      ui.dim(0.4);
+      const w = 260;
+      const h = 96;
+      const x = Math.round(ui.W / 2 - w / 2);
+      const y = Math.round(ui.H / 2 - h / 2) - 8;
+      ui.panel(x, y, w, h, "parchment", "ink");
+      ui.text(p.label, ui.W / 2, y + 10, { color: PAL.coral, outline: PAL.ink, align: "center" });
+      const why = open ? (regionById(p.to)?.name ?? p.to).toUpperCase() : (p.locked ?? "NOT YET");
+      wrap(why, w - 20)
+        .slice(0, 3)
+        .forEach((l, i) =>
+          ui.text(l, ui.W / 2, y + 26 + i * 9, { color: PAL.ink, align: "center" }),
+        );
+      menu.draw(ui, x + 60, y + h - 40, w - 120, 14, 4);
+      hints(ui, [
+        ["ENTER", "SELECT"],
+        ["ESC", "BACK"],
       ]);
     },
   };

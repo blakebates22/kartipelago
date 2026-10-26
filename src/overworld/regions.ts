@@ -25,6 +25,24 @@ export interface Gateway {
   heading: number;
 }
 
+/** A way on to another region (the doc's passages): a gorge, a pass, a causeway. */
+export interface Passage {
+  id: string;
+  label: string;
+  /** The region it leads to, and the passage there you come out of. */
+  to: string;
+  toPassage: string;
+  x: number;
+  z: number;
+  radius: number;
+  /** Which way you face coming out of it into this region. */
+  heading: number;
+  /** Adventure: it opens once this kingdom's dragon has fallen (dev free roam: always). */
+  opensAfter?: KingdomId;
+  /** What's in the way until then. */
+  locked?: string;
+}
+
 export interface Region {
   id: string;
   name: string;
@@ -38,6 +56,7 @@ export interface Region {
   kingdom?: KingdomId;
   spawn: { x: number; z: number; heading: number };
   gateways: Gateway[];
+  passages?: Passage[];
 }
 
 export const REGIONS: Region[] = [
@@ -90,6 +109,70 @@ export const REGIONS: Region[] = [
         heading: Math.atan2(-0.766, -0.643),
       },
     ],
+    passages: [
+      // The Burnt Gorge, through the north cliff: on to the Snow Kingdom.
+      {
+        id: "burnt_gorge",
+        label: "THE BURNT GORGE · TO THE SNOW KINGDOM",
+        to: "snow_kingdom",
+        toPassage: "burnt_gorge",
+        x: -6.8,
+        z: -440,
+        radius: 8,
+        heading: 0,
+        opensAfter: "valley",
+        locked: "CINDERJAW'S FIRE SPLIT THE CLIFF, BUT THE GORGE STILL BURNS: BEAT HIM FIRST",
+      },
+    ],
+  },
+  {
+    // The doc's second region (tools/blender/prehistoric/snow_region.py, a greybox): a
+    // basin ringed by peaks, a frozen lake in the middle, Hearthglow's village by the gorge.
+    id: "snow_kingdom",
+    name: "Snow Kingdom",
+    packageId: "snow_region",
+    music: "hearthglow",
+    worldId: "frostveil",
+    kingdom: "snow",
+    // In the village square, facing north up to the ring.
+    spawn: { x: 0, z: 290, heading: Math.PI },
+    gateways: [
+      // By the village's great tree (the town square).
+      {
+        id: "hearthglow",
+        track: "hearthglow_hollow",
+        x: 20,
+        z: 275,
+        radius: 6,
+        heading: -Math.PI / 2,
+      },
+      // At the citadel's gate in the west cliff.
+      {
+        id: "frostveil",
+        track: "frostveil_citadel",
+        x: -331,
+        z: 0,
+        radius: 6,
+        heading: Math.PI / 2,
+      },
+      // At the foot of the giant tree, north.
+      { id: "summit", track: "snowy_summit", x: 0, z: -285, radius: 6, heading: 0 },
+      // At the crack in the glacier, east.
+      { id: "aurora", track: "aurora_rift", x: 331, z: 0, radius: 6, heading: -Math.PI / 2 },
+    ],
+    passages: [
+      // Back down the Burnt Gorge to the valley.
+      {
+        id: "burnt_gorge",
+        label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
+        to: "dinosaur_valley",
+        toPassage: "burnt_gorge",
+        x: -2.8,
+        z: 440,
+        radius: 8,
+        heading: Math.PI,
+      },
+    ],
   },
   {
     id: "test_valley",
@@ -121,5 +204,9 @@ export const regionById = (id: string) => REGIONS.find((r) => r.id === id);
 export const regionOfKingdom = (k: KingdomId) => REGIONS.find((r) => r.kingdom === k);
 
 /** Is (x, z) inside the gateway's trigger (by `extra` metres more)? */
-export const inGateway = (g: Gateway, x: number, z: number, extra = 0) =>
-  Math.hypot(x - g.x, z - g.z) < g.radius + extra;
+export const inGateway = (
+  g: { x: number; z: number; radius: number },
+  x: number,
+  z: number,
+  extra = 0,
+) => Math.hypot(x - g.x, z - g.z) < g.radius + extra;

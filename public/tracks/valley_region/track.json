@@ -27,6 +27,27 @@
       "z": 334.25,
       "period": 14.0,
       "offset": 3.0
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -7.01,
+      "y": 1.6,
+      "z": -300.0
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 22.18,
+      "y": 2.4,
+      "z": -350.0
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -13.73,
+      "y": 4.4,
+      "z": -400.0
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region.py (re-running it rewrites entities)"

@@ -37,6 +37,8 @@ CAMP_R = 30.0
 CLIFF_R = 335.0  # where the cliffs begin to rise
 RIM_Z = 70.0
 FLOOR_Z = 1.4  # the valley floor (the river runs a couple of metres below it)
+GORGE_HW = 16.0  # the Burnt Gorge's half width
+GORGE_END = 445.0  # where its road ends (the passage on)
 
 # The river, from the falls to the bog (x, y), and its half width.
 RIVER = [(262.0, 318.0), (230.0, 270.0), (165.0, 205.0), (75.0, 150.0), (-55.0, 92.0), (-148.0, 2.0), (-196.0, -110.0),
@@ -88,11 +90,24 @@ def natural(x, y):
     db = math.hypot(x - bx, y - by)
     if db < br + 10:
         h = lerp(h, WATER_Z - 0.9, smooth((br + 10 - db) / 10))
+    # The Burnt Gorge: the split in the north cliff (Cinderjaw's fire), its floor rising
+    # gently to the far end, where the way on to the Snow Kingdom begins.
+    g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - 250.0) / 40.0)
+    if g > 0:
+        h = lerp(h, FLOOR_Z + 0.04 * max(0.0, y - 330.0), g)
     return h
+
+
+def gorge_x(y):
+    """The gorge winds a little as it climbs north."""
+    return 9.0 * math.sin(max(0.0, y - 260.0) / 45.0)
 
 
 def classify(c, n, info):
     if n.z < 0.62:
+        # The gorge's walls are scorched black.
+        if c.y > 260 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
+            return ("obsidian_cliff", "wall")
         return ("valley_cliff", "wall")
     bx, by, br = BOG
     if math.hypot(c.x - bx, c.y - by) < br + 2 and c.z < WATER_Z + 0.4:
@@ -194,6 +209,11 @@ def main():
         a0 = math.radians(a)
         c.side_road(name, line(spoke_end(a), polar(a, r - 10.0)), "valley_trail", "road", width=10.0, shoulder=1.2,
                     shoulder_mat=grass)
+    # The Burnt Gorge's road, on from the north spoke's end at the ring.
+    gx0, gy0 = spoke_end(90.0)
+    gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.04 * max(0.0, y - 330.0)) for y in range(int(gy0) + 4, int(GORGE_END) + 1, 8)]
+    c.side_road("Burnt Gorge Road", [(gx0, gy0, road_z(gx0, gy0))] + gorge, "valley_trail", "road", width=10.0, shoulder=1.2,
+                shoulder_mat=grass)
     bx, by, br = BOG
     shore = (bx + (br + 4) * math.cos(math.radians(45)), by + (br + 4) * math.sin(math.radians(45)))
     c.side_road("Bog Road", line(spoke_end(225.0), shore), "valley_trail", "road", width=10.0, shoulder=1.2,
@@ -253,6 +273,14 @@ def main():
         g = natural(fx + dx, fy + dy)
         box(c, "Ford Palm %d" % k, fx + dx, fy + dy, 0.5, 0.5, g - 1.0, g + 9.0, ("weathered_timber", "wall"))
         cone(c, "Ford Palm Crown %d" % k, fx + dx, fy + dy, 4.0, g + 8.0, 2.0, ("valley_grass", "wall"), segs=5, role="visual")
+
+    # The gorge's far end: it bends out of sight (a wall of black rock closes the view; the
+    # passage on starts just before it), and it still smoulders.
+    box(c, "Gorge Bend", gorge_x(470.0), 470.0, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z + 6.0, ("obsidian_cliff", "wall"))
+    for k, y in enumerate((300.0, 350.0, 400.0)):
+        x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
+        gx, gy, gz = c.game(x, y, FLOOR_Z + 0.04 * max(0.0, y - 330.0) + 0.2)
+        c.entity("campfire", x=gx, y=gy, z=gz)
 
     gates = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
