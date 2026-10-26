@@ -29,9 +29,10 @@ describe("overworld regions", () => {
     for (const k of KINGDOMS) {
       const r = regionOfKingdom(k.id);
       if (!r) continue;
-      expect(r.gateways.map((g) => g.track).sort(), k.id).toEqual(
-        k.courses.map((c) => c.track).sort(),
-      );
+      const courses = r.gateways.filter((g) => !g.boss).map((g) => g.track);
+      expect(courses.sort(), k.id).toEqual(k.courses.map((c) => c.track).sort());
+      // ...and its dragon's lair.
+      expect(r.gateways.find((g) => g.boss)?.track, k.id).toBe(k.boss!.track);
     }
     expect(regionOfKingdom("valley")?.id).toBe("dinosaur_valley");
   });

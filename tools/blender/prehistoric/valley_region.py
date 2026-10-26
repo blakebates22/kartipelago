@@ -51,6 +51,7 @@ CAVE = (40.0, CLIFF_R + 8.0)  # angle (degrees), radius
 TUNNEL = (-40.0, CLIFF_R + 8.0)
 PYRAMID = (-240.0, -242.0)
 FORD = (-148.0, 2.0)
+SCAR = (-90.0, CLIFF_R + 4.0)  # Cinderjaw's Scar: the boss gateway (south)
 
 
 def polar(a_deg, r):
@@ -112,6 +113,9 @@ def classify(c, n, info):
     bx, by, br = BOG
     if math.hypot(c.x - bx, c.y - by) < br + 2 and c.z < WATER_Z + 0.4:
         return ("bog_mud", "mud")
+    # The burnt trench up to Cinderjaw's Scar.
+    if c.y < -200 and abs(c.x) < 20 + 6 * math.sin(c.y / 13.0):
+        return ("lava_crust", "dirt")
     if c.z < WATER_Z + 0.3:
         return ("valley_sand", "water")  # (the river's wadeable)
     return ("valley_grass", "grass")
@@ -209,6 +213,9 @@ def main():
         a0 = math.radians(a)
         c.side_road(name, line(spoke_end(a), polar(a, r - 10.0)), "valley_trail", "road", width=10.0, shoulder=1.2,
                     shoulder_mat=grass)
+    # Up the burnt trench to Cinderjaw's Scar (south).
+    c.side_road("Scar Road", line(spoke_end(SCAR[0]), polar(SCAR[0], SCAR[1] - 18.0)), "valley_trail", "road", width=10.0,
+                shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
     # The Burnt Gorge's road, on from the north spoke's end at the ring.
     gx0, gy0 = spoke_end(90.0)
     gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.04 * max(0.0, y - 330.0)) for y in range(int(gy0) + 4, int(GORGE_END) + 1, 8)]
@@ -273,6 +280,23 @@ def main():
         g = natural(fx + dx, fy + dy)
         box(c, "Ford Palm %d" % k, fx + dx, fy + dy, 0.5, 0.5, g - 1.0, g + 9.0, ("weathered_timber", "wall"))
         cone(c, "Ford Palm Crown %d" % k, fx + dx, fy + dy, 4.0, g + 8.0, 2.0, ("valley_grass", "wall"), segs=5, role="visual")
+
+    # Cinderjaw's Scar: a black crater torn in the cliff's foot, lava in it, still burning.
+    sx, sy = polar(*SCAR)
+    for k in range(9):
+        a = k * math.tau / 9
+        if abs(math.sin(a) - 1.0) < 0.35:
+            continue  # (its mouth, towards the valley)
+        px, py = sx + 17.0 * math.cos(a), sy + 17.0 * math.sin(a)
+        cone(c, "Scar Rock %d" % k, px, py, 6.0 + 2.0 * math.sin(k * 2.3), FLOOR_Z - 1.0, 12.0 + 6.0 * math.cos(k * 1.7),
+             ("obsidian_cliff", "wall"), segs=5)
+    c.disc("Scar Lava", sx, sy - 4.0, 9.0, FLOOR_Z + 0.25, c.lib("volcano_lava"), coll="Props", role="visual", n=18, wobble=0.2, seed=7)
+    gx, gy, gz = c.game(sx, sy - 4.0, FLOOR_Z + 1.0)
+    c.entity("eruption", x=gx, y=gy, z=gz, period=9.0, offset=1.0)
+    for k in range(4):
+        px, py = sx + (k - 1.5) * 9.0, sy + 12.0
+        gx, gy, gz = c.game(px, py, FLOOR_Z + 0.2)
+        c.entity("campfire", x=gx, y=gy, z=gz)
 
     # The gorge's far end: it bends out of sight (a wall of black rock closes the view; the
     # passage on starts just before it), and it still smoulders.

@@ -42,6 +42,7 @@ CITADEL = (180.0, CLIFF_R + 6.0)  # angle, radius
 TREE = (90.0, CLIFF_R - 40.0)
 RIFT = (0.0, CLIFF_R + 6.0)
 FROZEN_PASS = (28.0, CLIFF_R + 6.0)
+LAIR = (135.0, CLIFF_R + 6.0)  # Rimefang's lair: the boss gateway (north-west)
 
 
 def ring_r(a):
@@ -112,7 +113,8 @@ def main():
     c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
     c.side_road("Village Road", line((vx, vy + vr - 2), ring_end(-90.0)), "packed_snow_road", "road", **trail)
     # Out from the ring to the landmarks.
-    for name, (a, r) in (("Citadel Road", CITADEL), ("Tree Road", TREE), ("Rift Road", RIFT), ("Pass Road", FROZEN_PASS)):
+    for name, (a, r) in (("Citadel Road", CITADEL), ("Tree Road", TREE), ("Rift Road", RIFT), ("Pass Road", FROZEN_PASS),
+                         ("Lair Road", LAIR)):
         c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "packed_snow_road", "road", **trail)
 
     X0, X1, Y0, Y1 = -470, 470, -480, 470
@@ -168,6 +170,18 @@ def main():
     x, y = polar(*FROZEN_PASS)
     rot = math.radians(FROZEN_PASS[0]) + math.pi / 2
     box(c, "Frozen Pass Ice", x, y, 9.0, 3.0, FLOOR_Z - 1.0, FLOOR_Z + 18.0, ("berg_ice", "wall"), rot=rot)
+
+    # Rimefang's lair: an ice cave in the north-west cliff, jagged ice round its mouth.
+    x, y = polar(*LAIR)
+    rot = math.radians(LAIR[0]) + math.pi / 2
+    box(c, "Lair Mouth", x, y, 8.0, 2.0, FLOOR_Z - 1.0, FLOOR_Z + 12.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+    for k in range(7):
+        t = (k - 3) / 3.0
+        if abs(t) < 0.4:
+            continue  # (the mouth itself)
+        px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
+        cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, FLOOR_Z - 1.0, 10.0 + 8.0 * (1 - abs(t)) + 4.0 * math.sin(k * 2.1),
+             ("glacier_ice", "wall"), segs=5)
 
     # The gorge's far end, back towards the valley: it bends out of sight.
     box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))

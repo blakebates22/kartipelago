@@ -33,9 +33,16 @@ import { loadingScreen } from "./loading";
 import { titleScreen } from "./title";
 import { confirmDialog, drawHud } from "./race";
 import { optionsScreen } from "./options";
-import { adventureHub, adventureOf, freeRoam, kingdomScreen, launch } from "./adventure";
+import {
+  adventureHub,
+  adventureOf,
+  freeRoam,
+  kingdomScreen,
+  launch,
+  sceneScreen,
+} from "./adventure";
 import { kingdomById } from "../adventure/data";
-import { coinCourse, kingdomPhase, objective } from "../adventure/progress";
+import { coinCourse, kingdomPhase, objective, piecesOf } from "../adventure/progress";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -149,7 +156,7 @@ function buildGateways(
   const marks = [
     ...region.gateways.map((g) => ({
       ...g,
-      label: trackById(g.track)?.name ?? g.track,
+      label: g.label ?? trackById(g.track)?.name ?? g.track,
       world: worldOfTrack(g.track)?.id ?? region.worldId,
     })),
     ...(region.passages ?? []).map((p) => ({
@@ -351,11 +358,29 @@ interface StoryOffer {
 function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefined {
   const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
   const course = k?.courses.find((c) => c.track === g.track);
-  if (!k || !course) return undefined;
+  if (!k || (!course && !g.boss)) return undefined;
   const a = adventureOf(game);
   const s = a.save;
   const ph = kingdomPhase(s, k);
   const back = () => (game.overworld = { region: region.id, at: g.id, adventure: true });
+  if (g.boss) {
+    const name = k.boss!.name.toUpperCase();
+    if (ph !== "boss" && ph !== "done")
+      return { track: g.track, note: `${name}'S LAIR. FIND THE MAP FIRST (${piecesOf(s, k)}/4)` };
+    return {
+      track: g.track,
+      note: ph === "done" ? `${name} IS BEATEN · RACE AGAIN` : `RACE ${name}!`,
+      go: () => {
+        back();
+        game.screens.go(
+          sceneScreen(game, k.scenes.boss, () =>
+            launch(game, { kind: "boss", kingdom: k.id }, k.boss!.track),
+          ),
+        );
+      },
+    };
+  }
+  if (!course) return undefined;
   if (ph === "locked") return { track: g.track, note: "NOT REACHED YET" };
   if (ph === "duel")
     return {
@@ -529,7 +554,7 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
       const y = Math.round(ui.H / 2 - h / 2) - 8;
       ui.panel(x, y, w, h, "parchment", "ink");
       const e = choices[pick]!;
-      ui.text(std.name.toUpperCase(), ui.W / 2, y + 8, {
+      ui.text((g.label ?? std.name).toUpperCase(), ui.W / 2, y + 8, {
         scale: 2,
         color: PAL.coral,
         outline: PAL.ink,

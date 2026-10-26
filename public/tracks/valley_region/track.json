@@ -29,21 +29,58 @@
       "offset": 3.0
     },
     {
+      "id": "eruption_02",
+      "type": "eruption",
+      "x": 0.0,
+      "y": 2.4,
+      "z": 343.0,
+      "period": 9.0,
+      "offset": 1.0
+    },
+    {
       "id": "campfire_02",
+      "type": "campfire",
+      "x": -13.5,
+      "y": 1.6,
+      "z": 327.0
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -4.5,
+      "y": 1.6,
+      "z": 327.0
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 4.5,
+      "y": 1.6,
+      "z": 327.0
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": 13.5,
+      "y": 1.6,
+      "z": 327.0
+    },
+    {
+      "id": "campfire_06",
       "type": "campfire",
       "x": -7.01,
       "y": 1.6,
       "z": -300.0
     },
     {
-      "id": "campfire_03",
+      "id": "campfire_07",
       "type": "campfire",
       "x": 22.18,
       "y": 2.4,
       "z": -350.0
     },
     {
-      "id": "campfire_04",
+      "id": "campfire_08",
       "type": "campfire",
       "x": -13.73,
       "y": 4.4,

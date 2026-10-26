@@ -23,6 +23,10 @@ export interface Gateway {
   radius: number;
   /** Which way the arch faces: you come back out of it this way after a race. */
   heading: number;
+  /** The kingdom's dragon's lair (its boss race), not one of its four courses. */
+  boss?: boolean;
+  /** The name on its board, when it isn't the course's. */
+  label?: string;
 }
 
 /** A way on to another region (the doc's passages): a gorge, a pass, a causeway. */
@@ -112,6 +116,17 @@ export const REGIONS: Region[] = [
         radius: 6,
         heading: Math.atan2(-0.766, -0.643),
       },
+      // Cinderjaw's Scar, up the burnt trench in the south: the dragon's race.
+      {
+        id: "scar",
+        track: "boss_prehistoric",
+        x: 0,
+        z: 318,
+        radius: 6,
+        heading: Math.PI,
+        boss: true,
+        label: "CINDERJAW'S SCAR",
+      },
     ],
     passages: [
       // The Burnt Gorge, through the north cliff: on to the Snow Kingdom.
@@ -164,6 +179,17 @@ export const REGIONS: Region[] = [
       { id: "summit", track: "snowy_summit", x: 0, z: -285, radius: 6, heading: 0 },
       // At the crack in the glacier, east.
       { id: "aurora", track: "aurora_rift", x: 331, z: 0, radius: 6, heading: -Math.PI / 2 },
+      // Rimefang's lair, an ice cave in the north-west cliff: the dragon's race.
+      {
+        id: "lair",
+        track: "boss_snowy",
+        x: -232.6,
+        z: -232.6,
+        radius: 6,
+        heading: Math.PI / 4,
+        boss: true,
+        label: "RIMEFANG'S LAIR",
+      },
     ],
     passages: [
       // Back down the Burnt Gorge to the valley.
