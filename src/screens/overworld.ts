@@ -45,8 +45,11 @@ import {
   sceneScreen,
 } from "./adventure";
 import { DRAGON, KINGDOMS, kingdomById, type KingdomId } from "../adventure/data";
+import { Racer as RacerView } from "../render/racers/racer";
+import type { RacerId } from "../render/racers/designs";
 import {
   championWon,
+  championsOf,
   coinCourse,
   completeReturn,
   dragonPhase,
@@ -251,6 +254,54 @@ function regionMap(session: Session, region: Region, extra: { x: number; z: numb
         const [u, v] = at(s.x, s.z);
         ui.rect(x0 + Math.round(u) - 2, y0 + Math.round(v) - 2, 4, 4, "#ff60c0");
       }
+    },
+  };
+}
+
+/** Your crew at the town square: the champions who've joined you, parked in a row by
+ * where you arrive (dev free roam: the kingdom's own champion), and the champion who's
+ * waiting to race you 1 on 1 parked by their challenge's arch. */
+function regionCrew(game: Game, session: Session, region: Region) {
+  const story = game.overworld?.adventure ? adventureOf(game).save : undefined;
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  const waiting = challengeOf(game, region);
+  const joined = story
+    ? championsOf(story).map((c) => c.look)
+    : k?.champion
+      ? [k.champion.look]
+      : [];
+  const you = session.entrants[0]!;
+  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
+  const made: RacerView[] = [];
+  const park = (look: RacerId, x: number, z: number, heading: number) => {
+    const r = new RacerView(look, { seed: made.length * 13 + 3 });
+    const y = groundAt(x, z);
+    r.root.position.set(x, y, z);
+    r.root.rotation.y = heading;
+    r.placeShadow(x, y, z, heading, 0);
+    session.root.add(r.root, r.shadow);
+    // (Parked karts are solid.)
+    session.solids.push({ kind: "circle", look: "tree", x, z, radius: 1.4, height: y + 3 });
+    made.push(r);
+  };
+  const sp = region.spawn;
+  const fx = Math.sin(sp.heading);
+  const fz = Math.cos(sp.heading);
+  joined.forEach((look, i) => {
+    const side = i % 2 ? 1 : -1;
+    const across = side * (6 + 4 * Math.floor(i / 2));
+    // In a row either side of the way out of the square, facing in to it.
+    park(look, sp.x + fx * 10 + fz * across, sp.z + fz * 10 - fx * across, sp.heading + Math.PI);
+  });
+  if (waiting && region.challenge && k?.champion) {
+    const c = region.challenge;
+    const rx = Math.cos(c.heading);
+    const rz = -Math.sin(c.heading);
+    park(k.champion.look, c.x + rx * 9, c.z + rz * 9, c.heading);
+  }
+  return {
+    dispose() {
+      for (const r of made) r.dispose(session.root);
     },
   };
 }
@@ -625,6 +676,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let returnGate: ReturnType<typeof regionReturnGate> | undefined;
   let blockers: ReturnType<typeof regionBlockers> | undefined;
   let map: ReturnType<typeof regionMap> | undefined;
+  let crew: ReturnType<typeof regionCrew> | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -668,6 +720,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles = regionPuzzles(game, session, region);
       returnGate = regionReturnGate(game, session, region);
       blockers = regionBlockers(game, session, region);
+      crew = regionCrew(game, session, region);
       map = regionMap(session, region, [
         ...(challenge ? [challenge] : []),
         ...(taskMark ? [taskMark] : []),
@@ -694,6 +747,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles?.dispose();
       returnGate?.dispose();
       blockers?.dispose();
+      crew?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
