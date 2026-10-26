@@ -195,6 +195,16 @@ describe("the save", () => {
     expect(j.pieces).toEqual({});
     mem.set("kartipelago.adventure.v1", "not json");
     expect(loadAdventure(store)).toBeUndefined();
+    // Where you were in the overworld, puzzles solved and keys found come back too.
+    const w = newSave();
+    w.where = { region: "snow_kingdom", at: "frostveil" };
+    w.puzzles["dinosaur_valley.three_stones"] = true;
+    w.keys.valley = true;
+    saveAdventure(w, store);
+    expect(loadAdventure(store)).toEqual(w);
+    mem.set("kartipelago.adventure.v1", '{"where":{"region":4},"keys":{"valley":1}}');
+    expect(loadAdventure(store)!.where).toBeUndefined();
+    expect(loadAdventure(store)!.keys).toEqual({});
   });
 
   it("three files, each with its own story and racer; file 1 is the old save", () => {

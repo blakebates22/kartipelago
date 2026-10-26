@@ -206,6 +206,55 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
   };
 }
 
+/** The region's map, top right: its ring road, the gateways (gold; the dragon's lair
+ * red), the ways on (white), the champion or the return task when they're waiting (green),
+ * and you (blinking). Drawn once to a canvas; only you move. */
+function regionMap(session: Session, region: Region, extra: { x: number; z: number }[]) {
+  const S = 72;
+  const R = 480; // (metres from the middle to the map's edge)
+  const at = (x: number, z: number) =>
+    [S / 2 + (x / R) * (S / 2), S / 2 + (z / R) * (S / 2)] as const;
+  const cv = document.createElement("canvas");
+  cv.width = S;
+  cv.height = S;
+  const g = cv.getContext("2d")!;
+  g.fillStyle = "rgba(20, 30, 20, 0.75)";
+  g.beginPath();
+  g.arc(S / 2, S / 2, S / 2 - 1, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = "#d8c8a0";
+  g.lineWidth = 2;
+  g.beginPath();
+  const pts = session.track?.samples ?? [];
+  pts.forEach((p, i) => {
+    const [u, v] = at(p.pos.x, p.pos.z);
+    if (i === 0) g.moveTo(u, v);
+    else g.lineTo(u, v);
+  });
+  g.closePath();
+  g.stroke();
+  const dot = (x: number, z: number, color: string, r = 2) => {
+    const [u, v] = at(x, z);
+    g.fillStyle = color;
+    g.fillRect(Math.round(u - r), Math.round(v - r), r * 2, r * 2);
+  };
+  for (const p of region.passages ?? []) dot(p.x, p.z, "#ffffff");
+  for (const gw of region.gateways) dot(gw.x, gw.z, gw.boss || gw.king ? "#e04030" : "#f0c040");
+  for (const e of extra) dot(e.x, e.z, "#60e070");
+  return {
+    draw(ui: UiLayer, t: number) {
+      const x0 = ui.W - S - 6;
+      const y0 = 6;
+      ui.image(cv, x0, y0, S, S, false);
+      const s = session.entrants[0]!.state;
+      if (Math.sin(t * 8) > -0.3) {
+        const [u, v] = at(s.x, s.z);
+        ui.rect(x0 + Math.round(u) - 2, y0 + Math.round(v) - 2, 4, 4, "#ff60c0");
+      }
+    },
+  };
+}
+
 /** Act V's return task's yard: its tool obstacle (solid, shown, until the kingdom's tool
  * is in the bag; dev free roam: in the ruined region) and what it says when you meet it. */
 function regionReturnGate(game: Game, session: Session, region: Region) {
@@ -417,6 +466,11 @@ export function overworldLoading(
         adventure: story,
         ruined: story ? undefined : ruined,
       };
+      // Adventure: the file remembers where you are.
+      if (save && story) {
+        save.where = { region: region.id, ...(at ? { at } : {}) };
+        persist(game);
+      }
       game.audio.music.stop(0.6);
       game.audio.music.prepare(region.music);
       const token = game.screens.token;
@@ -570,6 +624,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let puzzles: ReturnType<typeof regionPuzzles> | undefined;
   let returnGate: ReturnType<typeof regionReturnGate> | undefined;
   let blockers: ReturnType<typeof regionBlockers> | undefined;
+  let map: ReturnType<typeof regionMap> | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -613,6 +668,10 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles = regionPuzzles(game, session, region);
       returnGate = regionReturnGate(game, session, region);
       blockers = regionBlockers(game, session, region);
+      map = regionMap(session, region, [
+        ...(challenge ? [challenge] : []),
+        ...(taskMark ? [taskMark] : []),
+      ]);
       // Back out of the gateway you raced, or at the region's spawn.
       const from = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === at);
       const you = session.entrants[0]!;
@@ -697,6 +756,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       puzzles?.draw(ui);
       returnGate?.draw(ui);
       blockers?.draw(ui);
+      map?.draw(ui, clock);
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)

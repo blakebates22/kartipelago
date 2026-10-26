@@ -1918,6 +1918,8 @@ function buildSession(
     autopilot() {
       if (line && !you.driver) you.driver = createDriver(line, 0, tuning.ai);
     },
+    /** The lap's centre line (the overworld's map draws its ring road from it). */
+    track,
     /** The solid things karts hit besides the track's own collision (the overworld adds
      * its puzzles' gates here, and takes them away again when they open). */
     solids,

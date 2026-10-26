@@ -69,7 +69,7 @@ import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
 import { overworldLoading } from "./overworld";
-import { regionOfKingdom } from "../overworld/regions";
+import { regionById, regionOfKingdom } from "../overworld/regions";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
 
@@ -156,6 +156,11 @@ export function adventureFiles(game: Game, erasing = false): Screen {
     const a = openFile(game, i);
     // A new file (or one from before files had racers) picks its racer first.
     if (!a.save.racer) return game.screens.go(characterSelect(game, { adventure: i }));
+    // Back where you were in the overworld (unless the story has a scene to show first:
+    // the world map plays it).
+    const w = a.save.where;
+    if (w && regionById(w.region) && !dueScene(a.save))
+      return game.screens.go(overworldLoading(game, w.region, w.at, true));
     game.screens.go(adventureHub(game));
   };
   const back = () =>

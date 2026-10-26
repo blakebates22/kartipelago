@@ -34,6 +34,9 @@ export interface AdventureSave {
   puzzles: Record<string, boolean>;
   /** The kingdoms' hidden keys found (each opens its mini-game slot one day). */
   keys: Partial<Record<KingdomId, boolean>>;
+  /** Where you were in the overworld (the region, and the gateway you last came out of):
+   * opening the file takes you back there. */
+  where?: { region: string; at?: string };
   /** The second visit to the Dragon Kingdom: its ruined courses' cup. */
   finalCup: boolean;
   /** The scripted first race against the King (always lost), then the Chosen One's. */
@@ -92,6 +95,9 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   s.kingWon = r.kingWon === true;
   s.seen = Array.isArray(r.seen) ? r.seen.filter((x): x is string => typeof x === "string") : [];
   if (typeof r.racer === "string") s.racer = r.racer;
+  const w = r.where as Record<string, unknown> | undefined;
+  if (w && typeof w === "object" && typeof w.region === "string")
+    s.where = { region: w.region, ...(typeof w.at === "string" ? { at: w.at } : {}) };
   return s;
 }
 
