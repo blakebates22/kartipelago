@@ -516,14 +516,35 @@ def main():
         c.tunnel(rock, a, b, half=c.width / 2 + 3.0, height=60.0, pad=0.0)
     c.paint_rock(rock, ("ember_ash", "wall"), ("magma_rock", "wall"), floor=("cave_rock", "road"), top_z=VOLC_H - 6, floor_z=14)
     volcano(c)
-    floor = []
+    # The cave's floor, a little under the road, banked with it (it was a flat ribbon: on
+    # the road's low side, where it banks into the turns at the mouths, the flat floor's
+    # edge stood above the road, a ledge that caught karts entering and leaving the
+    # tunnel: Blake's review).
+    bm = kit.bmesh.new()
+    rows = []
     s = t0 - 22
     while s <= t1 + 22:
         q = c.at(s)
-        wide = in_volcano(q.p.x, q.p.y, 0.85)
-        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.0) + (14.0 if wide else 0.0), q.p.z - 0.25))
+        half = c.width / 2 + 3.0 + (7.0 if in_volcano(q.p.x, q.p.y, 0.85) else 0.0)
+        # (Under the road a little; beyond its edges it falls away like the shoulders, a
+        # metre lower at the walls, so it never stands above them.)
+        w = c.width / 2
+        # (And at its two ends it rises gently out of the ground, rather than starting with
+        # an edge.)
+        rise = 1.2 * (1.0 - min(1.0, (s - (t0 - 22)) / 18.0, ((t1 + 22) - s) / 18.0))
+        rows.append([bm.verts.new(q.p + q.r * a + Vector((0, 0, dz - rise)))
+                     for a, dz in ((-half, -1.25), (-w, -0.3), (0.0, -0.25), (w, -0.3), (half, -1.25))])
         s += 2.0
-    c.ribbon("Cave Floor", floor, 26, 0, c.lib("cave_rock", "road"), coll="Collision", role="collision", steps=4)
+    for lo, hi in zip(rows, rows[1:]):
+        for k in range(4):
+            bm.faces.new((lo[k], lo[k + 1], hi[k + 1], hi[k]))
+    bmesh_ops = kit.bmesh.ops
+    bmesh_ops.recalc_face_normals(bm, faces=bm.faces)
+    for f in bm.faces:
+        if f.normal.z < 0:
+            f.normal_flip()
+    cave = c.mesh_object("Cave Floor", bm, "Collision", "collision")
+    c.assign(cave, c.lib("cave_rock", "road"))
     # Warm light pools down the cave, so it reads in the dark.
     lights = []
     s = t0 + 6

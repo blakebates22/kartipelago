@@ -739,7 +739,7 @@
   ],
   "generator": "tools/blender/prehistoric/ember_peak_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "ember_peak.py": "49d5264a16d409db35ae9322a98fe10e96cfe86f77a2e6345040b3d639d17f78",
+    "ember_peak.py": "31c51901f730454a2abcd8328a83735f35de1b4601d372b29c34e6a2f3550a70",
     "ember_ruins.py": "9e086b118beb027f32cac72140ab149c72c569651e3925c5e6e04126e6e315a2"
   }
 }
