@@ -2727,6 +2727,163 @@ function splashLagoon(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Dragon Race"
+
+export const BOSS_MELODY = bars(
+  "D5:.5 D5:.5 A5:1 F5:.5 E5:.5 D5:1",
+  "F5:.5 F5:.5 Bb5:1 D6:1 Bb5:1",
+  "G5:.5 G5:.5 C6:1 E6:1 C6:1",
+  "D6:1.5 C6:.5 A5:1 F5:1",
+  "A5:.5 G5:.5 F5:1 D5:1 A5:1",
+  "Bb5:.5 A5:.5 F5:1 D5:1 F5:1",
+  "G5:.5 A5:.5 Bb5:1 D6:1 G5:1",
+  "C#6:1 E6:1 A5:2",
+  "C6:.5 A5:.5 F5:1 A5:1 C6:1",
+  "E6:.5 D6:.5 C6:1 G5:1 E5:1",
+  "F5:.5 E5:.5 D5:1 A5:1 D6:1",
+  "F6:.5 D6:.5 Bb5:1 F5:1 D5:1",
+  "D5:.5 G5:.5 Bb5:1 D6:1 Bb5:1",
+  "A5:.5 C#6:.5 E6:1 C#6:1 A5:1",
+  "D6:1 A5:1 F5:1 D5:1",
+  "E5:.5 F5:.5 E5:1 C#5:1 A4:1",
+);
+export const BOSS_CHORDS =
+  "Dm:4 Bb:4 C:4 Dm:4 Dm:4 Bb:4 Gm:4 A:4 F:4 C:4 Dm:4 Bb:4 Gm:4 A:4 Dm:4 A:4";
+
+/** "Dragon Race": the dragons' boss races, D minor, 164 BPM. Brass hammering out the
+ * tune over driving strings, horns answering, a galloping bass, war drums. */
+function dragonRace(): Song {
+  const ch = chart(BOSS_CHORDS);
+  const mel = seq(BOSS_MELODY, 0, 0.88);
+  const b = mel.filter((n) => n.t >= 32);
+  const gallop: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.25, "R"],
+    [0.75, 0.25, "R"],
+    [1, 0.5, "8"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "R"],
+    [2.5, 0.25, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "boss",
+    title: "Dragon Race",
+    role: "Boss races",
+    bpm: 164,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("brass", "base", 1, mel),
+      part("horn", "base", 0.55, shift(b, 0, -12)),
+      part("strings", "base", 0.6, arpeggio(ch, 0.25, [0, 1, 2, 1, 0, 1, 2, 3], 50, 0.2, 0.5)),
+      part("pizz", "base", 0.45, stabs(ch, [0, 1.5, 3], 62, 0.2, 0.5)),
+      part("bell", "base", 0.3, arpeggio(ch, 2, [3, 2], 74, 1.5, 0.35)),
+      part("drone", "base", 0.45, bassLine(ch, [[0, 3.9, "R"]], 26, 0.6)),
+      part("bass", "base", 1, bassLine(ch, gallop, 26, 0.85)),
+      ...drumParts("base", 0.9, drums("K...K...K...K...", KIT, 0.25, 16)),
+      ...drumParts("base", 0.65, drums("....S.......S.ss", KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("O.o.o.O.o.o.OOoo", KIT, 0.25, 16)),
+      ...drumParts("base", 0.4, drums("i.i.i.i.i.i.i.i.", KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums("C...............", KIT, 0.25, 4, 0)),
+      ...drumParts("base", 0.45, drums("C...............", KIT, 0.25, 4, 32)),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- the ruins' music
+//
+// Blake (Oct 26): the ruined courses want their own music. Each ruin plays its course's
+// piece arranged for the wreckage: the bright voices (steel pan, marimba, xylophone,
+// celesta, flutes) handed to darker ones (strings, pizzicato, tolling bells, horns,
+// brass), the tune doubled an octave down in the strings, war drums in place of the
+// groove, and a little faster, since the ruins are the speedrun courses.
+
+const DRUM_VOICES = new Set<InstrumentId>([
+  "kick",
+  "snare",
+  "hat",
+  "shaker",
+  "woodblock",
+  "bongo",
+  "tamb",
+  "crash",
+  "tom",
+  "djembe",
+  "logdrum",
+]);
+const RUIN_VOICE: Partial<Record<InstrumentId, InstrumentId>> = {
+  steelpan: "strings",
+  marimba: "pizz",
+  xylophone: "pizz",
+  celesta: "bell",
+  flute: "horn",
+  panflute: "horn",
+  clarinet: "brass",
+  square: "brass",
+};
+/** The voices that carry a tune (doubled an octave down in the ruin). */
+const TUNE_VOICES = new Set<InstrumentId>([
+  "steelpan",
+  "xylophone",
+  "flute",
+  "panflute",
+  "clarinet",
+  "square",
+]);
+
+export function ruinVersion(song: Song): Song {
+  const parts: Part[] = [];
+  for (const p of song.parts) {
+    if (DRUM_VOICES.has(p.inst)) continue;
+    parts.push({ ...p, inst: RUIN_VOICE[p.inst] ?? p.inst, gain: p.gain * 0.9 });
+    if (TUNE_VOICES.has(p.inst))
+      parts.push(part("strings", p.stem, p.gain * 0.3, shift(p.notes, 0, -12)));
+  }
+  const n = song.beats / 4;
+  parts.push(
+    ...drumParts("base", 0.85, drums("K..k..K.K..k..K.", KIT, 0.25, n)),
+    ...drumParts("base", 0.6, drums("....S.......S...", KIT, 0.25, n)),
+    ...drumParts("base", 0.55, drums("O..o..o.O.o.o.oo", KIT, 0.25, n)),
+    ...drumParts("base", 0.35, drums("i.i.i.i.i.i.i.i.", KIT, 0.25, n)),
+    ...drumParts("base", 0.4, drums("C...............", KIT, 0.25, 1)),
+  );
+  return {
+    ...song,
+    id: `${song.id}_ruin`,
+    title: `${song.title} (Ruined)`,
+    bpm: Math.round(song.bpm * 1.06),
+    parts,
+  };
+}
+
+/** The course pieces that have a ruined version (every course with a ruin). */
+export const RUIN_SONGS = [
+  "riverbend",
+  "cascade",
+  "bonebog",
+  "ember",
+  "frostveil",
+  "summit",
+  "hearthglow",
+  "aurora",
+  "canyon",
+  "oasis",
+  "ghost",
+  "depths",
+  "coral_cove",
+  "shipwreck_bay",
+  "volcano_isle",
+  "splash_lagoon",
+  "dragon",
+  "dragon_canyon",
+  "snow_dragon",
+  "celestial",
+];
+
 export const SONGS: Record<string, Song> = {
   title: title(),
   select: select(),
@@ -2756,7 +2913,12 @@ export const SONGS: Record<string, Song> = {
   shipwreck_bay: shipwreckBay(),
   volcano_isle: volcanoIsle(),
   splash_lagoon: splashLagoon(),
+  boss: dragonRace(),
 };
+for (const id of RUIN_SONGS) {
+  const r = ruinVersion(SONGS[id]!);
+  SONGS[r.id] = r;
+}
 
 /** The music player's list order: the menus' pieces, then each world's in the Tracks menu's
  * order (src/game/worlds.ts), then the rest. Pieces keep their order within a group. */
@@ -2782,7 +2944,6 @@ const rank = (role: string) => {
 /** The music player's list: composed pieces and planned ones not written yet, by group. */
 export const CATALOG: { id: string; title: string; role: string; available: boolean }[] = [
   ...Object.values(SONGS).map((s) => ({ id: s.id, title: s.title, role: s.role, available: true })),
-  // Planned: the dragons' boss races (they borrow their kingdom's), and Adventure's map.
-  { id: "boss", title: "Dragon Race", role: "Boss races", available: false },
+  // Planned: Adventure's map.
   { id: "adventure", title: "Adventure Map", role: "Adventure mode", available: false },
 ].sort((x, y) => rank(x.role) - rank(y.role));

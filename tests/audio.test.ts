@@ -45,6 +45,7 @@ const melodies: [string, string, number][] = [
   ["shipwreck_bay", S.WRECK_MELODY, 64],
   ["volcano_isle", S.VOLCANO_MELODY, 64],
   ["splash_lagoon", S.SPLASH_MELODY, 64],
+  ["boss", S.BOSS_MELODY, 64],
 ];
 const charts: [string, string, number, string][] = [
   [
@@ -71,6 +72,7 @@ const charts: [string, string, number, string][] = [
   ["shipwreck_bay", S.WRECK_CHORDS, 64, S.WRECK_MELODY],
   ["volcano_isle", S.VOLCANO_CHORDS, 64, S.VOLCANO_MELODY],
   ["splash_lagoon", S.SPLASH_CHORDS, 64, S.SPLASH_MELODY],
+  ["boss", S.BOSS_CHORDS, 64, S.BOSS_MELODY],
 ];
 
 describe("the soundtrack", () => {
@@ -114,7 +116,11 @@ describe("the soundtrack", () => {
 
   it("renders every piece cleanly: right length, in sync, no clipping, not silent", () => {
     const rate = 16000; // half rate keeps the test quick
-    for (const song of Object.values(S.SONGS)) {
+    // (The ruins' arrangements are made from these by one rule: two of them stand in.)
+    const songs = Object.values(S.SONGS).filter(
+      (s) => !s.id.endsWith("_ruin") || s.id === "riverbend_ruin" || s.id === "celestial_ruin",
+    );
+    for (const song of songs) {
       const stems = renderSongData(song, rate);
       const len = Math.round(((song.beats * 60) / song.bpm) * rate);
       for (const [name, d] of Object.entries(stems)) {
@@ -130,7 +136,20 @@ describe("the soundtrack", () => {
         expect(Math.sqrt(sum / d.length), `${song.id}/${name}`).toBeGreaterThan(0.01);
       }
     }
-  }, 180000);
+  }, 400000);
+
+  it("gives every ruin its own arrangement of its course's piece", () => {
+    for (const id of S.RUIN_SONGS) {
+      const base = S.SONGS[id]!;
+      const ruin = S.SONGS[`${id}_ruin`]!;
+      expect(ruin.beats, id).toBe(base.beats);
+      expect(ruin.bpm, id).toBeGreaterThan(base.bpm);
+      expect(
+        ruin.parts.map((p) => p.inst),
+        id,
+      ).not.toEqual(base.parts.map((p) => p.inst));
+    }
+  });
 
   it("normalises layers together, keeping their balance", () => {
     const stems = { base: new Float32Array([0.5, -1]), a: new Float32Array([0.5, 0]) };

@@ -63,7 +63,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/riverbend_palms_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "riverbend_ruins",
-    music: "riverbend",
+    music: "riverbend_ruin",
     load: { scene: "track", packageId: "riverbend_palms_ruin" },
   },
   // The previous Riverbend Palms (v2.1, before Blake's first review round), kept
@@ -100,7 +100,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/cascade_caverns_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "cascade_ruins",
-    music: "cascade",
+    music: "cascade_ruin",
     load: { scene: "track", packageId: "cascade_caverns_ruin" },
   },
   // The first Cascade ruin (it kept the north road after the leap; the cut back to the start
@@ -112,7 +112,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/cascade_caverns_ruin_v2.jpg",
     modes: ["race", "timeTrial"],
     theme: "cascade_ruins",
-    music: "cascade",
+    music: "cascade_ruin",
     load: { scene: "track", packageId: "cascade_caverns_ruin_v2" },
   },
   // The previous Cascade Caverns (v2, before Blake's first review round), kept
@@ -149,7 +149,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/bonebog_pyramid_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "bonebog_ruins",
-    music: "bonebog",
+    music: "bonebog_ruin",
     load: { scene: "track", packageId: "bonebog_pyramid_ruin" },
   },
   {
@@ -174,7 +174,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/ember_peak_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "ember_ruins",
-    music: "ember",
+    music: "ember_ruin",
     load: { scene: "track", packageId: "ember_peak_ruin" },
   },
   // The first Dry Gulch (round Boot Hill, the long mine), replaced by the new lap on
@@ -237,7 +237,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/coral_cove_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "cove_ruins",
-    music: "coral_cove",
+    music: "coral_cove_ruin",
     load: { scene: "track", packageId: "coral_cove_ruin" },
   },
   // The Coral Cove greybox (the painted course replaced it on 2026-10-25; the same lap):
@@ -275,7 +275,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/shipwreck_bay_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "wreck_ruins",
-    music: "shipwreck_bay",
+    music: "shipwreck_bay_ruin",
     load: { scene: "track", packageId: "shipwreck_bay_ruin" },
   },
   // The Shipwreck Bay greybox (the painted course replaced it on 2026-10-25; the same lap):
@@ -326,7 +326,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/volcano_isle_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "isle_ruins",
-    music: "volcano_isle",
+    music: "volcano_isle_ruin",
     load: { scene: "track", packageId: "volcano_isle_ruin" },
   },
   // The Volcano Isle greybox (the painted course replaced it on 2026-10-26; the same lap):
@@ -352,7 +352,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/boss_prehistoric.jpg",
     modes: ["race", "timeTrial"],
     theme: "river_valley",
-    music: "riverbend",
+    music: "boss",
     load: { scene: "track", packageId: "boss_prehistoric" },
   },
   {
@@ -363,7 +363,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/boss_snowy.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_pass",
-    music: "summit",
+    music: "boss",
     laps: 1,
     load: { scene: "track", packageId: "boss_snowy" },
   },
@@ -375,7 +375,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/boss_desert.jpg",
     modes: ["race", "timeTrial"],
     theme: "canyon_dash",
-    music: "canyon",
+    music: "boss",
     load: { scene: "track", packageId: "boss_desert" },
   },
   {
@@ -386,7 +386,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/boss_dragon.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragonspire_keep",
-    music: "dragon",
+    music: "boss",
     laps: 1,
     load: { scene: "track", packageId: "boss_dragon" },
   },
@@ -398,7 +398,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/boss_tropic.jpg",
     modes: ["race", "timeTrial"],
     theme: "beach_party",
-    music: "title",
+    music: "boss",
     load: { scene: "track", packageId: "boss_tropic" },
   },
   // The beach world's fourth course, painted (the Tropic Isles, Oct 26): the greybox's lap
@@ -423,7 +423,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/splash_lagoon_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "splash_ruins",
-    music: "splash_lagoon",
+    music: "splash_lagoon_ruin",
     load: { scene: "track", packageId: "splash_lagoon_ruin" },
   },
   // The Splash Lagoon greybox (the painted course replaced it on 2026-10-26; the same lap):
@@ -573,7 +573,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/frostveil_citadel_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "frost_ruins",
-    music: "frostveil",
+    music: "frostveil_ruin",
     load: { scene: "track", packageId: "frostveil_citadel_ruin" },
   },
   {
@@ -596,7 +596,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/snowy_summit_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_ruins",
-    music: "summit",
+    music: "summit_ruin",
     load: { scene: "track", packageId: "snowy_summit_ruin" },
   },
   {
@@ -619,7 +619,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/hearthglow_hollow_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "hearth_ruins",
-    music: "hearthglow",
+    music: "hearthglow_ruin",
     load: { scene: "track", packageId: "hearthglow_hollow_ruin" },
   },
   {
@@ -642,7 +642,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/aurora_rift_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "aurora_ruins",
-    music: "aurora",
+    music: "aurora_ruin",
     load: { scene: "track", packageId: "aurora_rift_ruin" },
   },
   // Desert World (src/game/worlds.ts), built by tools/blender/prehistoric/canyon_*.py.
@@ -666,7 +666,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/canyon_dash_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "canyon_ruins",
-    music: "canyon",
+    music: "canyon_ruin",
     load: { scene: "track", packageId: "canyon_dash_ruin" },
   },
   {
@@ -689,7 +689,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/oasis_haven_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "oasis_ruins",
-    music: "oasis",
+    music: "oasis_ruin",
     load: { scene: "track", packageId: "oasis_haven_ruin" },
   },
   {
@@ -712,7 +712,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/dry_gulch_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "gulch_ruins",
-    music: "ghost",
+    music: "ghost_ruin",
     load: { scene: "track", packageId: "dry_gulch_ruin" },
   },
   {
@@ -735,7 +735,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/impact_depths_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "impact_ruins",
-    music: "depths",
+    music: "depths_ruin",
     load: { scene: "track", packageId: "impact_depths_ruin" },
   },
   {
@@ -760,7 +760,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/dragon_isles_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "keep_ruins",
-    music: "dragon",
+    music: "dragon_ruin",
     load: { scene: "track", packageId: "dragon_isles_ruin" },
   },
   {
@@ -785,7 +785,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/dragon_canyon_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "emerald_ruins",
-    music: "dragon_canyon",
+    music: "dragon_canyon_ruin",
     load: { scene: "track", packageId: "dragon_canyon_ruin" },
   },
   {
@@ -811,7 +811,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/snow_dragon_pass_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "ember_hold_ruins",
-    music: "snow_dragon",
+    music: "snow_dragon_ruin",
     load: { scene: "track", packageId: "snow_dragon_pass_ruin" },
   },
   {
@@ -836,7 +836,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/celestial_dragon_festival_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "moon_ruins",
-    music: "celestial",
+    music: "celestial_ruin",
     load: { scene: "track", packageId: "celestial_dragon_festival_ruin" },
   },
   // Test World.
