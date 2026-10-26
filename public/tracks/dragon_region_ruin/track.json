@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "id": "dragon_region_ruin",
+  "name": "Dragon Kingdom (greybox, ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 0.0,
+      "y": 9.0,
+      "z": -0.0
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": 36.0,
+      "y": 26.0,
+      "z": 305.0
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": -266.98,
+      "y": 6.5,
+      "z": 23.36
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": -263.08,
+      "y": 6.5,
+      "z": 51.14
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": -256.29,
+      "y": 6.5,
+      "z": 78.36
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -246.7,
+      "y": 6.5,
+      "z": 104.72
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -234.4,
+      "y": 6.5,
+      "z": 129.93
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -219.53,
+      "y": 6.5,
+      "z": 153.72
+    },
+    {
+      "id": "storm_01",
+      "type": "storm",
+      "period": 9,
+      "spread": 5,
+      "distance": 900
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -77.99,
+      "y": 3.2,
+      "z": 131.77
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 95.83,
+      "y": 1.88,
+      "z": 100.72
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -140.77,
+      "y": 1.52,
+      "z": 125.39
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -108.96,
+      "y": 2.04,
+      "z": -53.0
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": -49.11,
+      "y": 3.11,
+      "z": 184.35
+    },
+    {
+      "id": "campfire_07",
+      "type": "campfire",
+      "x": -105.03,
+      "y": 2.51,
+      "z": 239.62
+    },
+    {
+      "id": "campfire_08",
+      "type": "campfire",
+      "x": 246.48,
+      "y": 2.24,
+      "z": -181.79
+    },
+    {
+      "id": "campfire_09",
+      "type": "campfire",
+      "x": 230.14,
+      "y": 2.47,
+      "z": -145.15
+    },
+    {
+      "id": "campfire_10",
+      "type": "campfire",
+      "x": -277.68,
+      "y": 2.22,
+      "z": -69.08
+    }
+  ],
+  "generator": "tools/blender/prehistoric/dragon_region_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "dragon_region.py": "7ff0219cfb2ee2447f6dc623a980ab5c7292be27bea8363ae85baad0d02d561a"
+  }
+}
