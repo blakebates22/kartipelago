@@ -509,7 +509,7 @@
   "generator": "tools/blender/prehistoric/oasis_haven_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "oasis_desert.py": "525a32b1f916015506c080daf6f5f7b51c446437e5b7c07cc2d95237544a066d",
-    "oasis_haven.py": "2eac22bda33a9d3c5d48ab24fbbff5e7216679aecf12ba3a7a47b133243054d5",
+    "oasis_haven.py": "8179abe87a212b4b9cec333092d432c3fd3a723db4afa3e87c87a88dfc8cd2c6",
     "oasis_props.py": "aecaf630981d13bd31ed673307deb02aa7693735a4fae2d14d9088b2f9ae59c2",
     "oasis_ruins.py": "667eb72278680cd880335860f5f04ee2f66745da2a1443ea3a3b71627fbac655"
   }
