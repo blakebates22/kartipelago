@@ -2319,7 +2319,7 @@ function snowDragon(): Song {
   ];
   return {
     id: "snow_dragon",
-    title: "Emberdeep Hold",
+    title: "Snow Dragon Pass",
     role: "Dragon Kingdom",
     bpm: 150,
     beats: 128,
@@ -2794,6 +2794,71 @@ function dragonRace(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "Emberdeep Hold"
+
+export const EMBERDEEP_MELODY = bars(
+  "C5:.5 Eb5:.5 G5:1 C6:1 G5:1",
+  "Eb5:.5 D5:.5 C5:1 G4:2",
+  "Ab4:.5 C5:.5 Eb5:1 Ab5:1 Eb5:1",
+  "D5:.5 C5:.5 B4:1 G4:1 D5:1",
+  "G5:.5 G5:.5 Eb5:.5 C5:.5 G5:1 C6:1",
+  "C6:.5 Bb5:.5 Ab5:1 F5:1 C5:1",
+  "B5:.5 A5:.5 G5:1 D5:1 B4:1",
+  "C5:1.5 D5:.5 Eb5:1 G5:1",
+  "Ab5:.5 G5:.5 Eb5:1 C5:1 Eb5:1",
+  "F5:.5 G5:.5 Bb5:1 D6:1 F6:1",
+  "G6:.5 F6:.5 Eb6:1 Bb5:1 G5:1",
+  "B5:.5 C6:.5 D6:1 B5:1 G5:1",
+  "F5:.5 G5:.5 Ab5:1 C6:1 F6:1",
+  "D6:.5 C6:.5 B5:1 G5:1 D5:1",
+  "C6:1 G5:1 Eb5:1 C5:1",
+  "D5:.5 Eb5:.5 D5:1 B4:1 G4:1",
+);
+export const EMBERDEEP_CHORDS =
+  "Cm:4 Cm:4 Ab:4 G:4 Cm:4 Fm:4 G:4 Cm:4 Ab:4 Bb:4 Eb:4 G:4 Fm:4 G:4 Cm:4 G:4";
+
+/** "Emberdeep Hold": the fortress in the storm, C minor, 140 BPM. Low brass and horns
+ * on the tune over a churning string ostinato and an organ-like pad, a tolling bell, a
+ * heavy stomping bass, thunder on the toms and cymbals. */
+function emberdeep(): Song {
+  const ch = chart(EMBERDEEP_CHORDS);
+  const mel = seq(EMBERDEEP_MELODY, 0, 0.86);
+  const a = mel.filter((n) => n.t < 32);
+  const b = mel.filter((n) => n.t >= 32);
+  const stomp: [number, number, string][] = [
+    [0, 0.75, "R"],
+    [0.75, 0.25, "R"],
+    [1, 1, "8"],
+    [2, 0.75, "R"],
+    [2.75, 0.25, "R"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "emberdeep",
+    title: "Emberdeep Hold",
+    role: "Dragon Kingdom",
+    bpm: 140,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("horn", "base", 1, a),
+      part("brass", "base", 1, b),
+      part("strings", "base", 0.45, shift(b, 0, -12)),
+      part("strings", "base", 0.5, arpeggio(ch, 0.25, [0, 1, 0, 2, 0, 1, 0, 3], 48, 0.2, 0.45)),
+      part("pad", "base", 0.55, pads(ch, 48, 4, 0.45)),
+      part("bell", "base", 0.35, arpeggio(ch, 4, [0], 60, 3, 0.45)),
+      part("drone", "base", 0.4, bassLine(ch, [[0, 3.9, "R"]], 24, 0.6)),
+      part("bass", "base", 1, bassLine(ch, stomp, 24, 0.85)),
+      ...drumParts("base", 0.9, drums("K.....K.K.......", KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("....S.......S...", KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("O...o.o.O...oooo", KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums("C...............", KIT, 0.25, 8)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- the ruins' music
 //
 // Blake (Oct 26): the ruined courses want their own music. Each ruin plays its course's
@@ -2880,7 +2945,7 @@ export const RUIN_SONGS = [
   "splash_lagoon",
   "dragon",
   "dragon_canyon",
-  "snow_dragon",
+  "emberdeep",
   "celestial",
 ];
 
@@ -2914,6 +2979,7 @@ export const SONGS: Record<string, Song> = {
   volcano_isle: volcanoIsle(),
   splash_lagoon: splashLagoon(),
   boss: dragonRace(),
+  emberdeep: emberdeep(),
 };
 for (const id of RUIN_SONGS) {
   const r = ruinVersion(SONGS[id]!);

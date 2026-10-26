@@ -799,7 +799,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/snow_dragon_pass.jpg",
     modes: ["race", "timeTrial"],
     theme: "emberdeep_hold",
-    music: "snow_dragon",
+    music: "emberdeep",
     load: { scene: "track", packageId: "snow_dragon_pass" },
     ruin: "snow_dragon_pass_ruin",
   },
@@ -811,7 +811,7 @@ export const TRACKS: TrackEntry[] = [
     preview: "previews/snow_dragon_pass_ruin.jpg",
     modes: ["race", "timeTrial"],
     theme: "ember_hold_ruins",
-    music: "snow_dragon_ruin",
+    music: "emberdeep_ruin",
     load: { scene: "track", packageId: "snow_dragon_pass_ruin" },
   },
   {

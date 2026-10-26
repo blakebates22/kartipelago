@@ -46,6 +46,7 @@ const melodies: [string, string, number][] = [
   ["volcano_isle", S.VOLCANO_MELODY, 64],
   ["splash_lagoon", S.SPLASH_MELODY, 64],
   ["boss", S.BOSS_MELODY, 64],
+  ["emberdeep", S.EMBERDEEP_MELODY, 64],
 ];
 const charts: [string, string, number, string][] = [
   [
@@ -73,6 +74,7 @@ const charts: [string, string, number, string][] = [
   ["volcano_isle", S.VOLCANO_CHORDS, 64, S.VOLCANO_MELODY],
   ["splash_lagoon", S.SPLASH_CHORDS, 64, S.SPLASH_MELODY],
   ["boss", S.BOSS_CHORDS, 64, S.BOSS_MELODY],
+  ["emberdeep", S.EMBERDEEP_CHORDS, 64, S.EMBERDEEP_MELODY],
 ];
 
 describe("the soundtrack", () => {
