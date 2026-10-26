@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "volcano_isle",
-  "name": "Volcano Isle (greybox)",
+  "name": "Volcano Isle",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -156,6 +156,134 @@
       "from": 653.7,
       "to": 700.1,
       "at": 714.1
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 42.0,
+      "y": 2.58,
+      "z": -49.0
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 44.8,
+      "y": 2.58,
+      "z": -46.9
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 38.0,
+      "y": 4.26,
+      "z": -75.0
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 40.0,
+      "y": 4.26,
+      "z": -73.5
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 88.0,
+      "y": 4.06,
+      "z": -63.0
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 90.4,
+      "y": 4.06,
+      "z": -61.2
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 76.73,
+      "y": 200.0,
+      "z": -646.73
+    },
+    {
+      "id": "birds_01",
+      "type": "birds",
+      "x": 0.0,
+      "y": 46.0,
+      "z": -120.0,
+      "radius": 60,
+      "count": 6,
+      "speed": 0.2,
+      "seed": 3,
+      "color": "#ffffff"
+    },
+    {
+      "id": "birds_02",
+      "type": "birds",
+      "x": 40.0,
+      "y": 24.0,
+      "z": 50.0,
+      "radius": 60,
+      "count": 4,
+      "speed": 0.16,
+      "seed": 7,
+      "color": "#f4f4f0"
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 8,
+      "radius": 30
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 88.19,
+      "y": 27.58,
+      "z": -209.7
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 93.84,
+      "y": 29.2,
+      "z": -229.72
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -52.78,
+      "y": 22.14,
+      "z": -210.2
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -55.99,
+      "y": 23.39,
+      "z": -230.76
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -85.48,
+      "y": 4.76,
+      "z": -35.45
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -83.54,
+      "y": 6.14,
+      "z": -9.48
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -47.95,
+      "y": 5.75,
+      "z": -28.48
     }
   ],
   "generator": "tools/blender/prehistoric/volcano_isle.py (re-running it rewrites entities)"
