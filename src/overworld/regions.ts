@@ -155,6 +155,8 @@ export const REGIONS: Region[] = [
       {
         id: "three_stones",
         label: "THE THREE STONES",
+        look: "stone",
+        hint: "THE THREE STONES! PRESS THE OTHER 2 BEFORE THE DRUMS STOP",
         switches: [
           { x: -100.39, z: -248.49 },
           { x: -117.02, z: -109.12 },
@@ -225,6 +227,29 @@ export const REGIONS: Region[] = [
         z: 440,
         radius: 8,
         heading: Math.PI,
+      },
+    ],
+
+    puzzles: [
+      // The Ice Bells: a frost-stone hut in the south-west, its ice door shut. Ring the
+      // three bells in order; the clue is their lanterns (one by the lake's west shore,
+      // two out on the ice, three up towards the village). A wrong bell and they all go
+      // quiet. Behind the door: the kingdom's hidden key.
+      {
+        id: "ice_bells",
+        label: "THE ICE BELLS",
+        look: "bell",
+        hint: "RING THE BELLS FROM THE FEWEST LANTERNS TO THE MOST",
+        ordered: true,
+        switches: [
+          { x: -135.95, z: 63.39, lanterns: 1 },
+          { x: -35.0, z: 60.62, lanterns: 2 },
+          { x: -91.66, z: 251.84, lanterns: 3 },
+        ],
+        radius: 3.5,
+        seconds: 0,
+        gate: { x: -199.4, z: 199.4, heading: (3 * Math.PI) / 4, width: 9 },
+        prize: { kind: "key", x: -206.48, z: 206.48 },
       },
     ],
   },

@@ -43,6 +43,13 @@ TREE = (90.0, CLIFF_R - 40.0)
 RIFT = (0.0, CLIFF_R + 6.0)
 FROZEN_PASS = (28.0, CLIFF_R + 6.0)
 LAIR = (135.0, CLIFF_R + 6.0)  # Rimefang's lair: the boss gateway (north-west)
+# The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut in the south-west, its ice
+# door shut, and three bells to ring in order (their lanterns: one, two, three), one by
+# the lake, one out on the ice, one up towards the village.
+HUT = (225.0, 292.0)  # angle (degrees), radius: the hut's middle
+HUT_HALF = 10.0
+HUT_GAP = 4.5
+BELLS = [(205.0, 150.0, 1), (240.0, 70.0, 2), (250.0, 268.0, 3)]  # angle, radius, lanterns
 
 
 def ring_r(a):
@@ -182,6 +189,34 @@ def main():
         px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
         cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, FLOOR_Z - 1.0, 10.0 + 8.0 * (1 - abs(t)) + 4.0 * math.sin(k * 2.1),
              ("glacier_ice", "wall"), segs=5)
+
+    # The Ice Bells' hut (its ice door is the game's) and where the bells hang.
+    px, py = polar(*HUT)
+    ia = math.radians(HUT[0]) + math.pi  # facing in, towards the lake
+    fx, fy = math.cos(ia), math.sin(ia)
+    sx, sy = -fy, fx
+    stone = ("frost_stone", "wall")
+    t = 0.8
+    for k, (cx, cy, hx, hy) in enumerate((
+            (-HUT_HALF, 0.0, t, HUT_HALF + t),
+            (0.0, HUT_HALF, HUT_HALF + t, t),
+            (0.0, -HUT_HALF, HUT_HALF + t, t),
+            (HUT_HALF, (HUT_HALF + HUT_GAP) / 2, t, (HUT_HALF - HUT_GAP) / 2 + t),
+            (HUT_HALF, -(HUT_HALF + HUT_GAP) / 2, t, (HUT_HALF - HUT_GAP) / 2 + t))):
+        wx, wy = px + cx * fx + cy * sx, py + cx * fy + cy * sy
+        box(c, "Hut Wall %d" % k, wx, wy, hx, hy, FLOOR_Z - 2.0, FLOOR_Z + 6.0, stone, rot=ia)
+    cone(c, "Hut Roof", px, py, HUT_HALF * 1.55, FLOOR_Z + 6.0, 7.0, ("pine_snow", "wall"), segs=4, role="visual")
+    for side in (-1, 1):
+        gx, gy = px + HUT_HALF * fx + side * (HUT_GAP + 0.9) * sx, py + HUT_HALF * fy + side * (HUT_GAP + 0.9) * sy
+        box(c, "Hut Doorpost %d" % side, gx, gy, 1.2, 1.2, FLOOR_Z - 2.0, FLOOR_Z + 8.0, stone, rot=ia)
+    box(c, "Hut Plinth", px, py, 1.0, 1.0, FLOOR_Z - 1.0, FLOOR_Z + 1.2, stone, rot=ia)
+    gx, gy, gz = c.game(px + HUT_HALF * fx, py + HUT_HALF * fy, FLOOR_Z)
+    c.entity("puzzle_gate", puzzle="ice_bells", x=gx, z=gz, heading=math.atan2(fx, -fy), width=2 * HUT_GAP,
+             prize_x=c.game(px, py, 0)[0], prize_z=c.game(px, py, 0)[2])
+    for k, (a, r, n) in enumerate(BELLS):
+        x, y = polar(a, r)
+        gx, gy, gz = c.game(x, y, 0.0)
+        c.entity("puzzle_switch", puzzle="ice_bells", index=k, x=gx, z=gz, lanterns=n)
 
     # The gorge's far end, back towards the valley: it bends out of sight.
     box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))

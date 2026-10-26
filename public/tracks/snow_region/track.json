@@ -26,6 +26,44 @@
       "radius": 30
     },
     {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "ice_bells",
+      "x": -199.4,
+      "z": 199.4,
+      "heading": 2.356194490192345,
+      "width": 9.0,
+      "prize_x": -206.48,
+      "prize_z": 206.48
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 0,
+      "x": -135.95,
+      "z": 63.39,
+      "lanterns": 1
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 1,
+      "x": -35.0,
+      "z": 60.62,
+      "lanterns": 2
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 2,
+      "x": -91.66,
+      "z": 251.84,
+      "lanterns": 3
+    },
+    {
       "id": "snowfall_01",
       "type": "snowfall",
       "rate": 60,

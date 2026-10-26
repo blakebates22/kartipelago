@@ -59,6 +59,7 @@ describe("overworld regions", () => {
         for (const e of sw) {
           const s = p.switches[e.index as number]!;
           expect(Math.hypot(s.x - (e.x as number), s.z - (e.z as number))).toBeLessThan(0.1);
+          expect(s.lanterns).toBe(e.lanterns);
         }
       }
   });
@@ -94,11 +95,43 @@ describe("overworld puzzles", () => {
   });
 
   it("start solved when the save says so, and shut the gateway with a box until then", () => {
-    expect(newPuzzleState(p, true)).toEqual({ pressed: [true, true, true], left: 0, solved: true });
+    expect(newPuzzleState(p, true)).toEqual({
+      pressed: [true, true, true],
+      left: 0,
+      solved: true,
+      on: -1,
+    });
     const b = gateSolid(p, 2);
     expect(b.halfLength).toBeGreaterThan(p.gate.width / 2);
     // Across the gateway: the box's length runs at right angles to the way the gate faces.
     expect(Math.abs(Math.cos(b.heading - p.gate.heading))).toBeLessThan(1e-9);
     expect(b.height).toBe(9);
+  });
+});
+
+describe("an ordered puzzle (the Ice Bells)", () => {
+  const p = regionById("snow_kingdom")!.puzzles![0]!;
+  const at = (i: number) => [p.switches[i]!.x, p.switches[i]!.z] as const;
+
+  it("opens when the bells go from the fewest lanterns to the most, with no clock", () => {
+    expect(p.switches.map((s) => s.lanterns)).toEqual([1, 2, 3]);
+    const st = newPuzzleState(p);
+    stepPuzzle(p, st, ...at(0), 0.1);
+    expect(st.left).toBe(0);
+    stepPuzzle(p, st, 0, 0, 1000); // (no clock: nothing runs out)
+    stepPuzzle(p, st, ...at(1), 0.1);
+    expect(stepPuzzle(p, st, ...at(2), 0.1).map((e) => e.kind)).toEqual(["press", "solved"]);
+  });
+
+  it("goes quiet again at a wrong bell, and only counts a bell as you arrive at it", () => {
+    const st = newPuzzleState(p);
+    stepPuzzle(p, st, ...at(0), 0.1);
+    expect(stepPuzzle(p, st, ...at(2), 0.1)).toEqual([{ kind: "reset", wrong: true }]);
+    expect(st.pressed).toEqual([false, false, false]);
+    // Sitting on it does nothing more; nor does sitting on the first after pressing it.
+    expect(stepPuzzle(p, st, ...at(2), 0.1)).toEqual([]);
+    stepPuzzle(p, st, ...at(0), 0.1);
+    expect(stepPuzzle(p, st, ...at(0), 0.1)).toEqual([]);
+    expect(st.pressed).toEqual([true, false, false]);
   });
 });

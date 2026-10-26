@@ -44,7 +44,13 @@ import {
 } from "./adventure";
 import { kingdomById } from "../adventure/data";
 import { championWon, coinCourse, kingdomPhase, objective, piecesOf } from "../adventure/progress";
-import { gateSolid, newPuzzleState, stepPuzzle, type Puzzle } from "../overworld/puzzles";
+import {
+  bellPosts,
+  gateSolid,
+  newPuzzleState,
+  stepPuzzle,
+  type Puzzle,
+} from "../overworld/puzzles";
 import { createPuzzleView } from "../overworld/puzzleView";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
@@ -77,6 +83,16 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
     );
     const solid = gateSolid(p, groundAt(p.gate.x, p.gate.z));
     if (!st.solved) session.solids.push(solid);
+    // A bell's frame posts are solid.
+    for (const b of bellPosts(p))
+      session.solids.push({
+        kind: "circle",
+        look: "tree",
+        x: b.x,
+        z: b.z,
+        radius: 0.5,
+        height: groundAt(b.x, b.z) + 7,
+      });
     return { p, st, solid, view: createPuzzleView(session.root, p, groundAt) };
   });
   // The kingdom's hidden key shows once its champion has joined you (the valley's: once
@@ -91,15 +107,17 @@ function regionPuzzles(game: Game, session: Session, region: Region) {
       for (const it of items) {
         for (const e of stepPuzzle(it.p, it.st, x, z, dt)) {
           if (e.kind === "press") {
-            game.sounds.stone(e.count);
-            if (e.count === 1 && it.p.switches.length > 1)
-              say(
-                `${it.p.label}! PRESS THE OTHER ${it.p.switches.length - 1} BEFORE THE DRUMS STOP`,
-              );
+            if (it.p.look === "bell") game.sounds.bell(e.count);
+            else game.sounds.stone(e.count);
+            if (e.count === 1 && it.p.switches.length > 1) say(it.p.hint);
             lastBeat = Math.ceil(it.st.left);
           } else if (e.kind === "reset") {
             game.sounds.stonesReset();
-            say("TOO SLOW! THE STONES ROSE AGAIN");
+            say(
+              e.wrong
+                ? `WRONG ONE! ${it.p.hint}`
+                : `TOO SLOW! THE ${it.p.look === "bell" ? "BELLS FELL SILENT" : "STONES ROSE AGAIN"}`,
+            );
           } else {
             game.sounds.solved();
             const i = session.solids.indexOf(it.solid);

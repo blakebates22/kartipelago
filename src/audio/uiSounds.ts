@@ -125,6 +125,11 @@ export function createUiSounds(audio: AudioEngine) {
         ["marimba", 67 + n * 5, 0, 0.12],
         ["marimba", 74 + n * 5, 0.08, 0.3],
       ]),
+    bell: (n: number) =>
+      audio.notes("sfx", [
+        ["bell", 67 + [0, 4, 7, 12][Math.min(3, n - 1)]!, 0, 1.2, 0.9],
+        ["celesta", 79 + [0, 4, 7, 12][Math.min(3, n - 1)]!, 0, 0.6, 0.6],
+      ]),
     drum: (hurry: boolean) =>
       audio.notes("sfx", [["tom", hurry ? 52 : 45, 0, 0.12, hurry ? 0.75 : 0.55]], 0.7),
     stonesReset: () =>
