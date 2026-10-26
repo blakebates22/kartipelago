@@ -173,9 +173,11 @@ def main():
     box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
     c.entity("snowfall", rate=60, radius=60)
 
+    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    c.start_line()
     gates = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish()
+    c.finish(extra={"race": {"laps": 1}})
     print("ring", round(c.length, 1), "gates", len(gates))
 
 

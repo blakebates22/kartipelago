@@ -14,6 +14,8 @@ export type AdventureRun =
   /** A treasure map race on a ruined course (or its stand-in). */
   | { kind: "coins"; kingdom: KingdomId; course: string; track: string; standIn: boolean }
   | { kind: "boss"; kingdom: KingdomId }
+  /** The champion's challenge: 1 on 1, once round the kingdom's overworld region. */
+  | { kind: "duel"; kingdom: KingdomId }
   /** The Dragon King: `chosen` once the Chosen One races him. */
   | { kind: "king"; chosen: boolean };
 
@@ -70,6 +72,10 @@ export function sessionExtras(
   if (run.kind === "coins")
     return { coins: "auto", field: { looks: kingdomField(run.kingdom, player, crew) } };
   if (run.kind === "cup") return { field: { looks: kingdomField(run.kingdom, player, crew) } };
+  if (run.kind === "duel") {
+    const ch = kingdomById(run.kingdom)!.champion!;
+    return { field: { count: 1, names: [ch.name], looks: [{ id: ch.look, alt: false }] } };
+  }
   if (run.kind === "boss") {
     const b = kingdomById(run.kingdom)!.boss!;
     return {
@@ -104,6 +110,8 @@ export function runLabel(run: AdventureRun | undefined): string | undefined {
       return run.standIn ? "TREASURE MAP · STAND-IN COURSE" : "TREASURE MAP";
     case "boss":
       return `VS ${kingdomById(run.kingdom)!.boss!.name.toUpperCase()}`;
+    case "duel":
+      return `1 ON 1 VS ${kingdomById(run.kingdom)!.champion!.name.toUpperCase()}`;
     case "king":
       return run.chosen ? `${DRAGON.chosen.ability} VS THE DRAGON KING` : "VS THE DRAGON KING";
     default:

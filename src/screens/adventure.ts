@@ -28,6 +28,8 @@ import {
 } from "../adventure/data";
 import {
   bossFinished,
+  duelFinished,
+  hasDuel,
   coinCourse,
   coinRaceFinished,
   completeReturn,
@@ -244,6 +246,7 @@ function statusOf(s: AdventureSave, id: KingdomId): string {
   return {
     locked: "",
     championship: "THE CHAMPIONSHIP",
+    duel: `RACE ${k.champion?.name.toUpperCase() ?? ""}, 1 ON 1`,
     coins: `THE MAP: ${piecesOf(s, k)}/4 PIECES`,
     boss: `RACE ${k.boss!.name.toUpperCase()}`,
     done: "FREE!",
@@ -503,6 +506,14 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
         });
       },
     });
+    const region = regionOfKingdom(id);
+    if (hasDuel(k) && region)
+      items.push({
+        label: `${s.duels[id] ? done : ""}RACE ${k.champion!.name.toUpperCase()} 1 ON 1`,
+        sub: `THE CHAMPION'S CHALLENGE: ONCE ROUND ${region.name.toUpperCase()}`,
+        disabled: !free && ph === "championship",
+        action: () => launch(game, { kind: "duel", kingdom: id }, region.packageId),
+      });
     k.courses.forEach((c) => {
       const cc = coinCourse(c, exists);
       const name = trackById(c.track)?.name ?? c.track;
@@ -511,7 +522,7 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
         sub: cc.standIn
           ? "4 MAP FRAGMENTS · STAND-IN: THE RUIN ISN'T BUILT YET"
           : "4 MAP FRAGMENTS AND 1ST PLACE",
-        disabled: !free && (ph === "championship" || ph === "locked"),
+        disabled: !free && (ph === "championship" || ph === "duel" || ph === "locked"),
         action: () =>
           launch(game, { kind: "coins", kingdom: id, course: c.track, ...cc }, cc.track),
       });
@@ -519,16 +530,16 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
     items.push({
       label: `THE MAP (${piecesOf(s, k)}/4)`,
       sub: `TO THE ${nameOf(k.next!).toUpperCase()}`,
-      disabled: !free && ph === "championship",
+      disabled: !free && (ph === "championship" || ph === "duel"),
       action: () => game.screens.go(mapScreen(game, k)),
     });
     items.push({
       label: `${s.bosses[id] ? done : ""}RACE ${k.boss!.name.toUpperCase()}`,
       sub:
-        ph === "coins" || ph === "championship"
+        ph === "coins" || ph === "championship" || ph === "duel"
           ? "FINISH THE MAP FIRST"
           : "THE DRAGON OF THIS KINGDOM",
-      disabled: !free && (ph === "coins" || ph === "championship"),
+      disabled: !free && (ph === "coins" || ph === "championship" || ph === "duel"),
       action: () =>
         scene(k.scenes.boss, () => launch(game, { kind: "boss", kingdom: id }, k.boss!.track)),
     });
@@ -901,11 +912,18 @@ export function adventureResult(
   const out =
     run.kind === "coins"
       ? coinRaceFinished(s, run.course, result.coins ?? { got: 0, total: 4 }, result.position)
-      : run.kind === "boss"
-        ? bossFinished(s, run.kingdom, result.position)
-        : run.kind === "king"
-          ? kingFinished(s, run.chosen ? result.position : undefined)
-          : { progressed: false, lines: [] };
+      : run.kind === "duel"
+        ? duelFinished(s, run.kingdom, result.position)
+        : run.kind === "boss"
+          ? bossFinished(s, run.kingdom, result.position)
+          : run.kind === "king"
+            ? kingFinished(s, run.chosen ? result.position : undefined)
+            : { progressed: false, lines: [] };
+  // The champion beaten 1 on 1 joins the crew: pickable everywhere from now on.
+  if (run.kind === "duel" && s.duels[run.kingdom]) {
+    const champ = kingdomById(run.kingdom)?.champion;
+    if (champ) unlockRacer(champ.look);
+  }
   persist(game);
   // The King's first race is lost whatever happens: straight on to the story.
   const scripted = run.kind === "king" && !run.chosen;
@@ -980,8 +998,10 @@ export function adventureCupDone(game: Game, place: number) {
   if (run?.kind === "cup") {
     cupFinished(a.save, run.kingdom, place);
     // The champion beaten in it joins the crew: pickable everywhere from now on.
-    if (run.kingdom !== "dragon_final" && a.save.cups[run.kingdom]) {
-      const champ = kingdomById(run.kingdom as KingdomId)?.champion;
+    // (Where there's a challenge to win first, they join after that.)
+    const kd = run.kingdom !== "dragon_final" ? kingdomById(run.kingdom as KingdomId) : undefined;
+    if (kd && a.save.cups[kd.id] && !hasDuel(kd)) {
+      const champ = kd.champion;
       if (champ) unlockRacer(champ.look);
     }
     persist(game);

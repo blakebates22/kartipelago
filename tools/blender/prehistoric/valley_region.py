@@ -282,9 +282,11 @@ def main():
         gx, gy, gz = c.game(x, y, FLOOR_Z + 0.04 * max(0.0, y - 330.0) + 0.2)
         c.entity("campfire", x=gx, y=gy, z=gz)
 
+    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    c.start_line()
     gates = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish()
+    c.finish(extra={"race": {"laps": 1}})
     print("ring", round(c.length, 1), "gates", len(gates))
 
 

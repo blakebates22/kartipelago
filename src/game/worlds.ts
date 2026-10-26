@@ -134,6 +134,9 @@ export const WORLDS: WorldEntry[] = [
       "volcano_isle_v2",
       "splash_lagoon_v2",
       "shipwreck_bay_v2",
+      // The overworld's regions as races (the champions' challenges).
+      "valley_region",
+      "snow_region",
     ],
     testing: true,
     // Set aside for now: the prototypes stay in the code but out of the menus.

@@ -10,6 +10,8 @@ import {
   coinRaceFinished,
   completeReturn,
   cupFinished,
+  duelFinished,
+  hasDuel,
   dragonPhase,
   dueScene,
   kingFinished,
@@ -93,6 +95,16 @@ describe("a playthrough", () => {
       expect(kingdomPhase(s, k)).toBe("championship");
       expect(objective(s)).toContain("CHAMPIONSHIP");
       cupFinished(s, k.id, 1);
+      // A kingdom with its overworld region: the champion's challenge comes first (they
+      // join, and the dragons strike, once it's won).
+      if (hasDuel(k)) {
+        watch(s, log);
+        expect(log).not.toContain(k.scenes.catastrophe);
+        expect(kingdomPhase(s, k)).toBe("duel");
+        expect(objective(s)).toContain("1 ON 1");
+        expect(duelFinished(s, k.id, 2).progressed).toBe(false);
+        expect(duelFinished(s, k.id, 1).progressed).toBe(true);
+      }
       watch(s, log);
       expect(log).toContain(k.scenes.catastrophe);
       expect(kingdomPhase(s, k)).toBe("coins");
@@ -212,7 +224,7 @@ describe("the save", () => {
 });
 
 describe("the crew", () => {
-  it("four racers to start; each kingdom's champion joins when you win its cup", () => {
+  it("four racers to start; each kingdom's champion joins when you beat them", () => {
     const mem = new Map<string, string>();
     const store = {
       getItem: (k: string) => mem.get(k) ?? null,
@@ -222,6 +234,9 @@ describe("the crew", () => {
     const s = newSave();
     expect(championsOf(s)).toEqual([]);
     cupFinished(s, "valley", 1);
+    // (The valley has its overworld region: Rex joins once beaten 1 on 1 there.)
+    expect(championsOf(s)).toEqual([]);
+    duelFinished(s, "valley", 1);
     expect(championsOf(s).map((c) => c.look)).toEqual(["rex"]);
     expect(unlockRacer("rex", store)).toBe(true);
     expect(unlockRacer("rex", store)).toBe(false);

@@ -57,6 +57,9 @@ export interface Region {
   spawn: { x: number; z: number; heading: number };
   gateways: Gateway[];
   passages?: Passage[];
+  /** Adventure: where the champion waits to race you 1 on 1 once round the ring (beside
+   * its start line; game/tracks.ts has the region as a race under its package's id). */
+  challenge?: { x: number; z: number; heading: number };
 }
 
 export const REGIONS: Region[] = [
@@ -69,6 +72,7 @@ export const REGIONS: Region[] = [
     music: "riverbend",
     worldId: "prehistoric",
     kingdom: "valley",
+    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
     // At the camp, facing north up the north spoke.
     spawn: { x: 0, z: 8, heading: Math.PI },
     gateways: [
@@ -134,6 +138,7 @@ export const REGIONS: Region[] = [
     music: "hearthglow",
     worldId: "frostveil",
     kingdom: "snow",
+    challenge: { x: 238, z: 14, heading: -Math.PI / 2 },
     // In the village square, facing north up to the ring.
     spawn: { x: 0, z: 290, heading: Math.PI },
     gateways: [

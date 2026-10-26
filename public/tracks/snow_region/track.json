@@ -9,7 +9,7 @@
     "look": "look.json"
   },
   "race": {
-    "laps": 3
+    "laps": 1
   },
   "entities": [
     {

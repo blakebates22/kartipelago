@@ -135,7 +135,11 @@ export function overworldLoading(
 
 /** The gateways' arches, in the session's scene: two posts and a lintel in the world's
  * colour, a glowing veil between them, and the course's name on a board above. */
-function buildGateways(session: Session, region: Region) {
+function buildGateways(
+  session: Session,
+  region: Region,
+  extra: { x: number; z: number; heading: number; label: string; world: string }[] = [],
+) {
   const group = new THREE.Group();
   group.name = "Gateways";
   const you = session.entrants[0]!;
@@ -153,6 +157,7 @@ function buildGateways(session: Session, region: Region) {
       label: `TO ${(regionById(p.to)?.name ?? p.to).toUpperCase()}`,
       world: regionById(p.to)?.worldId ?? region.worldId,
     })),
+    ...extra,
   ];
   for (const g of marks) {
     const color = new THREE.Color(worldById(g.world)?.color ?? "#e0a040");
@@ -227,16 +232,36 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let removeGateways: (() => void) | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
-  let inside: Gateway | Passage | undefined;
+  let inside: { x: number; z: number; radius: number } | undefined;
+  // Adventure, after the championship: the champion waits beside the ring's start line.
+  const champ = game.overworld?.adventure ? challengeOf(game, region) : undefined;
+  const challenge =
+    champ && region.challenge ? { id: "challenge", radius: 6, ...region.challenge } : undefined;
 
   const screen: Screen = {
     id: "OVERWORLD",
     enter() {
       game.session = session;
       game.ui.interactive = false;
-      removeGateways = buildGateways(session, region);
+      removeGateways = buildGateways(
+        session,
+        region,
+        challenge
+          ? [
+              {
+                ...challenge,
+                label: `${challengeOf(game, region)!.name}'S CHALLENGE`,
+                world: region.worldId,
+              },
+            ]
+          : [],
+      );
       // Back out of the gateway you raced, or at the region's spawn.
-      const from = [...region.gateways, ...(region.passages ?? [])].find((g) => g.id === at);
+      const from = [
+        ...region.gateways,
+        ...(region.passages ?? []),
+        ...(challenge ? [challenge] : []),
+      ].find((g) => g.id === at);
       const you = session.entrants[0]!;
       if (from) {
         const x = from.x + Math.sin(from.heading) * (from.radius + 6);
@@ -273,11 +298,18 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
         const p = (region.passages ?? []).find((p) => inGateway(p, s.x, s.z));
-        if (g || p) {
-          inside = g ?? p;
+        const ch = challenge && inGateway(challenge, s.x, s.z) ? challenge : undefined;
+        if (g || p || ch) {
+          inside = g ?? p ?? ch;
           s.speed = 0;
           game.sounds.confirm();
-          game.screens.push(g ? gatewayCard(game, region, g) : passageCard(game, p!));
+          game.screens.push(
+            g
+              ? gatewayCard(game, region, g)
+              : p
+                ? passageCard(game, p)
+                : challengeCard(game, region),
+          );
         }
       }
     },
@@ -301,7 +333,9 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
-  inside = [...region.gateways, ...(region.passages ?? [])].find((g) => g.id === at);
+  inside = [...region.gateways, ...(region.passages ?? []), ...(challenge ? [challenge] : [])].find(
+    (g) => g.id === at,
+  );
   return screen;
 }
 
@@ -323,6 +357,11 @@ function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefi
   const ph = kingdomPhase(s, k);
   const back = () => (game.overworld = { region: region.id, at: g.id, adventure: true });
   if (ph === "locked") return { track: g.track, note: "NOT REACHED YET" };
+  if (ph === "duel")
+    return {
+      track: g.track,
+      note: `${k.champion!.name.toUpperCase()} IS WAITING BY THE START LINE ON THE RING`,
+    };
   if (ph === "championship") {
     const cup = game.trophy && a.run?.kind === "cup" ? game.trophy : undefined;
     const raced = cup?.raced ?? 0;
@@ -363,6 +402,62 @@ function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefi
     go: () => {
       back();
       launch(game, { kind: "coins", kingdom: k.id, course: course.track, ...cc }, cc.track);
+    },
+  };
+}
+
+/** Adventure: the champion who'll race you 1 on 1 here now (their challenge is due). */
+function challengeOf(game: Game, region: Region) {
+  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
+  return k && region.challenge && kingdomPhase(adventureOf(game).save, k) === "duel"
+    ? { name: k.champion!.name.toUpperCase(), kingdom: k.id }
+    : undefined;
+}
+/** The champion's challenge: 1 on 1, once round the region's ring. */
+function challengeCard(game: Game, region: Region): Screen {
+  const ch = challengeOf(game, region)!;
+  const go = () => {
+    game.overworld = { region: region.id, at: "challenge", adventure: true };
+    launch(game, { kind: "duel", kingdom: ch.kingdom }, region.packageId);
+  };
+  const menu = new VMenu(
+    game,
+    [
+      { label: "RACE!", action: go },
+      { label: "NOT YET", action: () => game.screens.pop() },
+    ],
+    () => game.screens.pop(),
+  );
+  return {
+    id: "GATEWAY",
+    enter() {
+      game.ui.interactive = true;
+    },
+    frame(_dt, actions) {
+      menu.handle(actions);
+    },
+    draw(ui) {
+      ui.dim(0.4);
+      const w = 260;
+      const h = 100;
+      const x = Math.round(ui.W / 2 - w / 2);
+      const y = Math.round(ui.H / 2 - h / 2) - 8;
+      ui.panel(x, y, w, h, "parchment", "ink");
+      ui.text(`${ch.name}'S CHALLENGE`, ui.W / 2, y + 8, {
+        scale: 2,
+        color: PAL.coral,
+        outline: PAL.ink,
+        align: "center",
+      });
+      ui.text(`1 ON 1, ONCE ROUND ${region.name.toUpperCase()}.`, ui.W / 2, y + 30, {
+        color: PAL.ink,
+        align: "center",
+      });
+      ui.text(`BEAT ${ch.name} AND THEY JOIN YOUR CREW.`, ui.W / 2, y + 40, {
+        color: PAL.inkSoft,
+        align: "center",
+      });
+      menu.draw(ui, x + 60, y + h - 40, w - 120, 14, 4);
     },
   };
 }

@@ -16,6 +16,7 @@ import {
   type Kingdom,
   type KingdomId,
 } from "./data";
+import { regionOfKingdom } from "../overworld/regions";
 
 export interface AdventureSave {
   version: 1;
@@ -25,6 +26,8 @@ export interface AdventureSave {
   pieces: Record<string, boolean>;
   /** Demi-bosses beaten. */
   bosses: Partial<Record<KingdomId, boolean>>;
+  /** The champions' challenges won (the 1v1 race round a kingdom's overworld region). */
+  duels: Partial<Record<KingdomId, boolean>>;
   /** Act V: return objectives done. */
   returns: Partial<Record<KingdomId, boolean>>;
   /** The second visit to the Dragon Kingdom: its ruined courses' cup. */
@@ -44,6 +47,7 @@ export const newSave = (): AdventureSave => ({
   cups: {},
   pieces: {},
   bosses: {},
+  duels: {},
   returns: {},
   finalCup: false,
   kingLost: false,
@@ -73,6 +77,7 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   s.cups = flags(r.cups);
   s.pieces = flags(r.pieces);
   s.bosses = flags(r.bosses);
+  s.duels = flags(r.duels);
   s.returns = flags(r.returns);
   s.finalCup = r.finalCup === true;
   s.kingLost = r.kingLost === true;
@@ -116,7 +121,7 @@ export function eraseAdventure(storage: Pick<Store, "removeItem"> | undefined, s
 
 // ---------------------------------------------------------------- what follows from it
 
-export type KingdomPhase = "locked" | "championship" | "coins" | "boss" | "done";
+export type KingdomPhase = "locked" | "championship" | "duel" | "coins" | "boss" | "done";
 export type DragonPhase =
   | "locked"
   | "first" // its four standard courses, as a cup
@@ -135,10 +140,19 @@ export function unlocked(s: AdventureSave, id: KingdomId): boolean {
   return Boolean(s.bosses[STORY_ORDER[i - 1]!]);
 }
 
+/** A kingdom with its overworld region built has the champion's challenge after its
+ * championship (the overworld doc): the champion joins you when you win it. */
+export const hasDuel = (k: Kingdom) => Boolean(k.champion && regionOfKingdom(k.id));
+/** Has the kingdom's champion joined you (their challenge won, or the cup where there's
+ * no challenge)? */
+export const championWon = (s: AdventureSave, k: Kingdom) =>
+  hasDuel(k) ? Boolean(s.duels[k.id]) : Boolean(s.cups[k.id]);
+
 export function kingdomPhase(s: AdventureSave, k: Kingdom): KingdomPhase {
   if (!unlocked(s, k.id)) return "locked";
   if (s.bosses[k.id]) return "done";
   if (!s.cups[k.id]) return "championship";
+  if (hasDuel(k) && !s.duels[k.id]) return "duel";
   if (piecesOf(s, k) < k.courses.length) return "coins";
   if (!s.bosses[k.id]) return "boss";
   return "done";
@@ -160,7 +174,7 @@ export const toolsOf = (s: AdventureSave) =>
   KINGDOMS.filter((k) => s.bosses[k.id] && k.tool).map((k) => k.tool!);
 /** Champions who've joined your crew: each one beaten in their kingdom's championship. */
 export const championsOf = (s: AdventureSave) =>
-  KINGDOMS.filter((k) => s.cups[k.id] && k.champion).map((k) => k.champion!);
+  KINGDOMS.filter((k) => k.champion && championWon(s, k)).map((k) => k.champion!);
 
 /** The return objective is open in a kingdom during Act V, until done. */
 export const returnOpen = (s: AdventureSave, k: Kingdom) =>
@@ -183,7 +197,8 @@ export function dueScene(s: AdventureSave): string | undefined {
     const ph = kingdomPhase(s, k);
     if (ph === "locked") continue;
     due.push([k.scenes.arrive, true]);
-    if (s.cups[k.id]) due.push([k.scenes.catastrophe, true]);
+    // (The dragons strike at the champion's welcome: after the challenge, where there is one.)
+    if (championWon(s, k)) due.push([k.scenes.catastrophe, true]);
     if (piecesOf(s, k) >= k.courses.length) due.push([k.scenes.mapDone, true]);
     if (s.bosses[k.id]) due.push([k.scenes.bossWon, true]);
   }
@@ -228,7 +243,13 @@ export function cupFinished(
   }
   if (won && !s.cups[id]) {
     s.cups[id] = true;
-    const champ = kingdomById(id)?.champion;
+    const k = kingdomById(id);
+    const champ = k?.champion;
+    if (k && hasDuel(k))
+      return {
+        progressed: true,
+        lines: ["CHAMPIONS!", `${champ!.name.toUpperCase()} CHALLENGES YOU: 1 ON 1!`],
+      };
     return {
       progressed: true,
       lines: ["CHAMPIONS!", ...(champ ? [`${champ.name.toUpperCase()} JOINS YOUR CREW!`] : [])],
@@ -264,6 +285,19 @@ export function coinRaceFinished(
       lines: [`YOU WON, BUT FRAGMENTS ${coins.got}/${coins.total}.`, "GET ALL 4 AND WIN."],
     };
   return { progressed: false, lines: ["ALL 4 FRAGMENTS, BUT YOU HAVE TO WIN TOO."] };
+}
+
+/** The champion's challenge finished (the 1v1 round the kingdom's region). */
+export function duelFinished(
+  s: AdventureSave,
+  id: KingdomId,
+  position: number | undefined,
+): Outcome {
+  const champ = kingdomById(id)!.champion!.name.toUpperCase();
+  if (position !== 1) return { progressed: false, lines: [`${champ} WINS THIS TIME. TRY AGAIN!`] };
+  if (s.duels[id]) return { progressed: false, lines: [`${champ} BEATEN AGAIN!`] };
+  s.duels[id] = true;
+  return { progressed: true, lines: [`${champ} IS BEATEN!`, `${champ} JOINS YOUR CREW!`] };
 }
 
 export function bossFinished(
@@ -308,6 +342,8 @@ export function objective(s: AdventureSave): string {
   for (const k of KINGDOMS) {
     const ph = kingdomPhase(s, k);
     if (ph === "championship") return `${k.name.toUpperCase()}: WIN THE CHAMPIONSHIP`;
+    if (ph === "duel")
+      return `${k.name.toUpperCase()}: RACE ${k.champion!.name.toUpperCase()}, 1 ON 1`;
     if (ph === "coins") return `${k.name.toUpperCase()}: FIND THE MAP (${piecesOf(s, k)}/4 PIECES)`;
     if (ph === "boss") return `${k.name.toUpperCase()}: RACE ${k.boss!.name.toUpperCase()}`;
   }

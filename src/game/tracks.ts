@@ -905,6 +905,30 @@ export const TRACKS: TrackEntry[] = [
     music: "race",
     load: { scene: "track", packageId: "loop_lab" },
   },
+  // The overworld's regions (src/overworld/regions.ts), as races: the champions'
+  // challenges, 1 on 1 once round the region's ring road (Adventure). Not in any world.
+  {
+    id: "valley_region",
+    name: "Dinosaur Valley",
+    description: "The champion's challenge: 1 on 1, once round the valley's ring road.",
+    preview: "previews/riverbend_palms.jpg",
+    modes: ["race"],
+    theme: "mirror_lake",
+    music: "riverbend",
+    load: { scene: "track", packageId: "valley_region" },
+    laps: 1,
+  },
+  {
+    id: "snow_region",
+    name: "Snow Kingdom",
+    description: "The champion's challenge: 1 on 1, once round the frozen lake.",
+    preview: "previews/hearthglow_hollow.jpg",
+    modes: ["race"],
+    theme: "summit_pass",
+    music: "hearthglow",
+    load: { scene: "track", packageId: "snow_region" },
+    laps: 1,
+  },
   {
     id: "drift_park",
     name: "Drift Park",
