@@ -693,9 +693,9 @@
   ],
   "generator": "tools/blender/prehistoric/cascade_caverns_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "cascade_caverns.py": "ad2e4803771ac220035e61f3837bb36c7c0b13a2e91d8c10cbc9d28472929843",
+    "cascade_caverns.py": "8239f78a1fe5ad1c536417acd9616519bc9536f89d52cb8490137ebadde0e3c3",
     "cascade_review.py": "894af141ae141bc2ec7c604f3d4f151de7e4b239761187208b5e1780af3d29e8",
-    "cascade_ruins.py": "51ae3cffa313a215a67e5ac930e0fdbe38a397f6ab5e2e6bff139eef39c5d591",
-    "cascade_scenery.py": "7c9b7071a61dc6064d40a750b1464715f097ee5aad2d6118781b7edd9341004a"
+    "cascade_ruins.py": "6a32b93ff02498b93eb207e6893be3579b6936155c016753717da9792c01f167",
+    "cascade_scenery.py": "037fd891362a4df30e0b635d2e296f53f9f9e54e007d0c70348c6f674d5c6ede"
   }
 }

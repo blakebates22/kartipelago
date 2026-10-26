@@ -123,11 +123,95 @@ def dress(c, m):
         if b[3] == 0 and b[0] > -5.0 and clear(b[0], b[1], 8.0):
             k += 1
             rk.rubble_heap(c, b[0], b[1], z_at, n=8, spread=6.0, size=2.2, seed=k)
+    k = rubble_climb(c, m, z_at, k)
+    k = broken_ledge(c, m, z_at, clear, k)
     fires = rk.scorch(c, BURNS, z_at, clear, per=6, wet=lambda x, y, z: z < m.WATER_Z + 0.4)
     print("charred trees", rk.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree", "Canopy Tree")))
     rk.emit(c, fires, glow_on=ter)
     c.entity("ashfall", rate=40, radius=40)
     print("cascade ruin: fires", len(fires))
+
+
+def rubble_climb(c, m, z_at, k):
+    """Under the climb: the viaduct's stones it's heaped from, piled up out of the canyon
+    floor and the river (where the standing bridges have their pylons)."""
+    for piece in c.pieces:
+        if "rubble" not in piece.name:
+            continue
+        s0, s1 = piece["kp_from"], piece["kp_to"]
+        s = s0 + 4.0
+        while s < s1 - 2.0:
+            q = c.at(s)
+            g = max(z_at(q.p.x, q.p.y), m.WATER_Z - 0.6)
+            top = q.p.z - 2.6
+            if top - g > 1.0:
+                k += 1
+                ob = c.rock_mass("Climb Rubble %d" % k, q.p.x, q.p.y, q.w / 2 + 1.0, 4.2, top, z0=g - 2.0, n=7, seed=k,
+                                 bands=[(1.15, 0.0), (1.0, 0.45), (0.9, 0.8), (0.8, 1.0)], base=g,
+                                 angle=math.atan2(q.t.y, q.t.x) + math.pi / 2)
+                c.assign(ob, c.lib("ruin_rubble", "wall"))
+                for side in (-1, 1):
+                    p = q.side(side * (q.w / 2 + 3.0))
+                    rk.rubble_heap(c, p.x, p.y, lambda x, y, g=g: g, n=5, spread=3.5, size=2.0, role="visual", seed=k * 2 + side)
+            s += 8.0
+    return k
+
+
+def broken_ledge(c, m, z_at, clear, k):
+    """Where the climb meets the old road: the ledge it replaced breaks off just past the
+    corner, a stub of its paving jutting from the cliff with a broken edge, its fallen
+    slabs and rubble below (the destruction rule: you see why the road goes this way)."""
+    std_seg = kit.segment_starts(m.STANDARD_PATH)
+    a, b = std_seg[5], std_seg[9]
+    pts, d = [], 0.0
+    for p0, p1 in zip(m.STANDARD_PATH, m.STANDARD_PATH[1:]):
+        L = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
+        if a <= d <= b:
+            pts.append((p0[0], p0[1], d, math.atan2(p1[1] - p0[1], p1[0] - p0[0])))
+        d += L
+    # Walk back from the bridge along the old ledge: the stub starts where it clears the
+    # new road (its outer rail) and runs 16 m on towards the fallen part.
+    stub = []
+    for x, y, dd, ang in reversed(pts):
+        smp, dist = c.nearest(x, y)
+        if not stub and dist < smp.w / 2 + 9.0:
+            continue
+        stub.append((x, y, dd, ang))
+        if dd < stub[0][2] - 16.0:
+            break
+    if not stub:
+        return k
+    import bmesh
+    from props import cuboid
+
+    bm = bmesh.new()
+    n = len(stub)
+    for i, (x, y, dd, ang) in enumerate(stub):
+        u = i / max(1, n - 1)
+        z = 12.0 + (14.5 - 12.0) * kit.smooth((dd - a) / (b - a))
+        # The paving narrows and sags towards the break, its edge ragged.
+        w = 16.0 * (1.0 - 0.45 * u * u) - 3.0 * rnd(i * 1.3) * u
+        off = (rnd(i * 2.1) - 0.5) * 3.0 * u
+        nx, ny = -math.sin(ang), math.cos(ang)
+        cuboid(bm, (x + nx * off, y + ny * off, z - 1.0 - 0.8 * u * u), (3.2, w, 2.0), ang, ((rnd(i) - 0.5) * 0.1 * u, -0.12 * u * u))
+    ob = c.mesh_object("Broken Ledge", bm, "Wreck", "visual")
+    c.assign(ob, c.lib("ruin_stone", "wall"))
+    ob.data.shade_flat()
+    # Its fallen slabs and rubble on the slope below the break.
+    x, y, dd, ang = stub[-1]
+    for j in range(6):
+        k += 1
+        px = x - math.cos(ang) * (4 + 4 * j) + (rnd(k) - 0.5) * 10
+        py = y - math.sin(ang) * (4 + 4 * j) - 6 - 8 * rnd(k * 1.9)
+        if not clear(px, py, 5.0):
+            continue
+        g = z_at(px, py)
+        bm = bmesh.new()
+        cuboid(bm, (px, py, g + 0.6), (3.5 + 2 * rnd(k), 6 + 4 * rnd(k + 1), 1.6), ang + rnd(k * 3) * 1.2, ((rnd(k + 2) - 0.5) * 0.5, (rnd(k + 3) - 0.5) * 0.4))
+        slab = c.mesh_object("Fallen Ledge Slab %d" % k, bm, "Wreck", "visual")
+        c.assign(slab, c.lib("ruin_stone", "wall"))
+        rk.rubble_heap(c, px + 3, py - 2, z_at, n=6, spread=4.0, size=1.6, role="visual", seed=k)
+    return k
 
 
 ruin_mode.DRESS = dress

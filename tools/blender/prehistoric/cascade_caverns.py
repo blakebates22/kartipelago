@@ -343,6 +343,10 @@ def main():
         "ground": False,
     }
 
+    # The ruin's climb isn't a bridge either: the fallen viaduct's own stones, heaped up out
+    # of the canyon (cascade_ruins.py piles rubble under it, where the bridge had pylons).
+    c.kinds["rubble"] = dict(c.kinds["causeway"], barrier=1.1)
+
     def seg_of(s):
         k = 0
         for i, d in SEG.items():
@@ -365,7 +369,7 @@ def main():
         if 9 <= seg <= 11 and above > 3.0:
             return "viaduct"
         if RUIN and 1 <= seg <= 8:
-            return "viaduct" if above > 3.0 else "path"  # the rubble climb
+            return "rubble" if above > 3.0 else "path"  # the rubble climb
         if seg == 4 and above > 3.0:
             return "viaduct"
         if 5 <= seg <= 8:

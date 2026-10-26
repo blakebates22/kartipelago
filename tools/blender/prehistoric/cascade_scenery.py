@@ -406,7 +406,8 @@ def build(c, rock, t0, t1, cc):
             pylons(c, cc, s0, s1, 30.0 if "viaduct" in piece.name else 14.0, piece.name + " Pylons", ter)
             friezes(c, s0, s1, piece.name + " Frieze")
     gateway(c, cc.SEG[9] - 6, "Bridge Gateway")
-    gateway(c, cc.SEG[4] + 4, "Viaduct Gateway", height=9.0)
+    if not cc.RUIN:  # (in the ruin the viaduct is down, its gateway with it)
+        gateway(c, cc.SEG[4] + 4, "Viaduct Gateway", height=9.0)
 
     # The temple tunnel: a carved face at each mouth, torches all the way through, and
     # its rock painted dark with warm pools of torchlight.
