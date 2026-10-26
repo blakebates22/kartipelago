@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "snow_region_ruin",
+  "name": "Snow Kingdom (greybox, ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 0.0,
+      "y": 2.3,
+      "z": 285.0
+    },
+    {
+      "id": "sparkles_01",
+      "type": "sparkles",
+      "rate": 12,
+      "radius": 30
+    },
+    {
+      "id": "puzzle_gate_01",
+      "type": "puzzle_gate",
+      "puzzle": "ice_bells",
+      "x": -199.4,
+      "z": 199.4,
+      "heading": 2.356194490192345,
+      "width": 9.0,
+      "prize_x": -206.48,
+      "prize_z": 206.48
+    },
+    {
+      "id": "puzzle_switch_01",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 0,
+      "x": -135.95,
+      "z": 63.39,
+      "lanterns": 1
+    },
+    {
+      "id": "puzzle_switch_02",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 1,
+      "x": -35.0,
+      "z": 60.62,
+      "lanterns": 2
+    },
+    {
+      "id": "puzzle_switch_03",
+      "type": "puzzle_switch",
+      "puzzle": "ice_bells",
+      "index": 2,
+      "x": -91.66,
+      "z": 251.84,
+      "lanterns": 3
+    },
+    {
+      "id": "puzzle_gate_02",
+      "type": "puzzle_gate",
+      "puzzle": "return",
+      "x": 144.5,
+      "z": -250.28,
+      "heading": -0.5235987755982994,
+      "width": 9.0,
+      "prize_x": 150.0,
+      "prize_z": -259.81
+    },
+    {
+      "id": "snowfall_01",
+      "type": "snowfall",
+      "rate": 60,
+      "radius": 60
+    }
+  ],
+  "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "snow_region.py": "c5b1f9d50c45bf4d60afc65569d601064f8a3e3b0d870e597c0a8f199e0e6d3b"
+  }
+}
