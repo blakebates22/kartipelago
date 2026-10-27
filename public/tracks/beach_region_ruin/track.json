@@ -399,7 +399,7 @@
       "type": "villager_home",
       "x": -13.34,
       "z": -364.36,
-      "y": 15.9,
+      "y": 14.58,
       "r": 14.0,
       "n": 2,
       "folk": "beach",
@@ -408,49 +408,38 @@
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": -9.15,
-      "z": -464.98,
-      "y": 18.41,
+      "x": -3.05,
+      "z": -469.85,
+      "y": 18.43,
       "r": 14.0,
       "n": 3,
       "folk": "beach",
-      "heading": -3.064
+      "heading": -3.088
     },
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -181.93,
-      "z": -171.44,
-      "y": 7.63,
+      "x": -195.87,
+      "z": -176.3,
+      "y": 7.78,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "beach",
-      "heading": 0.509
+      "heading": 0.652
     },
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -244.63,
-      "z": -102.41,
-      "y": 6.83,
+      "x": -214.25,
+      "z": -98.07,
+      "y": 7.64,
       "r": 14.0,
       "n": 2,
       "folk": "beach",
-      "heading": -0.476
+      "heading": 1.534
     },
     {
       "id": "villager_home_06",
-      "type": "villager_home",
-      "x": -223.02,
-      "z": 69.5,
-      "y": 1.2,
-      "r": 14.0,
-      "n": 2,
-      "folk": "beach",
-      "heading": 2.146
-    },
-    {
-      "id": "villager_home_07",
       "type": "villager_home",
       "x": -227.29,
       "z": 202.78,
@@ -459,6 +448,17 @@
       "n": 3,
       "folk": "beach",
       "heading": -0.18
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -206.47,
+      "z": 171.15,
+      "y": -0.03,
+      "r": 14.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 3.052
     },
     {
       "id": "villager_home_08",
@@ -727,6 +727,6 @@
   "builtFrom": {
     "beach_layout.py": "a4f7977fa10e1870f3124e05e1a5962a4938e638792cbfe7f87fccb391a1d240",
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
-    "beach_region.py": "4f14bf609aef0c7bb9a18a1c6a2664b434afc7e69deafdd67e6ed9ad060cfcb2"
+    "beach_region.py": "97a8b0d42c22bcd1c5084d0c03aa9802c80a84eadf42917598c34ce8a25d218e"
   }
 }
