@@ -281,5 +281,30 @@ export function challengeSceneOf(kingdom: string) {
   return `${kingdom}_challenge`;
 }
 
+// Racing Adventure as a kingdom's own champion (an unlocked racer), their cousin takes
+// their part (Blake, Oct 27): every line of theirs is the cousin's, and at the
+// catastrophe the cousin doesn't join you: they give you their respect and stay home.
+for (const champ of Object.values(CHAMP_OF))
+  CAST[`${champ}_cousin`] = { ...CAST[champ]!, name: `${CAST[champ]!.name}'s Cousin` };
+
+/** A scene's lines as they play for a file raced as `racer`. */
+export function beatsFor(scene: Scene, racer: string): Beat[] {
+  const kingdom = Object.keys(CHAMP_OF).find((k) => CHAMP_OF[k] === racer);
+  if (!kingdom) return scene.beats;
+  const k = KINGDOMS.find((x) => x.id === kingdom)!;
+  const cousin = `${racer}_cousin`;
+  const beats = scene.beats.map((b) => (b.who === racer ? { ...b, who: cousin } : b));
+  if (scene.id !== k.scenes.catastrophe) return beats;
+  // (The first two lines are the champion joining your crew.)
+  return [
+    { who: cousin, text: "YOU BEAT ME FAIR AND SQUARE. YOU'VE GOT MY RESPECT, COUSIN." },
+    {
+      who: "",
+      text: `(${CAST[cousin]!.name.toUpperCase()} STAYS BEHIND TO LOOK AFTER THE ${k.name.toUpperCase()}.)`,
+    },
+    ...beats.slice(2),
+  ];
+}
+
 export const SCENES: Record<string, Scene> = Object.fromEntries(scenes.map((s) => [s.id, s]));
 export const sceneById = (id: string) => SCENES[id];

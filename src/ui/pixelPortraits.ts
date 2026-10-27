@@ -23,6 +23,8 @@ export interface PortraitOpts {
   view: PortraitView;
   /** Turn of the racer about its vertical axis (radians; 0 faces the camera). */
   yaw?: number;
+  /** The racer's alternate paint (a champion's cousin). */
+  alt?: boolean;
   /** Outline colour ("" for none). */
   outline?: string;
   /** Colour levels a channel (fewer: chunkier pixel art). */
@@ -70,21 +72,22 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
   rim.position.set(-4, 3, -3);
   scene.add(sun, rim, new THREE.HemisphereLight("#eaf4ff", "#6a5a48", 1.25));
   const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 60);
-  const racers = new Map<RacerId, Racer>();
+  const racers = new Map<string, Racer>();
   const slots = new Map<string, Slot>();
   const motion = still();
   const head = new THREE.Vector3();
   const clear = new THREE.Color();
 
-  function racerOf(id: RacerId) {
-    let r = racers.get(id);
+  function racerOf(id: RacerId, alt = false) {
+    const key = alt ? `${id}:alt` : id;
+    let r = racers.get(key);
     if (!r) {
-      r = new Racer(id, { seed: id.length * 7 + 3 });
+      r = new Racer(id, { seed: id.length * 7 + 3, alt });
       // Close up: always the detailed model.
       r.lod.autoUpdate = false;
       r.lod.levels.forEach((l, i) => (l.object.visible = i === 0));
       scene.add(r.root);
-      racers.set(id, r);
+      racers.set(key, r);
     }
     return r;
   }
@@ -118,8 +121,8 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
       dt = 0,
       result: number | null = null,
     ): HTMLCanvasElement {
-      const s = slotOf(`${id}:${o.w}x${o.h}:${o.view}`, o.w, o.h);
-      const r = racerOf(id);
+      const s = slotOf(`${id}${o.alt ? ":alt" : ""}:${o.w}x${o.h}:${o.view}`, o.w, o.h);
+      const r = racerOf(id, o.alt);
       for (const other of racers.values()) other.root.visible = other === r;
       Object.assign(motion, still(), pose ?? {});
       r.setResult(result, 8);

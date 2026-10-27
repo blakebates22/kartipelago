@@ -54,7 +54,7 @@ import {
   type AdventureSave,
 } from "../adventure/progress";
 import type { AdventureRun } from "../adventure/run";
-import { CAST, SCENES, sceneById, type Scene } from "../adventure/scenes";
+import { CAST, SCENES, beatsFor, sceneById, type Scene } from "../adventure/scenes";
 import type { RaceResult } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
 import { startCup } from "../game/trophy";
@@ -761,7 +761,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
           },
         ]
       : []),
-    ...(sc?.beats ?? []),
+    ...(sc ? beatsFor(sc, game.selection.racer) : []),
   ];
   // Staged in the 3D world (src/adventure/staged.ts), where there's a staging for it.
   const staged = stagedById(id);
@@ -882,7 +882,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
 export function portrait(
   ui: UiLayer,
   pp: PixelPortraits | undefined,
-  who: { color: string; shape?: string },
+  who: { color: string; shape?: string; name?: string },
   look: string | undefined,
   x: number,
   y: number,
@@ -893,7 +893,15 @@ export function portrait(
   if (look && pp) {
     const img = pp.draw(
       look as never,
-      { w: 48, h: 48, view: "head", yaw: 0.35 + Math.sin(t * 1.4) * 0.15, levels: 8 },
+      {
+        w: 48,
+        h: 48,
+        view: "head",
+        yaw: 0.35 + Math.sin(t * 1.4) * 0.15,
+        levels: 8,
+        // (A champion's cousin: the alternate paint.)
+        alt: who.name?.endsWith("'s Cousin") ?? false,
+      },
       undefined,
       1 / 60,
     );
