@@ -342,6 +342,127 @@
       "heading": -1.2031157067733895
     },
     {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": 29.44,
+      "z": 190.93,
+      "y": 19.52,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": 2.967
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -43.1,
+      "z": 190.78,
+      "y": 20.03,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": -2.871
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": 10.62,
+      "z": 456.89,
+      "y": 13.17,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": -0.159
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -273.59,
+      "z": 99.22,
+      "y": 27.18,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": -2.025
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": -197.92,
+      "z": 191.1,
+      "y": 25.43,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": -0.585
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -73.31,
+      "z": -231.77,
+      "y": 59.15,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": -2.113
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -61.96,
+      "z": -287.47,
+      "y": 57.78,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": -2.3
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 122.18,
+      "z": -262.38,
+      "y": 46.41,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": 2.812
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 213.07,
+      "z": -128.71,
+      "y": 44.09,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": 1.947
+    },
+    {
+      "id": "villager_home_10",
+      "type": "villager_home",
+      "x": 119.79,
+      "z": 50.06,
+      "y": 11.6,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": 0.115
+    },
+    {
+      "id": "villager_home_11",
+      "type": "villager_home",
+      "x": 69.19,
+      "z": 108.43,
+      "y": 11.97,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": 1.839
+    },
+    {
       "id": "torch_07",
       "type": "torch",
       "x": -298.18,
