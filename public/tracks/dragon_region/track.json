@@ -228,6 +228,138 @@
       "heading": 0.2988939942779373
     },
     {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": -76.78,
+      "z": 230.68,
+      "y": 3.35,
+      "r": 14.0,
+      "n": 3,
+      "folk": "dragon",
+      "heading": 0.205
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 73.54,
+      "z": 250.48,
+      "y": 1.83,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.074
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": -217.05,
+      "z": 113.9,
+      "y": 10.09,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": -0.539
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -222.31,
+      "z": -0.33,
+      "y": 16.0,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 2.71
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": -163.2,
+      "z": -216.57,
+      "y": 32.06,
+      "r": 14.0,
+      "n": 3,
+      "folk": "dragon",
+      "heading": 0.415
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -255.66,
+      "z": -207.7,
+      "y": 30.48,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": -2.45
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -25.64,
+      "z": -307.64,
+      "y": 33.66,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": -2.87
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 26.97,
+      "z": -283.69,
+      "y": 33.08,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.22
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 264.4,
+      "z": -100.35,
+      "y": 18.31,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": -0.993
+    },
+    {
+      "id": "villager_home_10",
+      "type": "villager_home",
+      "x": 155.46,
+      "z": -218.55,
+      "y": 25.89,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": -0.609
+    },
+    {
+      "id": "villager_home_11",
+      "type": "villager_home",
+      "x": 237.97,
+      "z": 165.11,
+      "y": 10.13,
+      "r": 14.0,
+      "n": 3,
+      "folk": "dragon",
+      "heading": -0.36
+    },
+    {
+      "id": "villager_home_12",
+      "type": "villager_home",
+      "x": 299.04,
+      "z": 131.62,
+      "y": 9.86,
+      "r": 14.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 1.276
+    },
+    {
       "id": "steam_01",
       "type": "steam",
       "x": 203.76,
