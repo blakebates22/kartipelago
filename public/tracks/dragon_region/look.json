@@ -1,58 +1,53 @@
 {
   "schemaVersion": 1,
-  "theme": "dragonspire_keep",
-  "sky": "#7a4a8a",
+  "theme": "dragon_isles",
+  "sky": "#5aa8f0",
   "fog": {
     "enabled": true,
-    "color": "#c4849a",
-    "near": 420,
-    "far": 2600
+    "color": "#cfe4f4",
+    "near": 520,
+    "far": 2900
   },
   "sun": {
-    "color": "#ffc08a",
-    "intensity": 2.5,
+    "color": "#fff2dc",
+    "intensity": 2.7,
     "direction": [
-      -0.62,
-      0.42,
-      0.66
+      -0.42,
+      0.78,
+      0.46
     ]
   },
   "ambient": {
-    "sky": "#b49ad8",
-    "ground": "#5a4048",
-    "intensity": 1.2
+    "sky": "#c4dcff",
+    "ground": "#86a070",
+    "intensity": 1.25
   },
   "skyDome": {
-    "top": "#2c2266",
-    "horizon": "#ff9a5a",
-    "bottom": "#e4889a",
+    "top": "#2a7ae0",
+    "horizon": "#dceefa",
+    "bottom": "#cfe4f0",
     "sun": {
-      "color": "#fff0c0",
-      "size": 11,
-      "glow": "#ffb070",
-      "elevation": 9
+      "color": "#fffbe8",
+      "size": 8,
+      "glow": "#ffe8b0",
+      "elevation": 46
     },
     "clouds": {
-      "count": 30,
-      "color": "#ffb48a",
-      "shade": "#8a5a9a",
-      "seed": 421,
-      "low": 3,
-      "high": 30,
+      "count": 34,
+      "color": "#ffffff",
+      "shade": "#dce8f4",
+      "seed": 311,
+      "low": 2,
+      "high": 26,
       "drift": 0.004
     },
     "hills": {
-      "color": "#5a4a7a",
-      "far": "#b48ab4",
-      "height": 13,
-      "seed": 423,
-      "layers": 3
-    },
-    "stars": {
-      "count": 60,
-      "color": "#fff4e0",
-      "seed": 425,
-      "low": 48
+      "color": "#7a9ab0",
+      "far": "#c4d8e8",
+      "height": 11,
+      "seed": 313,
+      "layers": 3,
+      "style": "karst"
     }
   }
 }

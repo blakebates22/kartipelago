@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "dragon_region",
-  "name": "Dragon Kingdom (greybox)",
+  "name": "Dragon Kingdom",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -13,53 +13,254 @@
   },
   "entities": [
     {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -128.11,
+      "y": 9.88,
+      "z": 197.15
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -115.25,
+      "y": 9.88,
+      "z": 183.44
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -153.3,
+      "y": 11.44,
+      "z": 171.71
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -139.44,
+      "y": 11.44,
+      "z": 159.01
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -177.03,
+      "y": 13.12,
+      "z": 146.26
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -163.58,
+      "y": 13.12,
+      "z": 133.12
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -98.37,
+      "y": 37.52,
+      "z": -273.17
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -91.43,
+      "y": 37.52,
+      "z": -255.7
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -79.71,
+      "y": 38.33,
+      "z": -280.9
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -72.47,
+      "y": 38.33,
+      "z": -263.55
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -60.27,
+      "y": 39.08,
+      "z": -288.46
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -53.97,
+      "y": 39.08,
+      "z": -270.75
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 85.62,
+      "y": 38.06,
+      "z": -297.59
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 75.9,
+      "y": 38.06,
+      "z": -281.5
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 107.21,
+      "y": 35.79,
+      "z": -280.39
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 94.31,
+      "y": 35.79,
+      "z": -266.71
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": 126.06,
+      "y": 33.49,
+      "z": -264.64
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": 114.83,
+      "y": 33.49,
+      "z": -249.57
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": 171.0,
+      "y": 8.92,
+      "z": 176.47
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": 159.56,
+      "y": 8.92,
+      "z": 161.54
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": 134.21,
+      "y": 8.15,
+      "z": 205.82
+    },
+    {
+      "id": "torch_22",
+      "type": "torch",
+      "x": 123.26,
+      "y": 8.15,
+      "z": 190.53
+    },
+    {
+      "id": "torch_23",
+      "type": "torch",
+      "x": 93.64,
+      "y": 8.15,
+      "z": 231.16
+    },
+    {
+      "id": "torch_24",
+      "type": "torch",
+      "x": 84.51,
+      "y": 8.15,
+      "z": 214.73
+    },
+    {
       "id": "lantern_01",
       "type": "lantern",
-      "x": 36.0,
-      "y": 26.0,
-      "z": 305.0
+      "x": 46.0,
+      "y": 27.0,
+      "z": 262.0
     },
     {
-      "id": "lantern_02",
-      "type": "lantern",
-      "x": -266.98,
-      "y": 6.5,
-      "z": 23.36
+      "id": "gateway_spot_01",
+      "type": "gateway_spot",
+      "gateway": "keep",
+      "x": -207.8,
+      "z": -255.72,
+      "heading": 0.5428119108540138
     },
     {
-      "id": "lantern_03",
-      "type": "lantern",
-      "x": -263.08,
-      "y": 6.5,
-      "z": 51.14
+      "id": "gateway_spot_02",
+      "type": "gateway_spot",
+      "gateway": "canyon",
+      "x": 318.0,
+      "z": 112.19,
+      "heading": -1.5548126758209768
     },
     {
-      "id": "lantern_04",
-      "type": "lantern",
-      "x": -256.29,
-      "y": 6.5,
-      "z": 78.36
+      "id": "gateway_spot_03",
+      "type": "gateway_spot",
+      "gateway": "hold",
+      "x": 206.65,
+      "z": -228.51,
+      "heading": -0.6587351292313119
     },
     {
-      "id": "lantern_05",
-      "type": "lantern",
-      "x": -246.7,
-      "y": 6.5,
-      "z": 104.72
+      "id": "gateway_spot_04",
+      "type": "gateway_spot",
+      "gateway": "moon",
+      "x": -326.31,
+      "z": -20.71,
+      "heading": 1.7989002375991785
     },
     {
-      "id": "lantern_06",
-      "type": "lantern",
-      "x": -234.4,
-      "y": 6.5,
-      "z": 129.93
+      "id": "gateway_spot_05",
+      "type": "gateway_spot",
+      "gateway": "citadel",
+      "x": 9.53,
+      "z": -326.53,
+      "heading": 0.2988939942779373
     },
     {
-      "id": "lantern_07",
-      "type": "lantern",
-      "x": -219.53,
-      "y": 6.5,
-      "z": 153.72
+      "id": "steam_01",
+      "type": "steam",
+      "x": 203.76,
+      "y": 25.51,
+      "z": -178.31
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 174.17,
+      "y": 25.07,
+      "z": -181.68
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 147.09,
+      "y": 24.15,
+      "z": -189.47
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 241.22,
+      "y": 22.81,
+      "z": -134.15
+    },
+    {
+      "id": "storm_01",
+      "type": "storm",
+      "period": 9,
+      "spread": 5,
+      "distance": 900
     }
   ],
   "generator": "tools/blender/prehistoric/dragon_region.py (re-running it rewrites entities)"
