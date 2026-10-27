@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "desert_region_ruin",
-  "name": "Desert World (greybox, ruined)",
+  "name": "Desert World (ruined)",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -13,125 +13,183 @@
   },
   "entities": [
     {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 292.06,
+      "y": 13.68,
+      "z": -95.69
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 288.74,
+      "y": 14.27,
+      "z": -80.82
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 286.26,
+      "y": 14.84,
+      "z": -64.12
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 284.26,
+      "y": 15.43,
+      "z": -48.36
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": 282.2,
+      "y": 16.04,
+      "z": -32.45
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 280.33,
+      "y": 16.65,
+      "z": -16.36
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 278.89,
+      "y": 17.23,
+      "z": -0.32
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 277.22,
+      "y": 17.86,
+      "z": 15.17
+    },
+    {
       "id": "campfire_01",
       "type": "campfire",
-      "x": -290.0,
-      "y": 2.3,
-      "z": -0.0
-    },
-    {
-      "id": "tumbleweed_01",
-      "type": "tumbleweed",
-      "ax": 215.85575219373078,
-      "ay": 3.0,
-      "az": 155.01911113762046,
-      "bx": 190.14424780626922,
-      "by": 3.0,
-      "bz": 185.66088886237955,
-      "period": 13.0,
-      "offset": 0.0,
-      "travel": 6.0,
-      "r": 0.8
-    },
-    {
-      "id": "steam_01",
-      "type": "steam",
-      "x": 0.0,
-      "y": -7.0,
+      "x": -262.0,
+      "y": 10.3,
       "z": -0.0
     },
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "crater_stones",
-      "x": -8.0,
-      "z": -0.0,
-      "heading": -1.5707963267948968,
+      "x": -42.43,
+      "z": 230.9,
+      "heading": 1.2765824837507473,
       "width": 9.0,
-      "prize_x": 0.0,
-      "prize_z": -0.0
+      "prize_x": -52.0,
+      "prize_z": 228.0
     },
     {
       "id": "puzzle_switch_01",
       "type": "puzzle_switch",
       "puzzle": "crater_stones",
       "index": 0,
-      "x": -52.33,
-      "z": -52.33
+      "x": 50.0,
+      "z": 168.0
     },
     {
       "id": "puzzle_switch_02",
       "type": "puzzle_switch",
       "puzzle": "crater_stones",
       "index": 1,
-      "x": 52.33,
-      "z": -52.33
+      "x": -78.0,
+      "z": 150.0
     },
     {
       "id": "puzzle_switch_03",
       "type": "puzzle_switch",
       "puzzle": "crater_stones",
       "index": 2,
-      "x": 52.33,
-      "z": 52.33
+      "x": 30.0,
+      "z": 234.0
     },
     {
       "id": "puzzle_switch_04",
       "type": "puzzle_switch",
       "puzzle": "crater_stones",
       "index": 3,
-      "x": -52.33,
-      "z": 52.33
+      "x": -40.0,
+      "z": 192.0
     },
     {
       "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "return",
-      "x": -236.73,
-      "z": -165.76,
-      "heading": 0.9599310885968817,
+      "x": -285.0,
+      "z": 28.07,
+      "heading": 1.5640793493060268,
       "width": 9.0,
-      "prize_x": -245.75,
-      "prize_z": -172.07
+      "prize_x": -296.0,
+      "prize_z": 28.0
     },
     {
       "id": "puzzle_gate_03",
       "type": "puzzle_gate",
       "puzzle": "secret",
-      "x": 75.32,
-      "z": -281.08,
-      "heading": -0.2617993877991493,
+      "x": 275.93,
+      "z": -207.36,
+      "heading": -0.7403431162834772,
       "width": 9.0,
-      "prize_x": 77.65,
-      "prize_z": -289.78
+      "prize_x": 282.0,
+      "prize_z": -214.0
     },
     {
-      "id": "dust_01",
-      "type": "dust",
-      "color": "#d89a6a",
-      "rate": 1.0
+      "id": "gateway_spot_01",
+      "type": "gateway_spot",
+      "gateway": "canyon",
+      "x": -63.91,
+      "z": -310.66,
+      "heading": -0.3320452914805664
     },
     {
-      "id": "dustwind_01",
-      "type": "dustwind",
-      "rate": 22,
-      "radius": 60,
-      "color": "#e0a878"
+      "id": "gateway_spot_02",
+      "type": "gateway_spot",
+      "gateway": "oasis",
+      "x": 302.53,
+      "z": -164.63,
+      "heading": -0.9095341402113571
     },
     {
-      "id": "birds_01",
-      "type": "birds",
-      "x": -150.0,
-      "y": 40.0,
-      "z": -120.0,
-      "radius": 70.0,
-      "count": 3,
-      "speed": 0.16,
-      "seed": 1
+      "id": "gateway_spot_03",
+      "type": "gateway_spot",
+      "gateway": "gulch",
+      "x": 228.49,
+      "z": 220.69,
+      "heading": -2.2260630845233735
+    },
+    {
+      "id": "gateway_spot_04",
+      "type": "gateway_spot",
+      "gateway": "impact",
+      "x": -28.01,
+      "z": 244.47,
+      "heading": 1.5315755489139506
+    },
+    {
+      "id": "gateway_spot_05",
+      "type": "gateway_spot",
+      "gateway": "lair",
+      "x": -181.02,
+      "z": -262.04,
+      "heading": 0.8456744569891725
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 8,
+      "radius": 40
     }
   ],
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "desert_region.py": "93623ec1306d31fd7460d7e003e35285846f9b2f0b0bf0fa87dedcad93d046a6"
+    "desert_layout.py": "fde6f7d6c7374f288495646698f6ed96e163d0c0b33df1400da7f9cdc74bc6a2",
+    "desert_region.py": "492c4a76446780208f7c5ac610e192ef4aa357556422c52ba535c9d760592806"
   }
 }
