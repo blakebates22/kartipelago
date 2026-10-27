@@ -1193,6 +1193,11 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, c
         for i in range(nx + 1):
             hs[i, j] = height(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny)
     lowest = self._lowest_surface()
+    # The land too: where the land's pulled down to meet a road (in a cutting, beside a
+    # sunken road), the natural height is above the visible ground there, and a floor at
+    # it was an invisible sheet over the land (karts drove in under it, or landed on it
+    # and floated). Holes in the land (under rock masses) have nothing to keep under.
+    land = self._lowest_surface(("Terrain",))
     bm = bmesh.new()
     zs = {}
     for j in range(ny):
@@ -1207,6 +1212,9 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, c
                 if clamp_where is not None and not clamp_where(lerp(xa, xb, u), lerp(ya, yb, v)):
                     continue
                 s = lowest(lerp(xa, xb, u), lerp(ya, yb, v))
+                if s is not None:
+                    z = min(z, s - clear)
+                s = land(lerp(xa, xb, u), lerp(ya, yb, v))
                 if s is not None:
                     z = min(z, s - clear)
             # A hair of overlap, so neighbouring squares never leave a crack.
@@ -1236,7 +1244,7 @@ def _underfloor_flat(self, name, x0, x1, y0, y1, cell, height, mat, clear=0.3, c
     return ob
 
 
-def _lowest_surface(self):
+def _lowest_surface(self, colls=("Roads",)):
     """A lookup (x, y) -> the height of the lowest road surface built so far there (the
     top faces of every road, side road and shortcut), or None if there's none. Only
     roads: a rock's buried base or a deck's underside mustn't drag the floor down."""
@@ -1244,8 +1252,11 @@ def _lowest_surface(self):
 
     dg = bpy.context.evaluated_depsgraph_get()
     verts, faces = [], []
-    roads = self.colls.get("Roads")
-    for ob in list(roads.all_objects) if roads else []:
+    obs = []
+    for name in colls:
+        got = self.colls.get(name)
+        obs += list(got.all_objects) if got else []
+    for ob in obs:
         if ob.type not in ("MESH", "CURVE") or ob.get("kp_role", "both") not in ("both", "collision"):
             continue
         ev = ob.evaluated_get(dg)
