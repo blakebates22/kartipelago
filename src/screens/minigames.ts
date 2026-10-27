@@ -37,14 +37,19 @@ const entryOf = (m: MiniGameInfo): TrackEntry => ({
 });
 
 /** The menu: the four games, each with what it's about. */
-export function minigameMenu(game: Game): Screen {
+/** The four mini-games' list. `back`: where ESC goes (the Tracks menu's DEV tab, where
+ * they live for now: Blake, Oct 27). */
+export function minigameMenu(
+  game: Game,
+  back: () => void = () => game.screens.go(titleScreen(game, true)),
+): Screen {
   const menu = new VMenu(
     game,
     MINIGAMES.map((m) => ({
       label: `${m.name.toUpperCase()}  ${m.kind === "battle" ? "(BATTLE)" : ""}`,
       action: () => game.screens.go(minigameLoading(game, m)),
     })),
-    () => game.screens.go(titleScreen(game, true)),
+    back,
   );
   return {
     id: "MINIGAMES",

@@ -30,6 +30,7 @@ import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { loadingScreen } from "./loading";
 import { characterSelect } from "./characterSelect";
+import { minigameMenu } from "./minigames";
 
 const images = new Map<string, HTMLImageElement>();
 /** Track pictures, loaded once and kept (they're small). */
@@ -43,7 +44,11 @@ export function preview(src: string): HTMLImageElement | undefined {
   return img.complete && img.naturalWidth > 0 ? img : undefined;
 }
 
-type Entry = { kind: "trophy" } | { kind: "track"; track: TrackEntry };
+type Entry =
+  | { kind: "trophy" }
+  | { kind: "track"; track: TrackEntry }
+  /** Dev builds' DEV tab: the mini-games (off the mode select for now: Blake, Oct 27). */
+  | { kind: "minigames" };
 
 /** The worlds along the top; dev builds add the Testing tab (prototypes, old versions,
  * ruins, bosses), which players never see. */
@@ -64,6 +69,7 @@ const STYLE: Record<string, IslandStyle> = {
 const styleOf = (w: WorldEntry): IslandStyle => STYLE[w.id] ?? "prehistoric";
 
 const entriesOf = (w: WorldEntry): Entry[] => [
+  ...(w.testing ? [{ kind: "minigames" as const }] : []),
   ...trackTilesOf(w).map((track) => ({ kind: "track" as const, track })),
   ...(w.testing ? [] : [{ kind: "trophy" as const }]),
 ];
@@ -110,6 +116,10 @@ export function tracksMenu(game: Game): Screen {
   const choose = () => {
     const e = entry();
     if (e.kind === "trophy") return startTrophy();
+    if (e.kind === "minigames") {
+      game.sounds.confirm();
+      return game.screens.go(minigameMenu(game, () => game.screens.go(tracksMenu(game))));
+    }
     if (e.track.comingSoon) return game.sounds.error();
     const track = e.track;
     const modes = track.modes.filter((m) => m !== "practice");
@@ -261,6 +271,15 @@ export function tracksMenu(game: Game): Screen {
       trophyPicture(ui, x, y, w, h);
       return;
     }
+    if (e.kind === "minigames") {
+      ui.rect(x, y, w, h, "#d8c49a");
+      ui.text("MINI-GAMES", x + w / 2, y + h / 2 - 7, {
+        scale: 2,
+        color: "#8a2a1a",
+        align: "center",
+      });
+      return;
+    }
     const img = e.track.preview && !e.track.comingSoon ? preview(e.track.preview) : undefined;
     if (img) ui.image(img, x, y, w, h);
     else {
@@ -272,9 +291,11 @@ export function tracksMenu(game: Game): Screen {
   const nameOf = (e: Entry) =>
     e.kind === "trophy"
       ? "TROPHY RACE"
-      : e.track.comingSoon
-        ? "COMING SOON"
-        : e.track.name.toUpperCase();
+      : e.kind === "minigames"
+        ? "MINI-GAMES"
+        : e.track.comingSoon
+          ? "COMING SOON"
+          : e.track.name.toUpperCase();
 
   /** The words for an entry: its description and best times, or the trophy rules. */
   function details(e: Entry): { body: string; lines: string[] } {
@@ -285,6 +306,11 @@ export function tracksMenu(game: Game): Screen {
         lines: [`${n} RACES · 8 RACERS`, "POINTS 10 8 6 5 4 3 2 1"],
       };
     }
+    if (e.kind === "minigames")
+      return {
+        body: "Balloon Brawl, Egg Scramble, Crown Hill and Star Fall. Here in the dev tab for now.",
+        lines: ["4 GAMES · 2 BATTLES"],
+      };
     if (e.track.comingSoon) return { body: "Still being built. Coming soon!", lines: [] };
     const rec = records[e.track.id];
     // Time Trials only (src/app/records.ts): a race against the rivals is never a record.
@@ -365,13 +391,13 @@ export function tracksMenu(game: Game): Screen {
         const y = ly + 6 + i * 32;
         if (on) ui.rect(lx + 2, y - 2, lw - 4, 28, "#ffd84a", 0.55);
         if (e.kind === "trophy") trophy(ui.g, lx + 8, y + 5, 1, on ? Math.sin(t * 3) : 0);
-        else stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
+        else if (e.kind === "track") stopMark(ui, lx + 14, y + 12, i + 1, on, e.track.comingSoon);
         ui.text(nameOf(e), lx + 30, y + 4, { color: on ? "#8a2a1a" : INK });
         const trial = e.kind === "track" ? records[e.track.id]?.best.timeTrial : undefined;
         const sub =
           e.kind === "trophy"
             ? `${tracksOf(world()).filter((tr) => !tr.comingSoon).length} RACES · MOST POINTS`
-            : e.track.comingSoon
+            : e.kind === "minigames" || e.track.comingSoon
               ? ""
               : `BEST TRIAL ${trial ? formatTime(trial) : NO_TIME}`;
         ui.text(sub, lx + 30, y + 14, { color: INK_SOFT });
