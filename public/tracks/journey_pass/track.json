@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "id": "journey_pass",
+  "name": "The Frozen Pass",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": -244.89,
+      "y": 70.95,
+      "z": -351.69
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": -232.81,
+      "y": 71.01,
+      "z": -339.18
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": -222.62,
+      "y": 70.72,
+      "z": -329.19
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": -210.05,
+      "y": 69.87,
+      "z": -320.44
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -196.95,
+      "y": 68.56,
+      "z": -311.9
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -183.55,
+      "y": 67.16,
+      "z": -303.78
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -170.13,
+      "y": 66.0,
+      "z": -296.24
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -362.75,
+      "y": 80.54,
+      "z": -373.1
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -383.01,
+      "y": 80.54,
+      "z": -364.53
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 360.24,
+      "y": 15.22,
+      "z": 378.75
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 380.88,
+      "y": 15.22,
+      "z": 371.14
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -118.28,
+      "y": 56.29,
+      "z": -241.89
+    },
+    {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": -117.31,
+      "z": -243.64,
+      "y": 56.99,
+      "r": 14.0,
+      "n": 1,
+      "folk": "road",
+      "heading": -0.503
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 258.76,
+      "y": 10.32,
+      "z": 253.1
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 259.57,
+      "z": 251.27,
+      "y": 10.49,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": -0.414
+    }
+  ],
+  "generator": "tools/blender/prehistoric/journey_pass.py (re-running it rewrites entities)",
+  "journey": {
+    "from": 58.4,
+    "to": 1366.9
+  }
+}

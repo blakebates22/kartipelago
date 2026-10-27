@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "theme": "summit_pass",
+  "sky": "#5ab8ff",
+  "fog": {
+    "enabled": true,
+    "color": "#d4eeff",
+    "near": 260,
+    "far": 1400
+  },
+  "sun": {
+    "color": "#fff4dc",
+    "intensity": 2.7,
+    "direction": [
+      0.42,
+      0.74,
+      0.52
+    ]
+  },
+  "ambient": {
+    "sky": "#eaf6ff",
+    "ground": "#8ea2bc",
+    "intensity": 1.35
+  },
+  "skyDome": {
+    "top": "#1c7ee8",
+    "horizon": "#c8ecff",
+    "bottom": "#e4f4ff",
+    "sun": {
+      "color": "#fffbe6",
+      "size": 8,
+      "glow": "#fff0b0",
+      "elevation": 32
+    },
+    "clouds": {
+      "count": 30,
+      "color": "#ffffff",
+      "shade": "#d2e6fa",
+      "seed": 61,
+      "low": 8,
+      "high": 26,
+      "drift": 0.005
+    },
+    "hills": {
+      "color": "#9eb8de",
+      "far": "#d2e4f8",
+      "height": 16,
+      "seed": 67,
+      "layers": 3
+    }
+  }
+}
