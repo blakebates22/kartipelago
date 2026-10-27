@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "id": "arena_nest",
+  "name": "Nest Island",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "arena_spawn_01",
+      "type": "arena_spawn",
+      "x": 50.96,
+      "z": -10.33,
+      "heading": -1.371,
+      "index": 0
+    },
+    {
+      "id": "arena_spawn_02",
+      "type": "arena_spawn",
+      "x": 28.73,
+      "z": -43.34,
+      "heading": -0.585,
+      "index": 1
+    },
+    {
+      "id": "arena_spawn_03",
+      "type": "arena_spawn",
+      "x": -10.33,
+      "z": -50.96,
+      "heading": 0.2,
+      "index": 2
+    },
+    {
+      "id": "arena_spawn_04",
+      "type": "arena_spawn",
+      "x": -43.34,
+      "z": -28.73,
+      "heading": 0.985,
+      "index": 3
+    },
+    {
+      "id": "arena_spawn_05",
+      "type": "arena_spawn",
+      "x": -50.96,
+      "z": 10.33,
+      "heading": 1.771,
+      "index": 4
+    },
+    {
+      "id": "arena_spawn_06",
+      "type": "arena_spawn",
+      "x": -28.73,
+      "z": 43.34,
+      "heading": 2.556,
+      "index": 5
+    },
+    {
+      "id": "arena_spawn_07",
+      "type": "arena_spawn",
+      "x": 10.33,
+      "z": 50.96,
+      "heading": -2.942,
+      "index": 6
+    },
+    {
+      "id": "arena_spawn_08",
+      "type": "arena_spawn",
+      "x": 43.34,
+      "z": 28.73,
+      "heading": -2.156,
+      "index": 7
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 18.3,
+      "across": -4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 54.8,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 91.3,
+      "across": 4.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 127.8,
+      "across": -4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 164.3,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 200.8,
+      "across": 4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 237.3,
+      "across": -4.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 273.8,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 310.3,
+      "across": 4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 346.8,
+      "across": -4.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "nest_01",
+      "type": "nest",
+      "x": 33.94,
+      "z": -33.94,
+      "y": -0.14,
+      "color": "red",
+      "index": 0
+    },
+    {
+      "id": "nest_02",
+      "type": "nest",
+      "x": -33.94,
+      "z": -33.94,
+      "y": -1.87,
+      "color": "blue",
+      "index": 1
+    },
+    {
+      "id": "nest_03",
+      "type": "nest",
+      "x": -33.94,
+      "z": 33.94,
+      "y": -1.29,
+      "color": "green",
+      "index": 2
+    },
+    {
+      "id": "nest_04",
+      "type": "nest",
+      "x": 33.94,
+      "z": 33.94,
+      "y": 0.16,
+      "color": "yellow",
+      "index": 3
+    },
+    {
+      "id": "egg_spawn_01",
+      "type": "egg_spawn",
+      "x": 0.0,
+      "z": -0.0,
+      "y": 2.65,
+      "r": 10.0
+    },
+    {
+      "id": "arena_01",
+      "type": "arena",
+      "game": "eggs",
+      "radius": 72.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/arena_nest.py (re-running it rewrites entities)",
+  "arena": true
+}

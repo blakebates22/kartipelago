@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "id": "arena_stars",
+  "name": "Star Fall",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "arena_spawn_01",
+      "type": "arena_spawn",
+      "x": 50.96,
+      "z": -10.33,
+      "heading": -1.371,
+      "index": 0
+    },
+    {
+      "id": "arena_spawn_02",
+      "type": "arena_spawn",
+      "x": 28.73,
+      "z": -43.34,
+      "heading": -0.585,
+      "index": 1
+    },
+    {
+      "id": "arena_spawn_03",
+      "type": "arena_spawn",
+      "x": -10.33,
+      "z": -50.96,
+      "heading": 0.2,
+      "index": 2
+    },
+    {
+      "id": "arena_spawn_04",
+      "type": "arena_spawn",
+      "x": -43.34,
+      "z": -28.73,
+      "heading": 0.985,
+      "index": 3
+    },
+    {
+      "id": "arena_spawn_05",
+      "type": "arena_spawn",
+      "x": -50.96,
+      "z": 10.33,
+      "heading": 1.771,
+      "index": 4
+    },
+    {
+      "id": "arena_spawn_06",
+      "type": "arena_spawn",
+      "x": -28.73,
+      "z": 43.34,
+      "heading": 2.556,
+      "index": 5
+    },
+    {
+      "id": "arena_spawn_07",
+      "type": "arena_spawn",
+      "x": 10.33,
+      "z": 50.96,
+      "heading": -2.942,
+      "index": 6
+    },
+    {
+      "id": "arena_spawn_08",
+      "type": "arena_spawn",
+      "x": 43.34,
+      "z": 28.73,
+      "heading": -2.156,
+      "index": 7
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 18.3,
+      "across": -4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 54.8,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 91.3,
+      "across": 4.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 127.8,
+      "across": -4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 164.3,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 200.8,
+      "across": 4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 237.3,
+      "across": -4.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 273.8,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 310.3,
+      "across": 4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 346.8,
+      "across": -4.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": 45.9,
+      "y": 5.72,
+      "z": -12.21
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 33.65,
+      "y": 3.73,
+      "z": -33.53
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": 12.38,
+      "y": 4.48,
+      "z": -45.86
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": -12.21,
+      "y": 3.86,
+      "z": -45.9
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -33.53,
+      "y": 1.99,
+      "z": -33.65
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -45.86,
+      "y": 3.13,
+      "z": -12.38
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -45.9,
+      "y": 3.28,
+      "z": 12.21
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": -33.65,
+      "y": 2.56,
+      "z": 33.53
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": -12.38,
+      "y": 4.71,
+      "z": 45.86
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": 12.21,
+      "y": 5.09,
+      "z": 45.9
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": 33.53,
+      "y": 4.03,
+      "z": 33.65
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": 45.86,
+      "y": 5.83,
+      "z": 12.38
+    },
+    {
+      "id": "star_field_01",
+      "type": "star_field",
+      "radius": 68.0
+    },
+    {
+      "id": "fireflies_01",
+      "type": "fireflies",
+      "rate": 30,
+      "radius": 36
+    },
+    {
+      "id": "arena_01",
+      "type": "arena",
+      "game": "stars",
+      "radius": 72.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/arena_stars.py (re-running it rewrites entities)",
+  "arena": true
+}

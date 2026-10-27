@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "id": "arena_crown",
+  "name": "Crown Hill",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "arena_spawn_01",
+      "type": "arena_spawn",
+      "x": 52.92,
+      "z": -10.73,
+      "heading": -1.371,
+      "index": 0
+    },
+    {
+      "id": "arena_spawn_02",
+      "type": "arena_spawn",
+      "x": 29.84,
+      "z": -45.01,
+      "heading": -0.585,
+      "index": 1
+    },
+    {
+      "id": "arena_spawn_03",
+      "type": "arena_spawn",
+      "x": -10.73,
+      "z": -52.92,
+      "heading": 0.2,
+      "index": 2
+    },
+    {
+      "id": "arena_spawn_04",
+      "type": "arena_spawn",
+      "x": -45.01,
+      "z": -29.84,
+      "heading": 0.985,
+      "index": 3
+    },
+    {
+      "id": "arena_spawn_05",
+      "type": "arena_spawn",
+      "x": -52.92,
+      "z": 10.73,
+      "heading": 1.771,
+      "index": 4
+    },
+    {
+      "id": "arena_spawn_06",
+      "type": "arena_spawn",
+      "x": -29.84,
+      "z": 45.01,
+      "heading": 2.556,
+      "index": 5
+    },
+    {
+      "id": "arena_spawn_07",
+      "type": "arena_spawn",
+      "x": 10.73,
+      "z": 52.92,
+      "heading": -2.942,
+      "index": 6
+    },
+    {
+      "id": "arena_spawn_08",
+      "type": "arena_spawn",
+      "x": 45.01,
+      "z": 29.84,
+      "heading": -2.156,
+      "index": 7
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 18.9,
+      "across": -4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 56.7,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 94.4,
+      "across": 4.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 132.2,
+      "across": -4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 170.0,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 207.7,
+      "across": 4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 245.5,
+      "across": -4.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 283.3,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 321.0,
+      "across": 4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 358.8,
+      "across": -4.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "crown_zone_01",
+      "type": "crown_zone",
+      "x": 0.0,
+      "z": -0.0,
+      "y": 13.65,
+      "r": 10.0
+    },
+    {
+      "id": "arena_01",
+      "type": "arena",
+      "game": "crown",
+      "radius": 74.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/arena_crown.py (re-running it rewrites entities)",
+  "arena": true
+}

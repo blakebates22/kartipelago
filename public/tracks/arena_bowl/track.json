@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "id": "arena_bowl",
+  "name": "Crater Bowl",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "arena_spawn_01",
+      "type": "arena_spawn",
+      "x": 49.0,
+      "z": -9.93,
+      "heading": -1.371,
+      "index": 0
+    },
+    {
+      "id": "arena_spawn_02",
+      "type": "arena_spawn",
+      "x": 27.63,
+      "z": -41.67,
+      "heading": -0.585,
+      "index": 1
+    },
+    {
+      "id": "arena_spawn_03",
+      "type": "arena_spawn",
+      "x": -9.93,
+      "z": -49.0,
+      "heading": 0.2,
+      "index": 2
+    },
+    {
+      "id": "arena_spawn_04",
+      "type": "arena_spawn",
+      "x": -41.67,
+      "z": -27.63,
+      "heading": 0.985,
+      "index": 3
+    },
+    {
+      "id": "arena_spawn_05",
+      "type": "arena_spawn",
+      "x": -49.0,
+      "z": 9.93,
+      "heading": 1.771,
+      "index": 4
+    },
+    {
+      "id": "arena_spawn_06",
+      "type": "arena_spawn",
+      "x": -27.63,
+      "z": 41.67,
+      "heading": 2.556,
+      "index": 5
+    },
+    {
+      "id": "arena_spawn_07",
+      "type": "arena_spawn",
+      "x": 9.93,
+      "z": 49.0,
+      "heading": -2.942,
+      "index": 6
+    },
+    {
+      "id": "arena_spawn_08",
+      "type": "arena_spawn",
+      "x": 41.67,
+      "z": 27.63,
+      "heading": -2.156,
+      "index": 7
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 17.6,
+      "across": -4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 52.9,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 88.1,
+      "across": 4.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 123.4,
+      "across": -4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 158.6,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 193.9,
+      "across": 4.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_07",
+      "type": "balloon",
+      "at": 229.1,
+      "across": -4.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_08",
+      "type": "balloon",
+      "at": 264.4,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_09",
+      "type": "balloon",
+      "at": 299.6,
+      "across": 4.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_10",
+      "type": "balloon",
+      "at": 334.9,
+      "across": -4.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 13.37,
+      "y": 8.66,
+      "z": -4.14
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 0.2,
+      "y": 8.0,
+      "z": -14.0
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": -13.25,
+      "y": 7.64,
+      "z": -4.51
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": -8.39,
+      "y": 8.0,
+      "z": 11.21
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 8.07,
+      "y": 8.61,
+      "z": 11.44
+    },
+    {
+      "id": "bubbles_01",
+      "type": "bubbles",
+      "x": 0.0,
+      "y": 9.65,
+      "z": -0.0,
+      "r": 3.0,
+      "molten": true
+    },
+    {
+      "id": "arena_01",
+      "type": "arena",
+      "game": "balloons",
+      "radius": 70.0
+    }
+  ],
+  "generator": "tools/blender/prehistoric/arena_bowl.py (re-running it rewrites entities)",
+  "arena": true
+}
