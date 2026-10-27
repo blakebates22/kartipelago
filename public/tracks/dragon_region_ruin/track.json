@@ -397,43 +397,43 @@
     {
       "id": "campfire_02",
       "type": "campfire",
-      "x": -207.8,
+      "x": -211.93,
       "y": 31.95,
-      "z": -263.72
+      "z": -262.57
     },
     {
       "id": "campfire_03",
       "type": "campfire",
-      "x": 318.0,
+      "x": 326.0,
       "y": 9.83,
-      "z": 104.19
+      "z": 112.06
     },
     {
       "id": "campfire_04",
       "type": "campfire",
-      "x": 206.65,
+      "x": 211.55,
       "y": 25.7,
-      "z": -236.51
+      "z": -234.84
     },
     {
       "id": "campfire_05",
       "type": "campfire",
-      "x": -326.31,
+      "x": -334.1,
       "y": 17.14,
-      "z": -28.71
+      "z": -18.9
     },
     {
       "id": "campfire_06",
       "type": "campfire",
-      "x": 9.53,
+      "x": 7.18,
       "y": 34.14,
-      "z": -334.53
+      "z": -334.18
     }
   ],
   "generator": "tools/blender/prehistoric/dragon_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "dragon_layout.py": "7ca6242ea85b092bc792e46ef69df6e6af0cdcee1b4b93c348317fe5e57166c7",
-    "dragon_region.py": "5ad81dc301fa6e303848ef45666b53c88f5273b27ee630d5a027fbe58bab1bbe",
+    "dragon_region.py": "ab27817216c065d33807cecb5142ef0be43f2ce328ea10f37d4ee8748e866761",
     "isles_props.py": "9938088595997e6c6716ab91f21fc659977a6abf088b1273971a40717f8ebda3",
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1"
   }
