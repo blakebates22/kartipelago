@@ -181,6 +181,116 @@
       "heading": 0.8456744569891725
     },
     {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": -208.72,
+      "z": -37.21,
+      "y": 10.36,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": 1.288
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -219.89,
+      "z": 33.37,
+      "y": 9.84,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": 1.907
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": -3.98,
+      "z": -301.09,
+      "y": 16.98,
+      "r": 14.0,
+      "n": 3,
+      "folk": "desert",
+      "heading": -2.395
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -15.2,
+      "z": -278.73,
+      "y": 18.19,
+      "r": 14.0,
+      "n": 3,
+      "folk": "desert",
+      "heading": -1.942
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": 179.38,
+      "z": -228.44,
+      "y": 6.04,
+      "r": 14.0,
+      "n": 3,
+      "folk": "desert",
+      "heading": -0.68
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": 228.44,
+      "z": -166.03,
+      "y": 9.29,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": -0.062
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": 139.82,
+      "z": 212.9,
+      "y": 14.98,
+      "r": 14.0,
+      "n": 3,
+      "folk": "desert",
+      "heading": -3.024
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 295.88,
+      "z": 79.92,
+      "y": 14.45,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": 1.156
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 16.57,
+      "z": 173.73,
+      "y": 3.54,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": 2.755
+    },
+    {
+      "id": "villager_home_10",
+      "type": "villager_home",
+      "x": -67.99,
+      "z": 183.14,
+      "y": 8.17,
+      "r": 14.0,
+      "n": 3,
+      "folk": "desert",
+      "heading": -0.287
+    },
+    {
       "id": "ashfall_01",
       "type": "ashfall",
       "rate": 8,
@@ -190,6 +300,6 @@
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "desert_layout.py": "fde6f7d6c7374f288495646698f6ed96e163d0c0b33df1400da7f9cdc74bc6a2",
-    "desert_region.py": "955588bfdb78d4f527f5555e9b5096db2952013ec71921b437bd18a9e1b49a7a"
+    "desert_region.py": "3d5a085dee6654d74f6bc6d01cfeeadb19437ce2e722a3db736f3d91113befc9"
   }
 }
