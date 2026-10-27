@@ -77,6 +77,8 @@ import { createChestView, createObstacleView, createPuzzleView } from "../overwo
 import { characterSelect } from "./characterSelect";
 import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
 import { exitSpot } from "../overworld/exits";
+import { challengeSceneOf } from "../adventure/scenes";
+import { challengeStaged, stageAt } from "../adventure/staged";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -622,6 +624,24 @@ export function overworldLoading(
             sceneScreen(game, due, () =>
               game.screens.go(overworldLoading(game, regionId, at, true)),
             ),
+          );
+        }
+      }
+      // Adventure: the fourth course won, the champion drives up as you come out of its
+      // gateway and the challenge starts at once (Blake, Oct 27). A lost challenge is
+      // raced again from the champion's spot by the start line.
+      if (save && story && k?.champion && kingdomPhase(save, k) === "duel") {
+        const id = challengeSceneOf(k.id);
+        if (!save.seen.includes(id)) {
+          const mark = at ? region.gateways.find((g) => g.id === at) : undefined;
+          const spot = mark ? exitSpot(mark, () => true) : (region.challenge ?? region.spawn);
+          stageAt(challengeStaged(id, region.id, k.champion.look, spot));
+          alive = false;
+          return game.screens.go(
+            sceneScreen(game, id, () => {
+              game.overworld = { region: region.id, at: "challenge", adventure: true };
+              launch(game, { kind: "duel", kingdom: k.id }, region.packageId);
+            }),
           );
         }
       }

@@ -706,5 +706,59 @@ const MORE: (StagedScene | undefined)[] = [
 ];
 for (const m of MORE) if (m) STAGED.push(m);
 
-export const stagedById = (scene: string) => STAGED.find((s) => s.scene === scene);
+/**
+ * A champion's challenge (Blake, Oct 27): you've just come out of a gateway (`at`, facing
+ * the way out); the champion drives up and pulls in beside you, says their piece, and
+ * the race starts at once. `at` is wherever you are, so the overworld stages it there
+ * (stageAt); the list below has one at each region's challenge spot for ?scene=.
+ */
+export function challengeStaged(
+  scene: string,
+  region: string,
+  champ: RacerId,
+  at: { x: number; z: number; heading: number },
+): StagedScene {
+  const fx = Math.sin(at.heading);
+  const fz = Math.cos(at.heading);
+  const P = (f: number, r: number): V2 => [at.x + fx * f + fz * r, at.z + fz * f - fx * r];
+  const P3 = (f: number, up: number, r: number): V3 => {
+    const [x, z] = P(f, r);
+    return [x, up, z];
+  };
+  const face = (from: V2, to: V2) => Math.atan2(to[0] - from[0], to[1] - from[1]);
+  const you = P(0, 0);
+  const stop = P(7, 3.5);
+  const start = P(30, 5);
+  return {
+    scene,
+    region,
+    ruined: false,
+    actors: {
+      you: { kind: "racer", look: "you", at: you, heading: at.heading },
+      champ: { kind: "racer", look: champ, at: start, heading: face(start, stop) },
+    },
+    beats: [
+      {
+        cam: { from: P3(-7, 3, -4), to: P3(-6, 3.2, -3), look: P3(20, 1.5, 4) },
+        moves: [{ actor: "champ", to: stop, dur: 3, heading: face(stop, you) }],
+      },
+      { cam: { from: P3(3, 2.2, 1), to: P3(3.5, 2.2, 1.5), look: P3(7, 1.4, 3.5) } },
+      { cam: { from: P3(-12, 8, -10), to: P3(-14, 10, -12), look: P3(3, 0.5, 1.5) } },
+      { cam: { from: P3(2, 2.2, -2), look: P3(7, 1.4, 3.5) } },
+    ],
+  };
+}
+
+for (const k of KINGDOMS) {
+  const r = REGIONS.find((x) => x.kingdom === k.id);
+  if (k.champion && r?.challenge)
+    STAGED.push(challengeStaged(`${k.id}_challenge`, r.id, k.champion.look, r.challenge));
+}
+
+/** Stagings made where you are (the challenges): they stand in for the list's. */
+const HERE = new Map<string, StagedScene>();
+export const stageAt = (s: StagedScene) => HERE.set(s.scene, s);
+
+export const stagedById = (scene: string) =>
+  HERE.get(scene) ?? STAGED.find((s) => s.scene === scene);
 export const CAMP_FIRE = FIRE;

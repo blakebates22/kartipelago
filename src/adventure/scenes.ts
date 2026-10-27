@@ -231,6 +231,20 @@ for (const k of KINGDOMS) {
       ]),
     );
   }
+  // The champion's challenge (Blake, Oct 27): out of the gateway of the last of the four
+  // courses, the champion drives up and you race at once (screens/overworld.ts).
+  if (champ)
+    scenes.push(
+      S(challengeSceneOf(k.id), `${CAST[champ]!.name}'s Challenge`, { track, color: "#7a5a1a" }, [
+        { who: champ, text: "HOLD IT RIGHT THERE! ALL FOUR OF MY COURSES? NOT BAD AT ALL." },
+        {
+          who: champ,
+          text: `BUT NOBODY TAKES THE ${k.name.toUpperCase()} CUP WITHOUT BEATING ME. ONCE ROUND, YOU AND ME.`,
+        },
+        { who: "", text: "(THE CHAMPION'S CHALLENGE: 1 ON 1, ONCE ROUND THE KINGDOM.)" },
+        { who: champ, text: "NO WAITING AROUND. WE GO RIGHT NOW!" },
+      ]),
+    );
   scenes.push(
     S(k.scenes.boss, `${k.boss!.name}`, { track: k.boss!.track, color: "#5a1a1a" }, [
       { who: d, text: "RACE ME, LITTLE LIZARD. LOSE, AND YOU BURN WITH THE REST." },
@@ -240,6 +254,11 @@ for (const k of KINGDOMS) {
 scenes.push(
   S("valley_arrive", "Dinosaur Valley", { track: "riverbend_palms", color: "#3a7a3a" }, []),
 );
+
+/** The scene of a kingdom's champion's challenge (where it has a champion). */
+export function challengeSceneOf(kingdom: string) {
+  return `${kingdom}_challenge`;
+}
 
 export const SCENES: Record<string, Scene> = Object.fromEntries(scenes.map((s) => [s.id, s]));
 export const sceneById = (id: string) => SCENES[id];
