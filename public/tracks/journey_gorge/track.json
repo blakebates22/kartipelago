@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "id": "journey_gorge",
+  "name": "The Burnt Gorge",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "bubbles_01",
+      "type": "bubbles",
+      "x": -382.0,
+      "y": 1.55,
+      "z": 256.0,
+      "r": 11.0,
+      "molten": true
+    },
+    {
+      "id": "bubbles_02",
+      "type": "bubbles",
+      "x": -279.0,
+      "y": 2.72,
+      "z": 208.0,
+      "r": 10.0,
+      "molten": true
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -198.5,
+      "y": 14.72,
+      "z": 158.17
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -185.5,
+      "y": 15.1,
+      "z": 154.8
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -172.12,
+      "y": 15.32,
+      "z": 152.06
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -158.26,
+      "y": 15.77,
+      "z": 149.4
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -144.46,
+      "y": 16.69,
+      "z": 146.39
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -130.97,
+      "y": 18.21,
+      "z": 143.58
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": -207.78,
+      "y": 22.42,
+      "z": 151.29
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": -117.04,
+      "y": 28.33,
+      "z": 130.7
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": 180.8,
+      "y": 51.47,
+      "z": -212.37
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 192.38,
+      "y": 52.11,
+      "z": -224.07
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": 204.65,
+      "y": 52.79,
+      "z": -235.07
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": 217.34,
+      "y": 53.56,
+      "z": -245.44
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": 230.13,
+      "y": 54.43,
+      "z": -255.24
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": 242.07,
+      "y": 55.32,
+      "z": -264.63
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": 252.9,
+      "y": 56.26,
+      "z": -275.56
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -397.3,
+      "y": 10.55,
+      "z": 349.96
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -375.77,
+      "y": 10.55,
+      "z": 354.52
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 374.64,
+      "y": 62.57,
+      "z": -398.0
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 353.54,
+      "y": 62.57,
+      "z": -404.2
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 57.7,
+      "y": 42.9,
+      "z": -116.8
+    },
+    {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": 57.29,
+      "z": -114.84,
+      "y": 42.91,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": 2.939
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": -363.82,
+      "y": 4.68,
+      "z": 335.83
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": -366.54,
+      "y": 3.92,
+      "z": 278.06
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": -305.57,
+      "y": 9.25,
+      "z": 253.86
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": -352.65,
+      "y": 9.88,
+      "z": 209.3
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": -310.24,
+      "y": 5.14,
+      "z": 171.02
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": -261.79,
+      "y": 10.27,
+      "z": 147.21
+    },
+    {
+      "id": "steam_09",
+      "type": "steam",
+      "x": -215.28,
+      "y": 15.11,
+      "z": 172.93
+    },
+    {
+      "id": "steam_10",
+      "type": "steam",
+      "x": -178.38,
+      "y": 23.28,
+      "z": 127.4
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 10,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/journey_gorge.py (re-running it rewrites entities)",
+  "journey": {
+    "from": 34.6,
+    "to": 1491.6
+  }
+}

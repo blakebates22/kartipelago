@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "theme": "ember_volcano",
+  "sky": "#4a2a35",
+  "fog": {
+    "enabled": true,
+    "color": "#6a3328",
+    "near": 70,
+    "far": 430
+  },
+  "sun": {
+    "color": "#ffb47a",
+    "intensity": 1.7,
+    "direction": [
+      0.2,
+      0.7,
+      0.6
+    ]
+  },
+  "ambient": {
+    "sky": "#c46a4a",
+    "ground": "#2a1210",
+    "intensity": 1.0
+  }
+}
