@@ -306,6 +306,16 @@ export function stagedSceneScreen(
       }
       const b = beatOf(i);
       if (b?.fx?.darken) ui.rect(0, 0, ui.W, ui.H, "#3a0c00", 0.35);
+      if (b?.fx?.night) ui.rect(0, 0, ui.W, ui.H, "#0a0a2a", 0.45);
+      if (b?.fx?.light)
+        ui.rect(
+          0,
+          0,
+          ui.W,
+          ui.H,
+          "#fff2c0",
+          Math.min(0.55, t * 0.4) * (0.8 + 0.2 * Math.sin(clock * 3)),
+        );
       if (b?.fx?.fire && t > 0.2)
         ui.rect(0, 0, ui.W, ui.H, "#ff6a10", 0.12 + 0.06 * Math.sin(clock * 9));
       if (b?.fx?.flash && t < 0.6) ui.rect(0, 0, ui.W, ui.H, "#fff2d0", 1 - t / 0.6);
