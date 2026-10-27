@@ -424,21 +424,21 @@
       "id": "campfire_10",
       "type": "campfire",
       "x": -155.93,
-      "y": 11.9,
+      "y": 10.84,
       "z": -300.0
     },
     {
       "id": "campfire_11",
       "type": "campfire",
       "x": -128.84,
-      "y": 13.94,
+      "y": 12.95,
       "z": -350.0
     },
     {
       "id": "campfire_12",
       "type": "campfire",
       "x": -165.72,
-      "y": 16.01,
+      "y": 15.02,
       "z": -400.0
     },
     {
@@ -646,6 +646,6 @@
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "valley_layout.py": "d00c6c6b5ce20c1d30b8a6f63df3ee1c16e41a055f8e4b1dd2c844f61e66f6f4",
-    "valley_region.py": "354e916d50f4afe27fa57eddbc524bad565dd67b092878c8d4627be373bcc06b"
+    "valley_region.py": "08c5461d470cc30c70febd9bb380a7b2de427120af8fd098c2ccd2ba531eea69"
   }
 }
