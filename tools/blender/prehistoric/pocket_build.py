@@ -56,16 +56,18 @@ def to_road(c, x, y):
     return math.atan2(q.p.y - y, q.p.x - x)
 
 
-def spurs(c, natural, gates, look_road, trail):
-    """A short road from the main road out to each gateway's landmark (12 m short of it),
-    and its gateway_spot entity. Returns {name: ((x, y) end, heading)}."""
+def spurs(c, natural, gates, look_road, trail, short=None):
+    """A short road from the main road out to each gateway's landmark (12 m short of it, or
+    `short`[name] m: past a landmark's fence, say), and its gateway_spot entity. Returns
+    {name: ((x, y) end, heading)}."""
     out = {}
     for name, (gx, gy) in gates.items():
         smp, _ = c.nearest(gx, gy)
         ax, ay = smp.p.x, smp.p.y
         d = math.hypot(gx - ax, gy - ay)
         ux, uy = (gx - ax) / d, (gy - ay) / d
-        end = (gx - ux * 12.0, gy - uy * 12.0)
+        back = (short or {}).get(name, 12.0)
+        end = (gx - ux * back, gy - uy * back)
         out[name] = (end, math.atan2(-ux, uy))
         # (From the main road's edge, at its height there: a banked road's edge isn't at its
         # middle's height, and a spur laid over it from the middle stood up out of it.)

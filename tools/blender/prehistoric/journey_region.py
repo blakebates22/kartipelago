@@ -202,7 +202,7 @@ def main():
         q, _ = c.nearest(*zone)
         # (The way into the journey from this end: facing along the road, away from the gate.)
         tx, ty = (q.t.x, q.t.y) if name == "start" else (-q.t.x, -q.t.y)
-        print("passage %s: x %.1f z %.1f heading %.4f" % (name, g[0], g[2], math.atan2(tx, ty)))
+        print("passage %s: x %.1f z %.1f heading %.4f" % (name, g[0], g[2], math.atan2(tx, -ty)))  # (game heading: z is -y)
 
 
 def water(c):

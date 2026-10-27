@@ -24,8 +24,9 @@
  *   pass or un-pass a gate.
  *
  * Standing in the race is validated checkpoints, then how far you are from your last
- * gate's plane towards the next one: measured between the two planes, never by looking
- * for the nearest bit of road, so being far from the road doesn't move you anywhere.
+ * gate towards the next one: measured across the planes of the road between them (each
+ * route sample's, in order, walked from the last gate), never by looking for the
+ * nearest bit of road, so being far from the road doesn't move you anywhere.
  *
  * All original code, built from how checkpoint racing works in late-90s kart racers.
  */
@@ -216,16 +217,111 @@ export function stepProgression(course: Checkpoint[], r: Progression, p: V3, q: 
   return out;
 }
 
+/** A stretch's road between two checkpoints' main gates: the route's samples in order
+ * (each a plane across the road, like a gate's), with metres from the first gate. */
+interface Chain {
+  x: number[];
+  z: number[];
+  fx: number[];
+  fz: number[];
+  d: number[];
+  length: number;
+}
+const chains = new WeakMap<CheckpointGate, Chain>();
+
 /**
- * How far a racer is between their last gate and the next, 0..1: their distance in
- * front of the last gate's plane over the distance between the two planes. Negative
- * (down to -1) while behind the last gate (on the grid, or reversing).
+ * Lay the route between each checkpoint's main gate and the next one's (`samples`: the
+ * lap's route, in order, with dist), so segmentProgress can follow the road's bends.
+ * On a long curved stretch the next gate's plane alone cuts back across the road
+ * before it (a hairpin's far side is "past" it): a kart there counted as nearly at
+ * the next gate, ahead of a rival really metres in front.
+ */
+export function layChains(course: Checkpoint[], samples: RouteSample[], lapLength: number) {
+  const n = samples.length;
+  if (n < 3 || course.length < 2) return;
+  const nearest = (g: CheckpointGate) => {
+    let best = 0;
+    let bestD = Infinity;
+    samples.forEach((p, i) => {
+      const d = (p.x - g.x) ** 2 + (p.z - g.z) ** 2 + 4 * (p.y - g.y) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    return best;
+  };
+  const at = course.map((c) => nearest(c.gates[0]!));
+  course.forEach((c, k) => {
+    const a = c.gates[0]!;
+    const b = course[(k + 1) % course.length]!.gates[0]!;
+    const ia = at[k]!;
+    const ib = at[(k + 1) % course.length]!;
+    const steps = (ib - ia + n) % n;
+    // (Gates out of the route's order, or too close together: keep the plane fraction.)
+    if (steps < 2 || steps > n / 2) return;
+    const ch: Chain = { x: [a.x], z: [a.z], fx: [a.fx], fz: [a.fz], d: [0], length: 0 };
+    let d = 0;
+    let px = a.x;
+    let pz = a.z;
+    for (let j = 1; j <= steps; j++) {
+      const p = samples[(ia + j) % n]!;
+      const last = j === steps;
+      const q = last ? { x: b.x, z: b.z, fx: b.fx, fz: b.fz } : p;
+      const fl = Math.hypot(q.fx, q.fz) || 1;
+      d += Math.hypot(q.x - px, q.z - pz);
+      ch.x.push(q.x);
+      ch.z.push(q.z);
+      ch.fx.push(q.fx / fl);
+      ch.fz.push(q.fz / fl);
+      ch.d.push(d);
+      px = q.x;
+      pz = q.z;
+    }
+    ch.length = d;
+    if (d > 0.5 && d < lapLength) chains.set(a, ch);
+  });
+}
+
+/**
+ * How far a racer is between their last gate and the next, 0..1. Along the road where
+ * the stretch is laid (layChains): between which two of the road's planes the kart is
+ * (the nearest such piece of road on a hairpin, where the far side is between two
+ * planes as well), so a bend's far side never counts as past it or behind the start. Elsewhere (shortcuts, courses without a route): their distance in front of
+ * the last gate's plane over the distance between the two planes. Negative (down to
+ * -1) while behind the last gate (on the grid, or reversing).
  */
 export function segmentProgress(course: Checkpoint[], r: Progression, at: V3): number {
   const a = r.lastGate;
   const b =
     course[r.next]!.gates.find((g) => g.route === r.activeRoute) ?? course[r.next]!.gates[0]!;
   const da = planeDist(a, at);
+  const ch = b === course[r.next]!.gates[0] ? chains.get(a) : undefined;
+  if (ch) {
+    // Every piece of the stretch the kart is between the two planes of (in front of
+    // the first, behind the second); on a hairpin there can be two, so the one whose
+    // road is closest wins.
+    let best = -1;
+    let bestD = Infinity;
+    let prev = da;
+    for (let j = 1; j < ch.d.length; j++) {
+      const dj = (at.x - ch.x[j]!) * ch.fx[j]! + (at.z - ch.z[j]!) * ch.fz[j]!;
+      if (prev >= 0 && dj < 0) {
+        const f = prev / Math.max(1e-6, prev - dj);
+        const mx = ch.x[j - 1]! + (ch.x[j]! - ch.x[j - 1]!) * f;
+        const mz = ch.z[j - 1]! + (ch.z[j]! - ch.z[j - 1]!) * f;
+        const off = (at.x - mx) ** 2 + (at.z - mz) ** 2;
+        if (off < bestD) {
+          bestD = off;
+          best = ch.d[j - 1]! + (ch.d[j]! - ch.d[j - 1]!) * f;
+        }
+      }
+      prev = dj;
+    }
+    if (best >= 0) return Math.min(0.999, best / ch.length);
+    if (da < 0) return Math.max(-0.999, da / 100);
+    return 0.999;
+  }
   if (da < 0) return Math.max(-0.999, da / 100);
   const db = planeDist(b, at);
   if (db >= 0) return 0.999;

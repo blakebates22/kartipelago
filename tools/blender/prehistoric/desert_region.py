@@ -81,8 +81,14 @@ def _natural(x, y):
 NOTCHES = pocket_kit.Notches(DL.route_points(), dict(DL.GATES, **({"lair": DL.LAIR} if RUIN else {})))
 
 
+# The Frozen Pass Road's way west from the post's square to the passage, cut through the
+# pockets' walls it crosses (pocket_kit.Cut).
+PASS_CUT = pocket_kit.Cut([(float(x), 0.0) for x in range(int(DL.HUB[0] - DL.HUB[2] + 2), int(DL.PASS_END[0]) - 8, -8)],
+                          _natural(DL.HUB[0] - DL.HUB[2] + 2, 0.0), _natural(*DL.PASS_END))
+
+
 def natural(x, y):
-    return NOTCHES.apply(_natural(x, y), x, y)
+    return NOTCHES.apply(PASS_CUT.apply(_natural(x, y), x, y), x, y)
 
 
 def classify(c, n, info):

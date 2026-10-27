@@ -39,6 +39,7 @@ import {
   newProgression,
   planeDist,
   rankValue,
+  layChains,
   stepProgression,
   type Checkpoint,
   type CheckpointGate,
@@ -217,6 +218,7 @@ export function createRace(
   racers = 1,
   course = makeCourse(track),
 ): Race {
+  layChains(course, routeSamples(track), track.length);
   return {
     open: Boolean(track.data.open),
     course,

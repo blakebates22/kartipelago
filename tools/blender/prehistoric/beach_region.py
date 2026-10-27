@@ -77,8 +77,14 @@ def _natural(x, y):
 NOTCHES = pocket_kit.Notches(BL.route_points(), dict({k: v for k, v in BL.GATES.items() if k != "volcano"}, **({"lair": BL.LAIR} if RUIN else {})))
 
 
+# The Dust Road's way north from the village square to the passage, cut through the
+# pockets' walls it crosses (pocket_kit.Cut).
+DUST_CUT = pocket_kit.Cut([(0.0, float(y)) for y in range(int(BL.HUB[1] + BL.HUB[2] - 2), int(BL.DUST_END[1]) + 8, 8)],
+                          _natural(0.0, BL.HUB[1] + BL.HUB[2] - 2), _natural(*BL.DUST_END))
+
+
 def natural(x, y):
-    return NOTCHES.apply(_natural(x, y), x, y)
+    return NOTCHES.apply(DUST_CUT.apply(_natural(x, y), x, y), x, y)
 
 
 def classify(c, n, info):

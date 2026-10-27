@@ -60,7 +60,10 @@ def homes(c, layout, ground, folk, house, per=2, pockets=None, room=13.0, near=(
     circles to keep clear. Returns the spots taken [(x, y, r)] (region_paint.EXTRA keeps
     the dressing off them)."""
     rnd = random.Random(seed)
-    taken = paint.Taken(list(avoid) + _built())
+    # (And off every gateway's arch, Blake, Oct 27: Hearthglow's stood three quarters inside a
+    # home's house, found only on the minimap. Entities are in game coordinates.)
+    gates = [(e["x"], -e["z"], 8.0) for e in c.entities if e["type"] == "gateway_spot"]
+    taken = paint.Taken(list(avoid) + gates + _built())
     out = []
     k = 0
     plist = getattr(layout, "pockets", None) or layout.POCKETS

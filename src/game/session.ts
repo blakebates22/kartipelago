@@ -96,7 +96,7 @@ import { gridSlot } from "../race/grid";
 import { createSpeedometer } from "../render/speedometer";
 import type { LookMode } from "../render/trackMaterials";
 import { createParkSigns } from "../render/parkSigns";
-import { applySurface, createMeshGround } from "../world/collisionMesh";
+import { applySurface, createMeshGround, deepestWall } from "../world/collisionMesh";
 import {
   disposeObject,
   loadTrackPackage,
@@ -2013,6 +2013,12 @@ function buildSession(
         teleported(race, 0, you.state);
         if (race.phase === "countdown") race.clock = -1e-4;
       }
+    },
+    /** Does a kart fit at (x, z) on the ground at or below height y (no wall in it)? */
+    kartFits(x: number, z: number, y: number) {
+      if (!pkg) return true;
+      const g = you.ground.at(x, z, y);
+      return !deepestWall(pkg.collision, x, g.height, z, tuning.physics.kartRadius);
     },
     /** Put kart i (a mini-game's start) at (x, z) facing `heading`. */
     place(i: number, x: number, z: number, heading: number, y = 200) {

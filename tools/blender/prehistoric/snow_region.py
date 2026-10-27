@@ -96,13 +96,19 @@ def _natural(x, y):
 NOTCHES = pocket_kit.Notches(SL.route_points(), dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})))
 
 
-def natural(x, y):
-    return NOTCHES.apply(_natural(x, y), x, y)
-
-
 def pb_seg(x, y, a, b):
     from pocket_kit import seg_d
     return seg_d(x, y, a, b)
+
+
+# The Burnt Gorge Road's way down from the square to the passage, cut through the pockets'
+# walls it crosses (pocket_kit.Cut).
+GORGE_CUT = pocket_kit.Cut([(gorge_x(y), float(y)) for y in range(int(HUB[1] - HUB[2] + 2), int(SL.GORGE_END[1]) - 8, -8)],
+                           _natural(0.0, HUB[1] - HUB[2] + 2), _natural(*SL.GORGE_END))
+
+
+def natural(x, y):
+    return NOTCHES.apply(GORGE_CUT.apply(_natural(x, y), x, y), x, y)
 
 
 def classify(c, n, info):
@@ -142,7 +148,9 @@ def main():
     gates = dict(SL.GATES)
     if RUIN:
         gates["lair"] = SL.LAIR
-    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
+    # (Hearthglow's arch stands outside the great tree's fence, 12 m round it: Blake, Oct 27,
+    # it stood three quarters in the fence and the boughs.)
+    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail, short={"hearthglow": 21.0})
     if RUIN:
         # Out of the lake through the Frozen Pass, east.
         smp, _ = c.nearest(*SL.FROZEN_PASS)

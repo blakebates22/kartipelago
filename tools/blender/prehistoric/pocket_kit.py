@@ -227,6 +227,49 @@ class Layout:
         return None if best is None else best[1]
 
 
+class Cut:
+    """A side road's way through the pockets' walls (Blake, Oct 27: out of the Burnt Gorge
+    into the Snow Kingdom you couldn't get up the "hill": the Gorge Road ran over the
+    pockets' walls, 54 m high, on the land's own height). The land along `points` [(x, y)]
+    is cut down to a floor easing from `z0` (the first point's) to `z1` (the last's), `flat`
+    m either side, blended back into the land over `blend` m. It only ever lowers the land.
+    """
+
+    def __init__(self, points, z0, z1, flat=9.0, blend=10.0):
+        self.pts = list(points)
+        self.z0, self.z1 = z0, z1
+        self.flat, self.blend = flat, blend
+        self.cum = [0.0]
+        for a, b in zip(self.pts, self.pts[1:]):
+            self.cum.append(self.cum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+        r = flat + blend
+        xs = [p[0] for p in self.pts]
+        ys = [p[1] for p in self.pts]
+        self.box = (min(xs) - r, max(xs) + r, min(ys) - r, max(ys) + r)
+
+    def floor(self, x, y):
+        """(distance from the road's line, the floor's height there), or None when clear."""
+        x0, x1, y0, y1 = self.box
+        if not (x0 <= x <= x1 and y0 <= y <= y1):
+            return None
+        best = None
+        for i, (a, b) in enumerate(zip(self.pts, self.pts[1:])):
+            d, t = seg_d(x, y, a, b)
+            if best is None or d < best[0]:
+                best = (d, self.cum[i] + t * (self.cum[i + 1] - self.cum[i]))
+        d, along = best
+        if d >= self.flat + self.blend:
+            return None
+        return d, lerp(self.z0, self.z1, smooth(along / (self.cum[-1] or 1.0)))
+
+    def apply(self, h, x, y):
+        f = self.floor(x, y)
+        if f is None or h <= f[1]:
+            return h
+        d, z = f
+        return lerp(h, z, smooth((self.flat + self.blend - d) / self.blend))
+
+
 class Notches:
     """The ways in to the gateways: from the main road to each gateway's landmark, the land
     cut down level with the road (Blake, Oct 26: Canyon Dash's gateway stood up on the

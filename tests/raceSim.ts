@@ -99,6 +99,14 @@ export interface SimOptions {
   rivals?: SkillConfig;
   /** Log every this many physics steps (120 = a second). */
   traceEvery?: number;
+  /** Race only this many karts (the player and the first rivals): 2 for a 1-on-1. */
+  count?: number;
+  /** Called after every physics step (for audits that watch the race as it runs). */
+  onStep?: (
+    race: ReturnType<typeof createRace>,
+    karts: ReturnType<typeof createKartState>[],
+    t: number,
+  ) => void;
 }
 
 export interface SimKart {
@@ -152,7 +160,7 @@ export function raceSim(p: TrackPackage, opts: SimOptions = {}) {
   ];
   const padsSeen = pads.map((z) => ({ x: z.x, y: z.y, z: z.z }));
   const rivals = roster.rivals;
-  const n = rivals.length + 1;
+  const n = Math.min(rivals.length + 1, opts.count ?? Infinity);
   const find = (id: string) => roster.characters.find((c) => c.id === id) as Character;
   const entrants = Array.from({ length: n }, (_, i) => {
     const r = rivals[(i + rivals.length - 1) % rivals.length]!;
@@ -409,6 +417,7 @@ export function raceSim(p: TrackPackage, opts: SimOptions = {}) {
     collectBalloons(world, racers, itemsCfg, () => itemsCfg.aiCollect);
     for (const ev of stepItemWorld(world, racers, itemsCfg, tuning.bananas, dt, progressOf))
       if (ev.type === "hit" && !ev.blocked) stats[ev.racer]!.hitsTaken++;
+    opts.onStep?.(race, karts, t);
   }
   race.racers.forEach((r, i) => {
     stats[i]!.finished = r.finished;

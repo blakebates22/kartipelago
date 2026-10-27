@@ -267,11 +267,15 @@ def landmarks(c, ground, spots):
 
 def ruined(c, ground, spots):
     """After the sacrifice: smoke and rubble at every gate, the trees charred."""
-    for name, ((ex, ey), _) in spots.items():
+    for name, ((ex, ey), h) in spots.items():
+        # (Either side of the arch, off its spur: Blake, Oct 27, out of Dragon Canyon's arch
+        # you came out into a rubble heap on the road, stuck.)
+        ux, uy = -math.sin(h), math.cos(h)  # (the spur's way, towards the landmark)
         for sd in (-1, 1):
-            ruin.rubble(c, "%s Rubble %d" % (name.title(), sd), ex + sd * 9.0, ey + 4.0, ground, ("keep_rock", "wall"),
+            rx, ry = ex - uy * sd * 13.0 + ux * 3.0, ey + ux * sd * 13.0 + uy * 3.0
+            ruin.rubble(c, "%s Rubble %d" % (name.title(), sd), rx, ry, ground, ("keep_rock", "wall"),
                         seed=len(name) + sd)
-        ruin.smoke(c, ex, ey + 8.0, ground(ex, ey) + 0.5)
+        ruin.smoke(c, ex + ux * 8.0, ey + uy * 8.0, ground(ex, ey) + 0.5)
     ruin_kit.char_trees(c, burn, ("Pine", "Broadleaf", "Blossom", "Jungle Tree"), chance=0.85, threshold=0.4)
 
 

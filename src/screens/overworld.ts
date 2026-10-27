@@ -75,6 +75,7 @@ import {
 import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
 import { characterSelect } from "./characterSelect";
 import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
+import { exitSpot } from "../overworld/exits";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -852,9 +853,8 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       const from = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === at);
       const you = session.entrants[0]!;
       if (from) {
-        const x = from.x + Math.sin(from.heading) * (from.radius + 6);
-        const z = from.z + Math.cos(from.heading) * (from.radius + 6);
-        session.placeYou(x, z, from.heading, PROBE_Y);
+        const out = exitSpot(from, (x, z) => session.kartFits(x, z, PROBE_Y));
+        session.placeYou(out.x, out.z, out.heading, PROBE_Y);
       } else {
         const sp = region.spawn;
         session.placeYou(sp.x, sp.z, sp.heading, you.state.y + 20);

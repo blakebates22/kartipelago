@@ -269,8 +269,8 @@ export const REGIONS: Region[] = [
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: -59.53,
-        z: 193.14,
+        x: -56.18,
+        z: 201.49,
         radius: 6,
         heading: 0.382,
       },
@@ -320,7 +320,7 @@ export const REGIONS: Region[] = [
         x: 400,
         z: 190,
         radius: 8,
-        heading: -Math.PI / 2,
+        heading: -1.692, // (along the Frozen Pass Road, west down to the lake)
         ruinOnly: true,
         blocker: { kind: "ice", width: 13 },
         opensAfter: "snow",
@@ -622,7 +622,7 @@ export const REGIONS: Region[] = [
     music: "journey_gorge",
     worldId: "prehistoric",
     journey: { from: "valley", to: "snow", road: [35, 1492] },
-    spawn: { x: -380.1, z: 358.1, heading: 0.3539 },
+    spawn: { x: -380.3, z: 331.8, heading: 2.796 },
     gateways: [],
     passages: [
       {
@@ -633,7 +633,7 @@ export const REGIONS: Region[] = [
         x: -385,
         z: 345,
         radius: 8,
-        heading: 0.3539,
+        heading: 2.796,
       },
       {
         id: "end",
@@ -643,7 +643,7 @@ export const REGIONS: Region[] = [
         x: 362,
         z: -394,
         radius: 8,
-        heading: -2.6723,
+        heading: -0.4613,
       },
     ],
   },
@@ -656,7 +656,7 @@ export const REGIONS: Region[] = [
     music: "journey_pass",
     worldId: "frostveil",
     journey: { from: "snow", to: "desert", road: [58, 1367] },
-    spawn: { x: -361.0, z: -372.7, heading: 2.443 },
+    spawn: { x: -361.0, z: -351.2, heading: 0.6936 },
     gateways: [],
     passages: [
       {
@@ -667,7 +667,7 @@ export const REGIONS: Region[] = [
         x: -370,
         z: -362,
         radius: 8,
-        heading: 2.443,
+        heading: 0.6936,
       },
       {
         id: "end",
@@ -677,7 +677,7 @@ export const REGIONS: Region[] = [
         x: 368,
         z: 368,
         radius: 8,
-        heading: -0.5213,
+        heading: -2.634,
       },
     ],
   },
@@ -690,7 +690,7 @@ export const REGIONS: Region[] = [
     music: "journey_dust",
     worldId: "desert",
     journey: { from: "desert", to: "beach", road: [43, 1292] },
-    spawn: { x: -358.2, z: 49.6, heading: 1.7411 },
+    spawn: { x: -358.3, z: 54.8, heading: 1.3713 },
     gateways: [],
     passages: [
       {
@@ -701,7 +701,7 @@ export const REGIONS: Region[] = [
         x: -372,
         z: 52,
         radius: 8,
-        heading: 1.7411,
+        heading: 1.3713,
       },
       {
         id: "end",
@@ -711,7 +711,7 @@ export const REGIONS: Region[] = [
         x: 380,
         z: -322,
         radius: 8,
-        heading: -2.0149,
+        heading: -1.1288,
       },
     ],
   },
@@ -724,7 +724,7 @@ export const REGIONS: Region[] = [
     music: "journey_cause",
     worldId: "beach",
     journey: { from: "beach", to: "dragon", road: [50, 1158] },
-    spawn: { x: -1.1, z: -413.6, heading: -2.9151 },
+    spawn: { x: -1.1, z: -386.4, heading: -0.2245 },
     gateways: [],
     passages: [
       {
@@ -735,7 +735,7 @@ export const REGIONS: Region[] = [
         x: 2,
         z: -400,
         radius: 8,
-        heading: -2.9151,
+        heading: -0.2245,
       },
       {
         id: "end",
@@ -745,7 +745,7 @@ export const REGIONS: Region[] = [
         x: 70,
         z: 390,
         radius: 8,
-        heading: -0.4385,
+        heading: -2.7008,
       },
     ],
   },
