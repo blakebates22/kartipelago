@@ -13,7 +13,7 @@
 import type { RacerId } from "../render/racers/designs";
 import type { Folk, Species } from "../render/villager";
 import { REGIONS } from "../overworld/regions";
-import { KINGDOMS } from "./data";
+import { KINGDOMS, farewellSceneOf } from "./data";
 
 export type V2 = [number, number];
 export type V3 = [number, number, number];
@@ -475,17 +475,131 @@ function beaten(
   };
 }
 
+/**
+ * The map whole (Blake, Oct 27: a grand reveal of the lair, and you're put in front of it
+ * rather than driving there): the camera sweeps down out of the sky onto the lair's mouth
+ * as its dragon passes overhead, then you, waiting before it.
+ */
+function reveal(
+  kingdom: string,
+  look: "ember" | "frost" | "sand" | "sea",
+  /** The scene's lines (a shot each). */
+  lines = 2,
+): StagedScene | undefined {
+  const kd = KINGDOMS.find((k) => k.id === kingdom);
+  const r = REGIONS.find((x) => x.kingdom === kingdom);
+  const lair = r?.gateways.find((g) => g.boss);
+  if (!kd || !r || !lair) return undefined;
+  const { P, P3 } = frame(lair);
+  return {
+    scene: kd.scenes.mapDone,
+    region: r.id,
+    ruined: true,
+    actors: {
+      you: {
+        kind: "racer",
+        look: "you",
+        at: P(lair.radius + 8, 0),
+        heading: lair.heading + Math.PI,
+      },
+      dragon: {
+        kind: "dragon",
+        at: P(-90, 40),
+        heading: lair.heading + Math.PI / 2,
+        y: 70,
+        scale: 1.4,
+        look,
+      },
+    },
+    beats: [
+      {
+        cam: { from: P3(160, 80, 70), to: P3(60, 24, 20), look: P3(0, 12, 0), lookTo: P3(0, 6, 0) },
+        moves: [{ actor: "dragon", to: P(-90, -260), y: 90, dur: 7 }],
+      },
+      { cam: { from: P3(34, 3.5, -9), to: P3(30, 3, -6), look: P3(0, 6, 0) } },
+      { cam: { from: P3(lair.radius + 20, 2.8, 0.5), look: P3(0, 4, 0) } },
+    ].slice(0, lines),
+  };
+}
+
+/**
+ * The dragon beaten (Blake, Oct 27): the kingdom's people line the way on to see you off,
+ * the champion (or the elder) says goodbye, and you're put in front of the passage.
+ */
+function farewell(
+  kingdom: string,
+  folk: Folk,
+  champ: RacerId,
+  elder?: ActorSpec,
+): StagedScene | undefined {
+  const r = REGIONS.find((x) => x.kingdom === kingdom);
+  const way = r?.passages?.find((p) => p.opensAfter === kingdom);
+  if (!r || !way) return undefined;
+  const { P, P3, face } = frame(way);
+  const you = P(way.radius + 14, 0);
+  const them = P(way.radius + 20, 4);
+  const actors: Record<string, ActorSpec> = {
+    you: { kind: "racer", look: "you", at: you, heading: way.heading + Math.PI },
+    champ: { kind: "racer", look: champ, at: them, heading: face(them, you) },
+  };
+  if (elder) {
+    const e = P(way.radius + 20, -4);
+    actors.elder = { ...elder, at: e, heading: face(e, you) } as ActorSpec;
+  }
+  [10, 15, 20, 25, 30, 35].forEach((f, i) => {
+    for (const side of [-1, 1]) {
+      const at = P(way.radius + f, side * 8);
+      actors[`v${i}${side}`] = {
+        kind: "villager",
+        folk,
+        seed: 3 + i * 7 + side,
+        at,
+        heading: face(at, you),
+      };
+    }
+  });
+  return {
+    scene: farewellSceneOf(kingdom),
+    region: r.id,
+    ruined: true,
+    actors,
+    beats: [
+      {
+        cam: {
+          from: P3(way.radius + 48, 14, -16),
+          to: P3(way.radius + 36, 8, -10),
+          look: P3(way.radius + 12, 1, 0),
+        },
+      },
+      {
+        cam: {
+          from: P3(way.radius + 16, 2.4, 1),
+          to: P3(way.radius + 16.5, 2.4, 1.5),
+          look: P3(way.radius + 20, 1.6, 4),
+        },
+      },
+      {
+        cam: {
+          from: P3(way.radius + 24, 3.5, 0),
+          to: P3(way.radius + 21, 3, 0),
+          look: P3(0, 3, 0),
+        },
+      },
+    ],
+  };
+}
+
 const MORE: (StagedScene | undefined)[] = [
-  // The valley's map whole, at the camp.
-  talk(
-    "valley_map",
-    "dinosaur_valley",
-    true,
-    CAMP,
-    "valley",
-    { kind: "villager", folk: "valley", seed: 5, species: "iggy", at: [0, 0], heading: 0 },
-    [{}, {}],
-  ),
+  // The valley's map whole: the reveal of Cinderjaw's Scar.
+  reveal("valley", "ember", 3),
+  farewell("valley", "valley", "rex", {
+    kind: "villager",
+    folk: "valley",
+    seed: 5,
+    species: "iggy",
+    at: [0, 0],
+    heading: 0,
+  }),
   beaten("valley", "ember", [{}, { fly: true }, { up: true }, {}, {}]),
   talk(
     "valley_return",
@@ -502,7 +616,8 @@ const MORE: (StagedScene | undefined)[] = [
     const champ: ActorSpec = { kind: "racer", look: q.champ, at: [0, 0], heading: 0 };
     const look = ({ snow: "frost", desert: "sand", beach: "sea" } as const)[k];
     return [
-      talk(kd.scenes.mapDone, q.region, true, q.at, q.folk, champ, [{}]),
+      reveal(k, look),
+      farewell(k, q.folk, q.champ),
       beaten(k, look, [{}, { fly: true }]),
       talk(kd.returnTask!.scene, q.region, true, q.at, q.folk, champ, [{}, { light: true }]),
     ];

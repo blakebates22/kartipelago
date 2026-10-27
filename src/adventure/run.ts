@@ -43,7 +43,10 @@ export function kingdomField(
       ? undefined
       : kingdomById(kingdom)?.champion?.look;
   const out: { id: RacerId; alt: boolean }[] = [];
-  if (champ && champ !== player && !crew.has(champ)) out.push({ id: champ, alt: false });
+  // (Racing as the champion yourself, an unlocked racer: their cousin races for the
+  // kingdom instead, in the alternate paint. Blake, Oct 27.)
+  if (champ && champ === player) out.push({ id: champ, alt: true });
+  else if (champ && !crew.has(champ)) out.push({ id: champ, alt: false });
   for (const r of RACER_IDS) if (crew.has(r) && r !== player) out.push({ id: r, alt: false });
   // Locals: the crew's cousins, in their alternate paints.
   const kin = [player, ...RACER_IDS.filter((r) => crew.has(r) && r !== player)];
@@ -74,7 +77,15 @@ export function sessionExtras(
   if (run.kind === "race") return { field: { looks: kingdomField(run.kingdom, player, crew) } };
   if (run.kind === "duel") {
     const ch = kingdomById(run.kingdom)!.champion!;
-    return { field: { count: 1, names: [ch.name], looks: [{ id: ch.look, alt: false }] } };
+    // (Racing as the champion yourself: their cousin takes the challenge.)
+    const cousin = ch.look === player;
+    return {
+      field: {
+        count: 1,
+        names: [cousin ? `${ch.name}'s Cousin` : ch.name],
+        looks: [{ id: ch.look, alt: cousin }],
+      },
+    };
   }
   if (run.kind === "boss") {
     const b = kingdomById(run.kingdom)!.boss!;

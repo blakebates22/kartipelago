@@ -8,7 +8,7 @@
  * the world map opening); for now they're a flash and a caption.
  */
 import type { RacerId } from "../render/racers/designs";
-import { DRAGON, KINGDOMS } from "./data";
+import { DRAGON, KINGDOMS, farewellSceneOf, nextNameOf } from "./data";
 
 export interface Speaker {
   name: string;
@@ -106,6 +106,7 @@ const scenes: Scene[] = [
     },
   ]),
   S("valley_map", "The Map Is Whole", { color: "#c8a060" }, [
+    { who: "", text: "THE MAP IS WHOLE, AND ITS LAST PIECE SHOWS THE WAY: CINDERJAW'S SCAR." },
     { who: "elder", text: "ALL FOUR PIECES! THE MAP SHOWS A LAND OF SNOW BEYOND THE MOUNTAINS." },
     { who: "elder", text: "BUT CINDERJAW STILL CIRCLES THE VALLEY. YOU MUST BEAT HIM FIRST." },
   ]),
@@ -216,6 +217,10 @@ for (const k of KINGDOMS) {
         ],
       ),
       S(k.scenes.mapDone, "The Map Is Whole", { color: "#c8a060" }, [
+        {
+          who: "",
+          text: `THE MAP IS WHOLE, AND IT SHOWS THE WAY: ${k.boss!.name.toUpperCase()}'S LAIR.`,
+        },
         { who: champ ?? "elder", text: "THE MAP POINTS ONWARD. BUT FIRST, THE DRAGON." },
       ]),
       S(k.scenes.bossWon, `${k.name} Is Free`, { track, color: "#3a6a9a" }, [
@@ -231,6 +236,22 @@ for (const k of KINGDOMS) {
       ]),
     );
   }
+  // The farewell (Blake, Oct 27): the dragon beaten, the kingdom's people see you off at
+  // the way on, and you're put in front of it (screens/overworld.ts).
+  if (champ)
+    scenes.push(
+      S(farewellSceneOf(k.id), `Farewell, ${k.name}`, { track, color: "#3a6a9a" }, [
+        {
+          who: k.id === "valley" ? "elder" : champ,
+          text: `THE WHOLE ${k.name.toUpperCase()} CAME OUT TO SEE YOU OFF. THANK YOU.`,
+        },
+        {
+          who: champ,
+          text: `THE ${nextNameOf(k.id).toUpperCase()} IS THROUGH THERE. I'M RIGHT BEHIND YOU.`,
+        },
+        { who: "", text: `(THE WAY ON TO THE ${nextNameOf(k.id).toUpperCase()} IS OPEN.)` },
+      ]),
+    );
   // The champion's challenge (Blake, Oct 27): out of the gateway of the last of the four
   // courses, the champion drives up and you race at once (screens/overworld.ts).
   if (champ)

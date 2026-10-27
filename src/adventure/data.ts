@@ -175,3 +175,13 @@ export const DRAGON = {
 export const STORY_ORDER: KingdomId[] = ["valley", "snow", "desert", "beach", "dragon"];
 
 export const kingdomById = (id: KingdomId) => KINGDOMS.find((k) => k.id === id);
+
+/** A kingdom's farewell (Blake, Oct 27): after its dragon falls, its people see you off at
+ * the way on to the next world. */
+export const farewellSceneOf = (kingdom: string) => `${kingdom}_farewell`;
+
+/** The next world's name, for the farewells. */
+export const nextNameOf = (kingdom: string) => {
+  const next = KINGDOMS.find((k) => k.id === kingdom)?.next;
+  return next === "dragon" ? DRAGON.name : (KINGDOMS.find((k) => k.id === next)?.name ?? "");
+};

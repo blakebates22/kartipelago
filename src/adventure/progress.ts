@@ -11,6 +11,7 @@ import {
   DRAGON,
   KINGDOMS,
   STORY_ORDER,
+  farewellSceneOf,
   kingdomById,
   type AdventureCourse,
   type Kingdom,
@@ -233,6 +234,10 @@ export function dueScene(s: AdventureSave): string | undefined {
     if (championWon(s, k)) due.push([k.scenes.catastrophe, true]);
     if (piecesOf(s, k) >= k.courses.length) due.push([k.scenes.mapDone, true]);
     if (s.bosses[k.id]) due.push([k.scenes.bossWon, true]);
+    // (The farewell, on the way out: not for a file already in the next world.)
+    const next = k.next === "dragon" ? DRAGON : KINGDOMS.find((x) => x.id === k.next);
+    if (s.bosses[k.id] && k.champion && next && !s.seen.includes(next.scenes.arrive))
+      due.push([farewellSceneOf(k.id), true]);
   }
   const dp = dragonPhase(s);
   if (dp !== "locked") {

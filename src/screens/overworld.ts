@@ -21,6 +21,7 @@ import {
   REGIONS,
   regionAsIs,
   regionById,
+  regionOfKingdom,
   storyPlace,
   type Gateway,
   type Passage,
@@ -49,7 +50,14 @@ import {
   persist,
   sceneScreen,
 } from "./adventure";
-import { DRAGON, KINGDOMS, STORY_ORDER, kingdomById, type KingdomId } from "../adventure/data";
+import {
+  DRAGON,
+  KINGDOMS,
+  STORY_ORDER,
+  farewellSceneOf,
+  kingdomById,
+  type KingdomId,
+} from "../adventure/data";
 import { Racer as RacerView } from "../render/racers/racer";
 import type { RacerId } from "../render/racers/designs";
 import {
@@ -76,7 +84,7 @@ import {
 import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
 import { characterSelect } from "./characterSelect";
 import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
-import { exitSpot } from "../overworld/exits";
+import { exitSpot, frontSpot, roadSpot } from "../overworld/exits";
 import { challengeSceneOf } from "../adventure/scenes";
 import { challengeStaged, stageAt } from "../adventure/staged";
 
@@ -571,6 +579,24 @@ const entryOf = (r: Region): TrackEntry => ({
   load: { scene: "track", packageId: r.packageId },
 });
 
+/** Where a story scene puts you when it ends, if anywhere: in front of the dragon's lair
+ * once the kingdom's map is whole; in front of the way on once its dragon is beaten. */
+function sceneTeleport(scene: string): { region: string; at: string } | undefined {
+  for (const k of KINGDOMS) {
+    const r = regionOfKingdom(k.id);
+    if (!r) continue;
+    if (scene === k.scenes.mapDone) {
+      const lair = r.gateways.find((g) => g.boss);
+      if (lair) return { region: r.id, at: `${lair.id}:front` };
+    }
+    if (scene === farewellSceneOf(k.id)) {
+      const way = (r.passages ?? []).find((p) => p.opensAfter === k.id);
+      if (way) return { region: r.id, at: `${way.id}:front` };
+    }
+  }
+  return undefined;
+}
+
 export function overworldLoading(
   game: Game,
   regionId: string,
@@ -620,9 +646,14 @@ export function overworldLoading(
         const due = dueScene(save);
         if (due) {
           alive = false;
+          // (Some scenes put you somewhere: the lair, once the map is whole; the way on,
+          // once the dragon's beaten. Blake, Oct 27.)
+          const to = sceneTeleport(due);
           return game.screens.go(
             sceneScreen(game, due, () =>
-              game.screens.go(overworldLoading(game, regionId, at, true)),
+              game.screens.go(
+                overworldLoading(game, to?.region ?? regionId, to ? to.at : at, true),
+              ),
             ),
           );
         }
@@ -870,12 +901,23 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         ...(challenge ? [challenge] : []),
         ...(taskMark ? [taskMark] : []),
       ]);
-      // Back out of the gateway you raced, or at the region's spawn.
-      const from = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === at);
+      // Back out of the gateway you raced (onto the road, facing along it), out of a
+      // passage, in front of a mark (`<id>:front`: the lair, the way on), or at the
+      // region's spawn.
+      const front = at?.endsWith(":front") ?? false;
+      const markId = front ? at!.slice(0, -":front".length) : at;
+      const from = [...marks, ...(taskSpot ? [taskSpot] : [])].find((g) => g.id === markId);
       const you = session.entrants[0]!;
-      if (from) {
-        const out = exitSpot(from, (x, z) => session.kartFits(x, z, PROBE_Y));
-        session.placeYou(out.x, out.z, out.heading, PROBE_Y);
+      const fits = (x: number, z: number) => session.kartFits(x, z, PROBE_Y);
+      if (from && front) {
+        const p = frontSpot(from, fits);
+        session.placeYou(p.x, p.z, p.heading, PROBE_Y);
+      } else if (from) {
+        const out = exitSpot(from, fits);
+        const gate = !(region.passages ?? []).some((p) => p.id === from.id);
+        const road = gate && session.track ? roadSpot(session.track.samples, out, fits) : undefined;
+        const p = road ?? out;
+        session.placeYou(p.x, p.z, p.heading, PROBE_Y);
       } else {
         const sp = region.spawn;
         session.placeYou(sp.x, sp.z, sp.heading, you.state.y + 20);

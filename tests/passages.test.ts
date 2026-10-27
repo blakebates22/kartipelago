@@ -9,7 +9,8 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import tuning from "../assets/data/tuning.json";
 import { REGIONS } from "../src/overworld/regions";
-import { exitSpot } from "../src/overworld/exits";
+import { exitSpot, frontSpot, roadSpot } from "../src/overworld/exits";
+import { buildTrack } from "../src/world/track";
 import { stepVertical } from "../src/physics/vertical";
 import { stepImpacts, stepMeshWalls } from "../src/physics/walls";
 import { createKartState, stepKart, type KartConfig } from "../src/vehicles/kart";
@@ -27,6 +28,11 @@ const reader =
     return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
   };
 
+const fits0 =
+  (mesh: Parameters<typeof deepestWall>[0], ground: ReturnType<typeof createMeshGround>) =>
+  (x: number, z: number) =>
+    !deepestWall(mesh, x, ground.at(x, z, 200).height, z, wallCfg.kartRadius);
+
 const PACKAGES = REGIONS.filter((r) => r.kingdom || r.journey).flatMap((r) =>
   (r.ruinPackageId ? [false, true] : [false]).map((ruined) => ({
     r,
@@ -40,6 +46,7 @@ describe("the ways between the worlds", () => {
     it(`${id}: every passage and gateway puts you on the road, facing the way on`, async () => {
       const p = await loadTrackPackage(reader(id), { visual: false });
       const ground = createMeshGround(p.collision);
+      const track = buildTrack(p.trackData, tuning.track.sampleSpacing);
       const bad: string[] = [];
       // (Back out of a gateway after its race, too.)
       const ways = [
@@ -47,12 +54,13 @@ describe("the ways between the worlds", () => {
         ...r.gateways.filter((g) => ruined || !g.boss),
       ];
       for (const ps of ways) {
-        // (As screens/overworld.ts puts you out of it.)
-        const out = exitSpot(
-          ps,
-          (x, z) =>
-            !deepestWall(p.collision, x, ground.at(x, z, 200).height, z, wallCfg.kartRadius),
-        );
+        // (As screens/overworld.ts puts you out of it: a gateway's onto the road beside it,
+        // facing along it.)
+        const fits = (x: number, z: number) =>
+          !deepestWall(p.collision, x, ground.at(x, z, 200).height, z, wallCfg.kartRadius);
+        const exit = exitSpot(ps, fits);
+        const gate = !(r.passages ?? []).some((q) => q.id === ps.id);
+        const out = (gate && roadSpot(track.samples, exit, fits)) || exit;
         const x0 = out.x;
         const z0 = out.z;
         const top = ground.at(x0, z0, 200);
@@ -60,7 +68,7 @@ describe("the ways between the worlds", () => {
         if (top.height > floor.height + 2) bad.push(`${ps.id}: on top of something`);
         if (deepestWall(p.collision, x0, top.height, z0, wallCfg.kartRadius))
           bad.push(`${ps.id}: in a wall`);
-        const k = createKartState(x0, z0, ps.heading, top.height);
+        const k = createKartState(x0, z0, out.heading, top.height);
         for (let t = 0; t < 4; t += dt) {
           stepImpacts(k, tuning.collision, dt);
           const here = ground.at(k.x, k.z, k.y);
@@ -74,6 +82,16 @@ describe("the ways between the worlds", () => {
         const moved = Math.hypot(k.x - x0, k.z - z0);
         if (moved < 30) bad.push(`${ps.id}: only ${moved.toFixed(0)} m in 4 s flat out`);
       }
+      // In front of the lair and the way on (the story puts you there), facing it: a kart
+      // fits, and flat out it reaches it.
+      if (ruined && r.kingdom)
+        for (const m of [
+          ...r.gateways.filter((g) => g.boss),
+          ...(r.passages ?? []).filter((q) => q.opensAfter === r.kingdom),
+        ]) {
+          const f = frontSpot(m, fits0(p.collision, ground));
+          if (!fits0(p.collision, ground)(f.x, f.z)) bad.push(`${m.id}: no room in front of it`);
+        }
       expect(bad).toEqual([]);
     });
 

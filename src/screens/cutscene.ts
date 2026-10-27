@@ -129,7 +129,9 @@ export function stagedSceneScreen(
       };
       if (spec.kind === "racer") {
         const look = (spec.look === "you" ? game.selection.racer : spec.look) as RacerId;
-        a.racer = new RacerView(look, { seed: name.length * 7 });
+        // (A champion who's also the racer you drive: their cousin, in the other paint.)
+        const cousin = spec.look !== "you" && look === game.selection.racer;
+        a.racer = new RacerView(look, { seed: name.length * 7, alt: cousin });
         s.root.add(a.racer.root, a.racer.shadow);
       } else if (spec.kind === "villager") {
         a.villager = createVillagerView(s.root, spec.folk, spec.seed, spec.species);
