@@ -72,6 +72,11 @@ export interface Region {
   worldId: string;
   /** The Adventure kingdom it is (src/adventure/data.ts): the story runs through it. */
   kingdom?: KingdomId;
+  /** A journey between two kingdoms, its own section (Blake, Oct 26: a loading zone at a
+   * kingdom's edge, the connecting stretch driven to the next one's): no gateways, a way
+   * in at each end (its passages "start", from `from`, and "end", to `to`). `road`: the
+   * stretch of its route that's road (the rest goes round out of sight). */
+  journey?: { from: KingdomId; to: KingdomId; road: [number, number] };
   spawn: { x: number; z: number; heading: number };
   gateways: Gateway[];
   passages?: Passage[];
@@ -194,8 +199,8 @@ export const REGIONS: Region[] = [
       {
         id: "burnt_gorge",
         label: "THE BURNT GORGE · TO THE SNOW KINGDOM",
-        to: "snow_kingdom",
-        toPassage: "burnt_gorge",
+        to: "journey_gorge",
+        toPassage: "start",
         x: -155.4,
         z: -420,
         radius: 8,
@@ -299,8 +304,8 @@ export const REGIONS: Region[] = [
       {
         id: "burnt_gorge",
         label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
-        to: "dinosaur_valley",
-        toPassage: "burnt_gorge",
+        to: "journey_gorge",
+        toPassage: "end",
         x: 0,
         z: 462,
         radius: 8,
@@ -310,8 +315,8 @@ export const REGIONS: Region[] = [
       {
         id: "frozen_pass",
         label: "THE FROZEN PASS · TO DESERT WORLD",
-        to: "desert_world",
-        toPassage: "frozen_pass",
+        to: "journey_pass",
+        toPassage: "start",
         x: 400,
         z: 190,
         radius: 8,
@@ -402,8 +407,8 @@ export const REGIONS: Region[] = [
       {
         id: "frozen_pass",
         label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
-        to: "snow_kingdom",
-        toPassage: "frozen_pass",
+        to: "journey_pass",
+        toPassage: "end",
         x: -458,
         z: 0,
         radius: 8,
@@ -413,8 +418,8 @@ export const REGIONS: Region[] = [
       {
         id: "dust_road",
         label: "THE DUST ROAD · TO TROPIC ISLES",
-        to: "tropic_isles",
-        toPassage: "dust_road",
+        to: "journey_dust",
+        toPassage: "start",
         x: 0,
         z: 445,
         radius: 8,
@@ -504,8 +509,8 @@ export const REGIONS: Region[] = [
       {
         id: "dust_road",
         label: "THE DUST ROAD · BACK TO DESERT WORLD",
-        to: "desert_world",
-        toPassage: "dust_road",
+        to: "journey_dust",
+        toPassage: "end",
         x: 0,
         z: -458,
         radius: 8,
@@ -515,8 +520,8 @@ export const REGIONS: Region[] = [
       {
         id: "causeway",
         label: "TIDEWYRM'S CAUSEWAY · TO THE DRAGON KINGDOM",
-        to: "dragon_kingdom",
-        toPassage: "causeway",
+        to: "journey_cause",
+        toPassage: "start",
         x: 0,
         z: 460,
         radius: 8,
@@ -599,12 +604,148 @@ export const REGIONS: Region[] = [
       {
         id: "causeway",
         label: "TIDEWYRM'S CAUSEWAY · BACK TO TROPIC ISLES",
-        to: "tropic_isles",
-        toPassage: "causeway",
+        to: "journey_cause",
+        toPassage: "end",
         x: 0,
         z: 460,
         radius: 8,
         heading: Math.PI,
+      },
+    ],
+  },
+  {
+    // Cinderjaw's burnt trench out of the valley, up out of the heat into the first snow: the scorched gorge and its lava pools, the Ash Tube, the Stair's switchbacks, the frosty Frostline and Frost Creek, the Snow Arch, the Snowgate.
+    // (tools/blender/prehistoric/journey_region.py gorge; the positions are the build's.)
+    id: "journey_gorge",
+    name: "The Burnt Gorge",
+    packageId: "journey_gorge",
+    music: "ember",
+    worldId: "prehistoric",
+    journey: { from: "valley", to: "snow", road: [35, 1492] },
+    spawn: { x: -380.1, z: 358.1, heading: 0.3539 },
+    gateways: [],
+    passages: [
+      {
+        id: "start",
+        label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
+        to: "dinosaur_valley",
+        toPassage: "burnt_gorge",
+        x: -385,
+        z: 345,
+        radius: 8,
+        heading: 0.3539,
+      },
+      {
+        id: "end",
+        label: "THE BURNT GORGE · ON TO THE SNOW KINGDOM",
+        to: "snow_kingdom",
+        toPassage: "burnt_gorge",
+        x: 362,
+        z: -394,
+        radius: 8,
+        heading: -2.6723,
+      },
+    ],
+  },
+  {
+    // Down out of the snow into the heat: the Col, the Ice Cave, the Glacier's seracs, the Melt's switchbacks and falls, the Red Cut's slot, the desert's Edge.
+    // (tools/blender/prehistoric/journey_region.py pass; the positions are the build's.)
+    id: "journey_pass",
+    name: "The Frozen Pass",
+    packageId: "journey_pass",
+    music: "summit",
+    worldId: "frostveil",
+    journey: { from: "snow", to: "desert", road: [58, 1367] },
+    spawn: { x: -361.0, z: -372.7, heading: 2.443 },
+    gateways: [],
+    passages: [
+      {
+        id: "start",
+        label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
+        to: "snow_kingdom",
+        toPassage: "frozen_pass",
+        x: -370,
+        z: -362,
+        radius: 8,
+        heading: 2.443,
+      },
+      {
+        id: "end",
+        label: "THE FROZEN PASS · ON TO DESERT WORLD",
+        to: "desert_world",
+        toPassage: "frozen_pass",
+        x: 368,
+        z: 368,
+        radius: 8,
+        heading: -0.5213,
+      },
+    ],
+  },
+  {
+    // Out of the sand into the jungle: the Dunes, the Mesa Tunnel, the Scrub, the Ford's river and bridge, the Vine Gorge, the Jungle.
+    // (tools/blender/prehistoric/journey_region.py dust; the positions are the build's.)
+    id: "journey_dust",
+    name: "The Dust Road",
+    packageId: "journey_dust",
+    music: "oasis",
+    worldId: "desert",
+    journey: { from: "desert", to: "beach", road: [43, 1292] },
+    spawn: { x: -358.2, z: 49.6, heading: 1.7411 },
+    gateways: [],
+    passages: [
+      {
+        id: "start",
+        label: "THE DUST ROAD · BACK TO DESERT WORLD",
+        to: "desert_world",
+        toPassage: "dust_road",
+        x: -372,
+        z: 52,
+        radius: 8,
+        heading: 1.7411,
+      },
+      {
+        id: "end",
+        label: "THE DUST ROAD · ON TO TROPIC ISLES",
+        to: "tropic_isles",
+        toPassage: "dust_road",
+        x: 380,
+        z: -322,
+        radius: 8,
+        heading: -2.0149,
+      },
+    ],
+  },
+  {
+    // Over the sea on the reef Tidewyrm raised: the Reef, the Sea Cave, the Stacks, the Isle and its lighthouse, the serpent's Ribs over the strait, the Crags up to the Dragon Kingdom's gate.
+    // (tools/blender/prehistoric/journey_region.py cause; the positions are the build's.)
+    id: "journey_cause",
+    name: "Tidewyrm's Causeway",
+    packageId: "journey_cause",
+    music: "shipwreck_bay",
+    worldId: "beach",
+    journey: { from: "beach", to: "dragon", road: [50, 1158] },
+    spawn: { x: -1.1, z: -413.6, heading: -2.9151 },
+    gateways: [],
+    passages: [
+      {
+        id: "start",
+        label: "TIDEWYRM'S CAUSEWAY · BACK TO TROPIC ISLES",
+        to: "tropic_isles",
+        toPassage: "causeway",
+        x: 2,
+        z: -400,
+        radius: 8,
+        heading: -2.9151,
+      },
+      {
+        id: "end",
+        label: "TIDEWYRM'S CAUSEWAY · ON TO THE DRAGON KINGDOM",
+        to: "dragon_kingdom",
+        toPassage: "causeway",
+        x: 70,
+        z: 390,
+        radius: 8,
+        heading: -0.4385,
       },
     ],
   },
@@ -633,6 +774,14 @@ export const REGIONS: Region[] = [
 ];
 
 export const regionById = (id: string) => REGIONS.find((r) => r.id === id);
+
+/** Where a region sits in the story's order (src/adventure/data.ts STORY_ORDER, as an
+ * index): a kingdom's, or halfway between for a journey. */
+export function storyPlace(r: Region, order: readonly KingdomId[]): number {
+  if (r.kingdom) return order.indexOf(r.kingdom);
+  if (r.journey) return (order.indexOf(r.journey.from) + order.indexOf(r.journey.to)) / 2;
+  return -1;
+}
 
 /** What of the region is there in its standard or ruined state: the lairs and the ways
  * the dragons broke open only after the attack. */

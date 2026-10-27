@@ -7,12 +7,17 @@ import math
 import random
 
 
+# Spots taken before the dressing (the villagers' homes: villager_homes.py): every Taken
+# keeps clear of them.
+EXTRA = []
+
+
 class Taken:
     """Circles already used (landmarks, gateways, puzzles, earlier props): nothing goes
     inside them."""
 
     def __init__(self, spots=()):
-        self.spots = list(spots)
+        self.spots = list(spots) + list(EXTRA)
 
     def add(self, x, y, r):
         self.spots.append((x, y, r))

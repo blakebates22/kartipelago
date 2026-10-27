@@ -33,7 +33,8 @@ import {
   coinCourse,
   coinRaceFinished,
   completeReturn,
-  cupFinished,
+  championshipTracks,
+  raceFinished,
   dragonPhase,
   dueScene,
   eraseAdventure,
@@ -57,7 +58,6 @@ import { CAST, SCENES, sceneById, type Scene } from "../adventure/scenes";
 import type { RaceResult } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
 import { startCup } from "../game/trophy";
-import { worldById } from "../game/worlds";
 import { wrap } from "../ui/font";
 import type { UiLayer } from "../ui/layer";
 import { INK, INK_SOFT, dashedRoute, island, parchment, type IslandStyle } from "../ui/mapArt";
@@ -68,7 +68,7 @@ import { loadingScreen } from "./loading";
 import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
-import { overworldLoading } from "./overworld";
+import { devWarp, overworldLoading } from "./overworld";
 import { regionById, regionOfKingdom } from "../overworld/regions";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
@@ -450,6 +450,32 @@ export function adventureHub(game: Game): Screen {
 
 // ---------------------------------------------------------------- a kingdom
 
+/** A championship's row on a kingdom's board: its four courses, won in any order (Blake,
+ * Oct 26: no Trophy Race cup). Dev free roam launches the next course not yet won. */
+function championshipItem(
+  game: Game,
+  id: KingdomId | "dragon_final",
+  label: string,
+  disabled: boolean,
+) {
+  const s = adventureOf(game).save;
+  const tracks = championshipTracks(id, exists);
+  const left = tracks.filter((t) => !s.wins[t]);
+  const won = id === "dragon_final" ? s.finalCup : Boolean(s.cups[id]);
+  const names = left.map((t) => (trackById(t)?.name ?? t).toUpperCase());
+  return {
+    label: `${won ? "★ " : ""}${label} (${tracks.length - left.length}/${tracks.length} WON)`,
+    sub: left.length
+      ? `WIN EACH COURSE, ANY ORDER · LEFT: ${names.join(", ")}`
+      : "ALL FOUR COURSES WON",
+    disabled,
+    action: () => {
+      const t = left[0] ?? tracks[0]!;
+      launch(game, { kind: "race", kingdom: id, track: t }, t);
+    },
+  };
+}
+
 export function kingdomScreen(game: Game, id: KingdomId): Screen {
   const a = adventureOf(game);
   const s = a.save;
@@ -460,18 +486,9 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
   const done = "★ ";
   if (id === "dragon") {
     const p = dragonPhase(s);
-    const originals = DRAGON.courses.map((c) => c.track);
-    items.push({
-      label: `${s.cups.dragon ? done : ""}CHAMPIONSHIP: THE FIRST VISIT`,
-      sub: "ITS FOUR COURSES, A TROPHY RACE",
-      disabled: !free && p !== "first",
-      action: () =>
-        launch(game, { kind: "cup", kingdom: "dragon" }, originals[0]!, {
-          name: DRAGON.name,
-          worldId: DRAGON.worldId,
-          tracks: originals,
-        }),
-    });
+    items.push(
+      championshipItem(game, "dragon", "CHAMPIONSHIP: THE FIRST VISIT", !free && p !== "first"),
+    );
     if (p === "return")
       items.push({
         label: "THE KINGDOM IS IN RUINS",
@@ -479,20 +496,9 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
         disabled: true,
         action: () => {},
       });
-    const ruins = DRAGON.courses.map((c) => coinCourse(c, exists));
-    items.push({
-      label: `${s.finalCup ? done : ""}THE LAST CHAMPIONSHIP`,
-      sub: ruins.some((r) => r.standIn)
-        ? "ITS RUINED COURSES (STAND-INS FOR NOW)"
-        : "ITS RUINED COURSES",
-      disabled: !free && p !== "final",
-      action: () =>
-        launch(game, { kind: "cup", kingdom: "dragon_final" }, ruins[0]!.track, {
-          name: `${DRAGON.name} (Ruined)`,
-          worldId: DRAGON.worldId,
-          tracks: ruins.map((r) => r.track),
-        }),
-    });
+    items.push(
+      championshipItem(game, "dragon_final", "THE LAST CHAMPIONSHIP", !free && p !== "final"),
+    );
     if (p === "done")
       items.push({
         label: "START A NEW ADVENTURE",
@@ -538,19 +544,7 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
   } else {
     const k = kingdomById(id)!;
     const ph = kingdomPhase(s, k);
-    items.push({
-      label: `${s.cups[id] ? done : ""}THE CHAMPIONSHIP`,
-      sub: "A TROPHY RACE: WIN THE CUP",
-      action: () => {
-        const w = worldById(k.worldId)!;
-        const tracks = k.courses.map((c) => c.track);
-        launch(game, { kind: "cup", kingdom: id }, tracks[0]!, {
-          name: k.name,
-          worldId: w.id,
-          tracks,
-        });
-      },
-    });
+    items.push(championshipItem(game, id, "THE CHAMPIONSHIP", false));
     const region = regionOfKingdom(id);
     if (hasDuel(k) && region)
       items.push({
@@ -980,7 +974,14 @@ export function adventureResult(
           ? bossFinished(s, run.kingdom, result.position)
           : run.kind === "king"
             ? kingFinished(s, run.chosen ? result.position : undefined)
-            : { progressed: false, lines: [] };
+            : run.kind === "race"
+              ? raceFinished(s, run.kingdom, run.track, result.position)
+              : { progressed: false, lines: [] };
+  // A championship won where there's no 1-on-1 to win after it: its champion joins.
+  if (run.kind === "race" && run.kingdom !== "dragon_final") {
+    const kd = kingdomById(run.kingdom as KingdomId);
+    if (kd && s.cups[kd.id] && !hasDuel(kd) && kd.champion) unlockRacer(kd.champion.look);
+  }
   // The champion beaten 1 on 1 joins the crew: pickable everywhere from now on.
   if (run.kind === "duel" && s.duels[run.kingdom]) {
     const champ = kingdomById(run.kingdom)?.champion;
@@ -1054,25 +1055,12 @@ export function adventureResult(
   };
 }
 
-/** A championship cup is over (from the Trophy podium): count it and drive on. */
-export function adventureCupDone(game: Game, place: number) {
+/** A Trophy Race cup's podium from inside Adventure (there are no cups in Adventure any
+ * more: Blake, Oct 26): just back home. */
+export function adventureCupDone(game: Game, _place: number) {
   const a = adventureOf(game);
-  const run = a.run;
-  if (run?.kind === "cup") {
-    cupFinished(a.save, run.kingdom, place);
-    // The champion beaten in it joins the crew: pickable everywhere from now on.
-    // (Where there's a challenge to win first, they join after that.)
-    const kd = run.kingdom !== "dragon_final" ? kingdomById(run.kingdom as KingdomId) : undefined;
-    if (kd && a.save.cups[kd.id] && !hasDuel(kd)) {
-      const champ = kd.champion;
-      if (champ) unlockRacer(champ.look);
-    }
-    persist(game);
-    a.at = run.kingdom === "dragon_final" ? "dragon" : run.kingdom;
-  }
   a.run = undefined;
   game.trophy = undefined;
-  // Back where the cup was entered (its scene first, if one's due), not the world map.
   goHome(game);
 }
 
@@ -1094,7 +1082,10 @@ function devMenu(game: Game): Screen {
   const free = (id: KingdomId) => {
     const k = kingdomById(id)!;
     s.cups[id] = true;
-    for (const c of k.courses) s.pieces[c.track] = true;
+    for (const c of k.courses) {
+      s.wins[c.track] = true;
+      s.pieces[c.track] = true;
+    }
     s.bosses[id] = true;
   };
   type Item = { label: string; action: () => void };
@@ -1159,11 +1150,12 @@ function devMenu(game: Game): Screen {
       },
     },
     {
-      // The overworld's first region (a greybox): free roam with its four gateways.
-      label: "OVERWORLD: DINOSAUR VALLEY",
+      // Free roam: any region, standard or ruined, or any journey between them.
+      label: "OVERWORLD: WARP ANYWHERE (FREE ROAM)",
       action: () => {
         game.sounds.confirm();
-        game.screens.go(overworldLoading(game, "dinosaur_valley"));
+        game.overworld = undefined;
+        game.screens.push(devWarp(game));
       },
     },
     {

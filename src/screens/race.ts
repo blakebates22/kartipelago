@@ -153,7 +153,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
           // In a Trophy Race: the cup table (and on to the next track) instead.
           if (game.trophy && !cupOver(game.trophy))
             game.screens.push(trophyStandings(game, result, entry));
-          else if (game.adventure?.run && game.adventure.run.kind !== "cup")
+          else if (game.adventure?.run)
             game.screens.push(
               adventureResult(game, result, entry, () => {
                 showingResults = false;

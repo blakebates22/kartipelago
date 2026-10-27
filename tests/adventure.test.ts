@@ -10,6 +10,8 @@ import {
   coinRaceFinished,
   completeReturn,
   cupFinished,
+  raceFinished,
+  winsOf,
   duelFinished,
   hasDuel,
   dragonPhase,
@@ -102,8 +104,12 @@ describe("a playthrough", () => {
         expect(log).toContain(k.scenes.arrive);
       }
       expect(kingdomPhase(s, k)).toBe("championship");
-      expect(objective(s)).toContain("CHAMPIONSHIP");
-      cupFinished(s, k.id, 1);
+      expect(objective(s)).toContain("WIN ITS 4 COURSES");
+      // Its four courses won in any order (last first here), a lost race counting for nothing.
+      const courses = [...k.courses].reverse();
+      expect(raceFinished(s, k.id, courses[0]!.track, 2).progressed).toBe(false);
+      for (const c of courses) expect(raceFinished(s, k.id, c.track, 1).progressed).toBe(true);
+      expect(s.cups[k.id]).toBe(true);
       // A kingdom with its overworld region: the champion's challenge comes first (they
       // join, and the dragons strike, once it's won).
       if (hasDuel(k)) {
@@ -128,7 +134,7 @@ describe("a playthrough", () => {
     expect(toolsOf(s)).toHaveLength(4);
     expect(dragonPhase(s)).toBe("first");
     s.where = { region: regionOfKingdom("dragon")!.id };
-    cupFinished(s, "dragon", 1);
+    for (const c of DRAGON.courses) raceFinished(s, "dragon", c.track, 1);
     watch(s, log);
     expect(log).toContain(DRAGON.scenes.sacrifice);
     expect(dragonPhase(s)).toBe("return");
@@ -136,7 +142,9 @@ describe("a playthrough", () => {
     watch(s, log);
     expect(log).toContain(DRAGON.scenes.resurrection);
     expect(dragonPhase(s)).toBe("final");
-    cupFinished(s, "dragon_final", 1);
+    for (const c of DRAGON.courses)
+      raceFinished(s, "dragon_final", coinCourse(c, () => true).track, 1);
+    expect(s.finalCup).toBe(true);
     watch(s, log);
     expect(dragonPhase(s)).toBe("king");
     // The first race against the King is lost whatever happens (scripted).
@@ -182,6 +190,21 @@ describe("treasure map races", () => {
     expect(s.pieces[track]).toBe(true);
     cupFinished(s, "valley", 1);
     cupFinished(s, "valley", 5);
+    expect(s.cups.valley).toBe(true);
+  });
+
+  it("a championship is its four courses won in any order, each counted once", () => {
+    const s = newSave();
+    const [a, b, c, d] = KINGDOMS[0]!.courses.map((x) => x.track);
+    raceFinished(s, "valley", c!, 1);
+    raceFinished(s, "valley", c!, 1);
+    raceFinished(s, "valley", a!, 3);
+    expect(winsOf(s, "valley")).toBe(1);
+    expect(kingdomPhase(s, KINGDOMS[0]!)).toBe("championship");
+    raceFinished(s, "valley", d!, 1);
+    raceFinished(s, "valley", a!, 1);
+    expect(s.cups.valley).toBeFalsy();
+    expect(raceFinished(s, "valley", b!, 1).lines[0]).toBe("ALL FOUR COURSES WON!");
     expect(s.cups.valley).toBe(true);
   });
 });

@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import pocket_kit  # noqa: E402
 from course_kit import Vector, lerp  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
@@ -24,6 +25,7 @@ from pocket_build import box, cone  # noqa: E402
 import props  # noqa: E402
 import beach_props as bp  # noqa: E402
 import tropic_props as tp  # noqa: E402
+import villager_homes as vh  # noqa: E402
 import swamp_props as swp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import beach_layout as BL  # noqa: E402
@@ -59,7 +61,7 @@ LOOK = {
 WET = {"shipwreck": ("wreck_wet_sand", "water"), "pier": ("cove_wet_sand", "water"), "coral": ("cove_wet_sand", "water")}
 
 
-def natural(x, y):
+def _natural(x, y):
     h = BL.natural(x, y)
     tz = L.tunnel_floor(x, y)
     if tz is not None:
@@ -68,6 +70,15 @@ def natural(x, y):
     if bz is not None:
         h = min(h, bz)
     return h
+
+
+# The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
+# spur mustn't climb a wall).
+NOTCHES = pocket_kit.Notches(BL.route_points(), dict({k: v for k, v in BL.GATES.items() if k != "volcano"}, **({"lair": BL.LAIR} if RUIN else {})))
+
+
+def natural(x, y):
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 def classify(c, n, info):
@@ -167,6 +178,8 @@ def main():
     puzzle_kit.pen(c, "secret", "Smugglers Cave", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("isle_rock", "wall"),
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
+    # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
+    vh.homes(c, L, ground, "beach", vh.proto_house(lambda c, k: tp.beach_hut(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
     dress(c, ground, spots)
     box(c, "Road Bend", 0.0, dy + 8.0, 40.0, 6.0, natural(0.0, dy) - 2.0, RIM_Z + 30.0, ("isle_rock", "wall"))
 

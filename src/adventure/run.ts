@@ -9,8 +9,8 @@ import { DRAGON, kingdomById, type KingdomId } from "./data";
 import type { AdventureSave } from "./progress";
 
 export type AdventureRun =
-  /** A championship: the kingdom's Trophy Race cup (game.trophy carries the races). */
-  | { kind: "cup"; kingdom: KingdomId | "dragon_final" }
+  /** One of a championship's courses (win all four, any order: progress.ts raceFinished). */
+  | { kind: "race"; kingdom: KingdomId | "dragon_final"; track: string }
   /** A treasure map race on a ruined course (or its stand-in). */
   | { kind: "coins"; kingdom: KingdomId; course: string; track: string; standIn: boolean }
   | { kind: "boss"; kingdom: KingdomId }
@@ -71,7 +71,7 @@ export function sessionExtras(
   if (!run) return {};
   if (run.kind === "coins")
     return { coins: "auto", field: { looks: kingdomField(run.kingdom, player, crew) } };
-  if (run.kind === "cup") return { field: { looks: kingdomField(run.kingdom, player, crew) } };
+  if (run.kind === "race") return { field: { looks: kingdomField(run.kingdom, player, crew) } };
   if (run.kind === "duel") {
     const ch = kingdomById(run.kingdom)!.champion!;
     return { field: { count: 1, names: [ch.name], looks: [{ id: ch.look, alt: false }] } };

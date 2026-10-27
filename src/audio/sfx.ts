@@ -53,6 +53,18 @@ export function createSfx(engine: AudioEngine) {
     src.stop(t + length + 0.02);
   };
 
+  /** A boost's rush (Blake, Oct 26: every boost should be heard): a whoosh climbing as
+   * the air tears past, the engine roaring up under it, a low thump at the kick. `size`:
+   * how big (a level 3 blue's is bigger). */
+  const rush = (at: number, volume: number, size: number) => {
+    const len = 0.35 + 0.25 * size;
+    noise(at, len, volume * 0.7 * size, 900, 7000);
+    noise(at + 0.05, len * 1.2, volume * 0.45, 6000, 600);
+    note(150, at, len, volume * 0.55, 150 + 300 * size, "sawtooth");
+    note(75, at, len * 0.9, volume * 0.4, 75 + 150 * size, "square");
+    note(90, at, 0.12, volume * 0.8, 45, "sine");
+  };
+
   return {
     /**
      * Balloon popped: the item lands in the box with a bright little jingle. It climbs
@@ -93,10 +105,17 @@ export function createSfx(engine: AudioEngine) {
         note(200, 0, chargeSec, volume * 0.7, 900, "sawtooth");
         noise(chargeSec, 0.6, volume, 6000, 300);
         note(140, chargeSec, 0.5, volume, 70, "square");
+        rush(chargeSec, volume, 1.3);
       } else {
         noise(0, 0.25 + level * 0.15, volume, 5000, 400);
         note(level === 1 ? 300 : 240, 0, 0.3, volume * 0.6, 120, "square");
+        rush(0.02, volume, level === 1 ? 0.8 : 1.0);
       }
+    },
+    /** A zipper (or a boost pad) firing: the jet's whoosh and the engine's roar up. */
+    zipper(volume: number) {
+      rush(0, volume, 1);
+      note(1568, 0.04, 0.08, volume * 0.35, 2093, "square");
     },
     /**
      * Tyres skidding through a drift: a looping screech you turn up and down. It's made
@@ -207,9 +226,10 @@ export function createSfx(engine: AudioEngine) {
     /**
      * Your kart's engine: a quiet, low hum under everything (two buzzy tones, filtered
      * soft, with a gentle chug), rising in pitch with speed. `set(level, pitch)`: level
-     * 0..1, pitch 0..1 (idle .. flat out; a boost can take it a little past 1).
+     * 0..1, pitch 0..1 (idle .. flat out; a boost can take it a little past 1). `voice`:
+     * the racer's own pitch (ENGINE_VOICE: every racer's kart sounds a little different).
      */
-    engine() {
+    engine(voice = 1) {
       if (!ctx || ctx.state !== "running") return undefined;
       const c = ctx;
       const gain = c.createGain();
@@ -245,7 +265,7 @@ export function createSfx(engine: AudioEngine) {
         set(level: number, pitch: number) {
           if (stopped) return;
           const now = c.currentTime;
-          const f = 55 + Math.max(0, Math.min(1.3, pitch)) * 85;
+          const f = voice * (55 + Math.max(0, Math.min(1.3, pitch)) * 85);
           saw.frequency.setTargetAtTime(f, now, 0.08);
           sub.frequency.setTargetAtTime(f / 2, now, 0.08);
           chug.frequency.setTargetAtTime(f / 4, now, 0.08);
@@ -907,3 +927,17 @@ export function createSfx(engine: AudioEngine) {
   };
 }
 export type Sfx = ReturnType<typeof createSfx>;
+
+/** Each racer's engine, a pitch of the same hum (Blake, Oct 26: a different noise for every
+ * racer): the little ones higher, the big ones lower. */
+export const ENGINE_VOICE: Record<string, number> = {
+  tiko: 1.15,
+  brakka: 0.8,
+  pebble: 1.32,
+  zephyr: 1.05,
+  raptor: 1.22,
+  rex: 0.7,
+  brachio: 0.88,
+  stego: 0.95,
+  dragon: 0.62,
+};

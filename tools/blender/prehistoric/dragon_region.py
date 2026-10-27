@@ -15,10 +15,12 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import pocket_kit  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import pocket_build as pb  # noqa: E402
 from pocket_build import box, cone  # noqa: E402
 import keep_props as kp  # noqa: E402
+import villager_homes as vh  # noqa: E402
 import isles_props as ip  # noqa: E402
 import cdf_props as cdp  # noqa: E402
 import props  # noqa: E402
@@ -50,12 +52,21 @@ def burn(x, y):
     return 0.55 + 0.45 * math.sin(x / 61.0 - 0.7) * math.cos(y / 43.0 + 1.1)
 
 
-def natural(x, y):
+def _natural(x, y):
     h = DL.natural(x, y)
     tz = L.tunnel_floor(x, y)
     if tz is not None:
         h = min(h, tz - 0.25)
     return h
+
+
+# The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
+# spur mustn't climb a wall).
+NOTCHES = pocket_kit.Notches(DL.route_points(), dict(DL.GATES, citadel=DL.CITADEL))
+
+
+def natural(x, y):
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 def classify(c, n, info):
@@ -106,6 +117,8 @@ def main():
     square(c, ground)
     landmarks(c, ground, spots)
     pb.emit_spots(c, spots)
+    # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
+    vh.homes(c, L, ground, "dragon", vh.proto_house(lambda c, k: kp.house(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 22.0)])
     dress(c, ground, spots)
     if RUIN:
         ruined(c, ground, spots)

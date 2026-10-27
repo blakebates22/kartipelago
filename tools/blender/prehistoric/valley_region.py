@@ -30,10 +30,12 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import pocket_kit  # noqa: E402
 from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
 import props  # noqa: E402
+import villager_homes as vh  # noqa: E402
 import region_paint as paint  # noqa: E402
 import ruin_kit  # noqa: E402
 import swamp_props as sp  # noqa: E402
@@ -80,7 +82,7 @@ def burn(x, y):
     return (0.6 + 0.45 * math.sin(x / 53.0 + 1.3) * math.cos(y / 47.0 - 0.4)) * (1.0 - 0.6 * w["bonebog"])
 
 
-def natural(x, y):
+def _natural(x, y):
     h = L.natural(x, y)
     tz = L.tunnel_floor(x, y)
     if tz is not None:
@@ -103,6 +105,15 @@ def natural(x, y):
             t = smooth((32 - abs(x - sx)) / 12.0) * smooth((-270 - y) / 20.0)
             h = lerp(h, 10.0, t)
     return h
+
+
+# The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
+# spur mustn't climb a wall).
+NOTCHES = pocket_kit.Notches(L.route_points(), dict(L.GATES, **({"lair": L.SCAR} if RUIN else {})))
+
+
+def natural(x, y):
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 LOOK = {
@@ -293,6 +304,8 @@ def main():
     for name, (end, heading) in spurs.items():
         gx, gy, gz = c.game(end[0], end[1], 0.0)
         c.entity("gateway_spot", gateway=name, x=gx, z=gz, heading=heading)
+    # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
+    vh.homes(c, L, ground, "valley", vh.proto_house(lambda c, k: props.hut(c)), avoid=[(0.0, 0.0, 44.0)])
     dress(c, ground, spurs)
 
     # (Raced too: the champion's challenge, once round the loop, from this line by the camp.)

@@ -46,6 +46,7 @@ export type ScreenId =
   | "ADVENTURE_DEV"
   | "ADVENTURE_SCENES"
   | "OVERWORLD_LOADING"
+  | "DEV_WARP"
   | "OVERWORLD"
   | "GATEWAY";
 

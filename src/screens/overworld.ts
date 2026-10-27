@@ -21,6 +21,7 @@ import {
   REGIONS,
   regionAsIs,
   regionById,
+  storyPlace,
   type Gateway,
   type Passage,
   type Region,
@@ -51,6 +52,8 @@ import { DRAGON, KINGDOMS, STORY_ORDER, kingdomById, type KingdomId } from "../a
 import { Racer as RacerView } from "../render/racers/racer";
 import type { RacerId } from "../render/racers/designs";
 import {
+  championshipTracks,
+  winsOf,
   championWon,
   championsOf,
   coinCourse,
@@ -71,6 +74,7 @@ import {
 } from "../overworld/puzzles";
 import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
 import { characterSelect } from "./characterSelect";
+import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -83,6 +87,10 @@ export interface OverworldState {
    * that itself: once the kingdom's champion has joined you). */
   ruined?: boolean;
 }
+
+/** Dev builds: a region warped to as standard or ruined stays so (whatever the story
+ * says) until warped again (the warp list: devWarp). */
+const devState = new Map<string, boolean>();
 
 /** Dev free roam (not an Adventure file): puzzles solved and keys found, for this visit. */
 const devSolved = new Set<string>();
@@ -233,13 +241,17 @@ function regionMap(session: Session, region: Region, extra: { x: number; z: numb
   g.strokeStyle = "#d8c8a0";
   g.lineWidth = 2;
   g.beginPath();
-  const pts = session.track?.samples ?? [];
+  // (A journey: only its road, not the way round out of sight.)
+  const road = region.journey?.road;
+  const pts = (session.track?.samples ?? []).filter(
+    (p) => !road || (p.dist >= road[0] && p.dist <= road[1]),
+  );
   pts.forEach((p, i) => {
     const [u, v] = at(p.pos.x, p.pos.z);
     if (i === 0) g.moveTo(u, v);
     else g.lineTo(u, v);
   });
-  g.closePath();
+  if (!road) g.closePath();
   g.stroke();
   const dot = (x: number, z: number, color: string, r = 2) => {
     const [u, v] = at(x, z);
@@ -560,21 +572,26 @@ export function overworldLoading(
   regionId: string,
   at?: string,
   adventure = game.overworld?.adventure ?? false,
+  /** Dev builds: this state whatever the story says (the warp list). */
+  devRuined?: boolean,
 ): Screen {
   const full = regionById(regionId)!;
   // The region before or after its dragon's attack.
   const k = full.kingdom ? kingdomById(full.kingdom) : undefined;
-  const story = adventure && Boolean(full.kingdom);
+  const story = adventure && Boolean(full.kingdom || full.journey);
   // (Adventure: once the kingdom's champion has joined you and the dragon struck; the
   // Dragon Kingdom after the sacrifice, at the end of its first championship.)
   const save = story ? adventureOf(game).save : undefined;
   const ruined =
     Boolean(full.ruinPackageId) &&
-    (save
-      ? full.kingdom === "dragon"
-        ? Boolean(save.cups.dragon)
-        : Boolean(k && championWon(save, k))
-      : Boolean(game.overworld?.ruined));
+    (import.meta.env.DEV && (devRuined ?? devState.get(full.id)) !== undefined
+      ? (devRuined ?? devState.get(full.id))!
+      : save
+        ? full.kingdom === "dragon"
+          ? Boolean(save.cups.dragon)
+          : Boolean(k && championWon(save, k))
+        : Boolean(game.overworld?.ruined));
+  if (import.meta.env.DEV && devRuined !== undefined) devState.set(full.id, devRuined);
   const region = regionAsIs(full, ruined);
   let ready: Session | undefined;
   let failed: string | undefined;
@@ -766,6 +783,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let map: ReturnType<typeof regionMap> | undefined;
   let crew: ReturnType<typeof regionCrew> | undefined;
   let secret: ReturnType<typeof regionSecret> | undefined;
+  let villagers: Villagers | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
   let inside: { x: number; z: number; radius: number } | undefined;
@@ -812,6 +830,20 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       blockers = regionBlockers(game, session, region);
       crew = regionCrew(game, session, region);
       secret = regionSecret(game, session, region);
+      // The folk who live here, walking about round their homes.
+      const land = session.makeGround();
+      villagers = createVillagers({
+        root: session.root,
+        homes: parseHomes(session.entities),
+        solids: session.solids,
+        ground: (x, z, y) => {
+          const g = land.at(x, z, y);
+          const bad = g.surface && /water|lava|wall|mud/.test(g.surface);
+          return { height: g.height, ok: !bad && g.ny > 0.8 };
+        },
+      });
+      if (import.meta.env.DEV)
+        (window as unknown as { kpVillagers?: Villagers }).kpVillagers = villagers;
       map = regionMap(session, region, [
         ...(challenge ? [challenge] : []),
         ...(taskMark ? [taskMark] : []),
@@ -840,6 +872,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       blockers?.dispose();
       crew?.dispose();
       secret?.dispose();
+      villagers?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
       game.audio.music.duck(false);
@@ -859,6 +892,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       returnGate?.step(s.x, s.z, dt);
       blockers?.step(s.x, s.z, dt, clock);
       secret?.step(s.x, s.z, dt);
+      villagers?.step(dt, clock, { x: s.x, z: s.z, speed: s.speed });
       if (inside && !inGateway(inside, s.x, s.z, 3)) inside = undefined;
       if (!inside) {
         const g = region.gateways.find((g) => inGateway(g, s.x, s.z));
@@ -867,6 +901,11 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         );
         const ch = challenge && inGateway(challenge, s.x, s.z) ? challenge : undefined;
         const tk = taskMark && inGateway(taskMark, s.x, s.z) ? taskMark : undefined;
+        if (p && !g && passageOpen(game, p)) {
+          inside = p;
+          game.sounds.confirm();
+          return throughPassage(game, p);
+        }
         if (g || p || ch || tk) {
           inside = g ?? p ?? ch ?? tk;
           s.speed = 0;
@@ -905,6 +944,19 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       blockers?.draw(ui);
       secret?.draw(ui);
       map?.draw(ui, clock, storyTarget(game, region));
+      // A villager you've stopped by: their name and what they say (placeholder lines:
+      // the dialogue comes later).
+      const v = villagers?.near();
+      if (v) {
+        const w = Math.min(ui.W - 40, 300);
+        const lines = wrap(v.line, w - 16).slice(0, 2);
+        const h = 20 + lines.length * 9;
+        const x = Math.round(ui.W / 2 - w / 2);
+        const y = ui.H - h - 30;
+        ui.panel(x, y, w, h, "parchment", "ink");
+        ui.text(v.name, x + 8, y + 5, { color: PAL.coral, outline: PAL.ink });
+        lines.forEach((l, i) => ui.text(l, x + 8, y + 16 + i * 9, { color: PAL.ink }));
+      }
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
@@ -921,42 +973,28 @@ interface StoryOffer {
   go?: () => void;
 }
 
-/** A championship toured gateway to gateway: race n of the cup at its gateway (the
- * standings send you back out between races). */
-function tourOffer(
+/** One of a championship's courses at its gateway (Blake, Oct 26: win all four, in any
+ * order; no Trophy Race cup): race it, or race it again once won. */
+function courseOffer(
   game: Game,
   region: Region,
   g: Gateway,
-  cup: { kingdom: KingdomId | "dragon_final"; name: string; worldId: string; tracks: string[] },
+  id: KingdomId | "dragon_final",
   title: string,
 ): StoryOffer | undefined {
-  const i = cup.tracks.indexOf(g.track);
-  if (i < 0) return undefined;
-  const a = adventureOf(game);
-  const on =
-    game.trophy && a.run?.kind === "cup" && a.run.kingdom === cup.kingdom ? game.trophy : undefined;
-  const raced = on?.raced ?? 0;
-  const next = cup.tracks[raced]!;
-  const n = `RACE ${raced + 1} OF ${cup.tracks.length}`;
-  if (next !== g.track)
-    return {
-      track: g.track,
-      note: `${title}'S ${n} IS AT ${(trackById(next)?.name ?? next).toUpperCase()}`,
-    };
+  const s = adventureOf(game).save;
+  const tracks = championshipTracks(id, (t) => Boolean(trackById(t)));
+  if (!tracks.includes(g.track)) return undefined;
+  const n = winsOf(s, id);
+  const won = Boolean(s.wins[g.track]);
   return {
-    track: next,
-    note: `${title} · ${n}`,
+    track: g.track,
+    note: won
+      ? `${title} · WON (${n}/${tracks.length}) · RACE IT AGAIN`
+      : `${title} · WIN HERE (${n}/${tracks.length} WON, ANY ORDER)`,
     go: () => {
       game.overworld = { region: region.id, at: g.id, adventure: true };
-      if (!on)
-        return launch(game, { kind: "cup", kingdom: cup.kingdom }, cup.tracks[0]!, {
-          name: cup.name,
-          worldId: cup.worldId,
-          tracks: cup.tracks,
-        });
-      game.selection.trackId = next;
-      game.selection.mode = "race";
-      game.screens.go(loadingScreen(game));
+      launch(game, { kind: "race", kingdom: id, track: g.track }, g.track);
     },
   };
 }
@@ -982,19 +1020,7 @@ function dragonOffer(game: Game, region: Region, g: Gateway): StoryOffer | undef
   }
   if (!DRAGON.courses.some((c) => c.track === g.track)) return undefined;
   if (p === "locked") return { track: g.track, note: "NOT REACHED YET" };
-  if (p === "first")
-    return tourOffer(
-      game,
-      region,
-      g,
-      {
-        kingdom: "dragon",
-        name: DRAGON.name,
-        worldId: DRAGON.worldId,
-        tracks: DRAGON.courses.map((c) => c.track),
-      },
-      "THE CHAMPIONSHIP",
-    );
+  if (p === "first") return courseOffer(game, region, g, "dragon", "THE CHAMPIONSHIP");
   if (p === "return") {
     const left = KINGDOMS.filter((k) => !s.returns[k.id]).length;
     return {
@@ -1005,16 +1031,11 @@ function dragonOffer(game: Game, region: Region, g: Gateway): StoryOffer | undef
   const ruins = DRAGON.courses.map((c) => coinCourse(c, (id) => Boolean(trackById(id))).track);
   const at = DRAGON.courses.findIndex((c) => c.track === g.track);
   if (p === "final")
-    return tourOffer(
+    return courseOffer(
       game,
       region,
       { ...g, track: ruins[at]! },
-      {
-        kingdom: "dragon_final",
-        name: `${DRAGON.name} (Ruined)`,
-        worldId: DRAGON.worldId,
-        tracks: ruins,
-      },
+      "dragon_final",
       "THE LAST CHAMPIONSHIP",
     );
   return {
@@ -1065,35 +1086,7 @@ function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefi
       track: g.track,
       note: `${k.champion!.name.toUpperCase()} IS WAITING BY THE START LINE ON THE RING`,
     };
-  if (ph === "championship") {
-    const cup = game.trophy && a.run?.kind === "cup" ? game.trophy : undefined;
-    const raced = cup?.raced ?? 0;
-    const next = k.courses[raced]!;
-    const n = `RACE ${raced + 1} OF ${k.courses.length}`;
-    if (next.track !== g.track)
-      return {
-        track: g.track,
-        note: `THE CHAMPIONSHIP'S ${n} IS AT ${(trackById(next.track)?.name ?? next.track).toUpperCase()}`,
-      };
-    return {
-      track: g.track,
-      note: `THE CHAMPIONSHIP · ${n}`,
-      go: () => {
-        back();
-        if (!cup) {
-          const tracks = k.courses.map((c) => c.track);
-          return launch(game, { kind: "cup", kingdom: k.id }, tracks[0]!, {
-            name: k.name,
-            worldId: worldById(k.worldId)!.id,
-            tracks,
-          });
-        }
-        game.selection.trackId = next.track;
-        game.selection.mode = "race";
-        game.screens.go(loadingScreen(game));
-      },
-    };
-  }
+  if (ph === "championship") return courseOffer(game, region, g, k.id, "THE CHAMPIONSHIP");
   // After the championship: the ruined course and its map fragments.
   const cc = coinCourse(course, (id) => Boolean(trackById(id)));
   const found = Boolean(s.pieces[course.track]);
@@ -1133,7 +1126,7 @@ export function storyTarget(
     if (o?.go && !/AGAIN/.test(o.note)) return g;
   }
   // The way on or back, towards the kingdom the story is at.
-  const here = STORY_ORDER.indexOf(region.kingdom ?? "valley");
+  const here = storyPlace(region, STORY_ORDER);
   const dp = dragonPhase(s);
   const pending = KINGDOMS.find((k) => kingdomPhase(s, k) !== "done");
   const goal: KingdomId = pending
@@ -1144,8 +1137,8 @@ export function storyTarget(
   const there = STORY_ORDER.indexOf(goal);
   if (there === here) return undefined;
   const p = (region.passages ?? []).find((p) => {
-    const to = regionById(p.to)?.kingdom;
-    const ti = to ? STORY_ORDER.indexOf(to) : -1;
+    const to = regionById(p.to);
+    const ti = to ? storyPlace(to, STORY_ORDER) : -1;
     const open = !p.opensAfter || Boolean(s.bosses[p.opensAfter]);
     return open && (there > here ? ti > here : ti < here);
   });
@@ -1210,15 +1203,8 @@ function challengeCard(game: Game, region: Region): Screen {
 
 /** Adventure: the region's goal, for the HUD. */
 function storyGoal(game: Game, region: Region): string | undefined {
-  const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
-  if (!k) return undefined;
-  const a = adventureOf(game);
-  if (kingdomPhase(a.save, k) === "championship") {
-    const raced = game.trophy && a.run?.kind === "cup" ? game.trophy.raced : 0;
-    const next = trackById(k.courses[raced]!.track);
-    return `THE CHAMPIONSHIP, RACE ${raced + 1} OF ${k.courses.length}: ${(next?.name ?? "").toUpperCase()}`;
-  }
-  return objective(a.save);
+  if (!region.kingdom && !region.journey) return undefined;
+  return objective(adventureOf(game).save);
 }
 
 /** A course's card at its gateway: standard or ruined, your best times, GO or back.
@@ -1307,20 +1293,29 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
   };
 }
 
-/** A passage's card: on to the next region, or what's still in the way. */
-function passageCard(game: Game, p: Passage): Screen {
+/** Is the way on open (Adventure: once its dragon's beaten)? */
+function passageOpen(game: Game, p: Passage) {
+  const s = game.overworld?.adventure ? adventureOf(game).save : undefined;
+  return !s || !p.opensAfter || freeRoam() || Boolean(s.bosses[p.opensAfter]);
+}
+
+/** On through a passage: the region (or the journey) beyond loads. */
+function throughPassage(game: Game, p: Passage) {
   const story = game.overworld?.adventure;
-  const s = story ? adventureOf(game).save : undefined;
-  const open = !s || !p.opensAfter || freeRoam() || Boolean(s.bosses[p.opensAfter]);
-  const go = () => {
-    game.overworld = {
-      region: p.to,
-      at: p.toPassage,
-      adventure: story,
-      ruined: game.overworld?.ruined,
-    };
-    game.screens.go(overworldLoading(game, p.to, p.toPassage, story));
+  game.overworld = {
+    region: p.to,
+    at: p.toPassage,
+    adventure: story,
+    ruined: game.overworld?.ruined,
   };
+  game.screens.go(overworldLoading(game, p.to, p.toPassage, story));
+}
+
+/** A passage's card: what's still in the way (an open passage is a loading zone: you go
+ * straight on, Blake, Oct 26). */
+function passageCard(game: Game, p: Passage): Screen {
+  const open = passageOpen(game, p);
+  const go = () => throughPassage(game, p);
   const menu = new VMenu(
     game,
     [
@@ -1372,7 +1367,7 @@ function overworldPause(game: Game, region: Region): Screen {
       { label: "RESUME", action: () => resume() },
       // Adventure: the kingdom's board (every step of its story, the ones the region
       // doesn't have yet: the map, the dragon, the task) and the world map.
-      ...(story
+      ...(game.overworld?.adventure
         ? [
             {
               // (Any of your crew can drive: Blake, Oct 26.)
@@ -1382,6 +1377,10 @@ function overworldPause(game: Game, region: Region): Screen {
                 game.screens.go(characterSelect(game, { swap: true }));
               },
             },
+          ]
+        : []),
+      ...(story
+        ? [
             {
               label: "KINGDOM BOARD",
               action: () => {
@@ -1415,6 +1414,10 @@ function overworldPause(game: Game, region: Region): Screen {
             },
           ]
         : []),
+      // Dev builds: straight to any region, standard or ruined, or any journey between.
+      ...(import.meta.env.DEV
+        ? [{ label: "WARP (DEV)", action: () => game.screens.push(devWarp(game)) }]
+        : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       {
         label: "MAIN MENU",
@@ -1446,7 +1449,7 @@ function overworldPause(game: Game, region: Region): Screen {
       ui.dim(0.45);
       const w = 140;
       const x = ui.W / 2 - w / 2;
-      ui.panel(x, 50, w, story ? 168 : region.ruinPackageId ? 144 : 120, "wood", "gold");
+      ui.panel(x, 50, w, 46 + menu.items.length * 24, "wood", "gold");
       ui.text("PAUSED", ui.W / 2, 60, {
         scale: 2,
         color: PAL.gold,
@@ -1463,6 +1466,65 @@ function overworldPause(game: Game, region: Region): Screen {
         ["▲▼", "CHOOSE"],
         ["ENTER", "SELECT"],
         ["ESC", "RESUME"],
+      ]);
+    },
+  };
+}
+
+/** Dev builds: every overworld region (◀▶: standard or ruined) and every journey between
+ * them, to load straight away (Blake, Oct 26). In an Adventure file the story carries on
+ * from wherever you land; a region warped to keeps its state until warped again. */
+export function devWarp(game: Game): Screen {
+  const places = REGIONS.filter((r) => r.kingdom || r.journey);
+  let ruined = false;
+  const adventure = game.overworld?.adventure ?? false;
+  const menu = new VMenu(
+    game,
+    places.map((r) => ({
+      label: r.journey ? `  ${r.name.toUpperCase()}` : r.name.toUpperCase(),
+      action: () => {
+        game.overworld = { region: r.id, adventure, ruined: ruined && !adventure };
+        game.screens.go(
+          overworldLoading(game, r.id, undefined, adventure, r.ruinPackageId ? ruined : undefined),
+        );
+      },
+    })),
+    () => game.screens.pop(),
+  );
+  return {
+    id: "DEV_WARP",
+    enter() {
+      game.ui.interactive = true;
+    },
+    frame(_dt, actions) {
+      if (actions.includes("left") || actions.includes("right")) {
+        ruined = !ruined;
+        game.sounds.move();
+      }
+      menu.handle(actions.filter((a) => a !== "left" && a !== "right"));
+    },
+    draw(ui) {
+      ui.dim(0.5);
+      const w = 220;
+      const x = Math.round(ui.W / 2 - w / 2);
+      const h = 52 + places.length * 15;
+      const y = Math.round(ui.H / 2 - h / 2);
+      ui.panel(x, y, w, h, "wood", "gold");
+      ui.text("WARP (DEV)", ui.W / 2, y + 8, {
+        color: PAL.gold,
+        outline: PAL.shadow,
+        align: "center",
+      });
+      ui.text(ruined ? "◀ RUINED ▶" : "◀ STANDARD ▶", ui.W / 2, y + 22, {
+        color: ruined ? PAL.coral : PAL.cream,
+        outline: PAL.shadow,
+        align: "center",
+      });
+      menu.draw(ui, x + 14, y + 36, w - 28, 13, 2);
+      hints(ui, [
+        ["◀▶", "STANDARD / RUINED"],
+        ["ENTER", "GO"],
+        ["ESC", "BACK"],
       ]);
     },
   };

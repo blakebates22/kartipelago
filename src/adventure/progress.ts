@@ -20,8 +20,12 @@ import { regionOfKingdom } from "../overworld/regions";
 
 export interface AdventureSave {
   version: 1;
-  /** Championships (Trophy Race cups) won; the Dragon Kingdom's is its first visit. */
+  /** Championships won: every one of the kingdom's four courses won (Blake, Oct 26: in
+   * any order, no Trophy Race cup); the Dragon Kingdom's is its first visit. */
   cups: Partial<Record<KingdomId, boolean>>;
+  /** Courses won in Adventure (1st place), by track id: the championships are made of
+   * these. */
+  wins: Record<string, boolean>;
   /** Map pieces earned, by the standard course's track id. */
   pieces: Record<string, boolean>;
   /** Demi-bosses beaten. */
@@ -56,6 +60,7 @@ export interface AdventureSave {
 export const newSave = (): AdventureSave => ({
   version: 1,
   cups: {},
+  wins: {},
   pieces: {},
   bosses: {},
   duels: {},
@@ -89,6 +94,7 @@ export function sanitizeSave(raw: unknown): AdventureSave {
   const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const s = newSave();
   s.cups = flags(r.cups);
+  s.wins = flags(r.wins);
   s.pieces = flags(r.pieces);
   s.bosses = flags(r.bosses);
   s.duels = flags(r.duels);
@@ -254,7 +260,43 @@ export interface Outcome {
   lines: string[];
 }
 
-/** A championship (cup) finished: `place` is your place in the cup's final table. */
+/** The tracks of a kingdom's championship (the Dragon Kingdom's last one: its ruins). */
+export function championshipTracks(
+  id: KingdomId | "dragon_final",
+  exists: (id: string) => boolean = () => true,
+): string[] {
+  if (id === "dragon_final") return DRAGON.courses.map((c) => coinCourse(c, exists).track);
+  const courses = id === "dragon" ? DRAGON.courses : (kingdomById(id)?.courses ?? []);
+  return courses.map((c) => c.track);
+}
+
+/** How many of a championship's courses are won. */
+export const winsOf = (s: AdventureSave, id: KingdomId | "dragon_final") =>
+  championshipTracks(id).filter((t) => s.wins[t]).length;
+
+/** One of a championship's courses raced (Blake, Oct 26: win all four, in any order, and
+ * the championship is yours): `position` is where you finished. */
+export function raceFinished(
+  s: AdventureSave,
+  id: KingdomId | "dragon_final",
+  track: string,
+  position: number | undefined,
+): Outcome {
+  const tracks = championshipTracks(id);
+  if (position !== 1) return { progressed: false, lines: ["WIN IT TO COUNT IT. TRY AGAIN!"] };
+  if (s.wins[track]) return { progressed: false, lines: ["WON AGAIN!"] };
+  s.wins[track] = true;
+  const n = tracks.filter((t) => s.wins[t]).length;
+  if (n < tracks.length)
+    return {
+      progressed: true,
+      lines: [`${n} OF ${tracks.length} COURSES WON!`, "WIN THE REST, IN ANY ORDER."],
+    };
+  const out = cupFinished(s, id, 1);
+  return { ...out, lines: ["ALL FOUR COURSES WON!", ...out.lines.slice(1)] };
+}
+
+/** A championship won (all its courses: raceFinished), or not: `place` 1 is won. */
 export function cupFinished(
   s: AdventureSave,
   id: KingdomId | "dragon_final",
@@ -367,7 +409,8 @@ export function completeReturn(s: AdventureSave, id: KingdomId): Outcome {
 export function objective(s: AdventureSave): string {
   for (const k of KINGDOMS) {
     const ph = kingdomPhase(s, k);
-    if (ph === "championship") return `${k.name.toUpperCase()}: WIN THE CHAMPIONSHIP`;
+    if (ph === "championship")
+      return `${k.name.toUpperCase()}: WIN ITS 4 COURSES (${winsOf(s, k.id)}/4 WON)`;
     if (ph === "duel")
       return `${k.name.toUpperCase()}: RACE ${k.champion!.name.toUpperCase()}, 1 ON 1`;
     if (ph === "coins") return `${k.name.toUpperCase()}: FIND THE MAP (${piecesOf(s, k)}/4 PIECES)`;
@@ -375,13 +418,13 @@ export function objective(s: AdventureSave): string {
   }
   switch (dragonPhase(s)) {
     case "first":
-      return "DRAGON KINGDOM: FIND THE CHOSEN ONE";
+      return `DRAGON KINGDOM: WIN ITS 4 COURSES (${winsOf(s, "dragon")}/4 WON)`;
     case "return": {
       const left = KINGDOMS.filter((k) => !s.returns[k.id]).length;
       return `RETURN HOME: ${left} TASK${left === 1 ? "" : "S"} LEFT IN THE FOUR KINGDOMS`;
     }
     case "final":
-      return "DRAGON KINGDOM: THE LAST CHAMPIONSHIP";
+      return `DRAGON KINGDOM: WIN ITS 4 RUINED COURSES (${winsOf(s, "dragon_final")}/4 WON)`;
     case "king":
       return "DRAGON KINGDOM: RACE THE DRAGON KING";
     case "done":

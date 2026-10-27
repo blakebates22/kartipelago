@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import pocket_kit  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
@@ -26,6 +27,7 @@ import oasis_props as op  # noqa: E402
 import gulch_props as gp  # noqa: E402
 import impact_props as ip  # noqa: E402
 import region_paint as paint  # noqa: E402
+import villager_homes as vh  # noqa: E402
 from pocket_kit import seg_d  # noqa: E402
 import desert_layout as DL  # noqa: E402
 
@@ -57,7 +59,7 @@ LOOK = {
 }
 
 
-def natural(x, y):
+def _natural(x, y):
     h = DL.natural(x, y)
     tz = L.tunnel_floor(x, y)
     if tz is not None:
@@ -72,6 +74,15 @@ def natural(x, y):
         if d < 22:
             h = lerp(h, 17.0, smooth((22.0 - d) / 9.0))
     return h
+
+
+# The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
+# spur mustn't climb a wall).
+NOTCHES = pocket_kit.Notches(DL.route_points(), dict(DL.GATES, **({"lair": DL.LAIR} if RUIN else {})))
+
+
+def natural(x, y):
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 def classify(c, n, info):
@@ -157,6 +168,8 @@ def main():
     puzzle_kit.pen(c, "secret", "Sunken Garden", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("oasis_stone", "wall"),
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
+    # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
+    vh.homes(c, L, ground, "desert", vh.adobe, avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
     dress(c, ground, spots)
     box(c, "Pass Bend", px - 8.0, 0.0, 6.0, 40.0, natural(px, 0.0) - 2.0, RIM_Z + 30.0, ("frost_cliff", "wall"))
     if RUIN:

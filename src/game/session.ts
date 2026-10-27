@@ -60,7 +60,7 @@ import {
   type BananaPickup,
 } from "../world/bananas";
 import { createBananaView } from "../render/bananaView";
-import type { Sfx } from "../audio/sfx";
+import { ENGINE_VOICE, type Sfx } from "../audio/sfx";
 import { createHazards, type HazardConfig } from "./hazards";
 import { createLoops } from "./loops";
 import { createCheckpointView, type CheckpointView } from "../render/checkpointView";
@@ -1047,6 +1047,7 @@ function buildSession(
           throttle = boostLab.throttle(ZIP.ACTIVE) ?? throttle;
         }
         startZipper(e.state, throttle, cfg);
+        if (i === 0 && !demo) sfx.zipper(itemsCfg.volume);
       }
       if (!onLoop) {
         if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
@@ -1062,7 +1063,10 @@ function buildSession(
         // Boost surfaces fire a zipper boost when you drive onto them.
         const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;
         const onBoost = Boolean(e.state.grounded && surface && SURFACES[surface]?.boost);
-        if (onBoost && !e.onBoost) startZipper(e.state, want.throttle, cfg);
+        if (onBoost && !e.onBoost) {
+          startZipper(e.state, want.throttle, cfg);
+          if (i === 0 && !demo) sfx.zipper(itemsCfg.volume);
+        }
         e.onBoost = onBoost;
       }
       const held0 = e.state.bananas;
@@ -1810,7 +1814,7 @@ function buildSession(
     if (level > 0) skid ??= sfx.skid();
     skid?.set(level, fast * 0.7 + Math.min(1, slide) * 0.3);
     // The engine: a quiet hum that rises with speed (a little higher on boost).
-    if (running) engine ??= sfx.engine();
+    if (running) engine ??= sfx.engine(ENGINE_VOICE[playerLook] ?? 1);
     const pushing = s.zipPhase === ZIP.ACTIVE || s.zipPhase === ZIP.ENDING;
     const speedFrac = Math.abs(s.speed) / tuning.vehicle.topSpeed;
     engine?.set(
@@ -1932,6 +1936,10 @@ function buildSession(
     coins: coinField,
     zippers,
     root,
+    /** The package's track.json entities (the overworld reads its villagers' homes). */
+    entities: (pkg?.meta.entities ?? []) as unknown[],
+    /** A fresh ground lookup of its own (for things walking about: villagers). */
+    makeGround,
     get race() {
       return race;
     },

@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
+import pocket_kit  # noqa: E402
 from course_kit import lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
@@ -25,6 +26,8 @@ import hearthglow_props as hp  # noqa: E402
 import summit_props as sp  # noqa: E402
 import aurora_props as ap  # noqa: E402
 import keep_props as kp  # noqa: E402
+import villager_homes as vh  # noqa: E402
+import snow_props as snp_  # noqa: E402
 import winter_props as wp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import snow_layout as SL  # noqa: E402
@@ -65,7 +68,7 @@ def gorge_x(y):
     return 6.0 * math.sin(max(0.0, -y - 300.0) / 40.0)
 
 
-def natural(x, y):
+def _natural(x, y):
     h = SL.natural(x, y)
     tz = L.tunnel_floor(x, y)
     if tz is not None:
@@ -86,6 +89,15 @@ def natural(x, y):
         if dd < 26:
             h = lerp(h, 57.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
     return h
+
+
+# The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
+# spur mustn't climb a wall).
+NOTCHES = pocket_kit.Notches(SL.route_points(), dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})))
+
+
+def natural(x, y):
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 def pb_seg(x, y, a, b):
@@ -160,6 +172,8 @@ def main():
     puzzle_kit.pen(c, "secret", "Old Store", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("citadel_stone", "wall"),
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
+    # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
+    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
     dress(c, ground, spots)
     # The gorge's far end, back towards the valley: it bends out of sight.
     box(c, "Gorge Bend", gorge_x(gy - 8), gy - 8, GORGE_HW + 24.0, 6.0, natural(0, gy) - 2.0, RIM_Z + 20.0,

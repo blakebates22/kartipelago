@@ -61,7 +61,7 @@ class Layout:
     point, last point)]; roll: the rolling ground's height (m); flat: looks kept flat."""
 
     def __init__(self, pockets, top, route, tunnels, hub=None, rivers=(), lakes=(), river_hw=9.0, roll=5.0,
-                 flat=(), mountains=40.0, water_floor=None):
+                 flat=(), mountains=40.0, water_floor=None, hidden=()):
         self.pockets = pockets
         self.top = top
         self.route = route
@@ -74,6 +74,10 @@ class Layout:
         self.flat = set(flat)
         self.mountains = mountains
         self.water_floor = water_floor
+        # Route points with no road (a journey's way back round to its start, out of sight
+        # over the mountains: the route is a loop, the road isn't): their heights are their
+        # own and never smoothed into the road's.
+        self.hidden = set(hidden)
         self.looks = sorted({p[1] for p in pockets})
         self._corridors = []
         self._rp = None
@@ -172,7 +176,10 @@ class Layout:
                 z = (sum(ring) + self.natural(x, y)) / 5.0 + 0.3
             zs.append(z)
         for _ in range(2):
-            zs = [z if self.route[i][2] is not None else 0.25 * zs[i - 1] + 0.5 * z + 0.25 * zs[(i + 1) % n]
+            def nb(i, j):
+                return zs[i] if j % n in self.hidden else zs[j % n]
+
+            zs = [z if self.route[i][2] is not None else 0.25 * nb(i, i - 1) + 0.5 * z + 0.25 * nb(i, i + 1)
                   for i, z in enumerate(zs)]
         out = []
         for i, (x, y, _) in enumerate(self.route):
@@ -218,3 +225,29 @@ class Layout:
                 if d < 18.0 and (best is None or d < best[0]):
                     best = (d, lerp(p[2], q[2], t))
         return None if best is None else best[1]
+
+
+class Notches:
+    """The ways in to the gateways: from the main road to each gateway's landmark, the land
+    cut down level with the road (Blake, Oct 26: Canyon Dash's gateway stood up on the
+    cliff, its spur climbing the wall, and you couldn't get into it). `gates`: {name: (x,
+    y)}; the cut runs to `reach` m short of each."""
+
+    def __init__(self, route_points, gates, reach=2.0, flat=9.0, blend=9.0):
+        pts = catmull(route_points, 8)
+        self.segs = []
+        self.flat, self.blend = flat, blend
+        for gx, gy in gates.values():
+            p = min(pts, key=lambda q: (q[0] - gx) ** 2 + (q[1] - gy) ** 2)
+            d = math.hypot(gx - p[0], gy - p[1]) or 1.0
+            ux, uy = (gx - p[0]) / d, (gy - p[1]) / d
+            self.segs.append(((p[0], p[1]), (gx - ux * reach, gy - uy * reach), p[2] - 0.3))
+
+    def apply(self, h, x, y):
+        for a, b, z in self.segs:
+            if h <= z:
+                continue
+            d, _ = seg_d(x, y, a, b)
+            if d < self.flat + self.blend:
+                h = lerp(h, z, smooth((self.flat + self.blend - d) / self.blend))
+        return h
