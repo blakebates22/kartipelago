@@ -445,60 +445,181 @@
       "heading": -2.0626165782572485
     },
     {
-      "id": "steam_09",
-      "type": "steam",
-      "x": 109.28,
-      "y": 10.97,
-      "z": 268.19
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": 56.0,
+      "z": -69.62,
+      "y": 27.91,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": -1.866
     },
     {
-      "id": "steam_10",
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -125.75,
+      "z": -24.33,
+      "y": 6.93,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": -0.682
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": -96.16,
+      "z": 8.05,
+      "y": 11.66,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": 0.811
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -232.32,
+      "z": -122.8,
+      "y": 0.8,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": -0.43
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": -152.93,
+      "z": -77.19,
+      "y": 3.66,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": 2.41
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -114.02,
+      "z": 252.28,
+      "y": 0.41,
+      "r": 14.0,
+      "n": 3,
+      "folk": "valley",
+      "heading": 2.885
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -73.34,
+      "z": 281.15,
+      "y": 1.28,
+      "r": 14.0,
+      "n": 3,
+      "folk": "valley",
+      "heading": -0.011
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 245.14,
+      "z": 242.28,
+      "y": 17.95,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": -1.015
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 112.06,
+      "z": 267.28,
+      "y": 10.08,
+      "r": 14.0,
+      "n": 3,
+      "folk": "valley",
+      "heading": 0.689
+    },
+    {
+      "id": "villager_home_10",
+      "type": "villager_home",
+      "x": 182.02,
+      "z": -278.84,
+      "y": 25.02,
+      "r": 14.0,
+      "n": 3,
+      "folk": "valley",
+      "heading": 0.299
+    },
+    {
+      "id": "villager_home_11",
+      "type": "villager_home",
+      "x": 125.64,
+      "z": -250.75,
+      "y": 23.19,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": 2.68
+    },
+    {
+      "id": "steam_09",
       "type": "steam",
       "x": 164.79,
       "y": 18.68,
       "z": 151.75
     },
     {
-      "id": "steam_11",
+      "id": "steam_10",
       "type": "steam",
       "x": 239.39,
       "y": 17.79,
       "z": 274.51
     },
     {
-      "id": "steam_12",
+      "id": "steam_11",
       "type": "steam",
       "x": 256.85,
       "y": 22.26,
       "z": 111.79
     },
     {
-      "id": "steam_13",
+      "id": "steam_12",
       "type": "steam",
       "x": 207.61,
       "y": 19.95,
       "z": 215.54
     },
     {
-      "id": "steam_14",
+      "id": "steam_13",
       "type": "steam",
       "x": 271.63,
       "y": 19.71,
       "z": 209.57
     },
     {
-      "id": "steam_15",
+      "id": "steam_14",
       "type": "steam",
       "x": 302.58,
       "y": 22.24,
       "z": 81.33
     },
     {
-      "id": "steam_16",
+      "id": "steam_15",
       "type": "steam",
       "x": 186.36,
       "y": 17.36,
       "z": 231.19
+    },
+    {
+      "id": "steam_16",
+      "type": "steam",
+      "x": 170.17,
+      "y": 15.02,
+      "z": 235.3
     },
     {
       "id": "torch_15",
@@ -532,7 +653,7 @@
       "id": "torch_19",
       "type": "torch",
       "x": -228.42,
-      "y": 2.54,
+      "y": 2.52,
       "z": 236.34
     },
     {
