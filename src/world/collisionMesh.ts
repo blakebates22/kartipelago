@@ -408,6 +408,12 @@ export function deepestWall(
   const low = y + WALL_BAND.low;
   const high = y + WALL_BAND.high;
   let best: WallContact | null = null;
+  // (Moving: a contact pushing back against the motion beats one pushing on along it. In
+  // a wall thinner than a kart both its faces are in reach, and the deeper one can be the
+  // far face once the middle's past the middle of the wall: that pushed karts falling past
+  // a thin wall, or shoved into one, out through it.)
+  let back: WallContact | null = null;
+  const moving = vx * vx + vz * vz > 1e-6;
   const seen = new Set<number>();
   for (let cx = cellOf(x - radius); cx <= cellOf(x + radius); cx++)
     for (let cz = cellOf(z - radius); cz <= cellOf(z + radius); cz++) {
@@ -445,9 +451,11 @@ export function deepestWall(
         }
         const out = radius - d;
         if (!best || out > best.out) best = { wx: -dx, wz: -dz, out };
+        if (moving && dx * vx + dz * vz < 0 && (!back || out > back.out))
+          back = { wx: -dx, wz: -dz, out };
       }
     }
-  return best;
+  return back ?? best;
 }
 
 /** A kart's config on a surface: its speed, acceleration and grip scaled. */

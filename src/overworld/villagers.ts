@@ -186,7 +186,22 @@ export function createVillagers(opts: {
   ground: (x: number, z: number, y: number) => { height: number; ok: boolean };
 }): Villagers {
   const folk: Villager[] = [];
-  opts.homes.forEach((h, hi) => {
+  opts.homes.forEach((h0, hi) => {
+    // The yard: the home's spot, or (if that's under a roof: a big house) the nearest
+    // open ground round it.
+    let h = h0;
+    if (!opts.ground(h0.x, h0.z, h0.y + LOOK_UP).ok)
+      search: for (let r = 3; r <= 15; r += 3)
+        for (let k = 0; k < 8; k++) {
+          const a = (k / 8) * Math.PI * 2;
+          const x = h0.x + Math.sin(a) * r;
+          const z = h0.z + Math.cos(a) * r;
+          const g = opts.ground(x, z, h0.y + LOOK_UP);
+          if (g.ok && Math.abs(g.height - h0.y) < 2) {
+            h = { ...h0, x, z, y: g.height };
+            break search;
+          }
+        }
     for (let k = 0; k < h.n; k++) {
       const seed = Math.abs(Math.round(h.x * 7 + h.z * 13)) + k * 31 + hi * 101;
       const rand = rng(seed + 17);

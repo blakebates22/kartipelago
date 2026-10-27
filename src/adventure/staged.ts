@@ -12,6 +12,8 @@
  */
 import type { RacerId } from "../render/racers/designs";
 import type { Folk, Species } from "../render/villager";
+import { REGIONS } from "../overworld/regions";
+import { KINGDOMS } from "./data";
 
 export type V2 = [number, number];
 export type V3 = [number, number, number];
@@ -287,6 +289,51 @@ STAGED.push(
     "sea",
   ),
 );
+
+// Each dragon's challenge at its lair (the ruined region's boss gateway): it waits before
+// the lair's mouth; you pull up, it rears up and roars its line.
+const DRAGON_LOOK: Record<string, "ember" | "frost" | "sand" | "sea"> = {
+  valley: "ember",
+  snow: "frost",
+  desert: "sand",
+  beach: "sea",
+};
+for (const k of KINGDOMS) {
+  const r = REGIONS.find((x) => x.kingdom === k.id);
+  const lair = r?.gateways.find((g) => g.boss);
+  if (!r || !lair) continue;
+  const fx = Math.sin(lair.heading);
+  const fz = Math.cos(lair.heading);
+  const P = (f: number, side: number): V2 => [
+    lair.x + fx * f + fz * side,
+    lair.z + fz * f - fx * side,
+  ];
+  const P3 = (f: number, up: number, side: number): V3 => {
+    const [x, z] = P(f, side);
+    return [x, up, z];
+  };
+  STAGED.push({
+    scene: k.scenes.boss,
+    region: r.id,
+    ruined: true,
+    actors: {
+      dragon: {
+        kind: "dragon",
+        at: P(2, 0),
+        heading: lair.heading,
+        scale: 1.6,
+        look: DRAGON_LOOK[k.id] ?? "ember",
+      },
+      you: { kind: "racer", look: "you", at: P(26, 0), heading: lair.heading + Math.PI },
+    },
+    beats: [
+      {
+        cam: { from: P3(52, 6, 12), to: P3(44, 5, 9), look: P3(0, 8, 0) },
+        fx: { rear: "dragon", shake: 0.5, darken: true },
+      },
+    ],
+  });
+}
 
 export const stagedById = (scene: string) => STAGED.find((s) => s.scene === scene);
 export const CAMP_FIRE = FIRE;
