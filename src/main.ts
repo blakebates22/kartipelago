@@ -13,6 +13,8 @@
  *   ?timing                               start-boost timing bar
  *   ?debug                                developer keys and window.kp
  */
+import { MINIGAMES, minigameById } from "./game/minigames";
+import { minigameLoading } from "./screens/minigames";
 import { adventureHub } from "./screens/adventure";
 import { overworldLoading } from "./screens/overworld";
 import "./styles.css";
@@ -207,7 +209,11 @@ if (PARAMS.get("shot")) screens.go(shotScreen(PARAMS.get("shot")!));
 else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureHub(game));
 // ?overworld[=region][&ruined] (dev server only): free roam in an overworld region (as it
 // is after its dragon's attack, with &ruined).
-else if (import.meta.env.DEV && PARAMS.has("overworld")) {
+// ?minigame=<balloons|eggs|crown|stars> (dev server only): straight into a mini-game.
+else if (import.meta.env.DEV && PARAMS.has("minigame")) {
+  const m = minigameById(PARAMS.get("minigame") || "balloons") ?? MINIGAMES[0]!;
+  screens.go(minigameLoading(game, m));
+} else if (import.meta.env.DEV && PARAMS.has("overworld")) {
   const region = PARAMS.get("overworld") || "dinosaur_valley";
   game.overworld = { region, ruined: PARAMS.has("ruined") };
   screens.go(overworldLoading(game, region));

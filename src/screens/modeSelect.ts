@@ -18,6 +18,7 @@ import { PAL } from "../ui/textures";
 import { hints } from "./common";
 import { characterSelect } from "./characterSelect";
 import { adventureFiles } from "./adventure";
+import { minigameMenu } from "./minigames";
 import { titleScreen } from "./title";
 
 export function modeSelect(game: Game): Screen {
@@ -27,8 +28,10 @@ export function modeSelect(game: Game): Screen {
   const pick = (i: number) => {
     game.sounds.confirm();
     // Tracks: pick a racer, then a course. Adventure: pick a file (each has its racer).
+    // Mini-games: straight to the four (with the racer last picked).
     if (i === 0) game.screens.go(characterSelect(game));
-    else game.screens.go(adventureFiles(game));
+    else if (i === 1) game.screens.go(adventureFiles(game));
+    else game.screens.go(minigameMenu(game));
   };
   return {
     id: "MODE_SELECT",
@@ -45,11 +48,11 @@ export function modeSelect(game: Game): Screen {
       }
       for (const a of actions) {
         if (a === "left" || a === "up") {
-          if (focus !== 0) game.sounds.move();
-          focus = 0;
+          if (focus > 0) game.sounds.move();
+          focus = Math.max(0, focus - 1);
         } else if (a === "right" || a === "down") {
-          if (focus !== 1) game.sounds.move();
-          focus = 1;
+          if (focus < 2) game.sounds.move();
+          focus = Math.min(2, focus + 1);
         } else if (a === "confirm") return pick(focus);
         else if (a === "back") {
           game.sounds.back();
@@ -68,14 +71,15 @@ export function modeSelect(game: Game): Screen {
       }
       titlePlank(ui.g, ui.W, "CHOOSE A MODE", t, calm);
       const signs = [
-        { label: "TRACKS", sub: "RACE ANY COURSE", icon: "flag" as const },
-        { label: "ADVENTURE", sub: "THE STORY (EARLY)", icon: "map" as const },
+        { label: "TRACKS", sub: "ANY COURSE", icon: "flag" as const },
+        { label: "ADVENTURE", sub: "THE STORY", icon: "map" as const },
+        { label: "MINI-GAMES", sub: "BATTLES & MORE", icon: "flag" as const },
       ];
-      const w = 128;
+      const gap = 10;
+      const w = Math.min(128, Math.floor((ui.W - 24 - 2 * gap) / 3));
       const h = 80;
-      const gap = 30;
       signs.forEach((s, i) => {
-        const x = Math.round(ui.W / 2 - w - gap / 2 + i * (w + gap));
+        const x = Math.round(ui.W / 2 - (3 * w + 2 * gap) / 2 + i * (w + gap));
         const sway = calm ? 0 : Math.round(Math.sin(t * 2 + i) * (i === focus ? 1.5 : 0.4));
         const y = 96 + sway;
         modeBoard(ui.g, x, y, w, h, { ...s, focused: i === focus }, t, calm);
@@ -88,11 +92,11 @@ export function modeSelect(game: Game): Screen {
         if (i === focus) {
           // A gold arrow pointing at the chosen board, bobbing.
           const bob = calm ? 0 : Math.round(Math.sin(t * 6) * 1.5);
-          const ax = i === 0 ? x + w + 6 - bob : x - 14 + bob;
-          ui.text(i === 0 ? "◀" : "▶", ax, y + h / 2 - 7, {
+          ui.text("▼", x + w / 2, y - 18 + bob, {
             scale: 2,
             color: PAL.gold,
             outline: PAL.shadow,
+            align: "center",
           });
         }
       });

@@ -16,7 +16,7 @@
  */
 import * as THREE from "three";
 import { tuning } from "../core/tuning";
-import { NEUTRAL, type Input } from "../core/input";
+import { NEUTRAL, type DeviceReading, type Input } from "../core/input";
 import type { Stage } from "../render/stage";
 import { createStartMeter } from "../debug/startMeter";
 import courseData from "../../assets/data/course.json";
@@ -196,6 +196,16 @@ export interface SessionOptions {
    * to finish, no clock on screen, no rivals and no Time Trial (the race underneath only
    * keeps the respawns working). */
   freeRoam?: boolean;
+  /** A mini-game (src/game/minigames.ts): free roam with rivals, who drive by the game's
+   * own minds (`drive`: what rival i does this step, undefined for the race AI; `fire`:
+   * whether it uses its item now), and the game hears the item events. */
+  arena?: ArenaHooks;
+}
+
+export interface ArenaHooks {
+  drive?(i: number, kart: KartState, dt: number): DeviceReading | undefined;
+  fire?(i: number, kart: KartState): boolean;
+  onItem?(ev: ItemEvent): void;
 }
 
 export interface SessionContext {
@@ -355,7 +365,7 @@ function buildSession(
   const LAPS = pkg?.meta.race?.laps ?? tuning.race.laps;
   /** The race rules with the course's own lap count (a one-lap boss race ends after one). */
   const raceRules = () =>
-    opts.freeRoam
+    opts.freeRoam || opts.arena
       ? { ...tuning.race, laps: 1_000_000, readySec: 0 }
       : { ...tuning.race, laps: LAPS };
   const root = new THREE.Group();
@@ -660,7 +670,7 @@ function buildSession(
   const newRace = (): Race | undefined => {
     const r = track ? createRace(track, raceRules(), entrants.length) : undefined;
     // (Free roam: leaving the road is the point, so it never puts you back.)
-    if (r && opts.freeRoam) r.open = true;
+    if (r && (opts.freeRoam || opts.arena)) r.open = true;
     return r;
   };
   let race = newRace();
@@ -809,6 +819,7 @@ function buildSession(
 
   /** Sound and messages for item events. Hits are heard when they're near you. */
   function itemFeedback(ev: ItemEvent) {
+    opts.arena?.onItem?.(ev);
     const vol = itemsCfg.volume;
     const me = you.state;
     const near = (j: number) => {
@@ -997,8 +1008,17 @@ function buildSession(
               dt,
             )
           : held;
+      // A mini-game's own minds drive its rivals (and choose when to fire).
+      const own = i > 0 && opts.arena?.drive?.(i, e.state, dt);
+      if (own) want = own;
+      if (i > 0 && opts.arena?.fire && race && canGo && !moment?.countdown) {
+        if (e.items.held.color && opts.arena.fire(i, e.state)) {
+          const ev = fireItem(itemWorld, racers, i, want.throttle, itemsCfg, progressOf);
+          if (ev) events.push(ev);
+        }
+      }
       // Rivals use their items too (the same fireItem, ammo and rules as the player).
-      if (e.driver && i > 0 && race && canGo && !moment?.countdown) {
+      else if (e.driver && i > 0 && race && canGo && !moment?.countdown) {
         const it = aiItem(e.driver, i, racers, itemWorld, itemsCfg, progressOf, dt);
         if (it.fire) {
           const ev = fireItem(
@@ -1667,7 +1687,7 @@ function buildSession(
       laps: LAPS,
       coins: coinField ? { got: coinsTaken(coinField), total: coinField.coins.length } : undefined,
     };
-    if (!race || opts.freeRoam) {
+    if (!race || opts.freeRoam || opts.arena) {
       const on = park && streak ? (streak.loop >= 0 ? streak.loop : parkLoop) : 0;
       return {
         ...base,
@@ -1917,6 +1937,15 @@ function buildSession(
         teleported(race, 0, you.state);
         if (race.phase === "countdown") race.clock = -1e-4;
       }
+    },
+    /** Put kart i (a mini-game's start) at (x, z) facing `heading`. */
+    place(i: number, x: number, z: number, heading: number, y = 200) {
+      const e = entrants[i];
+      if (!e) return;
+      const g = e.ground.at(x, z, y);
+      Object.assign(e.state, createKartState(x, z, heading, g.height));
+      snapPrev(e);
+      if (race) teleported(race, i, e.state);
     },
     /** Testing and demos: let the AI drive the player's kart. */
     autopilot() {
