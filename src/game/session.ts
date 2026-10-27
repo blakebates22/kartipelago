@@ -1100,7 +1100,7 @@ function buildSession(
       }
       if (!onLoop) {
         if (!OPEN) stepWalls(e.state, e.ground, walls, dt);
-        if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt);
+        if (pkg) stepMeshWalls(e.state, pkg.collision, walls, dt, before);
         stepSolids(e.state, solids, walls, dt);
         if (hazards) stepSolids(e.state, hazards.solids, walls, dt);
         stepVertical(e.state, e.ground, tuning.physics, dt);

@@ -286,6 +286,8 @@ export function stepMeshWalls(
   mesh: CollisionMesh,
   cfg: WallConfig & ImpactConfig,
   dt: number,
+  /** Where the kart was before this step's move (thin walls push it back to that side). */
+  from?: { x: number; z: number },
 ): WallHit | null {
   let worst: WallHit | null = null;
   // A few passes resolve corners where two walls meet.
@@ -298,6 +300,7 @@ export function stepMeshWalls(
       cfg.kartRadius,
       Math.sin(s.velAngle) * s.speed,
       Math.cos(s.velAngle) * s.speed,
+      from,
     );
     if (!c || c.out < 1e-6) break;
     const hit = hitWall(s, c.wx, c.wz, c.out, cfg, dt);

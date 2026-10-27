@@ -277,7 +277,7 @@ async function chaos(id: string, runs: number, seed: number) {
         stepKart(k, input, c, dt);
         const mx = k.x;
         const mz = k.z;
-        const hit = stepMeshWalls(k, mesh, wallCfg, dt);
+        const hit = stepMeshWalls(k, mesh, wallCfg, dt, { x: car.px, z: car.pz });
         stepVertical(k, ground, tuning.physics, dt);
         if (
           process.env.CHAOS_DEBUG &&

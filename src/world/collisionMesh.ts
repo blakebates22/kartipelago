@@ -403,6 +403,11 @@ export function deepestWall(
    * (a thin wall or rail, met edge on or dropped onto, pushed karts out its far side). */
   vx = 0,
   vz = 0,
+  /** Where the kart was before this step's move (when known): a contact pushing it back
+   * toward that side of the wall beats one pushing it on through (a kart dropped onto, or
+   * shoved sideways into, a wall thinner than itself: its middle past the wall's middle,
+   * the far face was the deeper and pushed it out the far side). */
+  from?: { x: number; z: number },
 ): WallContact | null {
   const w = mesh.walls;
   const low = y + WALL_BAND.low;
@@ -413,6 +418,7 @@ export function deepestWall(
   // far face once the middle's past the middle of the wall: that pushed karts falling past
   // a thin wall, or shoved into one, out through it.)
   let back: WallContact | null = null;
+  let home: WallContact | null = null;
   const moving = vx * vx + vz * vz > 1e-6;
   const seen = new Set<number>();
   for (let cx = cellOf(x - radius); cx <= cellOf(x + radius); cx++)
@@ -453,9 +459,16 @@ export function deepestWall(
         if (!best || out > best.out) best = { wx: -dx, wz: -dz, out };
         if (moving && dx * vx + dz * vz < 0 && (!back || out > back.out))
           back = { wx: -dx, wz: -dz, out };
+        // (The side of this face the kart came from: where it was before the move.)
+        if (
+          from &&
+          (from.x - tmp[0]!) * dx + (from.z - tmp[2]!) * dz > 0 &&
+          (!home || out > home.out)
+        )
+          home = { wx: -dx, wz: -dz, out };
       }
     }
-  return back ?? best;
+  return home ?? back ?? best;
 }
 
 /** A kart's config on a surface: its speed, acceleration and grip scaled. */
