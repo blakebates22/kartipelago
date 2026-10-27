@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "id": "journey_dust",
+  "name": "The Dust Road",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -184.34,
+      "y": 18.88,
+      "z": 124.59
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -169.45,
+      "y": 18.89,
+      "z": 133.49
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -153.83,
+      "y": 18.87,
+      "z": 140.22
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -137.29,
+      "y": 18.74,
+      "z": 145.01
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -120.76,
+      "y": 18.79,
+      "z": 147.75
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -104.99,
+      "y": 19.23,
+      "z": 149.74
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 121.76,
+      "y": 22.72,
+      "z": -120.52
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 127.37,
+      "y": 22.51,
+      "z": -129.63
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 134.29,
+      "y": 22.4,
+      "z": -139.12
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 141.34,
+      "y": 22.41,
+      "z": -148.91
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": 148.28,
+      "y": 22.49,
+      "z": -157.58
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 156.05,
+      "y": 22.66,
+      "z": -165.56
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 164.68,
+      "y": 22.96,
+      "z": -173.26
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 173.82,
+      "y": 23.37,
+      "z": -181.09
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 183.26,
+      "y": 23.88,
+      "z": -189.83
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 191.53,
+      "y": 24.51,
+      "z": -199.27
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": -381.85,
+      "y": 18.13,
+      "z": 43.12
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": -376.51,
+      "y": 18.13,
+      "z": 64.47
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": 391.03,
+      "y": 31.55,
+      "z": -314.65
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": 382.65,
+      "y": 31.55,
+      "z": -334.99
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -261.56,
+      "y": 13.16,
+      "z": 64.0
+    },
+    {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": -262.91,
+      "z": 62.52,
+      "y": 12.81,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": 0.739
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -3.69,
+      "y": 15.15,
+      "z": 107.93
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -5.62,
+      "z": 107.4,
+      "y": 16.14,
+      "r": 14.0,
+      "n": 1,
+      "folk": "road",
+      "heading": 1.303
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 112.95,
+      "y": 18.8,
+      "z": 14.17
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": 111.89,
+      "z": 12.47,
+      "y": 20.1,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": 0.558
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 311.78,
+      "y": 25.63,
+      "z": -238.82
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": 310.1,
+      "z": -239.9,
+      "y": 25.34,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": 1.0
+    },
+    {
+      "id": "dustwind_01",
+      "type": "dustwind",
+      "rate": 6
+    }
+  ],
+  "generator": "tools/blender/prehistoric/journey_dust.py (re-running it rewrites entities)",
+  "journey": {
+    "from": 43.1,
+    "to": 1291.7
+  }
+}
