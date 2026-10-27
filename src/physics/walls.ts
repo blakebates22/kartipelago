@@ -290,7 +290,15 @@ export function stepMeshWalls(
   let worst: WallHit | null = null;
   // A few passes resolve corners where two walls meet.
   for (let i = 0; i < 3; i++) {
-    const c = deepestWall(mesh, s.x, s.y, s.z, cfg.kartRadius);
+    const c = deepestWall(
+      mesh,
+      s.x,
+      s.y,
+      s.z,
+      cfg.kartRadius,
+      Math.sin(s.velAngle) * s.speed,
+      Math.cos(s.velAngle) * s.speed,
+    );
     if (!c || c.out < 1e-6) break;
     const hit = hitWall(s, c.wx, c.wz, c.out, cfg, dt);
     if (!worst || hit.into > worst.into) worst = hit;

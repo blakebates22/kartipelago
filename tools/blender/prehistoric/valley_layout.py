@@ -261,6 +261,26 @@ FIXED = {}
 _CORRIDORS = []
 
 
+_BRIDGES = []
+
+
+def bridge_floor(x, y):
+    """Under a bridge: the deck's underside if (x, y) is within 13 m of the road where it
+    crosses the water (the banks are kept down under it, out past its barriers: a bank
+    standing up into a bridge shoved karts sideways through its rail), else None."""
+    if not _BRIDGES:
+        for p in catmull(route_points(), 8):
+            d, wz = river_d(p[0], p[1])
+            if d < RIVER_HW + 12 and p[2] > wz + 0.9:
+                _BRIDGES.append(p)
+    best = None
+    for p in _BRIDGES:
+        d = math.hypot(x - p[0], y - p[1])
+        if d < 13.0 and (best is None or d < best[0]):
+            best = (d, p[2] - 1.9)
+    return None if best is None else best[1]
+
+
 def tunnel_floor(x, y):
     """Under a tunnel's rock: the road's height there if (x, y) is within 18 m of the road
     through it (the land is sunk below it, so none shows inside the bore), else None."""

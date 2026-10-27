@@ -86,17 +86,12 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
   async function loadDemo() {
     const token = game.screens.token;
     loading = true;
-    // The montage's next course (any that won't load are skipped), then Party Beach and
-    // the test tracks as the last resort.
+    // The montage's next course (any that won't load are skipped), then Party Beach as the
+    // last resort; never a prototype (if nothing loads, the painted landscape).
     const montage = TITLE_MONTAGE.map((_, k) => TITLE_MONTAGE[(clip + k) % TITLE_MONTAGE.length]!)
       .map((id) => trackById(id))
       .filter((e): e is NonNullable<typeof e> => Boolean(e));
-    const tries = [
-      ...montage.slice(0, 3),
-      TITLE_TRACK,
-      trackById("dino_demo")!,
-      trackById("drift_loop")!,
-    ];
+    const tries = [...montage.slice(0, 3), TITLE_TRACK];
     for (const entry of tries) {
       try {
         const s = await game.createSession({

@@ -85,6 +85,9 @@ def natural(x, y):
     tz = L.tunnel_floor(x, y)
     if tz is not None:
         h = min(h, tz - 0.25)  # (under a tunnel's rock: flush under its road, out to the walls)
+    bz = L.bridge_floor(x, y)
+    if bz is not None:
+        h = min(h, bz)  # (under a bridge's deck)
     if RUIN:
         # The Burnt Gorge: the split in the north cliff, its floor rising gently to the far
         # end, where the way on to the Snow Kingdom begins.
@@ -646,27 +649,29 @@ def dress(c, ground, spurs):
     rb = lobe("riverbend")
     for v, p in enumerate(palms):
         paint.scatter(c, p, 20, rmax, lambda x, y: bank(x, y) and lobe_at(x, y) in ("riverbend", "camp"), ground, taken, 20 + v,
-                      room=4.0, scale=(0.9, 1.4), road_margin=5.0)
-        paint.scatter(c, p, 14, rmax, rb, ground, taken, 10 + v, room=4.0, near_road=(5.0, 14.0), scale=(0.9, 1.4))
+                      room=4.0, scale=(0.9, 1.4), road_margin=5.0, trunk=(0.6, 8.0))
+        paint.scatter(c, p, 14, rmax, rb, ground, taken, 10 + v, room=4.0, near_road=(5.0, 14.0), scale=(0.9, 1.4),
+                      trunk=(0.6, 8.0))
     for v in range(2):
         paint.scatter(c, props.jungle_tree(c, v), 22, rmax, rb, ground, taken, 30 + v, room=5.0, scale=(1.0, 1.6),
-                      road_margin=6.0)
+                      road_margin=6.0, trunk=(0.8, 6.0))
     # Cascade: a jungle canyon: giant and grand trees, big-leaf plants, temple ruins.
     cas = lobe("cascade")
     for v in range(2):
         paint.scatter(c, props.giant_tree(c, v), 5, rmax, cas, ground, taken, 60 + v, room=16.0, scale=(0.9, 1.2),
-                      road_margin=12.0)
+                      road_margin=12.0, trunk=(3.0, 14.0))
         paint.scatter(c, props.grand_tree(c, v), 10, rmax, cas, ground, taken, 62 + v, room=10.0, scale=(1.2, 1.6),
-                      road_margin=9.0)
+                      road_margin=9.0, trunk=(1.6, 10.0))
         paint.scatter(c, props.jungle_tree(c, v), 30, rmax, cas, ground, taken, 64 + v, room=5.0, scale=(1.1, 1.9),
-                      road_margin=6.0)
+                      road_margin=6.0, trunk=(0.8, 6.0))
         paint.scatter(c, props.big_leaf_plant(c, v), 40, rmax, cas, ground, taken, 66 + v, room=2.5, role="visual")
     for v, p in enumerate((props.ruin_column(c, 0), props.ruin_column(c, 1), props.ruin_blocks(c, 0), props.stele(c, 0),
                            props.idol_head(c))):
         paint.scatter(c, p, 5, rmax, cas, ground, taken, 70 + v, room=5.0, near_road=(5.0, 24.0))
     # Ember: charred trees, basalt columns, glowing crystals, smoking vents.
     em = lobe("ember")
-    paint.scatter(c, props.dead_tree(c), 30, rmax, em, ground, taken, 80, room=5.0, scale=(1.0, 1.7), road_margin=5.0)
+    paint.scatter(c, props.dead_tree(c), 30, rmax, em, ground, taken, 80, room=5.0, scale=(1.0, 1.7), road_margin=5.0,
+                  trunk=(0.6, 6.0))
     paint.scatter(c, props.basalt_columns(c), 10, rmax, em, ground, taken, 81, room=7.0, road_margin=7.0)
     paint.scatter(c, props.crystals(c), 12, rmax, em, ground, taken, 82, room=4.0, role="visual")
     for x, y in paint.scatter(c, props.boulder(c, "volcano_basalt", 2), 8, rmax, em, ground, taken, 83, room=6.0):
@@ -681,7 +686,7 @@ def dress(c, ground, spurs):
 
     for v in range(2):
         paint.scatter(c, props.swamp_tree(c, v), 24, rmax, bog, ground, taken, 40 + v, room=6.0, scale=(1.0, 1.6),
-                      road_margin=6.0)
+                      road_margin=6.0, trunk=(0.9, 6.0))
         paint.scatter(c, props.cattails(c, v), 30, rmax, shore, ground, taken, 42 + v, room=2.0, role="visual")
     paint.scatter(c, props.reeds(c), 50, rmax, shore, ground, taken, 44, room=2.0, role="visual")
     paint.scatter(c, props.glow_caps(c), 30, rmax, bog, ground, taken, 45, room=2.0, role="visual")
@@ -696,7 +701,7 @@ def dress(c, ground, spurs):
     # The swamp's big things: giant trees, stilt huts on the shores, sunken timber and
     # crocodiles in the pools, bone piles, torch posts along its road.
     paint.scatter(c, sp.swamp_giant(c, 0), 6, rmax, bog, ground, taken, 47, room=14.0, scale=(0.8, 1.1),
-                  road_margin=12.0)
+                  road_margin=12.0, trunk=(2.5, 12.0))
     for v in range(2):
         paint.scatter(c, sp.bone_pile(c, v), 5, rmax, bog, ground, taken, 48 + v, room=5.0, road_margin=5.0)
     big = sorted(L.POOLS, key=lambda q: -q[2])

@@ -14,8 +14,8 @@
  *            is now under it).
  *   UNDER    the kart drove in under a floor's edge (one within 1.5 m over its head:
  *            a road's edge or a deck standing over the ground beside it).
- *   INWALL   pushed more than 0.7 m into a wall (by another kart, say): the next push
- *            out could put it through to the far side.
+ *   THRUWALL the kart's middle went through a wall in a step (pushed by another kart,
+ *            say, or falling past a wall's top): it's out the far side of it.
  *   FLUNG    thrown more than 4 m in one step (a collision push gone wrong). (Rising fast
  *            off a steep bank at full boost is just the physics: not counted.)
  *   STUCK    pinned: under 3 m driven in 4 s while trying forwards and back.
@@ -59,7 +59,74 @@ function rng(seed: number) {
   };
 }
 
-type Kind = "THROUGH" | "UNDER" | "INWALL" | "FLUNG" | "STUCK" | "VOID" | "RESPAWN";
+/** Did the move from (x0, z0) to (x1, z1), at height y, pass through a wall (the kart's
+ * middle crossing a wall triangle between its wheels and its roof)? The game's walls push
+ * a kart's circle out, but a middle that's got past a wall's plane is pushed out the far
+ * side: through it. (Grid cells as collisionMesh's, 4 m.) */
+function crossedWall(
+  mesh: { walls: { pos: Float32Array; nrm: Float32Array; cells: Map<number, number[]> } },
+  x0: number,
+  z0: number,
+  x1: number,
+  z1: number,
+  y: number,
+) {
+  const w = mesh.walls;
+  const key = (cx: number, cz: number) => (cx + 32768) * 65536 + (cz + 32768);
+  const seen = new Set<number>();
+  const ys = [y + 0.4, y + 0.9];
+  for (let cx = Math.floor(Math.min(x0, x1) / 4); cx <= Math.floor(Math.max(x0, x1) / 4); cx++)
+    for (let cz = Math.floor(Math.min(z0, z1) / 4); cz <= Math.floor(Math.max(z0, z1) / 4); cz++) {
+      for (const t of w.cells.get(key(cx, cz)) ?? []) {
+        if (seen.has(t)) continue;
+        seen.add(t);
+        const p = w.pos;
+        const o = t * 9;
+        const ax = p[o]!,
+          ay = p[o + 1]!,
+          az = p[o + 2]!;
+        const ux = p[o + 3]! - ax,
+          uy = p[o + 4]! - ay,
+          uz = p[o + 5]! - az;
+        const vx = p[o + 6]! - ax,
+          vy = p[o + 7]! - ay,
+          vz = p[o + 8]! - az;
+        let nx = uy * vz - uz * vy;
+        let ny = uz * vx - ux * vz;
+        let nz = ux * vy - uy * vx;
+        const nl = Math.hypot(nx, ny, nz) || 1;
+        // (Its face points out of the solid: only a move from in front of it to behind it
+        // is going through; the other way's a push back out.)
+        const fn = w.nrm[o]! * nx + w.nrm[o + 1]! * ny + w.nrm[o + 2]! * nz < 0 ? -1 : 1;
+        nx *= fn / nl;
+        ny *= fn / nl;
+        nz *= fn / nl;
+        for (const h of ys) {
+          const d0 = nx * (x0 - ax) + ny * (h - ay) + nz * (z0 - az);
+          const d1 = nx * (x1 - ax) + ny * (h - ay) + nz * (z1 - az);
+          if (!(d0 > 0.05 && d1 < -0.05)) continue;
+          const f = d0 / (d0 - d1);
+          const px = x0 + (x1 - x0) * f - ax,
+            py = h - ay,
+            pz = z0 + (z1 - z0) * f - az;
+          // Inside the triangle? (barycentric in 3D)
+          const uu = ux * ux + uy * uy + uz * uz,
+            vv = vx * vx + vy * vy + vz * vz;
+          const uv = ux * vx + uy * vy + uz * vz;
+          const pu = px * ux + py * uy + pz * uz,
+            pv = px * vx + py * vy + pz * vz;
+          const den = uv * uv - uu * vv;
+          if (Math.abs(den) < 1e-12) continue;
+          const s = (uv * pv - vv * pu) / den;
+          const r = (uv * pu - uu * pv) / den;
+          if (s >= 0 && r >= 0 && s + r <= 1) return true;
+        }
+      }
+    }
+  return false;
+}
+
+type Kind = "THROUGH" | "UNDER" | "THRUWALL" | "FLUNG" | "STUCK" | "VOID" | "RESPAWN";
 interface Hit {
   kind: Kind;
   x: number;
@@ -141,7 +208,7 @@ async function chaos(id: string, runs: number, seed: number) {
     // (their bumps come after the walls and the ground, as in the game).
     const smp = S[Math.floor(R() * S.length)]!;
     const fwd = Math.atan2(smp.forward.x, smp.forward.z);
-    const pack = run % 3 === 2 ? 6 : 1;
+    const pack = run % 3 === 2 && process.env.PACK !== "0" ? 6 : 1;
     const cars: Car[] = [];
     for (let j = 0; j < pack; j++) {
       const across = (R() * 2 - 1) * (smp.width / 2 + (pack > 1 ? 0 : 3));
@@ -208,8 +275,32 @@ async function chaos(id: string, runs: number, seed: number) {
         car.px = k.x;
         car.pz = k.z;
         stepKart(k, input, c, dt);
-        stepMeshWalls(k, mesh, wallCfg, dt);
+        const mx = k.x;
+        const mz = k.z;
+        const hit = stepMeshWalls(k, mesh, wallCfg, dt);
         stepVertical(k, ground, tuning.physics, dt);
+        if (
+          process.env.CHAOS_DEBUG &&
+          crossedWall(mesh, car.px, car.pz, k.x, k.z, Math.min(k.y, car.y0))
+        )
+          console.log(
+            JSON.stringify(
+              [0, 1, 2].map((i) => {
+                const c0 = deepestWall(
+                  mesh,
+                  i === 0 ? mx : k.x,
+                  car.y0,
+                  i === 0 ? mz : k.z,
+                  wallCfg.kartRadius,
+                );
+                return (
+                  c0 && { wx: +c0.wx.toFixed(2), wz: +c0.wz.toFixed(2), out: +c0.out.toFixed(2) }
+                );
+              }),
+            ),
+            `at ${mx.toFixed(2)},${mz.toFixed(2)} -> ${k.x.toFixed(2)},${k.z.toFixed(2)} vel ${Math.sin(k.velAngle).toFixed(2)},${Math.cos(k.velAngle).toFixed(2)}`,
+            `thruwall: move ${crossedWall(mesh, car.px, car.pz, mx, mz, car.y0)} push ${crossedWall(mesh, mx, mz, k.x, k.z, car.y0)} speed ${k.speed.toFixed(1)} y ${car.y0.toFixed(2)}->${k.y.toFixed(2)} grounded ${k.grounded} hit ${hit ? hit.into.toFixed(2) : "-"} moved ${Math.hypot(mx - car.px, mz - car.pz).toFixed(2)} pushed ${Math.hypot(k.x - mx, k.z - mz).toFixed(2)} pack ${cars.length}`,
+          );
       }
       if (cars.length > 1) {
         const live = cars.filter((c) => !c.done);
@@ -234,10 +325,9 @@ async function chaos(id: string, runs: number, seed: number) {
           report(car.y0 >= over.height - 0.05 ? "THROUGH" : "UNDER", over.height - k.y);
           continue;
         }
-        // Deep in a wall (the next step's push could put it out the far side).
-        const w = deepestWall(mesh, k.x, k.y, k.z, 1.0);
-        if (w && w.out > 0.7) {
-          report("INWALL", w.out);
+        // Through a wall: its middle went past one between this step and the last.
+        if (crossedWall(mesh, car.px, car.pz, k.x, k.z, Math.min(k.y, car.y0))) {
+          report("THRUWALL", Math.hypot(k.x - car.px, k.z - car.pz));
           continue;
         }
         const moved = Math.hypot(k.x - car.px, k.z - car.pz);
@@ -283,7 +373,7 @@ async function chaos(id: string, runs: number, seed: number) {
   const spots = [...cells.values()].sort((a, b) => b.n - a.n || b.size - a.size);
   const count = (k: Kind) => hits.filter((h) => h.kind === k).length;
   console.log(
-    `${id}: ${runs} runs, ${simmed.toFixed(0)} s driven: through ${count("THROUGH")}, under ${count("UNDER")}, in wall ${count("INWALL")}, flung ${count("FLUNG")}, respawn ${count("RESPAWN")}, stuck ${count("STUCK")}, void ${count("VOID")} (${spots.length} spots)`,
+    `${id}: ${runs} runs, ${simmed.toFixed(0)} s driven: through ${count("THROUGH")}, under ${count("UNDER")}, through walls ${count("THRUWALL")}, flung ${count("FLUNG")}, respawn ${count("RESPAWN")}, stuck ${count("STUCK")}, void ${count("VOID")} (${spots.length} spots)`,
   );
   for (const c of spots.slice(0, 20)) {
     const h = c.at;

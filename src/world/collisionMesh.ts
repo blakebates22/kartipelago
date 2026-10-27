@@ -398,6 +398,11 @@ export function deepestWall(
   y: number,
   z: number,
   radius: number,
+  /** The way the kart's moving (horizontal, any length), when it is: a middle right on a
+   * wall's plane is pushed back out the side it came from, not always the face's front
+   * (a thin wall or rail, met edge on or dropped onto, pushed karts out its far side). */
+  vx = 0,
+  vz = 0,
 ): WallContact | null {
   const w = mesh.walls;
   const low = y + WALL_BAND.low;
@@ -422,12 +427,17 @@ export function deepestWall(
         let d = Math.hypot(dx, dz);
         if (d >= radius) continue;
         if (d < 1e-5) {
-          // Centre right on the wall's plane: push out along its horizontal normal.
+          // Centre right on the wall's plane: push out along its horizontal normal, on the
+          // side the kart came from.
           dx = w.nrm[o]!;
           dz = w.nrm[o + 2]!;
           const l = Math.hypot(dx, dz) || 1;
           dx /= l;
           dz /= l;
+          if (dx * vx + dz * vz > 0) {
+            dx = -dx;
+            dz = -dz;
+          }
           d = 0;
         } else {
           dx /= d;

@@ -67,8 +67,41 @@ def spurs(c, natural, gates, look_road, trail):
         ux, uy = (gx - ax) / d, (gy - ay) / d
         end = (gx - ux * 12.0, gy - uy * 12.0)
         out[name] = (end, math.atan2(-ux, uy))
-        c.side_road(name.title() + " Road", line(natural, (ax, ay), end, z0=smp.p.z), look_road(gx, gy), "road", **trail)
+        # (From the main road's edge, at its height there: a banked road's edge isn't at its
+        # middle's height, and a spur laid over it from the middle stood up out of it.)
+        sx, sy = ax + ux * (smp.w / 2 - 1.0), ay + uy * (smp.w / 2 - 1.0)
+        z0 = road_z_at(c, sx, sy)
+        c.side_road(name.title() + " Road", line(natural, (sx, sy), end, z0=smp.p.z if z0 is None else z0),
+                    look_road(gx, gy), "road", **trail)
     return out
+
+
+def road_z_at(c, x, y):
+    """The main road's surface height at (x, y) (its pieces evaluated, banking and all), or
+    None."""
+    import bpy
+
+    dg = bpy.context.evaluated_depsgraph_get()
+    best = None
+    for ob in getattr(c, "pieces", []):
+        ev = ob.evaluated_get(dg)
+        try:
+            me = ev.to_mesh()
+        except RuntimeError:
+            continue
+        if me is None:
+            continue
+        mw = ob.matrix_world
+        for poly in me.polygons:
+            cx, cy = (mw @ poly.center).x, (mw @ poly.center).y
+            if abs(cx - x) > 3.0 or abs(cy - y) > 3.0:
+                continue
+            z = (mw @ poly.center).z
+            d = math.hypot(cx - x, cy - y)
+            if best is None or d < best[0]:
+                best = (d, z)
+        ev.to_mesh_clear()
+    return None if best is None else best[1]
 
 
 def emit_spots(c, spots):

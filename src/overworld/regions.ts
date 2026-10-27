@@ -346,70 +346,53 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // The doc's third region (tools/blender/prehistoric/desert_region.py, a greybox): a
-    // red-rock basin ringed by mesas, a meteor crater in the middle, Stego's trading post
-    // by the Frozen Pass.
+    // The third region (tools/blender/prehistoric/desert_layout.py, desert_region.py): walled
+    // pockets, the main road one loop through them by a threshold each time: Stego's
+    // trading post (the hub, the Frozen Pass down into it from the snow), the Slot (a narrow
+    // canyon) to the red canyon, the Arch (a sandstone fin) to the oasis, the Mine to the
+    // ghost town, over the Rim into the crater, the Wash back to the post.
+    // (The positions below are the build's entities.)
     id: "desert_world",
     name: "Desert World",
     packageId: "desert_region",
     ruinPackageId: "desert_region_ruin",
-    // A secret, for the way back: a sunken garden in the north, cut off by deep water the Beach Tool gets you over.
+    // A secret, for the way back: a sunken garden in the oasis, cut off by deep water the Beach Tool gets you over.
     secret: {
       obstacle: "water",
       tool: "beach",
-      gate: { x: 75.32, z: -281.08, heading: -0.2618, width: 9 },
-      spot: { x: 77.65, z: -289.78 },
+      gate: { x: 275.93, z: -207.36, heading: -0.74, width: 9 },
+      spot: { x: 282, z: -214 },
     },
-    // Act V's return task: Stego's old well, a walled yard in the north-west: a drift buries its way in.
+    // Act V's return task: Stego's old well, a walled yard behind the trading post: a drift buries its way in.
     returnTask: {
       obstacle: "drift",
-      gate: { x: -236.73, z: -165.76, heading: 0.9599, width: 9 },
-      spot: { x: -245.75, z: -172.07 },
+      gate: { x: -285.0, z: 28.07, heading: 1.564, width: 9 },
+      spot: { x: -296, z: 28 },
     },
     music: "canyon",
     worldId: "desert",
     kingdom: "desert",
-    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
-    // At the trading post, facing east to the ring.
-    spawn: { x: -290, z: 0, heading: Math.PI / 2 },
+    // The main road's start line, on the post's east side (the 1-on-1 is raced from it).
+    challenge: { x: -235, z: 10, heading: 3.0635 },
+    // In the trading post's square, facing east to the road.
+    spawn: { x: -270, z: 0, heading: Math.PI / 2 },
     gateways: [
-      // At the slot canyon in the north cliff.
-      {
-        id: "canyon",
-        track: "canyon_dash",
-        x: -56.8,
-        z: -322.0,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((100 * Math.PI) / 180), Math.sin((100 * Math.PI) / 180)),
-      },
-      // On the lawn by the palm-ringed pool, north-east.
-      {
-        id: "oasis",
-        track: "oasis_haven",
-        x: 200.7,
-        z: -168.4,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((40 * Math.PI) / 180), Math.sin((40 * Math.PI) / 180)),
-      },
-      // At the end of the ghost town's false-front street, south-east.
-      {
-        id: "gulch",
-        track: "dry_gulch",
-        x: 222.9,
-        z: 187.1,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((-40 * Math.PI) / 180), Math.sin((-40 * Math.PI) / 180)),
-      },
-      // On the crater's rim in the middle of the basin.
-      { id: "impact", track: "impact_depths", x: -60, z: 0, radius: 6, heading: -Math.PI / 2 },
-      // Scorchwind's lair: a rock arch in the south-west cliff, the dust devil before it.
+      // At the slot canyon's mouth in the canyon's north wall.
+      { id: "canyon", track: "canyon_dash", x: -63.91, z: -310.66, radius: 6, heading: -0.332 },
+      // In the palm grove by the spring.
+      { id: "oasis", track: "oasis_haven", x: 302.53, z: -164.63, radius: 6, heading: -0.91 },
+      // At the end of the ghost town's false-front street.
+      { id: "gulch", track: "dry_gulch", x: 228.49, z: 220.69, radius: 6, heading: -2.226 },
+      // By the meteorite in the crater's floor.
+      { id: "impact", track: "impact_depths", x: -28.01, z: 244.47, radius: 6, heading: 1.532 },
+      // Scorchwind's lair: a rock arch in the canyon's west wall.
       {
         id: "lair",
         track: "boss_desert",
-        x: -231.2,
-        z: 231.2,
+        x: -181.02,
+        z: -262.04,
         radius: 6,
-        heading: Math.atan2(-Math.cos((-135 * Math.PI) / 180), Math.sin((-135 * Math.PI) / 180)),
+        heading: 0.846,
         boss: true,
         label: "SCORCHWIND'S LAIR",
       },
@@ -421,19 +404,19 @@ export const REGIONS: Region[] = [
         label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
         to: "snow_kingdom",
         toPassage: "frozen_pass",
-        x: -445,
+        x: -458,
         z: 0,
         radius: 8,
         heading: Math.PI / 2,
       },
-      // The Dust Road south, under Scorchwind's drifts: on to Tropic Isles.
+      // The Dust Road south out of the crater, under Scorchwind's drifts: on to Tropic Isles.
       {
         id: "dust_road",
         label: "THE DUST ROAD · TO TROPIC ISLES",
         to: "tropic_isles",
         toPassage: "dust_road",
         x: 0,
-        z: 327,
+        z: 445,
         radius: 8,
         heading: Math.PI,
         ruinOnly: true,
@@ -443,23 +426,23 @@ export const REGIONS: Region[] = [
       },
     ],
     puzzles: [
-      // The Crater Stones: a sandstone vault on the crater's floor, its gate looking west
-      // up the road in. Press the four stones round the crater within 30 seconds.
+      // The Crater Stones: a sandstone vault on the crater's floor, its gate shut. Press the
+      // four stones round the crater within 30 seconds.
       {
         id: "crater_stones",
         label: "THE CRATER STONES",
         look: "stone",
         hint: "THE CRATER STONES! PRESS THE OTHER 3 BEFORE THE DRUMS STOP",
         switches: [
-          { x: -52.33, z: -52.33 },
-          { x: 52.33, z: -52.33 },
-          { x: 52.33, z: 52.33 },
-          { x: -52.33, z: 52.33 },
+          { x: 50, z: 168 },
+          { x: -78, z: 150 },
+          { x: 30, z: 234 },
+          { x: -40, z: 192 },
         ],
         radius: 3.5,
         seconds: 30,
-        gate: { x: -8, z: 0, heading: -Math.PI / 2, width: 9 },
-        prize: { kind: "key", x: 0, z: 0 },
+        gate: { x: -42.43, z: 230.9, heading: 1.277, width: 9 },
+        prize: { kind: "key", x: -52, z: 228 },
       },
     ],
   },
