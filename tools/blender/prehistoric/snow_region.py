@@ -1,22 +1,13 @@
-# The Snow Kingdom, the overworld's second region (greybox): the drivable mountain basin
-# past the Burnt Gorge, with the gateways into its four courses (the Claude Doc
-# "Kartipelago Overworld: Concept & Layout"; src/overworld/regions.ts places them).
+# The Snow Kingdom, the overworld's second region (v3): built from snow_layout.py's
+# pockets (Blake, Oct 26: each world walled off by landscape, the main road one loop through
+# them by a threshold each time; see snow_layout.py for the plan).
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/snow_region.py      (the bpy module)
+#   python tools/blender/prehistoric/snow_region.py [--ruin]      (the bpy module)
 #
-# Broad strokes, all placeholder, built like Dinosaur Valley (valley_region.py):
-#
-#   - A basin about 800 m across ringed by snowy peaks, a frozen lake in the middle with a
-#     ring road round it (the lake is ice: drive on it if you like).
-#   - From the south, the Burnt Gorge comes in from the valley, past Hearthglow's village
-#     (the town square: Brachio's) and on up to the ring.
-#   - The landmarks the gateways stand at: Hearthglow Hollow by the village's great tree
-#     (south), Frostveil Citadel at its gate in the west cliff, Snowy Summit Pass at the foot
-#     of the giant tree (north), Aurora Rift at the crack in the glacier (east), each at the
-#     end of a road from the ring.
-#   - Beside the rift, the Frozen Pass east to the desert: walled with Rimefang's ice until
-#     he falls (the story's way on).
+# (--ruin: after Rimefang's attack. Only the ruin has his lair, the road out through the
+# Frozen Pass (his ice across it is the game's, regions.ts's blocker, until he falls), the
+# village frozen over, ice shards driven into the fields, the pines frozen solid.)
 
 import math
 import os
@@ -26,303 +17,450 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
-from valley_region import box, cone, polar  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
+import pocket_build as pb  # noqa: E402
+from pocket_build import box, cone  # noqa: E402
 import hearthglow_props as hp  # noqa: E402
-import region_paint as paint  # noqa: E402
 import summit_props as sp  # noqa: E402
+import aurora_props as ap  # noqa: E402
+import keep_props as kp  # noqa: E402
+import winter_props as wp  # noqa: E402
+import region_paint as paint  # noqa: E402
+import snow_layout as SL  # noqa: E402
 
-# (--ruin: the Snow Kingdom after Rimefang's attack. Only the ruin has his lair, and his
-# ice walling the Frozen Pass shut; the village and the great tree are frozen over.)
 RUIN = ruin.ON
-TRACK_ID = ruin.track_id("snow_region")
-FLOOR_Z = 2.0
-RING_R = 215.0
-LAKE_R = 125.0
-CLIFF_R = 335.0
-RIM_Z = 95.0
-
-VILLAGE = (0.0, -285.0, 30.0)  # the town square: x, y, radius
+TRACK_ID = ruin.track_id("snow_region") + os.environ.get("KP_REGION_SUFFIX", "")
+L = SL.L
+HUB = SL.HUB
+FLOOR_Z = HUB[3]  # (the village's height: the old name)
+RIM_Z = SL.TOP
 GORGE_HW = 16.0
-GORGE_Y0 = -470.0  # the gorge's far (valley) end: the passage back
-CITADEL = (180.0, CLIFF_R + 6.0)  # angle, radius
-TREE = (90.0, CLIFF_R - 40.0)
-RIFT = (0.0, CLIFF_R + 6.0)
-FROZEN_PASS = (28.0, CLIFF_R + 6.0)
-LAIR = (135.0, CLIFF_R + 6.0)  # Rimefang's lair: the boss gateway (north-west)
-# The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut in the south-west, its ice
-# door shut, and three bells to ring in order (their lanterns: one, two, three), one by
-# the lake, one out on the ice, one up towards the village.
-HUT = (225.0, 292.0)  # angle (degrees), radius: the hut's middle
+
+# The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut on an island in the frozen
+# lake, its ice door shut, and three bells out on the ice round it to ring in order (their
+# lanterns: one, two, three).
+HUT = (118.0, -92.0)
 HUT_HALF = 10.0
 HUT_GAP = 4.5
-BELLS = [(205.0, 150.0, 1), (240.0, 70.0, 2), (250.0, 268.0, 3)]  # angle, radius, lanterns
-# Brachio's hot spring (Act V's return task): a walled yard in the north-east, its way in
-# frozen shut with ice the Snow Tool melts.
-RETURN = (60.0, 300.0)
-# A secret (src/overworld/regions.ts secret): an old store in the south-east, buried under a drift (the Desert Tool's): a later kingdom's tool opens it on
-# the way back, a treasure chest inside.
-SECRET = (-30.0, 300.0)
+BELLS = [(90.0, -60.0), (150.0, -112.0), (104.0, -132.0)]
+LANTERNS = [1, 2, 3]
+# Brachio's hot spring (Act V's return task): a walled yard in the summit meadow, frozen shut.
+RETURN = (-102.0, 268.0)
+# A secret (regions.ts secret): an old store in Frostveil's bailey, buried under a drift
+# (the Desert Tool's).
+SECRET = (-195.0, -102.0)
 
-
-def ring_r(a):
-    return RING_R + 10.0 * math.sin(3 * a + 1.1)
+LOOK = {
+    # look: (ground, cliff, road, shoulder)
+    "hearth": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "hearth_cobble", ("snow_ground", "deep_snow")),
+    "frostveil": (("snow_ground", "deep_snow"), ("frost_rock", "wall"), "snow_stone_road", ("snow_ground", "deep_snow")),
+    "summit": (("summit_snow", "deep_snow"), ("summit_cliff", "wall"), "summit_road", ("summit_snow", "deep_snow")),
+    "aurora": (("rift_snow", "deep_snow"), ("glacier_wall", "wall"), "rift_road", ("rift_snow", "deep_snow")),
+    "lake": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "packed_snow_road", ("snow_ground", "deep_snow")),
+}
 
 
 def gorge_x(y):
-    return 8.0 * math.sin(max(0.0, -y - 300.0) / 40.0)
+    return 6.0 * math.sin(max(0.0, -y - 300.0) / 40.0)
 
 
 def natural(x, y):
-    """The basin floor, gently rolling; the frozen lake's hollow; the peaks all round; the
-    Burnt Gorge's cut in the south."""
-    r = math.hypot(x, y)
-    h = FLOOR_Z + 0.8 * math.sin(x / 41.0) * math.cos(y / 37.0) + 0.6 * math.sin((x - y) / 59.0)
-    vx, vy, vr = VILLAGE
-    h = lerp(FLOOR_Z, h, smooth((math.hypot(x - vx, y - vy) - vr) / 14.0))
-    h = lerp(FLOOR_Z - 0.6, h, smooth((r - LAKE_R) / 10.0))
-    peaks = 1.0 + 0.25 * math.sin(5 * math.atan2(y, x)) + 0.15 * math.sin(11 * math.atan2(y, x) + 1.0)
-    h += RIM_Z * peaks * smooth((r - CLIFF_R) / 55.0) + 10.0 * smooth((r - CLIFF_R - 60) / 50.0)
-    g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((-y - 250.0) / 40.0)
-    if g > 0:
-        h = lerp(h, FLOOR_Z + 0.03 * max(0.0, -y - 330.0), g)
+    h = SL.natural(x, y)
+    tz = L.tunnel_floor(x, y)
+    if tz is not None:
+        h = min(h, tz - 0.25)  # (under a tunnel's rock: flush under its road, out to the walls)
+    # The Ice Bells' island in the lake.
+    d = math.hypot(x - HUT[0], y - HUT[1])
+    if d < 26:
+        h = max(h, lerp(SL.LAKE[3] + 0.5, h, smooth((d - 14.0) / 12.0)))
+    if RUIN:
+        # The Frozen Pass: a slot through the mountains east, out of the lake.
+        (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
+        dd, t = pb_seg(x, y, (ax - 30.0, ay + 10.0), (bx, by))
+        if dd < 30:
+            h = lerp(h, SL.LAKE[3] + 0.3 + 6.0 * t, smooth((30.0 - dd) / 12.0))
+        # Rimefang's lair: a cleft in the summit's north wall.
+        lx, ly = SL.LAIR
+        dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
+        if dd < 26:
+            h = lerp(h, 57.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
     return h
 
 
+def pb_seg(x, y, a, b):
+    from pocket_kit import seg_d
+    return seg_d(x, y, a, b)
+
+
 def classify(c, n, info):
+    look = L.look_at(c.x, c.y)
+    ground, cliff, _, _ = LOOK[look]
     if n.z < 0.62:
-        if c.y < -260 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
-            return ("obsidian_cliff", "wall")  # (the gorge's scorched walls)
-        return ("frost_cliff", "wall")
-    if math.hypot(c.x, c.y) < LAKE_R + 1 and c.z < FLOOR_Z - 0.2:
+        if c.y < -290 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 40:
+            return ("obsidian_cliff", "wall")  # (the Burnt Gorge's scorched walls)
+        return cliff
+    lx, ly, lr, lz = SL.LAKE
+    if math.hypot(c.x - lx, c.y - ly) < lr + 2 and c.z < lz + 0.1:
         return ("lake_ice", "ice")
-    return ("snow_ground", "deep_snow")
-
-
-def road_z(x, y):
-    return FLOOR_Z + 0.2
-
-
-def line(a, b, every=8.0, z=road_z):
-    n = max(2, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
-    return [(lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n), z(lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n)))
-            for k in range(n + 1)]
+    if RUIN and look in ("hearth", "summit", "frostveil") and math.sin(c.x / 23.0) * math.cos(c.y / 19.0) > 0.55:
+        return ("berg_ice", "ice")  # (Rimefang's frost)
+    return ground
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Snow Kingdom (greybox, ruined)" if RUIN else "Snow Kingdom (greybox)", "summit_pass")
-    ring = []
-    for k in range(48):
-        a = k * math.tau / 48
-        r = ring_r(a)
-        x, y = r * math.cos(a), r * math.sin(a)
-        ring.append((x, y, road_z(x, y)))
-    c.route(ring, width=14.0, bank=4.0)
+    c = kit.Course(TRACK_ID, "Snow Kingdom (ruined)" if RUIN else "Snow Kingdom", "summit_pass")
+    c.route(L.route_points(), width=14.0, bank=5.0)
+    kinds = {}
+    for look, (ground, cliff, road, shoulder) in LOOK.items():
+        kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
+    c.kinds = kinds
+    c.roads(kit.plan(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), "hearth", max_len=160.0))
+
     snow = ("snow_ground", "deep_snow")
-    c.kinds = {"road": {"mat": "packed_snow_road", "shoulder": 1.5, "shoulder_mat": snow}}
-    c.roads(kit.plan(c, [], "road", max_len=200.0))
-
-    def ring_end(a_deg):
-        a = math.radians(a_deg)
-        return ring_r(a) * math.cos(a) * 0.985, ring_r(a) * math.sin(a) * 0.985
-
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=snow)
-    # The Burnt Gorge, up past the village to the ring.
-    vx, vy, vr = VILLAGE
-    gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.03 * max(0.0, -y - 330.0)) for y in range(int(GORGE_Y0) + 25, int(vy - vr), 8)]
+    cx, cy, cr, cz = HUB
+    # Out of the square onto the road (north), and down the Burnt Gorge to the valley (south).
+    smp, _ = c.nearest(cx, cy + cr + 20.0)
+    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (cx, cy + cr - 2.0), z0=smp.p.z))),
+                "hearth_cobble", "road", **trail)
+    gx, gy = SL.GORGE_END
+    gorge = [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2) for y in range(int(cy - cr + 2), int(gy + 6), -8)]
     c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
-    c.side_road("Village Road", line((vx, vy + vr - 2), ring_end(-90.0)), "packed_snow_road", "road", **trail)
-    # Out from the ring to the landmarks.
-    outs = [("Citadel Road", CITADEL), ("Tree Road", TREE), ("Rift Road", RIFT)]
+    gates = dict(SL.GATES)
     if RUIN:
-        outs += [("Pass Road", FROZEN_PASS), ("Lair Road", LAIR)]
-    for name, (a, r) in outs:
-        c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "packed_snow_road", "road", **trail)
-
-    X0, X1, Y0, Y1 = -470, 470, -480, 470
-    ter = c.terrain("Basin", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=14.0)
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("snow_ground", "deep_snow"))
-    c.disc("Frozen Lake", 0.0, 0.0, LAKE_R + 2.0, FLOOR_Z - 0.55, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.05)
-
-    # The village: the town square, its houses and its great tree.
-    c.disc("Village Square", vx, vy, vr, FLOOR_Z + 0.05, c.lib("hearth_cobble", "road"), coll="Props", n=40)
-    for k in range(6):
-        a = k * math.tau / 6 + math.pi / 6
-        if abs(math.cos(a)) < 0.3:
-            continue  # (clear of the road through the square)
-        hx, hy = vx + (vr + 6) * math.cos(a), vy + (vr + 6) * math.sin(a)
-        if RUIN:
-            # Frozen solid: each house sealed in a block of Rimefang's ice, its roof gone.
-            box(c, "House %d" % k, hx, hy, 4.5, 3.5, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("hearth_stone", "wall"), rot=a)
-            box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, FLOOR_Z - 1.0, FLOOR_Z + 6.5, ("berg_ice", "wall"), rot=a + 0.08)
-            continue
-        # (Hearthglow's own cottages, their fronts to the square.)
-        c.place(hp.cottage(c, k % 4), hx, hy, FLOOR_Z, rot=a - math.pi / 2)
-    tx, ty = vx + 18.0, vy - 6.0
-    box(c, "Great Tree Trunk", tx, ty, 1.6, 1.6, FLOOR_Z - 1.0, FLOOR_Z + 8.0, ("weathered_timber", "wall"))
-    for k, (r, z) in enumerate(((7.0, 6.0), (5.5, 10.0), (3.8, 13.5))):
-        cone(c, "Great Tree %d" % k, tx, ty, r, FLOOR_Z + z, 5.0, ("glacier_ice" if RUIN else "pine_snow", "wall"), segs=8,
-             role="visual")
-    gx, gy, gz = c.game(vx, vy, FLOOR_Z + 0.3)
-    c.entity("campfire", x=gx, y=gy, z=gz)
-
-    # Frostveil Citadel: its gate and walls in the west cliff.
-    x, y = polar(*CITADEL)
-    rot = math.radians(CITADEL[0]) + math.pi / 2
-    for side in (-1, 1):
-        px, py = x + side * 10.0 * math.cos(rot), y + side * 10.0 * math.sin(rot)
-        box(c, "Citadel Tower %d" % side, px, py, 4.0, 4.0, FLOOR_Z - 1.0, FLOOR_Z + 22.0, ("frost_stone", "wall"), rot=rot)
-        cone(c, "Citadel Spire %d" % side, px, py, 5.0, FLOOR_Z + 22.0, 8.0, ("frost_cliff", "wall"), role="visual")
-    box(c, "Citadel Gate", x, y, 6.0, 2.0, FLOOR_Z - 1.0, FLOOR_Z + 12.0, ("dark_corridor", "wall"), rot=rot, role="visual")
-    box(c, "Citadel Gate Arch", x, y, 7.5, 3.0, FLOOR_Z + 12.0, FLOOR_Z + 16.0, ("frost_stone", "wall"), rot=rot)
-    # Snowy Summit Pass: the giant tree.
-    x, y = polar(*TREE)
-    x, y = x, y + 18.0
-    box(c, "Giant Tree Trunk", x, y, 7.0, 7.0, FLOOR_Z - 2.0, FLOOR_Z + 60.0, ("weathered_timber", "wall"))
-    for k, (r, z) in enumerate(((26.0, 40.0), (20.0, 56.0), (13.0, 70.0))):
-        cone(c, "Giant Tree Crown %d" % k, x, y, r, FLOOR_Z + z, 20.0, ("pine_snow", "wall"), segs=8, role="visual")
-    # Aurora Rift: the crack in the glacier, ice blocks either side.
-    x, y = polar(*RIFT)
-    rot = math.radians(RIFT[0]) + math.pi / 2
-    for side in (-1, 1):
-        for j in range(3):
-            px = x + side * (9.0 + j * 7.0) * math.cos(rot) + j * 6.0 * math.cos(rot - math.pi / 2)
-            py = y + side * (9.0 + j * 7.0) * math.sin(rot) + j * 6.0 * math.sin(rot - math.pi / 2)
-            box(c, "Rift Ice %d %d" % (side, j), px, py, 4.0, 5.0, FLOOR_Z - 1.0, FLOOR_Z + 24.0 - j * 4.0, ("glacier_ice", "wall"),
-                rot=rot + 0.3 * side)
-    box(c, "Rift Crack", x + 6 * math.cos(rot - math.pi / 2), y + 6 * math.sin(rot - math.pi / 2), 5.0, 1.0, FLOOR_Z - 1.0,
-        FLOOR_Z + 20.0, ("icefall_blue", "wall"), rot=rot, role="visual")
-    gx, gy, gz = c.game(x, y, FLOOR_Z + 30.0)
-    c.entity("sparkles", rate=12, radius=30)
+        gates["lair"] = SL.LAIR
+    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
     if RUIN:
-        ruined(c)
-    ice_bells(c)
-    puzzle_kit.pen(c, "return", "Hot Spring", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
-                   ("frost_stone", "wall"), natural(*polar(*RETURN)), height=6.0)
-    puzzle_kit.pen(c, "secret", "Old Store", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("frost_stone", "wall"),
-                   natural(*polar(*SECRET)), height=6.0)
+        # Out of the lake through the Frozen Pass, east.
+        smp, _ = c.nearest(*SL.FROZEN_PASS)
+        (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
+        way = pb.line(natural, (smp.p.x, smp.p.y), (bx - 10.0, by), z0=smp.p.z)
+        c.side_road("Frozen Pass Road", way, "packed_snow_road", "road", **trail)
 
+    X0, X1, Y0, Y1 = -480, 480, -490, 480
+    ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
+
+    def ground(x, y):
+        z = c.ground_z(x, y, [ter])
+        return natural(x, y) if z is None else z
+
+    lx, ly, lr, lz = SL.LAKE
+    c.disc("Frozen Lake", lx, ly, lr + 4.0, lz - 0.05, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.06)
+
+    thresholds(c, ground)
+    village(c, ground)
+    landmarks(c, ground, spots)
+    if RUIN:
+        ruined(c, ground)
+    ice_bells(c, ground)
+    puzzle_kit.pen(c, "return", "Hot Spring", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("frost_stone", "wall"),
+                   ground(*RETURN), height=6.0)
+    puzzle_kit.pen(c, "secret", "Old Store", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("citadel_stone", "wall"),
+                   ground(*SECRET), height=6.0)
+    pb.emit_spots(c, spots)
+    dress(c, ground, spots)
     # The gorge's far end, back towards the valley: it bends out of sight.
-    box(c, "Gorge Bend", gorge_x(GORGE_Y0 - 4), GORGE_Y0 - 4, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("obsidian_cliff", "wall"))
+    box(c, "Gorge Bend", gorge_x(gy - 8), gy - 8, GORGE_HW + 24.0, 6.0, natural(0, gy) - 2.0, RIM_Z + 20.0,
+        ("obsidian_cliff", "wall"))
     c.entity("snowfall", rate=60, radius=60)
 
-    dress(c)
-    # (Raced too: the champion's challenge, once round the ring, from this line.)
+    # (Raced too: the champion's challenge, once round the loop, from this line.)
     c.start_line()
-    gates = c.checkpoints(height=10.0)
+    gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
+    print("loop", round(c.length, 1), "gates", len(gts))
 
 
-def ruined(c):
-    """After Rimefang's attack: his lair, the road to the Frozen Pass (his ice across it is
-    the game's: regions.ts blocker, which breaks open when he falls), and ice shards
-    driven into the fields."""
-    # (Where the pass leaves the basin, the cliff's foot: a dark cleft behind the ice.)
-    x, y = polar(*FROZEN_PASS)
-    rot = math.radians(FROZEN_PASS[0]) + math.pi / 2
-    box(c, "Frozen Pass Cleft", x, y, 7.0, 1.5, FLOOR_Z - 1.0, FLOOR_Z + 16.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+def thresholds(c, ground):
+    """The Gatehouse (through Frostveil's curtain wall, a castle gate at each end), the Ice
+    Cave (blue ice, crystals in its walls), the Frozen Falls (a tunnel up behind a frozen
+    waterfall into the village), and the Snowshed (a timber avalanche gallery down the
+    cliff to the lake)."""
+    kp.use_palette({"keep_ashlar": "citadel_stone", "keep_ashlar_dark": "citadel_dark", "keep_parapet": "citadel_stone",
+                    "keep_gold": "temple_gold", "keep_banner": "banner_teal", "keep_pine": "pine_snow"})
+    for name, kind, a, b in L.tunnels:
+        s0, s1 = pb.tunnel_span(c, L, a, b)
+        if kind == "gatehouse":
+            half = pb.bore(c, L, name, s0, s1, ("citadel_stone", "wall"), ("snow_ground", "deep_snow"), height=11.0)
+            arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0)
+            tower = kp.round_tower(c, r=4.5, h=24.0)
+            for k, s in enumerate((s0 - 3.0, s1 + 3.0)):
+                q = c.at(s)
+                rot = math.atan2(q.t.y, q.t.x) - math.pi / 2
+                c.place(arch, q.p.x, q.p.y, q.p.z - 0.2, rot=rot, role="visual")
+                for sd in (-1, 1):
+                    x, y = q.p.x + q.r.x * sd * (half + 6.5), q.p.y + q.r.y * sd * (half + 6.5)
+                    c.place(tower, x, y, ground(x, y) - 0.5, rot=rot)
+            for k in range(3):
+                q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
+                for sd in (-1, 1):
+                    x, y = q.p.x + q.r.x * sd * (half - 0.6), q.p.y + q.r.y * sd * (half - 0.6)
+                    g = c.game(x, y, q.p.z + 4.5)
+                    c.entity("torch", x=g[0], y=g[1], z=g[2])
+        elif kind == "ice":
+            half = pb.bore(c, L, name, s0, s1, ("cavern_ice", "wall"), ("summit_snow", "deep_snow"), height=11.0)
+            crystals = [ap.fan(c, v, size=5.0, mat=m) for v, m in ((0, ap.CYAN), (1, ap.VIOLET), (2, ap.TEAL))]
+            s = s0 + 5.0
+            k = 0
+            while s < s1 - 4.0:
+                q = c.at(s)
+                sd = 1 if k % 2 else -1
+                x, y = q.p.x + q.r.x * sd * (half - 0.3), q.p.y + q.r.y * sd * (half - 0.3)
+                c.place(crystals[k % 3], x, y, q.p.z + 1.0 + 3.0 * (k % 2), rot=math.atan2(q.r.y, q.r.x) * sd,
+                        role="visual")
+                g = c.game(x, y, q.p.z + 5.0)
+                c.entity("lantern", x=g[0], y=g[1], z=g[2])
+                s += 9.0
+                k += 1
+            for s in (s0 - 2.0, s1 + 2.0):
+                q = c.at(s)
+                c.place(ap.icicle_fringe(c, 0, width=2 * half, length=4.0), q.p.x, q.p.y, q.p.z + 10.5,
+                        rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, role="visual")
+        else:  # the Frozen Falls
+            half = pb.bore(c, L, name, s0, s1, ("frost_cliff", "wall"), ("snow_ground", "deep_snow"), height=10.0)
+            q = c.at(s0 - 4.0)  # (the lake side: the falls pour down either side of the mouth)
+            for sd in (-1, 1):
+                x, y = q.p.x + q.r.x * sd * (half + 12.0), q.p.y + q.r.y * sd * (half + 12.0)
+                foot = ground(x, y)
+                wp.ice_fall(c, "%s %d" % (name, sd), x, y, foot + 22.0, foot - 0.5, 14.0, facing=(-q.t.x, -q.t.y))
+            c.place(ap.icicle_fringe(c, 1, width=2 * half + 4.0, length=5.0), q.p.x, q.p.y, q.p.z + 9.5,
+                    rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, role="visual")
+            for k in range(3):
+                q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
+                g = c.game(q.p.x + q.r.x * (half - 0.6), q.p.y + q.r.y * (half - 0.6), q.p.z + 4.5)
+                c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    snowshed(c, ground)
 
-    # Rimefang's lair: an ice cave in the north-west cliff, jagged ice round its mouth.
-    x, y = polar(*LAIR)
-    rot = math.radians(LAIR[0]) + math.pi / 2
-    box(c, "Lair Mouth", x, y, 8.0, 2.0, FLOOR_Z - 1.0, FLOOR_Z + 12.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+
+def snowshed(c, ground):
+    """The Snowshed: down the cliff from the glacier to the lake, a timber gallery over the
+    road (posts on the open, lake side; its roof sloping back into the cliff)."""
+    a = SL.ROUTE[33]
+    b = SL.ROUTE[35]
+    s0 = c.nearest(*a[:2])[0].s
+    s1 = c.nearest(*b[:2])[0].s
+    if s1 < s0:
+        s1 += c.length
+    timber = ("weathered_timber", "wall")
+    s = s0
+    k = 0
+    while s < s1:
+        q = c.at(s)
+        half = q.w / 2 + 2.0
+        # Which side is the cliff (the higher ground)?
+        hl = ground(q.p.x - q.r.x * (half + 8), q.p.y - q.r.y * (half + 8))
+        hr = ground(q.p.x + q.r.x * (half + 8), q.p.y + q.r.y * (half + 8))
+        out = 1 if hr < hl else -1
+        rot = math.atan2(q.r.y, q.r.x)
+        x, y = q.p.x + q.r.x * out * half, q.p.y + q.r.y * out * half
+        box(c, "Snowshed Post %d" % k, x, y, 0.5, 0.5, q.p.z - 1.0, q.p.z + 7.0, timber, rot=rot)
+        # (the roof: from over the posts up into the cliff, visual)
+        rx, ry = q.p.x + q.r.x * -out * 2.0, q.p.y + q.r.y * -out * 2.0
+        box(c, "Snowshed Roof %d" % k, rx, ry, half + 5.0, 3.4, q.p.z + 7.0, q.p.z + 7.5, timber, rot=rot, role="visual")
+        box(c, "Snowshed Snow %d" % k, rx, ry, half + 5.2, 3.5, q.p.z + 7.5, q.p.z + 8.2, ("snow_ground", "deep_snow"),
+            rot=rot, role="visual")
+        if k % 2 == 0:
+            g = c.game(x, y, q.p.z + 6.0)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+        s += 6.0
+        k += 1
+
+
+def village(c, ground):
+    """Hearthglow: the town square in its hollow, the cottages round it, the great tree, the
+    stalls, the bell tower, lanterns (after the attack: frozen solid, the tree iced)."""
+    cx, cy, cr, cz = HUB
+    c.disc("Village Square", cx, cy, cr, cz + 0.05, c.lib("hearth_cobble", "road"), coll="Props", n=40)
+    for k in range(8):
+        a = k * math.tau / 8 + math.pi / 8
+        if math.sin(a) > 0.75 or math.sin(a) < -0.8:
+            continue  # (clear of the ways in: north to the road, south to the gorge)
+        hx, hy = cx + (cr + 7) * math.cos(a), cy + (cr + 7) * math.sin(a)
+        if RUIN:
+            box(c, "House %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 4.0, ("hearth_stone", "wall"), rot=a)
+            box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, cz - 1.0, cz + 6.5, ("berg_ice", "wall"), rot=a + 0.08)
+            continue
+        c.place(hp.cottage(c, k % 4), hx, hy, ground(hx, hy) - 0.2, rot=a - math.pi / 2)
+    gx, gy = SL.GATES["hearthglow"]
+    if RUIN:
+        box(c, "Great Tree Trunk", gx, gy, 1.6, 1.6, ground(gx, gy) - 1.0, ground(gx, gy) + 8.0, ("weathered_timber", "wall"))
+        for k, (r, z) in enumerate(((8.0, 6.0), (6.0, 12.0), (4.0, 17.0))):
+            cone(c, "Great Tree Ice %d" % k, gx, gy, r, ground(gx, gy) + z, 6.0, ("glacier_ice", "wall"), segs=8,
+                 role="visual")
+    else:
+        hp.giant_tree(c, "Great Tree", gx, gy, ground(gx, gy), height=34.0)
+    g = c.game(cx, cy, cz + 0.3)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    if not RUIN:
+        tower = hp.bell_tower(c)
+        c.place(tower, cx + 18.0, cy - 30.0, ground(cx + 18.0, cy - 30.0) - 0.2, rot=math.pi)
+        for k in range(3):
+            a = 0.9 + 0.5 * k
+            x, y = cx + (cr - 4) * math.cos(-a), cy + (cr - 4) * math.sin(-a)
+            c.place(hp.stall(c, k % 2), x, y, cz, rot=-a + math.pi / 2)
+
+
+def landmarks(c, ground, spots):
+    """Each world's landmark, its gateway in front of it: Frostveil's keep, the summit's
+    giant tree and shipwreck, the rift in the glacier."""
+    def facing(name):
+        (ex, ey), _ = spots[name]
+        gx, gy = SL.GATES[name] if name in SL.GATES else SL.LAIR
+        return math.atan2(gy - ey, gx - ex)
+
+    # Frostveil Citadel: the keep behind its gate.
+    gx, gy = SL.GATES["frostveil"]
+    f = facing("frostveil")
+    keep = kp.keep_block(c, w=30.0, d=20.0, h=30.0)
+    c.place(keep, gx + 14.0 * math.cos(f), gy + 14.0 * math.sin(f), ground(gx, gy) - 0.5, rot=f + math.pi / 2)
+    arch = kp.gate_arch(c, span=16.0, clear=9.0, depth=5.0)
+    c.place(arch, gx, gy, ground(gx, gy) - 0.3, rot=f - math.pi / 2, role="visual")
+    box(c, "Keep Gate Dark", gx + 2.0 * math.cos(f), gy + 2.0 * math.sin(f), 6.0, 1.0, ground(gx, gy) - 1.0,
+        ground(gx, gy) + 9.0, ("dark_corridor", "wall"), rot=f + math.pi / 2, role="visual")
+    # Snowy Summit: the giant tree.
+    gx, gy = SL.GATES["summit"]
+    z = ground(gx, gy)
+    box(c, "Giant Tree Trunk", gx, gy, 6.0, 6.0, z - 2.0, z + 50.0, ("giant_bark", "wall"))
+    for k, (r, h) in enumerate(((24.0, 34.0), (18.0, 48.0), (12.0, 60.0))):
+        cone(c, "Giant Tree Crown %d" % k, gx, gy, r, z + h, 18.0, ("glacier_ice" if RUIN else "pine_snow", "wall"), segs=8,
+             role="visual")
+    # Aurora Rift: the crack in the glacier, ice spires either side, the sky alight.
+    gx, gy = SL.GATES["aurora"]
+    f = facing("aurora")
+    z = ground(gx, gy)
+    box(c, "Rift Crack", gx + 3.0 * math.cos(f), gy + 3.0 * math.sin(f), 5.0, 1.0, z - 1.0, z + 22.0, ("icefall_rift", "wall"),
+        rot=f + math.pi / 2, role="visual")
+    for sd in (-1, 1):
+        x, y = gx + sd * 12.0 * math.cos(f + math.pi / 2), gy + sd * 12.0 * math.sin(f + math.pi / 2)
+        c.place(ap.spire_cluster(c, 0 if sd < 0 else 1, height=34.0), x, y, ground(x, y) - 0.5, role="visual")
+        c.place(paint.trunk_proto(c, 5.0, 16.0), x, y, ground(x, y) - 0.5, coll="Collision", role="collision")
+    g = c.game(gx, gy, z + 30.0)
+    c.entity("sparkles", rate=12, radius=40)
+
+
+def ruined(c, ground):
+    """After Rimefang's attack: his lair (ice teeth round a dark mouth in the summit's north
+    wall), the cleft of the Frozen Pass, ice shards in the fields."""
+    lx, ly = SL.LAIR
+    z = ground(lx, ly)
+    box(c, "Lair Mouth", lx, ly + 4.0, 8.0, 2.0, z - 1.0, z + 12.0, ("dark_corridor", "wall"), role="visual")
     for k in range(7):
         t = (k - 3) / 3.0
         if abs(t) < 0.4:
-            continue  # (the mouth itself)
-        px, py = x + t * 12.0 * math.cos(rot), y + t * 12.0 * math.sin(rot)
-        cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, FLOOR_Z - 1.0, 10.0 + 8.0 * (1 - abs(t)) + 4.0 * math.sin(k * 2.1),
+            continue
+        px, py = lx + t * 13.0, ly + 2.0
+        cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, ground(px, py) - 1.0, 10.0 + 8.0 * (1 - abs(t)),
              ("glacier_ice", "wall"), segs=5)
-    avoid = (0.0, 90.0, 180.0, -90.0, FROZEN_PASS[0], LAIR[0], HUT[0], RETURN[0], SECRET[0], *(a for a, _, _ in BELLS))
-    spots = ruin.ring_spots(18, 140.0, 188.0, 5, avoid) + ruin.ring_spots(14, 250.0, 312.0, 6, avoid)
-    vx, vy, vr = VILLAGE
-    spots = [(x, y) for x, y in spots if math.hypot(x - vx, y - vy) > vr + 16]
-    ruin.shards(c, "Ice Shard", spots, natural, ("glacier_ice", "wall"), seed=7)
+    bx, by = SL.PASS_END
+    box(c, "Frozen Pass Bend", bx + 6.0, by, 6.0, 40.0, natural(bx, by) - 2.0, RIM_Z + 20.0, ("frost_cliff", "wall"))
+    spots = []
+    for k in range(40):
+        a = k * 2.399
+        r = 60.0 + 380.0 * ((k * 0.618) % 1.0)
+        x, y = r * math.cos(a), r * math.sin(a)
+        if L.wall_sd(x, y) < -16 and paint.road_clear(c, x, y, 8.0):
+            spots.append((x, y))
+    ruin.shards(c, "Ice Shard", spots, ground, ("glacier_ice", "wall"), seed=7)
 
 
-def dress(c):
-    """The paint pass: Snowy Summit's snowy pines, frosted broadleaves and shrubs over the
-    basin, boulders at the peaks' feet, lantern posts and snowmen round the village.
-    After the attack: the pines frozen into ice, the shrubs gone."""
-    vx, vy, vr = VILLAGE
-    taken = paint.Taken([(vx, vy, vr + 18.0), (*polar(*CITADEL), 30.0), (*polar(*TREE), 34.0), (*polar(*RIFT), 36.0),
-                         (*polar(*FROZEN_PASS), 22.0), (*polar(*HUT), 18.0), (*polar(*RETURN), 18.0),
-                         (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*LAIR), 26.0), (*polar(*SECRET), 16.0),
-                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
-                         *((*polar(a, r), 12.0) for a, r, _ in BELLS)])
+def ice_bells(c, ground):
+    puzzle_kit.pen(c, "ice_bells", "Bell Hut", *HUT, pb.to_road(c, *HUT), HUT_HALF, HUT_GAP, ("frost_stone", "wall"),
+                   ground(*HUT), roof=("pine_snow", "wall"), height=6.0)
+    puzzle_kit.switches(c, "ice_bells", BELLS, ground, lanterns=LANTERNS)
 
-    def open_ground(x, y):
-        r = math.hypot(x, y)
-        if r < LAKE_R + 8 or r > CLIFF_R - 10:
+
+def dress(c, ground, spots):
+    """The paint pass, world by world: the village's lantern posts, Christmas pines and
+    snowmen; the bailey's curtain walls, towers, braziers and banners; the summit's pines,
+    broadleaves, boulders, the frozen shipwreck and the mammoth's tusk gate; the glacier's
+    ice columns, spires and crystal gardens; the lake's icebergs. After the attack: the
+    pines frozen into ice, the undergrowth gone."""
+    taken = paint.Taken([(HUB[0], HUB[1], HUB[2] + 10.0), (*HUT, 26.0), (*RETURN, 18.0), (*SECRET, 16.0),
+                         *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
+                         *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0)])
+
+    def inside(x, y):
+        if L.wall_sd(x, y) > -8:
             return False
-        return not (abs(x - gorge_x(y)) < GORGE_HW + 12 and y < -250)
+        lx, ly, lr, _ = SL.LAKE
+        return math.hypot(x - lx, y - ly) > lr + 6
 
-    def foot(x, y):
-        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+    def look(name):
+        return lambda x, y: inside(x, y) and L.look_at(x, y) == name
 
-    g = natural
-    for v in range(2):
-        paint.scatter(c, sp.boulder(c, v), 14, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.2))
+    rmax = 470.0
+    g = ground
     pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=True) for v in range(3)]
+    for name in ("hearth", "frostveil", "summit", "lake"):
+        for v in range(2):
+            paint.scatter(c, sp.boulder(c, v), 6, rmax, lambda x, y, n=name: look(n)(x, y) and L.wall_sd(x, y) > -30, g,
+                          taken, 90 + v + len(name), room=4.0, scale=(1.0, 2.2), road_margin=9.0)
     if RUIN:
-        # Rimefang's frost: the pines stand frozen in ice, nothing else grows.
         for v, p in enumerate(pines):
-            for x, y in paint.scatter(c, p, 40, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(0.9, 1.4),
-                                      road_margin=7.0):
-                cone(c, "Frozen Pine %d %d" % (v, int(x)), x, y, 3.2, g(x, y) - 0.5, 9.0 + 3.0 * v, ("glacier_ice", "wall"), segs=6,
-                     role="visual")
+            for x, y in paint.scatter(c, p, 50, rmax, lambda x, y: inside(x, y) and L.look_at(x, y) != "aurora", g, taken,
+                                      10 + v, room=5.0, scale=(0.9, 1.4), road_margin=7.0):
+                cone(c, "Frozen Pine %d %d" % (v, int(x)), x, y, 3.2, g(x, y) - 0.5, 9.0 + 3.0 * v, ("glacier_ice", "wall"),
+                     segs=6, role="visual")
         return
-    for v, p in enumerate(pines):
-        paint.scatter(c, p, 70, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0)
-        paint.scatter(c, p, 18, CLIFF_R, open_ground, g, taken, 20 + v, room=4.0, near_road=(6.0, 14.0))
+    # Hearthglow: Christmas pines with lights, lantern posts along the road, snowmen.
+    hub = look("hearth")
     for v in range(2):
-        paint.scatter(c, sp.broadleaf(c, v, frosted=True), 25, CLIFF_R, open_ground, g, taken, 30 + v, room=5.0,
-                      road_margin=7.0)
-        paint.scatter(c, sp.shrub(c, v), 90, CLIFF_R, open_ground, g, taken, 40 + v, room=2.5, role="visual",
-                      scale=(0.7, 1.4))
-    # Round the village: lantern posts along the road in, snowmen in the fields.
+        paint.scatter(c, hp.xmas_pine(c, v, height=12.0 + 3.0 * v), 10, rmax, hub, g, taken, 60 + v, room=6.0,
+                      road_margin=6.0, trunk=(0.8, 6.0))
     post = hp.lantern_post(c, 0)
-    for k in range(3):  # (up the road to just short of the ring)
-        for side in (-1, 1):
-            x, y = vx + side * 7.0, vy + vr + 4.0 + k * 9.0
-            c.place(post, x, y, g(x, y))
-            gx, gy, gz = c.game(x, y, g(x, y) + 4.6)
-            c.entity("lantern", x=gx, y=gy, z=gz)
-    paint.scatter(c, hp.snowman(c, 0), 8, CLIFF_R, lambda x, y: open_ground(x, y) and math.hypot(x - vx, y - vy) < 110, g,
-                  taken, 50, room=3.0)
-
-
-def ice_bells(c):
-    # The Ice Bells' hut (its ice door is the game's) and where the bells hang.
-    px, py = polar(*HUT)
-    ia = math.radians(HUT[0]) + math.pi  # facing in, towards the lake
-    fx, fy = math.cos(ia), math.sin(ia)
-    sx, sy = -fy, fx
-    stone = ("frost_stone", "wall")
-    t = 0.8
-    for k, (cx, cy, hx, hy) in enumerate((
-            (-HUT_HALF, 0.0, t, HUT_HALF + t),
-            (0.0, HUT_HALF, HUT_HALF + t, t),
-            (0.0, -HUT_HALF, HUT_HALF + t, t),
-            (HUT_HALF, (HUT_HALF + HUT_GAP) / 2, t, (HUT_HALF - HUT_GAP) / 2 + t),
-            (HUT_HALF, -(HUT_HALF + HUT_GAP) / 2, t, (HUT_HALF - HUT_GAP) / 2 + t))):
-        wx, wy = px + cx * fx + cy * sx, py + cx * fy + cy * sy
-        box(c, "Hut Wall %d" % k, wx, wy, hx, hy, FLOOR_Z - 2.0, FLOOR_Z + 6.0, stone, rot=ia)
-    cone(c, "Hut Roof", px, py, HUT_HALF * 1.55, FLOOR_Z + 6.0, 7.0, ("pine_snow", "wall"), segs=4, role="visual")
-    for side in (-1, 1):
-        gx, gy = px + HUT_HALF * fx + side * (HUT_GAP + 0.9) * sx, py + HUT_HALF * fy + side * (HUT_GAP + 0.9) * sy
-        box(c, "Hut Doorpost %d" % side, gx, gy, 1.2, 1.2, FLOOR_Z - 2.0, FLOOR_Z + 8.0, stone, rot=ia)
-    box(c, "Hut Plinth", px, py, 1.0, 1.0, FLOOR_Z - 1.0, FLOOR_Z + 1.2, stone, rot=ia)
-    gx, gy, gz = c.game(px + HUT_HALF * fx, py + HUT_HALF * fy, FLOOR_Z)
-    c.entity("puzzle_gate", puzzle="ice_bells", x=gx, z=gz, heading=math.atan2(fx, -fy), width=2 * HUT_GAP,
-             prize_x=c.game(px, py, 0)[0], prize_z=c.game(px, py, 0)[2])
-    for k, (a, r, n) in enumerate(BELLS):
-        x, y = polar(a, r)
-        gx, gy, gz = c.game(x, y, 0.0)
-        c.entity("puzzle_switch", puzzle="ice_bells", index=k, x=gx, z=gz, lanterns=n)
+    for x, y in paint.scatter(c, post, 10, rmax, hub, g, taken, 62, room=10.0, near_road=(3.0, 5.0)):
+        gx, gy, gz = c.game(x, y, g(x, y) + 4.6)
+        c.entity("lantern", x=gx, y=gy, z=gz)
+    paint.scatter(c, hp.snowman(c, 0), 5, rmax, hub, g, taken, 63, room=3.0)
+    # Frostveil: towers and curtain walls round the bailey's edge, braziers, banners.
+    fv = look("frostveil")
+    for x, y in paint.scatter(c, kp.round_tower(c, r=4.0, h=20.0), 8, rmax,
+                              lambda x, y: fv(x, y) and L.wall_sd(x, y) > -16, g, taken, 70, room=26.0, road_margin=10.0):
+        pass
+    wall = kp.curtain_wall(c, length=18.0, h=10.0)
+    for x, y in paint.scatter(c, wall, 10, rmax, lambda x, y: fv(x, y) and L.wall_sd(x, y) > -14, g, taken, 71, room=14.0,
+                              road_margin=10.0):
+        pass
+    for x, y in paint.scatter(c, kp.brazier(c), 8, rmax, fv, g, taken, 72, room=8.0, near_road=(3.0, 6.0)):
+        gx, gy, gz = c.game(x, y, g(x, y) + 2.4)
+        c.entity("torch", x=gx, y=gy, z=gz)
+    paint.scatter(c, kp.banner_pole(c), 8, rmax, fv, g, taken, 73, room=8.0, near_road=(3.0, 6.0))
+    for v, p in enumerate(pines[:2]):
+        paint.scatter(c, p, 14, rmax, fv, g, taken, 74 + v, room=6.0, scale=(0.9, 1.3), road_margin=7.0, trunk=(0.8, 6.0))
+    # The summit: pines, broadleaves, shrubs, the frozen shipwreck, the tusk gate over the road.
+    su = look("summit")
+    for v, p in enumerate(pines):
+        paint.scatter(c, p, 40, rmax, su, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0, trunk=(0.8, 6.0))
+    for v in range(2):
+        paint.scatter(c, sp.broadleaf(c, v, frosted=True), 12, rmax, su, g, taken, 30 + v, room=5.0, road_margin=7.0,
+                      trunk=(0.9, 6.0))
+        paint.scatter(c, sp.shrub(c, v), 50, rmax, su, g, taken, 40 + v, room=2.5, role="visual", scale=(0.7, 1.4))
+    paint.scatter(c, sp.shipwreck(c), 1, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -24, g, taken, 44, room=40.0,
+                  road_margin=18.0)
+    paint.scatter(c, sp.lookout_hut(c), 2, rmax, su, g, taken, 45, room=10.0, road_margin=8.0)
+    # The glacier: ice columns, spires, crystal gardens, ice spikes.
+    au = look("aurora")
+    for v in range(2):
+        paint.scatter(c, ap.ice_column(c, v, height=30.0, radius=4.0), 6, rmax,
+                      lambda x, y: au(x, y) and L.wall_sd(x, y) > -24, g, taken, 80 + v, room=14.0, road_margin=10.0)
+        paint.scatter(c, ap.spire_cluster(c, v, height=22.0), 5, rmax, au, g, taken, 82 + v, room=14.0, road_margin=10.0,
+                      trunk=(4.0, 12.0))
+        paint.scatter(c, ap.ice_spike(c, v, height=10.0), 14, rmax, au, g, taken, 84 + v, room=5.0, road_margin=6.0)
+    paint.scatter(c, ap.garden(c, 0, radius=8.0), 4, rmax, au, g, taken, 86, room=14.0, road_margin=9.0, role="visual")
+    # The lake: pines on its shores, icebergs frozen in the ice.
+    la = look("lake")
+    for v, p in enumerate(pines[:2]):
+        paint.scatter(c, p, 16, rmax, la, g, taken, 50 + v, room=6.0, scale=(0.9, 1.3), road_margin=7.0, trunk=(0.8, 6.0))
+    lx, ly, lr, lz = SL.LAKE
+    for k in range(5):
+        a = k * 1.3 + 0.5
+        x, y = lx + lr * 0.75 * math.cos(a), ly + lr * 0.75 * math.sin(a)
+        if taken.clear(x, y, 10.0) and paint.road_clear(c, x, y, 8.0):
+            c.place(sp.iceberg(c, k % 2), x, y, lz - 0.4, rot=a)
+            taken.add(x, y, 10.0)
 
 
 if __name__ == "__main__":

@@ -229,62 +229,67 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // The doc's second region (tools/blender/prehistoric/snow_region.py, a greybox): a
-    // basin ringed by peaks, a frozen lake in the middle, Hearthglow's village by the gorge.
+    // The second region (tools/blender/prehistoric/snow_layout.py, snow_region.py): walled
+    // pockets like the valley's, the main road one loop through them, a threshold each
+    // time: Hearthglow's village (the hub, the Burnt Gorge up into it from the valley), the
+    // Gatehouse into Frostveil's bailey, the Climb to the summit meadow, the Ice Cave to the
+    // glacier, the Snowshed down to the frozen lake, the Frozen Falls back up to the village.
+    // (The positions below are the build's entities.)
     id: "snow_kingdom",
     name: "Snow Kingdom",
     packageId: "snow_region",
     ruinPackageId: "snow_region_ruin",
-    // A secret, for the way back: an old store in the south-east, buried under a drift the Desert Tool blows away.
+    // A secret, for the way back: an old store in Frostveil's bailey, buried under a drift the Desert Tool blows away.
     secret: {
       obstacle: "drift",
       tool: "desert",
-      gate: { x: 252.01, z: 145.5, heading: -2.0944, width: 9 },
-      spot: { x: 259.81, z: 150.0 },
+      gate: { x: -203.43, z: 98.85, heading: -1.929, width: 9 },
+      spot: { x: -195, z: 102 },
     },
-    // Act V's return task: Brachio's hot spring, a walled yard in the north-east: its way in is frozen shut.
+    // Act V's return task: Brachio's hot spring, a walled yard in the summit meadow: its way in is frozen shut.
     returnTask: {
       obstacle: "ice",
-      gate: { x: 144.5, z: -250.28, heading: -0.5236, width: 9 },
-      spot: { x: 150.0, z: -259.81 },
+      gate: { x: -91.36, z: -265.22, heading: 1.315, width: 9 },
+      spot: { x: -102, z: -268 },
     },
     music: "hearthglow",
     worldId: "frostveil",
     kingdom: "snow",
-    challenge: { x: 238, z: 14, heading: -Math.PI / 2 },
-    // In the village square, facing north up to the ring.
-    spawn: { x: 0, z: 290, heading: Math.PI },
+    // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
+    challenge: { x: 25, z: 205, heading: -1.7204 },
+    // In the village square, facing north to the road.
+    spawn: { x: 0, z: 250, heading: Math.PI },
     gateways: [
-      // By the village's great tree (the town square).
+      // By the village's great tree.
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: 20,
-        z: 275,
+        x: -59.53,
+        z: 193.14,
         radius: 6,
-        heading: -Math.PI / 2,
+        heading: 0.382,
       },
-      // At the citadel's gate in the west cliff.
+      // At the keep's gate in the bailey's west wall.
       {
         id: "frostveil",
         track: "frostveil_citadel",
-        x: -331,
-        z: 0,
+        x: -332.64,
+        z: 54.5,
         radius: 6,
-        heading: Math.PI / 2,
+        heading: 2.246,
       },
-      // At the foot of the giant tree, north.
-      { id: "summit", track: "snowy_summit", x: 0, z: -285, radius: 6, heading: 0 },
-      // At the crack in the glacier, east.
-      { id: "aurora", track: "aurora_rift", x: 331, z: 0, radius: 6, heading: -Math.PI / 2 },
-      // Rimefang's lair, an ice cave in the north-west cliff: the dragon's race.
+      // At the foot of the giant tree in the summit meadow.
+      { id: "summit", track: "snowy_summit", x: -243.28, z: -278.06, radius: 6, heading: 0.595 },
+      // At the rift in the glacier.
+      { id: "aurora", track: "aurora_rift", x: 306.8, z: -99.69, radius: 6, heading: -1.203 },
+      // Rimefang's lair, an ice cave in the summit's north wall: the dragon's race.
       {
         id: "lair",
         track: "boss_snowy",
-        x: -232.6,
-        z: -232.6,
+        x: -118.43,
+        z: -309.46,
         radius: 6,
-        heading: Math.PI / 4,
+        heading: -0.779,
         boss: true,
         label: "RIMEFANG'S LAIR",
       },
@@ -296,21 +301,21 @@ export const REGIONS: Region[] = [
         label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
         to: "dinosaur_valley",
         toPassage: "burnt_gorge",
-        x: -2.8,
-        z: 440,
+        x: 0,
+        z: 462,
         radius: 8,
         heading: Math.PI,
       },
-      // The Frozen Pass, east past the glacier: on to Desert World.
+      // The Frozen Pass, east out of the lake: on to Desert World.
       {
         id: "frozen_pass",
         label: "THE FROZEN PASS · TO DESERT WORLD",
         to: "desert_world",
         toPassage: "frozen_pass",
-        x: 288.7,
-        z: -153.5,
+        x: 400,
+        z: 190,
         radius: 8,
-        heading: Math.atan2(-0.883, 0.469),
+        heading: -Math.PI / 2,
         ruinOnly: true,
         blocker: { kind: "ice", width: 13 },
         opensAfter: "snow",
@@ -319,10 +324,9 @@ export const REGIONS: Region[] = [
     ],
 
     puzzles: [
-      // The Ice Bells: a frost-stone hut in the south-west, its ice door shut. Ring the
-      // three bells in order; the clue is their lanterns (one by the lake's west shore,
-      // two out on the ice, three up towards the village). A wrong bell and they all go
-      // quiet. Behind the door: the kingdom's hidden key.
+      // The Ice Bells: a frost-stone hut on an island in the frozen lake, its ice door shut.
+      // Ring the three bells out on the ice in order; the clue is their lanterns (one, two,
+      // three). A wrong bell and they all go quiet. Behind the door: the kingdom's hidden key.
       {
         id: "ice_bells",
         label: "THE ICE BELLS",
@@ -330,14 +334,14 @@ export const REGIONS: Region[] = [
         hint: "RING THE BELLS FROM THE FEWEST LANTERNS TO THE MOST",
         ordered: true,
         switches: [
-          { x: -135.95, z: 63.39, lanterns: 1 },
-          { x: -35.0, z: 60.62, lanterns: 2 },
-          { x: -91.66, z: 251.84, lanterns: 3 },
+          { x: 90, z: 60, lanterns: 1 },
+          { x: 150, z: 112, lanterns: 2 },
+          { x: 104, z: 132, lanterns: 3 },
         ],
         radius: 3.5,
         seconds: 0,
-        gate: { x: -199.4, z: 199.4, heading: (3 * Math.PI) / 4, width: 9 },
-        prize: { kind: "key", x: -206.48, z: 206.48 },
+        gate: { x: 127.89, z: 90.5, heading: 1.722, width: 9 },
+        prize: { kind: "key", x: 118, z: 92 },
       },
     ],
   },
