@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "id": "journey_cause",
+  "name": "Tidewyrm's Causeway",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 1
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 30.9,
+      "y": 6.6,
+      "z": -228.79
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 46.63,
+      "y": 6.6,
+      "z": -201.84
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 62.25,
+      "y": 6.6,
+      "z": -176.13
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 12.68,
+      "y": 8.6,
+      "z": -407.85
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -9.3,
+      "y": 8.6,
+      "z": -406.94
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 60.99,
+      "y": 19.13,
+      "z": 399.72
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 82.4,
+      "y": 19.13,
+      "z": 394.68
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 13.51,
+      "y": -3.35,
+      "z": -252.65
+    },
+    {
+      "id": "villager_home_01",
+      "type": "villager_home",
+      "x": 15.25,
+      "z": -253.64,
+      "y": -3.07,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": -1.055
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 36.52,
+      "y": -6.36,
+      "z": -71.85
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 38.34,
+      "z": -72.67,
+      "y": -6.37,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": -1.149
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 91.03,
+      "y": 4.79,
+      "z": 28.71
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": 89.65,
+      "z": 27.26,
+      "y": 4.6,
+      "r": 14.0,
+      "n": 2,
+      "folk": "road",
+      "heading": 0.763
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -31.33,
+      "y": -5.84,
+      "z": 211.42
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -29.77,
+      "z": 210.17,
+      "y": -6.14,
+      "r": 14.0,
+      "n": 1,
+      "folk": "road",
+      "heading": -0.894
+    },
+    {
+      "id": "storm_01",
+      "type": "storm",
+      "period": 11,
+      "spread": 5,
+      "distance": 900
+    }
+  ],
+  "generator": "tools/blender/prehistoric/journey_cause.py (re-running it rewrites entities)",
+  "journey": {
+    "from": 50.0,
+    "to": 1157.7
+  }
+}
