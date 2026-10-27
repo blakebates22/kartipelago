@@ -33,6 +33,7 @@ import { overworldLoading } from "./overworld";
 import { runLabel } from "../adventure/run";
 import { cupOver } from "../game/trophy";
 import { titleScreen } from "./title";
+import { instaWin } from "../debug/devFlags";
 
 const ordinal = (n: number) =>
   `${n}${["TH", "ST", "ND", "RD"][n % 10 < 4 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`;
@@ -42,6 +43,8 @@ const RESULTS_AFTER = 2.4;
 
 export function raceScreen(game: Game, session: Session, entry: TrackEntry): Screen {
   let showingResults = false;
+  /** Won by the dev menu's insta-win (no record from it). */
+  let instaWon = false;
   let lastCount = -1;
   let lastLap = 1;
   let banner: { text: string; until: number } | undefined;
@@ -128,6 +131,11 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
         }
       }
       lastLap = h.lap;
+      // Dev builds' insta-win (the dev menu's testing tools): won a moment after GO.
+      if (instaWin() && h.phase === "racing" && !h.finished && h.sinceGo > 0.4) {
+        instaWon = true;
+        session.debugWin();
+      }
       const since = session.finishedFor();
       if (since !== undefined && !showingResults) {
         if (!banner || banner.text !== "FINISH!") {
@@ -144,7 +152,8 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
           const mode = entry.modes.includes(game.selection.mode) ? game.selection.mode : "race";
           const rec = submitResult(
             entry.id,
-            mode === "timeTrial" ? "timeTrial" : "race",
+            // (An insta-win sets no record.)
+            mode === "timeTrial" && !instaWon ? "timeTrial" : "race",
             result.totalTime,
             result.bestLap,
           );
@@ -191,6 +200,7 @@ export function raceScreen(game: Game, session: Session, entry: TrackEntry): Scr
   function restart() {
     session.restart();
     showingResults = false;
+    instaWon = false;
     lastCount = -1;
     lastLap = 1;
     banner = undefined;

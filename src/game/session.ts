@@ -97,6 +97,7 @@ import { createSpeedometer } from "../render/speedometer";
 import type { LookMode } from "../render/trackMaterials";
 import { createParkSigns } from "../render/parkSigns";
 import { applySurface, createMeshGround, deepestWall } from "../world/collisionMesh";
+import { infiniteBoost } from "../debug/devFlags";
 import {
   disposeObject,
   loadTrackPackage,
@@ -594,6 +595,8 @@ function buildSession(
   /** Each kart's last spot on the road, grounded (respawn zones look it up too). */
   const lastRoad = entrants.map(() => ({ x: NaN, y: NaN, z: NaN }));
   /** Where race logic sees each kart (on a loop: the straight from its entry to its exit). */
+  /** The dev menu's infinite boost, as it was when this session began. */
+  const devBoost = infiniteBoost();
   const racePositions = () =>
     entrants.map((e, i) => (loops?.riding(i) ? loops.racePos(i, e.state) : e.state));
   // Blender tracks: lava, deep water, creatures and waterfalls from track.json.
@@ -1067,6 +1070,12 @@ function buildSession(
       // On a loop the AI holds the middle of the road.
       if (onLoop && e.driver) want = { ...want, steer: loops!.aiSteer(i) };
       if (i === 0 && !e.driver) {
+        // Dev builds' infinite boost (the dev menu): holding the item key keeps a zipper
+        // boost going (and fires no item).
+        if (devBoost && want.item) {
+          if (e.state.zipTime < 0.25 && canGo) startZipper(e.state, want.throttle, cfg);
+          want = { ...want, item: false };
+        }
         // The debug boost lab can script the throttle for a few seconds after a boost.
         const scripted = boostLab.throttle(e.state.zipPhase);
         if (scripted !== undefined) want = { ...want, throttle: scripted };
@@ -1981,6 +1990,16 @@ function buildSession(
       r.totalTime = clock;
       r.finished = true;
       race.finishOrder.push(index);
+    },
+    /**
+     * Dev builds' insta-win (the dev menu): every map fragment taken, you over the line
+     * first, the rivals after you in their places.
+     */
+    debugWin() {
+      if (!race || race.racers[0]!.finished) return;
+      if (coinField) for (const c of coinField.coins) c.taken = true;
+      this.debugFinish(0);
+      for (let i = 1; i < race.racers.length; i++) this.debugFinish(i);
     },
     setLookMode(mode: LookMode) {
       lookMode = mode;

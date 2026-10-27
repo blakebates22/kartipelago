@@ -73,6 +73,8 @@ import { stagedSceneScreen } from "./cutscene";
 import { stagedById } from "../adventure/staged";
 import { regionById, regionOfKingdom } from "../overworld/regions";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
+import { infiniteBoost, instaWin, setInfiniteBoost, setInstaWin } from "../debug/devFlags";
+import { clipSwitch } from "../debug/clipRecorder";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
 
 const store = () => safeStorage();
@@ -426,7 +428,7 @@ export function adventureHub(game: Game): Screen {
       const sel = spots[focus]!;
       const note =
         sel === "dev"
-          ? "DEV: JUMP ANYWHERE IN THE STORY"
+          ? "DEV TOOLS: INSTA-WIN, GO ANYWHERE, WARPS, STORY JUMPS, SCENES"
           : `${nameOf(sel).toUpperCase()}: ${statusOf(a.save, sel)}`;
       ui.rect(0, ui.H - 40, ui.W, 14, "#f4e8cc", 0.85);
       ui.text(note, ui.W / 2, ui.H - 37, { color: "#8a2a1a", align: "center" });
@@ -1073,7 +1075,7 @@ export function adventureCupDone(game: Game, _place: number) {
 // ---------------------------------------------------------------- dev tools
 
 /** Dev builds only: set the story to any point, without racing everything again. */
-function devMenu(game: Game): Screen {
+function storyJumps(game: Game, back: () => void): Screen {
   const a = adventureOf(game);
   const s = a.save;
   const save = () => persist(game);
@@ -1142,29 +1144,6 @@ function devMenu(game: Game): Screen {
       s.kingLost = true;
     }),
     {
-      label: "RACERS: UNLOCK ALL EIGHT",
-      action: () => {
-        setAllUnlocked(true);
-        game.sounds.confirm();
-      },
-    },
-    {
-      label: "RACERS: BACK TO THE STARTING FOUR",
-      action: () => {
-        setAllUnlocked(false);
-        game.sounds.confirm();
-      },
-    },
-    {
-      // Free roam: any region, standard or ruined, or any journey between them.
-      label: "OVERWORLD: WARP ANYWHERE (FREE ROAM)",
-      action: () => {
-        game.sounds.confirm();
-        game.overworld = undefined;
-        game.screens.push(devWarp(game));
-      },
-    },
-    {
       label: "REPLAY THE NEXT SCENE AGAIN",
       action: () => {
         s.seen.pop();
@@ -1173,21 +1152,18 @@ function devMenu(game: Game): Screen {
       },
     },
   ];
-  items.unshift(
-    {
-      label: "WATCH ANY SCENE (AS OFTEN AS YOU LIKE)",
-      action: () => game.screens.go(sceneList(game)),
-    },
-    {
-      label: freeRoam() ? "GO ANYWHERE: ON (TURN OFF)" : "GO ANYWHERE: OFF (TURN ON)",
-      action: () => {
-        setFreeRoam(!freeRoam());
-        game.sounds.confirm();
-        game.screens.go(devMenu(game));
-      },
-    },
-  );
-  const menu = new VMenu(game, items, () => game.screens.go(adventureHub(game)));
+  return devList(game, "JUMP IN THE STORY", "EACH JUMP REPLACES THE SAVE", items, back);
+}
+
+/** A dev menu page: a title, a note, a scrolling list. */
+function devList(
+  game: Game,
+  title: string,
+  note: string,
+  items: { label: string; action: () => void }[],
+  back: () => void,
+): Screen {
+  const menu = new VMenu(game, items, back);
   return {
     id: "ADVENTURE_DEV",
     seeThrough: false,
@@ -1196,36 +1172,115 @@ function devMenu(game: Game): Screen {
     },
     draw(ui) {
       ui.rect(0, 0, ui.W, ui.H, "#1d2a34");
-      ui.text("ADVENTURE DEV MENU", ui.W / 2, 6, {
-        color: PAL.gold,
-        outline: INK,
-        align: "center",
-      });
-      ui.text("DEV BUILDS ONLY · EACH JUMP REPLACES THE SAVE", ui.W / 2, 16, {
-        color: PAL.cream,
-        align: "center",
-      });
+      ui.text(title, ui.W / 2, 6, { color: PAL.gold, outline: INK, align: "center" });
+      ui.text(note, ui.W / 2, 16, { color: PAL.cream, align: "center" });
       menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3, 1, 12);
       hints(ui, [
         ["▲▼", "CHOOSE"],
-        ["ENTER", "JUMP"],
+        ["ENTER", "GO"],
         ["ESC", "BACK"],
       ]);
     },
   };
 }
 
+/**
+ * Dev builds: every testing tool on one short page (Blake, Oct 27: the menu ran off the
+ * screen): the switches first, then the pages of jumps, scenes and warps. `back`: where
+ * ESC goes (the world map, or the overworld's pause menu it was opened from); `extra`:
+ * more items from where it was opened (the overworld's world map).
+ */
+const clipLabel = () => (clipSwitch.on ? "RECORD CLIPS: ON · F4 SAVES" : "RECORD CLIPS: OFF");
+
+export function devMenu(
+  game: Game,
+  opts: { back?: () => void; extra?: { label: string; action: () => void }[] } = {},
+): Screen {
+  const back = opts.back ?? (() => game.screens.go(adventureHub(game)));
+  const again = () => game.screens.go(devMenu(game, opts));
+  const items: { label: string; action: () => void }[] = [
+    {
+      label: instaWin() ? "INSTA-WIN RACES: ON" : "INSTA-WIN RACES: OFF",
+      action: () => {
+        setInstaWin(!instaWin());
+        items[0]!.label = instaWin() ? "INSTA-WIN RACES: ON" : "INSTA-WIN RACES: OFF";
+      },
+    },
+    {
+      label: freeRoam() ? "GO ANYWHERE: ON" : "GO ANYWHERE: OFF",
+      action: () => {
+        setFreeRoam(!freeRoam());
+        items[1]!.label = freeRoam() ? "GO ANYWHERE: ON" : "GO ANYWHERE: OFF";
+      },
+    },
+    {
+      label: infiniteBoost() ? "INFINITE BOOST (HOLD E): ON" : "INFINITE BOOST (HOLD E): OFF",
+      action: () => {
+        setInfiniteBoost(!infiniteBoost());
+        const it = items.find((i) => i.label.startsWith("INFINITE BOOST"));
+        if (it)
+          it.label = infiniteBoost()
+            ? "INFINITE BOOST (HOLD E): ON"
+            : "INFINITE BOOST (HOLD E): OFF";
+      },
+    },
+    // The clip recorder (src/debug/clipRecorder.ts): while it's on, F4 saves the last
+    // 20-40 s of play as a video with the kart's readings (reviews/<track>/clips/).
+    ...(clipSwitch.available
+      ? [
+          {
+            label: clipLabel(),
+            action: () => {
+              clipSwitch.set(!clipSwitch.on);
+              const it = items.find((i) => i.label.startsWith("RECORD CLIPS"));
+              if (it) it.label = clipLabel();
+            },
+          },
+        ]
+      : []),
+    ...(opts.extra ?? []),
+    {
+      // Free roam: any region, standard or ruined, or any journey between them.
+      label: "WARP ANYWHERE (FREE ROAM) ...",
+      action: () => {
+        game.overworld = undefined;
+        game.screens.push(devWarp(game));
+      },
+    },
+    { label: "JUMP IN THE STORY ...", action: () => game.screens.go(storyJumps(game, again)) },
+    { label: "WATCH ANY SCENE ...", action: () => game.screens.go(sceneList(game, 0, again)) },
+    {
+      label: "RACERS: UNLOCK ALL EIGHT",
+      action: () => setAllUnlocked(true),
+    },
+    {
+      label: "RACERS: BACK TO THE STARTING FOUR",
+      action: () => setAllUnlocked(false),
+    },
+    { label: "BACK", action: back },
+  ];
+  return devList(
+    game,
+    "DEV TOOLS",
+    "DEV BUILDS ONLY · INSTA-WIN: EVERY RACE WON AT GO",
+    items,
+    back,
+  );
+}
+
 /** Dev builds: every scene in the story, to watch again and again (nothing is saved). */
-function sceneList(game: Game, at = 0): Screen {
+function sceneList(game: Game, at = 0, back = () => game.screens.go(devMenu(game))): Screen {
   const all = Object.values(SCENES);
   const menu = new VMenu(
     game,
     all.map((sc, i) => ({
       label: sc.id.toUpperCase().replace(/_/g, " "),
       action: () =>
-        game.screens.go(sceneScreen(game, sc.id, () => game.screens.go(sceneList(game, i)), false)),
+        game.screens.go(
+          sceneScreen(game, sc.id, () => game.screens.go(sceneList(game, i, back)), false),
+        ),
     })),
-    () => game.screens.go(devMenu(game)),
+    back,
   );
   menu.focus = at;
   return {

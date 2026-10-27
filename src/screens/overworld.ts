@@ -39,6 +39,7 @@ import { confirmDialog, drawHud } from "./race";
 import { optionsScreen } from "./options";
 import {
   adventureHub,
+  devMenu,
   adventureOf,
   freeRoam,
   journeyBegun,
@@ -1388,18 +1389,6 @@ function overworldPause(game: Game, region: Region): Screen {
                 game.screens.go(kingdomScreen(game, story));
               },
             },
-            // (No world map to hop from: every world is reached by driving there. Dev
-            // builds can still open it.)
-            ...(import.meta.env.DEV
-              ? [
-                  journeyBegun(adventureOf(game).save)
-                    ? {
-                        label: "WORLD MAP (DEV)",
-                        action: () => game.screens.go(adventureHub(game)),
-                      }
-                    : { label: "WORLD MAP (DEV)", action: () => peekWorldMap(game) },
-                ]
-              : []),
           ]
         : []),
       // Dev free roam: the region before or after its dragon's attack.
@@ -1414,9 +1403,35 @@ function overworldPause(game: Game, region: Region): Screen {
             },
           ]
         : []),
-      // Dev builds: straight to any region, standard or ruined, or any journey between.
+      // Dev builds: every testing tool on one page (insta-win, go anywhere, warps, story
+      // jumps, scenes; the world map in Adventure: no world map to hop from otherwise,
+      // every world is reached by driving there).
       ...(import.meta.env.DEV
-        ? [{ label: "WARP (DEV)", action: () => game.screens.push(devWarp(game)) }]
+        ? [
+            {
+              label: "DEV TOOLS",
+              action: () => {
+                const adventure = Boolean(game.overworld?.adventure);
+                const here = { ...game.overworld! };
+                const back = () => {
+                  game.overworld = here;
+                  game.screens.go(overworldLoading(game, region.id, undefined, adventure));
+                };
+                const extra = adventure
+                  ? [
+                      {
+                        label: "WORLD MAP",
+                        action: () =>
+                          journeyBegun(adventureOf(game).save)
+                            ? game.screens.go(adventureHub(game))
+                            : peekWorldMap(game),
+                      },
+                    ]
+                  : [];
+                game.screens.go(devMenu(game, { back, extra }));
+              },
+            },
+          ]
         : []),
       { label: "OPTIONS", action: () => game.screens.push(optionsScreen(game)) },
       {
