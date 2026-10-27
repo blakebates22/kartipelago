@@ -31,6 +31,116 @@
       "across": 0
     },
     {
+      "id": "tide_01",
+      "type": "tide",
+      "period": 14.0,
+      "low": -1.4,
+      "high": 1.0
+    },
+    {
+      "id": "sandbar_01",
+      "type": "sandbar",
+      "x": 124.28,
+      "y": 0.0,
+      "z": -7.98,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_02",
+      "type": "sandbar",
+      "x": 127.55,
+      "y": 0.0,
+      "z": -15.96,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_03",
+      "type": "sandbar",
+      "x": 130.83,
+      "y": 0.0,
+      "z": -23.93,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_04",
+      "type": "sandbar",
+      "x": 134.11,
+      "y": 0.0,
+      "z": -31.91,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_05",
+      "type": "sandbar",
+      "x": 137.39,
+      "y": 0.0,
+      "z": -39.89,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_06",
+      "type": "sandbar",
+      "x": 140.67,
+      "y": 0.0,
+      "z": -47.87,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_07",
+      "type": "sandbar",
+      "x": 143.95,
+      "y": 0.0,
+      "z": -55.85,
+      "r": 6.0
+    },
+    {
+      "id": "sandbar_08",
+      "type": "sandbar",
+      "x": 147.23,
+      "y": 0.0,
+      "z": -63.83,
+      "r": 6.0
+    },
+    {
+      "id": "coil_01",
+      "type": "coil",
+      "from": 235.9,
+      "to": 322.3,
+      "period": 8.0,
+      "offset": 0.0,
+      "up": 5.0
+    },
+    {
+      "id": "whirlpool_01",
+      "type": "whirlpool",
+      "x": 140.51,
+      "y": 2.92,
+      "z": -89.13,
+      "r": 8.5,
+      "spin": 1.5,
+      "variant": "alt"
+    },
+    {
+      "id": "whirlpool_02",
+      "type": "whirlpool",
+      "x": 23.49,
+      "y": 3.27,
+      "z": -130.69,
+      "r": 8.5,
+      "spin": 1.5,
+      "variant": "alt"
+    },
+    {
+      "id": "whirlpool_03",
+      "type": "whirlpool",
+      "x": 60.0,
+      "y": 2.86,
+      "z": -0.0,
+      "r": 8.5,
+      "spin": 1.5,
+      "variant": "alt"
+    },
+    {
       "id": "respawn_01",
       "type": "respawn",
       "from": 263.9,

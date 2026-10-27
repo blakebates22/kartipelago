@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "boss_prehistoric",
-  "name": "Tyrant's Gorge (boss, proto)",
+  "name": "Cinderjaw's Caldera",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -23,6 +23,166 @@
       "type": "zipper",
       "at": 590.4,
       "across": 0
+    },
+    {
+      "id": "fire_sweep_01",
+      "type": "fire_sweep",
+      "x": 38.89,
+      "y": 1.49,
+      "z": -38.89,
+      "heading": 2.3562,
+      "width": 20.0,
+      "depth": 4.0,
+      "period": 4.6,
+      "offset": 0.0,
+      "warn": 1.4,
+      "burn": 1.3
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 31.11,
+      "y": 1.99,
+      "z": -46.67
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 46.67,
+      "y": 1.99,
+      "z": -31.11
+    },
+    {
+      "id": "fire_sweep_02",
+      "type": "fire_sweep",
+      "x": 74.25,
+      "y": 1.99,
+      "z": -74.25,
+      "heading": 2.3564,
+      "width": 20.0,
+      "depth": 4.0,
+      "period": 4.6,
+      "offset": 2.3,
+      "warn": 1.4,
+      "burn": 1.3
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 66.47,
+      "y": 2.49,
+      "z": -82.02
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 82.02,
+      "y": 2.49,
+      "z": -66.47
+    },
+    {
+      "id": "fire_sweep_03",
+      "type": "fire_sweep",
+      "x": 32.49,
+      "y": 7.91,
+      "z": -45.29,
+      "heading": 0.7854,
+      "width": 19.0,
+      "depth": 4.0,
+      "period": 5.0,
+      "offset": 1.2,
+      "warn": 1.4,
+      "burn": 1.3
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 39.91,
+      "y": 8.41,
+      "z": -52.72
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 25.06,
+      "y": 8.41,
+      "z": -37.87
+    },
+    {
+      "id": "fire_sweep_04",
+      "type": "fire_sweep",
+      "x": 78.44,
+      "y": 6.0,
+      "z": 0.67,
+      "heading": 0.7418,
+      "width": 19.0,
+      "depth": 4.0,
+      "period": 5.0,
+      "offset": 3.7,
+      "warn": 1.4,
+      "burn": 1.3
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 86.19,
+      "y": 6.5,
+      "z": -6.42
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": 70.7,
+      "y": 6.5,
+      "z": 7.77
+    },
+    {
+      "id": "crust_vent_01",
+      "type": "crust_vent",
+      "x": 71.29,
+      "y": 3.97,
+      "z": -156.07,
+      "r": 3.0
+    },
+    {
+      "id": "crust_vent_02",
+      "type": "crust_vent",
+      "x": -2.9,
+      "y": 7.49,
+      "z": -145.94,
+      "r": 3.0
+    },
+    {
+      "id": "crust_vent_03",
+      "type": "crust_vent",
+      "x": 71.59,
+      "y": 4.59,
+      "z": 78.04,
+      "r": 3.0
+    },
+    {
+      "id": "crust_vent_04",
+      "type": "crust_vent",
+      "x": -2.54,
+      "y": 1.46,
+      "z": 68.67,
+      "r": 3.0
+    },
+    {
+      "id": "crumble_01",
+      "type": "crumble",
+      "variant": "alt",
+      "from": 10.0,
+      "to": 140.0,
+      "gap": 45.0
+    },
+    {
+      "id": "crumble_02",
+      "type": "crumble",
+      "variant": "alt",
+      "from": 380.3,
+      "to": 510.4,
+      "gap": 45.0
     },
     {
       "id": "respawn_01",

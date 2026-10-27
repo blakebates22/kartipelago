@@ -37,6 +37,135 @@
       "across": 0
     },
     {
+      "id": "fire_sweep_01",
+      "type": "fire_sweep",
+      "x": 145.0,
+      "y": 36.0,
+      "z": -525.44,
+      "heading": 3.1416,
+      "width": 19.0,
+      "depth": 4.0,
+      "period": 4.6,
+      "offset": 0.0,
+      "warn": 1.4,
+      "burn": 1.3,
+      "variant": "alt"
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 134.5,
+      "y": 36.5,
+      "z": -525.44
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 155.5,
+      "y": 36.5,
+      "z": -525.44
+    },
+    {
+      "id": "fire_sweep_02",
+      "type": "fire_sweep",
+      "x": 145.0,
+      "y": 36.0,
+      "z": -605.44,
+      "heading": 3.1416,
+      "width": 19.0,
+      "depth": 4.0,
+      "period": 4.6,
+      "offset": 2.3,
+      "warn": 1.4,
+      "burn": 1.3,
+      "variant": "alt"
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 134.5,
+      "y": 36.5,
+      "z": -605.44
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 155.5,
+      "y": 36.5,
+      "z": -605.44
+    },
+    {
+      "id": "ice_wall_01",
+      "type": "ice_wall",
+      "x": -115.0,
+      "y": 14.82,
+      "z": -609.24,
+      "heading": 0.0,
+      "width": 6.9,
+      "across": -3.75,
+      "period": 3.6,
+      "offset": 0.0,
+      "warn": 1.3,
+      "up": 1.9,
+      "variant": "alt"
+    },
+    {
+      "id": "ice_wall_02",
+      "type": "ice_wall",
+      "x": -115.0,
+      "y": 14.33,
+      "z": -564.24,
+      "heading": 0.0,
+      "width": 6.9,
+      "across": 3.75,
+      "period": 3.6,
+      "offset": 1.8,
+      "warn": 1.3,
+      "up": 1.9,
+      "variant": "alt"
+    },
+    {
+      "id": "firewall_01",
+      "type": "firewall",
+      "from": 221.0,
+      "to": 1067.0,
+      "gap": 60.0,
+      "speed": 25.0
+    },
+    {
+      "id": "gust_01",
+      "type": "gust",
+      "x": -115.0,
+      "y": 5.63,
+      "z": -119.29,
+      "r": 40.0,
+      "dx": -1.0,
+      "dz": 0.0,
+      "period": 5.5,
+      "offset": 0.0,
+      "warn": 1.2,
+      "on": 2.6,
+      "strength": 7.5,
+      "variant": "alt"
+    },
+    {
+      "id": "whirlpool_01",
+      "type": "whirlpool",
+      "x": 75.61,
+      "y": 14.94,
+      "z": -305.0,
+      "r": 8.5,
+      "spin": 1.5,
+      "variant": "alt"
+    },
+    {
+      "id": "fireball_01",
+      "type": "fireball",
+      "period": 5.0,
+      "speed": 30.0,
+      "variant": "alt"
+    },
+    {
       "id": "respawn_01",
       "type": "respawn",
       "from": 1140.9,
