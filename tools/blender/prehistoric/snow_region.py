@@ -279,6 +279,8 @@ def village(c, ground):
         if math.sin(a) > 0.75 or math.sin(a) < -0.8:
             continue  # (clear of the ways in: north to the road, south to the gorge)
         hx, hy = cx + (cr + 7) * math.cos(a), cy + (cr + 7) * math.sin(a)
+        if not paint.road_clear(c, hx, hy, 6.0):
+            continue
         if RUIN:
             box(c, "House %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 4.0, ("hearth_stone", "wall"), rot=a)
             box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, cz - 1.0, cz + 6.5, ("berg_ice", "wall"), rot=a + 0.08)

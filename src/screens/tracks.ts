@@ -69,8 +69,12 @@ const entriesOf = (w: WorldEntry): Entry[] => [
 ];
 
 export function tracksMenu(game: Game): Screen {
-  // Leaving a cup (or coming back after one) ends it.
+  // Leaving a cup (or coming back after one) ends it. Track mode is never an Adventure race
+  // (a run left over from a drive abandoned through the menus put map fragments on
+  // Meadow Run: Blake, Oct 26), nor in the overworld.
   game.trophy = undefined;
+  if (game.adventure) game.adventure.run = undefined;
+  game.overworld = undefined;
   const testingAt = WORLDS.findIndex((w) => w.testing && w.id === game.selection.worldId);
   let wi = testingAt >= 0 ? testingAt : Math.max(0, WORLDS.indexOf(currentWorld(game.selection)));
   let ei = Math.max(

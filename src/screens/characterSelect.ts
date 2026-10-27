@@ -27,7 +27,7 @@ import { mysteryEgg, selectBackdrop, type SelectBackdrop } from "../ui/selectArt
 import { hints } from "./common";
 import { modeSelect } from "./modeSelect";
 import { tracksMenu } from "./tracks";
-import { adventureFiles, startFile } from "./adventure";
+import { adventureFiles, adventureOf, goHome, persist, startFile } from "./adventure";
 
 /** Roster slots still to come (the locked tiles). */
 const LOCKED = 0;
@@ -58,8 +58,14 @@ function frame(
 
 /** `adventure`: picking the racer for that Adventure save file (kept for its whole story);
  * otherwise for Tracks mode. */
-export function characterSelect(game: Game, opts: { adventure?: number } = {}): Screen {
+export function characterSelect(
+  game: Game,
+  opts: { adventure?: number; swap?: boolean } = {},
+): Screen {
   const forFile = opts.adventure;
+  /** Adventure, mid-file: change racer from your crew (Blake, Oct 26: like swapping in a
+   * new party member, never locked to one racer until the end), then back to the drive. */
+  const swap = Boolean(opts.swap);
   // The backdrop: a jungle at dawn (?selectbg=ruins|vista shows the other options).
   const bgParam =
     typeof location !== "undefined" ? new URLSearchParams(location.search).get("selectbg") : null;
@@ -157,7 +163,11 @@ export function characterSelect(game: Game, opts: { adventure?: number } = {}): 
     selectBackdrop(ui.g, ui.W, ui.H, backdrop, t, game.settings.general.reduceMotion);
     banner(
       ui,
-      forFile === undefined ? "SELECT RACER" : `FILE ${forFile + 1}: YOUR RACER`,
+      swap
+        ? "YOUR CREW: WHO DRIVES?"
+        : forFile === undefined
+          ? "SELECT RACER"
+          : `FILE ${forFile + 1}: YOUR RACER`,
       6,
       "#c8322a",
     );
@@ -338,13 +348,20 @@ export function characterSelect(game: Game, opts: { adventure?: number } = {}): 
         } else if (a === "confirm") choose();
         else if (a === "back" && picked < 0) {
           game.sounds.back();
-          game.screens.go(forFile === undefined ? modeSelect(game) : adventureFiles(game));
+          if (swap) goHome(game);
+          else game.screens.go(forFile === undefined ? modeSelect(game) : adventureFiles(game));
         }
       }
       if (picked >= 0) {
         picked += dt;
         if (picked > 1.4) {
-          if (forFile === undefined) game.screens.go(tracksMenu(game));
+          if (swap) {
+            const a = adventureOf(game);
+            a.save.racer = id();
+            game.selection.racer = id();
+            persist(game);
+            goHome(game);
+          } else if (forFile === undefined) game.screens.go(tracksMenu(game));
           else startFile(game, id());
         }
       }

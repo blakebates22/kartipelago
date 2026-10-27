@@ -384,6 +384,11 @@ class Course:
             opts.update(extra)
             mat = opts.pop("mat")
             surface = opts.pop("surface", None)
+            if opts.get("ground") is False and len(plan) > 1:
+                # (A bridge or boardwalk laps 0.8 m over the road either side of it: where
+                # they only met, a sliver of a gap at the joint let a kart's middle drop
+                # through to the bank under it.)
+                s0, s1 = s0 - 0.8, s1 + 0.8
             self.piece("Road %02d %s" % (k + 1, kind), s0, s1, mat, surface, **opts)
 
     # -------------------------------------------------------------- terrain

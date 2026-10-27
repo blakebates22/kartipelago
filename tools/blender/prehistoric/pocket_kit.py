@@ -184,6 +184,23 @@ class Layout:
         self._rp = out
         return out
 
+    def bridge_floor(self, x, y):
+        """Under a bridge (where the road crosses water above it): the deck's underside if
+        (x, y) is within 13 m of the road there, else None (the banks are kept down under
+        it, out past its barriers: a bank standing up into a deck shoves karts sideways)."""
+        if not hasattr(self, "_bridges"):
+            self._bridges = []
+            for p in catmull(self.route_points(), 8):
+                d, wz = self.water_d(p[0], p[1])
+                if d < self.river_hw + 12 and p[2] > wz + 0.9:
+                    self._bridges.append(p)
+        best = None
+        for p in self._bridges:
+            d = math.hypot(x - p[0], y - p[1])
+            if d < 13.0 and (best is None or d < best[0]):
+                best = (d, p[2] - 1.9)
+        return None if best is None else best[1]
+
     def tunnel_floor(self, x, y):
         """Under a tunnel's rock: the road's height if (x, y) is within 18 m of the road
         through it (the land's kept flush under it, out to the bore's walls), else None."""

@@ -47,8 +47,9 @@ export interface AdventureSave {
   kingWon: boolean;
   /** Scenes already shown (each plays once; the scene list can replay them). */
   seen: string[];
-  /** The file's racer: picked when the file starts, kept to the ending (Blake: one racer
-   * per adventure). Missing in files from before files had one: picked on opening. */
+  /** The file's racer: picked when the file starts; any of your crew can take over from
+   * the overworld's pause menu (Blake, Oct 26: never locked to one racer till the end).
+   * Missing in files from before files had one: picked on opening. */
   racer?: string;
 }
 

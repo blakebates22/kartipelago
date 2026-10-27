@@ -447,71 +447,54 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // The doc's fourth region (tools/blender/prehistoric/beach_region.py, a greybox): an
-    // island, jungle hills round the north, a long beach round the south into the
-    // shallows, a lagoon in the middle, Raptor's boardwalk village where the Dust Road
-    // comes in.
+    // Tropic Isles (tools/blender/prehistoric/beach_region.py), v3: a pocket for each of
+    // its worlds walled off by jungle hills and rocky headlands, the main road one loop
+    // through them (Raptor's 1-on-1) by a threshold each time: Raptor's village on its
+    // plateau (the hub, the Dust Road down into it from the desert), the Vine Tunnel to
+    // the water park, behind the Falls to the shipwreck cove, through the Hull to the
+    // pier's cove, the Sea Arch to the coral cove, the Mangroves to the lagoon, up the
+    // Tiki Steps back to the village. (The positions below are the build's entities.)
     id: "tropic_isles",
     name: "Tropic Isles",
     packageId: "beach_region",
     ruinPackageId: "beach_region_ruin",
-    // A secret, for the way back: a smugglers' cave in the north, behind a rockfall the Valley Tool shifts.
+    // A secret, for the way back: a smugglers' cave in the pier's cove, behind a rockfall the Valley Tool shifts.
     secret: {
       obstacle: "rockfall",
       tool: "valley",
-      gate: { x: -89.92, z: -276.76, heading: 0.3142, width: 9 },
-      spot: { x: -92.71, z: -285.32 },
+      gate: { x: -52.33, z: 247.16, heading: 2.955, width: 9 },
+      spot: { x: -54, z: 256 },
     },
-    // Act V's return task: Raptor's cove, a walled yard in the west: a deep channel cuts off its way in.
+    // Act V's return task: Raptor's cove, a walled yard in the shipwreck cove: a deep channel cuts off its way in.
     returnTask: {
       obstacle: "water",
-      gate: { x: -287.9, z: -25.19, heading: 1.4835, width: 9 },
-      spot: { x: -298.86, z: -26.15 },
+      gate: { x: -254.74, z: 98.07, heading: 2.141, width: 9 },
+      spot: { x: -264, z: 104 },
     },
     music: "coral_cove",
     worldId: "beach",
     kingdom: "beach",
-    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
-    // In the village, facing south to the ring.
-    spawn: { x: 0, z: -290, heading: 0 },
+    // The main road's start line, south of the village square (the 1-on-1 is raced from it).
+    challenge: { x: 25, z: -225, heading: -1.9126 },
+    // On the village square's boardwalk, facing south to the road.
+    spawn: { x: 0, z: -248, heading: 0 },
     gateways: [
-      // On the beach by the coral heads, south-east.
-      {
-        id: "coral",
-        track: "coral_cove",
-        x: 224.4,
-        z: 157.2,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((-35 * Math.PI) / 180), Math.sin((-35 * Math.PI) / 180)),
-      },
-      // At the end of the pier, pointing out to the smoking island offshore.
-      { id: "volcano", track: "volcano_isle", x: 0, z: 343, radius: 6, heading: Math.PI },
-      // By the wrecked hull on the beach, south-west.
-      {
-        id: "wreck",
-        track: "shipwreck_bay",
-        x: -226.1,
-        z: 158.3,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((-145 * Math.PI) / 180), Math.sin((-145 * Math.PI) / 180)),
-      },
-      // At the water park's slide tower against the hills, north-west.
-      {
-        id: "splash",
-        track: "splash_lagoon",
-        x: -252.0,
-        z: -145.5,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((150 * Math.PI) / 180), Math.sin((150 * Math.PI) / 180)),
-      },
-      // Tidewyrm's lair: a sea cave in the east headland.
+      // At the water park's slide tower, north-west.
+      { id: "splash", track: "splash_lagoon", x: -288.09, z: -125.48, radius: 6, heading: 1.694 },
+      // By the wrecked hull up the shipwreck cove's beach, south-west.
+      { id: "wreck", track: "shipwreck_bay", x: -250.73, z: 154.12, radius: 6, heading: 1.22 },
+      // At the end of the pier, Volcano Isle smoking offshore.
+      { id: "volcano", track: "volcano_isle", x: 2.02, z: 302.55, radius: 6, heading: 2.612 },
+      // By the coral heads in the shallows, south-east.
+      { id: "coral", track: "coral_cove", x: 256.85, z: 153.16, radius: 6, heading: -2.698 },
+      // Tidewyrm's lair: a sea cave in the coral cove's east headland.
       {
         id: "lair",
         track: "boss_tropic",
-        x: 323.8,
-        z: -45.5,
+        x: 294.57,
+        z: 91.65,
         radius: 6,
-        heading: Math.atan2(-Math.cos((8 * Math.PI) / 180), Math.sin((8 * Math.PI) / 180)),
+        heading: -1.262,
         boss: true,
         label: "TIDEWYRM'S LAIR",
       },
@@ -524,20 +507,20 @@ export const REGIONS: Region[] = [
         to: "desert_world",
         toPassage: "dust_road",
         x: 0,
-        z: -445,
+        z: -458,
         radius: 8,
         heading: 0,
       },
-      // Tidewyrm's Causeway, out through the sea stacks: on to the Dragon Kingdom.
+      // Tidewyrm's Causeway, on from the pier's end over the sea: to the Dragon Kingdom.
       {
         id: "causeway",
         label: "TIDEWYRM'S CAUSEWAY · TO THE DRAGON KINGDOM",
         to: "dragon_kingdom",
         toPassage: "causeway",
-        x: 199.0,
-        z: 344.7,
+        x: 0,
+        z: 460,
         radius: 8,
-        heading: Math.atan2(-0.5, -0.866),
+        heading: Math.PI,
         ruinOnly: true,
         blocker: { kind: "water", width: 14 },
         opensAfter: "beach",
@@ -545,9 +528,9 @@ export const REGIONS: Region[] = [
       },
     ],
     puzzles: [
-      // The Tiki Gongs: a tiki hut in the north-east, its door shut. Strike the three
-      // gongs in order; the clue is their torches (one in the north-west, two on the east
-      // beach, three on the south-west beach). A wrong gong and they all go quiet.
+      // The Tiki Gongs: a tiki hut behind the village, its door shut. Strike the three
+      // gongs in order; the clue is their torches (one in the water park, two by the
+      // lagoon, three in the coral cove). A wrong gong and they all go quiet.
       {
         id: "tiki_gongs",
         label: "THE TIKI GONGS",
@@ -555,22 +538,25 @@ export const REGIONS: Region[] = [
         hint: "STRIKE THE GONGS FROM THE FEWEST TORCHES TO THE MOST",
         ordered: true,
         switches: [
-          { x: -127.5, z: -220.84, lanterns: 1 },
-          { x: 246.2, z: 43.41, lanterns: 2 },
-          { x: -122.5, z: 212.18, lanterns: 3 },
+          { x: -188, z: -130, lanterns: 1 },
+          { x: 102, z: -24, lanterns: 2 },
+          { x: 234, z: 226, lanterns: 3 },
         ],
         radius: 3.5,
         seconds: 0,
-        gate: { x: 205.06, z: -205.06, heading: -Math.PI / 4, width: 9 },
-        prize: { kind: "key", x: 212.13, z: -212.13 },
+        gate: { x: -8.21, z: -292.16, heading: 0.18, width: 9 },
+        prize: { kind: "key", x: -10, z: -302 },
       },
     ],
   },
   {
-    // The last region (tools/blender/prehistoric/dragon_region.py, a greybox): far over
-    // the horizon at the end of Tidewyrm's Causeway. A green basin ringed by dark crags,
-    // Dragonfire Square in the middle, King Pyrrhax's Citadel on the north cliff. Ruined
-    // after the sacrifice (the end of its first championship).
+    // The last region (tools/blender/prehistoric/dragon_region.py), v3: far over the
+    // horizon at the end of Tidewyrm's Causeway. A pocket for each of its worlds walled
+    // off by dark crags, the main road one loop through them: the Harbour and Dragonfire
+    // Square (the hub, the Causeway in over the sea), the Dragon Gate to Moonstone, the
+    // Climb to Dragonspire, the Keep Gate onto the Citadel's approach, the Lava Tube to
+    // Emberdeep, the Storm Pass to the Emerald Canyon, the Root Tunnel back to the
+    // harbour. Ruined after the sacrifice (the end of its first championship).
     id: "dragon_kingdom",
     name: "Dragon Kingdom",
     packageId: "dragon_region",
@@ -578,53 +564,32 @@ export const REGIONS: Region[] = [
     music: "dragon",
     worldId: "dragon",
     kingdom: "dragon",
-    // At the harbour where the Causeway comes in, facing north to the ring.
-    spawn: { x: 0, z: 285, heading: Math.PI },
+    // On Dragonfire Square's north side, facing north to the road.
+    spawn: { x: 0, z: 200, heading: Math.PI },
     gateways: [
-      // At the gate under Dragonspire Keep's tower on its crag, north-west.
-      {
-        id: "keep",
-        track: "dragon_isles",
-        x: -219.1,
-        z: -183.8,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((140 * Math.PI) / 180), Math.sin((140 * Math.PI) / 180)),
-      },
-      // At the overgrown jungle castle's gate in the east cliff.
-      {
-        id: "canyon",
-        track: "dragon_canyon",
-        x: 322.0,
-        z: -56.8,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((10 * Math.PI) / 180), Math.sin((10 * Math.PI) / 180)),
-      },
-      // At Emberdeep Hold's fortress gate cut into the mountain, north-east.
-      {
-        id: "hold",
-        track: "snow_dragon_pass",
-        x: 187.6,
-        z: -267.9,
-        radius: 6,
-        heading: Math.atan2(-Math.cos((55 * Math.PI) / 180), Math.sin((55 * Math.PI) / 180)),
-      },
+      // Under Dragonspire Keep's tower on its crag, north-west.
+      { id: "keep", track: "dragon_isles", x: -207.8, z: -255.72, radius: 6, heading: 0.543 },
+      // At the overgrown jungle castle's gate, east.
+      { id: "canyon", track: "dragon_canyon", x: 318.0, z: 112.19, radius: 6, heading: -1.555 },
+      // At Emberdeep Hold's fortress gate under its storm, north-east.
+      { id: "hold", track: "snow_dragon_pass", x: 206.65, z: -228.51, radius: 6, heading: -0.659 },
       // Before the moon gate among the violet lanterns, west.
       {
         id: "moon",
         track: "celestial_dragon_festival",
-        x: -259.4,
-        z: 94.4,
+        x: -326.31,
+        z: -20.71,
         radius: 6,
-        heading: Math.atan2(-Math.cos((200 * Math.PI) / 180), Math.sin((200 * Math.PI) / 180)),
+        heading: 1.799,
       },
-      // King Pyrrhax's Citadel on the north cliff: the King's race.
+      // King Pyrrhax's Citadel's gate in the north wall: the King's race.
       {
         id: "citadel",
         track: "boss_dragon",
-        x: -56.8,
-        z: -322.0,
+        x: 9.53,
+        z: -326.53,
         radius: 6,
-        heading: Math.atan2(-Math.cos((100 * Math.PI) / 180), Math.sin((100 * Math.PI) / 180)),
+        heading: 0.299,
         king: true,
         label: "KING PYRRHAX'S CITADEL",
       },
@@ -637,7 +602,7 @@ export const REGIONS: Region[] = [
         to: "tropic_isles",
         toPassage: "causeway",
         x: 0,
-        z: 445,
+        z: 460,
         radius: 8,
         heading: Math.PI,
       },

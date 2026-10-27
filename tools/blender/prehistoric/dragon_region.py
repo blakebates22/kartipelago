@@ -1,22 +1,12 @@
-# The Dragon Kingdom, the overworld's last region (greybox): far over the horizon at the
-# end of Tidewyrm's Causeway, with the gateways into its four courses and King Pyrrhax's
-# Citadel (the Claude Doc "Kartipelago Overworld: Concept & Layout"; src/overworld/
-# regions.ts places them).
+# The Dragon Kingdom, the overworld's last region (v3): built from dragon_layout.py's
+# pockets (Blake, Oct 26: each world walled off by landscape, the main road one loop
+# through them by a threshold each time; see dragon_layout.py for the plan).
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/dragon_region.py [--ruin]      (the bpy module)
 #
-# Broad strokes, all placeholder, built like the other regions:
-#
-#   - A green basin about 800 m across ringed by dark crags, a ring road round it and
-#     Dragonfire Square in the middle, a great dragon statue at its heart.
-#   - From the south, the Causeway comes in over the sea to the harbour (where you arrive).
-#   - The landmarks the gateways stand at: Dragonspire Keep's tower on a crag (north-west),
-#     Dragon Canyon's overgrown jungle gate (east), Emberdeep Hold's fortress gate cut into
-#     the mountain under a storm (north-east), the Moonstone Kingdom's moon gate among
-#     violet lanterns (west), and King Pyrrhax's Citadel on the north cliff.
-#   - --ruin: the kingdom after the sacrifice: scorched, smoking, rubble at every gate, the
-#     statue broken.
+# (--ruin: the kingdom after the sacrifice: scorched where the fire fell, smoke, the great
+# statue broken, rubble at every gate, the same trees charred.)
 
 import math
 import os
@@ -25,62 +15,34 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-from course_kit import lerp, smooth  # noqa: E402
-from valley_region import box, cone, polar  # noqa: E402
 import region_ruin as ruin  # noqa: E402
+import pocket_build as pb  # noqa: E402
+from pocket_build import box, cone  # noqa: E402
 import keep_props as kp  # noqa: E402
+import isles_props as ip  # noqa: E402
+import cdf_props as cdp  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
 import ruin_kit  # noqa: E402
-import summit_props as sp  # noqa: E402
+import dragon_layout as DL  # noqa: E402
 
 RUIN = ruin.ON
-TRACK_ID = ruin.track_id("dragon_region")
-FLOOR_Z = 2.0
-WATER_Z = -0.8
-RING_R = 220.0
-SQUARE_R = 30.0
-CLIFF_R = 335.0
-RIM_Z = 90.0
+TRACK_ID = ruin.track_id("dragon_region") + os.environ.get("KP_REGION_SUFFIX", "")
+L = DL.L
+HUB = DL.HUB
+FLOOR_Z = HUB[3]
+WATER_Z = DL.WATER_Z
+RIM_Z = DL.TOP
 
-HARBOUR = (0.0, -285.0, 26.0)  # where the Causeway comes in: x, y, radius
-CAUSE_HW = 12.0
-CAUSE_Y0 = -470.0  # the Causeway's far (Tropic Isles) end: the passage back
-KEEP = (140.0, 300.0)  # angle, radius
-CANYON = (10.0, CLIFF_R + 6.0)
-HOLD = (55.0, CLIFF_R + 6.0)
-MOON = (200.0, 290.0)
-CITADEL = (100.0, CLIFF_R + 6.0)
-
-
-def ring_r(a):
-    return RING_R + 10.0 * math.sin(3 * a + 1.4)
-
-
-def natural(x, y):
-    """Rolling green ground, Dragonfire Square level in the middle, dark crags all round,
-    the Causeway's cut through them in the south down to the sea."""
-    r = math.hypot(x, y)
-    a = math.atan2(y, x)
-    h = FLOOR_Z + 0.8 * math.sin(x / 35.0) * math.cos(y / 47.0) + 0.5 * math.sin((x - y) / 57.0)
-    h = lerp(FLOOR_Z, h, smooth((r - SQUARE_R) / 14.0))
-    hx, hy, hr = HARBOUR
-    h = lerp(FLOOR_Z, h, smooth((math.hypot(x - hx, y - hy) - hr) / 14.0))
-    h += RIM_Z * (1.0 + 0.3 * math.sin(6 * a) + 0.15 * math.sin(15 * a + 2.0)) * smooth((r - CLIFF_R) / 50.0)
-    g = smooth((CAUSE_HW + 14 - abs(x)) / 12) * smooth((-y - 250.0) / 40.0)
-    if g > 0:
-        h = lerp(h, FLOOR_Z, g)
-    return h
-
-
-def classify(c, n, info):
-    if n.z < 0.62:
-        return ("keep_rock", "wall")
-    if RUIN and math.hypot(c.x, c.y) < SQUARE_R + 4:
-        return ("lava_crust", "dirt")
-    if RUIN and burn(c.x, c.y) > 0.55:
-        return ("scorched_ground", "dirt")
-    return ("keep_grass", "grass")
+LOOK = {
+    # look: (ground, cliff, road, shoulder)
+    "harbour": (("keep_grass", "grass"), ("keep_rock", "wall"), "keep_cobble", ("keep_path", "dirt")),
+    "moon": (("moon_grass", "grass"), ("moon_rock", "wall"), "moon_paving", ("moon_grass", "grass")),
+    "keep": (("keep_grass", "grass"), ("keep_rock_moss", "wall"), "keep_flag", ("keep_path", "dirt")),
+    "citadel": (("ember_moss", "grass"), ("ember_rock", "wall"), "keep_flag", ("keep_path", "dirt")),
+    "hold": (("ember_rubble", "dirt"), ("ember_rock", "wall"), "ember_setts", ("ember_path", "dirt")),
+    "canyon": (("em_jungle_grass", "grass"), ("em_cliff", "wall"), "em_road", ("em_verge", "grass")),
+}
 
 
 def burn(x, y):
@@ -88,192 +50,276 @@ def burn(x, y):
     return 0.55 + 0.45 * math.sin(x / 61.0 - 0.7) * math.cos(y / 43.0 + 1.1)
 
 
-def road_z(x, y):
-    return natural(x, y) + 0.2
+def natural(x, y):
+    h = DL.natural(x, y)
+    tz = L.tunnel_floor(x, y)
+    if tz is not None:
+        h = min(h, tz - 0.25)
+    return h
 
 
-def line(a, b, every=8.0, z=road_z):
-    n = max(2, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
-    return [(lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n), z(lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n)))
-            for k in range(n + 1)]
-
-
-def gate(c, name, a, r, mat, width=8.0, height=12.0, towers=0.0, roof=None):
-    """A gate in the cliff (or standing free): a dark doorway between two jambs, a lintel,
-    and towers either side when `towers` is given (their height)."""
-    x, y = polar(a, r)
-    rot = math.radians(a) + math.pi / 2
-    z0 = natural(*polar(a, r - 12))
-    box(c, name, x, y, width, 2.0, z0 - 1.0, z0 + height, ("dark_corridor", "wall"), rot=rot, role="visual")
-    for side in (-1, 1):
-        px, py = x + side * (width + 1.5) * math.cos(rot), y + side * (width + 1.5) * math.sin(rot)
-        box(c, "%s Jamb %d" % (name, side), px, py, 1.8, 2.8, z0 - 1.0, z0 + height + 2.0, mat, rot=rot)
-        if towers:
-            tx, ty = x + side * (width + 7.0) * math.cos(rot), y + side * (width + 7.0) * math.sin(rot)
-            box(c, "%s Tower %d" % (name, side), tx, ty, 4.0, 4.0, z0 - 1.0, z0 + towers, mat, rot=rot)
-            if roof:
-                cone(c, "%s Tower Roof %d" % (name, side), tx, ty, 5.5, z0 + towers, 9.0, roof, segs=4, role="visual")
-    box(c, name + " Lintel", x, y, width + 2.5, 3.0, z0 + height, z0 + height + 3.5, mat, rot=rot)
-    return x, y, z0
-
-
-def dress(c):
-    """The paint pass: Dragonspire's dark mountain pines and green broadleaves over the
-    basin, bushes and flowers, banner poles along the spokes and up to the Citadel. After
-    the sacrifice: the same trees charred where the fire fell, the undergrowth burnt."""
-    hx, hy, hr = HARBOUR
-    taken = paint.Taken([(0.0, 0.0, SQUARE_R + 10.0), (hx, hy, hr + 22.0), (*polar(KEEP[0], KEEP[1] + 20.0), 34.0),
-                         (*polar(*CANYON), 30.0), (*polar(*HOLD), 30.0), (*polar(*MOON), 30.0), (*polar(*CITADEL), 34.0)])
-
-    def open_ground(x, y):
-        r = math.hypot(x, y)
-        return SQUARE_R + 10 < r < CLIFF_R - 10 and not (abs(x) < CAUSE_HW + 12 and y < -250)
-
-    def foot(x, y):
-        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
-
-    g = natural
-    for v in range(2):
-        paint.scatter(c, sp.boulder(c, v), 14, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.2))
-    for v in range(3):
-        paint.scatter(c, kp.pine(c, v, 9.0 + 3.0 * v), 60, CLIFF_R, open_ground, g, taken, 10 + v, room=5.0, scale=(1.0, 1.6))
-    for v in range(2):
-        paint.scatter(c, sp.broadleaf(c, v, frosted=False), 30, CLIFF_R, open_ground, g, taken, 20 + v, room=6.0,
-                      scale=(1.0, 1.5))
-        paint.scatter(c, props.bush(c, v), 90, CLIFF_R, open_ground, g, taken, 30 + v, room=2.5, role="visual")
-    paint.scatter(c, props.flowers(c), 160, CLIFF_R, open_ground, g, taken, 40, room=1.5, role="visual", sink=0.1)
-    # Banner poles either side of the spokes and of the road up to the Citadel.
-    pole = kp.banner_pole(c)
-    for a in (0.0, 90.0, 180.0, -90.0):
-        for k in range(3):
-            for side in (-1, 1):
-                x, y = polar(a, SQUARE_R + 20.0 + k * 50.0)
-                rot = math.radians(a) + math.pi / 2
-                x, y = x + side * 8.0 * math.cos(rot), y + side * 8.0 * math.sin(rot)
-                c.place(pole, x, y, g(x, y), rot=rot)
-    if RUIN:
-        ruin_kit.char_trees(c, burn, ("Keep Pine", "Broadleaf"), chance=0.85, threshold=0.3)
-        ruin.burn_away(c, burn, ("Bush", "Flowers"), threshold=0.3)
+def classify(c, n, info):
+    look = L.look_at(c.x, c.y)
+    ground, cliff, _, _ = LOOK[look]
+    if n.z < 0.62:
+        return cliff
+    if c.z < WATER_Z + 0.3:
+        return ("keep_lake_shallow", "water")
+    if look == "harbour" and c.z < WATER_Z + 1.4:
+        return ("keep_shore", "sand")
+    if RUIN and burn(c.x, c.y) > 0.55:
+        return ("scorched_ground", "dirt")
+    return ground
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Dragon Kingdom (greybox, ruined)" if RUIN else "Dragon Kingdom (greybox)", "dragonspire_keep")
-    ring = []
-    for k in range(48):
-        a = k * math.tau / 48
-        r = ring_r(a)
-        x, y = r * math.cos(a), r * math.sin(a)
-        ring.append((x, y, road_z(x, y)))
-    c.route(ring, width=14.0, bank=4.0)
-    grass = ("keep_grass", "grass")
-    c.kinds = {"road": {"mat": "keep_flag", "shoulder": 1.6, "shoulder_mat": ("keep_path", "dirt")}}
-    c.roads(kit.plan(c, [], "road", max_len=200.0))
-
-    def ring_end(a_deg):
-        a = math.radians(a_deg)
-        return ring_r(a) * math.cos(a) * 0.985, ring_r(a) * math.sin(a) * 0.985
+    c = kit.Course(TRACK_ID, "Dragon Kingdom (ruined)" if RUIN else "Dragon Kingdom", "dragon_isles")
+    c.route(L.route_points(), width=14.0, bank=5.0)
+    kinds = {}
+    for look, (ground, cliff, road, shoulder) in LOOK.items():
+        kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
+    c.kinds = kinds
+    c.roads(kit.plan(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), "harbour", max_len=160.0))
 
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("keep_path", "dirt"))
-    # The Causeway in from the sea, the harbour, on up to the ring; spokes to the square.
-    hx, hy, hr = HARBOUR
-    cause = [(0.0, y, FLOOR_Z + 0.2) for y in range(int(CAUSE_Y0) + 25, int(hy - hr), 8)]
-    c.side_road("Causeway", cause, "keep_cobble", "road", **trail)
-    c.side_road("Harbour Road", line((hx, hy + hr - 2), ring_end(-90.0)), "keep_flag", "road", **trail)
-    for a in (0.0, 90.0, 180.0, -90.0):
-        c.side_road("Spoke %d" % a, line(polar(a, SQUARE_R - 2), ring_end(a)), "keep_flag", "road", **trail)
-    for name, (a, r) in (("Keep Road", KEEP), ("Canyon Road", CANYON), ("Hold Road", HOLD), ("Moon Road", MOON),
-                         ("Citadel Road", CITADEL)):
-        c.side_road(name, line(ring_end(a), polar(a, r - 12.0)), "keep_flag", "road", **trail)
+    cx, cy, cr, cz = HUB
+    # The Causeway in from the sea onto the square's south side.
+    ex, ey = DL.CAUSEWAY_END
+    way = [(0.0, y, max(natural(0.0, y), WATER_Z + 1.4) + 0.2) for y in range(int(ey + 6), int(cy - cr + 2), 8)]
+    c.side_road("Causeway", way, "keep_cobble", "road", width=10.0, shoulder=0.6, shoulder_mat=("keep_ashlar", "road"),
+                barrier=0.6, barrier_mat=("keep_ashlar", "wall"), deck=1.4, deck_mat=("keep_ashlar", "wall"), ground=False)
+    box(c, "Causeway End", 0.0, ey - 4.0, 12.0, 3.0, WATER_Z - 4.0, WATER_Z + 14.0, ("keep_rock", "wall"))
+    gates = dict(DL.GATES)
+    gates["citadel"] = DL.CITADEL
+    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
 
-    X0, X1, Y0, Y1 = -470, 470, -480, 470
-    c.terrain("Basin", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=14.0)
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*grass))
-    c.disc("Sea", 0.0, -700.0, 600.0, WATER_Z, c.lib("keep_lake", "water"), role="visual", n=48)
+    X0, X1, Y0, Y1 = -490, 490, -490, 480
+    ter = c.terrain("Dragon Kingdom", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("keep_grass", "grass"))
+    c.disc("Sea", 0.0, -500.0, 900.0, WATER_Z, c.lib("keep_lake", "water"), role="visual", n=48)
 
-    # Dragonfire Square and its great dragon statue (broken after the sacrifice).
-    c.disc("Dragonfire Square", 0.0, 0.0, SQUARE_R, FLOOR_Z + 0.05, c.lib("keep_cobble", "road"), coll="Props", n=40)
-    box(c, "Statue Plinth", 0.0, 0.0, 5.0, 5.0, FLOOR_Z - 1.0, FLOOR_Z + 3.0, ("keep_ashlar", "wall"), rot=math.pi / 4)
+    def ground(x, y):
+        z = c.ground_z(x, y, [ter])
+        return natural(x, y) if z is None else z
+
+    thresholds(c, ground)
+    square(c, ground)
+    landmarks(c, ground, spots)
+    pb.emit_spots(c, spots)
+    dress(c, ground, spots)
     if RUIN:
-        box(c, "Statue Stump", 0.0, 0.0, 2.0, 3.0, FLOOR_Z + 3.0, FLOOR_Z + 7.0, ("keep_rock", "wall"))
-        ruin.rubble(c, "Statue Rubble", 6.0, 6.0, natural, ("keep_rock", "wall"), n=8, spread=4.0, size=1.4, seed=2)
-        ruin.smoke(c, 0.0, 0.0, FLOOR_Z + 7.0)
+        ruined(c, ground, spots)
     else:
-        box(c, "Statue Body", 0.0, 0.0, 2.0, 4.5, FLOOR_Z + 3.0, FLOOR_Z + 10.0, ("keep_rock", "wall"))
-        box(c, "Statue Neck", 0.0, 3.5, 1.0, 1.0, FLOOR_Z + 10.0, FLOOR_Z + 17.0, ("keep_rock", "wall"), role="visual")
-        box(c, "Statue Head", 0.0, 5.0, 1.5, 2.5, FLOOR_Z + 16.0, FLOOR_Z + 18.5, ("keep_rock", "wall"), role="visual")
-        for side in (-1, 1):
-            box(c, "Statue Wing %d" % side, side * 5.0, -0.5, 4.0, 0.4, FLOOR_Z + 9.0, FLOOR_Z + 14.0, ("keep_rock", "wall"),
-                rot=side * 0.4, role="visual")
-    # The harbour: quays either side of the Causeway's end, a lighthouse.
-    for side in (-1, 1):
-        box(c, "Quay %d" % side, side * (hr + 4.0), hy - 6.0, 4.0, 14.0, FLOOR_Z - 1.0, FLOOR_Z + 1.5, ("keep_ashlar", "wall"))
-    box(c, "Lighthouse", hr + 10.0, hy - 20.0, 3.0, 3.0, FLOOR_Z - 1.0, FLOOR_Z + 22.0, ("keep_ashlar", "wall"))
-    gx, gy, gz = c.game(hr + 10.0, hy - 20.0, FLOOR_Z + 24.0)
-    c.entity("lantern", x=gx, y=gy, z=gz)
+        c.entity("storm", period=9, spread=5, distance=900)
 
-    # The landmarks.
-    roof = ("keep_parapet", "wall")
-    # Dragonspire Keep: a tall keep on a crag, its gate at the foot.
-    x, y = polar(*KEEP)
-    kx, ky = polar(KEEP[0], KEEP[1] + 30.0)
-    c.assign(c.rock_mass("Keep Crag", kx, ky, 18.0, 14.0, FLOOR_Z + 14.0, z0=FLOOR_Z - 1.0, n=12, seed=4),
-             c.lib("keep_rock", "wall"))
-    gate(c, "Keep Gate", KEEP[0], KEEP[1] + 6.0, ("keep_ashlar", "wall"), towers=0.0)
-    box(c, "Dragonspire", kx, ky, 5.0, 5.0, FLOOR_Z + 10.0, FLOOR_Z + (34.0 if RUIN else 58.0), ("keep_ashlar", "wall"))
+    c.start_line()
+    gts = c.checkpoints(height=10.0)
+    kit.paint.shade_roads(c.pieces, 0.3)
+    c.finish(extra={"race": {"laps": 1}})
+    print("loop", round(c.length, 1), "gates", len(gts))
+
+
+def thresholds(c, ground):
+    """The Dragon Gate and the Keep Gate (castle gates at both ends, banners), the Lava Tube
+    (lava glowing in its walls), the Root Tunnel (roots and vines)."""
+    for name, kind, a, b in L.tunnels:
+        s0, s1 = pb.tunnel_span(c, L, a, b)
+        if kind == "gate":
+            half = pb.bore(c, L, name, s0, s1, ("keep_ashlar", "wall"), ("keep_grass", "grass"), height=11.0)
+            arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0)
+            tower = kp.round_tower(c, r=4.5, h=24.0)
+            for s in (s0 - 3.0, s1 + 3.0):
+                q = c.at(s)
+                rot = math.atan2(q.t.y, q.t.x) - math.pi / 2
+                c.place(arch, q.p.x, q.p.y, q.p.z - 0.2, rot=rot, role="visual")
+                for sd in (-1, 1):
+                    x, y = q.p.x + q.r.x * sd * (half + 6.5), q.p.y + q.r.y * sd * (half + 6.5)
+                    c.place(tower, x, y, ground(x, y) - 0.5, rot=rot)
+        elif kind == "lava":
+            half = pb.bore(c, L, name, s0, s1, ("ember_rock", "wall"), ("ember_moss", "grass"), height=11.0)
+            for sd in (-1, 1):
+                strip = []
+                s = s0 + 4.0
+                while s < s1 - 4.0:
+                    q = c.at(s)
+                    off = c.width / 2 + 2.2
+                    strip.append((q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off, 1.6, q.p.z - 0.15))
+                    s += 4.0
+                if len(strip) > 1:
+                    c.ribbon(name + " Lava %d" % sd, strip, 1.6, 0, c.lib("volcano_lava", "lava"), role="visual", steps=2)
+        else:  # the roots
+            half = pb.bore(c, L, name, s0, s1, ("em_moss_stone", "wall"), ("em_jungle_grass", "grass"), height=11.0)
+            for s in (s0 - 2.0, s1 + 2.0):
+                q = c.at(s)
+                for j in range(5):
+                    t = (j - 2) / 2.0
+                    x, y = q.p.x + q.r.x * t * (half + 3.0), q.p.y + q.r.y * t * (half + 3.0)
+                    cone(c, "%s Root %d %d" % (name, int(s), j), x, y, 1.4, q.p.z + 7.0 + 2.0 * abs(t), 6.0,
+                         ("em_root_bark", "wall"), segs=5, role="visual")
+        for k in range(3):
+            q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
+            for sd in (-1, 1):
+                x, y = q.p.x + q.r.x * sd * (half - 0.6), q.p.y + q.r.y * sd * (half - 0.6)
+                g = c.game(x, y, q.p.z + 4.5)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+
+
+def square(c, ground):
+    """Dragonfire Square and its great dragon statue (broken after the sacrifice); the
+    harbour's quays and lighthouse where the Causeway comes in."""
+    cx, cy, cr, cz = HUB
+    c.disc("Dragonfire Square", cx, cy, cr, cz + 0.05, c.lib("keep_cobble", "road"), coll="Props", n=40)
+    if RUIN:
+        box(c, "Statue Plinth", cx, cy, 5.0, 5.0, cz - 1.0, cz + 3.0, ("keep_ashlar", "wall"), rot=math.pi / 4)
+        box(c, "Statue Stump", cx, cy, 2.0, 3.0, cz + 3.0, cz + 7.0, ("keep_rock", "wall"))
+        ruin.rubble(c, "Statue Rubble", cx + 6.0, cy + 6.0, ground, ("keep_rock", "wall"), n=8, spread=4.0, size=1.4, seed=2)
+        ruin.smoke(c, cx, cy, cz + 7.0)
+    else:
+        box(c, "Statue Plinth", cx, cy, 5.0, 5.0, cz - 1.0, cz + 3.0, ("keep_ashlar", "wall"), rot=math.pi / 4)
+        c.place(kp.dragon_statue(c), cx, cy, cz + 3.0, rot=math.pi / 2)
+    for k in range(6):
+        a = k * math.tau / 6 + 0.5
+        if math.sin(a) < -0.5 or math.sin(a) > 0.8:
+            continue  # (clear of the ways in)
+        hx, hy = cx + (cr + 8) * math.cos(a), cy + (cr + 8) * math.sin(a)
+        if not paint.road_clear(c, hx, hy, 7.0):
+            continue
+        if RUIN:
+            ruin.rubble(c, "House Rubble %d" % k, hx, hy, ground, ("keep_ashlar", "wall"), n=6, spread=4.0, size=1.2, seed=k)
+            continue
+        c.place(kp.house(c, k % 3), hx, hy, ground(hx, hy) - 0.3, rot=a + math.pi / 2)
+    box(c, "Lighthouse", cx + 46.0, cy - 50.0, 3.0, 3.0, ground(cx + 46.0, cy - 50.0) - 1.0, cz + 22.0, ("keep_ashlar", "wall"))
+    g = c.game(cx + 46.0, cy - 50.0, cz + 24.0)
+    c.entity("lantern", x=g[0], y=g[1], z=g[2])
+
+
+def landmarks(c, ground, spots):
+    """Each world's gateway landmark: Dragonspire's tall keep on its crag, the jungle
+    castle's overgrown gate, Emberdeep's fortress gate under its storm, the moon gate among
+    violet lanterns, King Pyrrhax's Citadel."""
+    def facing(name):
+        (ex, ey), _ = spots[name]
+        gx, gy = gates_at(name)
+        return math.atan2(gy - ey, gx - ex)
+
+    def gates_at(name):
+        return DL.CITADEL if name == "citadel" else DL.GATES[name]
+
+    def gateway(name, mat, width=8.0, height=12.0, towers=0.0, roof=None):
+        x, y = gates_at(name)
+        f = facing(name)
+        rot = f + math.pi / 2
+        z0 = ground(x - 6.0 * math.cos(f), y - 6.0 * math.sin(f))
+        box(c, name.title() + " Gate", x, y, width, 2.0, z0 - 1.0, z0 + height, ("dark_corridor", "wall"), rot=rot,
+            role="visual")
+        for sd in (-1, 1):
+            px, py = x + sd * (width + 1.5) * math.cos(rot), y + sd * (width + 1.5) * math.sin(rot)
+            box(c, "%s Gate Jamb %d" % (name.title(), sd), px, py, 1.8, 2.8, z0 - 1.0, z0 + height + 2.0, mat, rot=rot)
+            if towers:
+                tx, ty = x + sd * (width + 7.0) * math.cos(rot), y + sd * (width + 7.0) * math.sin(rot)
+                box(c, "%s Gate Tower %d" % (name.title(), sd), tx, ty, 4.0, 4.0, z0 - 1.0, z0 + towers, mat, rot=rot)
+                if roof:
+                    cone(c, "%s Gate Roof %d" % (name.title(), sd), tx, ty, 5.5, z0 + towers, 9.0, roof, segs=4,
+                         role="visual")
+        box(c, name.title() + " Gate Lintel", x, y, width + 2.5, 3.0, z0 + height, z0 + height + 3.5, mat, rot=rot)
+        return x, y, z0, f
+
+    roof = ("keep_slate", "wall")
+    x, y, z0, f = gateway("keep", ("keep_ashlar", "wall"))
+    kx, ky = x + 26.0 * math.cos(f), y + 26.0 * math.sin(f)
+    box(c, "Dragonspire", kx, ky, 5.0, 5.0, z0 - 1.0, z0 + (24.0 if RUIN else 48.0), ("keep_ashlar", "wall"))
     if not RUIN:
-        cone(c, "Dragonspire Roof", kx, ky, 7.0, FLOOR_Z + 58.0, 14.0, roof, segs=4, role="visual")
-    # Dragon Canyon: the jungle castle's gate in the east cliff, overgrown.
-    gate(c, "Jungle Gate", CANYON[0], CANYON[1], ("limestone_moss", "wall"), towers=20.0, roof=("lush_grass", "wall"))
-    # Emberdeep Hold: the fortress gate cut into the mountain.
-    gate(c, "Hold Gate", HOLD[0], HOLD[1], ("fortress_wall", "wall"), height=16.0, towers=30.0)
-    # The Moonstone Kingdom: a moon gate (a ring) among violet lanterns.
-    mx, my = polar(*MOON)
-    rot = math.radians(MOON[0]) + math.pi / 2
+        cone(c, "Dragonspire Roof", kx, ky, 7.0, z0 + 48.0, 14.0, roof, segs=4, role="visual")
+    gateway("canyon", ("limestone_moss", "wall"), towers=20.0, roof=("lush_grass", "wall"))
+    gateway("hold", ("fortress_wall", "wall"), height=16.0, towers=30.0)
+    # The moon gate: a ring of stone among violet lanterns.
+    mx, my = DL.GATES["moon"]
+    f = facing("moon")
+    rot = f + math.pi / 2
+    z0 = ground(mx - 6.0 * math.cos(f), my - 6.0 * math.sin(f))
     for k in range(12):
         t = k * math.tau / 12
         bx, by = mx + 9.0 * math.cos(t) * math.cos(rot), my + 9.0 * math.cos(t) * math.sin(rot)
-        z = FLOOR_Z + 9.0 + 9.0 * math.sin(t)
-        if z < FLOOR_Z + 2.5 and abs(math.cos(t)) < 0.6:
-            continue  # (the way through)
-        box(c, "Moon Gate %d" % k, bx, by, 1.6, 1.2, z - 1.2, z + 1.2, ("limestone", "wall"), rot=rot,
-            role="both" if z < FLOOR_Z + 6 else "visual")
-    for k in range(6):
-        lx, ly = polar(MOON[0] + (k - 2.5) * 6.0, MOON[1] - 22.0)
-        box(c, "Moon Lantern Post %d" % k, lx, ly, 0.3, 0.3, FLOOR_Z - 1.0, FLOOR_Z + 4.0, ("weathered_timber", "wall"))
-        gx, gy, gz = c.game(lx, ly, FLOOR_Z + 4.5)
-        c.entity("lantern", x=gx, y=gy, z=gz)
-    # King Pyrrhax's Citadel: a great gate with towers on the north cliff.
-    gate(c, "Citadel Gate", CITADEL[0], CITADEL[1], ("keep_ashlar", "wall"), width=10.0, height=18.0,
-         towers=26.0 if RUIN else 44.0, roof=None if RUIN else roof)
-    cx, cy = polar(CITADEL[0], CITADEL[1] + 40.0)
-    box(c, "Citadel Keep", cx, cy, 22.0, 14.0, RIM_Z - 10.0, RIM_Z + (25.0 if RUIN else 55.0), ("keep_ashlar", "wall"),
-        rot=math.radians(CITADEL[0]) + math.pi / 2, role="visual")
+        z = z0 + 9.0 + 9.0 * math.sin(t)
+        if z < z0 + 2.5 and abs(math.cos(t)) < 0.6:
+            continue
+        box(c, "Moon Gate %d" % k, bx, by, 1.6, 1.2, z - 1.2, z + 1.2, ("moon_stone", "wall"), rot=rot,
+            role="both" if z < z0 + 6 else "visual")
+    x, y, z0, f = gateway("citadel", ("keep_ashlar_dark", "wall"), width=10.0, height=18.0, towers=26.0 if RUIN else 44.0,
+                          roof=None if RUIN else roof)
+    kx, ky = x + 40.0 * math.cos(f), y + 40.0 * math.sin(f)
+    box(c, "Citadel Keep", kx, ky, 22.0, 14.0, z0 + 10.0, z0 + (40.0 if RUIN else 70.0), ("keep_ashlar_dark", "wall"),
+        rot=f + math.pi / 2, role="visual")
 
-    if RUIN:
-        # After the sacrifice: a storm over the kingdom, scorched ground, smoke and rubble
-        # at every gate.
-        c.entity("storm", period=9, spread=5, distance=900)
-        avoid = (0.0, 90.0, 180.0, -90.0, KEEP[0], CANYON[0], HOLD[0], MOON[0], CITADEL[0])
-        burns = ruin.ring_spots(14, 60.0, 195.0, 21, avoid) + ruin.ring_spots(12, 255.0, 310.0, 22, avoid)
-        ruin.scorch(c, "Scorch", burns, natural)
-        for x, y in burns[::3]:
-            ruin.smoke(c, x, y, natural(x, y) + 0.2)
-        for name, (a, r) in (("Keep", KEEP), ("Canyon", CANYON), ("Hold", HOLD), ("Moon", MOON), ("Citadel", CITADEL)):
-            for side in (-1, 1):
-                x, y = polar(a + side * 6.0, r - 16.0)
-                ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, natural, ("keep_rock", "wall"), seed=int(a) + side)
 
-    dress(c)
+def ruined(c, ground, spots):
+    """After the sacrifice: smoke and rubble at every gate, the trees charred."""
+    for name, ((ex, ey), _) in spots.items():
+        for sd in (-1, 1):
+            ruin.rubble(c, "%s Rubble %d" % (name.title(), sd), ex + sd * 9.0, ey + 4.0, ground, ("keep_rock", "wall"),
+                        seed=len(name) + sd)
+        ruin.smoke(c, ex, ey + 8.0, ground(ex, ey) + 0.5)
+    ruin_kit.char_trees(c, burn, ("Pine", "Broadleaf", "Blossom", "Jungle Tree"), chance=0.85, threshold=0.4)
 
-    # The Causeway's far end, back over the sea towards Tropic Isles: it fades into the
-    # sea mist (a wall of rock closes the view).
-    box(c, "Causeway Bend", 0.0, CAUSE_Y0 - 4, CAUSE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z, ("keep_rock", "wall"))
 
-    c.start_line()
-    gates = c.checkpoints(height=10.0)
-    kit.paint.shade_roads(c.pieces, 0.3)
-    c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
+def dress(c, ground, spots):
+    """The paint pass, world by world: the harbour's boats and lanterns; Moonstone's
+    pagodas, blossom trees, stone lanterns and lantern strings; Dragonspire's houses,
+    banners and mountain pines; the Citadel's banners and braziers; Emberdeep's black walls,
+    braziers and basalt; the Emerald Canyon's jungle, ruined temple blocks, roots."""
+    taken = paint.Taken([(HUB[0], HUB[1], HUB[2] + 14.0), *((e[0], e[1], 16.0) for e, _ in spots.values()),
+                         *((x, y, 26.0) for x, y in DL.GATES.values()), (*DL.CITADEL, 40.0)])
+
+    def inside(x, y):
+        return L.wall_sd(x, y) < -8 and natural(x, y) > WATER_Z + 0.6
+
+    def look(*names):
+        return lambda x, y: inside(x, y) and L.look_at(x, y) in names
+
+    rmax = 480.0
+    g = ground
+    # Moonstone.
+    mo = look("moon")
+    paint.scatter(c, ip.pagoda(c, tiers=3, w=6.0, roof_mat="roof_jade"), 3, rmax, mo, g, taken, 10, room=14.0,
+                  road_margin=10.0)
+    for v in range(2):
+        paint.scatter(c, ip.blossom_tree(c, v), 12, rmax, mo, g, taken, 11 + v, room=6.0, road_margin=6.0, trunk=(0.7, 5.0))
+    for x, y in paint.scatter(c, ip.stone_lantern(c), 10, rmax, mo, g, taken, 13, room=6.0, near_road=(2.0, 5.0)):
+        gg = c.game(x, y, g(x, y) + 2.0)
+        c.entity("lantern", x=gg[0], y=gg[1], z=gg[2])
+    # Dragonspire's crag and the climb.
+    ke = look("keep")
+    for v in range(2):
+        paint.scatter(c, kp.pine(c, v, 9.0 + 3.0 * v), 26, rmax, ke, g, taken, 20 + v, room=5.0, scale=(1.0, 1.6),
+                      road_margin=6.0, trunk=(0.7, 6.0))
+        paint.scatter(c, kp.house(c, v), 4, rmax, ke, g, taken, 22 + v, room=14.0, road_margin=9.0)
+    paint.scatter(c, kp.banner_pole(c), 10, rmax, look("keep", "citadel"), g, taken, 24, room=8.0, near_road=(2.0, 5.0))
+    for x, y in paint.scatter(c, kp.brazier(c), 8, rmax, look("citadel", "hold"), g, taken, 25, room=8.0,
+                              near_road=(2.0, 6.0)):
+        gg = c.game(x, y, g(x, y) + 2.4)
+        c.entity("torch", x=gg[0], y=gg[1], z=gg[2])
+    # Emberdeep: black walls, basalt, steam.
+    ho = look("hold")
+    paint.scatter(c, kp.curtain_wall(c, length=18.0, h=10.0), 6, rmax, lambda x, y: ho(x, y) and L.wall_sd(x, y) > -16, g,
+                  taken, 30, room=16.0, road_margin=10.0)
+    paint.scatter(c, props.basalt_columns(c), 10, rmax, ho, g, taken, 31, room=7.0, road_margin=7.0)
+    for x, y in paint.scatter(c, props.boulder(c, "volcano_basalt", 1), 6, rmax, ho, g, taken, 32, room=6.0):
+        gg = c.game(x, y, g(x, y) + 1.0)
+        c.entity("steam", x=gg[0], y=gg[1], z=gg[2])
+    # The Emerald Canyon: jungle and temple ruins.
+    ca = look("canyon")
+    for v in range(2):
+        paint.scatter(c, props.jungle_tree(c, v), 24, rmax, ca, g, taken, 40 + v, room=5.0, scale=(1.1, 1.8), road_margin=6.0,
+                      trunk=(0.8, 6.0))
+        paint.scatter(c, props.big_leaf_plant(c, v), 30, rmax, ca, g, taken, 42 + v, room=2.5, role="visual")
+    for v, p in enumerate((props.ruin_column(c, 0), props.ruin_blocks(c, 0), props.idol_head(c))):
+        paint.scatter(c, p, 4, rmax, ca, g, taken, 44 + v, room=6.0, near_road=(5.0, 20.0))
+    # The harbour: pines and boats.
+    ha = look("harbour")
+    paint.scatter(c, kp.pine(c, 0, 10.0), 10, rmax, ha, g, taken, 50, room=6.0, road_margin=7.0, trunk=(0.7, 6.0))
+    for k in range(4):
+        x, y = -40.0 + 26.0 * k, -300.0 - 10.0 * (k % 2)
+        c.place(kp.boat(c, k % 2), x, y, WATER_Z - 0.2, rot=0.3 * k, role="visual")
 
 
 if __name__ == "__main__":

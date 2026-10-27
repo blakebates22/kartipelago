@@ -135,6 +135,10 @@ export function titleScreen(game: Game, startInMenu = false): Screen {
     id: "TITLE",
     enter() {
       game.ui.interactive = true;
+      // Back at the title: whatever was being raced or driven is over.
+      game.trophy = undefined;
+      game.overworld = undefined;
+      if (game.adventure) game.adventure.run = undefined;
       void game.audio.music.play("title", { fade: 1 });
       void loadDemo();
     },

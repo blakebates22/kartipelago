@@ -91,9 +91,12 @@ def natural(x, y):
     if RUIN:
         # The Burnt Gorge: the split in the north cliff, its floor rising gently to the far
         # end, where the way on to the Snow Kingdom begins.
-        g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - L.GORGE[1] - 10.0) / 30.0)
+        # (Cut down from inside Riverbend, at its floor's height, rising gently: it used to
+        # start where the wall did, leaving a 40 m hump at its mouth that the road climbed
+        # and a kart couldn't get back over: Blake, Oct 26.)
+        g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - L.GORGE[1] + 30.0) / 24.0)
         if g > 0:
-            h = lerp(h, 11.0 + 0.04 * max(0.0, y - 300.0), g)
+            h = lerp(h, 4.0 + 0.04 * max(0.0, y - L.GORGE[1]), g)
         # The burnt trench up to the Scar.
         sx, sy = L.SCAR
         if y < -270 and abs(x - sx) < 32:

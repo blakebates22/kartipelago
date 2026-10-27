@@ -227,6 +227,8 @@ def trading_post(c, ground):
         if math.cos(a) > 0.6:
             continue  # (clear of the way out, east)
         hx, hy = cx + (cr + 6) * math.cos(a), cy + (cr + 6) * math.sin(a)
+        if not paint.road_clear(c, hx, hy, 6.0):
+            continue
         if RUIN:
             box(c, "Stall %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 1.6 + 0.8 * (k % 2), ("adobe", "wall"), rot=a)
             ruin.rubble(c, "Stall Rubble %d" % k, hx + 3.0 * math.cos(a), hy + 3.0 * math.sin(a), ground, ("adobe", "wall"),

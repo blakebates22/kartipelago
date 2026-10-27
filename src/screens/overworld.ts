@@ -70,6 +70,7 @@ import {
   type Puzzle,
 } from "../overworld/puzzles";
 import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
+import { characterSelect } from "./characterSelect";
 
 /** Where the overworld is: the region, and the gateway you went into (you come back
  * out of it). */
@@ -1373,6 +1374,14 @@ function overworldPause(game: Game, region: Region): Screen {
       // doesn't have yet: the map, the dragon, the task) and the world map.
       ...(story
         ? [
+            {
+              // (Any of your crew can drive: Blake, Oct 26.)
+              label: "CHANGE RACER",
+              action: () => {
+                game.overworld = undefined;
+                game.screens.go(characterSelect(game, { swap: true }));
+              },
+            },
             {
               label: "KINGDOM BOARD",
               action: () => {
