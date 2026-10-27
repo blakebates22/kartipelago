@@ -99,6 +99,10 @@ def classify(c, n, info):
     return ground
 
 
+# Where Tidewyrm's Causeway leaves the beach (the ruin), west of the pier.
+CAUSEWAY_START = (-60.0, -262.0)
+
+
 def main():
     c = kit.Course(TRACK_ID, "Tropic Isles (ruined)" if RUIN else "Tropic Isles", "coral_cove")
     c.route(L.route_points(), width=14.0, bank=5.0)
@@ -150,10 +154,17 @@ def main():
     d = math.hypot(px - sx, py - sy)
     spots["volcano"] = ((px - (px - sx) / d * 4.0, py - (py - sy) / d * 4.0), math.atan2(-(px - sx) / d, (py - sy) / d))
     if RUIN:
-        # Tidewyrm's Causeway: on from the pier's end over the sea, south (his reef raised).
-        ax, ay = BL.CAUSEWAY
+        # Tidewyrm's Causeway: out over the sea from the beach west of the pier, south-east to
+        # its far end (his reef raised). (It ran on from the pier's end, through Volcano
+        # Isle's arch: Blake, Oct 27.) A spur down the beach to where it starts.
+        ax, ay = CAUSEWAY_START
         bx, by = BL.CAUSEWAY_END
-        way = [(lerp(ax, bx, k / 24), lerp(ay, by, k / 24) - 2.0, pier_z + 0.02) for k in range(25)]
+        smp, _ = c.nearest(ax, ay + 20.0)
+        c.side_road("Causeway Beach", pb.line(natural, (smp.p.x, smp.p.y), (ax, ay), z0=smp.p.z), "beach_road",
+                    "road", width=10.0, shoulder=0.6, shoulder_mat=("beach_sand", "sand"))
+        az = natural(ax, ay) + 0.2
+        way = [(lerp(ax, bx, k / 24), lerp(ay, by, k / 24), lerp(az, pier_z, min(1.0, k / 4)) + 0.02)
+               for k in range(25)]
         box(c, "Causeway End", bx, by - 6.0, 12.0, 3.0, WATER_Z - 4.0, WATER_Z + 14.0, ("isle_rock", "wall"))
         c.side_road("Tidewyrm's Causeway", way, "beach_road", "road", width=10.0, shoulder=0.6,
                     shoulder_mat=("isle_rock", "road"), barrier=0.6, barrier_mat=("isle_rock", "wall"), deck=1.4,

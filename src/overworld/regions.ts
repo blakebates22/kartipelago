@@ -525,7 +525,7 @@ export const REGIONS: Region[] = [
         x: 0,
         z: 460,
         radius: 8,
-        heading: Math.PI,
+        heading: -2.861, // (along the Causeway, back to the beach west of the pier)
         ruinOnly: true,
         blocker: { kind: "water", width: 14 },
         opensAfter: "beach",
