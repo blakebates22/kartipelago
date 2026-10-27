@@ -205,6 +205,17 @@
     {
       "id": "villager_home_03",
       "type": "villager_home",
+      "x": -469.34,
+      "z": -1.0,
+      "y": 16.97,
+      "r": 14.0,
+      "n": 2,
+      "folk": "desert",
+      "heading": -1.679
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
       "x": -3.98,
       "z": -301.09,
       "y": 16.98,
@@ -214,7 +225,7 @@
       "heading": -2.395
     },
     {
-      "id": "villager_home_04",
+      "id": "villager_home_05",
       "type": "villager_home",
       "x": -15.2,
       "z": -278.73,
@@ -225,7 +236,7 @@
       "heading": -1.942
     },
     {
-      "id": "villager_home_05",
+      "id": "villager_home_06",
       "type": "villager_home",
       "x": 179.38,
       "z": -228.44,
@@ -236,7 +247,7 @@
       "heading": -0.68
     },
     {
-      "id": "villager_home_06",
+      "id": "villager_home_07",
       "type": "villager_home",
       "x": 228.44,
       "z": -166.03,
@@ -247,7 +258,7 @@
       "heading": -0.062
     },
     {
-      "id": "villager_home_07",
+      "id": "villager_home_08",
       "type": "villager_home",
       "x": 139.82,
       "z": 212.9,
@@ -258,7 +269,7 @@
       "heading": -3.024
     },
     {
-      "id": "villager_home_08",
+      "id": "villager_home_09",
       "type": "villager_home",
       "x": 295.88,
       "z": 79.92,
@@ -269,7 +280,7 @@
       "heading": 1.156
     },
     {
-      "id": "villager_home_09",
+      "id": "villager_home_10",
       "type": "villager_home",
       "x": 16.57,
       "z": 173.73,
@@ -280,7 +291,7 @@
       "heading": 2.755
     },
     {
-      "id": "villager_home_10",
+      "id": "villager_home_11",
       "type": "villager_home",
       "x": -67.99,
       "z": 183.14,
@@ -300,6 +311,6 @@
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "desert_layout.py": "fde6f7d6c7374f288495646698f6ed96e163d0c0b33df1400da7f9cdc74bc6a2",
-    "desert_region.py": "3d5a085dee6654d74f6bc6d01cfeeadb19437ce2e722a3db736f3d91113befc9"
+    "desert_region.py": "e42dcf65bc34fa61ebd7d040346beeb5c29d53ede84dc3a17f36891edc674659"
   }
 }
