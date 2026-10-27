@@ -97,6 +97,9 @@ export function sessionExtras(
         catchUp: BOSS_CATCH_UP,
         speed: run.chosen ? DRAGON.king.chosenSpeed : DRAGON.king.speed,
       },
+      // The rematch as the Chosen One: his fireballs and the gauntlet (the course's
+      // alternative mechanic); the first race, his wall of fire.
+      bossVariant: run.chosen ? "alt" : "main",
       ...(run.chosen && { playerName: DRAGON.chosen.name }),
     };
   return {};

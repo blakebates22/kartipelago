@@ -32,6 +32,10 @@ export interface Home {
 
 const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road"];
 
+/** How far above a villager the ground is looked for: a roof over a spot (a house) is
+ * found first, and isn't ground it can stand on, so it never walks into a house. */
+const LOOK_UP = 8;
+
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 
 /** The homes among a package's entities. */
@@ -192,7 +196,7 @@ export function createVillagers(opts: {
       const r = 3 + rand() * Math.min(6, h.r * 0.5);
       const x = h.x + Math.sin(a) * r;
       const z = h.z + Math.cos(a) * r;
-      const g = opts.ground(x, z, h.y + 4);
+      const g = opts.ground(x, z, h.y + LOOK_UP);
       const y = g.ok ? g.height : h.y;
       const solid: SolidCircle = {
         kind: "circle",
@@ -231,8 +235,8 @@ export function createVillagers(opts: {
       const r = 2 + v.rand() * v.home.r;
       const x = v.home.x + Math.sin(a) * r;
       const z = v.home.z + Math.cos(a) * r;
-      const g = opts.ground(x, z, v.y + 3);
-      if (g.ok && Math.abs(g.height - v.home.y) < 4) {
+      const g = opts.ground(x, z, v.y + LOOK_UP);
+      if (g.ok && Math.abs(g.height - v.home.y) < 4 && Math.abs(g.height - v.y) < 3) {
         v.tx = x;
         v.tz = z;
         return;
@@ -290,7 +294,7 @@ export function createVillagers(opts: {
             const sp = v.speed * want * Math.max(0.2, Math.cos(wrap(face - v.heading)));
             const nx = v.x + Math.sin(v.heading) * sp * dt;
             const nz = v.z + Math.cos(v.heading) * sp * dt;
-            const g = opts.ground(nx, nz, v.y + 1.5);
+            const g = opts.ground(nx, nz, v.y + LOOK_UP);
             if (g.ok && Math.abs(g.height - v.y) < 0.6) {
               v.x = nx;
               v.z = nz;

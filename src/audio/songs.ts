@@ -2900,6 +2900,147 @@ const TUNE_VOICES = new Set<InstrumentId>([
   "square",
 ]);
 
+// ---------------------------------------------------------------- the journeys
+
+// The roads between the kingdoms (Blake, Oct 26: their own sections), a theme each, the
+// one world's sound giving way to the next's halfway through.
+
+export const GORGE_MELODY = bars(
+  "A4:1 C5:1 E5:1.5 D5:.5",
+  "C5:1 A4:1 E4:2",
+  "F4:1 A4:1 C5:1 A4:1",
+  "G4:1 B4:1 D5:1.5 C5:.5",
+  "E5:1 A5:1 E5:1 C5:1",
+  "A4:1 C5:.5 D5:.5 C5:1 A4:1",
+  "B4:1 G#4:1 E4:1 G#4:1",
+  "B4:2 E4:1 r:1",
+  "A4:1 C#5:1 E5:1.5 F#5:.5",
+  "F#5:1 D5:1 A4:1 D5:1",
+  "E5:1 G#5:1 B5:1.5 A5:.5",
+  "A5:2 E5:1 C#5:1",
+  "C#5:1 F#5:1 A5:1 F#5:1",
+  "D5:1 F#5:1 A5:1.5 G5:.5",
+  "G#5:1 E5:1 B4:1 G#4:1",
+  "A4:3 r:1",
+);
+export const GORGE_CHORDS = "Am:4 Am:4 F:4 G:4 Am:4 F:4 E:4 E:4 A:4 D:4 E:4 A:4 F#m:4 D:4 E:4 A:4";
+
+export const PASS_MELODY = bars(
+  "F#5:1 A5:1 D6:1 A5:1",
+  "E5:1 C#5:1 A4:1.5 B4:.5",
+  "D5:1 F#5:1 B5:1 F#5:1",
+  "G5:1 D5:1 B4:2",
+  "A4:1 D5:1 F#5:1.5 E5:.5",
+  "D5:1 B4:1 G4:1 B4:1",
+  "C#5:1 E5:1 A5:1 E5:1",
+  "A5:2 r:2",
+  "B4:1 D5:1 F#5:1 D5:1",
+  "B4:1 D5:1 G5:1.5 F#5:.5",
+  "F#5:1 D5:1 A4:1 D5:1",
+  "E5:1 A4:1 C#5:2",
+  "D5:1 G5:1 B5:1 G5:1",
+  "E5:1 A5:1 C#6:1 A5:1",
+  "B5:1 F#5:1 E5:1 C#5:1",
+  "D5:3 r:1",
+);
+export const PASS_CHORDS = "D:4 A:4 Bm:4 G:4 D:4 G:4 A:4 A:4 Bm:4 G:4 D:4 A:4 G:4 A:4 Bm:2 A:2 D:4";
+
+export const DUST_MELODY = bars(
+  "E5:1 G#5:1 B5:1 G#5:1",
+  "F#5:1 A5:1 D5:1.5 E5:.5",
+  "C#5:1 E5:1 A5:1 E5:1",
+  "G#5:1 B4:1 E5:2",
+  "B4:1 E5:1 G#5:.5 F#5:.5 E5:1",
+  "D5:1 F#5:1 A5:1 F#5:1",
+  "D#5:1 F#5:1 B5:1 F#5:1",
+  "B4:2 r:2",
+  "A4:1 C#5:1 E5:1.5 F#5:.5",
+  "E5:1 B4:1 G#4:1 B4:1",
+  "A4:1 D5:1 F#5:1 D5:1",
+  "C#5:2 A4:1 E5:1",
+  "G#5:1 E5:1 B5:1 G#5:1",
+  "A5:1 F#5:1 D5:1 F#5:1",
+  "F#5:1 D#5:1 B4:1 D#5:1",
+  "E5:3 r:1",
+);
+export const DUST_CHORDS = "E:4 D:4 A:4 E:4 E:4 D:4 B:4 B:4 A:4 E:4 D:4 A:4 E:4 D:4 B:4 E:4";
+
+export const CAUSEWAY_MELODY = bars(
+  "G4:1 Bb4:1 D5:1.5 C5:.5",
+  "Bb4:1 G4:1 Eb4:2",
+  "D5:1 F5:1 Bb5:1 F5:1",
+  "A4:1 C5:1 F5:1 C5:1",
+  "D5:1 G5:1 Bb5:1.5 A5:.5",
+  "G5:1 Eb5:1 C5:1 Eb5:1",
+  "F#5:1 A5:1 D5:1 F#5:1",
+  "D5:2 r:2",
+  "Eb5:1 G5:1 Bb5:1 G5:1",
+  "F5:1 D5:1 Bb4:1.5 C5:.5",
+  "C5:1 A4:1 F4:1 A4:1",
+  "Bb4:2 G4:1 D5:1",
+  "Eb5:1 G5:1 C6:1 G5:1",
+  "D5:1 G5:1 Bb5:1 G5:1",
+  "A5:1 F#5:1 D5:1 A4:1",
+  "G4:3 r:1",
+);
+export const CAUSEWAY_CHORDS =
+  "Gm:4 Eb:4 Bb:4 F:4 Gm:4 Cm:4 D:4 D:4 Eb:4 Bb:4 F:4 Gm:4 Cm:4 Gm:4 D:4 Gm:4";
+
+/** A journey's theme: the tune in the first world's instruments for its first half, the
+ * next world's for its second, over a travelling groove. */
+function journey(def: {
+  id: string;
+  title: string;
+  bpm: number;
+  melody: string;
+  chords: string;
+  first: [InstrumentId, number][];
+  second: [InstrumentId, number][];
+  comp: InstrumentId;
+  comp2: InstrumentId;
+  kick: string;
+  hats: string;
+  hand: string;
+}): Song {
+  const ch = chart(def.chords);
+  const mel = seq(def.melody, 0, 0.82);
+  const a = mel.filter((n) => n.t < 32);
+  const b = mel.filter((n) => n.t >= 32);
+  const first = ch.filter((c) => c.t < 32);
+  const second = ch.filter((c) => c.t >= 32);
+  // A walking, travelling bass: root, fifth, octave, a step in.
+  const walk: [number, number, string][] = [
+    [0, 1, "R"],
+    [1, 1, "5"],
+    [2, 1, "8"],
+    [3, 1, "A"],
+  ];
+  return {
+    id: def.id,
+    title: def.title,
+    role: "Journeys",
+    bpm: def.bpm,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      ...def.first.map(([inst, g], i) => part(inst, "base", g, i ? shift(a, 0, -12) : a)),
+      ...def.second.map(([inst, g], i) => part(inst, "base", g, i ? shift(b, 0, 12) : b)),
+      part(def.comp, "base", 0.5, arpeggio(first, 0.5, [0, 1, 2, 1], 57, 0.3, 0.45)),
+      part(def.comp2, "base", 0.5, arpeggio(second, 0.25, [0, 1, 2, 3, 2, 1, 2, 3], 64, 0.2, 0.42)),
+      part("pad", "base", 0.35, pads(ch, 55, 4, 0.4)),
+      part("bass", "base", 1, bassLine(ch, walk, 33, 0.85)),
+      ...drumParts("base", 0.85, drums(def.kick, KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums(def.hats, KIT, 0.25, 16)),
+      ...drumParts("base", 0.5, drums(def.hand, KIT, 0.25, 8, 32)),
+      ...[28, 60].flatMap((at) =>
+        drumParts("base", 0.7, drums("o.o.O.o.OoOoOOOO", KIT, 0.25, 1, at)),
+      ),
+      ...drumParts("base", 0.8, drums("C", KIT, 32, 2)),
+    ],
+  };
+}
+
 export function ruinVersion(song: Song): Song {
   const parts: Part[] = [];
   for (const p of song.parts) {
@@ -2980,6 +3121,86 @@ export const SONGS: Record<string, Song> = {
   splash_lagoon: splashLagoon(),
   boss: dragonRace(),
   emberdeep: emberdeep(),
+  journey_gorge: journey({
+    id: "journey_gorge",
+    title: "The Burnt Gorge",
+    bpm: 140,
+    melody: GORGE_MELODY,
+    chords: GORGE_CHORDS,
+    first: [
+      ["horn", 0.9],
+      ["brass", 0.4],
+    ],
+    second: [
+      ["flute", 1],
+      ["bell", 0.3],
+    ],
+    comp: "marimba",
+    comp2: "celesta",
+    kick: "K...k...K...k.k.",
+    hats: "iiIiiiIiiiIiiiIi",
+    hand: "..o...o...o..ooo",
+  }),
+  journey_pass: journey({
+    id: "journey_pass",
+    title: "The Frozen Pass",
+    bpm: 150,
+    melody: PASS_MELODY,
+    chords: PASS_CHORDS,
+    first: [
+      ["celesta", 1],
+      ["strings", 0.4],
+    ],
+    second: [
+      ["flute", 1],
+      ["xylophone", 0.3],
+    ],
+    comp: "pizz",
+    comp2: "marimba",
+    kick: "K.....k.K.......",
+    hats: "hhHhhhHhhhHhhhHh",
+    hand: "w.w.w.www.w.w.ww",
+  }),
+  journey_dust: journey({
+    id: "journey_dust",
+    title: "The Dust Road",
+    bpm: 156,
+    melody: DUST_MELODY,
+    chords: DUST_CHORDS,
+    first: [
+      ["flute", 1],
+      ["pizz", 0.5],
+    ],
+    second: [
+      ["steelpan", 1],
+      ["marimba", 0.35],
+    ],
+    comp: "pizz",
+    comp2: "marimba",
+    kick: "K..k..K.K..k..K.",
+    hats: "hhHhhhHhhhHhhhHh",
+    hand: "..b.bb.b..b.b.bb",
+  }),
+  journey_cause: journey({
+    id: "journey_cause",
+    title: "Tidewyrm's Causeway",
+    bpm: 132,
+    melody: CAUSEWAY_MELODY,
+    chords: CAUSEWAY_CHORDS,
+    first: [
+      ["strings", 1],
+      ["horn", 0.4],
+    ],
+    second: [
+      ["brass", 0.9],
+      ["bell", 0.3],
+    ],
+    comp: "marimba",
+    comp2: "pizz",
+    kick: "K.......K...k...",
+    hats: "i.i.i.i.i.i.i.i.",
+    hand: "..o...o...o..ooo",
+  }),
 };
 for (const id of RUIN_SONGS) {
   const r = ruinVersion(SONGS[id]!);
@@ -2999,6 +3220,7 @@ const ROLE_ORDER = [
   "Desert World",
   "Tropic Isles",
   "Dragon Kingdom",
+  "Journeys",
   "Boss races",
   "Adventure mode",
 ];

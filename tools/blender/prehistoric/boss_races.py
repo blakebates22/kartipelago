@@ -25,13 +25,20 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
 from course_kit import lerp, smooth  # noqa: E402
+from pocket_build import box  # noqa: E402
 
 # Each: layout, closing straights, start pose, heights at segment starts, decked segments
 # (bridges, the road on posts), jumps (segment, metres into it, gap, drop, kick), zippers
 # (segment, metres into it), laps, materials, and the ground's base level.
 PREHISTORIC = {
-    "name": "Tyrant's Gorge (boss, proto)",
-    "theme": "river_valley",
+    # Cinderjaw's Caldera (Blake, Oct 26: every boss race a mechanic to master): the
+    # figure of eight now over a lava lake in a volcano's caldera. Cinderjaw's breath
+    # sweeps across the straights on a beat (their glow first): drive through it burning
+    # and you take heat; the cooled-crust vents on the bends' inside lines take it away
+    # and fire a zipper; a full gauge overheats you. The alternative: the straights
+    # crumble into the lava behind whoever's leading (game/bossMech.ts).
+    "name": "Cinderjaw's Caldera",
+    "theme": "ember_volcano",
     "laps": 3,
     "start": (0.0, 0.0), "head": 45.0,
     "layout": [("S", 150), ("L", 55, 270), ("S", 150), ("R", 55, 270)],
@@ -40,9 +47,15 @@ PREHISTORIC = {
     "deck": [2],
     "jumps": [(3, 150.0, 12.0, 2.0, 0.9)],
     "zippers": [(0, 30), (3, 110)],
-    "mats": {"road": "valley_road", "ground": ("valley_grass", "grass"), "shoulder": ("valley_grass", "dirt"), "wall": ("valley_cliff", "wall"),
-             "deck": "wood_planks", "rail": ("palm_bark", "wall")},
-    "base": 0.0,
+    "mats": {"road": "basalt_road", "ground": ("ash_soil", "dirt"), "shoulder": ("scorched_ground", "dirt"),
+             "wall": ("obsidian_cliff", "wall"), "deck": "wood_planks", "rail": ("palm_bark", "wall")},
+    "base": -4.0,
+    "lava": True,
+    # Cinderjaw's mechanics: sweeps (segment, metres in, period, offset), vents (segment,
+    # fraction round the bend, across), the crumbling stretches (segment, from, to).
+    "sweeps": [(0, 55.0, 4.6, 0.0), (0, 105.0, 4.6, 2.3), (2, 45.0, 5.0, 1.2), (2, 110.0, 5.0, 3.7)],
+    "vents": [(1, 0.35, -4.0), (1, 0.7, -4.0), (3, 0.35, 4.0), (3, 0.7, 4.0)],
+    "crumble": [(0, 10.0, 140.0), (2, 10.0, 140.0)],
 }
 DESERT = {
     "name": "Mesa Rush (boss, proto)",
@@ -56,6 +69,16 @@ DESERT = {
     "deck": [],
     "jumps": [(0, 110.0, 14.0, 2.0, 1.0)],
     "zippers": [(0, 50), (2, 10), (8, 20)],
+    # Scorchwind's mechanics: crosswind gusts (the sand streams across first) shoving you
+    # toward the quicksand on the road's edge, rock pillars to shelter behind, the canyon
+    # jump carried further on a tailwind. The alternative: a sandstorm, beacon fires
+    # marking the way.
+    "gusts": [(0, 40.0, 1, 40.0, 5.5, 0.0), (0, 160.0, 1, 40.0, 5.5, 2.0), (8, 60.0, -1, 50.0, 6.0, 1.0),
+              (6, 30.0, 1, 34.0, 5.0, 3.0)],
+    "shelters": [(0, 30.0, -1, 11.0), (0, 150.0, -1, 11.0), (8, 50.0, 1, 11.0)],
+    "tailwinds": [(0, 124.0)],
+    "sandstorm": [(0.85, "alt")],
+    "quicksand": True,
     "mats": {"road": "dash_road", "ground": ("red_sand", "loose_sand"), "shoulder": ("dash_shoulder", "dirt"), "wall": ("strata_orange", "wall"),
              "deck": "plank_deck", "rail": ("fence_rail", "wall")},
     "base": 0.0,
@@ -70,10 +93,19 @@ TROPIC = {
                ("L", 30, 120)],
     "close": (4, 8),
     "heights": {0: 2.0, 1: 3.0, 2: 2.2, 3: 2.2, 4: 2.2, 5: 3.0, 6: 2.4, 7: 2.4, 8: 2.4, 9: 2.4, 10: 2.2, 11: 2.0},
-    "deck": [1, 5],
+    "deck": [1],
+    "coil_segs": [5],
     "humps": {9: (4, 1.0)},
     "jumps": [(5, 50.0, 12.0, 2.0, 0.9)],
     "zippers": [(0, 20), (4, 20), (8, 10)],
+    # Tidewyrm's mechanics: the tide rising and falling as he thrashes (the sandbar across
+    # the lagoon a shortcut only at low tide), his coils surfacing as the bridge between
+    # the islets (only while they're up). The alternative: whirlpools that swing you
+    # round and fling you on.
+    "tide": [(14.0, -1.4, 1.0)],
+    "sandbars": [((2, 10.0), (4, 30.0))],
+    "coils": [(5,)],
+    "whirlpools": [(4, 50.0, "alt"), (8, 40.0, "alt"), (0, 60.0, "alt")],
     "mats": {"road": "beach_road", "ground": ("beach_sand", "soft_sand"), "shoulder": ("beach_sand", "sand"), "wall": ("valley_cliff", "wall"),
              "deck": "wood_planks", "rail": ("tiki_wood", "wall")},
     "base": -3.0,
@@ -93,6 +125,15 @@ SNOWY = {
     "deck": [6],
     "jumps": [(8, 120.0, 22.0, 4.0, 1.2)],
     "zippers": [(2, 20), (8, 70), (10, 20), (16, 20)],
+    # Rimefang's mechanics: walls of ice rising across one lane of the divided straights
+    # (the frost cracks first: be in the other lane), then his avalanche chasing you down
+    # the mountain. The alternative: the valley floor a frozen lake that cracks if you
+    # linger.
+    "dividers": [(2, 15.0, 128.0), (4, 15.0, 128.0)],
+    "ice_walls": [(2, 35.0, -1, 3.6, 0.0), (2, 70.0, 1, 3.6, 1.8), (2, 105.0, -1, 3.6, 0.9),
+                  (4, 35.0, 1, 3.6, 0.4), (4, 70.0, -1, 3.6, 2.2), (4, 105.0, 1, 3.6, 1.3)],
+    "avalanche": [(5, 9, 70.0, 26.0)],
+    "thin_lake": [(9, 11, "alt")],
     "mats": {"road": "summit_road", "ground": ("summit_snow", "deep_snow"), "shoulder": ("summit_snow", "packed_snow"), "wall": ("summit_cliff", "wall"),
              "deck": "plank_road", "rail": ("rope_rail", "wall")},
     "base": 0.0,
@@ -111,6 +152,17 @@ DRAGON = {
     "deck": [1, 10, 11, 12],
     "jumps": [(13, 30.0, 16.0, 6.0, 0.9)],
     "zippers": [(0, 20), (10, 40), (12, 20), (16, 30)],
+    # King Pyrrhax: the first race, a wall of fire chasing you up the castle hill; the
+    # rematch (the alternative), his fireballs (AURIN'S LIGHT sends them back) and a
+    # gauntlet of each kingdom's trial: Cinderjaw's sweeps, Rimefang's walls, Scorchwind's
+    # wind, Tidewyrm's whirlpool.
+    "firewall": [(2, 12, 60.0, 25.0)],
+    "fireball": [(5.0, 30.0, "alt")],
+    "sweeps_alt": [(10, 60.0, 4.6, 0.0), (10, 140.0, 4.6, 2.3)],
+    "dividers": [(16, 20.0, 120.0, "alt")],
+    "ice_walls": [(16, 45.0, -1, 3.6, 0.0, "alt"), (16, 90.0, 1, 3.6, 1.8, "alt")],
+    "gusts": [(20, 50.0, 1, 40.0, 5.5, 0.0, "alt")],
+    "whirlpools": [(4, 30.0, "alt")],
     "mats": {"road": "keep_cobble", "ground": ("keep_grass", "grass"), "shoulder": ("keep_path", "dirt"), "wall": ("keep_rock", "wall"),
              "deck": "keep_flag", "rail": ("keep_parapet", "wall")},
     "base": 0.0,
@@ -183,6 +235,10 @@ def build(track_id):
         hills = 1.5 * math.sin(x / 37.0) * math.cos(y / 29.0) + 3.0 * smooth((d - 40) / 60)
         if sp.get("sea"):
             return lerp(best - 0.5, sp["base"], smooth((d - 14) / 14))
+        if sp.get("lava"):
+            # The lava lake round the road, the caldera's walls far out.
+            h = lerp(best - 0.5, sp["base"], smooth((d - 13) / 10))
+            return h + 40.0 * smooth((d - 120) / 60)
         h = lerp(best - 0.5, sp["base"] + max(0.0, best - sp["base"]) * 0.6 + hills, smooth((d - 16) / 50))
         dk = dtree.find((x, y, 0.0))[2] if deck_pts else 1e9
         if dk < 30 and dk < d:
@@ -194,6 +250,10 @@ def build(track_id):
     def classify(c, nrm, info):
         if nrm.z < 0.6:
             return m["wall"]
+        if sp.get("quicksand") and 9.0 < info["d"] < 30.0:
+            return ("gold_sand", "mud")  # (Scorchwind's quicksand by the road)
+        if sp.get("lava") and c.z < sp["base"] + 1.5 and info["d"] > 14:
+            return ("volcano_lava", "lava")
         if sp.get("sea") and c.z < 0.4:
             return ("wet_sand", "deep_water") if c.z < -0.4 else ("wet_sand", "sand")
         if info["d"] < 12:
@@ -209,6 +269,9 @@ def build(track_id):
         "kicker": {"mat": m["deck"], "surface": "road", "shoulder": 0.4, "shoulder_mat": (m["deck"], "road"), "deck": 2.0,
                    "deck_mat": (m["deck"], "road"), "ground": False},
     }
+    # Tidewyrm's coils: the bridge you drive along his back (scaly, no rails).
+    c.kinds["coil"] = {"mat": "em_cliff", "surface": "road", "shoulder": 0.4, "shoulder_mat": ("em_cliff", "road"),
+                       "deck": 2.0, "deck_mat": ("em_cliff", "road"), "ground": False}
     gaps = [(to_road(l), to_road(r)) for l, r, _, _ in jumps]
 
     def label(smp):
@@ -218,6 +281,8 @@ def build(track_id):
                 return "gap"
             if l - 12 <= s < l:
                 return "kicker"
+        if seg_of(to_plan(s)) in sp.get("coil_segs", []):
+            return "coil"
         return "deck" if seg_of(to_plan(s)) in sp["deck"] else "road"
 
     specials = []
@@ -244,6 +309,8 @@ def build(track_id):
     c.start_line()
     for seg, off in sp["zippers"]:
         c.zipper(to_road(seg_d[seg] + off), 0)
+    mechanics(c, sp, seg_d, to_road, length)
+    extra_mechanics(c, sp, seg_d, to_road, length, natural)
     for k, (l, r) in enumerate(gaps):
         c.entity("respawn", **{"from": round(l - 20, 1), "to": round(r + 4, 1), "at": round(r + 18, 1)})
     for i in range(1, n, 3):
@@ -252,6 +319,136 @@ def build(track_id):
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": sp["laps"]}})
     print(track_id, "lap", round(c.length, 1), "laps", sp["laps"])
+
+
+def mechanics(c, sp, seg_d, to_road, length):
+    """The boss's mechanics as entities (src/game/bossMech.ts): Cinderjaw's fire sweeps
+    and crust vents (main), the crumbling straights (alt)."""
+    def heading(q):
+        return math.atan2(q.t.x, -q.t.y)  # (game heading: x east, z = -blender y)
+
+    sweeps = [(*e, {}) for e in sp.get("sweeps", [])] + [(*e, {"variant": "alt"}) for e in sp.get("sweeps_alt", [])]
+    for seg, off, period, offset, var in sweeps:
+        q = c.at(to_road(seg_d[seg] + off))
+        g = c.game(q.p.x, q.p.y, q.p.z)
+        c.entity("fire_sweep", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(heading(q), 4),
+                 width=round(q.w + 4.0, 1), depth=4.0, period=period, offset=offset, warn=1.4, burn=1.3, **var)
+        # The vents its fire comes up from, either side.
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 3.0), q.p.y + q.r.y * sd * (q.w / 2 + 3.0)
+            g2 = c.game(x, y, q.p.z + 0.5)
+            c.entity("steam", x=g2[0], y=g2[1], z=g2[2])
+    for seg, frac, across in sp.get("vents", []):
+        a, b = seg_d[seg], seg_d.get(seg + 1, length)
+        q = c.at(to_road(a + (b - a) * frac))
+        x, y = q.p.x + q.r.x * across, q.p.y + q.r.y * across
+        g = c.game(x, y, q.p.z)
+        c.entity("crust_vent", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), r=3.0)
+    for seg, s0, s1 in sp.get("crumble", []):
+        c.entity("crumble", variant="alt", **{"from": round(to_road(seg_d[seg] + s0), 1),
+                                              "to": round(to_road(seg_d[seg] + s1), 1)}, gap=45.0)
+
+
+def extra_mechanics(c, sp, seg_d, to_road, length, natural):
+    """The other bosses' mechanics (src/game/bossMechs.ts) from the spec: Rimefang's ice
+    walls (and the lane dividers they need), avalanche and thin lake; Scorchwind's gusts,
+    shelters, tailwinds and sandstorm; Tidewyrm's tide, sandbars and coils, and his
+    whirlpools; the King's fire wall and fireballs. Each spec entry may end in "alt"."""
+    def at(seg, off):
+        return c.at(to_road(seg_d[seg] + off))
+
+    def seglen(seg):
+        return seg_d.get(seg + 1, length) - seg_d[seg]
+
+    def heading(q):
+        return math.atan2(q.t.x, -q.t.y)
+
+    def var(e):
+        return {"variant": "alt"} if e and e[-1] == "alt" else {}
+
+    def G(x, y, z):
+        g = c.game(x, y, z)
+        return {"x": round(g[0], 2), "y": round(g[1], 2), "z": round(g[2], 2)}
+
+    for seg, s0, s1, *rest in sp.get("dividers", []):
+        q0 = at(seg, s0)
+        k = 0
+        s = s0
+        while s < s1:
+            q = at(seg, s)
+            # (Only seen: a ridge of ice down the middle marking the lanes; a solid one would
+            # stand in the boss's racing line.)
+            box(c, "Divider %d %d" % (seg, k), q.p.x, q.p.y, 0.4, 1.6, q.p.z - 1.0, q.p.z + 0.5, ("rift_snow", "wall"),
+                rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, role="visual")
+            s += 4.0
+            k += 1
+        del q0
+    for seg, off, side, period, offset, *rest in sp.get("ice_walls", []):
+        q = at(seg, off)
+        c.entity("ice_wall", **G(q.p.x, q.p.y, q.p.z), heading=round(heading(q), 4), width=round(q.w / 2 - 0.6, 1),
+                 across=round(side * q.w / 4, 2), period=period, offset=offset, warn=1.3, up=1.9, **var(rest))
+    for a, b, gap, speed, *rest in sp.get("avalanche", []):
+        c.entity("avalanche", **{"from": round(to_road(seg_d[a]), 1), "to": round(to_road(seg_d[b]), 1)}, gap=gap,
+                 speed=speed, **var(rest))
+    for a, b, gap, speed, *rest in sp.get("firewall", []):
+        c.entity("firewall", **{"from": round(to_road(seg_d[a]), 1), "to": round(to_road(seg_d[b]), 1)}, gap=gap,
+                 speed=speed, **var(rest))
+    for a, b, *rest in sp.get("thin_lake", []):
+        pts = [at(seg, seglen(seg) * f) for seg in range(a, b + 1) for f in (0.0, 0.5, 1.0)]
+        cx = sum(q.p.x for q in pts) / len(pts)
+        cy = sum(q.p.y for q in pts) / len(pts)
+        r = max(math.hypot(q.p.x - cx, q.p.y - cy) for q in pts) + 12.0
+        z = min(q.p.z for q in pts)
+        c.disc("Frozen Lake", cx, cy, r, z - 0.25, c.lib("lake_ice", "ice"), role="visual", n=40)
+        c.entity("thin_lake", **G(cx, cy, z), r=round(r, 1), **var(rest))
+    for seg, off, side, r, period, offset, *rest in sp.get("gusts", []):
+        q = at(seg, off)
+        # The wind blows across the road toward `side` (+1: to the right).
+        rx, ry = q.r.x * side, q.r.y * side
+        c.entity("gust", **G(q.p.x, q.p.y, q.p.z), r=r, dx=round(rx, 3), dz=round(-ry, 3), period=period, offset=offset,
+                 warn=1.2, on=2.6, strength=7.5, **var(rest))
+    for seg, off, side, dist, *rest in sp.get("shelters", []):
+        q = at(seg, off)
+        x, y = q.p.x + q.r.x * side * dist, q.p.y + q.r.y * side * dist
+        c.assign(c.rock_mass("Shelter %d %d" % (seg, int(off)), x, y, 3.0, 2.4, q.p.z + 9.0, z0=q.p.z - 3.0, n=10,
+                             seed=int(off) + seg), c.lib(*sp["mats"]["wall"]))
+        g = c.game(x, y, q.p.z)
+        c.entity("shelter", x=round(g[0], 2), z=round(g[2], 2), r=4.5, **var(rest))
+    for seg, off, *rest in sp.get("tailwinds", []):
+        q = at(seg, off)
+        c.entity("tailwind", **G(q.p.x, q.p.y, q.p.z), r=10.0, **var(rest))
+    for e in sp.get("sandstorm", []):
+        c.entity("sandstorm", density=e[0], **var(e))
+        # The beacon fires marking the way.
+        s = 0.0
+        while s < length:
+            q = c.at(s)
+            for sd in (-1, 1):
+                x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.5), q.p.y + q.r.y * sd * (q.w / 2 + 2.5)
+                box(c, "Beacon %d %d" % (int(s), sd), x, y, 0.4, 0.4, q.p.z - 1.0, q.p.z + 2.4, ("weathered_timber", "wall"))
+                g = c.game(x, y, q.p.z + 2.8)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+            s += 36.0
+    for e in sp.get("tide", []):
+        period, low, high, *rest = e
+        c.entity("tide", period=period, low=low, high=high, **var(rest))
+    for (sa, oa), (sb, ob), *rest in sp.get("sandbars", []):
+        qa, qb = at(sa, oa), at(sb, ob)
+        n = max(2, int(math.hypot(qb.p.x - qa.p.x, qb.p.y - qa.p.y) / 8))
+        pts = [(kit.lerp(qa.p.x, qb.p.x, k / n), kit.lerp(qa.p.y, qb.p.y, k / n),
+                kit.lerp(qa.p.z, qb.p.z, k / n) if k in (0, n) else 0.35) for k in range(n + 1)]
+        c.side_road("Sandbar %d" % sa, pts, "beach_road", "road", width=9.0, shoulder=1.2, shoulder_mat=("wet_sand", "sand"))
+        for x, y, z in pts[1:-1]:
+            c.entity("sandbar", **G(x, y, 0.0), r=6.0, **var(rest))
+    for seg, *rest in sp.get("coils", []):
+        c.entity("coil", **{"from": round(to_road(seg_d[seg]) + 2.0, 1), "to": round(to_road(seg_d[seg] + seglen(seg)) - 2.0, 1)},
+                 period=8.0, offset=0.0, up=5.0, **var(rest))
+    for seg, off, *rest in sp.get("whirlpools", []):
+        q = at(seg, off)
+        c.entity("whirlpool", **G(q.p.x, q.p.y, q.p.z), r=round(q.w / 2 + 1.0, 1), spin=1.5, **var(rest))
+    for e in sp.get("fireball", []):
+        period, speed, *rest = e
+        c.entity("fireball", period=period, speed=speed, **var(rest))
 
 
 if __name__ == "__main__":

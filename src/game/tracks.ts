@@ -25,7 +25,13 @@ export interface TrackEntry {
   theme?: string;
   /** Music while racing. */
   music: string;
-  load: { scene: SessionScene; trackData?: TrackData; packageId?: string };
+  load: {
+    scene: SessionScene;
+    trackData?: TrackData;
+    packageId?: string;
+    /** A boss race: its alternative mechanic instead of its main one (game/bossMech.ts). */
+    bossVariant?: "main" | "alt";
+  };
   /** Old ?track= numbers that open it directly. */
   legacyNumber?: number;
   /** A planned track: shown in track select as "Coming Soon", not playable yet. */
@@ -346,20 +352,32 @@ export const TRACKS: TrackEntry[] = [
   // lap). Greyboxes in the Testing world: ?track=boss_<world>.
   {
     id: "boss_prehistoric",
-    name: "Tyrant's Gorge (boss, proto)",
+    name: "Cinderjaw's Caldera",
     description:
-      "Prehistoric boss race prototype, 3 laps: a figure of eight, over its own crossing and the gully jump.",
+      "Cinderjaw's boss race, 3 laps over a lava lake: his fire sweeps the straights (watch the glow), the crust vents cool you and boost you. Overheat and you spin.",
     preview: "previews/boss_prehistoric.jpg",
     modes: ["race", "timeTrial"],
-    theme: "river_valley",
+    theme: "ember_volcano",
     music: "boss",
     load: { scene: "track", packageId: "boss_prehistoric" },
   },
+  // Its alternative mechanic, to try (Blake, Oct 26: "lets try all of them").
+  {
+    id: "boss_prehistoric_alt",
+    name: "Cinderjaw's Caldera (crumbling)",
+    description:
+      "The alternative: the straights crumble into the lava behind whoever's leading. Fall behind there and you drop in.",
+    preview: "previews/boss_prehistoric.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "ember_volcano",
+    music: "boss",
+    load: { scene: "track", packageId: "boss_prehistoric", bossVariant: "alt" },
+  },
   {
     id: "boss_snowy",
-    name: "Avalanche Run (boss, proto)",
+    name: "Rimefang's Avalanche Run",
     description:
-      "Snow Kingdom boss race prototype, one long lap: switchbacks down, the ski jump, the climb back.",
+      "Rimefang's boss race, one long lap: walls of ice rise across one lane of the divided straights (the frost cracks first), then his avalanche chases you down the mountain.",
     preview: "previews/boss_snowy.jpg",
     modes: ["race", "timeTrial"],
     theme: "summit_pass",
@@ -368,10 +386,22 @@ export const TRACKS: TrackEntry[] = [
     load: { scene: "track", packageId: "boss_snowy" },
   },
   {
-    id: "boss_desert",
-    name: "Mesa Rush (boss, proto)",
+    id: "boss_snowy_alt",
+    name: "Rimefang's Avalanche Run (thin ice)",
     description:
-      "Desert boss race prototype, 3 laps: banked sweepers round the mesa, the canyon jump, a chicane.",
+      "The alternative: the valley floor is a frozen lake that cracks if you linger. Keep moving.",
+    preview: "previews/boss_snowy.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "summit_pass",
+    music: "boss",
+    laps: 1,
+    load: { scene: "track", packageId: "boss_snowy", bossVariant: "alt" },
+  },
+  {
+    id: "boss_desert",
+    name: "Scorchwind's Mesa Rush",
+    description:
+      "Scorchwind's boss race, 3 laps: crosswinds shove you toward the quicksand (the sand streams first); shelter behind the pillars; the canyon jump flies further on a tailwind.",
     preview: "previews/boss_desert.jpg",
     modes: ["race", "timeTrial"],
     theme: "canyon_dash",
@@ -379,10 +409,20 @@ export const TRACKS: TrackEntry[] = [
     load: { scene: "track", packageId: "boss_desert" },
   },
   {
+    id: "boss_desert_alt",
+    name: "Scorchwind's Mesa Rush (sandstorm)",
+    description: "The alternative: a sandstorm. You see a few metres; follow the beacon fires.",
+    preview: "previews/boss_desert.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "canyon_dash",
+    music: "boss",
+    load: { scene: "track", packageId: "boss_desert", bossVariant: "alt" },
+  },
+  {
     id: "boss_dragon",
-    name: "The Citadel (boss, proto)",
+    name: "King Pyrrhax's Citadel",
     description:
-      "Dragon Kingdom boss race prototype, one long lap: the chasm bridge, the castle hill, the battlements leap.",
+      "The Dragon King's race, one long lap: a wall of fire chases you up the castle hill.",
     preview: "previews/boss_dragon.jpg",
     modes: ["race", "timeTrial"],
     theme: "dragonspire_keep",
@@ -391,15 +431,38 @@ export const TRACKS: TrackEntry[] = [
     load: { scene: "track", packageId: "boss_dragon" },
   },
   {
-    id: "boss_tropic",
-    name: "Atoll Dash (boss, proto)",
+    id: "boss_dragon_alt",
+    name: "King Pyrrhax's Citadel (the rematch)",
     description:
-      "Tropic Isles boss race prototype, 3 laps: island hops by plank bridge, jump and causeway.",
+      "The rematch as Aurin: his fireballs (press the item button as one reaches you: AURIN'S LIGHT sends it back) and a gauntlet of every kingdom's trial.",
+    preview: "previews/boss_dragon.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "dragonspire_keep",
+    music: "boss",
+    laps: 1,
+    load: { scene: "track", packageId: "boss_dragon", bossVariant: "alt" },
+  },
+  {
+    id: "boss_tropic",
+    name: "Tidewyrm's Atoll",
+    description:
+      "Tidewyrm's boss race, 3 laps: the tide rises and falls (the sandbar shortcut's only dry at low tide), and his coils are the bridge between the islets only while they're up.",
     preview: "previews/boss_tropic.jpg",
     modes: ["race", "timeTrial"],
     theme: "beach_party",
     music: "boss",
     load: { scene: "track", packageId: "boss_tropic" },
+  },
+  {
+    id: "boss_tropic_alt",
+    name: "Tidewyrm's Atoll (whirlpools)",
+    description:
+      "The alternative: whirlpools swing you round and fling you on. Leave them facing out for a boost.",
+    preview: "previews/boss_tropic.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "beach_party",
+    music: "boss",
+    load: { scene: "track", packageId: "boss_tropic", bossVariant: "alt" },
   },
   // The beach world's fourth course, painted (the Tropic Isles, Oct 26): the greybox's lap
   // exactly, a seaside water park. ?track=splash_lagoon.

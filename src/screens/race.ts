@@ -372,6 +372,25 @@ export function drawHud(
   const big = { outline: PAL.shadow };
   if (h.boost > 0) speedLines(ui, h.boost, h.rainbow ? null : h.boostColor, t);
   if (cup) ui.text(cup, ui.W / 2, 6, { color: PAL.gold, outline: PAL.shadow, align: "center" });
+  // A boss race's gauge (Cinderjaw's HEAT): a bar going from yellow to red, flashing
+  // when it's nearly full.
+  if (h.gauge) {
+    const gx = 8;
+    const gy = 48;
+    const gw = 72;
+    const v = Math.max(0, Math.min(1, h.gauge.value));
+    ui.rect(gx - 1, gy - 1, gw + 2, 9, PAL.shadow);
+    ui.rect(gx, gy, gw, 7, "#3a2a20");
+    const hot = v > 0.75 && Math.sin(t * 18) > 0;
+    ui.rect(
+      gx,
+      gy,
+      Math.round(gw * v),
+      7,
+      hot ? "#ffffff" : v > 0.75 ? "#ff3a10" : v > 0.45 ? "#ff8a20" : "#ffd040",
+    );
+    ui.text(h.gauge.label, gx + gw + 4, gy - 1, { color: PAL.cream, outline: PAL.shadow });
+  }
   // Adventure's map fragments: how many you have (a little torn scrap of parchment).
   if (h.coins) {
     const all = h.coins.got >= h.coins.total;

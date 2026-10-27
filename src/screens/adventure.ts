@@ -69,6 +69,8 @@ import { modeSelect } from "./modeSelect";
 import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
 import { devWarp, overworldLoading } from "./overworld";
+import { stagedSceneScreen } from "./cutscene";
+import { stagedById } from "../adventure/staged";
 import { regionById, regionOfKingdom } from "../overworld/regions";
 import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
@@ -759,6 +761,10 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
       : []),
     ...(sc?.beats ?? []),
   ];
+  // Staged in the 3D world (src/adventure/staged.ts), where there's a staging for it.
+  const staged = stagedById(id);
+  if (staged && beats.length)
+    return stagedSceneScreen(game, staged, sc?.title ?? id, beats, finish);
   return {
     id: "ADVENTURE_SCENE",
     seeThrough: false,
@@ -871,7 +877,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
 }
 
 /** A speaker's portrait: a dinosaur's own face, or a placeholder dragon's head. */
-function portrait(
+export function portrait(
   ui: UiLayer,
   pp: PixelPortraits | undefined,
   who: { color: string; shape?: string },

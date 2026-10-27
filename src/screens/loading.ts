@@ -73,6 +73,7 @@ export function loadingScreen(game: Game): Screen {
           scene: entry.load.scene,
           trackData: entry.load.trackData,
           packageId: entry.load.packageId,
+          bossVariant: entry.load.bossVariant,
           rivals: game.selection.mode === "race",
           racer: game.selection.racer,
           trackId: entry.id,

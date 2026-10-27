@@ -75,6 +75,10 @@ const charts: [string, string, number, string][] = [
   ["splash_lagoon", S.SPLASH_CHORDS, 64, S.SPLASH_MELODY],
   ["boss", S.BOSS_CHORDS, 64, S.BOSS_MELODY],
   ["emberdeep", S.EMBERDEEP_CHORDS, 64, S.EMBERDEEP_MELODY],
+  ["journey_gorge", S.GORGE_CHORDS, 64, S.GORGE_MELODY],
+  ["journey_pass", S.PASS_CHORDS, 64, S.PASS_MELODY],
+  ["journey_dust", S.DUST_CHORDS, 64, S.DUST_MELODY],
+  ["journey_cause", S.CAUSEWAY_CHORDS, 64, S.CAUSEWAY_MELODY],
 ];
 
 describe("the soundtrack", () => {

@@ -444,8 +444,8 @@ export interface VillagerView {
 }
 
 /** A villager's look, all picked by its seed. */
-export function villagerLook(folk: Folk, seed: number) {
-  const species = SPECIES[seed % SPECIES.length]!;
+export function villagerLook(folk: Folk, seed: number, kind?: Species) {
+  const species = kind ?? SPECIES[seed % SPECIES.length]!;
   const skins = SKINS[folk];
   const cloths = CLOTH[folk];
   return {
@@ -455,9 +455,14 @@ export function villagerLook(folk: Folk, seed: number) {
   };
 }
 
-export function createVillagerView(parent: THREE.Object3D, folk: Folk, seed: number): VillagerView {
+export function createVillagerView(
+  parent: THREE.Object3D,
+  folk: Folk,
+  seed: number,
+  kind?: Species,
+): VillagerView {
   shared ??= new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-  const { species, skin, cloth } = villagerLook(folk, seed);
+  const { species, skin, cloth } = villagerLook(folk, seed, kind);
   const key = `${species}|${folk}|${skin}|${cloth.join()}|${seed % 2}`;
   let bg = bodies.get(key);
   if (!bg) bodies.set(key, (bg = bodyFor(species, folk, skin, cloth, seed)));

@@ -36,7 +36,7 @@ export function createDragonView(
   pos: { x: number; y: number; z: number },
   heading: number,
   scale = 1,
-  look: "ember" | "obsidian" = "ember",
+  look: "ember" | "obsidian" | "frost" | "sand" | "sea" | "king" = "ember",
 ): DragonView {
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
@@ -48,14 +48,23 @@ export function createDragonView(
   const geo = <G extends THREE.BufferGeometry>(g: G) => (geos.push(g), g);
   // Impact Depths' dragon is obsidian-black with molten spines and a crimson membrane.
   const ob = look === "obsidian";
-  const scales = mat(ob ? "#26202a" : SCALES);
-  const dark = mat(ob ? "#120e14" : DARK);
-  const belly = mat(ob ? "#6a3a2a" : BELLY);
+  // The other dragons' colours (the staged scenes: Rimefang, Scorchwind, Tidewyrm, the
+  // King): scales, dark, belly, wing.
+  const TINT: Record<string, [string, string, string, string]> = {
+    frost: ["#8ab4d8", "#3a5a7a", "#e0f0ff", "#6a9ac8"],
+    sand: ["#c89a5a", "#6a4a2a", "#f0d8a0", "#a8743a"],
+    sea: ["#2a7a7a", "#0f3a3a", "#8ad8c8", "#1f5a6a"],
+    king: ["#5a2a8a", "#2a0f3a", "#c8a040", "#7a3aa0"],
+  };
+  const tint = TINT[look];
+  const scales = mat(tint ? tint[0] : ob ? "#26202a" : SCALES);
+  const dark = mat(tint ? tint[1] : ob ? "#120e14" : DARK);
+  const belly = mat(tint ? tint[2] : ob ? "#6a3a2a" : BELLY);
   const horn = mat(ob ? "#e8dcc0" : HORN);
   const spine = ob
     ? mat("#ff6a1a", { emissive: new THREE.Color("#ff4a10"), emissiveIntensity: 0.9 })
     : mat(SPINE);
-  const wingMat = mat(ob ? "#5a1418" : WING, { side: THREE.DoubleSide });
+  const wingMat = mat(tint ? tint[3] : ob ? "#5a1418" : WING, { side: THREE.DoubleSide });
   const eyeMat = mat("#ffd040", { emissive: new THREE.Color("#ffb020"), emissiveIntensity: 1.4 });
   const throatMat = mat("#c04010", {
     emissive: new THREE.Color("#ff6a10"),

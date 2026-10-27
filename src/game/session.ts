@@ -14,6 +14,7 @@
  * Vehicle physics, drifting, zippers, bananas, items and the AI are used exactly as
  * before; nothing here changes how a kart drives.
  */
+import { createBossMech, hasBossMech, parseBossMech } from "./bossMech";
 import * as THREE from "three";
 import { tuning } from "../core/tuning";
 import { NEUTRAL, type DeviceReading, type Input } from "../core/input";
@@ -200,6 +201,8 @@ export interface SessionOptions {
    * own minds (`drive`: what rival i does this step, undefined for the race AI; `fire`:
    * whether it uses its item now), and the game hears the item events. */
   arena?: ArenaHooks;
+  /** A boss race's mechanic: its main one or its alternative (game/bossMech.ts). */
+  bossVariant?: "main" | "alt";
 }
 
 export interface ArenaHooks {
@@ -255,6 +258,8 @@ export interface HudState {
   ghost?: { on: boolean; best?: number; delta?: number };
   /** Adventure: map fragments taken of all there are. */
   coins?: { got: number; total: number };
+  /** A boss race's gauge (Cinderjaw's HEAT): 0..1. */
+  gauge?: { label: string; value: number };
 }
 
 /** The player's finished race. */
@@ -610,6 +615,30 @@ function buildSession(
             return r ? { lap: r.lap, laps: LAPS, finished: r.finished } : undefined;
           },
         })
+      : undefined;
+
+  // A boss race's mechanic (game/bossMech.ts): the fire sweeps and vents, the crumbling
+  // road. On you only: the boss is its master.
+  const mechCfg = pkg
+    ? parseBossMech(pkg.meta.entities ?? [], opts.bossVariant ?? "main")
+    : undefined;
+  const roadAt = (d: number) => {
+    const ss = track!.samples;
+    const L = track!.length;
+    const u = ((d % L) + L) % L;
+    const q = ss[Math.min(ss.length - 1, Math.round((u / L) * ss.length) % ss.length)]!;
+    return {
+      x: q.pos.x,
+      y: q.pos.y,
+      z: q.pos.z,
+      heading: Math.atan2(q.forward.x, q.forward.z),
+      width: q.width,
+    };
+  };
+  let lastItem = false;
+  const bossMech =
+    mechCfg && track && hasBossMech(mechCfg)
+      ? createBossMech({ cfg: mechCfg, root: demo ? undefined : root, roadAt })
       : undefined;
 
   // Drift Park: which loop you start on ([ and ] step through them), which way round
@@ -1141,6 +1170,43 @@ function buildSession(
           teleported(race, i, e.state);
         }
       }
+      if (bossMech && i === 0 && race && !riding) {
+        const lead = Math.max(...entrants.map((_, j) => progressOf(j)));
+        const boss = entrants[1]?.state;
+        const mv = bossMech.step(e.state, race.clock, dt, progressOf(0), lead, track!.length, {
+          boss: boss && { x: boss.x, y: boss.y, z: boss.z },
+          item: want.item && !lastItem,
+          airborne: !e.state.grounded,
+        });
+        lastItem = want.item;
+        if (mv.burnt || mv.overheated) e.racer.react("burn");
+        if (mv.splashed || mv.buried) e.racer.react("splash");
+        if (mv.bumped && !demo) sfx.explosion(itemsCfg.volume * 0.25);
+        if (mv.boosted) {
+          startZipper(e.state, want.throttle, cfg);
+          if (!demo) sfx.zipper(itemsCfg.volume);
+        }
+        if (mv.reflected && !demo) sfx.enhanced(itemsCfg.volume);
+        if (mv.bossHit && boss) {
+          boss.spinTime = 1.2;
+          boss.spinDir = 1;
+          boss.speed *= 0.3;
+        }
+        if (mv.overheated && !demo) sfx.explosion(itemsCfg.volume * 0.6);
+        if (mv.vented) {
+          startZipper(e.state, want.throttle, cfg);
+          if (!demo) sfx.zipper(itemsCfg.volume);
+        }
+        if (mv.dropAt !== undefined) {
+          const p = roadAt(mv.dropAt);
+          const bananas = e.state.bananas;
+          Object.assign(e.state, createKartState(p.x, p.z, p.heading, p.y + 0.5));
+          e.state.bananas = bananas;
+          e.racer.react("burn");
+          snapPrev(e);
+          teleported(race, i, e.state);
+        }
+      }
       const surfaceDef =
         pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
       const fell =
@@ -1473,6 +1539,14 @@ function buildSession(
     );
     skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
+    bossMech?.render(race?.clock ?? 0);
+    // Scorchwind's sandstorm: the air thick with sand.
+    const storm = bossMech?.fog() ?? 0;
+    if (storm > 0 && stage.scene.fog instanceof THREE.Fog) {
+      stage.scene.fog.color.set(0xc8a070);
+      stage.scene.fog.near = 2;
+      stage.scene.fog.far = 30 + (1 - storm) * 120;
+    }
     groundMat.color.set(park ? PARK_GROUND : (trackData.groundColor ?? world.groundColor));
     sceneryView?.render(tuning.scenery);
     fxClock += frameSeconds;
@@ -1686,6 +1760,7 @@ function buildSession(
       toast: toast?.text,
       laps: LAPS,
       coins: coinField ? { got: coinsTaken(coinField), total: coinField.coins.length } : undefined,
+      gauge: bossMech?.gauge(),
     };
     if (!race || opts.freeRoam || opts.arena) {
       const on = park && streak ? (streak.loop >= 0 ? streak.loop : parkLoop) : 0;
@@ -1852,6 +1927,7 @@ function buildSession(
     boostFx.dispose();
     abort.abort();
     hazards?.dispose();
+    bossMech?.dispose();
     aiDebug?.dispose();
     gateView?.dispose();
     coinView?.dispose();
