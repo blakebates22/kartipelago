@@ -360,6 +360,6 @@
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "snow_layout.py": "752c10cf3cce9146b3be0f0ad9efadb7e826aa132490793a579e20d2ccb0150d",
-    "snow_region.py": "d225557067440efc1c0571f607f4ab0f4606467e71ffe4e1c35ab87c4e375e79"
+    "snow_region.py": "71fa6ed5ec3b5ded579f0127430ed7f17ce3029a621d12f8fb24e59ea576e383"
   }
 }
