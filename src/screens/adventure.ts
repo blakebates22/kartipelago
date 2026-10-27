@@ -325,6 +325,8 @@ export function adventureHub(game: Game): Screen {
       return game.screens.go(devMenu(game));
     }
     if (!canVisit(a.save, id)) return game.sounds.error();
+    // (Outside dev free roam there's no hopping from the map: you drive there.)
+    if (!freeRoam() && !import.meta.env.DEV) return game.sounds.error();
     game.sounds.confirm();
     a.at = id;
     // A kingdom with its overworld region built: drive it (its board is in the pause menu).
@@ -338,6 +340,8 @@ export function adventureHub(game: Game): Screen {
     enter() {
       game.ui.interactive = true;
       void game.audio.music.play("map", { fade: 1 });
+      // Outside dev builds there's no world map to travel by: on with the drive.
+      if (!import.meta.env.DEV && !freeRoam()) return goHome(game);
       // The story's next turn plays first.
       const due = dueScene(a.save);
       if (due)
@@ -598,11 +602,24 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
       });
     items.push({ label: "MINI-GAME", sub: "A SLOT FOR LATER", disabled: true, action: () => {} });
   }
+  // A kingdom with its overworld region built: the board is its checklist, not a way in.
+  // Every race starts where it's found, by driving there (Blake, Oct 26: choosing the
+  // ruined course here just started it). Dev free roam can still launch from here.
+  const drive = regionOfKingdom(id);
+  const driven = !free && Boolean(drive);
+  if (driven)
+    for (const it of items) {
+      if (it.disabled || /^THE MAP|NEW ADVENTURE|MINI-GAME/.test(it.label)) continue;
+      it.sub = `${it.sub ? `${it.sub} · ` : ""}DRIVE TO IT IN ${drive!.name.toUpperCase()} TO RACE`;
+      it.action = () => game.sounds.error();
+    }
+  // Back to the drive (or the world map, with no region to drive).
+  const leave = driven ? () => goHome(game) : back;
   // One line a row; the chosen row's explanation goes in the note on the right.
   const menu = new VMenu(
     game,
     items.map(({ sub: _sub, ...it }) => it),
-    back,
+    leave,
   );
   return {
     id: "ADVENTURE_KINGDOM",
@@ -632,8 +649,12 @@ export function kingdomScreen(game: Game, id: KingdomId): Screen {
       }
       hints(ui, [
         ["▲▼", "CHOOSE"],
-        ["ENTER", "GO"],
-        ["ESC", "WORLD MAP"],
+        ...(driven
+          ? ([["ESC", "BACK TO THE DRIVE"]] as [string, string][])
+          : ([
+              ["ENTER", "GO"],
+              ["ESC", "WORLD MAP"],
+            ] as [string, string][])),
       ]);
     },
   };
@@ -1033,7 +1054,7 @@ export function adventureResult(
   };
 }
 
-/** A championship cup is over (from the Trophy podium): count it and go back to the map. */
+/** A championship cup is over (from the Trophy podium): count it and drive on. */
 export function adventureCupDone(game: Game, place: number) {
   const a = adventureOf(game);
   const run = a.run;
@@ -1051,7 +1072,8 @@ export function adventureCupDone(game: Game, place: number) {
   }
   a.run = undefined;
   game.trophy = undefined;
-  game.screens.go(adventureHub(game));
+  // Back where the cup was entered (its scene first, if one's due), not the world map.
+  goHome(game);
 }
 
 // ---------------------------------------------------------------- dev tools

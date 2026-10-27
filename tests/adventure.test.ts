@@ -33,6 +33,7 @@ import { autoCoinSpots } from "../src/game/coins";
 import { STARTERS, loadUnlocked, unlockRacer } from "../src/app/unlocks";
 import { kingdomField } from "../src/adventure/run";
 import { trackById } from "../src/game/tracks";
+import { regionOfKingdom } from "../src/overworld/regions";
 
 const exists = (id: string) => Boolean(trackById(id));
 
@@ -92,6 +93,14 @@ describe("a playthrough", () => {
     expect(log[0]).toBe("intro");
     expect(unlocked(s, "snow")).toBe(false);
     for (const k of KINGDOMS) {
+      // Its welcome waits until you drive there.
+      if (k !== KINGDOMS[0]) {
+        watch(s, log);
+        expect(log).not.toContain(k.scenes.arrive);
+        s.where = { region: regionOfKingdom(k.id)!.id };
+        watch(s, log);
+        expect(log).toContain(k.scenes.arrive);
+      }
       expect(kingdomPhase(s, k)).toBe("championship");
       expect(objective(s)).toContain("CHAMPIONSHIP");
       cupFinished(s, k.id, 1);
@@ -118,6 +127,7 @@ describe("a playthrough", () => {
     }
     expect(toolsOf(s)).toHaveLength(4);
     expect(dragonPhase(s)).toBe("first");
+    s.where = { region: regionOfKingdom("dragon")!.id };
     cupFinished(s, "dragon", 1);
     watch(s, log);
     expect(log).toContain(DRAGON.scenes.sacrifice);

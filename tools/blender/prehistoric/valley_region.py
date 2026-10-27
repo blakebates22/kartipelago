@@ -1,25 +1,27 @@
-# Dinosaur Valley, the overworld's first region (greybox): the drivable valley the game
-# opens in, with the gateways into its four courses (the Claude Doc "Kartipelago
-# Overworld: Concept & Layout"; src/overworld/regions.ts places the gateways).
+# Dinosaur Valley, the overworld's first region: the valley the game opens in, with the
+# gateways into its four courses (the Claude Doc "Kartipelago Overworld: Concept &
+# Layout"; src/overworld/regions.ts places the gateways).
 # SPDX-License-Identifier: MIT
 #
-#   python tools/blender/prehistoric/valley_region.py      (the bpy module)
+#   python tools/blender/prehistoric/valley_region.py [--ruin]      (the bpy module)
 #
-# Blake (Oct 26): one region per kingdom, gateways at matching landmarks, about 800-900 m
-# across. Broad strokes, all placeholder:
+# v2 (Blake, Oct 26: "a unique shape ... segments of the overworld that capture the
+# flavor of the level ... secretly an awesome race course ... think of kokiri forest"):
+# the layout is valley_layout.py. Four lobes round Elder Mossback's camp on its low
+# plateau, each one of the valley's courses' worlds, joined by necks over low ridges:
 #
-#   - A bowl about 800 m across ringed by cliffs: the dinosaurs think the valley is the
-#     whole world. (The Burnt Gorge through the north cliff comes with the story.)
-#   - A ring road round the valley floor, about a minute round at full speed, and four
-#     spokes in to Elder Mossback's camp in the middle.
-#   - The river, from the falls in the north-east cliff down to the bog in the south-west:
-#     a bridge where the north spoke crosses it, a ford where the west one does, bridges
-#     where the ring does.
-#   - The four landmarks the gateways stand at: Riverbend Palms by the ford (west),
-#     Cascade Caverns in a cave mouth beside the falls (north-east), Bonebog Pyramid where
-#     the pyramid's tip shows above the bog (south-west), Ember Peak in a lava-lit tunnel
-#     at the foot of the cliff with the volcano smoking beyond it (south-east). Short
-#     roads run out to the three in the cliffs.
+#   Riverbend (west)   a palm-lined river bend; its gateway among the palms on the far bank
+#   Cascade (NE)       a jungle canyon climbing to the falls, temple ruins in the trees; its
+#                      gateway the cave mouth beside the falls
+#   Ember (SE)         volcanic ground rising to the cliffs, lava pools and smoking vents;
+#                      its gateway the lava-lit tunnel
+#   Bonebog (SW)       sunken swamp: pools, mud, dead trees, reeds, bones, mist; its gateway
+#                      on the shore by the pyramid's tip
+#
+# The main road is one winding loop through all four (the champion's challenge is raced
+# on it, from the line by the camp). --ruin: the valley after Cinderjaw's attack: the
+# Burnt Gorge split through the north cliff, his Scar in the south up a burnt trench, the
+# trees charred, the ground scorched.
 
 import math
 import os
@@ -28,50 +30,37 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-from course_kit import bmesh, lerp, smooth  # noqa: E402
+from course_kit import Vector, bmesh, lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
 import ruin_kit  # noqa: E402
+import swamp_props as sp  # noqa: E402
+import bonebog_scenery as bs  # noqa: E402
+import valley_layout as L  # noqa: E402
 
-# (--ruin: the valley after Cinderjaw's attack. Only the ruin has the Burnt Gorge his fire
-# split through the north cliff, the burnt trench and his Scar in the south.)
 RUIN = ruin.ON
-TRACK_ID = ruin.track_id("valley_region")
-WATER_Z = -0.8
-RING_R = 225.0
-CAMP_R = 30.0
-CLIFF_R = 335.0  # where the cliffs begin to rise
-RIM_Z = 70.0
-FLOOR_Z = 1.4  # the valley floor (the river runs a couple of metres below it)
-GORGE_HW = 16.0  # the Burnt Gorge's half width
-GORGE_END = 445.0  # where its road ends (the passage on)
+TRACK_ID = ruin.track_id("valley_region") + os.environ.get("KP_REGION_SUFFIX", "")
+WATER_Z = L.WATER_Z
+FLOOR_Z = 1.4  # (the other regions' builds still read these)
+RIM_Z = L.RIM_Z
+CAMP_R = L.CAMP[2]
+GORGE_HW = 16.0
+GORGE_END = L.GORGE_END
+RIVER_HW = L.RIVER_HW
 
-# The river, from the falls to the bog (x, y), and its half width.
-RIVER = [(262.0, 318.0), (230.0, 270.0), (165.0, 205.0), (75.0, 150.0), (-55.0, 92.0), (-148.0, 2.0), (-196.0, -110.0),
-         (-222.0, -200.0)]
-RIVER_HW = 10.0
-BOG = (-232.0, -232.0, 46.0)
-
-# The landmarks (the gateways stand just in front of them).
-CAVE = (40.0, CLIFF_R + 8.0)  # angle (degrees), radius
-TUNNEL = (-40.0, CLIFF_R + 8.0)
-PYRAMID = (-240.0, -242.0)
-FORD = (-148.0, 2.0)
-SCAR = (-90.0, CLIFF_R + 4.0)  # Cinderjaw's Scar: the boss gateway (south)
-# The Three Stones (the first Banjo-style puzzle, src/overworld/puzzles.ts): an old stone
-# pen in the north-west meadow, its gate shut, and three switch stones round the meadow.
-PEN = (136.0, 300.0)  # angle (degrees), radius: the pen's middle
+# The Three Stones (src/overworld/puzzles.ts): an old stone pen in the camp's north meadow,
+# its gate shut, and three switch stones round it.
+PEN = (-22.0, 60.0)  # x, y
 PEN_HALF = 10.0
-PEN_GAP = 4.5  # half the gateway's width
-STONES = [(112.0, 268.0), (137.0, 160.0), (162.0, 270.0)]
-# The Elder's lookout (Act V's return task, src/overworld/regions.ts): a walled hollow in
-# the south-east meadow, its way in blocked by a rockfall the Valley Tool clears.
-RETURN = (-65.0, 300.0)
-# A secret (src/overworld/regions.ts secret): a grotto in the east meadow, walled with Rimefang's ice (the Snow Tool's): a later kingdom's tool opens it on
-# the way back, a treasure chest inside.
-SECRET = (15.0, 300.0)
+PEN_GAP = 4.5
+STONES = [(-58.0, 34.0), (22.0, 54.0), (-36.0, 14.0)]
+# The Elder's lookout (Act V's return task): a walled hollow on Ember's lower slope, its
+# way in blocked by a rockfall the Valley Tool clears.
+RETURN = (126.0, -174.0)
+# A secret: a grotto in the Cascade's woods, walled with ice the Snow Tool melts.
+SECRET = (208.0, 158.0)
 
 
 def polar(a_deg, r):
@@ -79,68 +68,70 @@ def polar(a_deg, r):
     return r * math.cos(a), r * math.sin(a)
 
 
-def _seg_d(px, py, a, b):
-    ax, ay = a
-    bx, by = b
-    dx, dy = bx - ax, by - ay
-    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
-    return math.hypot(px - ax - t * dx, py - ay - t * dy)
+def gorge_x(y):
+    """The Burnt Gorge winds a little as it climbs north from the road."""
+    return L.GORGE[0] + 9.0 * math.sin(max(0.0, y - 250.0) / 45.0)
 
 
-def river_d(x, y):
-    return min(_seg_d(x, y, a, b) for a, b in zip(RIVER, RIVER[1:]))
-
-
-def ring_r(a):
-    """The ring road's radius at angle a (radians): a slow wobble, three bulges round."""
-    return RING_R + 12.0 * math.sin(3 * a + 0.4)
+def burn(x, y):
+    """Where Cinderjaw's fire fell (0 none .. 1): most of the valley, a few green patches
+    left (the swamp's too wet to burn much)."""
+    w = L.lobe_weights(x, y)
+    return (0.6 + 0.45 * math.sin(x / 53.0 + 1.3) * math.cos(y / 47.0 - 0.4)) * (1.0 - 0.6 * w["bonebog"])
 
 
 def natural(x, y):
-    """The valley floor rolling gently, the river's channel and the bog sunk into it, the
-    cliffs rising all round to the rim."""
-    r = math.hypot(x, y)
-    h = FLOOR_Z + 0.7 * math.sin(x / 37.0) * math.cos(y / 41.0) + 0.5 * math.sin((x + y) / 53.0)
-    # (The camp sits on a level plaza.)
-    h = lerp(FLOOR_Z, h, smooth((r - CAMP_R) / 14.0))
-    h += RIM_Z * smooth((r - CLIFF_R) / 48.0) + 8.0 * smooth((r - CLIFF_R - 50) / 60.0)
-    d = river_d(x, y)
-    if d < RIVER_HW + 12:
-        h = lerp(h, WATER_Z - 1.4, smooth((RIVER_HW + 12 - d) / 12))
-    bx, by, br = BOG
-    db = math.hypot(x - bx, y - by)
-    if db < br + 10:
-        h = lerp(h, WATER_Z - 0.9, smooth((br + 10 - db) / 10))
-    # The Burnt Gorge: the split in the north cliff (Cinderjaw's fire), its floor rising
-    # gently to the far end, where the way on to the Snow Kingdom begins.
-    g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - 250.0) / 40.0) if RUIN else 0.0
-    if g > 0:
-        h = lerp(h, FLOOR_Z + 0.04 * max(0.0, y - 330.0), g)
+    h = L.natural(x, y)
+    tz = L.tunnel_floor(x, y)
+    if tz is not None:
+        h = min(h, tz - 0.25)  # (under a tunnel's rock: flush under its road, out to the walls)
+    if RUIN:
+        # The Burnt Gorge: the split in the north cliff, its floor rising gently to the far
+        # end, where the way on to the Snow Kingdom begins.
+        g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - L.GORGE[1] - 10.0) / 30.0)
+        if g > 0:
+            h = lerp(h, 11.0 + 0.04 * max(0.0, y - 300.0), g)
+        # The burnt trench up to the Scar.
+        sx, sy = L.SCAR
+        if y < -270 and abs(x - sx) < 32:
+            t = smooth((32 - abs(x - sx)) / 12.0) * smooth((-270 - y) / 20.0)
+            h = lerp(h, 10.0, t)
     return h
 
 
-def gorge_x(y):
-    """The gorge winds a little as it climbs north."""
-    return 9.0 * math.sin(max(0.0, y - 260.0) / 45.0)
+LOOK = {
+    # lobe: (ground, cliff, road, shoulder)
+    "riverbend": (("valley_grass", "grass"), ("valley_cliff", "wall"), "valley_road", ("valley_grass", "dirt")),
+    "cascade": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), "jungle_path", ("jungle_leafcover", "dirt")),
+    "ember": (("ash_soil", "dirt"), ("magma_rock", "wall"), "basalt_road", ("scorched_ground", "dirt")),
+    "bonebog": (("bog_bank", "grass"), ("bog_dark_stone", "wall"), "bog_paving", ("bog_moss_ground", "dirt")),
+    "camp": (("valley_grass", "grass"), ("valley_cliff", "wall"), "valley_road", ("valley_grass", "dirt")),
+}
+
+
+def lobe_at(x, y):
+    w = L.lobe_weights(x, y)
+    return max(w, key=w.get)
 
 
 def classify(c, n, info):
+    lobe = lobe_at(c.x, c.y)
+    ground, cliff, _, _ = LOOK[lobe]
     if n.z < 0.62:
-        # The gorge's walls are scorched black.
-        if RUIN and c.y > 260 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
-            return ("obsidian_cliff", "wall")
-        return ("valley_cliff", "wall")
-    bx, by, br = BOG
-    if math.hypot(c.x - bx, c.y - by) < br + 2 and c.z < WATER_Z + 0.4:
-        return ("bog_mud", "mud")
-    # The burnt trench up to Cinderjaw's Scar.
-    if RUIN and c.y < -200 and abs(c.x) < 20 + 6 * math.sin(c.y / 13.0):
+        if RUIN and c.y > L.GORGE[1] + 20 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
+            return ("obsidian_cliff", "wall")  # (the gorge's walls are scorched black)
+        return cliff
+    if RUIN and c.y < -280 and abs(c.x - L.SCAR[0]) < 24:
         return ("lava_crust", "dirt")
-    if c.z < WATER_Z + 0.3:
+    for px, py, pr in L.POOLS:
+        if math.hypot(c.x - px, c.y - py) < pr + 6 and c.z < WATER_Z + 0.6:
+            return ("bog_mud", "mud")
+    d, wz = L.river_d(c.x, c.y)
+    if d < RIVER_HW + 3 and c.z < wz + 0.3:
         return ("valley_sand", "water")  # (the river's wadeable)
-    if RUIN and burn(c.x, c.y) > 0.5:
+    if RUIN and lobe != "bonebog" and burn(c.x, c.y) > 0.5:
         return ("scorched_ground", "dirt")
-    return ("valley_grass", "grass")
+    return ground
 
 
 def box(c, name, cx, cy, hx, hy, z0, z1, mat, rot=0.0, role="both", coll="Props"):
@@ -168,308 +159,593 @@ def cone(c, name, cx, cy, r, z0, h, mat, segs=4, role="both", coll="Props"):
     return ob
 
 
-def road_z(x, y):
-    """The roads sit on the valley floor, rising onto their bridges over the river."""
-    return FLOOR_Z + 0.2 + 2.0 * smooth((RIVER_HW + 22 - river_d(x, y)) / 22)
-
-
-def line(a, b, every=8.0, z=None):
+def line(a, b, every=8.0, z=None, z0=None):
+    """Points from a to b on the land (or z(x, y)); z0: the height it leaves from (a road
+    it joins), eased into the land over its first 24 m so the joint is flush."""
     n = max(2, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
+    total = math.hypot(b[0] - a[0], b[1] - a[1])
     pts = []
     for k in range(n + 1):
         x, y = lerp(a[0], b[0], k / n), lerp(a[1], b[1], k / n)
-        pts.append((x, y, z(x, y) if z else road_z(x, y)))
+        h = z(x, y) if z else natural(x, y) + 0.2
+        if z0 is not None:
+            h = lerp(z0 + 0.02, h, smooth(total * k / n / 24.0))
+        pts.append((x, y, h))
     return pts
 
 
 def main():
-    c = kit.Course(TRACK_ID, "Dinosaur Valley (greybox, ruined)" if RUIN else "Dinosaur Valley (greybox)", "mirror_lake")
-    # The ring road, counter-clockwise from due east.
-    ring = []
-    for k in range(48):
-        a = k * math.tau / 48
-        r = ring_r(a)
-        x, y = r * math.cos(a), r * math.sin(a)
-        ring.append((x, y, road_z(x, y)))
-    c.route(ring, width=14.0, bank=4.0)
-    grass = ("valley_grass", "grass")
-    wall = ("valley_cliff", "wall")
-    c.kinds = {
-        "road": {"mat": "valley_road", "shoulder": 1.5, "shoulder_mat": grass},
-        "bridge": {"mat": "valley_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("valley_road", "road"),
-                   "barrier": 1.0, "barrier_mat": wall, "deck": 2.0, "deck_mat": wall, "ground": False},
-    }
+    c = kit.Course(TRACK_ID, "Dinosaur Valley (ruined)" if RUIN else "Dinosaur Valley", "mirror_lake")
+    c.route(L.route_points(), width=14.0, bank=6.0)
+    kinds = {}
+    for lobe, (ground, cliff, road, shoulder) in LOOK.items():
+        kinds[lobe] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
+    stone = ("jungle_mossstone", "wall")
+    kinds["bridge"] = {"mat": "wood_planks", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("wood_planks", "road"),
+                       "barrier": 1.0, "barrier_mat": ("palm_bark", "wall"), "deck": 1.8, "deck_mat": ("palm_bark", "wall"),
+                       "ground": False}
+    kinds["temple_bridge"] = {"mat": "jungle_temple", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("ruin_stone", "road"),
+                              "barrier": 1.2, "barrier_mat": stone, "deck": 2.4, "deck_mat": stone, "ground": False}
+    c.kinds = kinds
 
     def label(smp):
-        return "bridge" if river_d(smp.p.x, smp.p.y) < RIVER_HW + 5 else "road"
+        d, wz = L.river_d(smp.p.x, smp.p.y)
+        # (a bridge only where the land's well under the road: no bank stands up through it)
+        if d < RIVER_HW + 6 and smp.p.z > wz + 0.9 and natural(smp.p.x, smp.p.y) < smp.p.z - 1.2:
+            return "temple_bridge" if lobe_at(smp.p.x, smp.p.y) == "cascade" else "bridge"
+        return lobe_at(smp.p.x, smp.p.y)
 
-    specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label) if k != "road"]
-    c.roads(kit.plan(c, specials, "road", max_len=200.0))
+    c.roads(kit.plan(c, list(kit.runs(c, label)), "camp", max_len=160.0))
 
-    # The spokes in to the camp: east and south straight in; the north one over its
-    # bridge; the west one through the ford (down to the water and up the far bank).
-    def spoke_end(a_deg):
-        a = math.radians(a_deg)
-        return ring_r(a) * math.cos(a) * 0.985, ring_r(a) * math.sin(a) * 0.985
-
-    for name, a in (("East", 0.0), ("South", -90.0)):
-        c.side_road("Spoke " + name, line(polar(a, CAMP_R - 2), spoke_end(a)), "valley_trail", "road", width=10.0,
-                    shoulder=1.2, shoulder_mat=grass)
-    # North: up to the bridge, over it, on to the ring.
-    yb0, yb1 = 98.0, 136.0  # (the river crosses x = 0 near y = 117)
-    c.side_road("Spoke North", line((0.0, CAMP_R - 2), (0.0, yb0 + 2)), "valley_trail", "road", width=10.0, shoulder=1.2,
-                shoulder_mat=grass)
-    c.side_road("North Bridge", line((0.0, yb0), (0.0, yb1), every=4.0, z=lambda x, y: FLOOR_Z + 2.2), "valley_road", "road",
-                width=10.0, shoulder=0.4, shoulder_mat=("valley_road", "road"), barrier=1.0, barrier_mat=wall, deck=1.6,
-                deck_mat=wall, ground=False)
-    c.side_road("Spoke North 2", line((0.0, yb1 - 2), spoke_end(90.0)), "valley_trail", "road", width=10.0, shoulder=1.2,
-                shoulder_mat=grass)
-
-    def ford_z(x, y):
-        return lerp(FLOOR_Z + 0.2, WATER_Z - 0.25, smooth((RIVER_HW + 16 - river_d(x, y)) / 16))
-
-    c.side_road("Spoke West (the ford)", line((-(CAMP_R - 2), 0.0), spoke_end(180.0), z=ford_z), "valley_trail", "road",
-                width=10.0, shoulder=1.2, shoulder_mat=grass)
-    # Out from the ring to the three landmarks in the cliffs.
-    for name, (a, r) in (("Cave Road", CAVE), ("Tunnel Road", TUNNEL)):
-        a0 = math.radians(a)
-        c.side_road(name, line(spoke_end(a), polar(a, r - 10.0)), "valley_trail", "road", width=10.0, shoulder=1.2,
-                    shoulder_mat=grass)
+    # The camp's square, and the way out of it onto the road (east).
+    cx, cy, cr = L.CAMP
+    trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("valley_grass", "dirt"))
+    smp, _ = c.nearest(cx + cr + 30.0, cy)
+    c.side_road("Camp Road", list(reversed(line((smp.p.x, smp.p.y), (cx + cr - 2.0, cy), z0=smp.p.z))), "valley_trail",
+                "road", **trail)
+    # Out from the road to each landmark's gateway.
+    spurs = {}
+    for name, (gx, gy) in L.GATES.items():
+        smp, _ = c.nearest(gx, gy)
+        ax, ay = smp.p.x, smp.p.y
+        d = math.hypot(gx - ax, gy - ay)
+        ux, uy = (gx - ax) / d, (gy - ay) / d
+        end = (gx - ux * 12.0, gy - uy * 12.0)
+        spurs[name] = (end, math.atan2(-ux, uy))
+        c.side_road(name.title() + " Road", line((ax, ay), end, z0=smp.p.z), LOOK[lobe_at(gx, gy)][2], "road", **trail)
     if RUIN:
-        # Up the burnt trench to Cinderjaw's Scar (south).
-        c.side_road("Scar Road", line(spoke_end(SCAR[0]), polar(SCAR[0], SCAR[1] - 18.0)), "valley_trail", "road",
-                    width=10.0, shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
-        # The Burnt Gorge's road, on from the north spoke's end at the ring.
-        gx0, gy0 = spoke_end(90.0)
-        gorge = [(gorge_x(y), y, FLOOR_Z + 0.2 + 0.04 * max(0.0, y - 330.0))
-                 for y in range(int(gy0) + 4, int(GORGE_END) + 1, 8)]
-        c.side_road("Burnt Gorge Road", [(gx0, gy0, road_z(gx0, gy0))] + gorge, "valley_trail", "road", width=10.0,
-                    shoulder=1.2, shoulder_mat=grass)
-    bx, by, br = BOG
-    shore = (bx + (br + 4) * math.cos(math.radians(45)), by + (br + 4) * math.sin(math.radians(45)))
-    c.side_road("Bog Road", line(spoke_end(225.0), shore), "valley_trail", "road", width=10.0, shoulder=1.2,
-                shoulder_mat=grass)
+        # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
+        smp, _ = c.nearest(*L.SCAR)
+        c.side_road("Scar Road", line((smp.p.x, smp.p.y), (L.SCAR[0], L.SCAR[1] + 18.0), z0=smp.p.z), "basalt_road", "road",
+                    width=10.0,
+                    shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
+        smp, _ = c.nearest(*L.GORGE)
+        gorge = [(smp.p.x, smp.p.y, smp.p.z)] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2)
+                                                 for y in range(int(L.GORGE[1]) + 24, int(GORGE_END) + 1, 8)]
+        c.side_road("Burnt Gorge Road", gorge, "valley_trail", "road", **trail)
 
-    X0, X1, Y0, Y1 = -470, 470, -470, 470
-    ter = c.terrain("Valley", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=14.0)
+    X0, X1, Y0, Y1 = -480, 480, -480, 480
+    ter = c.terrain("Valley", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("valley_grass", "grass"))
-    river = [(x, y, 2 * RIVER_HW + 6) for x, y in RIVER]
-    c.ribbon("River", river, 2 * RIVER_HW + 6, WATER_Z, c.lib("valley_water", "water"), role="visual", steps=6)
-    c.disc("Bog", bx, by, br + 3.0, WATER_Z, c.lib("bog_water", "mud"), role="visual", n=36, wobble=0.12, seed=3)
 
-    # The falls: a sheet of water down the north-east cliff where the river begins.
-    fx, fy = RIVER[0]
-    ux, uy = fx / math.hypot(fx, fy), fy / math.hypot(fx, fy)
-    box(c, "Falls", fx + ux * 6, fy + uy * 6, 9.0, 1.2, WATER_Z, RIM_Z - 4.0, ("waterfall", "wall"),
-        rot=math.atan2(uy, ux) + math.pi / 2, role="visual")
+    def ground(x, y):
+        z = c.ground_z(x, y, [ter])
+        return natural(x, y) if z is None else z
 
-    # Elder Mossback's camp: four huts round a fire on a beaten-earth plaza.
-    c.disc("Camp Plaza", 0.0, 0.0, CAMP_R, FLOOR_Z + 0.05, c.lib("valley_trail", "dirt"), coll="Props",
-           role="both", n=40)
-    for k in range(4):
-        a = k * math.tau / 4 + math.pi / 4  # (on the diagonals, clear of the four spokes)
-        hx, hy = (CAMP_R - 8) * math.cos(a), (CAMP_R - 8) * math.sin(a)
+    # Water: the river down from the falls (sloping, a ribbon), the bog's pools.
+    for j, riv in enumerate(L.RIVERS):
+        river = []
+        for (ax, ay, az), (bx, by, bz) in zip(riv, riv[1:]):
+            n = max(1, int(math.hypot(bx - ax, by - ay) / 6))
+            for k in range(n):
+                t = k / n
+                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 8, lerp(az, bz, t) - 0.1))
+        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 8, riv[-1][2] - 0.1))
+        c.ribbon("River %d" % j, river, 2 * RIVER_HW + 8, 0, c.lib("valley_water", "water"), role="visual", steps=4)
+    for k, (lx, ly, lr, lz) in enumerate(L.LAKES):
+        c.disc("Lake %d" % k, lx, ly, lr + 6.0, lz - 0.1, c.lib("valley_water", "water"), role="visual", n=30, wobble=0.12,
+               seed=20 + k)
+    for k, (px, py, pr) in enumerate(L.POOLS):
+        c.disc("Bog Pool %d" % k, px, py, pr + 8.0, WATER_Z, c.lib("bog_water", "mud"), role="visual", n=30, wobble=0.15,
+               seed=k)
+        gx, gy, gz = c.game(px, py, WATER_Z + 0.1)
+        c.entity("bubbles", x=gx, y=gy, z=gz, r=pr * 0.7)
+        c.entity("mist", x=gx, y=gy + 1.0, z=gz, radius=pr + 10.0, rate=5)
+    # The falls, each out of its cliff, thrown down the river's way.
+    for j, ((fx, fy), riv) in enumerate(zip(L.FALLS, L.RIVERS)):
+        dx, dy = riv[1][0] - riv[0][0], riv[1][1] - riv[0][1]
+        d = math.hypot(dx, dy)
+        dx, dy = dx / d, dy / d
+        top = min(riv[0][2] + 34.0, L.TOP + 2.0)
+        props.falls(c, ("Riverbend Falls", "Cascade Falls")[j], fx - dx * 6.0, fy - dy * 6.0, top, riv[0][2], 12.0, 18.0,
+                    facing=-1, throw=7.0, angle=math.atan2(dy, dx) + math.pi / 2)
+
+    # The camp: a beaten-earth square, Riverbend's huts round a fire (burnt out after).
+    c.disc("Camp Square", cx, cy, cr, L.CAMP_Z + 0.05, c.lib("valley_trail", "dirt"), coll="Props", n=40)
+    for k in range(5):
+        a = k * math.tau / 5 + 0.9
+        hx, hy = cx + (cr - 6) * math.cos(a), cy + (cr - 6) * math.sin(a)
+        if abs(math.sin(a)) < 0.35 and math.cos(a) > 0:
+            continue  # (clear of the way out, east)
         if RUIN:
-            # Burnt out: blackened walls, the roofs gone, still smoking.
-            box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, FLOOR_Z - 1.0, FLOOR_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
-            ruin.smoke(c, hx, hy, FLOOR_Z + 2.5)
-            continue
-        # (Riverbend's own huts: painted walls, thatch, a dark doorway facing the fire.)
-        c.place(props.hut(c), hx, hy, FLOOR_Z, rot=a + math.pi)
-    c.entity("campfire", **dict(zip(("x", "y", "z"), c.game(0.0, 0.0, natural(0, 0) + 0.2))))
+            box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, L.CAMP_Z - 1.0, L.CAMP_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
+            ruin.smoke(c, hx, hy, L.CAMP_Z + 2.5)
+        else:
+            c.place(props.hut(c), hx, hy, L.CAMP_Z, rot=a + math.pi)
+    gx, gy, gz = c.game(cx, cy, L.CAMP_Z + 0.2)
+    c.entity("campfire", x=gx, y=gy, z=gz)
 
-    # The landmarks the gateways stand at.
-    # Cascade Caverns: a dark cave mouth in the cliff beside the falls.
-    for name, (a, r), mat in (("Cave Mouth", CAVE, ("dark_corridor", "wall")), ("Tunnel Mouth", TUNNEL, ("dark_corridor", "wall"))):
-        x, y = polar(a, r)
-        rot = math.radians(a) + math.pi / 2
-        z0 = natural(*polar(a, r - 10))
-        box(c, name, x, y, 9.0, 2.0, z0 - 1.0, z0 + 11.0, mat, rot=rot, role="visual")
-        for side in (-1, 1):
-            px, py = x + side * 8.0 * math.cos(rot), y + side * 8.0 * math.sin(rot)
-            box(c, name + " Jamb %d" % side, px, py, 1.6, 2.6, z0 - 1.0, z0 + 12.0, ("valley_cliff", "wall"), rot=rot)
-        box(c, name + " Lintel", x, y, 10.0, 2.8, z0 + 11.0, z0 + 14.0, ("valley_cliff", "wall"), rot=rot)
-    # Ember Peak: the tunnel glows with lava inside, the volcano smoking beyond the rim.
-    x, y = polar(TUNNEL[0], TUNNEL[1] + 1.5)
-    box(c, "Tunnel Lava", x, y, 7.0, 0.6, natural(*polar(TUNNEL[0], TUNNEL[1] - 10)) - 0.5,
-        natural(*polar(TUNNEL[0], TUNNEL[1] - 10)) + 3.0, ("volcano_lava", "wall"), rot=math.radians(TUNNEL[0]) + math.pi / 2,
-        role="visual")
-    vx, vy = polar(TUNNEL[0], 520.0)
-    volc = c.rock_mass("Volcano", vx, vy, 120.0, 110.0, 190.0, z0=60.0, n=18, seed=5,
-                       bands=[(1.0, 0.0), (0.7, 0.5), (0.4, 0.85), (0.25, 1.0)], base=60.0)
-    c.assign(volc, c.lib("valley_cliff", "wall"))
-    gx, gy, gz = c.game(vx, vy, 192.0)
-    c.entity("eruption", x=gx, y=gy, z=gz, period=14.0, offset=3.0)
-    # Bonebog Pyramid: its tip above the bog.
-    px, py = PYRAMID
-    cone(c, "Pyramid Tip", px, py, 14.0, WATER_Z - 2.0, 18.0, ("sandstone_block", "wall"))
-    # Riverbend Palms: a few palms at the ford.
-    for k, (dx, dy) in enumerate(((14, 18), (-16, 22), (18, -20), (-12, -24))):
-        fx, fy = FORD
-        g = natural(fx + dx, fy + dy)
-        if RUIN:
-            ruin.stump(c, "Ford Palm %d" % k, fx + dx, fy + dy, g, h=3.0 + k, r=0.5)
-            continue
-        box(c, "Ford Palm %d" % k, fx + dx, fy + dy, 0.5, 0.5, g - 1.0, g + 9.0, ("weathered_timber", "wall"))
-        cone(c, "Ford Palm Crown %d" % k, fx + dx, fy + dy, 4.0, g + 8.0, 2.0, ("valley_grass", "wall"), segs=5, role="visual")
-
+    thresholds(c, ground)
+    landmarks(c, ground, spurs)
     if RUIN:
-        ruined(c)
-    # The Three Stones' pen and switches, and the return task's hollow (in both).
-    three_stones(c)
-    puzzle_kit.pen(c, "return", "Lookout", *polar(*RETURN), math.radians(RETURN[0]) + math.pi, 11.0, 4.5,
-                   ("valley_cliff", "wall"), natural(*polar(*RETURN)), height=6.0)
-    puzzle_kit.pen(c, "secret", "Grotto", *polar(*SECRET), math.radians(SECRET[0]) + math.pi, 9.0, 4.5, ("valley_cliff", "wall"),
-                   natural(*polar(*SECRET)), height=6.0)
-    dress(c)
-    # (Raced too: the champion's challenge, once round the ring, from this line.)
+        ruined(c, ground, spurs)
+    three_stones(c, ground)
+    puzzle_kit.pen(c, "return", "Lookout", *RETURN, to_road(c, *RETURN), 11.0, 4.5, ("magma_rock", "wall"),
+                   ground(*RETURN), height=6.0)
+    puzzle_kit.pen(c, "secret", "Grotto", *SECRET, to_road(c, *SECRET), 9.0, 4.5, ("jungle_mossstone", "wall"),
+                   ground(*SECRET), height=6.0)
+    for name, (end, heading) in spurs.items():
+        gx, gy, gz = c.game(end[0], end[1], 0.0)
+        c.entity("gateway_spot", gateway=name, x=gx, z=gz, heading=heading)
+    dress(c, ground, spurs)
+
+    # (Raced too: the champion's challenge, once round the loop, from this line by the camp.)
     c.start_line()
     gates = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}})
-    print("ring", round(c.length, 1), "gates", len(gates))
+    print("loop", round(c.length, 1), "gates", len(gates))
 
 
-def ruined(c):
-    """After Cinderjaw's attack: his Scar and its trench, the Burnt Gorge, scorched
-    ground, smoke and wreckage round the valley."""
-    # Cinderjaw's Scar: a black crater torn in the cliff's foot, lava in it, still burning.
-    sx, sy = polar(*SCAR)
+def tunnel_span(c, a, b):
+    """The stretch of the road (s0, s1) that runs through the high ground round route
+    points a..b (a tunnel's length: from the wall's foot on one side to the other's)."""
+    s0 = c.nearest(*L.ROUTE[a][:2])[0].s
+    s1 = c.nearest(*L.ROUTE[b][:2])[0].s
+    if s1 < s0:
+        s1 += c.length
+
+    def inwall(s):
+        q = c.at(s)
+        return L.wall_sd(q.p.x, q.p.y) > -10.0
+
+    for _ in range(40):
+        if not inwall(s0 - 3.0):
+            break
+        s0 -= 3.0
+    for _ in range(40):
+        if not inwall(s1 + 3.0):
+            break
+        s1 += 3.0
+    return s0, s1
+
+
+def thresholds(c, ground):
+    """The ways between the worlds (Blake: tunnels you can't see through, walls that are
+    landscape): a ridge of rock heaped over the road where it crosses the high ground,
+    bored through, each its own: the Fallen Giant (a colossal hollow log the dinosaurs
+    made their tunnel, lanterns inside), the Lava Tube (basalt, lava glowing in channels
+    along its walls) and the Temple Steps (carved stone, a gateway at each end)."""
+    for name, kind, a, b in L.TUNNELS:
+        s0, s1 = tunnel_span(c, a, b)
+        mid = c.at((s0 + s1) / 2)
+        half_len = (s1 - s0) / 2
+        ang = math.atan2(mid.t.y, mid.t.x)
+        zr = min(c.at(s0).p.z, c.at(s1).p.z)
+        wall, top = {"log": (("valley_cliff", "wall"), ("valley_grass", "grass")),
+                     "lava": (("volcano_basalt", "wall"), ("ash_soil", "dirt")),
+                     "temple": (("jungle_mossstone", "wall"), ("jungle_leafcover", "grass"))}[kind]
+        # The heap over the road (it fills the cut the road makes through the high ground,
+        # and stands a little over the ridge round it, so nothing shows through).
+        rock = c.rock_mass(name + " Rock", mid.p.x, mid.p.y, half_len + 16.0, 40.0, L.TOP - 1.0, z0=zr - 6.0, n=30,
+                           seed=len(name), angle=ang, base=zr,
+                           bands=[(1.0, 0.0), (1.0, 0.3), (0.96, 0.55), (0.9, 0.8), (0.8, 0.95), (0.7, 1.0)])
+        half = c.width / 2 + (4.5 if kind == "log" else 3.0)
+        c.tunnel(rock, s0, s1, half=half, height=13.0 if kind == "log" else 10.0, pad=6.0)
+        for p, q in ((s0 - 70.0, s0 - 2.0), (s1 + 2.0, s1 + 70.0)):  # (overlapping the bore: no skin left between)
+            c.tunnel(rock, p, q, half=half + 1.0, height=70.0, pad=0.0, floor=-12.0)
+        c.paint_rock(rock, wall, top, top_z=L.TOP - 4.0)
+        if kind == "log":
+            fallen_giant(c, s0, s1)
+        elif kind == "lava":
+            for sd in (-1, 1):
+                strip = []
+                s = s0 + 4.0
+                while s < s1 - 4.0:
+                    q = c.at(s)
+                    off = c.width / 2 + 2.2
+                    strip.append((q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off, 1.6, q.p.z - 0.15))
+                    s += 4.0
+                c.ribbon(name + " Lava %d" % sd, strip, 1.6, 0, c.lib("volcano_lava", "lava"), role="visual", steps=2)
+            for k in range(3):
+                q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
+                g = c.game(q.p.x + q.r.x * (c.width / 2 + 2.2), q.p.y + q.r.y * (c.width / 2 + 2.2), q.p.z + 0.2)
+                c.entity("bubbles", x=g[0], y=g[1], z=g[2], r=1.0, molten=True)
+                c.entity("steam", x=g[0], y=g[1], z=g[2])
+            for s in (s0, s1):
+                q = c.at(s)
+                g = c.game(q.p.x, q.p.y, q.p.z + 0.5)
+                c.entity("steam", x=g[0], y=g[1], z=g[2])
+        else:
+            for k, s in enumerate((s0 - 1.0, s1 + 1.0)):
+                q = c.at(s)
+                rot = math.atan2(q.r.y, q.r.x)
+                for sd in (-1, 1):
+                    x, y = q.p.x + q.r.x * sd * (half + 1.6), q.p.y + q.r.y * sd * (half + 1.6)
+                    box(c, "%s Jamb %d %d" % (name, k, sd), x, y, 1.6, 2.2, q.p.z - 1.0, q.p.z + 11.0,
+                        ("jungle_temple", "wall"), rot=rot)
+                box(c, "%s Lintel %d" % (name, k), q.p.x, q.p.y, half + 3.4, 2.4, q.p.z + 10.0, q.p.z + 12.6,
+                    ("jungle_temple", "wall"), rot=rot)
+                c.place(props.idol_head(c), q.p.x, q.p.y, q.p.z + 12.6, rot=math.atan2(q.t.y, q.t.x) + math.pi * k,
+                        role="visual")
+            for k in range(3):
+                q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
+                for sd in (-1, 1):
+                    x, y = q.p.x + q.r.x * sd * (half - 0.6), q.p.y + q.r.y * sd * (half - 0.6)
+                    g = c.game(x, y, q.p.z + 4.2)
+                    c.entity("torch", x=g[0], y=g[1], z=g[2])
+
+
+def fallen_giant(c, s0, s1):
+    """The Fallen Giant: a colossal hollow trunk lying through the ridge, the road running
+    inside it, its broken top and its root plate standing out at the two ends, the
+    dinosaurs' lanterns hung in it, moss over it."""
+    ro, ri = 13.0, 11.0
+    lift = ri * 0.42
+    a = c.at(s0 - 8.0)
+    bm = bmesh.new()
+    n = 20
+    rings = []
+    m = max(6, int((s1 - s0 + 16.0) / 3.0))
+    frames = []
+    for k in range(m + 1):
+        f = k / m
+        q = c.at(s0 - 8.0 + (s1 - s0 + 16.0) * f)  # (it follows the road, bending with it)
+        side = Vector((q.r.x, q.r.y, 0.0)).normalized()
+        c0 = Vector((q.p.x, q.p.y, q.p.z + lift))
+        frames.append((c0, side, q))
+        lump = 1.0 + 0.04 * math.sin(f * 17.0)
+        outer = [bm.verts.new(c0 + (side * math.cos(t) + Vector((0, 0, math.sin(t)))) * ro * lump)
+                 for t in (j * math.tau / n for j in range(n))]
+        inner = [bm.verts.new(c0 + (side * math.cos(t) + Vector((0, 0, math.sin(t)))) * ri)
+                 for t in (j * math.tau / n for j in range(n))]
+        rings.append((outer, inner))
+    for (o0, i0), (o1, i1) in zip(rings, rings[1:]):
+        for j in range(n):
+            jj = (j + 1) % n
+            bm.faces.new((o0[j], o0[jj], o1[jj], o1[j]))
+            bm.faces.new((i0[j], i1[j], i1[jj], i0[jj]))
+    for (oo, ii), flip in ((rings[0], True), (rings[-1], False)):
+        for j in range(n):
+            jj = (j + 1) % n
+            f = (oo[j], ii[j], ii[jj], oo[jj])
+            bm.faces.new(f if flip else tuple(reversed(f)))
+    o, side, qa = frames[0]
+    end, side_e, qb = frames[-1]
+    ax = Vector((qa.t.x, qa.t.y, 0.0)).normalized()
+    zc = o.z
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    log = c.mesh_object("Fallen Giant", bm, "Props", "both")
+    c.assign(log, c.lib("palm_bark", "wall"))
+    # The root plate at one end, the broken top at the other.
+    for k in range(9):
+        t = k * math.tau / 9 + 0.3
+        d = (side * math.cos(t) + Vector((0, 0, math.sin(t)))).normalized()
+        if d.z < -0.5:
+            continue
+        p0 = o + d * ro * 0.9
+        p1 = p0 + d * (7.0 + 3.0 * math.sin(k * 2.1)) - ax * 3.0
+        cone(c, "Giant Root %d" % k, p1.x, p1.y, 1.6, min(p0.z, p1.z) - 1.0, abs(p1.z - p0.z) + 4.0,
+             ("bog_root", "wall"), segs=5, role="visual")
+    for k in range(5):
+        t = k * math.tau / 5 + 1.0
+        d = (side_e * math.cos(t) + Vector((0, 0, math.sin(t)))).normalized()
+        if d.z < -0.3:
+            continue
+        p = end + d * (ro - 1.0) + Vector((qb.t.x, qb.t.y, 0.0)) * 1.0
+        cone(c, "Giant Splinter %d" % k, p.x, p.y, 1.8, p.z - 1.5, 4.0 + 2.0 * (k % 2), ("palm_bark", "wall"), segs=4,
+             role="visual")
+    # Lanterns hung inside, and a carved frame of bones at the near mouth.
+    s = s0 + 6.0
+    k = 0
+    while s < s1 - 4.0:
+        q = c.at(s)
+        sd = 1 if k % 2 else -1
+        g = c.game(q.p.x + q.r.x * sd * (c.width / 2 + 1.5), q.p.y + q.r.y * sd * (c.width / 2 + 1.5), q.p.z + 6.0)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+        s += 12.0
+        k += 1
+    q = c.at(s0 - 6.0)
+    c.place(sp.horned_skull(c), q.p.x, q.p.y, zc + ro + 0.6, rot=math.atan2(-q.t.y, -q.t.x), scale=1.8, role="visual")
+
+
+def facing(spurs, name):
+    """The way a landmark at the end of its spur faces (back down the spur), as a box's
+    turn: its local x across the spur."""
+    (ex, ey), _ = spurs[name]
+    gx, gy = L.GATES[name]
+    return math.atan2(gy - ey, gx - ex) + math.pi / 2
+
+
+def landmarks(c, ground, spurs):
+    """Each lobe's landmark, its gateway in front of it."""
+    # Cascade Caverns' cave mouth beside the falls; Ember Peak's lava-lit tunnel.
+    for name, key, rock in (("Cave Mouth", "cascade", ("jungle_mossstone", "wall")),
+                            ("Tunnel Mouth", "ember", ("magma_rock", "wall"))):
+        gx, gy = L.GATES[key]
+        rot = facing(spurs, key)
+        z0 = ground(gx - 8 * math.cos(rot - math.pi / 2), gy - 8 * math.sin(rot - math.pi / 2))
+        box(c, name, gx, gy, 9.0, 2.0, z0 - 1.0, z0 + 11.0, ("dark_corridor", "wall"), rot=rot, role="visual")
+        for side in (-1, 1):
+            px, py = gx + side * 8.0 * math.cos(rot), gy + side * 8.0 * math.sin(rot)
+            box(c, name + " Jamb %d" % side, px, py, 1.6, 2.6, z0 - 1.0, z0 + 12.0, rock, rot=rot)
+        box(c, name + " Lintel", gx, gy, 10.0, 2.8, z0 + 11.0, z0 + 14.0, rock, rot=rot)
+    gx, gy = L.GATES["ember"]
+    rot = facing(spurs, "ember")
+    z0 = ground(gx, gy)
+    box(c, "Tunnel Lava", gx + 1.5 * math.cos(rot - math.pi / 2), gy + 1.5 * math.sin(rot - math.pi / 2), 7.0, 0.6, z0 - 3.0,
+        z0 + 2.0, ("volcano_lava", "wall"), rot=rot, role="visual")
+    # The volcano smoking beyond Ember's cliffs.
+    vx, vy = 430.0, -400.0
+    volc = c.rock_mass("Volcano", vx, vy, 120.0, 110.0, 200.0, z0=60.0, n=18, seed=5,
+                       bands=[(1.0, 0.0), (0.7, 0.5), (0.4, 0.85), (0.25, 1.0)], base=60.0)
+    c.assign(volc, c.lib("magma_rock", "wall"))
+    gx2, gy2, gz2 = c.game(vx, vy, 202.0)
+    c.entity("eruption", x=gx2, y=gy2, z=gz2, period=14.0, offset=3.0)
+    # Ember's lava pools, ringed with black rock, bubbling and steaming.
+    for k, (px, py, pr) in enumerate(L.LAVA):
+        g = ground(px, py)
+        c.disc("Lava Pool %d" % k, px, py, pr, g - 0.2, c.lib("volcano_lava"), coll="Props", role="visual", n=18, wobble=0.25,
+               seed=11 + k)
+        for j in range(5):
+            a = j * math.tau / 5 + k
+            cone(c, "Lava Rim %d %d" % (k, j), px + (pr + 2.0) * math.cos(a), py + (pr + 2.0) * math.sin(a), 2.2, g - 0.8,
+                 2.6 + j % 2, ("obsidian_cliff", "wall"), segs=5)
+        gx, gy, gz = c.game(px, py, g + 0.2)
+        c.entity("bubbles", x=gx, y=gy, z=gz, r=pr * 0.8, molten=True)
+        c.entity("steam", x=gx, y=gy, z=gz)
+    # Bonebog Pyramid: its tip above the bog.
+    px, py = L.PYRAMID
+    cone(c, "Pyramid Tip", px, py, 14.0, WATER_Z - 2.0, 18.0, ("sandstone_block", "wall"))
+
+
+def ruined(c, ground, spurs):
+    """After Cinderjaw's attack: his Scar, the Burnt Gorge's far end, smoke and rubble."""
+    sx, sy = L.SCAR
     for k in range(9):
         a = k * math.tau / 9
         if abs(math.sin(a) - 1.0) < 0.35:
             continue  # (its mouth, towards the valley)
         px, py = sx + 17.0 * math.cos(a), sy + 17.0 * math.sin(a)
-        cone(c, "Scar Rock %d" % k, px, py, 6.0 + 2.0 * math.sin(k * 2.3), FLOOR_Z - 1.0, 12.0 + 6.0 * math.cos(k * 1.7),
+        cone(c, "Scar Rock %d" % k, px, py, 6.0 + 2.0 * math.sin(k * 2.3), ground(px, py) - 1.0, 12.0 + 6.0 * math.cos(k * 1.7),
              ("obsidian_cliff", "wall"), segs=5)
-    c.disc("Scar Lava", sx, sy - 4.0, 9.0, FLOOR_Z + 0.25, c.lib("volcano_lava"), coll="Props", role="visual", n=18, wobble=0.2, seed=7)
-    gx, gy, gz = c.game(sx, sy - 4.0, FLOOR_Z + 1.0)
+    g = ground(sx, sy)
+    c.disc("Scar Lava", sx, sy - 4.0, 9.0, g + 0.25, c.lib("volcano_lava"), coll="Props", role="visual", n=18, wobble=0.2, seed=7)
+    gx, gy, gz = c.game(sx, sy - 4.0, g + 1.0)
     c.entity("eruption", x=gx, y=gy, z=gz, period=9.0, offset=1.0)
     for k in range(4):
         px, py = sx + (k - 1.5) * 9.0, sy + 12.0
-        gx, gy, gz = c.game(px, py, FLOOR_Z + 0.2)
-        c.entity("campfire", x=gx, y=gy, z=gz)
-
-    # The gorge's far end: it bends out of sight (a wall of black rock closes the view; the
-    # passage on starts just before it), and it still smoulders.
-    box(c, "Gorge Bend", gorge_x(470.0), 470.0, GORGE_HW + 24.0, 6.0, FLOOR_Z - 2.0, RIM_Z + 6.0, ("obsidian_cliff", "wall"))
+        ruin.smoke(c, px, py, ground(px, py) + 0.2)
+    # The gorge's far end: it bends out of sight (the passage on starts just before it).
+    box(c, "Gorge Bend", gorge_x(GORGE_END + 25.0), GORGE_END + 25.0, GORGE_HW + 24.0, 6.0, 0.0, RIM_Z + 10.0,
+        ("obsidian_cliff", "wall"))
     for k, y in enumerate((300.0, 350.0, 400.0)):
         x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
-        gx, gy, gz = c.game(x, y, FLOOR_Z + 0.04 * max(0.0, y - 330.0) + 0.2)
-        c.entity("campfire", x=gx, y=gy, z=gz)
-    # Scorched ground and smoke round the valley floor (off the roads), rubble heaped at
-    # the cave and tunnel mouths.
-    avoid = (0.0, 90.0, 180.0, -90.0, CAVE[0], TUNNEL[0], SCAR[0], 225.0, PEN[0], RETURN[0], SECRET[0],
-             *(a for a, _ in STONES))
-    burns = ruin.ring_spots(14, 60.0, 195.0, 3, avoid) + ruin.ring_spots(10, 258.0, 312.0, 4, avoid)
-    burns = [(x, y) for x, y in burns if river_d(x, y) > RIVER_HW + 14]
-    ruin.scorch(c, "Scorch", burns, natural)
-    for k, (x, y) in enumerate(burns[::3]):
-        ruin.smoke(c, x, y, natural(x, y) + 0.2)
-    for name, (a, r) in (("Cave", CAVE), ("Tunnel", TUNNEL)):
+        ruin.smoke(c, x, y, ground(x, y) + 0.2)
+    # Rubble at the cave and tunnel mouths.
+    for name in ("cascade", "ember"):
+        gx, gy = L.GATES[name]
+        rot = facing(spurs, name)
         for side in (-1, 1):
-            x, y = polar(a + side * 5.5, r - 14.0)
-            ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, natural, ("valley_cliff", "wall"), seed=int(a) + side)
+            x, y = gx + side * 16.0 * math.cos(rot), gy + side * 16.0 * math.sin(rot)
+            ruin.rubble(c, "%s Rubble %d" % (name, side), x, y, ground, ("valley_cliff", "wall"), seed=len(name) + side)
 
 
-def burn(x, y):
-    """Where Cinderjaw's fire fell (0 none .. 1): most of the valley, a few green patches
-    left."""
-    return 0.6 + 0.45 * math.sin(x / 53.0 + 1.3) * math.cos(y / 47.0 - 0.4)
+def to_road(c, x, y):
+    """The way from (x, y) to the nearest of the main road (a pen's gate faces it)."""
+    q, _ = c.nearest(x, y)
+    return math.atan2(q.p.y - y, q.p.x - x)
 
 
-def dress(c):
-    """The paint pass: the valley's jungle (Riverbend's palms, trees, bushes, ferns and
-    flowers) over the open ground, palms along the river and the roads, boulders at the
-    cliffs' feet, totems at the camp. After the attack: charred trees, stumps and logs,
-    the undergrowth burnt away."""
-    taken = paint.Taken([(0.0, 0.0, CAMP_R + 4.0), (*polar(*CAVE), 26.0), (*polar(*TUNNEL), 26.0), (*FORD, 20.0),
-                         (BOG[0], BOG[1], BOG[2] + 8.0), (*PYRAMID, 18.0), (*polar(*PEN), 18.0),
-                         (*polar(*RETURN), 18.0), (*polar(RETURN[0], RETURN[1] - 16.0), 9.0), (*polar(*SECRET), 16.0),
-                         (*polar(SECRET[0], SECRET[1] - 14.0), 9.0),
-                         *((*polar(a, r), 10.0) for a, r in STONES)])
-    bx, by, br = BOG
+def three_stones(c, ground):
+    """The pen (its gate is the game's) and a ring of standing stones round each switch."""
+    px, py = PEN
+    puzzle_kit.pen(c, "three_stones", "Pen", px, py, to_road(c, px, py), PEN_HALF, PEN_GAP, ("sandstone_block", "wall"),
+                   ground(px, py), height=5.0)
+    puzzle_kit.switches(c, "three_stones", STONES, ground, ring_mat=("sandstone_block", "wall"))
 
-    def open_ground(x, y):
-        r = math.hypot(x, y)
-        if r > CLIFF_R - 10 or river_d(x, y) < RIVER_HW + 6 or math.hypot(x - bx, y - by) < br + 6:
+
+def entrances(c):
+    """Where the main road crosses into each lobe: [{s, frm, to}], s along the road."""
+    out = []
+    prev = lobe_at(c.S[0].p.x, c.S[0].p.y)
+    for smp in c.S:
+        cur = lobe_at(smp.p.x, smp.p.y)
+        if cur != prev:
+            out.append({"s": smp.s, "frm": prev, "to": cur})
+            prev = cur
+    return out
+
+
+def gates(c, ground):
+    """Each lobe's sign where the road comes into it, so you know the course's world from
+    its threshold: the swamp through a giant's rib cage, Ember between smoking basalt
+    stacks, the Cascade under a temple lintel, Riverbend between two great palms."""
+    for k, e in enumerate(entrances(c)):
+        to, s = e["to"], e["s"] + 10.0
+        for _ in range(40):  # (out of a tunnel first, into the pocket)
+            q = c.at(s)
+            if L.wall_sd(q.p.x, q.p.y) < -14.0:
+                break
+            s += 4.0
+        q = c.at(s)
+        half = q.w / 2
+        side = lambda sd, off=0.0: (q.p.x + q.r.x * sd * (half + off), q.p.y + q.r.y * sd * (half + off))
+        head = math.atan2(q.t.y, q.t.x)
+        if to == "bonebog":
+            bs.rib_cage(c, None, s - 14.0, s + 22.0, "Bonebog Ribs %d" % k, spine_up=13.0, reach=half + 7.0, every=6.0)
+        elif to == "ember":
+            for sd in (-1, 1):
+                x, y = side(sd, 5.0)
+                c.place(props.basalt_columns(c), x, y, ground(x, y) - 0.3, rot=head, scale=1.6)
+                x, y = side(sd, 2.5)
+                c.place(sp.stone_brazier(c), x, y, ground(x, y) - 0.1)
+                gx, gy, gz = c.game(x, y, ground(x, y) + 1.6)
+                c.entity("torch", x=gx, y=gy, z=gz)
+        elif to == "cascade":
+            for sd in (-1, 1):
+                x, y = side(sd, 2.5)
+                c.place(props.ruin_column(c, 0), x, y, ground(x, y) - 0.2, scale=1.5)
+            x0, y0 = side(-1, 3.5)
+            x1, y1 = side(1, 3.5)
+            zt = max(ground(x0, y0), ground(x1, y1)) + 9.5
+            box(c, "Cascade Lintel %d" % k, (x0 + x1) / 2, (y0 + y1) / 2, half + 4.5, 1.3, zt, zt + 1.8,
+                ("jungle_temple", "wall"), rot=math.atan2(q.r.y, q.r.x), role="visual")
+        elif to == "riverbend":
+            for sd in (-1, 1):
+                x, y = side(sd, 3.5)
+                c.place(props.palm(c, 15.0, 2.0, 2), x, y, ground(x, y) - 0.2, rot=head + sd)
+
+
+def dress(c, ground, spurs):
+    """The paint pass, lobe by lobe, each with its course's own things. After the attack:
+    the same trees charred where the fire fell, the undergrowth burnt away."""
+    taken = paint.Taken([(L.CAMP[0], L.CAMP[1], L.CAMP[2] + 6.0), (*L.PYRAMID, 18.0), (*PEN, 18.0), (*RETURN, 18.0),
+                         (*SECRET, 16.0), *((x, y, 30.0) for x, y in L.FALLS), *((x, y, r + 8.0) for x, y, r, _ in L.LAKES), *((x, y, 10.0) for x, y in STONES),
+                         *((e[0], e[1], 16.0) for e, _ in spurs.values()), *((x, y, 22.0) for x, y in L.GATES.values()),
+                         *((x, y, r + 6.0) for x, y, r in L.POOLS), *((x, y, r + 8.0) for x, y, r in L.LAVA),
+                         (*L.SCAR, 30.0)])
+
+    def inside(x, y):
+        if L.wall_sd(x, y) > -8:
             return False
-        if RUIN and ((abs(x) < 34 and y < -190) or (abs(x - gorge_x(y)) < GORGE_HW + 14 and y > 230)):
-            return False  # (the burnt trench and the gorge's mouth)
+        if L.river_d(x, y)[0] < RIVER_HW + 5:
+            return False
+        if RUIN and abs(x - gorge_x(y)) < GORGE_HW + 14 and y > L.GORGE[1]:
+            return False
         return True
 
+    def lobe(name):
+        return lambda x, y: inside(x, y) and lobe_at(x, y) == name
+
     def bank(x, y):
-        return open_ground(x, y) and river_d(x, y) < RIVER_HW + 22
+        return inside(x, y) and L.river_d(x, y)[0] < RIVER_HW + 22
 
-    def foot(x, y):
-        return open_ground(x, y) and math.hypot(x, y) > CLIFF_R - 50
+    rmax = 420.0
+    # Rocks at the cliffs' feet, lobe by lobe.
+    for name, mat in (("riverbend", "valley_cliff"), ("cascade", "jungle_mossstone"), ("ember", "volcano_basalt"),
+                      ("bonebog", "bog_dark_stone")):
+        def foot(x, y, n=name):
+            return lobe(n)(x, y) and L.wall_sd(x, y) > -30
 
-    g = natural
-    rocks = [props.boulder(c, "valley_cliff", v) for v in range(3)]
-    for v, b in enumerate(rocks):
-        paint.scatter(c, b, 12, CLIFF_R, foot, g, taken, 90 + v, room=4.0, scale=(1.0, 2.4))
-    grand = [props.grand_tree(c, v) for v in range(3)]
-    trees = [props.jungle_tree(c, v) for v in range(2)]
+        for v in range(2):
+            paint.scatter(c, props.boulder(c, mat, v), 8, rmax, foot, ground, taken, 90 + v + len(name), room=4.0,
+                          scale=(1.0, 2.4))
+    # Riverbend: palms along the river and the road, jungle trees.
     palms = [props.palm(c, 10.0 + 1.5 * v, 1.3 + 0.5 * v, v) for v in range(3)]
-    for v, t in enumerate(grand):
-        paint.scatter(c, t, 5, CLIFF_R - 30, open_ground, g, taken, 60 + v, room=14.0, scale=(1.3, 1.8))
+    rb = lobe("riverbend")
     for v, p in enumerate(palms):
-        paint.scatter(c, p, 22, CLIFF_R, bank, g, taken, 20 + v, room=4.0, scale=(0.9, 1.4))
-        paint.scatter(c, p, 30, CLIFF_R, open_ground, g, taken, 10 + v, room=4.0, near_road=(4.0, 14.0), scale=(0.9, 1.4))
-    for v, t in enumerate(trees):
-        paint.scatter(c, t, 90, CLIFF_R, open_ground, g, taken, 30 + v, room=5.0, scale=(1.1, 1.9))
+        paint.scatter(c, p, 20, rmax, lambda x, y: bank(x, y) and lobe_at(x, y) in ("riverbend", "camp"), ground, taken, 20 + v,
+                      room=4.0, scale=(0.9, 1.4), road_margin=5.0)
+        paint.scatter(c, p, 14, rmax, rb, ground, taken, 10 + v, room=4.0, near_road=(5.0, 14.0), scale=(0.9, 1.4))
     for v in range(2):
-        paint.scatter(c, props.bush(c, v), 160, CLIFF_R, open_ground, g, taken, 70 + v, room=2.5, role="visual",
-                      scale=(0.7, 1.5))
-    paint.scatter(c, props.fern(c), 350, CLIFF_R, open_ground, g, taken, 40, room=1.5, role="visual")
-    paint.scatter(c, props.flowers(c), 350, CLIFF_R, open_ground, g, taken, 41, room=1.5, role="visual", sink=0.1)
-    # Totems either side of each spoke where it leaves the camp.
+        paint.scatter(c, props.jungle_tree(c, v), 22, rmax, rb, ground, taken, 30 + v, room=5.0, scale=(1.0, 1.6),
+                      road_margin=6.0)
+    # Cascade: a jungle canyon: giant and grand trees, big-leaf plants, temple ruins.
+    cas = lobe("cascade")
+    for v in range(2):
+        paint.scatter(c, props.giant_tree(c, v), 5, rmax, cas, ground, taken, 60 + v, room=16.0, scale=(0.9, 1.2),
+                      road_margin=12.0)
+        paint.scatter(c, props.grand_tree(c, v), 10, rmax, cas, ground, taken, 62 + v, room=10.0, scale=(1.2, 1.6),
+                      road_margin=9.0)
+        paint.scatter(c, props.jungle_tree(c, v), 30, rmax, cas, ground, taken, 64 + v, room=5.0, scale=(1.1, 1.9),
+                      road_margin=6.0)
+        paint.scatter(c, props.big_leaf_plant(c, v), 40, rmax, cas, ground, taken, 66 + v, room=2.5, role="visual")
+    for v, p in enumerate((props.ruin_column(c, 0), props.ruin_column(c, 1), props.ruin_blocks(c, 0), props.stele(c, 0),
+                           props.idol_head(c))):
+        paint.scatter(c, p, 5, rmax, cas, ground, taken, 70 + v, room=5.0, near_road=(5.0, 24.0))
+    # Ember: charred trees, basalt columns, glowing crystals, smoking vents.
+    em = lobe("ember")
+    paint.scatter(c, props.dead_tree(c), 30, rmax, em, ground, taken, 80, room=5.0, scale=(1.0, 1.7), road_margin=5.0)
+    paint.scatter(c, props.basalt_columns(c), 10, rmax, em, ground, taken, 81, room=7.0, road_margin=7.0)
+    paint.scatter(c, props.crystals(c), 12, rmax, em, ground, taken, 82, room=4.0, role="visual")
+    for x, y in paint.scatter(c, props.boulder(c, "volcano_basalt", 2), 8, rmax, em, ground, taken, 83, room=6.0):
+        gx, gy, gz = c.game(x, y, ground(x, y) + 1.0)
+        c.entity("steam", x=gx, y=gy, z=gz)
+    # Bonebog: swamp trees, reeds and cattails round the pools, lily pads on them, glowing
+    # caps, skulls and bones.
+    bog = lobe("bonebog")
+
+    def shore(x, y):
+        return bog(x, y) and any(abs(math.hypot(x - px, y - py) - pr - 6) < 6 for px, py, pr in L.POOLS)
+
+    for v in range(2):
+        paint.scatter(c, props.swamp_tree(c, v), 24, rmax, bog, ground, taken, 40 + v, room=6.0, scale=(1.0, 1.6),
+                      road_margin=6.0)
+        paint.scatter(c, props.cattails(c, v), 30, rmax, shore, ground, taken, 42 + v, room=2.0, role="visual")
+    paint.scatter(c, props.reeds(c), 50, rmax, shore, ground, taken, 44, room=2.0, role="visual")
+    paint.scatter(c, props.glow_caps(c), 30, rmax, bog, ground, taken, 45, room=2.0, role="visual")
+    paint.scatter(c, props.skull(c), 10, rmax, bog, ground, taken, 46, room=4.0, road_margin=4.0)
+    for k, (px, py, pr) in enumerate(L.POOLS):
+        for j in range(int(pr / 4)):
+            a = j * 2.39996 + k
+            r = pr * 0.8 * math.sqrt((j + 0.5) / (pr / 4))
+            x, y = px + r * math.cos(a), py + r * math.sin(a)
+            if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 18 and paint.road_clear(c, x, y, 3.0):
+                c.place(props.lily_pad(c, j % 3), x, y, WATER_Z + 0.03, rot=a * 3.0, role="visual")
+    # The swamp's big things: giant trees, stilt huts on the shores, sunken timber and
+    # crocodiles in the pools, bone piles, torch posts along its road.
+    paint.scatter(c, sp.swamp_giant(c, 0), 6, rmax, bog, ground, taken, 47, room=14.0, scale=(0.8, 1.1),
+                  road_margin=12.0)
+    for v in range(2):
+        paint.scatter(c, sp.bone_pile(c, v), 5, rmax, bog, ground, taken, 48 + v, room=5.0, road_margin=5.0)
+    big = sorted(L.POOLS, key=lambda q: -q[2])
+    for k, (px, py, pr) in enumerate(big[:3]):
+        a = 0.9 + 2.1 * k
+        x, y = px + (pr + 9.0) * math.cos(a), py + (pr + 9.0) * math.sin(a)
+        if paint.road_clear(c, x, y, 9.0) and taken.clear(x, y, 6.0):
+            c.place(sp.stilt_hut(c, k % 2), x, y, ground(x, y) - 0.4, rot=a + math.pi)
+            taken.add(x, y, 7.0)
+    for k, (px, py, pr) in enumerate(big[:5]):
+        a = 2.4 * k + 0.4
+        x, y = px + pr * 0.45 * math.cos(a), py + pr * 0.45 * math.sin(a)
+        if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 20:
+            c.place(sp.sunken_timber(c, k % 2), x, y, WATER_Z - 0.3, rot=a * 1.7, role="visual")
+    for k, (px, py, pr) in enumerate(big[:2]):
+        x, y = px - pr * 0.3, py + pr * 0.35
+        c.place(sp.croc(c), x, y, WATER_Z - 0.25, rot=1.1 + 2.0 * k, role="visual")
+    torch = sp.torch_post(c)
+    for e in entrances(c):
+        if e["to"] != "bonebog":
+            continue
+        for k in range(6):
+            q = c.at(e["s"] + 20.0 + 34.0 * k)
+            if lobe_at(q.p.x, q.p.y) != "bonebog":
+                break
+            sd = 1 if k % 2 else -1
+            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 6.5), q.p.y + q.r.y * sd * (q.w / 2 + 6.5)
+            c.place(torch, x, y, ground(x, y) - 0.2)
+            gx, gy, gz = c.game(x, y, ground(x, y) + 3.2)
+            c.entity("torch", x=gx, y=gy, z=gz)
+    gates(c, ground)
+    # The camp: totems where the road leaves it.
     tot = props.totem(c)
-    for a in (0.0, 90.0, 180.0, -90.0):
-        for side in (-1, 1):
-            x, y = polar(a + side * 14.0, CAMP_R + 6.0)
-            c.place(tot, x, y, g(x, y) - 0.2, rot=math.radians(a) - math.pi / 2)
-    if RUIN:
-        # Cinderjaw's fire: the same trees where it fell are charred stems (the courses'
-        # way: ruin_kit.char_trees), the undergrowth burnt away, logs fallen.
-        ruin_kit.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree"), chance=0.85, threshold=0.3)
-        ruin.burn_away(c, burn, ("Fern", "Flowers", "Bush"), threshold=0.3)
-        paint.scatter(c, props.log(c, 0), 40, CLIFF_R, open_ground, g, taken, 13, room=5.0, role="visual", sink=0.3)
-
-
-def three_stones(c):
-    # The Three Stones: the pen (its gate is the game's, src/overworld/puzzles.ts, which
-    # sinks it once all three switches are pressed in time) and a ring of standing stones
-    # round each switch.
-    px, py = polar(*PEN)
-    ia = math.radians(PEN[0]) + math.pi  # facing in, towards the camp
-    fx, fy = math.cos(ia), math.sin(ia)  # the front
-    sx, sy = -fy, fx  # across
-    stone = ("sandstone_block", "wall")
-    t = 0.8
-    for k, (cx, cy, hx, hy) in enumerate((
-            (-PEN_HALF, 0.0, t, PEN_HALF + t),  # back
-            (0.0, PEN_HALF, PEN_HALF + t, t),  # sides
-            (0.0, -PEN_HALF, PEN_HALF + t, t),
-            (PEN_HALF, (PEN_HALF + PEN_GAP) / 2, t, (PEN_HALF - PEN_GAP) / 2 + t),  # front, either side of the gate
-            (PEN_HALF, -(PEN_HALF + PEN_GAP) / 2, t, (PEN_HALF - PEN_GAP) / 2 + t))):
-        wx, wy = px + cx * fx + cy * sx, py + cx * fy + cy * sy
-        box(c, "Pen Wall %d" % k, wx, wy, hx, hy, FLOOR_Z - 2.0, FLOOR_Z + 5.0, stone, rot=ia)
     for side in (-1, 1):
-        gx, gy = px + PEN_HALF * fx + side * (PEN_GAP + 0.9) * sx, py + PEN_HALF * fy + side * (PEN_GAP + 0.9) * sy
-        box(c, "Pen Gatepost %d" % side, gx, gy, 1.2, 1.2, FLOOR_Z - 2.0, FLOOR_Z + 8.0, stone, rot=ia)
-    box(c, "Pen Plinth", px, py, 1.0, 1.0, FLOOR_Z - 1.0, FLOOR_Z + 1.2, stone, rot=ia)
-    gx, gy, gz = c.game(px + PEN_HALF * fx, py + PEN_HALF * fy, FLOOR_Z)
-    c.entity("puzzle_gate", puzzle="three_stones", x=gx, z=gz, heading=math.atan2(fx, -fy), width=2 * PEN_GAP,
-             prize_x=c.game(px, py, 0)[0], prize_z=c.game(px, py, 0)[2])
-    for k, (a, r) in enumerate(STONES):
-        x, y = polar(a, r)
-        gx, gy, gz = c.game(x, y, natural(x, y))
-        c.entity("puzzle_switch", puzzle="three_stones", index=k, x=gx, z=gz)
-        for j in range(3):
-            b = j * math.tau / 3 + k
-            cone(c, "Switch %d Stone %d" % (k, j), x + 7.0 * math.cos(b), y + 7.0 * math.sin(b), 1.1, natural(x, y) - 1.0,
-                 4.5, stone, segs=5)
+        x, y = L.CAMP[0] + L.CAMP[2] + 4.0, L.CAMP[1] + side * 9.0
+        c.place(tot, x, y, ground(x, y) - 0.2, rot=-math.pi / 2)
+    # Everywhere that isn't the swamp or the volcano's slope: bushes, ferns, flowers.
+    def green(x, y):
+        return inside(x, y) and lobe_at(x, y) in ("riverbend", "cascade", "camp")
+
+    for v in range(2):
+        paint.scatter(c, props.bush(c, v), 90, rmax, green, ground, taken, 50 + v, room=2.5, role="visual", scale=(0.7, 1.5))
+    paint.scatter(c, props.fern(c), 200, rmax, green, ground, taken, 54, room=1.5, role="visual")
+    paint.scatter(c, props.flowers(c), 180, rmax, lambda x, y: green(x, y) and lobe_at(x, y) != "cascade", ground, taken, 55,
+                  room=1.5, role="visual", sink=0.1)
+    if RUIN:
+        ruin_kit.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree"), chance=0.85, threshold=0.3)
+        ruin.burn_away(c, burn, ("Fern", "Flowers", "Bush", "Big Leaf"), threshold=0.3)
+        paint.scatter(c, props.log(c, 0), 40, rmax, inside, ground, taken, 13, room=5.0, role="visual", sink=0.3)
 
 
 if __name__ == "__main__":

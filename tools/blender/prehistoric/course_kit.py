@@ -659,10 +659,11 @@ class Course:
         bm.faces.new(rings[-1])
         return self.mesh_object(name, bm, "Rocks")
 
-    def tunnel(self, rock, s0, s1, half=None, height=8.5, pad=12.0):
-        """Cut a tunnel through `rock` along the route from s0 to s1 (padded at both ends)."""
+    def tunnel(self, rock, s0, s1, half=None, height=8.5, pad=12.0, floor=-0.4):
+        """Cut a tunnel through `rock` along the route from s0 to s1 (padded at both ends);
+        its floor `floor` under the road (deeper to clear a rock right away)."""
         half = half or self.width / 2 + 3.5
-        prof = [(-half, -0.4), (half, -0.4), (half, height * 0.62), (half * 0.62, height), (-half * 0.62, height), (-half, height * 0.62)]
+        prof = [(-half, floor), (half, floor), (half, height * 0.62), (half * 0.62, height), (-half * 0.62, height), (-half, height * 0.62)]
         bm = bmesh.new()
         rings = []
         n = max(4, math.ceil((s1 - s0 + 2 * pad) / 2.0))

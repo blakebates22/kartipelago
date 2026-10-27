@@ -117,68 +117,72 @@ export const REGIONS: Region[] = [
     name: "Dinosaur Valley",
     packageId: "valley_region",
     ruinPackageId: "valley_region_ruin",
-    // A secret, for the way back: a grotto in the east meadow, walled with ice the Snow Tool melts.
+    // (tools/blender/prehistoric/valley_layout.py: walled pockets, one world each, round
+    // the camp's plateau; the main road one loop through them by a threshold each time.
+    // The positions below are the build's entities.)
+    // A secret, for the way back: a grotto in the Cascade's woods, walled with ice the Snow Tool melts.
     secret: {
       obstacle: "ice",
       tool: "snow",
-      gate: { x: 281.08, z: -75.32, heading: -1.309, width: 9 },
-      spot: { x: 289.78, z: -77.65 },
+      gate: { x: 216.5, z: -155.04, heading: 1.2356, width: 9 },
+      spot: { x: 208, z: -158 },
     },
-    // Act V's return task: The Elder's lookout, a walled hollow in the south-east meadow: a rockfall blocks its way in.
+    // Act V's return task: The Elder's lookout, a walled hollow on Ember's lower slope: a rockfall blocks its way in.
     returnTask: {
       obstacle: "rockfall",
-      gate: { x: 122.14, z: 261.92, heading: -2.7053, width: 9 },
-      spot: { x: 126.79, z: 271.89 },
+      gate: { x: 136.84, z: 172.15, heading: 1.7395, width: 9 },
+      spot: { x: 126, z: 174 },
     },
     music: "riverbend",
     worldId: "prehistoric",
     kingdom: "valley",
-    challenge: { x: 250, z: 0, heading: -Math.PI / 2 },
-    // At the camp, facing north up the north spoke.
-    spawn: { x: 0, z: 8, heading: Math.PI },
+    // The main road's start line, on the camp's south side (the 1-on-1 is raced from it).
+    challenge: { x: 36, z: 30, heading: -0.9043 },
+    // In the camp's square, facing east to the way out onto the road.
+    spawn: { x: -6, z: -4, heading: Math.PI / 2 },
     gateways: [
-      // By the ford where the west spoke crosses the river.
+      // Riverbend: the palms on the bend's far bank, by the falls out of the north cliff.
       {
         id: "riverbend",
         track: "riverbend_palms",
-        x: -128,
-        z: 24,
+        x: -318.58,
+        z: -116.31,
         radius: 6,
-        heading: Math.PI,
+        heading: 1.2584,
       },
-      // In the cave mouth beside the falls, north-east, at the end of the cave road.
+      // Cascade: the cave mouth beside the falls, at the canyon's head.
       {
         id: "cascade",
         track: "cascade_caverns",
-        x: 252,
-        z: -211.5,
+        x: 288.78,
+        z: -295.76,
         radius: 6,
-        heading: Math.atan2(-0.766, 0.643),
+        heading: -1.2093,
       },
-      // On the bog's shore, the pyramid's tip out in the water, south-west.
+      // Bonebog: the pyramid's tip, out in the swamp's far corner.
       {
         id: "bonebog",
         track: "bonebog_pyramid",
-        x: -196.6,
-        z: 196.6,
+        x: -264.69,
+        z: 292.49,
         radius: 6,
-        heading: Math.atan2(0.707, -0.707),
+        heading: 2.4864,
       },
-      // At the lava-lit tunnel in the south-east cliff, the volcano beyond.
+      // Ember: the lava-lit cave in the volcano's foot.
       {
         id: "ember",
         track: "ember_peak",
-        x: 252,
-        z: 211.5,
+        x: 289.42,
+        z: 294.33,
         radius: 6,
-        heading: Math.atan2(-0.766, -0.643),
+        heading: -2.0626,
       },
-      // Cinderjaw's Scar, up the burnt trench in the south: the dragon's race.
+      // Cinderjaw's Scar, up the burnt trench in Ember's south wall: the dragon's race.
       {
         id: "scar",
         track: "boss_prehistoric",
-        x: 0,
-        z: 318,
+        x: 150,
+        z: 312,
         radius: 6,
         heading: Math.PI,
         boss: true,
@@ -186,14 +190,14 @@ export const REGIONS: Region[] = [
       },
     ],
     passages: [
-      // The Burnt Gorge, through the north cliff: on to the Snow Kingdom.
+      // The Burnt Gorge, through Riverbend's north cliff: on to the Snow Kingdom.
       {
         id: "burnt_gorge",
         label: "THE BURNT GORGE · TO THE SNOW KINGDOM",
         to: "snow_kingdom",
         toPassage: "burnt_gorge",
-        x: -6.8,
-        z: -440,
+        x: -155.4,
+        z: -420,
         radius: 8,
         heading: 0,
         ruinOnly: true,
@@ -203,9 +207,8 @@ export const REGIONS: Region[] = [
       },
     ],
     puzzles: [
-      // The Three Stones: an old stone pen in the north-west meadow, its gate shut. Press
-      // the three switch stones round the meadow (one by the gorge's mouth, one in the
-      // meadow inside the ring, one out west) before the drums stop and the gate sinks.
+      // The Three Stones: an old stone pen in the camp's north meadow, its gate shut. Press
+      // the three switch stones round the camp before the drums stop and the gate sinks.
       // Behind it: the valley's hidden key. (The build's puzzle_gate and puzzle_switch
       // entities are checked against these in tests/overworld.test.ts.)
       {
@@ -214,14 +217,14 @@ export const REGIONS: Region[] = [
         look: "stone",
         hint: "THE THREE STONES! PRESS THE OTHER 2 BEFORE THE DRUMS STOP",
         switches: [
-          { x: -100.39, z: -248.49 },
-          { x: -117.02, z: -109.12 },
-          { x: -256.79, z: -83.43 },
+          { x: -58, z: -34 },
+          { x: 22, z: -54 },
+          { x: -36, z: -14 },
         ],
         radius: 3.5,
         seconds: 30,
-        gate: { x: -208.61, z: -201.45, heading: 0.803, width: 9 },
-        prize: { kind: "key", x: -215.8, z: -208.4 },
+        gate: { x: -12.14, z: -58.34, heading: 1.4042, width: 9 },
+        prize: { kind: "key", x: -22, z: -60 },
       },
     ],
   },

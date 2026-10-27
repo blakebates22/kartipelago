@@ -212,10 +212,16 @@ export function coinCourse(c: AdventureCourse, exists: (id: string) => boolean) 
  */
 export function dueScene(s: AdventureSave): string | undefined {
   const due: [string, boolean][] = [["intro", true]];
+  // A kingdom's welcome waits until you've driven there (Blake, Oct 26: no hopping to the
+  // next world from a map): its region is where you are (the first is where you start).
+  const here = (id: KingdomId | "dragon", first: boolean) => {
+    const r = regionOfKingdom(id);
+    return !r || first || s.where?.region === r.id;
+  };
   for (const k of KINGDOMS) {
     const ph = kingdomPhase(s, k);
     if (ph === "locked") continue;
-    due.push([k.scenes.arrive, true]);
+    due.push([k.scenes.arrive, here(k.id, k === KINGDOMS[0])]);
     // (The dragons strike at the champion's welcome: after the challenge, where there is one.)
     if (championWon(s, k)) due.push([k.scenes.catastrophe, true]);
     if (piecesOf(s, k) >= k.courses.length) due.push([k.scenes.mapDone, true]);
@@ -223,10 +229,10 @@ export function dueScene(s: AdventureSave): string | undefined {
   }
   const dp = dragonPhase(s);
   if (dp !== "locked") {
-    due.push([DRAGON.scenes.arrive, true]);
+    due.push([DRAGON.scenes.arrive, here("dragon", false)]);
     if (s.cups.dragon) due.push([DRAGON.scenes.sacrifice, true]);
     if (allReturned(s)) due.push([DRAGON.scenes.resurrection, true]);
-    if (allReturned(s)) due.push([DRAGON.scenes.finalArrive, true]);
+    if (allReturned(s)) due.push([DRAGON.scenes.finalArrive, here("dragon", false)]);
     if (s.finalCup) due.push([DRAGON.scenes.king, true]);
     if (s.kingLost) due.push([DRAGON.scenes.kingLost, true]);
     if (s.kingWon) due.push([DRAGON.scenes.ending, true]);

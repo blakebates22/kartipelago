@@ -47,7 +47,7 @@ import {
   persist,
   sceneScreen,
 } from "./adventure";
-import { DRAGON, KINGDOMS, kingdomById, type KingdomId } from "../adventure/data";
+import { DRAGON, KINGDOMS, STORY_ORDER, kingdomById, type KingdomId } from "../adventure/data";
 import { Racer as RacerView } from "../render/racers/racer";
 import type { RacerId } from "../render/racers/designs";
 import {
@@ -56,6 +56,7 @@ import {
   coinCourse,
   completeReturn,
   dragonPhase,
+  dueScene,
   kingdomPhase,
   objective,
   piecesOf,
@@ -248,10 +249,20 @@ function regionMap(session: Session, region: Region, extra: { x: number; z: numb
   for (const gw of region.gateways) dot(gw.x, gw.z, gw.boss || gw.king ? "#e04030" : "#f0c040");
   for (const e of extra) dot(e.x, e.z, "#60e070");
   return {
-    draw(ui: UiLayer, t: number) {
+    draw(ui: UiLayer, t: number, target?: { x: number; z: number }) {
       const x0 = ui.W - S - 6;
       const y0 = 6;
       ui.image(cv, x0, y0, S, S, false);
+      // Where the story wants you: a pulsing marker.
+      if (target) {
+        const [u, v] = at(target.x, target.z);
+        const r = 3 + Math.round(1.5 + 1.5 * Math.sin(t * 5));
+        const c = "#ffffff";
+        ui.rect(x0 + Math.round(u) - r, y0 + Math.round(v) - r, r * 2, 1, c);
+        ui.rect(x0 + Math.round(u) - r, y0 + Math.round(v) + r - 1, r * 2, 1, c);
+        ui.rect(x0 + Math.round(u) - r, y0 + Math.round(v) - r, 1, r * 2, c);
+        ui.rect(x0 + Math.round(u) + r - 1, y0 + Math.round(v) - r, 1, r * 2, c);
+      }
       const s = session.entrants[0]!.state;
       if (Math.sin(t * 8) > -0.3) {
         const [u, v] = at(s.x, s.z);
@@ -583,6 +594,16 @@ export function overworldLoading(
       if (save && story) {
         save.where = { region: region.id, ...(at ? { at } : {}) };
         persist(game);
+        // Driven into a kingdom the story's just reached: its welcome first.
+        const due = dueScene(save);
+        if (due) {
+          alive = false;
+          return game.screens.go(
+            sceneScreen(game, due, () =>
+              game.screens.go(overworldLoading(game, regionId, at, true)),
+            ),
+          );
+        }
       }
       game.audio.music.stop(0.6);
       game.audio.music.prepare(region.music);
@@ -730,6 +751,10 @@ function buildGateways(
   };
 }
 
+/** The region as it's being driven now (its state after or before the attack): for the
+ * debug tools and the playtest bot. */
+export let drivenRegion: Region | undefined;
+
 export function overworldScreen(game: Game, session: Session, region: Region, at?: string): Screen {
   const entry = entryOf(region);
   let clock = 0;
@@ -766,6 +791,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     enter() {
       game.session = session;
       game.ui.interactive = false;
+      drivenRegion = region;
       removeGateways = buildGateways(session, region, [
         ...(challenge
           ? [
@@ -877,7 +903,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       returnGate?.draw(ui);
       blockers?.draw(ui);
       secret?.draw(ui);
-      map?.draw(ui, clock);
+      map?.draw(ui, clock, storyTarget(game, region));
     },
   };
   // (The arch you came out of counts as the one you're in, so its card doesn't reopen.)
@@ -1080,6 +1106,49 @@ function storyOffer(game: Game, region: Region, g: Gateway): StoryOffer | undefi
       launch(game, { kind: "coins", kingdom: k.id, course: course.track, ...cc }, cc.track);
     },
   };
+}
+
+/** Adventure: where the story wants you next in this region (the map marks it, and the
+ * playtest bot drives to it): the champion's challenge, the return task, the gateway with
+ * the next race that moves the story on, or the way on or back towards the kingdom the
+ * story's at. */
+export function storyTarget(
+  game: Game,
+  region: Region,
+): { id: string; x: number; z: number; radius: number; heading: number } | undefined {
+  if (!game.overworld?.adventure) return undefined;
+  const s = adventureOf(game).save;
+  if (region.challenge && challengeOf(game, region))
+    return { id: "challenge", radius: 6, ...region.challenge };
+  if (returnOf(game, region) && region.returnTask)
+    return {
+      id: "return",
+      radius: 4,
+      ...region.returnTask.spot,
+      heading: region.returnTask.gate.heading,
+    };
+  for (const g of region.gateways) {
+    const o = storyOffer(game, region, g);
+    if (o?.go && !/AGAIN/.test(o.note)) return g;
+  }
+  // The way on or back, towards the kingdom the story is at.
+  const here = STORY_ORDER.indexOf(region.kingdom ?? "valley");
+  const dp = dragonPhase(s);
+  const pending = KINGDOMS.find((k) => kingdomPhase(s, k) !== "done");
+  const goal: KingdomId = pending
+    ? pending.id
+    : dp === "return"
+      ? (KINGDOMS.find((k) => !s.returns[k.id])?.id ?? "dragon")
+      : "dragon";
+  const there = STORY_ORDER.indexOf(goal);
+  if (there === here) return undefined;
+  const p = (region.passages ?? []).find((p) => {
+    const to = regionById(p.to)?.kingdom;
+    const ti = to ? STORY_ORDER.indexOf(to) : -1;
+    const open = !p.opensAfter || Boolean(s.bosses[p.opensAfter]);
+    return open && (there > here ? ti > here : ti < here);
+  });
+  return p;
 }
 
 /** Adventure: the champion who'll race you 1 on 1 here now (their challenge is due). */
@@ -1311,12 +1380,18 @@ function overworldPause(game: Game, region: Region): Screen {
                 game.screens.go(kingdomScreen(game, story));
               },
             },
-            // (No world map until the journey begins; dev builds can peek.)
-            ...(journeyBegun(adventureOf(game).save)
-              ? [{ label: "WORLD MAP", action: () => game.screens.go(adventureHub(game)) }]
-              : import.meta.env.DEV
-                ? [{ label: "WORLD MAP (DEV)", action: () => peekWorldMap(game) }]
-                : []),
+            // (No world map to hop from: every world is reached by driving there. Dev
+            // builds can still open it.)
+            ...(import.meta.env.DEV
+              ? [
+                  journeyBegun(adventureOf(game).save)
+                    ? {
+                        label: "WORLD MAP (DEV)",
+                        action: () => game.screens.go(adventureHub(game)),
+                      }
+                    : { label: "WORLD MAP (DEV)", action: () => peekWorldMap(game) },
+                ]
+              : []),
           ]
         : []),
       // Dev free roam: the region before or after its dragon's attack.
