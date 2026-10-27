@@ -55,7 +55,9 @@ LOOK = {
     "canyon": (("red_sand", "loose_sand"), ("strata_red", "wall"), "dash_road", ("dash_shoulder", "dirt")),
     "oasis": (("gold_sand", "loose_sand"), ("gold_cliff", "wall"), "oasis_paving", ("gold_sand", "loose_sand")),
     "gulch": (("gulch_sand", "loose_sand"), ("strata_rust", "wall"), "gulch_road", ("gulch_verge", "dirt")),
-    "crater": (("slickrock", "dirt"), ("strata_purple", "wall"), "dash_road", ("talus", "wall")),
+    # (The shoulder was ("talus", "wall"): a flat strip of wall along the whole crater road
+    # that stopped karts driving onto it from the side. Blake, Oct 27.)
+    "crater": (("slickrock", "dirt"), ("strata_purple", "wall"), "dash_road", ("talus", "dirt")),
 }
 
 

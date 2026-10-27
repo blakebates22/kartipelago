@@ -311,6 +311,6 @@
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "desert_layout.py": "fde6f7d6c7374f288495646698f6ed96e163d0c0b33df1400da7f9cdc74bc6a2",
-    "desert_region.py": "e42dcf65bc34fa61ebd7d040346beeb5c29d53ede84dc3a17f36891edc674659"
+    "desert_region.py": "e2dd42b68de70023c1cc02823a11ef3f6d642fb2074cc59962aad0349dffe23c"
   }
 }
