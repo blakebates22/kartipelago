@@ -851,11 +851,22 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     ? { id: "return", radius: 4, x: rt.spot.x, z: rt.spot.z, heading: rt.gate.heading }
     : undefined;
   const taskMark = task ? taskSpot : undefined;
+  // Act V: every return task done, a portal opens by each kingdom's start line, straight
+  // back to the Dragon Kingdom (Blake, Oct 27: no driving all the way back).
+  const portal =
+    game.overworld?.adventure &&
+    region.kingdom &&
+    region.kingdom !== "dragon" &&
+    region.challenge &&
+    dragonPhase(adventureOf(game).save) === "final"
+      ? { id: "portal", radius: 6, ...region.challenge }
+      : undefined;
   const marks = [
     ...region.gateways,
     ...(region.passages ?? []),
     ...(challenge ? [challenge] : []),
     ...(taskMark ? [taskMark] : []),
+    ...(portal ? [portal] : []),
   ];
 
   const screen: Screen = {
@@ -876,6 +887,9 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
           : []),
         ...(taskMark && task
           ? [{ ...taskMark, label: task.returnTask!.label, world: region.worldId }]
+          : []),
+        ...(portal
+          ? [{ ...portal, label: "PORTAL · TO THE DRAGON KINGDOM", world: "dragon" }]
           : []),
       ]);
       puzzles = regionPuzzles(game, session, region);
@@ -900,6 +914,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       map = regionMap(session, region, [
         ...(challenge ? [challenge] : []),
         ...(taskMark ? [taskMark] : []),
+        ...(portal ? [portal] : []),
       ]);
       // Back out of the gateway you raced (onto the road, facing along it), out of a
       // passage, in front of a mark (`<id>:front`: the lair, the way on), or at the
@@ -962,6 +977,11 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         const p = (region.passages ?? []).find(
           (p) => inGateway(p, s.x, s.z) && !blockers?.shut(p.id),
         );
+        if (portal && inGateway(portal, s.x, s.z)) {
+          inside = portal;
+          game.sounds.confirm();
+          return game.screens.go(overworldLoading(game, "dragon_kingdom", undefined, true));
+        }
         const ch = challenge && inGateway(challenge, s.x, s.z) ? challenge : undefined;
         const tk = taskMark && inGateway(taskMark, s.x, s.z) ? taskMark : undefined;
         if (p && !g && passageOpen(game, p)) {
