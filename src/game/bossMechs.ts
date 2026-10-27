@@ -19,9 +19,10 @@
  *                    metres; the beacon fires mark the way (the build's torches).
  *   Tidewyrm (main)  tide { period, low, high, offset }: the sea rising and falling as he
  *                    thrashes; sandbar { x, y, z, r }: a shortcut only above water at low
- *                    tide (at high tide you're swimming); coil { from, to, period, offset }:
- *                    his coils, a bridge where the road is (round the lap) only while
- *                    they're up.
+ *                    tide, buoys at its ends green / amber / red (caught on it flooded,
+ *                    you swim slowly); coil { from, to, period, offset }: his back
+ *                    breaching from the road there, hump by hump, a swirl first: hit one
+ *                    as it rises for a boost, once it's up it knocks you back.
  *   Tidewyrm (alt)   whirlpool { x, y, z, r, spin, fling }: a whirlpool that swings you
  *                    round it and flings you out (a boost, if you leave it facing out).
  *   King Pyrrhax     firewall { from, to, gap, speed }: race 1, a wall of fire chasing you
@@ -438,6 +439,15 @@ function tides(
   coils: Record<string, unknown>[],
   root?: THREE.Object3D,
 ): Mechanic {
+  // (Blake, Oct 27: the tide was jank, a meter nobody could read and splashes out of
+  // nowhere. Reworked: you see everything coming.)
+  //  - The sandbar shortcut is signposted: buoys at each end, green while it stays dry,
+  //    amber when the sea's coming in (under SANDBAR_WARN s), red when it's under water.
+  //    Caught on it under water you swim (slowly), you're not put back.
+  //  - His coils on the causeway (coil from..to round the lap) are always a road now;
+  //    his back breaches from it in turn, one hump at a time on one half of the road: a
+  //    dark swirl on the road first (HUMP_WARN s), then the hump. Hit it just as it rises
+  //    and it throws you on (a boost); once it's up, it knocks you back.
   const K = kit(root);
   const period = num(tide?.period, 16);
   const low = num(tide?.low, -1.6);
@@ -449,79 +459,170 @@ function tides(
     to: num(o.to, 0),
     period: num(o.period, 8),
     offset: num(o.offset, 0),
-    up: num(o.up, 5),
   }));
+  const levelAt = (t: number) =>
+    (low + high) / 2 + ((high - low) / 2) * Math.sin(((t - offset) / period) * Math.PI * 2);
+  /** Under water from this level (a sandbar's top plus a little). */
+  const wet = sb.length ? Math.min(...sb.map((b) => b.y)) + 0.4 : Infinity;
+  const stateAt = (t: number): "open" | "closing" | "flooded" =>
+    levelAt(t) >= wet ? "flooded" : levelAt(t + SANDBAR_WARN) >= wet ? "closing" : "open";
   let level = low;
+  let now = 0;
+  let swimming = false;
   let road: MechCtx["roadAt"] | undefined;
   const seaM = K.mat(0x2aa8c8, 0.6, false);
   const seaG = K.geo(new THREE.CircleGeometry(900, 40));
   seaG.rotateX(-Math.PI / 2);
   const sea = new THREE.Mesh(seaG, seaM);
   K.group.add(sea);
+  // The buoys: two at each end of the sandbar.
+  const buoyLit = {
+    open: K.mat(0x30e050),
+    closing: K.mat(0xffb020),
+    flooded: K.mat(0xe03020),
+  };
+  const postM = K.lambert(0xf4f0e0);
+  const postG = K.geo(new THREE.CylinderGeometry(0.5, 0.7, 4.6, 8));
+  const lampG = K.geo(new THREE.SphereGeometry(1.2, 10, 8));
+  const buoys: THREE.Mesh[] = [];
+  if (sb.length) {
+    const ends = [sb[0]!, sb[sb.length - 1]!];
+    const dir = sb.length > 1 ? Math.atan2(ends[1]!.x - ends[0]!.x, ends[1]!.z - ends[0]!.z) : 0;
+    for (const e of ends)
+      for (const side of [-1, 1]) {
+        const x = e.x + Math.cos(dir) * side * (e.r + 1.5);
+        const z = e.z - Math.sin(dir) * side * (e.r + 1.5);
+        const post = new THREE.Mesh(postG, postM);
+        post.position.set(x, e.y + 1.6, z);
+        K.group.add(post);
+        const lamp = new THREE.Mesh(lampG, buoyLit.open);
+        lamp.position.set(x, e.y + 4.4, z);
+        K.group.add(lamp);
+        buoys.push(lamp);
+      }
+  }
+  // His humps: four spots along each coil stretch, breaching in turn.
   const coilM = K.lambert(0x1f6a6a);
-  const humpG = K.geo(new THREE.TorusGeometry(3.2, 1.3, 6, 10, Math.PI));
-  const humps = cs.map(() => {
-    const list: THREE.Mesh[] = [];
-    for (let k = 0; k < 6; k++) {
-      const m = new THREE.Mesh(humpG, coilM);
-      K.group.add(m);
-      list.push(m);
-    }
-    return list;
-  });
-  const coilUp = (c: (typeof cs)[number], t: number) => beat(t, c.period, c.offset, 1.0, c.up);
+  const swirlM = K.mat(0x0a2a3a, 0.7, false);
+  const humpG = K.geo(new THREE.TorusGeometry(2.6, 1.2, 6, 10, Math.PI));
+  const swirlG = K.geo(new THREE.CircleGeometry(3.2, 16));
+  swirlG.rotateX(-Math.PI / 2);
+  const humps = cs.flatMap((c, ci) =>
+    [0, 1, 2, 3].map((j) => {
+      const hump = new THREE.Mesh(humpG, coilM);
+      const swirl = new THREE.Mesh(swirlG, swirlM);
+      hump.visible = swirl.visible = false;
+      K.group.add(hump, swirl);
+      return {
+        ci,
+        at: c.from + ((c.to - c.from) * (j + 0.5)) / 4,
+        side: j % 2 ? 1 : -1,
+        offset: c.offset + (c.period * j) / 4,
+        period: c.period,
+        hump,
+        swirl,
+        lastHit: -Infinity,
+      };
+    }),
+  );
+  const humpBeat = (h: (typeof humps)[number], t: number) =>
+    beat(t, h.period, h.offset, HUMP_WARN, HUMP_UP);
+  const humpSpot = (h: (typeof humps)[number]) => {
+    if (!road) return undefined;
+    const p = road(h.at);
+    const across = h.side * (p.width / 4);
+    return {
+      x: p.x + Math.cos(p.heading) * across,
+      y: p.y,
+      z: p.z - Math.sin(p.heading) * across,
+      heading: p.heading,
+      half: p.width / 4,
+    };
+  };
   return {
     step(k, c, ev) {
       road = c.roadAt;
-      level =
-        (low + high) / 2 + ((high - low) / 2) * Math.sin(((c.t - offset) / period) * Math.PI * 2);
-      const at = wrapL(c.lap, c.lapLength);
-      // On a sandbar under the tide: swimming.
+      now = c.t;
+      level = levelAt(c.t);
+      // On the sandbar under water: swimming, slowly.
+      let wetNow = false;
       for (const b of sb)
-        if (Math.hypot(k.x - b.x, k.z - b.z) < b.r && level > b.y + 0.4 && k.y < level + 0.5) {
-          ev.splashed = true;
-          ev.dropAt = at + 20;
-          return;
+        if (Math.hypot(k.x - b.x, k.z - b.z) < b.r && level > b.y + 0.4 && k.y < level + 0.5)
+          wetNow = true;
+      if (wetNow) {
+        k.speed = Math.min(k.speed, SWIM_SPEED);
+        if (!swimming) ev.splashed = true;
+      }
+      swimming = wetNow;
+      // His humps.
+      for (const h of humps) {
+        const b = humpBeat(h, c.t);
+        if (b.phase !== "on" || c.t - h.lastHit < 1) continue;
+        const p = humpSpot(h);
+        if (!p) continue;
+        const l = local(p.x, p.z, p.heading, k.x, k.z);
+        if (Math.abs(l.along) > 2.6 || Math.abs(l.across) > p.half + 0.6 || Math.abs(k.y - p.y) > 3)
+          continue;
+        h.lastHit = c.t;
+        if (b.k < HUMP_RAMP) ev.boosted = true;
+        else {
+          k.speed *= 0.4;
+          k.spinTime = 0.5;
+          k.spinDir = h.side;
+          ev.bumped = true;
         }
-      // On his coils while they're down: into the sea.
-      for (const cl of cs)
-        if (at >= cl.from && at <= cl.to && coilUp(cl, c.t).phase !== "on") {
-          ev.splashed = true;
-          ev.dropAt = cl.to + 8;
-          return;
-        }
+      }
     },
     render(t) {
       sea.position.y = level;
-      cs.forEach((cl, i) => {
-        const b = coilUp(cl, t);
-        const h =
-          b.phase === "on"
-            ? Math.min(1, b.k * 6) * Math.min(1, (1 - b.k) * 6)
-            : b.phase === "warn"
-              ? b.k * 0.3
-              : 0;
-        // His humps either side of the road, rising out of the sea with the coils.
-        humps[i]!.forEach((m, j) => {
-          if (!road) return;
-          const p = road(cl.from + ((cl.to - cl.from) * (j + 0.5)) / 6);
-          const side = (j % 2 ? 1 : -1) * (p.width / 2 + 2.5);
-          m.position.set(
-            p.x + Math.cos(p.heading) * side,
-            p.y - 4.5 + h * 4.5,
-            p.z - Math.sin(p.heading) * side,
-          );
-          m.rotation.y = p.heading;
-        });
-      });
+      const st = stateAt(now);
+      for (const lamp of buoys) {
+        lamp.material = buoyLit[st];
+        // (Amber flashes.)
+        lamp.visible = st !== "closing" || Math.sin(t * 12) > -0.3;
+      }
+      for (const h of humps) {
+        const b = humpBeat(h, t);
+        const p = humpSpot(h);
+        if (!p) continue;
+        h.swirl.visible = b.phase === "warn";
+        h.swirl.position.set(p.x, p.y + 0.06, p.z);
+        h.swirl.scale.setScalar(0.4 + 0.6 * b.k);
+        h.hump.visible = b.phase === "on";
+        if (b.phase === "on") {
+          const rise = Math.min(1, b.k / HUMP_RAMP) * Math.min(1, (1 - b.k) * 5);
+          h.hump.position.set(p.x, p.y - 2.6 + 2.6 * rise, p.z);
+          h.hump.rotation.y = p.heading + Math.PI / 2;
+        }
+      }
     },
     sea: () => level,
     gauge() {
-      return { label: "TIDE", value: (level - low) / Math.max(0.01, high - low) };
+      if (!sb.length) return undefined;
+      const st = stateAt(now);
+      return {
+        label:
+          st === "open"
+            ? "SANDBAR: OPEN"
+            : st === "closing"
+              ? "SANDBAR: CLOSING!"
+              : "SANDBAR: FLOODED",
+        value: (level - low) / Math.max(0.01, high - low),
+      };
     },
     dispose: K.dispose,
   };
 }
+
+/** Seconds of warning before the sandbar floods (the buoys go amber). */
+const SANDBAR_WARN = 3;
+/** Caught on the sandbar under water: swimming at most this fast, m/s. */
+const SWIM_SPEED = 9;
+/** A hump's swirl before it breaches, how long it's up, and the first part of that
+ * (as it rises) when hitting it throws you on. */
+const HUMP_WARN = 1.6;
+const HUMP_UP = 2.2;
+const HUMP_RAMP = 0.25;
 
 function whirlpools(list: Record<string, unknown>[], root?: THREE.Object3D): Mechanic {
   const K = kit(root);

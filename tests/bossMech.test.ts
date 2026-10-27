@@ -206,23 +206,39 @@ describe("the other bosses' mechanics", () => {
     expect(k2.x).toBeLessThan(0.5);
   });
 
-  it("Tidewyrm: a sandbar's under water at high tide; his coils hold you only while up", () => {
+  it("Tidewyrm: the sandbar floods at high tide (you swim); his humps breach in turn", () => {
     const tide = { type: "tide", period: 20, low: -1, high: 1 };
     const m = createBossMech({
       cfg: parseBossMech([
         tide,
         { type: "sandbar", x: 0, y: 0, z: 0, r: 8 },
-        { type: "coil", from: 200, to: 260, period: 8, offset: 0, up: 4 },
+        { type: "coil", from: 200, to: 260, period: 8, offset: 0 },
       ]),
       roadAt: road,
     });
-    // High tide at t = 5 (a quarter of the way round): on the sandbar, you're swimming.
-    expect(step(m, kart(0), 5, 0).splashed).toBe(true);
-    // Low tide at t = 15: dry.
-    expect(step(m, kart(0), 15, 0).splashed).toBeUndefined();
-    // The coils: up at t = 6 (the last 4 of each 8), down at t = 1.
-    expect(step(m, { ...kart(220), y: 5 }, 6, 220).splashed).toBeUndefined();
-    expect(step(m, { ...kart(220), y: 5 }, 1, 220).splashed).toBe(true);
+    // High tide at t = 5 (a quarter of the way round): on the sandbar, you swim, slowly,
+    // and you're not put back.
+    const k = kart(0);
+    const ev = step(m, k, 5, 0);
+    expect(ev.splashed).toBe(true);
+    expect(ev.dropAt).toBeUndefined();
+    expect(k.speed).toBeLessThanOrEqual(9);
+    expect(m.gauge()?.label).toMatch(/FLOODED/);
+    // Low tide at t = 15: dry, and the gauge says so.
+    const k2 = kart(0);
+    expect(step(m, k2, 15, 0).splashed).toBeUndefined();
+    expect(k2.speed).toBe(20);
+    expect(m.gauge()?.label).toMatch(/OPEN/);
+    // The coils are road now: never into the sea.
+    for (let t = 0; t < 8; t += 0.5)
+      expect(step(m, { ...kart(220), x: 30 }, t, 220).dropAt).toBeUndefined();
+    // The first hump (207.5 m, the left half): up from t = 8 - 2.2 = 5.8; just risen it
+    // throws you on, fully up it knocks you back.
+    const left = { ...kart(207.5), x: -3.5 };
+    expect(step(m, { ...left }, 5.9, 207.5).boosted).toBe(true);
+    const hit = { ...left };
+    expect(step(m, hit, 7.2, 207.5).bumped).toBe(true);
+    expect(hit.speed).toBeLessThan(20);
   });
 
   it("a whirlpool swings you round; the King's fireball is sent back with the item button", () => {
