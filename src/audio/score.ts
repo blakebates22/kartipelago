@@ -43,6 +43,14 @@ export interface Song {
   /** Stems other than "base" start silent and are faded in by the game. */
   stems: string[];
   parts: Part[];
+  /**
+   * Beats of lead-in played once before the loop (cutscene cues): notes at negative
+   * times (-intro..0, "base" stem) are the intro, and the loop is beats 0..`beats`.
+   * A piece with an intro enters on the beat of the piece it replaces.
+   */
+  intro?: number;
+  /** Loudest sample after rendering (default 0.85): quiet cues stay quiet. */
+  peak?: number;
 }
 
 const NAMES: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };

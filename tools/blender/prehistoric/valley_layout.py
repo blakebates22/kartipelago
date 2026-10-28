@@ -32,32 +32,41 @@
 
 import math
 
+from pocket_kit import rim_crags, tier_of, tiered_walls  # noqa: F401
+
 WATER_Z = -0.8  # the bog's water
-CAMP = (0.0, 4.0, 24.0)  # x, y, radius (the town square)
+CAMP = (0.0, 3.0, 22.0)  # x, y, radius (the town square)
 CAMP_Z = 26.0
 TOP = 52.0  # the high ground between the pockets
 RISE = 26.0  # how far a pocket's wall takes to rise to it
 RIM_Z = TOP  # (the old name)
 
+# v4 (Blake, Oct 28: "travel takes a while"): the whole valley drawn in to about 0.62 of its
+# size, the loop some 40% shorter (its bends eased to a 12 m radius at least), the camp a little less (it has the village in it now),
+# every world still its own pocket behind its own threshold. The walls rise in tiers with
+# shelves (pocket_kit.terrace: "we need some ledges").
+#
 # The pockets: (name, the lobe whose look it has, circles (x, y, radius, floor height)).
 # A pocket is the union of its circles (rounded where they join); its floor blends the
 # circles' heights, so a pocket can slope (the Switchbacks fall from the camp to the river).
 POCKETS = [
-    ("camp", "camp", [(0.0, 0.0, 56.0, 26.0), (42.0, 46.0, 38.0, 26.0), (-28.0, 42.0, 30.0, 26.0), (68.0, 76.0, 24.0, 26.0)]),
+    ("camp", "camp", [(0.0, 0.0, 46.0, 26.0), (33.6, 36.8, 31.0, 26.0), (-22.4, 33.6, 25.0, 26.0), (54.4, 60.8, 20.0, 26.0)]),
     ("switchbacks", "riverbend",
-     [(-62.0, -14.0, 30.0, 25.0), (-96.0, -20.0, 32.0, 18.0), (-118.0, 18.0, 32.0, 11.0), (-150.0, 44.0, 34.0, 5.0)]),
+     [(-40.0, -10.0, 20.0, 25.0), (-60.0, -13.0, 21.0, 18.0), (-74.0, 11.0, 21.0, 11.0), (-94.0, 28.0, 22.0, 5.0)]),
     ("riverbend", "riverbend",
-     [(-205.0, 45.0, 75.0, 3.0), (-270.0, 118.0, 58.0, 3.5), (-150.0, 118.0, 40.0, 4.0), (-258.0, -32.0, 54.0, 2.5),
-      (-210.0, 134.0, 36.0, 3.5), (-292.0, 60.0, 30.0, 3.0), (-204.0, -24.0, 28.0, 2.5)]),
+     [(-128.0, 28.0, 50.0, 3.0), (-167.0, 74.0, 39.0, 3.5), (-94.0, 74.0, 27.0, 4.0), (-160.0, -19.0, 36.0, 2.5),
+      (-130.0, 85.0, 25.0, 3.5), (-183.0, 37.0, 21.0, 3.0), (-126.0, -15.0, 20.0, 2.5)]),
     ("bonebog", "bonebog",
-     [(-238.0, -168.0, 36.0, 0.4), (-178.0, -236.0, 78.0, 0.0), (-268.0, -258.0, 54.0, 0.0), (-98.0, -288.0, 50.0, 0.3)]),
+     [(-147.6, -106.0, 24.0, 0.4), (-110.0, -148.0, 51.0, 0.0), (-166.0, -162.0, 36.0, 0.0), (-61.0, -180.0, 33.0, 0.3)]),
     ("ember", "ember",
-     [(98.0, -258.0, 46.0, 8.0), (176.0, -206.0, 78.0, 12.0), (256.0, -148.0, 56.0, 18.0), (238.0, -296.0, 54.0, 16.0), (262.0, -232.0, 32.0, 17.0)]),
+     [(61.0, -161.0, 31.0, 8.0), (109.0, -128.0, 51.0, 12.0), (159.0, -92.0, 37.0, 18.0), (148.0, -185.0, 36.0, 16.0),
+      (163.0, -145.0, 22.0, 17.0)]),
     ("gulch", "ember",
-     [(290.0, -76.0, 26.0, 19.0), (276.0, -48.0, 22.0, 19.5), (266.0, -24.0, 25.0, 20.0), (284.0, 2.0, 22.0, 20.5),
-      (294.0, 26.0, 25.0, 21.0), (282.0, 54.0, 22.0, 21.0), (272.0, 80.0, 26.0, 21.0)]),
+     [(180.0, -47.0, 18.0, 19.0), (171.0, -30.0, 16.0, 19.5), (165.0, -15.0, 17.5, 20.0), (176.0, 1.0, 16.0, 20.5),
+      (182.0, 16.0, 17.5, 21.0), (175.0, 33.5, 16.0, 21.0), (169.0, 50.0, 18.0, 21.0)]),
     ("cascade", "cascade",
-     [(272.0, 138.0, 46.0, 21.0), (196.0, 206.0, 74.0, 23.0), (258.0, 292.0, 54.0, 29.0), (112.0, 282.0, 48.0, 25.0), (186.0, 304.0, 34.0, 27.0)]),
+     [(169.0, 86.0, 31.0, 21.0), (122.0, 128.0, 48.0, 23.0), (160.0, 181.0, 36.0, 29.0), (69.0, 175.0, 32.0, 25.0),
+      (115.0, 189.0, 23.0, 27.0)]),
 ]
 LOBES = [("riverbend",), ("cascade",), ("ember",), ("bonebog",)]  # (the lobes, by look)
 NAMES = ["riverbend", "cascade", "ember", "bonebog", "camp"]
@@ -120,15 +129,15 @@ def _seg_d(px, py, a, b):
 # The rivers (x, y, water height): Riverbend's falls out of its north cliff and winds
 # south to its lagoon; the Cascade's out of the canyon's head, down to its plunge pool.
 RIVERS = [
-    [(-290.0, 172.0, 4.0), (-268.0, 128.0, 2.9), (-226.0, 92.0, 2.0), (-196.0, 52.0, 1.4), (-214.0, 8.0, 1.0),
-     (-258.0, -34.0, 0.7), (-276.0, -54.0, 0.6)],
-    [(286.0, 334.0, 27.0), (262.0, 300.0, 25.6), (232.0, 262.0, 23.2), (204.0, 232.0, 21.4), (186.0, 206.0, 20.6)],
+    [(-181.0, 108.0, 4.0), (-166.0, 80.0, 2.9), (-140.0, 57.0, 2.0), (-121.5, 32.0, 1.4), (-133.0, 5.0, 1.0),
+     (-160.0, -21.0, 0.7), (-172.0, -34.0, 0.6)],
+    [(177.0, 207.0, 27.0), (162.0, 186.0, 25.6), (144.0, 162.0, 23.2), (126.5, 144.0, 21.4), (115.0, 128.0, 20.6)],
 ]
 RIVER = RIVERS[0]  # (the old name: the first)
-RIVER_HW = 9.0
-FALLS = [(-292.0, 180.0), (288.0, 342.0)]  # each river's falls' foot, at its cliff
+RIVER_HW = 8.0
+FALLS = [(-182.0, 113.0), (178.6, 212.0)]  # each river's falls' foot, at its cliff
 # Still water (x, y, radius, height): Riverbend's lagoon, the Cascade's plunge pool.
-LAKES = [(-282.0, -62.0, 18.0, 0.5), (184.0, 200.0, 24.0, 20.5)]
+LAKES = [(-176.0, -39.0, 15.0, 0.5), (114.0, 124.0, 16.0, 20.5)]
 
 
 def river_d(x, y):
@@ -147,26 +156,19 @@ def river_d(x, y):
 
 
 # The bog's pools (x, y, radius), its pyramid's tip; Ember's lava pools.
-POOLS = [(-290.0, -236.0, 24.0), (-196.0, -292.0, 22.0), (-150.0, -222.0, 18.0), (-232.0, -200.0, 12.0),
-         (-110.0, -300.0, 14.0), (-196.0, -186.0, 10.0), (-252.0, -290.0, 12.0)]
-PYRAMID = (-298.0, -298.0)
-LAVA = [(300.0, -150.0, 9.0), (270.0, -318.0, 12.0), (150.0, -205.0, 7.0)]
+POOLS = [(-180.0, -147.0, 15.0), (-121.5, -182.0, 14.0), (-94.0, -137.0, 11.5), (-144.0, -125.0, 7.5),
+         (-68.0, -187.0, 9.0), (-122.0, -116.0, 6.5), (-157.0, -181.0, 7.5)]
+PYRAMID = (-186.0, -186.0)
+LAVA = [(186.0, -93.0, 6.0), (167.0, -198.0, 8.0), (93.0, -127.0, 5.0)]
 
 
 def natural(x, y):
     """The land's own height: the lowest of each pocket's floor rising into its walls (so
     ridges between pockets, cliffs between floors), rolling ground on the floors, the
     rivers' channels and the swamp's pools sunk in, mountains beyond the walls."""
-    h = None
-    best = 1e9
-    for p in POCKETS:
-        sd, f = pocket_sd(p, x, y)
-        best = min(best, sd)
-        # (the wall's rise in proportion to its height, so every wall's as steep: too
-        # steep to drive up, the high ground out of reach)
-        rise = max(10.0, 0.42 * (TOP - f))
-        hp = lerp(f, TOP, smooth((sd + 8.0) / rise))
-        h = hp if h is None else min(h, hp)
+    # (v4: the walls rise in tiers, steep risers and shelves between: pocket_kit.terrace)
+    h, info = tiered_walls(POCKETS, TOP, x, y)
+    best, past = info["best"], info["past"]
     w = lobe_weights(x, y)
     floor = 1.0 - smooth((best + 14.0) / 20.0)
     # Rolling ground (the swamp stays low and flat, the camp level, the switchbacks and the
@@ -186,73 +188,110 @@ def natural(x, y):
         if dp < pr + 12:
             h = lerp(h, WATER_Z - 1.0, smooth((pr + 12 - dp) / 12.0))
     # Craggy tops, and mountains beyond.
-    if best > 0:
-        h += 5.0 * smooth(best / 30.0) * (0.5 + 0.5 * math.sin(x / 17.0 + math.cos(y / 23.0) * 2.0))
-        h += 40.0 * smooth((best - 70.0) / 110.0)
+    h += rim_crags(x, y, past, 40.0)
+    return falls_cliff(h, x, y, info["floor"])
+
+
+def falls_axis(j):
+    """The falls' foot (x, y), and the way the water runs off it (unit x, y)."""
+    fx, fy = FALLS[j]
+    riv = RIVERS[j]
+    dx, dy = riv[1][0] - riv[0][0], riv[1][1] - riv[0][1]
+    d = math.hypot(dx, dy)
+    return fx, fy, dx / d, dy / d
+
+
+FALLS_HALF = 18.0  # half the cliff's width behind each falls
+
+
+def falls_cliff(h, x, y, floor):
+    """Behind each falls a sheer cliff, the whole height of the wall, the river coming over
+    its rim in a shallow channel (Blake, note 43: "this needs to be magnificent"), and an
+    alcove opened in the tiers before it."""
+    for j in range(len(FALLS)):
+        fx, fy, ux, uy = falls_axis(j)
+        s = -((x - fx) * ux + (y - fy) * uy)  # (m upstream of the foot: behind it)
+        lat = abs(-(x - fx) * uy + (y - fy) * ux)
+        w = smooth((FALLS_HALF + 10.0 - lat) / 10.0) * smooth((s + 34.0) / 12.0) * smooth((60.0 - s) / 14.0)
+        if w <= 0.0:
+            continue
+        f = RIVERS[j][0][2] - 0.6
+        if s < -2.0:
+            hc = min(h, f + 0.5 * smooth((-s - 2.0) / 10.0))
+        else:
+            hc = f + (TOP + 1.0 - f) * smooth((s + 2.0) / 5.0)
+            if s > 3.0:
+                hc -= 1.6 * smooth((9.0 - lat) / 4.0)  # (the river's channel to the lip)
+        h = lerp(h, hc, w)
     return h
+
+
+def wall_info(x, y):
+    """Which pocket's wall (x, y) is on, its floor, how many tiers (pocket_kit)."""
+    return tiered_walls(POCKETS, TOP, x, y)[1]
 
 
 # The main road, one loop (x, y, height or None: None rides the land, a number is set by
 # hand, through the tunnels). From the camp's south side, west to the plateau's edge.
 ROUTE = [
-    (36.0, -30.0, None),  # 0: the start, the camp's south side, westbound
-    (-14.0, -40.0, None),
-    (-58.0, -22.0, None),  # the plateau's edge: the Switchbacks
-    (-92.0, -40.0, None),
-    (-120.0, -14.0, None),
-    (-104.0, 18.0, None),
-    (-132.0, 50.0, None),
-    (-164.0, 74.0, None),  # Riverbend
-    (-186.0, 112.0, None),
-    (-236.0, 150.0, None),
-    (-292.0, 128.0, None),
-    (-300.0, 76.0, None),
-    (-268.0, 46.0, None),
-    (-226.0, 45.0, None),  # over the river, straight across it
-    (-186.0, 29.0, None),
-    (-162.0, 6.0, None),
-    (-198.0, -30.0, None),  # down the east bank, the lagoon over the water
-    (-238.0, -88.0, 3.2),
-    (-238.0, -118.0, 3.0),  # 17: the Fallen Giant
-    (-236.0, -142.0, 1.8),
-    (-218.0, -170.0, None),  # Bonebog
-    (-246.0, -210.0, None),
-    (-236.0, -248.0, None),
-    (-196.0, -258.0, None),
-    (-160.0, -248.0, None),
-    (-126.0, -262.0, None),
-    (-82.0, -270.0, None),
-    (-52.0, -270.0, 2.2),  # 26: the Lava Tube
-    (-4.0, -268.0, 4.4),
-    (38.0, -264.0, 6.6),
-    (80.0, -256.0, None),  # Ember
-    (124.0, -232.0, None),
-    (172.0, -258.0, None),
-    (218.0, -300.0, None),
-    (262.0, -276.0, None),
-    (248.0, -222.0, None),
-    (198.0, -194.0, None),
-    (182.0, -150.0, None),
-    (228.0, -128.0, None),
-    (280.0, -112.0, None),
-    (290.0, -70.0, None),  # 39: Smoke Gulch
-    (264.0, -26.0, None),
-    (294.0, 24.0, None),
-    (270.0, 78.0, None),
-    (262.0, 126.0, None),  # Cascade
-    (276.0, 176.0, None),
-    (246.0, 236.0, None),
-    (272.0, 286.0, None),  # under the falls
-    (226.0, 314.0, None),
-    (162.0, 300.0, None),
-    (112.0, 296.0, None),
-    (92.0, 256.0, None),
-    (130.0, 226.0, None),
-    (150.0, 186.0, None),
-    (122.0, 150.0, 25.0),  # 53: the Temple Steps
-    (92.0, 112.0, 25.6),
-    (70.0, 78.0, None),  # the camp
-    (56.0, 22.0, None),
+    (22.0, -19.0, None),  # 0: the start, the camp's south side, westbound
+    (-9.0, -25.0, None),
+    (-35.5, -15.7, None),  # the plateau's edge: the Switchbacks
+    (-52.9, -14.3, None),
+    (-64.5, -4.3, None),
+    (-69.1, 11.2, None),
+    (-82.0, 31.0, None),
+    (-102.0, 46.0, None),  # Riverbend
+    (-115.0, 70.0, None),
+    (-146.0, 93.0, None),
+    (-181.0, 79.0, None),
+    (-186.0, 47.0, None),
+    (-166.0, 28.5, None),
+    (-140.0, 28.0, None),  # over the river, straight across it
+    (-115.0, 18.0, None),
+    (-109.3, 1.7, None),
+    (-123.0, -18.5, None),  # down the east bank, the lagoon over the water
+    (-147.6, -54.6, 3.2),
+    (-147.6, -73.2, 3.0),  # 18: the Fallen Giant
+    (-146.3, -88.0, 1.8),
+    (-141.9, -107.4, None),  # Bonebog
+    (-152.5, -130.0, None),
+    (-146.0, -154.0, None),
+    (-121.5, -160.0, None),
+    (-99.0, -154.0, None),
+    (-78.0, -162.5, None),
+    (-51.0, -167.5, None),
+    (-32.2, -167.4, 2.2),  # 27: the Lava Tube
+    (-2.5, -166.2, 4.4),
+    (23.6, -163.7, 6.6),
+    (49.6, -158.7, None),  # Ember
+    (77.0, -144.0, None),
+    (106.5, -160.0, None),
+    (135.0, -186.0, None),
+    (162.5, -171.0, None),
+    (154.0, -137.5, None),
+    (123.0, -120.0, None),
+    (118.3, -94.9, None),
+    (141.5, -79.5, None),
+    (173.5, -69.5, None),
+    (180.0, -43.5, None),  # 40: Smoke Gulch
+    (166.6, -15.7, None),
+    (182.0, 15.0, None),
+    (167.5, 48.5, None),
+    (162.5, 78.0, None),  # Cascade
+    (171.0, 109.0, None),
+    (152.5, 146.0, None),
+    (157.9, 174.0, None),  # under the falls
+    (140.0, 194.5, None),
+    (100.5, 186.0, None),
+    (72.9, 180.5, None),
+    (66.0, 159.7, None),
+    (80.5, 140.0, None),
+    (90.8, 115.7, None),
+    (75.6, 93.0, 25.0),  # 54: the Temple Steps
+    (57.0, 69.4, 25.6),
+    (43.5, 48.5, None),  # the camp
+    (35.0, 13.5, None),
 ]
 # The tunnels: (name, kind, first and last route point inside the rock).
 TUNNELS = [("Fallen Giant", "log", 18, 19), ("Lava Tube", "lava", 27, 29), ("Temple Steps", "temple", 54, 55)]
@@ -342,11 +381,11 @@ def catmull(points, per=12):
 
 # The gateways' landmarks (x, y): each world's, at the end of a short spur off the road.
 GATES = {
-    "riverbend": (-330.0, 120.0),  # the palms on the bend's far bank, by the falls
-    "cascade": (300.0, 300.0),  # the cave mouth beside the falls
-    "bonebog": (-272.0, -302.0),  # the pyramid's tip, out in the bog
-    "ember": (300.0, -300.0),  # the lava-lit cave in the volcano's foot
+    "riverbend": (-205.0, 75.0),  # the palms on the bend's far bank, by the falls
+    "cascade": (188.0, 160.0),  # the cave mouth in the canyon wall, by the falls
+    "bonebog": (-169.0, -188.0),  # the pyramid's tip, out in the bog
+    "ember": (186.0, -186.0),  # the lava-lit cave in the volcano's foot
 }
-SCAR = (150.0, -330.0)  # Cinderjaw's Scar (the ruin's boss gateway), Ember's south wall
-GORGE = (-150.0, 150.0)  # where the Burnt Gorge leaves Riverbend north (the ruin)
-GORGE_END = 420.0
+SCAR = (93.0, -205.0)  # Cinderjaw's Scar (the ruin's boss gateway), Ember's south wall
+GORGE = (-93.0, 93.0)  # where the Burnt Gorge leaves Riverbend north (the ruin)
+GORGE_END = 270.0

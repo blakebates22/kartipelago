@@ -41,9 +41,15 @@ export default defineConfig({
     sourcemap: true,
     // Three.js alone is ~550 kB minified; split chunks once the game grows.
     chunkSizeWarningLimit: 800,
-    // Two pages: the game, and the racer preview (garage.html).
+    // The pages: the game, the previews of racers (garage.html), people (people.html) and the
+    // story dragons (dragons.html).
     rollupOptions: {
-      input: { main: "index.html", garage: "garage.html" },
+      input: {
+        main: "index.html",
+        garage: "garage.html",
+        people: "people.html",
+        dragons: "dragons.html",
+      },
     },
   },
   test: {

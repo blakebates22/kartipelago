@@ -15,6 +15,93 @@ export interface AirSpot {
   x: number;
   z: number;
   look: TrackLook;
+  /** What drifts in its air (its course's: Bonebog's fireflies, Ember's ash, ...). */
+  ambient?: AmbientSpec[];
+}
+
+/**
+ * Something drifting in the air round the camera (Blake, Oct 28, note 38: "in this swamp
+ * region we have the same particle effect we have in Bonebog"): the courses' own
+ * camera-round particles (game/hazards.ts: fireflies, ashfall, snowfall, sparkles,
+ * dustwind), read from their track.json, and an area's extras from the region's own
+ * (an `area_ambient` entity: { area, effect, rate, radius, colors? }, area a gateway's id
+ * or "hub").
+ */
+export type AmbientKind = "fireflies" | "ashfall" | "snowfall" | "sparkles" | "dustwind";
+export const AMBIENT_KINDS: readonly AmbientKind[] = [
+  "fireflies",
+  "ashfall",
+  "snowfall",
+  "sparkles",
+  "dustwind",
+];
+export interface AmbientSpec {
+  kind: AmbientKind;
+  /** Particles a second at full strength. */
+  rate: number;
+  /** How far round the camera, metres. */
+  radius: number;
+  /** Its own colours (else the kind's). */
+  colors?: string[];
+}
+
+const DEFAULT_RATE: Record<AmbientKind, number> = {
+  fireflies: 30,
+  ashfall: 60,
+  snowfall: 100,
+  sparkles: 36,
+  dustwind: 10,
+};
+
+const numOr = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
+
+function specOf(e: Record<string, unknown>, kind: AmbientKind): AmbientSpec {
+  const colors = Array.isArray(e.colors)
+    ? e.colors.filter((c): c is string => typeof c === "string")
+    : typeof e.color === "string"
+      ? [e.color]
+      : undefined;
+  return {
+    kind,
+    rate: Math.max(0, numOr(e.rate, DEFAULT_RATE[kind])),
+    radius: Math.max(5, numOr(e.radius, kind === "dustwind" ? 60 : 36)),
+    ...(colors?.length ? { colors } : {}),
+  };
+}
+
+/** A course's camera-round particles, from its track.json entities. */
+export function courseAmbient(entities: readonly unknown[]): AmbientSpec[] {
+  const out: AmbientSpec[] = [];
+  for (const e of entities) {
+    if (!e || typeof e !== "object") continue;
+    const r = e as Record<string, unknown>;
+    if ((AMBIENT_KINDS as readonly unknown[]).includes(r.type))
+      out.push(specOf(r, r.type as AmbientKind));
+  }
+  return out;
+}
+
+/** A region's own extras for its areas ({area id: [specs]}), from its `area_ambient`s. */
+export function areaAmbient(entities: readonly unknown[]): Record<string, AmbientSpec[]> {
+  const out: Record<string, AmbientSpec[]> = {};
+  for (const e of entities) {
+    if (!e || typeof e !== "object") continue;
+    const r = e as Record<string, unknown>;
+    if (r.type !== "area_ambient" || typeof r.area !== "string") continue;
+    if (!(AMBIENT_KINDS as readonly unknown[]).includes(r.effect)) continue;
+    (out[r.area] ??= []).push(specOf(r, r.effect as AmbientKind));
+  }
+  return out;
+}
+
+/** How much of each area holds at (x, z) (the same blend as the air: they sum to 1). */
+export function airWeights(spots: readonly AirSpot[], x: number, z: number, width = BLEND_WIDTH) {
+  const w = spots.map(() => 0);
+  if (!spots.length) return w;
+  const { a, b, t } = airAt(spots, x, z, width);
+  w[a] = (w[a] ?? 0) + 1 - t;
+  w[b] = (w[b] ?? 0) + t;
+  return w;
 }
 
 /** How far apart (metres) the two nearest areas' distances have to be before the nearer

@@ -41,13 +41,13 @@ RIM_Z = BL.TOP
 # The Tiki Gongs (src/overworld/puzzles.ts): a tiki hut behind the village, its door shut,
 # and three gongs to strike in order (their torches: one, two, three): one in the water
 # park, one by the lagoon, one on Coral's beach.
-HUT = (-10.0, 302.0)
-GONGS = [(-188.0, 130.0), (102.0, 24.0), (234.0, -226.0)]
+HUT = (-6.2, 187.2)
+GONGS = [(-116.6, 80.6), (63.2, 14.9), (145.1, -140.1)]
 # Raptor's cove (Act V's return task): a walled yard at Shipwreck's beach, its way in cut
 # off by a deep channel the Beach Tool gets you over.
-RETURN = (-264.0, -104.0)
+RETURN = (-163.7, -64.5)
 # A secret: a smugglers' cave by the pier's cove, behind a rockfall (the Valley Tool's).
-SECRET = (-54.0, -256.0)
+SECRET = (-33.5, -158.7)
 
 LOOK = {
     # look: (ground, cliff, road, shoulder)
@@ -57,6 +57,16 @@ LOOK = {
     "pier": (("cove_sand", "sand"), ("cove_rock", "wall"), "cove_road", ("cove_sand", "sand")),
     "coral": (("cove_sand", "sand"), ("cove_rock", "wall"), "cove_road", ("cove_sand", "sand")),
     "lagoon": (("beach_sand", "sand"), ("isle_rock", "wall"), "beach_road", ("beach_sand", "sand")),
+}
+# v4 (Blake, Oct 28): the headlands and hills rise in tiers (pocket_kit.terrace), a bed of
+# each world's rock to a tier, foot to rim.
+STRATA = {
+    "village": ["isle_rock", "cove_rock", "isle_rock", "splash_rock", "isle_rock"],
+    "splash": ["splash_rock", "cove_rock", "isle_rock", "splash_rock", "isle_rock"],
+    "shipwreck": ["wreck_rock", "cove_rock", "wreck_rock", "isle_rock", "wreck_rock"],
+    "pier": ["cove_rock", "isle_rock", "cove_rock", "wreck_rock", "cove_rock"],
+    "coral": ["cove_rock", "isle_rock", "cove_rock", "splash_rock", "cove_rock"],
+    "lagoon": ["isle_rock", "cove_rock", "isle_rock", "cove_rock", "isle_rock"],
 }
 WET = {"shipwreck": ("wreck_wet_sand", "water"), "pier": ("cove_wet_sand", "water"), "coral": ("cove_wet_sand", "water")}
 
@@ -90,17 +100,18 @@ def natural(x, y):
 def classify(c, n, info):
     look = L.look_at(c.x, c.y)
     ground, cliff, _, _ = LOOK[look]
-    if n.z < 0.62:
-        return cliff
+    # (on the tiered walls only the shelves' flat tops are ground)
+    if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
+        return (pb.strata(L, c, n, STRATA), "wall")
     if c.z < WATER_Z + 0.3:
         return WET.get(look, ("lagoon_shallow", "water"))  # (the shallows are wadeable)
     if look in WET and c.z < WATER_Z + 1.6:
         return WET[look]
-    return ground
+    return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
 
 
 # Where Tidewyrm's Causeway leaves the beach (the ruin), west of the pier.
-CAUSEWAY_START = (-60.0, -262.0)
+CAUSEWAY_START = (-37.2, -162.4)
 
 
 def main():
@@ -120,7 +131,7 @@ def main():
             return "boardwalk"
         return L.look_at(smp.p.x, smp.p.y)
 
-    c.roads(kit.plan(c, list(kit.runs(c, label)), "village", max_len=160.0))
+    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, label)), LOOK), "village", max_len=160.0))
 
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("isle_jungle", "grass"))
     cx, cy, cr, cz = HUB
@@ -170,8 +181,9 @@ def main():
                     shoulder_mat=("isle_rock", "road"), barrier=0.6, barrier_mat=("isle_rock", "wall"), deck=1.4,
                     deck_mat=("isle_rock", "wall"), ground=False)
 
-    X0, X1, Y0, Y1 = -490, 490, -490, 480
-    ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    # (v4: drawn in, and finer, for the walls' tiers)
+    X0, X1, Y0, Y1 = -310, 310, -310, 310
+    ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("beach_sand", "sand"))
     c.disc("Sea", 0.0, -200.0, 1600.0, WATER_Z, c.lib("sea_water", "water"), role="visual", n=64)
 
@@ -193,7 +205,8 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "beach", vh.proto_house(lambda c, k: tp.beach_hut(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
+    vh.homes(c, L, ground, "beach", vh.proto_house(lambda c, k: tp.beach_hut(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)],
+             wall=-15.0)
     dress(c, ground, spots)
     box(c, "Road Bend", 0.0, dy + 8.0, 40.0, 6.0, natural(0.0, dy) - 2.0, RIM_Z + 30.0, ("isle_rock", "wall"))
 
@@ -362,10 +375,10 @@ def landmarks(c, ground, spots):
     c.place(tp.mast(c, h=16.0, broken=True), hx + 4.0 * math.cos(f), hy + 4.0 * math.sin(f), ground(hx, hy) + 4.0, rot=f)
     # Volcano Isle offshore, smoking.
     vx, vy = BL.VOLCANO
-    volc = c.rock_mass("Volcano Isle", vx, vy, 110.0, 90.0, 130.0, z0=WATER_Z - 4.0, n=18, seed=7,
+    volc = c.rock_mass("Volcano Isle", vx, vy, 72.0, 60.0, 96.0, z0=WATER_Z - 4.0, n=18, seed=7,
                        bands=[(1.0, 0.0), (0.7, 0.4), (0.4, 0.8), (0.25, 1.0)], base=WATER_Z)
     c.assign(volc, c.lib("isle_rock", "wall"))
-    g = c.game(vx, vy, 132.0)
+    g = c.game(vx, vy, 98.0)
     c.entity("eruption", x=g[0], y=g[1], z=g[2], period=15.0, offset=2.0)
     # Coral Cove: coral heads in the shallows by its gateway.
     x, y = BL.GATES["coral"]
@@ -394,7 +407,7 @@ def ruined(c, ground):
     spots = []
     for k in range(30):
         a = k * 2.399
-        r = 80.0 + 380.0 * ((k * 0.618) % 1.0)
+        r = 50.0 + 236.0 * ((k * 0.618) % 1.0)
         px, py = r * math.cos(a), r * math.sin(a)
         if L.wall_sd(px, py) < -14 and L.look_at(px, py) in ("shipwreck", "pier", "coral") and paint.road_clear(c, px, py, 7.0):
             spots.append((px, py))

@@ -28,98 +28,98 @@ import math
 from pocket_kit import Layout, catmull, lerp, smooth  # noqa: F401
 
 TOP = 78.0
-HUB = (0.0, -244.0, 26.0, 20.0)  # x, y, radius, height: the village square
+HUB = (0.0, -151.3, 20.8, 20.0)  # x, y, radius, height: the village square
 VILLAGE = HUB
-LAKE = (115.0, -88.0, 52.0, 12.0)  # the frozen lake's ice: x, y, radius, height
+LAKE = (71.3, -54.6, 32.2, 12.0)  # the frozen lake's ice: x, y, radius, height
 
 POCKETS = [
-    ("hearth", "hearth", [(0.0, -240.0, 58.0, 20.0), (40.0, -200.0, 30.0, 20.0), (-45.0, -205.0, 32.0, 20.0)]),
+    ("hearth", "hearth", [(0.0, -148.8, 42.9, 20.0), (24.8, -124.0, 22.2, 20.0), (-27.9, -127.1, 23.7, 20.0)]),
     # (the Burnt Gorge, south, down to the valley's passage)
-    ("gorge", "hearth", [(4.0, -330.0, 20.0, 18.0), (-6.0, -375.0, 19.0, 16.0), (6.0, -420.0, 19.0, 14.0),
-                         (0.0, -462.0, 22.0, 12.0)]),
+    ("gorge", "hearth", [(2.5, -204.6, 14.8, 18.0), (-3.7, -232.5, 14.1, 16.0), (3.7, -260.4, 14.1, 14.0),
+                         (0.0, -286.4, 16.3, 12.0)]),
     ("frostveil", "frostveil",
-     [(-235.0, -120.0, 62.0, 26.0), (-290.0, -50.0, 52.0, 28.0), (-190.0, -190.0, 36.0, 25.0),
-      (-300.0, 30.0, 40.0, 32.0)]),
+     [(-145.7, -74.4, 45.9, 26.0), (-179.8, -31.0, 38.5, 28.0), (-117.8, -117.8, 26.6, 25.0),
+      (-186.0, 18.6, 29.6, 32.0)]),
     ("climb", "summit",
-     [(-298.0, 68.0, 22.0, 35.0), (-305.0, 95.0, 25.0, 38.0), (-280.0, 132.0, 23.0, 44.0), (-300.0, 172.0, 24.0, 50.0),
-      (-262.0, 208.0, 25.0, 54.0)]),
+     [(-184.8, 42.2, 16.3, 35.0), (-189.1, 58.9, 18.5, 38.0), (-173.6, 81.8, 17.0, 44.0), (-186.0, 106.6, 17.8, 50.0),
+      (-162.4, 129.0, 18.5, 54.0)]),
     ("summit", "summit",
-     [(-150.0, 230.0, 72.0, 58.0), (-60.0, 270.0, 52.0, 58.0), (-225.0, 255.0, 45.0, 56.0),
-      (-90.0, 190.0, 40.0, 57.0)]),
+     [(-93.0, 142.6, 53.3, 58.0), (-37.2, 167.4, 38.5, 58.0), (-139.5, 158.1, 33.3, 56.0),
+      (-55.8, 117.8, 29.6, 57.0)]),
     ("aurora", "aurora",
-     [(190.0, 170.0, 70.0, 44.0), (260.0, 100.0, 50.0, 42.0), (135.0, 245.0, 42.0, 48.0),
-      (278.0, 30.0, 34.0, 40.0)]),
+     [(117.8, 105.4, 51.8, 44.0), (161.2, 62.0, 37.0, 42.0), (83.7, 151.9, 31.1, 48.0),
+      (172.4, 18.6, 25.2, 40.0)]),
     ("snowshed", "aurora",
-     [(302.0, -22.0, 25.0, 34.0), (306.0, -68.0, 24.0, 27.0), (284.0, -110.0, 24.0, 20.0),
-      (250.0, -140.0, 26.0, 15.0)]),
+     [(187.2, -13.6, 18.5, 34.0), (189.7, -42.2, 17.8, 27.0), (176.1, -68.2, 17.8, 20.0),
+      (155.0, -86.8, 19.2, 15.0)]),
     ("lake", "lake",
-     [(115.0, -88.0, 78.0, 12.0), (185.0, -45.0, 40.0, 12.0), (200.0, -128.0, 40.0, 12.0),
-      (70.0, -140.0, 36.0, 12.0)]),
+     [(71.3, -54.6, 57.7, 12.0), (114.7, -27.9, 29.6, 12.0), (124.0, -79.4, 29.6, 12.0),
+      (43.4, -86.8, 26.6, 12.0)]),
 ]
 
 ROUTE = [
-    (25.0, -205.0, None),  # 0: the start, the village's north side, westbound
-    (-30.0, -200.0, None),
-    (-72.0, -212.0, 20.3),
-    (-96.0, -210.0, 20.6),  # 3: the Gatehouse
-    (-138.0, -200.0, 23.4),
-    (-176.0, -186.0, None),  # Frostveil's bailey
-    (-222.0, -152.0, None),
-    (-262.0, -118.0, None),
-    (-246.0, -72.0, None),
-    (-290.0, -40.0, None),
-    (-312.0, 4.0, None),
-    (-286.0, 44.0, None),
-    (-305.0, 95.0, None),  # 12: the Climb
-    (-276.0, 132.0, None),
-    (-300.0, 172.0, None),
-    (-262.0, 208.0, None),
-    (-214.0, 246.0, None),  # 16: the summit meadow
-    (-165.0, 272.0, None),
-    (-148.0, 214.0, None),
-    (-100.0, 186.0, None),
-    (-62.0, 228.0, None),
-    (-40.0, 276.0, None),
-    (-4.0, 282.0, 57.0),  # 22: the Ice Cave
-    (42.0, 270.0, 53.0),
-    (86.0, 255.0, 49.0),
-    (130.0, 240.0, None),  # 25: the glacier
-    (176.0, 214.0, None),
-    (222.0, 180.0, None),
-    (196.0, 130.0, None),
-    (240.0, 94.0, None),
-    (284.0, 108.0, None),
-    (292.0, 50.0, None),
-    (270.0, 14.0, None),
-    (302.0, -22.0, None),  # 33: the Snowshed, down the cliff
-    (306.0, -68.0, None),
-    (282.0, -112.0, None),
-    (248.0, -142.0, None),
-    (204.0, -146.0, None),  # 37: the lake
-    (178.0, -100.0, None),
-    (160.0, -40.0, None),
-    (110.0, -26.0, None),
-    (62.0, -66.0, None),
-    (62.0, -122.0, None),
-    (96.0, -158.0, None),
-    (90.0, -188.0, 15.6),  # 44: the Frozen Falls
-    (60.0, -212.0, 19.0),
+    (15.5, -127.1, None),  # 0: the start, the village's north side, westbound
+    (-18.6, -124.0, None),
+    (-44.6, -131.4, 20.3),
+    (-59.5, -130.2, 20.6),  # 3: the Gatehouse
+    (-85.6, -124.0, 23.4),
+    (-109.1, -115.3, None),  # Frostveil's bailey
+    (-137.6, -94.2, None),
+    (-157.8, -72.2, None),
+    (-157.1, -45.7, None),
+    (-179.8, -24.8, None),
+    (-191.2, 2.3, None),
+    (-179.2, 27.8, None),
+    (-187.0, 58.3, None),  # 12: the Climb
+    (-176.5, 82.0, None),
+    (-179.4, 106.2, None),
+    (-162.4, 129.0, None),
+    (-132.7, 152.5, None),  # 16: the summit meadow
+    (-108.5, 152.4, None),
+    (-91.8, 132.7, None),
+    (-62.5, 118.6, None),
+    (-38.4, 141.4, None),
+    (-24.8, 171.1, None),
+    (-2.5, 174.8, 57.0),  # 22: the Ice Cave
+    (26.0, 167.4, 53.0),
+    (53.3, 158.1, 49.0),
+    (80.6, 148.8, None),  # 25: the glacier
+    (109.1, 132.7, None),
+    (129.6, 109.8, None),
+    (128.8, 82.5, None),
+    (149.3, 62.5, None),
+    (169.3, 54.3, None),
+    (181.0, 31.0, None),
+    (176.7, 8.7, None),
+    (187.2, -13.6, None),  # 33: the Snowshed, down the cliff
+    (189.7, -42.2, None),
+    (174.8, -69.4, None),
+    (153.8, -88.0, None),
+    (126.5, -90.5, None),  # 37: the lake
+    (110.4, -62.0, None),
+    (99.2, -24.8, None),
+    (68.2, -16.1, None),
+    (38.4, -40.9, None),
+    (38.4, -75.6, None),
+    (59.5, -98.0, None),
+    (55.8, -116.6, 15.6),  # 44: the Frozen Falls
+    (37.2, -131.4, 19.0),
 ]
 TUNNELS = [("Gatehouse", "gatehouse", 3, 4), ("Ice Cave", "ice", 22, 24), ("Frozen Falls", "icefall", 44, 45)]
 
-L = Layout(POCKETS, TOP, ROUTE, TUNNELS, hub=HUB, roll=4.0, flat=("hearth", "lake"), mountains=50.0)
+L = Layout(POCKETS, TOP, ROUTE, TUNNELS, hub=HUB, roll=4.0, flat=("hearth", "lake"), mountains=50.0, tiers=True)
 
 # The gateways' landmarks (x, y), each at the end of a short spur off the road.
 GATES = {
-    "hearthglow": (-64.0, -182.0),  # the village's great tree
-    "frostveil": (-342.0, -62.0),  # the keep's gate in the bailey's west wall
-    "summit": (-250.0, 288.0),  # the giant tree
-    "aurora": (318.0, 104.0),  # the rift in the glacier
+    "hearthglow": (-39.7, -112.8),  # the village's great tree
+    "frostveil": (-212.0, -38.4),  # the keep's gate in the bailey's west wall
+    "summit": (-155.0, 178.6),  # the giant tree
+    "aurora": (197.2, 64.5),  # the rift in the glacier
 }
-LAIR = (-110.0, 318.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
-FROZEN_PASS = (246.0, -170.0)  # where the Frozen Pass leaves the lake (the ruin), on east
-PASS_END = (420.0, -190.0)
-GORGE_END = (0.0, -470.0)  # the Burnt Gorge's far end: the passage back to the valley
+LAIR = (-105.0, 196.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
+FROZEN_PASS = (152.5, -105.4)  # where the Frozen Pass leaves the lake (the ruin), on east
+PASS_END = (260.4, -117.8)
+GORGE_END = (0.0, -291.4)  # the Burnt Gorge's far end: the passage back to the valley
 
 
 def natural(x, y):

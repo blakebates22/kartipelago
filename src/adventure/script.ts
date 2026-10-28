@@ -6,7 +6,7 @@
  * can't drift from the game: docs/adventure-script.txt is this, written out
  * (tools/audit/script.audit.ts writes it; tests/script.test.ts checks it's up to date).
  */
-import { END_CREDITS, FAKE_CREDITS, KINGDOMS, OPENING, RAGE, nameOf, sceneOf } from "./data";
+import { END_CREDITS, FAKE_CREDITS, KINGDOMS, OPENING, RAGE, sceneOf } from "./data";
 import { CAST, SCENES, type Beat } from "./scenes";
 import { STAGED, type StagedBeat, type StagedScene } from "./staged";
 import { regionById } from "../overworld/regions";
@@ -56,11 +56,20 @@ export function sceneOrder(): string[] {
   ];
 }
 
+/** The lands as a sentence names them. */
+const THE: Record<string, string> = {
+  valley: "Dinosaur Valley",
+  snow: "the Snow Kingdom",
+  desert: "Desert World",
+  beach: "the Tropic Isles",
+};
+const of = (k: string) => (k.endsWith("s") ? `${k}'` : `${k}'s`);
+
 /** When each scene plays (what you've just done). */
 function when(id: string): string {
   const k = KINGDOMS.find((x) => id.startsWith(`${x.id}_`));
   const step = k ? id.slice(k.id.length + 1) : "";
-  const K = k ? nameOf(k.id) : "";
+  const K = k ? THE[k.id]! : "";
   switch (id) {
     case OPENING:
       return "A new file is started, before you pick your racer.";
@@ -94,7 +103,7 @@ function when(id: string): string {
     case "festival":
       return "Your racer picked: the first thing you see in Dinosaur Valley.";
     case "challenge":
-      return `Coming out of the gateway of the last of ${K}'s four courses; the 1 on 1 starts straight after.`;
+      return `Coming out of the gateway of the last of ${of(K)} four courses; the 1 on 1 starts straight after.`;
     case "prize":
       return `${k!.champion.name} beaten 1 on 1.`;
     case "hundredth":
@@ -110,11 +119,11 @@ function when(id: string): string {
     case "caught":
       return `Arriving in ${K} out of the smugglers' tunnel.`;
     case "stands":
-      return `Two of ${K}'s four courses won.`;
+      return `Two of ${of(K)} four courses won.`;
     case "rescue":
       return "After the Rage: you wake in the ruined valley.";
     case "new_stone":
-      return `All four of ${K}'s light shards won; the dragon's race starts straight after.`;
+      return `All four of ${of(K)} light shards won; the dragon's race starts straight after.`;
     case "yield":
       return `${k!.boss.name} beaten under the new Pact Stone.`;
   }
@@ -123,35 +132,136 @@ function when(id: string): string {
 
 const name = (who: string) => (who ? (CAST[who]?.name ?? who).toUpperCase() : "NARRATOR (CAPTION)");
 
+/** The score's cues, as the script names them. */
+const CUE_NAME: Record<string, string> = {
+  festival: "the festival",
+  lumen: "Lumen's theme",
+  smugglers: "the smugglers",
+  conquered: "the conquered lands",
+  rimefang: "Rimefang's theme",
+  scorchwind: "Scorchwind's theme",
+  tidewyrm: "Tidewyrm's theme",
+  king: "the King's theme",
+  suspense: "suspense",
+  court: "the dragon court",
+  shatter: "the shattering",
+  false_victory: "victory (too soon)",
+  rage: "the Rage",
+  sorrow: "sorrow",
+  hope: "hope",
+  new_stone: "the new stone",
+  yield: "the yield",
+  confession: "the confession",
+  finale: "the finale",
+  home: "home",
+  dread: "the Dragon's Shadow (Cinderjaw's theme)",
+};
+/** A dragon's pose, in words ("idle" says nothing). */
+const POSE: Record<string, string> = {
+  rear: "rears up",
+  breathe: "breathes",
+  fly: "takes to the air",
+  land: "lands",
+  roar: "roars",
+  bow: "bows low",
+  stunned: "lies stunned",
+  claw: "lays a claw on the stone",
+  walk: "walks",
+  turn: "turns",
+};
+/** What each dragon breathes. */
+const BREATH: Record<string, string> = {
+  cinderjaw: "fire",
+  rimefang: "frost",
+  scorchwind: "a sandstorm",
+  tidewyrm: "a flood",
+  king: "fire",
+  lumen_dragon: "light",
+};
+/** A gesture, in words. */
+const GESTURE: Record<string, string> = {
+  wave: "waves",
+  point: "points",
+  cheer: "cheers",
+  nod: "nods",
+  shake: "shakes his head",
+  shrug: "shrugs",
+  bow: "bows",
+  cower: "cowers",
+  think: "stops to think",
+  raiseStaff: "raises his staff",
+  blowHorn: "blows the Founders' Horn",
+  breakHorn: "breaks the horn",
+  holdOut: "holds it out",
+  kneel: "sinks to his knees",
+};
+
+/** The townsfolk's gestures, all together. */
+const FOLK_DO: Record<string, string> = { cheer: "cheer", cower: "cower", point: "point" };
+
 /** A staged line's stage directions, in words. */
-function directions(st: StagedScene, b: StagedBeat | undefined): string[] {
+function directions(
+  st: StagedScene,
+  b: StagedBeat | undefined,
+  prev: StagedBeat | undefined,
+): string[] {
   if (!b) return [];
   const who = (k: string) => {
     const a = st.actors[k];
     const base = k.replace(/\d+$/, "");
-    if (a?.kind === "stone") return a.big ? "the Heart Stone" : "the Pact Stone";
-    if (k === "lumen_dragon") return "Lumen, the dragon";
+    if (a?.kind === "stone") {
+      const what = a.big ? "Heart Stone" : "Pact Stone";
+      return a.state === "broken"
+        ? `the broken ${what}`
+        : a.state === "new" && !a.big
+          ? "the new Pact Stone"
+          : `the ${what}`;
+    }
+    if (k === "lumen_dragon") return "Lumen the dragon";
     if (k === "you") return "you";
-    return CAST[base]?.name ?? base;
+    if (a?.kind === "villager") return CAST[base]?.name ?? "a townsperson";
+    const name = CAST[base]?.name ?? base;
+    return base !== k && k.endsWith("2") ? "the other guard" : name;
   };
   const out: string[] = [];
+  const fx = b.fx ?? {};
   for (const m of b.moves ?? []) {
     const a = st.actors[m.actor];
     const flying = a?.kind === "dragon" && (m.y ?? 0) > 2;
     const landing = a?.kind === "dragon" && m.y === 0;
+    const you = m.actor === "you";
     out.push(
-      `${who(m.actor)} ${flying ? "flies" : landing ? "comes down to land" : a?.kind === "racer" ? "drives" : "moves"}${flying ? " overhead" : ""}.`,
+      `${who(m.actor)} ${flying ? "flies" : landing ? "comes down to land" : a?.kind === "racer" ? (you ? "drive" : "drives") : you ? "move" : "moves"}${flying ? " overhead" : ""}.`,
     );
   }
-  const fx = b.fx ?? {};
-  for (const k of fx.show ?? []) out.push(`${who(k)} appears.`);
   for (const k of fx.hide ?? []) out.push(`${who(k)} is gone.`);
+  for (const k of fx.show ?? []) out.push(`${who(k)} appears.`);
+  // A pose is said when it changes (a line without one is back to standing).
+  for (const [k, p] of Object.entries(fx.pose ?? {})) {
+    const moving = (b.moves ?? []).some((m) => m.actor === k) || (fx.show ?? []).includes(k);
+    const fire = fx.fire === k && p === "breathe";
+    if (POSE[p] && !moving && !fire && prev?.fx?.pose?.[k] !== p)
+      out.push(`${who(k)} ${p === "breathe" ? `breathes ${BREATH[k] ?? "fire"}` : POSE[p]}.`);
+  }
+  if (fx.fire) out.push(`${who(fx.fire)} breathes ${BREATH[fx.fire] ?? "fire"}.`);
+  for (const [k, g] of Object.entries(fx.gesture ?? {})) {
+    const a = st.actors[k];
+    // (Townsfolk are summed up once below.)
+    if (a?.kind !== "villager" && GESTURE[g]) out.push(`${who(k)} ${GESTURE[g]}.`);
+  }
+  const folk = Object.entries(fx.gesture ?? {}).filter(
+    ([k]) => st.actors[k]?.kind === "villager" && !CAST[k.replace(/\d+$/, "")],
+  );
+  if (folk.length) out.push(`The townsfolk ${FOLK_DO[folk[0]![1]] ?? "react"}.`);
+  for (const [k, g] of Object.entries(fx.gesture ?? {}))
+    if (st.actors[k]?.kind === "villager" && CAST[k.replace(/\d+$/, "")] && GESTURE[g])
+      out.push(`${who(k)} ${FOLK_DO[g] ?? GESTURE[g]}.`);
   if (fx.rear) out.push(`${who(fx.rear)} rears up.`);
-  if (fx.fire) out.push(`${who(fx.fire)} breathes fire.`);
   if (fx.horn) out.push("The Founders' Horn sounds.");
   if (fx.flash) out.push("A flash.");
   if (fx.shake && fx.shake >= 1) out.push("The ground shakes.");
   if (fx.black) out.push("Blackout.");
+  if (fx.music) out.push(`Music: ${CUE_NAME[fx.music] ?? fx.music}.`);
   return out.map((d) => d[0]!.toUpperCase() + d.slice(1));
 }
 
@@ -190,9 +300,12 @@ export function scriptText(): string {
     ],
     [
       "ELDER MOSSBACK",
-      "Keeper of the Pact and of the Founders' Horn. Kind, old, a secret on his shoulders.",
+      "Keeper of the Pact: he sends the champion. Wears the Founders' Horn at his hip, and its secret.",
     ],
-    ["LUMEN", "A hooded figure in a long robe, his wings hidden under it: a dragon hatchling."],
+    [
+      "LUMEN",
+      "Mossback's ward, raised from an egg found in the river. Always hooded, always asking. Really a dragon, his wings hidden under the robe.",
+    ],
     ["REX", "Dinosaur Valley's champion. A cocky lone racer, no crew. Your first."],
     ["BRACHIO", "The Snow Kingdom's champion, Rimefang's captive."],
     ["STEGO", "Desert World's champion, Scorchwind's star act."],
@@ -201,8 +314,12 @@ export function scriptText(): string {
     ["RIMEFANG", "Dragon of the snow: the lawyer. Cold, precise, never breaks a rule."],
     ["SCORCHWIND", "Dragon of the desert: the showman. Vain, theatrical."],
     ["TIDEWYRM", "Dragon of the isles: the trickster. Greedy, sly, charming."],
-    ["KING PYRRHAX", "The Dragon King. He lost the First Race young, and remembers."],
-    ["SKETCHY GUARD", "The smugglers' guards at the underground games."],
+    [
+      "KING PYRRHAX",
+      "The Dragon King. He lost the First Race young, stunned by the horn, and has beaten every champion since.",
+    ],
+    ["SKETCHY GUARD", "The smugglers' guards at the underground games. They sell tunnels."],
+    ["GUARD", "The dragons' own guards: Dragon Kingdom folk in hooded tunics."],
     ["THE CROWD", "The Tropic Isles' captives and townsfolk."],
   ];
   for (const [n, d] of cast) out.push(`  ${n.padEnd(15)} ${d}`);
@@ -278,10 +395,13 @@ export function scriptText(): string {
         flash: "A flash.",
         light: "Golden light.",
       };
-      const dir = st ? directions(st, st.beats[i]) : b.fx ? [page[b.fx]] : [];
+      const dir = st ? directions(st, st.beats[i], st.beats[i - 1]) : b.fx ? [page[b.fx]] : [];
       out.push("");
       if (dir.length) out.push(indent(`[${dir.join(" ")}]`, 4));
-      out.push(`    ${name(b.who)}`);
+      // (Lumen's voice out of the light, with no Lumen on stage.)
+      const vo =
+        st && b.who === "lumen" && !st.actors.lumen ? " (HIS VOICE, OUT OF THE LIGHT)" : "";
+      out.push(`    ${name(b.who)}${vo}`);
       out.push(indent(b.text, 8));
     });
   }

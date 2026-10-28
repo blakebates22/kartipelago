@@ -4331,15 +4331,6 @@
       "tileMetres": 4
     },
     {
-      "id": "giant_bark",
-      "name": "Giant Bark",
-      "theme": "summit_pass",
-      "surface": "wall",
-      "image": "giant_bark.png",
-      "wrap": "repeat",
-      "tileMetres": 6
-    },
-    {
       "id": "heartwood",
       "name": "Heartwood",
       "theme": "summit_pass",
@@ -10282,6 +10273,1552 @@
       "image": "ruin_rubble.png",
       "wrap": "repeat",
       "tileMetres": 3
+    },
+    {
+      "id": "tx_valley_grass__jungle_leafcover_25",
+      "name": "Valley Grass to Jungle Leaf Cover (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__jungle_leafcover_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__jungle_leafcover_50",
+      "name": "Valley Grass to Jungle Leaf Cover (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__jungle_leafcover_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__jungle_leafcover_75",
+      "name": "Valley Grass to Jungle Leaf Cover (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__jungle_leafcover_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__bog_bank_25",
+      "name": "Valley Grass to Swamp Bank (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_bank_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__bog_bank_50",
+      "name": "Valley Grass to Swamp Bank (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_bank_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__bog_bank_75",
+      "name": "Valley Grass to Swamp Bank (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_bank_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_bog_bank__ash_soil_25",
+      "name": "Swamp Bank to Ash Soil (25%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_bank__ash_soil_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
+      "id": "tx_bog_bank__ash_soil_50",
+      "name": "Swamp Bank to Ash Soil (50%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_bank__ash_soil_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
+      "id": "tx_bog_bank__ash_soil_75",
+      "name": "Swamp Bank to Ash Soil (75%)",
+      "theme": "bonebog_swamp",
+      "surface": "sand",
+      "image": "tx_bog_bank__ash_soil_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
+      "id": "tx_ash_soil__jungle_leafcover_25",
+      "name": "Ash Soil to Jungle Leaf Cover (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "sand",
+      "image": "tx_ash_soil__jungle_leafcover_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ash_soil__jungle_leafcover_50",
+      "name": "Ash Soil to Jungle Leaf Cover (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "sand",
+      "image": "tx_ash_soil__jungle_leafcover_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ash_soil__jungle_leafcover_75",
+      "name": "Ash Soil to Jungle Leaf Cover (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "grass",
+      "image": "tx_ash_soil__jungle_leafcover_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_road__jungle_path_25",
+      "name": "Valley Road to Jungle Path (25%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__jungle_path_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_valley_road__jungle_path_50",
+      "name": "Valley Road to Jungle Path (50%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__jungle_path_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_valley_road__jungle_path_75",
+      "name": "Valley Road to Jungle Path (75%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__jungle_path_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_valley_road__bog_paving_25",
+      "name": "Valley Road to Mossy Paving (25%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__bog_paving_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_valley_road__bog_paving_50",
+      "name": "Valley Road to Mossy Paving (50%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__bog_paving_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_valley_road__bog_paving_75",
+      "name": "Valley Road to Mossy Paving (75%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__bog_paving_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_bog_paving__basalt_road_25",
+      "name": "Mossy Paving to Basalt Road (25%)",
+      "theme": "bonebog_swamp",
+      "surface": "road",
+      "image": "tx_bog_paving__basalt_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_bog_paving__basalt_road_50",
+      "name": "Mossy Paving to Basalt Road (50%)",
+      "theme": "bonebog_swamp",
+      "surface": "road",
+      "image": "tx_bog_paving__basalt_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_bog_paving__basalt_road_75",
+      "name": "Mossy Paving to Basalt Road (75%)",
+      "theme": "bonebog_swamp",
+      "surface": "road",
+      "image": "tx_bog_paving__basalt_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_basalt_road__jungle_path_25",
+      "name": "Basalt Road to Jungle Path (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__jungle_path_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_basalt_road__jungle_path_50",
+      "name": "Basalt Road to Jungle Path (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__jungle_path_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_basalt_road__jungle_path_75",
+      "name": "Basalt Road to Jungle Path (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__jungle_path_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_bog_moss_ground__scorched_ground_25",
+      "name": "Mossy Ground to Scorched Ground (25%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_moss_ground__scorched_ground_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_moss_ground__scorched_ground_50",
+      "name": "Mossy Ground to Scorched Ground (50%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_moss_ground__scorched_ground_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_moss_ground__scorched_ground_75",
+      "name": "Mossy Ground to Scorched Ground (75%)",
+      "theme": "bonebog_swamp",
+      "surface": "dirt",
+      "image": "tx_bog_moss_ground__scorched_ground_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__bog_moss_ground_25",
+      "name": "Valley Grass to Mossy Ground (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_moss_ground_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__bog_moss_ground_50",
+      "name": "Valley Grass to Mossy Ground (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_moss_ground_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__bog_moss_ground_75",
+      "name": "Valley Grass to Mossy Ground (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__bog_moss_ground_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_scorched_ground__jungle_leafcover_25",
+      "name": "Scorched Ground to Jungle Leaf Cover (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "tx_scorched_ground__jungle_leafcover_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_scorched_ground__jungle_leafcover_50",
+      "name": "Scorched Ground to Jungle Leaf Cover (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "tx_scorched_ground__jungle_leafcover_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_scorched_ground__jungle_leafcover_75",
+      "name": "Scorched Ground to Jungle Leaf Cover (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "grass",
+      "image": "tx_scorched_ground__jungle_leafcover_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__canopy_dark_25",
+      "name": "Ancient Grass to Deep Canopy (25%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__canopy_dark_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__canopy_dark_50",
+      "name": "Ancient Grass to Deep Canopy (50%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__canopy_dark_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__canopy_dark_75",
+      "name": "Ancient Grass to Deep Canopy (75%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__canopy_dark_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__bog_moss_ground_25",
+      "name": "Ancient Grass to Mossy Ground (25%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__bog_moss_ground_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__bog_moss_ground_50",
+      "name": "Ancient Grass to Mossy Ground (50%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__bog_moss_ground_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ancient_grass__bog_moss_ground_75",
+      "name": "Ancient Grass to Mossy Ground (75%)",
+      "theme": "mirror_lake",
+      "surface": "grass",
+      "image": "tx_ancient_grass__bog_moss_ground_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_moss_ground__ember_ash_25",
+      "name": "Mossy Ground to Ember Ash (25%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_moss_ground__ember_ash_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_moss_ground__ember_ash_50",
+      "name": "Mossy Ground to Ember Ash (50%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_moss_ground__ember_ash_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_moss_ground__ember_ash_75",
+      "name": "Mossy Ground to Ember Ash (75%)",
+      "theme": "bonebog_swamp",
+      "surface": "dirt",
+      "image": "tx_bog_moss_ground__ember_ash_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ember_ash__canopy_dark_25",
+      "name": "Ember Ash to Deep Canopy (25%)",
+      "theme": "impact_depths",
+      "surface": "dirt",
+      "image": "tx_ember_ash__canopy_dark_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ember_ash__canopy_dark_50",
+      "name": "Ember Ash to Deep Canopy (50%)",
+      "theme": "impact_depths",
+      "surface": "dirt",
+      "image": "tx_ember_ash__canopy_dark_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ember_ash__canopy_dark_75",
+      "name": "Ember Ash to Deep Canopy (75%)",
+      "theme": "impact_depths",
+      "surface": "grass",
+      "image": "tx_ember_ash__canopy_dark_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_snow_ground__summit_snow_25",
+      "name": "Snow to Sunny Snow (25%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__summit_snow_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_snow_ground__summit_snow_50",
+      "name": "Snow to Sunny Snow (50%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__summit_snow_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_snow_ground__summit_snow_75",
+      "name": "Snow to Sunny Snow (75%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__summit_snow_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_snow_ground__rift_snow_25",
+      "name": "Snow to Night Snow (25%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__rift_snow_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_snow_ground__rift_snow_50",
+      "name": "Snow to Night Snow (50%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__rift_snow_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_snow_ground__rift_snow_75",
+      "name": "Snow to Night Snow (75%)",
+      "theme": "frost_citadel",
+      "surface": "deep_snow",
+      "image": "tx_snow_ground__rift_snow_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_summit_snow__rift_snow_25",
+      "name": "Sunny Snow to Night Snow (25%)",
+      "theme": "summit_pass",
+      "surface": "deep_snow",
+      "image": "tx_summit_snow__rift_snow_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_summit_snow__rift_snow_50",
+      "name": "Sunny Snow to Night Snow (50%)",
+      "theme": "summit_pass",
+      "surface": "deep_snow",
+      "image": "tx_summit_snow__rift_snow_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_summit_snow__rift_snow_75",
+      "name": "Sunny Snow to Night Snow (75%)",
+      "theme": "summit_pass",
+      "surface": "deep_snow",
+      "image": "tx_summit_snow__rift_snow_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_hearth_cobble__snow_stone_road_25",
+      "name": "Village Cobbles to Snowy Stone Road (25%)",
+      "theme": "hearthglow",
+      "surface": "snow_stone",
+      "image": "tx_hearth_cobble__snow_stone_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "tx_hearth_cobble__snow_stone_road_50",
+      "name": "Village Cobbles to Snowy Stone Road (50%)",
+      "theme": "hearthglow",
+      "surface": "snow_stone",
+      "image": "tx_hearth_cobble__snow_stone_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "tx_hearth_cobble__snow_stone_road_75",
+      "name": "Village Cobbles to Snowy Stone Road (75%)",
+      "theme": "hearthglow",
+      "surface": "snow_stone",
+      "image": "tx_hearth_cobble__snow_stone_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
+      "id": "tx_snow_stone_road__summit_road_25",
+      "name": "Snowy Stone Road to Groomed Snow Road (25%)",
+      "theme": "frost_citadel",
+      "surface": "snow_stone",
+      "image": "tx_snow_stone_road__summit_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_snow_stone_road__summit_road_50",
+      "name": "Snowy Stone Road to Groomed Snow Road (50%)",
+      "theme": "frost_citadel",
+      "surface": "snow_stone",
+      "image": "tx_snow_stone_road__summit_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_snow_stone_road__summit_road_75",
+      "name": "Snowy Stone Road to Groomed Snow Road (75%)",
+      "theme": "frost_citadel",
+      "surface": "packed_snow",
+      "image": "tx_snow_stone_road__summit_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_summit_road__rift_road_25",
+      "name": "Groomed Snow Road to Glacier Road (25%)",
+      "theme": "summit_pass",
+      "surface": "packed_snow",
+      "image": "tx_summit_road__rift_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_summit_road__rift_road_50",
+      "name": "Groomed Snow Road to Glacier Road (50%)",
+      "theme": "summit_pass",
+      "surface": "packed_snow",
+      "image": "tx_summit_road__rift_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_summit_road__rift_road_75",
+      "name": "Groomed Snow Road to Glacier Road (75%)",
+      "theme": "summit_pass",
+      "surface": "snow_stone",
+      "image": "tx_summit_road__rift_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_rift_road__packed_snow_road_25",
+      "name": "Glacier Road to Packed Snow Road (25%)",
+      "theme": "aurora_rift",
+      "surface": "snow_stone",
+      "image": "tx_rift_road__packed_snow_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_rift_road__packed_snow_road_50",
+      "name": "Glacier Road to Packed Snow Road (50%)",
+      "theme": "aurora_rift",
+      "surface": "snow_stone",
+      "image": "tx_rift_road__packed_snow_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_rift_road__packed_snow_road_75",
+      "name": "Glacier Road to Packed Snow Road (75%)",
+      "theme": "aurora_rift",
+      "surface": "packed_snow",
+      "image": "tx_rift_road__packed_snow_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_packed_snow_road__hearth_cobble_25",
+      "name": "Packed Snow Road to Village Cobbles (25%)",
+      "theme": "frost_citadel",
+      "surface": "packed_snow",
+      "image": "tx_packed_snow_road__hearth_cobble_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_packed_snow_road__hearth_cobble_50",
+      "name": "Packed Snow Road to Village Cobbles (50%)",
+      "theme": "frost_citadel",
+      "surface": "packed_snow",
+      "image": "tx_packed_snow_road__hearth_cobble_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_packed_snow_road__hearth_cobble_75",
+      "name": "Packed Snow Road to Village Cobbles (75%)",
+      "theme": "frost_citadel",
+      "surface": "snow_stone",
+      "image": "tx_packed_snow_road__hearth_cobble_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.25
+    },
+    {
+      "id": "tx_pale_sand__red_sand_25",
+      "name": "Pale Sand to Red Sand (Deep) (25%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_pale_sand__red_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_pale_sand__red_sand_50",
+      "name": "Pale Sand to Red Sand (Deep) (50%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_pale_sand__red_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_pale_sand__red_sand_75",
+      "name": "Pale Sand to Red Sand (Deep) (75%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_pale_sand__red_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_red_sand__gold_sand_25",
+      "name": "Red Sand (Deep) to Golden Sand (25%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_red_sand__gold_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_red_sand__gold_sand_50",
+      "name": "Red Sand (Deep) to Golden Sand (50%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_red_sand__gold_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_red_sand__gold_sand_75",
+      "name": "Red Sand (Deep) to Golden Sand (75%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_red_sand__gold_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_sand_25",
+      "name": "Golden Sand to Red Sand (Night) (25%)",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "tx_gold_sand__gulch_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_sand_50",
+      "name": "Golden Sand to Red Sand (Night) (50%)",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "tx_gold_sand__gulch_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_sand_75",
+      "name": "Golden Sand to Red Sand (Night) (75%)",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "tx_gold_sand__gulch_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 8.0
+    },
+    {
+      "id": "tx_gulch_sand__slickrock_25",
+      "name": "Red Sand (Night) to Slickrock (25%)",
+      "theme": "dry_gulch",
+      "surface": "loose_sand",
+      "image": "tx_gulch_sand__slickrock_25.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_gulch_sand__slickrock_50",
+      "name": "Red Sand (Night) to Slickrock (50%)",
+      "theme": "dry_gulch",
+      "surface": "loose_sand",
+      "image": "tx_gulch_sand__slickrock_50.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_gulch_sand__slickrock_75",
+      "name": "Red Sand (Night) to Slickrock (75%)",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "tx_gulch_sand__slickrock_75.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_slickrock__pale_sand_25",
+      "name": "Slickrock to Pale Sand (25%)",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "tx_slickrock__pale_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_slickrock__pale_sand_50",
+      "name": "Slickrock to Pale Sand (50%)",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "tx_slickrock__pale_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_slickrock__pale_sand_75",
+      "name": "Slickrock to Pale Sand (75%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_slickrock__pale_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 9.0
+    },
+    {
+      "id": "tx_dash_road__oasis_paving_25",
+      "name": "Canyon Dirt Road to Oasis Flagstones (25%)",
+      "theme": "canyon_dash",
+      "surface": "packed_dirt",
+      "image": "tx_dash_road__oasis_paving_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_dash_road__oasis_paving_50",
+      "name": "Canyon Dirt Road to Oasis Flagstones (50%)",
+      "theme": "canyon_dash",
+      "surface": "packed_dirt",
+      "image": "tx_dash_road__oasis_paving_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_dash_road__oasis_paving_75",
+      "name": "Canyon Dirt Road to Oasis Flagstones (75%)",
+      "theme": "canyon_dash",
+      "surface": "road",
+      "image": "tx_dash_road__oasis_paving_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_oasis_paving__gulch_road_25",
+      "name": "Oasis Flagstones to Ghost Town Dirt Road (25%)",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "tx_oasis_paving__gulch_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_oasis_paving__gulch_road_50",
+      "name": "Oasis Flagstones to Ghost Town Dirt Road (50%)",
+      "theme": "oasis_haven",
+      "surface": "road",
+      "image": "tx_oasis_paving__gulch_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_oasis_paving__gulch_road_75",
+      "name": "Oasis Flagstones to Ghost Town Dirt Road (75%)",
+      "theme": "oasis_haven",
+      "surface": "packed_dirt",
+      "image": "tx_oasis_paving__gulch_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_gulch_road__dash_road_25",
+      "name": "Ghost Town Dirt Road to Canyon Dirt Road (25%)",
+      "theme": "dry_gulch",
+      "surface": "packed_dirt",
+      "image": "tx_gulch_road__dash_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gulch_road__dash_road_50",
+      "name": "Ghost Town Dirt Road to Canyon Dirt Road (50%)",
+      "theme": "dry_gulch",
+      "surface": "packed_dirt",
+      "image": "tx_gulch_road__dash_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gulch_road__dash_road_75",
+      "name": "Ghost Town Dirt Road to Canyon Dirt Road (75%)",
+      "theme": "dry_gulch",
+      "surface": "packed_dirt",
+      "image": "tx_gulch_road__dash_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_dash_shoulder__gold_sand_25",
+      "name": "Dirt Verge to Golden Sand (25%)",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "tx_dash_shoulder__gold_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_dash_shoulder__gold_sand_50",
+      "name": "Dirt Verge to Golden Sand (50%)",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "tx_dash_shoulder__gold_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_dash_shoulder__gold_sand_75",
+      "name": "Dirt Verge to Golden Sand (75%)",
+      "theme": "canyon_dash",
+      "surface": "loose_sand",
+      "image": "tx_dash_shoulder__gold_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_verge_25",
+      "name": "Golden Sand to Dirt Verge (Night) (25%)",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "tx_gold_sand__gulch_verge_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_verge_50",
+      "name": "Golden Sand to Dirt Verge (Night) (50%)",
+      "theme": "oasis_haven",
+      "surface": "loose_sand",
+      "image": "tx_gold_sand__gulch_verge_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gold_sand__gulch_verge_75",
+      "name": "Golden Sand to Dirt Verge (Night) (75%)",
+      "theme": "oasis_haven",
+      "surface": "dirt",
+      "image": "tx_gold_sand__gulch_verge_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gulch_verge__talus_25",
+      "name": "Dirt Verge (Night) to Talus (25%)",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "tx_gulch_verge__talus_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gulch_verge__talus_50",
+      "name": "Dirt Verge (Night) to Talus (50%)",
+      "theme": "dry_gulch",
+      "surface": "dirt",
+      "image": "tx_gulch_verge__talus_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_gulch_verge__talus_75",
+      "name": "Dirt Verge (Night) to Talus (75%)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "tx_gulch_verge__talus_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_talus__dash_shoulder_25",
+      "name": "Talus to Dirt Verge (25%)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "tx_talus__dash_shoulder_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_talus__dash_shoulder_50",
+      "name": "Talus to Dirt Verge (50%)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "tx_talus__dash_shoulder_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_talus__dash_shoulder_75",
+      "name": "Talus to Dirt Verge (75%)",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "tx_talus__dash_shoulder_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_isle_jungle__wreck_sand_25",
+      "name": "Jungle Floor to Amber Sand (25%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__wreck_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__wreck_sand_50",
+      "name": "Jungle Floor to Amber Sand (50%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__wreck_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__wreck_sand_75",
+      "name": "Jungle Floor to Amber Sand (75%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_isle_jungle__wreck_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_wreck_sand__cove_sand_25",
+      "name": "Amber Sand to Cove Sand (25%)",
+      "theme": "shipwreck_bay",
+      "surface": "sand",
+      "image": "tx_wreck_sand__cove_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_wreck_sand__cove_sand_50",
+      "name": "Amber Sand to Cove Sand (50%)",
+      "theme": "shipwreck_bay",
+      "surface": "sand",
+      "image": "tx_wreck_sand__cove_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_wreck_sand__cove_sand_75",
+      "name": "Amber Sand to Cove Sand (75%)",
+      "theme": "shipwreck_bay",
+      "surface": "sand",
+      "image": "tx_wreck_sand__cove_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_cove_sand__beach_sand_25",
+      "name": "Cove Sand to Beach Sand (25%)",
+      "theme": "coral_cove",
+      "surface": "sand",
+      "image": "tx_cove_sand__beach_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_cove_sand__beach_sand_50",
+      "name": "Cove Sand to Beach Sand (50%)",
+      "theme": "coral_cove",
+      "surface": "sand",
+      "image": "tx_cove_sand__beach_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_cove_sand__beach_sand_75",
+      "name": "Cove Sand to Beach Sand (75%)",
+      "theme": "coral_cove",
+      "surface": "sand",
+      "image": "tx_cove_sand__beach_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_beach_sand__isle_jungle_25",
+      "name": "Beach Sand to Jungle Floor (25%)",
+      "theme": "beach_party",
+      "surface": "sand",
+      "image": "tx_beach_sand__isle_jungle_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_beach_sand__isle_jungle_50",
+      "name": "Beach Sand to Jungle Floor (50%)",
+      "theme": "beach_party",
+      "surface": "sand",
+      "image": "tx_beach_sand__isle_jungle_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_beach_sand__isle_jungle_75",
+      "name": "Beach Sand to Jungle Floor (75%)",
+      "theme": "beach_party",
+      "surface": "grass",
+      "image": "tx_beach_sand__isle_jungle_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__cove_sand_25",
+      "name": "Jungle Floor to Cove Sand (25%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__cove_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__cove_sand_50",
+      "name": "Jungle Floor to Cove Sand (50%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__cove_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__cove_sand_75",
+      "name": "Jungle Floor to Cove Sand (75%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_isle_jungle__cove_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_beach_road__cove_road_25",
+      "name": "Packed Sand Road to Cove Track (25%)",
+      "theme": "beach_party",
+      "surface": "road",
+      "image": "tx_beach_road__cove_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_beach_road__cove_road_50",
+      "name": "Packed Sand Road to Cove Track (50%)",
+      "theme": "beach_party",
+      "surface": "road",
+      "image": "tx_beach_road__cove_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_beach_road__cove_road_75",
+      "name": "Packed Sand Road to Cove Track (75%)",
+      "theme": "beach_party",
+      "surface": "road",
+      "image": "tx_beach_road__cove_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_cove_road__wreck_road_25",
+      "name": "Cove Track to Cove Trail (25%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_cove_road__wreck_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_cove_road__wreck_road_50",
+      "name": "Cove Track to Cove Trail (50%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_cove_road__wreck_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_cove_road__wreck_road_75",
+      "name": "Cove Track to Cove Trail (75%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_cove_road__wreck_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_keep_grass__moon_grass_25",
+      "name": "Sunset Grass to Moonlit Grass (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__moon_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_grass__moon_grass_50",
+      "name": "Sunset Grass to Moonlit Grass (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__moon_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_grass__moon_grass_75",
+      "name": "Sunset Grass to Moonlit Grass (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__moon_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_grass__ember_moss_25",
+      "name": "Sunset Grass to Mountain Moss (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__ember_moss_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_grass__ember_moss_50",
+      "name": "Sunset Grass to Mountain Moss (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__ember_moss_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_grass__ember_moss_75",
+      "name": "Sunset Grass to Mountain Moss (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_grass__ember_moss_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_moss__ember_rubble_25",
+      "name": "Mountain Moss to Rubble (25%)",
+      "theme": "emberdeep_hold",
+      "surface": "grass",
+      "image": "tx_ember_moss__ember_rubble_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_moss__ember_rubble_50",
+      "name": "Mountain Moss to Rubble (50%)",
+      "theme": "emberdeep_hold",
+      "surface": "grass",
+      "image": "tx_ember_moss__ember_rubble_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_moss__ember_rubble_75",
+      "name": "Mountain Moss to Rubble (75%)",
+      "theme": "emberdeep_hold",
+      "surface": "rubble",
+      "image": "tx_ember_moss__ember_rubble_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_rubble__em_jungle_grass_25",
+      "name": "Rubble to Jungle Grass (25%)",
+      "theme": "emberdeep_hold",
+      "surface": "rubble",
+      "image": "tx_ember_rubble__em_jungle_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_rubble__em_jungle_grass_50",
+      "name": "Rubble to Jungle Grass (50%)",
+      "theme": "emberdeep_hold",
+      "surface": "rubble",
+      "image": "tx_ember_rubble__em_jungle_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_rubble__em_jungle_grass_75",
+      "name": "Rubble to Jungle Grass (75%)",
+      "theme": "emberdeep_hold",
+      "surface": "grass",
+      "image": "tx_ember_rubble__em_jungle_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_em_jungle_grass__keep_grass_25",
+      "name": "Jungle Grass to Sunset Grass (25%)",
+      "theme": "emerald_kingdom",
+      "surface": "grass",
+      "image": "tx_em_jungle_grass__keep_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_em_jungle_grass__keep_grass_50",
+      "name": "Jungle Grass to Sunset Grass (50%)",
+      "theme": "emerald_kingdom",
+      "surface": "grass",
+      "image": "tx_em_jungle_grass__keep_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_em_jungle_grass__keep_grass_75",
+      "name": "Jungle Grass to Sunset Grass (75%)",
+      "theme": "emerald_kingdom",
+      "surface": "grass",
+      "image": "tx_em_jungle_grass__keep_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_cobble__moon_paving_25",
+      "name": "Castle Town Cobbles to Moonstone Paving (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_cobble__moon_paving_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_keep_cobble__moon_paving_50",
+      "name": "Castle Town Cobbles to Moonstone Paving (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_cobble__moon_paving_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_keep_cobble__moon_paving_75",
+      "name": "Castle Town Cobbles to Moonstone Paving (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_cobble__moon_paving_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_moon_paving__keep_flag_25",
+      "name": "Moonstone Paving to Keep Flagstones (25%)",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "tx_moon_paving__keep_flag_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_moon_paving__keep_flag_50",
+      "name": "Moonstone Paving to Keep Flagstones (50%)",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "tx_moon_paving__keep_flag_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_moon_paving__keep_flag_75",
+      "name": "Moonstone Paving to Keep Flagstones (75%)",
+      "theme": "moonstone_kingdom",
+      "surface": "road",
+      "image": "tx_moon_paving__keep_flag_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_flag__ember_setts_25",
+      "name": "Keep Flagstones to Worn Hold Paving (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_flag__ember_setts_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_flag__ember_setts_50",
+      "name": "Keep Flagstones to Worn Hold Paving (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_flag__ember_setts_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_flag__ember_setts_75",
+      "name": "Keep Flagstones to Worn Hold Paving (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_flag__ember_setts_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_ember_setts__em_road_25",
+      "name": "Worn Hold Paving to Overgrown Flagstones (25%)",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "tx_ember_setts__em_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_ember_setts__em_road_50",
+      "name": "Worn Hold Paving to Overgrown Flagstones (50%)",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "tx_ember_setts__em_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_ember_setts__em_road_75",
+      "name": "Worn Hold Paving to Overgrown Flagstones (75%)",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "tx_ember_setts__em_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_em_road__keep_cobble_25",
+      "name": "Overgrown Flagstones to Castle Town Cobbles (25%)",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "tx_em_road__keep_cobble_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_em_road__keep_cobble_50",
+      "name": "Overgrown Flagstones to Castle Town Cobbles (50%)",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "tx_em_road__keep_cobble_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_em_road__keep_cobble_75",
+      "name": "Overgrown Flagstones to Castle Town Cobbles (75%)",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "tx_em_road__keep_cobble_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_keep_path__moon_grass_25",
+      "name": "Cliff Path to Moonlit Grass (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__moon_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_path__moon_grass_50",
+      "name": "Cliff Path to Moonlit Grass (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__moon_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_path__moon_grass_75",
+      "name": "Cliff Path to Moonlit Grass (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "grass",
+      "image": "tx_keep_path__moon_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_path__ember_path_25",
+      "name": "Cliff Path to Mountain Track (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__ember_path_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_path__ember_path_50",
+      "name": "Cliff Path to Mountain Track (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__ember_path_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_keep_path__ember_path_75",
+      "name": "Cliff Path to Mountain Track (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__ember_path_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_ember_path__em_verge_25",
+      "name": "Mountain Track to Leafy Verge (25%)",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "tx_ember_path__em_verge_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_ember_path__em_verge_50",
+      "name": "Mountain Track to Leafy Verge (50%)",
+      "theme": "emberdeep_hold",
+      "surface": "road",
+      "image": "tx_ember_path__em_verge_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_ember_path__em_verge_75",
+      "name": "Mountain Track to Leafy Verge (75%)",
+      "theme": "emberdeep_hold",
+      "surface": "dirt",
+      "image": "tx_ember_path__em_verge_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_em_verge__keep_path_25",
+      "name": "Leafy Verge to Cliff Path (25%)",
+      "theme": "emerald_kingdom",
+      "surface": "dirt",
+      "image": "tx_em_verge__keep_path_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_em_verge__keep_path_50",
+      "name": "Leafy Verge to Cliff Path (50%)",
+      "theme": "emerald_kingdom",
+      "surface": "dirt",
+      "image": "tx_em_verge__keep_path_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_em_verge__keep_path_75",
+      "name": "Leafy Verge to Cliff Path (75%)",
+      "theme": "emerald_kingdom",
+      "surface": "road",
+      "image": "tx_em_verge__keep_path_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "giant_bark",
+      "name": "Giant Bark",
+      "theme": "jungle_cascade",
+      "surface": "wall",
+      "image": "giant_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 4
+    },
+    {
+      "id": "camp_earth",
+      "name": "Camp Earth",
+      "theme": "river_valley",
+      "surface": "dirt",
+      "image": "camp_earth.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "valley_river",
+      "name": "Valley River (living)",
+      "theme": "river_valley",
+      "surface": "water",
+      "image": "valley_river.png",
+      "wrap": "repeat",
+      "tileMetres": 12,
+      "fx": {
+        "scrollU": 0.0,
+        "scrollV": 0.02,
+        "wave": 0.03,
+        "wavePeriod": 5,
+        "lagoon": 1.0
+      }
     }
   ]
 }

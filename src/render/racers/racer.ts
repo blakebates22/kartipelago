@@ -7,6 +7,8 @@
  * It never writes back to the physics.
  */
 import { BOSS_SHADOW, BossDragon, type BossPalette } from "./bossDragon";
+import type { DesignId } from "../storyDragon";
+import { DRAGON_PALETTES } from "./roster/dragon";
 import * as THREE from "three";
 import type { RacerId } from "./designs";
 import type { Palette } from "./roster/types";
@@ -91,7 +93,9 @@ export class Racer {
     this.lod.addLevel(this.high, 0);
     this.lod.addLevel(this.lowGroup, LOD_DISTANCE);
     if (opts.boss) {
-      this.boss = new BossDragon(palette as unknown as BossPalette);
+      // (Each Adventure dragon races as itself: the cutscenes' design, by its colours.)
+      const who = Object.entries(DRAGON_PALETTES).find(([, p]) => p === palette)?.[0];
+      this.boss = new BossDragon(palette as unknown as BossPalette, who as DesignId | undefined);
       this.root.add(this.boss.root);
     } else this.root.add(this.lod);
 

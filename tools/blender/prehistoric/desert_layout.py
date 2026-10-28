@@ -28,87 +28,87 @@ import math
 from pocket_kit import Layout, catmull, lerp, smooth  # noqa: F401
 
 TOP = 64.0
-HUB = (-262.0, 0.0, 24.0, 10.0)  # x, y, radius, height: the post's square
+HUB = (-162.4, 0.0, 19.2, 10.0)  # x, y, radius, height: the post's square
 POST = HUB
-POOL = (250.0, 228.0, 18.0, 5.0)  # the oasis pool: x, y, radius, water height
-CRATER = (-10.0, -215.0)  # the crater's middle
+POOL = (155.0, 141.4, 11.2, 5.0)  # the oasis pool: x, y, radius, water height
+CRATER = (-6.2, -133.3)  # the crater's middle
 
 POCKETS = [
-    ("post", "post", [(-260.0, 0.0, 55.0, 10.0), (-222.0, 42.0, 32.0, 10.0), (-225.0, -42.0, 32.0, 10.0)]),
+    ("post", "post", [(-161.2, 0.0, 40.7, 10.0), (-137.6, 26.0, 23.7, 10.0), (-139.5, -26.0, 23.7, 10.0)]),
     # (the Frozen Pass, west, up to the snow)
-    ("pass", "post", [(-330.0, 4.0, 22.0, 12.0), (-375.0, -4.0, 21.0, 14.0), (-420.0, 4.0, 21.0, 16.0),
-                      (-462.0, 0.0, 24.0, 18.0)]),
-    ("slot", "canyon", [(-214.0, 70.0, 18.0, 11.0), (-206.0, 92.0, 19.0, 12.0), (-182.0, 125.0, 18.0, 13.0),
-                        (-196.0, 145.0, 17.0, 14.0), (-200.0, 160.0, 19.0, 15.0), (-185.0, 178.0, 17.0, 15.5),
-                        (-170.0, 192.0, 20.0, 16.0), (-152.0, 212.0, 20.0, 16.5)]),
-    ("canyon", "canyon", [(-90.0, 240.0, 70.0, 18.0), (-10.0, 280.0, 52.0, 19.0), (-150.0, 255.0, 38.0, 17.0)]),
-    ("oasis", "oasis", [(170.0, 260.0, 40.0, 6.0), (230.0, 200.0, 70.0, 6.0), (290.0, 130.0, 45.0, 7.0)]),
-    ("gulch", "gulch", [(285.0, -60.0, 40.0, 13.0), (230.0, -150.0, 70.0, 14.0), (150.0, -230.0, 42.0, 14.0),
-                        (198.0, -214.0, 28.0, 14.0)]),
-    ("rim", "crater", [(100.0, -262.0, 20.0, 16.0), (62.0, -262.0, 20.0, 13.5), (30.0, -266.0, 22.0, 10.5)]),
-    ("crater", "crater", [(-10.0, -215.0, 64.0, 6.0), (-70.0, -170.0, 36.0, 7.0), (40.0, -180.0, 36.0, 7.0)]),
-    ("wash", "post", [(-105.0, -150.0, 22.0, 7.5), (-130.0, -112.0, 20.0, 8.0), (-172.0, -118.0, 20.0, 8.5),
-                      (-195.0, -82.0, 22.0, 9.5), (-215.0, -62.0, 24.0, 10.0)]),
+    ("pass", "post", [(-204.6, 2.5, 16.3, 12.0), (-232.5, -2.5, 15.5, 14.0), (-260.4, 2.5, 15.5, 16.0),
+                      (-286.4, 0.0, 17.8, 18.0)]),
+    ("slot", "canyon", [(-132.7, 43.4, 13.3, 11.0), (-127.7, 57.0, 14.1, 12.0), (-112.8, 77.5, 13.3, 13.0),
+                        (-121.5, 89.9, 12.6, 14.0), (-124.0, 99.2, 14.1, 15.0), (-114.7, 110.4, 12.6, 15.5),
+                        (-105.4, 119.0, 14.8, 16.0), (-94.2, 131.4, 14.8, 16.5)]),
+    ("canyon", "canyon", [(-55.8, 148.8, 51.8, 18.0), (-6.2, 173.6, 38.5, 19.0), (-93.0, 158.1, 28.1, 17.0)]),
+    ("oasis", "oasis", [(105.4, 161.2, 29.6, 6.0), (142.6, 124.0, 51.8, 6.0), (179.8, 80.6, 33.3, 7.0)]),
+    ("gulch", "gulch", [(176.7, -37.2, 29.6, 13.0), (142.6, -93.0, 51.8, 14.0), (93.0, -142.6, 31.1, 14.0),
+                        (122.8, -132.7, 20.7, 14.0)]),
+    ("rim", "crater", [(62.0, -162.4, 14.8, 16.0), (38.4, -162.4, 14.8, 13.5), (18.6, -164.9, 16.3, 10.5)]),
+    ("crater", "crater", [(-6.2, -133.3, 47.4, 6.0), (-43.4, -105.4, 26.6, 7.0), (24.8, -111.6, 26.6, 7.0)]),
+    ("wash", "post", [(-65.1, -93.0, 16.3, 7.5), (-80.6, -69.4, 14.8, 8.0), (-106.6, -73.2, 14.8, 8.5),
+                      (-120.9, -50.8, 16.3, 9.5), (-133.3, -38.4, 17.8, 10.0)]),
 ]
 
 ROUTE = [
-    (-235.0, -10.0, None),  # 0: the start, the post's east side, northbound
-    (-228.0, 35.0, None),
-    (-206.0, 90.0, None),  # 2: the Slot
-    (-182.0, 125.0, None),
-    (-200.0, 160.0, None),
-    (-168.0, 192.0, None),
-    (-130.0, 238.0, None),  # 6: the canyon
-    (-80.0, 262.0, None),
-    (-60.0, 215.0, None),
-    (-10.0, 240.0, None),
-    (20.0, 288.0, None),
-    (48.0, 282.0, 18.6),  # 11: the Arch
-    (100.0, 268.0, 12.0),
-    (150.0, 255.0, None),  # 13: the oasis
-    (192.0, 240.0, None),
-    (212.0, 196.0, None),
-    (252.0, 184.0, None),
-    (272.0, 148.0, None),
-    (300.0, 110.0, None),
-    (296.0, 70.0, 8.6),  # 19: the Mine
-    (290.0, 22.0, 10.4),
-    (285.0, -24.0, 12.2),
-    (275.0, -70.0, None),  # 21: the ghost town's street
-    (240.0, -120.0, None),
-    (200.0, -150.0, None),
-    (230.0, -195.0, None),
-    (180.0, -240.0, None),
-    (140.0, -236.0, None),
-    (100.0, -262.0, None),  # 27: over the rim
-    (62.0, -262.0, None),
-    (28.0, -262.0, None),
-    (-5.0, -250.0, None),  # 30: the crater
-    (25.0, -205.0, None),
-    (-20.0, -180.0, None),
-    (-70.0, -170.0, None),
-    (-105.0, -150.0, None),  # 34: the Wash
-    (-130.0, -112.0, None),
-    (-172.0, -118.0, None),
-    (-195.0, -82.0, None),
-    (-215.0, -62.0, None),
-    (-235.0, -40.0, None),
+    (-145.7, -6.2, None),  # 0: the start, the post's east side, northbound
+    (-141.4, 21.7, None),
+    (-127.7, 55.8, None),  # 2: the Slot
+    (-116.3, 77.5, None),
+    (-118.6, 98.8, None),
+    (-104.2, 119.0, None),
+    (-80.6, 147.6, None),  # 6: the canyon
+    (-53.6, 153.0, None),
+    (-33.5, 142.3, None),
+    (-6.2, 148.8, None),
+    (12.2, 172.1, None),
+    (29.8, 174.8, 18.6),  # 11: the Arch
+    (62.0, 166.2, 12.0),
+    (93.0, 158.1, None),  # 13: the oasis
+    (119.0, 148.8, None),
+    (132.3, 123.0, None),
+    (156.2, 114.1, None),
+    (168.6, 91.8, None),
+    (186.0, 68.2, None),
+    (183.5, 43.4, 8.6),  # 19: the Mine
+    (179.8, 13.6, 10.4),
+    (176.7, -14.9, 12.2),
+    (170.5, -43.4, None),  # 21: the ghost town's street
+    (148.8, -74.4, None),
+    (131.7, -94.8, None),
+    (134.2, -121.2, None),
+    (111.4, -146.6, None),
+    (86.8, -147.7, None),
+    (62.0, -162.4, None),  # 27: over the rim
+    (38.4, -162.4, None),
+    (17.4, -162.4, None),
+    (6.1, -149.7, None),  # 30: the crater
+    (4.5, -129.5, None),
+    (-12.4, -111.6, None),
+    (-43.4, -105.4, None),
+    (-65.1, -93.0, None),  # 34: the Wash
+    (-82.0, -73.1, None),
+    (-105.1, -70.0, None),
+    (-120.9, -50.8, None),
+    (-133.3, -38.4, None),
+    (-145.7, -24.8, None),
 ]
 TUNNELS = [("The Arch", "arch", 11, 12), ("The Mine", "mine", 19, 21)]
 
 L = Layout(POCKETS, TOP, ROUTE, TUNNELS, hub=HUB, lakes=[POOL], roll=4.0, flat=("post",), mountains=40.0,
-           water_floor=1.2)
+           water_floor=1.2, tiers=True)
 
 GATES = {
-    "canyon": (-60.0, 322.0),  # the slot canyon's mouth in the north wall
-    "oasis": (312.0, 172.0),  # the palm grove by the spring
-    "gulch": (238.0, -228.0),  # the end of the false-front street
-    "impact": (-40.0, -244.0),  # the shards in the crater's floor
+    "canyon": (-37.2, 199.6),  # the slot canyon's mouth in the north wall
+    "oasis": (193.4, 106.6),  # the palm grove by the spring
+    "gulch": (147.6, -141.4),  # the end of the false-front street
+    "impact": (-24.8, -151.3),  # the shards in the crater's floor
 }
-LAIR = (-190.0, 270.0)  # Scorchwind's lair (the ruin's boss gateway): a rock arch in the canyon's west wall
-DUST_ROAD = (0.0, -280.0)  # where the Dust Road leaves the crater (the ruin), on south
-DUST_END = (0.0, -460.0)
-PASS_END = (-470.0, 0.0)  # the Frozen Pass's far end: the passage back to the snow
+LAIR = (-117.8, 167.4)  # Scorchwind's lair (the ruin's boss gateway): a rock arch in the canyon's west wall
+DUST_ROAD = (0.0, -173.6)  # where the Dust Road leaves the crater (the ruin), on south
+DUST_END = (0.0, -285.2)
+PASS_END = (-291.4, 0.0)  # the Frozen Pass's far end: the passage back to the snow
 
 
 def natural(x, y):
@@ -116,8 +116,8 @@ def natural(x, y):
     # The crater's bowl: its floor dips to the middle.
     cx, cy = CRATER
     d = math.hypot(x - cx, y - cy)
-    if d < 60:
-        h -= 3.0 * (1.0 - smooth(d / 60.0))
+    if d < 37:
+        h -= 3.0 * (1.0 - smooth(d / 37.0))
     return h
 
 

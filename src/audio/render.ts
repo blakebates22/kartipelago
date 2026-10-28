@@ -16,6 +16,8 @@ export interface RenderedSong {
   stems: Record<string, AudioBuffer>;
   /** Loop (or piece) length, seconds. */
   seconds: number;
+  /** The intro's length (played once before the loop), seconds; 0 for none. */
+  introSeconds: number;
 }
 
 type Reply = { id: string; stems?: Record<string, Float32Array>; error?: string };
@@ -71,5 +73,10 @@ export async function renderSong(song: Song): Promise<RenderedSong> {
     buf.copyToChannel(d as Float32Array<ArrayBuffer>, 0);
     stems[name] = buf;
   }
-  return { song, stems, seconds: (song.beats * 60) / song.bpm };
+  return {
+    song,
+    stems,
+    seconds: (song.beats * 60) / song.bpm,
+    introSeconds: ((song.intro ?? 0) * 60) / song.bpm,
+  };
 }

@@ -53,11 +53,12 @@ def _built():
 
 
 def homes(c, layout, ground, folk, house, per=2, pockets=None, room=13.0, near=(9.0, 26.0), roam=14.0, n=(2, 3),
-          seed=7, skip=(), avoid=()):
+          seed=7, skip=(), avoid=(), wet=None, wall=-9.0):
     """Up to `per` homes in each of the layout's pockets (or `pockets`: names), each built
     by house(c, name, x, y, z, rot, k) facing the road, and its villager_home entity.
     `skip`: pockets with none (the hub's own houses are elsewhere, say); `avoid`: (x, y, r)
-    circles to keep clear. Returns the spots taken [(x, y, r)] (region_paint.EXTRA keeps
+    circles to keep clear; `wet(x, y)`: true in or by water (no home goes there); `wall`:
+    how far inside a pocket's edge a home must be. Returns the spots taken [(x, y, r)] (region_paint.EXTRA keeps
     the dressing off them)."""
     rnd = random.Random(seed)
     # (And off every gateway's arch, Blake, Oct 27: Hearthglow's stood three quarters inside a
@@ -80,7 +81,7 @@ def homes(c, layout, ground, folk, house, per=2, pockets=None, room=13.0, near=(
             a = rnd.uniform(0, math.tau)
             r = cr * math.sqrt(rnd.random())
             x, y = cx + r * math.cos(a), cy + r * math.sin(a)
-            if layout.pocket_at(x, y) != pname or layout.wall_sd(x, y) > -9.0:
+            if layout.pocket_at(x, y) != pname or layout.wall_sd(x, y) > wall or (wet and wet(x, y)):
                 continue
             if not taken.clear(x, y, room) or not paint.road_clear(c, x, y, near[0]) or paint.road_clear(c, x, y, near[1]):
                 continue

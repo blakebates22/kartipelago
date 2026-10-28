@@ -11,19 +11,22 @@ import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import type { Session } from "../game/session";
 import { CAST, type Beat } from "../adventure/scenes";
-import type { StagedScene, Shot, V3 } from "../adventure/staged";
+import type { StagedScene, Shot, StoryPose, V3 } from "../adventure/staged";
 import { regionById } from "../overworld/regions";
 import { Racer as RacerView } from "../render/racers/racer";
 import { DRAGON_PALETTES } from "../render/racers/roster/dragon";
 import type { RacerId } from "../render/racers/designs";
-import { createVillagerView, type VillagerView } from "../render/villager";
-import { createPactStoneView, createRobedView, type PropView } from "../render/storyProps";
+import { createVillagerView } from "../render/villager";
+import { createPactStoneView, type PropView } from "../render/storyProps";
 import {
-  createDragonFire,
-  createDragonView,
-  type DragonFireView,
-  type DragonView,
-} from "../render/dragon";
+  createElderView,
+  createGuardView,
+  createLumenView,
+  type PersonView,
+} from "../render/people";
+import { actRacer, type RacerActing } from "../render/people/racerActing";
+import { facePoint } from "../render/people/view";
+import { createStoryDragon, designOf, type StoryDragonView } from "../render/storyDragon";
 import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
 import { wrap } from "../ui/font";
 import { PAL } from "../ui/textures";
@@ -58,11 +61,15 @@ interface Actor {
     toHeading: number;
   };
   racer?: RacerView;
-  villager?: VillagerView;
+  /** A racer's acting (looking about, talking) in their kart. */
+  acting?: RacerActing;
+  /** Someone on foot: the Elder, Lumen in his robe, a guard, the townsfolk. */
+  person?: PersonView;
   prop?: PropView;
   shown: boolean;
-  dragon?: DragonView;
-  fire?: DragonFireView;
+  /** A dragon (render/storyDragon.ts: each its own design), and its name on stage. */
+  dragon?: StoryDragonView;
+  name: string;
 }
 
 export function stagedSceneScreen(
@@ -94,13 +101,9 @@ export function stagedSceneScreen(
       a.racer.root.visible = on;
       a.racer.shadow.visible = on;
     }
-    if (a.villager) a.villager.root.visible = on;
+    if (a.person) a.person.root.visible = on;
     if (a.prop) a.prop.root.visible = on;
     if (a.dragon) a.dragon.root.visible = on;
-    if (a.fire && !on) {
-      a.fire.dispose();
-      a.fire = undefined;
-    }
   };
   const startBeat = (k: number) => {
     const b = staged.beats[k];
@@ -157,28 +160,28 @@ export function stagedSceneScreen(
         heading: spec.heading,
         up: spec.kind === "dragon" ? (spec.y ?? 0) : 0,
         shown: true,
+        name,
       };
       if (spec.kind === "racer") {
         const look = (spec.look === "you" ? me : spec.look) as RacerId;
         // (A champion who's also your file's racer: their cousin, in the other paint.)
         const cousin = spec.look !== "you" && look === me;
         a.racer = new RacerView(look, { seed: name.length * 7, alt: cousin });
+        a.acting = actRacer(a.racer);
         s.root.add(a.racer.root, a.racer.shadow);
       } else if (spec.kind === "villager") {
-        a.villager = createVillagerView(s.root, spec.folk, spec.seed, spec.species);
+        a.person = createVillagerView(s.root, spec.folk, spec.seed, spec.species);
+      } else if (spec.kind === "elder") {
+        a.person = createElderView(s.root);
+        if (spec.horn === "broken") a.person.anim.hornBroken = true;
+      } else if (spec.kind === "guard") {
+        a.person = createGuardView(s.root, spec.folk, spec.seed);
       } else if (spec.kind === "robed") {
-        a.prop = createRobedView(s.root);
+        a.person = createLumenView(s.root);
       } else if (spec.kind === "stone") {
         a.prop = createPactStoneView(s.root, spec.state, spec.big);
       } else {
-        a.dragon = createDragonView(
-          s.root,
-          { x, y: a.y + a.up, z },
-          spec.heading,
-          spec.scale ?? 2,
-          spec.look ?? "ember",
-        );
-        // (Its fire's made where it is when it breathes: it may fly in first.)
+        a.dragon = createStoryDragon(s.root, designOf(spec.look), spec.scale ?? 2);
       }
       actors.set(name, a);
       if (spec.hidden) show(a, false);
@@ -187,9 +190,66 @@ export function stagedSceneScreen(
     startBeat(0);
   };
 
+  const look = new THREE.Vector3();
+  /** A dragon's pose on this line (the scene's cue, or what it's doing), who it's
+   * looking at (whoever's speaking; when it speaks, you), and its jaw while it talks. */
+  const placeDragon = (a: Actor, d: StoryDragonView, b: ReturnType<typeof beatOf>) => {
+    d.root.position.set(a.x, a.y + a.up, a.z);
+    d.root.rotation.y = a.heading;
+    const name = a.name;
+    const cue = b?.fx?.pose?.[name];
+    const moving = a.from !== undefined;
+    let pose: StoryPose = "idle";
+    if (cue) pose = cue;
+    else if (b?.fx?.fire === name) pose = "breathe";
+    else if (b?.fx?.rear === name) pose = "rear";
+    else if (moving && (a.up > 2 || a.from!.toUp > 2))
+      pose = a.from!.toUp < a.up && a.up < 30 ? "land" : "fly";
+    else if (moving) pose = "walk";
+    // High up and still, it's flying; a little up (a rooftop), it's perched there.
+    else if (a.up > 30) pose = "fly";
+    const perched = !moving && a.up > 2 && pose !== "fly" && pose !== "land";
+    d.ground = perched ? a.y + a.up : a.y;
+    const who = beats[Math.min(i, beats.length - 1)]?.who ?? "";
+    const talk = who === name || (name === "lumen_dragon" && who === "lumen");
+    // Look at the speaker; when it's the one speaking, at you (or ahead).
+    const at = (k: string) => {
+      const o = actors.get(k);
+      return o && o !== a && o.shown ? o : undefined;
+    };
+    const other = talk ? (at("you") ?? at("elder")) : at(who);
+    if (other) {
+      if (other.dragon) other.dragon.head(look);
+      else look.set(other.x, other.y + other.up + 1.4, other.z);
+    } else look.set(a.x + Math.sin(a.heading) * 60, a.y + 4, a.z + Math.cos(a.heading) * 60);
+    // Speaking, it plays to the camera a little (a face, not the top of a head).
+    if (talk) look.lerp(game.stage.camera.position, 0.55);
+    d.update(pose, t, clock, look, talk);
+  };
+
+  // Who's speaking this line (on stage), and where their face is.
+  const speakerOf = (k: number) => {
+    const who = beats[k]?.who;
+    if (!who) return undefined;
+    for (const n of [who, who === "lumen_dragon" ? "lumen" : "", `${who}1`]) {
+      const a = n ? actors.get(n) : undefined;
+      if (a?.shown && (a.person || a.racer)) return { name: n, a };
+    }
+    return undefined;
+  };
+  const faceOf = (a: Actor, out: THREE.Vector3) =>
+    a.person
+      ? a.person.headPosition(out)
+      : a.racer
+        ? facePoint(a.racer.rig, out)
+        : out.set(a.x, a.y + 1.4, a.z);
+  const speakerFace = new THREE.Vector3();
+  const camAt = new THREE.Vector3();
+  let lastClock = 0;
   const place = (frameSeconds: number) => {
     const b = beatOf(i);
-    const mouth = new THREE.Vector3();
+    const dt = Math.max(0, Math.min(0.1, clock - lastClock));
+    lastClock = clock;
     for (const a of actors.values()) {
       if (a.from) {
         const k = ease(Math.min(1, (clock - a.from.t0) / Math.max(0.01, a.from.dur)));
@@ -209,39 +269,25 @@ export function stagedSceneScreen(
         a.racer.root.rotation.y = a.heading;
         a.racer.placeShadow(a.x, a.y, a.z, a.heading, 0);
       }
-      a.villager?.update(a.x, a.y, a.z, a.heading, a.from ? 1 : 0, clock);
       a.prop?.update(a.x, a.y, a.z, a.heading, clock, a.from ? 1 : 0);
-      if (a.dragon && a.shown) {
-        a.dragon.root.position.set(a.x, a.y + a.up, a.z);
-        a.dragon.root.rotation.y = a.heading;
-        const name = [...actors.entries()].find(([, v]) => v === a)?.[0];
-        const rear = b?.fx?.rear === name;
-        const fire = b?.fx?.fire === name;
-        const target = new THREE.Vector3(
-          a.x + Math.sin(a.heading) * 20,
-          a.y,
-          a.z + Math.cos(a.heading) * 20,
-        );
-        const tt = Math.min(1, t / 1.5);
-        a.dragon.update(
-          fire ? "breathing" : rear ? "warning" : a.up > 2 ? "warning" : "idle",
-          fire ? (t % 2) / 2 : tt,
-          clock,
-          target,
-        );
-        a.dragon.mouth(mouth);
-        if (fire && !a.fire && session)
-          a.fire = createDragonFire(session.root, {
-            x: a.x + Math.sin(a.heading) * 22,
-            y: a.y,
-            z: a.z + Math.cos(a.heading) * 22,
-            heading: a.heading,
-            length: 26,
-            width: 14,
-            height: 6,
-          });
-        a.fire?.update(fire ? "breathing" : "idle", (t % 2) / 2, clock, mouth);
-      }
+      if (a.dragon && a.shown) placeDragon(a, a.dragon, b);
+    }
+    // Acting: the speaker talks (about as long as it takes to say the line) and looks
+    // at the camera (whoever they're talking to); everyone else looks at the speaker.
+    const sp = speakerOf(i);
+    if (sp) faceOf(sp.a, speakerFace);
+    camAt.copy(game.stage.camera.position);
+    const talking = (beats[i]?.text.length ?? 0) / 14 + 0.3;
+    for (const [name, a] of actors) {
+      if (!a.shown || (!a.person && !a.acting)) continue;
+      const me = sp?.a === a;
+      const cue = {
+        talk: me && t < talking,
+        gesture: b?.fx?.gesture?.[name] ?? null,
+        look: me || !sp ? (me ? camAt : null) : speakerFace,
+      };
+      a.acting?.update(dt, cue);
+      a.person?.update(a.x, a.y, a.z, a.heading, cue, clock);
     }
     void frameSeconds;
   };
@@ -254,9 +300,11 @@ export function stagedSceneScreen(
     const cam = game.stage.camera;
     const shake = beatOf(i)?.fx?.shake ?? 0;
     const sh = shake * Math.max(0, 1 - t / 2.5);
+    // (Heights over the ground under the camera, or under what it looks at: rel.)
+    const gy = shot.rel ? groundAt(look[0], look[2]) : groundAt(from[0], from[2]);
     cam.position.set(
       from[0] + Math.sin(clock * 37) * sh,
-      groundAt(from[0], from[2]) + from[1] + Math.sin(clock * 41) * sh,
+      gy + from[1] + Math.sin(clock * 41) * sh,
       from[2] + Math.cos(clock * 33) * sh,
     );
     cam.lookAt(look[0], groundAt(look[0], look[2]) + look[1], look[2]);
@@ -269,6 +317,8 @@ export function stagedSceneScreen(
       game.ui.interactive = true;
       pp = createPixelPortraits(game.stage.renderer);
       if (staged.music) void game.audio.music.play(staged.music, { fade: 1 });
+      // Render the scene's later cues now, so a switch mid-scene comes in on the beat.
+      for (const b of staged.beats) if (b.fx?.music) game.audio.music.prepare(b.fx.music);
       const token = game.screens.token;
       game
         .createSession({
@@ -292,10 +342,9 @@ export function stagedSceneScreen(
     exit() {
       alive = false;
       for (const a of actors.values()) {
-        a.villager?.dispose();
+        a.person?.dispose();
         a.prop?.dispose();
         a.dragon?.dispose();
-        a.fire?.dispose();
         if (a.racer && session) a.racer.dispose(session.root);
       }
       if (session) {
@@ -329,8 +378,9 @@ export function stagedSceneScreen(
     render3d(alpha, frameSeconds) {
       if (!session) return false;
       session.render(alpha, frameSeconds);
-      place(frameSeconds);
+      // (The shot first: the cast look at the camera.)
       shoot(beatOf(i)?.cam);
+      place(frameSeconds);
       game.stage.render();
       return true;
     },

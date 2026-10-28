@@ -163,3 +163,77 @@ def entrances(c, look_at):
             out.append({"s": smp.s, "frm": prev, "to": cur})
             prev = cur
     return out
+
+
+# ------------------------------------------------------------------ transitions (Oct 28)
+
+
+def blended(ma, mb, p):
+    """The p% transition from material ma to mb (either way round: region_textures.py), or
+    ma if there's none."""
+    import region_textures as TX
+
+    if (ma[0], mb[0]) in TX.PAIRS:
+        return (TX.blend_id(ma[0], mb[0], p), ma[1] if p <= 50 else mb[1])
+    if (mb[0], ma[0]) in TX.PAIRS:
+        return (TX.blend_id(mb[0], ma[0], 100 - p), ma[1] if p <= 50 else mb[1])
+    return ma
+
+
+def transition(weights, mat_of):
+    """Where two worlds meet (Blake, Oct 28: "we need to gradually transition ... develop
+    transitionary textures for all instances where we are transitioning environments"):
+    the ground turning from one to the other in bands. weights: {look: weight};
+    mat_of(look) -> (material, surface)."""
+    order = sorted(weights, key=weights.get, reverse=True)
+    a, b = order[0], order[1]
+    ma, mb = mat_of(a), mat_of(b)
+    if ma[0] == mb[0]:
+        return ma
+    f = weights[b] / ((weights[a] + weights[b]) or 1.0)
+    if f < 0.1:
+        return ma
+    return blended(ma, mb, 25 if f < 0.24 else 50)
+
+
+def blend_runs(c, runs, look, span=42.0):
+    """Where the road passes from one world's paving to the next: transition pieces
+    between them (25, 50, 75%), shoulders turning too. look: {name: (ground, cliff, road,
+    shoulder)}."""
+    out = [[s0, s1, k] for s0, s1, k in runs]
+    res = []
+    for i, r in enumerate(out):
+        res.append(r)
+        if i + 1 >= len(out):
+            continue
+        a, b = r[2], out[i + 1][2]
+        if a not in look or b not in look or look[a][2] == look[b][2]:
+            continue
+        s = r[1]
+        half = min(span / 2, (r[1] - r[0]) / 2, (out[i + 1][1] - out[i + 1][0]) / 2)
+        if half < 6.0:
+            continue
+        r[1] = s - half
+        out[i + 1][0] = s + half
+        for j, p in enumerate((25, 50, 75)):
+            kind = "%s>%s %d" % (a, b, p)
+            if kind not in c.kinds:
+                road = blended((look[a][2], "road"), (look[b][2], "road"), p)
+                sh = blended(look[a][3], look[b][3], p)
+                c.kinds[kind] = {"mat": road[0], "surface": "road", "shoulder": 1.5, "shoulder_mat": sh}
+            res.append([s - half + 2 * half * j / 3, s - half + 2 * half * (j + 1) / 3, kind])
+    return [tuple(r) for r in res]
+
+
+def strata(layout, c, n_, beds, top=None):
+    """A wall face's bed of rock: beds[look] lists the beds from the foot up (the last the
+    rim's crags), one bed to a tier (pocket_kit.terrace)."""
+    from pocket_kit import tier_of
+
+    wi = layout.wall_info(c.x, c.y)
+    look = next(p[1] for p in layout.pockets if p[0] == wi["pocket"])
+    b = beds[look]
+    if wi["past"] > 0:
+        return b[-1]
+    frac = (c.z - wi["floor"]) / max(1.0, (top or layout.top) - wi["floor"])
+    return b[min(len(b) - 2, tier_of(frac, wi["n"]))]

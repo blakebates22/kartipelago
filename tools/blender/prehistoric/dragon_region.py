@@ -36,6 +36,16 @@ FLOOR_Z = HUB[3]
 WATER_Z = DL.WATER_Z
 RIM_Z = DL.TOP
 
+# v4 (Blake, Oct 28): the crags rise in tiers (pocket_kit.terrace), a bed of each world's
+# rock to a tier, foot to rim.
+STRATA = {
+    "harbour": ["keep_rock_moss", "keep_rock", "keep_rock_moss", "keep_rock", "keep_rock"],
+    "moon": ["moon_rock", "keep_rock", "moon_rock", "keep_rock", "moon_rock"],
+    "keep": ["keep_rock_moss", "keep_rock", "keep_rock_moss", "keep_rock", "keep_rock"],
+    "citadel": ["ember_rock", "black_rock", "ember_rock", "black_rock", "obsidian_cliff"],
+    "hold": ["cave_rock", "ember_rock", "black_rock", "ember_rock", "obsidian_cliff"],
+    "canyon": ["em_cliff", "moss_rock", "em_cliff", "keep_rock_moss", "em_cliff"],
+}
 LOOK = {
     # look: (ground, cliff, road, shoulder)
     "harbour": (("keep_grass", "grass"), ("keep_rock", "wall"), "keep_cobble", ("keep_path", "dirt")),
@@ -72,15 +82,16 @@ def natural(x, y):
 def classify(c, n, info):
     look = L.look_at(c.x, c.y)
     ground, cliff, _, _ = LOOK[look]
-    if n.z < 0.62:
-        return cliff
+    # (on the tiered walls only the shelves' flat tops are ground)
+    if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
+        return (pb.strata(L, c, n, STRATA), "wall")
     if c.z < WATER_Z + 0.3:
         return ("keep_lake_shallow", "water")
     if look == "harbour" and c.z < WATER_Z + 1.4:
         return ("keep_shore", "sand")
     if RUIN and burn(c.x, c.y) > 0.55:
         return ("scorched_ground", "dirt")
-    return ground
+    return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
 
 
 def main():
@@ -90,7 +101,8 @@ def main():
     for look, (ground, cliff, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
     c.kinds = kinds
-    c.roads(kit.plan(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), "harbour", max_len=160.0))
+    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), LOOK), "harbour",
+                     max_len=160.0))
 
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("keep_path", "dirt"))
     cx, cy, cr, cz = HUB
@@ -104,8 +116,9 @@ def main():
     gates["citadel"] = DL.CITADEL
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
 
-    X0, X1, Y0, Y1 = -490, 490, -490, 480
-    ter = c.terrain("Dragon Kingdom", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    # (v4: drawn in, and finer, for the walls' tiers)
+    X0, X1, Y0, Y1 = -310, 310, -310, 310
+    ter = c.terrain("Dragon Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("keep_grass", "grass"))
     c.disc("Sea", 0.0, -500.0, 900.0, WATER_Z, c.lib("keep_lake", "water"), role="visual", n=48)
 
@@ -118,7 +131,8 @@ def main():
     landmarks(c, ground, spots)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "dragon", vh.proto_house(lambda c, k: kp.house(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 22.0)])
+    vh.homes(c, L, ground, "dragon", vh.proto_house(lambda c, k: kp.house(c, k % 4)), avoid=[(HUB[0], HUB[1], HUB[2] + 22.0)],
+             wall=-15.0)
     dress(c, ground, spots)
     if RUIN:
         ruined(c, ground, spots)
@@ -335,7 +349,7 @@ def dress(c, ground, spots):
     ha = look("harbour")
     paint.scatter(c, kp.pine(c, 0, 10.0), 10, rmax, ha, g, taken, 50, room=6.0, road_margin=7.0, trunk=(0.7, 6.0))
     for k in range(4):
-        x, y = -40.0 + 26.0 * k, -300.0 - 10.0 * (k % 2)
+        x, y = -25.0 + 16.0 * k, -186.0 - 6.0 * (k % 2)
         c.place(kp.boat(c, k % 2), x, y, WATER_Z - 0.2, rot=0.3 * k, role="visual")
 
 

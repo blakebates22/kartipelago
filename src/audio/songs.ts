@@ -82,6 +82,7 @@
  * flute, celesta and light pizzicato; Pebble: clarinet, soft horns and lazy marimba). The
  * game fades between racer layers as you browse, without restarting the piece.
  */
+import { cues } from "./cues";
 import type { InstrumentId } from "./instruments";
 import {
   arpeggio,
@@ -3266,6 +3267,8 @@ for (const id of RUIN_SONGS) {
   const r = ruinVersion(SONGS[id]!);
   SONGS[r.id] = r;
 }
+// The Adventure's cutscene score (cues.ts).
+Object.assign(SONGS, cues());
 
 /** The music player's list order: the menus' pieces, then each world's in the Tracks menu's
  * order (src/game/worlds.ts), then the rest. Pieces keep their order within a group. */
@@ -3285,6 +3288,8 @@ const ROLE_ORDER = [
   "Adventure mode",
 ];
 const rank = (role: string) => {
+  // The cutscene cues ("Cutscenes", and "dread": "Cutscenes: the dragons come") together.
+  if (role.startsWith("Cutscenes")) return ROLE_ORDER.length;
   const i = ROLE_ORDER.indexOf(role);
   return i < 0 ? ROLE_ORDER.length : i;
 };

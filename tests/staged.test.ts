@@ -3,7 +3,7 @@
 // the story plays in the 3D world has its staging (the opening is a storybook, the
 // credits roll).
 import { describe, expect, it } from "vitest";
-import { STAGED } from "../src/adventure/staged";
+import { CUES, STAGED } from "../src/adventure/staged";
 import { SCENES, sceneById } from "../src/adventure/scenes";
 import { OPENING } from "../src/adventure/data";
 import { regionById } from "../src/overworld/regions";
@@ -19,7 +19,13 @@ describe("staged scenes", () => {
       for (const m of b.moves ?? []) expect(s.actors[m.actor], m.actor).toBeDefined();
       for (const a of [b.fx?.fire, b.fx?.rear, ...(b.fx?.show ?? []), ...(b.fx?.hide ?? [])])
         if (a) expect(s.actors[a], a).toBeDefined();
+      // Poses are for dragons, gestures for those on foot; music is one of the score's cues.
+      for (const a of Object.keys(b.fx?.pose ?? {})) expect(s.actors[a]?.kind, a).toBe("dragon");
+      for (const a of Object.keys(b.fx?.gesture ?? {}))
+        expect(["elder", "guard", "villager"], a).toContain(s.actors[a]?.kind);
+      if (b.fx?.music) expect(CUES as readonly string[]).toContain(b.fx.music);
     }
+    if (s.music) expect(CUES as readonly string[]).toContain(s.music);
   });
 
   it("stage every scene but the opening's storybook", () => {

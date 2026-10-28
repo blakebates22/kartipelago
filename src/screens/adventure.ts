@@ -452,8 +452,9 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
 
 /**
  * The opening's storybook (The First Race): an old page, a picture inked on it for each
- * line: the war (dragons over the crews' banners), the race, the horn, the finish, the
- * five stones, the border, the champion's road to the King.
+ * line: the war (dragons over the crews' karts), the oath on the stones, the border, the
+ * champion's road to the King, the forfeit, the horn, the finish, the dragons behind the
+ * border, the five stones.
  */
 function storybook(ui: UiLayer, page: number, t: number, still: boolean) {
   ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
@@ -492,7 +493,9 @@ function storybook(ui: UiLayer, page: number, t: number, still: boolean) {
     g.lineTo(x1, y);
     g.stroke();
   };
-  switch (page) {
+  // Each line's picture (the drawings below, by number).
+  const PAGE = [0, 9, 5, 7, 8, 2, 3, 5, 4];
+  switch (PAGE[page] ?? 7) {
     case 0:
       for (let k = 0; k < 3; k++) dragon(cx - 80 + k * 70, cy - 20 + bob + k * 6, 1.4);
       for (let k = 0; k < 5; k++)
@@ -532,6 +535,26 @@ function storybook(ui: UiLayer, page: number, t: number, still: boolean) {
       dragon(cx + 60, cy + bob, 1.2);
       dragon(cx + 90, cy + 20 + bob, 1);
       kart(cx - 60, cy + 30, "#2a5a8a");
+      break;
+    case 9:
+      // The oath: both sides either side of the five stones.
+      for (let k = 0; k < 5; k++) stone(cx - 60 + k * 30, cy + 40, k === 4 ? 1.6 : 1.1, k === 4);
+      dragon(cx - 110, cy + bob, 1.3);
+      kart(cx + 110, cy + 28, "#2a5a8a");
+      break;
+    case 8:
+      // The forfeit: a dragon over the crews' homes.
+      for (let k = 0; k < 3; k++) {
+        const hx = cx - 60 + k * 60;
+        ui.rect(hx - 12, cy + 26, 24, 16, "#7a5a3a");
+        g.beginPath();
+        g.moveTo(hx - 16, cy + 26);
+        g.lineTo(hx, cy + 12);
+        g.lineTo(hx + 16, cy + 26);
+        g.closePath();
+        g.fill();
+      }
+      dragon(cx - 10, cy - 30 + bob, 2.2);
       break;
     default:
       kart(cx - 80, cy + 40, "#8a2a1a");

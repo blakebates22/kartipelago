@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalise, renderSongData } from "../src/audio/dsp";
+import { CUE_IDS } from "../src/audio/cues";
 import { chart, midi, seq, seqLength, voicing } from "../src/audio/score";
 import * as S from "../src/audio/songs";
 import { RACER_IDS } from "../src/render/racers/designs";
@@ -123,8 +124,11 @@ describe("the soundtrack", () => {
   it("renders every piece cleanly: right length, in sync, no clipping, not silent", () => {
     const rate = 16000; // half rate keeps the test quick
     // (The ruins' arrangements are made from these by one rule: two of them stand in.)
+    // (The cutscene cues have their own test: tests/cues.test.ts.)
     const songs = Object.values(S.SONGS).filter(
-      (s) => !s.id.endsWith("_ruin") || s.id === "riverbend_ruin" || s.id === "celestial_ruin",
+      (s) =>
+        (!s.id.endsWith("_ruin") || s.id === "riverbend_ruin" || s.id === "celestial_ruin") &&
+        !(CUE_IDS as readonly string[]).includes(s.id),
     );
     for (const song of songs) {
       const stems = renderSongData(song, rate);

@@ -12,6 +12,8 @@
  *   ?look=authentic|enhanced              texture look
  *   ?timing                               start-boost timing bar
  *   ?debug                                developer keys and window.kp
+ *   ?debug&music=<id>                     play a piece (e.g. a cutscene cue) over the
+ *                                         menus; kp.cue("<id>") switches cue like a scene
  */
 import { MINIGAMES, minigameById } from "./game/minigames";
 import { minigameLoading } from "./screens/minigames";
@@ -291,7 +293,18 @@ if (debugMode)
       get session() {
         return game.session;
       },
+      /** Switch to a piece the way a cutscene beat does (audition the score's cues). */
+      cue: (id: string) => game.audio.music.play(id, { fade: 0.8 }),
     },
   });
+// ?debug&music=<id>: audition a piece over the menus (once the title's own has started).
+const musicParam = PARAMS.get("music");
+if (debugMode && musicParam) {
+  const wait = setInterval(() => {
+    if (!audio.music.playingId) return;
+    clearInterval(wait);
+    if (audio.music.playingId !== musicParam) void audio.music.play(musicParam, { fade: 1 });
+  }, 250);
+}
 
 loop.start();

@@ -126,64 +126,64 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "ice",
       tool: "snow",
-      gate: { x: 216.5, z: -155.04, heading: 1.2356, width: 9 },
-      spot: { x: 208, z: -158 },
+      gate: { x: 137.48, z: -94.99, heading: 1.2297, width: 9 },
+      spot: { x: 129, z: -98 },
     },
     // The smugglers' Lookout Cave: the Elder's old lookout, a walled hollow on Ember's lower slope.
     cave: {
-      gate: { x: 136.84, z: 172.15, heading: 1.7395, width: 9 },
-      spot: { x: 126, z: 174 },
+      gate: { x: 77.89, z: 119.0, heading: -0.01, width: 9 },
+      spot: { x: 78, z: 108 },
     },
     music: "riverbend",
     worldId: "prehistoric",
     kingdom: "valley",
     // The main road's start line, on the camp's south side (the 1-on-1 is raced from it).
-    challenge: { x: 36, z: 30, heading: -0.9043 },
+    challenge: { x: 22, z: 19, heading: -0.9365 },
     // In the camp's square, facing east to the way out onto the road.
-    spawn: { x: -6, z: -4, heading: Math.PI / 2 },
+    spawn: { x: -6, z: -3, heading: Math.PI / 2 },
     gateways: [
       // Riverbend: the palms on the bend's far bank, by the falls out of the north cliff.
       {
         id: "riverbend",
         track: "riverbend_palms",
-        x: -318.58,
-        z: -116.31,
+        x: -193.68,
+        z: -71.01,
         radius: 6,
-        heading: 1.2584,
+        heading: 1.2318,
       },
-      // Cascade: the cave mouth beside the falls, at the canyon's head.
+      // Cascade: the cave mouth in the canyon wall, by the falls.
       {
         id: "cascade",
         track: "cascade_caverns",
-        x: 288.78,
-        z: -295.76,
+        x: 176.27,
+        z: -162.55,
         radius: 6,
-        heading: -1.2093,
+        heading: -1.7847,
       },
       // Bonebog: the pyramid's tip, out in the swamp's far corner.
       {
         id: "bonebog",
         track: "bonebog_pyramid",
-        x: -264.69,
-        z: 292.49,
+        x: -161.68,
+        z: 178.49,
         radius: 6,
-        heading: 2.4864,
+        heading: 2.4856,
       },
       // Ember: the lava-lit cave in the volcano's foot.
       {
         id: "ember",
         track: "ember_peak",
-        x: 289.42,
-        z: 294.33,
+        x: 175.46,
+        z: 180.26,
         radius: 6,
-        heading: -2.0626,
+        heading: -2.0693,
       },
       // Cinderjaw's Scar, up the burnt trench in Ember's south wall: the dragon's race.
       {
         id: "scar",
         track: "boss_prehistoric",
-        x: 150,
-        z: 312,
+        x: 93,
+        z: 187,
         radius: 6,
         heading: Math.PI,
         boss: true,
@@ -197,8 +197,8 @@ export const REGIONS: Region[] = [
         label: "THE BURNT GORGE · TO THE SNOW KINGDOM",
         to: "journey_gorge",
         toPassage: "start",
-        x: -155.4,
-        z: -420,
+        x: -96.8,
+        z: -270,
         radius: 8,
         heading: 0,
         ruinOnly: true,
@@ -223,52 +223,52 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "drift",
       tool: "desert",
-      gate: { x: -203.43, z: 98.85, heading: -1.929, width: 9 },
-      spot: { x: -195, z: 102 },
+      gate: { x: -126.48, z: 70.26, heading: -0.6687, width: 9 },
+      spot: { x: -120.9, z: 63.2 },
     },
     // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
     cave: {
-      gate: { x: -91.36, z: -265.22, heading: 1.315, width: 9 },
-      spot: { x: -102, z: -268 },
+      gate: { x: -52.52, z: -163.55, heading: 1.3278, width: 9 },
+      spot: { x: -63.2, z: -166.2 },
     },
     music: "hearthglow",
     worldId: "frostveil",
     kingdom: "snow",
     // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
-    challenge: { x: 25, z: 205, heading: -1.7204 },
+    challenge: { x: 16, z: 127, heading: -1.7226 },
     // In the village square, facing north to the road.
-    spawn: { x: 0, z: 250, heading: Math.PI },
+    spawn: { x: 0, z: 155, heading: Math.PI },
     gateways: [
       // By the village's great tree.
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: -56.18,
-        z: 201.49,
+        x: -31.68,
+        z: 132.21,
         radius: 6,
-        heading: 0.382,
+        heading: 0.392,
       },
       // At the keep's gate in the bailey's west wall.
       {
         id: "frostveil",
         track: "frostveil_citadel",
-        x: -332.64,
-        z: 54.5,
+        x: -202.05,
+        z: 31.68,
         radius: 6,
-        heading: 2.246,
+        heading: 2.1647,
       },
       // At the foot of the giant tree in the summit meadow.
-      { id: "summit", track: "snowy_summit", x: -243.28, z: -278.06, radius: 6, heading: 0.595 },
+      { id: "summit", track: "snowy_summit", x: -149.3, z: -168.04, radius: 6, heading: 0.4949 },
       // At the rift in the glacier.
-      { id: "aurora", track: "aurora_rift", x: 306.8, z: -99.69, radius: 6, heading: -1.203 },
+      { id: "aurora", track: "aurora_rift", x: 187.51, z: -57.42, radius: 6, heading: -0.9401 },
       // Rimefang's lair, an ice cave in the summit's north wall: the dragon's race.
       {
         id: "lair",
         track: "boss_snowy",
-        x: -118.43,
-        z: -309.46,
+        x: -107.72,
+        z: -184.31,
         radius: 6,
-        heading: -0.779,
+        heading: -0.2287,
         boss: true,
         label: "RIMEFANG'S LAIR",
       },
@@ -281,7 +281,7 @@ export const REGIONS: Region[] = [
         to: "journey_gorge",
         toPassage: "end",
         x: 0,
-        z: 462,
+        z: 283,
         radius: 8,
         heading: Math.PI,
       },
@@ -291,8 +291,8 @@ export const REGIONS: Region[] = [
         label: "THE FROZEN PASS · TO DESERT WORLD",
         to: "journey_pass",
         toPassage: "start",
-        x: 400,
-        z: 190,
+        x: 244,
+        z: 117.8,
         radius: 8,
         heading: -1.692, // (along the Frozen Pass Road, west down to the lake)
         ruinOnly: true,
@@ -317,38 +317,38 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "water",
       tool: "beach",
-      gate: { x: 275.93, z: -207.36, heading: -0.74, width: 9 },
-      spot: { x: 282, z: -214 },
+      gate: { x: 168.59, z: -126.18, heading: -0.761, width: 9 },
+      spot: { x: 174.8, z: -132.7 },
     },
     // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.
     cave: {
-      gate: { x: -285.0, z: 28.07, heading: 1.564, width: 9 },
-      spot: { x: -296, z: 28 },
+      gate: { x: -172.5, z: 17.5, heading: 1.5621, width: 9 },
+      spot: { x: -183.5, z: 17.4 },
     },
     music: "canyon",
     worldId: "desert",
     kingdom: "desert",
     // The main road's start line, on the post's east side (the 1-on-1 is raced from it).
-    challenge: { x: -235, z: 10, heading: 3.0635 },
+    challenge: { x: -146, z: 6, heading: 3.0636 },
     // In the trading post's square, facing east to the road.
-    spawn: { x: -270, z: 0, heading: Math.PI / 2 },
+    spawn: { x: -167.4, z: 0, heading: Math.PI / 2 },
     gateways: [
       // At the slot canyon's mouth in the canyon's north wall.
-      { id: "canyon", track: "canyon_dash", x: -63.91, z: -310.66, radius: 6, heading: -0.332 },
+      { id: "canyon", track: "canyon_dash", x: -40.75, z: -188.14, radius: 6, heading: -0.3006 },
       // In the palm grove by the spring.
-      { id: "oasis", track: "oasis_haven", x: 302.53, z: -164.63, radius: 6, heading: -0.91 },
+      { id: "oasis", track: "oasis_haven", x: 183.97, z: -99.17, radius: 6, heading: -0.9034 },
       // At the end of the ghost town's false-front street.
-      { id: "gulch", track: "dry_gulch", x: 228.49, z: 220.69, radius: 6, heading: -2.226 },
+      { id: "gulch", track: "dry_gulch", x: 137.23, z: 135.37, radius: 6, heading: -2.0975 },
       // By the meteorite in the crater's floor.
-      { id: "impact", track: "impact_depths", x: -28.01, z: 244.47, radius: 6, heading: 1.532 },
+      { id: "impact", track: "impact_depths", x: -12.97, z: 149.31, radius: 6, heading: 1.737 },
       // Scorchwind's lair: a rock arch in the canyon's west wall.
       {
         id: "lair",
         track: "boss_desert",
-        x: -181.02,
-        z: -262.04,
+        x: -109.01,
+        z: -159.23,
         radius: 6,
-        heading: 0.846,
+        heading: 0.822,
         boss: true,
         label: "SCORCHWIND'S LAIR",
       },
@@ -360,7 +360,7 @@ export const REGIONS: Region[] = [
         label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
         to: "journey_pass",
         toPassage: "end",
-        x: -458,
+        x: -279,
         z: 0,
         radius: 8,
         heading: Math.PI / 2,
@@ -372,7 +372,7 @@ export const REGIONS: Region[] = [
         to: "journey_dust",
         toPassage: "start",
         x: 0,
-        z: 445,
+        z: 270,
         radius: 8,
         heading: Math.PI,
         ruinOnly: true,
@@ -398,38 +398,38 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "rockfall",
       tool: "valley",
-      gate: { x: -52.33, z: 247.16, heading: 2.955, width: 9 },
-      spot: { x: -54, z: 256 },
+      gate: { x: -31.58, z: 149.91, heading: 2.9267, width: 9 },
+      spot: { x: -33.5, z: 158.7 },
     },
     // The smugglers' Sea Cave: a walled yard in the shipwreck cove, Raptor's old haunt.
     cave: {
-      gate: { x: -254.74, z: 98.07, heading: 2.141, width: 9 },
-      spot: { x: -264, z: 104 },
+      gate: { x: -153.54, z: 60.27, heading: 1.9653, width: 9 },
+      spot: { x: -163.7, z: 64.5 },
     },
     music: "coral_cove",
     worldId: "beach",
     kingdom: "beach",
     // The main road's start line, south of the village square (the 1-on-1 is raced from it).
-    challenge: { x: 25, z: -225, heading: -1.9126 },
+    challenge: { x: 16, z: -140, heading: -1.8809 },
     // On the village square's boardwalk, facing south to the road.
-    spawn: { x: 0, z: -248, heading: 0 },
+    spawn: { x: 0, z: -155, heading: 0 },
     gateways: [
       // At the water park's slide tower, north-west.
-      { id: "splash", track: "splash_lagoon", x: -288.09, z: -125.48, radius: 6, heading: 1.694 },
+      { id: "splash", track: "splash_lagoon", x: -174.0, z: -77.08, radius: 6, heading: 1.5858 },
       // By the wrecked hull up the shipwreck cove's beach, south-west.
-      { id: "wreck", track: "shipwreck_bay", x: -250.73, z: 154.12, radius: 6, heading: 1.22 },
+      { id: "wreck", track: "shipwreck_bay", x: -150.56, z: 91.07, radius: 6, heading: 1.7321 },
       // At the end of the pier, Volcano Isle smoking offshore.
-      { id: "volcano", track: "volcano_isle", x: 2.02, z: 302.55, radius: 6, heading: 2.612 },
+      { id: "volcano", track: "volcano_isle", x: 1.98, z: 186.23, radius: 6, heading: 2.6233 },
       // By the coral heads in the shallows, south-east.
-      { id: "coral", track: "coral_cove", x: 256.85, z: 153.16, radius: 6, heading: -2.698 },
+      { id: "coral", track: "coral_cove", x: 123.77, z: 117.75, radius: 6, heading: -2.5955 },
       // Tidewyrm's lair: a sea cave in the coral cove's east headland.
       {
         id: "lair",
         track: "boss_tropic",
-        x: 294.57,
-        z: 91.65,
+        x: 178.19,
+        z: 58.01,
         radius: 6,
-        heading: -1.262,
+        heading: -1.2828,
         boss: true,
         label: "TIDEWYRM'S LAIR",
       },
@@ -442,7 +442,7 @@ export const REGIONS: Region[] = [
         to: "journey_dust",
         toPassage: "end",
         x: 0,
-        z: -458,
+        z: -279.4,
         radius: 8,
         heading: 0,
       },
@@ -453,7 +453,7 @@ export const REGIONS: Region[] = [
         to: "journey_cause",
         toPassage: "start",
         x: 0,
-        z: 460,
+        z: 285.2,
         radius: 8,
         heading: -2.861, // (along the Causeway, back to the beach west of the pier)
         ruinOnly: true,
@@ -479,31 +479,31 @@ export const REGIONS: Region[] = [
     worldId: "dragon",
     kingdom: "dragon",
     // On Dragonfire Square's north side, facing north to the road.
-    spawn: { x: 0, z: 200, heading: Math.PI },
+    spawn: { x: 0, z: 138.8, heading: Math.PI },
     gateways: [
       // Under Dragonspire Keep's tower on its crag, north-west.
-      { id: "keep", track: "dragon_isles", x: -207.8, z: -255.72, radius: 6, heading: 0.543 },
+      { id: "keep", track: "dragon_isles", x: -126.54, z: -154.6, radius: 6, heading: 0.5389 },
       // At the overgrown jungle castle's gate, east.
-      { id: "canyon", track: "dragon_canyon", x: 318.0, z: 112.19, radius: 6, heading: -1.555 },
+      { id: "canyon", track: "dragon_canyon", x: 192.68, z: 68.02, radius: 6, heading: -1.6862 },
       // At Emberdeep Hold's fortress gate under its storm, north-east.
-      { id: "hold", track: "snow_dragon_pass", x: 206.65, z: -228.51, radius: 6, heading: -0.659 },
+      { id: "hold", track: "snow_dragon_pass", x: 125.26, z: -138.19, radius: 6, heading: -0.6693 },
       // Before the moon gate among the violet lanterns, west.
       {
         id: "moon",
         track: "celestial_dragon_festival",
-        x: -326.31,
-        z: -20.71,
+        x: -197.93,
+        z: -14.01,
         radius: 6,
-        heading: 1.799,
+        heading: 1.8073,
       },
       // King Pyrrhax's Citadel's gate in the north wall: the King's race.
       {
         id: "citadel",
         track: "boss_dragon",
-        x: 9.53,
-        z: -326.53,
+        x: 7.24,
+        z: -198.14,
         radius: 6,
-        heading: 0.299,
+        heading: 0.2998,
         king: true,
         label: "KING PYRRHAX'S CITADEL",
       },
@@ -516,7 +516,7 @@ export const REGIONS: Region[] = [
         to: "journey_cause",
         toPassage: "end",
         x: 0,
-        z: 460,
+        z: 283,
         radius: 8,
         heading: Math.PI,
       },

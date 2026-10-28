@@ -54,6 +54,106 @@ def catmull(points, per=12):
     return out
 
 
+# The walls in tiers (Blake, Oct 28, on Dinosaur Valley's walls: "too plain ... we need
+# some ledges, maybe with a couple of palm trees and shrubs on the ledges"; "take
+# inspiration from the walls in Cascade Caverns"): a pocket's wall rises in steep risers
+# with shelves between, each tier its own bed of rock, like Cascade Caverns' canyon. A
+# tier is TIER_W m deep and about TIER_H m tall (so a high wall has more of them); the
+# beds aren't all the same thickness, and where the risers fall, and how wide the shelves
+# are, wanders along the wall.
+TIER_W = 7.0
+TIER_H = 12.0
+_BEDS = (1.15, 1.0, 0.88, 1.06, 0.84, 0.95)
+
+
+def tier_count(height):
+    return max(2, min(5, int(round(height / TIER_H))))
+
+
+def tier_cum(n):
+    w = _BEDS[:n]
+    tot = sum(w)
+    out = [0.0]
+    for v in w:
+        out.append(out[-1] + v / tot)
+    return out
+
+
+def terrace(t, x, y, n):
+    """The height fraction (0 at the wall's foot .. 1 at its rim) at fraction t of the way
+    through an n-tier wall: a steep riser (most of the tier's rise), then a shelf that
+    climbs gently to the next riser."""
+    if t <= 0.0:
+        return 0.0
+    if t >= 1.0:
+        return 1.0
+    t = t + 0.035 * math.sin(x / 9.0 + t * 7.0) * math.cos(y / 13.0 - t * 5.0) + 0.02 * math.sin((x + y) / 23.0)
+    t = max(0.0, min(0.99999, t))
+    cum = tier_cum(n)
+    k = t * n
+    i = int(k)
+    u = k - i
+    rf = 0.5 + 0.12 * math.sin(x / 17.0 - y / 11.0 + i * 1.9)
+    lo, hi = cum[i], cum[i + 1]
+    return lo + (hi - lo) * (0.9 * smooth(u / rf) + 0.1 * smooth((u - rf) / (1.0 - rf)))
+
+
+def pocket_sd(p, x, y):
+    """Signed distance from the pocket's edge (< 0 inside), and its floor height there."""
+    sd = None
+    fw = fz = 0.0
+    for cx, cy, r, f in p[2]:
+        d = math.hypot(x - cx, y - cy) - r
+        sd = d if sd is None else smin(sd, d, 22.0)
+        w = math.exp(-max(0.0, d + r * 0.6) / 30.0)
+        fw += w
+        fz += w * f
+    return sd, fz / fw
+
+
+def tiered_walls(pockets, top, x, y):
+    """The land rising in tiers out of every pocket (the lowest of them all), and which
+    wall it is: (height, {pocket, floor, t (0 foot .. 1 rim), tier, n, past (m beyond the
+    rim, < 0 inside), best (the nearest pocket's signed distance)})."""
+    h = None
+    info = None
+    past = 1e9
+    best = 1e9
+    for p in pockets:
+        sd, f = pocket_sd(p, x, y)
+        best = min(best, sd)
+        n = tier_count(top - min(c[3] for c in p[2]))
+        wide = n * TIER_W
+        t = (sd + 8.0) / wide
+        past = min(past, sd + 8.0 - wide)
+        hp = f + (top - f) * terrace(t, x, y, n)
+        if h is None or hp < h:
+            h = hp
+            info = {"pocket": p[0], "floor": f, "t": t, "n": n}
+    t = info["t"]
+    info["tier"] = max(0, min(info["n"] - 1, int(t * info["n"]))) if t > 0 else -1
+    info["past"] = past
+    info["best"] = best
+    return h, info
+
+
+def rim_crags(x, y, past, mountains):
+    """Beyond a tiered wall's rim: craggy high ground, then the mountains."""
+    if past <= 0.0:
+        return 0.0
+    return (6.0 * smooth(past / 24.0) * (0.5 + 0.5 * math.sin(x / 17.0 + math.cos(y / 23.0) * 2.0))
+            + mountains * smooth((past - 45.0) / 110.0))
+
+
+def tier_of(frac, n):
+    """Which tier (0 = the foot) a height fraction up an n-tier wall is in."""
+    cum = tier_cum(n)
+    for i in range(n):
+        if frac < cum[i + 1] - 0.02:
+            return i
+    return n - 1
+
+
 class Layout:
     """pockets: [(name, look, [(x, y, radius, floor)])]; top: the high ground's height;
     hub: (x, y, radius, height) of a level square (or None); rivers: [[(x, y, water z)]];
@@ -61,8 +161,10 @@ class Layout:
     point, last point)]; roll: the rolling ground's height (m); flat: looks kept flat."""
 
     def __init__(self, pockets, top, route, tunnels, hub=None, rivers=(), lakes=(), river_hw=9.0, roll=5.0,
-                 flat=(), mountains=40.0, water_floor=None, hidden=()):
+                 flat=(), mountains=40.0, water_floor=None, hidden=(), tiers=False):
         self.pockets = pockets
+        # (The walls in tiers, with shelves: see terrace().)
+        self.tiers = tiers
         self.top = top
         self.route = route
         self.tunnels = tunnels
@@ -129,15 +231,23 @@ class Layout:
                 best, bz = d, lz
         return best, bz
 
+    def wall_info(self, x, y):
+        """Which pocket's wall (x, y) is on and how far up it (tiered_walls())."""
+        return tiered_walls(self.pockets, self.top, x, y)[1]
+
     def natural(self, x, y):
-        h = None
-        best = 1e9
-        for p in self.pockets:
-            sd, f = self.pocket_sd(p, x, y)
-            best = min(best, sd)
-            rise = max(10.0, 0.42 * (self.top - f))
-            hp = lerp(f, self.top, smooth((sd + 8.0) / rise))
-            h = hp if h is None else min(h, hp)
+        if self.tiers:
+            h, info = tiered_walls(self.pockets, self.top, x, y)
+            best, past = info["best"], info["past"]
+        else:
+            h = None
+            best = 1e9
+            for p in self.pockets:
+                sd, f = self.pocket_sd(p, x, y)
+                best = min(best, sd)
+                rise = max(10.0, 0.42 * (self.top - f))
+                hp = lerp(f, self.top, smooth((sd + 8.0) / rise))
+                h = hp if h is None else min(h, hp)
         w = self.look_weights(x, y)
         floor = 1.0 - smooth((best + 14.0) / 20.0)
         r = self.roll
@@ -155,7 +265,9 @@ class Layout:
         if d < hw + 14:
             h = lerp(h, wz - (self.water_floor if self.water_floor is not None else 1.4),
                      smooth((hw + 14 - d) / 14.0))
-        if best > 0:
+        if self.tiers:
+            h += rim_crags(x, y, past, self.mountains)
+        elif best > 0:
             h += 5.0 * smooth(best / 30.0) * (0.5 + 0.5 * math.sin(x / 17.0 + math.cos(y / 23.0) * 2.0))
             h += self.mountains * smooth((best - 70.0) / 110.0)
         return h

@@ -36,7 +36,15 @@ export type InstrumentId =
   | "bongo"
   | "tamb"
   | "crash"
-  | "tom";
+  | "tom"
+  // The cutscene score's voices (music renderer only; see play()).
+  | "harp"
+  | "organ"
+  | "accordion"
+  | "choir"
+  | "timpani"
+  | "wobble"
+  | "riser";
 
 export const DRUMS: ReadonlySet<InstrumentId> = new Set([
   "djembe",
@@ -206,11 +214,15 @@ export function play(
   const v: Voice = { ctx, out, t, dur, freq: midiToFreq(midi), vel };
   // The newer track-theme instruments live only in the music renderer (dsp.ts); live
   // sounds use their nearest relative.
-  if (inst === "steelpan" || inst === "bell") inst = "celesta";
-  else if (inst === "strings" || inst === "drone") inst = "pad";
-  else if (inst === "tom" || inst === "djembe") inst = "bongo";
+  if (inst === "steelpan" || inst === "bell" || inst === "harp") inst = "celesta";
+  else if (inst === "strings" || inst === "drone" || inst === "organ" || inst === "choir")
+    inst = "pad";
+  else if (inst === "tom" || inst === "djembe" || inst === "timpani") inst = "bongo";
   else if (inst === "panflute") inst = "flute";
   else if (inst === "logdrum") inst = "marimba";
+  else if (inst === "accordion") inst = "clarinet";
+  else if (inst === "wobble") inst = "bass";
+  else if (inst === "riser") inst = "crash";
   switch (inst) {
     case "marimba":
       bar(

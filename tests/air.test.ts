@@ -3,7 +3,15 @@
 // evenly where they're equally far, and every region's areas have looks to lend.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { airAt, airOf, hex, mixAir } from "../src/overworld/air";
+import {
+  airAt,
+  airOf,
+  airWeights,
+  areaAmbient,
+  courseAmbient,
+  hex,
+  mixAir,
+} from "../src/overworld/air";
 import { REGIONS } from "../src/overworld/regions";
 import { trackById } from "../src/game/tracks";
 import { parseLook } from "../src/world/trackPackage";
@@ -57,5 +65,31 @@ describe("the overworld's air", () => {
           expect(look.fog, id).toBeDefined();
         }
       }
+  });
+
+  it("brings each course's particles into its area, fading with the same blend", () => {
+    // Bonebog's swamp motes (Blake, note 38) come from the course itself.
+    const bog = JSON.parse(readFileSync("public/tracks/bonebog_pyramid/track.json", "utf8"));
+    expect(courseAmbient(bog.entities).map((a) => a.kind)).toContain("fireflies");
+    const ember = JSON.parse(readFileSync("public/tracks/ember_peak/track.json", "utf8"));
+    expect(courseAmbient(ember.entities).map((a) => a.kind)).toContain("ashfall");
+    // A region's own extras for an area.
+    const extra = areaAmbient([
+      { type: "area_ambient", area: "riverbend", effect: "sparkles", rate: 9, colors: ["#fff6c0"] },
+      { type: "area_ambient", area: "riverbend", effect: "nonsense" },
+      { type: "torch", x: 0 },
+    ]);
+    expect(extra.riverbend).toEqual([
+      { kind: "sparkles", rate: 9, radius: 36, colors: ["#fff6c0"] },
+    ]);
+    // The weights sum to one, the nearer area's the more, and never jump.
+    let last = 1;
+    for (let x = 0; x <= 400; x += 4) {
+      const w = airWeights(spots, x, -50);
+      expect(w.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 6);
+      expect(Math.abs(w[0]! - last)).toBeLessThan(0.06);
+      last = w[0]!;
+    }
+    expect(airWeights(spots, 0, 0)[0]).toBeCloseTo(1);
   });
 });

@@ -74,10 +74,13 @@ function blep(t: number, dt: number) {
   return 0;
 }
 
+const SINE_N = 4096;
+const SINE = new Float64Array(SINE_N + 1).map((_, i) => Math.sin((TAU * i) / SINE_N));
+
 class Osc {
   phase: number;
   constructor(phase = 0) {
-    this.phase = phase;
+    this.phase = phase % 1;
   }
   /** Advance by `inc` cycles and return the waveform. */
   saw(inc: number) {
@@ -97,7 +100,10 @@ class Osc {
     return v;
   }
   sine(inc: number) {
-    const v = Math.sin(TAU * this.phase);
+    // A table lookup, linearly interpolated (within 1e-7 of Math.sin, and much faster).
+    const x = this.phase * SINE_N;
+    const i = x | 0;
+    const v = SINE[i]! + (SINE[i + 1]! - SINE[i]!) * (x - i);
     this.phase = (this.phase + inc) % 1;
     return v;
   }
@@ -139,10 +145,18 @@ function bar(c: Ctx, partials: [number, number, number][], decay: number, level:
     const inc = (TAU * f) / c.rate;
     let a = amp * level * c.vel;
     const n = Math.min(len, Math.ceil(ring * d * 7 * c.rate));
+    const atkN = 0.003 * c.rate;
+    // sin(inc * i) by the recurrence s[i] = 2cos(inc) s[i-1] - s[i-2].
+    const cos2 = 2 * Math.cos(inc);
+    let s1 = Math.sin(-inc);
+    let s2 = Math.sin(-2 * inc);
     for (let i = 0; i < n; i++) {
-      const atk = i < 0.003 * c.rate ? i / (0.003 * c.rate) : 1;
-      add(c, i, a * atk * Math.sin(inc * i));
+      const s = cos2 * s1 - s2;
+      s2 = s1;
+      s1 = s;
+      add(c, i, a * (i < atkN ? i / atkN : 1) * s);
       a *= k;
+      if (a < 1e-5) break; // -100 dB: done
     }
   }
 }
@@ -551,6 +565,159 @@ export function renderNote(
       const f = midi > 0 ? c.freq : 330;
       return thump(c, f * 1.25, f, 0.03, 0.05, 0.5);
     }
+    // ---- the cutscene score's voices
+    case "harp":
+      // A plucked gut string: whole-number partials, the upper ones dying first, and a
+      // soft finger-noise at the start.
+      bar(
+        c,
+        [
+          [1, 1, 1],
+          [2, 0.42, 0.55],
+          [3, 0.2, 0.35],
+          [4, 0.1, 0.25],
+          [5, 0.05, 0.18],
+        ],
+        0.5,
+        0.27,
+      );
+      return noiseHit(c, "bp", Math.min(6000, c.freq * 3), 1.5, 0.008, 0.05);
+    case "organ":
+      // Drawbars (16', 8', 4', 2 2/3', 2') with a gentle chorus and a slow swell.
+      return sustained(c, {
+        layers: [
+          { wave: "sine", mult: 0.5, amp: 0.55 },
+          { wave: "sine", mult: 1, amp: 1 },
+          { wave: "sine", mult: 1, amp: 0.4, detune: 6 },
+          { wave: "sine", mult: 2, amp: 0.55 },
+          { wave: "sine", mult: 3, amp: 0.25 },
+          { wave: "sine", mult: 4, amp: 0.22 },
+        ],
+        filter: { from: 3000, to: 3000, time: 0.01, q: 0.5 },
+        attack: 0.07,
+        release: 0.35,
+        level: 0.085,
+        vibrato: { delay: 0.4, rate: 5.8, depth: 0.0015 },
+      });
+    case "accordion":
+      // Two reeds tuned a little apart (the musette's beating) and a low reed under them.
+      return sustained(c, {
+        layers: [
+          { wave: "saw", mult: 1, amp: 0.45, detune: -11 },
+          { wave: "saw", mult: 1, amp: 0.45, detune: 11 },
+          { wave: "square", mult: 0.5, amp: 0.25 },
+        ],
+        filter: { from: 1400, to: Math.min(3400, c.freq * 6), time: 0.04, q: 1.1 },
+        attack: 0.03,
+        release: 0.07,
+        level: 0.2,
+      });
+    case "choir":
+      return choir(c);
+    case "timpani":
+      return timpani(c, midi);
+    case "wobble":
+      return wobble(c);
+    case "riser":
+      return riser(c);
+  }
+}
+
+/**
+ * Voices singing "oh": detuned saws through the vowel's formants, a slow swell and a
+ * late, gentle vibrato.
+ */
+function choir(c: Ctx) {
+  const attack = 0.35;
+  const release = 0.6;
+  const hold = Math.max(attack, c.dur);
+  const n = Math.ceil((hold + release * 2) * c.rate);
+  const formants: [number, number, number][] = [
+    [520, 7, 1],
+    [880, 9, 0.6],
+    [2450, 12, 0.22],
+  ];
+  const bps = formants.map(([f, q]) => {
+    const b = new Biquad("bp", c.rate);
+    b.set(f, q);
+    return b;
+  });
+  const oscs = [new Osc(0), new Osc(0.31), new Osc(0.67)];
+  const det = [1, Math.pow(2, 9 / 1200), Math.pow(2, -9 / 1200)];
+  const base = c.freq / c.rate;
+  for (let i = 0; i < n; i++) {
+    const t = i / c.rate;
+    const depth = t < 0.45 ? 0 : Math.min(1, (t - 0.45) / 0.4) * 0.005;
+    const vib = 1 + depth * Math.sin(TAU * 5.1 * t);
+    let x = 0;
+    for (let k = 0; k < 3; k++) x += oscs[k]!.saw(base * det[k]! * vib);
+    let y = 0;
+    for (let k = 0; k < 3; k++) y += bps[k]!.run(x) * formants[k]![2];
+    add(c, i, y * ahr(i, c.rate, attack, hold, release) * 0.22 * c.vel);
+  }
+}
+
+/** A kettle drum: a tuned, slowly dying boom with its overtones and the mallet's thud. */
+function timpani(c: Ctx, midi: number) {
+  const f = midi > 0 ? c.freq : 65;
+  const n = Math.ceil(2.6 * c.rate);
+  const oscs = [new Osc(), new Osc(0.2), new Osc(0.5)];
+  const parts: [number, number, number][] = [
+    [1, 1, 0.75],
+    [1.5, 0.45, 0.4],
+    [1.99, 0.25, 0.3],
+  ];
+  const amps = parts.map((p) => p[1]);
+  const decays = parts.map((p) => Math.exp(-1 / (p[2] * c.rate)));
+  const bendDecay = Math.exp(-1 / (0.03 * c.rate));
+  let bend = 0.06;
+  for (let i = 0; i < n; i++) {
+    let x = 0;
+    for (let k = 0; k < 3; k++) {
+      x += oscs[k]!.sine((f * parts[k]![0] * (1 + bend)) / c.rate) * amps[k]!;
+      amps[k]! *= decays[k]!;
+    }
+    bend *= bendDecay;
+    const atk = i < 0.002 * c.rate ? i / (0.002 * c.rate) : 1;
+    add(c, i, x * atk * 0.45 * c.vel);
+    if (amps[0]! < 1e-4) break;
+  }
+  noiseHit(c, "lp", 700, 0.8, 0.05, 0.25);
+}
+
+/**
+ * A slinky, wobbling bass: it scoops up into each note and its filter wah-wahs at a
+ * steady 3 Hz, with a slow, wide vibrato on long notes.
+ */
+function wobble(c: Ctx) {
+  const n = Math.ceil((c.dur + 0.25) * c.rate);
+  const a = new Osc();
+  const b = new Osc(0.25);
+  const lp = new Biquad("lp", c.rate);
+  for (let i = 0; i < n; i++) {
+    const t = i / c.rate;
+    if (i % 16 === 0) lp.set(260 + 620 * (0.5 - 0.5 * Math.cos(TAU * 3 * t)), 5);
+    const scoop = Math.pow(2, (-1.2 * Math.exp(-t / 0.035)) / 12);
+    const vib = 1 + (t > 0.3 ? 0.008 * Math.sin(TAU * 4 * t) : 0);
+    const inc = (c.freq * scoop * vib) / c.rate;
+    const x = a.sine(inc) * 0.8 + b.saw(inc) * 0.45;
+    const e = t < 0.012 ? t / 0.012 : t > c.dur ? Math.exp(-(t - c.dur) / 0.05) : 1;
+    add(c, i, lp.run(x) * e * 0.28 * c.vel);
+  }
+}
+
+/** A rising rush of air (a build into a hit): noise swept upward, swelling to the end. */
+function riser(c: Ctx) {
+  const n = Math.ceil((c.dur + 0.05) * c.rate);
+  const bp = new Biquad("bp", c.rate);
+  const o = new Osc();
+  for (let i = 0; i < n; i++) {
+    const t = i / c.rate;
+    const p = Math.min(1, t / Math.max(0.1, c.dur));
+    if (i % 16 === 0) bp.set(250 * Math.pow(32, p), 2.5);
+    const e = p * p * (t > c.dur ? Math.exp(-(t - c.dur) / 0.01) : 1);
+    const tone = o.saw((c.freq * Math.pow(2, p)) / c.rate) * 0.15;
+    add(c, i, bp.run(noise() + tone) * e * 0.9 * c.vel);
   }
 }
 
@@ -568,7 +735,7 @@ export function renderStem(song: Song, stem: string, rate: number): Float32Array
   for (const p of song.parts) {
     if (p.stem !== stem) continue;
     for (const n of p.notes as Note[])
-      renderNote(work, rate, p.inst, n.t * spb + 0.005, n.d * spb, n.m, n.v, p.gain);
+      if (n.t >= 0) renderNote(work, rate, p.inst, n.t * spb + 0.005, n.d * spb, n.m, n.v, p.gain);
   }
   if (!song.loop) return work;
   const out = work.slice(0, len);
@@ -576,10 +743,28 @@ export function renderStem(song: Song, stem: string, rate: number): Float32Array
   return out;
 }
 
-/** Scale stems together so the loudest mix (base + any one layer) peaks at `peak`. */
-export function normalise(stems: Record<string, Float32Array>, peak = 0.85) {
+/** The stem name of a song's intro (played once, its tail ringing on into the loop). */
+export const INTRO = "@intro";
+
+/** A song's intro: the notes before beat 0, from the intro's start, tails and all. */
+export function renderIntro(song: Song, rate: number): Float32Array {
+  const spb = 60 / song.bpm;
+  const lead = (song.intro ?? 0) * spb;
+  const work = new Float32Array(Math.ceil((lead + TAIL_SEC) * rate));
+  for (const p of song.parts)
+    for (const n of p.notes as Note[])
+      if (n.t < 0)
+        renderNote(work, rate, p.inst, lead + n.t * spb + 0.005, n.d * spb, n.m, n.v, p.gain);
+  return work;
+}
+
+/**
+ * Scale stems together so the loudest mix (base + any one layer, and the intro over
+ * the loop's start) peaks at `peak`. `introLen` is the intro's length in samples.
+ */
+export function normalise(stems: Record<string, Float32Array>, peak = 0.85, introLen = 0) {
   const base = stems.base!;
-  const layers = Object.keys(stems).filter((k) => k !== "base");
+  const layers = Object.keys(stems).filter((k) => k !== "base" && k !== INTRO);
   let max = 1e-6;
   const sets = layers.length ? layers.map((l) => stems[l]!) : [undefined];
   for (const layer of sets)
@@ -587,14 +772,25 @@ export function normalise(stems: Record<string, Float32Array>, peak = 0.85) {
       const s = Math.abs(base[i]! + (layer?.[i] ?? 0));
       if (s > max) max = s;
     }
+  const intro = stems[INTRO];
+  if (intro)
+    for (let i = 0; i < intro.length; i++) {
+      const s = Math.abs(intro[i]! + (i >= introLen ? (base[i - introLen] ?? 0) : 0));
+      if (s > max) max = s;
+    }
   const k = peak / max;
   for (const b of Object.values(stems)) for (let i = 0; i < b.length; i++) b[i]! *= k;
 }
 
-/** Every stem of a song, normalised together. */
+/** Every stem of a song (and its intro, if it has one), normalised together. */
 export function renderSongData(song: Song, rate: number): Record<string, Float32Array> {
   const stems: Record<string, Float32Array> = {};
   for (const s of ["base", ...song.stems]) stems[s] = renderStem(song, s, rate);
-  normalise(stems);
+  let introLen = 0;
+  if (song.intro) {
+    stems[INTRO] = renderIntro(song, rate);
+    introLen = Math.round(((song.intro * 60) / song.bpm) * rate);
+  }
+  normalise(stems, song.peak ?? 0.85, introLen);
   return stems;
 }

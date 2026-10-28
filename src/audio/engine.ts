@@ -15,6 +15,7 @@
  */
 import { play, type InstrumentId } from "./instruments";
 import { renderSong, type RenderedSong } from "./render";
+import { INTRO } from "./dsp";
 import { SONGS } from "./songs";
 
 export interface AudioSettings {
@@ -131,28 +132,52 @@ export function createAudioEngine(initial: AudioSettings) {
     const i = recent.indexOf(id);
     if (i >= 0) recent.splice(i, 1);
     recent.unshift(id);
-    for (const old of recent.splice(4)) if (old !== current?.id) cache.delete(old);
+    // (Six: a cutscene prepares its few cues ahead while another piece plays.)
+    for (const old of recent.splice(6)) if (old !== current?.id) cache.delete(old);
     return p;
   }
 
   let current: Playing | undefined;
+
+  /**
+   * The AudioContext time of the next beat of a playing piece (within a beat and at
+   * most a second away), so the next piece can come in on it; undefined for none.
+   */
+  function nextBeat(p: Playing | undefined): number | undefined {
+    if (!ctx || !p) return undefined;
+    const beat = 60 / p.rendered.song.bpm;
+    const now = ctx.currentTime + 0.06;
+    const t = now - p.startedAt + p.offset; // seconds into the piece
+    if (t < 0) return undefined;
+    const wait = Math.ceil(t / beat - 1e-3) * beat - t;
+    return wait <= 1 ? now + wait : undefined;
+  }
   /** Bumped on every music request, so a slow render can't start a stale piece. */
   let request = 0;
 
   function start(
     rendered: RenderedSong,
-    opts: { fade: number; layers?: Record<string, number>; offset?: number; loop?: boolean },
+    opts: {
+      fade: number;
+      layers?: Record<string, number>;
+      offset?: number;
+      loop?: boolean;
+      /** When to start (AudioContext time); soon, by default. */
+      at?: number;
+    },
   ): Playing | undefined {
     if (!ctx || !musicIn) return undefined;
     const gain = ctx.createGain();
     gain.gain.value = 0;
     gain.connect(musicIn);
-    const at = ctx.currentTime + 0.06;
+    const at = Math.max(ctx.currentTime + 0.06, opts.at ?? 0);
     const loop = opts.loop ?? rendered.song.loop;
     const offset = opts.offset ?? 0;
+    const intro = rendered.introSeconds;
     const stems: Record<string, GainNode> = {};
     const sources: AudioBufferSourceNode[] = [];
     for (const [name, buf] of Object.entries(rendered.stems)) {
+      if (name === INTRO) continue;
       const g = ctx.createGain();
       g.gain.value = name === "base" ? 1 : (opts.layers?.[name] ?? 0);
       g.connect(gain);
@@ -164,8 +189,19 @@ export function createAudioEngine(initial: AudioSettings) {
         src.loopEnd = rendered.seconds;
       }
       src.connect(g);
-      src.start(at, offset % buf.duration);
+      // The loop starts once the intro (if any) has played.
+      if (offset < intro) src.start(at + intro - offset, 0);
+      else src.start(at, (offset - intro) % buf.duration);
       stems[name] = g;
+      sources.push(src);
+    }
+    const introBuf = rendered.stems[INTRO];
+    if (introBuf && offset < intro) {
+      // Played once, its tail ringing on over the loop's first bars.
+      const src = ctx.createBufferSource();
+      src.buffer = introBuf;
+      src.connect(stems.base ?? gain);
+      src.start(at, offset);
       sources.push(src);
     }
     gain.gain.setValueAtTime(0, at);
@@ -189,11 +225,14 @@ export function createAudioEngine(initial: AudioSettings) {
     return playing;
   }
 
-  function fadeOut(p: Playing | undefined, sec: number) {
+  /** Fade a piece out over `sec`, holding its level until `from` (AudioContext time). */
+  function fadeOut(p: Playing | undefined, sec: number, from = 0) {
     if (!ctx || !p) return;
-    const t = ctx.currentTime;
-    p.gain.gain.cancelScheduledValues(t);
-    p.gain.gain.setValueAtTime(p.gain.gain.value, t);
+    const now = ctx.currentTime;
+    const t = Math.max(now, from);
+    p.gain.gain.cancelScheduledValues(now);
+    p.gain.gain.setValueAtTime(p.gain.gain.value, now);
+    if (t > now) p.gain.gain.linearRampToValueAtTime(p.gain.gain.value, t);
     p.gain.gain.linearRampToValueAtTime(0, t + sec);
     for (const s of p.sources) {
       s.onended = null;
@@ -203,7 +242,7 @@ export function createAudioEngine(initial: AudioSettings) {
         // already stopped
       }
     }
-    setTimeout(() => p.gain.disconnect(), (sec + 0.2) * 1000);
+    setTimeout(() => p.gain.disconnect(), (t - now + sec + 0.2) * 1000);
   }
 
   const music = {
@@ -235,8 +274,16 @@ export function createAudioEngine(initial: AudioSettings) {
         return;
       }
       if (mine !== request) return; // something else was asked for meanwhile
-      fadeOut(current, fade);
-      current = start(rendered, { fade, layers: opts.layers, loop: opts.loop });
+      // A cutscene cue (a piece with an intro) comes in on the next beat of the piece
+      // it replaces, quickly, while that one fades out under it from the same moment.
+      const at = rendered.introSeconds > 0 ? nextBeat(current) : undefined;
+      fadeOut(current, fade, at);
+      current = start(rendered, {
+        fade: at === undefined ? fade : Math.min(fade, 0.3),
+        layers: opts.layers,
+        loop: opts.loop,
+        at,
+      });
       if (current) current.onEnd = opts.onEnd;
     },
     stop(fade = 0.6) {
@@ -269,10 +316,12 @@ export function createAudioEngine(initial: AudioSettings) {
     position(): number {
       if (!ctx || !current) return 0;
       const t = Math.max(0, ctx.currentTime - current.startedAt) + current.offset;
-      return current.loop ? t % current.rendered.seconds : Math.min(t, current.rendered.seconds);
+      const { seconds, introSeconds: intro } = current.rendered;
+      if (t < intro) return t;
+      return current.loop ? intro + ((t - intro) % seconds) : Math.min(t, intro + seconds);
     },
     length(): number {
-      return current?.rendered.seconds ?? 0;
+      return current ? current.rendered.introSeconds + current.rendered.seconds : 0;
     },
     /** Duck the music (pausing the game) or bring it back. */
     duck(on: boolean) {

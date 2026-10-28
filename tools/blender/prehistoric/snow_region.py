@@ -43,16 +43,16 @@ GORGE_HW = 16.0
 # The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut on an island in the frozen
 # lake, its ice door shut, and three bells out on the ice round it to ring in order (their
 # lanterns: one, two, three).
-HUT = (118.0, -92.0)
+HUT = (73.2, -57.0)
 HUT_HALF = 10.0
 HUT_GAP = 4.5
-BELLS = [(90.0, -60.0), (150.0, -112.0), (104.0, -132.0)]
+BELLS = [(55.8, -37.2), (93.0, -69.4), (64.5, -81.8)]
 LANTERNS = [1, 2, 3]
 # Brachio's hot spring (Act V's return task): a walled yard in the summit meadow, frozen shut.
-RETURN = (-102.0, 268.0)
+RETURN = (-63.2, 166.2)
 # A secret (regions.ts secret): an old store in Frostveil's bailey, buried under a drift
 # (the Desert Tool's).
-SECRET = (-195.0, -102.0)
+SECRET = (-120.9, -63.2)
 
 LOOK = {
     # look: (ground, cliff, road, shoulder)
@@ -64,8 +64,19 @@ LOOK = {
 }
 
 
+# v4 (Blake, Oct 28: the walls with ledges, like Cascade Caverns'): the walls rise in
+# tiers (pocket_kit.terrace), a bed of each world's rock to a tier, foot to rim.
+STRATA = {
+    "hearth": ["frost_stone", "frost_cliff", "frost_rock", "summit_cliff", "frost_cliff"],
+    "frostveil": ["frost_rock", "frost_cliff", "summit_rock", "frost_cliff", "summit_cliff"],
+    "summit": ["summit_rock", "summit_cliff", "frost_rock", "summit_cliff", "summit_rock"],
+    "aurora": ["rift_rock", "rift_cliff", "rift_stone", "rift_cliff", "rift_rock"],
+    "lake": ["frost_cliff", "frost_rock", "frost_stone", "frost_cliff", "summit_cliff"],
+}
+
+
 def gorge_x(y):
-    return 6.0 * math.sin(max(0.0, -y - 300.0) / 40.0)
+    return 4.0 * math.sin(max(0.0, -y - 186.0) / 26.0)
 
 
 def _natural(x, y):
@@ -114,16 +125,17 @@ def natural(x, y):
 def classify(c, n, info):
     look = L.look_at(c.x, c.y)
     ground, cliff, _, _ = LOOK[look]
-    if n.z < 0.62:
-        if c.y < -290 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 40:
+    # (on the tiered walls only the shelves' flat tops are ground)
+    if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
+        if c.y < -180 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
             return ("obsidian_cliff", "wall")  # (the Burnt Gorge's scorched walls)
-        return cliff
+        return (pb.strata(L, c, n, STRATA), "wall")
     lx, ly, lr, lz = SL.LAKE
     if math.hypot(c.x - lx, c.y - ly) < lr + 2 and c.z < lz + 0.1:
         return ("lake_ice", "ice")
     if RUIN and look in ("hearth", "summit", "frostveil") and math.sin(c.x / 23.0) * math.cos(c.y / 19.0) > 0.55:
         return ("berg_ice", "ice")  # (Rimefang's frost)
-    return ground
+    return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
 
 
 def main():
@@ -133,7 +145,8 @@ def main():
     for look, (ground, cliff, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
     c.kinds = kinds
-    c.roads(kit.plan(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), "hearth", max_len=160.0))
+    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), LOOK), "hearth",
+                     max_len=160.0))
 
     snow = ("snow_ground", "deep_snow")
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=snow)
@@ -158,8 +171,9 @@ def main():
         way = pb.line(natural, (smp.p.x, smp.p.y), (bx - 10.0, by), z0=smp.p.z)
         c.side_road("Frozen Pass Road", way, "packed_snow_road", "road", **trail)
 
-    X0, X1, Y0, Y1 = -480, 480, -490, 480
-    ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    # (v4: drawn in, and finer, for the walls' tiers)
+    X0, X1, Y0, Y1 = -310, 310, -310, 310
+    ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
 
     def ground(x, y):
@@ -180,7 +194,8 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
+    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)],
+             wall=-15.0, per=3)
     dress(c, ground, spots)
     # The gorge's far end, back towards the valley: it bends out of sight.
     box(c, "Gorge Bend", gorge_x(gy - 8), gy - 8, GORGE_HW + 24.0, 6.0, natural(0, gy) - 2.0, RIM_Z + 20.0,
@@ -382,7 +397,7 @@ def ruined(c, ground):
     spots = []
     for k in range(40):
         a = k * 2.399
-        r = 60.0 + 380.0 * ((k * 0.618) % 1.0)
+        r = 37.0 + 236.0 * ((k * 0.618) % 1.0)
         x, y = r * math.cos(a), r * math.sin(a)
         if L.wall_sd(x, y) < -16 and paint.road_clear(c, x, y, 8.0):
             spots.append((x, y))

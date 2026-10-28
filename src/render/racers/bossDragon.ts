@@ -14,6 +14,7 @@ import * as THREE from "three";
 import { Build, card, horn, loft, tube, type V3 } from "./kit/shapes";
 import { skinMaterial } from "./kit/paint";
 import type { RacerMotion } from "./animator";
+import { createStoryDragon, type DesignId, type StoryDragonView } from "../storyDragon";
 
 export interface BossPalette {
   skin: string;
@@ -60,8 +61,14 @@ export class BossDragon {
   private jolt = 0;
   private lastImpact = 0;
   private result: number | null = null;
+  /** The dragon's own design (as in the cutscenes), when it has one. */
+  private story?: StoryDragonView;
 
-  constructor(c: BossPalette) {
+  constructor(c: BossPalette, design?: DesignId) {
+    if (design) {
+      this.initStory(design);
+      return;
+    }
     const mat = skinMaterial();
     const skin = new THREE.Color(c.skin);
     const dark = new THREE.Color(c.skinDark);
@@ -369,6 +376,59 @@ export class BossDragon {
     this.root.scale.setScalar(BOSS_SCALE);
   }
 
+  /**
+   * The cutscenes' dragon (render/storyDragon.ts), scaled to race: it walks along with
+   * the kart beneath it, flies when it's airborne, opens its jaws for the boost's fire
+   * (the flame rides `mouth`), and roars or bows at the finish.
+   */
+  private initStory(design: DesignId) {
+    const s = design === "king" ? 0.22 : design === "cinderjaw" ? 0.24 : 0.2;
+    this.story = createStoryDragon(this.root, design, s);
+    // (Its legs step at a stride for its size, not a scurry.)
+    this.story.pace = 3;
+    // (The race draws its fire, out of `mouth`, and its shadow.)
+    this.story.effects = false;
+    const own = this.story.root.getObjectByName("story dragon shadow");
+    if (own) own.visible = false;
+    this.root.add(this.mouth);
+  }
+
+  private storyStep(dt: number, m: RacerMotion) {
+    const v = this.story!;
+    this.time += dt;
+    this.air += ((m.grounded ? 0 : 1) - this.air) * Math.min(1, dt * 6);
+    if (m.boostLeft > this.lastBoostLeft + 0.05) this.boost = 1;
+    this.lastBoostLeft = m.boostLeft;
+    this.boost = Math.max(m.boostPhase > 0 ? 0.6 : 0, this.boost - dt * 0.8);
+    const won = this.result === 1;
+    const pose =
+      this.result !== null
+        ? won
+          ? "roar"
+          : "bow"
+        : this.air > 0.4
+          ? "fly"
+          : this.boost > 0.3
+            ? "breathe"
+            : Math.abs(m.speed) > 1.5
+              ? "walk"
+              : "idle";
+    this.root.updateMatrixWorld(true);
+    const look = new THREE.Vector3(-m.steer * 30, 8, 60).applyMatrix4(this.root.matrixWorld);
+    v.update(pose, 0, this.time, look, false);
+    // The boost's flame comes out of its jaws, the way its head faces.
+    const at = new THREE.Vector3();
+    const facing = new THREE.Vector3();
+    v.mouth(at);
+    v.headFrame(new THREE.Vector3(), facing);
+    this.root.worldToLocal(at);
+    const inv = new THREE.Quaternion();
+    this.root.getWorldQuaternion(inv).invert();
+    facing.applyQuaternion(inv).normalize();
+    this.mouth.position.copy(at);
+    this.mouth.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), facing);
+  }
+
   setResult(place: number | null) {
     this.result = place;
   }
@@ -379,6 +439,7 @@ export class BossDragon {
 
   /** One rendered frame, from the kart underneath (never changes it). */
   step(dt: number, m: RacerMotion) {
+    if (this.story) return this.storyStep(dt, m);
     this.time += dt;
     const speed = Math.max(0, m.speed);
     const k = Math.min(1, speed / 9);

@@ -37,17 +37,17 @@ L = DL.L
 HUB = DL.HUB
 FLOOR_Z = HUB[3]
 RIM_Z = DL.TOP
-CRATER_R = 64.0
+CRATER_R = 40.0
 
 # The Crater Stones (src/overworld/puzzles.ts): a sandstone vault on the crater's floor,
 # its gate shut, and four stones round the crater to press within 30 seconds.
-VAULT = (-52.0, -228.0)
-STONES = [(50.0, -168.0), (-78.0, -150.0), (30.0, -234.0), (-40.0, -192.0)]
+VAULT = (-32.2, -141.4)
+STONES = [(31.0, -104.2), (-48.4, -93.0), (18.6, -145.1), (-24.8, -119.0)]
 # Stego's old well (Act V's return task): a walled yard behind the trading post, a drift
 # burying its way in.
-RETURN = (-296.0, -28.0)
+RETURN = (-183.5, -17.4)
 # A secret: a sunken garden in the oasis, cut off by deep water (the Beach Tool's).
-SECRET = (282.0, 214.0)
+SECRET = (174.8, 132.7)
 
 LOOK = {
     # look: (ground, cliff, road, shoulder)
@@ -58,6 +58,17 @@ LOOK = {
     # (The shoulder was ("talus", "wall"): a flat strip of wall along the whole crater road
     # that stopped karts driving onto it from the side. Blake, Oct 27.)
     "crater": (("slickrock", "dirt"), ("strata_purple", "wall"), "dash_road", ("talus", "dirt")),
+}
+
+
+# v4 (Blake, Oct 28): the walls rise in tiers (pocket_kit.terrace), a bed of each world's
+# rock to a tier, foot to rim, like Cascade Caverns' canyon.
+STRATA = {
+    "post": ["strata_orange", "strata_cream", "strata_red", "strata_orange", "strata_cream"],
+    "canyon": ["strata_red", "strata_rust", "strata_orange", "strata_red", "strata_cream"],
+    "oasis": ["gold_cliff", "strata_cream", "gold_cliff", "strata_orange", "strata_cream"],
+    "gulch": ["strata_rust", "strata_red", "strata_rust", "strata_purple", "strata_rust"],
+    "crater": ["strata_purple", "crater_rock", "strata_purple", "strata_rust", "crater_rock"],
 }
 
 
@@ -96,10 +107,11 @@ def natural(x, y):
 def classify(c, n, info):
     look = L.look_at(c.x, c.y)
     ground, cliff, _, _ = LOOK[look]
-    if n.z < 0.62:
-        if c.x < -300 and abs(c.y) < 50:
+    # (on the tiered walls only the shelves' flat tops are ground)
+    if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
+        if c.x < -186 and abs(c.y) < 31:
             return ("frost_cliff", "wall")  # (the pass down from the snow)
-        return cliff
+        return (pb.strata(L, c, n, STRATA), "wall")
     if look == "oasis":
         px, py, pr, pz = DL.POOL
         if math.hypot(c.x - px, c.y - py) < pr + 26:
@@ -108,7 +120,7 @@ def classify(c, n, info):
         return ("gulch_wash", "dirt")
     if RUIN and math.sin(c.x / 31.0 + 1.0) * math.cos(c.y / 27.0) > 0.5:
         return ("dune_crest", "loose_sand")  # (Scorchwind's drifts)
-    return ground
+    return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
 
 
 def main():
@@ -131,7 +143,7 @@ def main():
             return "mine" if L.pocket_at(smp.p.x, smp.p.y) in ("oasis", "gulch") else "canyon"
         return L.look_at(smp.p.x, smp.p.y)
 
-    c.roads(kit.plan(c, list(kit.runs(c, label)), "post", max_len=160.0))
+    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, label)), LOOK), "post", max_len=160.0))
 
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("dash_shoulder", "dirt"))
     cx, cy, cr, cz = HUB
@@ -151,8 +163,9 @@ def main():
         c.side_road("Dust Road", pb.line(natural, (smp.p.x, smp.p.y), (bx, by + 10.0), z0=smp.p.z), "dash_road", "road",
                     **trail)
 
-    X0, X1, Y0, Y1 = -490, 480, -480, 480
-    ter = c.terrain("Desert World", X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
+    # (v4: drawn in, and finer, for the walls' tiers)
+    X0, X1, Y0, Y1 = -310, 310, -310, 310
+    ter = c.terrain("Desert World", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("red_sand", "loose_sand"))
 
     def ground(x, y):
@@ -174,7 +187,7 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "desert", vh.adobe, avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)])
+    vh.homes(c, L, ground, "desert", vh.adobe, avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)], wall=-15.0, per=3)
     dress(c, ground, spots)
     box(c, "Pass Bend", px - 8.0, 0.0, 6.0, 40.0, natural(px, 0.0) - 2.0, RIM_Z + 30.0, ("frost_cliff", "wall"))
     if RUIN:

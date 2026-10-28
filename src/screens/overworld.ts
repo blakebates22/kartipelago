@@ -86,11 +86,23 @@ import { createChestView, createObstacleView } from "../overworld/yardView";
 import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
 import { exitSpot, frontSpot, roadSpot } from "../overworld/exits";
 import { challengeStaged, stageAt } from "../adventure/staged";
-import { createVillagerView, type VillagerView } from "../render/villager";
+import type { VillagerView } from "../render/villager";
+import { createGuardView } from "../render/people";
 import { createBannerView, type PropView } from "../render/storyProps";
 import { createGatewayArch, type ArchTheme } from "../render/gatewayArch";
 import { instaWin } from "../debug/devFlags";
-import { airAt, airOf, mixAir, type Air, type AirSpot } from "../overworld/air";
+import {
+  airAt,
+  airOf,
+  airWeights,
+  areaAmbient,
+  courseAmbient,
+  mixAir,
+  type AmbientSpec,
+  type Air,
+  type AirSpot,
+} from "../overworld/air";
+import { createAmbientFx } from "../render/ambientFx";
 import { packageBase } from "../game/session";
 import { parseLook, type TrackLook } from "../world/trackPackage";
 
@@ -363,7 +375,7 @@ function regionCave(game: Game, session: Session, region: Region) {
   const guards: { v: VillagerView; x: number; z: number }[] = [-1, 1].map((sd, i) => {
     const x = c.gate.x + rx * sd * off;
     const z = c.gate.z + rz * sd * off;
-    return { v: createVillagerView(session.root, folk, 7 + i * 11, "pachy"), x, z };
+    return { v: createGuardView(session.root, folk, 7 + i * 11), x, z };
   });
   if (shut) session.solids.push(gateSolid({ gate: c.gate }, groundAt(c.gate.x, c.gate.z)));
   // The cave's mouth: a dark arch of rock round the mark.
@@ -538,7 +550,7 @@ function regionDressing(game: Game, session: Session, region: Region) {
     [20, 4],
   ].map(([f, r], i) => {
     const [x, z] = P(f!, r!);
-    return { v: createVillagerView(session.root, folk, 31 + i * 9, "pachy"), x, z };
+    return { v: createGuardView(session.root, folk, 31 + i * 9), x, z };
   });
   return {
     step(t: number) {
@@ -629,31 +641,57 @@ function lookOf(id: string): Promise<TrackLook> {
   return p;
 }
 
+/** A course's camera-round particles (its track.json's), once per visit. */
+const airs = new Map<string, Promise<AmbientSpec[]>>();
+function ambientOf(id: string): Promise<AmbientSpec[]> {
+  let p = airs.get(id);
+  if (!p) {
+    p = fetch(`${packageBase(id)}track.json`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((j: { entities?: unknown[] }) => courseAmbient(j.entities ?? []))
+      .catch(() => []);
+    airs.set(id, p);
+  }
+  return p;
+}
+
 /**
  * Each area of the region in its own course's air (Blake, Oct 28: the levels' own
  * lighting and sky): every gateway's course (ruined: its ruin) lends its look.json to
  * the ground round it, the square has the region's own, and between them the two nearest
  * blend as you drive (overworld/air.ts). A square with no painted sky borrows the
- * nearest course's.
+ * nearest course's. What drifts in each course's air (Bonebog's fireflies, Ember's ash)
+ * drifts in its area too, fading with the same blend (note 38), with the region's own
+ * extras for an area (its `area_ambient`s: Riverbend's pollen, the Cascade's spray).
  */
-function regionAir(game: Game, region: Region, ruined: boolean) {
+function regionAir(game: Game, session: Session, region: Region, ruined: boolean) {
   const courses = region.gateways.filter((g) => !g.boss && !g.king && trackById(g.track));
   if (!courses.length) return undefined;
   const pkg = (ruined && region.ruinPackageId) || region.packageId;
   let spots: (AirSpot & { air: Air })[] | undefined;
   let alive = true;
+  const fx = createAmbientFx(session.root);
+  const land = session.makeGround();
+  const extras = areaAmbient(session.entities);
+  const idOf = (g: Gateway) => {
+    const t = trackById(g.track)!;
+    return (ruined && t.ruin && trackById(t.ruin) ? t.ruin : g.track) as string;
+  };
   void Promise.all([
     lookOf(pkg),
-    ...courses.map((g) => {
-      const t = trackById(g.track)!;
-      return lookOf((ruined && t.ruin && trackById(t.ruin) ? t.ruin : g.track) as string);
-    }),
-  ]).then(([own, ...theirs]) => {
+    Promise.all(courses.map((g) => lookOf(idOf(g)))),
+    Promise.all(courses.map((g) => ambientOf(idOf(g)))),
+  ]).then(([own, theirs, ambient]) => {
     if (!alive) return;
-    const base = airOf(own!);
+    const base = airOf(own);
     const list: AirSpot[] = [
-      { x: region.spawn.x, z: region.spawn.z, look: own! },
-      ...courses.map((g, i) => ({ x: g.x, z: g.z, look: theirs[i]! })),
+      { x: region.spawn.x, z: region.spawn.z, look: own, ambient: extras.hub ?? [] },
+      ...courses.map((g, i) => ({
+        x: g.x,
+        z: g.z,
+        look: theirs[i]!,
+        ambient: [...ambient[i]!, ...(extras[g.id] ?? [])],
+      })),
     ];
     // (A square with no sky of its own: the nearest course's.)
     if (!list[0]!.look.skyDome) {
@@ -665,12 +703,13 @@ function regionAir(game: Game, region: Region, ruined: boolean) {
             Math.hypot(p.x - region.spawn.x, p.z - region.spawn.z) -
             Math.hypot(q.x - region.spawn.x, q.z - region.spawn.z),
         )[0];
-      if (near) list[0] = { ...list[0]!, look: { ...own!, skyDome: near.look.skyDome } };
+      if (near) list[0] = { ...list[0]!, look: { ...own, skyDome: near.look.skyDome } };
     }
     spots = list.map((q) => ({ ...q, air: airOf(q.look, base) }));
   });
+  let clock = 0;
   return {
-    step(x: number, z: number) {
+    step(x: number, z: number, dt: number) {
       if (!spots) return;
       const { a, b, t } = airAt(spots, x, z);
       const A = spots[a]!;
@@ -681,9 +720,21 @@ function regionAir(game: Game, region: Region, ruined: boolean) {
       const under = sky(A);
       const over = sky(B);
       game.stage.setSkies(under ?? over, under && over ? { ...over, t } : undefined);
+      // What drifts in the air, round the camera.
+      clock += dt;
+      const w = airWeights(spots, x, z);
+      const cam = game.stage.camera.position;
+      fx.update(
+        Math.min(0.1, dt),
+        clock,
+        cam,
+        spots.map((q, i) => ({ specs: q.ambient ?? [], weight: w[i]! })),
+        (px, pz, py) => land.at(px, pz, py).height,
+      );
     },
     dispose() {
       alive = false;
+      fx.dispose();
       game.stage.setSkies(undefined);
       game.stage.setAir(undefined);
     },
@@ -958,7 +1009,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       secret = regionSecret(game, session, region);
       cave = regionCave(game, session, region);
       dressing = regionDressing(game, session, region);
-      air = regionAir(game, region, regionRuined(game, region.id, story));
+      air = regionAir(game, session, region, regionRuined(game, region.id, story));
       // The folk who live here, walking about round their homes.
       const land = session.makeGround();
       villagers = createVillagers({
@@ -1069,7 +1120,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     render3d(alpha, frameSeconds) {
       session.render(alpha, frameSeconds);
       const s = session.entrants[0]!.state;
-      air?.step(s.x, s.z);
+      air?.step(s.x, s.z, frameSeconds);
       game.stage.render();
       return true;
     },
