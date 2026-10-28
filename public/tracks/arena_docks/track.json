@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "arena_crown",
-  "name": "Crown Hill",
+  "id": "arena_docks",
+  "name": "Smugglers' Cove",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -15,152 +15,188 @@
     {
       "id": "arena_spawn_01",
       "type": "arena_spawn",
-      "x": 52.92,
-      "z": -10.73,
+      "x": 50.96,
+      "z": -10.33,
       "heading": -1.371,
       "index": 0
     },
     {
       "id": "arena_spawn_02",
       "type": "arena_spawn",
-      "x": 29.84,
-      "z": -45.01,
+      "x": 28.73,
+      "z": -43.34,
       "heading": -0.585,
       "index": 1
     },
     {
       "id": "arena_spawn_03",
       "type": "arena_spawn",
-      "x": -10.73,
-      "z": -52.92,
+      "x": -10.33,
+      "z": -50.96,
       "heading": 0.2,
       "index": 2
     },
     {
       "id": "arena_spawn_04",
       "type": "arena_spawn",
-      "x": -45.01,
-      "z": -29.84,
+      "x": -43.34,
+      "z": -28.73,
       "heading": 0.985,
       "index": 3
     },
     {
       "id": "arena_spawn_05",
       "type": "arena_spawn",
-      "x": -52.92,
-      "z": 10.73,
+      "x": -50.96,
+      "z": 10.33,
       "heading": 1.771,
       "index": 4
     },
     {
       "id": "arena_spawn_06",
       "type": "arena_spawn",
-      "x": -29.84,
-      "z": 45.01,
+      "x": -28.73,
+      "z": 43.34,
       "heading": 2.556,
       "index": 5
     },
     {
       "id": "arena_spawn_07",
       "type": "arena_spawn",
-      "x": 10.73,
-      "z": 52.92,
+      "x": 10.33,
+      "z": 50.96,
       "heading": -2.942,
       "index": 6
     },
     {
       "id": "arena_spawn_08",
       "type": "arena_spawn",
-      "x": 45.01,
-      "z": 29.84,
+      "x": 43.34,
+      "z": 28.73,
       "heading": -2.156,
       "index": 7
     },
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 18.9,
+      "at": 18.3,
       "across": -4.0,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 56.7,
+      "at": 54.8,
       "across": 0.0,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 94.4,
+      "at": 91.3,
       "across": 4.0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 132.2,
+      "at": 127.8,
       "across": -4.0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 170.0,
+      "at": 164.3,
       "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 207.7,
+      "at": 200.8,
       "across": 4.0,
       "color": "red"
     },
     {
       "id": "bal_07",
       "type": "balloon",
-      "at": 245.5,
+      "at": 237.3,
       "across": -4.0,
       "color": "blue"
     },
     {
       "id": "bal_08",
       "type": "balloon",
-      "at": 283.3,
+      "at": 273.8,
       "across": 0.0,
       "color": "green"
     },
     {
       "id": "bal_09",
       "type": "balloon",
-      "at": 321.0,
+      "at": 310.3,
       "across": 4.0,
       "color": "yellow"
     },
     {
       "id": "bal_10",
       "type": "balloon",
-      "at": 358.8,
+      "at": 346.8,
       "across": -4.0,
       "color": "rainbow"
     },
     {
-      "id": "crown_zone_01",
-      "type": "crown_zone",
+      "id": "dock_01",
+      "type": "dock",
+      "x": 35.36,
+      "z": -35.36,
+      "y": -0.14,
+      "color": "red",
+      "index": 0
+    },
+    {
+      "id": "dock_02",
+      "type": "dock",
+      "x": -35.36,
+      "z": -35.36,
+      "y": -1.87,
+      "color": "blue",
+      "index": 1
+    },
+    {
+      "id": "dock_03",
+      "type": "dock",
+      "x": -35.36,
+      "z": 35.36,
+      "y": -1.29,
+      "color": "green",
+      "index": 2
+    },
+    {
+      "id": "dock_04",
+      "type": "dock",
+      "x": 35.36,
+      "z": 35.36,
+      "y": 0.16,
+      "color": "yellow",
+      "index": 3
+    },
+    {
+      "id": "crate_spawn_01",
+      "type": "crate_spawn",
       "x": 0.0,
       "z": -0.0,
-      "y": 13.65,
-      "r": 10.0
+      "y": 2.15,
+      "r": 34.0
     },
     {
       "id": "arena_01",
       "type": "arena",
-      "game": "crown",
-      "radius": 74.0
+      "game": "smugglers",
+      "radius": 72.0
     }
   ],
-  "generator": "tools/blender/prehistoric/arena_crown.py (re-running it rewrites entities)",
+  "generator": "tools/blender/prehistoric/arena_docks.py (re-running it rewrites entities)",
   "arena": true
 }

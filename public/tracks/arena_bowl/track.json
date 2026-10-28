@@ -15,134 +15,134 @@
     {
       "id": "arena_spawn_01",
       "type": "arena_spawn",
-      "x": 49.0,
-      "z": -9.93,
+      "x": 56.84,
+      "z": -11.52,
       "heading": -1.371,
       "index": 0
     },
     {
       "id": "arena_spawn_02",
       "type": "arena_spawn",
-      "x": 27.63,
-      "z": -41.67,
+      "x": 32.05,
+      "z": -48.34,
       "heading": -0.585,
       "index": 1
     },
     {
       "id": "arena_spawn_03",
       "type": "arena_spawn",
-      "x": -9.93,
-      "z": -49.0,
+      "x": -11.52,
+      "z": -56.84,
       "heading": 0.2,
       "index": 2
     },
     {
       "id": "arena_spawn_04",
       "type": "arena_spawn",
-      "x": -41.67,
-      "z": -27.63,
+      "x": -48.34,
+      "z": -32.05,
       "heading": 0.985,
       "index": 3
     },
     {
       "id": "arena_spawn_05",
       "type": "arena_spawn",
-      "x": -49.0,
-      "z": 9.93,
+      "x": -56.84,
+      "z": 11.52,
       "heading": 1.771,
       "index": 4
     },
     {
       "id": "arena_spawn_06",
       "type": "arena_spawn",
-      "x": -27.63,
-      "z": 41.67,
+      "x": -32.05,
+      "z": 48.34,
       "heading": 2.556,
       "index": 5
     },
     {
       "id": "arena_spawn_07",
       "type": "arena_spawn",
-      "x": 9.93,
-      "z": 49.0,
+      "x": 11.52,
+      "z": 56.84,
       "heading": -2.942,
       "index": 6
     },
     {
       "id": "arena_spawn_08",
       "type": "arena_spawn",
-      "x": 41.67,
-      "z": 27.63,
+      "x": 48.34,
+      "z": 32.05,
       "heading": -2.156,
       "index": 7
     },
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 17.6,
+      "at": 20.1,
       "across": -4.0,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 52.9,
+      "at": 60.4,
       "across": 0.0,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 88.1,
+      "at": 100.7,
       "across": 4.0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 123.4,
+      "at": 141.0,
       "across": -4.0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 158.6,
+      "at": 181.3,
       "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 193.9,
+      "at": 221.6,
       "across": 4.0,
       "color": "red"
     },
     {
       "id": "bal_07",
       "type": "balloon",
-      "at": 229.1,
+      "at": 261.9,
       "across": -4.0,
       "color": "blue"
     },
     {
       "id": "bal_08",
       "type": "balloon",
-      "at": 264.4,
+      "at": 302.1,
       "across": 0.0,
       "color": "green"
     },
     {
       "id": "bal_09",
       "type": "balloon",
-      "at": 299.6,
+      "at": 342.4,
       "across": 4.0,
       "color": "yellow"
     },
     {
       "id": "bal_10",
       "type": "balloon",
-      "at": 334.9,
+      "at": 382.7,
       "across": -4.0,
       "color": "rainbow"
     },
@@ -150,42 +150,42 @@
       "id": "steam_01",
       "type": "steam",
       "x": 13.37,
-      "y": 8.66,
+      "y": 5.78,
       "z": -4.14
     },
     {
       "id": "steam_02",
       "type": "steam",
       "x": 0.2,
-      "y": 8.0,
+      "y": 5.17,
       "z": -14.0
     },
     {
       "id": "steam_03",
       "type": "steam",
       "x": -13.25,
-      "y": 7.64,
+      "y": 4.75,
       "z": -4.51
     },
     {
       "id": "steam_04",
       "type": "steam",
       "x": -8.39,
-      "y": 8.0,
+      "y": 5.13,
       "z": 11.21
     },
     {
       "id": "steam_05",
       "type": "steam",
       "x": 8.07,
-      "y": 8.61,
+      "y": 5.7,
       "z": 11.44
     },
     {
       "id": "bubbles_01",
       "type": "bubbles",
       "x": 0.0,
-      "y": 9.65,
+      "y": 6.05,
       "z": -0.0,
       "r": 3.0,
       "molten": true
@@ -194,7 +194,7 @@
       "id": "arena_01",
       "type": "arena",
       "game": "balloons",
-      "radius": 70.0
+      "radius": 78.0
     }
   ],
   "generator": "tools/blender/prehistoric/arena_bowl.py (re-running it rewrites entities)",
