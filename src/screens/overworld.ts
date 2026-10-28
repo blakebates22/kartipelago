@@ -1126,20 +1126,15 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
     draw(ui) {
       drawHud(ui, session, entry, true, undefined, clock);
-      const w = Math.min(170, ui.textWidth(region.name.toUpperCase()) + 16);
-      ui.panel(6, 6, w, 18, "wood", "gold");
-      ui.text(region.name.toUpperCase(), 6 + w / 2, 11, {
-        color: PAL.cream,
-        outline: PAL.shadow,
-        align: "center",
-      });
-      // Adventure: what to do next, under the plaque.
+      // (No region plaque and no minimap any more: Blake, Oct 28, they bothered him. The
+      // region's name shows as you arrive; a proper journal menu, what you've done and
+      // what's next, comes later.)
       const goal = story ? storyGoal(game, region) : undefined;
-      if (goal) ui.text(goal, 8, 28, { color: PAL.cream, outline: PAL.shadow });
+      if (goal) ui.text(goal, 8, 8, { color: PAL.cream, outline: PAL.shadow });
       blockers?.draw(ui);
       secret?.draw(ui);
       cave?.draw(ui);
-      map?.draw(ui, clock, storyTarget(game, region));
+      void map;
       // A villager you've stopped by: their name and what they say (placeholder lines:
       // the dialogue comes later).
       const v = villagers?.near();

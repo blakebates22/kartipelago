@@ -790,7 +790,14 @@ class Course:
         rows = []
         for along in (-1.0, 1.0):
             q = self.at(along)
-            rows.append([q.side(-half + half * 2 * k / 8, 0.04) for k in range(9)])
+            row = [q.side(-half + half * 2 * k / 8, 0.04) for k in range(9)]
+            # (Sat on the road as built, not on the route's own cross-section: Blake, Oct
+            # 28, the finish line was hovering where the road's draped over the land.)
+            for i, v in enumerate(row):
+                z = self.ground_z(v[0], v[1], self.pieces)
+                if z is not None and abs(z - v[2]) < 1.5:
+                    row[i] = (v[0], v[1], z + 0.03)
+            rows.append(row)
         verts = [[bm.verts.new(v) for v in r] for r in rows]
         for k in range(8):
             f = bm.faces.new((verts[0][k], verts[0][k + 1], verts[1][k + 1], verts[1][k]))

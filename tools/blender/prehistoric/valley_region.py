@@ -42,6 +42,7 @@ import swamp_props as sp  # noqa: E402
 import bonebog_scenery as bs  # noqa: E402
 import valley_layout as L  # noqa: E402
 import valley_dress as vd  # noqa: E402
+import region_props as rp  # noqa: E402
 import region_textures as TX  # noqa: E402
 
 RUIN = ruin.ON
@@ -256,13 +257,22 @@ def main():
                        "ground": False}
     kinds["temple_bridge"] = {"mat": "jungle_temple", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("ruin_stone", "road"),
                               "barrier": 1.2, "barrier_mat": stone, "deck": 2.4, "deck_mat": stone, "ground": False}
+    # Where a gateway's spur leaves a bridge: its deck with no railing (Blake, Oct 28:
+    # "you can't easily access Cascade Caverns because of the railing").
+    kinds["bridge_open"] = {**kinds["bridge"], "barrier": 0.0}
+    kinds["temple_bridge_open"] = {**kinds["temple_bridge"], "barrier": 0.0}
     c.kinds = kinds
+    junctions = [c.nearest(gx, gy)[0].s for gx, gy in L.GATES.values()]
+
+    def near_junction(s):
+        return any(min(abs(s - j), c.length - abs(s - j)) < 16.0 for j in junctions)
 
     def label(smp):
         d, wz = L.river_d(smp.p.x, smp.p.y)
         # (a bridge only where the land's well under the road: no bank stands up through it)
         if d < RIVER_HW + 6 and smp.p.z > wz + 0.9 and natural(smp.p.x, smp.p.y) < smp.p.z - 1.2:
-            return "temple_bridge" if lobe_at(smp.p.x, smp.p.y) == "cascade" else "bridge"
+            kind = "temple_bridge" if lobe_at(smp.p.x, smp.p.y) == "cascade" else "bridge"
+            return kind + "_open" if near_junction(smp.s) else kind
         return lobe_at(smp.p.x, smp.p.y)
 
     c.roads(kit.plan(c, blend_runs(c, list(kit.runs(c, label))), "camp", max_len=160.0))
@@ -273,7 +283,9 @@ def main():
     smp, _ = c.nearest(cx + cr + 30.0, cy)
     c.side_road("Camp Road", list(reversed(line((smp.p.x, smp.p.y), (cx + cr - 2.0, cy), z0=smp.p.z))), "camp_earth",
                 "road", **trail)
-    # Out from the road to each landmark's gateway.
+    # Out from the road to each landmark's gateway (off an open stretch of deck where it
+    # leaves a bridge: see bridge_open), with the shoulder of the world it's in (not grass
+    # in Ember: Blake, Oct 28).
     spurs = {}
     for name, (gx, gy) in L.GATES.items():
         smp, _ = c.nearest(gx, gy)
@@ -282,7 +294,9 @@ def main():
         ux, uy = (gx - ax) / d, (gy - ay) / d
         end = (gx - ux * 12.0, gy - uy * 12.0)
         spurs[name] = (end, math.atan2(-ux, uy))
-        c.side_road(name.title() + " Road", line((ax, ay), end, z0=smp.p.z), LOOK[lobe_at(gx, gy)][2], "road", **trail)
+        look = LOOK[lobe_at(gx, gy)]
+        c.side_road(name.title() + " Road", line((ax, ay), end, z0=smp.p.z), look[2], "road",
+                    **{**trail, "shoulder_mat": look[3]})
     if RUIN:
         # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
         smp, _ = c.nearest(*L.SCAR)
@@ -304,7 +318,7 @@ def main():
         return natural(x, y) if z is None else z
 
     # Water: the rivers and lakes in living water (valley_dress), the bog's pools.
-    vd.water(c)
+    vd.water(c, ground)
     for k, (px, py, pr) in enumerate(L.POOLS):
         c.disc("Bog Pool %d" % k, px, py, pr + 8.0, WATER_Z, c.lib("bog_water", "mud"), role="visual", n=30, wobble=0.15,
                seed=k)
@@ -317,7 +331,9 @@ def main():
 
     # The camp: a beaten-earth square, Riverbend's huts round a fire (burnt out after),
     # the village round it (valley_dress.camp).
-    c.disc("Camp Square", cx, cy, cr, L.CAMP_Z + 0.05, c.lib("camp_earth", "dirt"), coll="Props", n=40)
+    # (No beaten-earth plane any more: Blake, Oct 28, "remove this entire dirt plane and
+    # just make paths connecting the huts".)
+    hut_paths = []
     for k in range(5):
         a = k * math.tau / 5 + 0.9
         hx, hy = cx + (cr - 6) * math.cos(a), cy + (cr - 6) * math.sin(a)
@@ -328,10 +344,14 @@ def main():
             ruin.smoke(c, hx, hy, L.CAMP_Z + 2.5)
         else:
             c.place(props.hut(c), hx, hy, L.CAMP_Z, rot=a + math.pi)
+        # (From its door to the fire, and on round to the next hut.)
+        dx, dy = hx + 4.0 * math.cos(a + math.pi), hy + 4.0 * math.sin(a + math.pi)
+        hut_paths.append([(dx, dy), (cx + 2.5 * math.cos(a), cy + 2.5 * math.sin(a))])
+    hut_paths.append([(cx + 3.0, cy), (cx + cr - 2.0, cy)])
     gx, gy, gz = c.game(cx, cy, L.CAMP_Z + 0.2)
     c.entity("campfire", x=gx, y=gy, z=gz)
     camp_taken = paint.Taken([(cx, cy, cr)])
-    paths = vd.camp(c, ground, camp_taken)
+    paths = vd.camp(c, ground, camp_taken) + hut_paths
     paint.EXTRA.extend(camp_taken.spots)
 
     thresholds(c, ground)
@@ -511,6 +531,10 @@ def heap_strata(c, rock, kind, zr, top):
     for k, cen in enumerate(shelves):
         if k % 3 or any((cen - q).length < 4.0 for q in taken):
             continue
+        # (Not on the road through the bore: Blake, Oct 28, charred trees and crystals in
+        # the middle of the Lava Tube.)
+        if not paint.road_clear(c, cen.x, cen.y, 2.5):
+            continue
         look = a if lobe_at(cen.x, cen.y) == a else b
         pick = plants[look][k % 2]
         c.place(pick, cen.x, cen.y, cen.z - 0.2, rot=k * 1.3, scale=0.8 if pick.startswith("Tier") else 1.2, coll="Ledges",
@@ -571,17 +595,13 @@ def fallen_giant(c, s0, s1):
         p1 = p0 + d * (4.0 + 1.5 * math.sin(k * 2.1)) - ax * 2.5
         p2 = p1 + d * 2.5 - ax * 3.0 + Vector((0, 0, -3.0 - 2.0 * max(0.0, d.z)))
         p3 = Vector((p2.x - ax.x * 2.0 + d.x * 2.0, p2.y - ax.y * 2.0 + d.y * 2.0, qa.p.z - 2.0))
+        # (None across the road: Blake, Oct 28, "they go right in the road".)
+        if any(not paint.road_clear(c, v.x, v.y, 1.5) for v in (p1, p2, p3)):
+            continue
         props.tube(bm, [tuple(p0), tuple(p1), tuple(p2), tuple(p3)], [1.3, 1.0, 0.7, 0.35], n=6)
     roots = c.mesh_object("Giant Roots", bm, "Props", "visual")
     c.assign(roots, c.lib("giant_bark", "wall"))
-    for k in range(5):
-        t = k * math.tau / 5 + 1.0
-        d = (side_e * math.cos(t) + Vector((0, 0, math.sin(t)))).normalized()
-        if d.z < -0.3:
-            continue
-        p = end + d * (ro - 1.0) + Vector((qb.t.x, qb.t.y, 0.0)) * 1.0
-        cone(c, "Giant Splinter %d" % k, p.x, p.y, 1.8, p.z - 1.5, 4.0 + 2.0 * (k % 2), ("palm_bark", "wall"), segs=4,
-             role="visual")
+    # (Its broken top's splinters are gone: Blake, Oct 28, "delete this".)
     # Torches up its walls, webs and roots at the swamp's end (valley_dress), and a carved
     # frame of bones at the near mouth.
     vd.log_tunnel(c, s0, s1, ro, ri, lift)
@@ -629,9 +649,25 @@ def landmarks(c, ground, spurs):
         gx, gy, gz = c.game(px, py, g + 0.2)
         c.entity("bubbles", x=gx, y=gy, z=gz, r=pr * 0.8, molten=True)
         c.entity("steam", x=gx, y=gy, z=gz)
-    # Bonebog Pyramid: its tip above the bog.
+    # Bonebog Pyramid (Blake, Oct 28: "move this pyramid and make it larger and match the
+    # colour of the ruins in Bonebog that we drive through"): further back behind its
+    # gateway, a great stepped pyramid in Bonebog's own dark mossy stone, a carved band
+    # round each tier, its upper tiers rising out of the bog.
     px, py = L.PYRAMID
-    cone(c, "Pyramid Tip", px, py, 14.0, WATER_Z - 2.0, 18.0, ("sandstone_block", "wall"))
+    gx, gy = L.GATES["bonebog"]
+    rot = math.atan2(py - gy, px - gx)
+    z = WATER_Z - 2.0
+    for k, (half, h) in enumerate(((24.0, 5.0), (19.5, 5.0), (15.0, 5.0), (10.5, 5.0), (6.5, 4.5), (3.2, 4.0))):
+        box(c, "Pyramid Tier %d" % k, px, py, half, half, z, z + h, ("bog_stone", "wall"), rot=rot)
+        box(c, "Pyramid Band %d" % k, px, py, half + 0.15, half + 0.15, z + h - 1.0, z + h - 0.4, ("bog_carved", "wall"),
+            rot=rot, role="visual")
+        z += h
+    cone(c, "Pyramid Tip", px, py, 3.0, z, 3.5, ("bog_dark_stone", "wall"))
+    # Its stair up the front, toward the gateway.
+    for k in range(8):
+        sx, sy = px - math.cos(rot) * (24.0 - k * 2.6), py - math.sin(rot) * (24.0 - k * 2.6)
+        box(c, "Pyramid Stair %d" % k, sx, sy, 2.0, 4.0, WATER_Z - 2.0, WATER_Z + 1.0 + k * 3.4, ("bog_carved", "wall"),
+            rot=rot, role="visual")
 
 
 def ruined(c, ground, spurs):
@@ -727,7 +763,7 @@ def gates(c, ground):
 def dress(c, ground, spurs):
     """The paint pass, lobe by lobe, each with its course's own things. After the attack:
     the same trees charred where the fire fell, the undergrowth burnt away."""
-    taken = paint.Taken([(L.CAMP[0], L.CAMP[1], L.CAMP[2] + 6.0), (*L.PYRAMID, 18.0), (*RETURN, 18.0),
+    taken = paint.Taken([(L.CAMP[0], L.CAMP[1], L.CAMP[2] + 6.0), (*L.PYRAMID, 34.0), (*RETURN, 18.0),
                          (*SECRET, 16.0), *((x, y, 30.0) for x, y in L.FALLS), *((x, y, r + 8.0) for x, y, r, _ in L.LAKES),
                          *((e[0], e[1], 16.0) for e, _ in spurs.values()), *((x, y, 22.0) for x, y in L.GATES.values()),
                          *((x, y, r + 6.0) for x, y, r in L.POOLS), *((x, y, r + 8.0) for x, y, r in L.LAVA),
@@ -741,8 +777,20 @@ def dress(c, ground, spurs):
     vd.banks(c, ground, taken)
     vd.wall_life(c, ground, taken)
 
+    tunnels = [tunnel_span(c, a, b) for _, _, a, b in L.TUNNELS]
+
+    def in_tunnel(x, y):
+        q, d = c.nearest(x, y)
+        if d > 30.0:
+            return False
+        return any(s0 - 6.0 <= q.s <= s1 + 6.0 or s0 - 6.0 <= q.s + c.length <= s1 + 6.0 for s0, s1 in tunnels)
+
     def inside(x, y):
         if L.wall_sd(x, y) > -8:
+            return False
+        # (Nothing scattered in the tunnels: Blake, Oct 28, charred trees and crystals in
+        # the middle of the lava tube's road.)
+        if in_tunnel(x, y):
             return False
         if L.river_d(x, y)[0] < RIVER_HW + 5:
             return False
@@ -805,8 +853,8 @@ def dress(c, ground, spurs):
         return bog(x, y) and any(abs(math.hypot(x - px, y - py) - pr - 6) < 6 for px, py, pr in L.POOLS)
 
     for v in range(2):
-        paint.scatter(c, props.swamp_tree(c, v), 24, rmax, bog, ground, taken, 40 + v, room=6.0, scale=(1.0, 1.6),
-                      road_margin=6.0, trunk=(0.9, 6.0))
+        vd.place_big(c, rp.swamp_tree(c, v), 24, (-rmax, rmax, -rmax, rmax), bog, ground, taken, 40 + v, room=6.0,
+                     margin=6.0, trunk=(0.9, 6.0), scale=(1.0, 1.5), sink=0.3, foot=3.2)
         paint.scatter(c, props.cattails(c, v), 30, rmax, shore, ground, taken, 42 + v, room=2.0, role="visual")
     paint.scatter(c, props.reeds(c), 50, rmax, shore, ground, taken, 44, room=2.0, role="visual")
     paint.scatter(c, props.glow_caps(c), 30, rmax, bog, ground, taken, 45, room=2.0, role="visual")
@@ -816,12 +864,12 @@ def dress(c, ground, spurs):
             a = j * 2.39996 + k
             r = pr * 0.8 * math.sqrt((j + 0.5) / (pr / 4))
             x, y = px + r * math.cos(a), py + r * math.sin(a)
-            if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 18 and paint.road_clear(c, x, y, 3.0):
+            if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 34 and paint.road_clear(c, x, y, 3.0):
                 c.place(props.lily_pad(c, j % 3), x, y, WATER_Z + 0.03, rot=a * 3.0, role="visual")
     # The swamp's big things: giant trees, stilt huts on the shores, sunken timber and
     # crocodiles in the pools, bone piles, torch posts along its road.
-    paint.scatter(c, sp.swamp_giant(c, 0), 6, rmax, bog, ground, taken, 47, room=14.0, scale=(0.8, 1.1),
-                  road_margin=12.0, trunk=(2.5, 12.0))
+    vd.place_big(c, sp.swamp_giant(c, 0), 6, (-rmax, rmax, -rmax, rmax), bog, ground, taken, 47, room=14.0, margin=12.0,
+                 trunk=(2.5, 12.0), scale=(0.8, 1.1), sink=0.6, foot=6.0)
     for v in range(2):
         paint.scatter(c, sp.bone_pile(c, v), 5, rmax, bog, ground, taken, 48 + v, room=5.0, road_margin=5.0)
     big = sorted(L.POOLS, key=lambda q: -q[2])
@@ -834,7 +882,7 @@ def dress(c, ground, spurs):
     for k, (px, py, pr) in enumerate(big[:5]):
         a = 2.4 * k + 0.4
         x, y = px + pr * 0.45 * math.cos(a), py + pr * 0.45 * math.sin(a)
-        if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 20:
+        if math.hypot(x - L.PYRAMID[0], y - L.PYRAMID[1]) > 34 and paint.road_clear(c, x, y, 6.0):
             c.place(sp.sunken_timber(c, k % 2), x, y, WATER_Z - 0.3, rot=a * 1.7, role="visual")
     for k, (px, py, pr) in enumerate(big[:2]):
         x, y = px - pr * 0.3, py + pr * 0.35

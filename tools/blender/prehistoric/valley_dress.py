@@ -37,10 +37,13 @@ def _slope(x, y, e=1.2):
     return math.hypot(gx, gy)
 
 
-def place_big(c, proto, n, box, ok, ground, taken, seed, room, margin, trunk=None, scale=(0.9, 1.1), sink=0.3, coll="Props"):
+def place_big(c, proto, n, box, ok, ground, taken, seed, room, margin, trunk=None, scale=(0.9, 1.1), sink=0.3, coll="Props",
+              foot=4.0):
     """Up to n of something big (a jungle giant) at spots in box (x0, x1, y0, y1) where
     ok(x, y), `margin` m clear of the roads' edges, `room` from everything taken. Returns
-    the spots."""
+    the spots. It's set down on the lowest ground round its foot (`foot` m out, times its
+    scale), so no root hangs in the air (Blake, Oct 28: "these trees are floating"), and
+    not on ground too steep for that to look right."""
     rnd = random.Random(seed)
     out = []
     for _ in range(6000):
@@ -51,7 +54,11 @@ def place_big(c, proto, n, box, ok, ground, taken, seed, room, margin, trunk=Non
             continue
         s = rnd.uniform(*scale)
         rot = rnd.uniform(0, math.tau)
-        z = ground(x, y) - sink
+        ring = [ground(x + foot * s * math.cos(a), y + foot * s * math.sin(a)) for a in
+                (k * math.tau / 10 for k in range(10))] + [ground(x, y)]
+        if max(ring) - min(ring) > 2.2 * foot * s * 0.5:
+            continue
+        z = min(ring) - sink
         if trunk:
             c.place(proto, x, y, z, rot=rot, scale=s, coll=coll, role="visual")
             c.place(paint.trunk_proto(c, *trunk), x, y, z, scale=s, coll="Collision", role="collision")
@@ -110,7 +117,7 @@ def wall_life(c, ground, taken):
     dead = props.dead_tree(c)
     burning = [rp.burning_tree(c, v) for v in range(2)]
     basalt = props.basalt_columns(c)
-    swamp_tree = [props.swamp_tree(c, v) for v in range(2)]
+    swamp_tree = [rp.swamp_tree(c, v) for v in range(2)]
     grand = [props.grand_tree(c, v) for v in range(2)]
     room = paint.Taken(list(taken.spots))
     k = 0
@@ -223,7 +230,7 @@ def depth_paint(ob, depth):
     ca.data.foreach_set("color", cols)
 
 
-def water(c):
+def water(c, ground=None):
     """The rivers and lakes in living water (Blake, notes 18 and 44: "in our original Oasis
     level before the rework, we had high quality water; let's bring it in"): the lagoon
     effect (waves, ripples of light, glitter, the sky in it), deep in the middle, clear
@@ -239,6 +246,8 @@ def water(c):
         river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 8, riv[-1][2] - 0.1))
         ob = c.ribbon("River %d" % j, river, 2 * RIVER_HW + 8, 0, mat, role="visual", steps=8)
         depth_paint(ob, lambda x, y: 1.0 - L.river_d(x, y)[0] / (RIVER_HW + 3.0))
+        if ground:
+            tuck(ob, ground, lambda x, y: L.river_d(x, y)[0] > RIVER_HW - 1.0)
     for k, (lx, ly, lr, lz) in enumerate(L.LAKES):
         ob = c.disc("Lake %d" % k, lx, ly, lr + 6.0, lz - 0.1, mat, role="visual", n=36, wobble=0.12, seed=20 + k)
         bm = bmesh.new()
@@ -247,6 +256,30 @@ def water(c):
         bm.to_mesh(ob.data)
         bm.free()
         depth_paint(ob, lambda x, y, lx=lx, ly=ly, lr=lr: 1.0 - math.hypot(x - lx, y - ly) / (lr + 4.0))
+        if ground:
+            tuck(ob, ground, lambda x, y, lx=lx, ly=ly, lr=lr: math.hypot(x - lx, y - ly) > lr - 1.0)
+
+
+def tuck(ob, ground, edge):
+    """The water's edge into the bank (Blake, Oct 28: "the water appears to be a floating
+    sheet above the sand"): wherever the land under the sheet's outer part is lower than
+    the water, that part of the sheet runs down into it, so its edge is never in the air."""
+    me = ob.data
+    mw = ob.matrix_world
+    inv = mw.inverted()
+    n = 0
+    for v in me.vertices:
+        w = mw @ v.co
+        g = ground(w.x, w.y)
+        if g is None:
+            continue
+        # (Only near the edge: out in the channel the bed is meant to be under water.)
+        if edge(w.x, w.y) and g < w.z - 0.05 and w.z - g < 4.0:
+            w.z = g - 0.12
+            v.co = inv @ w
+            n += 1
+    me.update()
+    return n
 
 
 def banks(c, ground, taken):
@@ -351,18 +384,54 @@ def grand_falls(c, j, name):
     gx, gy, gz = c.game(fx, fy, foot)
     c.entity("waterfall", x=gx, y=gy, z=gz, top=top, width=wide, heading=math.atan2(ux, -uy))
     c.entity("mist", x=gx, y=gy + 1.0, z=gz, radius=wide, rate=8)
+    # (A true arc in one upright plane across the spray: Blake, Oct 28, "the rainbow is
+    # bent. This needs to be straightened out".)
     rows = []
     for i in range(9):
         t = i / 8
         row = []
-        for k in range(13):
-            a = math.pi * k / 12
-            r = wide * 0.85 + 1.2 * t
-            ox, oy = math.cos(a) * r, math.sin(a) * r * 0.55
-            p = Vector((fx + ux * (6.0 + oy) - uy * ox * 0.6, fy + uy * (6.0 + oy) + ux * ox * 0.6, foot + 2.0 + oy * 1.2))
-            row.append((p, k / 12, t))
+        for k in range(25):
+            a = math.pi * k / 24
+            r = wide * 0.8 + 2.2 * t
+            ox, oy = math.cos(a) * r, math.sin(a) * r * 0.62
+            p = Vector((fx + ux * 9.0 - uy * ox, fy + uy * 9.0 + ux * ox, foot + 1.0 + oy))
+            row.append((p, k / 24, t))
         rows.append(row)
     props.strip(c, name + " Rainbow", rows, c.lib("rainbow"))
+    # The plunge pool's water (Blake, Oct 28: "add more detail to this water, maybe some
+    # water features"): rocks standing in the foam with white water round each, ripple
+    # rings spreading out, stepping stones across the outflow, reeds and lilies at the
+    # pool's calm edge, a fallen log, spray.
+    rnd = random.Random(70 + j)
+    for k in range(6):
+        a = ang + math.pi + (k - 2.5) * 0.42
+        r = wide * (0.35 + 0.25 * (k % 2))
+        x, y = fx + math.cos(a) * r + ux * 4.0, fy + math.sin(a) * r + uy * 4.0
+        c.place(props.boulder(c, "canyon_rock_moss", k % 2), x, y, foot - 0.8, rot=k * 2.1, scale=0.9 + 0.5 * rnd.random(),
+                coll="Props", role="visual")
+        c.disc("%s Rock Foam %d" % (name, k), x, y, 2.4, foot + 0.07, c.lib("falls_foam"), role="visual", n=14, wobble=0.3,
+               seed=k + 3 * j)
+    for k in range(3):
+        c.disc("%s Ripple %d" % (name, k), fx + ux * (wide * 0.9 + 4.0 * k), fy + uy * (wide * 0.9 + 4.0 * k), 3.0 + 2.0 * k,
+               foot + 0.04, c.lib("falls_foam"), role="visual", n=24, wobble=0.35, seed=40 + k)
+    for k in range(5):
+        t = (k - 2) * 2.6
+        x, y = fx + ux * (wide * 1.15) - uy * t, fy + uy * (wide * 1.15) + ux * t
+        c.place(props.boulder(c, "canyon_rock_moss", 1), x, y, foot - 0.5, rot=k, scale=0.7, coll="Props", role="visual")
+    for k in range(10):
+        a = ang + math.pi + rnd.uniform(-1.4, 1.4)
+        r = wide * rnd.uniform(1.05, 1.3)
+        x, y = fx + math.cos(a) * r + ux * 3.0, fy + math.sin(a) * r + uy * 3.0
+        if k % 2:
+            c.place(props.cattails(c, k % 3), x, y, foot - 0.3, rot=rnd.uniform(0, math.tau), coll="Water Life", role="visual")
+        else:
+            c.place(props.lily_pad(c, k % 3), x, y, foot - 0.02, rot=rnd.uniform(0, math.tau), coll="Water Life",
+                    role="visual")
+    a = ang + math.pi + 1.2
+    c.place(props.log(c, 0), fx + math.cos(a) * wide + ux * 2.0, fy + math.sin(a) * wide + uy * 2.0, foot - 0.5, rot=a + 0.8,
+            scale=1.3, coll="Water Life", role="visual")
+    gs = c.game(fx + ux * 3.0, fy + uy * 3.0, foot + 0.5)
+    c.entity("steam", x=gs[0], y=gs[1], z=gs[2])
     # Boulders round the pool.
     for k in range(7):
         a = ang + math.pi + (k - 3) * 0.45
@@ -405,7 +474,8 @@ def camp(c, ground, taken):
     shed = rp.kart_shed(c)
     a = math.atan2(cy - SHED[1], cx - SHED[0])
     z = min(ground(SHED[0] + dx, SHED[1] + dy) for dx in (-4, 0, 4) for dy in (-3, 0, 3))
-    c.place(shed, SHED[0], SHED[1], z - 0.1, rot=a + math.pi / 2, coll="Village")
+    c.place(shed, SHED[0], SHED[1], z - 0.1, rot=a + math.pi / 2, coll="Village", role="visual")
+    c.place(rp.kart_shed_collider(c), SHED[0], SHED[1], z - 0.1, rot=a + math.pi / 2, coll="Collision", role="collision")
     taken.add(SHED[0], SHED[1], 8.0)
     # The hamlet: huts round the north hearth, their doors to the fire.
     hx, hy = HAMLET
@@ -678,6 +748,9 @@ def volcano(c):
             else:
                 t = (r - rc) / (R - rc)
                 z = base + (H - base) * (1.0 - t) ** 2.2
+                # (Its foot runs down under the land: Blake, Oct 28, its skirt's edge stood
+                # in the air over Ember's road.)
+                z -= 16.0 * smooth((t - 0.8) / 0.2)
                 z -= nb * 14.0 * (1.0 - t) ** 3
                 z -= 5.0 * gully(a) * math.sin(math.pi * min(1.0, t * 1.4))
             rr = r * (1.0 + 0.05 * math.sin(a * 5.0 + 1.0) + 0.03 * math.sin(a * 13.0))
@@ -778,23 +851,69 @@ def log_tunnel(c, s0, s1, ro, ri, lift):
         c.entity("torch", x=g[0], y=g[1], z=g[2])
         s += 10.0
         k += 1
-    # The swamp's end: webs and roots (the last third, and out past the mouth).
+    # The swamp's end: webs and roots (the last third, and out past the mouth). Each web is
+    # strung across the log's own wall (Blake, Oct 28: "these spider webs need to make
+    # sense, they're not connected correctly"): a fan in the trunk's cross-section, every
+    # spoke ending on the bark, its hub hanging just off the wall above the road.
     s = s0 + (s1 - s0) * 0.55
     k = 0
+    void(webs)
     while s < s1 + 6.0:
         q = c.at(s)
         t = Vector((q.t.x, q.t.y, 0.0)).normalized()
         face = math.atan2(-t.x, t.y)
         for sd in (-1, 1):
+            if (k + (sd > 0)) % 2:
+                continue
             side = Vector((q.r.x, q.r.y, 0.0)).normalized() * sd
-            th = 0.9 if (k + (sd > 0)) % 2 else 0.15
-            p = Vector((q.p.x, q.p.y, q.p.z + lift)) + (side * math.cos(th) + Vector((0, 0, math.sin(th)))) * (ri - 0.6)
-            c.place(webs[(k + (sd > 0)) % 2], p.x, p.y, p.z, rot=face + (0.35 * sd), scale=1.2, coll="Tunnels", role="visual")
+            th = 0.75 + 0.25 * (k % 3)
+            log_web(c, "Log Web %d %d" % (k, sd), Vector((q.p.x, q.p.y, q.p.z + lift)), side, ri, th, seed=k * 2 + (sd > 0))
         top = Vector((q.p.x, q.p.y, q.p.z + lift + ri - 0.4))
         c.place(roots[k % 2], top.x + q.r.x * 3.0 * (1 if k % 2 else -1), top.y + q.r.y * 3.0 * (1 if k % 2 else -1), top.z,
                 rot=face, coll="Tunnels", role="visual")
         s += 7.0
         k += 1
+
+
+def void(*_):
+    pass
+
+
+def log_web(c, name, centre, side, ri, th, seed=0, span=0.8, spokes=6, rings=5):
+    """A cobweb across the inside of a round tunnel (radius `ri` round `centre`, `side`
+    the horizontal unit across it): spokes from a hub out to the wall between the angles
+    th - span and th + span (0 at the side, up toward the roof), threads round between."""
+    rnd = random.Random(seed)
+    up = Vector((0, 0, 1))
+    wall = lambda a: centre + (side * math.cos(a) + up * math.sin(a)) * (ri - 0.05)  # noqa: E731
+    hub = centre + (side * math.cos(th) + up * math.sin(th)) * (ri * 0.45)
+    ends = [wall(th - span + 2 * span * i / (spokes - 1) + rnd.uniform(-0.05, 0.05)) for i in range(spokes)]
+    # (and one strand up to the roof and one down to the wall below, holding it)
+    bm = bmesh.new()
+    w = 0.035
+    normal = side.cross(up).normalized()
+
+    def thread(p, q):
+        d = q - p
+        if d.length < 1e-4:
+            return
+        x = d.cross(normal).normalized() * w
+        vs = [bm.verts.new(p - x), bm.verts.new(q - x), bm.verts.new(q + x), bm.verts.new(p + x)]
+        bm.faces.new(vs)
+
+    for e in ends:
+        thread(hub, e)
+    for r in range(1, rings + 1):
+        f = r / (rings + 0.7)
+        pts = [hub.lerp(e, f) for e in ends]
+        for p, q in zip(pts, pts[1:]):
+            mid = (p + q) / 2
+            mid = hub.lerp(mid, 0.96)
+            thread(p, mid)
+            thread(mid, q)
+    ob = c.mesh_object(name, bm, "Tunnels", "visual")
+    c.assign(ob, c.lib("cobweb"))
+    return ob
 
 
 def lava_tube(c, s0, s1, half):

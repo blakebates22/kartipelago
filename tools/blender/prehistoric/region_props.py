@@ -244,59 +244,189 @@ def well(c):
 
 
 def kart_shed(c):
-    """Where the camp works on its karts (Blake, note 1): an open-fronted timber shed under
-    a thatched gable, a kart up on blocks inside with a wheel off, a workbench with tools,
-    stacked tyres, barrels. Its open side faces -Y."""
+    """Where the camp works on its karts (Blake, note 1; Oct 28: "lets add more detail to
+    this garage"): an open-fronted timber shed of plank walls under a thatched gable on
+    rafters, a plank floor, a kart up on blocks under a timber hoist with its chain and
+    hook, a wheel off; a long workbench with a vice, an engine on it and tools; shelves of
+    paint pots and jars; tyres stacked and hung on pegs; barrels, a toolbox, a jack, crates;
+    a lantern hanging from the beam and a carved sign over the front. Its open side faces
+    -Y."""
     name = "Kart Shed"
 
     def build(bm):
-        W, D, H = 9.0, 6.0, 3.4
+        W, D, H = 10.0, 6.5, 3.6
+        k0 = len(bm.faces)
         for sx in (-1, 1):
             for sy in (-1, 1):
-                cuboid(bm, (sx * W / 2, sy * D / 2, H / 2 - 0.3), (0.35, 0.35, H + 0.6))
-        cuboid(bm, (0, D / 2, H / 2 - 0.3), (W, 0.18, H))  # back wall
+                cuboid(bm, (sx * W / 2, sy * D / 2, H / 2 - 0.3), (0.4, 0.4, H + 0.6))
+        cuboid(bm, (0, -D / 2, H / 2 - 0.3), (0.3, 0.3, H + 0.6))  # (a middle post at the front)
+        # Plank walls: the back, and the sides halfway, slats with gaps.
+        for k in range(7):
+            z = 0.2 + k * 0.48
+            cuboid(bm, (0, D / 2, z), (W, 0.14, 0.42), tilt=(0.0, 0.01 * ((k % 3) - 1)))
+            for sx in (-1, 1):
+                cuboid(bm, (sx * W / 2, D / 4, z), (0.14, D / 2, 0.42))
+        cuboid(bm, (0, -D / 2, H - 0.1), (W + 0.4, 0.34, 0.34))  # the front beam
+        cuboid(bm, (0, D / 2, H - 0.1), (W + 0.4, 0.3, 0.3))
+        for k in range(6):  # rafters under the thatch
+            x = -W / 2 + k * W / 5
+            for s in (-1, 1):
+                tube(bm, [(x, s * (D / 2 + 0.6), H - 0.2), (x, 0.0, H + 2.0)], 0.12, n=4)
+        cuboid(bm, (0, 0, H + 2.05), (W + 1.4, 0.24, 0.24))  # the ridge beam
+        # The plank floor.
+        for k in range(9):
+            cuboid(bm, (-W / 2 + 0.55 + k * (W - 1.1) / 8, 0, -0.08), ((W - 1.1) / 8 - 0.06, D - 0.2, 0.12))
+        # The workbench (with a vice), shelves, the hoist's frame.
+        bx, by = W * 0.22, D / 2 - 0.75
+        cuboid(bm, (bx, by, 0.95), (4.2, 1.0, 0.14))
         for sx in (-1, 1):
-            cuboid(bm, (sx * W / 2, D / 4, H / 2 - 0.3), (0.18, D / 2, H))  # half side walls
-        cuboid(bm, (0, -D / 2, H - 0.1), (W + 0.4, 0.3, 0.3))  # the front beam
-        cuboid(bm, (W * 0.25, D / 2 - 0.7, 0.95), (3.2, 1.0, 0.12))  # workbench top
+            cuboid(bm, (bx + sx * 1.9, by, 0.45), (0.16, 0.9, 0.9))
+        cuboid(bm, (bx, by, 0.3), (3.8, 0.9, 0.08))  # the shelf under it
+        for k in range(3):  # wall shelves
+            cuboid(bm, (bx, D / 2 - 0.25, 1.75 + k * 0.55), (3.6, 0.36, 0.06))
+        hx = -1.9
+        for sy in (-1, 1):  # the hoist: an A-frame over the kart
+            tube(bm, [(hx - 1.4, sy * 1.6, -0.05), (hx, sy * 0.2, H + 0.4)], 0.12, n=5)
+            tube(bm, [(hx + 1.4, sy * 1.6, -0.05), (hx, sy * 0.2, H + 0.4)], 0.12, n=5)
+        tube(bm, [(hx, -0.3, H + 0.4), (hx, 0.7, H + 0.4)], 0.14, n=5)
+        k_sign = len(bm.faces)
+        cuboid(bm, (0.0, -D / 2 - 0.25, H + 0.75), (3.4, 0.14, 0.8))  # the sign board
         for sx in (-1, 1):
-            cuboid(bm, (W * 0.25 + sx * 1.4, D / 2 - 0.7, 0.45), (0.15, 0.8, 0.9))
-        for k in range(3):  # tools hung on the back wall
-            cuboid(bm, (W * 0.12 + k * 0.6, D / 2 - 0.15, 2.0), (0.08, 0.06, 0.9 - 0.15 * k))
-        wood = _faces(bm, 0)
-        k0 = len(bm.faces)
+            tube(bm, [(sx * 1.4, -D / 2 - 0.25, H + 0.1), (sx * 1.4, -D / 2 - 0.25, H + 0.4)], 0.04, n=4)
+        wood = _faces(bm, k0)
+        k1 = len(bm.faces)
         for s in (-1, 1):
-            v = [bm.verts.new(q) for q in ((-W / 2 - 0.8, 0.0, H + 2.2), (W / 2 + 0.8, 0.0, H + 2.2),
-                                           (W / 2 + 0.8, s * (D / 2 + 1.2), H - 0.4), (-W / 2 - 0.8, s * (D / 2 + 1.2), H - 0.4))]
+            v = [bm.verts.new(q) for q in ((-W / 2 - 0.9, 0.0, H + 2.3), (W / 2 + 0.9, 0.0, H + 2.3),
+                                           (W / 2 + 0.9, s * (D / 2 + 1.3), H - 0.4), (-W / 2 - 0.9, s * (D / 2 + 1.3), H - 0.4))]
             bm.faces.new(v if s < 0 else list(reversed(v)))
         for s in (-1, 1):  # gable ends
-            v = [bm.verts.new(q) for q in ((s * W / 2, -D / 2, H - 0.2), (s * W / 2, D / 2, H - 0.2), (s * W / 2, 0.0, H + 2.1))]
+            v = [bm.verts.new(q) for q in ((s * W / 2, -D / 2, H - 0.2), (s * W / 2, D / 2, H - 0.2), (s * W / 2, 0.0, H + 2.2))]
             bm.faces.new(v)
-        roof = _faces(bm, k0)
-        k1 = len(bm.faces)
-        # The kart: a chassis on blocks, a seat, a steering column, three wheels and one off.
-        cuboid(bm, (-1.6, 0.2, 0.75), (1.6, 2.6, 0.3))
-        cuboid(bm, (-1.6, 0.6, 1.15), (0.9, 0.8, 0.6))
-        cuboid(bm, (-1.6, -0.75, 1.0), (1.4, 0.7, 0.35))
-        kart = _faces(bm, k1)
+        roof = _faces(bm, k1)
         k2 = len(bm.faces)
-        tube(bm, [(-1.6, -0.6, 1.0), (-1.6, -0.3, 1.7)], 0.05, n=4)
-        for x, y in ((-2.55, 1.2), (-0.65, 1.2), (-2.55, -0.9)):
+        # The kart: a chassis on blocks, a seat, a nose, a steering column with its wheel.
+        kx = hx
+        cuboid(bm, (kx, 0.2, 0.75), (1.6, 2.6, 0.3))
+        cuboid(bm, (kx, 0.6, 1.15), (0.9, 0.8, 0.6))
+        cuboid(bm, (kx, -0.75, 1.0), (1.4, 0.7, 0.35))
+        cuboid(bm, (kx, -1.4, 0.85), (1.2, 0.5, 0.25), tilt=(0.3, 0.0))
+        # Paint pots and jars on the shelves, a toolbox on the bench.
+        for k in range(10):
+            x = bx - 1.6 + (k % 5) * 0.75 + 0.1 * rnd(k)
+            z = 1.78 + (k // 5) * 0.55
+            _cyl(bm, (x, D / 2 - 0.25, z), 0.13 + 0.04 * rnd(k + 3), 0.3 + 0.1 * rnd(k + 5), n=6)
+        cuboid(bm, (bx - 1.2, by, 1.17), (0.8, 0.4, 0.3))
+        paint = _faces(bm, k2)
+        k3 = len(bm.faces)
+        tube(bm, [(kx, -0.6, 1.0), (kx, -0.3, 1.7)], 0.05, n=4)
+        res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=0.25, radius2=0.25, depth=0.06)
+        for v in res["verts"]:
+            v.co = Vector((kx + v.co.x, -0.25 + v.co.z, 1.75 + v.co.y))
+        for x, y in ((kx - 0.95, 1.2), (kx + 0.95, 1.2), (kx - 0.95, -0.9)):
             res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=0.42, radius2=0.42, depth=0.32)
             for v in res["verts"]:
                 v.co = Vector((x + v.co.z, y + v.co.x, 0.55 + v.co.y))
-        for k in range(4):  # a stack of tyres, and the one off the kart
-            _cyl(bm, (W / 2 - 1.1, -D / 2 + 1.3, -0.1 + 0.34 * k), 0.5, 0.32, n=10)
-        _cyl(bm, (-0.3, -1.8, -0.1), 0.42, 0.3, n=10)
-        for k in range(4):  # blocks under the kart
-            cuboid(bm, (-1.6 + (k % 2 - 0.5) * 1.2, 0.2 + (k // 2 - 0.5) * 1.8, 0.3), (0.5, 0.5, 0.6))
-        rubber = _faces(bm, k2)
-        k3 = len(bm.faces)
-        for k in range(2):  # barrels
-            _cyl(bm, (-W / 2 + 0.9 + k * 1.0, D / 2 - 0.9, -0.1), 0.45, 1.1, n=8, r2=0.42)
-        barrels = _faces(bm, k3)
-        return [(c.lib("wood_planks"), wood), (c.lib("thatch"), roof), (c.lib("tribal_paint"), kart),
-                (c.lib("black_rock"), rubber), (c.lib("palm_bark"), barrels)]
+        for k in range(5):  # a stack of tyres, and the one off the kart
+            _cyl(bm, (W / 2 - 1.1, -D / 2 + 1.3, -0.02 + 0.34 * k), 0.5, 0.32, n=10)
+        _cyl(bm, (kx + 1.6, -1.8, -0.02), 0.42, 0.3, n=10)
+        for k in range(3):  # tyres hung on pegs on the side wall
+            res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=0.45, radius2=0.45, depth=0.3)
+            for v in res["verts"]:
+                v.co = Vector((-W / 2 + 0.3 + v.co.z, D / 2 - 1.2 - k * 1.05, 2.2 + v.co.y + 0.0 * v.co.x))
+        # The hoist's chain and hook, the vice, the jack.
+        for k in range(8):
+            _cyl(bm, (hx + 0.04 * (k % 2), 0.2, H + 0.25 - k * 0.3), 0.06, 0.24, n=4)
+        tube(bm, [(hx, 0.2, H - 2.1), (hx + 0.15, 0.2, H - 2.35), (hx, 0.2, H - 2.5)], 0.05, n=4)
+        cuboid(bm, (bx + 1.7, by - 0.35, 1.15), (0.35, 0.3, 0.3))
+        cuboid(bm, (kx + 1.3, 0.8, 0.12), (0.5, 0.9, 0.2))
+        tube(bm, [(kx + 1.3, 0.4, 0.2), (kx + 1.3, -0.4, 0.75)], 0.04, n=4)
+        rubber = _faces(bm, k3)
+        k4 = len(bm.faces)
+        # The engine on the bench: a block, its head, a flywheel.
+        cuboid(bm, (bx + 0.5, by, 1.3), (0.8, 0.6, 0.55))
+        cuboid(bm, (bx + 0.5, by, 1.66), (0.7, 0.5, 0.18))
+        res = bmesh.ops.create_cone(bm, cap_ends=True, segments=10, radius1=0.3, radius2=0.3, depth=0.1)
+        for v in res["verts"]:
+            v.co = Vector((bx + 0.95 + v.co.z, by + v.co.x, 1.3 + v.co.y))
+        for k in range(3):  # spanners on the back wall
+            cuboid(bm, (bx - 0.9 + k * 0.45, D / 2 - 0.12, 2.9), (0.07, 0.05, 0.7 - 0.12 * k))
+        metal = _faces(bm, k4)
+        k5 = len(bm.faces)
+        for k in range(3):  # barrels
+            _cyl(bm, (-W / 2 + 0.9 + k * 1.0, D / 2 - 0.9, -0.02), 0.45, 1.1, n=8, r2=0.42)
+        for k in range(2):  # crates
+            cuboid(bm, (W / 2 - 1.0, D / 2 - 1.0 - k * 0.2, 0.4 + k * 0.8), (1.0, 1.0, 0.8), rot=0.2 * k)
+        barrels = _faces(bm, k5)
+        k6 = len(bm.faces)
+        # The lantern under the beam.
+        tube(bm, [(W * 0.1, -D / 2 + 0.2, H - 0.25), (W * 0.1, -D / 2 + 0.2, H - 0.75)], 0.03, n=4)
+        blob(bm, (W * 0.1, -D / 2 + 0.2, H - 0.95), 0.22, sz=1.3, subdiv=1)
+        light = _faces(bm, k6)
+        _ = k_sign
+        return [(c.lib("wood_planks"), wood), (c.lib("thatch"), roof), (c.lib("tribal_paint"), paint),
+                (c.lib("black_rock"), rubber), (c.lib("obsidian_cliff"), metal), (c.lib("palm_bark"), barrels),
+                (c.lib("lantern_glow"), light)]
+
+    return _p(c, name, build)
+
+
+def kart_shed_collider(c):
+    """What a kart hits at the kart shed (the shed itself is only seen: its rafters, hoist
+    and tools would be slopes a kart could catch on): its posts and walls."""
+    name = "Kart Shed Collider"
+
+    def build(bm):
+        W, D, H = 10.0, 6.5, 3.6
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                cuboid(bm, (sx * W / 2, sy * D / 2, H / 2 - 0.3), (0.4, 0.4, H + 0.6))
+        cuboid(bm, (0, -D / 2, H / 2 - 0.3), (0.3, 0.3, H + 0.6))
+        cuboid(bm, (0, D / 2, H / 2), (W, 0.3, H))
+        for sx in (-1, 1):
+            cuboid(bm, (sx * W / 2, D / 4, H / 2), (0.3, D / 2, H))
+        return [(c.lib("wood_planks", "wall"), _faces(bm, 0))]
+
+    return _p(c, name, build)
+
+
+def swamp_tree(c, variant=0):
+    """The valley swamp's smaller trees (Blake, Oct 28: "let's make the roots look better on
+    these smaller trees"): a flared trunk on arching stilt roots that leave it high up and
+    run down into the mud, cypress knees round its foot, a broad crown and hanging moss."""
+    name = "Valley Swamp Tree %d" % variant
+
+    def build(bm):
+        h = 9.0 + 2.0 * variant
+        tube(bm, [(0, 0, -0.6), (0.1, 0.05, 1.6), (0.6, 0.2, h * 0.4), (-0.4, -0.2, h * 0.72), (0.2, 0.3, h)],
+             [1.25, 0.8, 0.6, 0.48, 0.32], n=8)
+        for i in range(7):
+            a = i * math.tau / 7 + 0.3 * variant + 0.25 * rnd(i + variant * 7)
+            up = 1.8 + 1.4 * rnd(i * 3 + variant)
+            reach = 2.8 + 1.6 * rnd(i * 5 + variant)
+            at = lambda r, z: (r * math.cos(a), r * math.sin(a), z)  # noqa: E731
+            tube(bm, [at(0.5, up), at(1.3, up * 0.85), at(reach * 0.75, up * 0.35), at(reach, -0.05), at(reach * 1.2, -0.7)],
+                 [0.32, 0.27, 0.2, 0.14, 0.08], n=5)
+        for i in range(5):  # cypress knees
+            a = i * 1.7 + variant
+            r = 3.2 + 1.2 * rnd(i + 20)
+            x, y = r * math.cos(a), r * math.sin(a)
+            tube(bm, [(x, y, -0.4), (x, y, 0.5 + 0.5 * rnd(i + 30))], [0.22, 0.06], n=5)
+        trunk = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for dx, dy, dz, r in ((0.2, 0.3, h + 0.6, 3.6), (2.8, -0.9, h - 1.0, 2.6), (-2.6, 1.1, h - 0.8, 2.8),
+                              (0.4, -2.6, h - 1.4, 2.2)):
+            blob(bm, (dx, dy, dz), r, sz=0.45, subdiv=1)
+        canopy = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for i in range(8):
+            a = i * math.tau / 8
+            x, y = 2.4 * math.cos(a), 2.4 * math.sin(a)
+            v0 = bm.verts.new((x - 0.3, y, h - 0.6))
+            v1 = bm.verts.new((x + 0.3, y, h - 0.6))
+            v2 = bm.verts.new((x, y + 0.05, h - 3.6 - rnd(i) * 1.8))
+            bm.faces.new((v0, v1, v2))
+        moss = _faces(bm, k1)
+        return [(c.lib("palm_bark"), trunk), (c.lib("swamp_moss"), canopy + moss)]
 
     return _p(c, name, build)
 

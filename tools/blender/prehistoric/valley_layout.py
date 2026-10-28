@@ -158,7 +158,7 @@ def river_d(x, y):
 # The bog's pools (x, y, radius), its pyramid's tip; Ember's lava pools.
 POOLS = [(-180.0, -147.0, 15.0), (-121.5, -182.0, 14.0), (-94.0, -137.0, 11.5), (-144.0, -125.0, 7.5),
          (-68.0, -187.0, 9.0), (-122.0, -116.0, 6.5), (-157.0, -181.0, 7.5)]
-PYRAMID = (-186.0, -186.0)
+PYRAMID = (-202.0, -184.0)  # (Oct 28: moved back behind its gateway, and bigger)
 LAVA = [(186.0, -93.0, 6.0), (167.0, -198.0, 8.0), (93.0, -127.0, 5.0)]
 
 
