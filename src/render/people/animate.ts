@@ -8,7 +8,7 @@
  *   talking: the jaw in a speech rhythm       (while they have the line)
  *   walking: feet planted, stepping by the distance travelled (never skating)
  *   gestures: wave, point, cheer, nod, shake, shrug, bow, cower, think, raiseStaff,
- *             blowHorn, breakHorn, holdOut, kneel   (each blends in and out)
+ *             blowHorn, breakHorn, holdOut, touchHorn, kneel   (each blends in and out)
  *
  * Purely visual: it reads the cue and the distance moved, and poses the rig.
  */
@@ -30,6 +30,7 @@ export type Gesture =
   | "blowHorn"
   | "breakHorn"
   | "holdOut"
+  | "touchHorn"
   | "kneel";
 
 export const GESTURES: readonly Gesture[] = [
@@ -46,6 +47,7 @@ export const GESTURES: readonly Gesture[] = [
   "blowHorn",
   "breakHorn",
   "holdOut",
+  "touchHorn",
   "kneel",
 ];
 
@@ -374,6 +376,25 @@ const POSES: Record<Gesture, (t: number, c: Ctx) => GPose> = {
       head: [-0.04, 0, -0.1],
       brow: 0.5,
       jaw: 0.25,
+    };
+  },
+  touchHorn(t) {
+    // His hand goes to the horn at his hip, closes round its middle and lifts it out in
+    // front of him, across his belly, and he looks down at it (the story turns on it).
+    const d = ramp(t, 0.1, 0.9);
+    const grip: V3 = lerp3([-0.3, 0.06, -0.06], [-0.1, 0.24, 0.3], d);
+    const dir = lerp3([0.1, 0.5, -0.3], [1, 0.3, 0.2], d);
+    const horn = gripAt(grip, dir, [0, 0.035, 0.18]);
+    return {
+      props: { hornA: horn, hornB: horn },
+      hands: [null, [grip[0], grip[1] + 0.015, grip[2] + 0.01]],
+      handRot: [null, [-0.2, 0, -1.5]],
+      head: [0.38 * d, -0.1 * d, 0.04 * d],
+      lean: 0.08 * d,
+      brow: -0.5 * d,
+      lids: 0.35,
+      jaw: 0.02,
+      look: 0.1,
     };
   },
   kneel(t, c) {

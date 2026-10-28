@@ -22,7 +22,7 @@ describe("staged scenes", () => {
       // Poses are for dragons, gestures for those on foot; music is one of the score's cues.
       for (const a of Object.keys(b.fx?.pose ?? {})) expect(s.actors[a]?.kind, a).toBe("dragon");
       for (const a of Object.keys(b.fx?.gesture ?? {}))
-        expect(["elder", "guard", "villager"], a).toContain(s.actors[a]?.kind);
+        expect(["elder", "guard", "villager", "robed"], a).toContain(s.actors[a]?.kind);
       if (b.fx?.music) expect(CUES as readonly string[]).toContain(b.fx.music);
     }
     if (s.music) expect(CUES as readonly string[]).toContain(s.music);

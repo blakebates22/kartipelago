@@ -13,6 +13,64 @@ import { Build, ellipsoid, loft, tube, type V3 } from "../racers/kit/shapes";
 import { skinMaterial } from "../racers/kit/paint";
 import { buildTail, mesh, mottle, shade, skeleton, type PersonRig } from "./rig";
 import { tassel } from "./parts";
+import { eyesFor, skullAndJaw, type Pal, type Skull } from "./folk";
+
+/**
+ * Lumen's face under the hood (concepts, Blake Oct 28: his face shows, a little shadowed;
+ * he passes for a young dinosaur, the robe hides what he really is). `shadow` is the old
+ * one: only two glowing eyes in the dark. Lumen wears frill (Blake, Oct 28); the others stay
+ * for comparison.
+ *
+ *   snub   a round head and a short soft snout, big amber eyes: a kid.
+ *   long   a longer muzzle, narrower gold eyes, two horn nubs on his brow just showing.
+ *   frill  the snub face with small fins at his cheeks (a dragon's, folded down).
+ */
+export type LumenFace = "shadow" | "snub" | "long" | "frill";
+
+const FACES: Record<Exclude<LumenFace, "shadow">, { skull: Skull; eyes: number; pal: Pal }> = {
+  snub: {
+    skull: { R: 0.105, cy: 0.12, L: 0.15, w: 0.07, h: 0.048 },
+    eyes: 1.3,
+    pal: {
+      skin: new THREE.Color("#e2c27a"),
+      dark: new THREE.Color("#b88c44"),
+      belly: new THREE.Color("#f4e2b4"),
+      accent: "#e8c060",
+      mouth: "#5a2a1a",
+      tongue: "#d86a6a",
+      claw: "#b8862e",
+      iris: "#e8a020",
+    },
+  },
+  long: {
+    skull: { R: 0.1, cy: 0.12, L: 0.22, w: 0.058, h: 0.042 },
+    eyes: 1.05,
+    pal: {
+      skin: new THREE.Color("#d8b468"),
+      dark: new THREE.Color("#a87a34"),
+      belly: new THREE.Color("#f0dca8"),
+      accent: "#e8c060",
+      mouth: "#5a2a1a",
+      tongue: "#d86a6a",
+      claw: "#b8862e",
+      iris: "#ffc030",
+    },
+  },
+  frill: {
+    skull: { R: 0.105, cy: 0.12, L: 0.16, w: 0.068, h: 0.046 },
+    eyes: 1.2,
+    pal: {
+      skin: new THREE.Color("#e6c886"),
+      dark: new THREE.Color("#c09050"),
+      belly: new THREE.Color("#f6e6bc"),
+      accent: "#e8c060",
+      mouth: "#5a2a1a",
+      tongue: "#d86a6a",
+      claw: "#b8862e",
+      iris: "#f0b030",
+    },
+  },
+};
 
 const C = {
   robe: "#4d5a80",
@@ -57,7 +115,7 @@ function cutFacing(geo: THREE.BufferGeometry, dir: V3, cos: number) {
 let eyeMat: THREE.MeshBasicMaterial | undefined;
 let glowTex: THREE.Texture | undefined;
 
-export function buildLumen(): PersonRig {
+export function buildLumen(face: LumenFace = "shadow"): PersonRig {
   const robe = new THREE.Color(C.robe);
   const robeDark = new THREE.Color(C.robeDark);
   const robeLight = new THREE.Color(C.robeLight);
@@ -324,9 +382,11 @@ export function buildLumen(): PersonRig {
     for (let i = 0; i < nor.count; i++) nor.setXYZ(i, -nor.getX(i), -nor.getY(i), -nor.getZ(i));
   }
   hood.add(inner, C.shadow, { p: hoodC, s: [hoodS[0] * 0.94, hoodS[1] * 0.94, hoodS[2] * 0.94] });
-  // The shadowed face deep inside, the faintest snout.
-  hood.add(ellipsoid(14, 10), C.shadow, { p: [0, 0.13, 0.02], s: [0.15, 0.16, 0.14] });
-  hood.add(ellipsoid(10, 7), "#1c140c", { p: [0, 0.09, 0.12], s: [0.07, 0.055, 0.07] });
+  // The shadowed face deep inside, the faintest snout (the old look).
+  if (face === "shadow") {
+    hood.add(ellipsoid(14, 10), C.shadow, { p: [0, 0.13, 0.02], s: [0.15, 0.16, 0.14] });
+    hood.add(ellipsoid(10, 7), "#1c140c", { p: [0, 0.09, 0.12], s: [0.07, 0.055, 0.07] });
+  }
   // The hood's rim: thick, pale-edged.
   hood.add(new THREE.TorusGeometry(1, 0.11, 7, 22), (p) => (p.y > 0.7 ? C.trim : C.robeLight), {
     p: [0, hoodC[1] + 0.02 * 0.42 * 0.22, hoodC[2] + 0.21 * 0.42],
@@ -352,6 +412,55 @@ export function buildLumen(): PersonRig {
     ),
   );
   head.add(mesh(hood));
+
+  if (face !== "shadow") {
+    // His face: a young dinosaur's, as far as anyone can tell, in the hood's shadow.
+    const f = FACES[face];
+    const holder = new THREE.Group();
+    holder.position.set(0, 0.0, 0.07);
+    holder.scale.setScalar(1.2);
+    head.add(holder);
+    const { jaw, mouth } = skullAndJaw(holder, f.skull, f.pal, { seed: 3 });
+    const eyes = eyesFor(holder, f.skull, f.pal, f.eyes);
+    const { R, cy } = f.skull;
+    const extra = new Build();
+    if (face === "long")
+      // Two horn nubs on his brow, just showing under the hood's rim.
+      for (const sd of [1, -1])
+        extra.add(new THREE.ConeGeometry(0.018, 0.05, 6), C.goldDark, {
+          p: [sd * 0.45 * R, cy + 0.85 * R, 0.3 * R],
+          r: [-0.5, 0, sd * -0.35],
+        });
+    if (face === "frill")
+      // Little cheek fins, folded back (a dragon's, if you knew to look).
+      for (const sd of [1, -1])
+        for (let k = 0; k < 3; k++)
+          extra.add(new THREE.ConeGeometry(0.014, 0.075 - k * 0.012, 4), shade(f.pal.skin, 0.85), {
+            p: [sd * 0.9 * R, cy - 0.15 * R - k * 0.025, -0.05 * R],
+            r: [-1.9 + k * 0.15, 0, sd * (0.9 + k * 0.2)],
+          });
+    if (face !== "snub") holder.add(mesh(extra));
+    // The hood's shadow over the top of his face (darker toward the brow).
+    holder.traverse((o) => {
+      const g = (o as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+      const col = g?.getAttribute("color") as THREE.BufferAttribute | undefined;
+      const pos = g?.getAttribute("position") as THREE.BufferAttribute | undefined;
+      if (!col || !pos || o.userData.shaded) return;
+      o.userData.shaded = true;
+      const local = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        local.fromBufferAttribute(pos, i).applyMatrix4(o.matrix);
+        const y = local.y + (o.parent && o.parent !== holder ? o.parent.position.y : 0);
+        const k = 1 - 0.42 * Math.max(0, Math.min(1, (y - (cy - 0.3 * R)) / (1.3 * R)));
+        col.setXYZ(i, col.getX(i) * k, col.getY(i) * k, col.getZ(i) * k);
+      }
+      col.needsUpdate = true;
+    });
+    rig.face = { ...eyes, jaw, jawOpen: 0.3 };
+    rig.stance.mouth = mouth;
+    void skinMaterial;
+    return rig;
+  }
 
   // Two soft gold eyes in the dark, glowing (and a faint glow round each).
   eyeMat ??= new THREE.MeshBasicMaterial({ color: C.eye });

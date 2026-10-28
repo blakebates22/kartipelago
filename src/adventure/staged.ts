@@ -89,6 +89,7 @@ export type Gesture =
   | "blowHorn"
   | "breakHorn"
   | "holdOut"
+  | "touchHorn"
   | "kneel";
 
 export interface StagedBeat {
@@ -410,22 +411,33 @@ add(
         0: { fx: { gesture: cheer("v1", "v2", "v3", "v4") } },
         1: { fx: { gesture: { elder: "wave" } } },
         2: { fx: { gesture: { elder: "point" } } },
-        3: { fx: { gesture: { elder: "raiseStaff" } } },
-        4: { fx: { music: "lumen" } },
-        5: { fx: { gesture: { elder: "shake" } } },
-        // The Founders' Horn at his hip (the story turns on it).
-        6: {
-          cam: { from: [1.6, 1.1, -10.6], to: [1.3, 1.0, -10.9], look: [0, 0.9, -13] },
-          fx: { gesture: { elder: "think" } },
-        },
+        3: { fx: { gesture: { lumen: "wave" } } },
+        4: { fx: { gesture: { elder: "raiseStaff" } } },
+        5: { fx: { music: "lumen" } },
+        6: { fx: { gesture: { elder: "shake" } } },
+        // The Founders' Horn at his hip (the story turns on it); the festival goes on
+        // behind him.
         7: {
+          // (From his right, where the horn hangs, framed above the text box.)
+          cam: { from: [-1.2, 1.25, -11.2], to: [-1.05, 1.2, -11.4], look: [-0.2, 0.7, -12.9] },
+          fx: { gesture: { elder: "touchHorn" } },
+          moves: [
+            { actor: "v1", to: [11, -20], dur: 6 },
+            { actor: "v2", to: [-12, -19], dur: 6 },
+          ],
+        },
+        8: {
           cam: {
             from: [6.2, 1.25, 5.8],
             to: [6.4, 1.25, 6.1],
             look: [8.6, 1.0, 3.2],
             lookTo: [9.8, 1.0, 4.8],
           },
-          moves: [{ actor: "lumen", to: [10, 5], dur: 3, heading: 0.6 }],
+          moves: [
+            { actor: "lumen", to: [10, 5], dur: 3, heading: 0.6 },
+            { actor: "v3", to: [18, -12], dur: 6 },
+          ],
+          fx: { gesture: { v4: "cheer" } },
         },
       },
     },

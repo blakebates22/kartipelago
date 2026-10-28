@@ -14,6 +14,30 @@
 import * as THREE from "three";
 import { Racer, type RacerMotion } from "../render/racers/racer";
 import type { RacerId } from "../render/racers/designs";
+import { createElderView, createGuardView, createLumenView } from "../render/people";
+import type { PersonView } from "../render/people/view";
+import { createStoryDragon, type DesignId, type StoryDragonView } from "../render/storyDragon";
+
+/** The story's cast who aren't racers, by CAST key (adventure/scenes.ts), and what plays
+ * each: a person (Mossback, Lumen in his robe, a guard) or a story dragon. */
+const CAST_MODELS: Record<
+  string,
+  { person?: () => "elder" | "lumen" | "guard" | "sentry"; dragon?: DesignId }
+> = {
+  elder: { person: () => "elder" },
+  lumen: { person: () => "lumen" },
+  guard: { person: () => "guard" },
+  sentry: { person: () => "sentry" },
+  lumen_dragon: { dragon: "lumen" },
+  cinderjaw: { dragon: "cinderjaw" },
+  rimefang: { dragon: "rimefang" },
+  scorchwind: { dragon: "scorchwind" },
+  tidewyrm: { dragon: "tidewyrm" },
+  king: { dragon: "king" },
+};
+
+/** Whether a CAST key has a 3D model to portray (the rest are drawn). */
+export const hasCastModel = (key: string) => key in CAST_MODELS;
 
 export type PortraitView = "kart" | "head" | "front";
 
@@ -73,7 +97,12 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
   scene.add(sun, rim, new THREE.HemisphereLight("#eaf4ff", "#6a5a48", 1.25));
   const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 60);
   const racers = new Map<string, Racer>();
+  const people = new Map<string, PersonView>();
+  const dragons = new Map<string, StoryDragonView>();
   const slots = new Map<string, Slot>();
+  const at = new THREE.Vector3();
+  const fwd = new THREE.Vector3();
+  const side = new THREE.Vector3();
   const motion = still();
   const head = new THREE.Vector3();
   const clear = new THREE.Color();
@@ -109,6 +138,70 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
     return s;
   }
 
+  /** Render the one visible model into a slot and make it pixel art. */
+  function shoot(s: Slot, o: PortraitOpts): HTMLCanvasElement {
+    // Render small, transparent behind.
+    const prevTarget = renderer.getRenderTarget();
+    renderer.getClearColor(clear);
+    const prevAlpha = renderer.getClearAlpha();
+    renderer.setRenderTarget(s.rt);
+    renderer.setClearColor(0x000000, 0);
+    renderer.clear();
+    renderer.render(scene, camera);
+    renderer.readRenderTargetPixels(s.rt, 0, 0, o.w, o.h, s.buf);
+    renderer.setRenderTarget(prevTarget);
+    renderer.setClearColor(clear, prevAlpha);
+    // Into pixel art: flip, step the colours, hard alpha, outline.
+    const { w, h } = o;
+    const d = s.img.data;
+    const lv = Math.max(2, o.levels ?? 6);
+    const step = 255 / (lv - 1);
+    const dim = 1 - Math.min(1, Math.max(0, o.dim ?? 0)) * 0.6;
+    const sil = o.silhouette ? hexRgb(o.silhouette) : undefined;
+    const line = o.outline === "" ? undefined : hexRgb(o.outline ?? "#1d120a");
+    const solid = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const src = ((h - 1 - y) * w + x) * 4;
+        const dst = (y * w + x) * 4;
+        if (s.buf[src + 3]! < 110) {
+          d[dst + 3] = 0;
+          continue;
+        }
+        solid[y * w + x] = 1;
+        for (let c = 0; c < 3; c++) {
+          const v = sil ? sil[c]! : Math.round(s.buf[src + c]! / step) * step * dim;
+          d[dst + c] = Math.max(0, Math.min(255, v));
+        }
+        d[dst + 3] = 255;
+      }
+    if (line)
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          if (solid[y * w + x]) continue;
+          const near =
+            (x > 0 && solid[y * w + x - 1]) ||
+            (x < w - 1 && solid[y * w + x + 1]) ||
+            (y > 0 && solid[(y - 1) * w + x]) ||
+            (y < h - 1 && solid[(y + 1) * w + x]);
+          if (!near) continue;
+          const dst = (y * w + x) * 4;
+          d[dst] = line[0];
+          d[dst + 1] = line[1];
+          d[dst + 2] = line[2];
+          d[dst + 3] = 255;
+        }
+    s.ctx.putImageData(s.img, 0, 0);
+    return s.canvas;
+  }
+
+  /** Only `root` shows. */
+  function solo(root: THREE.Object3D) {
+    for (const r of racers.values()) r.root.visible = r.root === root;
+    for (const p of people.values()) p.root.visible = p.root === root;
+    for (const d of dragons.values()) d.root.visible = d.root === root;
+  }
+
   return {
     /**
      * The racer's portrait now (call each frame for a turning, breathing one). `pose`
@@ -123,7 +216,7 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
     ): HTMLCanvasElement {
       const s = slotOf(`${id}${o.alt ? ":alt" : ""}:${o.w}x${o.h}:${o.view}`, o.w, o.h);
       const r = racerOf(id, o.alt);
-      for (const other of racers.values()) other.root.visible = other === r;
+      solo(r.root);
       Object.assign(motion, still(), pose ?? {});
       r.setResult(result, 8);
       r.animate(dt, motion, { x: 0, z: 6 });
@@ -149,61 +242,69 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
         camera.lookAt(0, 0.75, 0);
       }
       camera.updateProjectionMatrix();
-      // Render small, transparent behind.
-      const prevTarget = renderer.getRenderTarget();
-      renderer.getClearColor(clear);
-      const prevAlpha = renderer.getClearAlpha();
-      renderer.setRenderTarget(s.rt);
-      renderer.setClearColor(0x000000, 0);
-      renderer.clear();
-      renderer.render(scene, camera);
-      renderer.readRenderTargetPixels(s.rt, 0, 0, o.w, o.h, s.buf);
-      renderer.setRenderTarget(prevTarget);
-      renderer.setClearColor(clear, prevAlpha);
-      // Into pixel art: flip, step the colours, hard alpha, outline.
-      const { w, h } = o;
-      const d = s.img.data;
-      const lv = Math.max(2, o.levels ?? 6);
-      const step = 255 / (lv - 1);
-      const dim = 1 - Math.min(1, Math.max(0, o.dim ?? 0)) * 0.6;
-      const sil = o.silhouette ? hexRgb(o.silhouette) : undefined;
-      const line = o.outline === "" ? undefined : hexRgb(o.outline ?? "#1d120a");
-      const solid = new Uint8Array(w * h);
-      for (let y = 0; y < h; y++)
-        for (let x = 0; x < w; x++) {
-          const src = ((h - 1 - y) * w + x) * 4;
-          const dst = (y * w + x) * 4;
-          if (s.buf[src + 3]! < 110) {
-            d[dst + 3] = 0;
-            continue;
-          }
-          solid[y * w + x] = 1;
-          for (let c = 0; c < 3; c++) {
-            const v = sil ? sil[c]! : Math.round(s.buf[src + c]! / step) * step * dim;
-            d[dst + c] = Math.max(0, Math.min(255, v));
-          }
-          d[dst + 3] = 255;
+      return shoot(s, o);
+    },
+    /**
+     * A story character who isn't a racer (Mossback, Lumen, a guard, a dragon): their
+     * head and shoulders, turning a little, blinking and breathing with `t`.
+     */
+    cast(key: string, o: { w: number; h: number; levels?: number }, t: number): HTMLCanvasElement {
+      const m = CAST_MODELS[key];
+      const s = slotOf(`cast:${key}:${o.w}x${o.h}`, o.w, o.h);
+      camera.aspect = o.w / o.h;
+      if (m?.person) {
+        let p = people.get(key);
+        if (!p) {
+          const kind = m.person();
+          p =
+            kind === "elder"
+              ? createElderView(scene)
+              : kind === "lumen"
+                ? createLumenView(scene)
+                : createGuardView(scene, kind === "sentry" ? "dragon" : "road", 4);
+          people.set(key, p);
         }
-      if (line)
-        for (let y = 0; y < h; y++)
-          for (let x = 0; x < w; x++) {
-            if (solid[y * w + x]) continue;
-            const near =
-              (x > 0 && solid[y * w + x - 1]) ||
-              (x < w - 1 && solid[y * w + x + 1]) ||
-              (y > 0 && solid[(y - 1) * w + x]) ||
-              (y < h - 1 && solid[(y + 1) * w + x]);
-            if (!near) continue;
-            const dst = (y * w + x) * 4;
-            d[dst] = line[0];
-            d[dst + 1] = line[1];
-            d[dst + 2] = line[2];
-            d[dst + 3] = 255;
-          }
-      s.ctx.putImageData(s.img, 0, 0);
-      return s.canvas;
+        solo(p.root);
+        const yaw = 0.35 + Math.sin(t * 0.7) * 0.12;
+        p.update(0, 0, 0, yaw, { look: camera.position }, t);
+        p.root.updateMatrixWorld(true);
+        p.headPosition(at);
+        camera.fov = 26;
+        camera.position.set(at.x + 0.45, at.y + 0.08, at.z + 1.75);
+        camera.lookAt(at.x, at.y - 0.12, at.z);
+      } else if (m?.dragon) {
+        let d = dragons.get(key);
+        if (!d) {
+          d = createStoryDragon(scene, m.dragon, 1);
+          d.ground = 0;
+          d.effects = false;
+          dragons.set(key, d);
+        }
+        solo(d.root);
+        d.root.rotation.y = 0.5 + Math.sin(t * 0.6) * 0.1;
+        d.update("idle", t, t, camera.position, false);
+        d.root.updateMatrixWorld(true);
+        d.headFrame(at, fwd);
+        side.set(0, 1, 0).cross(fwd).normalize();
+        const size = m.dragon === "lumen" ? 1.6 : m.dragon === "king" ? 6.5 : 5;
+        camera.fov = 26;
+        camera.position
+          .copy(at)
+          .addScaledVector(fwd, size * 1.6)
+          .addScaledVector(side, size * 0.9)
+          .add(new THREE.Vector3(0, size * 0.25, 0));
+        camera.lookAt(at);
+      }
+      camera.near = 0.05;
+      camera.far = 400;
+      camera.updateProjectionMatrix();
+      return shoot(s, { w: o.w, h: o.h, view: "head", levels: o.levels ?? 8 });
     },
     dispose() {
+      for (const p of people.values()) p.dispose();
+      people.clear();
+      for (const d of dragons.values()) d.dispose();
+      dragons.clear();
       for (const s of slots.values()) s.rt.dispose();
       slots.clear();
       for (const r of racers.values()) r.root.removeFromParent();

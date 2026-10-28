@@ -134,9 +134,10 @@ export function stagedSceneScreen(
     }
   };
   const next = () => {
+    // (The last line stays up, whole, until whatever comes next takes over.)
+    if (i + 1 >= beats.length) return done();
     i++;
     t = 0;
-    if (i >= beats.length) return done();
     startBeat(i);
   };
   const done = () => {
@@ -301,7 +302,13 @@ export function stagedSceneScreen(
     const shake = beatOf(i)?.fx?.shake ?? 0;
     const sh = shake * Math.max(0, 1 - t / 2.5);
     // (Heights over the ground under the camera, or under what it looks at: rel.)
-    const gy = shot.rel ? groundAt(look[0], look[2]) : groundAt(from[0], from[2]);
+    // (The ground under the shot's two ends, blended: a camera gliding in over the land
+    // shouldn't ride every bump and treetop under it.)
+    const g0 = shot.rel
+      ? groundAt(shot.look[0], shot.look[2])
+      : groundAt(shot.from[0], shot.from[2]);
+    const end = shot.rel ? (shot.lookTo ?? shot.look) : (shot.to ?? shot.from);
+    const gy = g0 + (groundAt(end[0], end[2]) - g0) * k;
     cam.position.set(
       from[0] + Math.sin(clock * 37) * sh,
       gy + from[1] + Math.sin(clock * 41) * sh,
@@ -310,9 +317,13 @@ export function stagedSceneScreen(
     cam.lookAt(look[0], groundAt(look[0], look[2]) + look[1], look[2]);
   };
 
-  return {
+  const screen: Screen & { readonly beat: number } = {
     id: "ADVENTURE_SCENE",
     seeThrough: false,
+    /** The line it's on (for the screenshot tools). */
+    get beat() {
+      return i;
+    },
     enter() {
       game.ui.interactive = true;
       pp = createPixelPortraits(game.stage.renderer);
@@ -373,7 +384,7 @@ export function stagedSceneScreen(
           return next();
         }
       }
-      if (game.menuInput.pointer.clicked && t > 0.3) next();
+      if (game.menuInput.pointer.clicked && t > 0.3 && alive) next();
     },
     render3d(alpha, frameSeconds) {
       if (!session) return false;
@@ -443,4 +454,5 @@ export function stagedSceneScreen(
       ]);
     },
   };
+  return screen;
 }

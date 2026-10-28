@@ -7,7 +7,7 @@ import type * as THREE from "three";
 import { createPersonView, type PersonView } from "./view";
 import { buildMossback } from "./mossback";
 import { buildGuard } from "./guard";
-import { buildLumen } from "./lumen";
+import { buildLumen, type LumenFace } from "./lumen";
 import type { Folk } from "../villager";
 
 export { GESTURES, type Gesture, type PersonCue } from "./animate";
@@ -27,7 +27,17 @@ export function createGuardView(parent: THREE.Object3D, folk: Folk, seed: number
   });
 }
 
-/** Lumen in his robe (the hatchling under it). */
-export function createLumenView(parent: THREE.Object3D, seed = 3): PersonView {
-  return createPersonView(parent, "lumen", buildLumen, { scale: 1.08, shadow: 0.5, seed });
+/** Lumen in his robe (the hatchling under it): his face shows in the hood, a young
+ * dinosaur's as far as anyone knows, the little fins at his cheeks the only hint (Blake
+ * picked the frill face, Oct 28). */
+export function createLumenView(
+  parent: THREE.Object3D,
+  seed = 3,
+  face: LumenFace = "frill",
+): PersonView {
+  return createPersonView(parent, `lumen|${face}`, () => buildLumen(face), {
+    scale: 1.08,
+    shadow: 0.5,
+    seed,
+  });
 }

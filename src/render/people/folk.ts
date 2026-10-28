@@ -122,7 +122,7 @@ export function villagerLook(folk: Folk, seed: number, kind?: Species) {
 
 // ---------------------------------------------------------------- heads
 
-interface Skull {
+export interface Skull {
   /** Cranium radius, centre height (head space), snout length (from the cranium's
    * centre), and the snout tip's half-width and half-height. */
   R: number;
@@ -132,7 +132,7 @@ interface Skull {
   h: number;
 }
 
-interface Pal {
+export interface Pal {
   skin: THREE.Color;
   dark: THREE.Color;
   belly: THREE.Color;
@@ -144,7 +144,12 @@ interface Pal {
 }
 
 /** The skull (round cranium, a snout), its mouth, nostrils and smile; and the jaw. */
-function skullAndJaw(head: THREE.Object3D, s: Skull, p: Pal, o: { tip?: string; seed: number }) {
+export function skullAndJaw(
+  head: THREE.Object3D,
+  s: Skull,
+  p: Pal,
+  o: { tip?: string; seed: number },
+) {
   const { R, cy, L, w, h } = s;
   const my = cy - 0.25 * R - h * 0.55; // the mouth line
   const tip = o.tip ? new THREE.Color(o.tip) : undefined;
@@ -246,7 +251,13 @@ function skullAndJaw(head: THREE.Object3D, s: Skull, p: Pal, o: { tip?: string; 
   return { jaw, mouth: [0, my, L + 0.05] as V3 };
 }
 
-function eyesFor(head: THREE.Object3D, s: Skull, p: Pal, big = 1, extra: Partial<EyeStyle> = {}) {
+export function eyesFor(
+  head: THREE.Object3D,
+  s: Skull,
+  p: Pal,
+  big = 1,
+  extra: Partial<EyeStyle> = {},
+) {
   const R = s.R;
   return buildEyes(head, {
     at: [0.48 * R, s.cy + 0.24 * R, 0.64 * R],

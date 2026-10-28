@@ -122,16 +122,25 @@ describe("the guards, Lumen and the townsfolk", () => {
       }
   });
 
-  it("Lumen's eyes glow and blink, and he keeps his tail under the robe", () => {
-    const v = createLumenView(new THREE.Scene());
-    standsRight(v, 14000);
-    expect(v.rig.glow.length).toBe(2);
-    let shut = false;
-    for (let t = 0; t < 12; t += 1 / 30) {
-      v.update(0, 0, 0, 0, {}, t);
-      if (v.rig.face.eyes.some((e) => e.lid.scale.y < 0.3)) shut = true;
+  it("Lumen blinks and keeps his tail under the robe, with every face (the old one's eyes glow)", () => {
+    for (const face of ["frill", "shadow", "snub", "long"] as const) {
+      const v = createLumenView(new THREE.Scene(), 3, face);
+      standsRight(v, 14000);
+      if (face === "shadow") expect(v.rig.glow.length).toBe(2);
+      expect(v.rig.face.eyes.length, face).toBe(2);
+      let shut = false;
+      for (let t = 0; t < 12; t += 1 / 30) {
+        v.update(0, 0, 0, 0, {}, t);
+        const f = v.rig.face;
+        const closed = (e: (typeof f.eyes)[number]) =>
+          e.lid.userData.squash
+            ? e.lid.scale.y < 0.3
+            : Math.abs(e.lid.rotation.x - f.lidClosed) < Math.abs(f.lidClosed - f.lidOpen) * 0.3;
+        if (f.eyes.some(closed)) shut = true;
+      }
+      expect(shut, `${face}: blinks`).toBe(true);
+      v.dispose();
     }
-    expect(shut, "blinks").toBe(true);
   });
 
   it("every kind of villager builds in every kingdom's clothes, and moves well", () => {

@@ -51,7 +51,14 @@ import { trackById, type TrackEntry } from "../game/tracks";
 import { wrap } from "../ui/font";
 import type { UiLayer } from "../ui/layer";
 import { INK, INK_SOFT, parchment } from "../ui/mapArt";
-import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
+import { createPixelPortraits, hasCastModel, type PixelPortraits } from "../ui/pixelPortraits";
+import {
+  PLATE_H,
+  PLATE_RIBBONS,
+  PLATE_W,
+  createStoryPlates,
+  type StoryPlates,
+} from "../ui/storyPlates";
 import { PAL } from "../ui/textures";
 import { VMenu, hints } from "./common";
 import { loadingScreen } from "./loading";
@@ -353,18 +360,24 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
   let i = 0;
   let t = 0;
   let pp: PixelPortraits | undefined;
+  let plates: StoryPlates | undefined;
   return {
     id: "ADVENTURE_SCENE",
     seeThrough: false,
     enter() {
       game.ui.interactive = true;
       pp = createPixelPortraits(game.stage.renderer);
-      if (sc?.backdrop.storybook) void game.audio.music.play("map", { fade: 1 });
+      if (sc?.backdrop.storybook) {
+        plates = createStoryPlates(game.stage.renderer);
+        void game.audio.music.play("map", { fade: 1 });
+      }
       if (!beats.length) finish();
     },
     exit() {
       pp?.dispose();
       pp = undefined;
+      plates?.dispose();
+      plates = undefined;
     },
     frame(dt, actions) {
       const before = i;
@@ -382,22 +395,24 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
             continue;
           }
           game.sounds.move();
+          // (The last line stays up, whole, until whatever comes next takes over.)
+          if (i + 1 >= beats.length) return finish();
           i++;
           t = 0;
-          if (i >= beats.length) return finish();
         }
       }
       if (game.menuInput.pointer.clicked && t > 0.2) {
+        if (i + 1 >= beats.length) return finish();
         i++;
         t = 0;
-        if (i >= beats.length) return finish();
       }
       if (i !== before && beats[i]?.fx === "horn") game.sounds.gong(3);
     },
     draw(ui) {
       const beat = beats[Math.min(i, beats.length - 1)];
       ui.rect(0, 0, ui.W, ui.H, sc?.backdrop.color ?? "#222");
-      if (sc?.backdrop.storybook) storybook(ui, i, ui.time, game.settings.general.reduceMotion);
+      if (sc?.backdrop.storybook)
+        storybook(ui, plates, Math.min(i, beats.length - 1), t, game.settings.general.reduceMotion);
       const img = sc?.backdrop.track
         ? preview(trackById(sc.backdrop.track)?.preview ?? "")
         : undefined;
@@ -416,7 +431,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
         ui.rect(0, 0, ui.W, ui.H, "#fff2d0", 1 - t * 2);
       if (beat?.fx === "light")
         ui.rect(0, 0, ui.W, ui.H, "#fff8e0", 0.25 + 0.1 * Math.sin(ui.time * 3));
-      if (beat?.fx === "dragons") dragonsOver(ui, ui.time);
+      if (beat?.fx === "dragons" && !sc?.backdrop.storybook) dragonsOver(ui, ui.time);
       ui.rect(0, 0, ui.W, 16, "#000000", 0.55);
       ui.text((sc?.title ?? id).toUpperCase(), ui.W / 2, 4, { color: PAL.gold, align: "center" });
       if (!beat) return;
@@ -451,120 +466,54 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
 }
 
 /**
- * The opening's storybook (The First Race): an old page, a picture inked on it for each
- * line: the war (dragons over the crews' karts), the oath on the stones, the border, the
- * champion's road to the King, the forfeit, the horn, the finish, the dragons behind the
- * border, the five stones.
+ * The opening's storybook (The First Race): an old page with an inked, washed plate for
+ * each line (ui/storyPlates.ts): the war, the oath before the race, its three rules (each
+ * under its ribbon), the horn at the last turn, the finish, the dragons going home, the
+ * stones.
  */
-function storybook(ui: UiLayer, page: number, t: number, still: boolean) {
+function storybook(
+  ui: UiLayer,
+  plates: StoryPlates | undefined,
+  page: number,
+  t: number,
+  still: boolean,
+) {
   ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
+  if (!plates) return;
   const g = ui.g;
-  const cx = ui.W / 2;
-  const cy = ui.H / 2 - 30;
-  const bob = still ? 0 : Math.sin(t * 1.5) * 2;
+  const x = Math.round(ui.W / 2 - PLATE_W / 2);
+  const y = 21;
+  const img = plates.draw(page, t, still);
   g.save();
-  g.strokeStyle = INK;
-  g.fillStyle = INK;
-  g.lineWidth = 2;
-  const kart = (x: number, y: number, c: string) => {
-    ui.rect(x - 8, y - 4, 16, 6, c);
-    ui.rect(x - 6, y + 2, 4, 3, INK);
-    ui.rect(x + 2, y + 2, 4, 3, INK);
-    ui.rect(x - 2, y - 8, 5, 5, c);
-  };
-  const dragon = (x: number, y: number, s: number) => {
-    g.beginPath();
-    g.moveTo(x - 14 * s, y);
-    g.lineTo(x, y - 9 * s);
-    g.lineTo(x + 4 * s, y);
-    g.lineTo(x + 18 * s, y - 9 * s);
-    g.lineTo(x + 22 * s, y + 2 * s);
-    g.lineTo(x, y + 4 * s);
-    g.closePath();
-    g.fill();
-  };
-  const stone = (x: number, y: number, s: number, lit: boolean) => {
-    ui.rect(x - 5 * s, y - 16 * s, 10 * s, 16 * s, lit ? "#d8b860" : "#7a7062");
-    ui.rect(x - 7 * s, y, 14 * s, 3 * s, INK);
-  };
-  const line = (x0: number, x1: number, y: number) => {
-    g.beginPath();
-    g.moveTo(x0, y);
-    g.lineTo(x1, y);
-    g.stroke();
-  };
-  // Each line's picture (the drawings below, by number).
-  const PAGE = [0, 9, 5, 7, 8, 2, 3, 5, 4];
-  switch (PAGE[page] ?? 7) {
-    case 0:
-      for (let k = 0; k < 3; k++) dragon(cx - 80 + k * 70, cy - 20 + bob + k * 6, 1.4);
-      for (let k = 0; k < 5; k++)
-        kart(cx - 90 + k * 45, cy + 40, ["#8a2a1a", "#2a5a8a", "#6a8a2a"][k % 3]!);
-      break;
-    case 1:
-      line(cx - 120, cx + 120, cy + 34);
-      dragon(cx - 40, cy + bob, 1.6);
-      kart(cx + 40, cy + 28, "#8a2a1a");
-      break;
-    case 2:
-      line(cx - 120, cx + 120, cy + 34);
-      dragon(cx + 10, cy + bob, 1.6);
-      kart(cx - 40, cy + 28, "#8a2a1a");
-      // The horn, and its blast.
-      ui.rect(cx - 96, cy + 6, 16, 6, "#c8a040");
-      ui.rect(cx - 82, cy + 4, 6, 10, "#c8a040");
-      for (let k = 0; k < 3; k++) {
-        g.beginPath();
-        g.arc(cx - 74, cy + 9, 10 + k * 8 + (still ? 0 : (t * 12) % 8), -0.6, 0.6);
-        g.stroke();
-      }
-      break;
-    case 3:
-      for (let k = 0; k < 6; k++)
-        ui.rect(cx + 20 + k * 6, cy + 10 + (k % 2) * 6, 6, 6, k % 2 ? INK : "#f4e8cc");
-      kart(cx + 2, cy + 28, "#8a2a1a");
-      dragon(cx - 70, cy + bob, 1.2);
-      break;
-    case 4:
-      for (let k = 0; k < 4; k++) stone(cx - 120 + k * 60, cy + 40, 1.4, false);
-      stone(cx + 120, cy + 40, 2.2, true);
-      break;
-    case 5:
-      line(cx, cx, cy - 40);
-      for (let y = cy - 40; y < cy + 50; y += 8) line(cx - 2, cx + 2, y);
-      dragon(cx + 60, cy + bob, 1.2);
-      dragon(cx + 90, cy + 20 + bob, 1);
-      kart(cx - 60, cy + 30, "#2a5a8a");
-      break;
-    case 9:
-      // The oath: both sides either side of the five stones.
-      for (let k = 0; k < 5; k++) stone(cx - 60 + k * 30, cy + 40, k === 4 ? 1.6 : 1.1, k === 4);
-      dragon(cx - 110, cy + bob, 1.3);
-      kart(cx + 110, cy + 28, "#2a5a8a");
-      break;
-    case 8:
-      // The forfeit: a dragon over the crews' homes.
-      for (let k = 0; k < 3; k++) {
-        const hx = cx - 60 + k * 60;
-        ui.rect(hx - 12, cy + 26, 24, 16, "#7a5a3a");
-        g.beginPath();
-        g.moveTo(hx - 16, cy + 26);
-        g.lineTo(hx, cy + 12);
-        g.lineTo(hx + 16, cy + 26);
-        g.closePath();
-        g.fill();
-      }
-      dragon(cx - 10, cy - 30 + bob, 2.2);
-      break;
-    default:
-      kart(cx - 80, cy + 40, "#8a2a1a");
-      g.setLineDash([6, 6]);
-      line(cx - 64, cx + 70, cy + 40);
-      g.setLineDash([]);
-      dragon(cx + 90, cy + 10 + bob, 1.8);
-      break;
-  }
+  g.globalCompositeOperation = "multiply";
+  g.imageSmoothingEnabled = true;
+  g.drawImage(img, x, y, PLATE_W, PLATE_H);
   g.restore();
+  const ribbon = PLATE_RIBBONS[page];
+  if (ribbon) {
+    // A red ribbon with forked ends over the plate's top edge.
+    const tw = ui.textWidth(ribbon) + 20;
+    const rx = Math.round(ui.W / 2 - tw / 2);
+    const ry = y - 3;
+    g.fillStyle = "#6a1a12";
+    for (const [sx, dir] of [
+      [rx - 10, 1],
+      [rx + tw + 10, -1],
+    ] as const) {
+      g.beginPath();
+      g.moveTo(sx, ry + 2);
+      g.lineTo(sx + dir * 14, ry + 2);
+      g.lineTo(sx + dir * 14, ry + 13);
+      g.lineTo(sx, ry + 13);
+      g.lineTo(sx + dir * 5, ry + 7.5);
+      g.closePath();
+      g.fill();
+    }
+    ui.rect(rx, ry, tw, 12, "#9a2a1c");
+    ui.rect(rx, ry, tw, 1, "#c84a30");
+    ui.rect(rx, ry + 11, tw, 1, "#5a140c");
+    ui.text(ribbon, ui.W / 2, ry + 3, { color: "#f4e4c0", align: "center" });
+  }
 }
 
 /** A speaker's portrait: a racer's own face, or a drawn head (the Elder, Lumen in his
@@ -596,6 +545,12 @@ export function portrait(
       1 / 60,
     );
     ui.image(img, x, y, 48, 48, false);
+    return;
+  }
+  // The rest of the cast: their own models too (Mossback, Lumen, the guards, the dragons).
+  const key = Object.keys(CAST).find((k) => CAST[k] === who);
+  if (key && pp && hasCastModel(key)) {
+    ui.image(pp.cast(key, { w: 48, h: 48 }, t), x, y, 48, 48, false);
     return;
   }
   const g = ui.g;
