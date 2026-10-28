@@ -7,7 +7,7 @@ import { safeStorage } from "../app/settings";
 const INSTA_WIN = "kartipelago.dev.instaWin";
 
 /** Insta-win (Blake, Oct 27: to get through Adventure faster): every race you enter is
- * won the moment it starts, every map fragment taken, the rivals behind you. */
+ * won the moment it starts, every shard piece taken, the rivals behind you. */
 export function instaWin(): boolean {
   if (!import.meta.env.DEV) return false;
   try {

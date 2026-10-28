@@ -1,66 +1,56 @@
 /**
- * Adventure mode's screens (the skeleton: every step of the story playable, everything
- * placeholder art and words; the rules are src/adventure/progress.ts, the story
- * src/adventure/data.ts and scenes.ts):
+ * Adventure mode's screens (the story: src/adventure/; the approved story, Blake, Oct 27:
+ * claude/kartipelago-story.md). Everything is driven in the overworld (screens/
+ * overworld.ts); these are the screens around it:
  *
- * - ADVENTURE_FILES: the three save files. Each keeps its own story and its own racer
- *   (picked when the file starts, kept to the ending); erase one from here.
- * - ADVENTURE_HUB: the world map. The five kingdoms on an old chart, the ones not reached
- *   yet in fog, the story's next step along the top, the tools you carry along the
- *   bottom. (It stands in for the drivable overworld to come.)
- * - ADVENTURE_KINGDOM: one kingdom's board: its championship, its four treasure map
- *   races, the map, its dragon, its return task, its mini-game slot.
- * - ADVENTURE_MAP: the map to the next kingdom, in four pieces.
- * - ADVENTURE_SCENE: a story scene: text boxes with a portrait over a picture.
- * - ADVENTURE_RESULT: after a single Adventure race: what it did for the story.
- * - ADVENTURE_DEV (dev builds only): jump to any point in the story.
+ * - ADVENTURE_FILES: the three save files. A new one plays the opening (The First Race),
+ *   then you pick your racer for it (yours for the whole story); erase one from here.
+ * - ADVENTURE_SCENE: a story scene: staged in the 3D world (screens/cutscene.ts), or over
+ *   a picture (the opening's storybook); the credits, fake and real.
+ * - ADVENTURE_RESULT: after an Adventure race: what it did for the story.
+ * - YOUR_CREW: who drives (your racer, and the champions who've joined you).
+ * - ADVENTURE_DEV (dev builds only): the testing tools; jump to any point in the story.
  */
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { safeStorage } from "../app/settings";
 import {
-  DRAGON,
+  END_CREDITS,
+  FAKE_CREDITS,
   KINGDOMS,
-  STORY_ORDER,
+  OPENING,
   kingdomById,
-  type Kingdom,
+  nameOf,
   type KingdomId,
 } from "../adventure/data";
 import {
   bossFinished,
+  coursesOf,
+  driversOf,
   duelFinished,
-  hasDuel,
-  coinCourse,
-  coinRaceFinished,
-  completeReturn,
-  championshipTracks,
-  raceFinished,
-  dragonPhase,
+  afterScene,
   dueScene,
   eraseAdventure,
-  kingFinished,
-  kingdomPhase,
+  finalFinished,
+  kingRaceFinished,
   loadAdventure,
   markSeen,
   newSave,
   objective,
-  piecesOf,
-  returnOpen,
+  raceFinished,
   SLOTS,
   saveAdventure,
-  toolsOf,
-  championsOf,
-  unlocked,
+  shardRaceFinished,
+  storyKingdom,
   type AdventureSave,
 } from "../adventure/progress";
 import type { AdventureRun } from "../adventure/run";
 import { CAST, SCENES, beatsFor, sceneById, type Scene } from "../adventure/scenes";
 import type { RaceResult } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
-import { startCup } from "../game/trophy";
 import { wrap } from "../ui/font";
 import type { UiLayer } from "../ui/layer";
-import { INK, INK_SOFT, dashedRoute, island, parchment, type IslandStyle } from "../ui/mapArt";
+import { INK, INK_SOFT, parchment } from "../ui/mapArt";
 import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
 import { PAL } from "../ui/textures";
 import { VMenu, hints } from "./common";
@@ -70,20 +60,21 @@ import { characterSelect } from "./characterSelect";
 import { preview } from "./tracks";
 import { devWarp, overworldLoading } from "./overworld";
 import { stagedSceneScreen } from "./cutscene";
+import { rollingCredits } from "./credits";
 import { stagedById } from "../adventure/staged";
+import { sceneOrder } from "../adventure/script";
 import { regionById, regionOfKingdom } from "../overworld/regions";
-import { STARTERS, setAllUnlocked, unlockRacer } from "../app/unlocks";
+import { setAllUnlocked, unlockRacer } from "../app/unlocks";
 import { infiniteBoost, instaWin, setInfiniteBoost, setInstaWin } from "../debug/devFlags";
 import { clipSwitch } from "../debug/clipRecorder";
 import { DESIGNS, type RacerId } from "../render/racers/designs";
 
 const store = () => safeStorage();
-const exists = (id: string) => Boolean(trackById(id));
 
 /**
- * Dev builds: go anywhere (Blake). Every kingdom and every race in it is open whatever
- * the story says, so any part can be tried and retried; results still count. On unless
- * the dev menu turns it off.
+ * Dev builds: go anywhere (Blake). Every passage and cave is open whatever the story
+ * says, so any part can be tried and retried; results still count. On unless the dev
+ * menu turns it off.
  */
 const FREE_KEY = "kartipelago.adventure.devFree";
 export function freeRoam(): boolean {
@@ -101,8 +92,6 @@ function setFreeRoam(on: boolean) {
     // (no storage: stays as it was)
   }
 }
-/** A kingdom you can go into: reached in the story, or anywhere in free roam. */
-const canVisit = (s: AdventureSave, id: KingdomId) => freeRoam() || unlocked(s, id);
 
 /** The Adventure state on the game: the open file (file 1 if none was opened yet). */
 export function adventureOf(game: Game) {
@@ -114,10 +103,17 @@ export const persist = (game: Game) => {
   saveAdventure(a.save, store(), a.slot);
 };
 
-/** Open a save file: its story, and its racer for every race in it. */
+/** The file's own racer ("you" in every scene), whoever's driving. */
+export const youOf = (game: Game): RacerId => {
+  const r = game.adventure?.save.racer;
+  return r && r in DESIGNS ? (r as RacerId) : game.selection.racer;
+};
+
+/** Open a save file: its story, and who's driving in it. */
 export function openFile(game: Game, slot: number) {
   game.adventure = { save: loadAdventure(store(), slot) ?? newSave(), slot };
-  const r = game.adventure.save.racer;
+  const s = game.adventure.save;
+  const r = s.driver && driversOf(s).includes(s.driver as RacerId) ? s.driver : s.racer;
   if (r && r in DESIGNS) game.selection.racer = r as RacerId;
   return game.adventure;
 }
@@ -126,36 +122,34 @@ export function openFile(game: Game, slot: number) {
 export function startFile(game: Game, racer: RacerId) {
   const a = adventureOf(game);
   a.save.racer = racer;
+  a.save.driver = racer;
+  markSeen(a.save, OPENING);
   persist(game);
   goHome(game);
 }
 
-/**
- * Has the journey begun? Blake (Oct 26): the world map isn't there until it does,
- * otherwise you'd know other kingdoms exist before the reveal. It begins when Cinderjaw
- * falls (his fire split the valley's cliff: the Burnt Gorge shows the world beyond).
- */
-export const journeyBegun = (s: AdventureSave) => Boolean(s.bosses.valley);
+/** Is the file in this kingdom's region (a welcome waits until you've driven there)? */
+export const hereIn = (s: AdventureSave) => (id: KingdomId) =>
+  regionOfKingdom(id)?.id === s.where?.region;
 
-/** The overworld region the story is in now: where you last were, else the region of the
- * first kingdom still to free (all four freed: the Dragon Kingdom). */
+/** The overworld region the story is in now: where you last were, else the region of
+ * the kingdom the story's at. */
 export function storyRegion(s: AdventureSave) {
   const w = s.where && regionById(s.where.region) ? s.where : undefined;
   if (w) return { region: w.region, at: w.at };
-  const k = KINGDOMS.find((k) => kingdomPhase(s, k) !== "done");
-  const r = regionOfKingdom(k ? k.id : "dragon");
+  const r = regionOfKingdom(storyKingdom(s));
   return r ? { region: r.id } : undefined;
 }
 
-/** On with the story: its next scene if one is due (the new file's opening first), then
- * straight into the overworld region you're progressing through. */
+/** On with the story: its next scene if one is due, then straight into the overworld
+ * region you're progressing through. */
 export function goHome(game: Game) {
   const s = adventureOf(game).save;
-  const due = dueScene(s);
+  const due = dueScene(s, hereIn(s));
   if (due) return game.screens.go(sceneScreen(game, due, () => goHome(game)));
   const at = storyRegion(s);
   if (at) return game.screens.go(overworldLoading(game, at.region, at.at, true));
-  game.screens.go(adventureHub(game));
+  game.screens.go(modeSelect(game));
 }
 
 /** The file chooser: three files, each its racer and where its story stands. */
@@ -172,7 +166,7 @@ export function adventureFiles(game: Game, erasing = false): Screen {
     const f = files[i];
     if (erasing)
       return f ? (armed === i ? "ENTER AGAIN TO ERASE IT FOR GOOD" : "ERASE THIS FILE") : "EMPTY";
-    return f ? objective(f) : "START THE STORY: PICK YOUR RACER FOR THIS FILE";
+    return f && f.racer ? objective(f) : "START THE STORY";
   };
   const open = (i: number) => {
     if (erasing) {
@@ -186,9 +180,17 @@ export function adventureFiles(game: Game, erasing = false): Screen {
       return game.screens.go(adventureFiles(game, false));
     }
     const a = openFile(game, i);
-    // A new file (or one from before files had racers) picks its racer first.
-    if (!a.save.racer) return game.screens.go(characterSelect(game, { adventure: i }));
-    // Its next scene if one's due, then back where you were in the overworld.
+    // A new file: the opening first (Blake, Oct 27: the file, then the opening, then your
+    // racer).
+    if (!a.save.racer)
+      return game.screens.go(
+        sceneScreen(
+          game,
+          OPENING,
+          () => game.screens.go(characterSelect(game, { adventure: i })),
+          false,
+        ),
+      );
     goHome(game);
   };
   const back = () =>
@@ -241,538 +243,123 @@ export function adventureFiles(game: Game, erasing = false): Screen {
   };
 }
 
-const STYLE: Record<KingdomId, IslandStyle> = {
-  valley: "prehistoric",
-  snow: "frostveil",
-  desert: "desert",
-  beach: "beach",
-  dragon: "dragon",
-};
-/** Where each kingdom sits on the chart (fractions of the screen). */
-const SPOT: Record<KingdomId, [number, number]> = {
-  // (Their names sit under them: keep the lowest clear of the status note at the bottom.)
-  valley: [0.14, 0.66],
-  snow: [0.3, 0.34],
-  desert: [0.5, 0.6],
-  beach: [0.7, 0.66],
-  dragon: [0.84, 0.36],
-};
-const nameOf = (id: KingdomId) => (id === "dragon" ? DRAGON.name : kingdomById(id)!.name);
-
-function statusOf(s: AdventureSave, id: KingdomId): string {
-  if (!unlocked(s, id))
-    return freeRoam() ? "NOT REACHED YET (DEV: OPEN ANYWAY)" : "NOT REACHED YET";
-  if (id === "dragon") {
-    const p = dragonPhase(s);
-    return {
-      locked: "",
-      first: "FIND THE CHOSEN ONE",
-      return: "IN RUINS: RETURN HOME FIRST",
-      final: "THE LAST CHAMPIONSHIP",
-      king: "THE DRAGON KING",
-      done: "FREE!",
-    }[p];
-  }
-  const k = kingdomById(id)!;
-  const ph = kingdomPhase(s, k);
-  if (returnOpen(s, k)) return `TASK: ${k.returnTask!.label}`;
-  return {
-    locked: "",
-    championship: "THE CHAMPIONSHIP",
-    duel: `RACE ${k.champion?.name.toUpperCase() ?? ""}, 1 ON 1`,
-    coins: `THE MAP: ${piecesOf(s, k)}/4 PIECES`,
-    boss: `RACE ${k.boss!.name.toUpperCase()}`,
-    done: "FREE!",
-  }[ph];
-}
-
-/** Start a race (or a cup's first race) for the story. */
-export function launch(
-  game: Game,
-  run: AdventureRun,
-  track: string,
-  cup?: { name: string; worldId: string; tracks: string[] },
-) {
+/** Start a race for the story. */
+export function launch(game: Game, run: AdventureRun, track: string) {
   const a = adventureOf(game);
   a.run = run;
-  game.trophy = cup ? startCup(cup.worldId, cup.name, cup.tracks) : undefined;
+  game.trophy = undefined;
   game.selection.trackId = track;
   game.selection.mode = "race";
   game.sounds.start();
   game.screens.go(loadingScreen(game));
 }
 
-// ---------------------------------------------------------------- the world map
+// ---------------------------------------------------------------- your crew
 
-/** Dev builds: open the world map once even before the journey begins (the pause menu's
- * dev entry). */
-let worldMapPeek = false;
-export const peekWorldMap = (game: Game) => {
-  worldMapPeek = true;
-  game.screens.go(adventureHub(game));
-};
-
-export function adventureHub(game: Game): Screen {
+/** Who drives (Blake, Oct 27: only your own racer and the crew who've joined you; never
+ * the other starters): pick one, and you're back where you were, driving them. */
+export function crewMenu(game: Game, then: () => void): Screen {
   const a = adventureOf(game);
-  a.run = undefined;
-  game.trophy = undefined;
-  game.overworld = undefined;
-  const dev = import.meta.env.DEV;
-  const spots: (KingdomId | "dev")[] = [...STORY_ORDER, ...(dev ? (["dev"] as const) : [])];
-  let focus = Math.max(0, spots.indexOf(a.at ?? "valley"));
-  let t = 0;
-  let clicked = -1;
-  const pick = (i: number) => {
-    const id = spots[i]!;
-    if (id === "dev") {
-      game.sounds.confirm();
-      return game.screens.go(devMenu(game));
-    }
-    if (!canVisit(a.save, id)) return game.sounds.error();
-    // (Outside dev free roam there's no hopping from the map: you drive there.)
-    if (!freeRoam() && !import.meta.env.DEV) return game.sounds.error();
+  const who = driversOf(a.save);
+  let pp: PixelPortraits | undefined;
+  const pick = (r: RacerId) => {
+    a.save.driver = r;
+    game.selection.racer = r;
+    persist(game);
     game.sounds.confirm();
-    a.at = id;
-    // A kingdom with its overworld region built: drive it (its board is in the pause menu).
-    const region = regionOfKingdom(id);
-    if (region) return game.screens.go(overworldLoading(game, region.id, undefined, true));
-    game.screens.go(kingdomScreen(game, id));
+    then();
   };
+  const menu = new VMenu(
+    game,
+    who.map((r) => ({
+      label: `${DESIGNS[r].name.toUpperCase()}${r === game.selection.racer ? "  (DRIVING)" : ""}`,
+      action: () => pick(r),
+    })),
+    () => game.screens.pop(),
+  );
+  menu.focus = Math.max(0, who.indexOf(game.selection.racer));
   return {
-    id: "ADVENTURE_HUB",
-    seeThrough: false,
+    id: "YOUR_CREW",
     enter() {
       game.ui.interactive = true;
-      void game.audio.music.play("map", { fade: 1 });
-      // Outside dev builds there's no world map to travel by: on with the drive.
-      if (!import.meta.env.DEV && !freeRoam()) return goHome(game);
-      // The story's next turn plays first.
-      const due = dueScene(a.save);
-      if (due)
-        return game.screens.go(sceneScreen(game, due, () => game.screens.go(adventureHub(game))));
-      // Until the journey begins there's no world map: straight on into the overworld.
-      if (!journeyBegun(a.save) && !worldMapPeek) return goHome(game);
-      worldMapPeek = false;
+      pp = createPixelPortraits(game.stage.renderer);
     },
-    frame(dt, actions) {
-      t += dt;
-      if (clicked >= 0) {
-        const c = clicked;
-        clicked = -1;
-        return pick(c);
-      }
-      for (const act of actions) {
-        if (act === "left" || act === "up") {
-          focus = (focus - 1 + spots.length) % spots.length;
-          game.sounds.move();
-        } else if (act === "right" || act === "down") {
-          focus = (focus + 1) % spots.length;
-          game.sounds.move();
-        } else if (act === "confirm") return pick(focus);
-        else if (act === "back") {
-          game.sounds.back();
-          return game.screens.go(adventureFiles(game));
-        }
-      }
+    exit() {
+      pp?.dispose();
+      pp = undefined;
+    },
+    frame(_dt, actions) {
+      menu.handle(actions);
     },
     draw(ui) {
-      ui.image(parchment(ui.W, ui.H, { compass: true, ships: true }), 0, 0, ui.W, ui.H, false);
-      ui.text("ADVENTURE", ui.W / 2, 6, {
+      ui.dim(0.5);
+      const w = 240;
+      const h = 70 + who.length * 20;
+      const x = Math.round(ui.W / 2 - w / 2);
+      const y = Math.round(ui.H / 2 - h / 2);
+      ui.panel(x, y, w, h, "wood", "gold");
+      ui.text("YOUR CREW", ui.W / 2, y + 8, {
         scale: 2,
-        color: PAL.coral,
-        outline: INK,
+        color: PAL.gold,
+        outline: PAL.shadow,
         align: "center",
       });
-      ui.text(objective(a.save), ui.W / 2, 24, { color: INK, align: "center" });
-      const pos = (id: KingdomId): [number, number] => [
-        Math.round(SPOT[id][0] * ui.W),
-        Math.round(SPOT[id][1] * ui.H),
-      ];
-      // The route between the kingdoms reached so far.
-      const reached = STORY_ORDER.filter((id) => unlocked(a.save, id));
-      if (reached.length > 1) dashedRoute(ui.g, reached.map(pos));
-      STORY_ORDER.forEach((id, i) => {
-        const [x, y] = pos(id);
-        const open = canVisit(a.save, id);
-        const on = focus === i;
-        const img = island(STYLE[id], on ? 22 : 19);
-        // The kingdoms not reached yet: faint on the chart, a question mark over them.
-        ui.g.globalAlpha = open ? 1 : 0.3;
-        ui.image(
-          img,
-          x - img.width / 2,
-          y -
-            img.height / 2 +
-            (on && !game.settings.general.reduceMotion ? Math.round(Math.sin(t * 4)) : 0),
-          img.width,
-          img.height,
-          false,
+      ui.text("WHO DRIVES?", ui.W / 2, y + 26, { color: PAL.cream, align: "center" });
+      const r = who[menu.focus];
+      if (r && pp) {
+        const img = pp.draw(
+          r,
+          { w: 48, h: 48, view: "head", yaw: 0.4, levels: 8 },
+          undefined,
+          1 / 60,
         );
-        ui.g.globalAlpha = 1;
-        if (!open)
-          ui.text("?", x, y - 6, { scale: 2, color: INK, outline: "#f4e8cc", align: "center" });
-        if (ui.hover(x - 26, y - 24, 52, 48)) {
-          if (game.menuInput.pointer.moved && focus !== i) {
-            focus = i;
-            game.sounds.move();
-          }
-          if (game.menuInput.pointer.clicked) clicked = i;
-        }
-        if (open || on)
-          ui.text(open ? nameOf(id).toUpperCase() : "???", x, y + 24, {
-            color: on ? "#8a2a1a" : INK,
-            align: "center",
-          });
-      });
-      // The chosen one's status, in a note.
-      const sel = spots[focus]!;
-      const note =
-        sel === "dev"
-          ? "DEV TOOLS: INSTA-WIN, GO ANYWHERE, WARPS, STORY JUMPS, SCENES"
-          : `${nameOf(sel).toUpperCase()}: ${statusOf(a.save, sel)}`;
-      ui.rect(0, ui.H - 40, ui.W, 14, "#f4e8cc", 0.85);
-      ui.text(note, ui.W / 2, ui.H - 37, { color: "#8a2a1a", align: "center" });
-      const tools = toolsOf(a.save).map((x) => x.name.toUpperCase());
-      ui.text(`TOOLS: ${tools.length ? tools.join(" · ") : "NONE YET"}`, 8, ui.H - 24, {
-        color: INK,
-      });
-      const champs = championsOf(a.save).map((c) => c.name.toUpperCase());
-      if (champs.length) ui.text(`FRIENDS: ${champs.join(" · ")}`, 8, 36, { color: INK_SOFT });
-      if (dev) {
-        const on = sel === "dev";
-        const r = ui.button(ui.W - 46, 6, 40, 14, "DEV", { focused: on });
-        if (r.clicked) clicked = spots.length - 1;
+        ui.image(img, x + 12, y + 40, 48, 48, false);
       }
+      menu.draw(ui, x + 70, y + 40, w - 84, 16, 4);
       hints(ui, [
-        ["◀▶", "KINGDOM"],
-        ["ENTER", "GO"],
+        ["▲▼", "CHOOSE"],
+        ["ENTER", "DRIVE"],
         ["ESC", "BACK"],
       ]);
     },
   };
 }
 
-// ---------------------------------------------------------------- a kingdom
-
-/** A championship's row on a kingdom's board: its four courses, won in any order (Blake,
- * Oct 26: no Trophy Race cup). Dev free roam launches the next course not yet won. */
-function championshipItem(
-  game: Game,
-  id: KingdomId | "dragon_final",
-  label: string,
-  disabled: boolean,
-) {
-  const s = adventureOf(game).save;
-  const tracks = championshipTracks(id, exists);
-  const left = tracks.filter((t) => !s.wins[t]);
-  const won = id === "dragon_final" ? s.finalCup : Boolean(s.cups[id]);
-  const names = left.map((t) => (trackById(t)?.name ?? t).toUpperCase());
-  return {
-    label: `${won ? "★ " : ""}${label} (${tracks.length - left.length}/${tracks.length} WON)`,
-    sub: left.length
-      ? `WIN EACH COURSE, ANY ORDER · LEFT: ${names.join(", ")}`
-      : "ALL FOUR COURSES WON",
-    disabled,
-    action: () => {
-      const t = left[0] ?? tracks[0]!;
-      launch(game, { kind: "race", kingdom: id, track: t }, t);
-    },
-  };
-}
-
-export function kingdomScreen(game: Game, id: KingdomId): Screen {
-  const a = adventureOf(game);
-  const s = a.save;
-  const free = freeRoam();
-  const items: { label: string; sub?: string; disabled?: boolean; action: () => void }[] = [];
-  const back = () => game.screens.go(adventureHub(game));
-  const scene = (sid: string, then: () => void) => game.screens.go(sceneScreen(game, sid, then));
-  const done = "★ ";
-  if (id === "dragon") {
-    const p = dragonPhase(s);
-    items.push(
-      championshipItem(game, "dragon", "CHAMPIONSHIP: THE FIRST VISIT", !free && p !== "first"),
-    );
-    if (p === "return")
-      items.push({
-        label: "THE KINGDOM IS IN RUINS",
-        sub: `RETURN TO THE FOUR KINGDOMS (${KINGDOMS.filter((k) => s.returns[k.id]).length}/4 TASKS)`,
-        disabled: true,
-        action: () => {},
-      });
-    items.push(
-      championshipItem(game, "dragon_final", "THE LAST CHAMPIONSHIP", !free && p !== "final"),
-    );
-    if (p === "done")
-      items.push({
-        label: "START A NEW ADVENTURE",
-        sub: "THE STORY FROM THE START; YOUR CREW STAYS. PICK ANY OF THEM AS YOUR RACER.",
-        action: () => {
-          eraseAdventure(store(), a.slot);
-          a.save = newSave();
-          a.at = "valley";
-          game.screens.go(characterSelect(game, { adventure: a.slot }));
-        },
-      });
-    if (free) {
-      // Both of the King's races, whichever the story is at.
-      items.push({
-        label: "RACE THE DRAGON KING (FIRST RACE)",
-        sub: "DEV: THE SCRIPTED RACE YOU CAN'T WIN",
-        action: () => launch(game, { kind: "king", chosen: false }, DRAGON.king.track),
-      });
-      items.push({
-        label: `${s.kingWon ? done : ""}RACE THE DRAGON KING AS ${DRAGON.chosen.name.toUpperCase()}`,
-        sub: "DEV: THE REMATCH",
-        action: () => launch(game, { kind: "king", chosen: true }, DRAGON.king.track),
-      });
-      KINGDOMS.forEach((k) =>
-        items.push({
-          label: `${s.returns[k.id] ? done : ""}RETURN TASK: ${k.returnTask!.label}`,
-          sub: `DEV: ${nameOf(k.id).toUpperCase()}'S TASK`,
-          action: () =>
-            scene(k.returnTask!.scene, () => {
-              completeReturn(s, k.id);
-              persist(game);
-              game.screens.go(kingdomScreen(game, id));
-            }),
-        }),
-      );
-    } else
-      items.push({
-        label: `${s.kingWon ? done : ""}RACE THE DRAGON KING`,
-        sub: s.kingLost ? `AS ${DRAGON.chosen.name.toUpperCase()}` : DRAGON.king.name.toUpperCase(),
-        disabled: p !== "king" && p !== "done",
-        action: () => launch(game, { kind: "king", chosen: s.kingLost }, DRAGON.king.track),
-      });
-  } else {
-    const k = kingdomById(id)!;
-    const ph = kingdomPhase(s, k);
-    items.push(championshipItem(game, id, "THE CHAMPIONSHIP", false));
-    const region = regionOfKingdom(id);
-    if (hasDuel(k) && region)
-      items.push({
-        label: `${s.duels[id] ? done : ""}RACE ${k.champion!.name.toUpperCase()} 1 ON 1`,
-        sub: `THE CHAMPION'S CHALLENGE: ONCE ROUND ${region.name.toUpperCase()}`,
-        disabled: !free && ph === "championship",
-        action: () => launch(game, { kind: "duel", kingdom: id }, region.packageId),
-      });
-    k.courses.forEach((c) => {
-      const cc = coinCourse(c, exists);
-      const name = trackById(c.track)?.name ?? c.track;
-      items.push({
-        label: `${s.pieces[c.track] ? done : ""}${name.toUpperCase()} (RUINED)`,
-        sub: cc.standIn
-          ? "4 MAP FRAGMENTS · STAND-IN: THE RUIN ISN'T BUILT YET"
-          : "4 MAP FRAGMENTS AND 1ST PLACE",
-        disabled: !free && (ph === "championship" || ph === "duel" || ph === "locked"),
-        action: () =>
-          launch(game, { kind: "coins", kingdom: id, course: c.track, ...cc }, cc.track),
-      });
-    });
-    items.push({
-      label: `THE MAP (${piecesOf(s, k)}/4)`,
-      sub: `TO THE ${nameOf(k.next!).toUpperCase()}`,
-      disabled: !free && (ph === "championship" || ph === "duel"),
-      action: () => game.screens.go(mapScreen(game, k)),
-    });
-    items.push({
-      label: `${s.bosses[id] ? done : ""}RACE ${k.boss!.name.toUpperCase()}`,
-      sub:
-        ph === "coins" || ph === "championship" || ph === "duel"
-          ? "FINISH THE MAP FIRST"
-          : "THE DRAGON OF THIS KINGDOM",
-      disabled: !free && (ph === "coins" || ph === "championship" || ph === "duel"),
-      action: () =>
-        scene(k.scenes.boss, () => launch(game, { kind: "boss", kingdom: id }, k.boss!.track)),
-    });
-    if (free || returnOpen(s, k) || s.returns[id])
-      items.push({
-        label: `${s.returns[id] ? done : ""}${k.returnTask!.label}`,
-        sub: `PLACEHOLDER TASK WITH ${k.returnTask!.who.toUpperCase()}`,
-        disabled: !free && Boolean(s.returns[id]),
-        action: () =>
-          scene(k.returnTask!.scene, () => {
-            completeReturn(s, id);
-            persist(game);
-            back();
-          }),
-      });
-    items.push({ label: "MINI-GAME", sub: "A SLOT FOR LATER", disabled: true, action: () => {} });
-  }
-  // A kingdom with its overworld region built: the board is its checklist, not a way in.
-  // Every race starts where it's found, by driving there (Blake, Oct 26: choosing the
-  // ruined course here just started it). Dev free roam can still launch from here.
-  const drive = regionOfKingdom(id);
-  const driven = !free && Boolean(drive);
-  if (driven)
-    for (const it of items) {
-      if (it.disabled || /^THE MAP|NEW ADVENTURE|MINI-GAME/.test(it.label)) continue;
-      it.sub = `${it.sub ? `${it.sub} · ` : ""}DRIVE TO IT IN ${drive!.name.toUpperCase()} TO RACE`;
-      it.action = () => game.sounds.error();
-    }
-  // Back to the drive (or the world map, with no region to drive).
-  const leave = driven ? () => goHome(game) : back;
-  // One line a row; the chosen row's explanation goes in the note on the right.
-  const menu = new VMenu(
-    game,
-    items.map(({ sub: _sub, ...it }) => it),
-    leave,
-  );
-  return {
-    id: "ADVENTURE_KINGDOM",
-    seeThrough: false,
-    enter() {
-      game.ui.interactive = true;
-    },
-    frame(_dt, actions) {
-      menu.handle(actions);
-    },
-    draw(ui) {
-      ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
-      const img = island(STYLE[id], 26);
-      ui.image(img, ui.W - img.width - 6, 18, img.width, img.height, false);
-      ui.text(nameOf(id).toUpperCase(), 14, 8, { scale: 2, color: PAL.coral, outline: INK });
-      ui.text(statusOf(s, id), 14, 26, { color: INK });
-      const lw = Math.min(230, ui.W - img.width - 40);
-      menu.draw(ui, 22, 42, lw, 15, 4);
-      const sub = items[menu.focus]?.sub;
-      if (sub) {
-        const nx = 22 + lw + 12;
-        const nw = ui.W - nx - 10;
-        const lines = wrap(sub, nw - 10);
-        ui.rect(nx, 30 + img.height, nw, 12 + lines.length * 9, "#f4e8cc");
-        ui.rect(nx, 30 + img.height, nw, 1, INK);
-        lines.forEach((l, j) => ui.text(l, nx + 5, 36 + img.height + j * 9, { color: INK }));
-      }
-      hints(ui, [
-        ["▲▼", "CHOOSE"],
-        ...(driven
-          ? ([["ESC", "BACK TO THE DRIVE"]] as [string, string][])
-          : ([
-              ["ENTER", "GO"],
-              ["ESC", "WORLD MAP"],
-            ] as [string, string][])),
-      ]);
-    },
-  };
-}
-
-// ---------------------------------------------------------------- the map
-
-function mapScreen(game: Game, k: Kingdom): Screen {
-  const s = adventureOf(game).save;
-  const back = () => game.screens.go(kingdomScreen(game, k.id));
-  return {
-    id: "ADVENTURE_MAP",
-    seeThrough: false,
-    frame(_dt, actions) {
-      if (actions.some((x) => x === "back" || x === "confirm")) {
-        game.sounds.back();
-        back();
-      }
-    },
-    draw(ui) {
-      ui.rect(0, 0, ui.W, ui.H, "#2f4a5a");
-      ui.text(`THE MAP TO THE ${nameOf(k.next!).toUpperCase()}`, ui.W / 2, 8, {
-        color: PAL.gold,
-        outline: INK,
-        align: "center",
-      });
-      const w = 220;
-      const h = 150;
-      const x = Math.round(ui.W / 2 - w / 2);
-      const y = 26;
-      const art = parchment(w, h, { compass: true, ships: false });
-      k.courses.forEach((c, i) => {
-        const qx = x + (i % 2) * (w / 2);
-        const qy = y + Math.floor(i / 2) * (h / 2);
-        const got = Boolean(s.pieces[c.track]);
-        if (got) {
-          ui.g.drawImage(
-            art,
-            (i % 2) * (w / 2),
-            Math.floor(i / 2) * (h / 2),
-            w / 2,
-            h / 2,
-            qx,
-            qy,
-            w / 2,
-            h / 2,
-          );
-          if (i === 3 || piecesOf(s, k) === 4) {
-            const isl = island(STYLE[k.next!], 16);
-            if (i === 3)
-              ui.image(
-                isl,
-                x + w / 2 - isl.width / 2,
-                y + h / 2 - isl.height / 2,
-                isl.width,
-                isl.height,
-                false,
-              );
-          }
-        } else {
-          ui.rect(qx + 2, qy + 2, w / 2 - 4, h / 2 - 4, "#1d2a34", 0.9);
-          ui.text("?", qx + w / 4, qy + h / 4 - 7, { scale: 2, color: INK_SOFT, align: "center" });
-        }
-        ui.text((trackById(c.track)?.name ?? c.track).toUpperCase(), qx + w / 4, qy + h / 2 - 12, {
-          color: got ? INK : "#8a9aa8",
-          align: "center",
-        });
-      });
-      ui.rect(x + w / 2, y, 1, h, INK);
-      ui.rect(x, y + h / 2, w, 1, INK);
-      ui.text(`${piecesOf(s, k)} OF 4 PIECES`, ui.W / 2, y + h + 8, {
-        color: PAL.cream,
-        outline: INK,
-        align: "center",
-      });
-      hints(ui, [["ESC", "BACK"]]);
-    },
-  };
-}
-
 // ---------------------------------------------------------------- scenes
 
-/** Play a story scene, then `then` (it marks the scene seen and saves first). */
+/** Play a story scene, then `then` (it marks the scene seen, sets where it leaves you,
+ * and saves first). */
 export function sceneScreen(game: Game, id: string, then: () => void, record = true): Screen {
   const a = adventureOf(game);
   const sc: Scene | undefined = sceneById(id);
-  let i = 0;
-  let t = 0;
-  let pp: PixelPortraits | undefined;
   const finish = () => {
     // (Watched from the dev menu's list: the story doesn't count it as seen.)
     if (record) {
       markSeen(a.save, id);
+      afterScene(a.save, id);
       persist(game);
     }
     then();
   };
-  // A new adventure as one of the crew who joined later: a "what if" story (placeholder).
-  const crew = id === "intro" && !STARTERS.includes(game.selection.racer);
-  const beats = [
-    ...(crew
-      ? [
-          {
-            who: "",
-            text: `A WHAT-IF STORY: THIS TIME, ${DESIGNS[game.selection.racer].name.toUpperCase()} RACES FOR THE VALLEY.`,
-          },
-        ]
-      : []),
-    ...(sc ? beatsFor(sc, game.selection.racer) : []),
-  ];
+  // The credits: the fake ending's (cut short by the King's rage) and the real ones.
+  if (id === FAKE_CREDITS || id === END_CREDITS)
+    return rollingCredits(game, { fake: id === FAKE_CREDITS, then: finish });
+  const you = youOf(game);
+  const beats = sc ? beatsFor(sc, you) : [];
   // Staged in the 3D world (src/adventure/staged.ts), where there's a staging for it.
   const staged = stagedById(id);
   if (staged && beats.length)
-    return stagedSceneScreen(game, staged, sc?.title ?? id, beats, finish);
+    return stagedSceneScreen(game, staged, sc?.title ?? id, beats, finish, you);
+  let i = 0;
+  let t = 0;
+  let pp: PixelPortraits | undefined;
   return {
     id: "ADVENTURE_SCENE",
     seeThrough: false,
     enter() {
       game.ui.interactive = true;
       pp = createPixelPortraits(game.stage.renderer);
+      if (sc?.backdrop.storybook) void game.audio.music.play("map", { fade: 1 });
       if (!beats.length) finish();
     },
     exit() {
@@ -780,6 +367,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
       pp = undefined;
     },
     frame(dt, actions) {
+      const before = i;
       t += dt;
       for (const act of actions) {
         if (act === "back") {
@@ -804,15 +392,16 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
         t = 0;
         if (i >= beats.length) return finish();
       }
+      if (i !== before && beats[i]?.fx === "horn") game.sounds.gong(3);
     },
     draw(ui) {
       const beat = beats[Math.min(i, beats.length - 1)];
       ui.rect(0, 0, ui.W, ui.H, sc?.backdrop.color ?? "#222");
+      if (sc?.backdrop.storybook) storybook(ui, i, ui.time, game.settings.general.reduceMotion);
       const img = sc?.backdrop.track
         ? preview(trackById(sc.backdrop.track)?.preview ?? "")
         : undefined;
-      if (img) {
-        // The picture, filling the screen, drifting slowly.
+      if (img && !sc?.backdrop.storybook) {
         const k = Math.max(ui.W / img.width, ui.H / img.height) * 1.08;
         const drift = game.settings.general.reduceMotion ? 0 : Math.sin(ui.time * 0.2) * 6;
         ui.image(
@@ -823,23 +412,14 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
           img.height * k,
         );
       }
-      if (beat?.fx === "flash" && t < 0.5) ui.rect(0, 0, ui.W, ui.H, "#fff2d0", 1 - t * 2);
+      if ((beat?.fx === "flash" || beat?.fx === "horn") && t < 0.5)
+        ui.rect(0, 0, ui.W, ui.H, "#fff2d0", 1 - t * 2);
       if (beat?.fx === "light")
         ui.rect(0, 0, ui.W, ui.H, "#fff8e0", 0.25 + 0.1 * Math.sin(ui.time * 3));
       if (beat?.fx === "dragons") dragonsOver(ui, ui.time);
-      if (beat?.fx === "worldmap")
-        ui.image(
-          parchment(ui.W, ui.H, { compass: true, ships: true }),
-          0,
-          0,
-          ui.W,
-          ui.H * Math.min(1, t * 1.5),
-          false,
-        );
       ui.rect(0, 0, ui.W, 16, "#000000", 0.55);
       ui.text((sc?.title ?? id).toUpperCase(), ui.W / 2, 4, { color: PAL.gold, align: "center" });
       if (!beat) return;
-      // The text box, with the speaker's portrait.
       const bx = 10;
       const bh = 64;
       const by = ui.H - bh - 18;
@@ -848,15 +428,7 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
       const who = beat.who ? CAST[beat.who] : undefined;
       let tx = bx + 10;
       if (who) {
-        portrait(
-          ui,
-          pp,
-          who,
-          beat.who === "you" ? game.selection.racer : who.look,
-          bx + 6,
-          by - 20,
-          ui.time,
-        );
+        portrait(ui, pp, who, beat.who === "you" ? you : who.look, bx + 6, by - 20, ui.time);
         tx = bx + 64;
         ui.text((beat.who === "you" ? "YOU" : who.name).toUpperCase(), tx, by + 6, {
           color: "#8a2a1a",
@@ -878,7 +450,102 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
   };
 }
 
-/** A speaker's portrait: a dinosaur's own face, or a placeholder dragon's head. */
+/**
+ * The opening's storybook (The First Race): an old page, a picture inked on it for each
+ * line: the war (dragons over the crews' banners), the race, the horn, the finish, the
+ * five stones, the border, the champion's road to the King.
+ */
+function storybook(ui: UiLayer, page: number, t: number, still: boolean) {
+  ui.image(parchment(ui.W, ui.H, { compass: false, ships: false }), 0, 0, ui.W, ui.H, false);
+  const g = ui.g;
+  const cx = ui.W / 2;
+  const cy = ui.H / 2 - 30;
+  const bob = still ? 0 : Math.sin(t * 1.5) * 2;
+  g.save();
+  g.strokeStyle = INK;
+  g.fillStyle = INK;
+  g.lineWidth = 2;
+  const kart = (x: number, y: number, c: string) => {
+    ui.rect(x - 8, y - 4, 16, 6, c);
+    ui.rect(x - 6, y + 2, 4, 3, INK);
+    ui.rect(x + 2, y + 2, 4, 3, INK);
+    ui.rect(x - 2, y - 8, 5, 5, c);
+  };
+  const dragon = (x: number, y: number, s: number) => {
+    g.beginPath();
+    g.moveTo(x - 14 * s, y);
+    g.lineTo(x, y - 9 * s);
+    g.lineTo(x + 4 * s, y);
+    g.lineTo(x + 18 * s, y - 9 * s);
+    g.lineTo(x + 22 * s, y + 2 * s);
+    g.lineTo(x, y + 4 * s);
+    g.closePath();
+    g.fill();
+  };
+  const stone = (x: number, y: number, s: number, lit: boolean) => {
+    ui.rect(x - 5 * s, y - 16 * s, 10 * s, 16 * s, lit ? "#d8b860" : "#7a7062");
+    ui.rect(x - 7 * s, y, 14 * s, 3 * s, INK);
+  };
+  const line = (x0: number, x1: number, y: number) => {
+    g.beginPath();
+    g.moveTo(x0, y);
+    g.lineTo(x1, y);
+    g.stroke();
+  };
+  switch (page) {
+    case 0:
+      for (let k = 0; k < 3; k++) dragon(cx - 80 + k * 70, cy - 20 + bob + k * 6, 1.4);
+      for (let k = 0; k < 5; k++)
+        kart(cx - 90 + k * 45, cy + 40, ["#8a2a1a", "#2a5a8a", "#6a8a2a"][k % 3]!);
+      break;
+    case 1:
+      line(cx - 120, cx + 120, cy + 34);
+      dragon(cx - 40, cy + bob, 1.6);
+      kart(cx + 40, cy + 28, "#8a2a1a");
+      break;
+    case 2:
+      line(cx - 120, cx + 120, cy + 34);
+      dragon(cx + 10, cy + bob, 1.6);
+      kart(cx - 40, cy + 28, "#8a2a1a");
+      // The horn, and its blast.
+      ui.rect(cx - 96, cy + 6, 16, 6, "#c8a040");
+      ui.rect(cx - 82, cy + 4, 6, 10, "#c8a040");
+      for (let k = 0; k < 3; k++) {
+        g.beginPath();
+        g.arc(cx - 74, cy + 9, 10 + k * 8 + (still ? 0 : (t * 12) % 8), -0.6, 0.6);
+        g.stroke();
+      }
+      break;
+    case 3:
+      for (let k = 0; k < 6; k++)
+        ui.rect(cx + 20 + k * 6, cy + 10 + (k % 2) * 6, 6, 6, k % 2 ? INK : "#f4e8cc");
+      kart(cx + 2, cy + 28, "#8a2a1a");
+      dragon(cx - 70, cy + bob, 1.2);
+      break;
+    case 4:
+      for (let k = 0; k < 4; k++) stone(cx - 120 + k * 60, cy + 40, 1.4, false);
+      stone(cx + 120, cy + 40, 2.2, true);
+      break;
+    case 5:
+      line(cx, cx, cy - 40);
+      for (let y = cy - 40; y < cy + 50; y += 8) line(cx - 2, cx + 2, y);
+      dragon(cx + 60, cy + bob, 1.2);
+      dragon(cx + 90, cy + 20 + bob, 1);
+      kart(cx - 60, cy + 30, "#2a5a8a");
+      break;
+    default:
+      kart(cx - 80, cy + 40, "#8a2a1a");
+      g.setLineDash([6, 6]);
+      line(cx - 64, cx + 70, cy + 40);
+      g.setLineDash([]);
+      dragon(cx + 90, cy + 10 + bob, 1.8);
+      break;
+  }
+  g.restore();
+}
+
+/** A speaker's portrait: a racer's own face, or a drawn head (the Elder, Lumen in his
+ * hood, a sketchy guard, a crowd, a dragon). */
 export function portrait(
   ui: UiLayer,
   pp: PixelPortraits | undefined,
@@ -909,11 +576,52 @@ export function portrait(
     return;
   }
   const g = ui.g;
-  if (who.shape === "elder" || who.shape === "chosen") {
-    // A dinosaur's head in profile (placeholder): the Elder grey-green with a mossy crest,
-    // the Chosen One dark with a pale gold scarf.
-    const elder = who.shape === "elder";
-    g.fillStyle = elder ? "#3a5a2a" : "#2a2a3a";
+  if (who.shape === "robed") {
+    // A hood, its dark opening, two gold eyes.
+    g.fillStyle = "#8a6a48";
+    g.beginPath();
+    g.moveTo(x + 6, y + 48);
+    g.quadraticCurveTo(x + 8, y + 6, x + 24, y + 6);
+    g.quadraticCurveTo(x + 40, y + 6, x + 42, y + 48);
+    g.closePath();
+    g.fill();
+    g.fillStyle = "#120c08";
+    g.beginPath();
+    g.ellipse(x + 24, y + 26, 10, 12, 0, 0, Math.PI * 2);
+    g.fill();
+    const blink = Math.sin(t * 0.9) > 0.97 ? 1 : 3;
+    ui.rect(x + 18, y + 24, 4, blink, "#ffd860");
+    ui.rect(x + 26, y + 24, 4, blink, "#ffd860");
+    ui.rect(x + 10, y + 44, 28, 3, "#c8b070");
+    return;
+  }
+  if (who.shape === "guard") {
+    // A shady character: a broad head, a squint, a scar.
+    g.fillStyle = "#4a3a2a";
+    g.beginPath();
+    g.ellipse(x + 24, y + 28, 16, 15, 0, 0, Math.PI * 2);
+    g.fill();
+    ui.rect(x + 14, y + 22, 8, 2, "#ffffff");
+    ui.rect(x + 28, y + 23, 6, 1, "#ffffff");
+    ui.rect(x + 30, y + 16, 2, 12, "#8a2a1a");
+    ui.rect(x + 16, y + 34, 16, 2, "#1a1010");
+    ui.rect(x + 8, y + 8, 32, 6, "#2a2a2a");
+    return;
+  }
+  if (who.shape === "crowd") {
+    for (let k = 0; k < 5; k++) {
+      const hx = x + 8 + (k % 3) * 16 + (k > 2 ? 8 : 0);
+      const hy = y + 16 + (k > 2 ? 16 : 0) + Math.round(Math.sin(t * 6 + k) * 2);
+      g.fillStyle = ["#6a8a3a", "#8a5a2a", "#3a6a8a", "#8a3a3a", "#6a6a2a"][k]!;
+      g.beginPath();
+      g.arc(hx, hy, 7, 0, Math.PI * 2);
+      g.fill();
+    }
+    return;
+  }
+  if (who.shape === "elder") {
+    // A dinosaur's head in profile, grey-green with a mossy crest.
+    g.fillStyle = "#3a5a2a";
     g.beginPath();
     g.moveTo(x + 10, y + 46);
     g.lineTo(x + 12, y + 22);
@@ -925,14 +633,12 @@ export function portrait(
     g.lineTo(x + 26, y + 46);
     g.closePath();
     g.fill();
-    ui.rect(x + 32, y + 17, 3, 3, elder ? "#ffffff" : "#ffd84a");
-    if (elder)
-      for (let k = 0; k < 4; k++) ui.rect(x + 14 + k * 5, y + 9 - (k % 2) * 2, 4, 4, "#7aa84a");
-    else ui.rect(x + 10, y + 32, 18, 5, "#f2e6a8");
+    ui.rect(x + 32, y + 17, 3, 3, "#ffffff");
+    for (let k = 0; k < 4; k++) ui.rect(x + 14 + k * 5, y + 9 - (k % 2) * 2, 4, 4, "#7aa84a");
     return;
   }
-  // A dragon (placeholder): a horned head in silhouette with a glowing eye.
-  g.fillStyle = "#1a1010";
+  // A dragon: a horned head in silhouette with a glowing eye (Lumen's is pale gold).
+  g.fillStyle = who.name === "Lumen" ? "#8a6a30" : "#1a1010";
   g.beginPath();
   g.moveTo(x + 8, y + 40);
   g.lineTo(x + 14, y + 16);
@@ -946,10 +652,10 @@ export function portrait(
   g.lineTo(x + 22, y + 44);
   g.closePath();
   g.fill();
-  ui.rect(x + 24, y + 18, 4, 3, "#ffd84a");
+  ui.rect(x + 24, y + 18, 4, 3, who.name === "Lumen" ? "#ffffff" : "#ffd84a");
 }
 
-/** Dragons crossing the sky (the attack scenes). */
+/** Dragons crossing the sky (the opening's war). */
 function dragonsOver(ui: UiLayer, t: number) {
   for (let k = 0; k < 3; k++) {
     const x = ((t * 60 + k * 140) % (ui.W + 80)) - 40;
@@ -971,7 +677,32 @@ function dragonsOver(ui: UiLayer, t: number) {
 
 // ---------------------------------------------------------------- after a race
 
-/** After a single Adventure race (a treasure map race, a dragon, the King). */
+/** What a race did for the story (the save), from its result. */
+export function applyResult(game: Game, run: AdventureRun, result: RaceResult) {
+  const s = adventureOf(game).save;
+  const cousin = run.kind === "duel" && kingdomById(run.kingdom)?.champion.look === youOf(game);
+  const out =
+    run.kind === "shards"
+      ? shardRaceFinished(s, run.course, result.coins ?? { got: 0, total: 4 }, result.position)
+      : run.kind === "duel"
+        ? duelFinished(s, run.kingdom, result.position, cousin)
+        : run.kind === "boss"
+          ? bossFinished(s, run.kingdom, result.position)
+          : run.kind === "king"
+            ? run.final
+              ? finalFinished(s, result.position)
+              : kingRaceFinished(s, result.position)
+            : raceFinished(s, run.kingdom, run.track, result.position);
+  // The champion beaten 1 on 1 joins the crew: pickable everywhere from now on.
+  if (run.kind === "duel" && s.duels[run.kingdom]) {
+    const champ = kingdomById(run.kingdom)?.champion;
+    if (champ) unlockRacer(champ.look);
+  }
+  persist(game);
+  return out;
+}
+
+/** After an Adventure race. */
 export function adventureResult(
   game: Game,
   result: RaceResult,
@@ -981,47 +712,19 @@ export function adventureResult(
   const a = adventureOf(game);
   const run = a.run!;
   const s = a.save;
-  const out =
-    run.kind === "coins"
-      ? coinRaceFinished(s, run.course, result.coins ?? { got: 0, total: 4 }, result.position)
-      : run.kind === "duel"
-        ? duelFinished(s, run.kingdom, result.position)
-        : run.kind === "boss"
-          ? bossFinished(s, run.kingdom, result.position)
-          : run.kind === "king"
-            ? kingFinished(s, run.chosen ? result.position : undefined)
-            : run.kind === "race"
-              ? raceFinished(s, run.kingdom, run.track, result.position)
-              : { progressed: false, lines: [] };
-  // A championship won where there's no 1-on-1 to win after it: its champion joins.
-  if (run.kind === "race" && run.kingdom !== "dragon_final") {
-    const kd = kingdomById(run.kingdom as KingdomId);
-    if (kd && s.cups[kd.id] && !hasDuel(kd) && kd.champion) unlockRacer(kd.champion.look);
-  }
-  // The champion beaten 1 on 1 joins the crew: pickable everywhere from now on.
-  if (run.kind === "duel" && s.duels[run.kingdom]) {
-    const champ = kingdomById(run.kingdom)?.champion;
-    if (champ) unlockRacer(champ.look);
-  }
-  persist(game);
-  // The King's first race is lost whatever happens: straight on to the story.
-  const scripted = run.kind === "king" && !run.chosen;
+  const out = applyResult(game, run, result);
   const home = () => {
     a.run = undefined;
-    const kd = run.kind === "king" ? "dragon" : run.kingdom;
-    a.at = kd === "dragon_final" ? "dragon" : kd;
-    // From the overworld: back out of its gateway (unless the story has a scene to show:
-    // it plays, then on into the overworld).
+    // From the overworld: back out of the mark you went in by (the story's scenes play
+    // first when one's due).
     const o = game.overworld;
-    if (o && !dueScene(s)) return game.screens.go(overworldLoading(game, o.region, o.at, true));
     if (o) s.where = { region: o.region, ...(o.at ? { at: o.at } : {}) };
+    persist(game);
     goHome(game);
   };
   const menu = new VMenu(game, [
     { label: "CONTINUE", action: home },
-    ...(scripted || (out.progressed && run.kind !== "coins")
-      ? []
-      : [{ label: "RETRY", action: () => (game.screens.pop(), retry()) }]),
+    ...(out.progressed ? [] : [{ label: "RETRY", action: () => (game.screens.pop(), retry()) }]),
   ]);
   let t = 0;
   return {
@@ -1056,7 +759,7 @@ export function adventureResult(
       );
       ui.text(entry.name.toUpperCase(), ui.W / 2, y + 38, { color: INK_SOFT, align: "center" });
       if (result.coins)
-        ui.text(`MAP FRAGMENTS ${result.coins.got}/${result.coins.total}`, ui.W / 2, y + 52, {
+        ui.text(`SHARD PIECES ${result.coins.got}/${result.coins.total}`, ui.W / 2, y + 52, {
           color: result.coins.got >= result.coins.total ? "#2a6a2a" : "#8a2a1a",
           align: "center",
         });
@@ -1071,8 +774,8 @@ export function adventureResult(
   };
 }
 
-/** A Trophy Race cup's podium from inside Adventure (there are no cups in Adventure any
- * more: Blake, Oct 26): just back home. */
+/** A Trophy Race cup's podium from inside Adventure (there are no cups in Adventure):
+ * just back home. */
 export function adventureCupDone(game: Game, _place: number) {
   const a = adventureOf(game);
   a.run = undefined;
@@ -1086,77 +789,86 @@ export function adventureCupDone(game: Game, _place: number) {
 function storyJumps(game: Game, back: () => void): Screen {
   const a = adventureOf(game);
   const s = a.save;
-  const save = () => persist(game);
-  const seeAll = () => {
-    // Mark every scene up to now as seen (so jumping doesn't replay them all).
-    for (;;) {
-      const d = dueScene(s);
-      if (!d) break;
-      markSeen(s, d);
-    }
+  const winAll = (id: KingdomId) => coursesOf(id).forEach((c) => (s.wins[c.track] = true));
+  const shardAll = (id: KingdomId) => coursesOf(id).forEach((c) => (s.shards[c.track] = true));
+  const out = (id: KingdomId) => {
+    winAll(id);
+    s.duels[id] = true;
+    s.games[id] = true;
   };
-  const free = (id: KingdomId) => {
-    const k = kingdomById(id)!;
-    s.cups[id] = true;
-    for (const c of k.courses) {
-      s.wins[c.track] = true;
-      s.pieces[c.track] = true;
-    }
-    s.bosses[id] = true;
-  };
+  const way = ["valley", "snow", "desert", "beach"] as const;
   type Item = { label: string; action: () => void };
-  const jump = (label: string, f: () => void): Item => ({
+  const jump = (label: string, region: string | undefined, f: () => void): Item => ({
     label,
     action: () => {
-      Object.assign(s, newSave());
+      const racer = s.racer ?? game.selection.racer;
+      Object.assign(s, newSave(), { racer, driver: racer });
+      game.selection.racer = racer as RacerId;
       f();
-      seeAll();
-      for (const k of KINGDOMS) if (s.cups[k.id] && k.champion) unlockRacer(k.champion.look);
-      save();
-      game.screens.go(adventureHub(game));
+      // Every scene up to now as seen (so a jump doesn't replay them all).
+      for (let d = dueScene(s); d; d = dueScene(s)) markSeen(s, d);
+      for (const k of KINGDOMS) if (s.duels[k.id]) unlockRacer(k.champion.look);
+      s.where = region ? { region } : undefined;
+      persist(game);
+      goHome(game);
     },
   });
   const items: Item[] = [
-    jump("RESET: A NEW ADVENTURE", () => eraseAdventure(store(), adventureOf(game).slot)),
-    jump("VALLEY: CHAMPIONSHIP WON", () => (s.cups.valley = true)),
-    jump("VALLEY: MAP DONE (BOSS NEXT)", () => {
-      s.cups.valley = true;
-      for (const c of kingdomById("valley")!.courses) s.pieces[c.track] = true;
+    jump("RESET: A NEW ADVENTURE", "dinosaur_valley", () => {}),
+    jump("VALLEY: FESTIVAL WON (REX NEXT)", "dinosaur_valley", () => winAll("valley")),
+    jump("VALLEY: REX JOINED (UNDERGROUND NEXT)", "dinosaur_valley", () => {
+      winAll("valley");
+      s.duels.valley = true;
     }),
-    jump("SNOW KINGDOM OPEN", () => free("valley")),
-    jump("DESERT WORLD OPEN", () => ["valley", "snow"].forEach((k) => free(k as KingdomId))),
-    jump("TROPIC ISLES OPEN", () =>
-      ["valley", "snow", "desert"].forEach((k) => free(k as KingdomId)),
+    jump("SNOW KINGDOM: CAUGHT", "snow_kingdom", () => out("valley")),
+    jump("SNOW KINGDOM: GAMES WON (BRACHIO NEXT)", "snow_kingdom", () => {
+      out("valley");
+      winAll("snow");
+    }),
+    jump("DESERT WORLD: CAUGHT", "desert_world", () => way.slice(0, 2).forEach(out)),
+    jump("TROPIC ISLES: CAUGHT", "tropic_isles", () => way.slice(0, 3).forEach(out)),
+    jump("DRAGON KINGDOM: THE KING'S GAMES", "dragon_kingdom", () => way.forEach(out)),
+    jump("DRAGON KINGDOM: THE KING NEXT", "dragon_kingdom", () => {
+      way.forEach(out);
+      winAll("dragon");
+    }),
+    jump("AFTER THE RAGE: THE RUINED VALLEY", "dinosaur_valley", () => {
+      way.forEach(out);
+      winAll("dragon");
+      s.kingRace = true;
+    }),
+    ...way.map((k, i) =>
+      jump(
+        `${nameOf(k).toUpperCase()} (RUINED): SHARDS DONE, DRAGON NEXT`,
+        regionOfKingdom(k)?.id,
+        () => {
+          way.forEach(out);
+          winAll("dragon");
+          s.kingRace = true;
+          way.slice(0, i).forEach((p) => (shardAll(p), (s.bosses[p] = true)));
+          shardAll(k);
+        },
+      ),
     ),
-    jump("DRAGON KINGDOM OPEN", () => KINGDOMS.forEach((k) => free(k.id))),
-    jump("AFTER THE SACRIFICE (RETURN)", () => {
-      KINGDOMS.forEach((k) => free(k.id));
-      s.cups.dragon = true;
+    jump("DRAGON KINGDOM (RUINED): THE LAST SHARDS", "dragon_kingdom", () => {
+      way.forEach(out);
+      winAll("dragon");
+      s.kingRace = true;
+      way.forEach((p) => (shardAll(p), (s.bosses[p] = true)));
     }),
-    jump("AFTER THE RESURRECTION", () => {
-      KINGDOMS.forEach((k) => free(k.id));
-      s.cups.dragon = true;
-      KINGDOMS.forEach((k) => (s.returns[k.id] = true));
-    }),
-    jump("THE DRAGON KING (FIRST RACE)", () => {
-      KINGDOMS.forEach((k) => free(k.id));
-      s.cups.dragon = true;
-      KINGDOMS.forEach((k) => (s.returns[k.id] = true));
-      s.finalCup = true;
-    }),
-    jump("THE DRAGON KING (AS THE CHOSEN ONE)", () => {
-      KINGDOMS.forEach((k) => free(k.id));
-      s.cups.dragon = true;
-      KINGDOMS.forEach((k) => (s.returns[k.id] = true));
-      s.finalCup = true;
-      s.kingLost = true;
+    jump("DRAGON KINGDOM: THE KING'S LAST RACE NEXT", "dragon_kingdom", () => {
+      way.forEach(out);
+      winAll("dragon");
+      s.kingRace = true;
+      way.forEach((p) => (shardAll(p), (s.bosses[p] = true)));
+      shardAll("dragon");
     }),
     {
-      label: "REPLAY THE NEXT SCENE AGAIN",
+      label: "REPLAY THE LAST SCENE AGAIN",
       action: () => {
         s.seen.pop();
-        save();
-        game.screens.go(adventureHub(game));
+        persist(game);
+        goHome(game);
       },
     },
   ];
@@ -1182,7 +894,7 @@ function devList(
       ui.rect(0, 0, ui.W, ui.H, "#1d2a34");
       ui.text(title, ui.W / 2, 6, { color: PAL.gold, outline: INK, align: "center" });
       ui.text(note, ui.W / 2, 16, { color: PAL.cream, align: "center" });
-      menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3, 1, 12);
+      menu.draw(ui, ui.W / 2 - 130, 28, 260, 13, 3, 1, 12);
       hints(ui, [
         ["▲▼", "CHOOSE"],
         ["ENTER", "GO"],
@@ -1192,19 +904,15 @@ function devList(
   };
 }
 
+const clipLabel = () => (clipSwitch.on ? "RECORD CLIPS: ON · F4 SAVES" : "RECORD CLIPS: OFF");
+
 /**
  * Dev builds: every testing tool on one short page (Blake, Oct 27: the menu ran off the
  * screen): the switches first, then the pages of jumps, scenes and warps. `back`: where
- * ESC goes (the world map, or the overworld's pause menu it was opened from); `extra`:
- * more items from where it was opened (the overworld's world map).
+ * ESC goes (the overworld's pause menu it was opened from).
  */
-const clipLabel = () => (clipSwitch.on ? "RECORD CLIPS: ON · F4 SAVES" : "RECORD CLIPS: OFF");
-
-export function devMenu(
-  game: Game,
-  opts: { back?: () => void; extra?: { label: string; action: () => void }[] } = {},
-): Screen {
-  const back = opts.back ?? (() => game.screens.go(adventureHub(game)));
+export function devMenu(game: Game, opts: { back?: () => void } = {}): Screen {
+  const back = opts.back ?? (() => goHome(game));
   const again = () => game.screens.go(devMenu(game, opts));
   const items: { label: string; action: () => void }[] = [
     {
@@ -1246,7 +954,6 @@ export function devMenu(
           },
         ]
       : []),
-    ...(opts.extra ?? []),
     {
       // Free roam: any region, standard or ruined, or any journey between them.
       label: "WARP ANYWHERE (FREE ROAM) ...",
@@ -1278,14 +985,20 @@ export function devMenu(
 
 /** Dev builds: every scene in the story, to watch again and again (nothing is saved). */
 function sceneList(game: Game, at = 0, back = () => game.screens.go(devMenu(game))): Screen {
-  const all = Object.values(SCENES);
+  const all = sceneOrder();
+  const title = (id: string) =>
+    id === FAKE_CREDITS
+      ? "The Fake Ending"
+      : id === END_CREDITS
+        ? "The Credits"
+        : (SCENES[id]?.title ?? id);
   const menu = new VMenu(
     game,
-    all.map((sc, i) => ({
-      label: sc.id.toUpperCase().replace(/_/g, " "),
+    all.map((id, i) => ({
+      label: id.toUpperCase().replace(/_/g, " "),
       action: () =>
         game.screens.go(
-          sceneScreen(game, sc.id, () => game.screens.go(sceneList(game, i, back)), false),
+          sceneScreen(game, id, () => game.screens.go(sceneList(game, i, back)), false),
         ),
     })),
     back,
@@ -1300,8 +1013,8 @@ function sceneList(game: Game, at = 0, back = () => game.screens.go(devMenu(game
     draw(ui) {
       ui.rect(0, 0, ui.W, ui.H, "#1d2a34");
       ui.text("EVERY SCENE", ui.W / 2, 6, { color: PAL.gold, outline: INK, align: "center" });
-      const sc = all[menu.focus];
-      if (sc) ui.text(sc.title.toUpperCase(), ui.W / 2, 16, { color: PAL.cream, align: "center" });
+      const id = all[menu.focus];
+      if (id) ui.text(title(id).toUpperCase(), ui.W / 2, 16, { color: PAL.cream, align: "center" });
       menu.draw(ui, ui.W / 2 - 110, 28, 220, 13, 3, 1, 12);
       hints(ui, [
         ["▲▼", "CHOOSE"],

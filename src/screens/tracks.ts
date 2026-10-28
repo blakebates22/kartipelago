@@ -76,7 +76,7 @@ const entriesOf = (w: WorldEntry): Entry[] => [
 
 export function tracksMenu(game: Game): Screen {
   // Leaving a cup (or coming back after one) ends it. Track mode is never an Adventure race
-  // (a run left over from a drive abandoned through the menus put map fragments on
+  // (a run left over from a drive abandoned through the menus put shard pieces on
   // Meadow Run: Blake, Oct 26), nor in the overworld.
   game.trophy = undefined;
   if (game.adventure) game.adventure.run = undefined;

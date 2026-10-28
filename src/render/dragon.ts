@@ -31,12 +31,16 @@ const SPINE = "#2a0e0a";
 const ease = (t: number) => t * t * (3 - 2 * t);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+/** The dragons' colours: Cinderjaw's ember (and Impact Depths' obsidian), Rimefang's
+ * frost, Scorchwind's sand, Tidewyrm's sea, the King's, and Lumen's gold. */
+export type DragonLook = "ember" | "obsidian" | "frost" | "sand" | "sea" | "king" | "lumen";
+
 export function createDragonView(
   parent: THREE.Object3D,
   pos: { x: number; y: number; z: number },
   heading: number,
   scale = 1,
-  look: "ember" | "obsidian" | "frost" | "sand" | "sea" | "king" = "ember",
+  look: DragonLook = "ember",
 ): DragonView {
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
@@ -55,6 +59,8 @@ export function createDragonView(
     sand: ["#c89a5a", "#6a4a2a", "#f0d8a0", "#a8743a"],
     sea: ["#2a7a7a", "#0f3a3a", "#8ad8c8", "#1f5a6a"],
     king: ["#5a2a8a", "#2a0f3a", "#c8a040", "#7a3aa0"],
+    // Lumen, out of his robe: pale gold.
+    lumen: ["#f0d890", "#8a6a30", "#fff6d8", "#f4e0a0"],
   };
   const tint = TINT[look];
   const scales = mat(tint ? tint[0] : ob ? "#26202a" : SCALES);

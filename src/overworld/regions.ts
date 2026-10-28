@@ -85,10 +85,10 @@ export interface Region {
   challenge?: { x: number; z: number; heading: number };
   /** Its switches and puzzles (src/overworld/puzzles.ts). */
   puzzles?: Puzzle[];
-  /** Act V: where the kingdom's return task happens, in a walled yard whose way in is
-   * blocked by an obstacle the kingdom's own tool clears (the overworld doc's tool
-   * gates: each tool opens one kind of obstacle). */
-  returnTask?: ReturnSpot;
+  /** Adventure: the smugglers' cave (the underground games and their tunnel out), in a
+   * walled yard whose way in the sketchy guards keep (the build's puzzle_gate
+   * "return"): its gate, and the cave's mouth inside. */
+  cave?: { gate: ReturnSpot["gate"]; spot: ReturnSpot["spot"] };
   /** A secret (Banjo-style backtracking): a walled yard you can see on the way out, its
    * way in blocked by an obstacle a later kingdom's tool clears, a treasure chest
    * inside. */
@@ -132,9 +132,8 @@ export const REGIONS: Region[] = [
       gate: { x: 216.5, z: -155.04, heading: 1.2356, width: 9 },
       spot: { x: 208, z: -158 },
     },
-    // Act V's return task: The Elder's lookout, a walled hollow on Ember's lower slope: a rockfall blocks its way in.
-    returnTask: {
-      obstacle: "rockfall",
+    // The smugglers' Lookout Cave: the Elder's old lookout, a walled hollow on Ember's lower slope.
+    cave: {
       gate: { x: 136.84, z: 172.15, heading: 1.7395, width: 9 },
       spot: { x: 126, z: 174 },
     },
@@ -251,9 +250,8 @@ export const REGIONS: Region[] = [
       gate: { x: -203.43, z: 98.85, heading: -1.929, width: 9 },
       spot: { x: -195, z: 102 },
     },
-    // Act V's return task: Brachio's hot spring, a walled yard in the summit meadow: its way in is frozen shut.
-    returnTask: {
-      obstacle: "ice",
+    // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
+    cave: {
       gate: { x: -91.36, z: -265.22, heading: 1.315, width: 9 },
       spot: { x: -102, z: -268 },
     },
@@ -368,9 +366,8 @@ export const REGIONS: Region[] = [
       gate: { x: 275.93, z: -207.36, heading: -0.74, width: 9 },
       spot: { x: 282, z: -214 },
     },
-    // Act V's return task: Stego's old well, a walled yard behind the trading post: a drift buries its way in.
-    returnTask: {
-      obstacle: "drift",
+    // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.
+    cave: {
       gate: { x: -285.0, z: 28.07, heading: 1.564, width: 9 },
       spot: { x: -296, z: 28 },
     },
@@ -470,9 +467,8 @@ export const REGIONS: Region[] = [
       gate: { x: -52.33, z: 247.16, heading: 2.955, width: 9 },
       spot: { x: -54, z: 256 },
     },
-    // Act V's return task: Raptor's cove, a walled yard in the shipwreck cove: a deep channel cuts off its way in.
-    returnTask: {
-      obstacle: "water",
+    // The smugglers' Sea Cave: a walled yard in the shipwreck cove, Raptor's old haunt.
+    cave: {
       gate: { x: -254.74, z: 98.07, heading: 2.141, width: 9 },
       spot: { x: -264, z: 104 },
     },

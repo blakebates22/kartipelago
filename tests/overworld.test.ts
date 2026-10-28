@@ -87,9 +87,9 @@ describe("overworld regions", () => {
         }
   });
 
-  it("put each return task's yard where the region's build put it", () => {
+  it("put each smugglers' cave in the yard where the region's build put it", () => {
     for (const r of REGIONS.filter((r) => r.kingdom && r.kingdom !== "dragon")) {
-      const rt = r.returnTask!;
+      const rt = r.cave!;
       expect(rt, r.id).toBeDefined();
       for (const pkg of [r.packageId, r.ruinPackageId!]) {
         const meta = JSON.parse(readFileSync(`public/tracks/${pkg}/track.json`, "utf8"));
@@ -125,13 +125,6 @@ describe("overworld regions", () => {
       }
       expect(sc.tool, r.id).not.toBe(r.kingdom);
     }
-    // Each kingdom's own tool clears its own yard's obstacle, one kind each.
-    expect(REGIONS.filter((r) => r.returnTask).map((r) => r.returnTask!.obstacle)).toEqual([
-      "rockfall",
-      "ice",
-      "drift",
-      "water",
-    ]);
   });
 
   it("have a ruined state built from the same script, and up to date with it (the sync rule)", async () => {

@@ -175,7 +175,7 @@ export interface SessionOptions {
    * instead of failing.
    */
   fallback?: boolean;
-  /** Adventure's treasure map challenge: map fragments on the course ("auto": four spread
+  /** Adventure's treasure map challenge: shard pieces on the course ("auto": four spread
    * round the lap). */
   coins?: CoinSpot[] | "auto";
   /** Adventure: the field. How many rivals, their names on screen, and a top-speed
@@ -257,7 +257,7 @@ export interface HudState {
   /** Time Trial: the ghost on or off, its (personal best) time, and the gap to it at the
    * last checkpoint while that's showing (negative: ahead). */
   ghost?: { on: boolean; best?: number; delta?: number };
-  /** Adventure: map fragments taken of all there are. */
+  /** Adventure: shard pieces taken of all there are. */
   coins?: { got: number; total: number };
   /** A boss race's gauge (Cinderjaw's HEAT): 0..1. */
   gauge?: { label: string; value: number };
@@ -272,7 +272,7 @@ export interface RaceResult {
   bestLap: number;
   /** Everyone's finishing order (names and times), when racing the AI. */
   order: { name: string; racer: RacerId; time?: number; you: boolean; slot: number }[];
-  /** Adventure: map fragments taken of all there were. */
+  /** Adventure: shard pieces taken of all there were. */
   coins?: { got: number; total: number };
 }
 
@@ -495,7 +495,7 @@ function buildSession(
         .balloons,
     );
   const itemView = createItemView(root);
-  // Adventure's map fragments (only the player takes them).
+  // Adventure's shard pieces (only the player takes them).
   const coinField =
     opts.coins && track
       ? createCoinField(track, opts.coins === "auto" ? autoCoinSpots(track.length) : opts.coins)
@@ -1305,10 +1305,7 @@ function buildSession(
         const n = coinsTaken(coinField);
         const all = coinField.coins.length;
         sfx.balloon(itemsCfg.volume, "new");
-        showToast(
-          n === all ? `ALL ${all} MAP FRAGMENTS! NOW WIN!` : `MAP FRAGMENT ${n}/${all}`,
-          1.6,
-        );
+        showToast(n === all ? `ALL ${all} SHARD PIECES! NOW WIN!` : `SHARD PIECE ${n}/${all}`, 1.6);
       }
     }
     // Telemetry: how sharply the player's path is curving (1/m), for the debug overlay.
@@ -1992,7 +1989,7 @@ function buildSession(
       race.finishOrder.push(index);
     },
     /**
-     * Dev builds' insta-win (the dev menu): every map fragment taken, you over the line
+     * Dev builds' insta-win (the dev menu): every shard piece taken, you over the line
      * first, the rivals after you in their places.
      */
     debugWin() {
@@ -2015,6 +2012,10 @@ function buildSession(
       return disposed;
     },
     showToast,
+    /** Show or hide the HUD (the speedometer, the start meter): hidden in cutscenes. */
+    showHud(on: boolean) {
+      hudRoot.hidden = demo || !on;
+    },
     /**
      * The review tool's "drive from here": put your kart on the ground at (x, z) (the
      * surface at or below height y) facing `heading`, stopped. If the race is still
@@ -2062,7 +2063,7 @@ function buildSession(
     hazards,
     entrants,
     itemWorld,
-    /** Adventure's map fragments (tests and debugging). */
+    /** Adventure's shard pieces (tests and debugging). */
     coins: coinField,
     zippers,
     root,

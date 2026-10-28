@@ -1,48 +1,46 @@
 /**
- * Adventure mode's story, as data: the five kingdoms in story order, each one's courses
- * and their ruined versions, its dragon, the tool and the champion it gives, where its
- * map leads, its return objective and its (still empty) mini-game slot; and the Dragon
- * Kingdom's own steps. The progress rules (progress.ts) and the screens read only this,
- * so the story changes here, not in code.
+ * Adventure mode's story, as data (the approved story, Blake, Oct 27: "The Shattered
+ * Pact", claude/kartipelago-story.md in the project): the four kingdoms in story order,
+ * each one's courses (raced standard on the way out, ruined on the way back), its dragon,
+ * its champion, its underground mini-game; and the Dragon Kingdom. The progress rules
+ * (progress.ts) and the screens read only this.
  *
- * Everything with a name here is a PLACEHOLDER from the story doc ("Kartipelago Adventure
- * Mode: Story & Progression"): names, lines and objectives are meant to be replaced.
+ * The journey runs twice: out through the four conquered kingdoms to the Dragon King
+ * (the gladiator games, the champions, the underground games and the smugglers' keys),
+ * then back through them in ruins (the light shards, the new Pact Stones, the dragons'
+ * boss races and the Yield), and to the King once more.
  */
 import type { CoinSpot } from "../game/coins";
+import type { MiniGameId } from "../game/minigames";
 import type { RacerId } from "../render/racers/designs";
 
 export type KingdomId = "valley" | "snow" | "desert" | "beach" | "dragon";
 
 export interface AdventureCourse {
-  /** The standard course (track id). */
+  /** The standard course (track id): the festival, the gladiator games, the King's Games. */
   track: string;
-  /** Its ruined version (track id), once built. Until then the standard course stands in. */
+  /** Its ruined version (track id): its light shard is won on it. */
   ruin?: string;
-  /** Map fragment spots on the ruin (default: four spread round the lap). */
+  /** Shard piece spots on the ruin (default: four spread round the lap). */
   coins?: CoinSpot[];
 }
 
 export interface Kingdom {
-  id: KingdomId;
+  id: Exclude<KingdomId, "dragon">;
   name: string;
   /** The game world its courses come from (game/worlds.ts). */
   worldId: string;
   courses: AdventureCourse[];
-  /** The demi-boss race: the dragon, its course, and its edge (a top-speed multiplier). */
-  boss?: { name: string; track: string; speed: number };
-  /** What beating the dragon gives (placeholder names). */
-  tool?: { id: string; name: string };
-  /** The kingdom's champion: beaten in its championship, they join your crew and become
-   * a racer you can pick everywhere (app/unlocks.ts). */
-  champion?: { name: string; look: RacerId };
-  /** The kingdom the finished map leads to. */
-  next?: KingdomId;
-  /** Act V: one placeholder task per kingdom (talk to someone, use the tool). */
-  returnTask?: { who: string; label: string; scene: string };
-  /** Room for a mini-game (open, not committed): null until one exists. */
-  minigame: null;
-  /** Scenes (scenes.ts) at each turn of the kingdom's story. */
-  scenes: { arrive: string; catastrophe: string; mapDone: string; boss: string; bossWon: string };
+  /** The demi-boss: its race on the way back (forced by the new Pact Stone). */
+  boss: { name: string; track: string; speed: number };
+  /** The kingdom's champion: beaten 1 on 1 after its four courses, they join your crew. */
+  champion: { name: string; look: RacerId };
+  /** The smugglers' underground games: the mini-game, and the cave's name. */
+  minigame: MiniGameId;
+  cave: string;
+  /** The kingdom the smugglers' tunnel leads on to, and the journey region it comes out in. */
+  next: KingdomId;
+  tunnel: string;
 }
 
 export const KINGDOMS: Kingdom[] = [
@@ -57,18 +55,11 @@ export const KINGDOMS: Kingdom[] = [
       { track: "ember_peak", ruin: "ember_peak_ruin" },
     ],
     boss: { name: "Cinderjaw", track: "boss_prehistoric", speed: 1.0 },
-    tool: { id: "valley_tool", name: "Valley Tool" },
     champion: { name: "Rex", look: "rex" },
+    minigame: "eggs",
+    cave: "THE LOOKOUT CAVE",
     next: "snow",
-    returnTask: { who: "Elder Mossback", label: "TALK TO THE ELDER", scene: "valley_return" },
-    minigame: null,
-    scenes: {
-      arrive: "valley_arrive",
-      catastrophe: "valley_catastrophe",
-      mapDone: "valley_map",
-      boss: "valley_boss",
-      bossWon: "valley_boss_won",
-    },
+    tunnel: "journey_gorge",
   },
   {
     id: "snow",
@@ -81,18 +72,11 @@ export const KINGDOMS: Kingdom[] = [
       { track: "aurora_rift", ruin: "aurora_rift_ruin" },
     ],
     boss: { name: "Rimefang", track: "boss_snowy", speed: 1.0 },
-    tool: { id: "snow_tool", name: "Snow Tool" },
     champion: { name: "Brachio", look: "brachio" },
+    minigame: "crown",
+    cave: "THE ICE CAVE",
     next: "desert",
-    returnTask: { who: "Brachio", label: "HELP BRACHIO", scene: "snow_return" },
-    minigame: null,
-    scenes: {
-      arrive: "snow_arrive",
-      catastrophe: "snow_catastrophe",
-      mapDone: "snow_map",
-      boss: "snow_boss",
-      bossWon: "snow_boss_won",
-    },
+    tunnel: "journey_pass",
   },
   {
     id: "desert",
@@ -105,18 +89,11 @@ export const KINGDOMS: Kingdom[] = [
       { track: "impact_depths", ruin: "impact_depths_ruin" },
     ],
     boss: { name: "Scorchwind", track: "boss_desert", speed: 1.0 },
-    tool: { id: "desert_tool", name: "Desert Tool" },
     champion: { name: "Stego", look: "stego" },
+    minigame: "stars",
+    cave: "THE DRIFT CAVE",
     next: "beach",
-    returnTask: { who: "Stego", label: "HELP STEGO", scene: "desert_return" },
-    minigame: null,
-    scenes: {
-      arrive: "desert_arrive",
-      catastrophe: "desert_catastrophe",
-      mapDone: "desert_map",
-      boss: "desert_boss",
-      bossWon: "desert_boss_won",
-    },
+    tunnel: "journey_dust",
   },
   {
     id: "beach",
@@ -129,22 +106,16 @@ export const KINGDOMS: Kingdom[] = [
       { track: "splash_lagoon", ruin: "splash_lagoon_ruin" },
     ],
     boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.0 },
-    tool: { id: "beach_tool", name: "Beach Tool" },
     champion: { name: "Raptor", look: "raptor" },
+    minigame: "balloons",
+    cave: "THE SEA CAVE",
     next: "dragon",
-    returnTask: { who: "Raptor", label: "HELP RAPTOR", scene: "beach_return" },
-    minigame: null,
-    scenes: {
-      arrive: "beach_arrive",
-      catastrophe: "beach_catastrophe",
-      mapDone: "beach_map",
-      boss: "beach_boss",
-      bossWon: "beach_boss_won",
-    },
+    tunnel: "journey_cause",
   },
 ];
 
-/** The Dragon Kingdom: two visits with the journey home between, and the Dragon King. */
+/** The Dragon Kingdom: the King's Games and the race for the lands; in ruins after the
+ * Pact shatters, its last four shards; then the King once more, under the new Pact. */
 export const DRAGON = {
   id: "dragon" as const,
   name: "Dragon Kingdom",
@@ -155,33 +126,36 @@ export const DRAGON = {
     { track: "snow_dragon_pass", ruin: "snow_dragon_pass_ruin" },
     { track: "celestial_dragon_festival", ruin: "celestial_dragon_festival_ruin" },
   ] as AdventureCourse[],
-  /** The final race. In the first, scripted race his advantage can't be beaten
-   * (`speed`); as the Chosen One, the placeholder ability cancels it (`chosenSpeed`). */
-  king: { name: "King Pyrrhax", track: "boss_dragon", speed: 1.45, chosenSpeed: 1.0 },
-  chosen: { name: "Aurin", ability: "AURIN'S LIGHT" },
-  minigame: null,
-  scenes: {
-    arrive: "dragon_arrive",
-    sacrifice: "dragon_sacrifice",
-    resurrection: "resurrection",
-    finalArrive: "dragon_final_arrive",
-    king: "king_intro",
-    kingLost: "king_lost",
-    ending: "ending",
-  },
+  /** Both races are raced to be won: the first for the lands (his wall of fire), the last
+   * under the new Pact (his fireballs and the gauntlet: the course's other mechanic). */
+  king: { name: "King Pyrrhax", track: "boss_dragon", speed: 1.0 },
 };
 
 /** Every kingdom in story order, the Dragon Kingdom last. */
 export const STORY_ORDER: KingdomId[] = ["valley", "snow", "desert", "beach", "dragon"];
 
-export const kingdomById = (id: KingdomId) => KINGDOMS.find((k) => k.id === id);
+export const kingdomById = (id: KingdomId | string) => KINGDOMS.find((k) => k.id === id);
+export const nameOf = (id: KingdomId) => (id === "dragon" ? DRAGON.name : kingdomById(id)!.name);
+/** The kingdom before this one in the story (the valley: none). */
+export const prevOf = (id: KingdomId): KingdomId | undefined =>
+  STORY_ORDER[STORY_ORDER.indexOf(id) - 1];
 
-/** A kingdom's farewell (Blake, Oct 27): after its dragon falls, its people see you off at
- * the way on to the next world. */
-export const farewellSceneOf = (kingdom: string) => `${kingdom}_farewell`;
+/** A kingdom's scene for a step of its story (scenes.ts): "<kingdom>_<step>". Steps:
+ * caught, stands, challenge, prize, underground, key, stone (the way out); new_stone,
+ * yield (the way back). The valley's own: festival, hundredth, way_out, rescue. */
+export const sceneOf = (k: KingdomId, step: string) => `${k}_${step}`;
 
-/** The next world's name, for the farewells. */
-export const nextNameOf = (kingdom: string) => {
-  const next = KINGDOMS.find((k) => k.id === kingdom)?.next;
-  return next === "dragon" ? DRAGON.name : (KINGDOMS.find((k) => k.id === next)?.name ?? "");
-};
+/** The scenes that aren't scenes: the credits, rolled (screens/credits.ts). */
+export const FAKE_CREDITS = "fake_credits";
+export const END_CREDITS = "end_credits";
+/** The opening, before you pick your racer (a new file). */
+export const OPENING = "first_race";
+/** The Rage, kingdom by kingdom (each staged in its own ruins). */
+export const RAGE = [
+  "dragon_rage",
+  "rage_valley",
+  "rage_snow",
+  "rage_desert",
+  "rage_beach",
+  "rage_shards",
+] as const;

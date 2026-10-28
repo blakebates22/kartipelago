@@ -97,8 +97,16 @@ export function minigameMenu(
   };
 }
 
+/** Adventure's underground games (the smugglers' mini-game): how it ends goes back to the
+ * story (`finish(won)`), and its menus are the story's (play again, or give up). */
+export interface MiniGameStory {
+  finish(won: boolean): void;
+  /** The caption over the scores (the cave's name). */
+  title?: string;
+}
+
 /** Load the arena (four karts: you and three rivals), then play. */
-export function minigameLoading(game: Game, info: MiniGameInfo): Screen {
+export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGameStory): Screen {
   let ready: Session | undefined;
   /** The session the game's playing in (the rivals' minds read it). */
   let live: Session | undefined;
@@ -159,7 +167,7 @@ export function minigameLoading(game: Game, info: MiniGameInfo): Screen {
     },
     frame(dt) {
       t += dt;
-      if (failed) return game.screens.go(minigameMenu(game));
+      if (failed) return story ? story.finish(false) : game.screens.go(minigameMenu(game));
       if (ready && t > 0.6) {
         const s = ready;
         ready = undefined;
@@ -169,7 +177,7 @@ export function minigameLoading(game: Game, info: MiniGameInfo): Screen {
         box.g = createMiniGame(info, arena, s.entrants.length, Math.floor(Math.random() * 1e6));
         if (import.meta.env.DEV) (window as unknown as { kpMini?: MiniGame }).kpMini = box.g;
         live = s;
-        game.screens.go(minigamePlay(game, s, box.g, info, () => (live = undefined)));
+        game.screens.go(minigamePlay(game, s, box.g, info, () => (live = undefined), story));
       }
     },
     draw(ui) {
@@ -336,6 +344,7 @@ function minigamePlay(
   g: MiniGame,
   info: MiniGameInfo,
   release: () => void,
+  story?: MiniGameStory,
 ): Screen {
   const entry = entryOf(info);
   let clock = 0;
@@ -345,11 +354,27 @@ function minigamePlay(
   const label = (v: number) =>
     info.id === "balloons" ? `${v} LEFT` : info.id === "crown" ? `${v}S` : `${v}`;
   const finish = () => {
-    over = new VMenu(game, [
-      { label: "PLAY AGAIN", action: () => game.screens.go(minigameLoading(game, info)) },
-      { label: "OTHER GAMES", action: () => game.screens.go(minigameMenu(game)) },
-      { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
-    ]);
+    const won = g.winner === 0;
+    over = new VMenu(
+      game,
+      story
+        ? [
+            { label: "CONTINUE", action: () => story.finish(won) },
+            ...(won
+              ? []
+              : [
+                  {
+                    label: "PLAY AGAIN",
+                    action: () => game.screens.go(minigameLoading(game, info, story)),
+                  },
+                ]),
+          ]
+        : [
+            { label: "PLAY AGAIN", action: () => game.screens.go(minigameLoading(game, info)) },
+            { label: "OTHER GAMES", action: () => game.screens.go(minigameMenu(game)) },
+            { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
+          ],
+    );
     game.ui.interactive = true;
     game.sounds.confirm();
   };
@@ -390,7 +415,7 @@ function minigamePlay(
         return;
       }
       if (actions.some((a) => a === "pause" || a === "back"))
-        game.screens.push(minigamePause(game, info));
+        game.screens.push(minigamePause(game, info, story));
     },
     render3d(alpha, frameSeconds) {
       session.render(alpha, frameSeconds);
@@ -402,7 +427,7 @@ function minigamePlay(
       // The scores, top left: everyone's, in their colours.
       const w = 150;
       ui.panel(6, 6, w, 18 + names.length * 11, "wood", "gold");
-      ui.text(info.name.toUpperCase(), 6 + w / 2, 10, {
+      ui.text((story?.title ?? info.name).toUpperCase(), 6 + w / 2, 10, {
         color: PAL.gold,
         outline: PAL.shadow,
         align: "center",
@@ -461,15 +486,24 @@ function minigamePlay(
   };
 }
 
-function minigamePause(game: Game, info: MiniGameInfo): Screen {
+function minigamePause(game: Game, info: MiniGameInfo, story?: MiniGameStory): Screen {
   const menu = new VMenu(
     game,
-    [
-      { label: "RESUME", action: () => game.screens.pop() },
-      { label: "START AGAIN", action: () => game.screens.go(minigameLoading(game, info)) },
-      { label: "OTHER GAMES", action: () => game.screens.go(minigameMenu(game)) },
-      { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
-    ],
+    story
+      ? [
+          { label: "RESUME", action: () => game.screens.pop() },
+          {
+            label: "START AGAIN",
+            action: () => game.screens.go(minigameLoading(game, info, story)),
+          },
+          { label: "GIVE UP", action: () => story.finish(false) },
+        ]
+      : [
+          { label: "RESUME", action: () => game.screens.pop() },
+          { label: "START AGAIN", action: () => game.screens.go(minigameLoading(game, info)) },
+          { label: "OTHER GAMES", action: () => game.screens.go(minigameMenu(game)) },
+          { label: "MAIN MENU", action: () => game.screens.go(titleScreen(game, true)) },
+        ],
     () => game.screens.pop(),
   );
   return {

@@ -22,6 +22,7 @@ import { PAL } from "../ui/textures";
 import { raceScreen } from "./race";
 import { preview, tracksMenu } from "./tracks";
 import { sessionExtras } from "../adventure/run";
+import { crewOf } from "../adventure/progress";
 import { loadUnlocked } from "../app/unlocks";
 
 const TIPS = [
@@ -78,7 +79,12 @@ export function loadingScreen(game: Game): Screen {
           racer: game.selection.racer,
           trackId: entry.id,
           ghost: game.settings.general.ghost,
-          ...sessionExtras(game.adventure?.run, game.selection.racer, loadUnlocked()),
+          ...sessionExtras(
+            game.adventure?.run,
+            game.selection.racer,
+            game.adventure ? new Set(crewOf(game.adventure.save)) : loadUnlocked(),
+            (game.adventure?.save.racer as RacerId | undefined) ?? game.selection.racer,
+          ),
         })
         .then((s) => {
           if (!alive || token !== game.screens.token) return s.dispose();

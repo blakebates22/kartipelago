@@ -15,7 +15,7 @@
  */
 import { MINIGAMES, minigameById } from "./game/minigames";
 import { minigameLoading } from "./screens/minigames";
-import { adventureHub, sceneScreen } from "./screens/adventure";
+import { adventureFiles, sceneScreen } from "./screens/adventure";
 import { overworldLoading } from "./screens/overworld";
 import "./styles.css";
 import { tuning } from "./core/tuning";
@@ -205,14 +205,14 @@ function shotScreen(id: string): Screen {
 }
 
 if (PARAMS.get("shot")) screens.go(shotScreen(PARAMS.get("shot")!));
-// ?adventure (dev server only): straight to the Adventure world map.
-else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureHub(game));
+// ?adventure (dev server only): straight to the Adventure files.
+else if (import.meta.env.DEV && PARAMS.has("adventure")) screens.go(adventureFiles(game));
 // ?overworld[=region][&ruined] (dev server only): free roam in an overworld region (as it
 // is after its dragon's attack, with &ruined).
 // ?scene=<scene id> (dev server only): play one Adventure story scene (a staged one in
 // its 3D region), then the main menu. The story doesn't count it as seen.
 else if (import.meta.env.DEV && PARAMS.has("scene")) {
-  const id = PARAMS.get("scene") || "valley_catastrophe";
+  const id = PARAMS.get("scene") || "valley_hundredth";
   screens.go(sceneScreen(game, id, () => screens.go(titleScreen(game, true)), false));
 }
 // ?minigame=<balloons|eggs|crown|stars> (dev server only): straight into a mini-game.

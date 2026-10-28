@@ -76,3 +76,69 @@ export function creditsScreen(game: Game): Screen {
     },
   };
 }
+
+/**
+ * The credits rolled over the whole screen in Adventure: at the real ending, and at the
+ * fake one (Blake, Oct 27: the King stunned, the credits start to roll... and break off,
+ * the screen shaking and going red as he wakes). ENTER or ESC skips them.
+ */
+export function rollingCredits(game: Game, o: { fake: boolean; then: () => void }): Screen {
+  let t = 0;
+  let done = false;
+  /** When the fake credits break off. */
+  const BREAK = 9;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    o.then();
+  };
+  return {
+    id: "CREDITS",
+    seeThrough: false,
+    enter() {
+      game.ui.interactive = true;
+      void game.audio.music.play("fanfare", { fade: 0.5 });
+    },
+    frame(dt, actions) {
+      t += dt;
+      if (actions.some((a) => a === "back" || a === "confirm") && t > 0.5) {
+        game.sounds.back();
+        return finish();
+      }
+      if (o.fake && t > BREAK && t - dt <= BREAK) {
+        game.audio.music.stop(0.1);
+        game.sounds.gong(1);
+      }
+      if (o.fake ? t > BREAK + 3.5 : t > LINES.length * 1.0 + 16) finish();
+    },
+    draw(ui) {
+      ui.rect(0, 0, ui.W, ui.H, "#0c0a08");
+      const broke = o.fake && t > BREAK;
+      const k = broke ? Math.min(1, (t - BREAK) / 1.5) : 0;
+      const shake = broke ? (1 - k * 0.5) * 6 : 0;
+      const sx = Math.sin(t * 47) * shake;
+      const sy = Math.cos(t * 39) * shake;
+      // Rolls up from the bottom (stops dead when it breaks).
+      const at = broke ? BREAK : t;
+      const speed = game.settings.general.reduceMotion ? 0 : 16;
+      let y = ui.H + 10 - at * speed;
+      for (const [text, kind] of LINES) {
+        if (y > -12 && y < ui.H + 12) {
+          if (kind === "head")
+            ui.text(text, ui.W / 2 + sx, y + sy, { color: PAL.gold, align: "center" });
+          else if (kind === "text")
+            ui.text(text, ui.W / 2 + sx, y + sy, { color: PAL.cream, align: "center" });
+        }
+        y += 14;
+      }
+      if (o.fake && !broke)
+        ui.text("THE END", ui.W / 2, 20, { scale: 2, color: PAL.gold, align: "center" });
+      if (broke) {
+        ui.rect(0, 0, ui.W, ui.H, "#8a0a00", 0.25 + 0.45 * k);
+        if (t > BREAK + 1.2)
+          ui.text("...", ui.W / 2, ui.H / 2 - 6, { scale: 3, color: PAL.cream, align: "center" });
+      }
+      hints(ui, [["ENTER", "SKIP"]]);
+    },
+  };
+}

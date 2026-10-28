@@ -1,84 +1,80 @@
 /**
  * Adventure progress: what the player has done (a small saved record) and everything
- * worked out from it (which kingdoms are open, each one's phase, the next scene due).
- * Plain data and functions, no rendering; the rules read the story data (data.ts).
+ * worked out from it (each kingdom's phase on the way out and on the way back, how each
+ * region looks now, the next scene due). Plain data and functions, no rendering; the
+ * rules read the story data (data.ts). The approved story: claude/kartipelago-story.md.
+ *
+ * The way out (Acts I-III): a kingdom's four courses (the festival, then the gladiator
+ * games), its champion 1 on 1 (they join your crew), its underground mini-game as that
+ * champion (the smugglers' key: the tunnel out). Then the King's Games and the King.
+ * The way back (Acts IV-V): each ruined kingdom's four ruined courses, each won with all
+ * its shard pieces for a light shard; four shards make the new Pact Stone and force the
+ * dragon to race; it yields and the kingdom is restored. Then the Dragon Kingdom's four
+ * shards, the Heart Stone, and the King's last race.
  *
  * The record only ever gains things, so replaying a race never undoes the story, and a
- * map piece is earned only by a race that took all four coins AND was won: coins taken
- * in a lost race are not kept.
+ * light shard is won only by a race that took all its shard pieces AND was won.
  */
 import {
   DRAGON,
+  END_CREDITS,
+  FAKE_CREDITS,
   KINGDOMS,
+  RAGE,
   STORY_ORDER,
-  farewellSceneOf,
   kingdomById,
+  prevOf,
+  sceneOf,
   type AdventureCourse,
   type Kingdom,
   type KingdomId,
 } from "./data";
+import type { RacerId } from "../render/racers/designs";
 import { regionOfKingdom } from "../overworld/regions";
 
 export interface AdventureSave {
-  version: 1;
-  /** Championships won: every one of the kingdom's four courses won (Blake, Oct 26: in
-   * any order, no Trophy Race cup); the Dragon Kingdom's is its first visit. */
-  cups: Partial<Record<KingdomId, boolean>>;
-  /** Courses won in Adventure (1st place), by track id: the championships are made of
-   * these. */
+  version: 2;
+  /** Standard courses won in Adventure (1st place), by track id: the festival, the
+   * gladiator games and the King's Games are made of these (any order). */
   wins: Record<string, boolean>;
-  /** Map pieces earned, by the standard course's track id. */
-  pieces: Record<string, boolean>;
-  /** Demi-bosses beaten. */
-  bosses: Partial<Record<KingdomId, boolean>>;
-  /** The champions' challenges won (the 1v1 race round a kingdom's overworld region). */
+  /** The champions beaten 1 on 1 (they've joined your crew). */
   duels: Partial<Record<KingdomId, boolean>>;
-  /** Act V: return objectives done. */
-  returns: Partial<Record<KingdomId, boolean>>;
-  /** The overworld's puzzles solved ("<region>.<puzzle>": src/overworld/puzzles.ts). */
-  puzzles: Record<string, boolean>;
-  /** The kingdoms' hidden keys found (each opens its mini-game slot one day). */
-  keys: Partial<Record<KingdomId, boolean>>;
-  /** The regions' secrets found (treasure chests behind later tools' obstacles), by
-   * region id. */
-  secrets: Record<string, boolean>;
-  /** Where you were in the overworld (the region, and the gateway you last came out of):
-   * opening the file takes you back there. */
-  where?: { region: string; at?: string };
-  /** The second visit to the Dragon Kingdom: its ruined courses' cup. */
-  finalCup: boolean;
-  /** The scripted first race against the King (always lost), then the Chosen One's. */
-  kingLost: boolean;
+  /** The underground games won: the smugglers' key, the tunnel out of the kingdom. */
+  games: Partial<Record<KingdomId, boolean>>;
+  /** The race for the lands: the King beaten the first time (the Pact shatters). */
+  kingRace: boolean;
+  /** Light shards won, by the standard course's track id (raced on its ruin). */
+  shards: Record<string, boolean>;
+  /** Dragons beaten under the new Pact (each yields its kingdom). */
+  bosses: Partial<Record<KingdomId, boolean>>;
+  /** The King's last race, won. */
   kingWon: boolean;
   /** Scenes already shown (each plays once; the scene list can replay them). */
   seen: string[];
-  /** The file's racer: picked when the file starts; any of your crew can take over from
-   * the overworld's pause menu (Blake, Oct 26: never locked to one racer till the end).
-   * Missing in files from before files had one: picked on opening. */
+  /** The file's racer: picked when the file starts, "you" for the whole story. */
   racer?: string;
+  /** Who's driving now: the file's racer or one of the crew who joined (Your Crew). */
+  driver?: string;
+  /** Where you were in the overworld (the region, and the mark you last came out of). */
+  where?: { region: string; at?: string };
 }
 
 export const newSave = (): AdventureSave => ({
-  version: 1,
-  cups: {},
+  version: 2,
   wins: {},
-  pieces: {},
-  bosses: {},
   duels: {},
-  returns: {},
-  puzzles: {},
-  keys: {},
-  secrets: {},
-  finalCup: false,
-  kingLost: false,
+  games: {},
+  kingRace: false,
+  shards: {},
+  bosses: {},
   kingWon: false,
   seen: [],
 });
 
-/** Save files: three, like the cartridge games. File 1 keeps the original key, so a save
- * from before files existed opens as file 1. */
+/** Save files: three, like the cartridge games. A new key for the new story (the old
+ * story's files stay where they were, for the adventure-v1 backup). */
 export const SLOTS = 3;
-const KEY = "kartipelago.adventure.v1";
+const KEY = "kartipelago.adventure.v2";
 const slotKey = (slot: number) => (slot === 0 ? KEY : `${KEY}.${slot + 1}`);
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -94,20 +90,16 @@ const flags = (v: unknown): Record<string, boolean> => {
 export function sanitizeSave(raw: unknown): AdventureSave {
   const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const s = newSave();
-  s.cups = flags(r.cups);
   s.wins = flags(r.wins);
-  s.pieces = flags(r.pieces);
-  s.bosses = flags(r.bosses);
   s.duels = flags(r.duels);
-  s.returns = flags(r.returns);
-  s.puzzles = flags(r.puzzles);
-  s.keys = flags(r.keys);
-  s.secrets = flags(r.secrets);
-  s.finalCup = r.finalCup === true;
-  s.kingLost = r.kingLost === true;
+  s.games = flags(r.games);
+  s.shards = flags(r.shards);
+  s.bosses = flags(r.bosses);
+  s.kingRace = r.kingRace === true;
   s.kingWon = r.kingWon === true;
   s.seen = Array.isArray(r.seen) ? r.seen.filter((x): x is string => typeof x === "string") : [];
   if (typeof r.racer === "string") s.racer = r.racer;
+  if (typeof r.driver === "string") s.driver = r.driver;
   const w = r.where as Record<string, unknown> | undefined;
   if (w && typeof w === "object" && typeof w.region === "string")
     s.where = { region: w.region, ...(typeof w.at === "string" ? { at: w.at } : {}) };
@@ -148,108 +140,182 @@ export function eraseAdventure(storage: Pick<Store, "removeItem"> | undefined, s
 
 // ---------------------------------------------------------------- what follows from it
 
-export type KingdomPhase = "locked" | "championship" | "duel" | "coins" | "boss" | "done";
-export type DragonPhase =
+/** A kingdom's step. The way out: locked (not reached), games (its four courses), duel
+ * (its champion), underground (the mini-game), escaped (the key won). The way back:
+ * waiting (in ruins, not reached yet), shards (its four ruined courses), boss (the new
+ * stone's forced race), restored. */
+export type KingdomPhase =
   | "locked"
-  | "first" // its four standard courses, as a cup
-  | "return" // the sacrifice is over: back to the four kingdoms
-  | "final" // the Chosen One is back: its four ruined courses, as a cup
-  | "king" // the Dragon King (first the scripted race, then as the Chosen One)
-  | "done";
+  | "games"
+  | "duel"
+  | "underground"
+  | "escaped"
+  | "waiting"
+  | "shards"
+  | "boss"
+  | "restored";
+/** The Dragon Kingdom's step: locked, games (the King's Games), king (the race for the
+ * lands); after the Pact shatters: waiting (in ruins), shards, final (the King under the
+ * new Pact), done. */
+export type DragonPhase = "locked" | "games" | "king" | "waiting" | "shards" | "final" | "done";
 
-export const piecesOf = (s: AdventureSave, k: Kingdom) =>
-  k.courses.filter((c) => s.pieces[c.track]).length;
+export const coursesOf = (id: KingdomId): AdventureCourse[] =>
+  id === "dragon" ? DRAGON.courses : (kingdomById(id)?.courses ?? []);
+/** How many of a kingdom's four standard courses are won (the way out). */
+export const winsOf = (s: AdventureSave, id: KingdomId) =>
+  coursesOf(id).filter((c) => s.wins[c.track]).length;
+/** How many of its light shards are won (the way back). */
+export const shardsOf = (s: AdventureSave, id: KingdomId) =>
+  coursesOf(id).filter((c) => s.shards[c.track]).length;
 
-/** Open once the kingdom before it in the story has been freed (the valley always). */
-export function unlocked(s: AdventureSave, id: KingdomId): boolean {
-  const i = STORY_ORDER.indexOf(id);
-  if (i <= 0) return true;
-  return Boolean(s.bosses[STORY_ORDER[i - 1]!]);
+/** Reached on the way out: the valley always; each next one once the kingdom before it
+ * is escaped (its smugglers' key won). */
+export function reachedOut(s: AdventureSave, id: KingdomId): boolean {
+  const prev = prevOf(id);
+  return !prev || Boolean(s.games[prev]);
 }
-
-/** A kingdom with its overworld region built has the champion's challenge after its
- * championship (the overworld doc): the champion joins you when you win it. */
-export const hasDuel = (k: Kingdom) => Boolean(k.champion && regionOfKingdom(k.id));
-/** Has the kingdom's champion joined you (their challenge won, or the cup where there's
- * no challenge)? */
-export const championWon = (s: AdventureSave, k: Kingdom) =>
-  hasDuel(k) ? Boolean(s.duels[k.id]) : Boolean(s.cups[k.id]);
+/** Reached on the way back: the valley once the Pact has shattered; each next one once
+ * the dragon before it has yielded. */
+export function reachedBack(s: AdventureSave, id: KingdomId): boolean {
+  if (!s.kingRace) return false;
+  const prev = prevOf(id);
+  return !prev || Boolean(s.bosses[prev]);
+}
 
 export function kingdomPhase(s: AdventureSave, k: Kingdom): KingdomPhase {
-  if (!unlocked(s, k.id)) return "locked";
-  if (s.bosses[k.id]) return "done";
-  if (!s.cups[k.id]) return "championship";
-  if (hasDuel(k) && !s.duels[k.id]) return "duel";
-  if (piecesOf(s, k) < k.courses.length) return "coins";
-  if (!s.bosses[k.id]) return "boss";
-  return "done";
+  if (!s.kingRace) {
+    if (!reachedOut(s, k.id)) return "locked";
+    if (winsOf(s, k.id) < k.courses.length) return "games";
+    if (!s.duels[k.id]) return "duel";
+    if (!s.games[k.id]) return "underground";
+    return "escaped";
+  }
+  if (s.bosses[k.id]) return "restored";
+  if (!reachedBack(s, k.id)) return "waiting";
+  if (shardsOf(s, k.id) < k.courses.length) return "shards";
+  return "boss";
 }
-
-export const allReturned = (s: AdventureSave) => KINGDOMS.every((k) => s.returns[k.id]);
 
 export function dragonPhase(s: AdventureSave): DragonPhase {
-  if (!unlocked(s, "dragon")) return "locked";
-  if (!s.cups.dragon) return "first";
-  if (!allReturned(s)) return "return";
-  if (!s.finalCup) return "final";
-  if (!s.kingWon) return "king";
-  return "done";
+  if (!s.kingRace) {
+    if (!reachedOut(s, "dragon")) return "locked";
+    return winsOf(s, "dragon") < DRAGON.courses.length ? "games" : "king";
+  }
+  if (s.kingWon) return "done";
+  if (!reachedBack(s, "dragon")) return "waiting";
+  return shardsOf(s, "dragon") < DRAGON.courses.length ? "shards" : "final";
 }
 
-/** The tools in the bag: one from each freed kingdom. */
-export const toolsOf = (s: AdventureSave) =>
-  KINGDOMS.filter((k) => s.bosses[k.id] && k.tool).map((k) => k.tool!);
-/** Champions who've joined your crew: each one beaten in their kingdom's championship. */
-export const championsOf = (s: AdventureSave) =>
-  KINGDOMS.filter((k) => k.champion && championWon(s, k)).map((k) => k.champion!);
+/** How a kingdom's region looks now: free (the valley before Cinderjaw comes; the Dragon
+ * Kingdom before the Pact shatters), conquered (a dragon rules it), ruined (after the
+ * Rage; the Dragon Kingdom after the blast), restored (its dragon yielded). */
+export type RegionLook = "free" | "conquered" | "ruined" | "restored";
+export function regionLook(s: AdventureSave, id: KingdomId): RegionLook {
+  if (id === "dragon") return !s.kingRace ? "free" : s.kingWon ? "restored" : "ruined";
+  if (s.kingRace) return s.bosses[id] ? "restored" : "ruined";
+  return id === "valley" && !s.seen.includes(sceneOf("valley", "hundredth")) ? "free" : "conquered";
+}
 
-/** The return objective is open in a kingdom during Act V, until done. */
-export const returnOpen = (s: AdventureSave, k: Kingdom) =>
-  dragonPhase(s) === "return" && !s.returns[k.id];
+/** Your crew: the champions who've joined you (beaten 1 on 1), as their looks. A file
+ * raced as a champion: that champion's cousin joined in their place (you're already
+ * them, so they're not listed twice). */
+export const crewOf = (s: AdventureSave): RacerId[] =>
+  KINGDOMS.filter((k) => s.duels[k.id] && k.champion.look !== s.racer).map((k) => k.champion.look);
+/** Who can drive: your own racer, and the crew. */
+export const driversOf = (s: AdventureSave): RacerId[] => [
+  ...(s.racer ? [s.racer as RacerId] : []),
+  ...crewOf(s),
+];
 
-/** The ruined version a coin race runs: the ruin if it's built, else the standard course
- * standing in (`standIn`). `exists` says whether a track id is in the game. */
-export function coinCourse(c: AdventureCourse, exists: (id: string) => boolean) {
+/** The ruined version a shard race runs: the ruin if it's built, else the standard
+ * course standing in (`standIn`). `exists` says whether a track id is in the game. */
+export function shardCourse(c: AdventureCourse, exists: (id: string) => boolean) {
   const ruin = c.ruin && exists(c.ruin) ? c.ruin : undefined;
   return { track: ruin ?? c.track, standIn: !ruin };
 }
 
+// ---------------------------------------------------------------- the scenes
+
+/** The scenes that start a race at once (staged where you are, then the race): the
+ * champion's challenge, the race for the lands, a new stone's forced race, the King's
+ * last. The overworld plays them (screens/overworld.ts raceTrigger), not dueScene. */
+export const challengeScene = (k: KingdomId) => sceneOf(k, "challenge");
+export const BEFORE_KING = "dragon_before_king";
+export const newStoneScene = (k: KingdomId) => sceneOf(k, "new_stone");
+export const HEART = "dragon_heart";
+export const UNDERGROUND = (k: KingdomId) => sceneOf(k, "underground");
+
+/** The story's scenes in order, each with whether it's due yet (all but the race
+ * triggers and the underground's welcome, which play where they happen). `here`: is
+ * the file in that kingdom's region (a welcome waits until you've driven there). */
+export function storyScenes(
+  s: AdventureSave,
+  here: (id: KingdomId) => boolean = () => true,
+): [string, boolean][] {
+  const due: [string, boolean][] = [];
+  // Act I: the valley.
+  due.push([sceneOf("valley", "festival"), true]);
+  if (s.duels.valley)
+    due.push(
+      [sceneOf("valley", "prize"), true],
+      [sceneOf("valley", "hundredth"), true],
+      [sceneOf("valley", "way_out"), true],
+    );
+  if (s.games.valley)
+    due.push([sceneOf("valley", "key"), true], [sceneOf("valley", "stone"), true]);
+  // Act II: the conquered kingdoms.
+  for (const k of KINGDOMS.slice(1)) {
+    if (!reachedOut(s, k.id)) break;
+    due.push([sceneOf(k.id, "caught"), here(k.id)]);
+    if (winsOf(s, k.id) >= 2) due.push([sceneOf(k.id, "stands"), true]);
+    if (s.duels[k.id]) due.push([sceneOf(k.id, "prize"), true]);
+    if (s.games[k.id]) due.push([sceneOf(k.id, "key"), true], [sceneOf(k.id, "stone"), true]);
+  }
+  // Act III: the Dragon Kingdom; the Pact shatters, the fake ending, the Rage.
+  if (reachedOut(s, "dragon")) due.push(["dragon_challenger", here("dragon")]);
+  if (s.kingRace)
+    due.push(
+      ["dragon_return", true],
+      ["dragon_lumen", true],
+      ["dragon_horn", true],
+      [FAKE_CREDITS, true],
+      ...RAGE.map((r): [string, boolean] => [r, true]),
+    );
+  // Act IV: the ruins.
+  if (s.kingRace) {
+    due.push([sceneOf("valley", "rescue"), here("valley")]);
+    for (const k of KINGDOMS) if (s.bosses[k.id]) due.push([sceneOf(k.id, "yield"), true]);
+  }
+  // Act V.
+  if (s.bosses.beach) due.push(["dragon_court", here("dragon")]);
+  if (s.kingWon) due.push(["dragon_lumen_returns", true], ["ending", true], [END_CREDITS, true]);
+  return due;
+}
+
+/** The next scene due, if any (each once, in story order). */
+export function dueScene(
+  s: AdventureSave,
+  here: (id: KingdomId) => boolean = () => true,
+): string | undefined {
+  return storyScenes(s, here).find(([id, ok]) => ok && !s.seen.includes(id))?.[0];
+}
+
 /**
- * The next scene due, if any: the story's turns in order, each once. The hub plays it
- * before showing anything else.
+ * Where a scene puts you when it ends (the file's `where`, for the overworld to load):
+ * a kingdom's stone (the way out) through the smugglers' tunnel into the journey on;
+ * the Rage into the ruined valley; a dragon's Yield in front of the cave (the tunnel on)
+ * in its restored kingdom; the credits home to the valley.
  */
-export function dueScene(s: AdventureSave): string | undefined {
-  const due: [string, boolean][] = [["intro", true]];
-  // A kingdom's welcome waits until you've driven there (Blake, Oct 26: no hopping to the
-  // next world from a map): its region is where you are (the first is where you start).
-  const here = (id: KingdomId | "dragon", first: boolean) => {
-    const r = regionOfKingdom(id);
-    return !r || first || s.where?.region === r.id;
-  };
+export function afterScene(s: AdventureSave, scene: string) {
   for (const k of KINGDOMS) {
-    const ph = kingdomPhase(s, k);
-    if (ph === "locked") continue;
-    due.push([k.scenes.arrive, here(k.id, k === KINGDOMS[0])]);
-    // (The dragons strike at the champion's welcome: after the challenge, where there is one.)
-    if (championWon(s, k)) due.push([k.scenes.catastrophe, true]);
-    if (piecesOf(s, k) >= k.courses.length) due.push([k.scenes.mapDone, true]);
-    if (s.bosses[k.id]) due.push([k.scenes.bossWon, true]);
-    // (The farewell, on the way out: not for a file already in the next world.)
-    const next = k.next === "dragon" ? DRAGON : KINGDOMS.find((x) => x.id === k.next);
-    if (s.bosses[k.id] && k.champion && next && !s.seen.includes(next.scenes.arrive))
-      due.push([farewellSceneOf(k.id), true]);
+    if (scene === sceneOf(k.id, "stone")) s.where = { region: k.tunnel, at: "start" };
+    if (scene === sceneOf(k.id, "yield")) {
+      const r = regionOfKingdom(k.id);
+      if (r) s.where = { region: r.id, at: "cave:front" };
+    }
   }
-  const dp = dragonPhase(s);
-  if (dp !== "locked") {
-    due.push([DRAGON.scenes.arrive, here("dragon", false)]);
-    if (s.cups.dragon) due.push([DRAGON.scenes.sacrifice, true]);
-    if (allReturned(s)) due.push([DRAGON.scenes.resurrection, true]);
-    if (allReturned(s)) due.push([DRAGON.scenes.finalArrive, here("dragon", false)]);
-    if (s.finalCup) due.push([DRAGON.scenes.king, true]);
-    if (s.kingLost) due.push([DRAGON.scenes.kingLost, true]);
-    if (s.kingWon) due.push([DRAGON.scenes.ending, true]);
-  }
-  return due.find(([id, ok]) => ok && !s.seen.includes(id))?.[0];
+  if (scene === RAGE[RAGE.length - 1]) s.where = { region: "dinosaur_valley" };
+  if (scene === END_CREDITS) s.where = { region: "dinosaur_valley" };
 }
 
 export function markSeen(s: AdventureSave, scene: string) {
@@ -265,176 +331,145 @@ export interface Outcome {
   lines: string[];
 }
 
-/** The tracks of a kingdom's championship (the Dragon Kingdom's last one: its ruins). */
-export function championshipTracks(
-  id: KingdomId | "dragon_final",
-  exists: (id: string) => boolean = () => true,
-): string[] {
-  if (id === "dragon_final") return DRAGON.courses.map((c) => coinCourse(c, exists).track);
-  const courses = id === "dragon" ? DRAGON.courses : (kingdomById(id)?.courses ?? []);
-  return courses.map((c) => c.track);
-}
-
-/** How many of a championship's courses are won. */
-export const winsOf = (s: AdventureSave, id: KingdomId | "dragon_final") =>
-  championshipTracks(id).filter((t) => s.wins[t]).length;
-
-/** One of a championship's courses raced (Blake, Oct 26: win all four, in any order, and
- * the championship is yours): `position` is where you finished. */
+/** One of a kingdom's four standard courses raced (the festival, the gladiator games,
+ * the King's Games: win all four, in any order). `position` is where you finished. */
 export function raceFinished(
   s: AdventureSave,
-  id: KingdomId | "dragon_final",
+  id: KingdomId,
   track: string,
   position: number | undefined,
 ): Outcome {
-  const tracks = championshipTracks(id);
   if (position !== 1) return { progressed: false, lines: ["WIN IT TO COUNT IT. TRY AGAIN!"] };
   if (s.wins[track]) return { progressed: false, lines: ["WON AGAIN!"] };
   s.wins[track] = true;
-  const n = tracks.filter((t) => s.wins[t]).length;
-  if (n < tracks.length)
-    return {
-      progressed: true,
-      lines: [`${n} OF ${tracks.length} COURSES WON!`, "WIN THE REST, IN ANY ORDER."],
-    };
-  const out = cupFinished(s, id, 1);
-  return { ...out, lines: ["ALL FOUR COURSES WON!", ...out.lines.slice(1)] };
+  const n = winsOf(s, id);
+  const all = coursesOf(id).length;
+  if (n < all)
+    return { progressed: true, lines: [`${n} OF ${all} COURSES WON!`, "WIN THE REST, ANY ORDER."] };
+  return {
+    progressed: true,
+    lines: [
+      "ALL FOUR COURSES WON!",
+      id === "dragon" ? "THE KING IS WAITING." : "SOMEONE'S COMING...",
+    ],
+  };
 }
 
-/** A championship won (all its courses: raceFinished), or not: `place` 1 is won. */
-export function cupFinished(
-  s: AdventureSave,
-  id: KingdomId | "dragon_final",
-  place: number,
-): Outcome {
-  const won = place === 1;
-  if (id === "dragon_final") {
-    if (won && !s.finalCup) s.finalCup = true;
-    return won
-      ? { progressed: true, lines: ["THE LAST CHAMPIONSHIP IS YOURS.", "THE DRAGON KING AWAITS."] }
-      : { progressed: false, lines: ["WIN THE CUP TO FACE THE DRAGON KING."] };
-  }
-  if (won && !s.cups[id]) {
-    s.cups[id] = true;
-    const k = kingdomById(id);
-    const champ = k?.champion;
-    if (k && hasDuel(k))
-      return {
-        progressed: true,
-        lines: ["CHAMPIONS!", `${champ!.name.toUpperCase()} CHALLENGES YOU: 1 ON 1!`],
-      };
-    return {
-      progressed: true,
-      lines: ["CHAMPIONS!", ...(champ ? [`${champ.name.toUpperCase()} JOINS YOUR CREW!`] : [])],
-    };
-  }
-  return won
-    ? { progressed: false, lines: ["CHAMPIONS AGAIN!"] }
-    : { progressed: false, lines: ["WIN THE CUP TO GO ON. TRY AGAIN!"] };
-}
-
-/** A treasure map race finished. */
-export function coinRaceFinished(
-  s: AdventureSave,
-  track: string,
-  coins: { got: number; total: number },
-  position: number | undefined,
-): Outcome {
-  const all = coins.total > 0 && coins.got >= coins.total;
-  const won = position === 1;
-  if (all && won) {
-    if (s.pieces[track]) return { progressed: false, lines: ["YOU ALREADY HAVE THIS PIECE."] };
-    s.pieces[track] = true;
-    return { progressed: true, lines: ["A PIECE OF THE MAP!"] };
-  }
-  if (!all && !won)
-    return {
-      progressed: false,
-      lines: [`FRAGMENTS ${coins.got}/${coins.total} AND NOT 1ST.`, "GET ALL 4 AND WIN."],
-    };
-  if (!all)
-    return {
-      progressed: false,
-      lines: [`YOU WON, BUT FRAGMENTS ${coins.got}/${coins.total}.`, "GET ALL 4 AND WIN."],
-    };
-  return { progressed: false, lines: ["ALL 4 FRAGMENTS, BUT YOU HAVE TO WIN TOO."] };
-}
-
-/** The champion's challenge finished (the 1v1 round the kingdom's region). */
+/** The champion's challenge finished (1 on 1 round the kingdom's region). */
 export function duelFinished(
   s: AdventureSave,
   id: KingdomId,
   position: number | undefined,
+  cousin = false,
 ): Outcome {
-  const champ = kingdomById(id)!.champion!.name.toUpperCase();
+  const c = kingdomById(id)!.champion.name.toUpperCase();
+  const champ = cousin ? `${c}'S COUSIN` : c;
   if (position !== 1) return { progressed: false, lines: [`${champ} WINS THIS TIME. TRY AGAIN!`] };
   if (s.duels[id]) return { progressed: false, lines: [`${champ} BEATEN AGAIN!`] };
   s.duels[id] = true;
-  return { progressed: true, lines: [`${champ} IS BEATEN!`, `${champ} JOINS YOUR CREW!`] };
+  return { progressed: true, lines: [`${champ} IS BEATEN!`] };
 }
 
-export function bossFinished(
+/** The underground games' mini-game finished: won, the smugglers' key. */
+export function gamesFinished(s: AdventureSave, id: KingdomId, won: boolean): Outcome {
+  if (!won) return { progressed: false, lines: ["NO KEY FOR LOSERS. TRY AGAIN!"] };
+  if (s.games[id]) return { progressed: false, lines: ["WON AGAIN!"] };
+  s.games[id] = true;
+  return { progressed: true, lines: ["THE SMUGGLERS' KEY!"] };
+}
+
+/** The race for the lands (the King, the first time). */
+export function kingRaceFinished(s: AdventureSave, position: number | undefined): Outcome {
+  if (position !== 1) return { progressed: false, lines: ["THE KING WINS THIS TIME. TRY AGAIN!"] };
+  if (s.kingRace) return { progressed: false, lines: ["THE KING IS BEATEN AGAIN!"] };
+  s.kingRace = true;
+  return { progressed: true, lines: ["THE KING IS BEATEN!", "THE LANDS ARE YOURS..."] };
+}
+
+/** A shard race on a ruined course: all its shard pieces AND 1st, its light shard. */
+export function shardRaceFinished(
   s: AdventureSave,
-  id: KingdomId,
+  track: string,
+  pieces: { got: number; total: number },
   position: number | undefined,
 ): Outcome {
-  const k = kingdomById(id)!;
-  if (position !== 1)
-    return { progressed: false, lines: [`${k.boss!.name.toUpperCase()} WINS THIS TIME.`] };
-  if (s.bosses[id])
-    return { progressed: false, lines: [`${k.boss!.name.toUpperCase()} BEATEN AGAIN!`] };
-  s.bosses[id] = true;
-  const lines = [
-    `${k.boss!.name.toUpperCase()} IS BEATEN!`,
-    `YOU GET THE ${k.tool!.name.toUpperCase()}.`,
-  ];
-  return { progressed: true, lines };
+  const all = pieces.total > 0 && pieces.got >= pieces.total;
+  const won = position === 1;
+  if (all && won) {
+    if (s.shards[track]) return { progressed: false, lines: ["YOU ALREADY HAVE THIS SHARD."] };
+    s.shards[track] = true;
+    return { progressed: true, lines: ["A LIGHT SHARD!"] };
+  }
+  if (!all && !won)
+    return {
+      progressed: false,
+      lines: [`SHARD PIECES ${pieces.got}/${pieces.total} AND NOT 1ST.`, "GET THEM ALL AND WIN."],
+    };
+  if (!all)
+    return {
+      progressed: false,
+      lines: [`YOU WON, BUT SHARD PIECES ${pieces.got}/${pieces.total}.`, "GET THEM ALL AND WIN."],
+    };
+  return { progressed: false, lines: ["EVERY PIECE, BUT YOU HAVE TO WIN TOO."] };
 }
 
-/** The Dragon King's races: the first is scripted (lost whatever happens), the second
- * is raced as the Chosen One and has to be won. */
-export function kingFinished(s: AdventureSave, position: number | undefined): Outcome {
-  if (!s.kingLost) {
-    s.kingLost = true;
-    return { progressed: true, lines: ["NOBODY CAN CATCH THE DRAGON KING..."] };
-  }
+/** A dragon's race under its new Pact Stone. */
+export function bossFinished(s: AdventureSave, id: KingdomId, position: number | undefined) {
+  const name = kingdomById(id)!.boss.name.toUpperCase();
+  if (position !== 1) return { progressed: false, lines: [`${name} WINS THIS TIME. TRY AGAIN!`] };
+  if (s.bosses[id]) return { progressed: false, lines: [`${name} BEATEN AGAIN!`] };
+  s.bosses[id] = true;
+  return { progressed: true, lines: [`${name} IS BEATEN!`, "BY THE PACT, HE MUST YIELD."] };
+}
+
+/** The King's last race, under the whole new Pact. */
+export function finalFinished(s: AdventureSave, position: number | undefined): Outcome {
   if (position !== 1) return { progressed: false, lines: ["THE KING HOLDS ON. TRY AGAIN!"] };
   const first = !s.kingWon;
   s.kingWon = true;
-  return { progressed: first, lines: ["THE DRAGON KING IS BEATEN!"] };
+  return { progressed: first, lines: ["THE DRAGON KING IS BEATEN, FAIRLY!"] };
 }
 
-export function completeReturn(s: AdventureSave, id: KingdomId): Outcome {
-  if (s.returns[id]) return { progressed: false, lines: [] };
-  s.returns[id] = true;
-  return { progressed: true, lines: [] };
-}
-
-/** Where the story stands, in a line (the hub's banner). */
+/** Where the story stands, in a line (the overworld's goal under the region's name, the
+ * file chooser). */
 export function objective(s: AdventureSave): string {
   for (const k of KINGDOMS) {
     const ph = kingdomPhase(s, k);
-    if (ph === "championship")
-      return `${k.name.toUpperCase()}: WIN ITS 4 COURSES (${winsOf(s, k.id)}/4 WON)`;
-    if (ph === "duel")
-      return `${k.name.toUpperCase()}: RACE ${k.champion!.name.toUpperCase()}, 1 ON 1`;
-    if (ph === "coins") return `${k.name.toUpperCase()}: FIND THE MAP (${piecesOf(s, k)}/4 PIECES)`;
-    if (ph === "boss") return `${k.name.toUpperCase()}: RACE ${k.boss!.name.toUpperCase()}`;
+    const name = k.name.toUpperCase();
+    const champ = k.champion.name.toUpperCase();
+    if (ph === "games") return `${name}: WIN ITS 4 COURSES (${winsOf(s, k.id)}/4 WON)`;
+    if (ph === "duel") return `${name}: BEAT ${champ}, 1 ON 1`;
+    if (ph === "underground") return `${name}: THE UNDERGROUND GAMES (${k.cave})`;
+    if (ph === "shards") return `${name}: WIN ITS LIGHT SHARDS (${shardsOf(s, k.id)}/4)`;
+    if (ph === "boss") return `${name}: RACE ${k.boss.name.toUpperCase()}`;
   }
+  const kd = KINGDOMS.find((k) => kingdomPhase(s, k) === "escaped");
   switch (dragonPhase(s)) {
-    case "first":
-      return `DRAGON KINGDOM: WIN ITS 4 COURSES (${winsOf(s, "dragon")}/4 WON)`;
-    case "return": {
-      const left = KINGDOMS.filter((k) => !s.returns[k.id]).length;
-      return `RETURN HOME: ${left} TASK${left === 1 ? "" : "S"} LEFT IN THE FOUR KINGDOMS`;
-    }
-    case "final":
-      return `DRAGON KINGDOM: WIN ITS 4 RUINED COURSES (${winsOf(s, "dragon_final")}/4 WON)`;
+    case "locked":
+      return kd ? `ON THROUGH THE SMUGGLERS' TUNNEL` : "";
+    case "games":
+      return `DRAGON KINGDOM: THE KING'S GAMES (${winsOf(s, "dragon")}/4 WON)`;
     case "king":
-      return "DRAGON KINGDOM: RACE THE DRAGON KING";
+      return "DRAGON KINGDOM: RACE THE KING FOR THE LANDS";
+    case "shards":
+      return `DRAGON KINGDOM: THE LAST LIGHT SHARDS (${shardsOf(s, "dragon")}/4)`;
+    case "final":
+      return "DRAGON KINGDOM: RACE THE KING, UNDER THE NEW PACT";
     case "done":
-      return "THE KINGDOMS ARE FREE!";
+      return "THE KINGDOMS ARE RESTORED!";
     default:
-      return "";
+      return KINGDOMS.some((k) => kingdomPhase(s, k) === "restored")
+        ? "ON THROUGH THE SMUGGLERS' TUNNEL"
+        : "";
   }
+}
+
+/** The kingdom the story is in now (where the next thing to do is). */
+export function storyKingdom(s: AdventureSave): KingdomId {
+  for (const id of STORY_ORDER) {
+    if (id === "dragon") return "dragon";
+    const ph = kingdomPhase(s, kingdomById(id)!);
+    if (ph !== "escaped" && ph !== "restored" && ph !== "locked" && ph !== "waiting") return id;
+  }
+  return "dragon";
 }

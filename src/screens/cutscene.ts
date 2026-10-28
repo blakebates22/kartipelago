@@ -17,6 +17,7 @@ import { Racer as RacerView } from "../render/racers/racer";
 import { DRAGON_PALETTES } from "../render/racers/roster/dragon";
 import type { RacerId } from "../render/racers/designs";
 import { createVillagerView, type VillagerView } from "../render/villager";
+import { createPactStoneView, createRobedView, type PropView } from "../render/storyProps";
 import {
   createDragonFire,
   createDragonView,
@@ -58,6 +59,8 @@ interface Actor {
   };
   racer?: RacerView;
   villager?: VillagerView;
+  prop?: PropView;
+  shown: boolean;
   dragon?: DragonView;
   fire?: DragonFireView;
 }
@@ -68,6 +71,8 @@ export function stagedSceneScreen(
   title: string,
   beats: Beat[],
   finish: () => void,
+  /** The file's racer: "you" in the scene (and a champion who's you: their cousin). */
+  me: RacerId = game.selection.racer,
 ): Screen {
   const region = regionById(staged.region)!;
   const pkg = (staged.ruined && region.ruinPackageId) || region.packageId;
@@ -83,8 +88,31 @@ export function stagedSceneScreen(
   const groundAt = (x: number, z: number) => land?.at(x, z, 200).height ?? 0;
   const beatOf = (k: number) => staged.beats[Math.min(k, staged.beats.length - 1)];
 
+  const show = (a: Actor, on: boolean) => {
+    a.shown = on;
+    if (a.racer) {
+      a.racer.root.visible = on;
+      a.racer.shadow.visible = on;
+    }
+    if (a.villager) a.villager.root.visible = on;
+    if (a.prop) a.prop.root.visible = on;
+    if (a.dragon) a.dragon.root.visible = on;
+    if (a.fire && !on) {
+      a.fire.dispose();
+      a.fire = undefined;
+    }
+  };
   const startBeat = (k: number) => {
     const b = staged.beats[k];
+    for (const n of b?.fx?.show ?? []) {
+      const a = actors.get(n);
+      if (a) show(a, true);
+    }
+    for (const n of b?.fx?.hide ?? []) {
+      const a = actors.get(n);
+      if (a) show(a, false);
+    }
+    if (b?.fx?.horn) game.sounds.gong(3);
     for (const m of b?.moves ?? []) {
       const a = actors.get(m.actor);
       if (!a) continue;
@@ -114,6 +142,7 @@ export function stagedSceneScreen(
 
   const build = (s: Session) => {
     land = s.makeGround();
+    s.showHud(false);
     // Your kart isn't driven here: you're one of the cast.
     const you = s.entrants[0]!;
     you.mesh.visible = false;
@@ -126,15 +155,20 @@ export function stagedSceneScreen(
         y: groundAt(x, z),
         heading: spec.heading,
         up: spec.kind === "dragon" ? (spec.y ?? 0) : 0,
+        shown: true,
       };
       if (spec.kind === "racer") {
-        const look = (spec.look === "you" ? game.selection.racer : spec.look) as RacerId;
-        // (A champion who's also the racer you drive: their cousin, in the other paint.)
-        const cousin = spec.look !== "you" && look === game.selection.racer;
+        const look = (spec.look === "you" ? me : spec.look) as RacerId;
+        // (A champion who's also your file's racer: their cousin, in the other paint.)
+        const cousin = spec.look !== "you" && look === me;
         a.racer = new RacerView(look, { seed: name.length * 7, alt: cousin });
         s.root.add(a.racer.root, a.racer.shadow);
       } else if (spec.kind === "villager") {
         a.villager = createVillagerView(s.root, spec.folk, spec.seed, spec.species);
+      } else if (spec.kind === "robed") {
+        a.prop = createRobedView(s.root);
+      } else if (spec.kind === "stone") {
+        a.prop = createPactStoneView(s.root, spec.state, spec.big);
       } else {
         a.dragon = createDragonView(
           s.root,
@@ -146,6 +180,7 @@ export function stagedSceneScreen(
         // (Its fire's made where it is when it breathes: it may fly in first.)
       }
       actors.set(name, a);
+      if (spec.hidden) show(a, false);
     }
     void DRAGON_PALETTES;
     startBeat(0);
@@ -174,7 +209,8 @@ export function stagedSceneScreen(
         a.racer.placeShadow(a.x, a.y, a.z, a.heading, 0);
       }
       a.villager?.update(a.x, a.y, a.z, a.heading, a.from ? 1 : 0, clock);
-      if (a.dragon) {
+      a.prop?.update(a.x, a.y, a.z, a.heading, clock, a.from ? 1 : 0);
+      if (a.dragon && a.shown) {
         a.dragon.root.position.set(a.x, a.y + a.up, a.z);
         a.dragon.root.rotation.y = a.heading;
         const name = [...actors.entries()].find(([, v]) => v === a)?.[0];
@@ -256,6 +292,7 @@ export function stagedSceneScreen(
       alive = false;
       for (const a of actors.values()) {
         a.villager?.dispose();
+        a.prop?.dispose();
         a.dragon?.dispose();
         a.fire?.dispose();
         if (a.racer && session) a.racer.dispose(session.root);
@@ -321,6 +358,8 @@ export function stagedSceneScreen(
       if (b?.fx?.fire && t > 0.2)
         ui.rect(0, 0, ui.W, ui.H, "#ff6a10", 0.12 + 0.06 * Math.sin(clock * 9));
       if (b?.fx?.flash && t < 0.6) ui.rect(0, 0, ui.W, ui.H, "#fff2d0", 1 - t / 0.6);
+      // The blackout: everything goes dark (a moment of the picture first).
+      if (b?.fx?.black) ui.rect(0, 0, ui.W, ui.H, "#000000", Math.min(1, t / 1.2));
       // Fading in from black at the start.
       if (i === 0 && t < 1) ui.rect(0, 0, ui.W, ui.H, "#000000", 1 - t);
       // Letterbox.
@@ -337,15 +376,7 @@ export function stagedSceneScreen(
       const who = beat.who ? CAST[beat.who] : undefined;
       let tx = bx + 10;
       if (who) {
-        portrait(
-          ui,
-          pp,
-          who,
-          beat.who === "you" ? game.selection.racer : who.look,
-          bx + 6,
-          by - 22,
-          ui.time,
-        );
+        portrait(ui, pp, who, beat.who === "you" ? me : who.look, bx + 6, by - 22, ui.time);
         tx = bx + 64;
         ui.text((beat.who === "you" ? "YOU" : who.name).toUpperCase(), tx, by + 6, {
           color: "#8a2a1a",

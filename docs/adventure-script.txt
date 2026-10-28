@@ -1,0 +1,1377 @@
+KARTIPELAGO: THE SHATTERED PACT
+The Adventure mode script: every cutscene, in the order it plays.
+
+Made from the game's own scene data (src/adventure/scenes.ts and
+staged.ts): change a line there and this script changes with it. Lines
+are as they appear on screen. Captions are read by the narrator. Stage
+directions, in brackets, come from the 3D staging of each scene.
+
+CAST
+  YOU             Your racer (Tiko, Brakka, Pebble or Zephyr; a champion's cousin plays a champion's part).
+  ELDER MOSSBACK  Keeper of the Pact and of the Founders' Horn. Kind, old, a secret on his shoulders.
+  LUMEN           A hooded figure in a long robe, his wings hidden under it: a dragon hatchling.
+  REX             Dinosaur Valley's champion. A cocky lone racer, no crew. Your first.
+  BRACHIO         The Snow Kingdom's champion, Rimefang's captive.
+  STEGO           Desert World's champion, Scorchwind's star act.
+  RAPTOR          Tropic Isles' champion, Tidewyrm's 'treasure'.
+  CINDERJAW       Dragon of the valley: the brute. All fire, no patience.
+  RIMEFANG        Dragon of the snow: the lawyer. Cold, precise, never breaks a rule.
+  SCORCHWIND      Dragon of the desert: the showman. Vain, theatrical.
+  TIDEWYRM        Dragon of the isles: the trickster. Greedy, sly, charming.
+  KING PYRRHAX    The Dragon King. He lost the First Race young, and remembers.
+  SKETCHY GUARD   The smugglers' guards at the underground games.
+  THE CROWD       The Tropic Isles' captives and townsfolk.
+
+
+========================================================================
+THE OPENING
+========================================================================
+
+
+SCENE 1. THE FIRST RACE   [first_race]
+------------------------------------------------------------------------
+WHEN: A new file is started, before you pick your racer.
+WHERE: A storybook page, inked pictures turning with each line.
+
+    [Dragons sweep across the page.]
+    NARRATOR (CAPTION)
+        LONG AGO, THE DRAGONS AND THE FIRST RACING CREWS WENT TO WAR
+        OVER THE LANDS.
+
+    NARRATOR (CAPTION)
+        THE WAR BURNED FOR YEARS. AT LAST BOTH SIDES AGREED TO SETTLE IT
+        WITH ONE RACE: THE WINNER WOULD KEEP THE LAND.
+
+    [A horn blasts.]
+    NARRATOR (CAPTION)
+        THE DRAGONS FLEW FASTER THAN ANYTHING ALIVE. BUT AT THE LAST
+        TURN, A HORN SOUNDED...
+
+    NARRATOR (CAPTION)
+        ...AND THE CREWS CROSSED THE LINE FIRST.
+
+    [Golden light.]
+    NARRATOR (CAPTION)
+        THE DRAGONS SWORE THE DRAGON PACT. ITS FIVE STONES WERE RAISED:
+        ONE IN EACH KINGDOM, AND THE HEART STONE IN THEIR OWN.
+
+    NARRATOR (CAPTION)
+        THE DRAGONS WITHDREW BEHIND THE BORDER. AND THE PACT SAID ONE
+        THING MORE:
+
+    NARRATOR (CAPTION)
+        EVERY HUNDRED YEARS, A CHAMPION GOES TO THE KING.
+
+
+========================================================================
+ACT I: DINOSAUR VALLEY
+========================================================================
+
+
+SCENE 2. THE SUMMER FESTIVAL   [valley_festival]
+------------------------------------------------------------------------
+WHEN: Your racer picked: the first thing you see in Dinosaur Valley.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: Elder Mossback, Lumen, you, townsfolk.
+
+    NARRATOR (CAPTION)
+        DINOSAUR VALLEY. THE SUMMER FESTIVAL IS IN FULL SWING, AND EVERY
+        CREW IN THE VALLEY IS HERE.
+
+    ELDER MOSSBACK
+        A NEW FACE! AND NO CREW COLOURS? THEN YOU RACE FOR YOURSELF.
+        WELCOME, STRANGER.
+
+    ELDER MOSSBACK
+        FOUR COURSES, ONE FESTIVAL CUP. WIN ALL FOUR AND THE WHOLE
+        VALLEY WILL KNOW YOUR NAME.
+
+    LUMEN
+        ELDER, TELL IT AGAIN. THE FIRST RACE. WHAT DID THE HORN SOUND
+        FOR?
+
+    ELDER MOSSBACK
+        NOT NOW, LUMEN. IT'S A FESTIVAL STORY, THAT'S ALL. GO AND WATCH
+        THE RACES.
+
+    [Lumen moves.]
+    LUMEN
+        ...IT'S ALWAYS JUST A STORY.
+
+
+SCENE 3. THE LONE RACER   [valley_challenge]
+------------------------------------------------------------------------
+WHEN: Coming out of the gateway of the last of Dinosaur Valley's four
+courses; the 1 on 1 starts straight after.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: you, Rex.
+
+    [Rex drives.]
+    REX
+        SO YOU'RE THE ONE WHO TOOK ALL FOUR. NOT BAD, FOR A NOBODY WITH
+        NO CREW.
+
+    REX
+        I DON'T HAVE A CREW EITHER. NEVER NEEDED ONE. I'M REX, AND I'M
+        THE BEST IN THIS VALLEY.
+
+    REX
+        YOU WANT TO BE THE BEST? BEAT ME. ONCE ROUND THE VALLEY, YOU AND
+        ME. RIGHT NOW!
+
+
+SCENE 4. A CREW OF TWO   [valley_prize]
+------------------------------------------------------------------------
+WHEN: Rex beaten 1 on 1.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: Rex, you, Elder Mossback, townsfolk.
+
+    REX
+        ...YOU ACTUALLY BEAT ME. NOBODY BEATS ME.
+
+    REX
+        FINE. A LONER WITH NO CREW, AND NOW THERE'S TWO OF US. I SUPPOSE
+        THAT MAKES US A CREW.
+
+    NARRATOR (CAPTION)
+        REX JOINS YOUR CREW! (YOU CAN RACE AS REX IN EVERY MODE NOW.)
+
+    ELDER MOSSBACK
+        A NEW CREW, BORN ON FESTIVAL DAY! NOW THAT'S A GOOD OMEN.
+
+
+SCENE 5. THE HUNDREDTH SUMMER   [valley_hundredth]
+------------------------------------------------------------------------
+WHEN: Straight after A Crew of Two, at sunset.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw.
+
+    ELDER MOSSBACK
+        FESTIVAL DAY... THE HUNDREDTH SUMMER. A HUNDRED SUMMERS SINCE
+        THE LAST CHAMPION WENT TO THE KING.
+
+    ELDER MOSSBACK
+        NO. NO, NO. SOMEBODY HAD TO GO. DID ANYONE GO? DID ANYONE EVEN
+        REMEMBER?
+
+    [Cinderjaw flies overhead.]
+    NARRATOR (CAPTION)
+        A SHADOW CROSSES THE SUN.
+
+    [Cinderjaw comes down to land. Cinderjaw rears up.]
+    CINDERJAW
+        NOBODY CAME. A HUNDRED YEARS, AND NOT ONE CHAMPION. BY THE PACT,
+        THIS VALLEY IS MINE.
+
+    CINDERJAW
+        THE LAW SAYS I RULE IT, NOT BURN IT. FOR NOW.
+
+    [Cinderjaw rears up. The ground shakes.]
+    CINDERJAW
+        SEAL THE BORDERS! ROUND THEM UP! THE RACES BELONG TO ME NOW.
+
+    NARRATOR (CAPTION)
+        CINDERJAW'S GUARDS SPREAD THROUGH THE VALLEY.
+
+
+SCENE 6. ONE WAY OUT   [valley_way_out]
+------------------------------------------------------------------------
+WHEN: Straight after The Hundredth Summer.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: Elder Mossback, you, Rex.
+
+    ELDER MOSSBACK
+        THIS IS MY FAULT. I KEPT ALL THE OLD STORIES, AND I FORGOT THE
+        ONE THAT MATTERED.
+
+    ELDER MOSSBACK
+        BUT THE PACT CUTS BOTH WAYS. A CHAMPION WHO BEATS THE KING WINS
+        THE LANDS BACK.
+
+    YOU
+        THEN WE GO TO THE KING.
+
+    ELDER MOSSBACK
+        WITH THE BORDERS SEALED? A SEALED KINGDOM HAS ONE WAY OUT: THE
+        SMUGGLERS' TUNNEL.
+
+    ELDER MOSSBACK
+        THE SMUGGLERS RUN THE UNDERGROUND GAMES, AND THEY ONLY LET IN
+        RACERS THEY RESPECT.
+
+    REX
+        LUCKY FOR YOU, THEY RESPECT ME. THEIR CAVE'S UP ON EMBER'S LOWER
+        SLOPE. LET ME DRIVE.
+
+    NARRATOR (CAPTION)
+        (SWITCH TO REX: PAUSE, THEN YOUR CREW. THEN FIND THE LOOKOUT
+        CAVE.)
+
+
+SCENE 7. THE UNDERGROUND   [valley_underground]
+------------------------------------------------------------------------
+WHEN: Driving into THE LOOKOUT CAVE as Rex; the mini-game starts
+straight after.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: you, Rex, Sketchy Guard.
+
+    NARRATOR (CAPTION)
+        A CAVE BEHIND A ROCKFALL, AND TWO GUARDS WHO LOOK LIKE THEY'D
+        SELL THEIR OWN TAILS.
+
+    SKETCHY GUARD
+        WELL, WELL. REX. WE HEARD YOU LOST TODAY.
+
+    REX
+        TO THIS ONE. THAT'S WHY THEY'RE WITH ME. WE WANT IN, AND WE WANT
+        THE TUNNEL.
+
+    SKETCHY GUARD
+        THE TUNNEL'S FOR WINNERS. WIN OUR GAME, AND IT'S YOURS.
+
+
+SCENE 8. THE SMUGGLERS' KEY   [valley_key]
+------------------------------------------------------------------------
+WHEN: The underground games' mini-game won.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: you, Rex, Sketchy Guard, Elder Mossback.
+
+    SKETCHY GUARD
+        HUH. YOU ACTUALLY WON. A DEAL'S A DEAL.
+
+    SKETCHY GUARD
+        HERE: THE SMUGGLERS' KEY. THE TUNNEL COMES OUT IN THE BURNT
+        GORGE, PAST CINDERJAW'S BORDER.
+
+    ELDER MOSSBACK
+        WHERE IS LUMEN? HE WAS RIGHT BEHIND US.
+
+    ELDER MOSSBACK
+        ...HE'LL FIND US. HE ALWAYS DOES.
+
+
+SCENE 9. WHO'S BEEN AT THE STONE?   [valley_stone]
+------------------------------------------------------------------------
+WHEN: Straight after the key; then you're through the smugglers' tunnel.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: a Pact Stone, Cinderjaw.
+
+    NARRATOR (CAPTION)
+        AT THE VALLEY'S PACT STONE, IN THE DARK...
+
+    [Cinderjaw rears up.]
+    CINDERJAW
+        A CRACK. RIGHT THROUGH THE OLD STONE. WHO'S BEEN AT IT?
+
+    CINDERJAW
+        SOMEBODY IN MY VALLEY IS PLAYING GAMES. I DON'T LIKE GAMES I
+        DIDN'T START.
+
+
+========================================================================
+ACT II: THE CONQUERED KINGDOMS
+========================================================================
+
+
+SCENE 10. CAUGHT   [snow_caught]
+------------------------------------------------------------------------
+WHEN: Arriving in Snow Kingdom out of the smugglers' tunnel.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: you, Sketchy Guard, townsfolk, Rimefang, Lumen.
+
+    [You drives.]
+    NARRATOR (CAPTION)
+        THE SNOW KINGDOM. YOU COME OUT OF THE GORGE STRAIGHT INTO A WALL
+        OF GUARDS.
+
+    [Rimefang comes down to land.]
+    RIMEFANG
+        TRAVELLERS. FROM A SEALED KINGDOM, NO LESS. HOW IRREGULAR.
+
+    [Rimefang rears up.]
+    RIMEFANG
+        THE LAW IS CLEAR. WE RULE, SO THE GAMES GO ON, AND EVERY
+        STRANGER IS A CAPTIVE. YOU WILL RACE.
+
+    NARRATOR (CAPTION)
+        IN THE CROWD, A HOODED FIGURE WATCHES. THEN IT IS GONE.
+
+
+SCENE 11. IN THE STANDS   [snow_stands]
+------------------------------------------------------------------------
+WHEN: Two of Snow Kingdom's four courses won.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: Rimefang, Sketchy Guard, you.
+
+    RIMEFANG
+        THE CAPTIVES RACE WELL. BUT THAT IS NOT WHAT TROUBLES ME.
+
+    RIMEFANG
+        SOMEONE HAS BEEN READING WHERE THEY SHOULDN'T. FIND OUT WHO.
+
+    SKETCHY GUARD
+        YES, LORD RIMEFANG.
+
+
+SCENE 12. THE PRIZED RACER   [snow_challenge]
+------------------------------------------------------------------------
+WHEN: Coming out of the gateway of the last of Snow Kingdom's four
+courses; the 1 on 1 starts straight after.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: you, Brachio, Rimefang.
+
+    [Rimefang rears up.]
+    RIMEFANG
+        FOUR WINS. THEN THE LAW ALLOWS YOU ONE MORE RACE: AGAINST MY
+        CHAMPION.
+
+    [Brachio drives.]
+    BRACHIO
+        I DON'T WANT TO DO THIS. BUT IF I LOSE ON PURPOSE, HE'LL KNOW.
+
+    BRACHIO
+        SO I WON'T. ONCE ROUND THE KINGDOM. GIVE IT EVERYTHING.
+
+
+SCENE 13. THE WINNER'S PRIZE   [snow_prize]
+------------------------------------------------------------------------
+WHEN: Brachio beaten 1 on 1.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: you, Brachio, Rimefang, townsfolk, The Crowd.
+
+    NARRATOR (CAPTION)
+        BY THE PACT, A RACER WHO WINS A DRAGON'S GAMES WINS THEIR CREW'S
+        FREEDOM.
+
+    RIMEFANG
+        AND YOU HAVE WON. YOU AND BRACHIO ARE FREE, AS THE LAW REQUIRES.
+
+    RIMEFANG
+        FREE FROM MY GAMES. NOT FROM MY KINGDOM. THE BORDER STAYS SHUT.
+        THE LAW IS SATISFIED.
+
+    BRACHIO
+        ...HE'S RIGHT, AND HE KNOWS IT. BUT A FREE RACER CAN GO WHERE A
+        CAPTIVE CAN'T.
+
+    BRACHIO
+        THE UNDERGROUND. THE SMUGGLERS HERE KNOW MY NAME. I'M WITH YOU.
+
+    NARRATOR (CAPTION)
+        BRACHIO JOINS YOUR CREW! (SWITCH TO BRACHIO TO GET PAST THE ICE
+        CAVE'S GUARDS.)
+
+
+SCENE 14. THE UNDERGROUND   [snow_underground]
+------------------------------------------------------------------------
+WHEN: Driving into THE ICE CAVE as Brachio; the mini-game starts
+straight after.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: you, Brachio, Sketchy Guard.
+
+    NARRATOR (CAPTION)
+        A CAVE IN THE ICE. THE GUARDS HERE ARE BIGGER, AND SKETCHIER.
+
+    SKETCHY GUARD
+        BRACHIO! RIMEFANG LET YOU GO? HE NEVER LETS ANYTHING GO.
+
+    BRACHIO
+        HE DIDN'T. THE LAW DID. WE WANT THE TUNNEL.
+
+    SKETCHY GUARD
+        WIN THE GAME, GET THE KEY. SAME AS ALWAYS.
+
+
+SCENE 15. THE FROZEN PASS   [snow_key]
+------------------------------------------------------------------------
+WHEN: The underground games' mini-game won.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: you, Brachio, Sketchy Guard, Elder Mossback, Rex.
+
+    SKETCHY GUARD
+        A WIN'S A WIN. HERE'S THE KEY: THE TUNNEL COMES OUT ON THE
+        FROZEN PASS.
+
+    YOU
+        HAS ANYONE SEEN A HOODED KID? ABOUT THIS TALL?
+
+    SKETCHY GUARD
+        SEEN NOTHING. HEARD NOTHING. THAT'S HOW WE STAY IN BUSINESS.
+
+
+SCENE 16. WHO'S BEEN AT THE STONE?   [snow_stone]
+------------------------------------------------------------------------
+WHEN: Straight after the key; then you're through the smugglers' tunnel.
+WHERE: Snow Kingdom, staged in 3D.
+ON STAGE: a Pact Stone, Rimefang.
+
+    NARRATOR (CAPTION)
+        THE SNOW KINGDOM'S PACT STONE, AT THE EDGE OF THE FROZEN LAKE.
+
+    RIMEFANG
+        CRACKED. BY NO TOOL I KNOW.
+
+    RIMEFANG
+        THE LAW HAS NO WORD FOR THIS. I WILL HAVE TO WRITE ONE.
+
+
+SCENE 17. CAUGHT   [desert_caught]
+------------------------------------------------------------------------
+WHEN: Arriving in Desert World out of the smugglers' tunnel.
+WHERE: Desert World, staged in 3D.
+ON STAGE: you, Sketchy Guard, townsfolk, Scorchwind, Lumen.
+
+    [You drives.]
+    NARRATOR (CAPTION)
+        DESERT WORLD. A SANDSTORM ROLLS IN OVER THE DUNES, AND IT HAS A
+        VOICE.
+
+    [Scorchwind comes down to land.]
+    SCORCHWIND
+        LADIES AND GENTLE-LIZARDS! FRESH FROM THE FROZEN PASS: NEW
+        PERFORMERS FOR MY GAMES!
+
+    [Scorchwind rears up.]
+    SCORCHWIND
+        RACE WELL AND THE CROWD LOVES YOU. RACE BADLY AND, WELL, THE
+        CROWD STILL LOVES ME.
+
+    NARRATOR (CAPTION)
+        UP ON A ROOFTOP, A HOODED FIGURE. WHEN YOU LOOK AGAIN, IT IS
+        GONE.
+
+
+SCENE 18. IN THE STANDS   [desert_stands]
+------------------------------------------------------------------------
+WHEN: Two of Desert World's four courses won.
+WHERE: Desert World, staged in 3D.
+ON STAGE: Scorchwind, Sketchy Guard, you.
+
+    SCORCHWIND
+        WHAT A SHOW! WHAT A CROWD! WHAT A... WAIT. WHO LEFT?
+
+    SCORCHWIND
+        SOMEBODY WALKED OUT ON MY SHOW. NOBODY WALKS OUT ON MY SHOW!
+
+
+SCENE 19. THE STAR ACT   [desert_challenge]
+------------------------------------------------------------------------
+WHEN: Coming out of the gateway of the last of Desert World's four
+courses; the 1 on 1 starts straight after.
+WHERE: Desert World, staged in 3D.
+ON STAGE: you, Stego, Scorchwind.
+
+    [Scorchwind rears up.]
+    SCORCHWIND
+        AND NOW, THE MOMENT YOU'VE ALL BEEN WAITING FOR: MY STAR, MY
+        HEADLINER... STEGO!
+
+    [Stego drives.]
+    STEGO
+        EVERY NIGHT THE SAME SHOW. EVERY NIGHT I WIN. EVERY NIGHT I GO
+        BACK IN MY CAGE.
+
+    STEGO
+        BEAT ME, NEWCOMER. I'D LIKE TO SEE WHAT HAPPENS THEN.
+
+
+SCENE 20. THE WINNER'S PRIZE   [desert_prize]
+------------------------------------------------------------------------
+WHEN: Stego beaten 1 on 1.
+WHERE: Desert World, staged in 3D.
+ON STAGE: you, Stego, Scorchwind, townsfolk, The Crowd.
+
+    NARRATOR (CAPTION)
+        THE CROWD GOES SILENT. THE STAR HAS LOST.
+
+    SCORCHWIND
+        ...BY THE PACT, THE WINNER'S CREW GOES FREE. AND I ALWAYS KEEP
+        MY WORD. IN PUBLIC.
+
+    SCORCHWIND
+        WHAT A TWIST! A CHAMPION FREED! WHO WROTE THIS SHOW? I DID!
+        APPLAUD ME!
+
+    STEGO
+        HE'LL SPIN ANYTHING. BUT FREE IS FREE. THE SMUGGLERS UNDER THE
+        SAND OWE ME A FAVOUR.
+
+    NARRATOR (CAPTION)
+        STEGO JOINS YOUR CREW! (SWITCH TO STEGO TO GET PAST THE DRIFT
+        CAVE'S GUARDS.)
+
+
+SCENE 21. THE UNDERGROUND   [desert_underground]
+------------------------------------------------------------------------
+WHEN: Driving into THE DRIFT CAVE as Stego; the mini-game starts
+straight after.
+WHERE: Desert World, staged in 3D.
+ON STAGE: you, Stego, Sketchy Guard.
+
+    NARRATOR (CAPTION)
+        A CAVE UNDER A DRIFT. THE GUARDS ARE COUNTING SOMEBODY ELSE'S
+        COINS.
+
+    SKETCHY GUARD
+        STEGO! THE STAR HIMSELF! DOES SCORCHWIND KNOW YOU'RE OUT?
+
+    STEGO
+        HE KNOWS. HE'S TELLING EVERYONE IT WAS HIS IDEA. WE NEED THE
+        TUNNEL.
+
+    SKETCHY GUARD
+        THE GAME FIRST. THE STAR SHOULD LIKE THAT.
+
+
+SCENE 22. THE DUST ROAD   [desert_key]
+------------------------------------------------------------------------
+WHEN: The underground games' mini-game won.
+WHERE: Desert World, staged in 3D.
+ON STAGE: you, Stego, Sketchy Guard, Elder Mossback, Rex.
+
+    SKETCHY GUARD
+        A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT ON THE DUST
+        ROAD.
+
+    STEGO
+        THE DUST ROAD GOES TO THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR
+        POCKETS.
+
+
+SCENE 23. WHO'S BEEN AT THE STONE?   [desert_stone]
+------------------------------------------------------------------------
+WHEN: Straight after the key; then you're through the smugglers' tunnel.
+WHERE: Desert World, staged in 3D.
+ON STAGE: a Pact Stone, Scorchwind.
+
+    NARRATOR (CAPTION)
+        DESERT WORLD'S PACT STONE, HALF BURIED IN THE DUNES.
+
+    SCORCHWIND
+        A CRACK! IN MY STONE! IN MY KINGDOM! DURING MY SHOW!
+
+    SCORCHWIND
+        SOMEBODY'S STAGING THEIR OWN ACT. I HATE A RIVAL ACT.
+
+
+SCENE 24. CAUGHT   [beach_caught]
+------------------------------------------------------------------------
+WHEN: Arriving in Tropic Isles out of the smugglers' tunnel.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: you, Sketchy Guard, townsfolk, Tidewyrm, Lumen.
+
+    [You drives.]
+    NARRATOR (CAPTION)
+        THE TROPIC ISLES. THE TIDE IS HIGH OVER THE BOARDWALKS, AND IT
+        ISN'T GOING DOWN.
+
+    [Tidewyrm comes down to land.]
+    TIDEWYRM
+        WELCOME, WELCOME! THE WATER? THAT'S MY TOLL. EVERYONE PAYS IT.
+        YOU'LL PAY IT IN RACES.
+
+    [Tidewyrm rears up.]
+    TIDEWYRM
+        WIN ENOUGH AND WHO KNOWS? MAYBE I'LL LET YOU OFF. I'M VERY
+        GENEROUS. ASK ANYONE.
+
+    NARRATOR (CAPTION)
+        ON THE PIER, A HOODED FIGURE. A WAVE BREAKS, AND THE PIER IS
+        EMPTY.
+
+
+SCENE 25. IN THE STANDS   [beach_stands]
+------------------------------------------------------------------------
+WHEN: Two of Tropic Isles's four courses won.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: Tidewyrm, Sketchy Guard, you.
+
+    TIDEWYRM
+        LOVELY RACING. LOVELY. NOW, WHAT'S ALL THIS ABOUT MY STONE?
+
+    TIDEWYRM
+        SOMETHING'S BEEN SWIMMING ROUND MY STONE. NOTHING SWIMS IN MY
+        WATER WITHOUT PAYING.
+
+
+SCENE 26. THE TREASURE   [beach_challenge]
+------------------------------------------------------------------------
+WHEN: Coming out of the gateway of the last of Tropic Isles's four
+courses; the 1 on 1 starts straight after.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: you, Raptor, Tidewyrm.
+
+    [Tidewyrm rears up.]
+    TIDEWYRM
+        AND NOW, MY TREASURE. THE FASTEST THING IN THE ISLES, AND ALL
+        MINE. RAPTOR!
+
+    [Raptor drives.]
+    RAPTOR
+        HE CALLS ME HIS TREASURE. HE KEEPS ME IN A CHEST WHEN I'M NOT
+        RACING.
+
+    RAPTOR
+        SO DON'T YOU DARE GO EASY ON ME. ONCE ROUND THE ISLES. GO!
+
+
+SCENE 27. THE FINE PRINT   [beach_prize]
+------------------------------------------------------------------------
+WHEN: Raptor beaten 1 on 1.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: you, Raptor, Tidewyrm, townsfolk, The Crowd.
+
+    TIDEWYRM
+        OH, WELL DONE! YES, YES, THE WINNER'S PRIZE. FREEDOM. HERE'S THE
+        CONTRACT.
+
+    TIDEWYRM
+        AND IF YOU READ THE FINE PRINT, IT SAYS: FREEDOM BEGINS AFTER A
+        HUNDRED MORE RACES.
+
+    THE CROWD
+        THAT'S NOT THE PACT! THE WINNER'S CREW GOES FREE! THE WINNER'S
+        CREW GOES FREE!
+
+    TIDEWYRM
+        ...EVERYONE'S A LAWYER. FINE. FINE! TAKE HER. FREE FROM MY
+        GAMES. NOT ONE BIT MORE.
+
+    RAPTOR
+        I KNOW EVERY SMUGGLER ON THESE ISLANDS. AND THEY ALL OWE ME.
+
+    NARRATOR (CAPTION)
+        RAPTOR JOINS YOUR CREW! (SWITCH TO RAPTOR TO GET PAST THE SEA
+        CAVE'S GUARDS.)
+
+
+SCENE 28. THE UNDERGROUND   [beach_underground]
+------------------------------------------------------------------------
+WHEN: Driving into THE SEA CAVE as Raptor; the mini-game starts straight
+after.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: you, Raptor, Sketchy Guard.
+
+    NARRATOR (CAPTION)
+        A SEA CAVE AT LOW TIDE. THE GUARDS ARE SITTING ON A CHEST THAT
+        ISN'T THEIRS.
+
+    SKETCHY GUARD
+        RAPTOR? OUT OF THE CHEST AT LAST! WHAT'S IT TO BE?
+
+    RAPTOR
+        THE LAST TUNNEL. THE ONE TO THE DRAGON KINGDOM.
+
+    SKETCHY GUARD
+        NOBODY USES THAT ONE. NOBODY COMES BACK. WIN THE GAME AND IT'S
+        YOURS ANYWAY.
+
+
+SCENE 29. THE LAST KEY   [beach_key]
+------------------------------------------------------------------------
+WHEN: The underground games' mini-game won.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: you, Raptor, Sketchy Guard, Elder Mossback, Rex.
+
+    SKETCHY GUARD
+        THERE. THE LAST KEY. THE TUNNEL COMES UP ON TIDEWYRM'S OLD
+        CAUSEWAY.
+
+    ELDER MOSSBACK
+        THE DRAGON KINGDOM. A HUNDRED YEARS LATE, BUT A CHAMPION IS
+        GOING TO THE KING.
+
+    REX
+        A CHAMPION AND A CREW.
+
+
+SCENE 30. WHO'S BEEN AT THE STONE?   [beach_stone]
+------------------------------------------------------------------------
+WHEN: Straight after the key; then you're through the smugglers' tunnel.
+WHERE: Tropic Isles, staged in 3D.
+ON STAGE: a Pact Stone, Tidewyrm.
+
+    NARRATOR (CAPTION)
+        THE TROPIC ISLES' PACT STONE, OUT ON THE REEF.
+
+    TIDEWYRM
+        CRACKED. THAT'S FOUR. FOUR STONES, FOUR CRACKS.
+
+    TIDEWYRM
+        THE KING SHOULD HEAR ABOUT THIS. FOR A PRICE.
+
+
+========================================================================
+ACT III: THE DRAGON KINGDOM
+========================================================================
+
+
+SCENE 31. THE CHALLENGER   [dragon_challenger]
+------------------------------------------------------------------------
+WHEN: Arriving in the Dragon Kingdom through the last smugglers' tunnel.
+WHERE: Dragon Kingdom, staged in 3D.
+ON STAGE: you, Elder Mossback, Lumen, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm.
+
+    [You drives.]
+    NARRATOR (CAPTION)
+        THE DRAGON KINGDOM. NO CREW HAS DRIVEN HERE IN A HUNDRED YEARS.
+
+    [King Pyrrhax comes down to land.]
+    NARRATOR (CAPTION)
+        THE KING COMES DOWN TO MEET YOU.
+
+    [King Pyrrhax rears up.]
+    KING PYRRHAX
+        A CHALLENGER. A HUNDRED YEARS LATE, BUT A CHALLENGER.
+
+    KING PYRRHAX
+        THE PACT SAYS I CANNOT REFUSE YOU. VERY WELL. WIN MY GAMES, AND
+        YOU MAY RACE ME.
+
+    [Cinderjaw flies overhead. Rimefang flies overhead. Scorchwind flies
+    overhead. Tidewyrm flies overhead.]
+    NARRATOR (CAPTION)
+        FOUR DRAGONS SETTLE ON THE ROOFTOPS TO WATCH: CINDERJAW,
+        RIMEFANG, SCORCHWIND AND TIDEWYRM.
+
+    LUMEN
+        YOU CAME. I KNEW YOU WOULD.
+
+    ELDER MOSSBACK
+        LUMEN! WHERE HAVE YOU BEEN?
+
+    LUMEN
+        CLOSE BY. ALWAYS CLOSE BY. GO ON. HE'S WAITING.
+
+
+SCENE 32. BEFORE THE KING   [dragon_before_king]
+------------------------------------------------------------------------
+WHEN: The King's four courses won; the race for the lands starts
+straight after.
+WHERE: Dragon Kingdom, staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    CINDERJAW
+        FOUR WINS. IN OUR OWN KINGDOM.
+
+    RIMEFANG
+        BY THE LAW, THE CHALLENGER HAS EARNED THE RACE.
+
+    SCORCHWIND
+        AND WHAT A RACE IT'LL BE! I'D SELL TICKETS, IF ANYONE HAD ANY
+        MONEY LEFT.
+
+    TIDEWYRM
+        MY MONEY'S ON THE KING. MY MONEY'S ALWAYS ON THE KING.
+
+    KING PYRRHAX
+        ENOUGH. TO THE LINE.
+
+
+SCENE 33. THE RETURN   [dragon_return]
+------------------------------------------------------------------------
+WHEN: The King beaten in the race for the lands.
+WHERE: Dragon Kingdom, staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone, Lumen.
+
+    NARRATOR (CAPTION)
+        THE KING IS BEATEN. FOR THE FIRST TIME IN A THOUSAND YEARS, A
+        DRAGON MUST KEEP THE RETURN.
+
+    KING PYRRHAX
+        BY THE PACT... THE LANDS GO BACK TO THE CREWS.
+
+    [King Pyrrhax moves.]
+    NARRATOR (CAPTION)
+        HE WALKS TO THE HEART STONE AND LAYS HIS CLAW ON IT.
+
+    [A flash.]
+    NARRATOR (CAPTION)
+        THE STONE WAKES.
+
+
+SCENE 34. LUMEN   [dragon_lumen]
+------------------------------------------------------------------------
+WHEN: Straight after The Return.
+WHERE: Dragon Kingdom, staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone, Lumen, Lumen (as a dragon).
+
+    [Lumen moves.]
+    LUMEN
+        NOW.
+
+    [Lumen, the dragon appears. Lumen is gone. A flash.]
+    NARRATOR (CAPTION)
+        LUMEN THROWS BACK HIS ROBE. HIS WINGS UNFOLD.
+
+    ELDER MOSSBACK
+        LUMEN... YOU'RE A DRAGON.
+
+    [King Pyrrhax rears up.]
+    KING PYRRHAX
+        A HATCHLING? WHAT ARE YOU DOING? STEP AWAY FROM THE STONE!
+
+    LUMEN
+        I'M SORRY, ELDER. THIS IS THE ONLY WAY ANY OF US GET FREE.
+
+    [A flash. The ground shakes.]
+    NARRATOR (CAPTION)
+        LUMEN STRIKES THE WAKING STONE. FAR AWAY, FOUR CRACKED STONES
+        ANSWER.
+
+    [The Heart Stone appears. The Heart Stone is gone. A flash. The
+    ground shakes.]
+    NARRATOR (CAPTION)
+        THE DRAGON PACT SHATTERS.
+
+    [Lumen, the dragon is gone. A flash. The ground shakes.]
+    NARRATOR (CAPTION)
+        THE BLAST TEARS THROUGH THE DRAGON KINGDOM. WHEN THE LIGHT
+        FADES, LUMEN IS GONE.
+
+
+SCENE 35. THE HORN   [dragon_horn]
+------------------------------------------------------------------------
+WHEN: Straight after Lumen (the Dragon Kingdom now in ruins).
+WHERE: Dragon Kingdom (in ruins), staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    NARRATOR (CAPTION)
+        SMOKE. RUBBLE. THE HEART STONE IN PIECES.
+
+    [King Pyrrhax rears up.]
+    KING PYRRHAX
+        NOTHING HOLDS ME NOW. NO PACT. NO LAW. NOTHING.
+
+    [King Pyrrhax rears up. King Pyrrhax breathes fire.]
+    KING PYRRHAX
+        AND YOU WILL BURN FIRST.
+
+    ELDER MOSSBACK
+        NOT TODAY.
+
+    [The Founders' Horn sounds. A flash. The ground shakes.]
+    NARRATOR (CAPTION)
+        THE OLD HORN SOUNDS. THE KING DROPS LIKE A STONE.
+
+    REX
+        HE'S DOWN! THE KING IS DOWN!
+
+    NARRATOR (CAPTION)
+        THE CREWS CHEER. THE PACT IS GONE AND THE KING IS BEATEN. IT'S
+        OVER.
+
+
+SCENE 36. THE FAKE ENDING   [fake_credits]
+------------------------------------------------------------------------
+WHEN: Straight after The Horn: the credits start to roll... and break
+off.
+WHERE: Full screen: the credits roll.
+
+    [THE END. The credits begin to roll over a dark screen... and stop
+    dead. The screen shakes and turns red. A low gong. "..."]
+
+
+SCENE 37. THE RAGE   [dragon_rage]
+------------------------------------------------------------------------
+WHEN: Straight after the fake credits. The Rage plays on through every
+kingdom.
+WHERE: Dragon Kingdom (in ruins), staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    [Blackout.]
+    NARRATOR (CAPTION)
+        ...BUT A HORN ONLY EVER STUNNED A DRAGON.
+
+    [King Pyrrhax rears up.]
+    NARRATOR (CAPTION)
+        THE KING WAKES IN THE RUINS OF HIS KINGDOM.
+
+    KING PYRRHAX
+        MY KINGDOM. MY HOME. YOUR CREWS DID THIS. YOUR CREWS ALWAYS DO
+        THIS.
+
+    [Cinderjaw flies overhead. Rimefang flies overhead. Scorchwind flies
+    overhead. Tidewyrm flies overhead. King Pyrrhax rears up. King
+    Pyrrhax breathes fire. The ground shakes.]
+    KING PYRRHAX
+        THE PACT IS GONE. THERE IS NO LAW LEFT TO STOP US. DRAGONS! TAKE
+        IT ALL!
+
+
+SCENE 38. THE RAGE   [rage_valley]
+------------------------------------------------------------------------
+WHEN: The Rage, kingdom by kingdom.
+WHERE: Dinosaur Valley (in ruins), staged in 3D.
+ON STAGE: Cinderjaw.
+
+    [Cinderjaw flies overhead. Cinderjaw breathes fire.]
+    NARRATOR (CAPTION)
+        CINDERJAW BURNS THE VALLEY HE WAS TOLD NOT TO.
+
+
+SCENE 39. THE RAGE   [rage_snow]
+------------------------------------------------------------------------
+WHEN: The Rage, kingdom by kingdom.
+WHERE: Snow Kingdom (in ruins), staged in 3D.
+ON STAGE: Rimefang.
+
+    [Rimefang flies overhead. Rimefang breathes fire.]
+    NARRATOR (CAPTION)
+        RIMEFANG FREEZES THE SNOW KINGDOM SOLID, AS CALMLY AS FILING
+        PAPERWORK.
+
+
+SCENE 40. THE RAGE   [rage_desert]
+------------------------------------------------------------------------
+WHEN: The Rage, kingdom by kingdom.
+WHERE: Desert World (in ruins), staged in 3D.
+ON STAGE: Scorchwind.
+
+    [Scorchwind flies overhead. Scorchwind breathes fire.]
+    NARRATOR (CAPTION)
+        SCORCHWIND BURIES DESERT WORLD IN SAND, THEN SULKS THAT THERE'S
+        NOBODY LEFT TO WATCH.
+
+
+SCENE 41. THE RAGE   [rage_beach]
+------------------------------------------------------------------------
+WHEN: The Rage, kingdom by kingdom.
+WHERE: Tropic Isles (in ruins), staged in 3D.
+ON STAGE: Tidewyrm.
+
+    [Tidewyrm flies overhead. Tidewyrm breathes fire.]
+    NARRATOR (CAPTION)
+        TIDEWYRM DROWNS THE TROPIC ISLES.
+
+
+SCENE 42. THE RAGE   [rage_shards]
+------------------------------------------------------------------------
+WHEN: The Rage, kingdom by kingdom.
+WHERE: Dragon Kingdom (in ruins), staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    NARRATOR (CAPTION)
+        IN THE RUINS OF THE CITADEL, THE BROKEN HEART STONE STILL GLOWS.
+
+    [A flash.]
+    NARRATOR (CAPTION)
+        LUMEN'S LIGHT BURSTS OUT OF IT AND SCATTERS ACROSS ALL FIVE
+        KINGDOMS: A RAIN OF LIGHT SHARDS.
+
+    [A flash. The ground shakes. Blackout.]
+    NARRATOR (CAPTION)
+        THEN A BLOW YOU NEVER SEE COMING, AND EVERYTHING GOES DARK.
+
+
+========================================================================
+ACT IV: THE RUINS
+========================================================================
+
+
+SCENE 43. REX   [valley_rescue]
+------------------------------------------------------------------------
+WHEN: After the Rage: you wake in the ruined valley.
+WHERE: Dinosaur Valley (in ruins), staged in 3D.
+ON STAGE: you, Rex, Elder Mossback.
+
+    NARRATOR (CAPTION)
+        YOU WAKE IN A CAGE IN THE RUINS OF DINOSAUR VALLEY. CINDERJAW'S
+        CAGE.
+
+    REX
+        PSST. HOLD STILL. THESE LOCKS ARE OLDER THAN I AM.
+
+    [Rex drives.]
+    REX
+        GOT IT! COME ON, BEFORE HIS GUARDS COME BACK.
+
+    [Elder Mossback moves.]
+    ELDER MOSSBACK
+        YOU'RE ALIVE, THANK THE STONES. NOW LOOK WHAT I FOUND IN THE
+        ASHES.
+
+    ELDER MOSSBACK
+        LUMEN'S LIGHT. I'D KNOW IT ANYWHERE. A PIECE OF IT FELL ON EVERY
+        COURSE IN THE VALLEY.
+
+    ELDER MOSSBACK
+        A SHARD COMES ONLY TO SOMEONE WHO WINS A RACE FAIRLY. WIN ENOUGH
+        OF THEM, AND...
+
+    ELDER MOSSBACK
+        ...AND WE COULD MAKE A NEW PACT. A FAIR ONE.
+
+    NARRATOR (CAPTION)
+        (EACH RUINED COURSE HOLDS SHARD PIECES: COLLECT THEM ALL AND
+        FINISH 1ST TO WIN ITS LIGHT SHARD.)
+
+
+SCENE 44. A NEW STONE   [valley_new_stone]
+------------------------------------------------------------------------
+WHEN: All four of Dinosaur Valley's light shards won; the dragon's race
+starts straight after.
+WHERE: Dinosaur Valley (in ruins), staged in 3D.
+ON STAGE: Cinderjaw, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        FOUR LIGHT SHARDS RISE FROM YOUR HANDS AND FLY TO CINDERJAW'S
+        LAIR.
+
+    [The Pact Stone appears. A flash.]
+    NARRATOR (CAPTION)
+        THEY BUILD A STONE: NEW, AND GLOWING WITH LUMEN'S LIGHT.
+
+    NARRATOR (CAPTION)
+        ITS FIRST LAW BURNS INTO THE STONE: A CHALLENGE MUST BE
+        ANSWERED.
+
+    [Cinderjaw rears up.]
+    CINDERJAW
+        WHAT IS THIS? I DON'T WANT TO RACE YOU. I... I HAVE TO RACE YOU?
+
+
+SCENE 45. THE YIELD   [valley_yield]
+------------------------------------------------------------------------
+WHEN: Cinderjaw beaten under the new Pact Stone.
+WHERE: Dinosaur Valley (in ruins), staged in 3D.
+ON STAGE: Cinderjaw, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        THE STONE SPEAKS ITS SECOND LAW: WHOEVER LOSES GIVES UP THEIR
+        CLAIM, AND LEAVES.
+
+    [Cinderjaw rears up.]
+    CINDERJAW
+        THIS ISN'T OVER. YOU HEAR ME? THIS ISN'T OVER!
+
+    [Cinderjaw flies overhead.]
+    NARRATOR (CAPTION)
+        CINDERJAW WON'T EVEN LOOK AT YOU. HE FLIES OFF TO THE DRAGON
+        KINGDOM.
+
+    NARRATOR (CAPTION)
+        THE NEW STONE'S LIGHT SPREADS ACROSS DINOSAUR VALLEY. THE RUINS
+        MEND.
+
+    NARRATOR (CAPTION)
+        DINOSAUR VALLEY IS RESTORED! THE SMUGGLERS' TUNNEL IS OPEN
+        AGAIN: ON TO THE SNOW KINGDOM.
+
+
+SCENE 46. A NEW STONE   [snow_new_stone]
+------------------------------------------------------------------------
+WHEN: All four of Snow Kingdom's light shards won; the dragon's race
+starts straight after.
+WHERE: Snow Kingdom (in ruins), staged in 3D.
+ON STAGE: Rimefang, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        FOUR LIGHT SHARDS RISE FROM YOUR HANDS AND FLY TO RIMEFANG'S
+        LAIR.
+
+    [The Pact Stone appears. A flash.]
+    NARRATOR (CAPTION)
+        THEY BUILD A STONE: NEW, AND GLOWING WITH LUMEN'S LIGHT.
+
+    NARRATOR (CAPTION)
+        ITS FIRST LAW BURNS INTO THE STONE: A CHALLENGE MUST BE
+        ANSWERED.
+
+    [Rimefang rears up.]
+    RIMEFANG
+        A NEW LAW. THEN I AM BOUND BY IT. I ACCEPT YOUR CHALLENGE.
+
+
+SCENE 47. THE YIELD   [snow_yield]
+------------------------------------------------------------------------
+WHEN: Rimefang beaten under the new Pact Stone.
+WHERE: Snow Kingdom (in ruins), staged in 3D.
+ON STAGE: Rimefang, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        THE STONE SPEAKS ITS SECOND LAW: WHOEVER LOSES GIVES UP THEIR
+        CLAIM, AND LEAVES.
+
+    [Rimefang rears up.]
+    RIMEFANG
+        THIS IS NOT THE PACT I KNEW.
+
+    [Rimefang flies overhead.]
+    NARRATOR (CAPTION)
+        RIMEFANG BOWS, AND FLIES OFF TO THE DRAGON KINGDOM.
+
+    NARRATOR (CAPTION)
+        THE NEW STONE'S LIGHT SPREADS ACROSS SNOW KINGDOM. THE RUINS
+        MEND.
+
+    NARRATOR (CAPTION)
+        SNOW KINGDOM IS RESTORED! THE SMUGGLERS' TUNNEL IS OPEN AGAIN:
+        ON TO THE DESERT WORLD.
+
+
+SCENE 48. A NEW STONE   [desert_new_stone]
+------------------------------------------------------------------------
+WHEN: All four of Desert World's light shards won; the dragon's race
+starts straight after.
+WHERE: Desert World (in ruins), staged in 3D.
+ON STAGE: Scorchwind, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        FOUR LIGHT SHARDS RISE FROM YOUR HANDS AND FLY TO SCORCHWIND'S
+        LAIR.
+
+    [The Pact Stone appears. A flash.]
+    NARRATOR (CAPTION)
+        THEY BUILD A STONE: NEW, AND GLOWING WITH LUMEN'S LIGHT.
+
+    NARRATOR (CAPTION)
+        ITS FIRST LAW BURNS INTO THE STONE: A CHALLENGE MUST BE
+        ANSWERED.
+
+    [Scorchwind rears up.]
+    SCORCHWIND
+        A RACE? NOW? I HAVEN'T EVEN DONE MY HAIR. FINE! THE SHOW MUST GO
+        ON.
+
+
+SCENE 49. THE YIELD   [desert_yield]
+------------------------------------------------------------------------
+WHEN: Scorchwind beaten under the new Pact Stone.
+WHERE: Desert World (in ruins), staged in 3D.
+ON STAGE: Scorchwind, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        THE STONE SPEAKS ITS SECOND LAW: WHOEVER LOSES GIVES UP THEIR
+        CLAIM, AND LEAVES.
+
+    [Scorchwind rears up.]
+    SCORCHWIND
+        THE KING'S RAGE? A BAD ACT. TERRIBLE REVIEWS. I'M LEAVING.
+
+    [Scorchwind flies overhead.]
+    NARRATOR (CAPTION)
+        SCORCHWIND MAKES A GRAND EXIT, INTO HIS OWN STORM.
+
+    NARRATOR (CAPTION)
+        THE NEW STONE'S LIGHT SPREADS ACROSS DESERT WORLD. THE RUINS
+        MEND.
+
+    NARRATOR (CAPTION)
+        DESERT WORLD IS RESTORED! THE SMUGGLERS' TUNNEL IS OPEN AGAIN:
+        ON TO THE TROPIC ISLES.
+
+
+SCENE 50. A NEW STONE   [beach_new_stone]
+------------------------------------------------------------------------
+WHEN: All four of Tropic Isles's light shards won; the dragon's race
+starts straight after.
+WHERE: Tropic Isles (in ruins), staged in 3D.
+ON STAGE: Tidewyrm, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        FOUR LIGHT SHARDS RISE FROM YOUR HANDS AND FLY TO TIDEWYRM'S
+        LAIR.
+
+    [The Pact Stone appears. A flash.]
+    NARRATOR (CAPTION)
+        THEY BUILD A STONE: NEW, AND GLOWING WITH LUMEN'S LIGHT.
+
+    NARRATOR (CAPTION)
+        ITS FIRST LAW BURNS INTO THE STONE: A CHALLENGE MUST BE
+        ANSWERED.
+
+    [Tidewyrm rears up.]
+    TIDEWYRM
+        BOUND? ME? THERE'S ALWAYS A WAY OUT OF A CONTRACT. RIGHT AFTER
+        THIS RACE.
+
+
+SCENE 51. THE YIELD   [beach_yield]
+------------------------------------------------------------------------
+WHEN: Tidewyrm beaten under the new Pact Stone.
+WHERE: Tropic Isles (in ruins), staged in 3D.
+ON STAGE: Tidewyrm, you, a Pact Stone.
+
+    NARRATOR (CAPTION)
+        THE STONE SPEAKS ITS SECOND LAW: WHOEVER LOSES GIVES UP THEIR
+        CLAIM, AND LEAVES.
+
+    [Tidewyrm rears up.]
+    TIDEWYRM
+        FINE. BUT BETWEEN YOU AND ME, THE KING IS AFRAID. OF WHAT, I
+        WONDER?
+
+    [Tidewyrm flies overhead.]
+    NARRATOR (CAPTION)
+        TIDEWYRM TRIES ONE LAST TRICK, IT FAILS, AND HE SLINKS OFF TO
+        THE DRAGON KINGDOM.
+
+    NARRATOR (CAPTION)
+        THE NEW STONE'S LIGHT SPREADS ACROSS TROPIC ISLES. THE RUINS
+        MEND.
+
+    NARRATOR (CAPTION)
+        TROPIC ISLES IS RESTORED! THE SMUGGLERS' TUNNEL IS OPEN AGAIN:
+        ON TO THE DRAGON KINGDOM.
+
+
+========================================================================
+ACT V: THE NEW PACT
+========================================================================
+
+
+SCENE 52. THE RUINED COURT   [dragon_court]
+------------------------------------------------------------------------
+WHEN: Arriving in the ruined Dragon Kingdom, every demi-boss yielded.
+WHERE: Dragon Kingdom (in ruins), staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    NARRATOR (CAPTION)
+        THE DRAGON KINGDOM, STILL IN RUINS FROM THE BLAST.
+
+    NARRATOR (CAPTION)
+        THE FOUR DRAGONS STAND AT COURT, SENT HOME BY THE YIELD. THE
+        KING SITS ON A BROKEN THRONE.
+
+    KING PYRRHAX
+        YOU AGAIN. STILL PLAYING WITH THE HATCHLING'S LIGHT.
+
+    CINDERJAW
+        LET ME BURN THEM, MY KING.
+
+    KING PYRRHAX
+        ...NO. LET THEM TRY. THE LAST FOUR SHARDS FELL ON MY OWN
+        COURSES.
+
+
+SCENE 53. THE HEART STONE   [dragon_heart]
+------------------------------------------------------------------------
+WHEN: The last four light shards won; the King's last race starts
+straight after.
+WHERE: Dragon Kingdom (in ruins), staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone.
+
+    [The Heart Stone appears. The Heart Stone is gone. A flash.]
+    NARRATOR (CAPTION)
+        THE LAST FOUR SHARDS FLY TO THE CITADEL. THE HEART STONE RISES
+        AGAIN, WHOLE AND SHINING.
+
+    NARRATOR (CAPTION)
+        THE NEW PACT IS WHOLE.
+
+    ELDER MOSSBACK
+        BEFORE IT BINDS YOU, KING PYRRHAX, THERE IS SOMETHING YOU SHOULD
+        HEAR. FROM US.
+
+    ELDER MOSSBACK
+        THE FIRST RACE. THIS HORN SOUNDED AT THE LAST TURN AND STUNNED
+        YOUR KIND. THE FOUNDERS CHEATED.
+
+    ELDER MOSSBACK
+        THE ELDERS KEPT THAT SECRET FOR A THOUSAND YEARS. NO MORE.
+
+    [A flash.]
+    NARRATOR (CAPTION)
+        MOSSBACK BREAKS THE FOUNDERS' HORN ACROSS HIS KNEE.
+
+    KING PYRRHAX
+        ...A THOUSAND YEARS I WAITED FOR ONE OF YOU TO SAY IT.
+
+    NARRATOR (CAPTION)
+        THE HEART STONE BURNS WITH ITS FIRST LAW: A CHALLENGE MUST BE
+        ANSWERED.
+
+    [King Pyrrhax rears up.]
+    KING PYRRHAX
+        THEN RACE ME. HONESTLY, THIS TIME. BOTH OF US.
+
+
+SCENE 54. LUMEN RETURNS   [dragon_lumen_returns]
+------------------------------------------------------------------------
+WHEN: The King beaten under the new Pact.
+WHERE: Dragon Kingdom, staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, King Pyrrhax, Cinderjaw, Rimefang,
+Scorchwind, Tidewyrm, the Heart Stone, Lumen (as a dragon).
+
+    KING PYRRHAX
+        ...BEATEN. FAIRLY. UNDER A LAW MADE BY ONE OF MY OWN.
+
+    KING PYRRHAX
+        I GIVE UP MY CLAIM TO THE LANDS. AND THE GRUDGE WITH IT.
+
+    NARRATOR (CAPTION)
+        BOTH SIDES HAVE ACCEPTED THE PACT. IT NO LONGER NEEDS LUMEN'S
+        LIGHT TO HOLD.
+
+    [Lumen, the dragon appears. A flash.]
+    NARRATOR (CAPTION)
+        THE HEART STONE OPENS, AND A DRAGON STEPS OUT OF THE LIGHT:
+        FULL-GROWN, AND GOLDEN.
+
+    LUMEN
+        HELLO, ELDER. I TOLD YOU I'D FIND YOU.
+
+    KING PYRRHAX
+        YOU GAVE YOURSELF UP. FOR US. FOR ALL OF US.
+
+    LUMEN
+        THE BORDER IS GONE, MY KING. WE'RE FREE TOO.
+
+    NARRATOR (CAPTION)
+        THE DRAGON KINGDOM MENDS IN THE LIGHT. RIMEFANG, SCORCHWIND AND
+        TIDEWYRM BOW TO THE NEW PACT.
+
+    [Cinderjaw rears up.]
+    CINDERJAW
+        NOT ME. NO PACT HOLDS ME. NOT THIS ONE, NOT ANY!
+
+    [Cinderjaw flies overhead.]
+    NARRATOR (CAPTION)
+        CINDERJAW FLIES OFF, PAST THE EDGE OF THE WORLD. NOBODY KNOWS
+        WHERE.
+
+
+SCENE 55. HOME   [ending]
+------------------------------------------------------------------------
+WHEN: Straight after Lumen Returns.
+WHERE: Dinosaur Valley, staged in 3D.
+ON STAGE: you, Elder Mossback, Rex, Brachio, Stego, Raptor, Lumen (as a
+dragon), townsfolk, King Pyrrhax.
+
+    NARRATOR (CAPTION)
+        AND SO THE KINGDOMS WERE RESTORED.
+
+    [King Pyrrhax flies overhead.]
+    NARRATOR (CAPTION)
+        THAT SUMMER, THE FESTIVAL HAD NEW RACERS: DRAGONS, RACING FOR
+        FUN, AND LOSING HONESTLY.
+
+    ELDER MOSSBACK
+        YOU CAME HERE WITH NO CREW. LOOK AT YOU NOW.
+
+    REX
+        BEST CREW IN THE WORLD. OBVIOUSLY.
+
+    LUMEN
+        SEE YOU AT THE NEXT FESTIVAL. I'M ENTERING THIS TIME.
+
+
+SCENE 56. THE CREDITS   [end_credits]
+------------------------------------------------------------------------
+WHEN: After the ending.
+WHERE: Full screen: the credits roll.
+
+    [The real credits roll. Thanks for playing.]
+
+
+END OF SCRIPT

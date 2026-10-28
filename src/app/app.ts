@@ -18,6 +18,7 @@ import type { UiLayer } from "../ui/layer";
 export type ScreenId =
   | "BOOT"
   | "TITLE"
+  | "YOUR_CREW"
   | "CHARACTER_SELECT"
   | "MODE_SELECT"
   | "TRACK_SELECT"

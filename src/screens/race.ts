@@ -28,7 +28,7 @@ import { VMenu, hints } from "./common";
 import { optionsScreen } from "./options";
 import { tracksMenu } from "./tracks";
 import { trophyStandings } from "./trophy";
-import { adventureHub, adventureResult } from "./adventure";
+import { adventureResult, goHome } from "./adventure";
 import { overworldLoading } from "./overworld";
 import { runLabel } from "../adventure/run";
 import { cupOver } from "../game/trophy";
@@ -401,16 +401,16 @@ export function drawHud(
     );
     ui.text(h.gauge.label, gx + gw + 4, gy - 1, { color: PAL.cream, outline: PAL.shadow });
   }
-  // Adventure's map fragments: how many you have (a little torn scrap of parchment).
+  // Adventure's shard pieces: how many you have (a little glowing crystal).
   if (h.coins) {
     const all = h.coins.got >= h.coins.total;
     const cx = 8;
     const cy = 34;
-    ui.rect(cx, cy, 9, 9, PAL.shadow);
-    ui.rect(cx + 1, cy + 1, 7, 7, all ? "#fff0c0" : "#e8cf98");
-    ui.rect(cx + 6, cy + 1, 2, 2, PAL.shadow);
-    ui.rect(cx + 2, cy + 5, 3, 1, "#8a2a1a");
-    ui.rect(cx + 3, cy + 4, 1, 3, "#8a2a1a");
+    ui.rect(cx + 3, cy, 3, 1, PAL.shadow);
+    ui.rect(cx + 2, cy + 1, 5, 7, PAL.shadow);
+    ui.rect(cx + 3, cy + 8, 3, 1, PAL.shadow);
+    ui.rect(cx + 3, cy + 1, 3, 7, all ? "#fff6c0" : "#f0d070");
+    ui.rect(cx + 4, cy + 2, 1, 3, "#ffffff");
     ui.text(`${h.coins.got}/${h.coins.total}`, cx + 13, cy + 1, {
       color: all ? PAL.gold : PAL.cream,
       outline: PAL.shadow,
@@ -604,8 +604,11 @@ function pauseMenu(game: Game, session: Session, entry: TrackEntry, restart: () 
           }
         : game.adventure?.run
           ? {
-              label: "WORLD MAP",
-              action: leave("THE WORLD MAP", () => game.screens.go(adventureHub(game))),
+              label: "BACK TO THE STORY",
+              action: leave("THE STORY", () => {
+                if (game.adventure) game.adventure.run = undefined;
+                goHome(game);
+              }),
             }
           : {
               label: "TRACK SELECT",
