@@ -15,63 +15,42 @@
     {
       "id": "torch_01",
       "type": "torch",
-      "x": 292.06,
-      "y": 13.68,
-      "z": -95.69
+      "x": 177.35,
+      "y": 14.01,
+      "z": -57.93
     },
     {
       "id": "torch_02",
       "type": "torch",
-      "x": 288.74,
-      "y": 14.27,
-      "z": -80.82
+      "x": 174.22,
+      "y": 14.75,
+      "z": -41.47
     },
     {
       "id": "torch_03",
       "type": "torch",
-      "x": 286.26,
-      "y": 14.84,
-      "z": -64.12
+      "x": 172.23,
+      "y": 15.7,
+      "z": -25.73
     },
     {
       "id": "torch_04",
       "type": "torch",
-      "x": 284.26,
-      "y": 15.43,
-      "z": -48.36
+      "x": 170.32,
+      "y": 16.73,
+      "z": -9.6
     },
     {
       "id": "torch_05",
       "type": "torch",
-      "x": 282.2,
-      "y": 16.04,
-      "z": -32.45
-    },
-    {
-      "id": "torch_06",
-      "type": "torch",
-      "x": 280.33,
-      "y": 16.65,
-      "z": -16.36
-    },
-    {
-      "id": "torch_07",
-      "type": "torch",
-      "x": 278.89,
-      "y": 17.23,
-      "z": -0.32
-    },
-    {
-      "id": "torch_08",
-      "type": "torch",
-      "x": 277.22,
-      "y": 17.86,
-      "z": 15.17
+      "x": 168.84,
+      "y": 17.89,
+      "z": 6.12
     },
     {
       "id": "campfire_01",
       "type": "campfire",
-      "x": -262.0,
+      "x": -162.4,
       "y": 10.3,
       "z": -0.0
     },
@@ -79,176 +58,154 @@
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
-      "x": -285.0,
-      "z": 28.07,
-      "heading": 1.5640793493060268,
+      "x": -172.5,
+      "z": 17.5,
+      "heading": 1.5620790304363057,
       "width": 9.0,
-      "prize_x": -296.0,
-      "prize_z": 28.0
+      "prize_x": -183.5,
+      "prize_z": 17.4
     },
     {
       "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
-      "x": 275.93,
-      "z": -207.36,
-      "heading": -0.7403431162834772,
+      "x": 168.59,
+      "z": -126.18,
+      "heading": -0.7610084042454841,
       "width": 9.0,
-      "prize_x": 282.0,
-      "prize_z": -214.0
+      "prize_x": 174.8,
+      "prize_z": -132.7
     },
     {
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "canyon",
-      "x": -63.91,
-      "z": -310.66,
-      "heading": -0.3320452914805664
+      "x": -40.75,
+      "z": -188.14,
+      "heading": -0.30058129551244056
     },
     {
       "id": "gateway_spot_02",
       "type": "gateway_spot",
       "gateway": "oasis",
-      "x": 302.53,
-      "z": -164.63,
-      "heading": -0.9095341402113571
+      "x": 183.97,
+      "z": -99.17,
+      "heading": -0.9033878395769028
     },
     {
       "id": "gateway_spot_03",
       "type": "gateway_spot",
       "gateway": "gulch",
-      "x": 228.49,
-      "z": 220.69,
-      "heading": -2.2260630845233735
+      "x": 137.23,
+      "z": 135.37,
+      "heading": -2.097544437001623
     },
     {
       "id": "gateway_spot_04",
       "type": "gateway_spot",
       "gateway": "impact",
-      "x": -28.01,
-      "z": 244.47,
-      "heading": 1.5315755489139506
+      "x": -12.97,
+      "z": 149.31,
+      "heading": 1.737016090501217
     },
     {
       "id": "villager_home_01",
       "type": "villager_home",
-      "x": -208.72,
-      "z": -37.21,
-      "y": 10.36,
+      "x": -16.88,
+      "z": -154.57,
+      "y": 18.45,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": 1.288
+      "heading": -2.71
     },
     {
       "id": "villager_home_02",
       "type": "villager_home",
-      "x": -219.89,
-      "z": 33.37,
-      "y": 9.84,
+      "x": -36.58,
+      "z": -123.16,
+      "y": 19.19,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": 1.907
+      "heading": -0.159
     },
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": -469.34,
-      "z": -1.0,
-      "y": 16.97,
+      "x": -95.51,
+      "z": -161.85,
+      "y": 20.33,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": -1.679
+      "heading": -2.515
     },
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -131.17,
-      "z": -257.26,
-      "y": 18.7,
+      "x": 156.31,
+      "z": -92.37,
+      "y": 7.52,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": -2.428
+      "heading": -1.159
     },
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -3.98,
-      "z": -301.09,
-      "y": 16.98,
+      "x": 118.33,
+      "z": -120.02,
+      "y": 7.31,
       "r": 14.0,
       "n": 3,
       "folk": "desert",
-      "heading": -2.395
+      "heading": -1.02
     },
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": 270.31,
-      "z": -124.14,
-      "y": 6.95,
+      "x": 113.26,
+      "z": 96.41,
+      "y": 12.56,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": -0.794
+      "heading": -1.648
     },
     {
       "id": "villager_home_07",
       "type": "villager_home",
-      "x": 256.7,
-      "z": -152.18,
-      "y": 8.26,
+      "x": 167.86,
+      "z": 89.8,
+      "y": 11.61,
       "r": 14.0,
       "n": 2,
       "folk": "desert",
-      "heading": -1.183
+      "heading": 0.917
     },
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": 253.95,
-      "z": 121.09,
-      "y": 16.84,
+      "x": 122.16,
+      "z": 123.54,
+      "y": 10.93,
       "r": 14.0,
       "n": 3,
       "folk": "desert",
-      "heading": 0.818
+      "heading": -2.024
     },
     {
       "id": "villager_home_09",
       "type": "villager_home",
-      "x": 203.57,
-      "z": 212.09,
-      "y": 17.04,
+      "x": 9.91,
+      "z": 114.31,
+      "y": 7.26,
       "r": 14.0,
       "n": 3,
       "folk": "desert",
-      "heading": -2.474
-    },
-    {
-      "id": "villager_home_10",
-      "type": "villager_home",
-      "x": -10.92,
-      "z": 215.79,
-      "y": -0.21,
-      "r": 14.0,
-      "n": 2,
-      "folk": "desert",
-      "heading": -2.457
-    },
-    {
-      "id": "villager_home_11",
-      "type": "villager_home",
-      "x": 27.88,
-      "z": 168.95,
-      "y": 2.61,
-      "r": 14.0,
-      "n": 3,
-      "folk": "desert",
-      "heading": 2.607
+      "heading": 2.227
     }
   ],
   "generator": "tools/blender/prehistoric/desert_region.py (re-running it rewrites entities)"
