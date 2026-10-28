@@ -217,7 +217,7 @@ else if (import.meta.env.DEV && PARAMS.has("scene")) {
   const id = PARAMS.get("scene") || "valley_hundredth";
   screens.go(sceneScreen(game, id, () => screens.go(titleScreen(game, true)), false));
 }
-// ?minigame=<balloons|eggs|crown|stars> (dev server only): straight into a mini-game.
+// ?minigame=<balloons|smugglers|crumble|stars> (dev server only): straight into a mini-game.
 else if (import.meta.env.DEV && PARAMS.has("minigame")) {
   const m = minigameById(PARAMS.get("minigame") || "balloons") ?? MINIGAMES[0]!;
   screens.go(minigameLoading(game, m));

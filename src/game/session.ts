@@ -210,6 +210,8 @@ export interface ArenaHooks {
   drive?(i: number, kart: KartState, dt: number): DeviceReading | undefined;
   fire?(i: number, kart: KartState): boolean;
   onItem?(ev: ItemEvent): void;
+  /** A mini-game's handicap on a kart's top speed (Smugglers' Run: carrying a crate). */
+  topSpeed?(i: number): number | undefined;
 }
 
 export interface SessionContext {
@@ -992,6 +994,8 @@ function buildSession(
         const boss = i > 0 && !demo ? (opts.field?.speed ?? 1) : 1;
         cfg = { ...cfg, topSpeed: cfg.topSpeed * trim * assist * boss };
       }
+      const handicap = opts.arena?.topSpeed?.(i);
+      if (handicap !== undefined) cfg = { ...cfg, topSpeed: cfg.topSpeed * handicap };
       // Imported tracks: the surface under the wheels scales speed, acceleration and grip.
       if (pkg && e.state.grounded && !loops?.riding(i)) {
         const surface = e.ground.at(e.state.x, e.state.z, e.state.y).surface;

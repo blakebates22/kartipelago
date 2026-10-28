@@ -11,6 +11,7 @@ import type { Session } from "../game/session";
 import type { TrackEntry } from "../game/tracks";
 import {
   MINIGAMES,
+  RULES,
   createMiniGame,
   newMind,
   parseArena,
@@ -151,6 +152,9 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
             onItem(ev) {
               if (ev.type === "hit" && !ev.blocked) box.g?.hit(ev.racer);
             },
+            topSpeed(i) {
+              return box.g?.carrying(i) ? RULES.carrySpeed : undefined;
+            },
           },
         })
         .then((s) => {
@@ -220,6 +224,14 @@ function arenaView(session: Session, g: MiniGame) {
   const geo = <T extends THREE.BufferGeometry>(x: T) => (made.push(x), x);
   const you = session.entrants[0]!;
   const groundAt = (x: number, z: number) => you.ground.at(x, z, 200).height;
+  const shadowGeo = geo(new THREE.CircleGeometry(1.6, 16));
+  const shadowMat = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.35,
+    depthWrite: false,
+  });
+  made.push(shadowMat);
   // Balloons over each kart (Balloon Brawl): one per life.
   const balloonGeo = geo(new THREE.SphereGeometry(0.45, 10, 8));
   const lives = session.entrants.map((_, i) => {
@@ -230,46 +242,52 @@ function arenaView(session: Session, g: MiniGame) {
       return b;
     });
   });
-  // Nests (Egg Scramble): a ring of the owner's colour.
-  const ringGeo = geo(new THREE.TorusGeometry(7, 0.35, 6, 24));
-  g.arena.nests.forEach((n, i) => {
-    const r = new THREE.Mesh(ringGeo, mat(KART_COLORS[i % 4]!, 0.5));
+  // Docks (Smugglers' Run): a glowing ring of the crew's colour at each.
+  const ringGeo = geo(new THREE.TorusGeometry(RULES.dockRadius, 0.35, 6, 28));
+  g.arena.docks.forEach((n, i) => {
+    const r = new THREE.Mesh(ringGeo, mat(KART_COLORS[i % 4]!, 0.6));
     r.rotation.x = Math.PI / 2;
     r.position.set(n.x, n.y + 0.3, n.z);
     group.add(r);
   });
-  const eggGeo = geo(new THREE.SphereGeometry(0.7, 10, 8));
-  eggGeo.scale(1, 1.3, 1);
-  const eggMat = mat("#fff6e0", 0.2);
-  const eggs: THREE.Mesh[] = [];
-  // The crown's ring (Crown Hill) and the crown over whoever holds it.
-  let crownRing: THREE.Mesh | undefined;
-  let crown: THREE.Mesh | undefined;
-  if (g.info.id === "crown") {
-    const c = g.arena.crown ?? { x: 0, z: 0, y: groundAt(0, 0), r: 10 };
-    crownRing = new THREE.Mesh(geo(new THREE.TorusGeometry(c.r, 0.4, 6, 32)), mat("#ffd23f", 0.6));
-    crownRing.rotation.x = Math.PI / 2;
-    crownRing.position.set(c.x, c.y + 0.3, c.z);
-    group.add(crownRing);
-    crown = new THREE.Mesh(
-      geo(new THREE.CylinderGeometry(0.7, 0.55, 0.6, 5, 1, true)),
-      mat("#ffd23f", 0.6),
-    );
-    group.add(crown);
+  // The crates: planks with dark iron bands.
+  const crateGeo = geo(new THREE.BoxGeometry(1.5, 1.2, 1.5));
+  const bandGeo = geo(new THREE.BoxGeometry(1.56, 0.18, 1.56));
+  const crateMat = mat("#a8743a", 0.1);
+  const bandMat = mat("#3a2a1c", 0.05);
+  const crates: { g: THREE.Group; s: THREE.Mesh }[] = [];
+  // The ice (Crumble Rink): a hexagonal slab per tile; cracking ones shiver and darken,
+  // gone ones drop away into the crevasse.
+  let tiles: THREE.InstancedMesh | undefined;
+  const ice = g.ice;
+  const tileColor = new THREE.Color();
+  const m4 = new THREE.Matrix4();
+  if (ice) {
+    const hex = geo(new THREE.CylinderGeometry(ice.size * 0.96, ice.size * 0.9, 0.9, 6));
+    hex.rotateY(Math.PI / 6);
+    hex.translate(0, -0.45, 0);
+    const iceMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    made.push(iceMat);
+    tiles = new THREE.InstancedMesh(hex, iceMat, ice.state.length);
+    for (let t = 0; t < ice.state.length; t++) {
+      // (A little variety: blue-white ice, some frostier.)
+      const v = ((t * 7919) % 100) / 100;
+      tiles.setColorAt(t, tileColor.setHSL(0.55, 0.45 + v * 0.2, 0.78 + v * 0.08));
+    }
+    group.add(tiles);
   }
+  const base = ice
+    ? Array.from({ length: ice.state.length }, (_, t) =>
+        tiles!.instanceColor!.array.slice(t * 3, t * 3 + 3),
+      )
+    : [];
   // Stars and their shadows (Star Fall).
   const starGeo = geo(new THREE.OctahedronGeometry(1.0));
   const starMat = mat("#ffe060", 0.7);
   const goldMat = mat("#ff9a20", 0.8);
-  const shadowGeo = geo(new THREE.CircleGeometry(1.6, 16));
-  const shadowMat = new THREE.MeshBasicMaterial({
-    color: 0x000000,
-    transparent: true,
-    opacity: 0.35,
-    depthWrite: false,
-  });
-  made.push(shadowMat);
   const stars: { m: THREE.Mesh; s: THREE.Mesh }[] = [];
+  // Out of Crumble Rink: the kart's gone through the ice.
+  const gone = session.entrants.map(() => false);
   return {
     update(t: number) {
       session.entrants.forEach((e, i) => {
@@ -282,35 +300,66 @@ function arenaView(session: Session, g: MiniGame) {
             k.z + Math.cos(t * 2 + j * 2.1) * 0.5,
           );
         });
-      });
-      while (eggs.length < g.eggs.length) {
-        const m = new THREE.Mesh(eggGeo, eggMat);
-        group.add(m);
-        eggs.push(m);
-      }
-      eggs.forEach((m, i) => {
-        const e = g.eggs[i];
-        m.visible = Boolean(e);
-        if (!e) return;
-        const carried = e.carrier >= 0;
-        const k = carried ? session.entrants[e.carrier]!.state : undefined;
-        m.position.set(
-          e.x,
-          (k ? k.y + 2.6 : groundAt(e.x, e.z) + 0.8) + Math.sin(t * 3 + i) * 0.1,
-          e.z,
-        );
-      });
-      if (crown) {
-        crown.visible = g.holder >= 0;
-        if (g.holder >= 0) {
-          const k = session.entrants[g.holder]!.state;
-          crown.position.set(k.x, k.y + 3.2, k.z);
-          crown.rotation.y = t * 2;
+        if (ice && g.out[i] && !gone[i]) {
+          gone[i] = true;
+          e.mesh.visible = false;
+          e.racer.shadow.visible = false;
         }
+      });
+      while (crates.length < g.crates.length) {
+        const c = new THREE.Group();
+        c.add(new THREE.Mesh(crateGeo, crateMat));
+        for (const y of [-0.38, 0.38]) {
+          const b = new THREE.Mesh(bandGeo, bandMat);
+          b.position.y = y;
+          c.add(b);
+        }
+        const s = new THREE.Mesh(shadowGeo, shadowMat);
+        s.rotation.x = -Math.PI / 2;
+        group.add(c, s);
+        crates.push({ g: c, s });
       }
-      if (crownRing)
-        (crownRing.material as THREE.MeshLambertMaterial).emissiveIntensity =
-          g.holder >= 0 ? 1.6 : 0.6;
+      crates.forEach((v, i) => {
+        const c = g.crates[i];
+        v.g.visible = v.s.visible = Boolean(c);
+        if (!c) return;
+        const carried = c.carrier >= 0;
+        const k = carried ? session.entrants[c.carrier]!.state : undefined;
+        const y = k ? k.y : groundAt(c.x, c.z);
+        v.g.position.set(c.x, (k ? y + 2.4 : y + 0.6) + Math.max(0, c.fall) * 20, c.z);
+        v.g.rotation.y = carried ? k!.heading : i * 1.3;
+        v.s.visible = c.fall > 0;
+        v.s.position.set(c.x, groundAt(c.x, c.z) + 0.08, c.z);
+        v.s.scale.setScalar(1.2 - Math.max(0, c.fall) * 0.3);
+      });
+      if (ice && tiles) {
+        for (let n = 0; n < ice.state.length; n++) {
+          const st = ice.state[n];
+          let y = ice.y;
+          let dx = 0;
+          let dz = 0;
+          let scale = 1;
+          const c = base[n]!;
+          tileColor.setRGB(c[0]!, c[1]!, c[2]!);
+          if (st === 1) {
+            // Cracking: shivering, darker as it goes.
+            const k = Math.max(0, Math.min(1, 1 - ice.timer[n]! / RULES.crackSec));
+            dx = Math.sin(t * 61 + n) * 0.06 * (0.3 + k);
+            dz = Math.cos(t * 53 + n) * 0.06 * (0.3 + k);
+            tileColor.lerp(new THREE.Color("#5a7f9e"), 0.25 + k * 0.45);
+          } else if (st === 2) {
+            const f = ice.timer[n]!;
+            y -= 9 * f * f;
+            scale = f > 1.6 ? 0 : 1;
+            tileColor.lerp(new THREE.Color("#2a4258"), 0.7);
+          }
+          m4.makeScale(scale, scale, scale).setPosition(ice.x[n]! + dx, y, ice.z[n]! + dz);
+          tiles.setMatrixAt(n, m4);
+          tiles.setColorAt(n, tileColor);
+        }
+        tiles.instanceMatrix.needsUpdate = true;
+        tiles.instanceColor!.needsUpdate = true;
+      }
       while (stars.length < g.stars.length) {
         const m = new THREE.Mesh(starGeo, starMat);
         const s = new THREE.Mesh(shadowGeo, shadowMat);
@@ -333,6 +382,7 @@ function arenaView(session: Session, g: MiniGame) {
     },
     dispose() {
       session.root.remove(group);
+      tiles?.dispose();
       for (const m of made) m.dispose();
     },
   };
@@ -352,7 +402,7 @@ function minigamePlay(
   let over: VMenu | undefined;
   const names = session.entrants.map((e, i) => (i === 0 ? "YOU" : e.name.toUpperCase()));
   const label = (v: number) =>
-    info.id === "balloons" ? `${v} LEFT` : info.id === "crown" ? `${v}S` : `${v}`;
+    info.id === "balloons" ? `${v} LEFT` : info.id === "crumble" ? "ON THE ICE" : `${v}`;
   const finish = () => {
     const won = g.winner === 0;
     over = new VMenu(
@@ -402,7 +452,10 @@ function minigamePlay(
       if (g.out[0]) ks[0]!.speed *= 0.9;
       for (const n of g.news) {
         if (n.what === "pop" && n.who === 0) game.sounds.error();
-        if ((n.what === "star" || n.what === "nest") && n.who === 0) game.sounds.confirm();
+        if (n.what === "drop" && n.who === 0) game.sounds.error();
+        if (n.what === "fall" && n.who === 0) game.sounds.error();
+        if ((n.what === "star" || n.what === "dock" || n.what === "grab") && n.who === 0)
+          game.sounds.confirm();
       }
       if (before === undefined && g.winner !== undefined) finish();
     },
@@ -452,11 +505,18 @@ function minigamePlay(
         align: "center",
       });
       if (g.out[0] && g.winner === undefined)
-        ui.text("YOU'RE OUT! WATCH THE REST...", ui.W / 2, 30, {
-          color: PAL.coral,
-          outline: PAL.shadow,
-          align: "center",
-        });
+        ui.text(
+          info.id === "crumble"
+            ? "THROUGH THE ICE! WATCH THE REST..."
+            : "YOU'RE OUT! WATCH THE REST...",
+          ui.W / 2,
+          30,
+          {
+            color: PAL.coral,
+            outline: PAL.shadow,
+            align: "center",
+          },
+        );
       if (over && g.winner !== undefined) {
         const pw = 220;
         const px = Math.round(ui.W / 2 - pw / 2);

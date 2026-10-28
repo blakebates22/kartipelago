@@ -6,6 +6,7 @@ import {
   MINIGAMES,
   RULES,
   createMiniGame,
+  makeIce,
   minigameById,
   newMind,
   parseArena,
@@ -17,14 +18,14 @@ import {
 const arena: Arena = {
   spawns: [0, 1, 2, 3].map((k) => ({ x: Math.sin(k) * 40, z: Math.cos(k) * 40, heading: 0 })),
   radius: 60,
-  nests: [
+  docks: [
     { x: 30, z: 30, y: 0, color: "red" },
     { x: -30, z: 30, y: 0, color: "blue" },
     { x: -30, z: -30, y: 0, color: "green" },
     { x: 30, z: -30, y: 0, color: "yellow" },
   ],
-  eggSpawn: { x: 0, z: 0, y: 0, r: 0.1 },
-  crown: { x: 0, z: 0, y: 0, r: 10 },
+  crateSpawn: { x: 0, z: 0, y: 0, r: 0.1 },
+  rink: { x: 0, z: 0, y: 2, r: 30, tile: 2.6 },
 };
 const karts = (): Kart[] =>
   arena.spawns.map((s) => ({ x: s.x, y: 0, z: s.z, heading: 0, speed: 0 }));
@@ -43,52 +44,67 @@ describe("the mini-games", () => {
     expect(g.winner).toBe(0);
   });
 
-  it("Egg Scramble: pick up, take home, steal; three in your nest wins", () => {
-    const g = createMiniGame(minigameById("eggs")!, arena, 4);
+  it("Smugglers' Run: grab a crate, run it to your dock; rammed, you drop it; five wins", () => {
+    const g = createMiniGame(minigameById("smugglers")!, arena, 4);
     const ks = karts();
     const fetch = () => {
-      // Wait for an egg in the middle, drive over it, take it home.
-      for (let k = 0; k < 60 * 6 && !g.eggs.some((e) => e.carrier < 0 && e.nest < 0); k++)
+      // Wait for a crate to land in the middle, drive over it, run it home.
+      for (let k = 0; k < 60 * 6 && !g.crates.some((c) => c.carrier < 0 && c.fall <= 0); k++)
         g.step(ks, 1 / 60);
-      const free = g.eggs.find((e) => e.carrier < 0 && e.nest < 0)!;
-      Object.assign(ks[0]!, { x: free.x, z: free.z });
+      const free = g.crates.find((c) => c.carrier < 0 && c.fall <= 0)!;
+      Object.assign(ks[0]!, { x: free.x, z: free.z, speed: 0 });
       g.step(ks, 1 / 60);
-      expect(g.eggs.some((e) => e.carrier === 0)).toBe(true);
+      expect(g.carrying(0)).toBe(true);
       Object.assign(ks[0]!, { x: 30, z: 30 });
       g.step(ks, 1 / 60);
       Object.assign(ks[0]!, { x: 50, z: 0 });
     };
     fetch();
     expect(g.score[0]).toBe(1);
-    // A rival steals it.
-    Object.assign(ks[1]!, { x: 30, z: 30 });
+    expect(g.carrying(0)).toBe(false);
+    // Rammed while carrying: dropped.
+    for (let k = 0; k < 60 * 6 && !g.crates.some((c) => c.carrier < 0 && c.fall <= 0); k++)
+      g.step(ks, 1 / 60);
+    const free = g.crates.find((c) => c.carrier < 0 && c.fall <= 0)!;
+    Object.assign(ks[0]!, { x: free.x, z: free.z });
     g.step(ks, 1 / 60);
-    expect(g.score[0]).toBe(0);
-    expect(g.eggs.some((e) => e.carrier === 1)).toBe(true);
-    // Hit while carrying: dropped.
-    g.hit(1);
-    expect(g.eggs.some((e) => e.carrier === 1)).toBe(false);
-    Object.assign(ks[1]!, { x: -50, z: 0 });
-    for (let n = 0; n < 3; n++) fetch();
+    expect(g.carrying(0)).toBe(true);
+    Object.assign(ks[1]!, { x: free.x + 1, z: free.z, speed: RULES.bumpSpeed + 5 });
+    g.step(ks, 1 / 60);
+    expect(g.carrying(0)).toBe(false);
+    Object.assign(ks[1]!, { x: -50, z: 0, speed: 0 });
+    Object.assign(ks[0]!, { x: 50, z: 0 });
+    for (let k = 0; k < 60 * 3; k++) g.step(ks, 1 / 60);
+    // (Hit by an item while carrying: dropped too.)
+    for (let n = 0; n < 4; n++) fetch();
     expect(g.winner).toBe(0);
   });
 
-  it("Crown Hill: the holder scores while they stay in the ring; out, and it passes on", () => {
-    const g = createMiniGame(minigameById("crown")!, arena, 4);
-    const ks = karts();
-    Object.assign(ks[2]!, { x: 1, z: 1 });
-    for (let k = 0; k < 60 * 5; k++) g.step(ks, 1 / 60);
-    expect(g.score[2]).toBeGreaterThanOrEqual(4);
-    // Another drives in: the holder keeps it.
-    Object.assign(ks[3]!, { x: -1, z: 1 });
-    for (let k = 0; k < 60 * 2; k++) g.step(ks, 1 / 60);
-    expect(g.holder).toBe(2);
-    // Shoved out: it passes to the one still in.
-    Object.assign(ks[2]!, { x: 50, z: 50 });
+  it("Crumble Rink: the ice cracks where you drive and falls; through it, you're out", () => {
+    const g = createMiniGame(minigameById("crumble")!, arena, 4, 3);
+    const ice = g.ice!;
+    expect(ice.state.length).toBeGreaterThan(100);
+    // Every tile is found again at its own centre.
+    for (let t = 0; t < ice.state.length; t += 17) expect(ice.at(ice.x[t]!, ice.z[t]!)).toBe(t);
+    const ks = karts().map((k, i) => ({ ...k, x: (i - 1.5) * 12, z: 0 }));
+    // Standing still (the countdown) cracks nothing.
+    for (let k = 0; k < 60 * (RULES.graceSec + 1); k++) g.step(ks, 1 / 60);
+    expect(ice.state.every((s) => s === 0)).toBe(true);
+    // Kart 1 drives: the tile under it cracks, then falls; it's out if it stays.
+    ks[1]!.speed = 10;
     g.step(ks, 1 / 60);
-    expect(g.holder).toBe(3);
-    for (let k = 0; k < 60 * 40; k++) g.step(ks, 1 / 60);
-    expect(g.winner).toBe(3);
+    const t = ice.at(ks[1]!.x, ks[1]!.z);
+    expect(ice.state[t]).toBe(1);
+    for (let k = 0; k < 60 * (RULES.crackSec + 0.2); k++) g.step(ks, 1 / 60);
+    expect(g.out[1]).toBe(true);
+    // Off the ice: out too.
+    Object.assign(ks[2]!, { x: 80, z: 0 });
+    g.step(ks, 1 / 60);
+    expect(g.out[2]).toBe(true);
+    // The edge crumbles in over time; the last one on the ice wins.
+    Object.assign(ks[3]!, { x: 200, z: 0 });
+    g.step(ks, 1 / 60);
+    expect(g.winner).toBe(0);
   });
 
   it("Star Fall: stars land and are caught; a hit knocks one out", () => {
@@ -126,11 +142,16 @@ describe("the mini-games", () => {
       const meta = JSON.parse(new TextDecoder().decode(bytes)) as { entities: unknown[] };
       const a = parseArena(meta.entities);
       expect(a.spawns.length, m.arena).toBeGreaterThanOrEqual(4);
-      if (m.id === "eggs") {
-        expect(a.nests).toHaveLength(4);
-        expect(a.eggSpawn).toBeDefined();
+      if (m.id === "smugglers") {
+        expect(a.docks).toHaveLength(4);
+        expect(a.crateSpawn).toBeDefined();
       }
-      if (m.id === "crown") expect(a.crown).toBeDefined();
+      if (m.id === "crumble") {
+        expect(a.rink).toBeDefined();
+        // Every kart starts on the ice.
+        const ice = makeIce(a.rink!);
+        for (const s of a.spawns) expect(ice.at(s.x, s.z), m.arena).toBeGreaterThanOrEqual(0);
+      }
     }
   });
 });
