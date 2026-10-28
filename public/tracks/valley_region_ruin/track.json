@@ -151,6 +151,13 @@
       "rate": 8
     },
     {
+      "id": "steam_01",
+      "type": "steam",
+      "x": -180.58,
+      "y": 4.5,
+      "z": -110.36
+    },
+    {
       "id": "waterfall_02",
       "type": "waterfall",
       "x": 178.6,
@@ -168,6 +175,13 @@
       "z": -212.0,
       "radius": 18.0,
       "rate": 8
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 176.86,
+      "y": 27.5,
+      "z": -209.56
     },
     {
       "id": "campfire_01",
@@ -603,35 +617,35 @@
       "molten": true
     },
     {
-      "id": "steam_01",
+      "id": "steam_03",
       "type": "steam",
       "x": -27.62,
       "y": 2.62,
       "z": 176.9
     },
     {
-      "id": "steam_02",
+      "id": "steam_04",
       "type": "steam",
       "x": -0.6,
       "y": 4.7,
       "z": 175.69
     },
     {
-      "id": "steam_03",
+      "id": "steam_05",
       "type": "steam",
       "x": 26.52,
       "y": 6.83,
       "z": 172.98
     },
     {
-      "id": "steam_04",
+      "id": "steam_06",
       "type": "steam",
       "x": -41.19,
       "y": 2.45,
       "z": 167.74
     },
     {
-      "id": "steam_05",
+      "id": "steam_07",
       "type": "steam",
       "x": 38.45,
       "y": 6.7,
@@ -719,7 +733,7 @@
       "molten": true
     },
     {
-      "id": "steam_06",
+      "id": "steam_08",
       "type": "steam",
       "x": 186.0,
       "y": 15.46,
@@ -735,7 +749,7 @@
       "molten": true
     },
     {
-      "id": "steam_07",
+      "id": "steam_09",
       "type": "steam",
       "x": 167.0,
       "y": 19.32,
@@ -751,7 +765,7 @@
       "molten": true
     },
     {
-      "id": "steam_08",
+      "id": "steam_10",
       "type": "steam",
       "x": 93.0,
       "y": 8.28,
@@ -1163,65 +1177,65 @@
     {
       "id": "campfire_33",
       "type": "campfire",
-      "x": 148.54,
-      "y": 48.62,
-      "z": -20.28
-    },
-    {
-      "id": "campfire_34",
-      "type": "campfire",
       "x": 182.99,
       "y": 33.42,
       "z": 136.98
     },
     {
+      "id": "campfire_34",
+      "type": "campfire",
+      "x": 212.09,
+      "y": 57.64,
+      "z": -1.9
+    },
+    {
       "id": "campfire_35",
       "type": "campfire",
-      "x": 49.34,
-      "y": 57.77,
-      "z": 90.31
+      "x": 129.17,
+      "y": 40.12,
+      "z": 221.39
     },
     {
       "id": "campfire_36",
       "type": "campfire",
-      "x": 212.08,
-      "y": 57.95,
-      "z": 8.56
+      "x": 202.29,
+      "y": 48.2,
+      "z": 8.68
     },
     {
       "id": "campfire_37",
       "type": "campfire",
-      "x": 83.16,
-      "y": 57.87,
-      "z": 62.97
+      "x": 54.41,
+      "y": 47.73,
+      "z": 94.48
     },
     {
       "id": "campfire_38",
       "type": "campfire",
-      "x": 168.52,
-      "y": 57.43,
-      "z": 234.72
+      "x": 19.3,
+      "y": 56.17,
+      "z": 187.02
     },
     {
       "id": "campfire_39",
       "type": "campfire",
-      "x": 152.73,
-      "y": 35.8,
-      "z": 37.21
+      "x": 192.25,
+      "y": 41.1,
+      "z": 123.68
     },
     {
       "id": "campfire_40",
       "type": "campfire",
-      "x": 174.4,
-      "y": 48.89,
-      "z": 225.97
+      "x": 132.5,
+      "y": 48.44,
+      "z": 231.17
     },
     {
       "id": "campfire_41",
       "type": "campfire",
-      "x": 187.73,
-      "y": 57.8,
-      "z": 224.08
+      "x": 189.39,
+      "y": 34.96,
+      "z": 15.97
     },
     {
       "id": "campfire_42",
@@ -1233,51 +1247,51 @@
     {
       "id": "campfire_43",
       "type": "campfire",
-      "x": 96.9,
-      "y": 47.93,
-      "z": 67.07
+      "x": 199.48,
+      "y": 41.19,
+      "z": 105.86
     },
     {
       "id": "campfire_44",
-      "type": "campfire",
-      "x": 198.02,
-      "y": 48.44,
-      "z": 128.53
-    },
-    {
-      "id": "campfire_45",
       "type": "campfire",
       "x": 110.22,
       "y": 48.03,
       "z": 63.59
     },
     {
+      "id": "campfire_45",
+      "type": "campfire",
+      "x": 137.78,
+      "y": 57.92,
+      "z": -30.16
+    },
+    {
       "id": "campfire_46",
       "type": "campfire",
-      "x": 159.3,
-      "y": 40.57,
-      "z": 224.37
+      "x": 145.54,
+      "y": 45.48,
+      "z": -53.28
     },
     {
       "id": "campfire_47",
       "type": "campfire",
-      "x": 136.71,
-      "y": 48.1,
-      "z": 231.79
+      "x": 200.28,
+      "y": 41.28,
+      "z": 79.81
     },
     {
       "id": "campfire_48",
       "type": "campfire",
-      "x": 127.88,
-      "y": 39.14,
-      "z": 61.8
+      "x": 80.9,
+      "y": 57.86,
+      "z": 63.57
     },
     {
       "id": "campfire_49",
       "type": "campfire",
-      "x": 115.22,
-      "y": 57.95,
-      "z": 49.85
+      "x": 140.44,
+      "y": 48.53,
+      "z": 13.46
     },
     {
       "id": "torch_40",
@@ -1287,7 +1301,7 @@
       "z": 209.02
     },
     {
-      "id": "steam_09",
+      "id": "steam_11",
       "type": "steam",
       "x": 129.64,
       "y": 15.479999999999999,
@@ -1296,114 +1310,114 @@
     {
       "id": "torch_41",
       "type": "torch",
-      "x": 58.54,
-      "y": 33.08,
-      "z": 99.45
+      "x": 59.47,
+      "y": 41.63,
+      "z": 206.65
     },
     {
-      "id": "steam_10",
+      "id": "steam_12",
       "type": "steam",
-      "x": 58.54,
-      "y": 32.48,
-      "z": 99.45
+      "x": 59.47,
+      "y": 41.03,
+      "z": 206.65
     },
     {
       "id": "torch_42",
-      "type": "torch",
-      "x": 48.07,
-      "y": 20.12,
-      "z": 190.84
-    },
-    {
-      "id": "steam_11",
-      "type": "steam",
-      "x": 48.07,
-      "y": 19.52,
-      "z": 190.84
-    },
-    {
-      "id": "torch_43",
       "type": "torch",
       "x": 23.69,
       "y": 41.71,
       "z": 136.2
     },
     {
-      "id": "steam_12",
+      "id": "steam_13",
       "type": "steam",
       "x": 23.69,
       "y": 41.11,
       "z": 136.2
     },
     {
-      "id": "torch_44",
+      "id": "torch_43",
       "type": "torch",
-      "x": 137.92,
-      "y": 43.48,
-      "z": 17.11
+      "x": 209.02,
+      "y": 44.12,
+      "z": -27.57
     },
     {
-      "id": "steam_13",
+      "id": "steam_14",
       "type": "steam",
-      "x": 137.92,
-      "y": 42.879999999999995,
-      "z": 17.11
+      "x": 209.02,
+      "y": 43.519999999999996,
+      "z": -27.57
+    },
+    {
+      "id": "torch_44",
+      "type": "torch",
+      "x": 141.65,
+      "y": 44.25,
+      "z": -45.68
+    },
+    {
+      "id": "steam_15",
+      "type": "steam",
+      "x": 141.65,
+      "y": 43.65,
+      "z": -45.68
     },
     {
       "id": "torch_45",
+      "type": "torch",
+      "x": 184.04,
+      "y": 27.99,
+      "z": 130.73
+    },
+    {
+      "id": "steam_16",
+      "type": "steam",
+      "x": 184.04,
+      "y": 27.389999999999997,
+      "z": 130.73
+    },
+    {
+      "id": "torch_46",
       "type": "torch",
       "x": 183.2,
       "y": 19.25,
       "z": -52.48
     },
     {
-      "id": "steam_14",
+      "id": "steam_17",
       "type": "steam",
       "x": 183.2,
       "y": 18.65,
       "z": -52.48
     },
     {
-      "id": "torch_46",
+      "id": "torch_47",
       "type": "torch",
       "x": 137.23,
       "y": 25.88,
       "z": 60.29
     },
     {
-      "id": "steam_15",
+      "id": "steam_18",
       "type": "steam",
       "x": 137.23,
       "y": 25.279999999999998,
       "z": 60.29
     },
     {
-      "id": "torch_47",
-      "type": "torch",
-      "x": 203.22,
-      "y": 43.74,
-      "z": -42.8
-    },
-    {
-      "id": "steam_16",
-      "type": "steam",
-      "x": 203.22,
-      "y": 43.14,
-      "z": -42.8
-    },
-    {
       "id": "torch_48",
       "type": "torch",
-      "x": 206.53,
-      "y": 43.37,
-      "z": 75.58
+      "x": 144.73,
+      "y": 33.11,
+      "z": 26.6
     },
     {
-      "id": "steam_17",
+      "id": "steam_19",
       "type": "steam",
-      "x": 206.53,
-      "y": 42.769999999999996,
-      "z": 75.58
+      "x": 144.73,
+      "y": 32.51,
+      "z": 26.6
     },
     {
       "id": "torch_49",
@@ -1491,8 +1505,8 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "d1136fc14904479ecbc7c74c045435a1f3acb7d3f7edf67bf68621ff49de2a04",
-    "valley_layout.py": "2e5b964a5bee3609c983a4bca3af2c3532b27499e56594603669527b8a9fa03f",
-    "valley_region.py": "7c2476a1fb43caa1e9837a50a38ccd69578ad2d892dbbf938e6f2da3ea963b01"
+    "valley_dress.py": "8dbd54104cdb934b6cce8df56e69fc13b4eda8b35581e7424e28d6db001c3ed0",
+    "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
+    "valley_region.py": "212e803932dce58c09b067fb7aaa22755f95aeef1049cc532f6a5c53041a1403"
   }
 }
