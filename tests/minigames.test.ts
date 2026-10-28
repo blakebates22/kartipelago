@@ -80,7 +80,7 @@ describe("the mini-games", () => {
     expect(g.winner).toBe(0);
   });
 
-  it("Crumble Rink: the ice cracks where you drive and falls; through it, you're out", () => {
+  it("Crumble Rink: thin ice cracks where you drive, breaks under the next kart; through it, you're out", () => {
     const g = createMiniGame(minigameById("crumble")!, arena, 4, 3);
     const ice = g.ice!;
     expect(ice.state.length).toBeGreaterThan(100);
@@ -90,18 +90,27 @@ describe("the mini-games", () => {
     // Standing still (the countdown) cracks nothing.
     for (let k = 0; k < 60 * (RULES.graceSec + 1); k++) g.step(ks, 1 / 60);
     expect(ice.state.every((s) => s === 0)).toBe(true);
-    // Kart 1 drives: the tile under it cracks, then falls; it's out if it stays.
+    // Kart 1 drives over a tile: it cracks, and holds.
     ks[1]!.speed = 10;
     g.step(ks, 1 / 60);
     const t = ice.at(ks[1]!.x, ks[1]!.z);
     expect(ice.state[t]).toBe(1);
-    for (let k = 0; k < 60 * (RULES.crackSec + 0.2); k++) g.step(ks, 1 / 60);
-    expect(g.out[1]).toBe(true);
-    // Off the ice: out too.
-    Object.assign(ks[2]!, { x: 80, z: 0 });
+    for (let k = 0; k < 60 * 3; k++) g.step(ks, 1 / 60);
+    expect(ice.state[t]).toBe(1);
+    expect(g.out[1]).toBe(false);
+    // Kart 2 drives onto it: it breaks, and if 2 stays there, it falls through.
+    Object.assign(ks[2]!, { x: ks[1]!.x, z: ks[1]!.z, speed: 10 });
+    Object.assign(ks[1]!, { x: 25, z: 5, speed: 0 });
     g.step(ks, 1 / 60);
+    expect(ice.state[t]).toBe(3);
+    for (let k = 0; k < 60 * (RULES.breakSec + 0.2); k++) g.step(ks, 1 / 60);
+    expect(ice.state[t]).toBe(2);
     expect(g.out[2]).toBe(true);
-    // The edge crumbles in over time; the last one on the ice wins.
+    // Off the ice: out too.
+    Object.assign(ks[1]!, { x: 80, z: 0 });
+    g.step(ks, 1 / 60);
+    expect(g.out[1]).toBe(true);
+    // The last one on the ice wins.
     Object.assign(ks[3]!, { x: 200, z: 0 });
     g.step(ks, 1 / 60);
     expect(g.winner).toBe(0);

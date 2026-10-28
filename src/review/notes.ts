@@ -88,6 +88,27 @@ export interface NoteStore {
   shotUrl(note: ReviewNote): string | undefined;
   /** Everything as one file (for EXPORT). */
   exportFile(): ReviewFile;
+  /** Notes kept in this browser that haven't reached the repo yet. */
+  pending(): number;
+}
+
+/**
+ * Give every note its own number (Blake, Oct 28: notes saved while the dev server was
+ * away all came out as #52): the first of a number keeps it, the others take the next
+ * free ones. Returns the notes it renumbered.
+ */
+export function renumber(notes: ReviewNote[]): ReviewNote[] {
+  const seen = new Set<number>();
+  let next = Math.max(0, ...notes.map((n) => n.number)) + 1;
+  const changed: ReviewNote[] = [];
+  for (const n of notes) {
+    if (seen.has(n.number) || !(n.number > 0)) {
+      n.number = next++;
+      changed.push(n);
+    }
+    seen.add(n.number);
+  }
+  return changed;
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -152,26 +173,49 @@ export async function openStore(
     if (i >= 0) notes[i] = n;
     else notes.push(n);
   };
-  // Send any notes kept in this browser earlier up to the repo.
-  let synced = 0;
-  if (repo) {
+  /** Send the notes kept in this browser up to the repo (how many went). */
+  const flush = async () => {
     const backlog = readLocal(track);
+    if (!backlog.length) return 0;
+    // (Numbers clash when notes were made while the repo was away: sort them out first.)
+    for (const n of backlog) if (!notes.some((x) => x.id === n.id)) notes.push(n);
+    renumber(notes);
     const left: ReviewNote[] = [];
+    let sent = 0;
     for (const n of backlog) {
-      // Already in the repo (sent before, or added by Claude): the repo's copy wins.
-      if (notes.some((x) => x.id === n.id)) continue;
+      const mine = notes.find((x) => x.id === n.id) ?? n;
       try {
-        const shot = n.shot?.startsWith("data:") ? n.shot : undefined;
-        const { shot: _drop, ...rest } = n;
+        const shot = mine.shot?.startsWith("data:") ? mine.shot : undefined;
+        const { shot: _drop, ...rest } = mine;
         void _drop;
-        upsert(await post(rest as ReviewNote, shot));
-        synced++;
+        const saved = await post(
+          { ...rest, shot: shot ? undefined : mine.shot } as ReviewNote,
+          shot,
+        );
+        upsert(saved);
+        sent++;
       } catch {
-        left.push(n);
+        left.push(mine);
       }
     }
     writeLocal(track, left);
-  } else notes = readLocal(track);
+    return sent;
+  };
+  // Send any notes kept in this browser earlier up to the repo.
+  let synced = 0;
+  if (repo) {
+    // (Renumber what's in the repo too, and save the ones that changed.)
+    for (const n of renumber(notes))
+      try {
+        upsert(await post(n));
+      } catch {
+        // Next time.
+      }
+    synced = await flush();
+  } else {
+    notes = readLocal(track);
+    renumber(notes);
+  }
   return {
     where: repo ? "repo" : "local",
     synced,
@@ -184,6 +228,8 @@ export async function openStore(
           const saved = await post(note, shot);
           upsert(saved);
           Object.assign(note, saved);
+          // The repo's answering: anything kept in the browser meanwhile goes up now.
+          await flush();
           return;
         } catch (err) {
           // Keep it in the browser so nothing is lost; it goes up next time.
@@ -201,8 +247,18 @@ export async function openStore(
     },
     async remove(id) {
       if (repo) await fetch(`${base}/note/${encodeURIComponent(id)}`, { method: "DELETE" });
-      notes = notes.filter((n) => n.id !== id);
+      // (In place: the review screen shows this same list.)
+      const i = notes.findIndex((n) => n.id === id);
+      if (i >= 0) notes.splice(i, 1);
       if (!repo) writeLocal(track, notes);
+      else
+        writeLocal(
+          track,
+          readLocal(track).filter((n) => n.id !== id),
+        );
+    },
+    pending() {
+      return repo ? readLocal(track).length : 0;
     },
     shotUrl(note) {
       if (!note.shot) return undefined;

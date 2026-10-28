@@ -206,6 +206,8 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
 }
 
 const KART_COLORS = ["#ffd23f", "#ff5a4f", "#2f80ed", "#3fbf6a"];
+const CRACKED = new THREE.Color("#7d98ad");
+const BREAKING = new THREE.Color("#2a4258");
 
 /** The rules' things in the arena. */
 function arenaView(session: Session, g: MiniGame) {
@@ -342,16 +344,21 @@ function arenaView(session: Session, g: MiniGame) {
           const c = base[n]!;
           tileColor.setRGB(c[0]!, c[1]!, c[2]!);
           if (st === 1) {
-            // Cracking: shivering, darker as it goes.
-            const k = Math.max(0, Math.min(1, 1 - ice.timer[n]! / RULES.crackSec));
-            dx = Math.sin(t * 61 + n) * 0.06 * (0.3 + k);
-            dz = Math.cos(t * 53 + n) * 0.06 * (0.3 + k);
-            tileColor.lerp(new THREE.Color("#5a7f9e"), 0.25 + k * 0.45);
+            // Cracked: greyer, a little sunk.
+            tileColor.lerp(CRACKED, 0.35);
+            y -= 0.04;
+          } else if (st === 3) {
+            // Breaking: shivering, darker as it goes.
+            const k = Math.max(0, Math.min(1, 1 - ice.timer[n]! / RULES.breakSec));
+            dx = Math.sin(t * 61 + n) * 0.08 * (0.4 + k);
+            dz = Math.cos(t * 53 + n) * 0.08 * (0.4 + k);
+            tileColor.lerp(BREAKING, 0.45 + k * 0.4);
+            y -= 0.1;
           } else if (st === 2) {
             const f = ice.timer[n]!;
             y -= 9 * f * f;
             scale = f > 1.6 ? 0 : 1;
-            tileColor.lerp(new THREE.Color("#2a4258"), 0.7);
+            tileColor.lerp(BREAKING, 0.8);
           }
           m4.makeScale(scale, scale, scale).setPosition(ice.x[n]! + dx, y, ice.z[n]! + dz);
           tiles.setMatrixAt(n, m4);

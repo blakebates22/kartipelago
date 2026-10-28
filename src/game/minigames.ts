@@ -14,8 +14,9 @@
  *              Ram a carrier, or hit them with an item, and they drop it. Five delivered
  *              wins.
  *   crumble    CRUMBLE RINK: the floor is ice tiles over a crevasse. A tile cracks when a
- *              kart drives over it and falls a moment later, and the edge crumbles in
- *              every few seconds. Fall and you're out; the last kart on the ice wins.
+ *              kart drives over it; drive onto a cracked tile and it breaks and falls a
+ *              moment later (keep going and you're across). The edge crumbles in every
+ *              few seconds. Fall and you're out; the last kart on the ice wins.
  *   stars      STAR FALL: stars fall out of the sky (their shadows first); drive through
  *              one where it lands to catch it (gold ones are worth three). A hit knocks one
  *              out of you. First to 15 wins.
@@ -58,7 +59,8 @@ export const MINIGAMES: MiniGameInfo[] = [
     name: "Crumble Rink",
     arena: "arena_rink",
     kind: "battle",
-    blurb: "THE ICE CRACKS WHERE YOU DRIVE AND THE EDGE CRUMBLES IN. LAST KART ON THE ICE WINS.",
+    blurb:
+      "THIN ICE: IT CRACKS WHERE YOU DRIVE, AND CRACKED ICE BREAKS UNDER THE NEXT KART. LAST ON THE ICE WINS.",
     seconds: 150,
   },
   {
@@ -154,9 +156,10 @@ export interface Star {
 export interface Ice {
   readonly x: Float32Array;
   readonly z: Float32Array;
-  /** 0 solid, 1 cracking (falls when its timer runs out), 2 gone. */
+  /** 0 solid; 1 cracked (driven over once); 3 breaking (driven onto again, or the edge
+   * crumbling: it falls when its timer runs out); 2 gone. */
   readonly state: Uint8Array;
-  /** Seconds left to fall (cracking), or since it fell (gone). */
+  /** Seconds since it cracked (cracked), left to fall (breaking), since it fell (gone). */
   readonly timer: Float32Array;
   /** Its distance from the middle, in tiles (the edge crumbles in by these). */
   readonly ring: Uint8Array;
@@ -270,16 +273,17 @@ export const RULES = {
   bumpSpeed: 7,
   /** After dropping one, how long before you can grab again. */
   dropCooldown: 1.2,
-  // Crumble Rink.
-  /** Seconds from a tile cracking to its fall. */
-  crackSec: 1.1,
+  // Crumble Rink: thin ice. The first kart over a tile cracks it; driving onto a cracked
+  // tile breaks it (it falls a moment later: keep going and you're across).
+  /** Seconds from a tile breaking to its fall. */
+  breakSec: 0.5,
   /** A kart cracks the tile under it only when moving at least this fast (standing on
    * the start doesn't). */
   crackSpeed: 3,
   /** The first seconds nothing cracks (the countdown). */
   graceSec: 4,
   /** The edge crumbles in a ring every this many seconds. */
-  edgeEvery: 9,
+  edgeEvery: 10,
   // Star Fall.
   starsToWin: 15,
   starEvery: 1.6,
@@ -309,6 +313,9 @@ export function createMiniGame(
   let starIn = 0;
   let edgeIn = RULES.edgeEvery;
   let edgeRing = ice ? Math.max(...ice.ring) : 0;
+  /** The tile each kart was on last step (Crumble Rink: a tile breaks as you drive onto
+   * it, not while you're on it). */
+  const onTile = new Array<number>(karts).fill(-1);
   /** Seconds each kart lasted on the ice (Crumble Rink's tie-break). */
   const lasted = new Array<number>(karts).fill(0);
   const goals: ({ x: number; z: number; t: number } | undefined)[] = new Array(karts);
@@ -431,15 +438,22 @@ export function createMiniGame(
         if (w >= 0) winner = w;
       } else if (info.id === "crumble" && ice) {
         if (played > RULES.graceSec) {
-          // Where karts drive, the ice cracks.
+          // Where karts drive, the ice cracks; onto cracked ice, it breaks.
           for (let i = 0; i < karts; i++) {
             if (out[i]) continue;
             const k = ks[i]!;
             const t = ice.at(k.x, k.z);
-            if (t >= 0 && ice.state[t] === 0 && Math.abs(k.speed) > RULES.crackSpeed) {
+            const entered = t !== onTile[i];
+            onTile[i] = t;
+            if (t < 0 || Math.abs(k.speed) <= RULES.crackSpeed) continue;
+            if (ice.state[t] === 0) {
               ice.state[t] = 1;
-              ice.timer[t] = RULES.crackSec;
+              ice.timer[t] = 0;
               say("crack", i);
+            } else if (ice.state[t] === 1 && entered) {
+              ice.state[t] = 3;
+              ice.timer[t] = RULES.breakSec;
+              say("break", i);
             }
           }
           // And the edge crumbles in, a ring at a time.
@@ -447,22 +461,22 @@ export function createMiniGame(
           if (edgeIn <= 0 && edgeRing > 2) {
             edgeIn = RULES.edgeEvery;
             for (let t = 0; t < ice.state.length; t++)
-              if (ice.ring[t]! >= edgeRing && ice.state[t] === 0) {
-                ice.state[t] = 1;
-                ice.timer[t] = RULES.crackSec + rand() * 1.4;
+              if (ice.ring[t]! >= edgeRing && (ice.state[t] === 0 || ice.state[t] === 1)) {
+                ice.state[t] = 3;
+                ice.timer[t] = RULES.breakSec + 0.6 + rand() * 1.6;
               }
             edgeRing -= 1;
             say("edge", -1);
           }
         }
         for (let t = 0; t < ice.state.length; t++) {
-          if (ice.state[t] === 1) {
+          if (ice.state[t] === 3) {
             ice.timer[t]! -= dt;
             if (ice.timer[t]! <= 0) {
               ice.state[t] = 2;
               ice.timer[t] = 0;
             }
-          } else if (ice.state[t] === 2) ice.timer[t]! += dt;
+          } else ice.timer[t]! += dt;
         }
         // Over a hole, or off the ice: you fall.
         for (let i = 0; i < karts; i++) {
@@ -565,16 +579,22 @@ export function createMiniGame(
         // afresh now and then, or when the ice under the goal goes.
         const g = goals[i];
         const t = g ? ice.at(g.x, g.z) : -1;
-        if (g && g.t > played && t >= 0 && ice.state[t] === 0 && dist(g) > 4) return g;
+        if (g && g.t > played && t >= 0 && ice.state[t] === 0 && dist(g) > 5) return g;
         let bestT = -1;
         let bestV = -Infinity;
-        for (let n = 0; n < 14; n++) {
+        for (let n = 0; n < 24; n++) {
           const c = Math.floor(rand() * ice.state.length);
           if (ice.state[c] !== 0) continue;
           const p = { x: ice.x[c]!, z: ice.z[c]! };
           const d = dist(p);
           if (d < 6 || d > 40) continue;
-          const v = solidAround(p.x, p.z, 9) - d * 0.15 - ice.ring[c]! * 0.6;
+          // (How much cracked ice lies on the way: crossing it breaks it.)
+          let bad = 0;
+          for (let f = 0.15; f < 1; f += 0.15) {
+            const u = ice.at(k.x + (p.x - k.x) * f, k.z + (p.z - k.z) * f);
+            if (u < 0 || ice.state[u] !== 0) bad += u >= 0 && ice.state[u] === 1 ? 1 : 4;
+          }
+          const v = solidAround(p.x, p.z, 9) - d * 0.15 - ice.ring[c]! * 0.6 - bad * 6;
           if (v > bestV) {
             bestV = v;
             bestT = c;

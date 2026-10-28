@@ -317,9 +317,9 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
       del.onclick = (e) => {
         e.stopPropagation();
         if (del.dataset.sure) {
-          void store?.remove(n.id).then(() => {
+          void store?.remove(n.id).then(async () => {
             if (n.kind === "edit") revertEdit(scene, n);
-            notes = notes.filter((x) => x.id !== n.id);
+            notes = (await store?.load()) ?? notes.filter((x) => x.id !== n.id);
             refreshMarkers();
             renderList();
           });
@@ -730,13 +730,17 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     if (!store) return;
     try {
       await store.save(n, shot);
-      const i = notes.findIndex((x) => x.id === n.id);
-      if (i >= 0) notes[i] = n;
-      else notes.push(n);
       where.textContent = savedWhere();
+      if (store.where === "repo" && !store.pending()) banner.className = "banner";
     } catch (err) {
+      // Kept in this browser (it goes up to the repo as soon as the dev server answers):
+      // still one of the notes, in the list, with its own number. Say so loudly.
       where.textContent = `Couldn't save: ${(err as Error).message}`;
+      banner.className = "banner bad";
+      banner.textContent = `NOT SAVED TO THE PROJECT (${store.pending()} waiting): ${(err as Error).message}. Is npm run dev still running? They're kept in this browser and sent up with your next save.`;
     }
+    // (The store's list is the one list: whatever happened, show it.)
+    notes = await store.load();
     refreshMarkers();
     renderList();
   }
