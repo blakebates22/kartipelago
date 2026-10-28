@@ -1030,12 +1030,15 @@ const DSQUARE = squareOf("dragon_kingdom");
 const CITADEL = (() => {
   const g = regionById("dragon_kingdom")?.gateways.find((g) => g.king);
   if (!g) return { x: 0, z: 0, heading: 0 };
-  // (The court stands out in the open in front of the gate: the shortened region's walls
-  // come in close round the gate itself.)
-  const OUT = 22;
+  // (The court stands out in the open in front of the gate, in the King's deep courtyard
+  // (dragon_layout.py's citadel pocket).)
+  const OUT = 40;
+  const SIDE = -9;
+  const fx = Math.sin(g.heading);
+  const fz = Math.cos(g.heading);
   return {
-    x: g.x + Math.sin(g.heading) * OUT,
-    z: g.z + Math.cos(g.heading) * OUT,
+    x: g.x + fx * OUT + fz * SIDE,
+    z: g.z + fz * OUT - fx * SIDE,
     heading: g.heading,
   };
 })();
@@ -1151,29 +1154,29 @@ const FOUR = ["cinderjaw", "rimefang", "scorchwind", "tidewyrm"];
     king: { kind: "dragon", at: P(-14, 0), heading: CITADEL.heading, scale: 1.4, look: "king" },
     cinderjaw: {
       kind: "dragon",
-      at: P(-6, -40),
-      heading: face(P(-6, -40), you),
+      at: P(-4, -28),
+      heading: face(P(-4, -28), you),
       scale: 0.9,
       look: "ember",
     },
     rimefang: {
       kind: "dragon",
-      at: P(-6, 40),
-      heading: face(P(-6, 40), you),
+      at: P(-4, 28),
+      heading: face(P(-4, 28), you),
       scale: 0.9,
       look: "frost",
     },
     scorchwind: {
       kind: "dragon",
-      at: P(-26, -44),
-      heading: face(P(-26, -44), you),
+      at: P(-22, -30),
+      heading: face(P(-22, -30), you),
       scale: 0.9,
       look: "sand",
     },
     tidewyrm: {
       kind: "dragon",
-      at: P(-26, 44),
-      heading: face(P(-26, 44), you),
+      at: P(-22, 30),
+      heading: face(P(-22, 30), you),
       scale: 0.9,
       look: "sea",
     },
@@ -1186,8 +1189,8 @@ const FOUR = ["cinderjaw", "rimefang", "scorchwind", "tidewyrm"];
     },
     ...extra,
   });
-  const wide: Shot = { from: P3(56, 8, 18), to: P3(48, 7, 14), look: P3(0, 9, 0) };
-  const onHeart: Shot = { from: P3(30, 4, -24), to: P3(28, 3.6, -25), look: P3(12, 4, -18) };
+  const wide: Shot = { from: P3(44, 14, 4), to: P3(40, 12, 3), look: P3(-2, 10, 0) };
+  const onHeart: Shot = { from: P3(30, 10, -10), to: P3(28, 9, -11), look: P3(12, 3, -18) };
   // Lumen the hatchling, by the stone (a close-up of a dragon so small would be inside it).
   const onLumen: Shot = { from: P3(25, 2.6, -9), to: P3(24.5, 2.5, -9.6), look: P3(18, 2.2, -15) };
   const allPose = (p: StoryPose, who = FOUR) =>
@@ -1242,7 +1245,8 @@ const FOUR = ["cinderjaw", "rimefang", "scorchwind", "tidewyrm"];
         lumen_dragon: {
           kind: "dragon",
           at: P(18, -15),
-          heading: face(P(18, -15), heart),
+          // (He speaks to the Elder; he turns to the stone to strike it.)
+          heading: face(P(18, -15), P(24, 6)),
           scale: 0.32,
           look: "lumen",
           hidden: true,
@@ -1275,14 +1279,17 @@ const FOUR = ["cinderjaw", "rimefang", "scorchwind", "tidewyrm"];
               pose: { lumen_dragon: "rear" },
             },
           },
-          2: { fx: { gesture: { elder: "think" }, pose: { lumen_dragon: "turn" } } },
+          2: { fx: { gesture: { elder: "think" } } },
           3: { cam: onLumen, fx: { pose: { lumen_dragon: "idle" } } },
           4: { fx: { pose: { king: "rear" } } },
-          5: { cam: onLumen, fx: { pose: { lumen_dragon: "turn" } } },
+          5: { cam: onLumen },
           6: { cam: { from: P3(34, 5, -4), to: P3(33, 5, -5), look: P3(18, 3, -15) } },
           7: { cam: onLumen, fx: { music: "sorrow", gesture: { elder: "shake" } } },
           8: {
             cam: onHeart,
+            moves: [
+              { actor: "lumen_dragon", to: P(18, -15), dur: 0.6, heading: face(P(18, -15), heart) },
+            ],
             fx: {
               flash: true,
               shake: 1.2,

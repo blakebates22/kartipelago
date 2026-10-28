@@ -945,7 +945,7 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen, Lumen (as a dragon).
     NARRATOR (CAPTION)
         LUMEN THROWS BACK HIS ROBE. HIS WINGS UNFOLD.
 
-    [Lumen the dragon turns. Elder Mossback stops to think.]
+    [Elder Mossback stops to think.]
     ELDER MOSSBACK
         LUMEN... THE EGG I FOUND IN THE RIVER. YOU'RE A DRAGON.
 
@@ -957,7 +957,6 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen, Lumen (as a dragon).
     KING PYRRHAX
         A HATCHLING? STEP AWAY FROM THE STONE!
 
-    [Lumen the dragon turns.]
     LUMEN
         AWAKE, THE HEART STONE CAN BE BROKEN. ASLEEP AGAIN, IT KEEPS
         EVERY DRAGON BEHIND THE BORDER.
@@ -970,8 +969,8 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen, Lumen (as a dragon).
     LUMEN
         I'M SORRY, ELDER. BREAKING IT TAKES ALL MY LIGHT.
 
-    [Lumen the dragon breathes light. A flash. The ground shakes. Music:
-    the shattering.]
+    [Lumen the dragon moves. A flash. The ground shakes. Music: the
+    shattering.]
     NARRATOR (CAPTION)
         LUMEN STRIKES THE WAKING STONE. FAR AWAY, FOUR CRACKED STONES
         ANSWER.
