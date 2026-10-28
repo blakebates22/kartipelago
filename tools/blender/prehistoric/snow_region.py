@@ -174,7 +174,6 @@ def main():
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
-    ice_bells(c, ground)
     puzzle_kit.pen(c, "return", "Hot Spring", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("frost_stone", "wall"),
                    ground(*RETURN), height=6.0)
     puzzle_kit.pen(c, "secret", "Old Store", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("citadel_stone", "wall"),
@@ -388,12 +387,6 @@ def ruined(c, ground):
         if L.wall_sd(x, y) < -16 and paint.road_clear(c, x, y, 8.0):
             spots.append((x, y))
     ruin.shards(c, "Ice Shard", spots, ground, ("glacier_ice", "wall"), seed=7)
-
-
-def ice_bells(c, ground):
-    puzzle_kit.pen(c, "ice_bells", "Bell Hut", *HUT, pb.to_road(c, *HUT), HUT_HALF, HUT_GAP, ("frost_stone", "wall"),
-                   ground(*HUT), roof=("pine_snow", "wall"), height=6.0)
-    puzzle_kit.switches(c, "ice_bells", BELLS, ground, lanterns=LANTERNS)
 
 
 def dress(c, ground, spots):

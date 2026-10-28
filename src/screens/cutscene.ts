@@ -113,6 +113,7 @@ export function stagedSceneScreen(
       if (a) show(a, false);
     }
     if (b?.fx?.horn) game.sounds.gong(3);
+    if (b?.fx?.music) void game.audio.music.play(b.fx.music, { fade: 0.8 });
     for (const m of b?.moves ?? []) {
       const a = actors.get(m.actor);
       if (!a) continue;

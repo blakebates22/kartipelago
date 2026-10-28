@@ -12,7 +12,6 @@
  * Positions are game coordinates (x, z; heading 0 faces +z, the kart's convention).
  */
 import type { KingdomId } from "../adventure/data";
-import type { Puzzle } from "./puzzles";
 
 export interface Gateway {
   id: string;
@@ -83,8 +82,6 @@ export interface Region {
   /** Adventure: where the champion waits to race you 1 on 1 once round the ring (beside
    * its start line; game/tracks.ts has the region as a race under its package's id). */
   challenge?: { x: number; z: number; heading: number };
-  /** Its switches and puzzles (src/overworld/puzzles.ts). */
-  puzzles?: Puzzle[];
   /** Adventure: the smugglers' cave (the underground games and their tunnel out), in a
    * walled yard whose way in the sketchy guards keep (the build's puzzle_gate
    * "return"): its gate, and the cave's mouth inside. */
@@ -210,27 +207,6 @@ export const REGIONS: Region[] = [
         locked: "CINDERJAW'S FIRE SPLIT THE CLIFF, BUT THE GORGE STILL BURNS: BEAT HIM FIRST",
       },
     ],
-    puzzles: [
-      // The Three Stones: an old stone pen in the camp's north meadow, its gate shut. Press
-      // the three switch stones round the camp before the drums stop and the gate sinks.
-      // Behind it: the valley's hidden key. (The build's puzzle_gate and puzzle_switch
-      // entities are checked against these in tests/overworld.test.ts.)
-      {
-        id: "three_stones",
-        label: "THE THREE STONES",
-        look: "stone",
-        hint: "THE THREE STONES! PRESS THE OTHER 2 BEFORE THE DRUMS STOP",
-        switches: [
-          { x: -58, z: -34 },
-          { x: 22, z: -54 },
-          { x: -36, z: -14 },
-        ],
-        radius: 3.5,
-        seconds: 30,
-        gate: { x: -12.14, z: -58.34, heading: 1.4042, width: 9 },
-        prize: { kind: "key", x: -22, z: -60 },
-      },
-    ],
   },
   {
     // The second region (tools/blender/prehistoric/snow_layout.py, snow_region.py): walled
@@ -325,28 +301,6 @@ export const REGIONS: Region[] = [
         locked: "RIMEFANG'S ICE WALLS THE PASS SHUT: BEAT HIM FIRST",
       },
     ],
-
-    puzzles: [
-      // The Ice Bells: a frost-stone hut on an island in the frozen lake, its ice door shut.
-      // Ring the three bells out on the ice in order; the clue is their lanterns (one, two,
-      // three). A wrong bell and they all go quiet. Behind the door: the kingdom's hidden key.
-      {
-        id: "ice_bells",
-        label: "THE ICE BELLS",
-        look: "bell",
-        hint: "RING THE BELLS FROM THE FEWEST LANTERNS TO THE MOST",
-        ordered: true,
-        switches: [
-          { x: 90, z: 60, lanterns: 1 },
-          { x: 150, z: 112, lanterns: 2 },
-          { x: 104, z: 132, lanterns: 3 },
-        ],
-        radius: 3.5,
-        seconds: 0,
-        gate: { x: 127.89, z: 90.5, heading: 1.722, width: 9 },
-        prize: { kind: "key", x: 118, z: 92 },
-      },
-    ],
   },
   {
     // The third region (tools/blender/prehistoric/desert_layout.py, desert_region.py): walled
@@ -425,26 +379,6 @@ export const REGIONS: Region[] = [
         blocker: { kind: "drift", width: 13 },
         opensAfter: "desert",
         locked: "SCORCHWIND'S DRIFTS BURY THE DUST ROAD: BEAT HIM FIRST",
-      },
-    ],
-    puzzles: [
-      // The Crater Stones: a sandstone vault on the crater's floor, its gate shut. Press the
-      // four stones round the crater within 30 seconds.
-      {
-        id: "crater_stones",
-        label: "THE CRATER STONES",
-        look: "stone",
-        hint: "THE CRATER STONES! PRESS THE OTHER 3 BEFORE THE DRUMS STOP",
-        switches: [
-          { x: 50, z: 168 },
-          { x: -78, z: 150 },
-          { x: 30, z: 234 },
-          { x: -40, z: 192 },
-        ],
-        radius: 3.5,
-        seconds: 30,
-        gate: { x: -42.43, z: 230.9, heading: 1.277, width: 9 },
-        prize: { kind: "key", x: -52, z: 228 },
       },
     ],
   },
@@ -526,27 +460,6 @@ export const REGIONS: Region[] = [
         blocker: { kind: "water", width: 14 },
         opensAfter: "beach",
         locked: "THE REEF LIES UNDER DEEP WATER, HELD DOWN BY TIDEWYRM: BEAT HIM FIRST",
-      },
-    ],
-    puzzles: [
-      // The Tiki Gongs: a tiki hut behind the village, its door shut. Strike the three
-      // gongs in order; the clue is their torches (one in the water park, two by the
-      // lagoon, three in the coral cove). A wrong gong and they all go quiet.
-      {
-        id: "tiki_gongs",
-        label: "THE TIKI GONGS",
-        look: "gong",
-        hint: "STRIKE THE GONGS FROM THE FEWEST TORCHES TO THE MOST",
-        ordered: true,
-        switches: [
-          { x: -188, z: -130, lanterns: 1 },
-          { x: 102, z: -24, lanterns: 2 },
-          { x: 234, z: 226, lanterns: 3 },
-        ],
-        radius: 3.5,
-        seconds: 0,
-        gate: { x: -8.21, z: -292.16, heading: 0.18, width: 9 },
-        prize: { kind: "key", x: -10, z: -302 },
       },
     ],
   },

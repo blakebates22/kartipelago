@@ -444,41 +444,6 @@
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
-      "puzzle": "three_stones",
-      "x": -12.14,
-      "z": -58.34,
-      "heading": 1.4042317437426952,
-      "width": 9.0,
-      "prize_x": -22.0,
-      "prize_z": -60.0
-    },
-    {
-      "id": "puzzle_switch_01",
-      "type": "puzzle_switch",
-      "puzzle": "three_stones",
-      "index": 0,
-      "x": -58.0,
-      "z": -34.0
-    },
-    {
-      "id": "puzzle_switch_02",
-      "type": "puzzle_switch",
-      "puzzle": "three_stones",
-      "index": 1,
-      "x": 22.0,
-      "z": -54.0
-    },
-    {
-      "id": "puzzle_switch_03",
-      "type": "puzzle_switch",
-      "puzzle": "three_stones",
-      "index": 2,
-      "x": -36.0,
-      "z": -14.0
-    },
-    {
-      "id": "puzzle_gate_02",
-      "type": "puzzle_gate",
       "puzzle": "return",
       "x": 136.84,
       "z": 172.15,
@@ -488,7 +453,7 @@
       "prize_z": 174.0
     },
     {
-      "id": "puzzle_gate_03",
+      "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
       "x": 216.5,
@@ -544,168 +509,179 @@
     {
       "id": "villager_home_02",
       "type": "villager_home",
-      "x": -125.75,
-      "z": -24.33,
-      "y": 6.93,
+      "x": 45.72,
+      "z": -45.08,
+      "y": 27.72,
       "r": 14.0,
       "n": 2,
       "folk": "valley",
-      "heading": -0.682
+      "heading": -1.75
     },
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": -96.16,
-      "z": 8.05,
-      "y": 11.66,
+      "x": -105.53,
+      "z": 7.68,
+      "y": 11.62,
       "r": 14.0,
       "n": 2,
       "folk": "valley",
-      "heading": 0.811
+      "heading": 0.788
     },
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -232.32,
-      "z": -122.8,
-      "y": 0.8,
+      "x": -155.01,
+      "z": -24.57,
+      "y": 1.51,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "valley",
-      "heading": -0.43
+      "heading": 2.268
     },
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -152.93,
-      "z": -77.19,
-      "y": 3.66,
+      "x": -154.39,
+      "z": -86.12,
+      "y": 3.36,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "valley",
-      "heading": 2.41
+      "heading": 2.225
     },
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": -114.02,
-      "z": 252.28,
-      "y": 0.41,
+      "x": -223.54,
+      "z": -118.6,
+      "y": 1.01,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "valley",
-      "heading": 2.885
+      "heading": -0.757
     },
     {
       "id": "villager_home_07",
       "type": "villager_home",
-      "x": -73.34,
-      "z": 281.15,
-      "y": 1.28,
+      "x": -218.03,
+      "z": 235.52,
+      "y": 0.17,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "valley",
-      "heading": -0.011
+      "heading": 2.676
     },
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": 245.14,
-      "z": 242.28,
-      "y": 17.95,
+      "x": -106.52,
+      "z": 250.94,
+      "y": 0.54,
       "r": 14.0,
       "n": 2,
       "folk": "valley",
-      "heading": -1.015
+      "heading": 2.929
     },
     {
       "id": "villager_home_09",
       "type": "villager_home",
-      "x": 112.06,
-      "z": 267.28,
-      "y": 10.08,
+      "x": 223.41,
+      "z": 156.11,
+      "y": 22.02,
       "r": 14.0,
       "n": 3,
       "folk": "valley",
-      "heading": 0.689
+      "heading": 0.23
     },
     {
       "id": "villager_home_10",
       "type": "villager_home",
-      "x": 182.02,
-      "z": -278.84,
-      "y": 25.02,
+      "x": 263.57,
+      "z": 137.45,
+      "y": 22.24,
       "r": 14.0,
       "n": 3,
       "folk": "valley",
-      "heading": 0.299
+      "heading": 0.2
     },
     {
       "id": "villager_home_11",
       "type": "villager_home",
-      "x": 125.64,
-      "z": -250.75,
-      "y": 23.19,
+      "x": 264.95,
+      "z": -168.94,
+      "y": 25.76,
       "r": 14.0,
       "n": 2,
       "folk": "valley",
-      "heading": 2.68
+      "heading": -1.7
+    },
+    {
+      "id": "villager_home_12",
+      "type": "villager_home",
+      "x": 114.24,
+      "z": -277.25,
+      "y": 24.23,
+      "r": 14.0,
+      "n": 2,
+      "folk": "valley",
+      "heading": 0.764
     },
     {
       "id": "steam_09",
+      "type": "steam",
+      "x": 109.28,
+      "y": 10.97,
+      "z": 268.19
+    },
+    {
+      "id": "steam_10",
       "type": "steam",
       "x": 164.79,
       "y": 18.68,
       "z": 151.75
     },
     {
-      "id": "steam_10",
+      "id": "steam_11",
       "type": "steam",
       "x": 239.39,
       "y": 17.79,
       "z": 274.51
     },
     {
-      "id": "steam_11",
+      "id": "steam_12",
       "type": "steam",
       "x": 256.85,
       "y": 22.26,
       "z": 111.79
     },
     {
-      "id": "steam_12",
+      "id": "steam_13",
       "type": "steam",
       "x": 207.61,
       "y": 19.95,
       "z": 215.54
     },
     {
-      "id": "steam_13",
+      "id": "steam_14",
       "type": "steam",
       "x": 271.63,
       "y": 19.71,
       "z": 209.57
     },
     {
-      "id": "steam_14",
+      "id": "steam_15",
       "type": "steam",
       "x": 302.58,
       "y": 22.24,
       "z": 81.33
     },
     {
-      "id": "steam_15",
+      "id": "steam_16",
       "type": "steam",
       "x": 186.36,
       "y": 17.36,
       "z": 231.19
-    },
-    {
-      "id": "steam_16",
-      "type": "steam",
-      "x": 170.17,
-      "y": 15.02,
-      "z": 235.3
     },
     {
       "id": "torch_15",
@@ -767,6 +743,6 @@
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "valley_layout.py": "d00c6c6b5ce20c1d30b8a6f63df3ee1c16e41a055f8e4b1dd2c844f61e66f6f4",
-    "valley_region.py": "60151e92e0cf33c4ee7d67fb45b439d90047edee548d0110654383bbf21449ee"
+    "valley_region.py": "0083695b9531e694c728c87fc214fcefca365ee643da48c9d9801bda8e39869e"
   }
 }

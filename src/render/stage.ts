@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { tuning } from "../core/tuning";
 import type { TrackLook } from "../world/trackPackage";
 import { applyRetroLook } from "./retro";
-import { createSkyDome, type SkyDome } from "./skyDome";
+import { createSkyDome, type SkyDome, type SkyDomeSpec } from "./skyDome";
+import type { Air } from "../overworld/air";
 
 /**
  * Render resolution: a fixed number of lines (the soft, low-resolution picture of the
@@ -51,6 +52,12 @@ export function createStage(container: HTMLElement) {
   let env: TrackLook = {};
   let dome: SkyDome | undefined;
   let lastFrame = performance.now();
+  /** The overworld's air, blended from its areas' looks (overworld/air.ts): over the
+   * track's own sun, light, sky colour and fog while it's set. */
+  let air: Air | undefined;
+  /** The overworld's areas' painted skies: the nearer one, the other faded over it. */
+  const skies = new Map<SkyDomeSpec, SkyDome>();
+  let skiesOn = false;
 
   /** A track's sky, sun and fog; an empty look is the game's default. */
   const applyEnvironment = () => {
@@ -100,6 +107,31 @@ export function createStage(container: HTMLElement) {
     return true;
   };
 
+  const applyAir = () => {
+    if (!air) return;
+    (scene.background as THREE.Color).setRGB(...air.sky);
+    if (scene.fog instanceof THREE.Fog) {
+      scene.fog.color.setRGB(...air.fog.color);
+      scene.fog.near = air.fog.near;
+      scene.fog.far = air.fog.far;
+    }
+    sun.color.setRGB(...air.sun.color);
+    sun.intensity = air.sun.intensity;
+    sunOffset
+      .set(...air.sun.direction)
+      .normalize()
+      .multiplyScalar(defaults.sunOffset.length());
+    hemi.color.setRGB(...air.ambient.sky);
+    hemi.groundColor.setRGB(...air.ambient.ground);
+    hemi.intensity = air.ambient.intensity;
+  };
+  const clearSkies = () => {
+    for (const d of skies.values()) d.dispose();
+    skies.clear();
+    skiesOn = false;
+    if (dome) dome.group.visible = true;
+  };
+
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = container;
     updateLook();
@@ -136,13 +168,56 @@ export function createStage(container: HTMLElement) {
     },
     setEnvironment(look: TrackLook | undefined) {
       env = look ?? {};
+      air = undefined;
+      clearSkies();
+      lookKey = "";
       applyEnvironment();
       resize();
     },
+    /** The overworld's blended air (undefined: the track's own look again). */
+    setAir(next: Air | undefined) {
+      air = next;
+      if (!air) {
+        lookKey = "";
+        applyEnvironment();
+        updateLook();
+      } else applyAir();
+    },
+    /**
+     * The overworld's painted skies: `under` (the nearer area's) and `over` faded over it
+     * by `t`. Each is made once and kept until the track changes (or `clear`).
+     */
+    setSkies(
+      under: { spec: SkyDomeSpec; sun?: [number, number, number] } | undefined,
+      over?: { spec: SkyDomeSpec; sun?: [number, number, number]; t: number },
+    ) {
+      const get = (x: { spec: SkyDomeSpec; sun?: [number, number, number] }) => {
+        let d = skies.get(x.spec);
+        if (!d) {
+          d = createSkyDome(x.spec, x.sun);
+          skies.set(x.spec, d);
+          scene.add(d.group);
+        }
+        return d;
+      };
+      if (!under) return clearSkies();
+      skiesOn = true;
+      if (dome) dome.group.visible = false;
+      const a = get(under);
+      const b = over && over.spec !== under.spec && over.t > 0.002 ? get(over) : undefined;
+      for (const d of skies.values()) d.group.visible = d === a || d === b;
+      a.fade(1, false);
+      b?.fade(over!.t, true);
+    },
     render: () => {
       // Live tuning edits to the look apply at once.
-      if (updateLook()) resize();
+      if (updateLook()) {
+        resize();
+        applyAir();
+      }
       const now = performance.now();
+      const step = Math.min(0.1, (now - lastFrame) / 1000);
+      if (skiesOn) for (const d of skies.values()) if (d.group.visible) d.update(camera, step);
       dome?.update(camera, Math.min(0.1, (now - lastFrame) / 1000));
       lastFrame = now;
       renderer.render(scene, camera);

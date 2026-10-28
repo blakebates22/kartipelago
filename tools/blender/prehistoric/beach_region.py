@@ -187,9 +187,6 @@ def main():
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
-    puzzle_kit.pen(c, "tiki_gongs", "Tiki Hut", *HUT, pb.to_road(c, *HUT), 10.0, 4.5, ("tiki_wood", "wall"), ground(*HUT),
-                   roof=("thatch", "wall"))
-    puzzle_kit.switches(c, "tiki_gongs", GONGS, ground, lanterns=[1, 2, 3])
     puzzle_kit.pen(c, "return", "Cove Yard", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("tiki_wood", "wall"),
                    ground(*RETURN), height=5.0)
     puzzle_kit.pen(c, "secret", "Smugglers Cave", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("isle_rock", "wall"),

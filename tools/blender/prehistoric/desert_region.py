@@ -168,9 +168,6 @@ def main():
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
-    puzzle_kit.pen(c, "crater_stones", "Vault", *VAULT, pb.to_road(c, *VAULT), 10.0, 4.5, ("masonry", "wall"),
-                   ground(*VAULT), height=5.0)
-    puzzle_kit.switches(c, "crater_stones", STONES, ground, ring_mat=("strata_cream", "wall"))
     puzzle_kit.pen(c, "return", "Old Well", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("adobe", "wall"), ground(*RETURN),
                    height=6.0)
     puzzle_kit.pen(c, "secret", "Sunken Garden", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("oasis_stone", "wall"),

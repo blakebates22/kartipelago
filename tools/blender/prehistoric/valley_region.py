@@ -296,7 +296,6 @@ def main():
     landmarks(c, ground, spurs)
     if RUIN:
         ruined(c, ground, spurs)
-    three_stones(c, ground)
     puzzle_kit.pen(c, "return", "Lookout", *RETURN, to_road(c, *RETURN), 11.0, 4.5, ("magma_rock", "wall"),
                    ground(*RETURN), height=6.0)
     puzzle_kit.pen(c, "secret", "Grotto", *SECRET, to_road(c, *SECRET), 9.0, 4.5, ("jungle_mossstone", "wall"),
@@ -564,14 +563,6 @@ def to_road(c, x, y):
     """The way from (x, y) to the nearest of the main road (a pen's gate faces it)."""
     q, _ = c.nearest(x, y)
     return math.atan2(q.p.y - y, q.p.x - x)
-
-
-def three_stones(c, ground):
-    """The pen (its gate is the game's) and a ring of standing stones round each switch."""
-    px, py = PEN
-    puzzle_kit.pen(c, "three_stones", "Pen", px, py, to_road(c, px, py), PEN_HALF, PEN_GAP, ("sandstone_block", "wall"),
-                   ground(px, py), height=5.0)
-    puzzle_kit.switches(c, "three_stones", STONES, ground, ring_mat=("sandstone_block", "wall"))
 
 
 def entrances(c):

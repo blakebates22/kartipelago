@@ -252,44 +252,6 @@
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
-      "puzzle": "ice_bells",
-      "x": 127.89,
-      "z": 90.5,
-      "heading": 1.721697094924045,
-      "width": 9.0,
-      "prize_x": 118.0,
-      "prize_z": 92.0
-    },
-    {
-      "id": "puzzle_switch_01",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 0,
-      "x": 90.0,
-      "z": 60.0,
-      "lanterns": 1
-    },
-    {
-      "id": "puzzle_switch_02",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 1,
-      "x": 150.0,
-      "z": 112.0,
-      "lanterns": 2
-    },
-    {
-      "id": "puzzle_switch_03",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 2,
-      "x": 104.0,
-      "z": 132.0,
-      "lanterns": 3
-    },
-    {
-      "id": "puzzle_gate_02",
-      "type": "puzzle_gate",
       "puzzle": "return",
       "x": -91.36,
       "z": -265.22,
@@ -299,7 +261,7 @@
       "prize_z": -268.0
     },
     {
-      "id": "puzzle_gate_03",
+      "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
       "x": -203.43,
@@ -493,6 +455,6 @@
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "snow_layout.py": "752c10cf3cce9146b3be0f0ad9efadb7e826aa132490793a579e20d2ccb0150d",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "06a2dfe2d9f7665103fc351b1c51c4e8e3e9198766a13ca646cb04aad69c79fa"
+    "snow_region.py": "09d02ba5f2b7bdd158d84abddad33ccb1cf2881b1a6540e1f3387e4ce18ffe5c"
   }
 }

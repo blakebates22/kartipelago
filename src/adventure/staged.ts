@@ -69,6 +69,8 @@ export interface StagedBeat {
     hide?: string[];
     /** The Founders' Horn. */
     horn?: boolean;
+    /** The music changes (a song id: "dread" when a dragon comes). */
+    music?: string;
   };
 }
 
@@ -309,7 +311,7 @@ add(
         2: {
           cam: { from: [0, 3, -4], look: [-40, 40, 40], lookTo: [40, 50, -10] },
           moves: [{ actor: "cinderjaw", to: [60, -30], y: 45, dur: 4.5 }],
-          fx: { darken: true },
+          fx: { darken: true, music: "dread" },
         },
         3: {
           cam: { from: [4, 1.2, -2], to: [2, 1.0, -1], look: [0, 10, 24], lookTo: [0, 9, 24] },
@@ -524,7 +526,7 @@ for (const k of ["snow", "desert", "beach"] as const) {
           1: {
             cam: { from: P3(0, 3, 0), look: P3(60, 40, -40), lookTo: P3(34, 10, 0) },
             moves: [{ actor: d, to: dragonAt, y: 0, dur: 5, heading: q.at.heading + Math.PI }],
-            fx: { darken: true, shake: 0.4 },
+            fx: { darken: true, shake: 0.4, music: "dread" },
           },
           2: { fx: { rear: d } },
           3: { cam: { from: P3(8.5, 2.2, 5.5), to: P3(9, 2.1, 6), look: P3(13, 1.5, 8) } },
@@ -765,7 +767,7 @@ const DK = "dragon_kingdom";
             moves: [
               { actor: "king", to: P(36, 0), y: 0, dur: 5, heading: DSQUARE.heading + Math.PI },
             ],
-            fx: { shake: 0.5 },
+            fx: { shake: 0.5, music: "dread" },
           },
           2: { fx: { rear: "king" } },
           4: {
@@ -929,6 +931,7 @@ const DK = "dragon_kingdom";
     ),
     stage("dragon_horn", DK, true, court(true), {
       wide,
+      music: "dread",
       per: {
         0: {
           cam: { from: P3(30, 4, -14), to: P3(28, 3, -16), look: P3(12, 2, -18) },
@@ -942,6 +945,7 @@ const DK = "dragon_kingdom";
     }),
     stage("dragon_rage", DK, true, court(true), {
       wide,
+      music: "dread",
       all: { night: true },
       per: {
         0: { fx: { black: true } },
@@ -973,6 +977,7 @@ const DK = "dragon_kingdom";
       }),
       {
         wide,
+        music: "dread",
         per: {
           0: { cam: onHeart, fx: { light: true, night: true } },
           1: {
@@ -1100,6 +1105,7 @@ const DK = "dragon_kingdom";
       },
       {
         wide: { from: P3(-10, 6, 0), look: P3(60, 30, -40), lookTo: P3(20, 20, 20) },
+        music: "dread",
         per: {
           0: {
             moves: [{ actor: d, to: P(30, 10), y: 18, dur: 5, heading: at.heading + Math.PI }],

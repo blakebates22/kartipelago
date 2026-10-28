@@ -78,49 +78,6 @@
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
-      "puzzle": "crater_stones",
-      "x": -42.43,
-      "z": 230.9,
-      "heading": 1.2765824837507473,
-      "width": 9.0,
-      "prize_x": -52.0,
-      "prize_z": 228.0
-    },
-    {
-      "id": "puzzle_switch_01",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 0,
-      "x": 50.0,
-      "z": 168.0
-    },
-    {
-      "id": "puzzle_switch_02",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 1,
-      "x": -78.0,
-      "z": 150.0
-    },
-    {
-      "id": "puzzle_switch_03",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 2,
-      "x": 30.0,
-      "z": 234.0
-    },
-    {
-      "id": "puzzle_switch_04",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 3,
-      "x": -40.0,
-      "z": 192.0
-    },
-    {
-      "id": "puzzle_gate_02",
-      "type": "puzzle_gate",
       "puzzle": "return",
       "x": -285.0,
       "z": 28.07,
@@ -130,7 +87,7 @@
       "prize_z": 28.0
     },
     {
-      "id": "puzzle_gate_03",
+      "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
       "x": 275.93,
@@ -285,13 +242,13 @@
     {
       "id": "villager_home_11",
       "type": "villager_home",
-      "x": 16.57,
-      "z": 173.73,
-      "y": 3.54,
+      "x": 27.88,
+      "z": 168.95,
+      "y": 2.61,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "desert",
-      "heading": 2.755
+      "heading": 2.607
     }
   ],
   "generator": "tools/blender/prehistoric/desert_region.py (re-running it rewrites entities)"

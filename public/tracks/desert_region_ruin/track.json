@@ -78,49 +78,6 @@
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
-      "puzzle": "crater_stones",
-      "x": -42.43,
-      "z": 230.9,
-      "heading": 1.2765824837507473,
-      "width": 9.0,
-      "prize_x": -52.0,
-      "prize_z": 228.0
-    },
-    {
-      "id": "puzzle_switch_01",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 0,
-      "x": 50.0,
-      "z": 168.0
-    },
-    {
-      "id": "puzzle_switch_02",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 1,
-      "x": -78.0,
-      "z": 150.0
-    },
-    {
-      "id": "puzzle_switch_03",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 2,
-      "x": 30.0,
-      "z": 234.0
-    },
-    {
-      "id": "puzzle_switch_04",
-      "type": "puzzle_switch",
-      "puzzle": "crater_stones",
-      "index": 3,
-      "x": -40.0,
-      "z": 192.0
-    },
-    {
-      "id": "puzzle_gate_02",
-      "type": "puzzle_gate",
       "puzzle": "return",
       "x": -285.0,
       "z": 28.07,
@@ -130,7 +87,7 @@
       "prize_z": 28.0
     },
     {
-      "id": "puzzle_gate_03",
+      "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
       "x": 275.93,
@@ -311,6 +268,6 @@
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "desert_layout.py": "fde6f7d6c7374f288495646698f6ed96e163d0c0b33df1400da7f9cdc74bc6a2",
-    "desert_region.py": "e2dd42b68de70023c1cc02823a11ef3f6d642fb2074cc59962aad0349dffe23c"
+    "desert_region.py": "a5f03b1b8b61b6b2c3b3bf84c31d477f3beef2d743d3ac73b66a0410b5074aa3"
   }
 }

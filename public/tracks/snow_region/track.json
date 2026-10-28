@@ -252,44 +252,6 @@
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
-      "puzzle": "ice_bells",
-      "x": 127.89,
-      "z": 90.5,
-      "heading": 1.721697094924045,
-      "width": 9.0,
-      "prize_x": 118.0,
-      "prize_z": 92.0
-    },
-    {
-      "id": "puzzle_switch_01",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 0,
-      "x": 90.0,
-      "z": 60.0,
-      "lanterns": 1
-    },
-    {
-      "id": "puzzle_switch_02",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 1,
-      "x": 150.0,
-      "z": 112.0,
-      "lanterns": 2
-    },
-    {
-      "id": "puzzle_switch_03",
-      "type": "puzzle_switch",
-      "puzzle": "ice_bells",
-      "index": 2,
-      "x": 104.0,
-      "z": 132.0,
-      "lanterns": 3
-    },
-    {
-      "id": "puzzle_gate_02",
-      "type": "puzzle_gate",
       "puzzle": "return",
       "x": -91.36,
       "z": -265.22,
@@ -299,7 +261,7 @@
       "prize_z": -268.0
     },
     {
-      "id": "puzzle_gate_03",
+      "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
       "x": -203.43,

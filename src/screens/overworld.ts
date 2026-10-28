@@ -81,20 +81,18 @@ import {
   storyKingdom,
   winsOf,
 } from "../adventure/progress";
-import {
-  bellPosts,
-  gateSolid,
-  newPuzzleState,
-  stepPuzzle,
-  type Puzzle,
-} from "../overworld/puzzles";
-import { createChestView, createObstacleView, createPuzzleView } from "../overworld/puzzleView";
+import { gateSolid } from "../overworld/gates";
+import { createChestView, createObstacleView } from "../overworld/yardView";
 import { createVillagers, parseHomes, type Villagers } from "../overworld/villagers";
 import { exitSpot, frontSpot, roadSpot } from "../overworld/exits";
 import { challengeStaged, stageAt } from "../adventure/staged";
 import { createVillagerView, type VillagerView } from "../render/villager";
 import { createBannerView, type PropView } from "../render/storyProps";
+import { createGatewayArch, type ArchTheme } from "../render/gatewayArch";
 import { instaWin } from "../debug/devFlags";
+import { airAt, airOf, mixAir, type Air, type AirSpot } from "../overworld/air";
+import { packageBase } from "../game/session";
+import { parseLook, type TrackLook } from "../world/trackPackage";
 
 /** Where the overworld is: the region, and the mark you went into (you come back out of
  * it; `<id>:front`: in front of it, facing it; `@x,z,heading`: just there). */
@@ -111,10 +109,6 @@ export interface OverworldState {
  * says) until warped again (the warp list: devWarp). */
 const devState = new Map<string, boolean>();
 
-/** Dev free roam (not an Adventure file): puzzles solved and keys found, for this visit. */
-const devSolved = new Set<string>();
-const devKeys = new Set<string>();
-
 /** Is the region ruined now (Adventure: by the story; else the free roam's choice)? */
 export function regionRuined(game: Game, regionId: string, adventure: boolean): boolean {
   const r = regionById(regionId);
@@ -123,121 +117,6 @@ export function regionRuined(game: Game, regionId: string, adventure: boolean): 
   if (dev !== undefined) return dev;
   if (adventure && r.kingdom) return regionLook(adventureOf(game).save, r.kingdom) === "ruined";
   return Boolean(game.overworld?.ruined);
-}
-
-/** The region's puzzles while you drive it: their state, their things in the scene and
- * the gates' collision (src/overworld/puzzles.ts). */
-function regionPuzzles(game: Game, session: Session, region: Region) {
-  // (Dev free roam only: the puzzles are gone from Adventure, Blake, Oct 27.)
-  const key = (p: Puzzle) => `${region.id}.${p.id}`;
-  const you = session.entrants[0]!;
-  const groundAt = (x: number, z: number) => you.ground.at(x, z, PROBE_Y).height;
-  let banner: { text: string; t: number } | undefined;
-  let lastBeat = 0;
-  const items = (region.puzzles ?? []).map((p) => {
-    const st = newPuzzleState(p, devSolved.has(key(p)));
-    const solid = gateSolid(p, groundAt(p.gate.x, p.gate.z));
-    if (!st.solved) session.solids.push(solid);
-    // A bell's frame posts are solid.
-    for (const b of bellPosts(p))
-      session.solids.push({
-        kind: "circle",
-        look: "tree",
-        x: b.x,
-        z: b.z,
-        radius: 0.5,
-        height: groundAt(b.x, b.z) + 7,
-      });
-    return { p, st, solid, view: createPuzzleView(session.root, p, groundAt) };
-  });
-  // The kingdom's hidden key shows once its champion has joined you (the valley's: once
-  // its championship is won); dev free roam always.
-  const keyShown = () => true;
-  const keyTaken = () => devKeys.has(region.id);
-  const say = (text: string) => (banner = { text, t: 3.5 });
-  return {
-    step(x: number, z: number, dt: number, t: number) {
-      if (banner && (banner.t -= dt) <= 0) banner = undefined;
-      for (const it of items) {
-        for (const e of stepPuzzle(it.p, it.st, x, z, dt)) {
-          if (e.kind === "press") {
-            if (it.p.look === "bell") game.sounds.bell(e.count);
-            else if (it.p.look === "gong") game.sounds.gong(e.count);
-            else game.sounds.stone(e.count);
-            if (e.count === 1 && it.p.switches.length > 1) say(it.p.hint);
-            lastBeat = Math.ceil(it.st.left);
-          } else if (e.kind === "reset") {
-            game.sounds.stonesReset();
-            say(
-              e.wrong
-                ? `WRONG ONE! ${it.p.hint}`
-                : `TOO SLOW! THE ${it.p.look === "stone" ? "STONES ROSE AGAIN" : `${it.p.look.toUpperCase()}S FELL SILENT`}`,
-            );
-          } else {
-            game.sounds.solved();
-            const i = session.solids.indexOf(it.solid);
-            if (i >= 0) session.solids.splice(i, 1);
-            devSolved.add(key(it.p));
-            say(
-              it.p.prize && !keyShown()
-                ? "THE GATE IS OPEN... BUT THE PLINTH INSIDE IS BARE, FOR NOW"
-                : "THE GATE IS OPEN!",
-            );
-          }
-        }
-        // The drums, once a second while they run (faster near the end).
-        if (it.st.left > 0) {
-          const beat = Math.ceil(it.st.left * (it.st.left < 5 ? 2 : 1));
-          if (beat !== lastBeat) {
-            lastBeat = beat;
-            game.sounds.drum(it.st.left < 5);
-          }
-        }
-        // The prize: drive into it.
-        const pr = it.p.prize;
-        if (
-          pr &&
-          it.st.solved &&
-          keyShown() &&
-          !keyTaken() &&
-          Math.hypot(x - pr.x, z - pr.z) < 3.5
-        ) {
-          game.sounds.keyFound();
-          devKeys.add(region.id);
-          say(`YOU FOUND ${region.name.toUpperCase()}'S HIDDEN KEY!`);
-        }
-        it.view.update(it.st, keyTaken(), keyShown(), t, dt);
-      }
-    },
-    draw(ui: UiLayer) {
-      const running = items.find((it) => it.st.left > 0);
-      if (running) {
-        const n = running.st.pressed.filter(Boolean).length;
-        const text = `${running.p.label} ${n}/${running.p.switches.length}`;
-        const w = ui.textWidth(text) + 20;
-        ui.panel(ui.W / 2 - w / 2, 6, w, 30, "wood", "gold");
-        ui.text(text, ui.W / 2, 10, { color: PAL.cream, outline: PAL.shadow, align: "center" });
-        ui.text(running.st.left.toFixed(1), ui.W / 2, 21, {
-          color: running.st.left < 5 ? PAL.coral : PAL.gold,
-          outline: PAL.shadow,
-          align: "center",
-        });
-      }
-      if (banner)
-        wrap(banner.text, ui.W - 60)
-          .slice(0, 2)
-          .forEach((l, i) =>
-            ui.text(l, ui.W / 2, ui.H / 2 - 40 + i * 10, {
-              color: PAL.gold,
-              outline: PAL.shadow,
-              align: "center",
-            }),
-          );
-    },
-    dispose() {
-      for (const it of items) it.view.dispose();
-    },
-  };
 }
 
 /** The region's map, top right: its ring road, the gateways (gold; the dragon's lair
@@ -736,6 +615,81 @@ function regionBlockers(game: Game, session: Session, region: Region) {
   };
 }
 
+/** A track's look.json (its sky, sky dome, sun, light and fog), once per visit. */
+const looks = new Map<string, Promise<TrackLook>>();
+function lookOf(id: string): Promise<TrackLook> {
+  let p = looks.get(id);
+  if (!p) {
+    p = fetch(`${packageBase(id)}look.json`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((j) => parseLook(j))
+      .catch(() => ({}));
+    looks.set(id, p);
+  }
+  return p;
+}
+
+/**
+ * Each area of the region in its own course's air (Blake, Oct 28: the levels' own
+ * lighting and sky): every gateway's course (ruined: its ruin) lends its look.json to
+ * the ground round it, the square has the region's own, and between them the two nearest
+ * blend as you drive (overworld/air.ts). A square with no painted sky borrows the
+ * nearest course's.
+ */
+function regionAir(game: Game, region: Region, ruined: boolean) {
+  const courses = region.gateways.filter((g) => !g.boss && !g.king && trackById(g.track));
+  if (!courses.length) return undefined;
+  const pkg = (ruined && region.ruinPackageId) || region.packageId;
+  let spots: (AirSpot & { air: Air })[] | undefined;
+  let alive = true;
+  void Promise.all([
+    lookOf(pkg),
+    ...courses.map((g) => {
+      const t = trackById(g.track)!;
+      return lookOf((ruined && t.ruin && trackById(t.ruin) ? t.ruin : g.track) as string);
+    }),
+  ]).then(([own, ...theirs]) => {
+    if (!alive) return;
+    const base = airOf(own!);
+    const list: AirSpot[] = [
+      { x: region.spawn.x, z: region.spawn.z, look: own! },
+      ...courses.map((g, i) => ({ x: g.x, z: g.z, look: theirs[i]! })),
+    ];
+    // (A square with no sky of its own: the nearest course's.)
+    if (!list[0]!.look.skyDome) {
+      const near = list
+        .slice(1)
+        .filter((q) => q.look.skyDome)
+        .sort(
+          (p, q) =>
+            Math.hypot(p.x - region.spawn.x, p.z - region.spawn.z) -
+            Math.hypot(q.x - region.spawn.x, q.z - region.spawn.z),
+        )[0];
+      if (near) list[0] = { ...list[0]!, look: { ...own!, skyDome: near.look.skyDome } };
+    }
+    spots = list.map((q) => ({ ...q, air: airOf(q.look, base) }));
+  });
+  return {
+    step(x: number, z: number) {
+      if (!spots) return;
+      const { a, b, t } = airAt(spots, x, z);
+      const A = spots[a]!;
+      const B = spots[b]!;
+      game.stage.setAir(mixAir(A.air, B.air, t));
+      const sky = (q: AirSpot) =>
+        q.look.skyDome ? { spec: q.look.skyDome, sun: q.look.sun?.direction } : undefined;
+      const under = sky(A);
+      const over = sky(B);
+      game.stage.setSkies(under ?? over, under && over ? { ...over, t } : undefined);
+    },
+    dispose() {
+      alive = false;
+      game.stage.setSkies(undefined);
+      game.stage.setAir(undefined);
+    },
+  };
+}
+
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
 const PROBE_Y = 200;
 
@@ -910,96 +864,47 @@ export function overworldLoading(
   };
 }
 
-/** The gateways' arches, in the session's scene: two posts and a lintel in the world's
- * colour, a glowing veil between them, and the course's name on a board above. */
+/** The gateways, in the session's scene (render/gatewayArch.ts: Blake, Oct 28, grand and
+ * natural: a cave mouth of the world's rock, a rugged sign, torches); the passages and
+ * the champion's spot the same. */
 function buildGateways(
   session: Session,
   region: Region,
   extra: { x: number; z: number; heading: number; label: string; world: string }[] = [],
 ) {
-  const group = new THREE.Group();
-  group.name = "Gateways";
   const you = session.entrants[0]!;
-  const stone = new THREE.MeshLambertMaterial({ color: 0x8a7a66 });
-  const made: THREE.Material[] = [stone];
-  const geos: THREE.BufferGeometry[] = [];
   const marks = [
     ...region.gateways.map((g) => ({
       ...g,
       label: g.label ?? trackById(g.track)?.name ?? g.track,
       world: worldOfTrack(g.track)?.id ?? region.worldId,
+      lair: Boolean(g.boss || g.king),
     })),
     ...(region.passages ?? []).map((p) => ({
       ...p,
       label: `TO ${(regionById(p.to)?.name ?? p.to).toUpperCase()}`,
       world: regionById(p.to)?.worldId ?? region.worldId,
+      lair: false,
     })),
-    ...extra,
+    ...extra.map((e) => ({ ...e, lair: false })),
   ];
-  for (const g of marks) {
-    const color = new THREE.Color(worldById(g.world)?.color ?? "#e0a040");
+  const themes = ["prehistoric", "frostveil", "desert", "beach", "dragon"];
+  const arches = marks.map((g, i) => {
     const y = you.ground.at(g.x, g.z, PROBE_Y).height;
-    const arch = new THREE.Group();
-    arch.position.set(g.x, y, g.z);
-    arch.rotation.y = g.heading;
-    const post = new THREE.BoxGeometry(1.4, 9, 1.4);
-    const lintel = new THREE.BoxGeometry(13, 1.6, 1.8);
-    const veilG = new THREE.PlaneGeometry(10.6, 7.6);
-    geos.push(post, lintel, veilG);
-    const trim = new THREE.MeshLambertMaterial({ color });
-    const veil = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.35,
-      side: THREE.DoubleSide,
-      depthWrite: false,
+    const own = themes.includes(region.worldId) ? region.worldId : "prehistoric";
+    const arch = createGatewayArch(session.root, {
+      label: g.label,
+      theme: (g.lair ? "lair" : own) as ArchTheme,
+      glow: g.lair ? "#ff4a20" : (worldById(g.world)?.color ?? "#e0a040"),
+      seed: i * 31 + Math.round(Math.abs(g.x) + Math.abs(g.z)),
     });
-    made.push(trim, veil);
-    for (const sx of [-6, 6]) {
-      const p = new THREE.Mesh(post, stone);
-      p.position.set(sx, 4.5, 0);
-      arch.add(p);
-    }
-    const l = new THREE.Mesh(lintel, trim);
-    l.position.set(0, 9.4, 0);
-    arch.add(l);
-    const v = new THREE.Mesh(veilG, veil);
-    v.position.set(0, 4.4, 0);
-    arch.add(v);
-    // The name board: a canvas texture.
-    const cv = document.createElement("canvas");
-    cv.width = 512;
-    cv.height = 96;
-    const cx = cv.getContext("2d")!;
-    cx.fillStyle = "#3a2414";
-    cx.fillRect(0, 0, 512, 96);
-    cx.strokeStyle = "#e0b040";
-    cx.lineWidth = 8;
-    cx.strokeRect(4, 4, 504, 88);
-    cx.fillStyle = "#f4e8cc";
-    cx.font = "bold 44px monospace";
-    cx.textAlign = "center";
-    cx.textBaseline = "middle";
-    cx.fillText(g.label.toUpperCase(), 256, 50, 480);
-    const tex = new THREE.CanvasTexture(cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    const boardM = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
-    const boardG = new THREE.PlaneGeometry(12, 2.25);
-    made.push(boardM);
-    geos.push(boardG);
-    const board = new THREE.Mesh(boardG, boardM);
-    board.position.set(0, 11.6, 0);
-    arch.add(board);
-    group.add(arch);
-  }
-  session.root.add(group);
-  return () => {
-    session.root.remove(group);
-    for (const m of made) {
-      (m as THREE.MeshBasicMaterial).map?.dispose();
-      m.dispose();
-    }
-    for (const g of geos) g.dispose();
+    arch.group.position.set(g.x, y, g.z);
+    arch.group.rotation.y = g.heading;
+    return arch;
+  });
+  return {
+    update: (t: number) => arches.forEach((a) => a.update(t)),
+    dispose: () => arches.forEach((a) => a.dispose()),
   };
 }
 
@@ -1010,14 +915,14 @@ export let drivenRegion: Region | undefined;
 export function overworldScreen(game: Game, session: Session, region: Region, at?: string): Screen {
   const entry = entryOf(region);
   let clock = 0;
-  let removeGateways: (() => void) | undefined;
-  let puzzles: ReturnType<typeof regionPuzzles> | undefined;
+  let gateways: ReturnType<typeof buildGateways> | undefined;
   let blockers: ReturnType<typeof regionBlockers> | undefined;
   let map: ReturnType<typeof regionMap> | undefined;
   let crew: ReturnType<typeof regionCrew> | undefined;
   let secret: ReturnType<typeof regionSecret> | undefined;
   let cave: ReturnType<typeof regionCave> | undefined;
   let dressing: ReturnType<typeof regionDressing> | undefined;
+  let air: ReturnType<typeof regionAir> | undefined;
   let villagers: Villagers | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
    * leave it). */
@@ -1043,18 +948,17 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       game.session = session;
       game.ui.interactive = false;
       drivenRegion = region;
-      removeGateways = buildGateways(session, region, [
+      gateways = buildGateways(session, region, [
         ...(challenge
           ? [{ ...challenge, label: `${champ!.name}'S CHALLENGE`, world: region.worldId }]
           : []),
       ]);
-      // (The puzzles are gone from Adventure: Blake, Oct 27. Dev free roam keeps them.)
-      if (!story) puzzles = regionPuzzles(game, session, region);
       blockers = regionBlockers(game, session, region);
       crew = regionCrew(game, session, region);
       secret = regionSecret(game, session, region);
       cave = regionCave(game, session, region);
       dressing = regionDressing(game, session, region);
+      air = regionAir(game, region, regionRuined(game, region.id, story));
       // The folk who live here, walking about round their homes.
       const land = session.makeGround();
       villagers = createVillagers({
@@ -1104,13 +1008,13 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       game.audio.music.duck(false);
     },
     exit() {
-      removeGateways?.();
-      puzzles?.dispose();
+      gateways?.dispose();
       blockers?.dispose();
       crew?.dispose();
       secret?.dispose();
       cave?.dispose();
       dressing?.dispose();
+      air?.dispose();
       villagers?.dispose();
       session.dispose();
       if (game.session === session) game.session = undefined;
@@ -1123,13 +1027,13 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       clock += dt;
       cave?.step(session.entrants[0]!.state.x, session.entrants[0]!.state.z, top ? dt : 0, clock);
       dressing?.step(clock);
+      gateways?.update(clock);
       if (!top) return;
       if (actions.some((a) => a === "pause" || a === "back")) {
         game.screens.push(overworldPause(game, region, session));
         return;
       }
       const s = session.entrants[0]!.state;
-      puzzles?.step(s.x, s.z, dt, clock);
       blockers?.step(s.x, s.z, dt, clock);
       secret?.step(s.x, s.z, dt);
       villagers?.step(dt, clock, { x: s.x, z: s.z, speed: s.speed });
@@ -1164,6 +1068,8 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
     render3d(alpha, frameSeconds) {
       session.render(alpha, frameSeconds);
+      const s = session.entrants[0]!.state;
+      air?.step(s.x, s.z);
       game.stage.render();
       return true;
     },
@@ -1179,7 +1085,6 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       // Adventure: what to do next, under the plaque.
       const goal = story ? storyGoal(game, region) : undefined;
       if (goal) ui.text(goal, 8, 28, { color: PAL.cream, outline: PAL.shadow });
-      puzzles?.draw(ui);
       blockers?.draw(ui);
       secret?.draw(ui);
       cave?.draw(ui);

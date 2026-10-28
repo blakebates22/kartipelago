@@ -2794,6 +2794,65 @@ function dragonRace(): Song {
   };
 }
 
+// ---------------------------------------------------------------- "The Dragon's Shadow"
+
+/** "The Dragon's Shadow" (Blake, Oct 28: when Cinderjaw comes in, really scary music): a
+ * cutscene cue for the dragons' arrivals and the Rage, C minor and its tritone, 66 BPM.
+ * A low drone that never lets go, strings creeping up in half steps, horns and brass
+ * stabbing dissonant chords, a tolling bell, a heartbeat on the toms, thunder. */
+function dragonsShadow(): Song {
+  const ch = chart("Cm:4 Db:4 Cm:4 F#:4 Cm:4 Ab:4 G:4 F#:4");
+  const creep = seq(
+    bars(
+      "C4:2 Db4:2",
+      "D4:2 Db4:2",
+      "C4:2 B3:2",
+      "C4:1 F#4:3",
+      "G4:2 Ab4:2",
+      "G4:2 F#4:2",
+      "G4:1 Ab4:1 G4:2",
+      "F#4:4",
+    ),
+    0,
+    0.7,
+  );
+  return {
+    id: "dread",
+    title: "The Dragon's Shadow",
+    role: "Cutscenes: the dragons come",
+    bpm: 66,
+    beats: 32,
+    loop: true,
+    stems: [],
+    parts: [
+      part("drone", "base", 0.8, bassLine(ch, [[0, 4, "R"]], 24, 0.7)),
+      part(
+        "bass",
+        "base",
+        0.7,
+        bassLine(
+          ch,
+          [
+            [0, 1.5, "R"],
+            [2, 1, "R"],
+            [3.5, 0.5, "A"],
+          ],
+          26,
+          0.75,
+        ),
+      ),
+      part("strings", "base", 0.55, creep),
+      part("pad", "base", 0.4, pads(ch, 48, 4, 0.45)),
+      part("horn", "base", 0.6, stabs(ch, [0, 2.75], 43, 0.9, 0.7)),
+      part("brass", "base", 0.45, stabs(ch, [3], 55, 0.5, 0.65)),
+      part("bell", "base", 0.4, arpeggio(ch, 4, [0], 60, 3, 0.55)),
+      ...drumParts("base", 0.85, drums("O..o............", KIT, 0.25, 8)),
+      ...drumParts("base", 0.5, drums("C...............", KIT, 0.25, 2, 0)),
+      ...drumParts("base", 0.5, drums("C...............", KIT, 0.25, 2, 16)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Emberdeep Hold"
 
 export const EMBERDEEP_MELODY = bars(
@@ -3120,6 +3179,7 @@ export const SONGS: Record<string, Song> = {
   volcano_isle: volcanoIsle(),
   splash_lagoon: splashLagoon(),
   boss: dragonRace(),
+  dread: dragonsShadow(),
   emberdeep: emberdeep(),
   journey_gorge: journey({
     id: "journey_gorge",

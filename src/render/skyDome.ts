@@ -165,6 +165,11 @@ export interface SkyDome {
   readonly group: THREE.Group;
   /** Keep it centred on the camera, and drift the clouds. */
   update(camera: THREE.Camera, dt: number): void;
+  /**
+   * Fade it over another dome (the overworld's areas, each with its course's sky): `f`
+   * 0..1, drawn after the dome under it. `fade(1, false)` puts it back as it was.
+   */
+  fade(f: number, over: boolean): void;
   dispose(): void;
 }
 
@@ -767,8 +772,44 @@ export function createSkyDome(
   let clockT = 0;
 
   const drift = cs.drift ?? 0.004;
+  // What fading changes, as it was made.
+  interface Faded {
+    o: THREE.Object3D;
+    m: THREE.Material;
+    order: number;
+    opacity: number;
+    transparent: boolean;
+  }
+  let made: Faded[] | undefined;
   return {
     group,
+    fade(f, over) {
+      made ??= (() => {
+        const out: Faded[] = [];
+        group.traverse((o) => {
+          const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+          if (m && !Array.isArray(m))
+            out.push({
+              o,
+              m,
+              order: o.renderOrder,
+              opacity: m.opacity,
+              transparent: m.transparent,
+            });
+        });
+        return out;
+      })();
+      for (const x of made) {
+        x.o.renderOrder = over ? x.order + 4 : x.order;
+        if (x.m instanceof THREE.ShaderMaterial) {
+          x.o.visible = !over || f > 0.5;
+          continue;
+        }
+        x.m.transparent = over ? true : x.transparent;
+        x.m.opacity = over ? x.opacity * f : x.opacity;
+      }
+      group.visible = !over || f > 0.002;
+    },
     update(camera, dt) {
       group.position.copy(camera.position);
       clouds.rotation.y += drift * dt;
