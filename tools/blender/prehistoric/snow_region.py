@@ -27,10 +27,12 @@ import summit_props as sp  # noqa: E402
 import aurora_props as ap  # noqa: E402
 import keep_props as kp  # noqa: E402
 import villager_homes as vh  # noqa: E402
+import valley_village as vv  # noqa: E402
 import snow_props as snp_  # noqa: E402
 import winter_props as wp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import snow_layout as SL  # noqa: E402
+import snow_dress as sd  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("snow_region") + os.environ.get("KP_REGION_SUFFIX", "")
@@ -99,7 +101,8 @@ def _natural(x, y):
         dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
         if dd < 26:
             h = lerp(h, 57.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
-    return h
+    # The pads Hearthglow's cottages stand on, up the hollow's walls (snow_dress).
+    return sd.pad_height(x, y, h)
 
 
 # The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
@@ -174,6 +177,7 @@ def main():
     # (v4: drawn in, and finer, for the walls' tiers)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
     ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
+    sd.level_pads(ter)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
 
     def ground(x, y):
@@ -184,7 +188,7 @@ def main():
     c.disc("Frozen Lake", lx, ly, lr + 4.0, lz - 0.05, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.06)
 
     thresholds(c, ground)
-    village(c, ground)
+    village(c, ground, ter)
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
@@ -194,12 +198,12 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)],
+    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 42.0)],
              wall=-15.0, per=3)
     dress(c, ground, spots)
+    vv.clear_paths(c, LANES)
     # The gorge's far end, back towards the valley: it bends out of sight.
-    box(c, "Gorge Bend", gorge_x(gy - 8), gy - 8, GORGE_HW + 24.0, 6.0, natural(0, gy) - 2.0, RIM_Z + 20.0,
-        ("obsidian_cliff", "wall"))
+    sd.gorge_bend(c, natural)
     c.entity("snowfall", rate=60, radius=60)
 
     # (Raced too: the champion's challenge, once round the loop, from this line.)
@@ -305,23 +309,16 @@ def snowshed(c, ground):
         k += 1
 
 
-def village(c, ground):
-    """Hearthglow: the town square in its hollow, the cottages round it, the great tree, the
-    stalls, the bell tower, lanterns (after the attack: frozen solid, the tree iced)."""
+LANES = []
+
+
+def village(c, ground, ter):
+    """Hearthglow: the town square in its hollow, the cottages round it on their lanes,
+    the fountain and the bonfire, the great tree, the stalls, the bell tower, lanterns and
+    lights (snow_dress.hearthglow; after the attack: frozen solid, the tree iced)."""
     cx, cy, cr, cz = HUB
-    c.disc("Village Square", cx, cy, cr, cz + 0.05, c.lib("hearth_cobble", "road"), coll="Props", n=40)
-    for k in range(8):
-        a = k * math.tau / 8 + math.pi / 8
-        if math.sin(a) > 0.75 or math.sin(a) < -0.8:
-            continue  # (clear of the ways in: north to the road, south to the gorge)
-        hx, hy = cx + (cr + 7) * math.cos(a), cy + (cr + 7) * math.sin(a)
-        if not paint.road_clear(c, hx, hy, 6.0):
-            continue
-        if RUIN:
-            box(c, "House %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 4.0, ("hearth_stone", "wall"), rot=a)
-            box(c, "House Ice %d" % k, hx, hy, 5.4, 4.4, cz - 1.0, cz + 6.5, ("berg_ice", "wall"), rot=a + 0.08)
-            continue
-        c.place(hp.cottage(c, k % 4), hx, hy, ground(hx, hy) - 0.2, rot=a - math.pi / 2)
+    taken = paint.Taken([(18.0, -181.3, 8.0), (*SL.GATES["hearthglow"], 20.0)])
+    LANES.extend(sd.hearthglow(c, ground, ter, taken))
     gx, gy = SL.GATES["hearthglow"]
     if RUIN:
         box(c, "Great Tree Trunk", gx, gy, 1.6, 1.6, ground(gx, gy) - 1.0, ground(gx, gy) + 8.0, ("weathered_timber", "wall"))
@@ -330,8 +327,6 @@ def village(c, ground):
                  role="visual")
     else:
         hp.giant_tree(c, "Great Tree", gx, gy, ground(gx, gy), height=34.0)
-    g = c.game(cx, cy, cz + 0.3)
-    c.entity("campfire", x=g[0], y=g[1], z=g[2])
     if not RUIN:
         tower = hp.bell_tower(c)
         c.place(tower, cx + 18.0, cy - 30.0, ground(cx + 18.0, cy - 30.0) - 0.2, rot=math.pi)
@@ -412,7 +407,9 @@ def dress(c, ground, spots):
     pines frozen into ice, the undergrowth gone."""
     taken = paint.Taken([(HUB[0], HUB[1], HUB[2] + 10.0), (*HUT, 26.0), (*RETURN, 18.0), (*SECRET, 16.0),
                          *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
-                         *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0)])
+                         *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS])
+    # The walls brought to life (snow_dress), both builds.
+    sd.wall_life(c, ground, taken)
 
     def inside(x, y):
         if L.wall_sd(x, y) > -8:

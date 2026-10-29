@@ -91,6 +91,8 @@ PAIRS = [
     ("jungle_leafcover", "camp_earth"),
     ("bog_bank", "camp_earth"),
     ("ash_soil", "scorched_ground"),
+    # (The Snow Kingdom's village lanes' soft edges: snow_dress.hearthglow.)
+    ("snow_ground", "packed_snow_road"),
 ]
 
 
