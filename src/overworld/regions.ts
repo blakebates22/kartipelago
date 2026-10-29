@@ -322,7 +322,7 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "water",
       tool: "beach",
-      gate: { x: 168.59, z: -126.18, heading: -0.761, width: 9 },
+      gate: { x: 168.74, z: -126.04, heading: -0.7382, width: 9 },
       spot: { x: 174.8, z: -132.7 },
     },
     // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.

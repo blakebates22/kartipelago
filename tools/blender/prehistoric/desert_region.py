@@ -30,6 +30,7 @@ import region_paint as paint  # noqa: E402
 import villager_homes as vh  # noqa: E402
 from pocket_kit import seg_d  # noqa: E402
 import desert_layout as DL  # noqa: E402
+import desert_dress as dd  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("desert_region") + os.environ.get("KP_REGION_SUFFIX", "")
@@ -109,7 +110,7 @@ def classify(c, n, info):
     ground, cliff, _, _ = LOOK[look]
     # (on the tiered walls only the shelves' flat tops are ground)
     if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
-        if c.x < -186 and abs(c.y) < 31:
+        if c.x < -204 and abs(c.y) < 24:
             return ("frost_cliff", "wall")  # (the pass down from the snow)
         return (pb.strata(L, c, n, STRATA), "wall")
     if look == "oasis":
@@ -118,6 +119,18 @@ def classify(c, n, info):
             return ("oasis_lawn", "grass")
     if L.pocket_at(c.x, c.y) == "wash":
         return ("gulch_wash", "dirt")
+    if DL.ravine_cut(c.x, c.y) > DL.RAVINE_DEPTH - 2.0:
+        return ("gulch_wash", "dirt")  # (the ravine's dry bed)
+    # v5: the dunes read in the sand: their crests wind-bleached, their hollows darker.
+    pk = L.pocket_at(c.x, c.y)
+    key = pk if pk == "wash" else look
+    if key in DL.DUNE and not RUIN:
+        amp = DL.DUNE[key][0]
+        dz = DL.dunes(c.x, c.y)
+        if dz > 0.55 * amp:
+            return ("dune_crest", "loose_sand")
+        if dz < -0.6 * amp and look in ("canyon", "post"):
+            return ("red_sand", "loose_sand")
     if RUIN and math.sin(c.x / 31.0 + 1.0) * math.cos(c.y / 27.0) > 0.5:
         return ("dune_crest", "loose_sand")  # (Scorchwind's drifts)
     return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
@@ -136,6 +149,8 @@ def main():
     c.kinds = kinds
 
     def label(smp):
+        if DL.ravine_d(smp.p.x, smp.p.y) < DL.RAVINE_HW + 7.0:
+            return "bridge"  # (the Gorge Bridge, over the ravine)
         d, wz = L.water_d(smp.p.x, smp.p.y)
         if d < L.river_hw + 4 and smp.p.z > wz + 0.9:
             return "bridge"
@@ -177,8 +192,16 @@ def main():
            seed=4)
 
     thresholds(c, ground)
-    trading_post(c, ground)
+    trading_post(c, ground, ter)
     landmarks(c, ground, spots)
+    # v5: the arches over the road and the buttes out on the floors (desert_dress).
+    keep = paint.Taken([(HUB[0], HUB[1], HUB[2] + 12.0), (*VAULT, 18.0), (*RETURN, 18.0), (*SECRET, 16.0),
+                        *((x, y, 9.0) for x, y in STONES), *((e[0], e[1], 16.0) for e, _ in spots.values()),
+                        *((x, y, 24.0) for x, y in DL.GATES.values()), (*DL.LAIR, 24.0),
+                        (DL.POOL[0], DL.POOL[1], DL.POOL[2] + 8.0)])
+    dd.trestle(c, ground)
+    dd.arches(c, ground, keep)
+    dd.buttes(c, ground, keep)
     if RUIN:
         ruined(c, ground)
     puzzle_kit.pen(c, "return", "Old Well", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("adobe", "wall"), ground(*RETURN),
@@ -187,9 +210,13 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "desert", vh.adobe, avoid=[(HUB[0], HUB[1], HUB[2] + 20.0)], wall=-15.0, per=3)
+    vh.homes(c, L, ground, "desert", vh.adobe, avoid=[(HUB[0], HUB[1], HUB[2] + 20.0), *dd.SPOTS], wall=-15.0, per=3)
     dress(c, ground, spots)
+    import valley_village as vv
+    vv.clear_paths(c, LANES)
     box(c, "Pass Bend", px - 8.0, 0.0, 6.0, 40.0, natural(px, 0.0) - 2.0, RIM_Z + 30.0, ("frost_cliff", "wall"))
+    cx, cy, cr, cz = HUB
+    dd.life(c, ground, windmill=(cx + 6.0, cy - 30.0, ground(cx + 6.0, cy - 30.0) - 0.2 + 14.6, 0.0))
     if RUIN:
         c.entity("ashfall", rate=8, radius=40)  # (dust on the wind)
 
@@ -248,38 +275,16 @@ def thresholds(c, ground):
             taken.append((x, y))
 
 
-def trading_post(c, ground):
-    """Stego's trading post: the square, its stalls under awnings, the water tower, the
-    windmill (after the attack: the stalls flattened, the tower down)."""
+def trading_post(c, ground, ter):
+    """Stego's trading post: the square, its houses, stalls, the water tank, the corral,
+    the windmill (desert_dress.trading_post; after the attack: wrecked)."""
     cx, cy, cr, cz = HUB
-    c.disc("Post Square", cx, cy, cr, cz + 0.05, c.lib("pale_sand", "dirt"), coll="Props", n=40)
-    for k in range(7):
-        a = k * math.tau / 7 + 0.4
-        if math.cos(a) > 0.6:
-            continue  # (clear of the way out, east)
-        hx, hy = cx + (cr + 6) * math.cos(a), cy + (cr + 6) * math.sin(a)
-        if not paint.road_clear(c, hx, hy, 6.0):
-            continue
-        if RUIN:
-            box(c, "Stall %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 1.6 + 0.8 * (k % 2), ("adobe", "wall"), rot=a)
-            ruin.rubble(c, "Stall Rubble %d" % k, hx + 3.0 * math.cos(a), hy + 3.0 * math.sin(a), ground, ("adobe", "wall"),
-                        n=5, spread=3.0, size=0.9, seed=k)
-            continue
-        box(c, "Stall %d" % k, hx, hy, 4.5, 3.5, cz - 1.0, cz + 4.5, ("adobe", "wall"), rot=a)
-        box(c, "Stall Awning %d" % k, hx, hy, 5.2, 4.2, cz + 4.5, cz + 5.0, (("tent_cloth", "tent_cloth_red")[k % 2], "wall"),
-            rot=a, role="visual")
-    tx, ty = cx - 10.0, cy + 16.0
-    if RUIN:
-        box(c, "Water Tower Tank", tx - 6.0, ty + 3.0, 3.0, 2.5, cz - 0.5, cz + 4.5, ("weathered_timber", "wall"), rot=0.5)
-    else:
-        for sx in (-1, 1):
-            for sy in (-1, 1):
-                box(c, "Water Tower Leg %d%d" % (sx, sy), tx + sx * 2.2, ty + sy * 2.2, 0.3, 0.3, cz - 1.0, cz + 9.0,
-                    ("weathered_timber", "wall"))
-        box(c, "Water Tower Tank", tx, ty, 3.0, 3.0, cz + 9.0, cz + 14.0, ("tank_staves", "wall"), role="visual")
+    LANES.extend(dd.trading_post(c, ground, ter))
+    if not RUIN:
         c.place(cp.windmill_tower(c), cx + 6.0, cy - 30.0, ground(cx + 6.0, cy - 30.0) - 0.2)
-    g = c.game(cx, cy, cz + 0.3)
-    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+
+
+LANES = []
 
 
 def landmarks(c, ground, spots):
@@ -364,7 +369,9 @@ def dress(c, ground, spots):
     taken = paint.Taken([(HUB[0], HUB[1], HUB[2] + 12.0), (*VAULT, 18.0), (*RETURN, 18.0), (*SECRET, 16.0),
                          *((x, y, 9.0) for x, y in STONES), *((e[0], e[1], 16.0) for e, _ in spots.values()),
                          *((x, y, 24.0) for x, y in DL.GATES.values()), (*DL.LAIR, 24.0),
-                         (DL.POOL[0], DL.POOL[1], DL.POOL[2] + 8.0)])
+                         (DL.POOL[0], DL.POOL[1], DL.POOL[2] + 8.0), *dd.SPOTS])
+    # The walls alive (desert_dress), both builds.
+    dd.wall_life(c, ground, taken)
 
     def inside(x, y):
         return L.wall_sd(x, y) < -8
