@@ -600,3 +600,20 @@ def lava_channel_lip(c, length=4.0):
         return [(c.lib("basalt_block"), _faces(bm, 0))]
 
     return _p(c, name, build)
+
+
+def tree_ledge(c, mat="ancient_cliff"):
+    """A rock ledge for a tree on a wall (Blake, Oct 29: "give this a small ledge"): a
+    lump of the wall's rock standing out of the slope round the tree's foot, its top
+    broken off flat for the tree to stand on, its face falling away below."""
+    name = "Tree Ledge %s" % mat
+
+    def build(bm):
+        res = bmesh.ops.create_icosphere(bm, subdivisions=2, radius=1.0)
+        for i, v in enumerate(res["verts"]):
+            k = 0.85 + 0.3 * rnd(i * 2.3 + len(mat))
+            x, y, z = v.co.x * 2.7 * k, v.co.y * 2.4 * k, v.co.z * 2.2 * k - 1.7
+            v.co = Vector((x, y, min(z, 0.28 + 0.06 * rnd(i * 5.1))))
+        return [(c.lib(mat, "wall"), _faces(bm, 0))]
+
+    return _p(c, name, build)

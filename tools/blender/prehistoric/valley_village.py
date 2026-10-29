@@ -316,14 +316,26 @@ HUTS = [
          extras=("skull", "firewood")),
     dict(r=2.9, h=2.3, wall="daub_rose", roof="finial", thatch="thatch", door="shut", band=False, win=2,
          extras=("pots", "chime")),
+    # The grand one (Blake, Riverbend note 11: "make this one more grand, keeping the same
+    # style, but I would like a chimney with smoke coming out").
+    dict(r=4.8, h=3.1, wall="daub_cream", roof="tiered", thatch="thatch_dark", door="porch", band=True, win=2,
+         extras=("gourds", "pots", "firewood", "bench", "chime"), chimney=True),
 ]
+GRAND = 99  # (asks for the grand one: the last look)
+
+
+def _vi(v):
+    """Which look: the grand one only when asked for; otherwise round the others."""
+    return len(HUTS) - 1 if v == GRAND else v % (len(HUTS) - 1)
 DOOR_HW = 0.7  # half the doorway's width
 DOOR_H = 2.05
 
 
 def hut_chimney(v):
     """Where a hut's chimney smokes from (its local x, y, z), or None."""
-    s = HUTS[v % len(HUTS)]
+    s = HUTS[_vi(v)]
+    if s.get("chimney"):
+        return (-s["r"] * 0.46, 0.6, s["h"] + 3.65)
     if s["roof"] != "dome":
         return None
     return (-s["r"] * 0.35, 0.4, s["h"] + 3.0)
@@ -333,7 +345,7 @@ def hut(c, v):
     """A villager's hut, look `v` of HUTS (its doorway at +X): a stone plinth, daub walls
     with a real doorway (a frame and lintel, a door or a hide, a dark room behind it),
     windows, a painted band, the roof in its own style, and its odds and ends about it."""
-    s = HUTS[v % len(HUTS)]
+    s = HUTS[_vi(v)]
     R, Hw = s["r"], s["h"]
     da = math.asin(DOOR_HW / R)
     T = 0.3  # the walls' thickness
@@ -479,12 +491,17 @@ def hut(c, v):
         # The roof.
         Re, ze = R + 1.05, Hw - 0.25
         roof_fill(m, s["roof"], R, Hw, Re, ze, thatch, v)
+        if s.get("chimney"):
+            cx, cy = -R * 0.46, 0.6
+            m.add(("ruin_stone", "wall"), lambda bm: _cyl(bm, (cx, cy, Hw + 0.6), 0.5, 3.0, n=8, r2=0.42))
+            m.add(("ruin_stone", "wall"), lambda bm: _cyl(bm, (cx, cy, Hw + 3.45), 0.5, 0.18, n=8))
+            m.add(("charred_bark", "wall"), lambda bm: _cyl(bm, (cx, cy, Hw + 3.63), 0.3, 0.02, n=8))
 
         # What's about it.
         for e in s["extras"]:
             extra(m, e, R, Hw, Re, ze, v)
 
-    return proto_mesh(c, "Village Hut %d" % (v % len(HUTS)), fill)
+    return proto_mesh(c, "Village Hut %d" % _vi(v), fill)
 
 
 def _cone(bm, rings_rz, n, tip=None, jag=0.0, seed=0):
@@ -637,8 +654,8 @@ def extra(m, kind, R, Hw, Re, ze, v):
 
 def hut_collider(c, v):
     """What a kart hits at a hut: its walls, a plain round (the porch's posts too)."""
-    s = HUTS[v % len(HUTS)]
-    name = "Village Hut Collider %d" % (v % len(HUTS))
+    s = HUTS[_vi(v)]
+    name = "Village Hut Collider %d" % _vi(v)
 
     def build(bm):
         _cyl(bm, (0, 0, -0.4), s["r"] + 0.15, s["h"] + 0.4, n=14)
@@ -664,8 +681,11 @@ def place_hut(c, v, x, y, z, rot, scale=1.0, coll="Village", name=None):
 
 
 def house(c, name, x, y, z, rot, k):
-    """villager_homes' house: the front (local -Y) to `rot`'s; our doorways face +X."""
-    place_hut(c, k, x, y, z - 0.15, rot - math.pi / 2, coll="Props", name=name)
+    """villager_homes' house: the front (local -Y) to `rot`'s; our doorways face +X. Set a
+    little up from the lowest ground round it (its walls run on down into the land), so
+    it doesn't sink into a slope (Blake, Riverbend note 11)."""
+    v = GRAND if name == "Home Riverbend 2" else k
+    place_hut(c, v, x, y, z + 0.25, rot - math.pi / 2, coll="Props", name=name)
 
 
 # ------------------------------------------------------------------ the kart shed
@@ -993,3 +1013,64 @@ def home_path(c, x, y, _r=0.0):
     start = (x + fx * 4.4, y + fy * 4.4)
     end = (q.p.x - ux * max(1.0, q.w / 2 - 1.2), q.p.y - uy * max(1.0, q.w / 2 - 1.2))
     return wander(start, end, bend=1.5 * math.sin(x * 0.37 + y * 0.11), seed=int(abs(x) * 3) % 17)
+
+
+def road_apron(c, start, end, mat, ground, width=15.0, past=6.0, name="Gateway Apron"):
+    """The road carried right up into a gateway's mouth (Blake, Riverbend notes 6 and 7:
+    a green patch on the road before the gate, the land before it to be "the same
+    texture as the road"): a strip of the road's own surface over the last stretch and
+    on past the road's end into the arch, its texture running along it like the road's."""
+    import course_kit as ck
+
+    e = ck.materials.entry(mat[0])
+    tile = e["tileMetres"]
+    sx, sy = start
+    ex, ey = end
+    L = math.hypot(ex - sx, ey - sy) or 1.0
+    ux, uy = (ex - sx) / L, (ey - sy) / L
+    nx, ny = -uy, ux
+    total = L + past
+    m = gs.Mesh()
+    steps = max(2, int(total / 1.0))
+    cols = (-1.0, -0.5, 0.0, 0.5, 1.0)
+    rows = []
+    for k in range(steps + 1):
+        s = total * k / steps
+        # (Round ends: narrower toward its far end, into the mouth.)
+        w = width / 2 * (1.0 if s < total - 3.0 else max(0.55, 1.0 - (s - (total - 3.0)) / 6.0))
+        row = []
+        for f in cols:
+            x, y = sx + ux * s + nx * f * w, sy + uy * s + ny * f * w
+            row.append(((x, y, ground(x, y) + 0.16), (s / tile, (f * w + width / 2) / tile)))
+        rows.append(row)
+    for r0, r1 in zip(rows, rows[1:]):
+        for j in range(len(cols) - 1):
+            q = [r0[j], r1[j], r1[j + 1], r0[j + 1]]
+            m.quad(mat, [p for p, _ in q], [uv for _, uv in q])
+    return m.build(c, name, coll="Props", role="visual")
+
+
+def clear_paths(c, paths, room=2.6):
+    """Nothing growing in a path (Blake, Riverbend note 9: "move this bush out of the
+    path"): bushes, ferns, leafy plants, flowers and small rocks within `room` of a
+    path's line are taken away."""
+    from mathutils import kdtree
+
+    pts = [p for path in paths for p in _catmull(path, step=1.0)]
+    if not pts:
+        return
+    tree = kdtree.KDTree(len(pts))
+    for i, (x, y) in enumerate(pts):
+        tree.insert((x, y, 0.0), i)
+    tree.balance()
+    small = ("Bush", "Fern", "Big Leaf", "Flower", "Grass", "Tuft", "Pebble", "Boulder", "Reeds", "Shrub")
+    gone = 0
+    for ob in list(bpy.data.objects):
+        if ob.type != "MESH" or not ob.name.startswith(small):
+            continue
+        p = ob.matrix_world.translation
+        _, _, d = tree.find((p.x, p.y, 0.0))
+        if d < room:
+            bpy.data.objects.remove(ob)
+            gone += 1
+    print("paths cleared of %d plants" % gone)

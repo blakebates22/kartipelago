@@ -145,10 +145,11 @@
       "id": "mist_08",
       "type": "mist",
       "x": -182.0,
-      "y": 5.0,
+      "y": 4.2,
       "z": -113.0,
-      "radius": 24.0,
-      "rate": 8
+      "radius": 21.6,
+      "rate": 12,
+      "color": "#eef6ff"
     },
     {
       "id": "steam_01",
@@ -171,10 +172,11 @@
       "id": "mist_09",
       "type": "mist",
       "x": 178.6,
-      "y": 28.0,
+      "y": 27.2,
       "z": -212.0,
-      "radius": 18.0,
-      "rate": 8
+      "radius": 16.2,
+      "rate": 12,
+      "color": "#eef6ff"
     },
     {
       "id": "steam_02",
@@ -371,6 +373,15 @@
       "x": -153.56,
       "y": 9.67,
       "z": 96.98
+    },
+    {
+      "id": "horned_skull_01",
+      "type": "horned_skull",
+      "x": -130.19,
+      "y": 21.12,
+      "z": 27.81,
+      "scale": 1.8,
+      "heading": 2.436
     },
     {
       "id": "torch_09",
@@ -787,7 +798,7 @@
       "id": "bubbles_27",
       "type": "bubbles",
       "x": 167.0,
-      "y": 19.32,
+      "y": 19.3,
       "z": 198.0,
       "r": 6.4,
       "molten": true
@@ -796,7 +807,7 @@
       "id": "steam_09",
       "type": "steam",
       "x": 167.0,
-      "y": 19.32,
+      "y": 19.3,
       "z": 198.0
     },
     {
@@ -952,9 +963,9 @@
     {
       "id": "chimney_01",
       "type": "chimney",
-      "x": -166.89,
-      "y": 5.94,
-      "z": -48.33
+      "x": -165.9,
+      "y": 7.89,
+      "z": -49.15
     },
     {
       "id": "villager_home_06",
@@ -1556,9 +1567,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "dbe5f7ad5bfc0bdf08c34a3e1e1560b5d5a0e042841998ae1f18c328ac113591",
+    "valley_dress.py": "0dd286b05f1a03a19cd60e774eb05cdb276bf847f018305d8041f8612c2e8796",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "3e3b3df24402cf30b8bca2ae787cffde3b27d007ec9ff8bd116bdfcf7e7321ad",
-    "valley_village.py": "1dbf8a0fa3cc7098f3aad6a4d1766037fe15b6fbdf46e585fca0650b2a9a9ea1"
+    "valley_region.py": "a13368f77427ea48878fd404c2af9bb8e08bb5f4a9aa654bfa5773b782450604",
+    "valley_village.py": "7eb73679e2f0d361cee1be64b21b51bcdd9f51a610d6de04e740b0214e1c8ec3"
   }
 }

@@ -1,9 +1,16 @@
 /**
  * An overworld gateway into a course (Blake, Oct 28: "way more grand and natural, like a
- * cave hole, and the sign above it more rugged; the portals look terrible"): a mouth of
- * piled boulders in the world's own rock round a dark tunnel, the course's glow deep in
- * it, a rugged plank sign hung from the top on ropes with the name burned in, and a
- * torch either side. A dragon's lair is the same in scorched rock with a red glow.
+ * cave hole, and the sign above it more rugged"; Oct 29, review-valley_region 4 and 5:
+ * "this rock piece is covering the sign", "pump up the fidelity of this fire ... high
+ * def", "the backside ... is just black ... redo this portal rock structure to make it
+ * look more natural", "redo the fonts of all the signs ... this is too plain jane"):
+ *
+ * a cave mouth in a hillock of the world's own rock (one mass, weathered in bands, moss
+ * or snow on its top, the hill closing over the tunnel behind so it's rock from every
+ * side), the course's glow deep inside, a carved sign hung clear in front of the rock
+ * with the name cut in big painted letters, and a torch either side: a carved post, an
+ * iron basket and a living fire (layered flames that flicker and lick, embers rising).
+ * A dragon's lair is the same in scorched rock with a red glow and red fire.
  *
  * Visual only (the gateway's circle is what you drive into). Local space: the mouth
  * faces +z (the way you come out), the tunnel runs back to -z.
@@ -14,20 +21,67 @@ export type ArchTheme = "prehistoric" | "frostveil" | "desert" | "beach" | "drag
 
 const THEMES: Record<
   ArchTheme,
-  { rock: string; dark: string; cap?: string; plank: string; ink: string }
+  {
+    rock: string;
+    dark: string;
+    band: string;
+    cap?: string;
+    plank: string;
+    paint: string;
+    edge: string;
+  }
 > = {
   prehistoric: {
-    rock: "#7a6a52",
-    dark: "#4e4434",
-    cap: "#4f7a32",
+    rock: "#8a7658",
+    dark: "#5a4c38",
+    band: "#a08a66",
+    cap: "#4f8a32",
     plank: "#7a5230",
-    ink: "#2a160a",
+    paint: "#f2c64a",
+    edge: "#3a1e0c",
   },
-  frostveil: { rock: "#8a96a4", dark: "#5a6474", cap: "#f2f6fa", plank: "#6a4a32", ink: "#1e1008" },
-  desert: { rock: "#c49a62", dark: "#8a6a42", plank: "#8a6038", ink: "#2a160a" },
-  beach: { rock: "#cbbca0", dark: "#8f8270", cap: "#5a9a3a", plank: "#9a7048", ink: "#2a160a" },
-  dragon: { rock: "#5a5262", dark: "#36303e", plank: "#5a3a2a", ink: "#140a06" },
-  lair: { rock: "#3a302c", dark: "#1e1814", plank: "#4a2a1a", ink: "#120804" },
+  frostveil: {
+    rock: "#8e9aa8",
+    dark: "#5a6474",
+    band: "#a8b4c2",
+    cap: "#f2f6fa",
+    plank: "#6a4a32",
+    paint: "#bfe6ff",
+    edge: "#1e2a3a",
+  },
+  desert: {
+    rock: "#c49a62",
+    dark: "#8a6a42",
+    band: "#d8b07a",
+    plank: "#8a6038",
+    paint: "#ffe08a",
+    edge: "#4a2410",
+  },
+  beach: {
+    rock: "#cbbca0",
+    dark: "#8f8270",
+    band: "#ddd0b4",
+    cap: "#5a9a3a",
+    plank: "#9a7048",
+    paint: "#ffffff",
+    edge: "#2a4a6a",
+  },
+  dragon: {
+    rock: "#5a5262",
+    dark: "#36303e",
+    band: "#6e6676",
+    plank: "#5a3a2a",
+    paint: "#ffb040",
+    edge: "#200a06",
+  },
+  lair: {
+    rock: "#3a302c",
+    dark: "#1e1814",
+    band: "#4a3c34",
+    plank: "#4a2a1a",
+    paint: "#ff7a30",
+    edge: "#120402",
+  },
 };
 
 function rng(seed: number) {
@@ -40,62 +94,198 @@ function rng(seed: number) {
   };
 }
 
-/** The sign's face: rough planks with the name burned into them, ragged edges. */
-function signTexture(label: string, plank: string, ink: string, seed: number) {
-  const W = 512;
-  const H = 128;
+/** Smooth 3D value noise (for the rock's shape and weathering), -1..1. */
+function noise3(seed: number) {
+  const h = (x: number, y: number, z: number) => {
+    const v = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + seed * 13.13) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  const sm = (t: number) => t * t * (3 - 2 * t);
+  return (x: number, y: number, z: number) => {
+    const xi = Math.floor(x);
+    const yi = Math.floor(y);
+    const zi = Math.floor(z);
+    const xf = sm(x - xi);
+    const yf = sm(y - yi);
+    const zf = sm(z - zi);
+    const l = (a: number, b: number, t: number) => a + (b - a) * t;
+    const c = (dx: number, dy: number, dz: number) => h(xi + dx, yi + dy, zi + dz);
+    return (
+      l(
+        l(l(c(0, 0, 0), c(1, 0, 0), xf), l(c(0, 1, 0), c(1, 1, 0), xf), yf),
+        l(l(c(0, 0, 1), c(1, 0, 1), xf), l(c(0, 1, 1), c(1, 1, 1), xf), yf),
+        zf,
+      ) *
+        2 -
+      1
+    );
+  };
+}
+
+// ---------------------------------------------------------------- the sign
+
+/** The sign: three rough planks, the name cut into them in big chunky letters, each
+ * letter its own tilt and bounce, painted, with a carved dark edge and a lit bevel; a
+ * leaf (or a spark) at each end. */
+function signTexture(label: string, th: (typeof THEMES)[ArchTheme], seed: number) {
+  const W = 1024;
+  const H = 256;
   const cv = document.createElement("canvas");
   cv.width = W;
   cv.height = H;
   const g = cv.getContext("2d")!;
   const r = rng(seed);
-  const base = new THREE.Color(plank);
-  // Three planks, each its own shade, ragged ends, grain lines, nails.
+  const base = new THREE.Color(th.plank);
   for (let p = 0; p < 3; p++) {
-    const y0 = 6 + p * 40;
-    const shade = base.clone().multiplyScalar(0.85 + r() * 0.3);
+    const y0 = 10 + p * 80;
+    const shade = base.clone().multiplyScalar(0.82 + r() * 0.3);
     g.fillStyle = `#${shade.getHexString()}`;
     g.beginPath();
-    const l = 4 + r() * 14;
-    const rr = W - 4 - r() * 14;
+    const l = 8 + r() * 26;
+    const rr = W - 8 - r() * 26;
     g.moveTo(l, y0);
-    for (let x = l; x <= rr; x += 32) g.lineTo(x, y0 + (r() - 0.5) * 3);
-    g.lineTo(rr + (r() - 0.5) * 8, y0 + 18);
-    g.lineTo(rr, y0 + 38);
-    for (let x = rr; x >= l; x -= 32) g.lineTo(x, y0 + 38 + (r() - 0.5) * 3);
-    g.lineTo(l + (r() - 0.5) * 8, y0 + 18);
+    for (let x = l; x <= rr; x += 48) g.lineTo(x, y0 + (r() - 0.5) * 5);
+    g.lineTo(rr + (r() - 0.5) * 14, y0 + 38);
+    g.lineTo(rr, y0 + 76);
+    for (let x = rr; x >= l; x -= 48) g.lineTo(x, y0 + 76 + (r() - 0.5) * 5);
+    g.lineTo(l + (r() - 0.5) * 14, y0 + 38);
     g.closePath();
     g.fill();
-    g.strokeStyle = "rgba(0,0,0,0.18)";
-    g.lineWidth = 2;
-    for (let k = 0; k < 4; k++) {
-      const y = y0 + 6 + k * 8 + r() * 3;
+    // Grain, knots, a lit top edge, nails.
+    g.strokeStyle = "rgba(0,0,0,0.16)";
+    g.lineWidth = 3;
+    for (let k = 0; k < 5; k++) {
+      const y = y0 + 10 + k * 14 + r() * 5;
       g.beginPath();
-      g.moveTo(l + 6, y);
-      g.bezierCurveTo(W * 0.3, y + (r() - 0.5) * 6, W * 0.7, y + (r() - 0.5) * 6, rr - 6, y);
+      g.moveTo(l + 10, y);
+      g.bezierCurveTo(W * 0.3, y + (r() - 0.5) * 10, W * 0.7, y + (r() - 0.5) * 10, rr - 10, y);
       g.stroke();
     }
+    g.fillStyle = "rgba(255,240,200,0.18)";
+    g.fillRect(l + 6, y0 + 2, rr - l - 12, 4);
+    g.fillStyle = "rgba(0,0,0,0.25)";
+    for (let k = 0; k < 2; k++) {
+      g.beginPath();
+      g.ellipse(l + 80 + r() * (rr - l - 160), y0 + 20 + r() * 40, 9, 5, 0, 0, Math.PI * 2);
+      g.fill();
+    }
     g.fillStyle = "#2a2a2a";
-    for (const x of [l + 12, rr - 12]) g.fillRect(x - 2, y0 + 17, 4, 4);
+    for (const x of [l + 22, rr - 22]) g.fillRect(x - 4, y0 + 34, 8, 8);
   }
-  // The name, burned in: a dark scorch with a lighter edge.
-  const size = Math.min(64, (W * 1.7) / Math.max(6, label.length));
-  g.font = `bold ${size}px serif`;
-  g.textAlign = "center";
+  // The letters: chunky, each tilted and bounced a little, cut (a dark outline and
+  // shadow), painted, and lit along their top.
+  const text = label.toUpperCase();
+  const size = Math.min(150, (W * 1.45) / Math.max(5, text.length));
+  g.font = `900 ${size}px "Arial Black", "Trebuchet MS", Impact, sans-serif`;
   g.textBaseline = "middle";
-  g.lineJoin = "round";
-  g.strokeStyle = "rgba(255,220,160,0.35)";
-  g.lineWidth = 6;
-  g.strokeText(label, W / 2, H / 2 + 2, W - 40);
-  g.fillStyle = ink;
-  g.fillText(label, W / 2, H / 2 + 2, W - 40);
+  g.textAlign = "center";
+  const widths = [...text].map((ch) => g.measureText(ch).width * 0.92);
+  const total = widths.reduce((a, b) => a + b, 0);
+  const sx = Math.min(1, (W - 120) / total);
+  let x = W / 2 - (total * sx) / 2;
+  [...text].forEach((ch, i) => {
+    const w = widths[i]! * sx;
+    const cx = x + w / 2;
+    const cy = H / 2 + 6 + Math.sin(i * 1.7 + seed) * 7;
+    g.save();
+    g.translate(cx, cy);
+    g.rotate((r() - 0.5) * 0.16);
+    g.scale(sx, 1);
+    g.lineJoin = "round";
+    // The cut: shadow below, the dark edge.
+    g.fillStyle = "rgba(0,0,0,0.45)";
+    g.fillText(ch, 5, 7);
+    g.strokeStyle = th.edge;
+    g.lineWidth = size * 0.16;
+    g.strokeText(ch, 0, 0);
+    // The paint, lighter toward its top.
+    const grad = g.createLinearGradient(0, -size * 0.45, 0, size * 0.45);
+    const paint = new THREE.Color(th.paint);
+    grad.addColorStop(0, `#${paint.clone().lerp(new THREE.Color("#ffffff"), 0.45).getHexString()}`);
+    grad.addColorStop(0.55, `#${paint.getHexString()}`);
+    grad.addColorStop(1, `#${paint.clone().multiplyScalar(0.7).getHexString()}`);
+    g.fillStyle = grad;
+    g.fillText(ch, 0, 0);
+    g.restore();
+    x += w;
+  });
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
   return tex;
 }
 
-/** The glow deep in the tunnel: the course's colour, swirling. */
-function glowTexture(color: string) {
+// ---------------------------------------------------------------- the fire
+
+const FRAMES = 8;
+const flameCache = new Map<string, HTMLCanvasElement>();
+
+/** A flame, in FRAMES frames side by side: tongues licking up from a hot white heart,
+ * yellow to orange to red at their tips, each frame a moment later. */
+function flameSheet(hot: string, mid: string, tip: string) {
+  const key = hot + mid + tip;
+  const have = flameCache.get(key);
+  if (have) return have;
+  const FW = 64;
+  const FH = 128;
+  const cv = document.createElement("canvas");
+  cv.width = FW * FRAMES;
+  cv.height = FH;
+  const g = cv.getContext("2d")!;
+  g.globalCompositeOperation = "lighter";
+  for (let f = 0; f < FRAMES; f++) {
+    const ox = f * FW;
+    const t = (f / FRAMES) * Math.PI * 2;
+    // Tongues: a few curved blades, each swaying with its own phase.
+    for (let k = 0; k < 5; k++) {
+      const ph = t + k * 1.3;
+      const hgt = FH * (0.55 + 0.3 * Math.abs(Math.sin(ph * (k % 2 ? 1 : 2) + k)));
+      const w = FW * (0.36 - k * 0.04);
+      const sway = Math.sin(ph) * FW * 0.12;
+      const bx = ox + FW / 2 + (k - 2) * FW * 0.06;
+      const by = FH - 10;
+      const grad = g.createLinearGradient(0, by, 0, by - hgt);
+      grad.addColorStop(0, hot);
+      grad.addColorStop(0.35, mid);
+      grad.addColorStop(0.8, tip);
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = grad;
+      g.globalAlpha = 0.55;
+      g.beginPath();
+      g.moveTo(bx - w / 2, by);
+      g.bezierCurveTo(
+        bx - w / 2,
+        by - hgt * 0.4,
+        bx + sway - w * 0.2,
+        by - hgt * 0.7,
+        bx + sway * 1.6,
+        by - hgt,
+      );
+      g.bezierCurveTo(
+        bx + sway + w * 0.2,
+        by - hgt * 0.7,
+        bx + w / 2,
+        by - hgt * 0.4,
+        bx + w / 2,
+        by,
+      );
+      g.closePath();
+      g.fill();
+    }
+    // The heart.
+    const heart = g.createRadialGradient(ox + FW / 2, FH - 22, 2, ox + FW / 2, FH - 22, FW * 0.34);
+    heart.addColorStop(0, "rgba(255,255,240,0.95)");
+    heart.addColorStop(1, "rgba(255,200,80,0)");
+    g.globalAlpha = 1;
+    g.fillStyle = heart;
+    g.fillRect(ox, FH - 60, FW, 60);
+  }
+  flameCache.set(key, cv);
+  return cv;
+}
+
+/** A soft round glow (round a flame, deep in the tunnel). */
+function glowTexture(color: string, rings = false) {
   const cv = document.createElement("canvas");
   cv.width = cv.height = 128;
   const g = cv.getContext("2d")!;
@@ -107,14 +297,115 @@ function glowTexture(color: string) {
   grad.addColorStop(1, `rgba(${rgb},0)`);
   g.fillStyle = grad;
   g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = "rgba(255,255,255,0.35)";
-  g.lineWidth = 3;
-  for (let k = 0; k < 3; k++) {
-    g.beginPath();
-    g.arc(64, 64, 18 + k * 14, k, k + 3.6);
-    g.stroke();
+  if (rings) {
+    g.strokeStyle = "rgba(255,255,255,0.35)";
+    g.lineWidth = 3;
+    for (let k = 0; k < 3; k++) {
+      g.beginPath();
+      g.arc(64, 64, 18 + k * 14, k, k + 3.6);
+      g.stroke();
+    }
   }
   return new THREE.CanvasTexture(cv);
+}
+
+// ---------------------------------------------------------------- the rock
+
+/** The rock: the mouth's arch and the hillock it's cut into, one weathered mass. */
+function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
+  const n = noise3(seed);
+  const rockC = new THREE.Color(th.rock);
+  const darkC = new THREE.Color(th.dark);
+  const bandC = new THREE.Color(th.band);
+  const capC = th.cap ? new THREE.Color(th.cap) : undefined;
+  const pos: number[] = [];
+  const col: number[] = [];
+  const tmp = new THREE.Color();
+  // A shell over a grid of (u, v): u round the hill from one foot to the other (0..PI),
+  // v from the mouth's face back over the top (0..1). Each point is pushed out by noise.
+  // The mouth's hole is cut where the hill's front face is.
+  const RI = 6.6; // the hole
+  const shellAt = (u: number, v: number, out: THREE.Vector3) => {
+    // The face: a ring from the hole's edge out to the hill's rim (v 0..0.25); then
+    // the hill over the top and down behind (v 0.25..1).
+    const ca = Math.cos(u);
+    const sa = Math.sin(u);
+    if (v <= 0.25) {
+      const k = v / 0.25;
+      const rad = RI + k * 4.6;
+      out.set(ca * rad, sa * rad * 1.08 + 0.2, 1.6 - k * k * 0.8);
+    } else {
+      const k = (v - 0.25) / 0.75;
+      // An ellipsoid behind the face: wide, tall at the front, falling away behind.
+      const ang = k * Math.PI * 0.5;
+      const rad = 11.2 * Math.cos(ang * 0.85) + 2;
+      out.set(ca * rad, sa * (rad * 1.08 + 0.2) * (1 - 0.15 * k), 0.8 - Math.sin(ang) * 15);
+    }
+    // Weathering: lumps and ledges.
+    const d =
+      n(out.x * 0.2, out.y * 0.2, out.z * 0.2) * 1.6 +
+      n(out.x * 0.55, out.y * 0.55, out.z * 0.55) * 0.6 +
+      n(out.x * 1.3, out.y * 1.3, out.z * 1.3) * 0.18;
+    const nx = v <= 0.25 ? 0 : ca;
+    const ny = v <= 0.25 ? 0 : sa;
+    const nz = v <= 0.25 ? 1 : 0.4;
+    out.x += nx * d;
+    out.y += Math.max(-out.y, ny * d);
+    out.z += nz * d * 0.8;
+    if (out.y < 0.05) out.y = -0.6; // (its feet sunk in the ground)
+    return out;
+  };
+  const NU = 48;
+  const NV = 30;
+  const grid: THREE.Vector3[][] = [];
+  for (let i = 0; i <= NU; i++) {
+    const row: THREE.Vector3[] = [];
+    for (let j = 0; j <= NV; j++)
+      row.push(shellAt((i / NU) * Math.PI, j / NV, new THREE.Vector3()));
+    grid.push(row);
+  }
+  const paint = (p: THREE.Vector3, nrm: THREE.Vector3) => {
+    // Beds of strata (ledges, a dark seam under each), cracks, darker low down, and the
+    // cap (moss, snow) on whatever faces up.
+    const w = n(p.x * 0.3, p.y * 0.1, p.z * 0.3) * 0.6;
+    const bed = (p.y * 0.42 + w) % 1;
+    tmp.copy(rockC).lerp(bandC, (Math.floor(p.y * 0.42 + w) % 2) * 0.55);
+    if (bed < 0.12) tmp.lerp(darkC, 0.75);
+    const crack = Math.abs(n(p.x * 0.9, p.y * 0.35, p.z * 0.9));
+    if (crack < 0.07) tmp.lerp(darkC, 0.8);
+    tmp.multiplyScalar(0.88 + 0.22 * (0.5 + 0.5 * n(p.x * 1.7, p.y * 1.7, p.z * 1.7)));
+    tmp.lerp(darkC, Math.max(0, 0.4 - p.y * 0.06));
+    if (capC && nrm.y > 0.5 && p.y > 3.5) tmp.lerp(capC, Math.min(1, (nrm.y - 0.5) * 3));
+    return tmp;
+  };
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const nrm = new THREE.Vector3();
+  const tri = (p0: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3) => {
+    a.subVectors(p1, p0);
+    b.subVectors(p2, p0);
+    nrm.crossVectors(a, b).normalize();
+    for (const p of [p0, p1, p2]) {
+      pos.push(p.x, p.y, p.z);
+      const c = paint(p, nrm);
+      col.push(c.r, c.g, c.b);
+    }
+  };
+  for (let i = 0; i < NU; i++)
+    for (let j = 0; j < NV; j++) {
+      const p00 = grid[i]![j]!;
+      const p10 = grid[i + 1]![j]!;
+      const p01 = grid[i]![j + 1]!;
+      const p11 = grid[i + 1]![j + 1]!;
+      // (Outward: the face toward +z, the hill away from its middle.)
+      tri(p00, p01, p10);
+      tri(p10, p01, p11);
+    }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
 }
 
 export interface GatewayArch {
@@ -134,148 +425,226 @@ export function createGatewayArch(
   parent.add(group);
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
-  const mat = (color: string, extra: THREE.MeshLambertMaterialParameters = {}) => {
-    const m = new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
-    mats.push(m);
-    return m;
-  };
-  const rock = mat(th.rock);
-  const dark = mat(th.dark);
-  const cap = th.cap ? mat(th.cap) : undefined;
-  const boulder = (x: number, y: number, z: number, s: number, m = rock) => {
-    const g = new THREE.IcosahedronGeometry(s, 1);
-    const p = g.getAttribute("position") as THREE.BufferAttribute;
-    // (The same nudge for the same corner, so the faces stay joined.)
-    const salt = r() * 100;
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i);
-      const y = p.getY(i);
-      const z = p.getZ(i);
-      const h = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719 + salt) * 43758.5453;
-      const k = 0.84 + 0.32 * (h - Math.floor(h));
-      p.setXYZ(i, x * k, y * k, z * k);
+  const texs: THREE.Texture[] = [];
+  const keep = <T extends THREE.Material>(m: T) => (mats.push(m), m);
+  const geo = <T extends THREE.BufferGeometry>(g: T) => (geos.push(g), g);
+
+  // The rock: the mouth and the hill over the tunnel, one mass.
+  const rockMat = keep(
+    new THREE.MeshLambertMaterial({
+      vertexColors: true,
+      flatShading: true,
+      side: THREE.DoubleSide,
+    }),
+  );
+  group.add(new THREE.Mesh(geo(rockMass(th, o.seed % 97)), rockMat));
+  // A few stones fallen at its feet.
+  const stoneMat = keep(new THREE.MeshLambertMaterial({ color: th.rock, flatShading: true }));
+  for (const sd of [-1, 1])
+    for (let k = 0; k < 3; k++) {
+      const s = 0.6 + r() * 0.9;
+      const st = new THREE.Mesh(geo(new THREE.IcosahedronGeometry(s, 1)), stoneMat);
+      st.position.set(sd * (8.8 + r() * 4), s * 0.3, 2.5 + r() * 3.5);
+      st.rotation.set(r() * 3, r() * 3, r() * 3);
+      st.scale.set(1, 0.6 + r() * 0.3, 1);
+      group.add(st);
     }
-    g.computeVertexNormals();
-    geos.push(g);
-    const b = new THREE.Mesh(g, m);
-    b.position.set(x, y, z);
-    b.rotation.set(r() * 3, r() * 3, r() * 3);
-    b.scale.set(1, 0.8 + r() * 0.4, 0.9 + r() * 0.3);
-    group.add(b);
-    return b;
-  };
-  // The mouth: boulders piled in an arch, bigger at the feet, two deep (front and back).
-  const R = 7.4;
-  const N = 11;
-  for (let row = 0; row < 2; row++)
-    for (let i = 0; i < N; i++) {
-      const a = (i / (N - 1)) * Math.PI;
-      const s = (i === 0 || i === N - 1 ? 3.4 : 2.3 + r() * 0.8) * (row ? 0.95 : 1);
-      const b = boulder(
-        Math.cos(a) * R,
-        Math.sin(a) * (R + 1.2) + (i === 0 || i === N - 1 ? 1.2 : 1.6),
-        row ? -3.2 : 0.4,
-        s,
-        row ? dark : rock,
-      );
-      // Moss, or snow, on the top stones.
-      if (cap && row === 0 && Math.sin(a) > 0.55) {
-        const c = boulder(b.position.x, b.position.y + s * 0.55, b.position.z + 0.2, s * 0.62, cap);
-        c.scale.y *= 0.45;
-      }
-    }
-  // Shoulders: rock spilling out to either side, and a few stones on the ground.
-  for (const sd of [-1, 1]) {
-    boulder(sd * 10.6, 1.6, -1.5, 3.0);
-    boulder(sd * 12.4, 0.8, 0.8, 1.9);
-    boulder(sd * 9.2, 5.6, -2.4, 2.2, dark);
-    boulder(sd * (7 + r() * 4), 0.3, 3.5 + r() * 2, 0.7 + r() * 0.5);
-  }
   // The hole: a dark tunnel back into the rock, the course's glow deep inside.
-  const tunnelG = new THREE.CylinderGeometry(6.2, 6.2, 12, 14, 1, true, -Math.PI / 2, Math.PI);
-  geos.push(tunnelG);
-  const inside = new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.DoubleSide });
-  mats.push(inside);
-  const tunnel = new THREE.Mesh(tunnelG, inside);
+  const inside = keep(new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide }));
+  const tunnel = new THREE.Mesh(
+    geo(new THREE.CylinderGeometry(6.4, 6.4, 14, 16, 1, true, -Math.PI / 2, Math.PI)),
+    inside,
+  );
   tunnel.rotation.x = -Math.PI / 2;
-  tunnel.position.set(0, 0.2, -6.5);
+  tunnel.position.set(0, 0.2, -5.6);
   group.add(tunnel);
-  const backG = new THREE.CircleGeometry(6.2, 16, 0, Math.PI);
-  geos.push(backG);
-  const back = new THREE.Mesh(backG, inside);
-  back.position.set(0, 0.2, -12.4);
+  const back = new THREE.Mesh(
+    geo(new THREE.CircleGeometry(6.4, 16, 0, Math.PI)),
+    keep(new THREE.MeshBasicMaterial({ color: 0x0a0806 })),
+  );
+  back.position.set(0, 0.2, -12.5);
   group.add(back);
-  const glowTex = glowTexture(o.glow);
-  const glowMat = new THREE.MeshBasicMaterial({
-    map: glowTex,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-  });
-  mats.push(glowMat);
-  const glowG = new THREE.PlaneGeometry(9, 9);
-  geos.push(glowG);
-  const glow = new THREE.Mesh(glowG, glowMat);
+  // The tunnel's floor, dark going in (not the grass outside running on in): from a
+  // little way inside, under the overhang, back to the end.
+  const floor = new THREE.Mesh(
+    geo(new THREE.PlaneGeometry(13, 10)),
+    keep(new THREE.MeshBasicMaterial({ color: 0x0a0806 })),
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(0, 0.22, -7.8);
+  group.add(floor);
+  const glowTex = glowTexture(o.glow, true);
+  texs.push(glowTex);
+  const glowMat = keep(
+    new THREE.MeshBasicMaterial({
+      map: glowTex,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    }),
+  );
+  const glow = new THREE.Mesh(geo(new THREE.PlaneGeometry(9, 9)), glowMat);
   glow.position.set(0, 3.6, -11.8);
   group.add(glow);
-  // The sign: planks hung on ropes from the top of the arch.
-  const signTex = signTexture(o.label.toUpperCase(), th.plank, th.ink, o.seed);
-  const signMat = new THREE.MeshLambertMaterial({
-    map: signTex,
-    side: THREE.DoubleSide,
-    transparent: true,
-    alphaTest: 0.5,
-  });
-  mats.push(signMat);
-  const signG = new THREE.PlaneGeometry(14, 3.5);
-  geos.push(signG);
+
+  // The sign: in front of the rock, clear of it, hung from two pegs on ropes.
+  const signTex = signTexture(o.label, th, o.seed);
+  texs.push(signTex);
+  const signMat = keep(
+    new THREE.MeshLambertMaterial({ map: signTex, side: THREE.DoubleSide, alphaTest: 0.5 }),
+  );
   const sign = new THREE.Group();
-  sign.position.set(0, R + 3.6, 3.3);
-  sign.rotation.z = (r() - 0.5) * 0.06;
-  const board = new THREE.Mesh(signG, signMat);
-  sign.add(board);
-  const rope = mat("#8a7450");
+  sign.position.set(0, 9.6, 3.2);
+  sign.rotation.z = (r() - 0.5) * 0.05;
+  sign.add(new THREE.Mesh(geo(new THREE.PlaneGeometry(13, 3.25)), signMat));
+  // (A plank's thickness behind it, so it isn't paper from the side.)
+  const backBoard = new THREE.Mesh(
+    geo(new THREE.BoxGeometry(12.4, 3.0, 0.18)),
+    keep(new THREE.MeshLambertMaterial({ color: new THREE.Color(th.plank).multiplyScalar(0.7) })),
+  );
+  backBoard.position.z = -0.12;
+  sign.add(backBoard);
+  const rope = keep(new THREE.MeshLambertMaterial({ color: "#8a7450" }));
   for (const sd of [-1, 1]) {
-    const rg = new THREE.CylinderGeometry(0.06, 0.06, 2.4, 4);
-    geos.push(rg);
-    const rp = new THREE.Mesh(rg, rope);
-    rp.position.set(sd * 4.6, 2.6, -0.3);
-    rp.rotation.z = sd * 0.1;
+    const rp = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.07, 0.07, 2.6, 5)), rope);
+    rp.position.set(sd * 4.6, 2.7, -0.4);
+    rp.rotation.set(-0.35, 0, sd * 0.08);
     sign.add(rp);
   }
   group.add(sign);
-  // Torches either side of the mouth.
-  const flames: THREE.Mesh[] = [];
-  const pole = mat("#4a3420");
-  const flameM = new THREE.MeshBasicMaterial({ color: o.theme === "lair" ? 0xff4010 : 0xffa030 });
-  mats.push(flameM);
+
+  // Torches either side of the mouth: a carved post, an iron basket, a living fire.
+  const lair = o.theme === "lair";
+  const sheet = lair
+    ? flameSheet("rgba(255,240,200,1)", "rgba(255,90,20,0.9)", "rgba(160,10,0,0.7)")
+    : flameSheet("rgba(255,250,220,1)", "rgba(255,170,40,0.9)", "rgba(220,60,10,0.7)");
+  const postMat = keep(new THREE.MeshLambertMaterial({ color: "#5a3a20", flatShading: true }));
+  const ironMat = keep(new THREE.MeshLambertMaterial({ color: "#2e2a28", flatShading: true }));
+  const fires: {
+    mats: THREE.MeshBasicMaterial[];
+    planes: THREE.Mesh[];
+    halo: THREE.Mesh;
+    embers: THREE.Points;
+    seeds: number[];
+  }[] = [];
+  const haloTex = glowTexture(lair ? "#ff4010" : "#ffa030");
+  texs.push(haloTex);
   for (const sd of [-1, 1]) {
-    const pg = new THREE.CylinderGeometry(0.16, 0.22, 3.6, 5);
-    const fg = new THREE.ConeGeometry(0.42, 1.1, 6);
-    geos.push(pg, fg);
-    const p = new THREE.Mesh(pg, pole);
-    p.position.set(sd * 8.6, 1.8, 3.4);
-    const f = new THREE.Mesh(fg, flameM);
-    f.position.set(sd * 8.6, 4.1, 3.4);
-    group.add(p, f);
-    flames.push(f);
+    const x = sd * 9.0;
+    const z = 3.6;
+    const post = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.2, 0.3, 4.2, 7)), postMat);
+    post.position.set(x, 2.1, z);
+    group.add(post);
+    for (let k = 0; k < 3; k++) {
+      const ring = new THREE.Mesh(geo(new THREE.TorusGeometry(0.27, 0.06, 5, 10)), ironMat);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(x, 1.2 + k * 1.1, z);
+      group.add(ring);
+    }
+    // The basket: iron straps opening up round the coals.
+    const basket = new THREE.Mesh(
+      geo(new THREE.CylinderGeometry(0.62, 0.3, 0.6, 8, 1, true)),
+      ironMat,
+    );
+    basket.position.set(x, 4.45, z);
+    group.add(basket);
+    const coals = new THREE.Mesh(
+      geo(new THREE.CircleGeometry(0.58, 10)),
+      keep(new THREE.MeshBasicMaterial({ color: lair ? 0xff3010 : 0xff7a20 })),
+    );
+    coals.rotation.x = -Math.PI / 2;
+    coals.position.set(x, 4.62, z);
+    group.add(coals);
+    // The flames: three crossed sheets, each a moment apart in the flipbook.
+    const fm: THREE.MeshBasicMaterial[] = [];
+    const planes: THREE.Mesh[] = [];
+    for (let k = 0; k < 3; k++) {
+      const tex = new THREE.CanvasTexture(sheet);
+      tex.repeat.set(1 / FRAMES, 1);
+      texs.push(tex);
+      const m = keep(
+        new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide,
+        }),
+      );
+      fm.push(m);
+      const pl = new THREE.Mesh(geo(new THREE.PlaneGeometry(1.5, 2.6)), m);
+      pl.position.set(x, 5.75, z);
+      pl.rotation.y = (k / 3) * Math.PI;
+      group.add(pl);
+      planes.push(pl);
+    }
+    const halo = new THREE.Mesh(
+      geo(new THREE.PlaneGeometry(4.2, 4.2)),
+      keep(
+        new THREE.MeshBasicMaterial({
+          map: haloTex,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          opacity: 0.55,
+        }),
+      ),
+    );
+    halo.position.set(x, 5.4, z + 0.1);
+    group.add(halo);
+    // Embers: sparks rising off it, drifting, winking out.
+    const NE = 14;
+    const eg = geo(new THREE.BufferGeometry());
+    eg.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(NE * 3), 3));
+    const embers = new THREE.Points(
+      eg,
+      keep(
+        new THREE.PointsMaterial({
+          color: lair ? 0xff5020 : 0xffb040,
+          size: 0.18,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
+      ),
+    );
+    embers.position.set(x, 5.0, z);
+    embers.frustumCulled = false;
+    group.add(embers);
+    fires.push({ mats: fm, planes, halo, embers, seeds: [...Array(NE)].map(() => r()) });
   }
   return {
     group,
     update(t) {
       glow.rotation.z = t * 0.6;
       glowMat.opacity = 0.75 + 0.2 * Math.sin(t * 2.1 + o.seed);
-      flames.forEach((f, i) => {
-        const k = 1 + 0.18 * Math.sin(t * 11 + i * 2) + 0.1 * Math.sin(t * 17 + i);
-        f.scale.set(1, k, 1);
+      fires.forEach((f, i) => {
+        f.mats.forEach((m, k) => {
+          const frame = Math.floor(t * 14 + k * 2.7 + i * 1.3) % FRAMES;
+          m.map!.offset.x = frame / FRAMES;
+        });
+        const k = 1 + 0.12 * Math.sin(t * 9 + i * 2) + 0.07 * Math.sin(t * 23 + i);
+        f.planes.forEach((p) => p.scale.set(1, k, 1));
+        (f.halo.material as THREE.MeshBasicMaterial).opacity =
+          0.45 + 0.12 * Math.sin(t * 13 + i * 3) + 0.06 * Math.sin(t * 31);
+        const pa = f.embers.geometry.getAttribute("position") as THREE.BufferAttribute;
+        f.seeds.forEach((s, e) => {
+          const life = (t * (0.5 + s * 0.4) + s * 7) % 1;
+          pa.setXYZ(
+            e,
+            Math.sin(s * 40 + t * 1.3) * 0.35 * life,
+            life * 3.2,
+            Math.cos(s * 31 + t * 1.1) * 0.35 * life,
+          );
+        });
+        pa.needsUpdate = true;
       });
-      sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.02;
+      sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.015;
     },
     dispose() {
       parent.remove(group);
-      signTex.dispose();
-      glowTex.dispose();
+      for (const tx of texs) tx.dispose();
       for (const m of mats) m.dispose();
       for (const g of geos) g.dispose();
     },

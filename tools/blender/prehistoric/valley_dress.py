@@ -125,6 +125,23 @@ def wall_life(c, ground, taken):
     def put(proto, x, y, rot, scale, sink=0.3, coll="Ledges"):
         c.place(proto, x, y, ground(x, y) - sink, rot=rot, scale=scale, coll=coll, role="visual")
 
+    # A rock ledge under each tree on the walls (Blake, Riverbend note 8, Bonebog note 11:
+    # "give this a small ledge ... all trees in this section on the wall"): a broad slab
+    # standing out of the wall at the tree's foot, in the world's own rock.
+    trees = set(palms + jungle + swampy + burning + [dead])
+    ledge = {lk: rp.tree_ledge(c, mat) for lk, mat in (("riverbend", "ancient_cliff"), ("camp", "ancient_cliff"),
+                                                        ("cascade", "canyon_rock_moss"), ("bonebog", "moss_rock"),
+                                                        ("ember", "volcano_slag"))}
+
+    def put_tree(proto, x, y, rot, scale, look, sink=0.3, coll="Ledges"):
+        if proto in trees:
+            # (Set back into the wall a little, its top at the tree's foot.)
+            dx, dy = _toward_pocket(x, y)
+            lx, ly = x - dx * 0.7, y - dy * 0.7
+            c.place(ledge.get(look, ledge["riverbend"]), lx, ly, ground(x, y) - 0.2, rot=rot, scale=1.0,
+                    coll=coll, role="visual")
+        put(proto, x, y, rot, scale, sink, coll)
+
     for x, y, look in shelves:
         if not room.clear(x, y, 3.5):
             continue
@@ -133,28 +150,28 @@ def wall_life(c, ground, taken):
         if look in ("riverbend", "camp"):
             pick = k % 5
             if pick == 0:
-                put(palms[k % 3], x, y, rot, 0.55 + 0.25 * ((k * 7) % 5) / 5)
+                put_tree(palms[k % 3], x, y, rot, 0.55 + 0.25 * ((k * 7) % 5) / 5, look)
             elif pick in (1, 2):
-                put(bushes[k % 2], x, y, rot, 0.9 + 0.5 * ((k * 3) % 5) / 5)
+                put_tree(bushes[k % 2], x, y, rot, 0.9 + 0.5 * ((k * 3) % 5) / 5, look)
             elif pick == 3:
-                put(fern, x, y, rot, 1.4)
+                put_tree(fern, x, y, rot, 1.4, look)
             else:
-                put(jungle[k % 2], x, y, rot, 0.6)
+                put_tree(jungle[k % 2], x, y, rot, 0.6, look)
         elif look == "cascade":
             pick = k % 4
-            put(jungle[k % 2] if pick == 0 else leafy[k % 2] if pick in (1, 2) else fern, x, y, rot,
-                0.7 if pick == 0 else 1.3)
+            put_tree(jungle[k % 2] if pick == 0 else leafy[k % 2] if pick in (1, 2) else fern, x, y, rot,
+                     0.7 if pick == 0 else 1.3, look)
         elif look == "bonebog":
             pick = k % 3
-            put(swampy[k % 2] if pick == 0 else fern, x, y, rot, 0.75 if pick == 0 else 1.3)
+            put_tree(swampy[k % 2] if pick == 0 else fern, x, y, rot, 0.75 if pick == 0 else 1.3, look)
         else:
             pick = k % 12
             if pick in (0, 6):
                 put(basalt, x, y, rot, 0.55, sink=0.6)
             elif pick in (1, 4, 8):
-                put(dead, x, y, rot, 0.9)
+                put_tree(dead, x, y, rot, 0.9, look)
             elif pick == 3:
-                put(burning[k % 2], x, y, rot, 0.8)
+                put_tree(burning[k % 2], x, y, rot, 0.8, look)
                 gx, gy, gz = c.game(x, y, ground(x, y) + 6.0)
                 c.entity("campfire", x=gx, y=gy, z=gz)
             else:
@@ -383,7 +400,9 @@ def grand_falls(c, j, name):
     # Spray, roar, mist, and the rainbow in the spray.
     gx, gy, gz = c.game(fx, fy, foot)
     c.entity("waterfall", x=gx, y=gy, z=gz, top=top, width=wide, heading=math.atan2(ux, -uy))
-    c.entity("mist", x=gx, y=gy + 1.0, z=gz, radius=wide, rate=8)
+    # (Low white mist where the water lands, under the falls, not hiding them: Blake,
+    # Riverbend note 12.)
+    c.entity("mist", x=gx, y=gy + 0.2, z=gz, radius=wide * 0.9, rate=12, color="#eef6ff")
     # (A true arc in one upright plane across the spray: Blake, Oct 28, "the rainbow is
     # bent. This needs to be straightened out".)
     rows = []
@@ -411,7 +430,7 @@ def grand_falls(c, j, name):
                 coll="Props", role="visual")
         c.disc("%s Rock Foam %d" % (name, k), x, y, 2.4, foot + 0.07, c.lib("falls_foam"), role="visual", n=14, wobble=0.3,
                seed=k + 3 * j)
-    for k in range(3):
+    for k in range(2):  # (not a third, out past the pool: Blake, Riverbend note 14)
         c.disc("%s Ripple %d" % (name, k), fx + ux * (wide * 0.9 + 4.0 * k), fy + uy * (wide * 0.9 + 4.0 * k), 3.0 + 2.0 * k,
                foot + 0.04, c.lib("falls_foam"), role="visual", n=24, wobble=0.35, seed=40 + k)
     for k in range(5):

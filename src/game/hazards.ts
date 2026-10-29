@@ -552,7 +552,7 @@ export function createHazards(opts: {
   }[] = [];
   const doors: { cfg: DoorConfig; view?: DoorView; open: boolean }[] = [];
   const wisps: WispsView[] = [];
-  const mists: (SoundSpot & { rate: number; acc: number })[] = [];
+  const mists: (SoundSpot & { rate: number; acc: number; color?: number })[] = [];
   let mistPuffs: ReturnType<typeof createParticles> | undefined;
   const whispers: (SoundSpot & { next: number })[] = [];
   const creaks: (SoundSpot & { next: number })[] = [];
@@ -855,7 +855,13 @@ export function createHazards(opts: {
     } else if (e.type === "wisps") {
       if (!opts.headless) wisps.push(createWispsView(group, parseWisps(e)));
     } else if (e.type === "mist")
-      mists.push({ ...parseSpot(e, 10), rate: Math.max(0, num(e.rate, 6)), acc: 0 });
+      mists.push({
+        ...parseSpot(e, 10),
+        rate: Math.max(0, num(e.rate, 6)),
+        acc: 0,
+        // (A colour of its own: a waterfall's white spray, low over its pool.)
+        ...(typeof e.color === "string" ? { color: parseInt(e.color.replace("#", ""), 16) } : {}),
+      });
     else if (e.type === "whispers")
       whispers.push({ ...parseSpot(e, 50), next: 2 + Math.random() * 4 });
     else if (e.type === "creak") creaks.push({ ...parseSpot(e, 30), next: Math.random() * 3 });
@@ -2235,11 +2241,11 @@ export function createHazards(opts: {
               ms.x + Math.cos(a) * r,
               ms.y + 0.3 + Math.random() * 0.6,
               ms.z + Math.sin(a) * r,
-              (Math.random() - 0.5) * 0.8,
-              0.15 + Math.random() * 0.3,
-              (Math.random() - 0.5) * 0.8,
+              (Math.random() - 0.5) * (ms.color === undefined ? 0.8 : 1.6),
+              ms.color === undefined ? 0.15 + Math.random() * 0.3 : 0.05 + Math.random() * 0.1,
+              (Math.random() - 0.5) * (ms.color === undefined ? 0.8 : 1.6),
               3.0 + Math.random() * 2.0,
-              Math.random() < 0.5 ? 0x2ac884 : 0x186a4a,
+              ms.color ?? (Math.random() < 0.5 ? 0x2ac884 : 0x186a4a),
             );
           }
         }

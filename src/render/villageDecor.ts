@@ -17,6 +17,7 @@ import { sleekKart } from "./racers/kit/sleek";
 import {
   Build,
   box,
+  card,
   cyl,
   ellipsoid,
   horn,
@@ -335,6 +336,154 @@ export function buildKartWreck(): THREE.Group {
   return root;
 }
 
+const BONE_HI = "#efe4c8";
+const BONE_LO = "#b8a482";
+const CRACK = "#6a5a42";
+const MOSS = "#5a7a32";
+
+/** Old bone: ivory, yellowing low down, cracked and stained, moss where rain sits. */
+function oldBone(seed: number) {
+  const hi = new THREE.Color(BONE_HI);
+  const lo = new THREE.Color(BONE_LO);
+  const crack = new THREE.Color(CRACK);
+  const moss = new THREE.Color(MOSS);
+  return (p: THREE.Vector3, n: THREE.Vector3): ColorLike => {
+    const c = lo.clone().lerp(hi, Math.min(1, Math.max(0, 0.35 + p.y * 0.18)));
+    const w = Math.sin(p.x * 3.1 + p.z * 1.7 + seed) * Math.sin(p.y * 2.3 - p.z * 2.9 + seed * 2);
+    if (Math.abs(w) < 0.05) c.lerp(crack, 0.7);
+    c.multiplyScalar(0.92 + 0.1 * Math.sin(p.x * 11 + p.y * 7 + p.z * 13));
+    if (n.y > 0.6 && Math.sin(p.x * 1.3 + seed) * Math.cos(p.z * 1.1) > 0.35) c.lerp(moss, 0.65);
+    return c;
+  };
+}
+
+/** A great horned skull (about 9 m long at scale 1, facing +Z, lying on the ground): a
+ * broad cranium and a deep snout ending in a hooked beak, long brow horns sweeping
+ * forward, a short nose horn, a wide frill behind with a scalloped, knobbed edge and two
+ * windows through it, dark eye sockets with heavy rims, the lower jaw lying apart. */
+export function buildHornedSkull(): THREE.Mesh {
+  const b = new Build();
+  const bone = oldBone(3);
+  const colorise = (g: THREE.BufferGeometry) => {
+    const pos = g.getAttribute("position");
+    const nor = g.getAttribute("normal");
+    const cols = new Float32Array(pos.count * 3);
+    const p = new THREE.Vector3();
+    const n = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      const c = new THREE.Color(bone(p.fromBufferAttribute(pos, i), n.fromBufferAttribute(nor, i)));
+      cols.set([c.r, c.g, c.b], i * 3);
+    }
+    g.setAttribute("color", new THREE.BufferAttribute(cols, 3));
+    return g;
+  };
+  // The cranium and snout, one loft from the back of the head to the beak's root.
+  b.addColored(
+    colorise(
+      loft(
+        [
+          { at: [0, 1.5, -1.9], rx: 1.5, ry: 1.2, sq: 2.4 },
+          { at: [0, 1.75, -1.0], rx: 1.95, ry: 1.55, sq: 2.5 },
+          { at: [0, 1.8, 0.4], rx: 1.85, ry: 1.5, sq: 2.6 },
+          { at: [0, 1.55, 1.8], rx: 1.35, ry: 1.25, sq: 2.6, flat: 0.2 },
+          { at: [0, 1.3, 3.2], rx: 0.95, ry: 1.0, sq: 2.6, flat: 0.25 },
+          { at: [0, 1.1, 4.4], rx: 0.55, ry: 0.75, sq: 2.4, flat: 0.2 },
+        ],
+        { sides: 18, steps: 3, capStart: true, capEnd: true },
+      ),
+    ),
+  );
+  // The beak: hooked down.
+  b.addColored(
+    colorise(
+      loft(
+        [
+          { at: [0, 1.15, 4.3], rx: 0.5, ry: 0.65 },
+          { at: [0, 0.95, 5.0], rx: 0.32, ry: 0.5 },
+          { at: [0, 0.55, 5.45], rx: 0.16, ry: 0.28 },
+          { at: [0, 0.2, 5.5], rx: 0.04, ry: 0.06 },
+        ],
+        { sides: 12, steps: 3, capStart: true, capEnd: true },
+      ),
+    ),
+  );
+  // Brow horns, long and curving forward, and the short nose horn.
+  for (const sx of [-1, 1]) {
+    b.addColored(
+      colorise(
+        loft(
+          [
+            { at: [sx * 0.85, 2.7, 0.4], rx: 0.42, ry: 0.42 },
+            { at: [sx * 1.05, 3.9, 1.2], rx: 0.32, ry: 0.32 },
+            { at: [sx * 1.15, 4.8, 2.4], rx: 0.2, ry: 0.2 },
+            { at: [sx * 1.1, 5.2, 3.6], rx: 0.04, ry: 0.04 },
+          ],
+          { sides: 12, steps: 3, capStart: true, capEnd: true },
+        ),
+      ),
+    );
+    // The eye socket: a heavy rim round a dark hole.
+    b.add(torus(0.42, 0.14, 8, 16), BONE_LO, {
+      p: [sx * 1.55, 2.05, 0.75],
+      r: [0, sx * 1.2, 0],
+    });
+    b.add(ellipsoid(12, 8), "#1a1410", { p: [sx * 1.5, 2.05, 0.75], s: [0.12, 0.36, 0.36] });
+    // Cheek horns, low.
+    b.addColored(
+      colorise(horn([sx * 1.6, 1.2, -0.2], [sx * 2.4, 0.9, 0.3], 0.3, BONE_HI, [0, -0.1, 0], 10)),
+    );
+  }
+  b.addColored(colorise(horn([0, 2.2, 3.4], [0, 3.1, 4.1], 0.3, BONE_HI, [0, 0.1, 0.1], 10)));
+  b.add(ellipsoid(10, 8), "#1a1410", { p: [0, 1.6, 3.9], s: [0.35, 0.28, 0.4] });
+  // The frill: a wide shield sweeping up behind the head, its edge scalloped and knobbed,
+  // two windows through it.
+  const outline: [number, number][] = [];
+  const N = 28;
+  for (let i = 0; i <= N; i++) {
+    const a = (i / N) * Math.PI;
+    const r = 4.2 + 0.28 * Math.cos(i * Math.PI); // (scallops)
+    outline.push([Math.cos(a) * r, Math.sin(a) * r * 0.95]);
+  }
+  outline.push([-1.6, -0.2], [1.6, -0.2]);
+  const frill = colorise(card(outline, 0.32));
+  b.addColored(frill, { p: [0, 1.6, -1.7], r: [-0.3, 0, 0] });
+  const tilt = new THREE.Matrix4().makeRotationX(-0.3);
+  for (let i = 0; i <= N; i += 2) {
+    const a = (i / N) * Math.PI;
+    const v = new THREE.Vector3(Math.cos(a) * 4.45, Math.sin(a) * 4.2, 0).applyMatrix4(tilt);
+    b.add(ellipsoid(10, 8), BONE_HI, { p: [v.x, v.y + 1.6, v.z - 1.7], s: [0.3, 0.3, 0.26] });
+  }
+  for (const sx of [-1, 1]) {
+    const v = new THREE.Vector3(sx * 1.6, 2.4, 0).applyMatrix4(tilt);
+    for (const off of [0.18, -0.18]) {
+      const w = new THREE.Vector3(0, 0, off).applyMatrix4(tilt);
+      b.add(ellipsoid(14, 10), "#1e1812", {
+        p: [v.x, v.y + 1.6 + w.y, v.z - 1.7 + w.z],
+        s: [0.85, 0.7, 0.06],
+        r: [-0.3, 0, 0],
+      });
+    }
+  }
+  // The lower jaw, fallen apart: two long bones lying in front.
+  for (const sx of [-1, 1])
+    b.addColored(
+      colorise(
+        loft(
+          [
+            { at: [sx * 1.25, 0.45, -0.4], rx: 0.4, ry: 0.5 },
+            { at: [sx * 1.0, 0.35, 1.8], rx: 0.3, ry: 0.42 },
+            { at: [sx * 0.5, 0.3, 3.6], rx: 0.22, ry: 0.3 },
+            { at: [sx * 0.2, 0.28, 4.3], rx: 0.15, ry: 0.2 },
+          ],
+          { sides: 10, steps: 2, capStart: true, capEnd: true },
+        ),
+      ),
+      { r: [0, sx * 0.08, sx * 0.1] },
+    );
+  const mesh = new THREE.Mesh(b.build(), skinMaterial());
+  return mesh;
+}
+
 /** The decor among a track's entities, added under `parent`; dispose() takes it away. */
 export function createVillageDecor(
   parent: THREE.Object3D,
@@ -349,6 +498,10 @@ export function createVillageDecor(
     let obj: THREE.Object3D | undefined;
     if (o.type === "village_totem") obj = buildTotem(Math.round(num(o.variant)));
     else if (o.type === "kart_wreck") obj = buildKartWreck();
+    else if (o.type === "horned_skull") {
+      obj = buildHornedSkull();
+      obj.scale.setScalar(num(o.scale, 1));
+    }
     if (!obj) continue;
     obj.position.set(num(o.x), num(o.y), num(o.z));
     obj.rotation.y = num(o.heading);

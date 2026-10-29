@@ -251,7 +251,9 @@ def main():
     c.route(L.route_points(), width=14.0, bank=6.0)
     kinds = {}
     for lobe, (ground, cliff, road, shoulder) in LOOK.items():
-        kinds[lobe] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
+        # (A skirt under the road's edges, so where it stands over the land you see earth,
+        # not through it: Blake, Riverbend note 1, "I can see the underside of this plane".)
+        kinds[lobe] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder, "deck": 1.2, "deck_mat": cliff}
     stone = ("jungle_mossstone", "wall")
     kinds["bridge"] = {"mat": "wood_planks", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("wood_planks", "road"),
                        "barrier": 1.0, "barrier_mat": ("palm_bark", "wall"), "deck": 1.8, "deck_mat": ("palm_bark", "wall"),
@@ -296,7 +298,10 @@ def main():
         end = (gx - ux * 12.0, gy - uy * 12.0)
         spurs[name] = (end, math.atan2(-ux, uy))
         look = LOOK[lobe_at(gx, gy)]
-        c.side_road(name.title() + " Road", line((ax, ay), end, z0=smp.p.z), look[2], "road",
+        # (On a little way into the gateway's mouth, so its end is in the dark of the
+        # tunnel: Blake, Riverbend note 6, a green strip across the road before the gate.)
+        into = (end[0] + ux * 7.0, end[1] + uy * 7.0)
+        c.side_road(name.title() + " Road", line((ax, ay), into, z0=smp.p.z), look[2], "road",
                     **{**trail, "shoulder_mat": look[3]})
     if RUIN:
         # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
@@ -367,9 +372,23 @@ def main():
                    ground(*RETURN), height=6.0)
     puzzle_kit.pen(c, "secret", "Grotto", *SECRET, to_road(c, *SECRET), 9.0, 4.5, ("jungle_mossstone", "wall"),
                    ground(*SECRET), height=6.0)
+    roads = [ob for ob in c.coll("Roads").objects]
+
+    def on_road(x, y):
+        z = ground(x, y)
+        r = c.ground_z(x, y, roads)
+        return z if r is None else max(z, r)
+
     for name, (end, heading) in spurs.items():
         gx, gy, gz = c.game(end[0], end[1], 0.0)
         c.entity("gateway_spot", gateway=name, x=gx, z=gz, heading=heading)
+        # The road carried on up into the gateway's mouth (Blake, Riverbend notes 6, 7).
+        gxy = L.GATES[name]
+        dx, dy = gxy[0] - end[0], gxy[1] - end[1]
+        dl = math.hypot(dx, dy) or 1.0
+        look = LOOK[lobe_at(*gxy)]
+        vv.road_apron(c, (end[0] - dx / dl * 14.0, end[1] - dy / dl * 14.0), end, (look[2], "road"), on_road,
+                      name=name.title() + " Gateway Apron")
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Off the water and out of the walls: Blake's notes 34 and 45, a hut half in the river
     # and one in a wall.)
@@ -393,7 +412,9 @@ def main():
         r = c.ground_z(x, y, c.pieces)
         return z if r is None else max(z, r)
 
-    vv.path_ribbons(c, paths + [vv.home_path(c, x, y, r) for x, y, r in homes], path_ground, look=path_look)
+    all_paths = paths + [vv.home_path(c, x, y, r) for x, y, r in homes]
+    vv.path_ribbons(c, all_paths, path_ground, look=path_look)
+    vv.clear_paths(c, all_paths)
     vd.area_air(c)
 
     # (Raced too: the champion's challenge, once round the loop, from this line by the camp.)
@@ -625,7 +646,12 @@ def fallen_giant(c, s0, s1):
     # frame of bones at the near mouth.
     vd.log_tunnel(c, s0, s1, ro, ri, lift)
     q = c.at(s0 - 6.0)
-    c.place(sp.horned_skull(c), q.p.x, q.p.y, zc + ro + 0.6, rot=math.atan2(-q.t.y, -q.t.x), scale=1.8, role="visual")
+    # The horned skull over the mouth, carved finely in the game (Blake, Riverbend note 15:
+    # "completely redone and high fidelity ... too polygonal and cheap"):
+    # render/villageDecor.ts, a horned_skull entity.
+    face = math.atan2(-q.t.y, -q.t.x)
+    g = c.game(q.p.x, q.p.y, zc + ro + 0.2)
+    c.entity("horned_skull", x=g[0], y=g[1], z=g[2], scale=1.8, heading=round(math.atan2(math.cos(face), -math.sin(face)), 3))
 
 
 def facing(spurs, name):
