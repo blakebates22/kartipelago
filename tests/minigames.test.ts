@@ -26,6 +26,7 @@ const arena: Arena = {
   ],
   crateSpawn: { x: 0, z: 0, y: 0, r: 0.1 },
   rink: { x: 0, z: 0, y: 2, r: 30, tile: 2.6 },
+  ramps: [],
 };
 const karts = (): Kart[] =>
   arena.spawns.map((s) => ({ x: s.x, y: 0, z: s.z, heading: 0, speed: 0 }));

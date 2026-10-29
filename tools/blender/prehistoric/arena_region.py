@@ -18,8 +18,18 @@
 #   stars  Star Fall (catch the falling stars): a plaza of three terraces with gentle
 #          slopes between (no step a kart can't climb), a shallow ring road round it
 #
-# The route is a ring round the floor with no road (the kit's courses have a route: the
-# balloons go round it, and a kart that falls off is put back on it).
+# Oct 29 (Blake: "completely scrap the level layout ... each needs a new cool level with 2
+# levels to drive up and down. no stupid mound in the middle that cant be climbed"): Crater
+# Bowl, Smugglers' Cove and Star Fall are two-storey arenas. The upper level is a broad
+# ring deck on pillars (the route: the road generator's own deck, nothing under it but the
+# pillars), open at its edges so you can drive off it; four long ramps climb to it from
+# the outer floor and two run down from it to the middle. Under it and round it, the
+# floor is flat (banked only at the rim), each arena with its own cover. The game knows
+# the deck and the ramps (`deck`, `ramp` entities) for its rivals and its pickups.
+#
+# The route is the deck's ring (the balloons go round it, and a kart that falls off is put
+# back on it); a second route, "ground", runs round the outer floor for the balloons down
+# there.
 
 import math
 import os
@@ -78,29 +88,29 @@ SPECS = {
 SP = SPECS[AID]
 F, R, TOP = SP["floor"], SP["r"], SP["top"]
 RING = R - 22.0  # (the route's ring)
+# The two-storey arenas: the deck's radius, its height over the floor, its road's width.
+TWO = AID in ("bowl", "docks", "stars")
+DECK = {"bowl": (32.0, 5.5), "docks": (30.0, 4.5), "stars": (33.0, 6.0)}.get(AID)
+DECK_W = 16.0
+if TWO:
+    RING = DECK[0]
+DECK_Z = F + DECK[1] if TWO else None
 # Crumble Rink's ice: its height and radius (the tiles are the game's).
 ICE_Z, ICE_R, TILE = 2.0, 40.0, 2.6
 if AID == "rink":
     RING = 24.0
 
-ROUTE = [(RING * math.cos(k * math.tau / 16), RING * math.sin(k * math.tau / 16), ICE_Z if AID == "rink" else None)
-         for k in range(16)]
+ROUTE = [(RING * math.cos(k * math.tau / 16), RING * math.sin(k * math.tau / 16),
+          ICE_Z if AID == "rink" else DECK_Z) for k in range(16)]
 L = Layout([("floor", "floor", [(0.0, 0.0, R, F)])], TOP, ROUTE, [], roll=1.2, flat=(), mountains=30.0)
 
 
 def feature(x, y):
-    """The arena's own shapes over its floor: the bowl's mound, the crown's hill, the
-    stars' terraces (a height to add, 0 elsewhere)."""
+    """The arena's own shape over its floor: flat (Blake, Oct 29: "no stupid mound in the
+    middle"), banked up at the rim so you can drift round it."""
     d = math.hypot(x, y)
-    if AID == "bowl":
-        # A low island (2.4 m over 12 m: about 11 degrees at its steepest), and the rim
-        # banked up gently so you can drift round it.
-        return 2.4 * smooth((26.0 - d) / 12.0) + 5.0 * smooth((d - (R - 28.0)) / 24.0)
-    if AID == "stars":
-        # Three terraces with long slopes between (3 m over 12 m and over 10 m), and a
-        # shallow ring road round the outside.
-        return (3.0 * smooth((50.0 - d) / 12.0) + 3.0 * smooth((26.0 - d) / 10.0)
-                - 1.0 * smooth(1.0 - abs(d - 64.0) / 6.0) + 3.0 * smooth((d - (R - 10.0)) / 10.0))
+    if AID in ("bowl", "docks", "stars"):
+        return 4.0 * smooth((d - (R - 16.0)) / 14.0)
     return 0.0
 
 
@@ -119,10 +129,17 @@ def classify(c, n, info):
 
 def main():
     c = kit.Course(TRACK_ID, SP["name"], SP["env"])
-    c.route(L.route_points(), width=14.0, bank=0.0)
+    c.route(L.route_points(), width=DECK_W - 2.0 if TWO else 14.0, bank=0.0)
     ground_m, cliff_m, road_m = SP["mats"]
     c.kinds = {"floor": {"mat": road_m[0], "shoulder": 1.0, "shoulder_mat": ground_m}}
-    if AID != "rink":
+    if TWO:
+        # The upper level: the road generator's deck, up on pillars, open at its edges.
+        c.kinds = {"floor": {"mat": road_m[0], "surface": "road", "shoulder": 1.0, "shoulder_mat": (road_m[0], "road"),
+                             "deck": 1.4, "deck_mat": cliff_m, "ground": False}}
+    if TWO:
+        # The upper level: the whole ring a deck.
+        c.roads(kit.plan(c, [], "floor", max_len=60.0))
+    elif AID != "rink":
         c.roads(kit.plan(c, [(0.0, c.length, None)], "floor", max_len=160.0))
     X0, X1, Y0, Y1 = -200, 200, -200, 200
     ter = c.terrain(SP["name"], X0, X1, Y0, Y1, 2.5, natural, classify, near=4.0, fade=8.0)
@@ -135,24 +152,81 @@ def main():
         return natural(x, y) if z is None else z
 
     taken = paint.Taken([(0.0, 0.0, 30.0)])
-    # Where the karts start: round the ring, facing in.
+    if TWO:
+        two_levels(c, ground, taken)
+    # Where the karts start: round the ring, facing in (on the outer floor, two-storey).
     for k in range(8):
-        a = k * math.tau / 8 + 0.2
-        sr = 18.0 if AID == "rink" else RING - 6.0
+        a = k * math.tau / 8 + 0.2 + (math.pi / 8 if TWO else 0.0)
+        sr = 18.0 if AID == "rink" else (RING + DECK_W / 2 + 12.0 if TWO else RING - 6.0)
         x, y = sr * math.cos(a), sr * math.sin(a)
         g = c.game(x, y, ground(x, y))
         c.entity("arena_spawn", x=round(g[0], 2), z=round(g[2], 2), heading=round(math.atan2(-x, y), 3), index=k)
     # Item balloons round the ring and nearer the middle.
     n = 0
-    for k in range(10):
-        c.balloon(c.length * (k + 0.5) / 10, (k % 3 - 1) * 4.0, ("red", "blue", "green", "yellow", "rainbow")[k % 5])
+    for k in range(10 if not TWO else 6):
+        c.balloon(c.length * (k + 0.5) / (10 if not TWO else 6), (k % 3 - 1) * 4.0,
+                  ("red", "blue", "green", "yellow", "rainbow")[k % 5])
         n += 1
+    if TWO:
+        # Down on the floor too: round the outer floor (its own route), and in the middle.
+        rg = (RING + DECK_W / 2 + R - 16.0) / 2
+        pts = [(rg * math.cos(k * math.tau / 24), rg * math.sin(k * math.tau / 24), ground(rg * math.cos(k * math.tau / 24),
+                                                                                         rg * math.sin(k * math.tau / 24)) + 0.3)
+               for k in range(24)]
+        c.path_curve("ground", pts)
+        for k in range(8):
+            c.entities.append({"id": "bal_g%02d" % k, "type": "balloon", "route": "ground", "at": round(math.tau * rg * (k + 0.5) / 8, 1),
+                               "across": 0.0, "color": ("red", "blue", "green", "yellow", "rainbow")[(k + 2) % 5]})
     BUILD[AID](c, ground, taken)
     c.entity("arena", game={"bowl": "balloons", "docks": "smugglers", "rink": "crumble", "stars": "stars"}[AID],
              radius=round(R - 8.0, 1))
     kit.paint.shade_roads(c.pieces, 0.3)
     c.checkpoints(height=12.0)
     c.finish(extra={"race": {"laps": 1}, "arena": True})
+
+
+def two_levels(c, ground, taken):
+    """The upper level's pillars and ramps (the deck itself is the route's road): four
+    long ramps up to it from the outer floor (on the four sides), two down from it into
+    the middle (between them), pillars under it; and the `deck` and `ramp` entities."""
+    rd, h = DECK
+    ground_m, cliff_m, road_m = SP["mats"]
+    half = DECK_W / 2 + 1.0
+    zt = DECK_Z
+    # Pillars, clear of the ramps.
+    for k in range(16):
+        a = k * math.tau / 16 + math.tau / 32
+        x, y = rd * math.cos(a), rd * math.sin(a)
+        box(c, "Pillar %d" % k, x, y, 1.1, 1.1, F - 1.0, zt - 1.2, cliff_m, rot=a)
+        taken.add(x, y, 3.0)
+    ramps = []
+    # Up from the outer floor: radial, the high end at the deck's outer edge.
+    for k in range(4):
+        a = k * math.tau / 4
+        Lr = 26.0
+        r0 = rd + half - 0.8
+        cx, cy = (r0 + Lr / 2) * math.cos(a), (r0 + Lr / 2) * math.sin(a)
+        z0 = ground(cx, cy)
+        ramp(c, "Ramp Up %d" % k, cx, cy, a + math.pi, Lr, 11.0, zt - z0 + 0.04, road_m, z0)
+        ramps.append(((r0 + Lr) * math.cos(a), (r0 + Lr) * math.sin(a), r0 * math.cos(a), r0 * math.sin(a)))
+        taken.add(cx, cy, 13.0)
+    # Down into the middle: radial, the high end at the deck's inner edge.
+    for k in range(2):
+        a = k * math.pi + math.pi / 4
+        Lr = 20.0
+        r0 = rd - half + 0.8
+        cx, cy = (r0 - Lr / 2) * math.cos(a), (r0 - Lr / 2) * math.sin(a)
+        z0 = ground(cx, cy)
+        ramp(c, "Ramp Down %d" % k, cx, cy, a, Lr, 10.0, zt - z0 + 0.04, road_m, z0)
+        ramps.append(((r0 - Lr) * math.cos(a), (r0 - Lr) * math.sin(a), r0 * math.cos(a), r0 * math.sin(a)))
+        taken.add(cx, cy, 11.0)
+    g = c.game(0.0, 0.0, zt)
+    c.entity("deck", r=rd, w=DECK_W, y=round(zt, 2))
+    for k, (bx, by, tx, ty) in enumerate(ramps):
+        b = c.game(bx, by, ground(bx, by))
+        t = c.game(tx, ty, zt)
+        c.entity("ramp", x=b[0], z=b[2], tx=t[0], tz=t[2], index=k)
+    del g
 
 
 def ramp(c, name, x, y, rot, length, width, rise, mat, z0):
@@ -181,35 +255,36 @@ def ramp(c, name, x, y, rot, length, width, rise, mat, z0):
 
 
 def build_bowl(c, ground, taken):
-    """Cover round the island (a few low boulders and broken walls, spaced so there's a
-    line of sight between any two and room to drive round each), two jump ramps on the
-    outer loop."""
-    for k in range(5):
-        a = k * math.tau / 5 + 0.35
-        x, y = 42.0 * math.cos(a), 42.0 * math.sin(a)
-        if k % 2 == 0:
-            # A broken wall, side-on to the middle.
-            for j in range(3):
-                t = (j - 1) * 3.4
-                h = (3.6, 2.6, 1.8)[j]
-                box(c, "Broken Wall %d %d" % (k, j), x - math.sin(a) * t, y + math.cos(a) * t, 1.6, 3.2, F - 0.5,
-                    ground(x, y) + h, ("obsidian_cliff", "wall"), rot=a)
-        else:
-            c.assign(c.rock_mass("Boulder %d" % k, x, y, 3.2, 2.6, ground(x, y) + 3.4, z0=F - 2.0, n=10, seed=k + 2),
-                     c.lib("obsidian_cliff", "wall"))
-        taken.add(x, y, 9.0)
-    for k, a in enumerate((0.9, 0.9 + math.pi)):
-        x, y = (RING - 2.0) * math.cos(a), (RING - 2.0) * math.sin(a)
-        ramp(c, "Jump %d" % k, x, y, a + math.pi / 2, 11.0, 9.0, 1.8, ("basalt_road", "road"), ground(x, y))
+    """Cover on the outer floor between the ramps (broken walls and boulders, spaced so
+    there's room to drive round each), a ring of low basalt stumps in the middle, steam
+    vents and a bubbling pit in the very middle."""
+    for k in range(4):
+        a = k * math.tau / 4 + math.pi / 4
+        for j, rr in enumerate((50.0, 62.0)):
+            x, y = rr * math.cos(a + (j - 0.5) * 0.18), rr * math.sin(a + (j - 0.5) * 0.18)
+            if j == 0:
+                for w in range(3):
+                    t = (w - 1) * 3.4
+                    hh = (3.6, 2.6, 1.8)[w]
+                    box(c, "Broken Wall %d %d" % (k, w), x - math.sin(a) * t, y + math.cos(a) * t, 1.6, 3.2, F - 0.5,
+                        ground(x, y) + hh, ("obsidian_cliff", "wall"), rot=a)
+            else:
+                c.assign(c.rock_mass("Boulder %d" % k, x, y, 3.2, 2.6, ground(x, y) + 3.4, z0=F - 2.0, n=10, seed=k + 2),
+                         c.lib("obsidian_cliff", "wall"))
+            taken.add(x, y, 9.0)
+    for k in range(3):
+        a = k * math.tau / 3 + 1.2
+        x, y = 11.0 * math.cos(a), 11.0 * math.sin(a)
+        box(c, "Stump %d" % k, x, y, 1.4, 1.4, F - 0.5, ground(x, y) + 1.4, ("obsidian_cliff", "wall"), rot=a)
     for k in range(5):
         a = k * math.tau / 5 + 0.3
-        x, y = 14.0 * math.cos(a), 14.0 * math.sin(a)
+        x, y = 6.0 * math.cos(a), 6.0 * math.sin(a)
         g = c.game(x, y, ground(x, y) + 0.3)
         c.entity("steam", x=g[0], y=g[1], z=g[2])
     g = c.game(0.0, 0.0, ground(0.0, 0.0) + 1.0)
     c.entity("bubbles", x=g[0], y=g[1], z=g[2], r=3.0, molten=True)
-    paint.scatter(c, props.basalt_columns(c), 10, R - 10, lambda x, y: math.hypot(x, y) > RING + 6, ground, taken, 4,
-                  room=6.0, road_margin=-30.0)
+    paint.scatter(c, props.basalt_columns(c), 10, R - 6, lambda x, y: math.hypot(x, y) > R - 14, ground, taken, 4,
+                  room=6.0, road_margin=-60.0)
 
 
 def build_docks(c, ground, taken):
@@ -237,19 +312,19 @@ def build_docks(c, ground, taken):
         g = c.game(x, y, z)
         c.entity("dock", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), color=col, index=k)
         taken.add(x, y, 14.0)
-    # Stacks round the middle (cover, and something to cut round).
+    # Stacks round the middle (cover, and something to cut round), inside the deck's ring.
     for k in range(4):
-        a = k * math.tau / 4
-        x, y = 26.0 * math.cos(a), 26.0 * math.sin(a)
+        a = k * math.tau / 4 + math.pi / 4 + 0.4
+        x, y = 12.0 * math.cos(a), 12.0 * math.sin(a)
         z = ground(x, y)
-        box(c, "Stack %d" % k, x, y, 3.0, 3.0, z - 0.3, z + 2.4, ("weathered_timber", "wall"), rot=a + 0.4)
-        box(c, "Stack %d Top" % k, x + 0.4, y - 0.3, 2.0, 2.0, z + 2.4, z + 4.2, ("weathered_timber", "wall"), rot=a - 0.2)
+        box(c, "Stack %d" % k, x, y, 2.2, 2.2, z - 0.3, z + 2.2, ("weathered_timber", "wall"), rot=a + 0.4)
         taken.add(x, y, 6.0)
     g = c.game(0.0, 0.0, ground(0.0, 0.0))
-    c.entity("crate_spawn", x=g[0], z=g[2], y=g[1], r=34.0)
+    # (Where the crates fall: the middle, inside the deck's ring, on the floor.)
+    c.entity("crate_spawn", x=g[0], z=g[2], y=g[1], r=16.0)
     for v in range(2):
-        paint.scatter(c, bp.coconut_palm(c, v), 10, R - 6, lambda x, y: math.hypot(x, y) > RING + 4, ground, taken, 10 + v,
-                      room=6.0, road_margin=-30.0, trunk=(0.6, 7.0))
+        paint.scatter(c, bp.coconut_palm(c, v), 10, R - 6, lambda x, y: math.hypot(x, y) > R - 14, ground, taken, 10 + v,
+                      room=6.0, road_margin=-60.0, trunk=(0.6, 7.0))
 
 
 def build_rink(c, ground, taken):

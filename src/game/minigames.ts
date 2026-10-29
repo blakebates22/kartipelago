@@ -92,13 +92,32 @@ export interface Arena {
   crateSpawn?: { x: number; z: number; y: number; r: number };
   /** The ice (Crumble Rink): its centre, height, radius and tile size. */
   rink?: { x: number; z: number; y: number; r: number; tile: number };
+  /** The upper level (the two-storey arenas): a ring deck round the middle, its centre
+   * line's radius, its width and its height. */
+  deck?: { r: number; w: number; y: number };
+  /** The ramps between the levels: the foot (x, z) and the top (tx, tz). */
+  ramps: { x: number; z: number; tx: number; tz: number }[];
+}
+
+/** On the upper level? (Over the deck's ring and up at its height.) */
+export function onDeck(arena: Arena, p: { x: number; z: number; y?: number }): boolean {
+  const d = arena.deck;
+  if (!d) return false;
+  const r = Math.hypot(p.x, p.z);
+  return Math.abs(r - d.r) < d.w / 2 + 0.5 && (p.y ?? -Infinity) > d.y - 1.6;
+}
+
+/** Under the deck's ring (its footprint), whatever the height. */
+export function overDeck(arena: Arena, x: number, z: number): boolean {
+  const d = arena.deck;
+  return Boolean(d) && Math.abs(Math.hypot(x, z) - d!.r) < d!.w / 2 - 0.5;
 }
 
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 
 /** An arena's things from its package's entities. */
 export function parseArena(entities: unknown[]): Arena {
-  const a: Arena = { spawns: [], radius: 60, docks: [] };
+  const a: Arena = { spawns: [], radius: 60, docks: [], ramps: [] };
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
@@ -118,6 +137,14 @@ export function parseArena(entities: unknown[]): Arena {
       };
     else if (o.type === "crate_spawn")
       a.crateSpawn = { x: num(o.x, 0), z: num(o.z, 0), y: num(o.y, 0), r: num(o.r, 30) };
+    else if (o.type === "deck") a.deck = { r: num(o.r, 30), w: num(o.w, 16), y: num(o.y, 6) };
+    else if (o.type === "ramp")
+      a.ramps[num(o.index, a.ramps.length)] = {
+        x: num(o.x, 0),
+        z: num(o.z, 0),
+        tx: num(o.tx, 0),
+        tz: num(o.tz, 0),
+      };
     else if (o.type === "rink")
       a.rink = {
         x: num(o.x, 0),
@@ -129,6 +156,7 @@ export function parseArena(entities: unknown[]): Arena {
   }
   a.spawns = a.spawns.filter(Boolean);
   a.docks = a.docks.filter(Boolean);
+  a.ramps = a.ramps.filter(Boolean);
   return a;
 }
 
@@ -141,6 +169,8 @@ export interface Crate {
   fall: number;
   /** Who's carrying it (-1: on the ground). */
   carrier: number;
+  /** Up on the deck (it fell there, or was dropped there). */
+  high?: boolean;
 }
 
 export interface Star {
@@ -150,6 +180,8 @@ export interface Star {
   fall: number;
   life: number;
   gold: boolean;
+  /** Up on the deck (it fell on it). */
+  high?: boolean;
 }
 
 /** Crumble Rink's ice: hexagonal tiles (pointy-top), each solid, cracking or gone. */
@@ -240,7 +272,7 @@ export interface MiniGame {
   /** Is this kart carrying a crate (Smugglers' Run: it's slower)? */
   carrying(i: number): boolean;
   /** Where a rival should drive now. */
-  target(i: number, karts: Kart[]): { x: number; z: number };
+  target(i: number, karts: Kart[]): { x: number; z: number; high?: boolean };
   /** Standings: kart indices, best first. */
   standings(): number[];
 }
@@ -321,6 +353,11 @@ export function createMiniGame(
   const goals: ({ x: number; z: number; t: number } | undefined)[] = new Array(karts);
   const news: { what: string; who: number }[] = [];
   const say = (what: string, who: number) => news.push({ what, who });
+  /** The karts as last stepped (where a dropped crate lands, which level). */
+  let lastKarts: Kart[] = [];
+  /** Is kart k at the level of something there (high: on the deck)? */
+  const sameLevel = (k: Kart, high: boolean | undefined) =>
+    !arena.deck || onDeck(arena, k) === Boolean(high);
 
   const dockOf = (i: number) => arena.docks[i % Math.max(1, arena.docks.length)];
   const randomSpot = (r: number) => {
@@ -344,6 +381,7 @@ export function createMiniGame(
     c.carrier = -1;
     c.x += (rand() - 0.5) * 5;
     c.z += (rand() - 0.5) * 5;
+    c.high = Boolean(lastKarts[i]) && onDeck(arena, lastKarts[i]!) && overDeck(arena, c.x, c.z);
     cooldown[i] = RULES.dropCooldown;
     return true;
   };
@@ -374,6 +412,7 @@ export function createMiniGame(
     carrying: (i) => crates.some((c) => c.carrier === i),
     step(ks, dt) {
       news.length = 0;
+      lastKarts = ks;
       if (winner !== undefined) return;
       clock -= dt;
       played += dt;
@@ -411,7 +450,10 @@ export function createMiniGame(
           if (cooldown[i]! > 0) continue;
           const free = crates.find(
             (c) =>
-              c.carrier < 0 && c.fall <= 0 && Math.hypot(c.x - k.x, c.z - k.z) < RULES.cratePick,
+              c.carrier < 0 &&
+              c.fall <= 0 &&
+              Math.hypot(c.x - k.x, c.z - k.z) < RULES.cratePick &&
+              sameLevel(k, c.high),
           );
           if (free) {
             free.carrier = i;
@@ -503,6 +545,8 @@ export function createMiniGame(
             fall: RULES.starFall,
             life: RULES.starLife,
             gold: rand() < 0.15,
+            // (One falling over the deck's ring lands on the deck.)
+            high: overDeck(arena, p.x, p.z),
           });
           starIn = RULES.starEvery;
         }
@@ -514,7 +558,10 @@ export function createMiniGame(
           }
           st.life -= dt;
           const by = ks.findIndex(
-            (k, i) => !out[i] && Math.hypot(k.x - st.x, k.z - st.z) < RULES.starPick,
+            (k, i) =>
+              !out[i] &&
+              Math.hypot(k.x - st.x, k.z - st.z) < RULES.starPick &&
+              sameLevel(k, st.high),
           );
           if (by >= 0) {
             score[by]! += st.gold ? 3 : 1;
@@ -568,7 +615,9 @@ export function createMiniGame(
         const free = near(crates.filter((c) => c.carrier < 0 && c.fall < 0.8));
         // A loose crate near enough, or else go and ram whoever's carrying one.
         const carrier = near(
-          ks.filter((_, j) => j !== i && game.carrying(j)).map((o) => ({ x: o.x, z: o.z })),
+          ks
+            .filter((_, j) => j !== i && game.carrying(j))
+            .map((o) => ({ x: o.x, z: o.z, high: onDeck(arena, o) })),
         );
         if (free && (!carrier || dist(free) < dist(carrier) * 1.5)) return free;
         if (carrier) return carrier;
@@ -615,9 +664,20 @@ export function createMiniGame(
         }, undefined);
         return pick ?? { x: 0, z: 0 };
       }
-      // Balloon Brawl: the nearest kart still in.
-      const rivals = ks.map((o, j) => ({ ...o, j })).filter((o) => o.j !== i && !out[o.j]);
-      return near(rivals) ?? { x: 0, z: 0 };
+      // Balloon Brawl: the nearest kart still in (on the same level counts for more).
+      const rivals = ks
+        .map((o, j) => ({ ...o, j, high: onDeck(arena, o) }))
+        .filter((o) => o.j !== i && !out[o.j]);
+      const mine = onDeck(arena, k);
+      return (
+        rivals.reduce<(typeof rivals)[number] | undefined>(
+          (a, b) =>
+            !a || dist(b) * (b.high === mine ? 1 : 1.8) < dist(a) * (a.high === mine ? 1 : 1.8)
+              ? b
+              : a,
+          undefined,
+        ) ?? { x: 0, z: 0 }
+      );
     },
   };
   return game;
@@ -671,4 +731,139 @@ export function shouldFire(
     const err = Math.abs(Math.atan2(Math.sin(a - k.heading), Math.cos(a - k.heading)));
     return d < 45 && err < 0.4;
   });
+}
+
+// ---------------------------------------------------------------- finding the way
+
+/** Where to drive for a target, by the levels (the two-storey arenas): up a ramp to reach
+ * one on the deck (to its foot first, then up it), round the ring on the deck itself,
+ * straight off the deck's edge for one below. */
+export function waypoint(
+  arena: Arena,
+  k: Kart,
+  tg: { x: number; z: number; high?: boolean },
+): { x: number; z: number } {
+  const d = arena.deck;
+  if (!d || !arena.ramps.length) return tg;
+  const up = onDeck(arena, k);
+  const want = Boolean(tg.high);
+  if (up && want) {
+    // Round the ring: never more than a bend ahead, so the line stays on the deck.
+    const ak = Math.atan2(k.x, k.z);
+    const at = Math.atan2(tg.x, tg.z);
+    const da = Math.atan2(Math.sin(at - ak), Math.cos(at - ak));
+    if (Math.abs(da) * d.r < 10) return tg;
+    const a = ak + Math.sign(da) * Math.min(Math.abs(da), 0.45);
+    return { x: Math.sin(a) * d.r, z: Math.cos(a) * d.r };
+  }
+  if (up === want) return tg;
+  if (!up && want) {
+    // Climb: the ramp with the shortest way, foot then top then on.
+    let best = arena.ramps[0]!;
+    let bv = Infinity;
+    for (const r of arena.ramps) {
+      const v = Math.hypot(r.x - k.x, r.z - k.z) + Math.hypot(r.tx - tg.x, r.tz - tg.z);
+      if (v < bv) {
+        bv = v;
+        best = r;
+      }
+    }
+    const ux = best.tx - best.x;
+    const uz = best.tz - best.z;
+    const len = Math.hypot(ux, uz) || 1;
+    // On it already (between its foot and top, inside its width): straight on up.
+    const t = ((k.x - best.x) * ux + (k.z - best.z) * uz) / (len * len);
+    const side = Math.abs(((k.x - best.x) * uz - (k.z - best.z) * ux) / len);
+    if (t > -0.15 && t < 1.2 && side < 5)
+      return { x: best.tx + (ux / len) * 6, z: best.tz + (uz / len) * 6 };
+    // Else to a spot out before its foot, to come at it straight.
+    return { x: best.x - (ux / len) * 7, z: best.z - (uz / len) * 7 };
+  }
+  return tg;
+}
+
+/** Steer round what's in the way: try the line to (tx, tz), then lines turned a little
+ * either side, further and further, and take the first clear for a few metres. */
+export function clearLine(
+  k: Kart,
+  tx: number,
+  tz: number,
+  fits: (x: number, z: number, y: number) => boolean,
+): { x: number; z: number } {
+  const want = Math.atan2(tx - k.x, tz - k.z);
+  const dist = Math.hypot(tx - k.x, tz - k.z);
+  for (const off of [0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05, 1.4, -1.4]) {
+    const a = want + off;
+    let ok = true;
+    for (const r of [2.5, 5, 8]) {
+      if (r > dist + 2) break;
+      if (!fits(k.x + Math.sin(a) * r, k.z + Math.cos(a) * r, k.y + 1.2)) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok)
+      return off === 0
+        ? { x: tx, z: tz }
+        : { x: k.x + Math.sin(a) * 10, z: k.z + Math.cos(a) * 10 };
+  }
+  return { x: tx, z: tz };
+}
+
+/** Crumble Rink's rivals (Blake, Oct 29: "the cpus just flew off the edge almost
+ * instantly ... we want this one to be hard, but not ridiculously hard"): never faster
+ * than they can stop on ice, slowing to arrive; looking ahead along where they're
+ * sliding, and if that's off the ice or onto a hole, braking and turning for the
+ * safest way (solid ice the whole way); away from the edge as it crumbles in. */
+export function iceDrive(
+  m: Mind,
+  k: Kart,
+  game: MiniGame,
+  tg: { x: number; z: number },
+  dt: number,
+): DeviceReading {
+  const ice = game.ice!;
+  const here = ice.at(k.x, k.z);
+  // (Cracked ice breaks under the next kart onto it: as bad as a hole, except the tile
+  // it's on now.)
+  const solid = (x: number, z: number) => {
+    const t = ice.at(x, z);
+    return t >= 0 && (ice.state[t] === 0 || t === here);
+  };
+  const safe = (a: number, reach: number) => {
+    for (let r = 2; r <= reach; r += 1.5)
+      if (!solid(k.x + Math.sin(a) * r, k.z + Math.cos(a) * r)) return false;
+    return true;
+  };
+  const v = Math.abs(k.speed);
+  // How far it'll slide: look that far ahead (and a little more).
+  const reach = 4 + v * 0.7;
+  let aimA = Math.atan2(tg.x - k.x, tg.z - k.z);
+  if (!safe(aimA, Math.min(reach, Math.hypot(tg.x - k.x, tg.z - k.z) + 2))) {
+    let found = false;
+    for (const off of [0.4, -0.4, 0.8, -0.8, 1.2, -1.2, 1.7, -1.7, 2.3, -2.3, Math.PI]) {
+      if (safe(aimA + off, reach)) {
+        aimA += off;
+        found = true;
+        break;
+      }
+    }
+    const mid = game.arena.rink ?? { x: 0, z: 0 };
+    if (!found) aimA = Math.atan2(mid.x - k.x, mid.z - k.z); // (toward the middle)
+  }
+  const err = Math.atan2(Math.sin(aimA - k.heading), Math.cos(aimA - k.heading));
+  const ahead = safe(k.heading, reach);
+  const dist = Math.hypot(tg.x - k.x, tg.z - k.z);
+  // Speed: slow to arrive, slow to turn, and never fast on ice.
+  const vmax = Math.min(14, 3 + dist * 0.6) * (Math.abs(err) > 0.8 ? 0.5 : 1);
+  m.stuck = v < 1 ? m.stuck + dt : 0;
+  const steer = Math.max(-1, Math.min(1, -err * 2.4));
+  if (!ahead && v > 3) return { throttle: 0, brake: 1, steer, drift: false, item: false };
+  return {
+    throttle: v < vmax ? (Math.abs(err) > 1.4 ? 0.4 : 0.85) : 0,
+    brake: v > vmax + 2 ? 0.6 : 0,
+    steer,
+    drift: false,
+    item: false,
+  };
 }

@@ -14,6 +14,9 @@ import {
   RULES,
   createMiniGame,
   newMind,
+  iceDrive,
+  waypoint,
+  clearLine,
   parseArena,
   seek,
   shouldFire,
@@ -141,7 +144,12 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
               if (g.out[i] || g.winner !== undefined)
                 return { throttle: 0, brake: 1, steer: 0, drift: false, item: false };
               const tg = g.target(i, ks);
-              return seek(box.minds[i]!, k, tg.x, tg.z, dt);
+              if (g.ice) return iceDrive(box.minds[i]!, k, g, tg, dt);
+              // By the levels (up a ramp to the deck, round it, off it), round what's in
+              // the way.
+              const w = waypoint(g.arena, k, tg);
+              const c = clearLine(k, w.x, w.z, (x, z, y) => live!.kartFits(x, z, y));
+              return seek(box.minds[i]!, k, c.x, c.z, dt);
             },
             fire(i, k) {
               const g = box.g;

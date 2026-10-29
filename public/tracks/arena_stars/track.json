@@ -13,221 +13,318 @@
   },
   "entities": [
     {
+      "id": "deck_01",
+      "type": "deck",
+      "r": 33.0,
+      "w": 16.0,
+      "y": 8.0
+    },
+    {
+      "id": "ramp_01",
+      "type": "ramp",
+      "x": 67.2,
+      "z": -0.0,
+      "tx": 41.2,
+      "tz": -0.0,
+      "index": 0
+    },
+    {
+      "id": "ramp_02",
+      "type": "ramp",
+      "x": 0.0,
+      "z": -67.2,
+      "tx": 0.0,
+      "tz": -41.2,
+      "index": 1
+    },
+    {
+      "id": "ramp_03",
+      "type": "ramp",
+      "x": -67.2,
+      "z": -0.0,
+      "tx": -41.2,
+      "tz": -0.0,
+      "index": 2
+    },
+    {
+      "id": "ramp_04",
+      "type": "ramp",
+      "x": -0.0,
+      "z": 67.2,
+      "tx": -0.0,
+      "tz": 41.2,
+      "index": 3
+    },
+    {
+      "id": "ramp_05",
+      "type": "ramp",
+      "x": 3.39,
+      "z": -3.39,
+      "tx": 17.54,
+      "tz": -17.54,
+      "index": 4
+    },
+    {
+      "id": "ramp_06",
+      "type": "ramp",
+      "x": -3.39,
+      "z": 3.39,
+      "tx": -17.54,
+      "tz": 17.54,
+      "index": 5
+    },
+    {
       "id": "arena_spawn_01",
       "type": "arena_spawn",
-      "x": 50.96,
-      "z": -10.33,
-      "heading": -1.371,
+      "x": 43.96,
+      "z": -29.61,
+      "heading": -0.978,
       "index": 0
     },
     {
       "id": "arena_spawn_02",
       "type": "arena_spawn",
-      "x": 28.73,
-      "z": -43.34,
-      "heading": -0.585,
+      "x": 10.15,
+      "z": -52.02,
+      "heading": -0.193,
       "index": 1
     },
     {
       "id": "arena_spawn_03",
       "type": "arena_spawn",
-      "x": -10.33,
-      "z": -50.96,
-      "heading": 0.2,
+      "x": -29.61,
+      "z": -43.96,
+      "heading": 0.593,
       "index": 2
     },
     {
       "id": "arena_spawn_04",
       "type": "arena_spawn",
-      "x": -43.34,
-      "z": -28.73,
-      "heading": 0.985,
+      "x": -52.02,
+      "z": -10.15,
+      "heading": 1.378,
       "index": 3
     },
     {
       "id": "arena_spawn_05",
       "type": "arena_spawn",
-      "x": -50.96,
-      "z": 10.33,
-      "heading": 1.771,
+      "x": -43.96,
+      "z": 29.61,
+      "heading": 2.163,
       "index": 4
     },
     {
       "id": "arena_spawn_06",
       "type": "arena_spawn",
-      "x": -28.73,
-      "z": 43.34,
-      "heading": 2.556,
+      "x": -10.15,
+      "z": 52.02,
+      "heading": 2.949,
       "index": 5
     },
     {
       "id": "arena_spawn_07",
       "type": "arena_spawn",
-      "x": 10.33,
-      "z": 50.96,
-      "heading": -2.942,
+      "x": 29.61,
+      "z": 43.96,
+      "heading": -2.549,
       "index": 6
     },
     {
       "id": "arena_spawn_08",
       "type": "arena_spawn",
-      "x": 43.34,
-      "z": 28.73,
-      "heading": -2.156,
+      "x": 52.02,
+      "z": 10.15,
+      "heading": -1.763,
       "index": 7
     },
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 18.3,
+      "at": 17.3,
       "across": -4.0,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 54.8,
+      "at": 51.9,
       "across": 0.0,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 91.3,
+      "at": 86.5,
       "across": 4.0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 127.8,
+      "at": 121.2,
       "across": -4.0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 164.3,
+      "at": 155.8,
       "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 200.8,
+      "at": 190.4,
       "across": 4.0,
       "color": "red"
     },
     {
-      "id": "bal_07",
+      "id": "bal_g00",
       "type": "balloon",
-      "at": 237.3,
-      "across": -4.0,
-      "color": "blue"
-    },
-    {
-      "id": "bal_08",
-      "type": "balloon",
-      "at": 273.8,
+      "route": "ground",
+      "at": 20.6,
       "across": 0.0,
       "color": "green"
     },
     {
-      "id": "bal_09",
+      "id": "bal_g01",
       "type": "balloon",
-      "at": 310.3,
-      "across": 4.0,
+      "route": "ground",
+      "at": 61.9,
+      "across": 0.0,
       "color": "yellow"
     },
     {
-      "id": "bal_10",
+      "id": "bal_g02",
       "type": "balloon",
-      "at": 346.8,
-      "across": -4.0,
+      "route": "ground",
+      "at": 103.1,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_g03",
+      "type": "balloon",
+      "route": "ground",
+      "at": 144.3,
+      "across": 0.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_g04",
+      "type": "balloon",
+      "route": "ground",
+      "at": 185.6,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_g05",
+      "type": "balloon",
+      "route": "ground",
+      "at": 226.8,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_g06",
+      "type": "balloon",
+      "route": "ground",
+      "at": 268.0,
+      "across": 0.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_g07",
+      "type": "balloon",
+      "route": "ground",
+      "at": 309.3,
+      "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "lantern_01",
       "type": "lantern",
       "x": 54.12,
-      "y": 3.87,
+      "y": 6.81,
       "z": -14.4
     },
     {
       "id": "lantern_02",
       "type": "lantern",
       "x": 39.67,
-      "y": 3.36,
+      "y": 6.16,
       "z": -39.53
     },
     {
       "id": "lantern_03",
       "type": "lantern",
       "x": 14.59,
-      "y": 2.68,
+      "y": 5.3,
       "z": -54.07
     },
     {
       "id": "lantern_04",
       "type": "lantern",
       "x": -14.4,
-      "y": 2.11,
+      "y": 4.81,
       "z": -54.12
     },
     {
       "id": "lantern_05",
       "type": "lantern",
       "x": -39.53,
-      "y": 1.63,
+      "y": 4.28,
       "z": -39.67
     },
     {
       "id": "lantern_06",
       "type": "lantern",
       "x": -54.07,
-      "y": 1.37,
+      "y": 3.89,
       "z": -14.59
     },
     {
       "id": "lantern_07",
       "type": "lantern",
       "x": -54.12,
-      "y": 1.57,
+      "y": 4.09,
       "z": 14.4
     },
     {
       "id": "lantern_08",
       "type": "lantern",
       "x": -39.67,
-      "y": 2.21,
+      "y": 4.91,
       "z": 39.53
     },
     {
       "id": "lantern_09",
       "type": "lantern",
       "x": -14.59,
-      "y": 2.86,
+      "y": 5.72,
       "z": 54.07
     },
     {
       "id": "lantern_10",
       "type": "lantern",
       "x": 14.4,
-      "y": 3.3,
+      "y": 6.03,
       "z": 54.12
     },
     {
       "id": "lantern_11",
       "type": "lantern",
       "x": 39.53,
-      "y": 3.66,
+      "y": 6.42,
       "z": 39.67
     },
     {
       "id": "lantern_12",
       "type": "lantern",
       "x": 54.07,
-      "y": 3.93,
+      "y": 6.82,
       "z": 14.59
     },
     {

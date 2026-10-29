@@ -13,137 +13,234 @@
   },
   "entities": [
     {
+      "id": "deck_01",
+      "type": "deck",
+      "r": 30.0,
+      "w": 16.0,
+      "y": 6.0
+    },
+    {
+      "id": "ramp_01",
+      "type": "ramp",
+      "x": 64.2,
+      "z": -0.0,
+      "tx": 38.2,
+      "tz": -0.0,
+      "index": 0
+    },
+    {
+      "id": "ramp_02",
+      "type": "ramp",
+      "x": 0.0,
+      "z": -64.2,
+      "tx": 0.0,
+      "tz": -38.2,
+      "index": 1
+    },
+    {
+      "id": "ramp_03",
+      "type": "ramp",
+      "x": -64.2,
+      "z": -0.0,
+      "tx": -38.2,
+      "tz": -0.0,
+      "index": 2
+    },
+    {
+      "id": "ramp_04",
+      "type": "ramp",
+      "x": -0.0,
+      "z": 64.2,
+      "tx": -0.0,
+      "tz": 38.2,
+      "index": 3
+    },
+    {
+      "id": "ramp_05",
+      "type": "ramp",
+      "x": 1.27,
+      "z": -1.27,
+      "tx": 15.41,
+      "tz": -15.41,
+      "index": 4
+    },
+    {
+      "id": "ramp_06",
+      "type": "ramp",
+      "x": -1.27,
+      "z": 1.27,
+      "tx": -15.41,
+      "tz": 15.41,
+      "index": 5
+    },
+    {
       "id": "arena_spawn_01",
       "type": "arena_spawn",
-      "x": 50.96,
-      "z": -10.33,
-      "heading": -1.371,
+      "x": 41.47,
+      "z": -27.93,
+      "heading": -0.978,
       "index": 0
     },
     {
       "id": "arena_spawn_02",
       "type": "arena_spawn",
-      "x": 28.73,
-      "z": -43.34,
-      "heading": -0.585,
+      "x": 9.58,
+      "z": -49.07,
+      "heading": -0.193,
       "index": 1
     },
     {
       "id": "arena_spawn_03",
       "type": "arena_spawn",
-      "x": -10.33,
-      "z": -50.96,
-      "heading": 0.2,
+      "x": -27.93,
+      "z": -41.47,
+      "heading": 0.593,
       "index": 2
     },
     {
       "id": "arena_spawn_04",
       "type": "arena_spawn",
-      "x": -43.34,
-      "z": -28.73,
-      "heading": 0.985,
+      "x": -49.07,
+      "z": -9.58,
+      "heading": 1.378,
       "index": 3
     },
     {
       "id": "arena_spawn_05",
       "type": "arena_spawn",
-      "x": -50.96,
-      "z": 10.33,
-      "heading": 1.771,
+      "x": -41.47,
+      "z": 27.93,
+      "heading": 2.163,
       "index": 4
     },
     {
       "id": "arena_spawn_06",
       "type": "arena_spawn",
-      "x": -28.73,
-      "z": 43.34,
-      "heading": 2.556,
+      "x": -9.58,
+      "z": 49.07,
+      "heading": 2.949,
       "index": 5
     },
     {
       "id": "arena_spawn_07",
       "type": "arena_spawn",
-      "x": 10.33,
-      "z": 50.96,
-      "heading": -2.942,
+      "x": 27.93,
+      "z": 41.47,
+      "heading": -2.549,
       "index": 6
     },
     {
       "id": "arena_spawn_08",
       "type": "arena_spawn",
-      "x": 43.34,
-      "z": 28.73,
-      "heading": -2.156,
+      "x": 49.07,
+      "z": 9.58,
+      "heading": -1.763,
       "index": 7
     },
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 18.3,
+      "at": 15.7,
       "across": -4.0,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 54.8,
+      "at": 47.2,
       "across": 0.0,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 91.3,
+      "at": 78.7,
       "across": 4.0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 127.8,
+      "at": 110.1,
       "across": -4.0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 164.3,
+      "at": 141.6,
       "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 200.8,
+      "at": 173.1,
       "across": 4.0,
       "color": "red"
     },
     {
-      "id": "bal_07",
+      "id": "bal_g00",
       "type": "balloon",
-      "at": 237.3,
-      "across": -4.0,
-      "color": "blue"
-    },
-    {
-      "id": "bal_08",
-      "type": "balloon",
-      "at": 273.8,
+      "route": "ground",
+      "at": 20.0,
       "across": 0.0,
       "color": "green"
     },
     {
-      "id": "bal_09",
+      "id": "bal_g01",
       "type": "balloon",
-      "at": 310.3,
-      "across": 4.0,
+      "route": "ground",
+      "at": 60.1,
+      "across": 0.0,
       "color": "yellow"
     },
     {
-      "id": "bal_10",
+      "id": "bal_g02",
       "type": "balloon",
-      "at": 346.8,
-      "across": -4.0,
+      "route": "ground",
+      "at": 100.1,
+      "across": 0.0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_g03",
+      "type": "balloon",
+      "route": "ground",
+      "at": 140.2,
+      "across": 0.0,
+      "color": "red"
+    },
+    {
+      "id": "bal_g04",
+      "type": "balloon",
+      "route": "ground",
+      "at": 180.2,
+      "across": 0.0,
+      "color": "blue"
+    },
+    {
+      "id": "bal_g05",
+      "type": "balloon",
+      "route": "ground",
+      "at": 220.3,
+      "across": 0.0,
+      "color": "green"
+    },
+    {
+      "id": "bal_g06",
+      "type": "balloon",
+      "route": "ground",
+      "at": 260.4,
+      "across": 0.0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_g07",
+      "type": "balloon",
+      "route": "ground",
+      "at": 300.4,
+      "across": 0.0,
       "color": "rainbow"
     },
     {
@@ -151,7 +248,7 @@
       "type": "dock",
       "x": 35.36,
       "z": -35.36,
-      "y": -0.14,
+      "y": 2.67,
       "color": "red",
       "index": 0
     },
@@ -160,7 +257,7 @@
       "type": "dock",
       "x": -35.36,
       "z": -35.36,
-      "y": -1.87,
+      "y": 0.82,
       "color": "blue",
       "index": 1
     },
@@ -169,7 +266,7 @@
       "type": "dock",
       "x": -35.36,
       "z": 35.36,
-      "y": -1.29,
+      "y": 1.43,
       "color": "green",
       "index": 2
     },
@@ -178,7 +275,7 @@
       "type": "dock",
       "x": 35.36,
       "z": 35.36,
-      "y": 0.16,
+      "y": 2.99,
       "color": "yellow",
       "index": 3
     },
@@ -188,7 +285,7 @@
       "x": 0.0,
       "z": -0.0,
       "y": 2.15,
-      "r": 34.0
+      "r": 16.0
     },
     {
       "id": "arena_01",

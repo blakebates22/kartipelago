@@ -7,21 +7,43 @@
    "index": 0,
    "route": "main",
    "position": [
-    54.509,
-    3.397,
-    19.885
+    30.0,
+    6.0,
+    -0.0
    ],
-   "heading": 2.77512,
+   "heading": 3.14159,
    "width": 50.0,
    "height": 12.0,
    "below": 3.0,
    "respawn": {
     "position": [
-     55.825,
-     3.423,
-     16.139
+     29.853,
+     6.0,
+     -3.536
     ],
-    "heading": 2.83686
+    "heading": -3.04614
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    -29.996,
+    6.0,
+    -0.64
+   ],
+   "heading": -0.01201,
+   "width": 50.0,
+   "height": 12.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -29.853,
+     6.0,
+     3.536
+    ],
+    "heading": 0.09545
    }
   }
  ]
