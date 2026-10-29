@@ -616,6 +616,12 @@ export function stagedSceneScreen(
   const followLook = new THREE.Vector3();
   let following = false;
   let lastDt = 1 / 60;
+  // The title card: held a moment even when the scene's place loads at once, the title
+  // fading up and away, so a scene that follows another opens on a card, not a flash of
+  // black (Blake, Oct 28: the Cracked Stone's "black flash at the start").
+  const CARD = 1.2;
+  let card = 0;
+  const carding = () => !session || card < CARD;
 
   const screen: Screen & { readonly beat: number; readonly cast: Map<string, Actor> } = {
     id: "ADVENTURE_SCENE",
@@ -670,7 +676,8 @@ export function stagedSceneScreen(
     },
     frame(dt, actions) {
       if (failed) return done();
-      if (!session) return;
+      card += dt;
+      if (carding()) return;
       t += dt;
       clock += dt;
       for (const act of actions) {
@@ -691,7 +698,7 @@ export function stagedSceneScreen(
       if (game.menuInput.pointer.clicked && t > 0.3 && alive) next();
     },
     render3d(alpha, frameSeconds) {
-      if (!session) return false;
+      if (!session || carding()) return false;
       session.render(alpha, frameSeconds);
       // (The shot first: the cast look at the camera.)
       lastDt = Math.min(0.1, Math.max(0, frameSeconds));
@@ -701,13 +708,17 @@ export function stagedSceneScreen(
       return true;
     },
     draw(ui) {
-      if (!session) {
-        ui.rect(0, 0, ui.W, ui.H, "#0c0a08");
+      if (carding()) {
+        ui.rect(0, 0, ui.W, ui.H, "#000000");
         ui.text(title.toUpperCase(), ui.W / 2, ui.H / 2 - 4, {
           color: PAL.gold,
           outline: PAL.shadow,
           align: "center",
         });
+        // (Up over its first moment; away over its last, once the place is ready.)
+        const up = Math.min(1, card / 0.35);
+        const away = session ? Math.min(1, Math.max(0, (CARD - card) / 0.3)) : 1;
+        ui.rect(0, 0, ui.W, ui.H, "#000000", 1 - up * away);
         return;
       }
       const b = beatOf(i);
