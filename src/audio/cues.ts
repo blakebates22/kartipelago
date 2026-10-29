@@ -1,6 +1,6 @@
 /**
- * The Adventure's cutscene score: twenty cues written as one film score, all original
- * (MIT, like the code). Staged scenes name them (StagedScene.music, a beat's
+ * The Adventure's cutscene score: twenty cues written as one film score, and the four
+ * champions' themes, all original (MIT, like the code). Staged scenes name them (StagedScene.music, a beat's
  * fx.music); "dread" (songs.ts) stays the cue for a dragon arriving.
  *
  * Three leitmotifs run through it, written into each cue in its own key and voice:
@@ -61,6 +61,7 @@ const KIT: Record<string, InstrumentId> = {
   t: "tamb",
   c: "crash",
   o: "tom",
+  d: "djembe",
 };
 
 const beat = (grid: string, step: number, times: number, start = 0, gain = 0.7): Part[] =>
@@ -1762,6 +1763,250 @@ function home(): Song {
   };
 }
 
+// ================================================================ the champions
+
+/**
+ * The champions' themes (Blake, Oct 28: "intro music for all of the new racers we get on
+ * the way"): each plays as its champion first rolls up (their challenge) and again when
+ * they join your crew. Each its own character, in its kingdom's colours; all sixty-four
+ * beats, the tune twice, the second time fuller.
+ */
+function champion(o: {
+  id: string;
+  title: string;
+  bpm: number;
+  chords: string;
+  melody: string;
+  lead: InstrumentId;
+  second: InstrumentId;
+  pickup: Part[];
+  extra: (ch: Chord[]) => Part[];
+}): Song {
+  const ch = chart(o.chords + " " + o.chords);
+  const mel = line(o.melody, 0, 0.8);
+  return {
+    id: o.id,
+    title: o.title,
+    role: "Cutscenes",
+    bpm: o.bpm,
+    beats: 64,
+    intro: 2,
+    peak: 0.8,
+    loop: true,
+    stems: [],
+    parts: [
+      ...o.pickup,
+      part(o.lead, 0.9, mel),
+      part(o.lead, 0.8, shift(mel, 32)),
+      // The second time round, doubled an octave up.
+      part(o.second, 0.45, shift(mel, 32, 12)),
+      ...o.extra(ch),
+    ],
+  };
+}
+
+/** "The Lone Racer": Rex. E minor, 152: a swaggering square lead over brass stabs, a
+ * driving bass and toms (no crew, never needed one). */
+function rex(): Song {
+  return champion({
+    id: "rex",
+    title: "The Lone Racer",
+    bpm: 152,
+    chords: "Em:4 Em:4 C:4 D:4 Em:4 Em:4 C:4 B7:4",
+    melody: bars(
+      4,
+      "E5:.5 E5:.25 G5:.25 A5:.5 B5:1 r:.5 A5:.5 G5:.5",
+      "B5:.5 D6:.5 B5:.5 A5:.5 G5:1 E5:1",
+      "C6:.75 B5:.25 A5:.5 G5:.5 E5:1 G5:1",
+      "F#5:.5 A5:.5 D6:1 C6:.5 A5:.5 F#5:1",
+      "E5:.5 E5:.25 G5:.25 A5:.5 B5:1 r:.5 A5:.5 G5:.5",
+      "B5:.5 D6:.5 B5:.5 A5:.5 G5:1 E5:1",
+      "C6:.5 C6:.5 B5:.5 A5:.5 G5:.5 A5:.5 B5:1",
+      "B5:1 D#5:.5 F#5:.5 B5:2",
+    ),
+    lead: "square",
+    second: "brass",
+    pickup: [
+      ...beat("o.o.oooo", 0.25, 1, -2, 0.6),
+      part("brass", 0.6, line("B4:.5 D5:.5 E5:1", -2, 0.7)),
+    ],
+    extra: (ch) => [
+      part("brass", 0.45, stabs(ch, [0, 1.5, 3], 55, 0.3, 0.6)),
+      part(
+        "bass",
+        1,
+        bassLine(
+          ch,
+          [
+            [0, 0.5, "R"],
+            [0.5, 0.5, "R"],
+            [1, 0.5, "8"],
+            [1.5, 0.5, "R"],
+            [2, 0.5, "R"],
+            [2.5, 0.5, "5"],
+            [3, 0.5, "R"],
+            [3.5, 0.5, "8"],
+          ],
+          28,
+          0.85,
+        ),
+      ),
+      ...beat("K.k.S.k.K.kkS.k.", 0.25, 16, 0, 0.75),
+      ...beat("i.i.i.i.i.i.i.i.", 0.25, 16, 0, 0.35),
+      ...beat("o.......o.o.o...", 0.25, 16, 0, 0.45),
+      ...beat("C", 32, 2, 0, 0.5),
+    ],
+  });
+}
+
+/** "The Gentle Giant": Brachio. A major, 112: a warm horn tune over rolling bells, soft
+ * strings and timpani (big, slow, kind; the ice kingdom's champion). */
+function brachio(): Song {
+  return champion({
+    id: "brachio",
+    title: "The Gentle Giant",
+    bpm: 112,
+    chords: "A:4 E/G#:4 F#m:4 D:4 Bm:4 E:4 D:2 E:2 A:4",
+    melody: bars(
+      4,
+      "A4:1 C#5:1 E5:1.5 D5:.5",
+      "C#5:1 B4:1 E4:2",
+      "F#4:1 A4:1 C#5:1.5 B4:.5",
+      "A4:1 F#4:1 D5:2",
+      "D5:1 F#5:1 E5:1 D5:1",
+      "E5:1.5 D5:.5 B4:2",
+      "A4:.5 B4:.5 C#5:1 B4:.5 C#5:.5 D5:1",
+      "C#5:3 r:1",
+    ),
+    lead: "horn",
+    second: "bell",
+    pickup: [part("harp", 0.5, line("E4:.25 A4:.25 C#5:.25 E5:.25 A5:1", -2, 0.6))],
+    extra: (ch) => [
+      part("strings", 0.4, pads(ch, 52, 4, 0.45)),
+      part("bell", 0.3, arpeggio(ch, 0.5, [0, 1, 2, 1], 64, 0.5, 0.45)),
+      part(
+        "bass",
+        0.8,
+        bassLine(
+          ch,
+          [
+            [0, 2, "R"],
+            [2, 2, "5"],
+          ],
+          33,
+          0.7,
+        ),
+      ),
+      part("timpani", 0.5, roll(45, 28, 4, 0.25, 0.3, 0.7)),
+      part("timpani", 0.5, roll(45, 60, 4, 0.25, 0.3, 0.7)),
+      ...beat("K.......k.......", 0.25, 16, 0, 0.5),
+      ...beat("h.h.h.h.h.h.h.h.", 0.25, 16, 0, 0.3),
+    ],
+  });
+}
+
+/** "The Iron Shell": Stego. D minor, 124: a clarinet tune with a desert's raised
+ * seventh, over djembe and bongos and plucked strings (sturdy, armoured, stubborn). */
+function stego(): Song {
+  return champion({
+    id: "stego",
+    title: "The Iron Shell",
+    bpm: 124,
+    chords: "Dm:4 Dm:4 Gm:4 A7:4 Dm:4 Bb:4 Gm:2 A7:2 Dm:4",
+    melody: bars(
+      4,
+      "D5:.5 E5:.5 F5:.5 G5:.5 A5:1 F5:1",
+      "Bb5:.5 A5:.5 G5:.5 F5:.5 E5:1 D5:1",
+      "G5:.75 F5:.25 E5:.5 D5:.5 Bb4:1 D5:1",
+      "C#5:.5 E5:.5 A5:1 G5:.5 E5:.5 C#5:1",
+      "D5:.5 F5:.5 A5:.5 D6:.5 C6:1 A5:1",
+      "Bb5:1 A5:.5 G5:.5 F5:1 D5:1",
+      "G5:.5 Bb5:.5 A5:.5 G5:.5 F5:.5 E5:.5 C#5:1",
+      "D5:3 r:1",
+    ),
+    lead: "clarinet",
+    second: "flute",
+    pickup: [...beat("D.d.dddD", 0.25, 1, -2, 0.6)],
+    extra: (ch) => [
+      part("pizz", 0.5, arpeggio(ch, 0.5, [0, 2, 1, 2], 50, 0.4, 0.55)),
+      part(
+        "bass",
+        0.9,
+        bassLine(
+          ch,
+          [
+            [0, 1, "R"],
+            [1.5, 0.5, "R"],
+            [2, 1, "5"],
+            [3, 1, "R"],
+          ],
+          26,
+          0.8,
+        ),
+      ),
+      ...beat("D..d..D.d.D..d..", 0.25, 16, 0, 0.6),
+      ...beat("b...b.b...b...b.", 0.25, 16, 0, 0.5),
+      ...beat("....S.......S...", 0.25, 16, 0, 0.45),
+      ...beat("hhhhhhhhhhhhhhhh", 0.25, 16, 0, 0.25),
+    ],
+  });
+}
+
+/** "Quick as the Tide": Raptor. G mixolydian, 160: a darting steel pan over marimba,
+ * a slapping bass and bongos (fast, slick, the tropic isles' champion). */
+function raptor(): Song {
+  return champion({
+    id: "raptor",
+    title: "Quick as the Tide",
+    bpm: 160,
+    chords: "G:4 F:4 C:4 G:4 G:4 F:4 C:2 D:2 G:4",
+    melody: bars(
+      4,
+      "D5:.5 G5:.5 B5:.5 A5:.5 G5:.5 F5:.5 D5:1",
+      "C5:.5 F5:.5 A5:.5 G5:.5 F5:1 C5:1",
+      "E5:.5 G5:.5 C6:1 B5:.5 G5:.5 E5:1",
+      "D5:1 B4:.5 D5:.5 G5:2",
+      "B5:.5 D6:.5 B5:.5 A5:.5 G5:.5 A5:.5 B5:1",
+      "A5:.5 C6:.5 A5:.5 G5:.5 F5:1 D5:1",
+      "E5:.5 G5:.5 C6:.5 G5:.5 F#5:.5 A5:.5 D6:.5 C6:.5",
+      "B5:2 G5:2",
+    ),
+    lead: "steelpan",
+    second: "xylophone",
+    pickup: [
+      part(
+        "marimba",
+        0.6,
+        line("D5:.25 E5:.25 F#5:.25 G5:.25 A5:.25 B5:.25 C6:.25 D6:.25", -2, 0.6),
+      ),
+    ],
+    extra: (ch) => [
+      part("marimba", 0.45, dyn(arpeggio(ch, 0.5, [0, 1, 2, 1, 2, 3, 2, 1], 55, 0.4, 0.5), 1)),
+      part(
+        "bass",
+        1,
+        bassLine(
+          ch,
+          [
+            [0, 0.75, "R"],
+            [0.75, 0.25, "R"],
+            [1.5, 0.5, "5"],
+            [2, 0.75, "8"],
+            [2.75, 0.25, "5"],
+            [3.5, 0.5, "R"],
+          ],
+          31,
+          0.8,
+        ),
+      ),
+      ...beat("K..kK...K..kK.k.", 0.25, 16, 0, 0.7),
+      ...beat("b.bb.b.bb.bb.b.b", 0.25, 16, 0, 0.45),
+      ...beat("..t...t...t...t.", 0.25, 16, 0, 0.35),
+      ...beat("C", 32, 2, 0, 0.45),
+    ],
+  });
+}
+
 // ================================================================ the cues
 
 /** Every cutscene cue, by id (the ids the staged scenes use). */
@@ -1787,6 +2032,10 @@ export function cues(): Record<string, Song> {
     confession(),
     finale(),
     home(),
+    rex(),
+    brachio(),
+    stego(),
+    raptor(),
   ];
   return Object.fromEntries(list.map((s) => [s.id, s]));
 }
@@ -1813,4 +2062,8 @@ export const CUE_IDS = [
   "confession",
   "finale",
   "home",
+  "rex",
+  "brachio",
+  "stego",
+  "raptor",
 ] as const;

@@ -443,8 +443,18 @@ export function sceneScreen(game: Game, id: string, then: () => void, record = t
       const who = beat.who ? CAST[beat.who] : undefined;
       let tx = bx + 10;
       if (who) {
-        portrait(ui, pp, who, beat.who === "you" ? you : who.look, bx + 6, by - 20, ui.time);
-        tx = bx + 64;
+        const slot = portraitSlot(bx, by, bh);
+        portrait(
+          ui,
+          pp,
+          who,
+          beat.who === "you" ? you : who.look,
+          slot.x,
+          slot.y,
+          ui.time,
+          slot.size,
+        );
+        tx = slot.tx;
         ui.text((beat.who === "you" ? "YOU" : who.name).toUpperCase(), tx, by + 6, {
           color: "#8a2a1a",
         });
@@ -518,6 +528,18 @@ function storybook(
 
 /** A speaker's portrait: a racer's own face, or a drawn head (the Elder, Lumen in his
  * hood, a sketchy guard, a crowd, a dragon). */
+/** Speakers' portraits sit inside the text box (Blake, Oct 28), a little smaller; false
+ * puts them back, bigger, standing up out of its top-left corner. */
+export const PORTRAIT_IN_BOX = true;
+
+/** Where a speaker's portrait goes for a text box at (bx, by), bh high, and where the
+ * text starts after it. */
+export function portraitSlot(bx: number, by: number, bh: number) {
+  if (!PORTRAIT_IN_BOX) return { x: bx + 6, y: by - 22, size: 48, tx: bx + 64 };
+  const size = Math.min(48, bh - 10);
+  return { x: bx + 5, y: by + 5, size, tx: bx + size + 14 };
+}
+
 export function portrait(
   ui: UiLayer,
   pp: PixelPortraits | undefined,
@@ -526,15 +548,16 @@ export function portrait(
   x: number,
   y: number,
   t: number,
+  size = 48,
 ) {
-  ui.rect(x - 2, y - 2, 52, 52, INK);
-  ui.rect(x, y, 48, 48, who.color);
+  ui.rect(x - 2, y - 2, size + 4, size + 4, INK);
+  ui.rect(x, y, size, size, who.color);
   if (look && pp) {
     const img = pp.draw(
       look as never,
       {
-        w: 48,
-        h: 48,
+        w: size,
+        h: size,
         view: "head",
         yaw: 0.35 + Math.sin(t * 1.4) * 0.15,
         levels: 8,
@@ -544,15 +567,32 @@ export function portrait(
       undefined,
       1 / 60,
     );
-    ui.image(img, x, y, 48, 48, false);
+    ui.image(img, x, y, size, size, false);
     return;
   }
   // The rest of the cast: their own models too (Mossback, Lumen, the guards, the dragons).
   const key = Object.keys(CAST).find((k) => CAST[k] === who);
   if (key && pp && hasCastModel(key)) {
-    ui.image(pp.cast(key, { w: 48, h: 48 }, t), x, y, 48, 48, false);
+    ui.image(pp.cast(key, { w: size, h: size }, t), x, y, size, size, false);
     return;
   }
+  // The drawn ones (drawn at 48, scaled to fit).
+  ui.g.save();
+  ui.g.translate(x, y);
+  ui.g.scale(size / 48, size / 48);
+  drawnPortrait(ui, who, 0, 0, t);
+  ui.g.restore();
+}
+
+/** A portrait drawn by hand, 48 x 48 at (x, y): a hood, a guard, a crowd, the Elder, a
+ * dragon's head. */
+function drawnPortrait(
+  ui: UiLayer,
+  who: { color: string; shape?: string; name?: string },
+  x: number,
+  y: number,
+  t: number,
+) {
   const g = ui.g;
   if (who.shape === "robed") {
     // A hood, its dark opening, two gold eyes.

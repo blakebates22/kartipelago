@@ -143,7 +143,7 @@ courses; the 1 on 1 starts straight after.
 WHERE: Dinosaur Valley, staged in 3D.
 ON STAGE: you, Rex.
 
-    [Rex drives.]
+    [Rex drives. Rex appears. Music: rex.]
     REX
         SO YOU'RE THE ONE WHO TOOK ALL FOUR RACES. NOT BAD, FOR A NOBODY
         WITH NO CREW.
@@ -169,7 +169,7 @@ ON STAGE: Rex, you, Elder Mossback, townsfolk.
     REX
         FINE. TWO LONERS WITH NO CREW. I SUPPOSE THAT MAKES US A CREW.
 
-    [The townsfolk cheer.]
+    [The townsfolk cheer. Music: rex.]
     NARRATOR (CAPTION)
         REX JOINS YOUR CREW!
 
@@ -420,7 +420,7 @@ ON STAGE: you, Brachio, Rimefang.
         FOUR WINS. NOW, BY THE KING'S LAW, ONE MORE RACE: AGAINST MY
         CHAMPION.
 
-    [Brachio drives.]
+    [Brachio drives. Brachio appears. Music: brachio.]
     BRACHIO
         I'M BRACHIO. THE BEST RACER IN THIS KINGDOM, SO HE MADE ME HIS.
         I DON'T WANT THIS.
@@ -578,7 +578,7 @@ ON STAGE: you, Stego, Scorchwind.
         AND NOW, THE MOMENT YOU'VE ALL BEEN WAITING FOR: MY STAR, MY
         HEADLINER... STEGO!
 
-    [Stego drives.]
+    [Stego drives. Stego appears. Music: stego.]
     STEGO
         EVERY NIGHT THE SAME SHOW. EVERY NIGHT I WIN. EVERY NIGHT I GO
         BACK IN MY CAGE.
@@ -727,7 +727,7 @@ ON STAGE: you, Raptor, Tidewyrm.
         AND NOW, MY TREASURE. THE FASTEST THING IN THE ISLES, AND ALL
         MINE. RAPTOR!
 
-    [Raptor drives.]
+    [Raptor drives. Raptor appears. Music: raptor.]
     RAPTOR
         HE CALLS ME HIS TREASURE. HE KEEPS ME IN A CHEST WHEN I'M NOT
         RACING.

@@ -31,7 +31,7 @@ import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits"
 import { wrap } from "../ui/font";
 import { PAL } from "../ui/textures";
 import { hints } from "./common";
-import { portrait } from "./adventure";
+import { portrait, portraitSlot } from "./adventure";
 
 const INK = "#3a2412";
 const ease = (t: number) => t * t * (3 - 2 * t);
@@ -57,6 +57,8 @@ interface Actor {
     t0: number;
     dur: number;
     to: [number, number];
+    /** The whole way, start to end (a move with bends). */
+    path?: [number, number][];
     toUp: number;
     toHeading: number;
   };
@@ -70,6 +72,29 @@ interface Actor {
   /** A dragon (render/storyDragon.ts: each its own design), and its name on stage. */
   dragon?: StoryDragonView;
   name: string;
+}
+
+/** A point `k` (0..1) of the way along a path of straight stretches, and the heading
+ * there (0 = +z). */
+function alongPath(path: [number, number][], k: number): [number, number, number] {
+  const lens = path.slice(1).map((p, i) => Math.hypot(p[0] - path[i]![0], p[1] - path[i]![1]));
+  const total = lens.reduce((a, b) => a + b, 0) || 1;
+  let d = k * total;
+  for (let i = 0; i < lens.length; i++) {
+    const a = path[i]!;
+    const b = path[i + 1]!;
+    if (d <= lens[i]! || i === lens.length - 1) {
+      const t = lens[i]! ? Math.min(1, d / lens[i]!) : 1;
+      return [
+        a[0] + (b[0] - a[0]) * t,
+        a[1] + (b[1] - a[1]) * t,
+        Math.atan2(b[0] - a[0], b[1] - a[1]),
+      ];
+    }
+    d -= lens[i]!;
+  }
+  const p = path[path.length - 1]!;
+  return [p[0], p[1], 0];
 }
 
 export function stagedSceneScreen(
@@ -105,6 +130,39 @@ export function stagedSceneScreen(
     if (a.prop) a.prop.root.visible = on;
     if (a.dragon) a.dragon.root.visible = on;
   };
+  /**
+   * The main road's way in to `stop` from ahead of "you": its centre line from about 45 m
+   * ahead (the way you face) back to `stop`. Undefined with no road near you.
+   */
+  const roadPath = (stop: [number, number]): [number, number][] | undefined => {
+    const samples = session?.track?.samples;
+    const me = actors.get("you");
+    if (!samples?.length || !me) return undefined;
+    let i0 = 0;
+    let bd = Infinity;
+    samples.forEach((s, i) => {
+      const d = (s.pos.x - me.x) ** 2 + (s.pos.z - me.z) ** 2;
+      if (d < bd) {
+        bd = d;
+        i0 = i;
+      }
+    });
+    if (bd > 25 * 25) return undefined;
+    const f0 = samples[i0]!.forward;
+    const dir = f0.x * Math.sin(me.heading) + f0.z * Math.cos(me.heading) >= 0 ? 1 : -1;
+    const n = samples.length;
+    const pts: [number, number][] = [];
+    let run = 0;
+    let prev = samples[i0]!.pos;
+    for (let k = 1; k < n && run < 52; k++) {
+      const p = samples[(((i0 + dir * k) % n) + n) % n]!.pos;
+      run += Math.hypot(p.x - prev.x, p.z - prev.z);
+      prev = p;
+      // (Only beyond where they'll stop: no doubling back.)
+      if (run > Math.hypot(stop[0] - me.x, stop[1] - me.z) + 6) pts.push([p.x, p.z]);
+    }
+    return pts.length ? [...pts.reverse(), stop] : undefined;
+  };
   const startBeat = (k: number) => {
     const b = staged.beats[k];
     for (const n of b?.fx?.show ?? []) {
@@ -128,6 +186,18 @@ export function stagedSceneScreen(
         t0: clock,
         dur: m.dur,
         to: m.to,
+        ...(m.road
+          ? (() => {
+              const path = roadPath(m.to);
+              if (path) {
+                a.x = path[0]![0];
+                a.z = path[0]![1];
+              }
+              return path ? { path } : {};
+            })()
+          : m.via?.length
+            ? { path: [[a.x, a.z], ...m.via, m.to] as [number, number][] }
+            : {}),
         toUp: m.y ?? a.up,
         toHeading: m.heading ?? Math.atan2(m.to[0] - a.x, m.to[1] - a.z),
       };
@@ -254,14 +324,25 @@ export function stagedSceneScreen(
     for (const a of actors.values()) {
       if (a.from) {
         const k = ease(Math.min(1, (clock - a.from.t0) / Math.max(0.01, a.from.dur)));
-        a.x = lerp(a.from.x, a.from.to[0], k);
-        a.z = lerp(a.from.z, a.from.to[1], k);
         a.up = lerp(a.from.up, a.from.toUp, k);
-        const dh = Math.atan2(
-          Math.sin(a.from.toHeading - a.from.heading),
-          Math.cos(a.from.toHeading - a.from.heading),
-        );
-        a.heading = a.from.heading + dh * Math.min(1, k * 2);
+        if (a.from.path) {
+          // Along the bends at an even speed, facing the way it goes; turning to its last
+          // heading over the last stretch.
+          const [x, z, h] = alongPath(a.from.path, k);
+          a.x = x;
+          a.z = z;
+          const end = Math.max(0, (k - 0.85) / 0.15);
+          const dh = Math.atan2(Math.sin(a.from.toHeading - h), Math.cos(a.from.toHeading - h));
+          a.heading = h + dh * end;
+        } else {
+          a.x = lerp(a.from.x, a.from.to[0], k);
+          a.z = lerp(a.from.z, a.from.to[1], k);
+          const dh = Math.atan2(
+            Math.sin(a.from.toHeading - a.from.heading),
+            Math.cos(a.from.toHeading - a.from.heading),
+          );
+          a.heading = a.from.heading + dh * Math.min(1, k * 2);
+        }
         if (k >= 1) a.from = undefined;
       }
       a.y = groundAt(a.x, a.z);
@@ -438,8 +519,18 @@ export function stagedSceneScreen(
       const who = beat.who ? CAST[beat.who] : undefined;
       let tx = bx + 10;
       if (who) {
-        portrait(ui, pp, who, beat.who === "you" ? me : who.look, bx + 6, by - 22, ui.time);
-        tx = bx + 64;
+        const slot = portraitSlot(bx, by, bh);
+        portrait(
+          ui,
+          pp,
+          who,
+          beat.who === "you" ? me : who.look,
+          slot.x,
+          slot.y,
+          ui.time,
+          slot.size,
+        );
+        tx = slot.tx;
         ui.text((beat.who === "you" ? "YOU" : who.name).toUpperCase(), tx, by + 6, {
           color: "#8a2a1a",
         });

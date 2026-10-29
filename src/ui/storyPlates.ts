@@ -52,6 +52,10 @@ interface Plate {
 
 // ------------------------------------------------------------------ the set's kit
 
+/** The founders' kinds (the crews of a thousand years ago: valley folk, not today's
+ * racers). */
+const FOUNDERS: Species[] = ["parasaur", "pachy", "ovi", "iggy"];
+
 /** The war's dragons, each a shade off the one who carries the line now. */
 const FOREBEAR: Partial<Record<DesignId, string>> = {
   cinderjaw: "#b8c4a0",
@@ -90,12 +94,13 @@ class Kit {
   private geos: THREE.BufferGeometry[] = [];
   private mats = new Map<string, THREE.Material>();
   private extra: THREE.Material[] = [];
-  racers: { r: Racer; m: RacerMotion }[] = [];
+  racers: { r: Racer; m: RacerMotion; driver?: PersonView }[] = [];
   dragons: StoryDragonView[] = [];
   props: PropView[] = [];
   people: PersonView[] = [];
   /** Things the line passes skip (light, glow, smoke). */
   readonly fx = new Set<THREE.Object3D>();
+  private clock = 0;
   /** The ground's height (set by ground()). */
   height: (x: number, z: number) => number = () => 0;
 
@@ -245,7 +250,7 @@ class Kit {
   /** A chequered line across the road, and an arch over it hung with a banner. */
   startLine(x: number, z: number, heading: number, w = 10, arch = true) {
     const grp = new THREE.Group();
-    grp.position.set(x, this.height(x, z) + 0.14, z);
+    grp.position.set(x, this.height(x, z) + 0.4, z);
     grp.rotation.y = heading;
     this.scene.add(grp);
     const cells = 10;
@@ -365,24 +370,81 @@ class Kit {
 
   /** The Dragon Kingdom's citadel, far off: towers on a crag. */
   citadel(x: number, z: number, s = 1) {
+    // The Dragon Kingdom's citadel on its crag: a walled square with a round tower at
+    // each corner, the gate in the front wall, and the great keep rising behind it with
+    // two slim spires (Blake, Oct 28: neat and symmetric, not three cones).
     const grp = new THREE.Group();
     grp.position.set(x, this.height(x, z), z);
     grp.scale.setScalar(s);
+    grp.rotation.y = Math.atan2(-x, -z) + Math.PI;
     this.scene.add(grp);
-    const crag = this.mesh(new THREE.ConeGeometry(16, 22, 6), this.mat("#6a5a50"), grp);
-    crag.position.y = 8;
-    const towers: [number, number, number, number][] = [
-      [0, 0, 3.2, 26],
-      [-6, 2, 2.2, 18],
-      [6, 1, 2.4, 20],
-      [-3, -4, 1.8, 15],
-      [4, -4, 1.8, 16],
-    ];
-    for (const [tx, tz, r, h] of towers) {
-      const t = this.mesh(new THREE.CylinderGeometry(r * 0.8, r, h, 6), this.mat("#5a4a48"), grp);
-      t.position.set(tx, 14 + h / 2, tz);
-      const c = this.mesh(new THREE.ConeGeometry(r * 1.3, r * 2.6, 6), this.mat("#8a2a20"), grp);
-      c.position.set(tx, 14 + h + r * 1.3, tz);
+    const stone = this.mat("#6e625c");
+    const dark = this.mat("#4e4440");
+    const roof = this.mat("#7a2620");
+    const crag = this.mesh(new THREE.CylinderGeometry(15, 21, 14, 9), this.mat("#5e524a"), grp);
+    crag.position.y = 7;
+    const top = 14;
+    const W = 22;
+    const D = 16;
+    const wallH = 6;
+    // The curtain walls, and their battlements.
+    for (const [wx, wz, w, d] of [
+      [0, D / 2, W, 1.6],
+      [0, -D / 2, W, 1.6],
+      [W / 2, 0, 1.6, D],
+      [-W / 2, 0, 1.6, D],
+    ] as const) {
+      const wall = this.mesh(new THREE.BoxGeometry(w, wallH, d), stone, grp);
+      wall.position.set(wx, top + wallH / 2, wz);
+      const n = Math.round(Math.max(w, d) / 2.2);
+      for (let i = 0; i < n; i++) {
+        const u = (i + 0.5) / n - 0.5;
+        const m = this.mesh(
+          new THREE.BoxGeometry(w > d ? 1 : 1.8, 1.1, w > d ? 1.8 : 1),
+          stone,
+          grp,
+        );
+        m.position.set(wx + (w > d ? u * w : 0), top + wallH + 0.55, wz + (w > d ? 0 : u * d));
+      }
+    }
+    // The gate, in the front wall.
+    const gate = this.mesh(new THREE.BoxGeometry(4, 4.4, 0.4), dark, grp);
+    gate.position.set(0, top + 2.2, D / 2 + 0.8);
+    const arch = this.mesh(
+      new THREE.CylinderGeometry(2, 2, 0.4, 10, 1, false, 0, Math.PI),
+      dark,
+      grp,
+    );
+    arch.rotation.set(Math.PI / 2, 0, Math.PI / 2);
+    arch.position.set(0, top + 4.4, D / 2 + 0.8);
+    // A round tower at each corner, with a pointed roof.
+    for (const [cx, cz] of [
+      [W / 2, D / 2],
+      [-W / 2, D / 2],
+      [W / 2, -D / 2],
+      [-W / 2, -D / 2],
+    ] as const) {
+      const t = this.mesh(new THREE.CylinderGeometry(2.2, 2.4, 11, 10), stone, grp);
+      t.position.set(cx, top + 5.5, cz);
+      const r = this.mesh(new THREE.ConeGeometry(3, 5, 10), roof, grp);
+      r.position.set(cx, top + 13.5, cz);
+    }
+    // The great keep: a tall square hall with a steep roof, its banners on the front.
+    const keep = this.mesh(new THREE.BoxGeometry(10, 18, 8), stone, grp);
+    keep.position.set(0, top + 9, -2);
+    const kr = this.mesh(new THREE.ConeGeometry(7.6, 9, 4), roof, grp);
+    kr.rotation.y = Math.PI / 4;
+    kr.position.set(0, top + 22.5, -2);
+    for (const bx of [-2.6, 2.6]) {
+      const banner = this.mesh(new THREE.BoxGeometry(1.6, 5, 0.2), roof, grp);
+      banner.position.set(bx, top + 12, 2.1);
+    }
+    // Two slim spires either side of the keep.
+    for (const sx of [-6.5, 6.5]) {
+      const sp = this.mesh(new THREE.CylinderGeometry(1, 1.2, 22, 8), stone, grp);
+      sp.position.set(sx, top + 11, -3);
+      const c = this.mesh(new THREE.ConeGeometry(1.5, 6, 8), roof, grp);
+      c.position.set(sx, top + 25, -3);
     }
   }
 
@@ -488,7 +550,8 @@ class Kit {
     return grp;
   }
 
-  /** A racer of the first crews: today's racers' ancestors, in their other paint. */
+  /** A racer of the first crews, a thousand years ago: a karts in the old paint, driven
+   * by valley folk, not today's racers (Blake, Oct 28: "clearly different"). */
   racer(id: RacerId, x: number, z: number, heading: number, speed = 0, alt = true) {
     const r = new Racer(id, { seed: id.length * 5 + 1, alt });
     r.lod.autoUpdate = false;
@@ -496,10 +559,21 @@ class Kit {
     r.root.position.set(x, this.height(x, z), z);
     r.root.rotation.y = heading;
     this.scene.add(r.root);
+    // Today's rider out; a founder in: one of the valley's folk, low in the seat.
+    r.rig.root.visible = false;
+    r.rig.hands.visible = false;
+    const k = this.racers.length;
+    const driver = createVillagerView(
+      r.kart.body,
+      "valley",
+      11 + k * 7,
+      FOUNDERS[k % FOUNDERS.length],
+    );
+    this.people.push(driver);
     const m = still();
     m.speed = speed;
     m.throttle = speed > 0;
-    this.racers.push({ r, m });
+    this.racers.push({ r, m, driver });
     return r;
   }
 
@@ -507,6 +581,8 @@ class Kit {
    * others are their forebears, today's dragons a shade different. */
   dragon(who: DesignId, x: number, y: number, z: number, heading: number, scale: number) {
     const d = createStoryDragon(this.scene, who, scale);
+    // (Its own fire and glow wash out on the page: the plates ink their own.)
+    d.effects = false;
     const tint = FOREBEAR[who];
     if (tint) {
       const c = new THREE.Color(tint);
@@ -553,7 +629,12 @@ class Kit {
   }
 
   animate(dt: number) {
-    for (const { r, m } of this.racers) r.animate(dt, m, null);
+    this.clock += dt;
+    for (const { r, m, driver } of this.racers) {
+      r.animate(dt, m, null);
+      // (Kneeling in the seat, hunched forward over the wheel.)
+      driver?.update(0, 0.38, -0.3, 0, { gesture: "kneel" }, this.clock + 3);
+    }
   }
 
   dispose() {
@@ -600,6 +681,62 @@ function fly(
   d.update(pose, t, t, at ?? look.copy(d.root.position).addScaledVector(fwd, 60), false);
 }
 
+/**
+ * A dragon's fire, drawn in ink and wash on the plate: a wavering tongue of flame from
+ * `from` toward `to` (plate pixels), `reach` of the way, red outside, gold in the heart.
+ */
+function inkFlame(
+  g: CanvasRenderingContext2D,
+  from: THREE.Vector2,
+  to: THREE.Vector2,
+  t: number,
+  reach: number,
+) {
+  const dx = (to.x - from.x) * reach;
+  const dy = (to.y - from.y) * reach;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const nx = -uy;
+  const ny = ux;
+  const tongue = (wide: number, long: number) => {
+    const n = 14;
+    const pts: [number, number][] = [];
+    for (const side of [1, -1])
+      for (let i = side > 0 ? 0 : n; side > 0 ? i <= n : i >= 0; i += side) {
+        const u = i / n;
+        // Narrow at the jaws, billowing, licking to a point; the edge flickering.
+        // (A cone of fire flaring out from the jaws, its far end rounding off.)
+        const w = wide * RES * (0.12 + 0.88 * u ** 0.8) * Math.sqrt(Math.max(0, 1 - u ** 6));
+        const lick =
+          (Math.sin(u * 15 - t * 14 + side * 2) + 0.5 * Math.sin(u * 31 - t * 23)) * 2.2 * RES * u;
+        const d = u * len * long;
+        pts.push([
+          from.x + ux * d + nx * (w + lick) * side,
+          from.y + uy * d + ny * (w + lick) * side,
+        ]);
+      }
+    g.beginPath();
+    pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+    g.closePath();
+  };
+  g.save();
+  g.lineJoin = "round";
+  tongue(10, 1);
+  g.fillStyle = "rgba(206,70,30,0.95)";
+  g.fill();
+  g.strokeStyle = `rgb(${INK.join(",")})`;
+  g.lineWidth = RES * 1.1;
+  g.stroke();
+  tongue(6.5, 0.85);
+  g.fillStyle = "rgba(238,146,44,0.95)";
+  g.fill();
+  tongue(3.5, 0.62);
+  g.fillStyle = "rgba(255,224,120,0.95)";
+  g.fill();
+  g.restore();
+}
+
 // ------------------------------------------------------------------ the pages
 
 /** 1. The war: dragons over the crews' karts, fire on the plain. */
@@ -618,6 +755,8 @@ function war(): Plate {
   k.racer("brakka", 2, 15, flee, 30);
   k.racer("pebble", 10, 10, flee, 30);
   const fire = k.dragon("cinderjaw", 16, 10, 0, -Math.PI / 2 - 0.25, 0.3);
+  const mouth = new THREE.Vector3();
+  const aim = new THREE.Vector3();
   const frost = k.dragon("rimefang", -12, 14, -8, -Math.PI / 2 + 0.2, 0.26);
   const sand = k.dragon("scorchwind", 30, 16, -20, -Math.PI / 2, 0.24);
   const r = rnd(4);
@@ -638,12 +777,19 @@ function war(): Plate {
       fly(sand, "fly", t, 12);
       drift(camera, [-2, 6, 40], [1, 6, 37], [4, 6, 4], t);
     },
+    overlay(g, t, project) {
+      // His fire, inked and washed like the rest of the page (the model's own glow
+      // doesn't survive the wash): from his jaws down toward the fleeing karts.
+      const from = project(fire.mouth(mouth));
+      const to = project(aim.set(-2, k.height(-2, 16) + 1, 16));
+      inkFlame(g, from, to, t, 0.85);
+    },
     dispose: () => k.dispose(),
   };
 }
 
 /** 2. The oath, before the race: the King and the crews either side of the start line,
- * the oath's light rising between them. */
+ * the oath's ring of light between them. */
 function oath(): Plate {
   const k = new Kit();
   k.ground(["#b8c088", "#a0ac74"]);
@@ -661,12 +807,10 @@ function oath(): Plate {
     ["zephyr", 14, 5],
   ];
   for (const [id, x, z] of crew) k.racer(id, x, z, -Math.PI / 2 - 0.3, 0);
-  // The oath: a ring of light on the line, a column rising from it.
+  // The oath: a ring of light on the line between them.
   const ring = k.glow(new THREE.TorusGeometry(2.6, 0.22, 6, 32), "#ffd070", 0.9);
   ring.rotation.x = Math.PI / 2;
   ring.position.set(0, 0.5, 0);
-  const column = k.glow(new THREE.CylinderGeometry(2.2, 2.6, 26, 20, 1, true), "#ffd890", 0.35);
-  column.position.set(0, 13, 0);
   // Both sides' banners behind.
   for (const [x, c] of [
     [-22, "#8a2a20"],
@@ -690,7 +834,6 @@ function oath(): Plate {
       king.ground = 0;
       king.update("bow", t, t, look.set(0, 3, 0), false);
       ring.rotation.z = t * 0.4;
-      (column.material as THREE.MeshBasicMaterial).opacity = 0.3 + 0.08 * Math.sin(t * 2);
       drift(camera, [0, 6, 32], [0, 5.5, 28], [0, 5, -3], t);
     },
     dispose: () => k.dispose(),
@@ -744,12 +887,34 @@ function ruleChampion(): Plate {
   ]);
   k.startLine(0, 0, Math.PI / 2, 12, false);
   const champ = k.racer("tiko", -5, 0, Math.PI / 2, 0);
-  // The champion's gold pennant.
-  const pole = k.mesh(new THREE.CylinderGeometry(0.06, 0.06, 4, 4), k.mat("#5a3a22"), champ.root);
-  pole.position.set(-0.7, 2.6, -1.6);
-  const pen = k.mesh(new THREE.ConeGeometry(0.55, 1.8, 3), k.mat("#e8b830", 0.2), champ.root);
-  pen.rotation.z = -Math.PI / 2;
-  pen.position.set(-0.7, 4.1, -1.6);
+  // The champion's banner, flying from a tall pole behind the seat: a swallow-tailed
+  // gold flag with a red border and the Pact's ring on it.
+  const pole = k.mesh(new THREE.CylinderGeometry(0.07, 0.07, 4.6, 6), k.mat("#5a3a22"), champ.root);
+  pole.position.set(-0.75, 2.9, -1.7);
+  const knob = k.mesh(new THREE.SphereGeometry(0.16, 8, 6), k.mat("#e8b830"), champ.root);
+  knob.position.set(-0.75, 5.25, -1.7);
+  const flag = (w: number, h: number, notch: number) => {
+    const sh = new THREE.Shape();
+    sh.moveTo(0, 0);
+    sh.lineTo(0, -w);
+    sh.lineTo(h, -w);
+    sh.lineTo(h - notch, -w / 2);
+    sh.lineTo(h, 0);
+    sh.closePath();
+    return new THREE.ShapeGeometry(sh);
+  };
+  const cloth = k.twoSided("#8a2a1c");
+  const gold = k.twoSided("#e8b830");
+  const banner = new THREE.Group();
+  banner.position.set(-0.75, 5.0, -1.7);
+  banner.rotation.y = Math.PI;
+  champ.root.add(banner);
+  const edge = k.mesh(flag(1.3, 2.3, 0.6), cloth, banner);
+  const face = k.mesh(flag(1.06, 2.0, 0.5), gold, banner);
+  face.position.set(0.04, -0.12, 0.02);
+  const ring = k.mesh(new THREE.TorusGeometry(0.26, 0.05, 4, 16), cloth, banner);
+  ring.position.set(0.8, -0.65, 0.04);
+  void edge;
   const king = k.dragon("king", 13, 0, -1, -Math.PI / 2, 0.26);
   k.hourglass(0, -7, 1);
   const r = rnd(2);

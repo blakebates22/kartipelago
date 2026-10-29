@@ -38,11 +38,14 @@ const CAST_MODELS: Record<
 
 /** How far back a dragon's portrait stands (its head's size, about: metres at scale 1). */
 const HEAD_SIZE: Partial<Record<DesignId, number>> = {
-  cinderjaw: 15,
+  cinderjaw: 18,
   king: 21,
   lumen: 13,
   lumen_grown: 12,
 };
+
+/** Dragons whose faces read best from the front (a broad, short face: Cinderjaw's). */
+const FRONTAL = new Set<DesignId>(["cinderjaw"]);
 
 /** Whether a CAST key has a 3D model to portray (the rest are drawn). */
 export const hasCastModel = (key: string) => key in CAST_MODELS;
@@ -102,7 +105,9 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
   sun.position.set(3, 6, 5);
   const rim = new THREE.DirectionalLight("#bfe0ff", 1.1);
   rim.position.set(-4, 3, -3);
-  scene.add(sun, rim, new THREE.HemisphereLight("#eaf4ff", "#6a5a48", 1.25));
+  // (A light from the camera for the dragons: their hides are dark, their heads big.)
+  const fill = new THREE.DirectionalLight("#fff0dc", 0);
+  scene.add(sun, rim, fill, fill.target, new THREE.HemisphereLight("#eaf4ff", "#6a5a48", 1.25));
   const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 60);
   const racers = new Map<string, Racer>();
   const people = new Map<string, PersonView>();
@@ -225,6 +230,7 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
       const s = slotOf(`${id}${o.alt ? ":alt" : ""}:${o.w}x${o.h}:${o.view}`, o.w, o.h);
       const r = racerOf(id, o.alt);
       solo(r.root);
+      fill.intensity = 0;
       Object.assign(motion, still(), pose ?? {});
       r.setResult(result, 8);
       r.animate(dt, motion, { x: 0, z: 6 });
@@ -260,6 +266,7 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
       const m = CAST_MODELS[key];
       const s = slotOf(`cast:${key}:${o.w}x${o.h}`, o.w, o.h);
       camera.aspect = o.w / o.h;
+      fill.intensity = 0;
       if (m?.person) {
         let p = people.get(key);
         if (!p) {
@@ -290,18 +297,26 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
         }
         solo(d.root);
         d.root.rotation.y = 0.5 + Math.sin(t * 0.6) * 0.1;
-        d.update("idle", t, t, camera.position, false);
+        // (Looking ahead, a little our way: not at wherever the camera was last.)
+        const ry = d.root.rotation.y + 0.35;
+        d.update("idle", t, t, side.set(Math.sin(ry) * 60, 12, Math.cos(ry) * 60), false);
         d.root.updateMatrixWorld(true);
         d.headFrame(at, fwd);
         side.set(0, 1, 0).cross(fwd).normalize();
         const size = HEAD_SIZE[m.dragon] ?? 10;
         camera.fov = 26;
+        // Three-quarters on, a little above: the snout, the horns and an eye (framed a
+        // little toward the snout, the head's long that way).
+        at.addScaledVector(fwd, size * 0.06);
         camera.position
           .copy(at)
-          .addScaledVector(fwd, size * 1.6)
-          .addScaledVector(side, size * 0.9)
-          .add(new THREE.Vector3(0, size * 0.25, 0));
+          .addScaledVector(fwd, size * (FRONTAL.has(m.dragon) ? 1.6 : 1.25))
+          .addScaledVector(side, size * (FRONTAL.has(m.dragon) ? 0.55 : 1.15))
+          .add(new THREE.Vector3(0, size * 0.3, 0));
         camera.lookAt(at);
+        fill.position.copy(camera.position);
+        fill.target.position.copy(at);
+        fill.intensity = 2.1;
       }
       camera.near = 0.05;
       camera.far = 400;

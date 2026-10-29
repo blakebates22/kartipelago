@@ -96,7 +96,18 @@ export type Gesture =
 export interface StagedBeat {
   cam: Shot;
   /** Actors moving to a mark over the line (seconds; `y` metres up for a flyer). */
-  moves?: { actor: string; to: V2; y?: number; dur: number; heading?: number }[];
+  /** Moves: straight to `to`, or along `via` first (a road's bends), at an even speed;
+   * facing the way it goes, then `heading` at the end. */
+  moves?: {
+    actor: string;
+    to: V2;
+    via?: V2[];
+    /** Come along the main road instead, from ahead of "you" (the cutscene finds it). */
+    road?: boolean;
+    y?: number;
+    dur: number;
+    heading?: number;
+  }[];
   fx?: {
     /** The dragon's fire from its jaws (the actor). */
     fire?: string;
@@ -294,7 +305,10 @@ export function stage(
       }
       cam = closeUp({ ...actors[who]!, heading: heads.get(who)! }, at, toward, ys.get(who) ?? 0);
     }
-    return { cam: cam ?? o.wide, moves: p.moves, fx: { ...o.all, ...p.fx } };
+    // A champion joining your crew: their theme (unless the line sets its own music).
+    const joins =
+      b.crew && CHAMP_THEME[b.crew] && !p.fx?.music ? { music: CHAMP_THEME[b.crew] } : {};
+    return { cam: cam ?? o.wide, moves: p.moves, fx: { ...o.all, ...joins, ...p.fx } };
   });
   return { scene, region, ruined, actors, beats, music: o.music };
 }
@@ -362,8 +376,19 @@ export const CUES = [
   "finale",
   "home",
   "dread",
+  "rex",
+  "brachio",
+  "stego",
+  "raptor",
 ] as const;
 export type Cue = (typeof CUES)[number];
+/** Each champion's theme (their challenge, and joining your crew). */
+const CHAMP_THEME: Record<string, Cue> = {
+  rex: "rex",
+  brachio: "brachio",
+  stego: "stego",
+  raptor: "raptor",
+};
 /** Each dragon's own theme (Cinderjaw's is the dread). */
 const THEME: Record<string, Cue> = {
   cinderjaw: "dread",
@@ -959,12 +984,14 @@ export function challengeStaged(
   const { P, P3 } = frame(at);
   const you = P(0, 0);
   const stop = P(7, 3.5);
+  // (They come up the main road to you, from ahead: Blake, Oct 28, not out of the cliff.
+  // The cutscene finds the road; out of sight until then.)
   const start = P(30, 5);
   const champ = CHAMP_OF[kingdom]!;
   const d = kingdom === "valley" ? undefined : DRAGON_OF[kingdom];
   const actors: Record<string, ActorSpec> = {
     you: { kind: "racer", look: "you", at: you, heading: at.heading },
-    [champ]: { kind: "racer", look: champ, at: start, heading: face(start, stop) },
+    [champ]: { kind: "racer", look: champ, at: start, heading: face(start, stop), hidden: true },
   };
   if (d)
     actors[d] = {
@@ -989,12 +1016,13 @@ export function challengeStaged(
   });
   per[first] = {
     ...per[first],
-    moves: [{ actor: champ, to: stop, dur: 3, heading: face(stop, you) }],
+    moves: [{ actor: champ, to: stop, road: true, dur: 4.5, heading: face(stop, you) }],
+    fx: { ...per[first]?.fx, show: [champ], music: CHAMP_THEME[champ] },
     cam: { from: P3(-4, 2.6, -6), to: P3(-3.4, 2.6, -5.6), look: P3(16, 1.2, 4) },
   };
   return stage(sceneOf(kingdom, "challenge"), region, false, actors, {
     wide: { from: P3(-12, 8, -10), to: P3(-14, 10, -12), look: P3(3, 0.5, 1.5) },
-    music: d ? THEME[d] : "festival",
+    music: d ? THEME[d] : (CHAMP_THEME[champ] ?? "festival"),
     per,
   });
 }

@@ -38,7 +38,7 @@ const lumen = (iv: number[]) =>
 
 describe("the cutscene score", () => {
   it("has every cue the scenes name, ready to loop, 20-60 s long, with an intro", () => {
-    expect(CUE_IDS).toHaveLength(20);
+    expect(CUE_IDS).toHaveLength(24);
     for (const s of cues) {
       expect(s, s.id).toBeDefined();
       expect(s.role.startsWith("Cutscenes"), s.id).toBe(true);
