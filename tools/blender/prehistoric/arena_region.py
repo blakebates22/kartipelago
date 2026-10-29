@@ -31,6 +31,7 @@
 # back on it); a second route, "ground", runs round the outer floor for the balloons down
 # there.
 
+import json
 import math
 import os
 import sys
@@ -57,7 +58,7 @@ SPECS = {
         "floor": 2.0,
         "r": 86.0,
         "top": 40.0,
-        "mats": (("ash_soil", "dirt"), ("ember_rock", "wall"), ("basalt_road", "road")),
+        "mats": (("volcano_slag", "dirt"), ("ember_rock", "wall"), ("basalt_road", "road")),
     },
     "docks": {
         "name": "Smugglers' Cove",
@@ -183,6 +184,36 @@ def main():
     kit.paint.shade_roads(c.pieces, 0.3)
     c.checkpoints(height=12.0)
     c.finish(extra={"race": {"laps": 1}, "arena": True})
+    if AID in LOOKS:
+        path = os.path.join(kit.TRACKS_DIR, TRACK_ID, "look.json")
+        with open(path, encoding="utf-8") as f:
+            look = json.load(f)
+        for k, v in LOOKS[AID].items():
+            look[k] = v
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(look, f, indent=2)
+            f.write("\n")
+
+
+# Each arena's own sky and light where its kingdom's is wrong for it (Blake, Oct 29: the
+# Crater Bowl was too dark: now a volcano at dusk, glowing orange, the floor lit warm).
+LOOKS = {
+    "bowl": {
+        "sky": "#ff8a4a",
+        "fog": {"enabled": True, "color": "#b0563a", "near": 140, "far": 900},
+        "sun": {"color": "#ffd2a0", "intensity": 2.5, "direction": [0.35, 0.62, 0.55]},
+        "ambient": {"sky": "#ffb08a", "ground": "#6a3020", "intensity": 1.55},
+        "skyDome": {
+            "top": "#2a1236",
+            "horizon": "#ff8a46",
+            "bottom": "#7a2a1a",
+            "sun": {"color": "#ffe0a8", "size": 14, "glow": "#ff9a4a", "elevation": 16},
+            "clouds": {"count": 18, "color": "#5a3040", "shade": "#2a1420", "seed": 311, "low": 4, "high": 18,
+                       "drift": 0.004},
+            "hills": {"color": "#2a1612", "far": "#7a3a2a", "height": 14, "seed": 313, "layers": 3},
+        },
+    },
+}
 
 
 def two_levels(c, ground, taken):

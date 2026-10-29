@@ -1,25 +1,52 @@
 {
   "schemaVersion": 1,
   "theme": "ember_volcano",
-  "sky": "#4a2a35",
+  "sky": "#ff8a4a",
   "fog": {
     "enabled": true,
-    "color": "#6a3328",
-    "near": 70,
-    "far": 430
+    "color": "#b0563a",
+    "near": 140,
+    "far": 900
   },
   "sun": {
-    "color": "#ffb47a",
-    "intensity": 1.7,
+    "color": "#ffd2a0",
+    "intensity": 2.5,
     "direction": [
-      0.2,
-      0.7,
-      0.6
+      0.35,
+      0.62,
+      0.55
     ]
   },
   "ambient": {
-    "sky": "#c46a4a",
-    "ground": "#2a1210",
-    "intensity": 1.0
+    "sky": "#ffb08a",
+    "ground": "#6a3020",
+    "intensity": 1.55
+  },
+  "skyDome": {
+    "top": "#2a1236",
+    "horizon": "#ff8a46",
+    "bottom": "#7a2a1a",
+    "sun": {
+      "color": "#ffe0a8",
+      "size": 14,
+      "glow": "#ff9a4a",
+      "elevation": 16
+    },
+    "clouds": {
+      "count": 18,
+      "color": "#5a3040",
+      "shade": "#2a1420",
+      "seed": 311,
+      "low": 4,
+      "high": 18,
+      "drift": 0.004
+    },
+    "hills": {
+      "color": "#2a1612",
+      "far": "#7a3a2a",
+      "height": 14,
+      "seed": 313,
+      "layers": 3
+    }
   }
 }
