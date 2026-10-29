@@ -453,29 +453,38 @@ HAMLET = (-4.0, 42.0)  # a few more huts round the north hearth
 
 
 def camp(c, ground, taken):
-    """The camp: its beaten-earth square, huts round the Elder's fire, hearths with log
-    benches, the well, the kart shed, carved totems, a hamlet to the north, and the dirt
-    paths between them (returned, for painting into the land)."""
+    """The camp: huts round the Elder's fire, hearths with log benches, the well, the kart
+    shed, carved totems, a hamlet to the north, and the dirt paths between them (returned
+    as lists of points, for valley_village.path_ribbons). The village made over: Blake,
+    Oct 28, review-valley_region 3 (see valley_village)."""
+    import valley_village as vv
+
     cx, cy, cr = L.CAMP
-    z0 = L.CAMP_Z
     paths = []
-    hut = props.hut(c)
-    h = rp.hearth(c)
+    h = vv.hearth(c)
     for k, (x, y) in enumerate(HEARTHS):
         z = ground(x, y)
         c.place(h, x, y, z - 0.05, rot=k * 1.1, coll="Village", role="visual")
         g = c.game(x, y, z + 0.3)
         c.entity("campfire", x=g[0], y=g[1], z=g[2])
         taken.add(x, y, 5.0)
-    w = rp.well(c)
     z = ground(*WELL)
-    c.place(w, WELL[0], WELL[1], z - 0.05, rot=0.4, coll="Village")
+    c.place(vv.well(c), WELL[0], WELL[1], z - 0.05, rot=0.4, coll="Village")
+    vv.well_hole(c, WELL[0], WELL[1], ground)
     taken.add(WELL[0], WELL[1], 4.0)
-    shed = rp.kart_shed(c)
     a = math.atan2(cy - SHED[1], cx - SHED[0])
     z = min(ground(SHED[0] + dx, SHED[1] + dy) for dx in (-4, 0, 4) for dy in (-3, 0, 3))
-    c.place(shed, SHED[0], SHED[1], z - 0.1, rot=a + math.pi / 2, coll="Village", role="visual")
-    c.place(rp.kart_shed_collider(c), SHED[0], SHED[1], z - 0.1, rot=a + math.pi / 2, coll="Collision", role="collision")
+    rot = a + math.pi / 2
+    c.place(vv.kart_shed(c), SHED[0], SHED[1], z - 0.1, rot=rot, coll="Village", role="visual")
+    c.place(vv.repair_sign(c), SHED[0], SHED[1], z - 0.1, rot=rot, coll="Village", role="visual")
+    c.place(rp.kart_shed_collider(c), SHED[0], SHED[1], z - 0.1, rot=rot, coll="Collision", role="collision")
+    # The kart taken apart on its blocks under the hoist (the game's own kart: Blake, note
+    # 12, "an actual rendered cart thats dissasembled"), its nose to the open front.
+    ca, sa = math.cos(rot), math.sin(rot)
+    kx, ky = SHED[0] + (-1.9 * ca - 0.2 * sa), SHED[1] + (-1.9 * sa + 0.2 * ca)
+    face = rot - math.pi / 2
+    g = c.game(kx, ky, z - 0.1)
+    c.entity("kart_wreck", x=g[0], y=g[1], z=g[2], heading=round(math.atan2(math.cos(face), -math.sin(face)), 3))
     taken.add(SHED[0], SHED[1], 8.0)
     # The hamlet: huts round the north hearth, their doors to the fire.
     hx, hy = HAMLET
@@ -484,8 +493,11 @@ def camp(c, ground, taken):
         x, y = hx + 10.0 * math.cos(a), hy + 10.0 * math.sin(a)
         if L.wall_sd(x, y) > -10.0 or not paint.road_clear(c, x, y, 6.0):
             continue
-        c.place(hut, x, y, ground(x, y) - 0.1, rot=a + math.pi, scale=0.85, coll="Village")
+        vv.place_hut(c, k + 2, x, y, ground(x, y) - 0.1, a + math.pi, scale=0.85)
         taken.add(x, y, 5.0)
+        # (From its door to the fire.)
+        paths.append(vv.wander((x - 3.6 * math.cos(a), y - 3.6 * math.sin(a)),
+                               (hx + 2.6 * math.cos(a), hy + 2.6 * math.sin(a)), bend=1.2 * (-1) ** k, seed=k))
     # The camp's folk: about the hamlet's hearth, the well and the kart shed (their homes
     # for src/overworld/villagers.ts).
     for k, (x, y, n) in enumerate(((hx, hy - 6.0, 3), (WELL[0] - 4.0, WELL[1] - 5.0, 2), (SHED[0] + 6.0, SHED[1] - 8.0, 2))):
@@ -493,15 +505,22 @@ def camp(c, ground, taken):
         g = c.game(x, y, ground(x, y))
         c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=n, folk="valley",
                  heading=round(math.atan2(-math.cos(face), math.sin(face)), 3))
-    # Totems: tall carved ones flanking the way out of the square, and by the hamlet.
+    # Totems: tall carved ones flanking the way out of the square, and by the hamlet (carved
+    # in the game, as finely as the characters: Blake, notes 10 and 11).
     for k, (x, y, rot) in enumerate(((cx + cr + 3.0, cy - 8.0, -math.pi / 2), (cx + cr + 3.0, cy + 8.0, -math.pi / 2),
                                      (hx + 5.0, hy - 5.0, 0.9), (SHED[0] + 7.0, SHED[1] - 7.0, -0.8))):
-        c.place(rp.totem_pole(c, k % 2), x, y, ground(x, y) - 0.2, rot=rot, coll="Village")
+        vv.totem(c, x, y, ground(x, y) - 0.2, rot, k)
         taken.add(x, y, 2.0)
-    # The paths: from the square to the well and the hamlet, to the shed, and out to the
-    # gateway roads' huts.
-    paths.append([(cx, cy + cr - 2.0), WELL, HAMLET])
-    paths.append([(cx - cr + 4.0, cy + 6.0), (SHED[0] + 4.0, SHED[1] - 4.0)])
+    # The paths: from the square to the well and on to the hamlet, and to the shed.
+    sq = (cx, cy + cr - 2.0)
+    wd = math.hypot(WELL[0] - sq[0], WELL[1] - sq[1])
+    to_well = (WELL[0] - (WELL[0] - sq[0]) / wd * 4.2, WELL[1] - (WELL[1] - sq[1]) / wd * 4.2)
+    paths.append(vv.wander(sq, to_well, bend=1.5, seed=3))
+    hd = math.hypot(HAMLET[0] - WELL[0], HAMLET[1] - WELL[1])
+    from_well = (WELL[0] + (HAMLET[0] - WELL[0]) / hd * 4.2, WELL[1] + (HAMLET[1] - WELL[1]) / hd * 4.2)
+    to_ham = (HAMLET[0] - (HAMLET[0] - WELL[0]) / hd * 3.0, HAMLET[1] - (HAMLET[1] - WELL[1]) / hd * 3.0)
+    paths.append(vv.wander(from_well, to_ham, bend=-2.0, seed=5))
+    paths.append(vv.wander((cx - cr + 4.0, cy + 6.0), (SHED[0] + 4.0, SHED[1] - 4.0), bend=2.0, seed=7))
     return paths
 
 

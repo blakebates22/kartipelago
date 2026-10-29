@@ -42,6 +42,7 @@ import swamp_props as sp  # noqa: E402
 import bonebog_scenery as bs  # noqa: E402
 import valley_layout as L  # noqa: E402
 import valley_dress as vd  # noqa: E402
+import valley_village as vv  # noqa: E402
 import region_props as rp  # noqa: E402
 import region_textures as TX  # noqa: E402
 
@@ -343,11 +344,15 @@ def main():
             box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, L.CAMP_Z - 1.0, L.CAMP_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
             ruin.smoke(c, hx, hy, L.CAMP_Z + 2.5)
         else:
-            c.place(props.hut(c), hx, hy, L.CAMP_Z, rot=a + math.pi)
-        # (From its door to the fire, and on round to the next hut.)
-        dx, dy = hx + 4.0 * math.cos(a + math.pi), hy + 4.0 * math.sin(a + math.pi)
-        hut_paths.append([(dx, dy), (cx + 2.5 * math.cos(a), cy + 2.5 * math.sin(a))])
-    hut_paths.append([(cx + 3.0, cy), (cx + cr - 2.0, cy)])
+            vv.place_hut(c, k, hx, hy, L.CAMP_Z, a + math.pi)
+        # (From its door to the fire, curving a little: Blake, notes 1 and 3.)
+        dx, dy = hx + 4.2 * math.cos(a + math.pi), hy + 4.2 * math.sin(a + math.pi)
+        hut_paths.append(vv.wander((dx, dy), (cx + 6.4 * math.cos(a), cy + 6.4 * math.sin(a)), bend=1.4 * (-1) ** k, seed=k))
+    hut_paths.append(vv.wander((cx + 6.4, cy), (cx + cr - 1.0, cy), bend=0.8, seed=9))
+    # The Elder's fire in the middle of the camp, on a round of trodden earth where the
+    # paths all meet.
+    vv.plaza(c, cx, cy, 6.5, ground, name="Camp Plaza")
+    c.place(vv.hearth(c), cx, cy, ground(cx, cy) - 0.05, rot=0.3, coll="Village", role="visual")
     gx, gy, gz = c.game(cx, cy, L.CAMP_Z + 0.2)
     c.entity("campfire", x=gx, y=gy, z=gz)
     camp_taken = paint.Taken([(cx, cy, cr)])
@@ -368,13 +373,27 @@ def main():
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Off the water and out of the walls: Blake's notes 34 and 45, a hut half in the river
     # and one in a wall.)
-    homes = vh.homes(c, L, ground, "valley", vh.proto_house(lambda c, k: props.hut(c)), avoid=[(0.0, 3.0, 34.0)], wet=wet,
+    homes = vh.homes(c, L, ground, "valley", vv.house, avoid=[(0.0, 3.0, 34.0)], wet=wet,
                      wall=-15.0, skip=("ember", "gulch"))
     # Ember's folk in obsidian huts (Blake, note 30).
     homes += vh.homes(c, L, ground, "valley", vd.obsidian_house, pockets=["ember"], wet=wet, wall=-15.0, seed=13)
     dress(c, ground, spurs)
     vd.shade_walls(c, ter)
-    vd.paint_paths(c, ter, paths + [vd.home_path(x, y, c) for x, y, _ in homes])
+    # The paths, as ribbons laid on the land (Blake, Oct 28: the painted ones "look
+    # horrible"): the camp's, and each home's from its door to the road.
+    def path_look(x, y):
+        under = {"cascade": "jungle_leafcover", "bonebog": "bog_bank", "ember": "ash_soil"}.get(lobe_at(x, y), "valley_grass")
+        dirt = "scorched_ground" if under == "ash_soil" else "camp_earth"
+        return (dirt, "dirt"), (TX.blend_id(under, dirt, 50), "dirt")
+
+    def path_ground(x, y):
+        # (Up onto the road's shoulder and surface where a path runs in under it: Blake,
+        # Oct 28, a path stopping short of the road.)
+        z = ground(x, y)
+        r = c.ground_z(x, y, c.pieces)
+        return z if r is None else max(z, r)
+
+    vv.path_ribbons(c, paths + [vv.home_path(c, x, y, r) for x, y, r in homes], path_ground, look=path_look)
     vd.area_air(c)
 
     # (Raced too: the champion's challenge, once round the loop, from this line by the camp.)

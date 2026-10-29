@@ -85,6 +85,12 @@ PAIRS = [
     ("keep_path", "ember_path"),
     ("ember_path", "em_verge"),
     ("em_verge", "keep_path"),
+    # (The valley's footpaths' soft edges: valley_village.path_ribbons. Added last, so the
+    # others keep their seeds.)
+    ("valley_grass", "camp_earth"),
+    ("jungle_leafcover", "camp_earth"),
+    ("bog_bank", "camp_earth"),
+    ("ash_soil", "scorched_ground"),
 ]
 
 

@@ -240,6 +240,14 @@
       "z": -42.0
     },
     {
+      "id": "kart_wreck_01",
+      "type": "kart_wreck",
+      "x": -23.62,
+      "y": 25.76,
+      "z": -29.98,
+      "heading": 0.666
+    },
+    {
       "id": "villager_home_01",
       "type": "villager_home",
       "x": -4.0,
@@ -271,6 +279,42 @@
       "n": 2,
       "folk": "valley",
       "heading": -2.467
+    },
+    {
+      "id": "village_totem_01",
+      "type": "village_totem",
+      "x": 25.0,
+      "y": 26.08,
+      "z": 5.0,
+      "variant": 0,
+      "heading": -1.571
+    },
+    {
+      "id": "village_totem_02",
+      "type": "village_totem",
+      "x": 25.0,
+      "y": 26.25,
+      "z": -11.0,
+      "variant": 1,
+      "heading": -1.571
+    },
+    {
+      "id": "village_totem_03",
+      "type": "village_totem",
+      "x": 1.0,
+      "y": 25.82,
+      "z": -37.0,
+      "variant": 2,
+      "heading": 0.9
+    },
+    {
+      "id": "village_totem_04",
+      "type": "village_totem",
+      "x": -15.0,
+      "y": 25.8,
+      "z": -24.0,
+      "variant": 3,
+      "heading": -0.8
     },
     {
       "id": "torch_01",
@@ -906,6 +950,13 @@
       "heading": 2.129
     },
     {
+      "id": "chimney_01",
+      "type": "chimney",
+      "x": -166.89,
+      "y": 5.94,
+      "z": -48.33
+    },
+    {
       "id": "villager_home_06",
       "type": "villager_home",
       "x": -171.78,
@@ -917,7 +968,7 @@
       "heading": 2.419
     },
     {
-      "id": "chimney_01",
+      "id": "chimney_02",
       "type": "chimney",
       "x": 148.13,
       "y": 18.68,
@@ -935,7 +986,7 @@
       "heading": 2.862
     },
     {
-      "id": "chimney_02",
+      "id": "chimney_03",
       "type": "chimney",
       "x": 72.52,
       "y": 9.02,
@@ -1505,8 +1556,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "8dbd54104cdb934b6cce8df56e69fc13b4eda8b35581e7424e28d6db001c3ed0",
+    "valley_dress.py": "dbe5f7ad5bfc0bdf08c34a3e1e1560b5d5a0e042841998ae1f18c328ac113591",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "212e803932dce58c09b067fb7aaa22755f95aeef1049cc532f6a5c53041a1403"
+    "valley_region.py": "3e3b3df24402cf30b8bca2ae787cffde3b27d007ec9ff8bd116bdfcf7e7321ad",
+    "valley_village.py": "1dbf8a0fa3cc7098f3aad6a4d1766037fe15b6fbdf46e585fca0650b2a9a9ea1"
   }
 }

@@ -184,6 +184,13 @@
       "z": -209.56
     },
     {
+      "id": "chimney_01",
+      "type": "chimney",
+      "x": -16.43,
+      "y": 31.2,
+      "z": 1.16
+    },
+    {
       "id": "campfire_01",
       "type": "campfire",
       "x": 0.0,
@@ -210,6 +217,14 @@
       "x": -4.0,
       "y": 26.31,
       "z": -42.0
+    },
+    {
+      "id": "kart_wreck_01",
+      "type": "kart_wreck",
+      "x": -23.62,
+      "y": 25.76,
+      "z": -29.98,
+      "heading": 0.666
     },
     {
       "id": "villager_home_01",
@@ -243,6 +258,42 @@
       "n": 2,
       "folk": "valley",
       "heading": -2.467
+    },
+    {
+      "id": "village_totem_01",
+      "type": "village_totem",
+      "x": 25.0,
+      "y": 26.08,
+      "z": 5.0,
+      "variant": 0,
+      "heading": -1.571
+    },
+    {
+      "id": "village_totem_02",
+      "type": "village_totem",
+      "x": 25.0,
+      "y": 26.25,
+      "z": -11.0,
+      "variant": 1,
+      "heading": -1.571
+    },
+    {
+      "id": "village_totem_03",
+      "type": "village_totem",
+      "x": 1.0,
+      "y": 25.82,
+      "z": -37.0,
+      "variant": 2,
+      "heading": 0.9
+    },
+    {
+      "id": "village_totem_04",
+      "type": "village_totem",
+      "x": -15.0,
+      "y": 25.8,
+      "z": -24.0,
+      "variant": 3,
+      "heading": -0.8
     },
     {
       "id": "torch_01",
@@ -820,6 +871,13 @@
       "heading": 2.235
     },
     {
+      "id": "chimney_02",
+      "type": "chimney",
+      "x": -166.89,
+      "y": 5.94,
+      "z": -48.33
+    },
+    {
       "id": "villager_home_06",
       "type": "villager_home",
       "x": -171.78,
@@ -831,7 +889,7 @@
       "heading": 2.419
     },
     {
-      "id": "chimney_01",
+      "id": "chimney_03",
       "type": "chimney",
       "x": 148.13,
       "y": 18.68,
@@ -849,7 +907,7 @@
       "heading": 2.862
     },
     {
-      "id": "chimney_02",
+      "id": "chimney_04",
       "type": "chimney",
       "x": 72.52,
       "y": 8.86,

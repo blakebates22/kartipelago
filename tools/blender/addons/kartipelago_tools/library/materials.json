@@ -11787,6 +11787,114 @@
       "tileMetres": 5.0
     },
     {
+      "id": "tx_valley_grass__camp_earth_25",
+      "name": "Valley Grass to Camp Earth (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__camp_earth_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__camp_earth_50",
+      "name": "Valley Grass to Camp Earth (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__camp_earth_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_valley_grass__camp_earth_75",
+      "name": "Valley Grass to Camp Earth (75%)",
+      "theme": "river_valley",
+      "surface": "dirt",
+      "image": "tx_valley_grass__camp_earth_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_jungle_leafcover__camp_earth_25",
+      "name": "Jungle Leaf Cover to Camp Earth (25%)",
+      "theme": "jungle_cascade",
+      "surface": "grass",
+      "image": "tx_jungle_leafcover__camp_earth_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_jungle_leafcover__camp_earth_50",
+      "name": "Jungle Leaf Cover to Camp Earth (50%)",
+      "theme": "jungle_cascade",
+      "surface": "grass",
+      "image": "tx_jungle_leafcover__camp_earth_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_jungle_leafcover__camp_earth_75",
+      "name": "Jungle Leaf Cover to Camp Earth (75%)",
+      "theme": "jungle_cascade",
+      "surface": "dirt",
+      "image": "tx_jungle_leafcover__camp_earth_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_bog_bank__camp_earth_25",
+      "name": "Swamp Bank to Camp Earth (25%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_bank__camp_earth_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_bank__camp_earth_50",
+      "name": "Swamp Bank to Camp Earth (50%)",
+      "theme": "bonebog_swamp",
+      "surface": "grass",
+      "image": "tx_bog_bank__camp_earth_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_bog_bank__camp_earth_75",
+      "name": "Swamp Bank to Camp Earth (75%)",
+      "theme": "bonebog_swamp",
+      "surface": "dirt",
+      "image": "tx_bog_bank__camp_earth_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_ash_soil__scorched_ground_25",
+      "name": "Ash Soil to Scorched Ground (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "sand",
+      "image": "tx_ash_soil__scorched_ground_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
+      "id": "tx_ash_soil__scorched_ground_50",
+      "name": "Ash Soil to Scorched Ground (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "sand",
+      "image": "tx_ash_soil__scorched_ground_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
+      "id": "tx_ash_soil__scorched_ground_75",
+      "name": "Ash Soil to Scorched Ground (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "tx_ash_soil__scorched_ground_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.5
+    },
+    {
       "id": "giant_bark",
       "name": "Giant Bark",
       "theme": "jungle_cascade",
@@ -11819,6 +11927,114 @@
         "wavePeriod": 5,
         "lagoon": 1.0
       }
+    },
+    {
+      "id": "log_bark",
+      "name": "Log Bark",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "log_bark.png",
+      "wrap": "repeat",
+      "tileMetres": 1.6
+    },
+    {
+      "id": "log_cut",
+      "name": "Log Cut End",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "log_cut.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "daub_ochre",
+      "name": "Hut Daub (Ochre)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "daub_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 2.5
+    },
+    {
+      "id": "daub_cream",
+      "name": "Hut Daub (Cream)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "daub_cream.png",
+      "wrap": "repeat",
+      "tileMetres": 2.5
+    },
+    {
+      "id": "daub_rose",
+      "name": "Hut Daub (Rose)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "daub_rose.png",
+      "wrap": "repeat",
+      "tileMetres": 2.5
+    },
+    {
+      "id": "hut_door",
+      "name": "Hut Door",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "hut_door.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "thatch_dark",
+      "name": "Thatch (Old)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "thatch_dark.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "thatch_pale",
+      "name": "Thatch (Fresh Reed)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "thatch_pale.png",
+      "wrap": "repeat",
+      "tileMetres": 3
+    },
+    {
+      "id": "painted_hide",
+      "name": "Painted Hide",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "painted_hide.png",
+      "wrap": "repeat",
+      "tileMetres": 1.4
+    },
+    {
+      "id": "sign_repair_1",
+      "name": "Sign: Kart Repair (1/3)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "sign_repair_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_repair_2",
+      "name": "Sign: Kart Repair (2/3)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "sign_repair_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_repair_3",
+      "name": "Sign: Kart Repair (3/3)",
+      "theme": "river_valley",
+      "surface": "wall",
+      "image": "sign_repair_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     }
   ]
 }

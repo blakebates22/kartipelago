@@ -63,6 +63,7 @@ import {
 import { createBananaView } from "../render/bananaView";
 import { ENGINE_VOICE, type Sfx } from "../audio/sfx";
 import { createHazards, type HazardConfig } from "./hazards";
+import { createVillageDecor } from "../render/villageDecor";
 import { createLoops } from "./loops";
 import { createCheckpointView, type CheckpointView } from "../render/checkpointView";
 import { segmentProgress } from "../race/checkpoints";
@@ -621,6 +622,9 @@ function buildSession(
           },
         })
       : undefined;
+
+  // The village's carved totems and the kart taken apart in the shed (render/villageDecor.ts).
+  const decor = pkg ? createVillageDecor(root, pkg.meta.entities ?? []) : undefined;
 
   // A boss race's mechanic (game/bossMech.ts): the fire sweeps and vents, the crumbling
   // road. On you only: the boss is its master.
@@ -1937,6 +1941,7 @@ function buildSession(
     boostFx.dispose();
     abort.abort();
     hazards?.dispose();
+    decor?.dispose();
     bossMech?.dispose();
     aiDebug?.dispose();
     gateView?.dispose();

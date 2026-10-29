@@ -181,7 +181,7 @@ export function stagedSceneScreen(
   const walkAround = (from: [number, number], to: [number, number]) => {
     const clear = (a: [number, number], b: [number, number]) => {
       const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      const n = Math.max(2, Math.ceil(d / 0.75));
+      const n = Math.max(2, Math.ceil(d / 0.3));
       // (Not the ends: someone may stand by a wall to start with.)
       for (let i = 1; i < n; i++) {
         const x = a[0] + ((b[0] - a[0]) * i) / n;
