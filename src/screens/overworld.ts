@@ -29,6 +29,7 @@ import {
 } from "../overworld/regions";
 import type { Session } from "../game/session";
 import { trackById, type TrackEntry } from "../game/tracks";
+import { reviewScreen } from "../review/reviewScreen";
 import { worldById, worldOfTrack } from "../game/worlds";
 import { minigameById } from "../game/minigames";
 import { wrap } from "../ui/font";
@@ -991,9 +992,16 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     ...(caveAt ? [caveAt] : []),
   ];
 
+  // F2 (dev builds): the level review tool, as in the races.
+  const onKey = (e: KeyboardEvent) => {
+    if (!import.meta.env.DEV || e.code !== "F2" || e.repeat || game.screens.top !== screen) return;
+    e.preventDefault();
+    openRegionReview(game, session, region);
+  };
   const screen: Screen = {
     id: "OVERWORLD",
     enter() {
+      window.addEventListener("keydown", onKey);
       game.session = session;
       game.ui.interactive = false;
       drivenRegion = region;
@@ -1057,6 +1065,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       game.audio.music.duck(false);
     },
     exit() {
+      window.removeEventListener("keydown", onKey);
       gateways?.dispose();
       blockers?.dispose();
       crew?.dispose();
@@ -1515,6 +1524,24 @@ function passageCard(game: Game, p: Passage): Screen {
   };
 }
 
+/**
+ * The level review tool (dev builds), on the region you're driving: the same tool as
+ * the races' (F2, or REVIEW REGION in the pause menu), its notes filed under the
+ * region's package (the ruined one when it's ruined).
+ */
+function openRegionReview(game: Game, session: Session, region: Region) {
+  const story = Boolean(game.overworld?.adventure);
+  const ruined = regionRuined(game, region.id, story);
+  const pkg = (ruined && region.ruinPackageId) || region.packageId;
+  const base = trackById(pkg) ?? trackById(region.packageId);
+  const entry = {
+    ...(base ?? ({} as TrackEntry)),
+    id: pkg,
+    name: ruined ? `${region.name} (ruined)` : region.name,
+  } as TrackEntry;
+  game.screens.push(reviewScreen(game, session, entry));
+}
+
 function overworldPause(game: Game, region: Region, session: Session): Screen {
   const leave = () => {
     game.overworld = undefined;
@@ -1553,6 +1580,18 @@ function overworldPause(game: Game, region: Region, session: Session): Screen {
                 game.overworld = { region: region.id, ruined };
                 devState.delete(region.id);
                 game.screens.go(overworldLoading(game, region.id, undefined, false));
+              },
+            },
+          ]
+        : []),
+      // Dev builds: the level review tool, on this region.
+      ...(import.meta.env.DEV
+        ? [
+            {
+              label: "REVIEW REGION",
+              action: () => {
+                game.screens.pop();
+                openRegionReview(game, session, region);
               },
             },
           ]
