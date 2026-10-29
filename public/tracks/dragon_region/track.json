@@ -338,13 +338,6 @@
       "heading": -0.934
     },
     {
-      "id": "lantern_02",
-      "type": "lantern",
-      "x": -117.02,
-      "y": 10.64,
-      "z": 58.56
-    },
-    {
       "id": "steam_01",
       "type": "steam",
       "x": 95.85,

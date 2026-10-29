@@ -115,16 +115,17 @@ export function floatingIsland(
     const hgt = 3 + Math.round(Math.sin(x * 0.4) * 1);
     px(g, cx + x, cy - hgt, 1, hgt + 1, Math.abs(x) % 5 < 3 ? "#5aa874" : "#4f9a68");
   }
-  // Blossom trees and the tower.
+  // Two dark pines and the tower (not blossom: Blake, Oct 29).
   for (const tx of [-r * 0.7, r * 0.75]) {
-    px(g, cx + tx, cy - 7, 1, 4, "#5a3a22");
-    px(g, cx + tx - 3, cy - 11, 7, 4, "#f2a0c0");
-    px(g, cx + tx - 2, cy - 12, 5, 1, "#f8c0d8");
+    px(g, cx + tx, cy - 6, 1, 3, "#4a2e1a");
+    for (let k = 0; k < 4; k++)
+      px(g, cx + tx - 3 + k * 0.8, cy - 7 - k * 2, 7 - k * 1.6, 2, k % 2 ? "#2e5a3a" : "#3a6e44");
   }
   tower(g, cx - 2, cy - 2, 0.85);
 }
 
-/** Recolour part of the canyon wall as jade cliffs (the Dragon Kingdom's), with strata. */
+/** Recolour part of the canyon wall as the Dragon Kingdom's dark crags, with strata and a
+ * glow of embers in their cracks (not jade: Blake, Oct 29). */
 export function jadeCliff(
   g: G,
   x0: number,
@@ -134,8 +135,8 @@ export function jadeCliff(
 ) {
   for (let x = Math.floor(x0); x < x1; x++) {
     const y = Math.round(top(x));
-    px(g, x, y, 1, bottom - y, "#4f8a72");
-    px(g, x, y, 1, 2, "#8fd0a8");
+    px(g, x, y, 1, bottom - y, "#4a4250");
+    px(g, x, y, 1, 2, "#7a6e80");
     for (let k = 1; k < 9; k++)
       px(
         g,
@@ -143,8 +144,8 @@ export function jadeCliff(
         y + k * 9 + Math.round(Math.sin(x * 0.05 + k) * 1.5),
         1,
         2,
-        k % 2 ? "#3e7460" : "#5a9a80",
+        k % 2 ? "#3a3240" : "#564c5e",
       );
-    if (hash(x, 5) < 0.3) px(g, x, y + 2, 1, 4 + hash(x, 6) * 10, "#3d7a32");
+    if (hash(x, 5) < 0.12) px(g, x, y + 8 + hash(x, 7) * 40, 1, 3 + hash(x, 6) * 6, "#d8602a");
   }
 }

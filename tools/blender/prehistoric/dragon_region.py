@@ -22,6 +22,7 @@ from pocket_build import box, cone  # noqa: E402
 import keep_props as kp  # noqa: E402
 import villager_homes as vh  # noqa: E402
 import isles_props as ip  # noqa: E402
+import aurora_props as ap  # noqa: E402
 import cdf_props as cdp  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
@@ -259,19 +260,18 @@ def landmarks(c, ground, spots):
         cone(c, "Dragonspire Roof", kx, ky, 7.0, z0 + 48.0, 14.0, roof, segs=4, role="visual")
     gateway("canyon", ("limestone_moss", "wall"), towers=20.0, roof=("lush_grass", "wall"))
     gateway("hold", ("fortress_wall", "wall"), height=16.0, towers=30.0)
-    # The moon gate: a ring of stone among violet lanterns.
+    # The moon gate: two standing stones and a lintel over them (Blake, Oct 29: not the old
+    # round Chinese moon gate), moonstone glowing in the lintel.
     mx, my = DL.GATES["moon"]
     f = facing("moon")
     rot = f + math.pi / 2
     z0 = ground(mx - 6.0 * math.cos(f), my - 6.0 * math.sin(f))
-    for k in range(12):
-        t = k * math.tau / 12
-        bx, by = mx + 9.0 * math.cos(t) * math.cos(rot), my + 9.0 * math.cos(t) * math.sin(rot)
-        z = z0 + 9.0 + 9.0 * math.sin(t)
-        if z < z0 + 2.5 and abs(math.cos(t)) < 0.6:
-            continue
-        box(c, "Moon Gate %d" % k, bx, by, 1.6, 1.2, z - 1.2, z + 1.2, ("moon_stone", "wall"), rot=rot,
-            role="both" if z < z0 + 6 else "visual")
+    for sd in (-1, 1):
+        bx, by = mx + sd * 8.0 * math.cos(rot), my + sd * 8.0 * math.sin(rot)
+        box(c, "Moon Gate Stone %d" % sd, bx, by, 2.2, 1.8, z0 - 1.0, z0 + 14.0, ("moon_stone", "wall"), rot=rot)
+    box(c, "Moon Gate Lintel", mx, my, 11.0, 2.2, z0 + 14.0, z0 + 17.0, ("moon_stone", "wall"), rot=rot, role="visual")
+    box(c, "Moon Gate Moonstone", mx + 1.15 * math.cos(f), my + 1.15 * math.sin(f), 1.4, 0.15, z0 + 14.6, z0 + 16.4,
+        ("crystal_violet2", "wall"), rot=rot, role="visual")
     x, y, z0, f = gateway("citadel", ("keep_ashlar_dark", "wall"), width=10.0, height=18.0, towers=26.0 if RUIN else 44.0,
                           roof=None if RUIN else roof)
     kx, ky = x + 40.0 * math.cos(f), y + 40.0 * math.sin(f)
@@ -295,7 +295,7 @@ def ruined(c, ground, spots):
 
 def dress(c, ground, spots):
     """The paint pass, world by world: the harbour's boats and lanterns; Moonstone's
-    pagodas, blossom trees, stone lanterns and lantern strings; Dragonspire's houses,
+    watchtowers, moonstone crystals, pines and torch posts; Dragonspire's houses,
     banners and mountain pines; the Citadel's banners and braziers; Emberdeep's black walls,
     braziers and basalt; the Emerald Canyon's jungle, ruined temple blocks, roots."""
     taken = paint.Taken([(HUB[0], HUB[1], HUB[2] + 14.0), *((e[0], e[1], 16.0) for e, _ in spots.values()),
@@ -309,15 +309,20 @@ def dress(c, ground, spots):
 
     rmax = 480.0
     g = ground
-    # Moonstone.
+    # Moonstone (Blake, Oct 29: no more of the old Chinese look, its pagodas, pink blossom
+    # trees and garden lanterns): stone watchtowers, violet moonstone crystals growing out
+    # of the ground, dark pines, torch posts along the road.
     mo = look("moon")
-    paint.scatter(c, ip.pagoda(c, tiers=3, w=6.0, roof_mat="roof_jade"), 3, rmax, mo, g, taken, 10, room=14.0,
+    paint.scatter(c, kp.round_tower(c, r=3.2, h=14.0, roof=True, variant=1), 3, rmax, mo, g, taken, 10, room=14.0,
                   road_margin=10.0)
     for v in range(2):
-        paint.scatter(c, ip.blossom_tree(c, v), 12, rmax, mo, g, taken, 11 + v, room=6.0, road_margin=6.0, trunk=(0.7, 5.0))
-    for x, y in paint.scatter(c, ip.stone_lantern(c), 10, rmax, mo, g, taken, 13, room=6.0, near_road=(2.0, 5.0)):
-        gg = c.game(x, y, g(x, y) + 2.0)
-        c.entity("lantern", x=gg[0], y=gg[1], z=gg[2])
+        paint.scatter(c, ap.spire_cluster(c, v, height=7.0 + 3.0 * v, mat="crystal_violet2", accent="crystal_cyan"), 6, rmax,
+                      mo, g, taken, 11 + v, room=7.0, road_margin=6.0)
+        paint.scatter(c, kp.pine(c, v, 9.0 + 2.0 * v), 8, rmax, mo, g, taken, 14 + v, room=5.0, road_margin=6.0,
+                      trunk=(0.7, 6.0))
+    for x, y in paint.scatter(c, kp.torch_post(c), 10, rmax, mo, g, taken, 13, room=6.0, near_road=(2.0, 5.0)):
+        gg = c.game(x, y, g(x, y) + 2.6)
+        c.entity("torch", x=gg[0], y=gg[1], z=gg[2])
     # Dragonspire's crag and the climb.
     ke = look("keep")
     for v in range(2):

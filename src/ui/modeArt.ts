@@ -293,32 +293,44 @@ function palm(g: G, x: number, y: number, s: number) {
 
 /** A Dragon Kingdom castle tower (Dragonspire Keep's look): a grey-violet stone tower on
  * a wall, battlements, lit windows, a slate cone spire and a crimson banner. */
+/** A tower of the Dragon Kingdom's citadel: dark basalt, embers glowing in its windows,
+ * a crown of horn-like spikes instead of a spire, a crimson banner. */
 function castleTower(g: G, x: number, y: number, s: number) {
   const wall = 22 * s;
-  px(g, x - wall / 2, y - 5 * s, wall, 6 * s, "#8e88a4");
-  px(g, x - wall / 2, y - 5 * s, wall, 1, "#b4aec6");
-  for (let k = 0; k < wall; k += 4 * s) px(g, x - wall / 2 + k, y - 7 * s, 2 * s, 2 * s, "#8e88a4");
+  px(g, x - wall / 2, y - 5 * s, wall, 6 * s, "#3e3640");
+  px(g, x - wall / 2, y - 5 * s, wall, 1, "#5a5060");
+  for (let k = 0; k < wall; k += 4 * s) px(g, x - wall / 2 + k, y - 7 * s, 2 * s, 2 * s, "#3e3640");
   const bw = 10 * s;
-  const bh = 20 * s;
+  const bh = 22 * s;
   const top = y - 5 * s - bh;
-  px(g, x - bw / 2, top, bw, bh, "#8a84a0");
-  px(g, x - bw / 2, top, 2 * s, bh, "#a49eb8");
-  px(g, x + bw / 2 - 2 * s, top, 2 * s, bh, "#6e6886");
-  for (let k = 0; k < 2; k++) px(g, x - s, top + 5 * s + k * 7 * s, 2 * s, 3 * s, "#ffd36a");
-  // Battlements.
-  px(g, x - bw / 2 - s, top - s, bw + 2 * s, 2 * s, "#9a94ae");
-  for (let k = 0; k < 4; k++)
-    px(g, x - bw / 2 - s + k * ((bw - s) / 3), top - 3 * s, 2 * s, 2 * s, "#9a94ae");
-  // The spire: a slate cone, lit on one side.
-  const sh = 14 * s;
-  for (let r = 0; r < sh; r++) {
-    const half = ((bw / 2) * (sh - r)) / sh;
-    px(g, x - half, top - 3 * s - r, half, 1, "#56628a");
-    px(g, x, top - 3 * s - r, half, 1, "#3e4a6e");
+  // The tower, widening a little to its foot, its stones lit on one side.
+  for (let r = 0; r < bh; r++) {
+    const half = bw / 2 + (r / bh) * s;
+    px(g, x - half, top + r, half * 2, 1, "#3a3240");
+    px(g, x - half, top + r, 2 * s, 1, "#564c5c");
   }
-  // A crimson banner from its tip.
-  const tip = top - 3 * s - sh;
-  px(g, x, tip - 4 * s, 1, 4 * s, "#3a2a2a");
+  for (let k = 0; k < 3; k++) {
+    px(g, x - s, top + 4 * s + k * 6 * s, 2 * s, 3 * s, k === 1 ? "#ff8a30" : "#ffb040");
+    px(g, x - s, top + 4 * s + k * 6 * s, 2 * s, s, "#ffe08a");
+  }
+  // The crown: spikes curving outward like horns.
+  px(g, x - bw / 2 - s, top - s, bw + 2 * s, 2 * s, "#2e2832");
+  for (let k = 0; k < 4; k++) {
+    const sx = x - bw / 2 + k * ((bw - s) / 3);
+    const hgt = (k === 1 || k === 2 ? 7 : 5) * s;
+    for (let r = 0; r < hgt; r++)
+      px(
+        g,
+        sx + ((k < 2 ? -1 : 1) * (r * r)) / (hgt * 3),
+        top - s - r,
+        Math.max(1, s * (1.6 - r / hgt)),
+        1,
+        "#2e2832",
+      );
+  }
+  // A crimson banner from its crown.
+  const tip = top - 8 * s;
+  px(g, x, tip - 4 * s, 1, 6 * s, "#2a1a1a");
   px(g, x + 1, tip - 4 * s, 4 * s, 2 * s, "#c8302a");
   px(g, x + 1, tip - 2 * s, 2 * s, s, "#a82420");
 }
@@ -352,33 +364,81 @@ function fern(g: G, x: number, y: number) {
 
 // ---------------------------------------------------------------- moving bits
 
-/** A serpent dragon gliding through the sky: a sine-wave body behind its head. */
+/** A dragon of the Dragon Kingdom flying over (Blake, Oct 29: not the long whiskered
+ * serpent, ours): a heavy crimson body with a gold belly, a horned head on a curved neck,
+ * a long tail with a spade at its end, and two great bat wings beating. */
 function skyDragon(g: G, W: number, t: number, calm: boolean) {
-  // Glides right to left across the right half of the sky, below the title.
+  // Flies right to left across the right half of the sky, below the title.
   const x0 = W * 0.42;
   const span = W + 110 - x0;
   const k = calm ? 0.6 : (t * 0.035) % 1;
   const hx = W + 10 - span * k;
-  const hy = 64 + Math.sin(t * 0.7) * 3;
-  // Body: segments trailing to the right of the head.
-  for (let i = 40; i >= 0; i--) {
-    const sx = hx + 6 + i * 2.2;
-    const sy = hy + 4 + Math.sin(i * 0.32 - t * 2.2) * 6 + i * 0.12;
-    const r = i < 3 ? 3 : Math.max(1.2, 3.4 - i * 0.05);
-    px(g, sx, sy - r, 3, r * 2, i % 3 ? "#5fb89a" : "#4aa086");
-    px(g, sx, sy - r, 3, 1, "#f2d36a"); // golden crest
-    px(g, sx, sy + r - 1, 3, 1, "#e8f4d8");
+  const beat = calm ? 0.4 : Math.sin(t * 5);
+  const hy = 64 + Math.sin(t * 0.7) * 3 - beat * 1.5;
+  const RED = "#b8322a";
+  const DARK = "#7a1e1a";
+  const GOLD = "#f2c64a";
+  // The tail: tapering behind, swaying, a spade at its tip.
+  for (let i = 0; i < 26; i++) {
+    const sx = hx + 16 + i * 1.6;
+    const sy = hy + 5 + Math.sin(i * 0.22 - t * 2) * 2.2 + i * 0.12;
+    const r = Math.max(0.6, 2.4 - i * 0.07);
+    px(g, sx, sy - r, 2, r * 2, i % 2 ? RED : DARK);
   }
-  // Head.
-  px(g, hx - 6, hy, 14, 7, "#5fb89a");
-  px(g, hx - 9, hy + 3, 5, 4, "#5fb89a");
-  px(g, hx - 9, hy + 6, 6, 1, "#e8f4d8");
-  px(g, hx - 3, hy + 1, 2, 2, "#ffd36a");
-  px(g, hx + 2, hy - 4, 2, 5, "#f2d36a"); // horns
-  px(g, hx + 5, hy - 3, 2, 4, "#f2d36a");
-  // Whiskers.
-  for (let i = 0; i < 8; i++)
-    px(g, hx - 10 - i, hy + 6 + Math.sin(i * 0.8 + t * 3) * 1.5, 1, 1, "#f2d36a");
+  const tx = hx + 16 + 26 * 1.6;
+  const ty = hy + 5 + Math.sin(26 * 0.22 - t * 2) * 2.2 + 3;
+  px(g, tx, ty - 3, 3, 6, DARK);
+  px(g, tx + 3, ty - 1, 2, 2, DARK);
+  // The far wing, behind the body.
+  wing(g, hx + 9, hy + 1, -beat, DARK, "#5a1612");
+  // The body: heavy, gold-bellied.
+  px(g, hx + 2, hy, 16, 8, RED);
+  px(g, hx + 3, hy + 6, 13, 3, GOLD);
+  px(g, hx + 4, hy - 1, 12, 1, DARK); // (spines along its back)
+  for (let i = 0; i < 6; i++) px(g, hx + 5 + i * 2, hy - 2, 1, 1, DARK);
+  // Legs tucked under.
+  px(g, hx + 5, hy + 8, 3, 2, DARK);
+  px(g, hx + 13, hy + 8, 3, 2, DARK);
+  // The neck, curving up, and the head: snout, jaw, horns sweeping back, a glowing eye.
+  px(g, hx - 2, hy - 2, 6, 6, RED);
+  px(g, hx - 5, hy - 4, 5, 5, RED);
+  px(g, hx - 11, hy - 4, 8, 4, RED);
+  px(g, hx - 11, hy - 1, 7, 2, DARK);
+  px(g, hx - 12, hy - 3, 1, 1, "#2a0a08");
+  px(g, hx - 7, hy - 4, 2, 1, "#ffd36a");
+  px(g, hx - 4, hy - 7, 1, 3, GOLD);
+  px(g, hx - 3, hy - 8, 2, 1, GOLD);
+  px(g, hx - 2, hy - 6, 1, 2, GOLD);
+  px(g, hx - 1, hy - 7, 2, 1, GOLD);
+  // A wisp of smoke from its nostril.
+  if (!calm) px(g, hx - 14 - ((t * 6) % 6), hy - 4 - ((t * 3) % 3), 2, 1, "#c8b8b0");
+  // The near wing, in front.
+  wing(g, hx + 8, hy + 2, beat, RED, DARK);
+}
+
+/** A bat wing from its shoulder (sx, sy), raised by `up` (-1..1): finger bones fanning
+ * out and the skin between, its trailing edge scalloped. */
+function wing(g: G, sx: number, sy: number, up: number, skin: string, bone: string) {
+  const reach = 22;
+  const lift = up * 14;
+  for (let f = 0; f < 4; f++) {
+    // Each finger, from the shoulder out and back.
+    const ex = sx + 6 + f * 5;
+    const ey = sy - lift * (1 - f * 0.18) - 6 + f * 2;
+    const n = 14;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      px(g, sx + (ex - sx) * u - u * reach * 0.15, sy + (ey - sy) * u, 1, 1, bone);
+    }
+    // The skin down to the next finger's root, scalloped.
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      const x = sx + (ex - sx) * u - u * reach * 0.15;
+      const y = sy + (ey - sy) * u;
+      const drop = (1 - u) * 3 + 2 + Math.sin(u * Math.PI) * 4 - (f === 3 ? 0 : 0);
+      px(g, x, y + 1, 1, drop, skin);
+    }
+  }
 }
 
 function clouds(g: G, W: number, t: number, calm: boolean) {
