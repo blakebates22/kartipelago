@@ -19,6 +19,7 @@ export type ScreenId =
   | "BOOT"
   | "TITLE"
   | "YOUR_CREW"
+  | "CAVE_TALK"
   | "CHARACTER_SELECT"
   | "MODE_SELECT"
   | "TRACK_SELECT"

@@ -13,6 +13,7 @@
  *
  * Leaving it clears game.overworld, so races go back to their usual menus.
  */
+import type { Folk } from "../render/villager";
 import * as THREE from "three";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
@@ -50,9 +51,13 @@ import {
   hereIn,
   launch,
   persist,
+  portrait,
+  portraitSlot,
   sceneScreen,
   youOf,
 } from "./adventure";
+import { CAST } from "../adventure/scenes";
+import { createPixelPortraits, type PixelPortraits } from "../ui/pixelPortraits";
 import {
   DRAGON,
   RAGE,
@@ -306,6 +311,11 @@ interface CaveNow {
   mode: "shut" | "games" | "tunnel";
   /** What the guards say at the gate. */
   say: string;
+  /** Said in a little scene of its own as you come up (Blake, Oct 29: "when I run into
+   * the sketchy guards before I have rex unlocked, i want it to be a proper cutscene"):
+   * the camera on the guards, each line in the text box with the guard's face. Which
+   * guard says it (0 or 1), and what. */
+  talk?: [number, string][];
 }
 
 function caveOf(game: Game, region: Region): CaveNow | undefined {
@@ -331,6 +341,11 @@ function caveOf(game: Game, region: Region): CaveNow | undefined {
             mode: "shut",
             // (Blake, Oct 28: the smugglers say it, not a menu hint.)
             say: `"NEVER SEEN YOU BEFORE. WE OPEN UP FOR ${champ}'S CREW, AND ONLY WITH ${champ} AT THE WHEEL."`,
+            talk: [
+              [0, "WHOA, WHOA. HOLD IT RIGHT THERE. NEVER SEEN YOU BEFORE."],
+              [1, `THIS CAVE OPENS FOR ${champ}'S CREW. AND ONLY WITH ${champ} AT THE WHEEL.`],
+              [0, `NO ${champ}, NO GAMES. GO ON, BEAT IT.`],
+            ],
           };
     case "escaped":
     case "restored":
@@ -416,14 +431,28 @@ function regionCave(game: Game, session: Session, region: Region) {
   session.root.add(group);
   let near = false;
   let banner = 0;
+  let wants = false;
   return {
     step(x: number, z: number, dt: number, t: number) {
       for (const [i, g] of guards.entries())
         g.v.update(g.x, groundAt(g.x, g.z), g.z, out + Math.PI + (i ? -0.2 : 0.2), 0, t);
       banner = Math.max(0, banner - dt);
       const now2 = Math.hypot(x - c.gate.x, z - c.gate.z) < c.gate.width + 5;
-      if (now2 && !near && now.say) banner = 4;
+      if (now2 && !near && now.talk) wants = true;
+      else if (now2 && !near && now.say) banner = 4;
       near = now2;
+    },
+    /** A scene to play now (the guards turning you away), once each time you come up. */
+    talk() {
+      if (!wants || !now.talk) return undefined;
+      wants = false;
+      return {
+        lines: now.talk,
+        gate: c.gate,
+        folk,
+        seeds: [7, 18],
+        guards: guards.map((g) => ({ x: g.x, z: g.z })),
+      };
     },
     draw(ui: UiLayer) {
       if (banner > 0)
@@ -443,6 +472,99 @@ function regionCave(game: Game, session: Session, region: Region) {
       rock.dispose();
       dark.dispose();
       for (const g of geos) g.dispose();
+    },
+  };
+}
+
+/** The guards at the smugglers' cave turning you away, as a little scene (Blake, Oct 29:
+ * "a proper cutscene", not a line of white text): the world held still, letterboxed, the
+ * camera low beside you on the two guards across the gate, each line in the text box
+ * with the guard's own face; ENTER for the next, ESC to skip. */
+function caveTalk(
+  game: Game,
+  session: Session,
+  t: {
+    lines: [number, string][];
+    gate: { x: number; z: number; heading: number };
+    folk: Folk;
+    seeds: number[];
+    guards: { x: number; z: number }[];
+  },
+): Screen {
+  let i = 0;
+  let tt = 0;
+  let pp: PixelPortraits | undefined;
+  const you = session.entrants[0]!;
+  const cam = new THREE.Vector3();
+  const look = new THREE.Vector3();
+  const done = () => {
+    pp?.dispose();
+    game.screens.pop();
+  };
+  return {
+    id: "CAVE_TALK",
+    seeThrough: true,
+    enter() {
+      game.ui.interactive = false;
+      pp = createPixelPortraits(game.stage.renderer);
+    },
+    frame(dt, actions) {
+      tt += dt;
+      for (const a of actions) {
+        if (a === "back") return done();
+        if (a === "confirm") {
+          const line = t.lines[i]![1];
+          if (Math.floor(tt * 50) < line.length) {
+            tt = 99;
+            continue;
+          }
+          i++;
+          tt = 0;
+          if (i >= t.lines.length) return done();
+          game.sounds.move();
+        }
+      }
+    },
+    render3d(alpha, frameSeconds) {
+      session.render(alpha, frameSeconds);
+      // Low beside you, the guards across the gate filling the shot, the speaker a little
+      // nearer the middle.
+      const s = you.state;
+      const gy = you.ground.at(t.gate.x, t.gate.z, PROBE_Y).height;
+      const who = t.guards[t.lines[Math.min(i, t.lines.length - 1)]![0]] ?? t.gate;
+      const dx = t.gate.x - s.x;
+      const dz = t.gate.z - s.z;
+      const d = Math.hypot(dx, dz) || 1;
+      const ux = dx / d;
+      const uz = dz / d;
+      // (In front of the gate on your side, a touch off centre, at a guard's eye height.)
+      cam.set(t.gate.x - ux * 5.2 + uz * 0.9, gy + 1.5, t.gate.z - uz * 5.2 - ux * 0.9);
+      look.set(who.x * 0.75 + t.gate.x * 0.25, gy + 0.7, who.z * 0.75 + t.gate.z * 0.25);
+      const c = game.stage.camera;
+      c.position.copy(cam);
+      c.lookAt(look);
+      c.updateMatrixWorld();
+      game.stage.render();
+      return true;
+    },
+    draw(ui) {
+      ui.rect(0, 0, ui.W, 22, "#000000");
+      ui.rect(0, ui.H - 22, ui.W, 22, "#000000");
+      const [g, text] = t.lines[Math.min(i, t.lines.length - 1)]!;
+      const bx = 10;
+      const bh = 54;
+      const by = ui.H - bh - 26;
+      const bw = ui.W - 20;
+      ui.panel(bx, by, bw, bh, "parchment", "ink");
+      const slot = portraitSlot(bx, by, bh);
+      portrait(ui, pp, CAST.guard!, undefined, slot.x, slot.y, ui.time, slot.size, {
+        folk: t.folk,
+        seed: t.seeds[g] ?? 7,
+      });
+      ui.text("SKETCHY GUARD", slot.tx, by + 6, { color: "#8a2a1a" });
+      wrap(text.slice(0, Math.floor(tt * 50)), bw - (slot.tx - bx) - 10)
+        .slice(0, 3)
+        .forEach((l, j) => ui.text(l, slot.tx, by + 18 + j * 10, { color: "#2a1a10" }));
     },
   };
 }
@@ -1104,6 +1226,12 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         return;
       }
       const s = session.entrants[0]!.state;
+      const talk = cave?.talk();
+      if (talk) {
+        s.speed = 0;
+        game.screens.push(caveTalk(game, session, talk));
+        return;
+      }
       blockers?.step(s.x, s.z, dt, clock);
       secret?.step(s.x, s.z, dt);
       villagers?.step(dt, clock, { x: s.x, z: s.z, speed: s.speed });
