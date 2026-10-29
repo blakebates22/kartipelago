@@ -788,8 +788,7 @@ function war(): Plate {
   };
 }
 
-/** 2. The oath, before the race: the King and the crews either side of the start line,
- * the oath's ring of light between them. */
+/** 2. The oath, before the race: the King and the crews either side of the start line. */
 function oath(): Plate {
   const k = new Kit();
   k.ground(["#b8c088", "#a0ac74"]);
@@ -807,10 +806,6 @@ function oath(): Plate {
     ["zephyr", 14, 5],
   ];
   for (const [id, x, z] of crew) k.racer(id, x, z, -Math.PI / 2 - 0.3, 0);
-  // The oath: a ring of light on the line between them.
-  const ring = k.glow(new THREE.TorusGeometry(2.6, 0.22, 6, 32), "#ffd070", 0.9);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.set(0, 0.5, 0);
   // Both sides' banners behind.
   for (const [x, c] of [
     [-22, "#8a2a20"],
@@ -833,7 +828,6 @@ function oath(): Plate {
       k.animate(dt);
       king.ground = 0;
       king.update("bow", t, t, look.set(0, 3, 0), false);
-      ring.rotation.z = t * 0.4;
       drift(camera, [0, 6, 32], [0, 5.5, 28], [0, 5, -3], t);
     },
     dispose: () => k.dispose(),
