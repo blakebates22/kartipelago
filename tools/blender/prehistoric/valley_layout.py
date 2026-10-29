@@ -182,7 +182,9 @@ def natural(x, y):
     # The rivers' channels and the lakes.
     d, wz = river_d(x, y)
     if d < RIVER_HW + 14:
-        h = lerp(h, wz - 1.4, smooth((RIVER_HW + 14 - d) / 14.0))
+        # (Deeper than it was, 1.4 m: the water and the sand under its shallow edge fought,
+        # Blake, Riverbend note 8, "perhaps we need to make the river deeper slightly".)
+        h = lerp(h, wz - 2.2, smooth((RIVER_HW + 14 - d) / 14.0))
     for px, py, pr in POOLS:
         dp = math.hypot(x - px, y - py)
         if dp < pr + 12:

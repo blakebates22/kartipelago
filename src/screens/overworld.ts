@@ -1074,7 +1074,13 @@ function buildGateways(
     const own = themes.includes(region.worldId) ? region.worldId : "prehistoric";
     const arch = createGatewayArch(session.root, {
       label: g.label,
-      theme: (g.lair ? "lair" : own) as ArchTheme,
+      // (The valley's volcano's gateway in its own basalt, no moss on it.)
+      theme: (g.lair
+        ? "lair"
+        : own === "prehistoric" &&
+            /ember|lava|volcan|crater/i.test(`${g.label} ${"track" in g ? g.track : ""}`)
+          ? "ember"
+          : own) as ArchTheme,
       glow: g.lair ? "#ff4a20" : (worldById(g.world)?.color ?? "#e0a040"),
       seed: i * 31 + Math.round(Math.abs(g.x) + Math.abs(g.z)),
     });

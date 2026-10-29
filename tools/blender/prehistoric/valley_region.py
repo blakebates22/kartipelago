@@ -218,7 +218,9 @@ def classify(c, n, info):
         if math.hypot(c.x - px, c.y - py) < pr + 6 and c.z < WATER_Z + 0.6:
             return ("bog_mud", "mud")
     d, wz = L.river_d(c.x, c.y)
-    if d < RIVER_HW + 3 and c.z < wz + 0.3:
+    # (Sand under all the water, out to the sheet's edge, not grass: Blake, Riverbend
+    # note 11.)
+    if d < RIVER_HW + 7 and c.z < wz + 0.35:
         return ("valley_sand", "water")  # (the river's wadeable)
     if RUIN and lobe != "bonebog" and burn(c.x, c.y) > 0.5:
         return ("scorched_ground", "dirt")
@@ -327,8 +329,10 @@ def main():
         # (On a little way into the gateway's mouth, so its end is in the dark of the
         # tunnel: Blake, Riverbend note 6, a green strip across the road before the gate.)
         into = (end[0] + ux * 7.0, end[1] + uy * 7.0)
+        # (Its shoulders in the road's own surface, not the world's grass: a green line ran
+        # along it into the gate, Blake, Riverbend note 4.)
         c.side_road(name.title() + " Road", line((ax, ay), into, z0=smp.p.z), look[2], "road",
-                    **{**trail, "shoulder_mat": look[3]})
+                    **{**trail, "shoulder_mat": (look[2], "dirt")})
     if RUIN:
         # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
         smp, _ = c.nearest(*L.SCAR)
@@ -454,8 +458,10 @@ def main():
         dx, dy = gxy[0] - end[0], gxy[1] - end[1]
         dl = math.hypot(dx, dy) or 1.0
         look = LOOK[lobe_at(*gxy)]
+        # (Wide enough, and on right into the mouth, to meet the tunnel's floor: no grass
+        # showing either side or between: Blake, Riverbend notes 3 and 4.)
         vv.road_apron(c, (end[0] - dx / dl * 14.0, end[1] - dy / dl * 14.0), end, (look[2], "road"), on_road,
-                      name=name.title() + " Gateway Apron")
+                      width=19.0, past=max(6.0, dl + 5.0), name=name.title() + " Gateway Apron")
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Off the water and out of the walls: Blake's notes 34 and 45, a hut half in the river
     # and one in a wall.)
@@ -597,6 +603,8 @@ def thresholds(c, ground):
         for p, q in ((s0 - 70.0, s0 - 2.0), (s1 + 2.0, s1 + 70.0)):  # (overlapping the bore: no skin left between)
             c.tunnel(rock, p, q, half=half + 1.0, height=70.0, pad=0.0, floor=-12.0)
         heap_strata(c, rock, kind, zr, top)
+        if kind in ("log", "temple") and not RUIN:
+            vd.ledge_greens(c, rock, ground, seed=len(name))
         if kind == "log":
             fallen_giant(c, s0, s1)
         elif kind == "lava":
@@ -734,11 +742,13 @@ def fallen_giant(c, s0, s1):
     vd.log_tunnel(c, s0, s1, ro, ri, lift)
     q = c.at(s0 - 6.0)
     # The horned skull over the mouth, carved finely in the game (Blake, Riverbend note 15:
-    # "completely redone and high fidelity ... too polygonal and cheap"):
-    # render/villageDecor.ts, a horned_skull entity.
+    # "completely redone and high fidelity"): render/villageDecor.ts, a horned_skull
+    # entity. (Smaller than it was, 1.8: its frill was wider than the cut through the rock
+    # over the road and was lost in the rock either side, so it didn't read as a
+    # triceratops: Blake, Riverbend note 7.)
     face = math.atan2(-q.t.y, -q.t.x)
     g = c.game(q.p.x, q.p.y, zc + ro + 0.2)
-    c.entity("horned_skull", x=g[0], y=g[1], z=g[2], scale=1.8, heading=round(math.atan2(math.cos(face), -math.sin(face)), 3))
+    c.entity("horned_skull", x=g[0], y=g[1], z=g[2], scale=1.1, heading=round(math.atan2(math.cos(face), -math.sin(face)), 3))
 
 
 def facing(spurs, name):
@@ -911,6 +921,8 @@ def dress(c, ground, spurs):
     vd.swamp(c, ground, taken)
     vd.ember(c, ground, taken)
     vd.banks(c, ground, taken)
+    if not RUIN:
+        vd.bridge_dress(c, lambda q: lobe_at(q.p.x, q.p.y) != "cascade", ground)
     vd.wall_life(c, ground, taken)
 
     tunnels = [tunnel_span(c, a, b) for _, _, a, b in L.TUNNELS]
@@ -986,7 +998,9 @@ def dress(c, ground, spurs):
     bog = lobe("bonebog")
 
     def shore(x, y):
-        return bog(x, y) and any(abs(math.hypot(x - px, y - py) - pr - 6) < 6 for px, py, pr in L.POOLS)
+        # (At the pools' edges, the water's, not out on the land: Blake, Riverbend note 10.)
+        return bog(x, y) and ground(x, y) < WATER_Z + 0.4 and any(abs(math.hypot(x - px, y - py) - pr - 7.0) < 2.0
+                                                                   for px, py, pr in L.POOLS)
 
     for v in range(2):
         vd.place_big(c, rp.swamp_tree(c, v), 24, (-rmax, rmax, -rmax, rmax), bog, ground, taken, 40 + v, room=6.0,
@@ -1042,10 +1056,13 @@ def dress(c, ground, spurs):
         return inside(x, y) and lobe_at(x, y) in ("riverbend", "cascade", "camp")
 
     for v in range(2):
-        paint.scatter(c, props.bush(c, v), 90, rmax, green, ground, taken, 50 + v, room=2.5, role="visual", scale=(0.7, 1.5))
-    paint.scatter(c, props.fern(c), 200, rmax, green, ground, taken, 54, room=1.5, role="visual")
+        paint.scatter(c, props.bush(c, v), 90, rmax, green, ground, taken, 50 + v, room=2.5, role="visual", scale=(0.7, 1.5),
+                      seat=1.0)
+    paint.scatter(c, props.fern(c), 200, rmax, green, ground, taken, 54, room=1.5, role="visual", seat=0.8)
+    # (Each set down on the lowest ground under it, its blossoms in the grass: none floating,
+    # Blake, Riverbend note 1.)
     paint.scatter(c, props.flowers(c), 180, rmax, lambda x, y: green(x, y) and lobe_at(x, y) != "cascade", ground, taken, 55,
-                  room=1.5, role="visual", sink=0.1)
+                  room=1.5, role="visual", sink=0.22, seat=1.6)
     if RUIN:
         ruin_kit.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree", "Great Tree"), chance=0.85,
                             threshold=0.3)

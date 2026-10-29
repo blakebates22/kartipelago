@@ -18,7 +18,8 @@
 import * as THREE from "three";
 import { createFire, glowTexture, type Fire } from "./fire";
 
-export type ArchTheme = "prehistoric" | "frostveil" | "desert" | "beach" | "dragon" | "lair";
+export type ArchTheme =
+  "prehistoric" | "ember" | "frostveil" | "desert" | "beach" | "dragon" | "lair";
 
 const THEMES: Record<
   ArchTheme,
@@ -40,6 +41,16 @@ const THEMES: Record<
     plank: "#7a5230",
     paint: "#f2c64a",
     edge: "#3a1e0c",
+  },
+  // (The volcano's: basalt with ash on its top, no green: Blake, Ember Peak note 8.)
+  ember: {
+    rock: "#5a4a44",
+    dark: "#2a201c",
+    band: "#6e5a50",
+    cap: "#8a8078",
+    plank: "#5a3a26",
+    paint: "#ffb04a",
+    edge: "#240c04",
   },
   frostveil: {
     rock: "#8e9aa8",
@@ -243,16 +254,25 @@ function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
       out.set(ca * rad, sa * rad * 1.08 + 0.2, 1.6 - k * k * 0.8);
     } else {
       const k = (v - 0.25) / 0.75;
-      // An ellipsoid behind the face: wide, tall at the front, falling away behind.
+      // An ellipsoid behind the face: wide, tall at the front, falling away behind, and
+      // closed right over at the back (it was open there, the black tunnel showing
+      // through: Blake, Riverbend note 9, "cover this back on all of these").
       const ang = k * Math.PI * 0.5;
-      const rad = 11.2 * Math.cos(ang * 0.85) + 2;
-      out.set(ca * rad, sa * (rad * 1.08 + 0.2) * (1 - 0.15 * k), 0.8 - Math.sin(ang) * 15);
+      const rad = 13.2 * Math.pow(Math.cos(ang), 0.75);
+      out.set(ca * rad, sa * (rad * 1.08 + 0.2) * (1 - 0.15 * k), 0.8 - Math.sin(ang) * 19);
     }
     // Weathering: lumps and ledges.
+    // (More of it, finer, and ledges stepped out along the strata: it read flat, "too
+    // planar": Blake, Riverbend note 2.)
+    const w0 = n(out.x * 0.3, out.y * 0.1, out.z * 0.3) * 0.6;
+    const bed = (out.y * 0.42 + w0) % 1;
+    const ledge = bed > 0.82 ? (bed - 0.82) * 6 : bed < 0.1 ? 1 - bed * 4 : 0;
     const d =
-      n(out.x * 0.2, out.y * 0.2, out.z * 0.2) * 1.6 +
-      n(out.x * 0.55, out.y * 0.55, out.z * 0.55) * 0.6 +
-      n(out.x * 1.3, out.y * 1.3, out.z * 1.3) * 0.18;
+      n(out.x * 0.2, out.y * 0.2, out.z * 0.2) * 1.8 +
+      n(out.x * 0.55, out.y * 0.55, out.z * 0.55) * 0.7 +
+      n(out.x * 1.3, out.y * 1.3, out.z * 1.3) * 0.28 +
+      n(out.x * 2.9, out.y * 2.9, out.z * 2.9) * 0.1 +
+      (v > 0.25 ? Math.max(0, ledge) * 0.55 : 0);
     const nx = v <= 0.25 ? 0 : ca;
     const ny = v <= 0.25 ? 0 : sa;
     const nz = v <= 0.25 ? 1 : 0.4;
@@ -262,8 +282,8 @@ function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
     if (out.y < 0.05) out.y = -0.6; // (its feet sunk in the ground)
     return out;
   };
-  const NU = 48;
-  const NV = 30;
+  const NU = 84;
+  const NV = 52;
   const grid: THREE.Vector3[][] = [];
   for (let i = 0; i <= NU; i++) {
     const row: THREE.Vector3[] = [];
@@ -345,17 +365,33 @@ export function createGatewayArch(
     }),
   );
   group.add(new THREE.Mesh(geo(rockMass(th, o.seed % 97)), rockMat));
-  // A few stones fallen at its feet.
+  // Stones fallen at its feet, and boulders tumbled against its flanks.
   const stoneMat = keep(new THREE.MeshLambertMaterial({ color: th.rock, flatShading: true }));
-  for (const sd of [-1, 1])
-    for (let k = 0; k < 3; k++) {
-      const s = 0.6 + r() * 0.9;
-      const st = new THREE.Mesh(geo(new THREE.IcosahedronGeometry(s, 1)), stoneMat);
-      st.position.set(sd * (8.8 + r() * 4), s * 0.3, 2.5 + r() * 3.5);
+  const darkStone = keep(new THREE.MeshLambertMaterial({ color: th.band, flatShading: true }));
+  for (const sd of [-1, 1]) {
+    for (let k = 0; k < 4; k++) {
+      const s = 0.5 + r() * 0.9;
+      const st = new THREE.Mesh(
+        geo(new THREE.IcosahedronGeometry(s, 1)),
+        k % 2 ? darkStone : stoneMat,
+      );
+      st.position.set(sd * (8.8 + r() * 4.5), s * 0.3, 2.0 + r() * 4);
       st.rotation.set(r() * 3, r() * 3, r() * 3);
       st.scale.set(1, 0.6 + r() * 0.3, 1);
       group.add(st);
     }
+    for (let k = 0; k < 3; k++) {
+      const s = 1.6 + r() * 1.4;
+      const st = new THREE.Mesh(
+        geo(new THREE.DodecahedronGeometry(s, 1)),
+        k % 2 ? stoneMat : darkStone,
+      );
+      st.position.set(sd * (11.5 + r() * 2.5), s * 0.35, -3 - k * 4.5 - r() * 2);
+      st.rotation.set(r() * 3, r() * 3, r() * 3);
+      st.scale.set(1.2, 0.75, 1);
+      group.add(st);
+    }
+  }
   // The hole: a dark tunnel back into the rock, the course's glow deep inside.
   const inside = keep(new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide }));
   const tunnel = new THREE.Mesh(
@@ -371,12 +407,25 @@ export function createGatewayArch(
   );
   back.position.set(0, 0.2, -12.5);
   group.add(back);
-  // The tunnel's floor, dark going in (not the grass outside running on in): from a
-  // little way inside, under the overhang, back to the end.
-  const floor = new THREE.Mesh(
-    geo(new THREE.PlaneGeometry(13, 10)),
-    keep(new THREE.MeshBasicMaterial({ color: 0x0a0806 })),
-  );
+  // The tunnel's floor (not the grass outside running on in): trodden earth at the mouth,
+  // darkening only deep inside (it was black right to the mouth: Blake, Bonebog note 21,
+  // "lets not have any black on the floor here").
+  const floorGeo = geo(new THREE.PlaneGeometry(13, 10, 1, 8));
+  {
+    const earth = new THREE.Color(th.dark).lerp(new THREE.Color(th.rock), 0.35);
+    const deep = new THREE.Color(0x0a0806);
+    const fp = floorGeo.getAttribute("position");
+    const fc: number[] = [];
+    const c = new THREE.Color();
+    for (let i = 0; i < fp.count; i++) {
+      // (Laid flat, the plane's -y edge is at the mouth, its +y edge deep inside.)
+      const t = Math.min(1, Math.max(0, (fp.getY(i) + 5) / 10) * 1.4);
+      c.copy(earth).lerp(deep, t * t);
+      fc.push(c.r, c.g, c.b);
+    }
+    floorGeo.setAttribute("color", new THREE.Float32BufferAttribute(fc, 3));
+  }
+  const floor = new THREE.Mesh(floorGeo, keep(new THREE.MeshBasicMaterial({ vertexColors: true })));
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(0, 0.22, -7.8);
   group.add(floor);

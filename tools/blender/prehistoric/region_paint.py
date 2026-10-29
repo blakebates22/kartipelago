@@ -51,14 +51,16 @@ def trunk_proto(c, r, h):
 
 
 def scatter(c, proto, n, rmax, ok, ground, taken, seed, room=3.0, scale=(0.8, 1.3), role="both", sink=0.2,
-            near_road=None, tries=60, instead=None, road_margin=3.0, trunk=None):
+            near_road=None, tries=60, instead=None, road_margin=3.0, trunk=None, seat=None):
     """Up to `n` copies of `proto` at random spots within `rmax` of the middle where
     ok(x, y) holds, `room` metres clear of everything taken (they're taken in turn).
     `near_road` (m0, m1): only that far from a road's edge, e.g. lining it. `instead(x,
     y, z, scale)`: put something else at each of the same spots (a ruin's wreck of it).
     `trunk` (radius, height): a tree: it's only seen, and a plain post round its trunk is
     what a kart hits (its boughs' sloping faces would be floors a kart could drive up
-    onto, and get caught under)."""
+    onto, and get caught under). `seat`: its spread (m, at scale 1): it's set down on the
+    lowest ground under it, so no part of it floats on a slope (Blake, Riverbend note 1:
+    "no floating flowers ... throughout the entire overworld")."""
     rnd = random.Random(seed)
     placed = []
     for _ in range(n * tries):
@@ -76,14 +78,18 @@ def scatter(c, proto, n, rmax, ok, ground, taken, seed, room=3.0, scale=(0.8, 1.
             continue
         s = rnd.uniform(*scale)
         rot = rnd.uniform(0, math.tau)
+        gz = ground(x, y)
+        if seat:
+            gz = min([gz] + [ground(x + seat * s * math.cos(t), y + seat * s * math.sin(t))
+                             for t in (0.0, 1.05, 2.09, 3.14, 4.19, 5.24)])
         if instead:
             instead(x, y, ground(x, y), s)
         else:
             if trunk:
-                c.place(proto, x, y, ground(x, y) - sink, rot=rot, scale=s, role="visual")
-                c.place(trunk_proto(c, *trunk), x, y, ground(x, y) - sink, scale=s, coll="Collision", role="collision")
+                c.place(proto, x, y, gz - sink, rot=rot, scale=s, role="visual")
+                c.place(trunk_proto(c, *trunk), x, y, gz - sink, scale=s, coll="Collision", role="collision")
             else:
-                c.place(proto, x, y, ground(x, y) - sink, rot=rot, scale=s, role=role)
+                c.place(proto, x, y, gz - sink, rot=rot, scale=s, role=role)
         taken.add(x, y, room * 0.5)
         placed.append((x, y))
     return placed

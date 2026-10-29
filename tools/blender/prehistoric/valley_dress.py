@@ -11,6 +11,7 @@ import random
 import course_kit as kit
 from course_kit import Vector, bmesh, lerp, smooth
 import props
+import gulch_scenery as gs
 import swamp_props as sp
 import region_props as rp
 import region_paint as paint
@@ -259,9 +260,10 @@ def water(c, ground=None):
             n = max(1, int(math.hypot(bx - ax, by - ay) / 3.0))
             for k in range(n):
                 t = k / n
-                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 8, lerp(az, bz, t) - 0.1))
-        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 8, riv[-1][2] - 0.1))
-        ob = c.ribbon("River %d" % j, river, 2 * RIVER_HW + 8, 0, mat, role="visual", steps=8)
+                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 12, lerp(az, bz, t) - 0.1))
+        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 12, riv[-1][2] - 0.1))
+        # (Wide enough to cover the low grass along its banks: Blake, Riverbend note 11.)
+        ob = c.ribbon("River %d" % j, river, 2 * RIVER_HW + 12, 0, mat, role="visual", steps=10)
         depth_paint(ob, lambda x, y: 1.0 - L.river_d(x, y)[0] / (RIVER_HW + 3.0))
         if ground:
             tuck(ob, ground, lambda x, y: L.river_d(x, y)[0] > RIVER_HW - 1.0)
@@ -313,31 +315,6 @@ def banks(c, ground, taken):
     segs = []
     for riv in L.RIVERS:
         segs += list(zip(riv, riv[1:]))
-    for k in range(900):
-        (ax, ay, az), (bx, by, bz) = segs[rnd.randrange(len(segs))]
-        t = rnd.random()
-        x, y, wz = lerp(ax, bx, t), lerp(ay, by, t), lerp(az, bz, t)
-        dx, dy = bx - ax, by - ay
-        d = math.hypot(dx, dy)
-        nx, ny = -dy / d, dx / d
-        side = 1 if rnd.random() < 0.5 else -1
-        off = RIVER_HW * rnd.uniform(0.55, 1.25)
-        px, py = x + nx * side * off, y + ny * side * off
-        if not paint.road_clear(c, px, py, 3.5) or not taken.clear(px, py, 1.0):
-            continue
-        g = ground(px, py)
-        if off > RIVER_HW * 0.95 and g > wz - 1.0:
-            c.place(clumps[k % 3] if k % 4 else reeds, px, py, max(g, wz - 0.4), rot=rnd.uniform(0, math.tau),
-                    scale=rnd.uniform(0.8, 1.4), coll="Water Life", role="visual")
-            n[0] += 1
-        elif off < RIVER_HW * 0.9 and g < wz - 0.5 and k % 2 == 0:
-            for m in range(3 + k % 3):
-                a, r = rnd.uniform(0, math.tau), rnd.uniform(0, 3.0)
-                qx, qy = px + r * math.cos(a), py + r * math.sin(a)
-                bloom = m == 0 and k % 4 == 0
-                c.place(lotus if bloom else pads[(k + m) % 3], qx, qy, wz - 0.08, rot=rnd.uniform(0, math.tau),
-                        scale=(1.3 if bloom else 0.8) + 0.6 * rnd.random(), coll="Water Life", role="visual")
-                n[1] += 1
     # Logs: fallen in from the banks, half in the water.
     for j, riv in enumerate(L.RIVERS):
         for k in range(len(riv) - 1):
@@ -350,14 +327,44 @@ def banks(c, ground, taken):
             if paint.road_clear(c, px, py, 5.0) and taken.clear(px, py, 3.0):
                 c.place(logs[k % 2], px, py, lerp(az, bz, 0.5) - 0.55, rot=math.atan2(dy, dx) + side * 0.9,
                         scale=1.1, coll="Water Life", role="visual")
+                taken.add(px, py, 4.5)  # (nothing growing up through it: Blake, Riverbend note 12)
                 n[2] += 1
+    for k in range(900):
+        (ax, ay, az), (bx, by, bz) = segs[rnd.randrange(len(segs))]
+        t = rnd.random()
+        x, y, wz = lerp(ax, bx, t), lerp(ay, by, t), lerp(az, bz, t)
+        dx, dy = bx - ax, by - ay
+        d = math.hypot(dx, dy)
+        nx, ny = -dy / d, dx / d
+        side = 1 if rnd.random() < 0.5 else -1
+        off = RIVER_HW * rnd.uniform(0.55, 1.08)
+        px, py = x + nx * side * off, y + ny * side * off
+        # (Clear of the bridges too: cattails grew up through one, Riverbend note 5.)
+        if not paint.road_clear(c, px, py, 5.5) or not taken.clear(px, py, 1.0):
+            continue
+        g = ground(px, py)
+        # (Right at the water's edge or in the shallows, never up on the land: Blake,
+        # Riverbend note 10, "check all cat tails".)
+        if RIVER_HW * 0.85 < off < RIVER_HW * 1.04 and wz - 0.8 < g < wz + 0.3:
+            c.place(clumps[k % 3] if k % 4 else reeds, px, py, max(g, wz - 0.4), rot=rnd.uniform(0, math.tau),
+                    scale=rnd.uniform(0.8, 1.4), coll="Water Life", role="visual")
+            n[0] += 1
+        elif off < RIVER_HW * 0.9 and g < wz - 0.5 and k % 2 == 0:
+            for m in range(3 + k % 3):
+                a, r = rnd.uniform(0, math.tau), rnd.uniform(0, 3.0)
+                qx, qy = px + r * math.cos(a), py + r * math.sin(a)
+                bloom = m == 0 and k % 4 == 0
+                c.place(lotus if bloom else pads[(k + m) % 3], qx, qy, wz - 0.08, rot=rnd.uniform(0, math.tau),
+                        scale=(1.3 if bloom else 0.8) + 0.6 * rnd.random(), coll="Water Life", role="visual")
+                n[1] += 1
     # Round the lakes too.
     for k, (lx, ly, lr, lz) in enumerate(L.LAKES):
+        lgx, lgy = lx + (lr - 2.0) * math.cos(0.7 + k), ly + (lr - 2.0) * math.sin(0.7 + k)
         for m in range(26):
             a = m * 2.39996 + k
-            r = lr + rnd.uniform(-1.5, 3.0)
+            r = lr + rnd.uniform(-1.2, 0.6)
             x, y = lx + r * math.cos(a), ly + r * math.sin(a)
-            if paint.road_clear(c, x, y, 3.0):
+            if paint.road_clear(c, x, y, 5.5) and ground(x, y) < lz + 0.3 and math.hypot(x - lgx, y - lgy) > 5.0:
                 c.place(clumps[m % 3], x, y, max(ground(x, y), lz - 0.4), rot=a * 3.0, scale=rnd.uniform(0.9, 1.4),
                         coll="Water Life", role="visual")
                 n[0] += 1
@@ -442,7 +449,7 @@ def grand_falls(c, j, name):
         r = wide * rnd.uniform(1.05, 1.3)
         x, y = fx + math.cos(a) * r + ux * 3.0, fy + math.sin(a) * r + uy * 3.0
         if k % 2:
-            c.place(props.cattails(c, k % 3), x, y, foot - 0.3, rot=rnd.uniform(0, math.tau), coll="Water Life", role="visual")
+            continue  # (no cattails out past the pool, up on the land: Blake, Riverbend note 10)
         else:
             c.place(props.lily_pad(c, k % 3), x, y, foot - 0.02, rot=rnd.uniform(0, math.tau), coll="Water Life",
                     role="visual")
@@ -674,7 +681,8 @@ def pact_stone_ground(c, ground):
         x, y = sx + r * math.cos(a), sy + r * math.sin(a)
         if not paint.road_clear(c, x, y, 1.5) or RUIN:
             continue
-        c.place(fl, x, y, ground(x, y) - 0.05, rot=a, scale=0.8, coll="Village", role="visual")
+        foot = min(ground(x + 1.2 * math.cos(t), y + 1.2 * math.sin(t)) for t in (0.0, 2.1, 4.2))
+        c.place(fl, x, y, min(foot, ground(x, y)) - 0.18, rot=a, scale=0.8, coll="Village", role="visual")
     if not RUIN:
         bowl = rp.offering_bowl(c)
         for i, a in enumerate((2.0, 2.45, 2.85)):
@@ -1229,3 +1237,135 @@ def shade_walls(c, ter):
     cols = np.ones((nl, 4), np.float32)
     cols[:, :3] = vcol[vi]
     ca.data.foreach_set("color", cols.ravel())
+
+
+def ledge_greens(c, ob, ground, seed=5, step=2.2, every=0.55):
+    """Ferns and shrubs along a rock's ledges (Blake, Riverbend note 14, "line this ledge
+    with shrubs and ferns"; Cascade notes 17 and 18, ferns on the temple steps' ledges):
+    wherever its top steps down (a flat that a few metres on falls away or ends), up off
+    the ground at its foot, now and then a fern or a shrub, set into the rock a little."""
+    mw = ob.matrix_world
+    inv = mw.inverted()
+    down = (inv.to_3x3() @ Vector((0, 0, -1))).normalized()
+
+    def hit(x, y):
+        ok, loc, nrm, _ = ob.ray_cast(inv @ Vector((x, y, 600.0)), down)
+        if not ok:
+            return None
+        return mw @ loc, (mw.to_3x3() @ nrm).normalized()
+
+    rnd = random.Random(seed)
+    pts = [mw @ Vector(b) for b in ob.bound_box]
+    x0, x1 = min(p.x for p in pts), max(p.x for p in pts)
+    y0, y1 = min(p.y for p in pts), max(p.y for p in pts)
+    fern, bushes = props.fern(c), [props.bush(c, v) for v in range(2)]
+    n = 0
+    y = y0
+    while y < y1:
+        x = x0
+        while x < x1:
+            h = hit(x, y)
+            x += step
+            if h is None or h[1].z < 0.8 or rnd.random() > every:
+                continue
+            p = h[0]
+            if p.z < ground(p.x, p.y) + 1.5 or not paint.road_clear(c, p.x, p.y, 3.0):
+                continue
+            edge = False
+            for t in range(8):
+                a = t * math.tau / 8
+                h2 = hit(p.x + 2.6 * math.cos(a), p.y + 2.6 * math.sin(a))
+                if h2 is None or h2[0].z < p.z - 1.2:
+                    edge = True
+                    break
+            if not edge:
+                continue
+            proto = fern if rnd.random() < 0.55 else bushes[rnd.randrange(2)]
+            c.place(proto, p.x, p.y, p.z - 0.15, rot=rnd.uniform(0, math.tau), scale=rnd.uniform(0.8, 1.3), coll="Props",
+                    role="visual")
+            n += 1
+        y += step
+    print("%s: %d ferns and shrubs on its ledges" % (ob.name, n))
+    return n
+
+
+def bridge_dress(c, keep, ground, every=3.6):
+    """The timber bridges made something (Blake, Riverbend note 6: "a higher def bridge
+    here to add some flair ... make it come more alive"): stout posts along both rails
+    with rope slung between their tops, a tall carved post with a torch at each corner,
+    and under the deck pilings down into the river, braced across, every few metres.
+    `keep(q)`: which of the road's bridge stretches (by a sample on it)."""
+    post = "Bridge Post"
+
+    def post_build(bm):
+        props.tube(bm, [(0, 0, -0.4), (0, 0, 1.75)], [0.2, 0.18], n=7)
+        props.tube(bm, [(0, 0, 1.75), (0, 0, 1.95)], [0.24, 0.1], n=7)
+        return [(c.lib("palm_bark", "wall"), list(range(len(bm.faces))))]
+
+    c.proto(post, post_build)
+    tall = "Bridge Torch Post"
+
+    def tall_build(bm):
+        k0 = len(bm.faces)
+        props.tube(bm, [(0, 0, -0.4), (0, 0, 3.2)], [0.3, 0.24], n=8)
+        bark = list(range(k0, len(bm.faces)))
+        k1 = len(bm.faces)
+        for z in (0.9, 1.6, 2.3):  # carved bands
+            props.tube(bm, [(0, 0, z), (0, 0, z + 0.16)], [0.34, 0.34], n=8)
+        paint_ = list(range(k1, len(bm.faces)))
+        k2 = len(bm.faces)
+        props.tube(bm, [(0, 0, 3.15), (0, 0, 3.55)], [0.2, 0.42], n=8)  # the cup the fire burns in
+        cup = list(range(k2, len(bm.faces)))
+        return [(c.lib("palm_bark", "wall"), bark), (c.lib("tribal_paint", "wall"), paint_), (c.lib("charred_bark", "wall"), cup)]
+
+    c.proto(tall, tall_build)
+    rope = gs.Mesh()
+    under = gs.Mesh()
+    runs, cur = [], []
+    for q in c.S:
+        if not q.ground and keep(q):
+            cur.append(q)
+        elif cur:
+            runs.append(cur)
+            cur = []
+    if cur:
+        runs.append(cur)
+    n = 0
+    for run in runs:
+        if len(run) < 6:
+            continue
+        L_ = run[-1].s - run[0].s
+        k = max(2, int(round(L_ / every)))
+        picks = [run[min(len(run) - 1, int(round(i * (len(run) - 1) / k)))] for i in range(k + 1)]
+        for sd in (-1, 1):
+            tops = []
+            for i, q in enumerate(picks):
+                end = i in (0, len(picks) - 1)
+                x, y = q.p.x + q.r.x * sd * (q.w / 2 + 0.35), q.p.y + q.r.y * sd * (q.w / 2 + 0.35)
+                c.place(tall if end else post, x, y, q.p.z, rot=q.s, coll="Bridges", role="visual")
+                if end:
+                    g = c.game(x, y, q.p.z + 3.7)
+                    c.entity("torch", x=g[0], y=g[1], z=g[2])
+                tops.append((x, y, q.p.z + (2.9 if end else 1.85)))
+            for a, b in zip(tops, tops[1:]):
+                mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 - 0.35)
+                rope.add(("rope_rail", "wall"), lambda bm, pts=[a, mid, b]: props.tube(bm, pts, 0.05, n=4))
+        # Pilings and braces under the deck, down into the water.
+        for q in picks[1:-1]:
+            z_top = q.p.z - 1.6
+            zb = min(ground(q.p.x, q.p.y), z_top - 2.0) - 1.0
+            ends = []
+            for sd in (-1, 1):
+                x, y = q.p.x + q.r.x * sd * (q.w / 2 - 0.6), q.p.y + q.r.y * sd * (q.w / 2 - 0.6)
+                under.add(("palm_bark", "wall"), lambda bm, x=x, y=y, zb=zb, zt=z_top: props.tube(bm, [(x, y, zb), (x, y, zt)], 0.32, n=7))
+                ends.append((x, y))
+            (ax, ay), (bx, by) = ends
+            pa, pb_ = (ax, ay, z_top - 0.4), (bx, by, z_top - 0.4)
+            under.add(("palm_bark", "wall"), lambda bm, pa=pa, pb_=pb_: props.tube(bm, [pa, pb_], 0.22, n=6))
+            pc, pd = (ax, ay, z_top - 0.6), (bx, by, max(zb + 0.6, z_top - 2.6))
+            under.add(("palm_bark", "wall"), lambda bm, pc=pc, pd=pd: props.tube(bm, [pc, pd], 0.14, n=5))
+        n += 1
+    rope.build(c, "Bridge Ropes", coll="Bridges", role="visual")
+    under.build(c, "Bridge Pilings", coll="Bridges", role="visual")
+    print("bridges dressed: %d" % n)
+

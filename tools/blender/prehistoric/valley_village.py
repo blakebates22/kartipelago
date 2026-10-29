@@ -607,7 +607,8 @@ def roof_fill(m, kind, R, Hw, Re, ze, thatch, v):
         m.add(thatch, lambda bm: _cone(bm, [(Re, ze), (R * 0.95, Hw + 0.7), (R * 0.5, Hw + 1.55)], n, jag=0.12, seed=v))
         m.add(thatch, lambda bm: _cone(bm, [(R * 0.82, Hw + 1.0), (R * 0.45, Hw + 2.3)], n, tip=Hw + 3.4, jag=0.1,
                                        seed=v + 40))
-        m.add(("rope_rail", "wall"), lambda bm: _cone(bm, [(R * 0.32, Hw + 2.75), (R * 0.27, Hw + 2.95)], n))
+        if _vi(v) != len(HUTS) - 1:  # (not on the grand one: Blake, Riverbend note 13, "remove this ring")
+            m.add(("rope_rail", "wall"), lambda bm: _cone(bm, [(R * 0.32, Hw + 2.75), (R * 0.27, Hw + 2.95)], n))
         top = Hw + 3.4
     elif kind == "finial":
         m.add(thatch, lambda bm: _cone(bm, [(Re, ze), (R * 0.9, Hw + 1.0), (R * 0.5, Hw + 2.4)], n, tip=Hw + 3.9, jag=0.1,
@@ -1137,7 +1138,9 @@ def road_apron(c, start, end, mat, ground, width=15.0, past=6.0, name="Gateway A
     total = L + past
     m = gs.Mesh()
     steps = max(2, int(total / 1.0))
-    cols = (-1.0, -0.5, 0.0, 0.5, 1.0)
+    # (Columns a metre or so apart: the land's bumps between sparser ones poked up
+    # through it in green patches, Blake, Riverbend notes 3 and 4.)
+    cols = tuple(-1.0 + 2.0 * j / 16 for j in range(17))
     rows = []
     for k in range(steps + 1):
         s = total * k / steps
@@ -1146,7 +1149,7 @@ def road_apron(c, start, end, mat, ground, width=15.0, past=6.0, name="Gateway A
         row = []
         for f in cols:
             x, y = sx + ux * s + nx * f * w, sy + uy * s + ny * f * w
-            row.append(((x, y, ground(x, y) + 0.16), (s / tile, (f * w + width / 2) / tile)))
+            row.append(((x, y, ground(x, y) + 0.18), (s / tile, (f * w + width / 2) / tile)))
         rows.append(row)
     for r0, r1 in zip(rows, rows[1:]):
         for j in range(len(cols) - 1):
