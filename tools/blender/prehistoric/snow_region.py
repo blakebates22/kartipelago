@@ -223,8 +223,26 @@ def main():
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
-    vh.homes(c, L, ground, "snow", vh.proto_house(lambda c, k: snp_.snow_house(c, k % 3)), avoid=[(HUB[0], HUB[1], HUB[2] + 42.0)],
-             wall=-15.0, per=3)
+    # (Hearthglow's cottages, each set level and solid: the overworld rules, Blake, Oct 29,
+    # where they were plain boxes half sunk in the snow.)
+    def home(c, name, x, y, z, rot, k):
+        v = (1, 4, 2)[k % 3]
+        if RUIN:
+            w, d = hp.COTTAGE_SIZE[v]
+            hi = sd.level_site(c, x, y, rot, w, d, ground, ter)
+            if hi is None:
+                return False
+            box(c, name, x, y, w / 2 - 0.5, d / 2 - 0.5, hi - 1.3, hi + 4.0, ("hearth_stone", "wall"), rot=rot)
+            box(c, name + " Ice", x, y, w / 2 + 0.4, d / 2 + 0.4, hi - 1.3, hi + 6.5, ("berg_ice", "wall"), rot=rot + 0.08)
+            return True
+        smoke = sd.seat_cottage(c, v, x, y, rot, ground, name=name, ter=ter)
+        if smoke is None:
+            return False
+        g = c.game(*smoke)
+        c.entity("chimney", x=g[0], y=g[1], z=g[2])
+        return True
+
+    vh.homes(c, L, ground, "snow", home, avoid=[(HUB[0], HUB[1], HUB[2] + 42.0)], wall=-15.0, per=3, level=3.0, foot=6.5)
     dress(c, ground, spots)
     vv.clear_paths(c, LANES)
     # The gorge's far end, back towards the valley: it bends out of sight.

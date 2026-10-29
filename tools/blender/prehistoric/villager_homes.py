@@ -53,12 +53,13 @@ def _built():
 
 
 def homes(c, layout, ground, folk, house, per=2, pockets=None, room=13.0, near=(9.0, 26.0), roam=14.0, n=(2, 3),
-          seed=7, skip=(), avoid=(), wet=None, wall=-9.0):
+          seed=7, skip=(), avoid=(), wet=None, wall=-9.0, level=1.6, foot=5.0):
     """Up to `per` homes in each of the layout's pockets (or `pockets`: names), each built
     by house(c, name, x, y, z, rot, k) facing the road, and its villager_home entity.
     `skip`: pockets with none (the hub's own houses are elsewhere, say); `avoid`: (x, y, r)
     circles to keep clear; `wet(x, y)`: true in or by water (no home goes there); `wall`:
-    how far inside a pocket's edge a home must be. Returns the spots taken [(x, y, r)] (region_paint.EXTRA keeps
+    how far inside a pocket's edge a home must be; `level`: the most the ground may fall
+    over the ring `foot` out from its middle (the overworld rules: on level ground). Returns the spots taken [(x, y, r)] (region_paint.EXTRA keeps
     the dressing off them)."""
     rnd = random.Random(seed)
     # (And off every gateway's arch, Blake, Oct 27: Hearthglow's stood three quarters inside a
@@ -86,13 +87,17 @@ def homes(c, layout, ground, folk, house, per=2, pockets=None, room=13.0, near=(
             if not taken.clear(x, y, room) or not paint.road_clear(c, x, y, near[0]) or paint.road_clear(c, x, y, near[1]):
                 continue
             z = ground(x, y)
-            ring = [ground(x + 5.0 * math.cos(t), y + 5.0 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
-            if max(ring) - min(ring) > 1.6:
+            ring = [ground(x + foot * math.cos(t), y + foot * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
+            if level < 1.6:
+                ring += [ground(x + foot * math.cos(t), y + foot * math.sin(t)) for t in (0.79, 2.36, 3.93, 5.5)]
+                ring.append(ground(x, y))
+            if max(ring) - min(ring) > level:
                 continue  # (too steep to build on)
             q, _ = c.nearest(x, y)
             face = math.atan2(q.p.y - y, q.p.x - x)
             rot = face + math.pi / 2  # (its front, local -y, to the road)
-            house(c, "Home %s %d" % (pname.title(), k), x, y, min(ring) + 0.05, rot, k)
+            if house(c, "Home %s %d" % (pname.title(), k), x, y, min(ring) + 0.05, rot, k) is False:
+                continue  # (the house itself found the ground under it wanting)
             # The yard before it: where its folk walk about.
             fx, fy = x + math.cos(face) * 6.0, y + math.sin(face) * 6.0
             g = c.game(fx, fy, ground(fx, fy))

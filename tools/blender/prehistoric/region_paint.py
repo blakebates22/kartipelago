@@ -87,3 +87,31 @@ def scatter(c, proto, n, rmax, ok, ground, taken, seed, room=3.0, scale=(0.8, 1.
         taken.add(x, y, room * 0.5)
         placed.append((x, y))
     return placed
+
+
+def grade(c, ter, x, y, rot, w, d, z, margin=1.0, blend=4.0, front=2.0, road=2.5):
+    """Cut and fill the land (the mesh `ter`) level at height z under a building's
+    footprint (w by d, turned `rot`, `margin` round it and `front` more before its door,
+    local -Y), easing back to the land over `blend` metres (the overworld rules, Blake,
+    Oct 29: buildings on level ground, never set into a slope). Never within `road` of a
+    road. Returns the vertices moved."""
+    me = ter.data
+    ca, sa = math.cos(rot), math.sin(rot)
+    hx, y0, y1 = w / 2 + margin, -(d / 2 + margin + front), d / 2 + margin
+    R = math.hypot(hx, max(-y0, y1)) + blend
+    n = 0
+    for v in me.vertices:
+        dx, dy = v.co.x - x, v.co.y - y
+        if abs(dx) > R or abs(dy) > R:
+            continue
+        lx, ly = dx * ca + dy * sa, -dx * sa + dy * ca
+        e = math.hypot(max(0.0, abs(lx) - hx), max(0.0, ly - y1, y0 - ly))
+        if e >= blend or not road_clear(c, v.co.x, v.co.y, road):
+            continue
+        t = e / blend
+        t = t * t * (3 - 2 * t)
+        v.co.z = z + (v.co.z - z) * t
+        n += 1
+    me.update()
+    return n
+

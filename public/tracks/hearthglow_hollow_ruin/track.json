@@ -1574,7 +1574,7 @@
   "generator": "tools/blender/prehistoric/hearthglow_hollow_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "hearthglow_hollow.py": "071dd10384178b9251a1313c11bcfb212a51409692fe6e65455f584310deabdb",
-    "hearthglow_props.py": "014356ec04f6402b79260ed1b3cf5934bd8b48274bb47ce016ef8418d97f107b",
+    "hearthglow_props.py": "854c84ce8845f35f8f47d76c55c73530c66d1d2a48841bc17ba500ae4be4d3bd",
     "hearthglow_ruins.py": "984a658fe0aa438d50bcc9b99417f23c4d6d1f6631d5bbedcaa539ca4ccd1fa6",
     "hearthglow_scenery.py": "a8e34b0ad3e5c7abf9a6b0263bfb05443e7f967e0f944a7213d37876f98c6a38"
   }

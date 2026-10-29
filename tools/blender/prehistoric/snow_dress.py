@@ -236,6 +236,70 @@ def _lane_look(x, y):
     return LANE, (TX.blend_id("snow_ground", "packed_snow_road", 50), "deep_snow")
 
 
+def footing(x, y, rot, w, d, ground, margin=0.6):
+    """The ground under a building's footprint (w by d, turned `rot`; corners, edge middles
+    and middle, `margin` out) and a step before its door (local -Y): (lowest, highest)."""
+    ca, sa = math.cos(rot), math.sin(rot)
+    hs = []
+    for fx, fy in [(i, j) for i in (-0.5, 0.0, 0.5) for j in (-0.5, 0.0, 0.5)] + [(0.0, -0.5 - 1.4 / d)]:
+        lx, ly = fx * (w + margin), fy * (d + margin)
+        hs.append(ground(x + lx * ca - ly * sa, y + lx * sa + ly * ca))
+    return min(hs), max(hs)
+
+
+LEVEL = 0.6  # the most a cottage's ground may fall across it (its base course goes 0.7 m down)
+
+
+def level_site(c, x, y, rot, w, d, ground, ter, most=3.0):
+    """The ground a building of w by d goes on at (x, y), made level (the overworld rules,
+    Blake, Oct 29: on level ground, never set into a slope): if it falls more than LEVEL
+    across, the land's cut and filled level under it (up to `most`). The height to seat it
+    at, or None if it's too steep to build there."""
+    lo, hi = footing(x, y, rot, w, d, ground)
+    if hi - lo <= LEVEL:
+        return hi
+    if ter is None or hi - lo > most:
+        return None
+    paint.grade(c, ter, x, y, rot, w, d, (lo + hi) / 2)
+    lo, hi = footing(x, y, rot, w, d, ground)
+    return hi if hi - lo <= LEVEL else None
+
+
+def seat_cottage(c, v, x, y, rot, ground, name=None, coll="Village", ter=None):
+    """A cottage set level on its footing (the overworld rules, Blake, Oct 29: on level
+    ground; its door sill at the highest ground, its stone base course down past the
+    lowest; nothing in the hill, nothing floating), and solid. Returns where its chimney
+    smokes from, or None if it can't be built there."""
+    w, d = hp.COTTAGE_SIZE[v % 5]
+    hi = level_site(c, x, y, rot, w, d, ground, ter)
+    if hi is None:
+        return None
+    z = hi - 0.5
+    c.place(hp.cottage(c, v), x, y, z, rot=rot, coll=coll, role="visual", name=name)
+    c.place(hp.cottage_block(c, v), x, y, z, rot=rot, coll=coll, role="collision")
+    hx, hy, hz = hp.CHIMNEY[v % 5]
+    ca, sa = math.cos(rot), math.sin(rot)
+    return (x + hx * ca - hy * sa, y + hx * sa + hy * ca, z + hz)
+
+
+def railing(c, px, py, toward, R, z, ground, span=1.25):
+    """Timber railing on an arc `R` round (px, py), facing `toward` (+-span), at height z:
+    along a terrace's edge over the drop below it. Only where the ground's level with it
+    (none buried in a bank or standing out over the drop)."""
+    rail = hp.pad_rail(c)
+    n = 0
+    a = toward - span
+    da = 1.8 / R
+    while a < toward + span:
+        x, y = px + R * math.cos(a), py + R * math.sin(a)
+        x2, y2 = px + R * math.cos(a + da), py + R * math.sin(a + da)
+        if abs(ground(x, y) - z) < 0.4 and abs(ground(x2, y2) - z) < 0.4:
+            c.place(rail, x, y, z - 0.05, rot=a + math.pi / 2, coll="Village", role="both")
+            n += 1
+        a += da
+    return n
+
+
 def hearthglow(c, ground, ter, taken):
     """Hearthglow, a real village (as the valley's camp was made: Blake, Oct 28, "lets
     add more to this village"): the cobbled square and round it the cottages, facing it,
@@ -263,7 +327,8 @@ def hearthglow(c, ground, ter, taken):
     taken.add(fx, fy, 6.5)
     SPOTS.append((fx, fy, 8.0))
     bx, by = cx - 11.0, cy + 10.5
-    c.place(vv.hearth(c), bx, by, ground(bx, by) - 0.05, rot=0.7, coll="Village", role="visual")
+    # (Set down as the valley's are: solid, logs in the fire and log benches round it.)
+    vv.place_hearth(c, bx, by, ground, rot=0.7)
     if not RUIN:
         g = c.game(bx, by, ground(bx, by) + 0.3)
         c.entity("campfire", x=g[0], y=g[1], z=g[2])
@@ -287,6 +352,7 @@ def hearthglow(c, ground, ter, taken):
             continue
         z = ground(x, y)
         c.place(post, x, y, z - 0.1, coll="Village", role="visual")
+        c.place(paint.trunk_proto(c, 0.3, 5.0), x, y, z, coll="Collision", role="collision")
         posts.append((x, y, z))
         taken.add(x, y, 1.5)
         if not RUIN:
@@ -310,32 +376,44 @@ def hearthglow(c, ground, ter, taken):
             cands.append((cx + r * math.cos(a), cy + r * math.sin(a), True))
     cands += [(x, y, False) for x, y, _ in PADS]
     k = 0
+    import villager_homes as vh
+
+    # (Clear of what's built already: the Gatehouse's towers stood through a cottage.)
+    standing = vh._built()
     for x, y, floor in cands:
         if len(built) >= 18:
             break
+        if any(math.hypot(x - ox, y - oy) < orr + 6.0 for ox, oy, orr in standing):
+            continue
         if floor and (L.pocket_at(x, y) != "hearth" or L.wall_sd(x, y) > -5.0):
             continue
         if in_lane(x, y, 11.0) or not paint.road_clear(c, x, y, 8.0) or not taken.clear(x, y, 5.0):
             continue
         if any(math.hypot(x - hx, y - hy) < 13.0 for hx, hy, _, _ in built):
             continue
-        ring = [ground(x + 5.5 * math.cos(t), y + 5.5 * math.sin(t)) for t in (0.0, 0.79, 1.57, 2.36, 3.14, 3.93, 4.71, 5.5)]
-        if max(ring) - min(ring) > (2.2 if floor else 1.4):
-            continue
         a = math.atan2(y - cy, x - cx)
         rot = a - math.pi / 2  # (its front, local -Y, to the square)
-        z = min(ring) + 0.05
         v = (k * 3 + 1) % 5
+        if not floor and v in (0, 3):
+            v = (1, 2)[k % 2]  # (on a pad: one that fits on it)
+        w, d = hp.COTTAGE_SIZE[v]
+        hi = level_site(c, x, y, rot, w, d, ground, ter)
+        if hi is None:
+            continue  # (only on level ground: Blake, Oct 29)
         if RUIN:
-            box(c, "House %d" % k, x, y, 4.5, 3.5, z - 1.0, z + 4.0, ("hearth_stone", "wall"), rot=rot)
-            box(c, "House Ice %d" % k, x, y, 5.4, 4.4, z - 1.0, z + 6.5, ("berg_ice", "wall"), rot=rot + 0.08)
+            z = hi - 0.5
+            box(c, "House %d" % k, x, y, w / 2 - 0.5, d / 2 - 0.5, z - 0.8, z + 4.5, ("hearth_stone", "wall"), rot=rot)
+            box(c, "House Ice %d" % k, x, y, w / 2 + 0.4, d / 2 + 0.4, z - 0.8, z + 7.0, ("berg_ice", "wall"), rot=rot + 0.08)
         else:
-            c.place(hp.cottage(c, v), x, y, z - 0.6, rot=rot, coll="Village", role="visual")
-            c.place(hp.cottage_block(c, v), x, y, z - 0.6, rot=rot, coll="Village", role="collision")
-            hx, hy, hz = hp.CHIMNEY[v]
-            ca, sa = math.cos(rot), math.sin(rot)
-            sc.chimneys.append((x + hx * ca - hy * sa, y + hx * sa + hy * ca, z - 0.6 + hz))
-            sc.warm.append((x, y, z + 3.0))
+            smoke = seat_cottage(c, v, x, y, rot, ground, ter=ter)
+            sc.chimneys.append(smoke)
+            sc.warm.append((x, y, hi + 2.5))
+        # (A terrace over a drop: a railing along its edge, before the door.)
+        fx, fy = x - math.cos(a) * (d / 2 + 6.0), y - math.sin(a) * (d / 2 + 6.0)
+        if not floor:
+            railing(c, x, y, a + math.pi, PAD_R - 1.5, hi, ground)
+        elif ground(fx, fy) < hi - 1.5:
+            railing(c, x, y, a + math.pi, d / 2 + 2.6, hi, ground, span=0.6)
         built.append((x, y, v, floor))
         taken.add(x, y, 7.0)
         SPOTS.append((x, y, 9.0))

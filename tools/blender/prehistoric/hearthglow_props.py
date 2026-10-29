@@ -130,6 +130,25 @@ def cottage(c, variant=0):
     return _p(c, name, build)
 
 
+COTTAGE_SIZE = ((11.0, 8.0), (9.0, 8.0), (8.0, 8.0), (14.0, 9.0), (10.0, 9.0))  # (w, d) of each variant
+
+
+def pad_rail(c):
+    """A length of timber railing (1.8 m, along +X from its post): for the terraces the
+    cottages up in the hollow's walls stand on, along their edge over the drop."""
+    name = "Pad Rail"
+
+    def build(bm):
+        k = Parts(bm)
+        k.box(BEAM, (0, 0, 0.55), (0.24, 0.24, 1.5))
+        k.box(SNOW, (0, 0, 1.34), (0.3, 0.3, 0.1))
+        for z in (0.55, 1.1):
+            k.box("timber_rail", (0.9, 0, z), (1.9, 0.12, 0.16))
+        return k.slots(c)
+
+    return _p(c, name, build)
+
+
 def cottage_block(c, variant=0):
     """The cottage's collision: just its walls as one box (the roof, windows and lights
     are only for looking at)."""
