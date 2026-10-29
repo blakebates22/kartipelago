@@ -28,6 +28,7 @@ import {
   type V3,
 } from "./racers/kit/shapes";
 import { skinMaterial } from "./racers/kit/paint";
+import { createFire, type Fire } from "./fire";
 
 const WOOD = "#8a5a34";
 const WOOD_DARK = "#5e3a1e";
@@ -484,13 +485,16 @@ export function buildHornedSkull(): THREE.Mesh {
   return mesh;
 }
 
-/** The decor among a track's entities, added under `parent`; dispose() takes it away. */
+/** The decor among a track's entities, added under `parent`: the carved and built pieces,
+ * and the living fires (`fire` { "x", "y", "z", "size" }: the fire's base). update(t)
+ * plays the fires; dispose() takes it all away. */
 export function createVillageDecor(
   parent: THREE.Object3D,
   entities: unknown[],
-): { dispose(): void } {
+): { update(t: number): void; dispose(): void } {
   const group = new THREE.Group();
   group.name = "village decor";
+  const fires: Fire[] = [];
   const num = (v: unknown, d = 0) => (typeof v === "number" && Number.isFinite(v) ? v : d);
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
@@ -501,6 +505,10 @@ export function createVillageDecor(
     else if (o.type === "horned_skull") {
       obj = buildHornedSkull();
       obj.scale.setScalar(num(o.scale, 1));
+    } else if (o.type === "fire") {
+      const f = createFire({ size: num(o.size, 1), red: o.red === true, seed: fires.length * 1.7 });
+      fires.push(f);
+      obj = f.group;
     }
     if (!obj) continue;
     obj.position.set(num(o.x), num(o.y), num(o.z));
@@ -509,7 +517,11 @@ export function createVillageDecor(
   }
   if (group.children.length) parent.add(group);
   return {
+    update(t) {
+      for (const f of fires) f.update(t);
+    },
     dispose() {
+      for (const f of fires) f.dispose();
       group.removeFromParent();
       group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();

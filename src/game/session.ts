@@ -1553,6 +1553,7 @@ function buildSession(
     );
     skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
+    decor?.update(fxClock);
     bossMech?.render(race?.clock ?? 0);
     // Scorchwind's sandstorm: the air thick with sand.
     const storm = bossMech?.fog() ?? 0;

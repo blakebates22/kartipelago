@@ -110,8 +110,27 @@ def _natural(x, y):
 NOTCHES = pocket_kit.Notches(L.route_points(), dict(L.GATES, **({"lair": L.SCAR} if RUIN else {})))
 
 
+def _pyramid_bay(h, x, y):
+    """The wall cut back round Bonebog's pyramid, a square bay a little bigger than its
+    base, down to the bog's floor (Blake, Bonebog note 5: "move the pyramid so it is not
+    going into the wall")."""
+    px, py = L.PYRAMID
+    gx, gy = L.GATES["bonebog"]
+    rot = math.atan2(py - gy, px - gx)
+    ca, sa = math.cos(rot), math.sin(rot)
+    u = (x - px) * ca + (y - py) * sa
+    v = -(x - px) * sa + (y - py) * ca
+    d = max(abs(u), abs(v))
+    if d > 38.0:
+        return h
+    base = _natural(px - ca * 30.0, py - sa * 30.0)
+    if d < 28.0:
+        return min(h, base)
+    return min(h, lerp(base, h, smooth((d - 28.0) / 10.0)))
+
+
 def natural(x, y):
-    return NOTCHES.apply(_natural(x, y), x, y)
+    return _pyramid_bay(NOTCHES.apply(_natural(x, y), x, y), x, y)
 
 
 LOOK = {
@@ -326,7 +345,14 @@ def main():
     # Water: the rivers and lakes in living water (valley_dress), the bog's pools.
     vd.water(c, ground)
     for k, (px, py, pr) in enumerate(L.POOLS):
-        c.disc("Bog Pool %d" % k, px, py, pr + 8.0, WATER_Z, c.lib("bog_water", "mud"), role="visual", n=30, wobble=0.15,
+        # (Not running on into a gateway's mouth: Blake, Bonebog note 2.)
+        r = pr + 8.0
+        for (ex, ey), _h in spurs.values():
+            d = math.hypot(px - ex, py - ey)
+            r = min(r, d - 14.0)
+        if r < 3.0:
+            continue
+        c.disc("Bog Pool %d" % k, px, py, r, WATER_Z, c.lib("bog_water", "mud"), role="visual", n=30, wobble=0.15,
                seed=k)
         gx, gy, gz = c.game(px, py, WATER_Z + 0.1)
         c.entity("bubbles", x=gx, y=gy, z=gz, r=pr * 0.7)
@@ -397,6 +423,16 @@ def main():
     # Ember's folk in obsidian huts (Blake, note 30).
     homes += vh.homes(c, L, ground, "valley", vd.obsidian_house, pockets=["ember"], wet=wet, wall=-15.0, seed=13)
     dress(c, ground, spurs)
+    # Bonebog: the swamp-dweller's hut where the tier tree stood (Blake, Bonebog notes 9,
+    # 10), the fossil skulls carved finely (8), and logs in the pool (7).
+    hx, hy = -98.5, -173.4
+    q, _ = c.nearest(hx, hy)
+    vv.place_swamp_hut(c, hx, hy, ground(hx, hy) - 0.2, math.atan2(q.p.y - hy, q.p.x - hx))
+    vv.fossil_skulls(c)
+    px, py, pr = L.POOLS[2]
+    for k, (ox, oy, a) in enumerate(((0.3, -0.2, 0.6), (-0.35, 0.3, 2.2))):
+        c.place(props.log(c, k % 2), px + ox * pr, py + oy * pr, WATER_Z - 0.35, rot=a, scale=1.4, coll="Water Life",
+                role="visual")
     vd.shade_walls(c, ter)
     # The paths, as ribbons laid on the land (Blake, Oct 28: the painted ones "look
     # horrible"): the camp's, and each home's from its door to the road.
@@ -701,8 +737,12 @@ def landmarks(c, ground, spurs):
     px, py = L.PYRAMID
     gx, gy = L.GATES["bonebog"]
     rot = math.atan2(py - gy, px - gx)
+    # (Out of the wall, Blake's Bonebog note 5: the wall is cut back round it into a bay,
+    # natural() below.)
+    k_size = 1.0
     z = WATER_Z - 2.0
     for k, (half, h) in enumerate(((24.0, 5.0), (19.5, 5.0), (15.0, 5.0), (10.5, 5.0), (6.5, 4.5), (3.2, 4.0))):
+        half *= k_size
         box(c, "Pyramid Tier %d" % k, px, py, half, half, z, z + h, ("bog_stone", "wall"), rot=rot)
         box(c, "Pyramid Band %d" % k, px, py, half + 0.15, half + 0.15, z + h - 1.0, z + h - 0.4, ("bog_carved", "wall"),
             rot=rot, role="visual")
@@ -710,7 +750,7 @@ def landmarks(c, ground, spurs):
     cone(c, "Pyramid Tip", px, py, 3.0, z, 3.5, ("bog_dark_stone", "wall"))
     # Its stair up the front, toward the gateway.
     for k in range(8):
-        sx, sy = px - math.cos(rot) * (24.0 - k * 2.6), py - math.sin(rot) * (24.0 - k * 2.6)
+        sx, sy = px - math.cos(rot) * (24.0 * k_size - k * 2.6), py - math.sin(rot) * (24.0 * k_size - k * 2.6)
         box(c, "Pyramid Stair %d" % k, sx, sy, 2.0, 4.0, WATER_Z - 2.0, WATER_Z + 1.0 + k * 3.4, ("bog_carved", "wall"),
             rot=rot, role="visual")
 

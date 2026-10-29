@@ -617,3 +617,40 @@ def tree_ledge(c, mat="ancient_cliff"):
         return [(c.lib(mat, "wall"), _faces(bm, 0))]
 
     return _p(c, name, build)
+
+
+def wall_sconce_cage(c):
+    """A wall torch for a tunnel (Blake, Oct 29: "improve the quality of the fire and the
+    torches"): a riveted iron backplate, a curled bracket out from it, an iron basket of
+    six bars and two rings, and in it a wooden torch head wrapped in pitch-soaked cloth.
+    Its fire is the game's own (a `fire` entity over the basket). Origin at the wall,
+    pointing out along -Y."""
+    name = "Wall Sconce Cage"
+
+    def build(bm):
+        cuboid(bm, (0, -0.06, 0), (0.46, 0.12, 0.9))
+        for sx in (-1, 1):
+            for sz in (-1, 1):
+                blob(bm, (sx * 0.16, -0.13, sz * 0.35), 0.045, subdiv=0)
+        tube(bm, [(0, -0.12, -0.3), (0, -0.45, -0.18), (0, -0.66, 0.1), (0, -0.7, 0.42)], [0.06, 0.06, 0.055, 0.05], n=6)
+        tube(bm, [(0, -0.12, 0.15), (0, -0.3, 0.05), (0, -0.4, -0.08), (0, -0.34, -0.2)], 0.035, n=5)  # (the curl)
+        for k in range(6):
+            a = k * math.tau / 6
+            tube(bm, [(0.17 * math.cos(a), -0.7 + 0.17 * math.sin(a), 0.42), (0.27 * math.cos(a), -0.7 + 0.27 * math.sin(a), 0.72),
+                      (0.31 * math.cos(a), -0.7 + 0.31 * math.sin(a), 0.98)], 0.025, n=4)
+        for z, r in ((0.6, 0.22), (0.95, 0.31)):
+            ring_ = ring(bm, (0, -0.7), r, z, 12)
+            ring2 = ring(bm, (0, -0.7), r + 0.03, z, 12)
+            ring3 = ring(bm, (0, -0.7), r + 0.03, z + 0.04, 12)
+            ring4 = ring(bm, (0, -0.7), r, z + 0.04, 12)
+            loft(bm, [ring_, ring2, ring3, ring4, ring_], cap_top=False)
+        iron = _faces(bm, 0)
+        k0 = len(bm.faces)
+        tube(bm, [(0, -0.7, 0.4), (0, -0.7, 0.75)], 0.07, n=6)
+        wood = _faces(bm, k0)
+        k1 = len(bm.faces)
+        blob(bm, (0, -0.7, 0.85), 0.14, sz=1.4, subdiv=1)
+        cloth = _faces(bm, k1)
+        return [(c.lib("black_rock"), iron), (c.lib("palm_bark"), wood), (c.lib("charred_bark"), cloth)]
+
+    return _p(c, name, build)

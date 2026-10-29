@@ -854,7 +854,7 @@ def wall_point(c, q, side, height, inset):
 
 def sconces(c, s0, s1, half, every=11.0, height=4.6, lit_from=0.0):
     """Torches in iron cages along both walls of a bore (Blake, notes 15 and 41), lit."""
-    sc = rp.wall_sconce(c)
+    sc = rp.wall_sconce_cage(c)
     s = s0 + 5.0 + lit_from
     k = 0
     while s < s1 - 4.0:
@@ -862,9 +862,14 @@ def sconces(c, s0, s1, half, every=11.0, height=4.6, lit_from=0.0):
         sd = 1 if k % 2 else -1
         x, y, z = wall_point(c, q, sd, height, half - 0.15)
         rx, ry = q.r.x * sd, q.r.y * sd
-        c.place(sc, x, y, z, rot=math.atan2(-rx, ry) + math.pi, coll="Tunnels", role="visual")
+        rot = math.atan2(-rx, ry) + math.pi
+        c.place(sc, x, y, z, rot=rot, coll="Tunnels", role="visual")
         g = c.game(x - rx * 0.7, y - ry * 0.7, z + 1.0)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
+        # Its fire, the game's own, over the basket (render/fire.ts).
+        fx, fy = x + 0.7 * math.sin(rot), y - 0.7 * math.cos(rot)
+        f = c.game(fx, fy, z + 0.82)
+        c.entity("fire", x=f[0], y=f[1], z=f[2], size=0.5)
         s += every
         k += 1
     return k
@@ -873,7 +878,7 @@ def sconces(c, s0, s1, half, every=11.0, height=4.6, lit_from=0.0):
 def log_tunnel(c, s0, s1, ro, ri, lift):
     """Inside the Fallen Giant (note 41): torches up its walls all the way through, and once
     into the swamp's end, cobwebs in its corners and roots hanging from its roof."""
-    sc = rp.wall_sconce(c)
+    sc = rp.wall_sconce_cage(c)
     webs = [sp.cobweb(c, 0), sp.cobweb(c, 1)]
     roots = [rp.root_curtain(c, v, 5.0 + 2.0 * v) for v in range(2)]
     s = s0 - 4.0
@@ -884,9 +889,13 @@ def log_tunnel(c, s0, s1, ro, ri, lift):
         th = 0.35
         side = Vector((q.r.x, q.r.y, 0.0)).normalized() * sd
         p = Vector((q.p.x, q.p.y, q.p.z + lift)) + (side * math.cos(th) + Vector((0, 0, math.sin(th)))) * (ri - 0.2)
-        c.place(sc, p.x, p.y, p.z - 1.0, rot=math.atan2(side.x, -side.y) + math.pi, coll="Tunnels", role="visual")
+        rot = math.atan2(side.x, -side.y) + math.pi
+        c.place(sc, p.x, p.y, p.z - 1.0, rot=rot, coll="Tunnels", role="visual")
         g = c.game(p.x - side.x * 0.8, p.y - side.y * 0.8, p.z)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
+        # Its fire, the game's own (render/fire.ts), over the basket.
+        f = c.game(p.x + 0.7 * math.sin(rot), p.y - 0.7 * math.cos(rot), p.z - 1.0 + 0.82)
+        c.entity("fire", x=f[0], y=f[1], z=f[2], size=0.5)
         s += 10.0
         k += 1
     # The swamp's end: webs and roots (the last third, and out past the mouth). Each web is

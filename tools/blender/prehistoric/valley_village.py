@@ -1074,3 +1074,148 @@ def clear_paths(c, paths, room=2.6):
             bpy.data.objects.remove(ob)
             gone += 1
     print("paths cleared of %d plants" % gone)
+
+
+# ------------------------------------------------------------------ the swamp hut
+
+
+def swamp_hut(c):
+    """A swamp-dweller's hut (Blake, Bonebog notes 9 and 10: "think yodas house on dagoa
+    ... make the hut nice"): a low lumpy dome of mud and wattle grown over with moss,
+    old roots arching over it and down into the bog, a round doorway with a bent-wood
+    frame, two round windows glowing, a crooked clay chimney, a lantern on a crook by the
+    door, stepping stones up to it, pots and a stool. Its door faces +X."""
+
+    def fill(m):
+        mud = ("swamp_mud", "wall")
+        moss = ("bog_moss_ground", "grass")
+        root = ("bog_root", "wall")
+        R = 3.6
+
+        def dome(bm):
+            res = bmesh.ops.create_icosphere(bm, subdivisions=3, radius=1.0)
+            for i, v in enumerate(res["verts"]):
+                p = v.co.copy()
+                lump = 1.0 + 0.08 * math.sin(p.x * 7 + p.y * 3) * math.cos(p.z * 5 + p.x * 2) + 0.05 * (rnd(i) - 0.5)
+                v.co = Vector((p.x * R * 1.15 * lump, p.y * R * lump, max(-0.6, p.z * 3.1 * lump + 0.2)))
+
+        k0 = len(m.bm.faces)
+        m.add(mud, dome)
+        # (Moss on what faces up: those faces to the moss.)
+        m.bm.faces.ensure_lookup_table()
+        m.bm.normal_update()
+        mud_faces = m.slots[mud]
+        moved = [i for i in mud_faces[-(len(m.bm.faces) - k0):] if m.bm.faces[i].normal.z > 0.72]
+        m.slots[mud] = [i for i in mud_faces if i not in set(moved)]
+        m.slots.setdefault(moss, []).extend(moved)
+        # Roots arching over it and down into the bog.
+        for k in range(7):
+            a = k * math.tau / 7 + 0.4
+            if abs(math.atan2(math.sin(a), math.cos(a))) < 0.5:
+                continue  # (clear of the door)
+            ca, sa = math.cos(a), math.sin(a)
+            r0 = 0.6 + 0.4 * rnd(k + 3)
+            m.add(root, lambda bm, ca=ca, sa=sa, r0=r0: tube(bm, [
+                (ca * r0, sa * r0, 3.4), (ca * R * 0.7, sa * R * 0.6, 3.0), (ca * R * 1.25, sa * R * 1.1, 1.6),
+                (ca * R * 1.55, sa * R * 1.4, 0.2), (ca * R * 1.75, sa * R * 1.6, -0.6)], [0.45, 0.4, 0.33, 0.25, 0.18], n=7))
+        # The stump of the old tree it grew under, out of the top.
+        m.add(root, lambda bm: tube(bm, [(0.3, -0.2, 2.6), (0.2, -0.1, 4.2), (0.6, 0.1, 5.2)], [1.0, 0.75, 0.45], n=9))
+        # The doorway: dark, round, under a bent-wood frame, stones up to it.
+        dx = R * 1.15 - 0.15
+        m.add(("dark_corridor", "wall"), lambda bm: _round(bm, (dx, 0, 1.05), 0.85, 1.0, 14))
+        m.add(BARK, lambda bm: tube(bm, [(dx + 0.08, 0.85 * math.cos(t), 1.05 + 1.0 * math.sin(t))
+                                         for t in [i * math.pi / 10 for i in range(-1, 12)]], 0.11, n=6))
+        for k in range(3):
+            m.add(("ruin_stone", "wall"), lambda bm, k=k: blob(bm, (dx + 0.9 + k * 0.8, 0.15 * (k % 2), 0.0), 0.45, sx=1.2,
+                                                                sz=0.4, subdiv=1))
+        # Round windows, glowing, framed.
+        for a in (0.95, -1.2):
+            wx, wy = math.cos(a) * R * 1.12, math.sin(a) * R * 0.97
+            m.add(("lantern_glow", "wall"), lambda bm, a=a, wx=wx, wy=wy: _round_at(bm, (wx, wy, 1.7), a, 0.38, 10))
+            m.add(BARK, lambda bm, a=a, wx=wx, wy=wy: tube(bm, [
+                (wx + math.cos(a) * 0.05 - math.sin(a) * 0.4 * math.cos(t), wy + math.sin(a) * 0.05 + math.cos(a) * 0.4 * math.cos(t),
+                 1.7 + 0.4 * math.sin(t)) for t in [i * math.tau / 10 for i in range(11)]], 0.06, n=4))
+        # The chimney: a crooked clay pipe out of the roof.
+        m.add(("daub_rose", "wall"), lambda bm: tube(bm, [(-1.4, 0.9, 2.4), (-1.6, 1.0, 3.6), (-1.4, 1.2, 4.3)], [0.32, 0.28, 0.3],
+                                                       n=8))
+        # A lantern on a crook by the door.
+        m.add(BARK, lambda bm: tube(bm, [(dx + 0.6, -1.4, -0.3), (dx + 0.7, -1.4, 2.4), (dx + 1.2, -1.2, 2.7)], 0.07, n=5))
+        m.add(("lantern_glow", "wall"), lambda bm: blob(bm, (dx + 1.25, -1.2, 2.2), 0.2, sz=1.3, subdiv=1))
+        # Pots and a stool.
+        for k, (px, py) in enumerate(((dx + 0.3, 1.6), (dx - 0.2, 2.1))):
+            m.add(("daub_ochre", "wall"), lambda bm, px=px, py=py, k=k: loft(bm, [
+                ring(bm, (px, py), r * (0.9 + 0.2 * k), z, 10) for r, z in ((0.22, 0.0), (0.34, 0.25), (0.3, 0.55), (0.2, 0.7))],
+                cap_top=True))
+        log(m, (dx + 1.6, 1.0, 0.25), (dx + 1.6, 1.0, 0.65), 0.28, seed=91, n=9)
+
+    return proto_mesh(c, "Swamp Hut", fill)
+
+
+def _round(bm, centre, rw, rh, n):
+    """An upright oval facing +X (a doorway)."""
+    cx, cy, cz = centre
+    vs = [bm.verts.new((cx, cy + rw * math.cos(i * math.tau / n), max(0.0, cz + rh * math.sin(i * math.tau / n))))
+          for i in range(n)]
+    bm.faces.new(vs)
+
+
+def _round_at(bm, centre, a, r, n):
+    """An upright disc facing out along angle a (a round window)."""
+    cx, cy, cz = centre
+    tx, ty = -math.sin(a), math.cos(a)
+    vs = [bm.verts.new((cx + math.cos(a) * 0.04 + tx * r * math.cos(i * math.tau / n),
+                        cy + math.sin(a) * 0.04 + ty * r * math.cos(i * math.tau / n), cz + r * math.sin(i * math.tau / n)))
+          for i in range(n)]
+    bm.faces.new(vs)
+
+
+def place_swamp_hut(c, x, y, z, rot):
+    """The swamp hut, its collider, its chimney smoking, and its folk's home before it.
+    Trees standing where it goes are taken away (Blake: "move the tree")."""
+    for ob in list(bpy.data.objects):
+        near = math.hypot(ob.matrix_world.translation.x - x, ob.matrix_world.translation.y - y) < 8.0
+        if ob.type == "MESH" and ("Tree" in ob.name or "Giant" in ob.name) and near:
+            bpy.data.objects.remove(ob)
+    c.place(swamp_hut(c), x, y, z, rot=rot, coll="Props", role="visual", name="Swamp Hut")
+
+    def build(bm):
+        _cyl(bm, (0, 0, -0.6), 3.9, 3.6, n=14)
+        return [(c.lib("swamp_mud", "wall"), list(range(len(bm.faces))))]
+
+    c.proto("Swamp Hut Collider", build)
+    c.place("Swamp Hut Collider", x, y, z, rot=rot, coll="Collision", role="collision")
+    ca, sa = math.cos(rot), math.sin(rot)
+    g = c.game(x + (-1.4 * ca - 1.2 * sa), y + (-1.4 * sa + 1.2 * ca), z + 4.4)
+    c.entity("chimney", x=g[0], y=g[1], z=g[2])
+    hx, hy = x + ca * 7.0, y + sa * 7.0
+    g = c.game(hx, hy, z)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=9.0, n=1, folk="valley",
+             heading=round(math.atan2(-math.cos(rot), math.sin(rot)), 3))
+
+
+def fossil_skulls(c, sink=0.9):
+    """The bog's fossil skulls carved finely in the game (Blake, Bonebog note 8: "lets
+    increase the fidelity of this bone model"): each Fossil Skull the dressing scattered
+    becomes a horned_skull entity where it lay (render/villageDecor.ts), half sunk, with a
+    plain collider."""
+
+    def build(bm):
+        _cyl(bm, (0, 0, -0.5), 1.0, 2.2, n=10)
+        return [(c.lib("bog_bone", "wall"), list(range(len(bm.faces))))]
+
+    c.proto("Skull Collider", build)
+    n = 0
+    for ob in list(bpy.data.objects):
+        if ob.type != "MESH" or not ob.name.startswith("Fossil Skull"):
+            continue
+        p = ob.matrix_world.translation.copy()
+        rot = ob.rotation_euler.z
+        sc = ob.scale.x
+        bpy.data.objects.remove(ob)
+        g = c.game(p.x, p.y, p.z - sink * sc)
+        c.entity("horned_skull", x=g[0], y=g[1], z=g[2], scale=round(0.85 * sc, 3),
+                 heading=round(math.atan2(math.cos(rot), -math.sin(rot)), 3))
+        c.place("Skull Collider", p.x, p.y, p.z - 0.3, rot=rot, scale=(2.2 * sc, 1.6 * sc, 1.0), coll="Collision",
+                role="collision")
+        n += 1
+    print("fossil skulls: %d" % n)

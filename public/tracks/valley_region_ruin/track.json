@@ -115,23 +115,6 @@
       "rate": 5
     },
     {
-      "id": "bubbles_07",
-      "type": "bubbles",
-      "x": -157.0,
-      "y": -0.7,
-      "z": 181.0,
-      "r": 5.25
-    },
-    {
-      "id": "mist_07",
-      "type": "mist",
-      "x": -157.0,
-      "y": 0.30000000000000004,
-      "z": 181.0,
-      "radius": 17.5,
-      "rate": 5
-    },
-    {
       "id": "waterfall_01",
       "type": "waterfall",
       "x": -182.0,
@@ -142,7 +125,7 @@
       "heading": 0.49180917598869855
     },
     {
-      "id": "mist_08",
+      "id": "mist_07",
       "type": "mist",
       "x": -182.0,
       "y": 4.2,
@@ -169,7 +152,7 @@
       "heading": -0.6202494859828215
     },
     {
-      "id": "mist_09",
+      "id": "mist_08",
       "type": "mist",
       "x": 178.6,
       "y": 27.2,
@@ -326,11 +309,27 @@
       "z": 35.45
     },
     {
+      "id": "fire_01",
+      "type": "fire",
+      "x": -124.36,
+      "y": 11.43,
+      "z": 35.51,
+      "size": 0.5
+    },
+    {
       "id": "torch_02",
       "type": "torch",
       "x": -145.28,
       "y": 11.6,
       "z": 31.09
+    },
+    {
+      "id": "fire_02",
+      "type": "fire",
+      "x": -145.36,
+      "y": 11.42,
+      "z": 31.02,
+      "size": 0.5
     },
     {
       "id": "torch_03",
@@ -340,11 +339,27 @@
       "z": 49.71
     },
     {
+      "id": "fire_03",
+      "type": "fire",
+      "x": -135.36,
+      "y": 11.4,
+      "z": 49.76,
+      "size": 0.5
+    },
+    {
       "id": "torch_04",
       "type": "torch",
       "x": -156.45,
       "y": 11.53,
       "z": 51.59
+    },
+    {
+      "id": "fire_04",
+      "type": "fire",
+      "x": -156.55,
+      "y": 11.35,
+      "z": 51.56,
+      "size": 0.5
     },
     {
       "id": "torch_05",
@@ -354,11 +369,27 @@
       "z": 63.42
     },
     {
+      "id": "fire_05",
+      "type": "fire",
+      "x": -139.07,
+      "y": 11.35,
+      "z": 63.41,
+      "size": 0.5
+    },
+    {
       "id": "torch_06",
       "type": "torch",
       "x": -156.89,
       "y": 11.27,
       "z": 74.61
+    },
+    {
+      "id": "fire_06",
+      "type": "fire",
+      "x": -156.99,
+      "y": 11.09,
+      "z": 74.62,
+      "size": 0.5
     },
     {
       "id": "torch_07",
@@ -368,11 +399,27 @@
       "z": 83.02
     },
     {
+      "id": "fire_07",
+      "type": "fire",
+      "x": -137.46,
+      "y": 10.27,
+      "z": 83.01,
+      "size": 0.5
+    },
+    {
       "id": "torch_08",
       "type": "torch",
       "x": -153.56,
       "y": 9.67,
       "z": 96.98
+    },
+    {
+      "id": "fire_08",
+      "type": "fire",
+      "x": -153.65,
+      "y": 9.49,
+      "z": 97.01,
+      "size": 0.5
     },
     {
       "id": "horned_skull_01",
@@ -391,7 +438,7 @@
       "z": 157.99
     },
     {
-      "id": "bubbles_08",
+      "id": "bubbles_07",
       "type": "bubbles",
       "x": -37.62,
       "y": 2.22,
@@ -407,7 +454,7 @@
       "z": 157.72
     },
     {
-      "id": "bubbles_09",
+      "id": "bubbles_08",
       "type": "bubbles",
       "x": -28.63,
       "y": 2.59,
@@ -423,7 +470,7 @@
       "z": 157.48
     },
     {
-      "id": "bubbles_10",
+      "id": "bubbles_09",
       "type": "bubbles",
       "x": -19.94,
       "y": 3.1799999999999997,
@@ -439,7 +486,7 @@
       "z": 157.12
     },
     {
-      "id": "bubbles_11",
+      "id": "bubbles_10",
       "type": "bubbles",
       "x": -11.37,
       "y": 3.9000000000000004,
@@ -455,7 +502,7 @@
       "z": 156.6
     },
     {
-      "id": "bubbles_12",
+      "id": "bubbles_11",
       "type": "bubbles",
       "x": -2.76,
       "y": 4.63,
@@ -471,7 +518,7 @@
       "z": 155.99
     },
     {
-      "id": "bubbles_13",
+      "id": "bubbles_12",
       "type": "bubbles",
       "x": 5.89,
       "y": 5.48,
@@ -487,7 +534,7 @@
       "z": 155.22
     },
     {
-      "id": "bubbles_14",
+      "id": "bubbles_13",
       "type": "bubbles",
       "x": 14.28,
       "y": 6.35,
@@ -503,7 +550,7 @@
       "z": 154.13
     },
     {
-      "id": "bubbles_15",
+      "id": "bubbles_14",
       "type": "bubbles",
       "x": 22.71,
       "y": 6.81,
@@ -519,7 +566,7 @@
       "z": 152.99
     },
     {
-      "id": "bubbles_16",
+      "id": "bubbles_15",
       "type": "bubbles",
       "x": 31.55,
       "y": 6.71,
@@ -535,7 +582,7 @@
       "z": 177.17
     },
     {
-      "id": "bubbles_17",
+      "id": "bubbles_16",
       "type": "bubbles",
       "x": -36.77,
       "y": 2.22,
@@ -551,7 +598,7 @@
       "z": 176.91
     },
     {
-      "id": "bubbles_18",
+      "id": "bubbles_17",
       "type": "bubbles",
       "x": -28.18,
       "y": 2.59,
@@ -567,7 +614,7 @@
       "z": 176.67
     },
     {
-      "id": "bubbles_19",
+      "id": "bubbles_18",
       "type": "bubbles",
       "x": -19.32,
       "y": 3.1799999999999997,
@@ -583,7 +630,7 @@
       "z": 176.29
     },
     {
-      "id": "bubbles_20",
+      "id": "bubbles_19",
       "type": "bubbles",
       "x": -10.37,
       "y": 3.9000000000000004,
@@ -599,7 +646,7 @@
       "z": 175.75
     },
     {
-      "id": "bubbles_21",
+      "id": "bubbles_20",
       "type": "bubbles",
       "x": -1.46,
       "y": 4.63,
@@ -615,7 +662,7 @@
       "z": 175.13
     },
     {
-      "id": "bubbles_22",
+      "id": "bubbles_21",
       "type": "bubbles",
       "x": 7.35,
       "y": 5.48,
@@ -631,7 +678,7 @@
       "z": 174.3
     },
     {
-      "id": "bubbles_23",
+      "id": "bubbles_22",
       "type": "bubbles",
       "x": 16.4,
       "y": 6.35,
@@ -647,7 +694,7 @@
       "z": 173.14
     },
     {
-      "id": "bubbles_24",
+      "id": "bubbles_23",
       "type": "bubbles",
       "x": 25.4,
       "y": 6.81,
@@ -663,7 +710,7 @@
       "z": 172.03
     },
     {
-      "id": "bubbles_25",
+      "id": "bubbles_24",
       "type": "bubbles",
       "x": 34.01,
       "y": 6.71,
@@ -714,11 +761,27 @@
       "z": -97.99
     },
     {
+      "id": "fire_09",
+      "type": "fire",
+      "x": 92.95,
+      "y": 29.62,
+      "z": -97.07,
+      "size": 0.5
+    },
+    {
       "id": "torch_28",
       "type": "torch",
       "x": 74.17,
       "y": 29.65,
       "z": -104.76
+    },
+    {
+      "id": "fire_10",
+      "type": "fire",
+      "x": 73.16,
+      "y": 29.47,
+      "z": -105.73,
+      "size": 0.5
     },
     {
       "id": "torch_29",
@@ -728,11 +791,27 @@
       "z": -88.16
     },
     {
+      "id": "fire_11",
+      "type": "fire",
+      "x": 84.02,
+      "y": 29.42,
+      "z": -87.32,
+      "size": 0.5
+    },
+    {
       "id": "torch_30",
       "type": "torch",
       "x": 64.8,
       "y": 29.64,
       "z": -93.24
+    },
+    {
+      "id": "fire_12",
+      "type": "fire",
+      "x": 63.71,
+      "y": 29.46,
+      "z": -94.11,
+      "size": 0.5
     },
     {
       "id": "torch_31",
@@ -742,11 +821,27 @@
       "z": -76.8
     },
     {
+      "id": "fire_13",
+      "type": "fire",
+      "x": 75.05,
+      "y": 29.59,
+      "z": -75.9,
+      "size": 0.5
+    },
+    {
       "id": "torch_32",
       "type": "torch",
       "x": 55.99,
       "y": 29.95,
       "z": -82.5
+    },
+    {
+      "id": "fire_14",
+      "type": "fire",
+      "x": 54.9,
+      "y": 29.77,
+      "z": -83.38,
+      "size": 0.5
     },
     {
       "id": "eruption_01",
@@ -779,7 +874,7 @@
       "z": 257.95
     },
     {
-      "id": "bubbles_26",
+      "id": "bubbles_25",
       "type": "bubbles",
       "x": 186.0,
       "y": 15.46,
@@ -795,7 +890,7 @@
       "z": 93.0
     },
     {
-      "id": "bubbles_27",
+      "id": "bubbles_26",
       "type": "bubbles",
       "x": 167.0,
       "y": 19.3,
@@ -811,7 +906,7 @@
       "z": 198.0
     },
     {
-      "id": "bubbles_28",
+      "id": "bubbles_27",
       "type": "bubbles",
       "x": 93.0,
       "y": 8.28,
@@ -1538,6 +1633,33 @@
       "z": 168.97
     },
     {
+      "id": "chimney_04",
+      "type": "chimney",
+      "x": -100.22,
+      "y": 4.97,
+      "z": 174.05
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": -95.15,
+      "z": 167.25,
+      "y": 0.57,
+      "r": 9.0,
+      "n": 1,
+      "folk": "valley",
+      "heading": -0.499
+    },
+    {
+      "id": "horned_skull_02",
+      "type": "horned_skull",
+      "x": -71.48,
+      "y": -0.61,
+      "z": 131.17,
+      "scale": 0.952,
+      "heading": -0.017
+    },
+    {
       "id": "area_ambient_01",
       "type": "area_ambient",
       "area": "riverbend",
@@ -1567,9 +1689,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "0dd286b05f1a03a19cd60e774eb05cdb276bf847f018305d8041f8612c2e8796",
+    "valley_dress.py": "8e398e6e8ce5e96d019e78a9f23e5f94366850aff4dd7c30c12d2ee54ae3660a",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "a13368f77427ea48878fd404c2af9bb8e08bb5f4a9aa654bfa5773b782450604",
-    "valley_village.py": "7eb73679e2f0d361cee1be64b21b51bcdd9f51a610d6de04e740b0214e1c8ec3"
+    "valley_region.py": "9931dd8302846f5dc9c02cb863986e339d90013020c6f861504e8dec3e80b0d5",
+    "valley_village.py": "0a955361e1840639905e3dcdbf6f3a265dced5b293f6815f04208974034a2a66"
   }
 }

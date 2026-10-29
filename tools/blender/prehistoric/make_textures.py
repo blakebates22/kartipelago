@@ -1385,8 +1385,10 @@ def bog_root():
 
     def f(x, y):
         groove = math.sin(x * 1.1 + a(x, y) * 7)
+        # (No moss on it: Blake, Oct 29, "remove the leaves from the bark texture". Just
+        # darker, older patches of bark.)
         if b(x, y) > 0.8:
-            return pick(["#33502a", "#3e5e2e"], a(x, y))
+            return pick(pal[:3], 0.2 + groove * 0.3 + a(x, y) * 0.3)
         return pick(pal, 0.45 + groove * 0.3 + a(x, y) * 0.2)
 
     return paint(f)

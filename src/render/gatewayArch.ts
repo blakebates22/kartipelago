@@ -16,6 +16,7 @@
  * faces +z (the way you come out), the tunnel runs back to -z.
  */
 import * as THREE from "three";
+import { createFire, glowTexture, type Fire } from "./fire";
 
 export type ArchTheme = "prehistoric" | "frostveil" | "desert" | "beach" | "dragon" | "lair";
 
@@ -213,100 +214,6 @@ function signTexture(label: string, th: (typeof THEMES)[ArchTheme], seed: number
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   return tex;
-}
-
-// ---------------------------------------------------------------- the fire
-
-const FRAMES = 8;
-const flameCache = new Map<string, HTMLCanvasElement>();
-
-/** A flame, in FRAMES frames side by side: tongues licking up from a hot white heart,
- * yellow to orange to red at their tips, each frame a moment later. */
-function flameSheet(hot: string, mid: string, tip: string) {
-  const key = hot + mid + tip;
-  const have = flameCache.get(key);
-  if (have) return have;
-  const FW = 64;
-  const FH = 128;
-  const cv = document.createElement("canvas");
-  cv.width = FW * FRAMES;
-  cv.height = FH;
-  const g = cv.getContext("2d")!;
-  g.globalCompositeOperation = "lighter";
-  for (let f = 0; f < FRAMES; f++) {
-    const ox = f * FW;
-    const t = (f / FRAMES) * Math.PI * 2;
-    // Tongues: a few curved blades, each swaying with its own phase.
-    for (let k = 0; k < 5; k++) {
-      const ph = t + k * 1.3;
-      const hgt = FH * (0.55 + 0.3 * Math.abs(Math.sin(ph * (k % 2 ? 1 : 2) + k)));
-      const w = FW * (0.36 - k * 0.04);
-      const sway = Math.sin(ph) * FW * 0.12;
-      const bx = ox + FW / 2 + (k - 2) * FW * 0.06;
-      const by = FH - 10;
-      const grad = g.createLinearGradient(0, by, 0, by - hgt);
-      grad.addColorStop(0, hot);
-      grad.addColorStop(0.35, mid);
-      grad.addColorStop(0.8, tip);
-      grad.addColorStop(1, "rgba(0,0,0,0)");
-      g.fillStyle = grad;
-      g.globalAlpha = 0.55;
-      g.beginPath();
-      g.moveTo(bx - w / 2, by);
-      g.bezierCurveTo(
-        bx - w / 2,
-        by - hgt * 0.4,
-        bx + sway - w * 0.2,
-        by - hgt * 0.7,
-        bx + sway * 1.6,
-        by - hgt,
-      );
-      g.bezierCurveTo(
-        bx + sway + w * 0.2,
-        by - hgt * 0.7,
-        bx + w / 2,
-        by - hgt * 0.4,
-        bx + w / 2,
-        by,
-      );
-      g.closePath();
-      g.fill();
-    }
-    // The heart.
-    const heart = g.createRadialGradient(ox + FW / 2, FH - 22, 2, ox + FW / 2, FH - 22, FW * 0.34);
-    heart.addColorStop(0, "rgba(255,255,240,0.95)");
-    heart.addColorStop(1, "rgba(255,200,80,0)");
-    g.globalAlpha = 1;
-    g.fillStyle = heart;
-    g.fillRect(ox, FH - 60, FW, 60);
-  }
-  flameCache.set(key, cv);
-  return cv;
-}
-
-/** A soft round glow (round a flame, deep in the tunnel). */
-function glowTexture(color: string, rings = false) {
-  const cv = document.createElement("canvas");
-  cv.width = cv.height = 128;
-  const g = cv.getContext("2d")!;
-  const c = new THREE.Color(color);
-  const rgb = `${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)}`;
-  const grad = g.createRadialGradient(64, 64, 4, 64, 64, 64);
-  grad.addColorStop(0, `rgba(255,255,240,0.95)`);
-  grad.addColorStop(0.25, `rgba(${rgb},0.85)`);
-  grad.addColorStop(1, `rgba(${rgb},0)`);
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 128, 128);
-  if (rings) {
-    g.strokeStyle = "rgba(255,255,255,0.35)";
-    g.lineWidth = 3;
-    for (let k = 0; k < 3; k++) {
-      g.beginPath();
-      g.arc(64, 64, 18 + k * 14, k, k + 3.6);
-      g.stroke();
-    }
-  }
-  return new THREE.CanvasTexture(cv);
 }
 
 // ---------------------------------------------------------------- the rock
@@ -516,20 +423,9 @@ export function createGatewayArch(
 
   // Torches either side of the mouth: a carved post, an iron basket, a living fire.
   const lair = o.theme === "lair";
-  const sheet = lair
-    ? flameSheet("rgba(255,240,200,1)", "rgba(255,90,20,0.9)", "rgba(160,10,0,0.7)")
-    : flameSheet("rgba(255,250,220,1)", "rgba(255,170,40,0.9)", "rgba(220,60,10,0.7)");
   const postMat = keep(new THREE.MeshLambertMaterial({ color: "#5a3a20", flatShading: true }));
   const ironMat = keep(new THREE.MeshLambertMaterial({ color: "#2e2a28", flatShading: true }));
-  const fires: {
-    mats: THREE.MeshBasicMaterial[];
-    planes: THREE.Mesh[];
-    halo: THREE.Mesh;
-    embers: THREE.Points;
-    seeds: number[];
-  }[] = [];
-  const haloTex = glowTexture(lair ? "#ff4010" : "#ffa030");
-  texs.push(haloTex);
+  const fires: Fire[] = [];
   for (const sd of [-1, 1]) {
     const x = sd * 9.0;
     const z = 3.6;
@@ -556,94 +452,22 @@ export function createGatewayArch(
     coals.rotation.x = -Math.PI / 2;
     coals.position.set(x, 4.62, z);
     group.add(coals);
-    // The flames: three crossed sheets, each a moment apart in the flipbook.
-    const fm: THREE.MeshBasicMaterial[] = [];
-    const planes: THREE.Mesh[] = [];
-    for (let k = 0; k < 3; k++) {
-      const tex = new THREE.CanvasTexture(sheet);
-      tex.repeat.set(1 / FRAMES, 1);
-      texs.push(tex);
-      const m = keep(
-        new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide,
-        }),
-      );
-      fm.push(m);
-      const pl = new THREE.Mesh(geo(new THREE.PlaneGeometry(1.5, 2.6)), m);
-      pl.position.set(x, 5.75, z);
-      pl.rotation.y = (k / 3) * Math.PI;
-      group.add(pl);
-      planes.push(pl);
-    }
-    const halo = new THREE.Mesh(
-      geo(new THREE.PlaneGeometry(4.2, 4.2)),
-      keep(
-        new THREE.MeshBasicMaterial({
-          map: haloTex,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          opacity: 0.55,
-        }),
-      ),
-    );
-    halo.position.set(x, 5.4, z + 0.1);
-    group.add(halo);
-    // Embers: sparks rising off it, drifting, winking out.
-    const NE = 14;
-    const eg = geo(new THREE.BufferGeometry());
-    eg.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(NE * 3), 3));
-    const embers = new THREE.Points(
-      eg,
-      keep(
-        new THREE.PointsMaterial({
-          color: lair ? 0xff5020 : 0xffb040,
-          size: 0.18,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-        }),
-      ),
-    );
-    embers.position.set(x, 5.0, z);
-    embers.frustumCulled = false;
-    group.add(embers);
-    fires.push({ mats: fm, planes, halo, embers, seeds: [...Array(NE)].map(() => r()) });
+    const fire = createFire({ red: lair, seed: o.seed + sd });
+    fire.group.position.set(x, 4.6, z);
+    group.add(fire.group);
+    fires.push(fire);
   }
   return {
     group,
     update(t) {
       glow.rotation.z = t * 0.6;
       glowMat.opacity = 0.75 + 0.2 * Math.sin(t * 2.1 + o.seed);
-      fires.forEach((f, i) => {
-        f.mats.forEach((m, k) => {
-          const frame = Math.floor(t * 14 + k * 2.7 + i * 1.3) % FRAMES;
-          m.map!.offset.x = frame / FRAMES;
-        });
-        const k = 1 + 0.12 * Math.sin(t * 9 + i * 2) + 0.07 * Math.sin(t * 23 + i);
-        f.planes.forEach((p) => p.scale.set(1, k, 1));
-        (f.halo.material as THREE.MeshBasicMaterial).opacity =
-          0.45 + 0.12 * Math.sin(t * 13 + i * 3) + 0.06 * Math.sin(t * 31);
-        const pa = f.embers.geometry.getAttribute("position") as THREE.BufferAttribute;
-        f.seeds.forEach((s, e) => {
-          const life = (t * (0.5 + s * 0.4) + s * 7) % 1;
-          pa.setXYZ(
-            e,
-            Math.sin(s * 40 + t * 1.3) * 0.35 * life,
-            life * 3.2,
-            Math.cos(s * 31 + t * 1.1) * 0.35 * life,
-          );
-        });
-        pa.needsUpdate = true;
-      });
+      for (const f of fires) f.update(t);
       sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.015;
     },
     dispose() {
       parent.remove(group);
+      for (const f of fires) f.dispose();
       for (const tx of texs) tx.dispose();
       for (const m of mats) m.dispose();
       for (const g of geos) g.dispose();
