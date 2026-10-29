@@ -8,7 +8,7 @@
  *   talking: the jaw in a speech rhythm       (while they have the line)
  *   walking: feet planted, stepping by the distance travelled (never skating)
  *   gestures: wave, point, cheer, nod, shake, shrug, bow, cower, think, raiseStaff,
- *             blowHorn, breakHorn, holdOut, touchHorn, kneel   (each blends in and out)
+ *             blowHorn, breakHorn, holdOut, touchHorn, dance, kneel   (each blends in and out)
  *
  * Purely visual: it reads the cue and the distance moved, and poses the rig.
  */
@@ -31,6 +31,7 @@ export type Gesture =
   | "breakHorn"
   | "holdOut"
   | "touchHorn"
+  | "dance"
   | "kneel";
 
 export const GESTURES: readonly Gesture[] = [
@@ -48,6 +49,7 @@ export const GESTURES: readonly Gesture[] = [
   "breakHorn",
   "holdOut",
   "touchHorn",
+  "dance",
   "kneel",
 ];
 
@@ -181,6 +183,33 @@ const POSES: Record<Gesture, (t: number, c: Ctx) => GPose> = {
       jaw: 0.75,
       lids: t % 1.4 > 0.7 ? 0.8 : 0,
       brow: 0.7,
+    };
+  },
+  dance(t, c) {
+    // A festival dance: bouncing on the beat, swaying side to side, one arm up and then
+    // the other, the head bobbing along.
+    const beat = t * 2 * Math.PI * 1.15;
+    const bounce = Math.abs(Math.sin(beat)) * 0.06;
+    const sway = Math.sin(beat / 2);
+    const [l, r] = c.shoulder;
+    const up = (k: number) => Math.max(0, k);
+    return {
+      crouch: 0.04 - bounce,
+      roll: sway * 0.12,
+      twist: sway * 0.18,
+      hands: [
+        [l.x + 0.12, l.y + 0.1 + up(sway) * 0.36, l.z + 0.16],
+        [r.x - 0.12, r.y + 0.1 + up(-sway) * 0.36, r.z + 0.16],
+      ],
+      handRot: [
+        [-1.0, 0, 0.5],
+        [-1.0, 0, -0.5],
+      ],
+      head: [-0.08 + Math.sin(beat) * 0.08, sway * 0.15, sway * 0.12],
+      lean: c.quad ? -0.15 : -0.04,
+      jaw: 0.5,
+      brow: 0.6,
+      lids: 0.15,
     };
   },
   nod(t) {
@@ -379,18 +408,19 @@ const POSES: Record<Gesture, (t: number, c: Ctx) => GPose> = {
     };
   },
   touchHorn(t) {
-    // His hand goes to the horn at his hip, closes round its middle and lifts it out in
-    // front of him, across his belly, and he looks down at it (the story turns on it).
+    // His hand goes to the horn at his hip, closes round its middle and lifts it a little
+    // out in front of him on that side (clear of his belly), and he looks down at it (the
+    // story turns on it).
     const d = ramp(t, 0.1, 0.9);
-    const grip: V3 = lerp3([-0.3, 0.06, -0.06], [-0.1, 0.24, 0.3], d);
-    const dir = lerp3([0.1, 0.5, -0.3], [1, 0.3, 0.2], d);
+    const grip: V3 = lerp3([-0.3, 0.06, -0.06], [-0.3, 0.2, 0.42], d);
+    const dir = lerp3([0.1, 0.5, -0.3], [-0.1, 0.55, 1], d);
     const horn = gripAt(grip, dir, [0, 0.035, 0.18]);
     return {
       props: { hornA: horn, hornB: horn },
-      hands: [null, [grip[0], grip[1] + 0.015, grip[2] + 0.01]],
-      handRot: [null, [-0.2, 0, -1.5]],
-      head: [0.38 * d, -0.1 * d, 0.04 * d],
-      lean: 0.08 * d,
+      hands: [null, [grip[0], grip[1] + 0.015, grip[2]]],
+      handRot: [null, [-0.6, 0, -1.2]],
+      head: [0.36 * d, 0.18 * d, 0.04 * d],
+      lean: 0.06 * d,
       brow: -0.5 * d,
       lids: 0.35,
       jaw: 0.02,

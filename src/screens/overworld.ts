@@ -542,15 +542,13 @@ function regionDressing(game: Game, session: Session, region: Region) {
     const [x, z] = P(f!, r!);
     return { v: createBannerView(session.root, color), x, z, h: sp.heading + Math.PI / 2 };
   });
-  const folk = ({ valley: "valley", snow: "snow", desert: "desert", beach: "beach" } as const)[
-    region.kingdom as "valley"
-  ];
   const guards = [
     [20, -4],
     [20, 4],
   ].map(([f, r], i) => {
     const [x, z] = P(f!, r!);
-    return { v: createGuardView(session.root, folk, 31 + i * 9), x, z };
+    // (The dragon's own guards: Dragon Kingdom folk, as in The Hundredth Summer.)
+    return { v: createGuardView(session.root, "dragon", 31 + i * 9), x, z };
   });
   return {
     step(t: number) {

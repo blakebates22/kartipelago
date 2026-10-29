@@ -48,6 +48,8 @@ export function designOf(look: DragonLook | undefined): DesignId {
   }
 }
 
+export { DRAGON_SIZE } from "./storyDragons/headAt";
+
 export interface StoryDragonView {
   readonly root: THREE.Group;
   readonly design: DesignId;

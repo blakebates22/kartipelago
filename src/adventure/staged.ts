@@ -17,7 +17,7 @@
 import type { RacerId } from "../render/racers/designs";
 import type { Folk, Species } from "../render/villager";
 import type { DragonLook } from "../render/dragon";
-import { DRAGON_HEAD } from "../render/storyDragons/headAt";
+import { DRAGON_HEAD, DRAGON_SIZE } from "../render/storyDragons/headAt";
 import type { StoneState } from "../render/storyProps";
 import { REGIONS, regionById, regionOfKingdom } from "../overworld/regions";
 
@@ -90,6 +90,7 @@ export type Gesture =
   | "breakHorn"
   | "holdOut"
   | "touchHorn"
+  | "dance"
   | "kneel";
 
 export interface StagedBeat {
@@ -387,6 +388,43 @@ const campFolk = (ruined: boolean): Record<string, ActorSpec> =>
         v3: vill("valley", 21, [12, -6], [0, -4]),
       };
 const VALLEY = "dinosaur_valley";
+/** Where Cinderjaw lands in the camp (The Hundredth Summer): its flat ground, east. */
+const CINDER_LANDS: V2 = [28, -8];
+/** His guards' runs out across the valley as he takes it: from his feet, to. */
+const GUARD_RUNS: [V2, V2][] = [
+  [
+    [16, -14],
+    [-30, -30],
+  ],
+  [
+    [17, -6],
+    [-34, 4],
+  ],
+  [
+    [18, -18],
+    [-12, -42],
+  ],
+  [
+    [18, 0],
+    [-6, 22],
+  ],
+  [
+    [15, -10],
+    [-44, -14],
+  ],
+  [
+    [20, -22],
+    [24, -42],
+  ],
+  [
+    [16, -2],
+    [-26, -6],
+  ],
+  [
+    [19, -12],
+    [-22, -20],
+  ],
+];
 const cheer = (...who: string[]) =>
   Object.fromEntries(who.map((w) => [w, "cheer"])) as Record<string, Gesture>;
 const cower = (...who: string[]) =>
@@ -457,7 +495,11 @@ add(
       wide: { from: [-8, 6, -14], to: [-10, 7, -16], look: [2, 1, -2] },
       per: {
         2: { fx: { gesture: cheer("v1", "v2", "v3") } },
-        3: { fx: { gesture: { elder: "cheer", ...cheer("v1", "v2", "v3") } } },
+        // The whole camp celebrates: Mossback cheering, the folk dancing.
+        3: {
+          cam: { from: [-6, 2.6, -2], to: [-6.5, 2.8, -1.5], look: [1, 1.4, -11] },
+          fx: { gesture: { elder: "cheer", v1: "dance", v2: "dance", v3: "dance" } },
+        },
       },
     },
   ),
@@ -475,9 +517,16 @@ add(
         at: [-160, 120],
         heading: 2.4,
         y: 70,
-        scale: 2.2,
+        scale: DRAGON_SIZE.cinderjaw,
         look: "ember",
       },
+      // His guards (Dragon Kingdom folk), there once he's landed.
+      ...Object.fromEntries(
+        GUARD_RUNS.map(([from], i) => [
+          `g${i + 1}`,
+          { kind: "guard", folk: "dragon", seed: 40 + i * 7, at: from, heading: 0, hidden: true },
+        ]),
+      ),
     },
     {
       music: "festival",
@@ -487,8 +536,12 @@ add(
         0: { fx: { gesture: { elder: "think" } } },
         1: { fx: { gesture: { elder: "think" }, music: "suspense" } },
         2: { fx: { gesture: { elder: "kneel" } } },
+        // (Blake, Oct 28: we saw only his belly, his feet floating, never his face. He
+        // lands now on the camp's own flat ground, east of it, facing the camp, and the
+        // shots are from the camp, low, his face toward us.)
+        // His shadow over the camp: seen side-on, crossing the sky.
         3: {
-          cam: { from: [0, 3, -4], look: [-40, 40, 40], lookTo: [40, 50, -10] },
+          cam: { from: [-10, 3, -40], look: [-60, 40, 60], lookTo: [40, 40, -16] },
           moves: [{ actor: "cinderjaw", to: [60, -30], y: 45, dur: 4.5 }],
           fx: {
             darken: true,
@@ -497,26 +550,47 @@ add(
             gesture: cower("v1", "v2", "v3", "elder"),
           },
         },
+        // He comes down behind you, east of the camp.
         4: {
-          cam: { from: [4, 1.2, -2], to: [2, 1.0, -1], look: [0, 26, 30], lookTo: [0, 30, 22] },
-          moves: [{ actor: "cinderjaw", to: [0, 58], y: 0, dur: 2.5, heading: Math.PI }],
-          fx: { pose: { cinderjaw: "land" }, shake: 0.6, darken: true },
+          cam: {
+            from: [-6, 3.5, 6],
+            to: [-5, 3.5, 5],
+            look: [22, 14, -8],
+            lookTo: [14, 10, -8],
+          },
+          moves: [{ actor: "cinderjaw", to: CINDER_LANDS, y: 0, dur: 3, heading: -Math.PI / 2 }],
+          fx: { pose: { cinderjaw: "land" }, shake: 0.35 },
         },
+        // Rearing up to name himself: from the camp, his face toward us.
         5: {
-          cam: { from: [16, 24, -8], to: [14, 25, -6], look: [0, 33, 20] },
-          fx: { pose: { cinderjaw: "roar" }, darken: true },
+          cam: { from: [-8, 3, 8], to: [-7, 3.2, 7], look: [13, 11, -8] },
+          fx: { pose: { cinderjaw: "idle" } },
         },
-        6: { fx: { pose: { cinderjaw: "idle" }, darken: true } },
+        // His head down over the racers.
+        6: {
+          cam: { from: [-2, 4, 4], to: [-1, 4.3, 3.4], look: [13, 14, -8] },
+          fx: { pose: { cinderjaw: "idle" } },
+        },
         7: {
-          cam: { from: [-26, 20, -6], to: [-28, 22, -8], look: [0, 44, 30] },
+          cam: { from: [-14, 9, -12], to: [-15, 9.4, -13], look: [12, 7, -8] },
           fx: {
-            pose: { cinderjaw: "roar" },
-            shake: 1.0,
-            darken: true,
+            pose: { cinderjaw: "breathe" },
+            fire: "cinderjaw",
+            shake: 0.6,
             gesture: cower("v1", "v2", "v3"),
           },
         },
-        8: { fx: { darken: true, music: "conquered" } },
+        // His guards fan out from his feet across the valley.
+        8: {
+          cam: { from: [-22, 10, -36], to: [-24, 10.5, -38], look: [0, 1, -8] },
+          fx: {
+            darken: true,
+            music: "conquered",
+            show: GUARD_RUNS.map((_, i) => `g${i + 1}`),
+            gesture: cower("v1", "v2", "v3", "elder"),
+          },
+          moves: GUARD_RUNS.map(([, to], i) => ({ actor: `g${i + 1}`, to, dur: 7 })),
+        },
       },
     },
   ),
@@ -904,12 +978,19 @@ export function challengeStaged(
   const first = Math.max(0, sc?.beats.findIndex((b) => b.who === champ) ?? 0);
   const per: Record<number, Partial<StagedBeat>> = {};
   if (d) per[0] = { fx: { pose: { [d]: "rear" } } };
+  // The champion's lines over your shoulder, so you're in the shot with them (Blake,
+  // Oct 28: a close-up of the champion alone loses you); their arrival from behind you.
+  sc?.beats.forEach((b, k) => {
+    if (b.who === champ)
+      per[k] = {
+        ...per[k],
+        cam: { from: P3(-3, 2.6, -4.5), to: P3(-2.6, 2.6, -4.2), look: P3(5, 1.0, 2) },
+      };
+  });
   per[first] = {
     ...per[first],
     moves: [{ actor: champ, to: stop, dur: 3, heading: face(stop, you) }],
-    ...(first === 0
-      ? { cam: { from: P3(-7, 3, -4), to: P3(-6, 3.2, -3), look: P3(20, 1.5, 4) } }
-      : {}),
+    cam: { from: P3(-4, 2.6, -6), to: P3(-3.4, 2.6, -5.6), look: P3(16, 1.2, 4) },
   };
   return stage(sceneOf(kingdom, "challenge"), region, false, actors, {
     wide: { from: P3(-12, 8, -10), to: P3(-14, 10, -12), look: P3(3, 0.5, 1.5) },

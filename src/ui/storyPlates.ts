@@ -805,7 +805,57 @@ function ruleForfeit(): Plate {
   };
 }
 
-/** 6. The race's last turn: the dragons ahead, the karts behind, and a horn raised out
+/** 6. The race begins: the crews' karts off the line, the dragons lifting off beside
+ * them, both sides' banners, the crowd. */
+function raceStart(): Plate {
+  const k = new Kit();
+  k.ground(["#b8c088", "#a0ac74"]);
+  k.road(
+    [
+      [0, -120],
+      [0, -20],
+      [0, 40],
+      [-8, 140],
+    ],
+    14,
+  );
+  k.startLine(0, -2, 0, 15);
+  k.racer("tiko", -4, 4, 0.05, 40);
+  k.racer("brakka", 1, 6.5, -0.03, 40);
+  k.racer("pebble", 5, 3, 0.02, 40);
+  const d1 = k.dragon("cinderjaw", -9.5, 3, 2, 0.1, 0.2);
+  const d2 = k.dragon("rimefang", 10, 4.5, 0, -0.1, 0.18);
+  // Both sides' banners at the line, and the crowd either side.
+  for (const [x, c] of [
+    [-11, "#8a2a20"],
+    [11, "#2a5a8a"],
+  ] as const) {
+    const pole = k.mesh(new THREE.CylinderGeometry(0.2, 0.2, 10, 5), k.mat("#6a4426"));
+    pole.position.set(x, 5, -4);
+    const cloth = k.mesh(new THREE.BoxGeometry(3, 4, 0.15), k.mat(c));
+    cloth.position.set(x - 1.6 * Math.sign(x), 7.6, -4);
+  }
+  const r = rnd(21);
+  for (let i = 0; i < 6; i++) k.folk("valley", 70 + i, -13 - r() * 4, 2 + i * 3.5, Math.PI / 2);
+  for (let i = 0; i < 6; i++) k.folk("valley", 80 + i, 13 + r() * 4, 2 + i * 3.5, -Math.PI / 2);
+  for (let i = 0; i < 10; i++) k.tree(-90 + r() * 180, -40 - r() * 50, "round", 1 + r());
+  k.mountain(-80, -300, 100, 90, true);
+  k.mountain(90, -320, 110, 90, true);
+  const camera = camOf(42);
+  return {
+    scene: k.scene,
+    camera,
+    update(t, dt) {
+      k.animate(dt);
+      fly(d1, "fly", t, 3 + Math.min(1, t / 6) * 2, 0.3);
+      fly(d2, "fly", t, 4.5 + Math.min(1, t / 6) * 2, 0.3);
+      drift(camera, [3, 3.6, 26], [2, 3.6, 24], [0, 4.5, -2], t);
+    },
+    dispose: () => k.dispose(),
+  };
+}
+
+/** 7. The race's last turn: the dragons ahead, the karts behind, and a horn raised out
  * of the crowd at the bend (whose hand, the picture doesn't show). */
 function horn(): Plate {
   const k = new Kit();
@@ -893,7 +943,7 @@ function horn(): Plate {
   };
 }
 
-/** 7. The finish: the crews over the line, the dragons faltering behind. */
+/** 8. The finish: the crews over the line, the dragons faltering behind. */
 function finish(): Plate {
   const k = new Kit();
   k.ground(["#b8c088", "#a0ac74"]);
@@ -929,7 +979,7 @@ function finish(): Plate {
   };
 }
 
-/** 8. The dragons keep their oath: away over the border, home to the Dragon Kingdom. */
+/** 9. The dragons keep their oath: away over the border, home to the Dragon Kingdom. */
 function withdraw(): Plate {
   const k = new Kit();
   k.ground(["#b8c088", "#9eae76"]);
@@ -969,7 +1019,7 @@ function withdraw(): Plate {
   };
 }
 
-/** 9. The stones: one in each land, the Heart Stone behind them in the Dragon Kingdom. */
+/** 10. The stones: one in each land, the Heart Stone behind them in the Dragon Kingdom. */
 function stones(): Plate {
   const k = new Kit();
   k.ground(["#c4c094", "#aeaa80"], 0.6);
@@ -1002,7 +1052,18 @@ function stones(): Plate {
   };
 }
 
-const PAGES = [war, oath, ruleBorder, ruleChampion, ruleForfeit, horn, finish, withdraw, stones];
+const PAGES = [
+  war,
+  oath,
+  ruleBorder,
+  ruleChampion,
+  ruleForfeit,
+  raceStart,
+  horn,
+  finish,
+  withdraw,
+  stones,
+];
 export const PLATE_COUNT = PAGES.length;
 
 /** The ribbon over each rules page (the oath, then rules I, II and III). */

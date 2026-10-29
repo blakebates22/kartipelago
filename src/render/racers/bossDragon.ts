@@ -14,7 +14,12 @@ import * as THREE from "three";
 import { Build, card, horn, loft, tube, type V3 } from "./kit/shapes";
 import { skinMaterial } from "./kit/paint";
 import type { RacerMotion } from "./animator";
-import { createStoryDragon, type DesignId, type StoryDragonView } from "../storyDragon";
+import {
+  DRAGON_SIZE,
+  createStoryDragon,
+  type DesignId,
+  type StoryDragonView,
+} from "../storyDragon";
 
 export interface BossPalette {
   skin: string;
@@ -382,7 +387,7 @@ export class BossDragon {
    * (the flame rides `mouth`), and roars or bows at the finish.
    */
   private initStory(design: DesignId) {
-    const s = design === "king" ? 0.22 : design === "cinderjaw" ? 0.24 : 0.2;
+    const s = DRAGON_SIZE[design] ?? (design === "king" ? 0.22 : 0.2);
     this.story = createStoryDragon(this.root, design, s);
     // (Its legs step at a stride for its size, not a scurry.)
     this.story.pace = 3;

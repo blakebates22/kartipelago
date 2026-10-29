@@ -58,6 +58,10 @@ WHERE: A storybook page, inked pictures turning with each line.
         WINNERS LOSE THE LANDS, UNTIL A CHAMPION BEATS THE KING AND WINS
         THEM BACK.
 
+    NARRATOR (CAPTION)
+        WITH THE OATH SWORN, THE RACE BEGAN: DRAGONS AND CREWS, SIDE BY
+        SIDE.
+
     [A horn blasts.]
     NARRATOR (CAPTION)
         THE DRAGONS FLEW FASTER THAN ANYTHING ALIVE. BUT AT THE LAST
@@ -65,11 +69,13 @@ WHERE: A storybook page, inked pictures turning with each line.
 
     NARRATOR (CAPTION)
         ...THE DRAGONS FALTERED, AND THE CREWS CROSSED THE LINE FIRST.
+        NO DRAGON SAW WHO BLEW THE HORN.
 
     [Golden light.]
     NARRATOR (CAPTION)
-        THE DRAGONS KEPT THEIR OATH. THEY WITHDREW BEHIND THE BORDER, TO
-        THE DRAGON KINGDOM.
+        THE KING SUSPECTED A TRICK, BUT HE COULD NOT PROVE IT, AND HE
+        HAD SWORN. SO THE DRAGONS KEPT THEIR OATH, AND WITHDREW BEHIND
+        THE BORDER, TO THE DRAGON KINGDOM.
 
     NARRATOR (CAPTION)
         A PACT STONE STANDS IN EACH LAND, AND THE HEART STONE IN THE
@@ -123,8 +129,7 @@ ON STAGE: Elder Mossback, Lumen, you, townsfolk.
 
     [A townsperson moves. A townsperson moves.]
     NARRATOR (CAPTION)
-        MOSSBACK'S HAND GOES TO THE OLD HORN AT HIS HIP: THE FOUNDERS'
-        HORN.
+        MOSSBACK'S HAND GOES TO THE OLD HORN AT HIS HIP.
 
     [Lumen moves. A townsperson moves. The townsfolk cheer.]
     LUMEN
@@ -140,8 +145,8 @@ ON STAGE: you, Rex.
 
     [Rex drives.]
     REX
-        SO YOU'RE THE ONE WHO TOOK ALL FOUR. NOT BAD, FOR A NOBODY WITH
-        NO CREW.
+        SO YOU'RE THE ONE WHO TOOK ALL FOUR RACES. NOT BAD, FOR A NOBODY
+        WITH NO CREW.
 
     REX
         I'M REX. NO CREW EITHER. NEVER NEEDED ONE. I'M THE BEST RACER IN
@@ -166,9 +171,9 @@ ON STAGE: Rex, you, Elder Mossback, townsfolk.
 
     [The townsfolk cheer.]
     NARRATOR (CAPTION)
-        REX JOINS YOUR CREW! (YOU CAN RACE AS REX IN EVERY MODE NOW.)
+        REX JOINS YOUR CREW!
 
-    [Elder Mossback cheers. The townsfolk cheer.]
+    [Elder Mossback cheers. The townsfolk react.]
     ELDER MOSSBACK
         A NEW CREW, BORN ON FESTIVAL DAY! NOW THAT'S A GOOD OMEN.
 
@@ -177,7 +182,8 @@ SCENE 5. THE HUNDREDTH SUMMER   [valley_hundredth]
 ------------------------------------------------------------------------
 WHEN: Straight after A Crew of Two, at sunset.
 WHERE: Dinosaur Valley, staged in 3D.
-ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw.
+ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw, g1, g2, g3,
+g4, g5, g6, g7, g8.
 
     [Elder Mossback stops to think.]
     ELDER MOSSBACK
@@ -199,10 +205,9 @@ ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw.
 
     [Cinderjaw comes down to land.]
     CINDERJAW
-        NOBODY CAME. A HUNDRED YEARS, AND NO CHAMPION. BY THE PACT, THE
-        LANDS ARE FORFEIT.
+        NOBODY CAME. A HUNDRED YEARS, AND NO CHAMPION. BY THE PACT, YOUR
+        LANDS ARE OURS NOW.
 
-    [Cinderjaw roars.]
     CINDERJAW
         I AM CINDERJAW. FOUR DRAGONS TAKE THE FOUR LANDS, AND THIS
         VALLEY IS MINE.
@@ -210,12 +215,15 @@ ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw.
     CINDERJAW
         THE PACT STILL SAYS I MAY NOT HARM YOU. SO I WON'T. FOR NOW.
 
-    [Cinderjaw roars. The townsfolk cower. The ground shakes.]
+    [Cinderjaw breathes fire. The townsfolk cower.]
     CINDERJAW
         SEAL THE BORDERS! ROUND UP EVERY RACER! THE RACES BELONG TO ME
         NOW.
 
-    [Music: the conquered lands.]
+    [G moves. The other guard moves. G moves. G moves. G moves. G moves.
+    G moves. G moves. G appears. The other guard appears. G appears. G
+    appears. G appears. G appears. G appears. G appears. Elder Mossback
+    cowers. The townsfolk cower. Music: the conquered lands.]
     NARRATOR (CAPTION)
         CINDERJAW'S GUARDS SPREAD THROUGH THE VALLEY.
 
@@ -1020,8 +1028,8 @@ Scorchwind, Tidewyrm, the Heart Stone.
     [King Pyrrhax lies stunned. Elder Mossback blows the Founders' Horn.
     The Founders' Horn sounds. A flash. The ground shakes.]
     NARRATOR (CAPTION)
-        MOSSBACK RAISES THE FOUNDERS' HORN, AND BLOWS. THE KING DROPS
-        LIKE A STONE.
+        MOSSBACK RAISES THE OLD HORN, AND BLOWS. THE KING DROPS LIKE A
+        STONE.
 
     [Music: victory (too soon).]
     REX

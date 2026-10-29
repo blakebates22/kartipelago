@@ -36,6 +36,14 @@ const CAST_MODELS: Record<
   king: { dragon: "king" },
 };
 
+/** How far back a dragon's portrait stands (its head's size, about: metres at scale 1). */
+const HEAD_SIZE: Partial<Record<DesignId, number>> = {
+  cinderjaw: 15,
+  king: 21,
+  lumen: 13,
+  lumen_grown: 12,
+};
+
 /** Whether a CAST key has a 3D model to portray (the rest are drawn). */
 export const hasCastModel = (key: string) => key in CAST_MODELS;
 
@@ -286,7 +294,7 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
         d.root.updateMatrixWorld(true);
         d.headFrame(at, fwd);
         side.set(0, 1, 0).cross(fwd).normalize();
-        const size = m.dragon === "lumen" ? 1.6 : m.dragon === "king" ? 6.5 : 5;
+        const size = HEAD_SIZE[m.dragon] ?? 10;
         camera.fov = 26;
         camera.position
           .copy(at)
