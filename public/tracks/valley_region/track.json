@@ -197,19 +197,19 @@
       "z": -10.0
     },
     {
-      "id": "campfire_04",
-      "type": "campfire",
-      "x": -4.0,
-      "y": 26.31,
-      "z": -42.0
-    },
-    {
       "id": "kart_wreck_01",
       "type": "kart_wreck",
       "x": -23.62,
       "y": 25.76,
       "z": -29.98,
       "heading": 0.666
+    },
+    {
+      "id": "chimney_02",
+      "type": "chimney",
+      "x": -13.8,
+      "y": 30.33,
+      "z": -41.59
     },
     {
       "id": "villager_home_01",
@@ -796,21 +796,21 @@
       "offset": 3.0
     },
     {
-      "id": "campfire_05",
+      "id": "campfire_04",
       "type": "campfire",
       "x": 257.95,
       "y": 168.0,
       "z": 248.18
     },
     {
-      "id": "campfire_06",
+      "id": "campfire_05",
       "type": "campfire",
       "x": 251.82,
       "y": 168.0,
       "z": 251.82
     },
     {
-      "id": "campfire_07",
+      "id": "campfire_06",
       "type": "campfire",
       "x": 248.18,
       "y": 168.0,
@@ -941,7 +941,7 @@
       "heading": 2.235
     },
     {
-      "id": "chimney_02",
+      "id": "chimney_03",
       "type": "chimney",
       "x": -165.9,
       "y": 7.89,
@@ -959,7 +959,7 @@
       "heading": 2.419
     },
     {
-      "id": "chimney_03",
+      "id": "chimney_04",
       "type": "chimney",
       "x": 148.13,
       "y": 18.68,
@@ -977,7 +977,7 @@
       "heading": 2.862
     },
     {
-      "id": "chimney_04",
+      "id": "chimney_05",
       "type": "chimney",
       "x": 72.52,
       "y": 8.86,
@@ -995,7 +995,7 @@
       "heading": 0.696
     },
     {
-      "id": "campfire_08",
+      "id": "campfire_07",
       "type": "campfire",
       "x": 51.76,
       "y": 13.1,
@@ -1009,14 +1009,14 @@
       "z": 171.74
     },
     {
-      "id": "campfire_09",
+      "id": "campfire_08",
       "type": "campfire",
       "x": 144.59,
       "y": 22.49,
       "z": 158.25
     },
     {
-      "id": "campfire_10",
+      "id": "campfire_09",
       "type": "campfire",
       "x": 132.77,
       "y": 20.38,
@@ -1030,14 +1030,14 @@
       "z": 146.32
     },
     {
-      "id": "campfire_11",
+      "id": "campfire_10",
       "type": "campfire",
       "x": 119.02,
       "y": 17.53,
       "z": 150.02
     },
     {
-      "id": "campfire_12",
+      "id": "campfire_11",
       "type": "campfire",
       "x": 156.25,
       "y": 22.48,
@@ -1051,14 +1051,14 @@
       "z": 118.2
     },
     {
-      "id": "campfire_13",
+      "id": "campfire_12",
       "type": "campfire",
       "x": 153.25,
       "y": 22.66,
       "z": 90.97
     },
     {
-      "id": "campfire_14",
+      "id": "campfire_13",
       "type": "campfire",
       "x": 171.56,
       "y": 24.37,
@@ -1072,14 +1072,14 @@
       "z": 136.42
     },
     {
-      "id": "campfire_15",
+      "id": "campfire_14",
       "type": "campfire",
       "x": 89.08,
       "y": 14.7,
       "z": 163.25
     },
     {
-      "id": "campfire_16",
+      "id": "campfire_15",
       "type": "campfire",
       "x": 51.05,
       "y": 13.8,
@@ -1093,14 +1093,14 @@
       "z": 139.81
     },
     {
-      "id": "campfire_17",
+      "id": "campfire_16",
       "type": "campfire",
       "x": 133.71,
       "y": 20.14,
       "z": 161.97
     },
     {
-      "id": "campfire_18",
+      "id": "campfire_17",
       "type": "campfire",
       "x": 168.89,
       "y": 23.91,
@@ -1114,14 +1114,14 @@
       "z": 123.23
     },
     {
-      "id": "campfire_19",
+      "id": "campfire_18",
       "type": "campfire",
       "x": 168.22,
       "y": 22.63,
       "z": 109.46
     },
     {
-      "id": "campfire_20",
+      "id": "campfire_19",
       "type": "campfire",
       "x": 130.87,
       "y": 20.38,
@@ -1135,7 +1135,7 @@
       "z": 103.09
     },
     {
-      "id": "campfire_21",
+      "id": "campfire_20",
       "type": "campfire",
       "x": 108.99,
       "y": 16.64,
@@ -1217,119 +1217,119 @@
       "lava": true
     },
     {
-      "id": "campfire_22",
+      "id": "campfire_21",
       "type": "campfire",
       "x": 182.99,
       "y": 33.42,
       "z": 136.98
     },
     {
-      "id": "campfire_23",
+      "id": "campfire_22",
       "type": "campfire",
       "x": 49.34,
       "y": 57.77,
       "z": 90.31
     },
     {
-      "id": "campfire_24",
+      "id": "campfire_23",
       "type": "campfire",
       "x": 206.18,
       "y": 57.5,
       "z": -48.81
     },
     {
-      "id": "campfire_25",
+      "id": "campfire_24",
       "type": "campfire",
       "x": 200.48,
       "y": 47.54,
       "z": 67.55
     },
     {
-      "id": "campfire_26",
+      "id": "campfire_25",
       "type": "campfire",
       "x": 152.73,
       "y": 35.8,
       "z": 37.21
     },
     {
-      "id": "campfire_27",
+      "id": "campfire_26",
       "type": "campfire",
       "x": 197.92,
       "y": 40.89,
       "z": 106.11
     },
     {
-      "id": "campfire_28",
+      "id": "campfire_27",
       "type": "campfire",
       "x": 134.86,
       "y": 57.47,
       "z": 29.77
     },
     {
-      "id": "campfire_29",
+      "id": "campfire_28",
       "type": "campfire",
       "x": 106.49,
       "y": 39.22,
       "z": 72.64
     },
     {
-      "id": "campfire_30",
+      "id": "campfire_29",
       "type": "campfire",
       "x": 150.96,
       "y": 58.0,
       "z": 240.45
     },
     {
-      "id": "campfire_31",
+      "id": "campfire_30",
       "type": "campfire",
       "x": 206.49,
       "y": 48.29,
       "z": -15.91
     },
     {
-      "id": "campfire_32",
+      "id": "campfire_31",
       "type": "campfire",
       "x": 183.77,
       "y": 32.61,
       "z": 148.63
     },
     {
-      "id": "campfire_33",
+      "id": "campfire_32",
       "type": "campfire",
       "x": 110.22,
       "y": 48.03,
       "z": 63.59
     },
     {
-      "id": "campfire_34",
+      "id": "campfire_33",
       "type": "campfire",
       "x": 159.3,
       "y": 40.57,
       "z": 224.37
     },
     {
-      "id": "campfire_35",
+      "id": "campfire_34",
       "type": "campfire",
       "x": 134.39,
       "y": 57.67,
       "z": 41.79
     },
     {
-      "id": "campfire_36",
+      "id": "campfire_35",
       "type": "campfire",
       "x": 44.62,
       "y": 46.68,
       "z": 200.74
     },
     {
-      "id": "campfire_37",
+      "id": "campfire_36",
       "type": "campfire",
       "x": 122.67,
       "y": 57.59,
       "z": 47.83
     },
     {
-      "id": "campfire_38",
+      "id": "campfire_37",
       "type": "campfire",
       "x": 81.69,
       "y": 47.52,
@@ -1518,7 +1518,7 @@
       "z": 168.97
     },
     {
-      "id": "chimney_05",
+      "id": "chimney_06",
       "type": "chimney",
       "x": -100.22,
       "y": 4.97,
@@ -1565,20 +1565,11 @@
     {
       "id": "village_totem_03",
       "type": "village_totem",
-      "x": -7.25,
-      "y": 31.66,
-      "z": -49.85,
-      "variant": 2,
-      "heading": 0.154
-    },
-    {
-      "id": "village_totem_04",
-      "type": "village_totem",
-      "x": -27.85,
-      "y": 22.13,
-      "z": 6.25,
+      "x": -23.25,
+      "y": 25.75,
+      "z": -4.85,
       "variant": 3,
-      "heading": 1.892
+      "heading": 1.491
     },
     {
       "id": "area_ambient_01",

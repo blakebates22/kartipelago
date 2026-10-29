@@ -128,12 +128,10 @@ def hearth(c, logs=True):
 
     def fill(m):
         stones_ring(m, 1.45, 12, 0.18, 0.36, 11)
-        m.add(("charred_bark", "wall"), lambda bm: _cyl(bm, (0, 0, 0.02), 1.15, 0.12, n=12))
-        for i in range(5):
-            a = i * math.tau / 5 + 0.3
-            ca, sa = math.cos(a), math.sin(a)
-            m.add(("charred_bark", "wall"),
-                  lambda bm, ca=ca, sa=sa: tube(bm, [(1.1 * ca, 1.1 * sa, 0.12), (0.1 * ca, 0.1 * sa, 1.2)], 0.11, n=6))
+        # A bed of grey ash in the ring, and the fire on it the game's own living fire
+        # (render/fire.ts). (No cone of charred sticks: Blake, Oct 29, "remove the lava cone
+        # looking thing in the fires ... and just have the high fidelity fire".)
+        m.add(("ash_soil", "dirt"), lambda bm: _cyl(bm, (0, 0, 0.0), 1.15, 0.06, n=12))
 
         def flames(bm):
             for i, (r, w, hh) in enumerate(((0.0, 0.5, 1.9), (0.32, 0.34, 1.35), (0.34, 0.32, 1.2), (0.3, 0.3, 1.45))):
@@ -442,14 +440,27 @@ def hut(c, v):
             for q in (((x2, -w, 0), (x2, w, 0), (x2, w, DOOR_H), (x2, -w, DOOR_H)),  # back
                       ((x1, w, 0), (x2, w, 0), (x2, w, DOOR_H), (x1, w, DOOR_H)),  # sides
                       ((x2, -w, 0), (x1, -w, 0), (x1, -w, DOOR_H), (x2, -w, DOOR_H)),
-                      ((x1, -w, 0.02), (x2, -w, 0.02), (x2, w, 0.02), (x1, w, 0.02)),  # floor, ceiling
-                      ((x1, -w, DOOR_H), (x1, w, DOOR_H), (x2, w, DOOR_H), (x2, -w, DOOR_H))):
+                      ((x1, -w, DOOR_H), (x1, w, DOOR_H), (x2, w, DOOR_H), (x2, -w, DOOR_H))):  # (ceiling)
                 both(bm, q)
             # (The wall face beside the doorway inside, so the room is closed.)
             for sgn in (-1, 1):
                 both(bm, ((x1, sgn * DOOR_HW, 0), (x1, sgn * w, 0), (x1, sgn * w, DOOR_H), (x1, sgn * DOOR_HW, DOOR_H)))
 
         m.add(dark, room)
+
+        # A floor of beaten earth inside (Blake, Oct 29: "make the huts have dirt floors"),
+        # round to the walls, and the doorway's sill to the threshold.
+        def floor(bm):
+            nf = 20
+            cv = bm.verts.new((0.0, 0.0, 0.03))
+            rim = [bm.verts.new(P(R - 0.05, k * math.tau / nf, 0.03)) for k in range(nf)]
+            for k in range(nf):
+                bm.faces.new((cv, rim[k], rim[(k + 1) % nf]))
+            x0 = R * math.cos(da) - T - 1.85
+            bm.faces.new([bm.verts.new(p) for p in ((x0, -DOOR_HW - 0.5, 0.035), (R * math.cos(da) + 0.05, -DOOR_HW, 0.035),
+                                                     (R * math.cos(da) + 0.05, DOOR_HW, 0.035), (x0, DOOR_HW + 0.5, 0.035))])
+
+        m.add(("camp_earth", "dirt"), floor)
 
         # The frame: two posts and a lintel with carved ends, a threshold stone.
         xo = R * math.cos(da) + 0.06
@@ -964,7 +975,7 @@ def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Villag
         fl1 = bool(flare and flare(*line[-1]))
 
         def widen(d):
-            return 1.0 + 1.3 * max(0.0, 1.0 - d / 6.0) ** 2
+            return 1.0 + 0.6 * max(0.0, 1.0 - d / 6.0) ** 2
 
         rows = []
         for k, (x, y) in enumerate(line):
@@ -1075,6 +1086,12 @@ def plaza(c, x, y, r, ground, dirt=("camp_earth", "dirt"), edge=None, verge=1.2,
     return m.build(c, name, coll="Village", role="visual")
 
 
+# How far from the road's edge a path's end stands (Blake, Oct 29: "make it so the path is
+# not at all going into the road"): past the road's shoulder (2 m), and the widened end's
+# whole round, its verges too (width 2.4, three 0.65 m verge bands, widened 1.6 times).
+ROAD_CLEAR = 2.2 + (1.2 + 3 * 0.65 * 1.2) * 1.6 + 0.4
+
+
 def home_path(c, x, y, _r=0.0):
     """A home's path, from before its door to the nearest road on the land (not one in a
     tunnel or on a bridge), running a little way in under the road's edge (Blake,
@@ -1092,7 +1109,7 @@ def home_path(c, x, y, _r=0.0):
     start = (x + fx * 4.4, y + fy * 4.4)
     # (Its end, widening, out on the grass just short of the road's shoulder: not into the
     # road itself. Blake, Oct 29.)
-    end = (q.p.x - ux * (q.w / 2 + 2.4), q.p.y - uy * (q.w / 2 + 2.4))
+    end = (q.p.x - ux * (q.w / 2 + ROAD_CLEAR), q.p.y - uy * (q.w / 2 + ROAD_CLEAR))
     return wander(start, end, bend=1.5 * math.sin(x * 0.37 + y * 0.11), seed=int(abs(x) * 3) % 17)
 
 

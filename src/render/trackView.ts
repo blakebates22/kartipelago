@@ -112,6 +112,8 @@ export function createTrackView(
      * they lie flush on humps, dips and banking (done on the first render).
      */
     drape?: (x: number, z: number, y: number) => number;
+    /** false: no start line of its own (the track's model has one painted on its road). */
+    startLine?: boolean;
   } = {},
 ) {
   // Polygon offset makes the road win depth ties with the ground plane where it lies
@@ -243,7 +245,9 @@ export function createTrackView(
   const surface = opts.surface ?? true;
   const parts = [
     ...(surface ? [road, ...walls] : []),
-    startLine,
+    // (Not a second one, flat over the model's own line where the road banks or drapes over
+    // the land: Blake, Oct 29, "two checkered starting lines and one is partially floating".)
+    ...(opts.startLine === false ? [] : [startLine]),
     ...glowMeshes,
     ...hazeMeshes,
     ...zipMeshes,

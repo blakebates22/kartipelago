@@ -434,7 +434,13 @@ function buildSession(
   // Zipper pads lie on the ground under them (asked on the first frame, once it's built).
   const drapeOn = (x: number, z: number, y: number) => makeGround().at(x, z, y).height;
   let trackView = track
-    ? createTrackView(root, track, tuning.track, zippers, { surface: !pkg, drape: drapeOn })
+    ? createTrackView(root, track, tuning.track, zippers, {
+        surface: !pkg,
+        drape: drapeOn,
+        startLine:
+          !pkg?.visual?.getObjectByName("Start_Line") &&
+          !pkg?.visual?.getObjectByName("Start Line"),
+      })
     : undefined;
   const parkViews = (park?.loops ?? []).map((l, i) =>
     createTrackView(root, l.track, tuning.track, parkPads[i]),
@@ -1873,6 +1879,9 @@ function buildSession(
       trackView = createTrackView(root, track, tuning.track, zippers, {
         surface: false,
         drape: drapeOn,
+        startLine:
+          !pkg?.visual?.getObjectByName("Start_Line") &&
+          !pkg?.visual?.getObjectByName("Start Line"),
       });
       line = lineOf(track);
       lapLines = lapLinesOf(next);

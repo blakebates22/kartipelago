@@ -394,7 +394,7 @@ def main():
     ox, oy = smp_out.p.x, smp_out.p.y
     od = math.hypot(ox - (cx + 6.4), oy - cy)
     ux, uy = (ox - (cx + 6.4)) / od, (oy - cy) / od
-    hut_paths.append(vv.wander((cx + 6.4, cy), (ox - ux * (smp_out.w / 2 + 2.6), oy - uy * (smp_out.w / 2 + 2.6)), bend=0.8,
+    hut_paths.append(vv.wander((cx + 6.4, cy), (ox - ux * (smp_out.w / 2 + vv.ROAD_CLEAR), oy - uy * (smp_out.w / 2 + vv.ROAD_CLEAR)), bend=0.8,
                                seed=9))
     # The Elder's fire in the middle of the camp, on a round of trodden earth where the
     # paths all meet.
@@ -460,7 +460,7 @@ def main():
 
     def meets_road(x, y):
         q, d = c.nearest(x, y)
-        return d < q.w / 2 + 5.0
+        return d < q.w / 2 + vv.ROAD_CLEAR + 1.5
 
     def path_ground(x, y):
         # (Up onto the road's shoulder and surface where a path runs in under it: Blake,

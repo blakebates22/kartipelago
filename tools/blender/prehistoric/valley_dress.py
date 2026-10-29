@@ -467,7 +467,9 @@ def grand_falls(c, j, name):
 # maybe a shed that they use to work on karts"): (x, y) of each.
 WELL = (9.0, 25.0)
 SHED = (-22.0, 31.0)
-HEARTHS = [(-10.0, -8.0), (12.0, 10.0), (-4.0, 42.0)]
+# (The hamlet's hearth, on the slope at the wall's foot, is gone: Blake, Oct 29, "completely
+# remove the fire and log that's on the slope in the village, we don't need that one".)
+HEARTHS = [(-10.0, -8.0), (12.0, 10.0)]
 HAMLET = (-4.0, 42.0)  # a few more huts round the north hearth
 HAMLET_HUTS = []
 STAGE = [((-6.0, 4.0), 13.0), ((15.0, -6.0), 15.0)]  # the cutscenes' camp and the Pact Stone (Blender x, y; clear radius)
@@ -506,19 +508,32 @@ def camp(c, ground, taken):
     g = c.game(kx, ky, z - 0.1)
     c.entity("kart_wreck", x=g[0], y=g[1], z=g[2], heading=round(math.atan2(math.cos(face), -math.sin(face)), 3))
     taken.add(SHED[0], SHED[1], 8.0)
-    # The hamlet: huts round the north hearth, their doors to the fire.
+    # The hamlet: huts round a little meeting place, their doors to it, each on level ground
+    # well out from the wall's foot (Blake, Oct 29: two huts "in the hill ... the doors are
+    # also clearly in the ground").
     hx, hy = HAMLET
-    for k in range(4):
-        a = k * math.tau / 4 + 0.6
-        x, y = hx + 10.0 * math.cos(a), hy + 10.0 * math.sin(a)
-        if L.wall_sd(x, y) > -10.0 or not paint.road_clear(c, x, y, 6.0):
-            continue
-        vv.place_hut(c, k + 2, x, y, ground(x, y) - 0.1, a + math.pi, scale=0.85)
-        taken.add(x, y, 5.0)
-        HAMLET_HUTS.append((x, y))
-        # (From its door to the fire.)
-        paths.append(vv.wander((x - 3.6 * math.cos(a), y - 3.6 * math.sin(a)),
-                               (hx + 2.6 * math.cos(a), hy + 2.6 * math.sin(a)), bend=1.2 * (-1) ** k, seed=k))
+    k = 0
+    for i in range(24):
+        if k >= 3:
+            break
+        a = i * math.tau / 24 + 0.6
+        for r in (9.0, 11.0):
+            x, y = hx + r * math.cos(a), hy + r * math.sin(a)
+            if L.wall_sd(x, y) > -14.0 or not paint.road_clear(c, x, y, 6.0) or not taken.clear(x, y, 5.5):
+                continue
+            ring = [ground(x + 4.8 * math.cos(t), y + 4.8 * math.sin(t)) for t in (j * math.tau / 10 for j in range(10))]
+            if max(ring) - min(ring) > 0.35 or any(math.hypot(x - ox, y - oy) < 10.0 for ox, oy in HAMLET_HUTS):
+                continue
+            vv.place_hut(c, k + 2, x, y, min(ring) - 0.05, a + math.pi, scale=0.85)
+            taken.add(x, y, 5.0)
+            HAMLET_HUTS.append((x, y))
+            # (From its door to the meeting place.)
+            paths.append(vv.wander((x - 3.6 * math.cos(a), y - 3.6 * math.sin(a)),
+                                   (hx + 2.6 * math.cos(a), hy + 2.6 * math.sin(a)), bend=1.2 * (-1) ** k, seed=k))
+            k += 1
+            break
+    print("hamlet huts: %s" % [(round(x, 1), round(y, 1)) for x, y in HAMLET_HUTS])
+    vv.plaza(c, hx, hy, 3.4, ground, name="Hamlet Plaza")
     # The camp's folk: about the hamlet's hearth, the well and the kart shed (their homes
     # for src/overworld/villagers.ts).
     for k, (x, y, n) in enumerate(((hx, hy - 6.0, 3), (WELL[0] - 4.0, WELL[1] - 5.0, 2), (SHED[0] + 6.0, SHED[1] - 8.0, 2))):
@@ -565,7 +580,11 @@ def place_totems(c, ground, huts, paths):
                 gap = min(gap, min([math.hypot(x - px, y - py) - 2.6 for px, py in pts] or [9.0]))
                 gap = min(gap, *[math.hypot(x - sx, y - sy) - sr for (sx, sy), sr in STAGE])
                 gap = min(gap, *[math.hypot(x - tx, y - ty) - 9.0 for tx, ty in placed] or [9.0])
-                if gap <= 0.0 or not paint.road_clear(c, x, y, 4.0) or L.wall_sd(x, y) > -6.0:
+                if gap <= 0.0 or not paint.road_clear(c, x, y, 4.0) or L.wall_sd(x, y) > -13.0:
+                    continue
+                # (On the level, not up the wall's side: Blake, Oct 29.)
+                ring = [ground(x + 2.0 * math.cos(t), y + 2.0 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
+                if max(ring) - min(ring) > 0.3:
                     continue
                 if best is None or gap > best[0]:
                     best = (gap, x, y)
