@@ -463,7 +463,8 @@ const GUARD_RUNS: [V2, V2][] = [
     [-6, 22],
   ],
   [
-    [15, -10],
+    // (Clear of the hearth at (12, -10): its ring and logs are solid now.)
+    [19, -12],
     [-44, -14],
   ],
   [

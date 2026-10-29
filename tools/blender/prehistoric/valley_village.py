@@ -121,7 +121,7 @@ def stones_ring(m, r, n, z, size, seed, skip=None, mat=("ruin_stone", "wall")):
 # ------------------------------------------------------------------ the hearth
 
 
-def hearth(c):
+def hearth(c, logs=True):
     """A camp hearth (Blake, notes 2 and 6: the benches "should just be a normal log"): a
     ring of stones round a bed of coals, charred sticks crossed in it, the fire, and three
     log benches round it, plain felled logs with their cut ends showing."""
@@ -143,7 +143,7 @@ def hearth(c):
                     v.co += Vector((r * math.cos(a), r * math.sin(a), 0.2 + hh / 2))
 
         m.add(("campfire_flame", "wall"), flames)
-        for i in range(3):
+        for i in range(3 if logs else 0):
             a = i * math.tau / 3 + 0.5
             ca, sa = math.cos(a), math.sin(a)
             cx, cy = 3.2 * ca, 3.2 * sa
@@ -151,7 +151,54 @@ def hearth(c):
             rr = 0.3 + 0.03 * i
             log(m, (cx - tx, cy - ty, rr * 0.85), (cx + tx, cy + ty, rr * 0.85), rr, seed=i + 3)
 
-    return proto_mesh(c, "Village Hearth", fill)
+    return proto_mesh(c, "Village Hearth" if logs else "Village Hearth Ring", fill)
+
+
+HEARTH_LOGS = [(i * math.tau / 3 + 0.5, 0.3 + 0.03 * i) for i in range(3)]  # (angle, radius) of each bench log
+
+
+def hearth_log(c, i):
+    """One of a hearth's log benches on its own (laid on the ground where it lies), along
+    local X."""
+    _a, rr = HEARTH_LOGS[i]
+
+    def fill(m):
+        log(m, (-1.3, 0.0, rr * 0.85), (1.3, 0.0, rr * 0.85), rr, seed=i + 3)
+
+    return proto_mesh(c, "Hearth Log %d" % i, fill)
+
+
+def place_hearth(c, x, y, ground, rot=0.0, coll="Village"):
+    """A hearth set down properly (Blake, Oct 29: a log floating; "the fires and logs need
+    hit boxes, currently I drive right through them"): the ring of stones and the fire on
+    the ground at its middle, each log bench on the ground where it lies, and solid, all
+    of them, the ring and every log."""
+    from props import cuboid as _cub
+
+    z = ground(x, y)
+    c.place(hearth(c, logs=False), x, y, z - 0.05, rot=rot, coll=coll, role="visual")
+    name = "Hearth Ring Collider"
+
+    def ring_build(bm):
+        _cyl(bm, (0, 0, -0.3), 1.6, 1.0, n=10)
+        return [(c.lib("ruin_stone", "wall"), list(range(len(bm.faces))))]
+
+    c.proto(name, ring_build)
+    c.place(name, x, y, z, rot=rot, coll="Collision", role="collision")
+
+    def log_build(bm):
+        _cub(bm, (0, 0, 0.2), (2.8, 0.7, 1.0))
+        return [(c.lib("log_bark", "wall"), list(range(len(bm.faces))))]
+
+    c.proto("Hearth Log Collider", log_build)
+    for i, (a, rr) in enumerate(HEARTH_LOGS):
+        a2 = a + rot
+        lx, ly = x + 3.2 * math.cos(a2), y + 3.2 * math.sin(a2)
+        # (Lying across the line from the fire, on the lowest ground under it.)
+        lr = a2 + math.pi / 2
+        foot = min(ground(lx + dx * 1.2 * math.cos(lr), ly + dx * 1.2 * math.sin(lr)) for dx in (-1, 0, 1))
+        c.place(hearth_log(c, i), lx, ly, foot - 0.04, rot=lr, coll=coll, role="visual")
+        c.place("Hearth Log Collider", lx, ly, foot, rot=lr, coll="Collision", role="collision")
 
 
 # ------------------------------------------------------------------ the well
@@ -1043,7 +1090,9 @@ def home_path(c, x, y, _r=0.0):
     f, fd = c.nearest(x, y)
     fx, fy = (f.p.x - x) / (fd or 1.0), (f.p.y - y) / (fd or 1.0)
     start = (x + fx * 4.4, y + fy * 4.4)
-    end = (q.p.x - ux * max(1.0, q.w / 2 - 1.2), q.p.y - uy * max(1.0, q.w / 2 - 1.2))
+    # (Its end, widening, out on the grass just short of the road's shoulder: not into the
+    # road itself. Blake, Oct 29.)
+    end = (q.p.x - ux * (q.w / 2 + 2.4), q.p.y - uy * (q.w / 2 + 2.4))
     return wander(start, end, bend=1.5 * math.sin(x * 0.37 + y * 0.11), seed=int(abs(x) * 3) % 17)
 
 

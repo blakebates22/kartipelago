@@ -482,10 +482,9 @@ def camp(c, ground, taken):
 
     cx, cy, cr = L.CAMP
     paths = []
-    h = vv.hearth(c)
     for k, (x, y) in enumerate(HEARTHS):
         z = ground(x, y)
-        c.place(h, x, y, z - 0.05, rot=k * 1.1, coll="Village", role="visual")
+        vv.place_hearth(c, x, y, ground, rot=k * 1.1)
         g = c.game(x, y, z + 0.3)
         c.entity("campfire", x=g[0], y=g[1], z=g[2])
         taken.add(x, y, 5.0)

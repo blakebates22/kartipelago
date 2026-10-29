@@ -214,7 +214,7 @@
       "id": "campfire_07",
       "type": "campfire",
       "x": 12.0,
-      "y": 26.58,
+      "y": 26.33,
       "z": -10.0
     },
     {
@@ -1627,7 +1627,7 @@
       "id": "village_totem_01",
       "type": "village_totem",
       "x": 16.07,
-      "y": 25.94,
+      "y": 25.89,
       "z": -20.28,
       "variant": 0,
       "heading": -0.749
@@ -1689,9 +1689,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "b7ad61adf32ff6269b49af68f438b16f01eb89e7f59ee22699d920dd4a5b7057",
+    "valley_dress.py": "37648042863b663e9e3118d79dac72f8494cefb3af93baf4f6fb7fd33f8abf2f",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "6ccdb297d32b9f61c1baab1af2ebe8437d8b913c57fa1683f96dd7108e992c75",
-    "valley_village.py": "005054aa2a6fddddfaea090c1d09881f0ba9899a5d7fd09c7783e5be4fb223c7"
+    "valley_region.py": "24f31870863c5eed888acd493a7b143133c4130d6f32d0f77ef836d63aaa490f",
+    "valley_village.py": "0c122263da3479b3f72b87ff7ade06eb547a87e44fe4e10aeb5db4c00b1c5525"
   }
 }

@@ -309,9 +309,9 @@ def main():
     # The camp's square, and the way out of it onto the road (east).
     cx, cy, cr = L.CAMP
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("valley_grass", "dirt"))
-    smp, _ = c.nearest(cx + cr + 30.0, cy)
-    c.side_road("Camp Road", list(reversed(line((smp.p.x, smp.p.y), (cx + cr - 2.0, cy), z0=smp.p.z))), "camp_earth",
-                "road", **trail)
+    # (No broad slab of a road into the camp any more, just its path: Blake, Oct 29,
+    # "this looks horrible, maybe just remove this plane". See hut_paths below.)
+    smp_out, _ = c.nearest(cx + cr + 30.0, cy)
     # Out from the road to each landmark's gateway (off an open stretch of deck where it
     # leaves a bridge: see bridge_open), with the shoulder of the world it's in (not grass
     # in Ember: Blake, Oct 28).
@@ -390,11 +390,16 @@ def main():
         # (From its door to the fire, curving a little: Blake, notes 1 and 3.)
         dx, dy = hx + 4.2 * math.cos(a + math.pi), hy + 4.2 * math.sin(a + math.pi)
         hut_paths.append(vv.wander((dx, dy), (cx + 6.4 * math.cos(a), cy + 6.4 * math.sin(a)), bend=1.4 * (-1) ** k, seed=k))
-    hut_paths.append(vv.wander((cx + 6.4, cy), (cx + cr - 1.0, cy), bend=0.8, seed=9))
+    # The way out of the square east, a path on to the main road's edge.
+    ox, oy = smp_out.p.x, smp_out.p.y
+    od = math.hypot(ox - (cx + 6.4), oy - cy)
+    ux, uy = (ox - (cx + 6.4)) / od, (oy - cy) / od
+    hut_paths.append(vv.wander((cx + 6.4, cy), (ox - ux * (smp_out.w / 2 + 2.6), oy - uy * (smp_out.w / 2 + 2.6)), bend=0.8,
+                               seed=9))
     # The Elder's fire in the middle of the camp, on a round of trodden earth where the
     # paths all meet.
     vv.plaza(c, cx, cy, 6.5, ground, name="Camp Plaza")
-    c.place(vv.hearth(c), cx, cy, ground(cx, cy) - 0.05, rot=0.3, coll="Village", role="visual")
+    vv.place_hearth(c, cx, cy, ground, rot=0.3)
     gx, gy, gz = c.game(cx, cy, L.CAMP_Z + 0.2)
     c.entity("campfire", x=gx, y=gy, z=gz)
     camp_taken = paint.Taken([(cx, cy, cr)])
@@ -455,7 +460,7 @@ def main():
 
     def meets_road(x, y):
         q, d = c.nearest(x, y)
-        return d < q.w / 2 + 2.5
+        return d < q.w / 2 + 5.0
 
     def path_ground(x, y):
         # (Up onto the road's shoulder and surface where a path runs in under it: Blake,
