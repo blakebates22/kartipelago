@@ -63,6 +63,7 @@ import {
 import { createBananaView } from "../render/bananaView";
 import { ENGINE_VOICE, type Sfx } from "../audio/sfx";
 import { createHazards, type HazardConfig } from "./hazards";
+import { batchStatic } from "../render/batchStatic";
 import { createVillageDecor } from "../render/villageDecor";
 import { createLoops } from "./loops";
 import { createCheckpointView, type CheckpointView } from "../render/checkpointView";
@@ -631,6 +632,9 @@ function buildSession(
 
   // The village's carved totems and the kart taken apart in the shed (render/villageDecor.ts).
   const decor = pkg ? createVillageDecor(root, pkg.meta.entities ?? [], pkg.visual) : undefined;
+  // The still scenery drawn in batches, not prop by prop (render/batchStatic.ts: the lag,
+  // Blake, Oct 29). After the decor: it hides the flames it replaces with living fire.
+  if (pkg) pkg.visual.userData.batching = batchStatic(pkg.visual);
 
   // A boss race's mechanic (game/bossMech.ts): the fire sweeps and vents, the crumbling
   // road. On you only: the boss is its master.

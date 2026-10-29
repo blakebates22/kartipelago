@@ -660,7 +660,7 @@ def heap_strata(c, rock, kind, zr, top):
         c.assign(rock, c.lib(*mat), faces)
     rock.data.shade_flat()
     plants = {"riverbend": [props.bush(c, 0), props.fern(c)], "camp": [props.bush(c, 1), props.fern(c)],
-              "cascade": [props.big_leaf_plant(c, 0), props.fern(c)], "bonebog": [props.fern(c), sp.tier_tree(c, 0)],
+              "cascade": [props.big_leaf_plant(c, 0), props.fern(c)], "bonebog": [props.fern(c), props.fern(c)],  # (no trees over the canopy: Blake, Oct 29)
               "ember": [props.dead_tree(c), props.crystals(c)]}
     taken = []
     for k, cen in enumerate(shelves):

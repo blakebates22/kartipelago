@@ -16,6 +16,7 @@
  * faces +z (the way you come out), the tunnel runs back to -z.
  */
 import * as THREE from "three";
+import { batchStatic } from "./batchStatic";
 import { createFire, glowTexture, type Fire } from "./fire";
 
 export type ArchTheme =
@@ -429,8 +430,7 @@ export function createGatewayArch(
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(0, 0.22, -7.8);
   group.add(floor);
-  const glowTex = glowTexture(o.glow, true);
-  texs.push(glowTex);
+  const glowTex = glowTexture(o.glow, true); // (shared: not ours to dispose)
   const glowMat = keep(
     new THREE.MeshBasicMaterial({
       map: glowTex,
@@ -506,6 +506,8 @@ export function createGatewayArch(
     group.add(fire.group);
     fires.push(fire);
   }
+  // (Its rock, stones, sign and posts drawn as a few batches, not ~30 meshes: the lag.)
+  const batching = batchStatic(group);
   return {
     group,
     update(t) {
@@ -516,6 +518,7 @@ export function createGatewayArch(
     },
     dispose() {
       parent.remove(group);
+      batching.dispose();
       for (const f of fires) f.dispose();
       for (const tx of texs) tx.dispose();
       for (const m of mats) m.dispose();

@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run typecheck && npm run test && npm run build"
+    "check": "npm run format:check && npm run typecheck && npm run test && npm run build",
+    "perf:regions": "node tools/perf/regions.cjs"
   },
   "dependencies": {
     "lil-gui": "0.21.0",

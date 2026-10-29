@@ -74,8 +74,20 @@ function flameSheet(hot: string, mid: string, tip: string) {
   return cv;
 }
 
-/** A soft round glow (round a flame, deep in a tunnel); `rings` adds swirls. */
+const glows = new Map<string, THREE.CanvasTexture>();
+
+/** A soft round glow (round a flame, deep in a tunnel); `rings` adds swirls. One texture
+ * per colour, shared (don't dispose it). */
 export function glowTexture(color: string, rings = false) {
+  const key = `${color}${rings ? "+" : ""}`;
+  const have = glows.get(key);
+  if (have) return have;
+  const tex = makeGlow(color, rings);
+  glows.set(key, tex);
+  return tex;
+}
+
+function makeGlow(color: string, rings: boolean) {
   const cv = document.createElement("canvas");
   cv.width = cv.height = 128;
   const g = cv.getContext("2d")!;
@@ -105,92 +117,128 @@ export interface Fire {
   dispose(): void;
 }
 
-/** A fire `size` tall-ish (1 = a torch's), red for a dragon's lair. */
-export function createFire(o: { size?: number; red?: boolean; seed?: number } = {}): Fire {
-  const size = o.size ?? 1;
-  const seed = o.seed ?? Math.random() * 10;
-  const group = new THREE.Group();
-  group.name = "fire";
-  const sheet = o.red
+/** A fire `size` tall-ish (1 = a torch's), red for a dragon's lair.
+ *
+ * Every fire shares its textures, materials and geometry with the others (Blake, Oct 29:
+ * "things are very very laggy": each of the valley's ~180 fires had made four textures of
+ * its own and updated its own buffers every frame). They fall into a few BUCKETS, each a
+ * moment apart in the flipbook so neighbouring fires don't flicker in step; a bucket's
+ * flames, halo and embers are animated once a frame however many fires share it. */
+const BUCKETS = 5;
+interface Shared {
+  mats: THREE.MeshBasicMaterial[];
+  halo: THREE.SpriteMaterial;
+  embers: THREE.BufferGeometry;
+  emberMat: THREE.PointsMaterial;
+  seed: number;
+  last: number;
+}
+const shared = new Map<string, Shared>();
+let unitPlane: THREE.PlaneGeometry | undefined;
+const NE = 12;
+
+function bucketOf(red: boolean, b: number): Shared {
+  const key = `${red ? "r" : "o"}${b}`;
+  const have = shared.get(key);
+  if (have) return have;
+  const sheet = red
     ? flameSheet("rgba(255,240,200,1)", "rgba(255,90,20,0.9)", "rgba(160,10,0,0.7)")
     : flameSheet("rgba(255,250,220,1)", "rgba(255,170,40,0.9)", "rgba(220,60,10,0.7)");
-  const disposables: { dispose(): void }[] = [];
   const mats: THREE.MeshBasicMaterial[] = [];
-  const planes: THREE.Mesh[] = [];
-  const plane = new THREE.PlaneGeometry(1.5 * size, 2.6 * size);
-  plane.translate(0, 1.15 * size, 0);
-  disposables.push(plane);
   for (let k = 0; k < 3; k++) {
     const tex = new THREE.CanvasTexture(sheet);
     tex.repeat.set(1 / FRAMES, 1);
-    const m = new THREE.MeshBasicMaterial({
-      map: tex,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-    });
-    disposables.push(tex, m);
-    mats.push(m);
-    const pl = new THREE.Mesh(plane, m);
-    pl.rotation.y = (k / 3) * Math.PI;
-    group.add(pl);
-    planes.push(pl);
+    mats.push(
+      new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+      }),
+    );
   }
-  const haloTex = glowTexture(o.red ? "#ff4010" : "#ffa030");
-  const haloMat = new THREE.SpriteMaterial({
-    map: haloTex,
+  const halo = new THREE.SpriteMaterial({
+    map: glowTexture(red ? "#ff4010" : "#ffa030"),
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     opacity: 0.5,
   });
-  disposables.push(haloTex, haloMat);
-  const halo = new THREE.Sprite(haloMat);
-  halo.scale.setScalar(4.2 * size);
-  halo.position.y = 0.8 * size;
-  group.add(halo);
-  const NE = 12;
-  const eg = new THREE.BufferGeometry();
-  eg.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(NE * 3), 3));
-  const em = new THREE.PointsMaterial({
-    color: o.red ? 0xff5020 : 0xffb040,
-    size: 0.16 * size,
+  const embers = new THREE.BufferGeometry();
+  embers.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(NE * 3), 3));
+  embers.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 2, 0), 3);
+  const emberMat = new THREE.PointsMaterial({
+    color: red ? 0xff5020 : 0xffb040,
+    size: 0.16,
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
-  disposables.push(eg, em);
-  const embers = new THREE.Points(eg, em);
-  embers.frustumCulled = false;
+  const s: Shared = { mats, halo, embers, emberMat, seed: b * 1.37 + (red ? 0.5 : 0), last: -1 };
+  shared.set(key, s);
+  return s;
+}
+
+/** Play a bucket's flames, halo and embers at time t (once a frame, whoever asks). */
+function play(s: Shared, t: number) {
+  if (s.last === t) return;
+  s.last = t;
+  const seed = s.seed;
+  s.mats.forEach((m, k) => {
+    const frame = Math.floor(t * 14 + k * 2.7 + seed * 3) % FRAMES;
+    m.map!.offset.x = frame / FRAMES;
+  });
+  s.halo.opacity = 0.42 + 0.12 * Math.sin(t * 13 + seed) + 0.06 * Math.sin(t * 31);
+  const pa = s.embers.getAttribute("position") as THREE.BufferAttribute;
+  for (let e = 0; e < NE; e++) {
+    const s0 = Math.abs((Math.sin(e * 12.9898 + seed) * 43758.5453) % 1);
+    const life = (t * (0.5 + s0 * 0.4) + s0 * 7) % 1;
+    pa.setXYZ(
+      e,
+      Math.sin(s0 * 40 + t * 1.3) * 0.35 * life,
+      0.6 + life * 3.0,
+      Math.cos(s0 * 31 + t * 1.1) * 0.35 * life,
+    );
+  }
+  pa.needsUpdate = true;
+}
+
+export function createFire(o: { size?: number; red?: boolean; seed?: number } = {}): Fire {
+  const size = o.size ?? 1;
+  const seed = o.seed ?? Math.random() * 10;
+  const s = bucketOf(Boolean(o.red), Math.abs(Math.floor(seed * 7.3)) % BUCKETS);
+  const group = new THREE.Group();
+  group.name = "fire";
+  if (!unitPlane) {
+    unitPlane = new THREE.PlaneGeometry(1.5, 2.6);
+    unitPlane.translate(0, 1.15, 0);
+  }
+  const planes: THREE.Mesh[] = [];
+  for (let k = 0; k < 3; k++) {
+    const pl = new THREE.Mesh(unitPlane, s.mats[k]!);
+    pl.rotation.y = (k / 3) * Math.PI + seed;
+    pl.scale.setScalar(size);
+    group.add(pl);
+    planes.push(pl);
+  }
+  const halo = new THREE.Sprite(s.halo);
+  halo.scale.setScalar(4.2 * size);
+  halo.position.y = 0.8 * size;
+  group.add(halo);
+  const embers = new THREE.Points(s.embers, s.emberMat);
+  embers.scale.setScalar(size);
   group.add(embers);
-  const seeds = [...Array(NE)].map((_, i) => (Math.sin(i * 12.9898 + seed) * 43758.5453) % 1);
   return {
     group,
     update(t) {
-      mats.forEach((m, k) => {
-        const frame = Math.floor(t * 14 + k * 2.7 + seed) % FRAMES;
-        m.map!.offset.x = frame / FRAMES;
-      });
+      play(s, t);
       const k = 1 + 0.12 * Math.sin(t * 9 + seed) + 0.07 * Math.sin(t * 23 + seed);
-      planes.forEach((p) => p.scale.set(1, k, 1));
-      haloMat.opacity = 0.42 + 0.12 * Math.sin(t * 13 + seed) + 0.06 * Math.sin(t * 31);
-      const pa = eg.getAttribute("position") as THREE.BufferAttribute;
-      seeds.forEach((s0, e) => {
-        const s = Math.abs(s0);
-        const life = (t * (0.5 + s * 0.4) + s * 7) % 1;
-        pa.setXYZ(
-          e,
-          Math.sin(s * 40 + t * 1.3) * 0.35 * life * size,
-          (0.6 + life * 3.0) * size,
-          Math.cos(s * 31 + t * 1.1) * 0.35 * life * size,
-        );
-      });
-      pa.needsUpdate = true;
+      for (const p of planes) p.scale.set(size, size * k, size);
     },
     dispose() {
+      // (The textures, materials and geometry are shared by every fire: they stay.)
       group.removeFromParent();
-      for (const d of disposables) d.dispose();
     },
   };
 }

@@ -590,6 +590,10 @@ function modelledFlames(visual: THREE.Object3D) {
   return out;
 }
 
+/** How far off a fire still burns (m), and the most that burn at once. */
+const FIRE_RANGE = 90;
+const FIRES_MAX = 36;
+
 export function createVillageDecor(
   parent: THREE.Object3D,
   entities: unknown[],
@@ -617,12 +621,13 @@ export function createVillageDecor(
       o.type === "torch" ? { x, y: y - 0.45, z, size: 0.5 } : { x, y: y - 0.3, z, size: 1.0 },
     );
   }
-  const living: { fire: Fire; x: number; y: number; z: number }[] = [];
+  const living: { fire: Fire; x: number; y: number; z: number; d: number }[] = [];
+  const near: typeof living = [];
   for (const s of spots) {
     const f = createFire({ size: s.size, seed: living.length * 2.3 });
     f.group.position.set(s.x, s.y, s.z);
     group.add(f.group);
-    living.push({ fire: f, x: s.x, y: s.y, z: s.z });
+    living.push({ fire: f, x: s.x, y: s.y, z: s.z, d: 0 });
   }
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
@@ -646,11 +651,20 @@ export function createVillageDecor(
   if (group.children.length) parent.add(group);
   // The lily pads and lotus flowers ride the water, rising and falling a little and
   // rocking, each in its own time (Blake, Riverbend note 15).
-  const floats: { o: THREE.Object3D; y: number; rx: number; rz: number; ph: number; sp: number }[] =
-    [];
+  // (Drawn instanced: one draw for every pad of a kind, not one each, the lag, Oct 29.)
+  const floats: {
+    o: THREE.Object3D;
+    y: number;
+    rx: number;
+    rz: number;
+    ph: number;
+    sp: number;
+    parts: { inst: THREE.InstancedMesh; i: number; local: THREE.Matrix4 }[];
+  }[] = [];
+  const insts = new Map<string, { inst?: THREE.InstancedMesh; mesh: THREE.Mesh; n: number }>();
+  const FLOAT = /^(Lily_Pad|Lotus)/;
   visual?.traverse((o) => {
-    if (!/^(Lily_Pad|Lotus)/.test(o.name) || (o.parent && /^(Lily_Pad|Lotus)/.test(o.parent.name)))
-      return;
+    if (!FLOAT.test(o.name) || (o.parent && FLOAT.test(o.parent.name))) return;
     const ph = (o.position.x * 0.37 + o.position.z * 0.23) % (Math.PI * 2);
     floats.push({
       o,
@@ -659,23 +673,84 @@ export function createVillageDecor(
       rz: o.rotation.z,
       ph,
       sp: 1.1 + (ph % 0.5),
+      parts: [],
+    });
+    o.traverse((m) => {
+      const mesh = m as THREE.Mesh;
+      if (!mesh.isMesh || Array.isArray(mesh.material)) return;
+      const key = `${mesh.geometry.uuid}|${mesh.material.uuid}`;
+      const e = insts.get(key);
+      if (e) e.n++;
+      else insts.set(key, { mesh, n: 1 });
     });
   });
+  const floatRoot = new THREE.Group();
+  floatRoot.name = "floating (instanced)";
+  const fm = new THREE.Matrix4();
+  if (visual && floats.length) {
+    visual.updateMatrixWorld(true);
+    const invRoot = new THREE.Matrix4().copy(visual.matrixWorld).invert();
+    for (const e of insts.values()) {
+      e.inst = new THREE.InstancedMesh(e.mesh.geometry, e.mesh.material as THREE.Material, e.n);
+      e.inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      e.inst.frustumCulled = false;
+      e.n = 0;
+      floatRoot.add(e.inst);
+    }
+    for (const f of floats) {
+      const toFloat = new THREE.Matrix4().copy(f.o.matrixWorld).invert();
+      f.o.traverse((m) => {
+        const mesh = m as THREE.Mesh;
+        if (!mesh.isMesh || Array.isArray(mesh.material)) return;
+        const e = insts.get(`${mesh.geometry.uuid}|${mesh.material.uuid}`)!;
+        const local = new THREE.Matrix4().multiplyMatrices(toFloat, mesh.matrixWorld);
+        f.parts.push({ inst: e.inst!, i: e.n, local });
+        e.inst!.setMatrixAt(e.n++, fm.multiplyMatrices(invRoot, mesh.matrixWorld));
+      });
+      f.o.visible = false;
+    }
+    visual.add(floatRoot);
+    // (The review tool shows the pads themselves, to pick them.)
+    visual.userData.floating = {
+      off() {
+        floatRoot.visible = false;
+        for (const f of floats) f.o.visible = true;
+      },
+    };
+  }
   return {
     update(t, eye) {
+      const live = floatRoot.visible;
+      const touched = new Set<THREE.InstancedMesh>();
       for (const f of floats) {
         if (eye && Math.hypot(f.o.position.x - eye.x, f.o.position.z - eye.z) > 120) continue;
         const a = t * f.sp + f.ph;
         f.o.position.y = f.y + Math.sin(a) * 0.045;
         f.o.rotation.x = f.rx + Math.sin(a * 0.8 + 1.3) * 0.035;
         f.o.rotation.z = f.rz + Math.cos(a * 0.7) * 0.035;
+        if (!live) continue;
+        // (Each pad hangs right under the track's root: its own matrix is its place.)
+        f.o.updateMatrix();
+        for (const p of f.parts) {
+          p.inst.setMatrixAt(p.i, fm.multiplyMatrices(f.o.matrix, p.local));
+          touched.add(p.inst);
+        }
       }
+      for (const inst of touched) inst.instanceMatrix.needsUpdate = true;
       for (const f of fires) f.update(t);
-      // (Only the fires near enough to see are drawn and kept burning.)
+      // (Only the fires near enough to see are drawn and kept burning, and no more than
+      // FIRES_MAX of them, the nearest: Blake, Oct 29, the lag in Ember, where 130 burned
+      // at once.)
+      near.length = 0;
       for (const l of living) {
-        const on = !eye || Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z) < 140;
-        l.fire.group.visible = on;
-        if (on) l.fire.update(t);
+        l.d = eye ? Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z) : 0;
+        l.fire.group.visible = false;
+        if (l.d < FIRE_RANGE) near.push(l);
+      }
+      if (near.length > FIRES_MAX) near.sort((a, b) => a.d - b.d).length = FIRES_MAX;
+      for (const l of near) {
+        l.fire.group.visible = true;
+        l.fire.update(t);
       }
     },
     dispose() {

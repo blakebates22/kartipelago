@@ -163,18 +163,23 @@ def wall_life(c, ground, taken):
             put_tree(jungle[k % 2] if pick == 0 else leafy[k % 2] if pick in (1, 2) else fern, x, y, rot,
                      0.7 if pick == 0 else 1.3, look)
         elif look == "bonebog":
+            # (No trees on the swamp's walls, and nothing at all up over its canopy, where
+            # it can hardly be seen: Blake, Bonebog note 18, "remove these trees on the
+            # wall", and Oct 29, "remove all the trees from above the canopy in bone bog".)
+            if ground(x, y) > 24.0:
+                continue
             pick = k % 3
-            put_tree(swampy[k % 2] if pick == 0 else fern, x, y, rot, 0.75 if pick == 0 else 1.3, look)
+            put_tree(bushes[k % 2] if pick == 0 else fern, x, y, rot, 0.9 if pick == 0 else 1.3, look)
         else:
             pick = k % 12
             if pick in (0, 6):
                 put(basalt, x, y, rot, 0.55, sink=0.6)
             elif pick in (1, 4, 8):
                 put_tree(dead, x, y, rot, 0.9, look)
-            elif pick == 3:
+            elif pick == 3 and k % 24 == 3:  # (half as many burning on the walls: the lag)
                 put_tree(burning[k % 2], x, y, rot, 0.8, look)
-                gx, gy, gz = c.game(x, y, ground(x, y) + 6.0)
-                c.entity("campfire", x=gx, y=gy, z=gz)
+            elif pick == 3:
+                put_tree(dead, x, y, rot, 0.9, look)
             else:
                 continue
         room.add(x, y, 3.5)
@@ -207,7 +212,7 @@ def wall_life(c, ground, taken):
         elif look == "cascade":
             put(grand[k % 2] if k % 4 == 0 else jungle[k % 2], x, y, rot, 1.0 if k % 4 else 0.8, coll="Rim")
         elif look == "bonebog":
-            put(swamp_tree[k % 2], x, y, rot, 1.2, coll="Rim")
+            continue  # (none along the swamp's rims, over its canopy: Blake, Oct 29)
         else:
             if k % 4:
                 continue
@@ -864,12 +869,10 @@ def ember(c, ground, taken):
                        and all(math.hypot(x - px, y - py) > pr + 6 for px, py, pr in L.LAVA))
     burning = 0
     for v in range(2):
-        for x, y in paint.scatter(c, rp.burning_tree(c, v), 7, 260.0, em, ground, taken, 210 + v, room=7.0, scale=(0.9, 1.3),
+        # (Half as many as there were, 7 of each, and no extra campfire and torch on each
+        # over its own flames: Blake, Oct 29, the lag, "remove 50% of the trees in ember".)
+        for x, y in paint.scatter(c, rp.burning_tree(c, v), 4, 260.0, em, ground, taken, 210 + v, room=7.0, scale=(0.9, 1.3),
                                   road_margin=6.0, trunk=(0.7, 6.0), tries=600):
-            g = c.game(x, y, ground(x, y) + 7.5)
-            c.entity("campfire", x=g[0], y=g[1], z=g[2])
-            if burning % 2 == 0:
-                c.entity("torch", x=g[0], y=g[1] - 3.0, z=g[2])
             burning += 1
     geysers = 0
     for k in range(3000):

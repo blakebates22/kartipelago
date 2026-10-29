@@ -123,7 +123,12 @@ def burning_tree(c, variant=0):
         tips.append((0.1, 0.0, h - 0.6))
         charred = _faces(bm, 0)
         k0 = len(bm.faces)
+        # (Fire at three of them, not all five: Blake, Oct 29, the lag, "remove 50% of the
+        # fire on the remaining trees"; and Ember note 1, "remove the amount of fire on the
+        # trees". The game burns each as its living fire.)
         for j, (x, y, z) in enumerate(tips):
+            if j in (0, 2):
+                continue
             for q in range(2):
                 w = (0.55 if q == 0 else 0.35) * (1.2 if j == len(tips) - 1 else 1.0)
                 hh = (1.9 if q == 0 else 1.3) * (1.3 if j == len(tips) - 1 else 1.0)

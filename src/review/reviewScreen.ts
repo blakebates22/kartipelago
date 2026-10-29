@@ -1051,6 +1051,12 @@ export function reviewScreen(game: Game, session: Session, entry: TrackEntry): S
     id: "REVIEW",
     seeThrough: false,
     enter() {
+      // (The props themselves, not the batches they're drawn in: picked, moved, hidden.
+      // render/batchStatic.ts. Left so for the rest of the race, edits and all.)
+      scene.traverse((o) => {
+        for (const k of ["batching", "floating"])
+          (o.userData[k] as { off?: () => void } | undefined)?.off?.();
+      });
       game.ui.interactive = false;
       wasLines = stage.lines;
       stage.setResolution(0);
