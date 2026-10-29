@@ -509,11 +509,13 @@ add(
         3: { fx: { gesture: { elder: "think" } } },
         4: { fx: { gesture: { lumen: "wave" } } },
         5: { fx: { gesture: { elder: "raiseStaff" } } },
-        6: { fx: { music: "lumen" } },
-        7: { fx: { gesture: { elder: "shake" } } },
+        // (He's cut off mid-sentence: Lumen can't wait.)
+        6: { fx: { gesture: { elder: "point" } } },
+        7: { fx: { music: "lumen", gesture: { lumen: "wave" } } },
+        8: { fx: { gesture: { elder: "shake" } } },
         // The Founders' Horn at his hip (the story turns on it); the festival goes on
         // behind him.
-        8: {
+        9: {
           // (From his right, where the horn hangs, framed above the text box.)
           cam: { from: [-1.2, 1.25, -11.2], to: [-1.05, 1.2, -11.4], look: [-0.2, 0.7, -12.9] },
           fx: { gesture: { elder: "touchHorn" } },
@@ -523,7 +525,7 @@ add(
             { actor: "v2", to: [-14, -6], dur: 7 },
           ],
         },
-        9: {
+        10: {
           cam: {
             from: [6.2, 1.25, 5.8],
             to: [6.4, 1.25, 6.1],

@@ -66,6 +66,9 @@ interface Actor {
     land?: boolean;
     toUp: number;
     toHeading: number;
+    /** A flyer's ground at the start and the end (its height is measured between them). */
+    y0?: number;
+    y1?: number;
   };
   racer?: RacerView;
   /** A racer's acting (looking about, talking) in their kart. */
@@ -173,7 +176,7 @@ export function stagedSceneScreen(
    * walks through the hut... we always need to be aware of this"): the straight way if
    * nothing's in it, otherwise round whatever is (a hut, a wall: anything the ground
    * jumps up to under a walker's feet), by the smallest step aside that clears it.
-   * Undefined for the straight way.
+   * Undefined for the straight way; null when there's no way at all.
    */
   const walkAround = (from: [number, number], to: [number, number]) => {
     const clear = (a: [number, number], b: [number, number]) => {
@@ -197,9 +200,118 @@ export function stagedSceneScreen(
     for (const off of [3, 5, 7, 9, 12, 15])
       for (const sd of [1, -1]) {
         const mid: [number, number] = [mx + px * off * sd, mz + pz * off * sd];
-        if (clear(from, mid) && clear(mid, to)) return [from, mid, to] as [number, number][];
+        if (roomy(mid[0], mid[1]) && clear(from, mid) && clear(mid, to))
+          return [from, mid, to] as [number, number][];
       }
-    return undefined;
+    return findWay(from, to, clear);
+  };
+  /** The way round when one step aside won't do (huts in a row, a hut by a wall): a
+   * search over a 1.5 m grid, then pulled straight wherever the way is clear. */
+  /** Room to walk: clear here and a step each way (so not in a doorway, not inside). */
+  const roomy = (x: number, z: number) =>
+    !!session &&
+    [
+      [0, 0],
+      [1.2, 0],
+      [-1.2, 0],
+      [0, 1.2],
+      [0, -1.2],
+    ].every(([dx, dz]) => session!.kartFits(x + dx!, z + dz!, groundAt(x + dx!, z + dz!) + 3));
+  const findWay = (
+    from: [number, number],
+    to: [number, number],
+    clear: (a: [number, number], b: [number, number]) => boolean,
+  ): [number, number][] | null => {
+    if (!session) return null;
+    const S = 1.5;
+    const pad = 20;
+    const x0 = Math.min(from[0], to[0]) - pad;
+    const z0 = Math.min(from[1], to[1]) - pad;
+    const nx = Math.ceil((Math.abs(to[0] - from[0]) + 2 * pad) / S) + 1;
+    const nz = Math.ceil((Math.abs(to[1] - from[1]) + 2 * pad) / S) + 1;
+    const cell = (x: number, z: number) =>
+      Math.max(0, Math.min(nx - 1, Math.round((x - x0) / S))) +
+      nx * Math.max(0, Math.min(nz - 1, Math.round((z - z0) / S)));
+    const at = (c: number): [number, number] => [x0 + (c % nx) * S, z0 + Math.floor(c / nx) * S];
+    const open = new Map<number, boolean>();
+    const s0 = cell(...from);
+    const s1 = cell(...to);
+    const fits = (c: number) => {
+      if (c === s0 || c === s1) return true;
+      let o = open.get(c);
+      if (o === undefined) {
+        // (Wide: a doorway isn't a way through a hut.)
+        const [x, z] = at(c);
+        o = roomy(x, z);
+        open.set(c, o);
+      }
+      return o;
+    };
+    const cost = new Map<number, number>([[s0, 0]]);
+    const back = new Map<number, number>();
+    const h = (c: number) => {
+      const [x, z] = at(c);
+      return Math.hypot(x - to[0], z - to[1]);
+    };
+    const queue: [number, number][] = [[h(s0), s0]];
+    let found = false;
+    for (let n = 0; queue.length && n < 20000; n++) {
+      let bi = 0;
+      for (let k = 1; k < queue.length; k++) if (queue[k]![0] < queue[bi]![0]) bi = k;
+      const [, c] = queue.splice(bi, 1)[0]!;
+      if (c === s1) {
+        found = true;
+        break;
+      }
+      const cx = c % nx;
+      const cz = Math.floor(c / nx);
+      for (let dz = -1; dz <= 1; dz++)
+        for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dz) continue;
+          const x = cx + dx;
+          const z = cz + dz;
+          if (x < 0 || z < 0 || x >= nx || z >= nz) continue;
+          const d = z * nx + x;
+          if (!fits(d)) continue;
+          const g = cost.get(c)! + Math.hypot(dx, dz) * S;
+          if (g >= (cost.get(d) ?? Infinity)) continue;
+          cost.set(d, g);
+          back.set(d, c);
+          queue.push([g + h(d), d]);
+        }
+    }
+    if (!found) return null;
+    const cells: [number, number][] = [];
+    for (let c: number | undefined = s1; c !== undefined && c !== s0; c = back.get(c))
+      cells.unshift(at(c));
+    cells[cells.length - 1] = to;
+    // Pulled straight: from each point, on to the furthest one it can see.
+    const way: [number, number][] = [from];
+    let k = -1;
+    while (k < cells.length - 1) {
+      let j = cells.length - 1;
+      const here = k < 0 ? from : cells[k]!;
+      while (j > k + 1 && !clear(here, cells[j]!)) j--;
+      way.push(cells[j]!);
+      k = j;
+    }
+    return way;
+  };
+  /** A walk along bends, each stretch taken round anything in its way (a curving path
+   * swinging into a hut: Blake, Oct 28). */
+  const routeThrough = (all: [number, number][]) => {
+    // (A bend that lands in a wall is dropped: the way goes round instead.)
+    const pts = all.filter((p, k) => k === 0 || k === all.length - 1 || roomy(p[0], p[1]));
+    const out: [number, number][] = [pts[0]!];
+    for (let k = 1; k < pts.length; k++) {
+      const last = k === pts.length - 1;
+      const leg = walkAround(out[out.length - 1]!, pts[k]!);
+      // (No way to a bend, from where we are: it's inside something. Skip it.)
+      if (leg === null && !last) continue;
+      if (leg) out.push(...leg.slice(1));
+      else out.push(pts[k]!);
+    }
+    return out;
   };
   const startBeat = (k: number) => {
     const b = staged.beats[k];
@@ -239,7 +351,11 @@ export function stagedSceneScreen(
                 return path ? { path } : {};
               })()
             : m.via?.length
-              ? { path: [[a.x, a.z], ...m.via, m.to] as [number, number][] }
+              ? {
+                  path: a.person
+                    ? routeThrough([[a.x, a.z], ...m.via, m.to])
+                    : [[a.x, a.z], ...m.via, m.to],
+                }
               : {}),
         toUp: m.y ?? a.up,
         toHeading: m.heading ?? Math.atan2(m.to[0] - a.x, m.to[1] - a.z),
@@ -415,7 +531,18 @@ export function stagedSceneScreen(
         }
         if (k >= 1) a.from = undefined;
       }
-      a.y = groundAt(a.x, a.z);
+      // (A dragon in the air flies level, not lifting and dropping with every cliff and
+      // tree under it: Blake, Oct 28, "incredibly choppy". Its height is measured from
+      // the ground it left blended into the ground it's making for.)
+      const flight = a.from;
+      if (a.dragon && flight && (flight.up > 2 || flight.toUp > 2)) {
+        const u = Math.min(1, (clock - flight.t0) / Math.max(0.01, flight.dur));
+        // (Landing, the same curve as its drop, so it never dips below where it lands.)
+        const ku = flight.land ? 1 - (1 - Math.min(1, u / 0.85)) ** 2 : ease(u);
+        flight.y0 ??= groundAt(flight.x, flight.z);
+        flight.y1 ??= groundAt(flight.to[0], flight.to[1]);
+        a.y = lerp(flight.y0, flight.y1, ku);
+      } else a.y = groundAt(a.x, a.z);
       if (a.racer) {
         a.racer.root.position.set(a.x, a.y, a.z);
         a.racer.root.rotation.y = a.heading;
@@ -490,12 +617,16 @@ export function stagedSceneScreen(
   let following = false;
   let lastDt = 1 / 60;
 
-  const screen: Screen & { readonly beat: number } = {
+  const screen: Screen & { readonly beat: number; readonly cast: Map<string, Actor> } = {
     id: "ADVENTURE_SCENE",
     seeThrough: false,
     /** The line it's on (for the screenshot tools). */
     get beat() {
       return i;
+    },
+    /** (For the tools: where everyone is, x/y/up/z.) */
+    get cast() {
+      return actors;
     },
     enter() {
       game.ui.interactive = true;

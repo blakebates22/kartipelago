@@ -1688,8 +1688,10 @@ export function createHazards(opts: {
         );
       }
       // Smoke and embers over the campfires you're near.
+      // (Not in a cutscene: the smoke draws the eye from the story. Blake, Oct 28.)
       for (const f of fires) {
-        if (!smoke || Math.hypot(listener.x - f.x, listener.z - f.z) > 140) continue;
+        if (!smoke || hazards.calm || Math.hypot(listener.x - f.x, listener.z - f.z) > 140)
+          continue;
         f.acc = Math.min(1, f.acc + dt);
         for (; f.acc > 0.16; f.acc -= 0.16) {
           const j = () => Math.random() - 0.5;
@@ -2267,7 +2269,8 @@ export function createHazards(opts: {
         droneLoop?.set(cfg.volume * 0.45 * deep);
       }
       for (const ch of chimneys) {
-        if (!smoke || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240) continue;
+        if (!smoke || hazards.calm || Math.hypot(listener.x - ch.x, listener.z - ch.z) > 240)
+          continue;
         ch.acc = Math.min(1, ch.acc + dt);
         for (; ch.acc > 0.4; ch.acc -= 0.4)
           smoke.emit(
