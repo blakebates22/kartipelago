@@ -1157,8 +1157,10 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         ground: (x, z, y) => {
           const g = land.at(x, z, y);
           const bad = g.surface && /water|lava|wall|mud/.test(g.surface);
-          return { height: g.height, ok: !bad && g.ny > 0.8 };
+          // No land under you (a well's mouth, a hole): not somewhere to stand.
+          return { height: g.height, ok: !bad && g.ny > 0.8 && g.height > -500 };
         },
+        fits: (x, z, y, r) => session.standFits(x, z, y, r),
       });
       if (import.meta.env.DEV)
         (window as unknown as { kpVillagers?: Villagers }).kpVillagers = villagers;

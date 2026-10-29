@@ -384,6 +384,10 @@ def kart_shed_collider(c):
         cuboid(bm, (0, D / 2, H / 2), (W, 0.3, H))
         for sx in (-1, 1):
             cuboid(bm, (sx * W / 2, D / 4, H / 2), (0.3, D / 2, H))
+        # The stack of tyres, and the kart up on its blocks (Blake, Oct 29: "I want a hit
+        # box on the stack of tires and the disassembled kart in the garage").
+        _cyl(bm, (W / 2 - 1.1, -D / 2 + 1.3, -0.3), 0.55, 2.1, n=10)
+        cuboid(bm, (-1.9, 0.2, 0.45), (2.7, 1.9, 1.5))
         return [(c.lib("wood_planks", "wall"), _faces(bm, 0))]
 
     return _p(c, name, build)

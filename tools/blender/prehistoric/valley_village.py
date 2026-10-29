@@ -132,6 +132,11 @@ def hearth(c, logs=True):
         # (render/fire.ts). (No cone of charred sticks: Blake, Oct 29, "remove the lava cone
         # looking thing in the fires ... and just have the high fidelity fire".)
         m.add(("ash_soil", "dirt"), lambda bm: _cyl(bm, (0, 0, 0.0), 1.15, 0.06, n=12))
+        # Logs burning in it, laid across one another (Blake, Oct 29: "can we add logs in
+        # the high fidelity fire"): three short split logs, flat, their ends charred.
+        for i, (a, z) in enumerate(((0.3, 0.16), (1.35, 0.3), (2.4, 0.44))):
+            ca, sa = math.cos(a), math.sin(a)
+            log(m, (-0.85 * ca, -0.85 * sa, z), (0.85 * ca, 0.85 * sa, z), 0.15, seed=i + 21)
 
         def flames(bm):
             for i, (r, w, hh) in enumerate(((0.0, 0.5, 1.9), (0.32, 0.34, 1.35), (0.34, 0.32, 1.2), (0.3, 0.3, 1.45))):
@@ -452,13 +457,15 @@ def hut(c, v):
         # round to the walls, and the doorway's sill to the threshold.
         def floor(bm):
             nf = 20
-            cv = bm.verts.new((0.0, 0.0, 0.03))
-            rim = [bm.verts.new(P(R - 0.05, k * math.tau / nf, 0.03)) for k in range(nf)]
+            # (A hand above the hut's foot, so it shows over the land inside: Blake, Oct 29,
+            # only one or two showed theirs.)
+            cv = bm.verts.new((0.0, 0.0, 0.14))
+            rim = [bm.verts.new(P(R - 0.05, k * math.tau / nf, 0.14)) for k in range(nf)]
             for k in range(nf):
                 bm.faces.new((cv, rim[k], rim[(k + 1) % nf]))
             x0 = R * math.cos(da) - T - 1.85
-            bm.faces.new([bm.verts.new(p) for p in ((x0, -DOOR_HW - 0.5, 0.035), (R * math.cos(da) + 0.05, -DOOR_HW, 0.035),
-                                                     (R * math.cos(da) + 0.05, DOOR_HW, 0.035), (x0, DOOR_HW + 0.5, 0.035))])
+            bm.faces.new([bm.verts.new(p) for p in ((x0, -DOOR_HW - 0.5, 0.145), (R * math.cos(da) + 0.05, -DOOR_HW, 0.145),
+                                                     (R * math.cos(da) + 0.05, DOOR_HW, 0.145), (x0, DOOR_HW + 0.5, 0.145))])
 
         m.add(("camp_earth", "dirt"), floor)
 

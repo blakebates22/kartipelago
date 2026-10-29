@@ -469,10 +469,36 @@ WELL = (9.0, 25.0)
 SHED = (-22.0, 31.0)
 # (The hamlet's hearth, on the slope at the wall's foot, is gone: Blake, Oct 29, "completely
 # remove the fire and log that's on the slope in the village, we don't need that one".)
-HEARTHS = [(-10.0, -8.0), (12.0, 10.0)]
+# (And the one at (-10, -8): the land falls away there toward the road, so it sat on a
+# slope, a log floating. Blake, Oct 29, again: it was that one.)
+HEARTHS = [(12.0, 10.0)]
 HAMLET = (-4.0, 42.0)  # a few more huts round the north hearth
 HAMLET_HUTS = []
 STAGE = [((-6.0, 4.0), 13.0), ((15.0, -6.0), 15.0)]  # the cutscenes' camp and the Pact Stone (Blender x, y; clear radius)
+# Where the cutscenes' folk stand and walk in the camp (src/adventure/staged.ts, in
+# Blender x, y: game z flipped): no hut over any of them. Each is a segment (a spot is
+# a segment of no length).
+SCENE_WALKS = [
+    ((0.0, 13.0), (0.0, 13.0)),  # the Elder at the fire
+    ((4.0, 12.0), (1.0, 6.0)),  # ... and the night Rex runs (rescue)
+    ((-3.0, 11.0), (-3.0, 11.0)),
+    ((5.0, 12.0), (4.0, 25.0)),  # v1, off between the huts
+    ((-5.0, 12.0), (-14.0, 6.0)),  # v2
+    ((12.0, 6.0), (18.0, 12.0)),  # v3
+    ((-10.0, 6.0), (-4.0, 2.0)),  # you, Rex
+    ((-8.0, -6.0), (0.0, 4.0)),  # v4
+]
+
+
+def scene_clear(x, y, r):
+    """(x, y) at least r from every cutscene spot and walk."""
+    for (ax, ay), (bx, by) in SCENE_WALKS:
+        dx, dy = bx - ax, by - ay
+        L2 = dx * dx + dy * dy
+        t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / L2))
+        if math.hypot(x - ax - t * dx, y - ay - t * dy) < r:
+            return False
+    return True
 
 
 def camp(c, ground, taken):

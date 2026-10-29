@@ -424,7 +424,8 @@ const campFolk = (ruined: boolean): Record<string, ActorSpec> =>
         // (Blake, Oct 28: the long-crested one looked "a tad derpy": a sturdy iggy.)
         v1: vill("valley", 9, [5, -12], [0, -4], "iggy"),
         v2: vill("valley", 12, [-5, -12], [0, -4]),
-        v3: vill("valley", 21, [12, -6], [0, -4]),
+        // (Off the hearth's log benches at (12, -10): solid now.)
+        v3: vill("valley", 21, [11, -3.5], [0, -4]),
       };
 const VALLEY = "dinosaur_valley";
 /** A curving way from `from` to `to`: the points between, the middle pushed `side`
@@ -455,8 +456,9 @@ const GUARD_RUNS: [V2, V2][] = [
     [-34, 4],
   ],
   [
+    // (Short of the hamlet's huts.)
     [18, -18],
-    [-12, -42],
+    [-17, -38],
   ],
   [
     [18, 0],
@@ -535,7 +537,7 @@ add(
           },
           moves: [
             { actor: "lumen", to: [10, 5], dur: 3, heading: 0.6 },
-            { actor: "v3", to: [18, -12], dur: 6 },
+            { actor: "v3", to: [20, -4], dur: 6 },
           ],
           fx: { gesture: { v4: "cheer" } },
         },
@@ -766,15 +768,16 @@ add(
         },
         2: { moves: [{ actor: "rex", to: [2, 0], dur: 2.5, heading: -2.4 }] },
         3: {
-          moves: [{ actor: "elder", to: [1, -6], dur: 3, heading: -0.6 }],
+          // (Short of the camp fire's log benches.)
+          moves: [{ actor: "elder", to: [2, -7.5], dur: 3, heading: -0.6 }],
           fx: { gesture: { elder: "holdOut" }, light: true },
         },
         4: {
-          cam: { from: [-1.5, 1.6, -3.4], to: [-1.2, 1.5, -3.8], look: [1, 1.1, -6] },
+          cam: { from: [-0.5, 1.6, -4.9], to: [-0.2, 1.5, -5.3], look: [2, 1.1, -7.5] },
           fx: { gesture: { elder: "cower" }, flash: true, light: true },
         },
         5: {
-          cam: { from: [-1.5, 1.6, -3.4], to: [-1.0, 1.4, -4.2], look: [1, 1.0, -6] },
+          cam: { from: [-0.5, 1.6, -4.9], to: [0, 1.4, -5.7], look: [2, 1.0, -7.5] },
           fx: { light: true, music: "lumen" },
         },
         6: { fx: { gesture: { elder: "think" } } },

@@ -376,16 +376,41 @@ def main():
     CAMP_HUTS.clear()
     for k in range(5):
         a = k * math.tau / 5 + 0.9
-        hx, hy = cx + (cr - 6) * math.cos(a), cy + (cr - 6) * math.sin(a)
         if abs(math.sin(a)) < 0.35 and math.cos(a) > 0:
             continue  # (clear of the way out, east)
+        # (On truly level ground: Blake, Oct 29, two huts were set into the side of the
+        # slight rise toward the road, their doors in the ground. Each moves round or in a
+        # little until the land under it is flat.)
+        best = None
+        for step in range(45):
+            da_ = (step + 1) // 2 * 0.1 * (1 if step % 2 else -1)
+            for dr in (0.0, -2.0, -4.0, 2.0, 4.0):
+                aa = a + da_
+                tx, ty = cx + (cr - 6 + dr) * math.cos(aa), cy + (cr - 6 + dr) * math.sin(aa)
+                if any(math.hypot(tx - ox, ty - oy) < 9.5 for ox, oy in CAMP_HUTS):
+                    continue
+                (sx, sy), sr = vd.STAGE[1]
+                if math.hypot(tx - sx, ty - sy) < sr:
+                    continue  # (not by the Pact Stone: the cutscenes' ground)
+                if not vd.scene_clear(tx, ty, 5.5):
+                    continue  # (nor over anyone in a cutscene)
+                if abs(math.sin(aa)) < 0.35 and math.cos(aa) > 0:
+                    continue
+                ring_ = [ground(tx + 4.2 * math.cos(t), ty + 4.2 * math.sin(t)) for t in (j * math.tau / 12 for j in range(12))]
+                sp = max(ring_) - min(ring_)
+                if best is None or sp < best[0] - 0.05:
+                    best = (sp, aa, tx, ty)
+        if best is None or best[0] > 0.3:
+            print("camp hut %d: no level ground, left out" % k)
+            continue
+        _sp, a, hx, hy = best
         if RUIN:
             box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, L.CAMP_Z - 1.0, L.CAMP_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
             ruin.smoke(c, hx, hy, L.CAMP_Z + 2.5)
         else:
-            # (On the lowest ground under it: Blake, Oct 29, note 20, a hut floating.)
             foot = min(ground(hx + 3.6 * math.cos(t), hy + 3.6 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71))
-            vv.place_hut(c, k, hx, hy, min(L.CAMP_Z, foot, ground(hx, hy)) - 0.05, a + math.pi)
+            vv.place_hut(c, k, hx, hy, foot - 0.05, a + math.pi)
+            print("camp hut %d at (%.1f, %.1f), level to %.2f m" % (k, hx, hy, _sp))
             CAMP_HUTS.append((hx, hy))
         # (From its door to the fire, curving a little: Blake, notes 1 and 3.)
         dx, dy = hx + 4.2 * math.cos(a + math.pi), hy + 4.2 * math.sin(a + math.pi)

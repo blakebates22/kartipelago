@@ -171,9 +171,9 @@
     {
       "id": "campfire_01",
       "type": "campfire",
-      "x": 9.95,
+      "x": -2.06,
       "y": 28.5,
-      "z": -15.53
+      "z": -18.87
     },
     {
       "id": "campfire_02",
@@ -185,16 +185,16 @@
     {
       "id": "campfire_03",
       "type": "campfire",
-      "x": -15.41,
+      "x": -18.93,
       "y": 28.5,
-      "z": 1.29
+      "z": -9.45
     },
     {
       "id": "campfire_04",
       "type": "campfire",
-      "x": -0.68,
+      "x": -19.27,
       "y": 28.5,
-      "z": 12.99
+      "z": -8.37
     },
     {
       "id": "campfire_05",
@@ -205,13 +205,6 @@
     },
     {
       "id": "campfire_06",
-      "type": "campfire",
-      "x": -10.0,
-      "y": 25.28,
-      "z": 8.0
-    },
-    {
-      "id": "campfire_07",
       "type": "campfire",
       "x": 12.0,
       "y": 26.33,
@@ -817,21 +810,21 @@
       "offset": 3.0
     },
     {
-      "id": "campfire_08",
+      "id": "campfire_07",
       "type": "campfire",
       "x": 257.95,
       "y": 168.0,
       "z": 248.18
     },
     {
-      "id": "campfire_09",
+      "id": "campfire_08",
       "type": "campfire",
       "x": 251.82,
       "y": 168.0,
       "z": 251.82
     },
     {
-      "id": "campfire_10",
+      "id": "campfire_09",
       "type": "campfire",
       "x": 248.18,
       "y": 168.0,
@@ -895,49 +888,49 @@
       "offset": 1.0
     },
     {
-      "id": "campfire_11",
+      "id": "campfire_10",
       "type": "campfire",
       "x": 79.5,
       "y": 10.2,
       "z": 193.0
     },
     {
-      "id": "campfire_12",
+      "id": "campfire_11",
       "type": "campfire",
       "x": 88.5,
       "y": 10.19,
       "z": 193.0
     },
     {
-      "id": "campfire_13",
+      "id": "campfire_12",
       "type": "campfire",
       "x": 97.5,
       "y": 10.19,
       "z": 193.0
     },
     {
-      "id": "campfire_14",
+      "id": "campfire_13",
       "type": "campfire",
       "x": 106.5,
       "y": 10.75,
       "z": 193.0
     },
     {
-      "id": "campfire_15",
+      "id": "campfire_14",
       "type": "campfire",
       "x": -112.96,
       "y": 12.48,
       "z": -300.0
     },
     {
-      "id": "campfire_16",
+      "id": "campfire_15",
       "type": "campfire",
       "x": -77.71,
       "y": 14.48,
       "z": -350.0
     },
     {
-      "id": "campfire_17",
+      "id": "campfire_16",
       "type": "campfire",
       "x": -101.29,
       "y": 16.48,
@@ -1074,7 +1067,7 @@
       "heading": 0.696
     },
     {
-      "id": "campfire_18",
+      "id": "campfire_17",
       "type": "campfire",
       "x": 51.76,
       "y": 13.1,
@@ -1088,14 +1081,14 @@
       "z": 171.74
     },
     {
-      "id": "campfire_19",
+      "id": "campfire_18",
       "type": "campfire",
       "x": 144.59,
       "y": 22.49,
       "z": 158.25
     },
     {
-      "id": "campfire_20",
+      "id": "campfire_19",
       "type": "campfire",
       "x": 132.77,
       "y": 20.38,
@@ -1109,14 +1102,14 @@
       "z": 146.32
     },
     {
-      "id": "campfire_21",
+      "id": "campfire_20",
       "type": "campfire",
       "x": 119.02,
       "y": 17.53,
       "z": 150.02
     },
     {
-      "id": "campfire_22",
+      "id": "campfire_21",
       "type": "campfire",
       "x": 156.25,
       "y": 22.48,
@@ -1130,14 +1123,14 @@
       "z": 118.2
     },
     {
-      "id": "campfire_23",
+      "id": "campfire_22",
       "type": "campfire",
       "x": 153.25,
       "y": 22.66,
       "z": 90.97
     },
     {
-      "id": "campfire_24",
+      "id": "campfire_23",
       "type": "campfire",
       "x": 171.56,
       "y": 24.37,
@@ -1151,14 +1144,14 @@
       "z": 136.42
     },
     {
-      "id": "campfire_25",
+      "id": "campfire_24",
       "type": "campfire",
       "x": 89.08,
       "y": 14.7,
       "z": 163.25
     },
     {
-      "id": "campfire_26",
+      "id": "campfire_25",
       "type": "campfire",
       "x": 51.05,
       "y": 13.8,
@@ -1172,14 +1165,14 @@
       "z": 139.81
     },
     {
-      "id": "campfire_27",
+      "id": "campfire_26",
       "type": "campfire",
       "x": 133.71,
       "y": 20.15,
       "z": 161.97
     },
     {
-      "id": "campfire_28",
+      "id": "campfire_27",
       "type": "campfire",
       "x": 168.89,
       "y": 23.91,
@@ -1193,14 +1186,14 @@
       "z": 123.23
     },
     {
-      "id": "campfire_29",
+      "id": "campfire_28",
       "type": "campfire",
       "x": 168.22,
       "y": 22.63,
       "z": 109.46
     },
     {
-      "id": "campfire_30",
+      "id": "campfire_29",
       "type": "campfire",
       "x": 130.87,
       "y": 20.38,
@@ -1214,7 +1207,7 @@
       "z": 103.09
     },
     {
-      "id": "campfire_31",
+      "id": "campfire_30",
       "type": "campfire",
       "x": 108.99,
       "y": 16.64,
@@ -1296,119 +1289,119 @@
       "lava": true
     },
     {
-      "id": "campfire_32",
+      "id": "campfire_31",
       "type": "campfire",
       "x": 182.99,
       "y": 33.42,
       "z": 136.98
     },
     {
-      "id": "campfire_33",
+      "id": "campfire_32",
       "type": "campfire",
       "x": 212.09,
       "y": 57.64,
       "z": -1.9
     },
     {
-      "id": "campfire_34",
+      "id": "campfire_33",
       "type": "campfire",
       "x": 129.17,
       "y": 40.12,
       "z": 221.39
     },
     {
-      "id": "campfire_35",
+      "id": "campfire_34",
       "type": "campfire",
       "x": 202.29,
       "y": 48.2,
       "z": 8.68
     },
     {
-      "id": "campfire_36",
+      "id": "campfire_35",
       "type": "campfire",
       "x": 54.41,
       "y": 47.73,
       "z": 94.48
     },
     {
-      "id": "campfire_37",
+      "id": "campfire_36",
       "type": "campfire",
       "x": 19.3,
       "y": 56.17,
       "z": 187.02
     },
     {
-      "id": "campfire_38",
+      "id": "campfire_37",
       "type": "campfire",
       "x": 192.25,
       "y": 41.1,
       "z": 123.68
     },
     {
-      "id": "campfire_39",
+      "id": "campfire_38",
       "type": "campfire",
       "x": 132.5,
       "y": 48.44,
       "z": 231.17
     },
     {
-      "id": "campfire_40",
+      "id": "campfire_39",
       "type": "campfire",
       "x": 189.39,
       "y": 34.96,
       "z": 15.97
     },
     {
-      "id": "campfire_41",
+      "id": "campfire_40",
       "type": "campfire",
       "x": 181.35,
       "y": 40.76,
       "z": 211.61
     },
     {
-      "id": "campfire_42",
+      "id": "campfire_41",
       "type": "campfire",
       "x": 199.48,
       "y": 41.19,
       "z": 105.86
     },
     {
-      "id": "campfire_43",
+      "id": "campfire_42",
       "type": "campfire",
       "x": 110.22,
       "y": 48.03,
       "z": 63.59
     },
     {
-      "id": "campfire_44",
+      "id": "campfire_43",
       "type": "campfire",
       "x": 137.78,
       "y": 57.92,
       "z": -30.16
     },
     {
-      "id": "campfire_45",
+      "id": "campfire_44",
       "type": "campfire",
       "x": 145.54,
       "y": 45.48,
       "z": -53.28
     },
     {
-      "id": "campfire_46",
+      "id": "campfire_45",
       "type": "campfire",
       "x": 200.28,
       "y": 41.28,
       "z": 79.81
     },
     {
-      "id": "campfire_47",
+      "id": "campfire_46",
       "type": "campfire",
       "x": 80.9,
       "y": 57.86,
       "z": 63.57
     },
     {
-      "id": "campfire_48",
+      "id": "campfire_47",
       "type": "campfire",
       "x": 140.44,
       "y": 48.53,
@@ -1680,9 +1673,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "aef00bd918d74f7ccc62f198ba8d9243400206a46e0c2151f160cf7ec998a58c",
+    "valley_dress.py": "78a1890858b76c3654d9c78861779a07a54912d3becf4bc917764577d38a8dd3",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "2b0c6bc3c034c74242814b8f2037a0a096713184554331248d8802940ad93be9",
-    "valley_village.py": "8ea475ad0d7731da537942ace5f48225d5ec98a364170c24b873738c274542a8"
+    "valley_region.py": "7d65b7e61d96aac0c6d7e39e6daacb515683e1c08e266bfab2478f00e943fc49",
+    "valley_village.py": "4347a4c85aaf2b1e8bf721e42beb04f40337103986dc5f64cd14a1e44aee6b52"
   }
 }

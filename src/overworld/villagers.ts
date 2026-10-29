@@ -184,8 +184,31 @@ export function createVillagers(opts: {
   /** The ground's height at (x, z), and whether a villager may stand there (not water,
    * lava or a wall). */
   ground: (x: number, z: number, y: number) => { height: number; ok: boolean };
+  /** Whether one `radius` round can stand at (x, z) (no wall, hut, well or fire: they
+   * never walk through anything solid. Blake, Oct 29, "this should be a hard rule"). */
+  fits?: (x: number, z: number, y: number, radius: number) => boolean;
 }): Villagers {
   const folk: Villager[] = [];
+  const fits = opts.fits ?? (() => true);
+  /** Free to stand at (x, z): open ground, nothing solid. */
+  const free = (x: number, z: number, y: number, r: number) => {
+    const g = opts.ground(x, z, y + LOOK_UP);
+    return g.ok && fits(x, z, g.height + 0.2, r) ? g : undefined;
+  };
+  /** A clear straight walk from (ax, az) to (bx, bz): free every half metre, no step up
+   * or down more than a little. */
+  const clearWalk = (ax: number, az: number, bx: number, bz: number, y: number, r: number) => {
+    const d = Math.hypot(bx - ax, bz - az);
+    const n = Math.max(1, Math.ceil(d / 0.5));
+    let h = y;
+    for (let i = 1; i <= n; i++) {
+      const t = i / n;
+      const g = free(ax + (bx - ax) * t, az + (bz - az) * t, h, r);
+      if (!g || Math.abs(g.height - h) > 0.6) return false;
+      h = g.height;
+    }
+    return true;
+  };
   opts.homes.forEach((h0, hi) => {
     // The yard: the home's spot, or (if that's under a roof: a big house) the nearest
     // open ground round it.
@@ -207,10 +230,19 @@ export function createVillagers(opts: {
       const rand = rng(seed + 17);
       const look = villagerLook(h.folk, seed);
       const size = SIZE[look.species];
-      const a = rand() * Math.PI * 2;
-      const r = 3 + rand() * Math.min(6, h.r * 0.5);
-      const x = h.x + Math.sin(a) * r;
-      const z = h.z + Math.cos(a) * r;
+      let x = h.x;
+      let z = h.z;
+      for (let tries = 0; tries < 12; tries++) {
+        const a = rand() * Math.PI * 2;
+        const r = 3 + rand() * Math.min(6, h.r * 0.5);
+        const cx = h.x + Math.sin(a) * r;
+        const cz = h.z + Math.cos(a) * r;
+        if (free(cx, cz, h.y, size.radius * 0.8)) {
+          x = cx;
+          z = cz;
+          break;
+        }
+      }
       const g = opts.ground(x, z, h.y + LOOK_UP);
       const y = g.ok ? g.height : h.y;
       const solid: SolidCircle = {
@@ -224,8 +256,8 @@ export function createVillagers(opts: {
       opts.solids.push(solid);
       folk.push({
         home: h,
-        x: g.ok ? x : h.x,
-        z: g.ok ? z : h.z,
+        x,
+        z,
         y,
         heading: rand() * Math.PI * 2,
         speed: size.speed * (0.85 + rand() * 0.3),
@@ -245,17 +277,18 @@ export function createVillagers(opts: {
   let nearest: Villager | undefined;
 
   const pick = (v: Villager) => {
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       const a = v.rand() * Math.PI * 2;
       const r = 2 + v.rand() * v.home.r;
       const x = v.home.x + Math.sin(a) * r;
       const z = v.home.z + Math.cos(a) * r;
-      const g = opts.ground(x, z, v.y + LOOK_UP);
-      if (g.ok && Math.abs(g.height - v.home.y) < 4 && Math.abs(g.height - v.y) < 3) {
-        v.tx = x;
-        v.tz = z;
-        return;
-      }
+      const g = free(x, z, v.y, v.radius * 0.8);
+      if (!g || Math.abs(g.height - v.home.y) >= 4 || Math.abs(g.height - v.y) >= 3) continue;
+      // (Only somewhere it can walk to straight, round nothing solid.)
+      if (!clearWalk(v.x, v.z, x, z, v.y, v.radius * 0.8)) continue;
+      v.tx = x;
+      v.tz = z;
+      return;
     }
     v.wait = 2;
   };
@@ -276,11 +309,15 @@ export function createVillagers(opts: {
         const dyou = Math.hypot(dx, dz);
         let want = 0;
         if (dyou < 7 && Math.abs(you.speed) > 4) {
-          // A kart coming: out of its way.
-          v.tx = v.x - (dx / (dyou || 1)) * 5;
-          v.tz = v.z - (dz / (dyou || 1)) * 5;
-          v.wait = 0;
-          want = 1.6;
+          // A kart coming: out of its way (if the way is clear; else it stands its ground).
+          const ox = v.x - (dx / (dyou || 1)) * 5;
+          const oz = v.z - (dz / (dyou || 1)) * 5;
+          if (clearWalk(v.x, v.z, ox, oz, v.y, v.radius * 0.8)) {
+            v.tx = ox;
+            v.tz = oz;
+            v.wait = 0;
+            want = 1.6;
+          }
         } else if (dyou < 6 && Math.abs(you.speed) < 2) {
           // You've stopped by: it stops and looks at you.
           const face = Math.atan2(dx, dz);
@@ -309,8 +346,8 @@ export function createVillagers(opts: {
             const sp = v.speed * want * Math.max(0.2, Math.cos(wrap(face - v.heading)));
             const nx = v.x + Math.sin(v.heading) * sp * dt;
             const nz = v.z + Math.cos(v.heading) * sp * dt;
-            const g = opts.ground(nx, nz, v.y + LOOK_UP);
-            if (g.ok && Math.abs(g.height - v.y) < 0.6) {
+            const g = free(nx, nz, v.y, v.radius * 0.8);
+            if (g && Math.abs(g.height - v.y) < 0.6) {
               v.x = nx;
               v.z = nz;
               v.y += (g.height - v.y) * Math.min(1, dt * 10);

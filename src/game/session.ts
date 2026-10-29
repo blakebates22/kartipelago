@@ -2059,6 +2059,13 @@ function buildSession(
       const g = you.ground.at(x, z, y);
       return !deepestWall(pkg.collision, x, g.height, z, tuning.physics.kartRadius);
     },
+    /** Whether something `radius` round can stand at (x, z), on the ground under height y
+     * (no wall, hut, well or fire there: the villagers' hard rule, Blake, Oct 29). */
+    standFits(x: number, z: number, y: number, radius: number) {
+      if (!pkg) return true;
+      const g = you.ground.at(x, z, y);
+      return !deepestWall(pkg.collision, x, g.height, z, radius);
+    },
     /** Put kart i (a mini-game's start) at (x, z) facing `heading`. */
     place(i: number, x: number, z: number, heading: number, y = 200) {
       const e = entrants[i];
