@@ -365,6 +365,9 @@ export interface HazardEvents {
 type Point3 = { x: number; y: number; z: number };
 
 export interface Hazards {
+  /** Geysers held at rest (a cutscene playing by one: Blake, Oct 28, the geyser behind
+   * Rex pulled the eye away). */
+  calm: boolean;
   /** Called once per kart per physics step, after it has moved. */
   stepKart(
     i: number,
@@ -1308,6 +1311,7 @@ export function createHazards(opts: {
     : undefined;
 
   const hazards: Hazards = {
+    calm: false,
     solids,
     depths,
     isles,
@@ -2284,7 +2288,9 @@ export function createHazards(opts: {
         const rc = raceClock();
         for (const g of geysers) {
           const c = g.cfg;
-          const { phase, t: pt } = geyserPhase(c, rc);
+          const { phase, t: pt } = hazards.calm
+            ? { phase: "idle" as const, t: 0 }
+            : geyserPhase(c, rc);
           const far = Math.hypot(listener.x - c.x, listener.z - c.z);
           if (phase !== g.last) {
             const loud = vol() * Math.max(0, 1 - far / 220);

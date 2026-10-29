@@ -56,6 +56,10 @@ export interface Shot {
   to?: V3;
   look: V3;
   lookTo?: V3;
+  /** Look at this actor wherever it is (eased: a steady pan), `followUp` metres above its
+   * feet, instead of `look`. */
+  follow?: string;
+  followUp?: number;
   /** The camera's height is over the ground where it looks (the subject's), not under it
    * (close on someone standing lower or higher than the camera's spot). */
   rel?: boolean;
@@ -102,6 +106,8 @@ export interface StagedBeat {
     actor: string;
     to: V2;
     via?: V2[];
+    /** A flyer coming in to land: gliding in, flaring, turning to `heading` once down. */
+    land?: boolean;
     /** Come along the main road instead, from ahead of "you" (the cutscene finds it). */
     road?: boolean;
     y?: number;
@@ -113,6 +119,8 @@ export interface StagedBeat {
     fire?: string;
     flash?: boolean;
     shake?: number;
+    /** When the shake starts, seconds into the line (a landing's thud). */
+    shakeAt?: number;
     /** A dragon rearing up. */
     rear?: string;
     darken?: boolean;
@@ -314,10 +322,11 @@ export function stage(
 }
 
 const ELDER = { kind: "elder" } as const;
-const vill = (folk: Folk, seed: number, at: V2, to: V2): ActorSpec => ({
+const vill = (folk: Folk, seed: number, at: V2, to: V2, species?: Species): ActorSpec => ({
   kind: "villager",
   folk,
   seed,
+  ...(species ? { species } : {}),
   at,
   heading: face(at, to),
 });
@@ -403,16 +412,36 @@ const THEME: Record<string, Cue> = {
 /** Dinosaur Valley's camp: the square round the fire at (0, -4), the huts round it, the
  * way out east. The Elder by his hut to the south; the valley's Pact Stone by the fire. */
 const CAMP = { x: -6, z: -4, heading: Math.PI / 2 };
-const STONE_V: V2 = [-12, -14];
+/** The valley's Pact Stone, where the overworld stands it (regions.ts). */
+const STONE_AT = regionById("dinosaur_valley")!.pactStone!;
+const STONE_V: V2 = [STONE_AT.x, STONE_AT.z];
+/** Where Cinderjaw stands over the cracked stone (his head above it). */
+const CINDER_AT_STONE: V2 = [STONE_AT.x + 14, STONE_AT.z + 8];
 const campFolk = (ruined: boolean): Record<string, ActorSpec> =>
   ruined
     ? {}
     : {
-        v1: vill("valley", 9, [5, -12], [0, -4]),
+        // (Blake, Oct 28: the long-crested one looked "a tad derpy": a sturdy iggy.)
+        v1: vill("valley", 9, [5, -12], [0, -4], "iggy"),
         v2: vill("valley", 12, [-5, -12], [0, -4]),
         v3: vill("valley", 21, [12, -6], [0, -4]),
       };
 const VALLEY = "dinosaur_valley";
+/** A curving way from `from` to `to`: the points between, the middle pushed `side`
+ * metres to the left (a gentle arc, as anyone walks). */
+function bend(from: V2, to: V2, side: number): V2[] {
+  const d = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1;
+  const px = -(to[1] - from[1]) / d;
+  const pz = (to[0] - from[0]) / d;
+  const out: V2[] = [];
+  for (let k = 1; k < 8; k++) {
+    const t = k / 8;
+    const b = 4 * t * (1 - t) * side;
+    out.push([from[0] + (to[0] - from[0]) * t + px * b, from[1] + (to[1] - from[1]) * t + pz * b]);
+  }
+  return out;
+}
+
 /** Where Cinderjaw lands in the camp (The Hundredth Summer): its flat ground, east. */
 const CINDER_LANDS: V2 = [28, -8];
 /** His guards' runs out across the valley as he takes it: from his feet, to. */
@@ -466,6 +495,8 @@ add(
       you: { kind: "racer", look: "you", at: [-10, -6], heading: 1.3 },
       ...campFolk(false),
       v4: vill("valley", 31, [-8, 6], [0, -4]),
+      // (The festival's held round the valley's Pact Stone.)
+      stone: { kind: "stone", state: "old", at: STONE_V, heading: STONE_AT.heading },
     },
     {
       music: "festival",
@@ -474,22 +505,25 @@ add(
         0: { fx: { gesture: cheer("v1", "v2", "v3", "v4") } },
         1: { fx: { gesture: { elder: "wave" } } },
         2: { fx: { gesture: { elder: "point" } } },
-        3: { fx: { gesture: { lumen: "wave" } } },
-        4: { fx: { gesture: { elder: "raiseStaff" } } },
-        5: { fx: { music: "lumen" } },
-        6: { fx: { gesture: { elder: "shake" } } },
+        // (How he found Lumen: the boy's light, explained without giving him away.)
+        3: { fx: { gesture: { elder: "think" } } },
+        4: { fx: { gesture: { lumen: "wave" } } },
+        5: { fx: { gesture: { elder: "raiseStaff" } } },
+        6: { fx: { music: "lumen" } },
+        7: { fx: { gesture: { elder: "shake" } } },
         // The Founders' Horn at his hip (the story turns on it); the festival goes on
         // behind him.
-        7: {
+        8: {
           // (From his right, where the horn hangs, framed above the text box.)
           cam: { from: [-1.2, 1.25, -11.2], to: [-1.05, 1.2, -11.4], look: [-0.2, 0.7, -12.9] },
           fx: { gesture: { elder: "touchHorn" } },
+          // (Off between the huts, not through them: Blake, Oct 28.)
           moves: [
-            { actor: "v1", to: [11, -20], dur: 6 },
-            { actor: "v2", to: [-12, -19], dur: 6 },
+            { actor: "v1", to: [4, -25], dur: 7 },
+            { actor: "v2", to: [-14, -6], dur: 7 },
           ],
         },
-        8: {
+        9: {
           cam: {
             from: [6.2, 1.25, 5.8],
             to: [6.4, 1.25, 6.1],
@@ -535,7 +569,9 @@ add(
     {
       rex: { kind: "racer", look: "rex", at: [6, 0], heading: -2.2 },
       you: { kind: "racer", look: "you", at: [-4, -2], heading: 1.6 },
-      elder: { ...ELDER, at: [0, -13], heading: 0 },
+      // (By the stone as it starts to glow.)
+      elder: { ...ELDER, at: [10, 0.5], heading: face([10, 0.5], STONE_V) },
+      stone: { kind: "stone", state: "glowing", at: STONE_V, heading: STONE_AT.heading },
       ...campFolk(false),
       cinderjaw: {
         kind: "dragon",
@@ -558,15 +594,20 @@ add(
       wide: { from: [-24, 14, -28], to: [-30, 18, -34], look: [0, 4, 6] },
       all: { night: true },
       per: {
-        0: { fx: { gesture: { elder: "think" } } },
+        // The stone glowing at dusk, Mossback staring at it.
+        0: {
+          cam: { from: [3, 2.2, -5], to: [3.6, 2.3, -4.2], look: [13, 2.2, 4] },
+          fx: { gesture: { elder: "think" } },
+        },
         1: { fx: { gesture: { elder: "think" }, music: "suspense" } },
         2: { fx: { gesture: { elder: "kneel" } } },
         // (Blake, Oct 28: we saw only his belly, his feet floating, never his face. He
         // lands now on the camp's own flat ground, east of it, facing the camp, and the
         // shots are from the camp, low, his face toward us.)
-        // His shadow over the camp: seen side-on, crossing the sky.
+        // His shadow over the camp: seen from the camp, the camera turning to keep him
+        // as he crosses the sky.
         3: {
-          cam: { from: [-10, 3, -40], look: [-60, 40, 60], lookTo: [40, 40, -16] },
+          cam: { from: [-10, 3, -40], look: [-60, 40, 60], follow: "cinderjaw", followUp: 8 },
           moves: [{ actor: "cinderjaw", to: [60, -30], y: 45, dur: 4.5 }],
           fx: {
             darken: true,
@@ -575,16 +616,27 @@ add(
             gesture: cower("v1", "v2", "v3", "elder"),
           },
         },
-        // He comes down behind you, east of the camp.
+        // He comes down behind you, east of the camp: gliding in, flaring, the ground
+        // shaking as he touches down; then he turns to the camp.
         4: {
           cam: {
             from: [-6, 3.5, 6],
             to: [-5, 3.5, 5],
             look: [22, 14, -8],
-            lookTo: [14, 10, -8],
+            follow: "cinderjaw",
+            followUp: 9,
           },
-          moves: [{ actor: "cinderjaw", to: CINDER_LANDS, y: 0, dur: 3, heading: -Math.PI / 2 }],
-          fx: { pose: { cinderjaw: "land" }, shake: 0.35 },
+          moves: [
+            {
+              actor: "cinderjaw",
+              to: CINDER_LANDS,
+              y: 0,
+              dur: 4.2,
+              heading: -Math.PI / 2,
+              land: true,
+            },
+          ],
+          fx: { shake: 0.4, shakeAt: 3.6 },
         },
         // Rearing up to name himself: from the camp, his face toward us.
         5: {
@@ -593,7 +645,7 @@ add(
         },
         // His head down over the racers.
         6: {
-          cam: { from: [-2, 4, 4], to: [-1, 4.3, 3.4], look: [13, 14, -8] },
+          cam: { from: [-2, 4, 4], to: [-1, 4.3, 3.4], look: [13, 9.5, -8] },
           fx: { pose: { cinderjaw: "idle" } },
         },
         7: {
@@ -614,7 +666,13 @@ add(
             show: GUARD_RUNS.map((_, i) => `g${i + 1}`),
             gesture: cower("v1", "v2", "v3", "elder"),
           },
-          moves: GUARD_RUNS.map(([, to], i) => ({ actor: `g${i + 1}`, to, dur: 7 })),
+          // (Each on its own curving way, at its own pace: not ruled lines.)
+          moves: GUARD_RUNS.map(([from, to], i) => ({
+            actor: `g${i + 1}`,
+            to,
+            via: bend(from, to, (i % 2 ? 1 : -1) * (3 + (i % 3) * 1.5)),
+            dur: 6.5 + (i % 4) * 0.6,
+          })),
         },
       },
     },
@@ -627,6 +685,8 @@ add(
       elder: { ...ELDER, at: [-3, -11], heading: -0.6 },
       you: { kind: "racer", look: "you", at: [-8, -6], heading: 2.6 },
       rex: { kind: "racer", look: "rex", at: [-1, -5], heading: -2.6 },
+      // (He tags along: "ME TOO!")
+      lumen: { kind: "robed", at: [-6.5, -12.5], heading: face([-6.5, -12.5], [-8, -6]) },
     },
     {
       music: "conquered",
@@ -647,22 +707,38 @@ add(
     VALLEY,
     false,
     {
-      stone: { kind: "stone", state: "cracked", at: STONE_V, heading: 0.6 },
+      stone: { kind: "stone", state: "cracked", at: STONE_V, heading: STONE_AT.heading },
+      // (Looming over the stone, his head above it.)
       cinderjaw: {
         kind: "dragon",
-        at: [-30, 14],
-        heading: face([-30, 14], STONE_V),
-        scale: 1.4,
+        at: CINDER_AT_STONE,
+        heading: face(CINDER_AT_STONE, STONE_V),
+        scale: DRAGON_SIZE.cinderjaw,
         look: "ember",
       },
     },
     {
       music: "suspense",
-      wide: { from: [-4, 3, -4], to: [-6, 2.6, -7], look: [-12, 2.4, -14] },
+      wide: { from: [-7, 9, -7], to: [-7.6, 9.3, -7.6], look: [19, 3.5, 9] },
       all: { night: true },
       per: {
-        1: { fx: { pose: { cinderjaw: "rear" } } },
-        2: { fx: { pose: { cinderjaw: "turn" } } },
+        1: {
+          cam: { from: [-1, 3.5, -9], to: [-1.5, 3.7, -9.5], look: [21, 15, 10] },
+          fx: { pose: { cinderjaw: "rear" } },
+        },
+        // (Blake, Oct 28: he turned far too fast. Slowly now, to look out over the valley.)
+        2: {
+          cam: { from: [-2, 4, -10], to: [-3, 4.2, -11], look: [22, 11, 8] },
+          moves: [
+            {
+              actor: "cinderjaw",
+              to: [CINDER_AT_STONE[0] + 0.01, CINDER_AT_STONE[1]],
+              heading: face(CINDER_AT_STONE, STONE_V) + 1.1,
+              dur: 7,
+            },
+          ],
+          fx: { pose: { cinderjaw: "idle" } },
+        },
       },
     },
   ),
@@ -744,14 +820,22 @@ for (const k of KINGDOMS) {
       r.id,
       false,
       {
-        you: { kind: "racer", look: "you", at: gate.P(-9, 2), heading: inward },
-        [champ]: { kind: "racer", look: champ, at: gate.P(-8, -2.5), heading: inward },
-        guard: guard(folk, 7, gate.P(0.5, 3.6), inward + Math.PI),
-        guard2: guard(folk, 18, gate.P(0.5, -3.6), inward + Math.PI),
+        // (Blake, Oct 28: the champion up close to the guards, the guards out in front of
+        // the gate, not in its walls; the rest of the crew behind.)
+        you: { kind: "racer", look: "you", at: gate.P(-8, 2.6), heading: inward },
+        [champ]: { kind: "racer", look: champ, at: gate.P(-4.6, -1.2), heading: inward },
+        guard: guard(folk, 7, gate.P(-1.6, 1.9), inward + Math.PI + 0.25),
+        guard2: guard(folk, 18, gate.P(-1.6, -2.4), inward + Math.PI - 0.25),
+        ...(k.id === "valley"
+          ? {
+              elder: { ...ELDER, at: gate.P(-11, 4.5), heading: inward - 0.3 },
+              lumen: { kind: "robed", at: gate.P(-12.5, 6.5), heading: inward - 0.5 } as ActorSpec,
+            }
+          : {}),
       },
       {
         music: "smugglers",
-        wide: { from: gate.P3(-24, 9, 8), to: gate.P3(-20, 7, 6), look: gate.P3(2, 1.5, 0) },
+        wide: { from: gate.P3(-13, 3.6, 5), to: gate.P3(-12, 3.4, 4.4), look: gate.P3(-2, 1.4, 0) },
         all: { night: true },
         per: {
           1: { fx: { gesture: { guard: "point" } } },
@@ -764,10 +848,10 @@ for (const k of KINGDOMS) {
       r.id,
       false,
       {
-        you: { kind: "racer", look: "you", at: mouth.P(-6, 1.5), heading: inward },
-        [champ]: { kind: "racer", look: champ, at: mouth.P(-6.5, -2.5), heading: inward },
-        guard: guard(folk, 7, mouth.P(-1, 0), inward + Math.PI),
-        elder: { ...ELDER, at: mouth.P(-4, 4.5), heading: inward - 0.8 },
+        you: { kind: "racer", look: "you", at: mouth.P(-8.5, 1.5), heading: inward },
+        [champ]: { kind: "racer", look: champ, at: mouth.P(-8.5, -2.5), heading: inward },
+        guard: guard(folk, 7, mouth.P(-4, 0), inward + Math.PI),
+        elder: { ...ELDER, at: mouth.P(-7, 4.5), heading: inward - 0.8 },
         ...(champ === "rex"
           ? {}
           : {
@@ -781,7 +865,7 @@ for (const k of KINGDOMS) {
       },
       {
         music: "smugglers",
-        wide: { from: mouth.P3(-16, 6, 6), to: mouth.P3(-14, 5, 5), look: mouth.P3(0, 1, 0) },
+        wide: { from: mouth.P3(-17, 5, 6), to: mouth.P3(-15, 4.5, 5), look: mouth.P3(-3, 1, 0) },
         all: { night: true },
         per: {
           [keyLine]: { fx: { gesture: { guard: "holdOut" } } },
@@ -1400,7 +1484,7 @@ const FOUR = ["cinderjaw", "rimefang", "scorchwind", "tidewyrm"];
               pose: { lumen_dragon: "rear" },
             },
           },
-          2: { fx: { gesture: { elder: "think" } } },
+          2: { fx: { gesture: { elder: "point" } } },
           3: { cam: onLumen, fx: { pose: { lumen_dragon: "idle" } } },
           4: { fx: { pose: { king: "rear" } } },
           5: { cam: onLumen },

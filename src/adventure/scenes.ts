@@ -111,10 +111,10 @@ const scenes: Scene[] = [
       "RULE ONE: WHOEVER LOST THE RACE WOULD LEAVE THE FOUR LANDS AND LIVE BEHIND A BORDER. AND NEITHER SIDE WOULD EVER HARM THE OTHER AGAIN.",
     ),
     cap(
-      "RULE TWO: EVERY HUNDRED YEARS, THE WINNERS MUST SEND THEIR BEST RACER, A CHAMPION, TO RACE THE LOSERS' KING.",
+      "RULE TWO: EVERY HUNDRED YEARS, THE WINNERS MUST SEND THEIR BEST RACER, A CHAMPION, TO RACE THE LOSERS' KING. IF THE KING WINS, THE LANDS GO BACK TO THE DRAGONS.",
     ),
     cap(
-      "RULE THREE: IF A HUNDRED YEARS PASS AND NO CHAMPION COMES, THE WINNERS LOSE THE LANDS, UNTIL A CHAMPION BEATS THE KING AND WINS THEM BACK.",
+      "RULE THREE: IF A HUNDRED YEARS PASS AND NO CHAMPION COMES, THE KING WINS WITHOUT A RACE, UNTIL A CHAMPION BEATS HIM AND WINS THE LANDS BACK.",
     ),
     cap("WITH THE OATH SWORN, THE RACE BEGAN: DRAGONS AND CREWS, SIDE BY SIDE."),
     cap("THE DRAGONS FLEW FASTER THAN ANYTHING ALIVE. BUT AT THE LAST TURN, A HORN SOUNDED...", {
@@ -128,7 +128,7 @@ const scenes: Scene[] = [
       { fx: "light" },
     ),
     cap(
-      "A PACT STONE STANDS IN EACH LAND, AND THE HEART STONE IN THE DRAGON KINGDOM. WHILE THEY STAND, THE PACT HOLDS.",
+      "THE PACT WAS CARVED INTO FIVE STONES MADE OF DRAGON LIGHT: ONE IN EACH LAND, AND THE HEART STONE IN THE DRAGON KINGDOM. WHILE THEY STAND, THE BORDER AND THE PEACE HOLD.",
     ),
   ]),
 
@@ -139,12 +139,13 @@ const scenes: Scene[] = [
     { track: "riverbend_palms", color: "#3a7a3a" },
     [
       cap(
-        "DINOSAUR VALLEY. THE SUMMER FESTIVAL IS IN FULL SWING, AND EVERY CREW IN THE VALLEY IS HERE.",
+        "DINOSAUR VALLEY. THE SUMMER FESTIVAL, HELD AT THE VALLEY'S PACT STONE EVERY SUMMER FOR A THOUSAND YEARS.",
       ),
       say("elder", "A NEW FACE! NO CREW COLOURS? THEN YOU RACE FOR YOURSELF. WELCOME, STRANGER!"),
+      say("elder", "I'M MOSSBACK, KEEPER OF THE PACT. AND THIS IS LUMEN, WHO I RAISED."),
       say(
         "elder",
-        "I'M MOSSBACK, KEEPER OF THE PACT. AND THIS IS LUMEN, WHO I RAISED. SAY HELLO, LUMEN.",
+        "I FOUND HIM AS A BABY, ASLEEP IN THE RIVER REEDS, GLOWING LIKE A LANTERN. SAY HELLO, LUMEN.",
       ),
       say("lumen", "HI! GOOD LUCK. YOU'LL NEED IT IF REX IS RACING."),
       say(
@@ -176,12 +177,12 @@ const scenes: Scene[] = [
     "The Hundredth Summer",
     { track: "ember_peak", color: "#7a2618" },
     [
-      say("elder", "FESTIVAL DAY... THE HUNDREDTH SUMMER. WAIT. THE HUNDREDTH?"),
+      say("elder", "THE STONE... IT'S GLOWING. IT ONLY DOES THAT ON THE HUNDREDTH SUMMER. TODAY?"),
       say(
         "elder",
-        "A CHAMPION MUST RACE THE KING EVERY HUNDRED YEARS. THE LAST ONE WENT A HUNDRED SUMMERS AGO.",
+        "A CHAMPION MUST RACE THE KING EVERY HUNDRED YEARS. THE LAST ONE WENT A HUNDRED SUMMERS AGO, BEFORE I WAS BORN.",
       ),
-      say("elder", "SENDING THE CHAMPION IS THE KEEPER'S JOB. MY JOB. AND I FORGOT."),
+      say("elder", "SENDING THE CHAMPION IS THE KEEPER'S JOB. MY JOB. AND I LOST COUNT."),
       cap("A SHADOW CROSSES THE SUN."),
       say(
         "cinderjaw",
@@ -189,7 +190,7 @@ const scenes: Scene[] = [
       ),
       say(
         "cinderjaw",
-        "I AM CINDERJAW. FOUR DRAGONS TAKE THE FOUR LANDS, AND THIS VALLEY IS MINE.",
+        "I AM CINDERJAW. A THOUSAND YEARS WE DIMMED BEHIND YOUR BORDER. NOW FOUR DRAGONS TAKE THE FOUR LANDS, AND THIS VALLEY IS MINE.",
       ),
       say("cinderjaw", "THE PACT STILL SAYS I MAY NOT HARM YOU. SO I WON'T. FOR NOW."),
       say("cinderjaw", "SEAL THE BORDERS! ROUND UP EVERY RACER! THE RACES BELONG TO ME NOW."),
@@ -199,11 +200,11 @@ const scenes: Scene[] = [
   S(sceneOf("valley", "way_out"), "One Way Out", { track: "ember_peak", color: "#4a2a1a" }, [
     say(
       "elder",
-      "THIS IS MY FAULT. I KEPT ALL THE OLD STORIES, AND I FORGOT THE ONE THAT MATTERED.",
+      "THIS IS MY FAULT. I KNEW THE PACT BY HEART, AND STILL I LOST COUNT OF THE SUMMERS.",
     ),
     say(
       "elder",
-      "BUT THE PACT CUTS BOTH WAYS. IF A CHAMPION BEATS THE KING, HE MUST GIVE ALL FOUR LANDS BACK.",
+      "BUT THE PACT ALSO SAYS THIS: IF A CHAMPION BEATS THE KING, HE MUST GIVE ALL FOUR LANDS BACK.",
     ),
     say("elder", "YOU WON THE FESTIVAL AND BEAT REX. THAT MAKES YOU THE VALLEY'S CHAMPION."),
     say("you", "THEN I'LL GO TO THE KING."),
@@ -213,26 +214,36 @@ const scenes: Scene[] = [
     ),
     say(
       "elder",
-      "THEY RUN LAND TO LAND: VALLEY, SNOW, DESERT, ISLES. ONLY THE LAST ONE REACHES THE DRAGON KINGDOM.",
+      "EACH TUNNEL COMES OUT IN AN OLD PASS, AND THE PASS LEADS ON TO THE NEXT LAND: SNOW, THEN DESERT, THEN THE ISLES. ONLY FROM THE ISLES DOES A TUNNEL REACH THE DRAGON KINGDOM.",
     ),
     say(
       "elder",
-      "THE SMUGGLERS OPEN A TUNNEL ONLY FOR RACERS THEY RESPECT. AND I'M COMING WITH YOU. I OWE IT.",
+      "AND I'M COMING WITH YOU. SENDING A CHAMPION WAS MY JOB. THE LEAST I CAN DO IS GO WITH ONE.",
     ),
+    // (He tags along: so in The Smugglers' Key, "he was right behind us".)
+    say("lumen", "ME TOO! YOU ALWAYS TOLD ME TO KEEP AWAY FROM DRAGONS."),
     say(
       "rex",
-      "LUCKY FOR YOU, THEY RESPECT ME. THEIR CAVE'S UP ON EMBER'S LOWER SLOPE. LET ME DRIVE.",
+      "THE SMUGGLERS ONLY OPEN UP FOR RACERS THEY KNOW. THEY KNOW ME. I CAN GET US THROUGH.",
     ),
-    cap("(SWITCH TO REX: PAUSE, THEN YOUR CREW. THEN FIND THE LOOKOUT CAVE.)", { switchTo: "rex" }),
+    cap(
+      "THEIR CAVE IS UP ON EMBER'S LOWER SLOPE. (REX IS IN YOUR CREW NOW: TO DRIVE AS HIM, PAUSE AND CHOOSE YOUR CREW.)",
+      { switchTo: "rex" },
+    ),
   ]),
   S(
     sceneOf("valley", "underground"),
     "The Underground",
     { track: "ember_peak", color: "#2a1a10" },
     [
-      cap("A CAVE BEHIND A ROCKFALL, AND TWO GUARDS WHO LOOK LIKE THEY'D SELL THEIR OWN TAILS."),
+      cap(
+        "A CAVE BEHIND A ROCKFALL. TWO GUARDS ARE COUNTING A PILE OF KART PARTS THAT ISN'T THEIRS.",
+      ),
       say("guard", "WELL, WELL. REX. WE HEARD YOU LOST TODAY."),
-      say("rex", "TO THIS ONE. SO YOU KNOW THEY'RE GOOD. WE WANT THE TUNNEL TO THE SNOW KINGDOM."),
+      say(
+        "rex",
+        "YEAH. THIS RACER BEAT ME FAIR. THAT'S HOW GOOD THEY ARE. WE NEED THE TUNNEL OUT TO THE SNOW KINGDOM'S PASS.",
+      ),
       say("guard", "THE TUNNEL'S FOR WINNERS. WIN OUR GAME, AND THE KEY IS YOURS."),
     ],
   ),
@@ -245,27 +256,25 @@ const scenes: Scene[] = [
     say("elder", "WHERE'S LUMEN? HE WAS RIGHT BEHIND US."),
     say("elder", "...HE'LL FIND US. HE ALWAYS DOES."),
   ]),
-  S(
-    sceneOf("valley", "stone"),
-    "Who's Been at the Stone?",
-    { track: "ember_peak", color: "#1a0a0a" },
-    [
-      cap("MEANWHILE, AT THE VALLEY'S PACT STONE..."),
-      say("cinderjaw", "A CRACK. RIGHT THROUGH THE OLD STONE. WHO'S BEEN AT IT?"),
-      say(
-        "cinderjaw",
-        "NOTHING IN THIS VALLEY CAN CRACK A PACT STONE. NOTHING THAT LIVES HERE, ANYWAY.",
-      ),
-    ],
-  ),
+  S(sceneOf("valley", "stone"), "The Cracked Stone", { track: "ember_peak", color: "#1a0a0a" }, [
+    cap("MEANWHILE, AT THE VALLEY'S PACT STONE..."),
+    say("cinderjaw", "A CRACK. RIGHT THROUGH THE OLD STONE. WHO DARED TOUCH IT?"),
+    say(
+      "cinderjaw",
+      "NO TOOL CAN CRACK A PACT STONE. ONLY DRAGON LIGHT COULD, AND EVERY DRAGON IS ACCOUNTED FOR.",
+    ),
+  ]),
 
   // ---------------------------------------------------------------- Act III
   S("dragon_challenger", "The Challenger", { track: "dragon_isles", color: "#3a1a2a" }, [
     cap("THE DRAGON KINGDOM. THE FIRST CREW TO DRIVE HERE IN A HUNDRED YEARS."),
     cap("THE KING COMES DOWN TO MEET YOU."),
     say("king", "I AM PYRRHAX, KING OF THE DRAGONS. A CHAMPION, A HUNDRED YEARS LATE."),
-    say("king", "NINE CHAMPIONS HAVE RACED ME, ONE EVERY HUNDRED YEARS. I BEAT EVERY ONE."),
-    say("king", "BEAT ME, AND BY THE PACT I MUST GIVE THE FOUR LANDS BACK. NO KING EVER HAS."),
+    say(
+      "king",
+      "NINE CHAMPIONS HAVE RACED ME, ONE EVERY HUNDRED YEARS. NINE TIMES I LOST, AND MY PEOPLE STAYED BEHIND THE BORDER, DIMMING.",
+    ),
+    say("king", "THIS TIME THE LANDS ARE MINE. BEAT ME, AND BY THE PACT I MUST GIVE THEM BACK."),
     say("king", "THE PACT SAYS I MUST RACE YOU. IT DOESN'T SAY WHEN. WIN MY FOUR RACES FIRST."),
     cap(
       "FOUR DRAGONS SETTLE ON THE ROOFTOPS TO WATCH: CINDERJAW, RIMEFANG, SCORCHWIND AND TIDEWYRM.",
@@ -282,7 +291,7 @@ const scenes: Scene[] = [
     say("king", "ENOUGH. TO THE LINE."),
   ]),
   S("dragon_return", "The Return", { track: "dragon_isles", color: "#1a0a1a" }, [
-    cap("THE KING IS BEATEN. FOR THE FIRST TIME EVER, A CHAMPION HAS BEATEN THE KING."),
+    cap("THE KING IS BEATEN. AND FOR THE FIRST TIME EVER, HE HOLDS THE LANDS TO GIVE BACK."),
     say(
       "king",
       "...BEATEN. AND A DRAGON KEEPS HIS OATH. BY THE PACT, THE FOUR LANDS GO BACK TO THE CREWS.",
@@ -293,21 +302,27 @@ const scenes: Scene[] = [
   S("dragon_lumen", "Lumen", { track: "dragon_isles", color: "#1a0a1a" }, [
     say("lumen", "NOW."),
     cap("LUMEN THROWS BACK HIS ROBE. HIS WINGS UNFOLD."),
-    say("elder", "LUMEN... THE EGG I FOUND IN THE RIVER. YOU'RE A DRAGON."),
+    say(
+      "elder",
+      "LUMEN, NO! I HID WHAT YOU ARE ALL THESE YEARS, SO THE STONES WOULD NEVER DIM YOU!",
+    ),
     say(
       "lumen_dragon",
-      "THE PACT KEEPS DRAGONS BEHIND THE BORDER. I HATCHED ON YOUR SIDE OF IT, SO IT NEVER HELD ME.",
+      "THE STONES ARE MADE OF DRAGON LIGHT, AND THEY FEED ON IT. I HATCHED ON YOUR SIDE OF THE BORDER, SO THEY NEVER TOOK MINE.",
     ),
     say("king", "A HATCHLING? STEP AWAY FROM THE STONE!"),
     say(
       "lumen_dragon",
-      "AWAKE, THE HEART STONE CAN BE BROKEN. ASLEEP AGAIN, IT KEEPS EVERY DRAGON BEHIND THE BORDER.",
+      "FOR A THOUSAND YEARS THEY'VE DIMMED MY PEOPLE. I NEEDED A CHAMPION TO BEAT YOU, SO THE HEART STONE WOULD WAKE. AWAKE, IT CAN BE BROKEN.",
     ),
     say(
       "lumen_dragon",
-      "I CRACKED THE OTHER FOUR SO THEY'D FALL WITH IT. NO PACT, NO BORDER. EVERYONE FREE.",
+      "I CRACKED THE OTHER FOUR SO THEY'D FALL WITH IT. NO STONES, NO BORDER. OUR LIGHT COMES HOME.",
     ),
-    say("lumen_dragon", "I'M SORRY, ELDER. BREAKING IT TAKES ALL MY LIGHT."),
+    say(
+      "lumen_dragon",
+      "I'M SORRY, ELDER. WE'LL KEEP THE PEACE WITHOUT THE STONES. AND BREAKING IT TAKES ALL MY LIGHT.",
+    ),
     cap("LUMEN STRIKES THE WAKING STONE. FAR AWAY, FOUR CRACKED STONES ANSWER."),
     cap("THE DRAGON PACT SHATTERS."),
     cap("THE BLAST TEARS THROUGH THE DRAGON KINGDOM. WHEN THE LIGHT FADES, LUMEN IS GONE."),
@@ -323,7 +338,7 @@ const scenes: Scene[] = [
   ]),
   S("dragon_rage", "The Rage", { track: "dragon_isles_ruin", color: "#1a0a0a" }, [
     cap("...BUT A HORN ONLY EVER STUNNED A DRAGON."),
-    cap("THE KING WAKES IN THE RUINS OF HIS KINGDOM."),
+    cap("THE KING WAKES IN THE RUINS, BLAZING. FREE OF THE STONES, HIS LIGHT HAS COME HOME."),
     say("king", "MY HOME, IN RUINS. BROKEN BY A HATCHLING RAISED BY YOUR KIND."),
     say(
       "king",
@@ -359,7 +374,7 @@ const scenes: Scene[] = [
     say("elder", "YOU'RE ALIVE, THANK THE STONES. LOOK WHAT FELL IN THE ASHES: LUMEN'S LIGHT."),
     cap("THE SHARD BURNS MOSSBACK'S HAND. A VOICE SPEAKS OUT OF THE LIGHT. LUMEN'S VOICE."),
     say("lumen", "ONLY A FAIR WINNER MAY HOLD ME."),
-    say("elder", "THE FIRST PACT STONES WERE MADE OF DRAGON LIGHT. THE KEEPERS ALWAYS KNEW THAT."),
+    say("elder", "THE PACT STONES WERE MADE OF DRAGON LIGHT. AND HERE IS LUMEN'S, FREELY GIVEN."),
     say(
       "elder",
       "FOUR SHARDS MAKE A NEW STONE, AND A NEW STONE MAKES NEW LAWS. LAWS EVERY DRAGON MUST OBEY.",
@@ -391,7 +406,7 @@ const scenes: Scene[] = [
     cap("THE LAST FOUR SHARDS FLY TO THE CITADEL. THE HEART STONE RISES AGAIN, WHOLE AND SHINING."),
     say(
       "lumen",
-      "THE NEW PACT HAS NO BORDER AND NO FORFEIT. ONLY ITS TWO LAWS, FOR DRAGONS AND CREWS ALIKE.",
+      "THE NEW PACT HAS NO BORDER, NO FORFEIT, AND IT FEEDS ON NOBODY'S LIGHT. ONLY ITS TWO LAWS, FOR DRAGONS AND CREWS ALIKE.",
     ),
     say(
       "lumen",
@@ -419,16 +434,22 @@ const scenes: Scene[] = [
     cap("BOTH SIDES HAVE ACCEPTED THE PACT. IT NO LONGER NEEDS LUMEN'S LIGHT TO HOLD."),
     cap("THE HEART STONE OPENS, AND A DRAGON STEPS OUT OF THE LIGHT: FULL-GROWN, AND GOLDEN."),
     say("lumen_dragon", "HELLO, ELDER. YOU SAID I'D ALWAYS FIND YOU."),
-    say("elder", "SO THAT'S HOW YOU GOT PAST EVERY BORDER. WINGS."),
+    say("elder", "A THOUSAND YEARS OF DIMMING, AND LOOK AT YOU SHINE."),
     say("lumen_dragon", "AND YOU TOLD HIM THE TRUTH. THAT'S ALL I EVER WANTED FROM YOU."),
     say("king", "YOU GAVE YOURSELF UP, HATCHLING. FOR US. FOR ALL OF US."),
-    say("lumen_dragon", "THE BORDER IS GONE, MY KING. WE'RE FREE TOO."),
+    say(
+      "lumen_dragon",
+      "THE BORDER IS GONE, MY KING, AND NO STONE TAKES OUR LIGHT. WE'RE FREE TOO.",
+    ),
     cap(
       "THE DRAGON KINGDOM MENDS IN THE LIGHT. RIMEFANG, SCORCHWIND AND TIDEWYRM BOW TO THE NEW PACT.",
     ),
-    say("cinderjaw", "NOT ME. YOUR STONES ONLY BIND DRAGONS IN THESE LANDS. SO I'M LEAVING THEM!"),
+    say(
+      "cinderjaw",
+      "NOT ME. THE KING ACCEPTED FOR THE DRAGONS OF THESE LANDS. SO I'M LEAVING THEM!",
+    ),
     cap(
-      "CINDERJAW FLIES OFF, PAST THE EDGE OF THE WORLD, WHERE NO STONE CAN REACH. NOBODY KNOWS WHERE.",
+      "CINDERJAW FLIES OFF, PAST THE EDGE OF THE WORLD, WHERE NO PACT CAN REACH. NOBODY KNOWS WHERE.",
     ),
   ]),
   S("ending", "Home", { track: "riverbend_palms", color: "#3a7a3a" }, [
@@ -476,7 +497,7 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
       say("rimefang", "THE CAPTIVES RACE WELL. THAT IS NOT WHAT TROUBLES ME."),
       say(
         "rimefang",
-        "SOMEONE HAS BEEN IN MY LIBRARY, READING THE PACT'S OLDEST PAGE: HOW THE HEART STONE WAKES.",
+        "SOMEONE HAS BEEN IN MY LIBRARY, READING THE PACT'S OLDEST PAGE: HOW ITS STONES FEED ON OUR LIGHT, AND HOW THE HEART STONE WAKES.",
       ),
       say("sentry", "HOW DOES IT WAKE, LORD RIMEFANG?"),
       say("rimefang", "ONLY WHEN A KING GIVES THE LANDS BACK. NO KING EVER HAS. FIND THE READER."),
@@ -712,7 +733,7 @@ for (const [k, d] of Object.entries(ACT2) as [KingdomId, Kingdom2][]) {
     S(sceneOf(k, "prize"), d.prize[0], bd, d.prize[1]),
     S(sceneOf(k, "underground"), "The Underground", { ...bd, color: "#1a1a2a" }, d.underground),
     S(sceneOf(k, "key"), d.key[0], { ...bd, color: "#1a1a2a" }, d.key[1]),
-    S(sceneOf(k, "stone"), "Who's Been at the Stone?", { ...bd, color: "#0a0a1a" }, d.stone),
+    S(sceneOf(k, "stone"), "The Cracked Stone", { ...bd, color: "#0a0a1a" }, d.stone),
   );
 }
 

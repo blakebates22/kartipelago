@@ -18,7 +18,7 @@ CAST
   RIMEFANG        Dragon of the snow: the lawyer. Cold, precise, never breaks a rule.
   SCORCHWIND      Dragon of the desert: the showman. Vain, theatrical.
   TIDEWYRM        Dragon of the isles: the trickster. Greedy, sly, charming.
-  KING PYRRHAX    The Dragon King. He lost the First Race young, stunned by the horn, and has beaten every champion since.
+  KING PYRRHAX    The Dragon King. He lost the First Race young, stunned by the horn, and lost to all nine champions since, one a century: his people stayed behind the border, dimming.
   SKETCHY GUARD   The smugglers' guards at the underground games. They sell tunnels.
   GUARD           The dragons' own guards: Dragon Kingdom folk in hooded tunics.
   THE CROWD       The Tropic Isles' captives and townsfolk.
@@ -51,12 +51,13 @@ WHERE: A storybook page, inked pictures turning with each line.
 
     NARRATOR (CAPTION)
         RULE TWO: EVERY HUNDRED YEARS, THE WINNERS MUST SEND THEIR BEST
-        RACER, A CHAMPION, TO RACE THE LOSERS' KING.
+        RACER, A CHAMPION, TO RACE THE LOSERS' KING. IF THE KING WINS,
+        THE LANDS GO BACK TO THE DRAGONS.
 
     NARRATOR (CAPTION)
         RULE THREE: IF A HUNDRED YEARS PASS AND NO CHAMPION COMES, THE
-        WINNERS LOSE THE LANDS, UNTIL A CHAMPION BEATS THE KING AND WINS
-        THEM BACK.
+        KING WINS WITHOUT A RACE, UNTIL A CHAMPION BEATS HIM AND WINS
+        THE LANDS BACK.
 
     NARRATOR (CAPTION)
         WITH THE OATH SWORN, THE RACE BEGAN: DRAGONS AND CREWS, SIDE BY
@@ -78,8 +79,9 @@ WHERE: A storybook page, inked pictures turning with each line.
         THE BORDER, TO THE DRAGON KINGDOM.
 
     NARRATOR (CAPTION)
-        A PACT STONE STANDS IN EACH LAND, AND THE HEART STONE IN THE
-        DRAGON KINGDOM. WHILE THEY STAND, THE PACT HOLDS.
+        THE PACT WAS CARVED INTO FIVE STONES MADE OF DRAGON LIGHT: ONE
+        IN EACH LAND, AND THE HEART STONE IN THE DRAGON KINGDOM. WHILE
+        THEY STAND, THE BORDER AND THE PEACE HOLD.
 
 
 ========================================================================
@@ -91,12 +93,12 @@ SCENE 2. THE SUMMER FESTIVAL   [valley_festival]
 ------------------------------------------------------------------------
 WHEN: Your racer picked: the first thing you see in Dinosaur Valley.
 WHERE: Dinosaur Valley, staged in 3D.
-ON STAGE: Elder Mossback, Lumen, you, townsfolk.
+ON STAGE: Elder Mossback, Lumen, you, townsfolk, a Pact Stone.
 
     [The townsfolk cheer.]
     NARRATOR (CAPTION)
-        DINOSAUR VALLEY. THE SUMMER FESTIVAL IS IN FULL SWING, AND EVERY
-        CREW IN THE VALLEY IS HERE.
+        DINOSAUR VALLEY. THE SUMMER FESTIVAL, HELD AT THE VALLEY'S PACT
+        STONE EVERY SUMMER FOR A THOUSAND YEARS.
 
     [Elder Mossback waves.]
     ELDER MOSSBACK
@@ -106,7 +108,12 @@ ON STAGE: Elder Mossback, Lumen, you, townsfolk.
     [Elder Mossback points.]
     ELDER MOSSBACK
         I'M MOSSBACK, KEEPER OF THE PACT. AND THIS IS LUMEN, WHO I
-        RAISED. SAY HELLO, LUMEN.
+        RAISED.
+
+    [Elder Mossback stops to think.]
+    ELDER MOSSBACK
+        I FOUND HIM AS A BABY, ASLEEP IN THE RIVER REEDS, GLOWING LIKE A
+        LANTERN. SAY HELLO, LUMEN.
 
     [Lumen waves.]
     LUMEN
@@ -182,21 +189,23 @@ SCENE 5. THE HUNDREDTH SUMMER   [valley_hundredth]
 ------------------------------------------------------------------------
 WHEN: Straight after A Crew of Two, at sunset.
 WHERE: Dinosaur Valley, staged in 3D.
-ON STAGE: Rex, you, Elder Mossback, townsfolk, Cinderjaw, g1, g2, g3,
-g4, g5, g6, g7, g8.
+ON STAGE: Rex, you, Elder Mossback, a Pact Stone, townsfolk, Cinderjaw,
+g1, g2, g3, g4, g5, g6, g7, g8.
 
     [Elder Mossback stops to think.]
     ELDER MOSSBACK
-        FESTIVAL DAY... THE HUNDREDTH SUMMER. WAIT. THE HUNDREDTH?
+        THE STONE... IT'S GLOWING. IT ONLY DOES THAT ON THE HUNDREDTH
+        SUMMER. TODAY?
 
     [Elder Mossback stops to think. Music: suspense.]
     ELDER MOSSBACK
         A CHAMPION MUST RACE THE KING EVERY HUNDRED YEARS. THE LAST ONE
-        WENT A HUNDRED SUMMERS AGO.
+        WENT A HUNDRED SUMMERS AGO, BEFORE I WAS BORN.
 
     [Elder Mossback sinks to his knees.]
     ELDER MOSSBACK
-        SENDING THE CHAMPION IS THE KEEPER'S JOB. MY JOB. AND I FORGOT.
+        SENDING THE CHAMPION IS THE KEEPER'S JOB. MY JOB. AND I LOST
+        COUNT.
 
     [Cinderjaw flies overhead. Elder Mossback cowers. The townsfolk
     cower. Music: the Dragon's Shadow (Cinderjaw's theme).]
@@ -209,8 +218,8 @@ g4, g5, g6, g7, g8.
         LANDS ARE OURS NOW.
 
     CINDERJAW
-        I AM CINDERJAW. FOUR DRAGONS TAKE THE FOUR LANDS, AND THIS
-        VALLEY IS MINE.
+        I AM CINDERJAW. A THOUSAND YEARS WE DIMMED BEHIND YOUR BORDER.
+        NOW FOUR DRAGONS TAKE THE FOUR LANDS, AND THIS VALLEY IS MINE.
 
     CINDERJAW
         THE PACT STILL SAYS I MAY NOT HARM YOU. SO I WON'T. FOR NOW.
@@ -232,16 +241,16 @@ SCENE 6. ONE WAY OUT   [valley_way_out]
 ------------------------------------------------------------------------
 WHEN: Straight after The Hundredth Summer.
 WHERE: Dinosaur Valley, staged in 3D.
-ON STAGE: Elder Mossback, you, Rex.
+ON STAGE: Elder Mossback, you, Rex, Lumen.
 
     [Elder Mossback shakes his head.]
     ELDER MOSSBACK
-        THIS IS MY FAULT. I KEPT ALL THE OLD STORIES, AND I FORGOT THE
-        ONE THAT MATTERED.
+        THIS IS MY FAULT. I KNEW THE PACT BY HEART, AND STILL I LOST
+        COUNT OF THE SUMMERS.
 
     [Elder Mossback raises his staff. Music: hope.]
     ELDER MOSSBACK
-        BUT THE PACT CUTS BOTH WAYS. IF A CHAMPION BEATS THE KING, HE
+        BUT THE PACT ALSO SAYS THIS: IF A CHAMPION BEATS THE KING, HE
         MUST GIVE ALL FOUR LANDS BACK.
 
     [Elder Mossback points.]
@@ -259,21 +268,25 @@ ON STAGE: Elder Mossback, you, Rex.
 
     [Elder Mossback points.]
     ELDER MOSSBACK
-        THEY RUN LAND TO LAND: VALLEY, SNOW, DESERT, ISLES. ONLY THE
-        LAST ONE REACHES THE DRAGON KINGDOM.
+        EACH TUNNEL COMES OUT IN AN OLD PASS, AND THE PASS LEADS ON TO
+        THE NEXT LAND: SNOW, THEN DESERT, THEN THE ISLES. ONLY FROM THE
+        ISLES DOES A TUNNEL REACH THE DRAGON KINGDOM.
 
     [Elder Mossback nods.]
     ELDER MOSSBACK
-        THE SMUGGLERS OPEN A TUNNEL ONLY FOR RACERS THEY RESPECT. AND
-        I'M COMING WITH YOU. I OWE IT.
+        AND I'M COMING WITH YOU. SENDING A CHAMPION WAS MY JOB. THE
+        LEAST I CAN DO IS GO WITH ONE.
+
+    LUMEN
+        ME TOO! YOU ALWAYS TOLD ME TO KEEP AWAY FROM DRAGONS.
 
     REX
-        LUCKY FOR YOU, THEY RESPECT ME. THEIR CAVE'S UP ON EMBER'S LOWER
-        SLOPE. LET ME DRIVE.
+        THE SMUGGLERS ONLY OPEN UP FOR RACERS THEY KNOW. THEY KNOW ME. I
+        CAN GET US THROUGH.
 
     NARRATOR (CAPTION)
-        (SWITCH TO REX: PAUSE, THEN YOUR CREW. THEN FIND THE LOOKOUT
-        CAVE.)
+        THEIR CAVE IS UP ON EMBER'S LOWER SLOPE. (REX IS IN YOUR CREW
+        NOW: TO DRIVE AS HIM, PAUSE AND CHOOSE YOUR CREW.)
 
 
 SCENE 7. THE UNDERGROUND   [valley_underground]
@@ -281,19 +294,19 @@ SCENE 7. THE UNDERGROUND   [valley_underground]
 WHEN: Driving into THE LOOKOUT CAVE as Rex; the mini-game starts
 straight after.
 WHERE: Dinosaur Valley, staged in 3D.
-ON STAGE: you, Rex, Sketchy Guard.
+ON STAGE: you, Rex, Sketchy Guard, Elder Mossback, Lumen.
 
     NARRATOR (CAPTION)
-        A CAVE BEHIND A ROCKFALL, AND TWO GUARDS WHO LOOK LIKE THEY'D
-        SELL THEIR OWN TAILS.
+        A CAVE BEHIND A ROCKFALL. TWO GUARDS ARE COUNTING A PILE OF KART
+        PARTS THAT ISN'T THEIRS.
 
     [Sketchy Guard points.]
     SKETCHY GUARD
         WELL, WELL. REX. WE HEARD YOU LOST TODAY.
 
     REX
-        TO THIS ONE. SO YOU KNOW THEY'RE GOOD. WE WANT THE TUNNEL TO THE
-        SNOW KINGDOM.
+        YEAH. THIS RACER BEAT ME FAIR. THAT'S HOW GOOD THEY ARE. WE NEED
+        THE TUNNEL OUT TO THE SNOW KINGDOM'S PASS.
 
     [Sketchy Guard shrugs. The other guard nods.]
     SKETCHY GUARD
@@ -323,7 +336,7 @@ ON STAGE: you, Rex, Sketchy Guard, Elder Mossback.
         ...HE'LL FIND US. HE ALWAYS DOES.
 
 
-SCENE 9. WHO'S BEEN AT THE STONE?   [valley_stone]
+SCENE 9. THE CRACKED STONE   [valley_stone]
 ------------------------------------------------------------------------
 WHEN: Straight after the key; then you're through the smugglers' tunnel.
 WHERE: Dinosaur Valley, staged in 3D.
@@ -334,12 +347,12 @@ ON STAGE: a Pact Stone, Cinderjaw.
 
     [Cinderjaw rears up.]
     CINDERJAW
-        A CRACK. RIGHT THROUGH THE OLD STONE. WHO'S BEEN AT IT?
+        A CRACK. RIGHT THROUGH THE OLD STONE. WHO DARED TOUCH IT?
 
-    [Cinderjaw turns.]
+    [Cinderjaw moves.]
     CINDERJAW
-        NOTHING IN THIS VALLEY CAN CRACK A PACT STONE. NOTHING THAT
-        LIVES HERE, ANYWAY.
+        NO TOOL CAN CRACK A PACT STONE. ONLY DRAGON LIGHT COULD, AND
+        EVERY DRAGON IS ACCOUNTED FOR.
 
 
 ========================================================================
@@ -393,7 +406,7 @@ ON STAGE: Rimefang, Guard, you.
     [Rimefang turns.]
     RIMEFANG
         SOMEONE HAS BEEN IN MY LIBRARY, READING THE PACT'S OLDEST PAGE:
-        HOW THE HEART STONE WAKES.
+        HOW ITS STONES FEED ON OUR LIGHT, AND HOW THE HEART STONE WAKES.
 
     GUARD
         HOW DOES IT WAKE, LORD RIMEFANG?
@@ -500,7 +513,7 @@ ON STAGE: you, Brachio, Sketchy Guard, Elder Mossback, Rex.
         SEEN NOTHING. HEARD NOTHING. THAT'S HOW WE STAY IN BUSINESS.
 
 
-SCENE 16. WHO'S BEEN AT THE STONE?   [snow_stone]
+SCENE 16. THE CRACKED STONE   [snow_stone]
 ------------------------------------------------------------------------
 WHEN: Straight after the key; then you're through the smugglers' tunnel.
 WHERE: Snow Kingdom, staged in 3D.
@@ -655,7 +668,7 @@ ON STAGE: you, Stego, Sketchy Guard, Elder Mossback, Rex.
         THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR POCKETS.
 
 
-SCENE 23. WHO'S BEEN AT THE STONE?   [desert_stone]
+SCENE 23. THE CRACKED STONE   [desert_stone]
 ------------------------------------------------------------------------
 WHEN: Straight after the key; then you're through the smugglers' tunnel.
 WHERE: Desert World, staged in 3D.
@@ -814,7 +827,7 @@ ON STAGE: you, Raptor, Sketchy Guard, Elder Mossback, Rex.
         A CHAMPION AND A CREW.
 
 
-SCENE 30. WHO'S BEEN AT THE STONE?   [beach_stone]
+SCENE 30. THE CRACKED STONE   [beach_stone]
 ------------------------------------------------------------------------
 WHEN: Straight after the key; then you're through the smugglers' tunnel.
 WHERE: Tropic Isles, staged in 3D.
@@ -859,12 +872,12 @@ Rimefang, Scorchwind, Tidewyrm.
         LATE.
 
     KING PYRRHAX
-        NINE CHAMPIONS HAVE RACED ME, ONE EVERY HUNDRED YEARS. I BEAT
-        EVERY ONE.
+        NINE CHAMPIONS HAVE RACED ME, ONE EVERY HUNDRED YEARS. NINE
+        TIMES I LOST, AND MY PEOPLE STAYED BEHIND THE BORDER, DIMMING.
 
     KING PYRRHAX
-        BEAT ME, AND BY THE PACT I MUST GIVE THE FOUR LANDS BACK. NO
-        KING EVER HAS.
+        THIS TIME THE LANDS ARE MINE. BEAT ME, AND BY THE PACT I MUST
+        GIVE THEM BACK.
 
     [King Pyrrhax turns.]
     KING PYRRHAX
@@ -929,8 +942,8 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen.
     [King Pyrrhax bows low. Cinderjaw rears up. Rimefang rears up.
     Scorchwind rears up. Tidewyrm rears up.]
     NARRATOR (CAPTION)
-        THE KING IS BEATEN. FOR THE FIRST TIME EVER, A CHAMPION HAS
-        BEATEN THE KING.
+        THE KING IS BEATEN. AND FOR THE FIRST TIME EVER, HE HOLDS THE
+        LANDS TO GIVE BACK.
 
     KING PYRRHAX
         ...BEATEN. AND A DRAGON KEEPS HIS OATH. BY THE PACT, THE FOUR
@@ -960,29 +973,32 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen, Lumen (as a dragon).
     NARRATOR (CAPTION)
         LUMEN THROWS BACK HIS ROBE. HIS WINGS UNFOLD.
 
-    [Elder Mossback stops to think.]
+    [Elder Mossback points.]
     ELDER MOSSBACK
-        LUMEN... THE EGG I FOUND IN THE RIVER. YOU'RE A DRAGON.
+        LUMEN, NO! I HID WHAT YOU ARE ALL THESE YEARS, SO THE STONES
+        WOULD NEVER DIM YOU!
 
     LUMEN
-        THE PACT KEEPS DRAGONS BEHIND THE BORDER. I HATCHED ON YOUR SIDE
-        OF IT, SO IT NEVER HELD ME.
+        THE STONES ARE MADE OF DRAGON LIGHT, AND THEY FEED ON IT. I
+        HATCHED ON YOUR SIDE OF THE BORDER, SO THEY NEVER TOOK MINE.
 
     [King Pyrrhax rears up.]
     KING PYRRHAX
         A HATCHLING? STEP AWAY FROM THE STONE!
 
     LUMEN
-        AWAKE, THE HEART STONE CAN BE BROKEN. ASLEEP AGAIN, IT KEEPS
-        EVERY DRAGON BEHIND THE BORDER.
+        FOR A THOUSAND YEARS THEY'VE DIMMED MY PEOPLE. I NEEDED A
+        CHAMPION TO BEAT YOU, SO THE HEART STONE WOULD WAKE. AWAKE, IT
+        CAN BE BROKEN.
 
     LUMEN
-        I CRACKED THE OTHER FOUR SO THEY'D FALL WITH IT. NO PACT, NO
-        BORDER. EVERYONE FREE.
+        I CRACKED THE OTHER FOUR SO THEY'D FALL WITH IT. NO STONES, NO
+        BORDER. OUR LIGHT COMES HOME.
 
     [Elder Mossback shakes his head. Music: sorrow.]
     LUMEN
-        I'M SORRY, ELDER. BREAKING IT TAKES ALL MY LIGHT.
+        I'M SORRY, ELDER. WE'LL KEEP THE PEACE WITHOUT THE STONES. AND
+        BREAKING IT TAKES ALL MY LIGHT.
 
     [Lumen the dragon moves. A flash. The ground shakes. Music: the
     shattering.]
@@ -1065,7 +1081,8 @@ Scorchwind, Tidewyrm, the Heart Stone.
 
     [King Pyrrhax rears up.]
     NARRATOR (CAPTION)
-        THE KING WAKES IN THE RUINS OF HIS KINGDOM.
+        THE KING WAKES IN THE RUINS, BLAZING. FREE OF THE STONES, HIS
+        LIGHT HAS COME HOME.
 
     KING PYRRHAX
         MY HOME, IN RUINS. BROKEN BY A HATCHLING RAISED BY YOUR KIND.
@@ -1192,8 +1209,8 @@ ON STAGE: you, Rex, Elder Mossback.
 
     [Elder Mossback stops to think.]
     ELDER MOSSBACK
-        THE FIRST PACT STONES WERE MADE OF DRAGON LIGHT. THE KEEPERS
-        ALWAYS KNEW THAT.
+        THE PACT STONES WERE MADE OF DRAGON LIGHT. AND HERE IS LUMEN'S,
+        FREELY GIVEN.
 
     [Elder Mossback raises his staff. Music: hope.]
     ELDER MOSSBACK
@@ -1466,8 +1483,8 @@ Scorchwind, Tidewyrm, the Heart Stone.
 
     [Music: Lumen's theme.]
     LUMEN (HIS VOICE, OUT OF THE LIGHT)
-        THE NEW PACT HAS NO BORDER AND NO FORFEIT. ONLY ITS TWO LAWS,
-        FOR DRAGONS AND CREWS ALIKE.
+        THE NEW PACT HAS NO BORDER, NO FORFEIT, AND IT FEEDS ON NOBODY'S
+        LIGHT. ONLY ITS TWO LAWS, FOR DRAGONS AND CREWS ALIKE.
 
     LUMEN (HIS VOICE, OUT OF THE LIGHT)
         IT HOLDS BY MY LIGHT, UNTIL BOTH SIDES ACCEPT IT. THEN IT WON'T
@@ -1534,7 +1551,7 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen (as a dragon).
 
     [Elder Mossback cheers.]
     ELDER MOSSBACK
-        SO THAT'S HOW YOU GOT PAST EVERY BORDER. WINGS.
+        A THOUSAND YEARS OF DIMMING, AND LOOK AT YOU SHINE.
 
     LUMEN
         AND YOU TOLD HIM THE TRUTH. THAT'S ALL I EVER WANTED FROM YOU.
@@ -1544,7 +1561,8 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen (as a dragon).
         YOU GAVE YOURSELF UP, HATCHLING. FOR US. FOR ALL OF US.
 
     LUMEN
-        THE BORDER IS GONE, MY KING. WE'RE FREE TOO.
+        THE BORDER IS GONE, MY KING, AND NO STONE TAKES OUR LIGHT. WE'RE
+        FREE TOO.
 
     [Rimefang bows low. Scorchwind bows low. Tidewyrm bows low. Elder
     Mossback bows.]
@@ -1554,12 +1572,12 @@ Scorchwind, Tidewyrm, the Heart Stone, Lumen (as a dragon).
 
     [Cinderjaw roars. Music: the Dragon's Shadow (Cinderjaw's theme).]
     CINDERJAW
-        NOT ME. YOUR STONES ONLY BIND DRAGONS IN THESE LANDS. SO I'M
+        NOT ME. THE KING ACCEPTED FOR THE DRAGONS OF THESE LANDS. SO I'M
         LEAVING THEM!
 
     [Cinderjaw flies overhead.]
     NARRATOR (CAPTION)
-        CINDERJAW FLIES OFF, PAST THE EDGE OF THE WORLD, WHERE NO STONE
+        CINDERJAW FLIES OFF, PAST THE EDGE OF THE WORLD, WHERE NO PACT
         CAN REACH. NOBODY KNOWS WHERE.
 
 

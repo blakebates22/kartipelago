@@ -11,6 +11,7 @@
  * - YOUR_CREW: who drives (your racer, and the champions who've joined you).
  * - ADVENTURE_DEV (dev builds only): the testing tools; jump to any point in the story.
  */
+import type { Folk } from "../render/villager";
 import type { Game } from "../app/game";
 import type { Screen } from "../app/app";
 import { safeStorage } from "../app/settings";
@@ -549,6 +550,7 @@ export function portrait(
   y: number,
   t: number,
   size = 48,
+  guard?: { folk: Folk; seed: number },
 ) {
   ui.rect(x - 2, y - 2, size + 4, size + 4, INK);
   ui.rect(x, y, size, size, who.color);
@@ -573,7 +575,7 @@ export function portrait(
   // The rest of the cast: their own models too (Mossback, Lumen, the guards, the dragons).
   const key = Object.keys(CAST).find((k) => CAST[k] === who);
   if (key && pp && hasCastModel(key)) {
-    ui.image(pp.cast(key, { w: size, h: size }, t), x, y, size, size, false);
+    ui.image(pp.cast(key, { w: size, h: size }, t, guard), x, y, size, size, false);
     return;
   }
   // The drawn ones (drawn at 48, scaled to fit).

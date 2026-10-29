@@ -316,7 +316,7 @@ export function scriptText(): string {
     ["TIDEWYRM", "Dragon of the isles: the trickster. Greedy, sly, charming."],
     [
       "KING PYRRHAX",
-      "The Dragon King. He lost the First Race young, stunned by the horn, and has beaten every champion since.",
+      "The Dragon King. He lost the First Race young, stunned by the horn, and lost to all nine champions since, one a century: his people stayed behind the border, dimming.",
     ],
     ["SKETCHY GUARD", "The smugglers' guards at the underground games. They sell tunnels."],
     ["GUARD", "The dragons' own guards: Dragon Kingdom folk in hooded tunics."],

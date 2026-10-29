@@ -55,8 +55,10 @@ import {
 } from "./adventure";
 import {
   DRAGON,
+  RAGE,
   STORY_ORDER,
   kingdomById,
+  sceneOf,
   nameOf,
   type Kingdom,
   type KingdomId,
@@ -89,7 +91,12 @@ import { exitSpot, frontSpot, roadSpot } from "../overworld/exits";
 import { challengeStaged, stageAt } from "../adventure/staged";
 import type { VillagerView } from "../render/villager";
 import { createGuardView } from "../render/people";
-import { createBannerView, type PropView } from "../render/storyProps";
+import {
+  createBannerView,
+  createPactStoneView,
+  type PropView,
+  type StoneState,
+} from "../render/storyProps";
 import { createGatewayArch, type ArchTheme } from "../render/gatewayArch";
 import { instaWin } from "../debug/devFlags";
 import {
@@ -322,7 +329,8 @@ function caveOf(game: Game, region: Region): CaveNow | undefined {
         : {
             k,
             mode: "shut",
-            say: `"ONLY ${champ} GETS IN HERE." (PAUSE, THEN YOUR CREW: SWITCH TO ${champ}.)`,
+            // (Blake, Oct 28: the smugglers say it, not a menu hint.)
+            say: `"NEVER SEEN YOU BEFORE. WE OPEN UP FOR ${champ}'S CREW, AND ONLY WITH ${champ} AT THE WHEEL."`,
           };
     case "escaped":
     case "restored":
@@ -972,6 +980,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   let secret: ReturnType<typeof regionSecret> | undefined;
   let cave: ReturnType<typeof regionCave> | undefined;
   let dressing: ReturnType<typeof regionDressing> | undefined;
+  let pactStone: ReturnType<typeof regionPactStone> | undefined;
   let air: ReturnType<typeof regionAir> | undefined;
   let villagers: Villagers | undefined;
   /** The gateway (or passage) you're standing in (its card doesn't open again until you
@@ -1015,6 +1024,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       secret = regionSecret(game, session, region);
       cave = regionCave(game, session, region);
       dressing = regionDressing(game, session, region);
+      pactStone = regionPactStone(game, session, region);
       air = regionAir(game, session, region, regionRuined(game, region.id, story));
       // The folk who live here, walking about round their homes.
       const land = session.makeGround();
@@ -1072,6 +1082,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       secret?.dispose();
       cave?.dispose();
       dressing?.dispose();
+      pactStone?.dispose();
       air?.dispose();
       villagers?.dispose();
       session.dispose();
@@ -1085,6 +1096,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       clock += dt;
       cave?.step(session.entrants[0]!.state.x, session.entrants[0]!.state.z, top ? dt : 0, clock);
       dressing?.step(clock);
+      pactStone?.step(clock);
       gateways?.update(clock);
       if (!top) return;
       if (actions.some((a) => a === "pause" || a === "back")) {
@@ -1540,6 +1552,44 @@ function openRegionReview(game: Game, session: Session, region: Region) {
     name: ruined ? `${region.name} (ruined)` : region.name,
   } as TrackEntry;
   game.screens.push(reviewScreen(game, session, entry));
+}
+
+/**
+ * The kingdom's Pact Stone (Blake, Oct 28: it's in the story, so it's in the world), as
+ * the story has it: old; glowing from the hundredth summer; cracked once it's been found
+ * cracked; broken after the Rage (and in the ruined region). Solid.
+ */
+function regionPactStone(game: Game, session: Session, region: Region) {
+  const at = region.pactStone;
+  if (!at) return undefined;
+  const story = Boolean(game.overworld?.adventure);
+  const k = region.kingdom;
+  let state: StoneState = "old";
+  if (regionRuined(game, region.id, story)) state = "broken";
+  else if (story && k) {
+    const seen = adventureOf(game).save.seen;
+    if (RAGE.some((r) => seen.includes(r))) state = "broken";
+    else if (seen.includes(sceneOf(k as KingdomId, "stone"))) state = "cracked";
+    else if (seen.includes(sceneOf(k as KingdomId, "hundredth"))) state = "glowing";
+  }
+  const you = session.entrants[0]!;
+  const y = you.ground.at(at.x, at.z, PROBE_Y).height;
+  const view = createPactStoneView(session.root, state);
+  view.update(at.x, y, at.z, at.heading, 0);
+  session.solids.push({
+    kind: "circle",
+    look: "creature",
+    x: at.x,
+    z: at.z,
+    radius: 1.6,
+    height: y + 6,
+  });
+  return {
+    step(t: number) {
+      view.update(at.x, y, at.z, at.heading, t);
+    },
+    dispose: () => view.dispose(),
+  };
 }
 
 function overworldPause(game: Game, region: Region, session: Session): Screen {

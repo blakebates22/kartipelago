@@ -124,7 +124,9 @@ export function createRobedView(parent: THREE.Object3D): PropView {
   };
 }
 
-export type StoneState = "old" | "cracked" | "new" | "broken";
+/** old; glowing (an old stone lit up: the hundredth summer); cracked; new (Lumen's light);
+ * broken. */
+export type StoneState = "old" | "glowing" | "cracked" | "new" | "broken";
 
 /** A rounded-off box (bevelled on every edge), centred on the origin. */
 function bevelBox(w: number, h: number, d: number, r: number) {
@@ -255,8 +257,8 @@ export function createPactStoneView(
   const dark = k.mat(fresh ? "#a89870" : "#56514a");
   const mossy = k.mat("#5a7a3a");
   const inlay = k.mat(
-    fresh ? "#ffe08a" : state === "cracked" ? "#8a7a58" : "#c8a24a",
-    fresh ? 1.3 : state === "cracked" ? 0 : 0.35,
+    fresh || state === "glowing" ? "#ffe08a" : state === "cracked" ? "#8a7a58" : "#c8a24a",
+    fresh || state === "glowing" ? 1.3 : state === "cracked" ? 0 : 0.35,
   );
   const crack = k.mat("#ff7a30", 1.4);
   const inner = new THREE.Group();
@@ -356,8 +358,11 @@ export function createPactStoneView(
     }
   }
   const glow =
-    fresh || state === "cracked"
-      ? glowSprite(fresh ? "rgba(255,226,140,0.9)" : "rgba(255,120,40,0.5)", fresh ? 7 : 3)
+    fresh || state === "cracked" || state === "glowing"
+      ? glowSprite(
+          fresh || state === "glowing" ? "rgba(255,226,140,0.9)" : "rgba(255,120,40,0.5)",
+          fresh || state === "glowing" ? 7 : 3,
+        )
       : undefined;
   if (glow) {
     glow.sprite.position.y = 2.6;

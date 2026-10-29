@@ -81,6 +81,9 @@ export interface Region {
   passages?: Passage[];
   /** Adventure: where the champion waits to race you 1 on 1 once round the ring (beside
    * its start line; game/tracks.ts has the region as a race under its package's id). */
+  /** The kingdom's Pact Stone, where the story stands it (old, glowing on the hundredth
+   * summer, cracked, broken after the Rage): its spot and the way it faces. */
+  pactStone?: { x: number; z: number; heading: number };
   challenge?: { x: number; z: number; heading: number };
   /** Adventure: the smugglers' cave (the underground games and their tunnel out), in a
    * walled yard whose way in the sketchy guards keep (the build's puzzle_gate
@@ -137,6 +140,8 @@ export const REGIONS: Region[] = [
     music: "riverbend",
     worldId: "prehistoric",
     kingdom: "valley",
+    // The valley's Pact Stone, at the camp's east side: the festival's held round it.
+    pactStone: { x: 15, z: 6, heading: -2.11 },
     // The main road's start line, on the camp's south side (the 1-on-1 is raced from it).
     challenge: { x: 22, z: 19, heading: -0.9365 },
     // In the camp's square, facing east to the way out onto the road.

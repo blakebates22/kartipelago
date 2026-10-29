@@ -11,6 +11,7 @@
  *
  * Each (racer, size, view) keeps its own canvas, so a menu can show several at once.
  */
+import type { Folk } from "../render/villager";
 import * as THREE from "three";
 import { Racer, type RacerMotion } from "../render/racers/racer";
 import type { RacerId } from "../render/racers/designs";
@@ -262,13 +263,21 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
      * A story character who isn't a racer (Mossback, Lumen, a guard, a dragon): their
      * head and shoulders, turning a little, blinking and breathing with `t`.
      */
-    cast(key: string, o: { w: number; h: number; levels?: number }, t: number): HTMLCanvasElement {
+    cast(
+      key: string,
+      o: { w: number; h: number; levels?: number },
+      t: number,
+      /** A guard as the scene dressed them (their kingdom's folk and look), so the face
+       * in the box is the one on stage. */
+      guard?: { folk: Folk; seed: number },
+    ): HTMLCanvasElement {
       const m = CAST_MODELS[key];
-      const s = slotOf(`cast:${key}:${o.w}x${o.h}`, o.w, o.h);
+      const gk = guard ? `${key}|${guard.folk}|${guard.seed}` : key;
+      const s = slotOf(`cast:${gk}:${o.w}x${o.h}`, o.w, o.h);
       camera.aspect = o.w / o.h;
       fill.intensity = 0;
       if (m?.person) {
-        let p = people.get(key);
+        let p = people.get(gk);
         if (!p) {
           const kind = m.person();
           p =
@@ -276,8 +285,10 @@ export function createPixelPortraits(renderer: THREE.WebGLRenderer) {
               ? createElderView(scene)
               : kind === "lumen"
                 ? createLumenView(scene)
-                : createGuardView(scene, kind === "sentry" ? "dragon" : "road", 4);
-          people.set(key, p);
+                : guard
+                  ? createGuardView(scene, guard.folk, guard.seed)
+                  : createGuardView(scene, kind === "sentry" ? "dragon" : "road", 4);
+          people.set(gk, p);
         }
         solo(p.root);
         const yaw = 0.35 + Math.sin(t * 0.7) * 0.12;

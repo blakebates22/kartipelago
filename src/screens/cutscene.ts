@@ -43,6 +43,9 @@ const lerp3 = (a: V3, b: V3, t: number): V3 => [
 ];
 
 interface Actor {
+  /** A dragon's pose already settled (its first frame shows it posed, not mid-blend from
+   * its rest pose: Blake, Oct 28, "something black pops into the frame"). */
+  settled?: boolean;
   x: number;
   y: number;
   z: number;
@@ -59,6 +62,8 @@ interface Actor {
     to: [number, number];
     /** The whole way, start to end (a move with bends). */
     path?: [number, number][];
+    /** A flyer landing (its own glide and flare). */
+    land?: boolean;
     toUp: number;
     toHeading: number;
   };
@@ -163,6 +168,39 @@ export function stagedSceneScreen(
     }
     return pts.length ? [...pts.reverse(), stop] : undefined;
   };
+  /**
+   * Someone walking from `from` to `to` (Blake, Oct 28: "the character in the background
+   * walks through the hut... we always need to be aware of this"): the straight way if
+   * nothing's in it, otherwise round whatever is (a hut, a wall: anything the ground
+   * jumps up to under a walker's feet), by the smallest step aside that clears it.
+   * Undefined for the straight way.
+   */
+  const walkAround = (from: [number, number], to: [number, number]) => {
+    const clear = (a: [number, number], b: [number, number]) => {
+      const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const n = Math.max(2, Math.ceil(d / 0.75));
+      // (Not the ends: someone may stand by a wall to start with.)
+      for (let i = 1; i < n; i++) {
+        const x = a[0] + ((b[0] - a[0]) * i) / n;
+        const z = a[1] + ((b[1] - a[1]) * i) / n;
+        // (A wall a kart's width away: a hut, a fence, a rock face.)
+        if (session && !session.kartFits(x, z, groundAt(x, z) + 3)) return false;
+      }
+      return true;
+    };
+    if (clear(from, to)) return undefined;
+    const mx = (from[0] + to[0]) / 2;
+    const mz = (from[1] + to[1]) / 2;
+    const d = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1;
+    const px = -(to[1] - from[1]) / d;
+    const pz = (to[0] - from[0]) / d;
+    for (const off of [3, 5, 7, 9, 12, 15])
+      for (const sd of [1, -1]) {
+        const mid: [number, number] = [mx + px * off * sd, mz + pz * off * sd];
+        if (clear(from, mid) && clear(mid, to)) return [from, mid, to] as [number, number][];
+      }
+    return undefined;
+  };
   const startBeat = (k: number) => {
     const b = staged.beats[k];
     for (const n of b?.fx?.show ?? []) {
@@ -186,20 +224,26 @@ export function stagedSceneScreen(
         t0: clock,
         dur: m.dur,
         to: m.to,
-        ...(m.road
+        ...(a.person && !m.road && !m.via?.length
           ? (() => {
-              const path = roadPath(m.to);
-              if (path) {
-                a.x = path[0]![0];
-                a.z = path[0]![1];
-              }
+              const path = walkAround([a.x, a.z], m.to);
               return path ? { path } : {};
             })()
-          : m.via?.length
-            ? { path: [[a.x, a.z], ...m.via, m.to] as [number, number][] }
-            : {}),
+          : m.road
+            ? (() => {
+                const path = roadPath(m.to);
+                if (path) {
+                  a.x = path[0]![0];
+                  a.z = path[0]![1];
+                }
+                return path ? { path } : {};
+              })()
+            : m.via?.length
+              ? { path: [[a.x, a.z], ...m.via, m.to] as [number, number][] }
+              : {}),
         toUp: m.y ?? a.up,
         toHeading: m.heading ?? Math.atan2(m.to[0] - a.x, m.to[1] - a.z),
+        ...(m.land ? { land: true } : {}),
       };
     }
   };
@@ -218,6 +262,8 @@ export function stagedSceneScreen(
   const build = (s: Session) => {
     land = s.makeGround();
     s.showHud(false);
+    // (The geysers rest while a scene plays: nothing erupts behind the speaker.)
+    if (s.hazards) s.hazards.calm = true;
     // Your kart isn't driven here: you're one of the cast.
     const you = s.entrants[0]!;
     you.mesh.visible = false;
@@ -295,6 +341,10 @@ export function stagedSceneScreen(
     } else look.set(a.x + Math.sin(a.heading) * 60, a.y + 4, a.z + Math.cos(a.heading) * 60);
     // Speaking, it plays to the camera a little (a face, not the top of a head).
     if (talk) look.lerp(game.stage.camera.position, 0.55);
+    if (!a.settled) {
+      for (let k = 0; k < 30; k++) d.update(pose, t, clock - 1.5 + k * 0.05, look, talk);
+      a.settled = true;
+    }
     d.update(pose, t, clock, look, talk);
   };
 
@@ -325,7 +375,24 @@ export function stagedSceneScreen(
       if (a.from) {
         const k = ease(Math.min(1, (clock - a.from.t0) / Math.max(0.01, a.from.dur)));
         a.up = lerp(a.from.up, a.from.toUp, k);
-        if (a.from.path) {
+        if (a.from.land) {
+          // A landing (Blake, Oct 28: not floating, turning stiffly, then sinking): it
+          // glides in facing the way it flies, slowing, dropping steeply at first and
+          // flaring out over the ground; only once down does it turn to face its mark.
+          const u = Math.min(1, (clock - a.from.t0) / Math.max(0.01, a.from.dur));
+          const kh = 1 - (1 - Math.min(1, u / 0.85)) ** 2;
+          a.x = lerp(a.from.x, a.from.to[0], kh);
+          a.z = lerp(a.from.z, a.from.to[1], kh);
+          const ku = Math.min(1, u / 0.85);
+          a.up = a.from.toUp + (a.from.up - a.from.toUp) * (1 - ku) ** 2;
+          const fly = Math.atan2(a.from.to[0] - a.from.x, a.from.to[1] - a.from.z);
+          const turn = Math.max(0, (u - 0.85) / 0.15);
+          const dh = Math.atan2(Math.sin(a.from.toHeading - fly), Math.cos(a.from.toHeading - fly));
+          const dh0 = Math.atan2(Math.sin(fly - a.from.heading), Math.cos(fly - a.from.heading));
+          a.heading =
+            u < 0.15 ? a.from.heading + dh0 * (u / 0.15) : fly + dh * turn * turn * (3 - 2 * turn);
+          if (u >= 1) a.from = undefined;
+        } else if (a.from.path) {
           // Along the bends at an even speed, facing the way it goes; turning to its last
           // heading over the last stretch.
           const [x, z, h] = alongPath(a.from.path, k);
@@ -341,7 +408,10 @@ export function stagedSceneScreen(
             Math.sin(a.from.toHeading - a.from.heading),
             Math.cos(a.from.toHeading - a.from.heading),
           );
-          a.heading = a.from.heading + dh * Math.min(1, k * 2);
+          // (Someone on foot turns to go before they set off, not walking backwards while
+          // they come round; the rest turn over the first half of the move.)
+          const turn = a.person ? Math.min(1, (clock - a.from.t0) / 0.5) : Math.min(1, k * 2);
+          a.heading = a.from.heading + dh * turn;
         }
         if (k >= 1) a.from = undefined;
       }
@@ -381,7 +451,9 @@ export function stagedSceneScreen(
     const look = lerp3(shot.look, shot.lookTo ?? shot.look, k);
     const cam = game.stage.camera;
     const shake = beatOf(i)?.fx?.shake ?? 0;
-    const sh = shake * Math.max(0, 1 - t / 2.5);
+    // (From `shakeAt` seconds into the line: a landing's thud, not its approach.)
+    const ts = t - (beatOf(i)?.fx?.shakeAt ?? 0);
+    const sh = ts < 0 ? 0 : shake * Math.max(0, 1 - ts / 2.5);
     // (Heights over the ground under the camera, or under what it looks at: rel.)
     // (The ground under the shot's two ends, blended: a camera gliding in over the land
     // shouldn't ride every bump and treetop under it.)
@@ -395,8 +467,28 @@ export function stagedSceneScreen(
       gy + from[1] + Math.sin(clock * 41) * sh,
       from[2] + Math.cos(clock * 33) * sh,
     );
-    cam.lookAt(look[0], groundAt(look[0], look[2]) + look[1], look[2]);
+    // (Likewise what it looks at: a look sweeping across the sky mustn't bob with every
+    // cliff and treetop under it: Blake, Oct 28, "very shaky".)
+    const lookEnd = shot.lookTo ?? shot.look;
+    const l0 = groundAt(shot.look[0], shot.look[2]);
+    const ly = l0 + (groundAt(lookEnd[0], lookEnd[2]) - l0) * k;
+    // Following someone: their position, eased (a steady pan, not a jitter).
+    const who = shot.follow ? actors.get(shot.follow) : undefined;
+    if (who) {
+      followAt.set(who.x, who.y + who.up + (shot.followUp ?? 0), who.z);
+      if (!following) followLook.copy(followAt);
+      else followLook.lerp(followAt, 1 - Math.exp(-6 * lastDt));
+      following = true;
+      cam.lookAt(followLook);
+    } else {
+      following = false;
+      cam.lookAt(look[0], ly + look[1], look[2]);
+    }
   };
+  const followAt = new THREE.Vector3();
+  const followLook = new THREE.Vector3();
+  let following = false;
+  let lastDt = 1 / 60;
 
   const screen: Screen & { readonly beat: number } = {
     id: "ADVENTURE_SCENE",
@@ -471,6 +563,7 @@ export function stagedSceneScreen(
       if (!session) return false;
       session.render(alpha, frameSeconds);
       // (The shot first: the cast look at the camera.)
+      lastDt = Math.min(0.1, Math.max(0, frameSeconds));
       shoot(beatOf(i)?.cam);
       place(frameSeconds);
       game.stage.render();
@@ -520,6 +613,8 @@ export function stagedSceneScreen(
       let tx = bx + 10;
       if (who) {
         const slot = portraitSlot(bx, by, bh);
+        // (A guard's face is the one on stage: the same folk, the same look.)
+        const spec = beat.who ? staged.actors[beat.who] : undefined;
         portrait(
           ui,
           pp,
@@ -529,6 +624,7 @@ export function stagedSceneScreen(
           slot.y,
           ui.time,
           slot.size,
+          spec?.kind === "guard" ? { folk: spec.folk, seed: spec.seed } : undefined,
         );
         tx = slot.tx;
         ui.text((beat.who === "you" ? "YOU" : who.name).toUpperCase(), tx, by + 6, {
