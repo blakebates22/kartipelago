@@ -882,12 +882,15 @@ def wander(a, b, bend=0.0, seed=0):
     return pts
 
 
-def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Village", name="Village Paths"):
+def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Village", name="Village Paths", flare=None):
     """Dirt paths laid on the land as ribbons (Blake, notes 1, 3, 8: the painted ones
     "look horrible"): smooth curves through each path's points, a hand's breadth above the
     ground, their width wandering slowly, a soft verge either side where the grass grows
-    into the dirt, and round ends. `look(x, y)` -> (dirt material, verge material or None)
-    for where a path runs."""
+    into the dirt, and round ends. `look(x, y)` -> (dirt material, verge) for where a path
+    runs; the verge one material, or a list of them from the dirt out to the grass (Blake,
+    Oct 29, note 12: "blend the paths into the grass way better": dirt 75%, 50%, 25%), each
+    band `verge` wide. `flare(x, y)`: true where an end meets a road, and the path widens
+    and softens into it there (note 13: "blend the path merging into the road")."""
     import region_textures as TX
 
     look = look or (lambda x, y: (("camp_earth", "dirt"), (TX.blend_id("valley_grass", "camp_earth", 50), "dirt")))
@@ -902,7 +905,20 @@ def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Villag
             continue
         mid = line[len(line) // 2]
         dirt, edge = look(*mid)
+        bands = list(edge) if isinstance(edge, list) else ([edge] if edge else [])
+        nb = len(bands)
         L = len(line)
+        # (How far along, and how near a flared end: the last few metres widen.)
+        along = [0.0]
+        for k in range(1, L):
+            along.append(along[-1] + math.hypot(line[k][0] - line[k - 1][0], line[k][1] - line[k - 1][1]))
+        total = along[-1] or 1.0
+        fl0 = bool(flare and flare(*line[0]))
+        fl1 = bool(flare and flare(*line[-1]))
+
+        def widen(d):
+            return 1.0 + 1.3 * max(0.0, 1.0 - d / 6.0) ** 2
+
         rows = []
         for k, (x, y) in enumerate(line):
             a = line[max(0, k - 1)]
@@ -910,12 +926,24 @@ def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Villag
             tx, ty = b[0] - a[0], b[1] - a[1]
             tl = math.hypot(tx, ty) or 1.0
             nx, ny = -ty / tl, tx / tl
-            wl = width / 2 * (1.0 + 0.12 * math.sin(k * 0.21 + pi) + 0.05 * math.sin(k * 0.67 + pi * 3))
-            wr = width / 2 * (1.0 + 0.12 * math.sin(k * 0.19 + pi * 2) + 0.05 * math.sin(k * 0.71 + pi))
-            vl = verge * (0.8 + 0.4 * (0.5 + 0.5 * math.sin(k * 0.5 + pi)))
-            vr = verge * (0.8 + 0.4 * (0.5 + 0.5 * math.sin(k * 0.43 + pi * 5)))
-            rows.append([P(x - nx * (wl + vl), y - ny * (wl + vl), 0.04), P(x - nx * wl, y - ny * wl, 0.07), P(x, y, 0.08),
-                         P(x + nx * wr, y + ny * wr, 0.07), P(x + nx * (wr + vr), y + ny * (wr + vr), 0.04)])
+            f = 1.0
+            if fl0:
+                f = max(f, widen(along[k]))
+            if fl1:
+                f = max(f, widen(total - along[k]))
+            wl = width / 2 * f * (1.0 + 0.12 * math.sin(k * 0.21 + pi) + 0.05 * math.sin(k * 0.67 + pi * 3))
+            wr = width / 2 * f * (1.0 + 0.12 * math.sin(k * 0.19 + pi * 2) + 0.05 * math.sin(k * 0.71 + pi))
+            vl = verge * f * (0.8 + 0.4 * (0.5 + 0.5 * math.sin(k * 0.5 + pi)))
+            vr = verge * f * (0.8 + 0.4 * (0.5 + 0.5 * math.sin(k * 0.43 + pi * 5)))
+            row = []
+            for j in range(nb, 0, -1):
+                o = wl + vl * j
+                row.append(P(x - nx * o, y - ny * o, 0.07 - 0.03 * j / max(1, nb)))
+            row += [P(x - nx * wl, y - ny * wl, 0.07), P(x, y, 0.08), P(x + nx * wr, y + ny * wr, 0.07)]
+            for j in range(1, nb + 1):
+                o = wr + vr * j
+                row.append(P(x + nx * o, y + ny * o, 0.07 - 0.03 * j / max(1, nb)))
+            rows.append(row)
 
         def strip(bm, js, rows=rows):
             vs = [[bm.verts.new(p) for p in row] for row in rows]
@@ -923,33 +951,37 @@ def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Villag
                 for j in js:
                     bm.faces.new((r0[j], r1[j], r1[j + 1], r0[j + 1]))
 
-        m.add(dirt, lambda bm: strip(bm, (1, 2)))
-        if edge:
-            m.add(edge, lambda bm: strip(bm, (0, 3)))
-        # Round ends: a half disc of dirt, and its verge round it.
+        # Columns: nb verge bands, two dirt halves, nb verge bands.
+        m.add(dirt, lambda bm: strip(bm, (nb, nb + 1)))
+        for j, band in enumerate(bands):
+            # (band j: the j-th out from the dirt, both sides)
+            m.add(band, lambda bm, j=j: strip(bm, (nb - 1 - j, nb + 2 + j)))
+        # Round ends: a half disc of dirt, and its verge bands round it.
         for end, (x, y), (px, py) in ((0, line[0], line[1]), (1, line[-1], line[-2])):
             ux, uy = x - px, y - py
             ul = math.hypot(ux, uy) or 1.0
             ux, uy = ux / ul, uy / ul
             nx, ny = -uy, ux
             row = rows[0] if end == 0 else rows[-1]
-            wi = math.hypot(row[1][0] - x, row[1][1] - y)
-            wo = math.hypot(row[0][0] - x, row[0][1] - y)
+            wi = math.hypot(row[nb][0] - x, row[nb][1] - y)
+            radii = [wi] + [math.hypot(row[nb - j][0] - x, row[nb - j][1] - y) for j in range(1, nb + 1)]
             K = 6
-            inner, outer = [], []
-            for i in range(K + 1):
-                th = -math.pi / 2 + math.pi * i / K
-                dx, dy = ux * math.cos(th) + nx * math.sin(th), uy * math.cos(th) + ny * math.sin(th)
-                inner.append(P(x + dx * wi, y + dy * wi, 0.07))
-                outer.append(P(x + dx * wo, y + dy * wo, 0.04))
+            rings = []
+            for ri, rr in enumerate(radii):
+                ring_ = []
+                for i in range(K + 1):
+                    th = -math.pi / 2 + math.pi * i / K
+                    dx, dy = ux * math.cos(th) + nx * math.sin(th), uy * math.cos(th) + ny * math.sin(th)
+                    ring_.append(P(x + dx * rr, y + dy * rr, 0.07 - 0.03 * ri / max(1, nb)))
+                rings.append(ring_)
 
-            def cap(bm, inner=inner, x=x, y=y):
+            def cap(bm, inner=rings[0], x=x, y=y, end=end):
                 cv = bm.verts.new(P(x, y, 0.08))
                 iv = [bm.verts.new(p) for p in inner]
                 for i in range(K):
                     bm.faces.new((cv, iv[i + 1], iv[i]) if end == 0 else (cv, iv[i], iv[i + 1]))
 
-            def rim(bm, inner=inner, outer=outer):
+            def rim(bm, inner, outer, end=end):
                 iv = [bm.verts.new(p) for p in inner]
                 ov = [bm.verts.new(p) for p in outer]
                 for i in range(K):
@@ -957,8 +989,8 @@ def path_ribbons(c, paths, ground, look=None, width=2.4, verge=0.8, coll="Villag
                     bm.faces.new(q if end == 1 else tuple(reversed(q)))
 
             m.add(dirt, cap)
-            if edge:
-                m.add(edge, rim)
+            for j, band in enumerate(bands):
+                m.add(band, lambda bm, a=rings[j], b=rings[j + 1]: rim(bm, a, b))
     return m.build(c, name, coll=coll, role="visual")
 
 

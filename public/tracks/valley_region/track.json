@@ -172,7 +172,7 @@
       "id": "chimney_01",
       "type": "chimney",
       "x": -16.43,
-      "y": 31.2,
+      "y": 30.11,
       "z": 1.16
     },
     {
@@ -243,42 +243,6 @@
       "n": 2,
       "folk": "valley",
       "heading": -2.467
-    },
-    {
-      "id": "village_totem_01",
-      "type": "village_totem",
-      "x": 25.0,
-      "y": 26.08,
-      "z": 5.0,
-      "variant": 0,
-      "heading": -1.571
-    },
-    {
-      "id": "village_totem_02",
-      "type": "village_totem",
-      "x": 25.0,
-      "y": 26.25,
-      "z": -11.0,
-      "variant": 1,
-      "heading": -1.571
-    },
-    {
-      "id": "village_totem_03",
-      "type": "village_totem",
-      "x": 1.0,
-      "y": 25.82,
-      "z": -37.0,
-      "variant": 2,
-      "heading": 0.9
-    },
-    {
-      "id": "village_totem_04",
-      "type": "village_totem",
-      "x": -15.0,
-      "y": 25.8,
-      "z": -24.0,
-      "variant": 3,
-      "heading": -0.8
     },
     {
       "id": "torch_01",
@@ -1579,6 +1543,42 @@
       "z": 131.17,
       "scale": 0.952,
       "heading": -0.017
+    },
+    {
+      "id": "village_totem_01",
+      "type": "village_totem",
+      "x": 16.85,
+      "y": 25.87,
+      "z": -28.25,
+      "variant": 0,
+      "heading": -0.588
+    },
+    {
+      "id": "village_totem_02",
+      "type": "village_totem",
+      "x": -29.85,
+      "y": 25.63,
+      "z": -34.25,
+      "variant": 1,
+      "heading": 0.762
+    },
+    {
+      "id": "village_totem_03",
+      "type": "village_totem",
+      "x": -7.25,
+      "y": 31.66,
+      "z": -49.85,
+      "variant": 2,
+      "heading": 0.154
+    },
+    {
+      "id": "village_totem_04",
+      "type": "village_totem",
+      "x": -27.85,
+      "y": 22.13,
+      "z": 6.25,
+      "variant": 3,
+      "heading": 1.892
     },
     {
       "id": "area_ambient_01",

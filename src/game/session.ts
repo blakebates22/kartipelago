@@ -624,7 +624,7 @@ function buildSession(
       : undefined;
 
   // The village's carved totems and the kart taken apart in the shed (render/villageDecor.ts).
-  const decor = pkg ? createVillageDecor(root, pkg.meta.entities ?? []) : undefined;
+  const decor = pkg ? createVillageDecor(root, pkg.meta.entities ?? [], pkg.visual) : undefined;
 
   // A boss race's mechanic (game/bossMech.ts): the fire sweeps and vents, the crumbling
   // road. On you only: the boss is its master.
@@ -1553,7 +1553,7 @@ function buildSession(
     );
     skidSound();
     hazards?.render(fxClock, frameSeconds, you.mesh.position);
-    decor?.update(fxClock);
+    decor?.update(fxClock, stage.camera.position);
     bossMech?.render(race?.clock ?? 0);
     // Scorchwind's sandstorm: the air thick with sand.
     const storm = bossMech?.fog() ?? 0;

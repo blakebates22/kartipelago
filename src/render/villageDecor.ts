@@ -488,14 +488,95 @@ export function buildHornedSkull(): THREE.Mesh {
 /** The decor among a track's entities, added under `parent`: the carved and built pieces,
  * and the living fires (`fire` { "x", "y", "z", "size" }: the fire's base). update(t)
  * plays the fires; dispose() takes it all away. */
+/** The flames modelled into the scenery (campfires, braziers, torches), by their
+ * materials' names: they give way to the living fire (render/fire.ts). */
+const FLAME = /campfire[ _]flame|keep[ _]flame|torch[ _]flame|brazier[ _]fire/i;
+
+/** Where the scenery's own flames stand: each one's foot and height, its faces hidden.
+ * (Blake, Oct 29: "now that we have high fidelity torches in the tunnel ... lets replace
+ * all fire with this.") */
+function modelledFlames(visual: THREE.Object3D) {
+  const cells = new Map<string, { x: number; z: number; y0: number; y1: number; n: number }>();
+  const v = new THREE.Vector3();
+  visual.updateMatrixWorld(true);
+  visual.traverse((o) => {
+    if (!(o instanceof THREE.Mesh)) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    const hit = mats.map((m) => FLAME.test(m?.name ?? "") || FLAME.test(m?.map?.name ?? ""));
+    if (!hit.some(Boolean)) return;
+    const geo = o.geometry as THREE.BufferGeometry;
+    const pos = geo.getAttribute("position");
+    const idx = geo.getIndex();
+    const groups = geo.groups.length
+      ? geo.groups
+      : [{ start: 0, count: idx ? idx.count : pos.count, materialIndex: 0 }];
+    for (const g of groups) {
+      if (!hit[g.materialIndex ?? 0]) continue;
+      for (let i = g.start; i < g.start + g.count; i++) {
+        v.fromBufferAttribute(pos, idx ? idx.getX(i) : i).applyMatrix4(o.matrixWorld);
+        const key = `${Math.round(v.x / 1.6)},${Math.round(v.z / 1.6)}`;
+        const c = cells.get(key);
+        if (c) {
+          c.x += v.x;
+          c.z += v.z;
+          c.n++;
+          c.y0 = Math.min(c.y0, v.y);
+          c.y1 = Math.max(c.y1, v.y);
+        } else cells.set(key, { x: v.x, z: v.z, y0: v.y, y1: v.y, n: 1 });
+      }
+    }
+    for (let i = 0; i < mats.length; i++) if (hit[i] && mats[i]) mats[i]!.visible = false;
+  });
+  // (Neighbouring cells of one flame joined: a flame is one fire.)
+  const out: { x: number; y: number; z: number; h: number }[] = [];
+  for (const c of cells.values()) {
+    const x = c.x / c.n;
+    const z = c.z / c.n;
+    const near = out.find((f) => Math.hypot(f.x - x, f.z - z) < 1.8 && Math.abs(f.y - c.y0) < 2.0);
+    if (near) {
+      near.h = Math.max(near.h, c.y1 - near.y);
+      near.y = Math.min(near.y, c.y0);
+      continue;
+    }
+    out.push({ x, y: c.y0, z, h: c.y1 - c.y0 });
+  }
+  return out;
+}
+
 export function createVillageDecor(
   parent: THREE.Object3D,
   entities: unknown[],
-): { update(t: number): void; dispose(): void } {
+  visual?: THREE.Object3D,
+): { update(t: number, eye?: THREE.Vector3): void; dispose(): void } {
   const group = new THREE.Group();
   group.name = "village decor";
   const fires: Fire[] = [];
   const num = (v: unknown, d = 0) => (typeof v === "number" && Number.isFinite(v) ? v : d);
+  // Every fire in the world the living one: the scenery's own flames, then the torches'
+  // and campfires' where no flame was modelled.
+  const spots: { x: number; y: number; z: number; size: number }[] = [];
+  if (visual)
+    for (const f of modelledFlames(visual))
+      spots.push({ x: f.x, y: f.y, z: f.z, size: Math.max(0.35, Math.min(2.2, f.h / 1.7)) });
+  for (const e of entities) {
+    if (!e || typeof e !== "object") continue;
+    const o = e as Record<string, unknown>;
+    if (o.type !== "torch" && o.type !== "campfire") continue;
+    const x = num(o.x);
+    const y = num(o.y);
+    const z = num(o.z);
+    if (spots.some((s) => Math.hypot(s.x - x, s.z - z) < 1.8 && Math.abs(s.y - y) < 3)) continue;
+    spots.push(
+      o.type === "torch" ? { x, y: y - 0.45, z, size: 0.5 } : { x, y: y - 0.3, z, size: 1.0 },
+    );
+  }
+  const living: { fire: Fire; x: number; y: number; z: number }[] = [];
+  for (const s of spots) {
+    const f = createFire({ size: s.size, seed: living.length * 2.3 });
+    f.group.position.set(s.x, s.y, s.z);
+    group.add(f.group);
+    living.push({ fire: f, x: s.x, y: s.y, z: s.z });
+  }
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
@@ -517,11 +598,18 @@ export function createVillageDecor(
   }
   if (group.children.length) parent.add(group);
   return {
-    update(t) {
+    update(t, eye) {
       for (const f of fires) f.update(t);
+      // (Only the fires near enough to see are drawn and kept burning.)
+      for (const l of living) {
+        const on = !eye || Math.hypot(l.x - eye.x, l.y - eye.y, l.z - eye.z) < 140;
+        l.fire.group.visible = on;
+        if (on) l.fire.update(t);
+      }
     },
     dispose() {
       for (const f of fires) f.dispose();
+      for (const l of living) l.fire.dispose();
       group.removeFromParent();
       group.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();

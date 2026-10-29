@@ -654,3 +654,27 @@ def wall_sconce_cage(c):
         return [(c.lib("black_rock"), iron), (c.lib("palm_bark"), wood), (c.lib("charred_bark"), cloth)]
 
     return _p(c, name, build)
+
+
+def offering_bowl(c):
+    """An offering left at a Pact Stone's foot (Blake, Oct 29, note 18): a low clay bowl
+    heaped with fruit and a few flowers."""
+    name = "Offering Bowl"
+
+    def build(bm):
+        _cyl(bm, (0, 0, 0), 0.18, 0.08, n=10, r2=0.3)
+        _cyl(bm, (0, 0, 0.08), 0.3, 0.1, n=10, r2=0.34)
+        clay = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for i, (x, y, z, r) in enumerate(((0.0, 0.0, 0.24, 0.12), (0.12, 0.05, 0.21, 0.09), (-0.1, 0.08, 0.21, 0.09),
+                                          (0.02, -0.12, 0.2, 0.08))):
+            blob(bm, (x, y, z), r, subdiv=1)
+        fruit = _faces(bm, k0)
+        k0 = len(bm.faces)
+        for i in range(3):
+            a = i * 2.1 + 0.4
+            blob(bm, (0.2 * math.cos(a), 0.2 * math.sin(a), 0.22), 0.06, sz=0.5, subdiv=0)
+        petals = _faces(bm, k0)
+        return [(c.lib("terracotta"), clay), (c.lib("fruit"), fruit), (c.lib("flowerbed"), petals)]
+
+    return _p(c, name, build)

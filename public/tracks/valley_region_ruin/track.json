@@ -266,42 +266,6 @@
       "heading": -2.467
     },
     {
-      "id": "village_totem_01",
-      "type": "village_totem",
-      "x": 25.0,
-      "y": 26.08,
-      "z": 5.0,
-      "variant": 0,
-      "heading": -1.571
-    },
-    {
-      "id": "village_totem_02",
-      "type": "village_totem",
-      "x": 25.0,
-      "y": 26.25,
-      "z": -11.0,
-      "variant": 1,
-      "heading": -1.571
-    },
-    {
-      "id": "village_totem_03",
-      "type": "village_totem",
-      "x": 1.0,
-      "y": 25.82,
-      "z": -37.0,
-      "variant": 2,
-      "heading": 0.9
-    },
-    {
-      "id": "village_totem_04",
-      "type": "village_totem",
-      "x": -15.0,
-      "y": 25.8,
-      "z": -24.0,
-      "variant": 3,
-      "heading": -0.8
-    },
-    {
       "id": "torch_01",
       "type": "torch",
       "x": -124.44,
@@ -1660,6 +1624,42 @@
       "heading": -0.017
     },
     {
+      "id": "village_totem_01",
+      "type": "village_totem",
+      "x": 16.07,
+      "y": 25.94,
+      "z": -20.28,
+      "variant": 0,
+      "heading": -0.749
+    },
+    {
+      "id": "village_totem_02",
+      "type": "village_totem",
+      "x": -29.85,
+      "y": 25.63,
+      "z": -34.25,
+      "variant": 1,
+      "heading": 0.762
+    },
+    {
+      "id": "village_totem_03",
+      "type": "village_totem",
+      "x": -7.25,
+      "y": 31.66,
+      "z": -49.85,
+      "variant": 2,
+      "heading": 0.154
+    },
+    {
+      "id": "village_totem_04",
+      "type": "village_totem",
+      "x": -27.85,
+      "y": 22.13,
+      "z": 6.25,
+      "variant": 3,
+      "heading": 1.892
+    },
+    {
       "id": "area_ambient_01",
       "type": "area_ambient",
       "area": "riverbend",
@@ -1689,9 +1689,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "8e398e6e8ce5e96d019e78a9f23e5f94366850aff4dd7c30c12d2ee54ae3660a",
+    "valley_dress.py": "b7ad61adf32ff6269b49af68f438b16f01eb89e7f59ee22699d920dd4a5b7057",
     "valley_layout.py": "4be53f72968117994ca73de9926449c9305dba43d3051a8520fb05b359ba27fd",
-    "valley_region.py": "9931dd8302846f5dc9c02cb863986e339d90013020c6f861504e8dec3e80b0d5",
-    "valley_village.py": "0a955361e1840639905e3dcdbf6f3a265dced5b293f6815f04208974034a2a66"
+    "valley_region.py": "6ccdb297d32b9f61c1baab1af2ebe8437d8b913c57fa1683f96dd7108e992c75",
+    "valley_village.py": "005054aa2a6fddddfaea090c1d09881f0ba9899a5d7fd09c7783e5be4fb223c7"
   }
 }

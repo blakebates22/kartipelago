@@ -12030,6 +12030,33 @@
       "tileMetres": 5.5
     },
     {
+      "id": "tx_valley_grass__valley_road_25",
+      "name": "Valley Grass to Valley Road (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__valley_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_grass__valley_road_50",
+      "name": "Valley Grass to Valley Road (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__valley_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_grass__valley_road_75",
+      "name": "Valley Grass to Valley Road (75%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_grass__valley_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
       "id": "giant_bark",
       "name": "Giant Bark",
       "theme": "jungle_cascade",

@@ -93,6 +93,8 @@ PAIRS = [
     ("ash_soil", "scorched_ground"),
     # (The Snow Kingdom's village lanes' soft edges: snow_dress.hearthglow.)
     ("snow_ground", "packed_snow_road"),
+    # (The camp's road edged into the grass: Blake, Oct 29, village note 19.)
+    ("valley_grass", "valley_road"),
 ]
 
 
@@ -215,15 +217,14 @@ def giant_bark():
 
 def camp_earth():
     """The camp's beaten earth (Blake, note 1: "I don't want the dirt to have grass in
-    it"): packed warm earth, scuffed paler where feet go, a few pebbles."""
+    it"; Oct 29, note 12: no white and grey "tetris block" pebbles, "just brown"): packed
+    warm earth, scuffed paler where feet go."""
     w, h = 64, 32
     a, b = _noise(4, 2, 41, w, h), _noise(16, 8, 42, w, h)
     pal = [(150, 94, 52), (166, 106, 60), (180, 120, 70), (194, 136, 84), (206, 152, 98)]
 
     def f(x, y):
         v = 0.6 * a(x, y) + 0.4 * b(x, y)
-        if b(x, y) > 0.86:
-            return (120, 98, 80) if (x + y) % 3 else (214, 196, 170)  # (pebbles)
         return pal[max(0, min(4, int(v * 5)))]
 
     return _paint(w, h, f)

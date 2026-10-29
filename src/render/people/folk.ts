@@ -297,6 +297,8 @@ interface Kind {
   body: { at: V3; rx: number; ry: number }[];
   /** The neck's loft (neck space, from its base to under the head). */
   neck: { at: V3; r: number }[];
+  /** A neck that rises (a long-neck's): lofted upright, its pale front facing forward. */
+  neckRises?: boolean;
   tail: { at: V3; segs: [number, number, number][]; lift: number[] };
   /** Anchors for the clothes. */
   collar: { on: "torso" | "neck"; at: V3; r: number; tilt: number; upright?: boolean };
@@ -744,13 +746,19 @@ const KINDS: Record<Species, Kind> = {
       { at: [0, 0.17, 0.36], rx: 0.28, ry: 0.27 },
       { at: [0, 0.2, 0.5], rx: 0.17, ry: 0.17 },
     ],
+    // (Blake, Oct 29, note 16: "this dinosaur's neck looks terrible": it pinched in and
+    // bulged out, its pale front showing as a stripe up its back. Now one smooth taper,
+    // rising in a gentle curve, its pale front to the front.)
     neck: [
-      { at: [0, -0.06, -0.1], r: 0.19 },
-      { at: [0, 0.12, 0.06], r: 0.14 },
-      { at: [0, 0.38, 0.12], r: 0.105 },
-      { at: [0, 0.6, 0.2], r: 0.088 },
-      { at: [0, 0.72, 0.29], r: 0.08 },
+      { at: [0, -0.1, -0.14], r: 0.2 },
+      { at: [0, 0.05, 0.0], r: 0.165 },
+      { at: [0, 0.22, 0.07], r: 0.135 },
+      { at: [0, 0.4, 0.13], r: 0.112 },
+      { at: [0, 0.56, 0.19], r: 0.097 },
+      { at: [0, 0.68, 0.25], r: 0.087 },
+      { at: [0, 0.75, 0.3], r: 0.082 },
     ],
+    neckRises: true,
     tail: {
       at: [0, 0.12, -0.38],
       segs: [
@@ -1250,8 +1258,9 @@ export function buildFolk(folk: Folk, seed: number, kind?: Species): PersonRig {
       {
         sides: 11,
         steps: 2,
-        up: quad ? [0, 1, 0] : [0, 0, 1],
-        paint: (_t, a) => ((quad ? a < -0.8 : Math.abs(a - Math.PI / 2) < 0.7) ? p.belly : skin),
+        up: quad && !k.neckRises ? [0, 1, 0] : [0, 0, 1],
+        paint: (_t, a) =>
+          (quad && !k.neckRises ? a < -0.8 : Math.abs(a - Math.PI / 2) < 0.7) ? p.belly : skin,
       },
     ),
   );

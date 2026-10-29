@@ -469,6 +469,8 @@ WELL = (9.0, 25.0)
 SHED = (-22.0, 31.0)
 HEARTHS = [(-10.0, -8.0), (12.0, 10.0), (-4.0, 42.0)]
 HAMLET = (-4.0, 42.0)  # a few more huts round the north hearth
+HAMLET_HUTS = []
+STAGE = [((-6.0, 4.0), 13.0), ((15.0, -6.0), 15.0)]  # the cutscenes' camp and the Pact Stone (Blender x, y; clear radius)
 
 
 def camp(c, ground, taken):
@@ -514,6 +516,7 @@ def camp(c, ground, taken):
             continue
         vv.place_hut(c, k + 2, x, y, ground(x, y) - 0.1, a + math.pi, scale=0.85)
         taken.add(x, y, 5.0)
+        HAMLET_HUTS.append((x, y))
         # (From its door to the fire.)
         paths.append(vv.wander((x - 3.6 * math.cos(a), y - 3.6 * math.sin(a)),
                                (hx + 2.6 * math.cos(a), hy + 2.6 * math.sin(a)), bend=1.2 * (-1) ** k, seed=k))
@@ -524,12 +527,7 @@ def camp(c, ground, taken):
         g = c.game(x, y, ground(x, y))
         c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=n, folk="valley",
                  heading=round(math.atan2(-math.cos(face), math.sin(face)), 3))
-    # Totems: tall carved ones flanking the way out of the square, and by the hamlet (carved
-    # in the game, as finely as the characters: Blake, notes 10 and 11).
-    for k, (x, y, rot) in enumerate(((cx + cr + 3.0, cy - 8.0, -math.pi / 2), (cx + cr + 3.0, cy + 8.0, -math.pi / 2),
-                                     (hx + 5.0, hy - 5.0, 0.9), (SHED[0] + 7.0, SHED[1] - 7.0, -0.8))):
-        vv.totem(c, x, y, ground(x, y) - 0.2, rot, k)
-        taken.add(x, y, 2.0)
+    # (The totems: place_totems, once every hut and path is down.)
     # The paths: from the square to the well and on to the hamlet, and to the shed.
     sq = (cx, cy + cr - 2.0)
     wd = math.hypot(WELL[0] - sq[0], WELL[1] - sq[1])
@@ -541,6 +539,104 @@ def camp(c, ground, taken):
     paths.append(vv.wander(from_well, to_ham, bend=-2.0, seed=5))
     paths.append(vv.wander((cx - cr + 4.0, cy + 6.0), (SHED[0] + 4.0, SHED[1] - 4.0), bend=2.0, seed=7))
     return paths
+
+
+def place_totems(c, ground, huts, paths):
+    """The carved totems, placed with thought (Blake, Oct 29, notes 14 and 17: "relocate
+    the totem poles strategically ... in a place that doesn't ruin the cutscenes"; one
+    stood in a hut): one keeping watch by each of the camp's working places, the well,
+    the kart shed and the hamlet's hearth, and one at the head of the west path out of
+    the square. Each at the spot round its place furthest from every hut and path, well
+    clear of the cutscenes' ground (the camp's middle and the Pact Stone) and the road,
+    facing the square."""
+    import valley_village as vv
+
+    cx, cy, cr = L.CAMP
+    pts = [p for path in paths for p in vv._catmull(path, step=1.0)]
+    huts = list(huts) + HAMLET_HUTS
+    features = [WELL, SHED, HAMLET, (cx - cr + 2.0, cy - 6.0)]
+    placed = []
+    for k, (fx, fy) in enumerate(features):
+        best = None
+        for r in (4.5, 5.5, 6.5, 7.5, 8.5):
+            for i in range(32):
+                a = i * math.tau / 32
+                x, y = fx + r * math.cos(a), fy + r * math.sin(a)
+                gap = min([math.hypot(x - hx, y - hy) - 6.5 for hx, hy in huts] or [9.0])
+                gap = min(gap, min([math.hypot(x - px, y - py) - 2.6 for px, py in pts] or [9.0]))
+                gap = min(gap, *[math.hypot(x - sx, y - sy) - sr for (sx, sy), sr in STAGE])
+                gap = min(gap, *[math.hypot(x - tx, y - ty) - 9.0 for tx, ty in placed] or [9.0])
+                if gap <= 0.0 or not paint.road_clear(c, x, y, 4.0) or L.wall_sd(x, y) > -6.0:
+                    continue
+                if best is None or gap > best[0]:
+                    best = (gap, x, y)
+        if best is None:
+            print("totem %d: no room" % k)
+            continue
+        _, x, y = best
+        rot = math.atan2(cy - y, cx - x) + math.pi / 2
+        vv.totem(c, x, y, ground(x, y) - 0.2, rot, k)
+        placed.append((x, y))
+    print("totems placed: %d" % len(placed))
+
+
+def pact_stone_ground(c, ground):
+    """The valley's Pact Stone given a setting worthy of it, subtly (Blake, Oct 29, note
+    18: "a very important artifact ... spruce up the surroundings subtly without ruining
+    the cutscenes"): a round of old flagstones laid flush round its foot, a kerb of low
+    worn stones round that, wildflowers growing between them, and offerings left at its
+    foot, a few bowls of flowers and fruit. Nothing knee-high or more, nothing solid:
+    the camera and the actors pass over it all. (After the attack: the flowers gone.)"""
+    import valley_village as vv
+    import gulch_scenery as gs
+
+    sx, sy = STAGE[1][0]
+    m = gs.Mesh()
+    n = 24
+    R = 3.0
+
+    def P(r, a, lift):
+        rr = r * (1.0 + 0.04 * math.sin(a * 5 + 1.0))
+        x, y = sx + rr * math.cos(a), sy + rr * math.sin(a)
+        return (x, y, ground(x, y) + lift)
+
+    def disc(bm):
+        cv = bm.verts.new((sx, sy, ground(sx, sy) + 0.07))
+        ring_ = [bm.verts.new(P(R, i * math.tau / n, 0.06)) for i in range(n)]
+        for i in range(n):
+            bm.faces.new((cv, ring_[i], ring_[(i + 1) % n]))
+
+    m.add(("ruin_stone", "road"), disc)
+    # The kerb: low worn stones round the flagstones, a gap toward the camp.
+    k = 0
+    for i in range(18):
+        a = i * math.tau / 18
+        if abs(math.atan2(math.sin(a - 2.4), math.cos(a - 2.4))) < 0.45:
+            continue
+        x, y = sx + (R + 0.35) * math.cos(a), sy + (R + 0.35) * math.sin(a)
+        z = ground(x, y)
+        h = 0.18 + 0.1 * ((i * 7) % 3) / 2
+        m.add(("ruin_stone", "wall"), lambda bm, x=x, y=y, z=z, a=a, h=h: vv.cuboid(bm, (x, y, z + h / 2 - 0.05),
+                                                                                   (0.62, 0.42, h), a + math.pi / 2))
+        k += 1
+    ob = m.build(c, "Pact Stone Ground", "Village", role="visual")
+    # Wildflowers between the kerb stones and round about, and offerings at its foot.
+    import props
+
+    fl = props.flowers(c)
+    for i in range(9):
+        a = i * 2.39996 + 0.4
+        r = R + 0.9 + 1.4 * ((i * 5) % 3) / 2
+        x, y = sx + r * math.cos(a), sy + r * math.sin(a)
+        if not paint.road_clear(c, x, y, 1.5) or RUIN:
+            continue
+        c.place(fl, x, y, ground(x, y) - 0.05, rot=a, scale=0.8, coll="Village", role="visual")
+    if not RUIN:
+        bowl = rp.offering_bowl(c)
+        for i, a in enumerate((2.0, 2.45, 2.85)):
+            x, y = sx + 1.6 * math.cos(a), sy + 1.6 * math.sin(a)
+            c.place(bowl, x, y, ground(x, y) + 0.04, rot=a, coll="Village", role="visual")
+    return ob
 
 
 def paint_paths(c, ter, paths, width=3.6, mat=("camp_earth", "dirt")):

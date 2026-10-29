@@ -273,6 +273,13 @@ def main():
         # (A skirt under the road's edges, so where it stands over the land you see earth,
         # not through it: Blake, Riverbend note 1, "I can see the underside of this plane".)
         kinds[lobe] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder, "deck": 1.2, "deck_mat": cliff}
+        if lobe in ("camp", "riverbend"):
+            # (No tan strip of the skirt showing beside the road on the grass: its skirt the
+            # grass; and the camp's road edged into the grass by a strip half road, half
+            # grass, on the border: Blake, Oct 29, village notes 15, 19.)
+            kinds[lobe]["deck_mat"] = ground
+        if lobe == "camp":
+            kinds[lobe].update(shoulder=2.0, shoulder_mat=(TX.blend_id("valley_grass", "valley_road", 50), "dirt"))
     stone = ("jungle_mossstone", "wall")
     kinds["bridge"] = {"mat": "wood_planks", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("wood_planks", "road"),
                        "barrier": 1.0, "barrier_mat": ("palm_bark", "wall"), "deck": 1.8, "deck_mat": ("palm_bark", "wall"),
@@ -366,6 +373,7 @@ def main():
     # (No beaten-earth plane any more: Blake, Oct 28, "remove this entire dirt plane and
     # just make paths connecting the huts".)
     hut_paths = []
+    CAMP_HUTS.clear()
     for k in range(5):
         a = k * math.tau / 5 + 0.9
         hx, hy = cx + (cr - 6) * math.cos(a), cy + (cr - 6) * math.sin(a)
@@ -375,7 +383,10 @@ def main():
             box(c, "Hut %d" % k, hx, hy, 3.2, 3.2, L.CAMP_Z - 1.0, L.CAMP_Z + 2.2 + 0.6 * (k % 2), ("obsidian_cliff", "wall"), rot=a)
             ruin.smoke(c, hx, hy, L.CAMP_Z + 2.5)
         else:
-            vv.place_hut(c, k, hx, hy, L.CAMP_Z, a + math.pi)
+            # (On the lowest ground under it: Blake, Oct 29, note 20, a hut floating.)
+            foot = min(ground(hx + 3.6 * math.cos(t), hy + 3.6 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71))
+            vv.place_hut(c, k, hx, hy, min(L.CAMP_Z, foot, ground(hx, hy)) - 0.05, a + math.pi)
+            CAMP_HUTS.append((hx, hy))
         # (From its door to the fire, curving a little: Blake, notes 1 and 3.)
         dx, dy = hx + 4.2 * math.cos(a + math.pi), hy + 4.2 * math.sin(a + math.pi)
         hut_paths.append(vv.wander((dx, dy), (cx + 6.4 * math.cos(a), cy + 6.4 * math.sin(a)), bend=1.4 * (-1) ** k, seed=k))
@@ -439,7 +450,12 @@ def main():
     def path_look(x, y):
         under = {"cascade": "jungle_leafcover", "bonebog": "bog_bank", "ember": "ash_soil"}.get(lobe_at(x, y), "valley_grass")
         dirt = "scorched_ground" if under == "ash_soil" else "camp_earth"
-        return (dirt, "dirt"), (TX.blend_id(under, dirt, 50), "dirt")
+        # (Into the grass in three steps, not one: Blake, Oct 29, note 12.)
+        return (dirt, "dirt"), [(TX.blend_id(under, dirt, p), "dirt") for p in (75, 50, 25)]
+
+    def meets_road(x, y):
+        q, d = c.nearest(x, y)
+        return d < q.w / 2 + 2.5
 
     def path_ground(x, y):
         # (Up onto the road's shoulder and surface where a path runs in under it: Blake,
@@ -449,7 +465,9 @@ def main():
         return z if r is None else max(z, r)
 
     all_paths = paths + [vv.home_path(c, x, y, r) for x, y, r in homes]
-    vv.path_ribbons(c, all_paths, path_ground, look=path_look)
+    vv.path_ribbons(c, all_paths, path_ground, look=path_look, verge=0.65, flare=meets_road)
+    vd.place_totems(c, ground, CAMP_HUTS + [(x, y) for x, y, _r in homes], all_paths)
+    vd.pact_stone_ground(c, ground)
     vv.clear_paths(c, all_paths)
     vd.area_air(c)
 
@@ -459,6 +477,9 @@ def main():
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}})
     print("loop", round(c.length, 1), "gates", len(gates))
+
+
+CAMP_HUTS = []
 
 
 def blend_runs(c, runs, span=42.0):
