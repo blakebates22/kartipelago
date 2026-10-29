@@ -41,6 +41,7 @@ def _pads():
     cx, cy, cr, cz = SL.HUB
     route = [(p[0], p[1]) for p in SL.route_points()]
     gx, gy = SL.GATES["hearthglow"]
+    tx, ty = SL.TREE
     pads = []
     for deg in range(0, 360, 9):
         a = math.radians(deg)
@@ -58,6 +59,8 @@ def _pads():
                 continue
             if math.hypot(x - gx, y - gy) < 24.0 or math.hypot(x - 18.0, y + 181.3) < 14.0:
                 continue
+            if math.hypot(x - tx, y - ty) < 20.0 or (x < cx and abs(y - cy) < 18.0):
+                continue  # (the great tree; the lane west to Hearthglow's portal)
             if any(math.hypot(x - px, y - py) < 15.0 for px, py, _ in pads):
                 continue
             pads.append((x, y, h))
@@ -250,14 +253,16 @@ def hearthglow(c, ground, ter, taken):
            role="collision", n=40)
     # (Out of the square north to the road and south to the gorge is kept clear: the stage.)
     def in_lane(x, y, w):
-        return abs(x - cx) < w
+        # (North to the road, south to the gorge: the stage; and west, the lane to the
+        # portal.)
+        return abs(x - cx) < w or (x < cx - 4.0 and abs(y - cy) < w * 0.75)
 
     # The fountain east, the bonfire west, either side of the way through.
     fx, fy = cx + 12.5, cy - 2.0
     hs.fountain(c, fx, fy, ground(fx, fy))
     taken.add(fx, fy, 6.5)
     SPOTS.append((fx, fy, 8.0))
-    bx, by = cx - 12.0, cy + 1.5
+    bx, by = cx - 11.0, cy + 10.5
     c.place(vv.hearth(c), bx, by, ground(bx, by) - 0.05, rot=0.7, coll="Village", role="visual")
     if not RUIN:
         g = c.game(bx, by, ground(bx, by) + 0.3)
@@ -376,3 +381,34 @@ def gorge_bend(c, natural):
                                               (15.0, -3.0, 13.0, 9.0, 26.0), (2.0, -18.0, 30.0, 10.0, 46.0))):
         ob = c.rock_mass("Gorge Bend %d" % k, gx + dx, gy + dy, rx, ry, z0 + h, z0=z0 - 4.0, n=14, seed=31 + k)
         c.assign(ob, c.lib("obsidian_cliff", "wall"))
+
+
+# ------------------------------------------------------------------ the ice bridge
+
+
+def ice_bridge(c, ground):
+    """The bridge of ice over the glacier's crevasse: icicles hanging all along under its
+    deck's edges, and great tusks of ice holding it up from the crevasse's walls."""
+    fringe = ap.icicle_fringe(c, 1, width=6.0, length=4.0)
+    spike = ap.ice_spike(c, 1, height=14.0)
+    last = -1e9
+    n = 0
+    for q in c.S:
+        if q.ground or SL.crevasse_d(q.p.x, q.p.y) > SL.CREVASSE_HW + 8.0 or q.s - last < 5.0:
+            continue
+        last = q.s
+        rot = math.atan2(q.t.y, q.t.x)
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 0.6), q.p.y + q.r.y * sd * (q.w / 2 + 0.6)
+            c.place(fringe, x, y, q.p.z - 3.0, rot=rot, coll="Bridges", role="visual")
+        n += 1
+    # (Tusks of ice up out of the crevasse under each end of the deck.)
+    for q in c.S[::4]:
+        d = SL.crevasse_d(q.p.x, q.p.y)
+        if q.ground or not SL.CREVASSE_HW - 2.0 < d < SL.CREVASSE_HW + 1.0:
+            continue
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * 3.0, q.p.y + q.r.y * sd * 3.0
+            c.place(spike, x, y, ground(x, y) - 1.0, rot=q.s, scale=(q.p.z - 3.0 - ground(x, y)) / 14.0 + 0.1,
+                    coll="Bridges", role="visual")
+    print("ice bridge: %d fringes" % n)

@@ -228,12 +228,12 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "drift",
       tool: "desert",
-      gate: { x: -126.48, z: 70.26, heading: -0.6687, width: 9 },
+      gate: { x: -126.71, z: 70.07, heading: -0.7017, width: 9 },
       spot: { x: -120.9, z: 63.2 },
     },
     // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
     cave: {
-      gate: { x: -52.52, z: -163.55, heading: 1.3278, width: 9 },
+      gate: { x: -52.56, z: -163.42, heading: 1.315, width: 9 },
       spot: { x: -63.2, z: -166.2 },
     },
     music: "hearthglow",
@@ -244,36 +244,36 @@ export const REGIONS: Region[] = [
     // In the village square, facing north to the road.
     spawn: { x: 0, z: 155, heading: Math.PI },
     gateways: [
-      // By the village's great tree.
+      // In the hollow's west wall, at the end of the lane out of the square.
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: -31.68,
-        z: 132.21,
+        x: -45.0,
+        z: 150.72,
         radius: 6,
-        heading: 0.392,
+        heading: 1.5484,
       },
       // At the keep's gate in the bailey's west wall.
       {
         id: "frostveil",
         track: "frostveil_citadel",
-        x: -202.05,
-        z: 31.68,
+        x: -201.95,
+        z: 31.84,
         radius: 6,
-        heading: 2.1647,
+        heading: 2.149,
       },
       // At the foot of the giant tree in the summit meadow.
-      { id: "summit", track: "snowy_summit", x: -149.3, z: -168.04, radius: 6, heading: 0.4949 },
+      { id: "summit", track: "snowy_summit", x: -148.63, z: -168.43, radius: 6, heading: 0.5596 },
       // At the rift in the glacier.
-      { id: "aurora", track: "aurora_rift", x: 187.51, z: -57.42, radius: 6, heading: -0.9401 },
+      { id: "aurora", track: "aurora_rift", x: 187.09, z: -58.03, radius: 6, heading: -1.0015 },
       // Rimefang's lair, an ice cave in the summit's north wall: the dragon's race.
       {
         id: "lair",
         track: "boss_snowy",
-        x: -107.72,
-        z: -184.31,
+        x: -107.6,
+        z: -184.28,
         radius: 6,
-        heading: -0.2287,
+        heading: -0.218,
         boss: true,
         label: "RIMEFANG'S LAIR",
       },

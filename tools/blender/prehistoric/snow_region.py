@@ -101,13 +101,18 @@ def _natural(x, y):
         dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
         if dd < 26:
             h = lerp(h, 57.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
+    # The lane out of the square west to Hearthglow's portal, cut level into the wall.
+    d, _t = pb_seg(x, y, (HUB[0] - HUB[2], HUB[1]), SL.GATES["hearthglow"])
+    if d < 14.0:
+        h = lerp(h, HUB[3] + 0.3, smooth((14.0 - d) / 5.0))
     # The pads Hearthglow's cottages stand on, up the hollow's walls (snow_dress).
     return sd.pad_height(x, y, h)
 
 
 # The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
 # spur mustn't climb a wall).
-NOTCHES = pocket_kit.Notches(SL.route_points(), dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})))
+NOTCHES = pocket_kit.Notches(SL.route_points(), {k: v for k, v in dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})).items()
+                                                  if k != "hearthglow"})
 
 
 def pb_seg(x, y, a, b):
@@ -133,6 +138,8 @@ def classify(c, n, info):
         if c.y < -180 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
             return ("obsidian_cliff", "wall")  # (the Burnt Gorge's scorched walls)
         return (pb.strata(L, c, n, STRATA), "wall")
+    if SL.crevasse_cut(c.x, c.y) > 1.5:
+        return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
     lx, ly, lr, lz = SL.LAKE
     if math.hypot(c.x - lx, c.y - ly) < lr + 2 and c.z < lz + 0.1:
         return ("lake_ice", "ice")
@@ -147,9 +154,18 @@ def main():
     kinds = {}
     for look, (ground, cliff, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
+    # v5: the bridge of ice over the crevasse on the glacier.
+    kinds["icebridge"] = {"mat": "rift_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("glacier_ice", "road"),
+                          "barrier": 0.9, "barrier_mat": ("glacier_ice", "wall"), "deck": 3.0,
+                          "deck_mat": ("glacier_ice", "wall"), "ground": False}
     c.kinds = kinds
-    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, lambda smp: L.look_at(smp.p.x, smp.p.y))), LOOK), "hearth",
-                     max_len=160.0))
+
+    def label(smp):
+        if SL.crevasse_d(smp.p.x, smp.p.y) < SL.CREVASSE_HW + 6.0:
+            return "icebridge"
+        return L.look_at(smp.p.x, smp.p.y)
+
+    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, label)), LOOK), "hearth", max_len=160.0))
 
     snow = ("snow_ground", "deep_snow")
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=snow)
@@ -161,12 +177,20 @@ def main():
     gx, gy = SL.GORGE_END
     gorge = [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2) for y in range(int(cy - cr + 2), int(gy + 6), -8)]
     c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
-    gates = dict(SL.GATES)
+    gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
     if RUIN:
         gates["lair"] = SL.LAIR
-    # (Hearthglow's arch stands outside the great tree's fence, 12 m round it: Blake, Oct 27,
-    # it stood three quarters in the fence and the boughs.)
-    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail, short={"hearthglow": 21.0})
+    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
+    # Hearthglow's portal: in the hollow's west wall, the lane to it straight out of the
+    # square (Blake, Oct 29: it stood in the middle of the road).
+    hx, hy = SL.GATES["hearthglow"]
+    sx, sy = cx - cr + 1.5, cy
+    ux, uy = hx - sx, hy - sy
+    ul = math.hypot(ux, uy)
+    ux, uy = ux / ul, uy / ul
+    end = (hx - ux * 10.0, hy - uy * 10.0)
+    c.side_road("Hollow Lane", pb.line(natural, (sx, sy), end, z0=cz + 0.05), "hearth_cobble", "road", **trail)
+    spots["hearthglow"] = (end, math.atan2(-ux, uy))
     if RUIN:
         # Out of the lake through the Frozen Pass, east.
         smp, _ = c.nearest(*SL.FROZEN_PASS)
@@ -188,6 +212,7 @@ def main():
     c.disc("Frozen Lake", lx, ly, lr + 4.0, lz - 0.05, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.06)
 
     thresholds(c, ground)
+    sd.ice_bridge(c, ground)
     village(c, ground, ter)
     landmarks(c, ground, spots)
     if RUIN:
@@ -278,8 +303,8 @@ def thresholds(c, ground):
 def snowshed(c, ground):
     """The Snowshed: down the cliff from the glacier to the lake, a timber gallery over the
     road (posts on the open, lake side; its roof sloping back into the cliff)."""
-    a = SL.ROUTE[33]
-    b = SL.ROUTE[35]
+    a = SL.BASE_ROUTE[33]
+    b = SL.BASE_ROUTE[35]
     s0 = c.nearest(*a[:2])[0].s
     s1 = c.nearest(*b[:2])[0].s
     if s1 < s0:
@@ -317,9 +342,9 @@ def village(c, ground, ter):
     the fountain and the bonfire, the great tree, the stalls, the bell tower, lanterns and
     lights (snow_dress.hearthglow; after the attack: frozen solid, the tree iced)."""
     cx, cy, cr, cz = HUB
-    taken = paint.Taken([(18.0, -181.3, 8.0), (*SL.GATES["hearthglow"], 20.0)])
+    taken = paint.Taken([(18.0, -181.3, 8.0), (*SL.GATES["hearthglow"], 16.0), (*SL.TREE, 13.0)])
     LANES.extend(sd.hearthglow(c, ground, ter, taken))
-    gx, gy = SL.GATES["hearthglow"]
+    gx, gy = SL.TREE
     if RUIN:
         box(c, "Great Tree Trunk", gx, gy, 1.6, 1.6, ground(gx, gy) - 1.0, ground(gx, gy) + 8.0, ("weathered_timber", "wall"))
         for k, (r, z) in enumerate(((8.0, 6.0), (6.0, 12.0), (4.0, 17.0))):
