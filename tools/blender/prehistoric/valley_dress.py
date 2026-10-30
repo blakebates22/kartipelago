@@ -894,9 +894,16 @@ def ember(c, ground, taken):
 
 
 def obsidian_house(c, name, x, y, z, rot, k):
-    c.place(rp.obsidian_hut(c, k % 2), x, y, z - 0.3, rot=rot, name=name)
-    g = c.game(x, y, z + 3.0)
-    c.entity("chimney", x=g[0], y=g[1] + 2.2, z=g[2])
+    """An Ember home: the village's hut, bigger, in black stone under obsidian slabs, with
+    its chimney smoking (Blake, Ember notes 3 and 6: the little obsidian domes "too small",
+    "much bigger, like the ones in the other village"). The front (local -Y) to `rot`."""
+    import valley_village as vv
+
+    v = (0, 3, 1, 4)[k % 4]
+    vv.place_hut(c, v, x, y, z + 0.2, rot - math.pi / 2, scale=1.3, coll="Props", name=name, look=vv.EMBER)
+    if vv.hut_chimney(v) is None:
+        g = c.game(x, y, z + 7.0)
+        c.entity("chimney", x=g[0], y=g[1], z=g[2])
 
 
 # ------------------------------------------------------------------ the volcano
@@ -973,6 +980,8 @@ def volcano(c):
     ob.data.shade_flat()
     # Lava from the breach, down the gullies.
     for j, da in enumerate((-0.12, 0.0, 0.14)):
+        if j == 1:
+            continue  # (not the middle one: it jutted out of the wall, Blake, Ember note 7)
         pts = []
         for k in range(40):
             t = k / 39.0
@@ -1375,4 +1384,80 @@ def bridge_dress(c, keep, ground, every=3.6):
     rope.build(c, "Bridge Ropes", coll="Bridges", role="visual")
     under.build(c, "Bridge Pilings", coll="Bridges", role="visual")
     print("bridges dressed: %d" % n)
+
+
+def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
+    """The Lookout made a smugglers' tunnel (Blake, Ember note 4: "we need to make this
+    tunnel look way cooler ... it needs a smugglers tunnel makeover"): its walls lost in a
+    hill of black lava rock heaped over and round them (the yard inside a cave under it),
+    a mine's timber frame at the way in with braces and a lantern burning on each post,
+    rails running in on their sleepers, and the smugglers' crates and barrels stacked by
+    the door."""
+    import gulch_props as gp
+
+    fx, fy = math.cos(facing), math.sin(facing)
+    sx, sy = -fy, fx
+
+    def at(u, v):
+        return px + u * fx + v * sx, py + u * fy + v * sy
+
+    def dress(ob, top):
+        groups = {}
+        mw = ob.matrix_world
+        for poly in ob.data.polygons:
+            cen = mw @ poly.center
+            key = ("ember_ash", "wall") if poly.normal.z > 0.6 else (
+                ("black_rock", "wall") if int((cen.z - floor) / 2.2) % 2 else ("obsidian_cliff", "wall"))
+            groups.setdefault(key, []).append(poly.index)
+        for mat, faces in groups.items():
+            c.assign(ob, c.lib(*mat), faces)
+        ob.data.shade_flat()
+
+    # The hill over the yard: its underside the cave's roof.
+    hx, hy = at(-1.0, 0.0)
+    hill = c.rock_mass("Lookout Hill", hx, hy, half + 5.0, half + 4.0, floor + height + 9.0, z0=floor + height - 0.4, n=22,
+                       seed=5, angle=facing, base=floor + height - 0.4,
+                       bands=[(1.0, 0.0), (0.92, 0.3), (0.8, 0.55), (0.62, 0.8), (0.4, 1.0)])
+    dress(hill, floor + height + 9.0)
+    # Heaped up against its walls outside, all but the front.
+    for k, (u, v, rx, ry, ang) in enumerate(((-half - 2.5, 0.0, 3.6, half + 4.0, 0.0), (0.0, half + 2.5, half + 4.0, 3.6, 0.0),
+                                            (0.0, -half - 2.5, half + 4.0, 3.6, 0.0),
+                                            (half + 1.5, (half + gap) / 2 + 1.5, 2.6, (half - gap) / 2 + 1.0, 0.0),
+                                            (half + 1.5, -(half + gap) / 2 - 1.5, 2.6, (half - gap) / 2 + 1.0, 0.0))):
+        x, y = at(u, v)
+        ob = c.rock_mass("Lookout Heap %d" % k, x, y, rx, ry, floor + height + 1.5 + (k % 2), z0=floor - 2.0, n=16, seed=9 + k,
+                         angle=facing, base=floor - 2.0,
+                         bands=[(1.0, 0.0), (1.0, 0.35), (0.9, 0.4), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)])
+        dress(ob, floor + height)
+    # The mine's frame at the way in.
+    m = gs.Mesh()
+    beam = ("weathered_timber", "wall")
+    for side in (-1, 1):
+        x, y = at(half + 1.6, side * (gap + 0.1))
+        m.add(beam, lambda bm, x=x, y=y: props.cuboid(bm, (x, y, floor + 2.6), (0.7, 0.7, 5.6), rot=facing))
+        bx, by = at(half + 1.6, side * (gap - 1.2))
+        m.add(beam, lambda bm, x=x, y=y, bx=bx, by=by: props.tube(bm, [(x, y, floor + 3.6), (bx, by, floor + 5.0)], 0.18, n=5))
+        g = c.game(x, y, floor + 5.9)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+    x, y = at(half + 1.6, 0.0)
+    m.add(beam, lambda bm: props.cuboid(bm, (x, y, floor + 5.6), (0.8, 2 * gap + 2.2, 0.8), rot=facing))
+    x2, y2 = at(half + 2.2, 0.0)
+    m.add(("board_walk", "wall"), lambda bm: props.cuboid(bm, (x2, y2, floor + 6.5), (0.15, 3.4, 0.9), rot=facing))
+    # Rails in, on their sleepers.
+    for k in range(9):
+        u = half + 7.0 - k * 1.4
+        x, y = at(u, 0.0)
+        m.add(beam, lambda bm, x=x, y=y: props.cuboid(bm, (x, y, ground(x, y) + 0.08), (0.35, 2.4, 0.16), rot=facing))
+    for side in (-1, 1):
+        a, b = at(half + 7.4, side * 0.75), at(half - 4.0, side * 0.75)
+        m.add(("rail_iron", "wall"), lambda bm, a=a, b=b: props.tube(
+            bm, [(a[0], a[1], ground(*a) + 0.22), (b[0], b[1], floor + 0.22)], 0.07, n=4))
+    m.build(c, "Lookout Frame", coll="Props", role="visual")
+    # The smugglers' stock by the door (solid).
+    for k, (u, v) in enumerate(((half + 3.5, gap + 3.0), (half + 5.0, gap + 4.6), (half + 3.2, -gap - 3.2),
+                                (half + 5.4, -gap - 4.2))):
+        x, y = at(u, v)
+        proto = gp.crate_stack(c, k % 2) if k % 2 == 0 else gp.barrel(c, k % 2)
+        c.place(proto, x, y, ground(x, y) - 0.05, rot=facing + k, coll="Props")
+    print("lookout: a smugglers' den")
 

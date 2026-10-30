@@ -441,6 +441,7 @@ def main():
         ruined(c, ground, spurs)
     puzzle_kit.pen(c, "return", "Lookout", *RETURN, to_road(c, *RETURN), 11.0, 4.5, ("basalt_block", "wall"),
                    ground(*RETURN), height=6.0)
+    vd.smugglers_den(c, ground, *RETURN, to_road(c, *RETURN), 11.0, 4.5, ground(*RETURN), 6.0)
     puzzle_kit.pen(c, "secret", "Grotto", *SECRET, to_road(c, *SECRET), 9.0, 4.5, ("jungle_mossstone", "wall"),
                    ground(*SECRET), height=6.0)
     roads = [ob for ob in c.coll("Roads").objects]
@@ -468,7 +469,8 @@ def main():
     homes = vh.homes(c, L, ground, "valley", vv.house, avoid=[(0.0, 3.0, 34.0)], wet=wet,
                      wall=-15.0, skip=("ember", "gulch"))
     # Ember's folk in obsidian huts (Blake, note 30).
-    homes += vh.homes(c, L, ground, "valley", vd.obsidian_house, pockets=["ember"], wet=wet, wall=-15.0, seed=13)
+    homes += vh.homes(c, L, ground, "valley", vd.obsidian_house, pockets=["ember"], wet=wet, wall=-15.0, seed=13, level=0.8,
+                      foot=6.5)
     dress(c, ground, spurs)
     # Bonebog: the swamp-dweller's hut where the tier tree stood (Blake, Bonebog notes 9,
     # 10), the fossil skulls carved finely (8), and logs in the pool (7).
@@ -614,10 +616,8 @@ def thresholds(c, ground):
                 q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
                 g = c.game(q.p.x + q.r.x * (c.width / 2 + 2.6), q.p.y + q.r.y * (c.width / 2 + 2.6), q.p.z + 0.2)
                 c.entity("steam", x=g[0], y=g[1], z=g[2])
-            for s in (s0, s1):
-                q = c.at(s)
-                g = c.game(q.p.x, q.p.y, q.p.z + 0.5)
-                c.entity("steam", x=g[0], y=g[1], z=g[2])
+            # (No steam puffing up in the middle of the road at its two mouths: Blake, Ember
+            # note 2, "a weird smoke effect I want to remove".)
         else:
             for k, s in enumerate((s0 - 1.0, s1 + 1.0)):
                 q = c.at(s)
@@ -661,7 +661,7 @@ def heap_strata(c, rock, kind, zr, top):
     rock.data.shade_flat()
     plants = {"riverbend": [props.bush(c, 0), props.fern(c)], "camp": [props.bush(c, 1), props.fern(c)],
               "cascade": [props.big_leaf_plant(c, 0), props.fern(c)], "bonebog": [props.fern(c), props.fern(c)],  # (no trees over the canopy: Blake, Oct 29)
-              "ember": [props.dead_tree(c), props.crystals(c)]}
+              "ember": [props.dead_tree(c), props.crystals(c, "obsidian_cliff")]}
     taken = []
     for k, cen in enumerate(shelves):
         if k % 3 or any((cen - q).length < 4.0 for q in taken):
@@ -781,6 +781,8 @@ def landmarks(c, ground, spurs):
     vd.volcano(c)
     # Ember's lava pools, ringed with black rock, bubbling and steaming.
     for k, (px, py, pr) in enumerate(L.LAVA):
+        if k == 1:
+            continue  # (not the one before Ember's gateway, nor its rocks: Blake, Ember note 5)
         g = ground(px, py)
         c.disc("Lava Pool %d" % k, px, py, pr, g - 0.2, c.lib("volcano_lava"), coll="Props", role="visual", n=18, wobble=0.25,
                seed=11 + k)
@@ -1029,7 +1031,9 @@ def dress(c, ground, spurs):
     paint.scatter(c, props.dead_tree(c), 30, rmax, em, ground, taken, 80, room=5.0, scale=(1.0, 1.7), road_margin=5.0,
                   trunk=(0.6, 6.0))
     paint.scatter(c, props.basalt_columns(c), 10, rmax, em, ground, taken, 81, room=7.0, road_margin=7.0)
-    paint.scatter(c, props.crystals(c), 12, rmax, em, ground, taken, 82, room=4.0, role="visual")
+    # (Black glass, not glowing orange spikes that looked like cheap cone fire: Blake, Ember
+    # note 1, "only ... the high fidelity fire, not the low quality cone looking fire".)
+    paint.scatter(c, props.crystals(c, "obsidian_cliff"), 12, rmax, em, ground, taken, 82, room=4.0, role="visual")
     for x, y in paint.scatter(c, props.boulder(c, "volcano_basalt", 2), 8, rmax, em, ground, taken, 83, room=6.0):
         gx, gy, gz = c.game(x, y, ground(x, y) + 1.0)
         c.entity("steam", x=gx, y=gy, z=gz)

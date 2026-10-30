@@ -391,11 +391,18 @@ def hut_chimney(v):
     return (-s["r"] * 0.35, 0.4, s["h"] + 3.0)
 
 
-def hut(c, v):
+# The Ember folk's huts: the village's, in their own black stone, roofed in slabs of
+# obsidian (Blake, Ember notes 3 and 6: "make all the huts in this area much bigger, like
+# the ones in the other village").
+EMBER = {"wall": "basalt_block", "thatch": "obsidian_cliff", "name": "Ember Hut"}
+
+
+def hut(c, v, look=None):
     """A villager's hut, look `v` of HUTS (its doorway at +X): a stone plinth, daub walls
     with a real doorway (a frame and lintel, a door or a hide, a dark room behind it),
-    windows, a painted band, the roof in its own style, and its odds and ends about it."""
-    s = HUTS[_vi(v)]
+    windows, a painted band, the roof in its own style, and its odds and ends about it.
+    `look`: materials in place of its own (EMBER)."""
+    s = dict(HUTS[_vi(v)], **{k: val for k, val in (look or {}).items() if k != "name"})
     R, Hw = s["r"], s["h"]
     da = math.asin(DOOR_HW / R)
     T = 0.3  # the walls' thickness
@@ -566,7 +573,7 @@ def hut(c, v):
         for e in s["extras"]:
             extra(m, e, R, Hw, Re, ze, v)
 
-    return proto_mesh(c, "Village Hut %d" % _vi(v), fill)
+    return proto_mesh(c, "%s %d" % ((look or {}).get("name", "Village Hut"), _vi(v)), fill)
 
 
 def _cone(bm, rings_rz, n, tip=None, jag=0.0, seed=0):
@@ -733,10 +740,10 @@ def hut_collider(c, v):
     return c.proto(name, build) and name
 
 
-def place_hut(c, v, x, y, z, rot, scale=1.0, coll="Village", name=None):
+def place_hut(c, v, x, y, z, rot, scale=1.0, coll="Village", name=None, look=None):
     """A hut (look v, its doorway turned to `rot`), its collider, and its chimney's
     smoke if it has one."""
-    c.place(hut(c, v), x, y, z, rot=rot, scale=scale, coll=coll, role="visual", name=name)
+    c.place(hut(c, v, look), x, y, z, rot=rot, scale=scale, coll=coll, role="visual", name=name)
     c.place(hut_collider(c, v), x, y, z, rot=rot, scale=scale, coll="Collision", role="collision")
     ch = hut_chimney(v)
     if ch:
