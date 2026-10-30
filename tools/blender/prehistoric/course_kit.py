@@ -569,6 +569,30 @@ class Course:
             pts.append((b[0], b[1], natural(b[0], b[1]) + 0.2 if last is None else lerp(last[1], natural(*b) + 0.2, 1.0)))
         return pts
 
+    def _road_trees(self):
+        """BVH trees of every road's upward faces (evaluated: the road generator's mesh)."""
+        from mathutils.bvhtree import BVHTree
+
+        dg = bpy.context.evaluated_depsgraph_get()
+        trees = []
+        for ob in self.coll("Roads").objects:
+            if ob.type not in ("CURVE", "MESH"):
+                continue
+            ev = ob.evaluated_get(dg)
+            try:
+                me = ev.to_mesh()
+            except RuntimeError:
+                continue
+            if me is None:
+                continue
+            mw = ev.matrix_world
+            verts = [mw @ v.co for v in me.vertices]
+            polys = [tuple(p.vertices) for p in me.polygons if p.normal.z > 0.5]
+            if polys:
+                trees.append(BVHTree.FromPolygons(verts, polys))
+            ev.to_mesh_clear()
+        return trees
+
     def verge_height(self, x, y, z, under=0.2, edge_pad=4.0, slope=3.0, reach=7.5):
         """The land at (x, y), height z, brought up to meet the roads beside it (Blake,
         valley polish 14, note 1: "sometimes the road is higher than the ground and if I
@@ -623,6 +647,10 @@ class Course:
         onto it (`verge_height`).
         """
         self.build_ground_tree()
+        # (The roads' own top faces, for keeping the land under them: the verge's estimate of
+        # a road's surface can sit a little over the real one where it curves and climbs,
+        # and the grass came up through the road there.)
+        road_trees = self._road_trees() if verge else []
         nx = int(round((x1 - x0) / cell))
         ny = int(round((y1 - y0) / cell))
         bm = bmesh.new()
@@ -637,6 +665,10 @@ class Course:
                 h = lerp(nat, z, w)
                 if verge:
                     h = self.verge_height(x, y, h, under)
+                    for t in road_trees:
+                        hit = t.ray_cast(Vector((x, y, h + 3.0)), Vector((0, 0, -1)))
+                        if hit[0] is not None and hit[0].z < h + 0.15:
+                            h = hit[0].z - 0.15
                 row.append(bm.verts.new((x, y, h)))
             rows.append(row)
         for j in range(ny):

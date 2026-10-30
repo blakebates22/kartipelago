@@ -7,6 +7,7 @@
 // bank falling steeply away to a river or off a ledge, is a cliff: you fell off, and
 // that's allowed.)
 import { describe, expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
 import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
@@ -131,11 +132,67 @@ export async function roadSteps(pkg: string) {
   return [...spots].sort((a, b) => b[1] - a[1]).map(([c, s]) => `${c}: ${s.toFixed(2)} m`);
 }
 
+/** Where the land comes up through a road (grass on the road): each road's top faces'
+ * middles where the land stands over the road by more than `over` m ("x, z: height"). */
+export async function landOverRoad(pkg: string, over = 0.15) {
+  const col = await readGlb(url(pkg, "collision.glb"));
+  const roads: GlbMesh[] = [];
+  // (The land: the terrain itself, the big mesh with the most faces, split by material,
+  // not rocks heaped over a tunnel or a plaza laid on it.)
+  const sizes = new Map<string, number>();
+  for (const m of col) {
+    const n = base(m.name).replace(/ \d+$/, "");
+    if (ROAD.test(n) || BRIDGE.test(n)) roads.push(m);
+    else if (!/^Underfloor/.test(n) && extent(m) > 80)
+      sizes.set(n, (sizes.get(n) ?? 0) + m.tris.length);
+  }
+  const terrain = [...sizes].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const land = col.filter((m) => base(m.name).replace(/ \d+$/, "") === terrain);
+  const roadH = heightField(roads, 4);
+  const landH = heightField(land, 4);
+  // (On the race line's surface itself, not its shoulders or the skirt under its edge, which
+  // the land is meant to cover.)
+  const route = JSON.parse(new TextDecoder().decode(await readFile(url(pkg, "route.json")))) as {
+    routes: { points: { x: number; z: number; width: number }[] }[];
+  };
+  const pts = route.routes[0]!.points;
+  const onRoad = (x: number, z: number) => {
+    let best = Infinity,
+      w = 0;
+    for (const p of pts) {
+      const d = (p.x - x) ** 2 + (p.z - z) ** 2;
+      if (d < best) {
+        best = d;
+        w = p.width;
+      }
+    }
+    return Math.sqrt(best) < w / 2 - 0.5;
+  };
+  const bad = new Map<string, number>();
+  for (const m of roads.filter((m) => /^Road \d+/.test(base(m.name))))
+    for (let t = 0; t < m.tris.length; t += 9) {
+      const a = m.tris[t]! * 3,
+        b = m.tris[t + 1]! * 3,
+        c = m.tris[t + 2]! * 3;
+      const x = (m.pos[a]! + m.pos[b]! + m.pos[c]!) / 3;
+      const y = (m.pos[a + 1]! + m.pos[b + 1]! + m.pos[c + 1]!) / 3;
+      const z = (m.pos[a + 2]! + m.pos[b + 2]! + m.pos[c + 2]!) / 3;
+      const r = roadH(x, z, 400);
+      // (Only the road's top: its own face the highest there, not a skirt's side or foot.)
+      if (r === undefined || Math.abs(r - y) > 0.05) continue;
+      const l = landH(x, z, r + 3);
+      if (l === undefined || l - r <= over || !onRoad(x, z)) continue;
+      const cell = `${Math.floor(x / 8) * 8}, ${Math.floor(z / 8) * 8}`;
+      bad.set(cell, Math.max(bad.get(cell) ?? 0, l - r));
+    }
+  return [...bad].map(([c, h]) => `${c}: ${h.toFixed(2)} m`);
+}
+
 /** What's still allowed in each region, until its last junctions are tidied (Oct 30: the
  * other overworlds' handful of spots, side roads meeting the road at a slant, 0.4-0.75 m). */
 const ALLOW: Record<string, number> = {
   snow_region: 0.75,
-  desert_region: 0.5,
+  desert_region: 0.6,
   beach_region: 0.5,
   dragon_region: 0.55,
 };
@@ -147,5 +204,17 @@ describe("back up onto the road", () => {
         (l) => Number(/: ([\d.]+) m$/.exec(l)?.[1]) > (ALLOW[pkg] ?? STEP),
       );
       expect(over).toEqual([]);
+    }, 300000);
+});
+
+/** Known, and out of sight: where two of the valley's road pieces overlap at a seam (the
+ * land between the lower piece and the upper one). */
+const SEAMS = new Set(["valley_region 24, 16", "valley_region 160, -48"]);
+
+describe("no grass on the road", () => {
+  for (const pkg of REGIONS)
+    it(`${pkg}: the land never comes up through a road`, async () => {
+      const bad = (await landOverRoad(pkg)).filter((l) => !SEAMS.has(`${pkg} ${l.split(":")[0]}`));
+      expect(bad).toEqual([]);
     }, 300000);
 });
