@@ -149,6 +149,9 @@ def wall_life(c, ground, taken):
             tex = paint.wall_texture(land, x, y, dx, dy) if land else None
             lp = rp.tree_ledge(c, tex) if tex else ledge.get(look, ledge["riverbend"])
             c.place(lp, lx, ly, ground(x, y) - 0.2, rot=rot, scale=1.0, coll=coll, role="visual")
+            # (Its trunk and roots solid, as every tree's: valley polish 18.)
+            c.place(paint.trunk_proto(c, 0.7, 8.0), x, y, ground(x, y) - sink, scale=scale, coll="Collision", role="collision")
+            c.place_foot(proto, x, y, ground(x, y) - sink, rot=rot, scale=scale)
         put(proto, x, y, rot, scale, sink, coll)
 
     for x, y, look in shelves:
@@ -199,14 +202,8 @@ def wall_life(c, ground, taken):
         rot = math.atan2(-dx, dy)
         z = ground(x, y)
         if look == "ember":
-            # Lava seeping over the lip and down the riser, into a glowing pool below.
-            if seeps < 9 and drop > 7.0 and ((int(x) + int(y)) % 3 == 0):
-                # (None at game (161, -11): Blake, valley polish 14, note 6, "lets remove
-                # this piece of lava".)
-                if math.hypot(x - 160.8, y - 11.3) > 8.0:
-                    lava_seep(c, x, y, dx, dy, z, drop, seeps)
-                seeps += 1
-                room.add(x, y, 9.0)
+            # (No lava seeping over the lips any more, nor its pool, spark and flame: Blake
+            # asked twice for one to go, valley polish 14, note 6, and 17, notes 1 to 3.)
             continue
         if look == "bonebog":
             c.place(beards[n_lips % 2], x + dx * 0.6, y + dy * 0.6, z + 0.2, rot=rot, coll="Vines", role="visual")
@@ -342,7 +339,7 @@ def banks(c, ground, taken):
             px, py = x - dy / d * side * (RIVER_HW + 1.0), y + dx / d * side * (RIVER_HW + 1.0)
             if paint.road_clear(c, px, py, 5.0) and taken.clear(px, py, 3.0):
                 c.place(logs[k % 2], px, py, lerp(az, bz, 0.5) - 0.55, rot=math.atan2(dy, dx) + side * 0.9,
-                        scale=1.1, coll="Water Life", role="visual")
+                        scale=1.1, coll="Water Life")  # (solid: valley polish 18)
                 taken.add(px, py, 4.5)  # (nothing growing up through it: Blake, Riverbend note 12)
                 n[2] += 1
     for k in range(900):
@@ -392,7 +389,7 @@ def banks(c, ground, taken):
                     coll="Water Life", role="visual")
             n[1] += 1
         x, y = lx + (lr - 2.0) * math.cos(0.7 + k), ly + (lr - 2.0) * math.sin(0.7 + k)
-        c.place(logs[k % 2], x, y, lz - 0.5, rot=1.2 + k, scale=1.3, coll="Water Life", role="visual")
+        c.place(logs[k % 2], x, y, lz - 0.5, rot=1.2 + k, scale=1.3, coll="Water Life")  # (solid)
     print("banks: cattails %d, lilies %d, logs %d" % tuple(n))
 
 
@@ -450,7 +447,7 @@ def grand_falls(c, j, name):
         r = wide * (0.35 + 0.25 * (k % 2))
         x, y = fx + math.cos(a) * r + ux * 4.0, fy + math.sin(a) * r + uy * 4.0
         c.place(props.boulder(c, "canyon_rock_moss", k % 2), x, y, foot - 0.8, rot=k * 2.1, scale=0.9 + 0.5 * rnd.random(),
-                coll="Props", role="visual")
+                coll="Props")  # (solid: valley polish 18)
         c.disc("%s Rock Foam %d" % (name, k), x, y, 2.4, foot + 0.07, c.lib("falls_foam"), role="visual", n=14, wobble=0.3,
                seed=k + 3 * j)
     for k in range(2):  # (not a third, out past the pool: Blake, Riverbend note 14)
@@ -471,7 +468,7 @@ def grand_falls(c, j, name):
                     role="visual")
     a = ang + math.pi + 1.2
     c.place(props.log(c, 0), fx + math.cos(a) * wide + ux * 2.0, fy + math.sin(a) * wide + uy * 2.0, foot - 0.5, rot=a + 0.8,
-            scale=1.3, coll="Water Life", role="visual")
+            scale=1.3, coll="Water Life")  # (solid)
     gs = c.game(fx + ux * 3.0, fy + uy * 3.0, foot + 0.5)
     c.entity("steam", x=gs[0], y=gs[1], z=gs[2])
     # Boulders round the pool.
@@ -480,7 +477,7 @@ def grand_falls(c, j, name):
         r = wide * 0.85 + 2.0
         x, y = fx + math.cos(a) * r * 0.9 + ux * 3.0, fy + math.sin(a) * r * 0.9 + uy * 3.0
         c.place(props.boulder(c, "canyon_rock_moss", k % 2), x, y, foot - 0.6, rot=k * 1.3, scale=1.6 + 0.6 * (k % 3),
-                coll="Props", role="visual")
+                coll="Props")  # (solid: valley polish 18)
 
 
 # ------------------------------------------------------------------ the camp
@@ -1185,7 +1182,9 @@ def lava_tube(c, s0, s1, half):
         q = c.at(s)
         for sd in (-1, 1):
             x, y, z = wall_point(c, q, sd, 0.0, half - 1.2)
-            c.place(cols, x, y, z - 1.0, rot=k * 0.9 + sd, scale=(0.55, 0.55, 1.05), coll="Tunnels", role="visual")
+            # (Solid, and the kerbs too: Blake, valley polish 18, note 4, "all these pillars in
+            # these tunnels need hit boxes".)
+            c.place(cols, x, y, z - 1.0, rot=k * 0.9 + sd, scale=(0.55, 0.55, 1.05), coll="Tunnels")
         s += 9.0
         k += 1
     lip = rp.lava_channel_lip(c, 4.4)
@@ -1204,7 +1203,7 @@ def lava_tube(c, s0, s1, half):
             q = c.at(s)
             for o in (c.width / 2 + 1.2, c.width / 2 + 4.0):
                 x, y = q.p.x + q.r.x * sd * o, q.p.y + q.r.y * sd * o
-                c.place(lip, x, y, q.p.z - 0.45, rot=math.atan2(q.t.y, q.t.x), coll="Tunnels", role="visual")
+                c.place(lip, x, y, q.p.z - 0.45, rot=math.atan2(q.t.y, q.t.x), coll="Tunnels")
             if k % 2 == 0:
                 x, y = q.p.x + q.r.x * sd * (c.width / 2 + 2.6), q.p.y + q.r.y * sd * (c.width / 2 + 2.6)
                 g = c.game(x, y, q.p.z + 1.2)
@@ -1225,8 +1224,10 @@ def temple_tunnel(c, s0, s1, half):
         rot = math.atan2(q.r.y, q.r.x)
         for sd in (-1, 1):
             x, y, z = wall_point(c, q, sd, 0.0, half - 0.5)
+            # (Solid: Blake, valley polish 18, note 5, "all these columns in this tunnel need
+            # hitboxes".)
             box(c, "Temple Pilaster %d %d" % (k, sd), x, y, 0.9, 1.1, z - 0.6, z + 6.0, ("jungle_temple", "wall"), rot=rot,
-                role="visual", coll="Tunnels")
+                coll="Tunnels")
         s += 7.0
         k += 1
     s = s0
@@ -1492,23 +1493,8 @@ def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
                          angle=facing, base=z0,
                          bands=[(1.0, 0.0), (1.0, 0.35), (0.9, 0.4), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)])
         dress(ob, floor + height)
-    # The mine's frame at the way in.
-    m = gs.Mesh()
-    beam = ("weathered_timber", "wall")
-    for side in (-1, 1):
-        x, y = at(half + 1.6, side * (gap + 0.1))
-        m.add(beam, lambda bm, x=x, y=y: props.cuboid(bm, (x, y, floor + 2.6), (0.7, 0.7, 5.6), rot=facing))
-        bx, by = at(half + 1.6, side * (gap - 1.2))
-        m.add(beam, lambda bm, x=x, y=y, bx=bx, by=by: props.tube(bm, [(x, y, floor + 3.6), (bx, by, floor + 5.0)], 0.18, n=5))
-        g = c.game(x, y, floor + 5.9)
-        c.entity("torch", x=g[0], y=g[1], z=g[2])
-    x, y = at(half + 1.6, 0.0)
-    m.add(beam, lambda bm: props.cuboid(bm, (x, y, floor + 5.6), (0.8, 2 * gap + 2.2, 0.8), rot=facing))
-    x2, y2 = at(half + 2.2, 0.0)
-    m.add(("board_walk", "wall"), lambda bm: props.cuboid(bm, (x2, y2, floor + 6.5), (0.15, 3.4, 0.9), rot=facing))
-    # (No rails in on sleepers any more: they rode up off the uneven ground, Blake, valley
-    # polish 14, note 3, "these stair railings ... are just floating".)
-    m.build(c, "Lookout Frame", coll="Props", role="visual")
+    # (No timber mine frame at the way in, nor its torches: Blake, valley polish 17, note
+    # 6, "lets remove this wooden structure".)
     # The smugglers' stock by the door (solid).
     for k, (u, v) in enumerate(((half + 3.5, gap + 3.0), (half + 5.0, gap + 4.6), (half + 3.2, -gap - 3.2),
                                 (half + 5.4, -gap - 4.2))):

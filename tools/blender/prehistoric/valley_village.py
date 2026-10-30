@@ -109,13 +109,13 @@ def both(bm, pts):
     bm.faces.new(b)
 
 
-def stones_ring(m, r, n, z, size, seed, skip=None, mat=("ruin_stone", "wall")):
+def stones_ring(m, r, n, z, size, seed, skip=None, mat=("ruin_stone", "wall"), sz=0.75):
     for i in range(n):
         a = i * math.tau / n + 0.2 * rnd(seed + i)
         if skip and skip(a):
             continue
         s = size * (0.8 + 0.4 * rnd(seed * 3 + i))
-        m.add(mat, lambda bm, a=a, s=s: blob(bm, (r * math.cos(a), r * math.sin(a), z), s, sx=1.3, sz=0.75, subdiv=1))
+        m.add(mat, lambda bm, a=a, s=s: blob(bm, (r * math.cos(a), r * math.sin(a), z), s, sx=1.3, sz=sz, subdiv=1))
 
 
 # ------------------------------------------------------------------ the hearth
@@ -514,7 +514,7 @@ def hut(c, v, look=None, bare=False):
         m.add(timber, lambda bm: cuboid(bm, (xo + 0.02, 0, DOOR_H + 0.16), (0.26, 2 * DOOR_HW + 0.7, 0.24)))
         for sgn in (-1, 1):
             m.add(END, lambda bm, sgn=sgn: blob(bm, (xo + 0.02, sgn * (DOOR_HW + 0.4), DOOR_H + 0.16), 0.17, subdiv=1))
-        m.add(("ruin_stone", "wall"), lambda bm: cuboid(bm, (xo + 0.45, 0, 0.05), (0.9, 1.7, 0.16)))
+        m.add(("ruin_stone", "wall"), lambda bm: cuboid(bm, (xo + 0.45, 0, -0.2), (0.9, 1.7, 0.66)))  # (deep: never floats)
 
         # The door.
         if s["door"] in ("open", "porch", "shut"):
@@ -589,7 +589,11 @@ def hut(c, v, look=None, bare=False):
             m.add(("tribal_paint", "wall"), band)
 
         # The plinth: stones round the foot of the walls (not across the doorway).
-        stones_ring(m, R + 0.12, 22, 0.12, 0.3, v * 7 + 3, skip=lambda a: abs(math.atan2(math.sin(a), math.cos(a))) < da + 0.25)
+        # (Deep: each stone runs on down into the ground, so where the land falls away
+        # under the hut none of them shows a gap: Blake, valley polish 17, note 5, "check
+        # every stone and make sure its on the ground".)
+        stones_ring(m, R + 0.12, 22, -0.15, 0.3, v * 7 + 3, skip=lambda a: abs(math.atan2(math.sin(a), math.cos(a))) < da + 0.25,
+                    sz=1.5)
 
         # The roof.
         Re, ze = R + 1.05, Hw - 0.25
@@ -788,9 +792,12 @@ def place_hut(c, v, x, y, z, rot, scale=1.0, coll="Village", name=None, look=Non
                 continue
             for which, pts in extra_spots(e, HUTS[_vi(v)]["r"]):
                 zs = [ground(x + (px * ca - py * sa) * scale, y + (px * sa + py * ca) * scale) for px, py in pts]
-                # (Never down into the hut's own floor, nor far off it.)
-                ze = max(z, min(max(zs) - 0.04, z + 1.2))
-                c.place(hut_extra(c, v, e, which), x, y, ze, rot=rot, scale=scale, coll=coll, role="visual")
+                # (On the lowest ground under it, so no side of it floats, Blake, valley
+                # polish 17, note 4; never far off the hut's own floor.)
+                ze = max(z - 1.2, min(min(zs) - 0.02, z + 1.2))
+                # (Solid, all of them: Blake, valley polish 18, "a lot of things that you
+                # would expect to have hit boxes do not".)
+                c.place(hut_extra(c, v, e, which), x, y, ze, rot=rot, scale=scale, coll=coll)
     c.place(hut_collider(c, v), x, y, z, rot=rot, scale=scale, coll="Collision", role="collision")
     ch = hut_chimney(v)
     if ch:
@@ -1254,7 +1261,7 @@ def swamp_yard(c, kind, k, px, py):
 
     def fill(m):
         if kind == "stone":
-            m.add(("ruin_stone", "wall"), lambda bm: blob(bm, (px, py, 0.0), 0.45, sx=1.2, sz=0.4, subdiv=1))
+            m.add(("ruin_stone", "wall"), lambda bm: blob(bm, (px, py, -0.2), 0.45, sx=1.2, sz=0.9, subdiv=1))
         elif kind == "pot":
             m.add(("daub_ochre", "wall"), lambda bm: loft(bm, [
                 ring(bm, (px, py), r * (0.9 + 0.2 * k), z, 10) for r, z in ((0.22, 0.0), (0.34, 0.25), (0.3, 0.55), (0.2, 0.7))],
@@ -1312,8 +1319,8 @@ def swamp_hut(c, bare=False):
         m.add(BARK, lambda bm: tube(bm, [(dx + 0.08, 0.85 * math.cos(t), 1.05 + 1.0 * math.sin(t))
                                          for t in [i * math.pi / 10 for i in range(-1, 12)]], 0.11, n=6))
         for k in range(0 if bare else 3):
-            m.add(("ruin_stone", "wall"), lambda bm, k=k: blob(bm, (dx + 0.9 + k * 0.8, 0.15 * (k % 2), 0.0), 0.45, sx=1.2,
-                                                                sz=0.4, subdiv=1))
+            m.add(("ruin_stone", "wall"), lambda bm, k=k: blob(bm, (dx + 0.9 + k * 0.8, 0.15 * (k % 2), -0.2), 0.45, sx=1.2,
+                                                                sz=0.9, subdiv=1))
         # Round windows, glowing, framed.
         for a in (0.95, -1.2):
             wx, wy = math.cos(a) * R * 1.12, math.sin(a) * R * 0.97
@@ -1370,7 +1377,7 @@ def place_swamp_hut(c, x, y, z, rot):
         for kind, k, px, py, sink in SWAMP_YARD:
             wx, wy = x + px * ca - py * sa, y + px * sa + py * ca
             pts = [(wx, wy)] + [(wx + 0.3 * math.cos(t), wy + 0.3 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
-            zg = max(GROUND(*p) for p in pts) if kind == "pot" else GROUND(wx, wy)
+            zg = min(GROUND(*p) for p in pts) if kind == "pot" else GROUND(wx, wy)
             c.place(swamp_yard(c, kind, k, px, py), x, y, zg - sink, rot=rot, coll="Props", role="visual")
 
     def build(bm):

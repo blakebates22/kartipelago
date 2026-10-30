@@ -1100,6 +1100,37 @@ function buildGateways(
     });
     arch.group.position.set(g.x, y, g.z);
     arch.group.rotation.y = g.heading;
+    // Its rock and torch posts solid (Blake, valley polish 18, note 3: "the portal rocks
+    // all need hit boxes"): the rock either side of the mouth and behind the bore, and
+    // each post. (Local x across the mouth, z out of it.)
+    const ch = Math.cos(g.heading);
+    const sh = Math.sin(g.heading);
+    const at = (lx: number, lz: number) => ({
+      x: g.x + lx * ch + lz * sh,
+      z: g.z - lx * sh + lz * ch,
+    });
+    for (const [lx, lz, hw, hl] of [
+      [-10.0, -8.5, 3.3, 10.0],
+      [10.0, -8.5, 3.3, 10.0],
+      [0, -16.0, 6.8, 3.0],
+    ] as const)
+      session.solids.push({
+        kind: "box",
+        look: "rock",
+        ...at(lx, lz),
+        heading: g.heading,
+        halfLength: hl,
+        halfWidth: hw,
+        height: y + 14,
+      });
+    for (const sd of [-1, 1])
+      session.solids.push({
+        kind: "circle",
+        look: "tree",
+        ...at(sd * 9.0, 3.6),
+        radius: 0.4,
+        height: y + 5,
+      });
     return arch;
   });
   return {

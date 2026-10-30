@@ -280,7 +280,10 @@ function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
     out.x += nx * d;
     out.y += Math.max(-out.y, ny * d);
     out.z += nz * d * 0.8;
-    if (out.y < 0.05) out.y = -0.6; // (its feet sunk in the ground)
+    // (Its feet run 3 m down into the ground, so where the land falls away under one
+    // side it still meets the land: Blake, valley polish 18, note 1, "the portal is kind
+    // of floating on this side".)
+    if (out.y < 0.05) out.y = -3.0;
     return out;
   };
   const NU = 84;
@@ -455,8 +458,10 @@ export function createGatewayArch(
   for (const sd of [-1, 1]) {
     const x = sd * 9.0;
     const z = 3.6;
-    const post = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.2, 0.3, 4.2, 7)), postMat);
-    post.position.set(x, 2.1, z);
+    // (On down 2 m into the ground, so it stands on the land on a slope too: valley
+    // polish 18, note 2, "this light pole is floating".)
+    const post = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.2, 0.3, 6.2, 7)), postMat);
+    post.position.set(x, 1.1, z);
     group.add(post);
     for (let k = 0; k < 3; k++) {
       const ring = new THREE.Mesh(geo(new THREE.TorusGeometry(0.27, 0.06, 5, 10)), ironMat);

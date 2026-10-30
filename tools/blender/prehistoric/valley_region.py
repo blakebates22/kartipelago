@@ -498,8 +498,9 @@ def main():
     vv.fossil_skulls(c)
     px, py, pr = L.POOLS[2]
     for k, (ox, oy, a) in enumerate(((0.3, -0.2, 0.6), (-0.35, 0.3, 2.2))):
-        c.place(props.log(c, k % 2), px + ox * pr, py + oy * pr, WATER_Z - 0.35, rot=a, scale=1.4, coll="Water Life",
-                role="visual")
+        # (Solid: Blake, valley polish 18, "a lot of things that you would expect to have
+        # hit boxes do not".)
+        c.place(props.log(c, k % 2), px + ox * pr, py + oy * pr, WATER_Z - 0.35, rot=a, scale=1.4, coll="Water Life")
     vd.shade_walls(c, ter)
     # The paths, as ribbons laid on the land (Blake, Oct 28: the painted ones "look
     # horrible"): the camp's, and each home's from its door to the road.
@@ -1142,7 +1143,7 @@ def dress(c, ground, spurs):
         ruin_kit.char_trees(c, burn, ("Palm", "Jungle Tree", "Grand Tree", "Giant Tree", "Great Tree"), chance=0.85,
                             threshold=0.3)
         ruin.burn_away(c, burn, ("Fern", "Flowers", "Bush", "Big Leaf"), threshold=0.3)
-        paint.scatter(c, props.log(c, 0), 40, rmax, inside, ground, taken, 13, room=5.0, role="visual", sink=0.3)
+        paint.scatter(c, props.log(c, 0), 40, rmax, inside, ground, taken, 13, room=5.0, sink=0.3)  # (solid)
 
 
 if __name__ == "__main__":

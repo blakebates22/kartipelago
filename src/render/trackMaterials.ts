@@ -154,7 +154,8 @@ const WAVES = /* glsl */ `
 `;
 
 /**
- * Patch a Lambert material's shaders: living water (waves, ripples, glitter, sky sheen),
+ * Patch a Lambert material's shaders: living water (still, its light alive: waves of
+ * light, ripples, glitter, sky sheen),
  * swaying (a gentle breeze) and/or a flickering glow. Purely visual; collision never
  * moves.
  */
@@ -187,7 +188,9 @@ function patchShader(mat: THREE.MeshLambertMaterial, fx: MaterialFx, u: WaterUni
             transformed.z += kpSway * 0.6 * cos(kpTime * 1.3 + ph);
             transformed.y += kpSway * 0.25 * sin(kpTime * 2.3 + ph * 0.7);
           }
-          if (kpLagoon > 0.0) transformed.y += kpLagoon * kpWaves(kpW.xz, kpTime).x;
+          // (The water's surface never moves, only its light: rising and falling, it ran up
+          // over the shallow banks and back in jagged shapes, Blake, Oct 29, "lets have it
+          // never move".)
           vKpWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;
         }`,
       );
