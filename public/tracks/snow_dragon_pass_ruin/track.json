@@ -16,98 +16,98 @@
       "id": "torch_01",
       "type": "torch",
       "x": -1.0,
-      "y": 52.36,
+      "y": 52.31,
       "z": -12.6
     },
     {
       "id": "torch_02",
       "type": "torch",
       "x": 24.99,
-      "y": 51.14,
+      "y": 51.73,
       "z": -12.6
     },
     {
       "id": "torch_03",
       "type": "torch",
       "x": -1.0,
-      "y": 53.45,
+      "y": 53.74,
       "z": 12.6
     },
     {
       "id": "torch_04",
       "type": "torch",
       "x": 24.99,
-      "y": 51.63,
+      "y": 51.92,
       "z": 12.6
     },
     {
       "id": "torch_05",
       "type": "torch",
       "x": 59.78,
-      "y": 50.94,
+      "y": 51.82,
       "z": -11.32
     },
     {
       "id": "torch_06",
       "type": "torch",
       "x": 60.22,
-      "y": 49.77,
+      "y": 50.74,
       "z": 11.17
     },
     {
       "id": "torch_07",
       "type": "torch",
       "x": 90.36,
-      "y": 50.26,
+      "y": 50.53,
       "z": -1.18
     },
     {
       "id": "torch_08",
       "type": "torch",
       "x": 101.5,
-      "y": 49.61,
+      "y": 49.79,
       "z": 32.03
     },
     {
       "id": "torch_09",
       "type": "torch",
       "x": 134.43,
-      "y": 47.43,
+      "y": 47.79,
       "z": 29.71
     },
     {
       "id": "torch_10",
       "type": "torch",
       "x": 145.78,
-      "y": 46.22,
+      "y": 46.39,
       "z": -4.18
     },
     {
       "id": "torch_11",
       "type": "torch",
       "x": 175.65,
-      "y": 44.46,
+      "y": 44.5,
       "z": -8.12
     },
     {
       "id": "torch_12",
       "type": "torch",
       "x": 175.64,
-      "y": 43.94,
+      "y": 44.25,
       "z": 11.88
     },
     {
       "id": "torch_13",
       "type": "torch",
       "x": 199.98,
-      "y": 43.03,
+      "y": 43.1,
       "z": -8.99
     },
     {
       "id": "torch_14",
       "type": "torch",
       "x": 203.25,
-      "y": 44.28,
+      "y": 45.18,
       "z": 11.71
     },
     {
@@ -912,7 +912,7 @@
       "id": "torch_129",
       "type": "torch",
       "x": -19.49,
-      "y": 56.59,
+      "y": 56.6,
       "z": -130.6
     },
     {
@@ -968,7 +968,7 @@
       "id": "torch_137",
       "type": "torch",
       "x": -53.65,
-      "y": 53.89,
+      "y": 54.09,
       "z": -25.72
     },
     {
@@ -1347,7 +1347,7 @@
     "ember_scenery.py": "9cb1173368c71a2f77c633e17a951e797d39b256ee83d3474de67277ee34d1a4",
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "keep_scenery.py": "29de2d1cd20999b5cac82fc55b299cb979bc0a33ab41fb586f996fa33ddfe855",
-    "snow_dragon_pass.py": "79b29fe4d855a7b108e49e31782f3d71c54c27586067c0df049a3fbcd2ac791d",
+    "snow_dragon_pass.py": "c3186993b7daa8a6ea83bb15a3a8a45a20494ba1a5c75ef0108b7704965ea764",
     "snow_dragon_pass_ruins.py": "5619a07c47d499dc6ef2ca9500b9617cc03dadb996d8685644d60017e9fcdd5e"
   }
 }

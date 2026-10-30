@@ -847,7 +847,7 @@ def main():
     HIDE_S[:] = [t0 - 16, t1 + 16]
 
     X0, X1, Y0, Y1 = -520, 520, -480, 480
-    c.terrain("Land", X0, X1, Y0, Y1, 5.5, cut_land(c), classify, near=9.0, fade=18.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 5.5, cut_land(c), classify, near=9.0, fade=18.0, fine=3)
 
     def near(fn, m=64.0):
         return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < m else None

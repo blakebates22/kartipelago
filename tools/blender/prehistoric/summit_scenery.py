@@ -98,7 +98,9 @@ def glacier(c, ss, t0, t1):
         # As wide as the tunnel inside the ice (no strips hidden in the solid glacier to
         # walk off), wider outside it where the land is cut away round the portals.
         inside = ss.in_glacier(q.p.x, q.p.y, 0.97)
-        floor.append((q.p.x, q.p.y, 2 * half - 0.6 if inside else 2 * half + 12, q.p.z - 0.25))
+        # (Tilted with the road: flat, it stood over the banked road's low side, and its
+        # high side stood a metre over the floor.)
+        floor.append((q.p.x, q.p.y, 2 * half - 0.6 if inside else 2 * half + 12, q.p.z - 0.25, q.bank))
         s += 2.0
     c.ribbon("Cave Floor", floor, 26, 0, c.lib("crystal_road", "snow_stone"), coll="Collision", role="collision", steps=4)
     return rock
@@ -581,6 +583,8 @@ def _stump_inside(c, ss, glow_pts, cx, cy, ri, ro, stump):
     zf = ss.road_z(ss.SEG[22]) - 0.45
     k0 = len(bm.faces)
     bm.faces.new(props.ring(bm, (cx, cy), ri + 5.0, zf, 48))
+    # (Meeting the road through it: it banks, and its high side stood over the flat floor.)
+    c.hug(bm, zf)
     m.mark(("forest_road", "dirt"), k0)
     k0 = len(bm.faces)
     col = [props.ring(bm, (cx, cy), 11.0 + 1.5 * math.exp(-(z - zf) / 4), z, 24, phase=0.1 * j) for j, z in enumerate((zf - 1, zf + 4, zf + 9))]

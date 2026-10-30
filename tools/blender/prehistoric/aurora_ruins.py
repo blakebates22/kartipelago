@@ -102,7 +102,7 @@ def dress(c, m, lp, s_in, s_out):
         sc.p = asc.spots(c, std, gs_in, gs_out)
         solid, info = asc.caverns(c, std, sc.p, more=cut)
     # The land round the ruin's own road.
-    c.terrain("Land", X0, X1, Y0, Y1, 8.0, std.natural, std.classify, near=8.5, fade=7.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 8.0, std.natural, std.classify, near=8.5, fade=7.0, verge_fill=1.5, fine=4)
 
     def under(x, y):
         if c.nearest(x, y)[1] > 70:

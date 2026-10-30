@@ -5,12 +5,20 @@
 // taller is a wall. For every overworld region: from the land right beside any road (not
 // a bridge), the road's edge is no more than that above it. (A drop of more than 2 m, or a
 // bank falling steeply away to a river or off a ledge, is a cliff: you fell off, and
-// that's allowed.)
+// that's allowed.) The courses too, one world at a time.
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
 import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
+/** The courses done so far (Oct 30: the Snow world's, standard and ruin). */
+const COURSES = [
+  "snowy_summit",
+  "frostveil_citadel",
+  "hearthglow_hollow",
+  "aurora_rift",
+  "snow_dragon_pass",
+].flatMap((t) => [t, `${t}_ruin`]);
 /** What's a road (the race line's pieces, the side roads, aprons and lanes), by name. */
 const ROAD = /^(Road \d+ |.* Road$|.* Apron$|.* Lane$)/;
 /** Built drops: a bridge, a raised deck or causeway, a jump's ramp and landing, a cliff ledge, a ford (its sides are meant to fall away: a rail, water, or a jump). */
@@ -88,6 +96,24 @@ export async function roadSteps(pkg: string) {
     if (r === undefined) continue;
     const br = bridgeH(x, z, 400);
     if (br !== undefined && br > r - 0.5) continue;
+    // (On a rail's or a wall's top, not the road: a strip under 2.5 m across, falling away on
+    // both sides. It's the wall we built, not somewhere you drive.)
+    const level = (dx: number, dz: number) => {
+      let h = r;
+      for (let i = 1; i <= 15; i++) {
+        const q = roadH(x + dx * i, z + dz * i, h + 0.3);
+        if (q === undefined || q < h - 0.25) return i - 1;
+        h = q;
+      }
+      return 15;
+    };
+    let rail = false;
+    for (let k = 0; k < 4 && !rail; k++) {
+      const dx = Math.cos((k * Math.PI) / 4) * 0.1;
+      const dz = Math.sin((k * Math.PI) / 4) * 0.1;
+      rail = level(dx, dz) + level(-dx, -dz) < 25;
+    }
+    if (rail) continue;
     // (Out from here, 8 ways: the road's edge, where it ends, and the land just past it.
     // The step is measured right at the edge, so a steep road's grade isn't counted.)
     for (let k = 0; k < 8; k++) {
@@ -198,10 +224,16 @@ const ALLOW: Record<string, number> = {
   desert_region: 0.6,
   beach_region: 0.5,
   dragon_region: 0.55,
+  // (Where a side road leaves the race line at a slant off its banked high side: you drop
+  // onto it going that way. Where it joins again, it's flush.)
+  hearthglow_hollow: 0.5,
+  snow_dragon_pass: 0.95,
+  // (A few spots on the snowfield's ridge, 0.4.)
+  aurora_rift: 0.45,
 };
 
 describe("back up onto the road", () => {
-  for (const pkg of REGIONS)
+  for (const pkg of [...REGIONS, ...COURSES])
     it(`${pkg}: no road stands more than ${ALLOW[pkg] ?? STEP} m over the land beside it`, async () => {
       const over = (await roadSteps(pkg)).filter(
         (l) => Number(/: ([\d.]+) m$/.exec(l)?.[1]) > (ALLOW[pkg] ?? STEP),
@@ -215,7 +247,7 @@ describe("back up onto the road", () => {
 const SEAMS = new Set(["valley_region 24, 16", "valley_region 160, -48"]);
 
 describe("no grass on the road", () => {
-  for (const pkg of REGIONS)
+  for (const pkg of [...REGIONS, ...COURSES])
     it(`${pkg}: the land never comes up through a road`, async () => {
       const bad = (await landOverRoad(pkg)).filter((l) => !SEAMS.has(`${pkg} ${l.split(":")[0]}`));
       expect(bad).toEqual([]);

@@ -576,7 +576,7 @@ def main():
         t0, t1 = max(inside, key=lambda r: r[1] - r[0])
         TUNNEL_S[:] = [t0 - 16, t1 + 16]
     X0, X1, Y0, Y1 = -420, 420, -420, 400
-    c.terrain("Mountains", X0, X1, Y0, Y1, 5.0, cut_land(c), classify, near=9.0, fade=20.0)
+    c.terrain("Mountains", X0, X1, Y0, Y1, 5.0, cut_land(c), classify, near=9.0, fade=20.0, fine=3)
     # The hidden floors only where a kart could ever be: within 80 m of the road.
 
     def near(fn):

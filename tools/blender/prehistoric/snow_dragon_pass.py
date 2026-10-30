@@ -317,14 +317,14 @@ def main():
         out = []
         for i, (x, y) in enumerate(pts):
             out.append((x, y, lerp(za, zb, smooth(i / (len(pts) - 1))) - 0.05))
-        c.shortcut(name, out, mat, "road", width=14.0, shoulder=1.0, shoulder_mat=snowbank)
+        c.shortcut(name, out, mat, "road", width=14.0, shoulder=1.0, shoulder_mat=snowbank, flush=True)
         return za, zb
 
     za1, zb1 = side_road("Frozen Supply Road", SUPPLY, 6, 16, "ember_setts")
     za2, zb2 = side_road("Frozen Aqueduct", AQUEDUCT, 27, 32, "ember_flag")
 
     X0, X1, Y0, Y1 = -260, 480, -160, 520
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2, fine=3)
 
     def under(x, y):
         return natural(x, y) - 0.4
@@ -401,7 +401,7 @@ def ruin_course(c, snowbank):
     specials = [r for r in kit.runs(c, label) if r[2] != "road"]
     c.roads(kit.plan(c, specials, "road", max_len=200.0))
     X0, X1, Y0, Y1 = -260, 480, -160, 520
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2, fine=3)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("ember_rubble", "rubble"))
     ruin_mode.DRESS(c, sys.modules[__name__], ter)
     c.start_line()

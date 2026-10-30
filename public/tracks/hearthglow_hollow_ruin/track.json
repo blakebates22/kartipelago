@@ -140,14 +140,14 @@
       "id": "lantern_01",
       "type": "lantern",
       "x": -2.9,
-      "y": 5.78,
+      "y": 5.76,
       "z": -24.13
     },
     {
       "id": "lantern_02",
       "type": "lantern",
       "x": -29.11,
-      "y": 7.09,
+      "y": 7.06,
       "z": -34.85
     },
     {
@@ -182,21 +182,21 @@
       "id": "lantern_07",
       "type": "lantern",
       "x": -2.66,
-      "y": 7.04,
+      "y": 7.07,
       "z": 28.19
     },
     {
       "id": "lantern_08",
       "type": "lantern",
       "x": 8.06,
-      "y": 5.92,
+      "y": 5.73,
       "z": 1.98
     },
     {
       "id": "lantern_09",
       "type": "lantern",
       "x": -9.9,
-      "y": 7.36,
+      "y": 7.38,
       "z": 116.0
     },
     {
@@ -210,14 +210,14 @@
       "id": "lantern_11",
       "type": "lantern",
       "x": -9.9,
-      "y": 7.48,
+      "y": 7.51,
       "z": 72.0
     },
     {
       "id": "lantern_12",
       "type": "lantern",
       "x": 9.9,
-      "y": 7.33,
+      "y": 7.34,
       "z": 72.0
     },
     {
@@ -231,28 +231,28 @@
       "id": "lantern_14",
       "type": "lantern",
       "x": -18.87,
-      "y": 6.34,
+      "y": 6.53,
       "z": -58.08
     },
     {
       "id": "lantern_15",
       "type": "lantern",
       "x": -64.07,
-      "y": 7.75,
+      "y": 7.88,
       "z": -69.91
     },
     {
       "id": "lantern_16",
       "type": "lantern",
       "x": -43.85,
-      "y": 6.13,
+      "y": 5.86,
       "z": -78.06
     },
     {
       "id": "lantern_17",
       "type": "lantern",
       "x": -67.3,
-      "y": 7.64,
+      "y": 7.66,
       "z": -117.5
     },
     {
@@ -350,7 +350,7 @@
       "id": "lantern_31",
       "type": "lantern",
       "x": -222.27,
-      "y": 8.68,
+      "y": 8.92,
       "z": -92.64
     },
     {
@@ -364,14 +364,14 @@
       "id": "lantern_33",
       "type": "lantern",
       "x": -202.19,
-      "y": 7.49,
+      "y": 7.58,
       "z": -46.22
     },
     {
       "id": "lantern_34",
       "type": "lantern",
       "x": -221.99,
-      "y": 8.1,
+      "y": 8.11,
       "z": -46.26
     },
     {
@@ -518,7 +518,7 @@
       "id": "lantern_55",
       "type": "lantern",
       "x": -10.16,
-      "y": 8.14,
+      "y": 8.15,
       "z": 174.05
     },
     {
@@ -532,14 +532,14 @@
       "id": "lantern_57",
       "type": "lantern",
       "x": -9.9,
-      "y": 6.93,
+      "y": 6.82,
       "z": 131.18
     },
     {
       "id": "lantern_58",
       "type": "lantern",
       "x": 9.9,
-      "y": 7.84,
+      "y": 7.85,
       "z": 131.18
     },
     {
@@ -819,7 +819,7 @@
       "id": "chimney_30",
       "type": "chimney",
       "x": -34.85,
-      "y": 16.16,
+      "y": 16.13,
       "z": -84.06
     },
     {
@@ -833,7 +833,7 @@
       "id": "chimney_32",
       "type": "chimney",
       "x": -37.03,
-      "y": 12.74,
+      "y": 12.78,
       "z": -97.35
     },
     {
@@ -1036,7 +1036,7 @@
       "id": "chimney_61",
       "type": "chimney",
       "x": -191.66,
-      "y": 15.21,
+      "y": 15.16,
       "z": -40.42
     },
     {
@@ -1273,21 +1273,21 @@
       "id": "torch_04",
       "type": "torch",
       "x": -77.49,
-      "y": 4.86,
+      "y": 4.83,
       "z": -93.84
     },
     {
       "id": "torch_05",
       "type": "torch",
       "x": -88.83,
-      "y": 5.02,
+      "y": 5.01,
       "z": -101.59
     },
     {
       "id": "torch_06",
       "type": "torch",
       "x": -108.78,
-      "y": 5.39,
+      "y": 5.46,
       "z": -102.4
     },
     {
@@ -1315,14 +1315,14 @@
       "id": "torch_10",
       "type": "torch",
       "x": -191.63,
-      "y": 4.79,
+      "y": 4.78,
       "z": -86.89
     },
     {
       "id": "torch_11",
       "type": "torch",
       "x": -192.62,
-      "y": 5.19,
+      "y": 5.18,
       "z": -51.58
     },
     {
@@ -1441,7 +1441,7 @@
       "id": "campfire_03",
       "type": "campfire",
       "x": -88.83,
-      "y": 4.42,
+      "y": 4.41,
       "z": -101.59
     },
     {
@@ -1462,7 +1462,7 @@
       "id": "campfire_06",
       "type": "campfire",
       "x": -192.62,
-      "y": 4.59,
+      "y": 4.58,
       "z": -51.58
     },
     {
@@ -1573,7 +1573,7 @@
   ],
   "generator": "tools/blender/prehistoric/hearthglow_hollow_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "hearthglow_hollow.py": "071dd10384178b9251a1313c11bcfb212a51409692fe6e65455f584310deabdb",
+    "hearthglow_hollow.py": "f2b4008dbc1eb0e947b1491b1ec0f379b45792a4ca2cb40c2c145cf4284b127f",
     "hearthglow_props.py": "854c84ce8845f35f8f47d76c55c73530c66d1d2a48841bc17ba500ae4be4d3bd",
     "hearthglow_ruins.py": "984a658fe0aa438d50bcc9b99417f23c4d6d1f6631d5bbedcaa539ca4ccd1fa6",
     "hearthglow_scenery.py": "a8e34b0ad3e5c7abf9a6b0263bfb05443e7f967e0f944a7213d37876f98c6a38"

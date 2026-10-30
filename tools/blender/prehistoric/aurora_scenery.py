@@ -181,9 +181,13 @@ def route_cutter(c, s0, s1, prof, pad=0.0, step=2.5, wobble=0.0, name="Tunnel", 
         q = c.at(s)
         g = grow(t) if grow else 1.0
         ring = []
+        # (The floor banks with the road: flat, it left a gutter along a banked road's high
+        # side a metre and a half deep, and a kart that slid off couldn't climb back.)
+        tb = math.tan(math.radians(q.bank))
         for j, (o, z) in enumerate(prof):
             w = 1.0 + wobble * (math.sin(s * 0.21 + j * 1.9) * 0.6 + math.sin(s * 0.07 + j) * 0.4) if z > 0 else 1.0
-            ring.append(bm.verts.new(q.p + q.r * (o * w * g) + Vector((0, 0, z * (w * g if z > 0 else 1.0)))))
+            lift = z * w * g if z > 0 else z - o * g * tb
+            ring.append(bm.verts.new(q.p + q.r * (o * w * g) + Vector((0, 0, lift))))
         rings.append(ring)
     m = len(prof)
     for lo, hi in zip(rings, rings[1:]):
@@ -194,7 +198,7 @@ def route_cutter(c, s0, s1, prof, pad=0.0, step=2.5, wobble=0.0, name="Tunnel", 
     return closed(c, bm, name + " Cutter")
 
 
-def tunnel_prof(half, h, depth=1.0):
+def tunnel_prof(half, h, depth=0.25):
     return [(-half, -depth), (half, -depth), (half * 1.05, 0.55 * h), (0.75 * half, 0.9 * h), (0.3 * half, h),
             (-0.3 * half, h), (-0.75 * half, 0.9 * h), (-half * 1.05, 0.55 * h)]
 
@@ -311,7 +315,7 @@ def caverns(c, ar, P, more=None):
     # 5. The ascent: an ice tunnel up from the lake, a fractured canyon open to the sky
     # (the cutter rises clear of the glacier's top), a gallery and the great opening.
     apply_cut(c, solid, route_cutter(c, *P["ice_tunnel"], tunnel_prof(12.0, 15.0), pad=8.0, wobble=0.15, name="Ice Tunnel"))
-    canyon = [(-11.0, -1.0), (11.0, -1.0), (13.0, 30.0), (24.0, 200.0), (-24.0, 200.0), (-13.0, 30.0)]
+    canyon = [(-11.0, -0.25), (11.0, -0.25), (13.0, 30.0), (24.0, 200.0), (-24.0, 200.0), (-13.0, 30.0)]
     apply_cut(c, solid, route_cutter(c, *P["canyon_cut"], canyon, pad=6.0, wobble=0.1, name="Canyon"))
     apply_cut(c, solid, route_cutter(c, *P["opening_cut"], tunnel_prof(16.0, 30.0), pad=6.0, wobble=0.12, name="Great Opening",
                                      grow=lambda t: 1.0 + 0.5 * t))
@@ -702,12 +706,18 @@ def falls_sheet(c, x, y, top, foot, width, facing, mat=("icefall_rift", "wall"),
     return ob
 
 
-def sheet(c, ring, z, mat, name, coll="Water", role="visual"):
-    """A flat sheet over a closed outline (fog layers, the lake's ice)."""
+def sheet(c, ring, z, mat, name, coll="Water", role="visual", hug=0.0):
+    """A flat sheet over a closed outline (fog layers, the lake's ice). `hug`: cut into
+    cells that size, and brought up beside the roads to meet their banked edges (the lake's
+    ice: the road over it banks, and its high side stood a metre and more over the ice, a
+    wall a kart that slid off couldn't climb back over)."""
     bm = bmesh.new()
     vs = [bm.verts.new((x, y, z)) for x, y in ring]
     bm.faces.new(vs)
-    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    if hug:
+        c.hug(bm, z, hug)
+    else:
+        bmesh.ops.triangulate(bm, faces=bm.faces[:])
     ob = c.mesh_object(name, bm, coll, role)
     c.assign(ob, c.lib(*mat))
     return ob
@@ -996,7 +1006,7 @@ def lake(c, sc, ar, info):
     cx, cy = lcentre
     # The ice: the cavern's outline pulled in a little (the walls meet it).
     inner = [(cx + (x - cx) * 0.97, cy + (y - cy) * 0.97) for x, y in lring]
-    ice = sheet(c, inner, ar.Z_LAKE, ("mirror_ice", "ice"), "Mirror Lake", coll="Lake", role="both")
+    ice = sheet(c, inner, ar.Z_LAKE, ("mirror_ice", "ice"), "Mirror Lake", coll="Lake", role="both", hug=2.5)
     # Ice columns from the depths to the roof, where the road can weave round them.
     cols = 0
     for k in range(60):
@@ -1210,7 +1220,7 @@ def build(c, ar, lp, s_in, s_out):
     sc = Scene(c, ar)
     sc.p = spots(c, ar, s_in, s_out)
     solid, info = caverns(c, ar, sc.p)
-    c.terrain("Land", X0, X1, Y0, Y1, 8.0, ar.natural, ar.classify, near=8.5, fade=7.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 8.0, ar.natural, ar.classify, near=8.5, fade=7.0, verge_fill=1.5, fine=4)
 
     def under(x, y):
         if c.nearest(x, y)[1] > 70:

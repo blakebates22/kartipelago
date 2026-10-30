@@ -748,7 +748,7 @@
       "id": "torch_83",
       "type": "torch",
       "x": 55.91,
-      "y": 2.08,
+      "y": 2.04,
       "z": 288.31
     },
     {
@@ -776,7 +776,7 @@
       "id": "campfire_02",
       "type": "campfire",
       "x": 55.91,
-      "y": 1.48,
+      "y": 1.44,
       "z": 288.31
     },
     {
@@ -801,7 +801,7 @@
   ],
   "generator": "tools/blender/prehistoric/frostveil_citadel_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "frostveil_citadel.py": "832e5346e1745314564f8ac05d9b367eed5be1e730beb9571d18d4104aa4f779",
+    "frostveil_citadel.py": "5df48097c0f991341060bad9561eb7c6a7a6218b8981824dcf95df945f7658d0",
     "frostveil_ruins.py": "3066998cd6ef0b5b308810abe2cc08d1fd617aa7a0954d7cd1ffd7390b9de0c9",
     "frostveil_scenery.py": "e97d20b8c170a3c744d1af9f1c2d54061a1375bd4492ccd12ed76434547b4219"
   }

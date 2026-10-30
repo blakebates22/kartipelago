@@ -592,14 +592,14 @@ def main():
     i1 = next(k for k, p in enumerate(alley) if p[2] >= ALLEY_ICE[1])
     open_kw = dict(width=ALLEY_W, shoulder=0.6, shoulder_mat=("hearth_cobble", "snow_stone"))
     wall_kw = dict(open_kw, barrier=1.3, barrier_mat=stone)
-    c.side_road("Alley Mouth", run(0, w0 + 2), "hearth_cobble", **open_kw)
+    c.side_road("Alley Mouth", run(0, w0 + 2), "hearth_cobble", **open_kw, flush=True, ease=5.0)
     c.side_road("Alley 1", run(w0, i0 + 1), "hearth_cobble", **wall_kw)
     c.side_road("Alley Ice", run(i0, i1 + 1), "icy_cobble", **wall_kw)
     c.side_road("Alley 2", run(i1, w1), "hearth_cobble", **wall_kw)
-    c.side_road("Alley End", run(w1 - 2, len(alley) - 1), "hearth_cobble", **open_kw)
+    c.side_road("Alley End", run(w1 - 2, len(alley) - 1), "hearth_cobble", **open_kw, flush=True, ease=5.0)
 
     X0, X1, Y0, Y1 = -620, 520, -460, 720
-    c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0, fine=3)
 
     def near(fn, m=64.0):
         return lambda x, y: fn(x, y) if c.nearest(x, y)[1] < m else None
@@ -689,7 +689,7 @@ def ruin_course(c, stone):
     c.roads(kit.plan(c, specials, "street", max_len=200.0))
 
     X0, X1, Y0, Y1 = -620, 520, -460, 720
-    c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 6.5, natural, classify, near=9.0, fade=18.0, fine=3)
 
     def under(x, y):
         nat = natural(x, y)

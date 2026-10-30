@@ -438,11 +438,12 @@ class Course:
         return wmax, z
 
     def side_road(self, name, pts, mat, surface=None, width=9.0, shoulder=1.0, shoulder_mat=None, barrier=0.0, barrier_mat=None,
-                  deck=0.0, deck_mat=None, ground=True):
+                  deck=0.0, deck_mat=None, ground=True, flush=False, ease=20.0):
         """
         Like shortcut (a road off the race line through (x, y, z) points), with a barrier
         and a deck if asked; `ground=False`: the terrain doesn't rise to meet it (a road
         up on the rooftops, say). Its samples are in self.side_samples either way.
+        `flush`: as shortcut's, flush with the race line where it leaves or joins it.
         """
         cd = bpy.data.curves.new(name, "CURVE")
         cd.dimensions = "3D"
@@ -452,6 +453,9 @@ class Course:
         for bp, p in zip(sp.bezier_points, pts):
             bp.co = p[:3]
             bp.handle_left_type = bp.handle_right_type = "AUTO"
+        if flush:
+            self._flush_spline(cd, sp, width / 2 + shoulder + 0.5, ease)
+            sp = cd.splines[0]
         sp.resolution_u = 12
         ob = bpy.data.objects.new(name, cd)
         self.coll("Roads").objects.link(ob)
@@ -476,17 +480,22 @@ class Course:
         if not hasattr(self, "side_samples"):
             self.side_samples = []
         for p in export.sample_route(ob, 1.0)["points"]:
-            smp = Sample(Vector((p["x"], -p["z"], p["y"])), width, 0.0, 0.0)
+            smp = Sample(Vector((p["x"], -p["z"], p["y"])), width, p.get("bank", 0.0), 0.0)
             self.side_samples.append(smp)
             if ground:
                 self.extra_ground.append(smp)
         return ob
 
-    def shortcut(self, name, pts, mat, surface=None, width=9.0, shoulder=1.0, shoulder_mat=None):
+    def shortcut(self, name, pts, mat, surface=None, width=9.0, shoulder=1.0, shoulder_mat=None, flush=False, ease=20.0):
         """
         A side road off the race line (a shortcut): a road curve through (x, y, z) points,
         open at both ends, that the terrain meets just like the main road. It isn't part
-        of the route, so the AI keeps to the main road.
+        of the route, so the AI keeps to the main road. `flush`: where any of its width is
+        over a ground road (where it leaves the race line and joins it again), just under
+        that road's own banked surface, eased back to its own heights over `ease` m (the
+        same curve, cut finer): leaving or joining at the road's middle height, its edge
+        stood over it, a step a metre and more high on a banked road (Blake, valley polish
+        14, note 1).
         """
         cd = bpy.data.curves.new(name, "CURVE")
         cd.dimensions = "3D"
@@ -498,6 +507,9 @@ class Course:
             bp.handle_left_type = bp.handle_right_type = "AUTO"
             # (A fourth value: the width there, e.g. to taper a path's ends.)
             bp.radius = (p[3] / width) if len(p) > 3 else 1.0
+        if flush:
+            self._flush_spline(cd, sp, width / 2 + shoulder + 0.5, ease)
+            sp = cd.splines[0]
         sp.resolution_u = 12
         ob = bpy.data.objects.new(name, cd)
         self.coll("Roads").objects.link(ob)
@@ -512,7 +524,7 @@ class Course:
         materials.apply_to_road(ob, self.lib(*sm), "shoulder", se["tileMetres"], 0, materials.aspect(se))
         bpy.context.view_layer.update()
         for p in export.sample_route(ob, 1.0)["points"]:
-            smp = Sample(Vector((p["x"], -p["z"], p["y"])), p.get("width", width), 0.0, 0.0)
+            smp = Sample(Vector((p["x"], -p["z"], p["y"])), p.get("width", width), p.get("bank", 0.0), 0.0)
             self.extra_ground.append(smp)
         return ob
 
@@ -572,6 +584,104 @@ class Course:
             pts.append((b[0], b[1], natural(b[0], b[1]) + 0.2 if last is None else lerp(last[1], natural(*b) + 0.2, 1.0)))
         return pts
 
+    def _flush_spline(self, cd, sp, half, ease, step=2.0):
+        """`shortcut(flush=True)`: the spline cut into pieces about `step` long (exactly the
+        same curve) and its heights brought flush with the ground road it's over."""
+        old = [(bp.co.copy(), bp.handle_left.copy(), bp.handle_right.copy(), bp.radius) for bp in sp.bezier_points]
+        pts = []  # [co, tangent (per unit t of its piece), radius]
+        for k in range(len(old) - 1):
+            p0, _, h0, r0 = old[k]
+            p1, h1, _, r1 = old[k + 1]
+            n = max(1, math.ceil((p1 - p0).length / step))
+            for j in range(n + (1 if k == len(old) - 2 else 0)):
+                t = j / n
+                u = 1 - t
+                co = p0 * u ** 3 + h0 * 3 * u * u * t + h1 * 3 * u * t * t + p1 * t ** 3
+                d = (h0 - p0) * 3 * u * u + (h1 - h0) * 6 * u * t + (p1 - h1) * 3 * t * t
+                pts.append([co, d / n, lerp(r0, r1, t)])
+        # (Its height over a ground road there, if any of its width is over one.)
+        # (Of the race line's stretches there, the one nearest its own height: where the lap
+        # zigzags, another leg can be nearer across.)
+        self.nearest(0.0, 0.0)
+
+        def over(co, d):
+            # (Its height and tilt: in the plane of that road's banked surface, so where they
+            # overlap at a slant they're one surface, not one edge over the other.)
+            best = None
+            dl = Vector((d.x, d.y)).length or 1.0
+            rs = Vector((d.y / dl, -d.x / dl))
+            for _, i, _d in self._near_tree.find_range(Vector((co.x, co.y, 0)), 30.0):
+                q = self.S[i]
+                dx, dy = co.x - q.p.x, co.y - q.p.y
+                txy = Vector((q.t.x, q.t.y))
+                if not q.ground or txy.length < 1e-6:
+                    continue
+                th = txy / txy.length
+                al = dx * th.x + dy * th.y
+                if abs(al) > 1.5:
+                    continue
+                o = dx * q.r.x + dy * q.r.y
+                if abs(o) > q.w / 2 + 1.5 + half:
+                    continue
+                tb = math.tan(math.radians(q.bank))
+                grade = q.t.z / txy.length
+                oc = max(-q.w / 2 - 1.5, min(q.w / 2 + 1.5, o))
+                z = q.p.z + al * grade - oc * tb - 0.06
+                slope = (th.x * grade - q.r.x * tb) * rs.x + (th.y * grade - q.r.y * tb) * rs.y
+                # (No steeper than a road's bank: leaving a steep stretch square on, the
+                # grade would tip it right over.)
+                tl = max(-0.14, min(0.14, math.atan(-slope)))
+                if abs(z - co.z) < 4.0 and (best is None or abs(z - co.z) < abs(best[0] - co.z)):
+                    best = (z, tl)
+            return best
+
+        flushed = [over(p[0], p[1]) for p in pts]
+        lift = [0.0] * len(pts)
+        tilt = [0.0] * len(pts)
+        for order in (range(len(pts)), range(len(pts) - 1, -1, -1)):
+            last = None  # (the lift and tilt where it left the road, distance since)
+            prev = None
+            for i in order:
+                if flushed[i] is not None:
+                    last, prev = (flushed[i][0] - pts[i][0].z, flushed[i][1], 0.0), pts[i][0]
+                    continue
+                if last is None:
+                    continue
+                dist = last[2] + (pts[i][0] - prev).length
+                last, prev = (last[0], last[1], dist), pts[i][0]
+                if dist < ease:
+                    lift[i] += last[0] * (1 - smooth(dist / ease))
+                    tilt[i] += last[1] * (1 - smooth(dist / ease))
+        cd.splines.remove(sp)
+        sp = cd.splines.new("BEZIER")
+        sp.bezier_points.add(len(pts) - 1)
+        for bp, (co, d, r), f, dz, tl in zip(sp.bezier_points, pts, flushed, lift, tilt):
+            bp.handle_left_type = bp.handle_right_type = "FREE"
+            c = co.copy()
+            c.z = f[0] if f is not None else co.z + dz
+            bp.co = c
+            bp.handle_left = c - d / 3
+            bp.handle_right = c + d / 3
+            bp.radius = r
+            bp.tilt = f[1] if f is not None else tl
+
+    def hug(self, bm, z, cell=2.5, fill=2.0):
+        """Everything in `bm` (a flat floor at height z: a lake's ice, a stump's floor) cut
+        into cells `cell` across and brought up to meet the ground roads' banked edges (as
+        the land is, `verge_height`): flat, a banked road's high side stood a metre and more
+        over it, a wall a kart that slid off couldn't climb back over."""
+        xs = [v.co.x for v in bm.verts]
+        ys = [v.co.y for v in bm.verts]
+        for axis, lo, hi in (((1, 0, 0), min(xs), max(xs)), ((0, 1, 0), min(ys), max(ys))):
+            k = math.floor(lo / cell) + 1
+            while k * cell < hi:
+                co = (k * cell, 0, 0) if axis[0] else (0, k * cell, 0)
+                bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=co, plane_no=axis)
+                k += 1
+        bmesh.ops.triangulate(bm, faces=bm.faces[:])
+        for v in bm.verts:
+            v.co.z = self.verge_height(v.co.x, v.co.y, z, fill=fill)
+
     def _road_trees(self):
         """BVH trees of every road's upward faces (evaluated: the road generator's mesh)."""
         from mathutils.bvhtree import BVHTree
@@ -625,6 +735,8 @@ class Course:
             oc = clamp(o, -half - 1.5, half + 1.5)
             # (The road's surface there: banked across, and climbing along with its grade.)
             zs = smp.p.z + along * smp.t.z / txy.length - oc * math.tan(math.radians(smp.bank))
+            if zs - z > 6.0:
+                continue  # (a road stacked far over this one, a spiral's next turn up)
             out = max(0.0, abs(o) - half)
             key = (round(out, 1), -zs)
             if best is None or key < best[0]:
@@ -650,7 +762,7 @@ class Course:
         return f if need <= fill else z + max(0.0, 2 * fill - need)
 
     def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=True,
-                verge_fill=0.6):
+                verge_fill=0.6, fine=1):
         """
         A height-field grid over [x0, x1] x [y0, y1]. `natural(x, y)` is the land's own
         height; near the roads it's pulled to meet them. `classify(face_centre, normal,
@@ -658,6 +770,8 @@ class Course:
         land also brought up to every road's edge, so a kart can always drive back up
         onto it (`verge_height`), dips up to `verge_fill` m deep filled (0.6 by default,
         so a river or a drop beside a course's road stays as it was; the overworlds, 1.5).
+        `fine`: the cells along the ground roads' edges cut into fine x fine, so a coarse
+        grid's land still meets a road's edge.
         """
         self.build_ground_tree()
         # (The roads' own top faces, for keeping the land under them: the verge's estimate of
@@ -667,33 +781,123 @@ class Course:
         nx = int(round((x1 - x0) / cell))
         ny = int(round((y1 - y0) / cell))
         bm = bmesh.new()
-        rows = []
+
+        def height(x, y):
+            nat = natural(x, y)
+            w, z = self.road_height(x, y, near, fade, under, nat)
+            h = lerp(nat, z, w)
+            if verge:
+                h = self.verge_height(x, y, h, under, fill=verge_fill)
+                for t in road_trees:
+                    hit = t.ray_cast(Vector((x, y, h + 3.0)), Vector((0, 0, -1)))
+                    if hit[0] is not None and hit[0].z < h + 0.15:
+                        h = hit[0].z - 0.15
+            return h
+
+        # (`fine`: the cells along a ground road's edges cut into fine x fine. On a coarse
+        # grid the land between a vertex under the road and the next one out, metres away
+        # down a slope, ran straight: its edge stood a metre or more over the land beside
+        # it, or the land came up over its shoulder.)
+        sub = max(1, int(fine)) if verge else 1
+        refined = set()
+        known = {}
+
+        def at(I, J):
+            z = known.get((I, J))
+            if z is None:
+                z = known[I, J] = height(x0 + (x1 - x0) * I / (nx * sub), y0 + (y1 - y0) * J / (ny * sub))
+            return z
+
+        if sub > 1:
+            reach = cell * 0.75 + 6.0
+            for j in range(ny):
+                for i in range(nx):
+                    x = x0 + (x1 - x0) * (i + 0.5) / nx
+                    y = y0 + (y1 - y0) * (j + 0.5) / ny
+                    if not any(abs(d - self._ground[k].w / 2 - 1.5) < reach
+                               for _, k, d in self._ground_tree.find_range(Vector((x, y, 0)), 30.0 + reach)):
+                        continue
+                    # (Only where the land there isn't what the coarse cell would show.)
+                    I, J = i * sub, j * sub
+                    za, zb, zc, zd = at(I, J), at(I + sub, J), at(I + sub, J + sub), at(I, J + sub)
+                    for b in range(sub + 1):
+                        for a in range(sub + 1):
+                            u, v = a / sub, b / sub
+                            flat = lerp(lerp(za, zb, u), lerp(zd, zc, u), v)
+                            if abs(at(I + a, J + b) - flat) > 0.12:
+                                refined.add((i, j))
+                                break
+                        if (i, j) in refined:
+                            break
+        verts = {}
+
+        def vert(I, J, hang=None):
+            v = verts.get((I, J))
+            if v is None:
+                x = x0 + (x1 - x0) * I / (nx * sub)
+                y = y0 + (y1 - y0) * J / (ny * sub)
+                if hang is None:
+                    z = at(I, J)
+                else:
+                    # (On an edge shared with a coarse cell: on that cell's straight edge, so
+                    # the two meet with no crack.)
+                    (Ia, Ja), (Ib, Jb) = hang
+                    va, vb = vert(Ia, Ja), vert(Ib, Jb)
+                    f = ((I - Ia) + (J - Ja)) / ((Ib - Ia) + (Jb - Ja))
+                    z = lerp(va.co.z, vb.co.z, f)
+                v = verts[I, J] = bm.verts.new((x, y, z))
+            return v
+
+        def quad(a, b, c, d):
+            # Split each quad along the flatter diagonal.
+            if abs(a.co.z - c.co.z) < abs(b.co.z - d.co.z):
+                bm.faces.new((a, b, c))
+                bm.faces.new((a, c, d))
+            else:
+                bm.faces.new((a, b, d))
+                bm.faces.new((b, c, d))
+
         for j in range(ny + 1):
-            row = []
             for i in range(nx + 1):
-                x = x0 + (x1 - x0) * i / nx
-                y = y0 + (y1 - y0) * j / ny
-                nat = natural(x, y)
-                w, z = self.road_height(x, y, near, fade, under, nat)
-                h = lerp(nat, z, w)
-                if verge:
-                    h = self.verge_height(x, y, h, under, fill=verge_fill)
-                    for t in road_trees:
-                        hit = t.ray_cast(Vector((x, y, h + 3.0)), Vector((0, 0, -1)))
-                        if hit[0] is not None and hit[0].z < h + 0.15:
-                            h = hit[0].z - 0.15
-                row.append(bm.verts.new((x, y, h)))
-            rows.append(row)
+                vert(i * sub, j * sub)
+        ngons = []
         for j in range(ny):
             for i in range(nx):
-                a, b, c, d = rows[j][i], rows[j][i + 1], rows[j + 1][i + 1], rows[j + 1][i]
-                # Split each quad along the flatter diagonal.
-                if abs(a.co.z - c.co.z) < abs(b.co.z - d.co.z):
-                    bm.faces.new((a, b, c))
-                    bm.faces.new((a, c, d))
+                I, J = i * sub, j * sub
+                if (i, j) in refined:
+                    # (The cell's own edges: shared with a coarse neighbour, on its line.)
+                    def hang(a, b, i=i, j=j, I=I, J=J):
+                        if b in (0, sub) and a not in (0, sub):
+                            nb = (i, j - 1) if b == 0 else (i, j + 1)
+                            if nb not in refined:
+                                return ((I, J + b), (I + sub, J + b))
+                        if a in (0, sub) and b not in (0, sub):
+                            nb = (i - 1, j) if a == 0 else (i + 1, j)
+                            if nb not in refined:
+                                return ((I + a, J), (I + a, J + sub))
+                        return None
+
+                    for b in range(sub):
+                        for a in range(sub):
+                            quad(vert(I + a, J + b, hang(a, b)), vert(I + a + 1, J + b, hang(a + 1, b)),
+                                 vert(I + a + 1, J + b + 1, hang(a + 1, b + 1)), vert(I + a, J + b + 1, hang(a, b + 1)))
+                    continue
+                corners = ((I, J), (I + sub, J), (I + sub, J + sub), (I, J + sub))
+                ring = []
+                extra = False
+                for e, nb in enumerate(((i, j - 1), (i + 1, j), (i, j + 1), (i - 1, j))):
+                    (Ia, Ja), (Ib, Jb) = corners[e], corners[(e + 1) % 4]
+                    ring.append(vert(Ia, Ja))
+                    if nb in refined:
+                        extra = True
+                        for k in range(1, sub):
+                            ring.append(vert(Ia + (Ib - Ia) * k // sub, Ja + (Jb - Ja) * k // sub, ((Ia, Ja), (Ib, Jb)) if Ia + Ja < Ib + Jb else ((Ib, Jb), (Ia, Ja))))
+                if extra:
+                    ngons.append(bm.faces.new(ring))
                 else:
-                    bm.faces.new((a, b, d))
-                    bm.faces.new((b, c, d))
+                    quad(*ring)
+        if ngons:
+            bmesh.ops.triangulate(bm, faces=ngons)
         ob = self.mesh_object(name, bm, "Terrain")
         groups = {}
         tree = kdtree.KDTree(len(self.S))
@@ -727,13 +931,15 @@ class Course:
 
     def ribbon(self, name, path, width, z, mat, coll="Water", role="both", steps=1):
         """
-        A flat strip along a path of (x, y[, width[, z]]) points: rivers, lava flows.
-        UVs run along the strip (V) so the flow animation scrolls downstream.
+        A flat strip along a path of (x, y[, width[, z[, bank]]]) points: rivers, lava
+        flows. UVs run along the strip (V) so the flow animation scrolls downstream. `bank`
+        (degrees, as a road's): tilted across, like the road it's laid under.
         """
         bm = bmesh.new()
         uv = bm.loops.layers.uv.new("UVMap")
         pts = [Vector((p[0], p[1], p[3] if len(p) > 3 else z)) for p in path]
         widths = [p[2] if len(p) > 2 else width for p in path]
+        tilt = [math.tan(math.radians(p[4])) if len(p) > 4 else 0.0 for p in path]
         rows = []
         along = 0.0
         for i, p in enumerate(pts):
@@ -747,7 +953,7 @@ class Course:
             row = []
             for k in range(steps + 1):
                 o = -w / 2 + w * k / steps
-                row.append((bm.verts.new(p + r * o), o, along))
+                row.append((bm.verts.new(p + r * o + Vector((0, 0, -o * tilt[i]))), o, along))
             rows.append(row)
         e = materials.entry(mat["kp_texture"])
         tile = e["tileMetres"]

@@ -992,7 +992,7 @@
   "builtFrom": {
     "aurora_props.py": "9ced87009a5e930b558c71825df96a4e4ec2ee099cddab698bb2016be2e16f8e",
     "aurora_rift.py": "979af348a4b24c1665ece7808e8c0cbb801b5fa49a6fecb87bdd2d26d8bd54a6",
-    "aurora_ruins.py": "9dca2cd927397b4f48fc6ec375d39f361c9a0199e3c3eb5d214f430f83d4d1b6",
-    "aurora_scenery.py": "921f219dfc8e52f215ead37439eaad3832f55e7c1060f3a58dfa57ffe47b1791"
+    "aurora_ruins.py": "c453dd76d297b1fd634a6dc1dba7af77ebb12f651ec2f2bd4e85fc753166463e",
+    "aurora_scenery.py": "cbf2c03205ecacd2add2a6ae040ec0c39e1be6259ba8893de68277ffb2b43c50"
   }
 }
