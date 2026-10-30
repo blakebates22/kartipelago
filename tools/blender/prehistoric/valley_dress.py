@@ -1242,7 +1242,7 @@ def shade_walls(c, ter):
     ca.data.foreach_set("color", cols.ravel())
 
 
-def ledge_greens(c, ob, ground, seed=5, step=2.2, every=0.55):
+def ledge_greens(c, ob, ground, seed=5, step=2.2, every=0.55, floor=None):
     """Ferns and shrubs along a rock's ledges (Blake, Riverbend note 14, "line this ledge
     with shrubs and ferns"; Cascade notes 17 and 18, ferns on the temple steps' ledges):
     wherever its top steps down (a flat that a few metres on falls away or ends), up off
@@ -1272,7 +1272,11 @@ def ledge_greens(c, ob, ground, seed=5, step=2.2, every=0.55):
             if h is None or h[1].z < 0.8 or rnd.random() > every:
                 continue
             p = h[0]
-            if p.z < ground(p.x, p.y) + 1.5 or not paint.road_clear(c, p.x, p.y, 3.0):
+            g = ground(p.x, p.y)
+            # (Up off the ground at its foot, or `floor`; and out in the open, not under the
+            # land it stands against.)
+            if (p.z < (floor if floor is not None else g) + 1.5 or p.z < g - 0.3
+                    or not paint.road_clear(c, p.x, p.y, 3.0)):
                 continue
             edge = False
             for t in range(8):

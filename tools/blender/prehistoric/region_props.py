@@ -408,18 +408,16 @@ def swamp_tree(c, variant=0):
         h = 9.0 + 2.0 * variant
         tube(bm, [(0, 0, -0.6), (0.1, 0.05, 1.6), (0.6, 0.2, h * 0.4), (-0.4, -0.2, h * 0.72), (0.2, 0.3, h)],
              [1.25, 0.8, 0.6, 0.48, 0.32], n=8)
+        # (Low roots, flaring from the trunk's foot down into the mud; no knees poking up out
+        # of the ground round it: Blake, Bonebog note 16, "I want them lower ... roots
+        # sticking out of the ground and it looks weird".)
         for i in range(7):
             a = i * math.tau / 7 + 0.3 * variant + 0.25 * rnd(i + variant * 7)
-            up = 1.8 + 1.4 * rnd(i * 3 + variant)
-            reach = 2.8 + 1.6 * rnd(i * 5 + variant)
+            up = 0.7 + 0.5 * rnd(i * 3 + variant)
+            reach = 2.2 + 1.0 * rnd(i * 5 + variant)
             at = lambda r, z: (r * math.cos(a), r * math.sin(a), z)  # noqa: E731
-            tube(bm, [at(0.5, up), at(1.3, up * 0.85), at(reach * 0.75, up * 0.35), at(reach, -0.05), at(reach * 1.2, -0.7)],
-                 [0.32, 0.27, 0.2, 0.14, 0.08], n=5)
-        for i in range(5):  # cypress knees
-            a = i * 1.7 + variant
-            r = 3.2 + 1.2 * rnd(i + 20)
-            x, y = r * math.cos(a), r * math.sin(a)
-            tube(bm, [(x, y, -0.4), (x, y, 0.5 + 0.5 * rnd(i + 30))], [0.22, 0.06], n=5)
+            tube(bm, [at(0.6, up), at(1.2, up * 0.7), at(reach * 0.75, up * 0.2), at(reach, -0.25), at(reach * 1.15, -0.8)],
+                 [0.4, 0.32, 0.22, 0.15, 0.08], n=5)
         trunk = _faces(bm, 0)
         k0 = len(bm.faces)
         for dx, dy, dz, r in ((0.2, 0.3, h + 0.6, 3.6), (2.8, -0.9, h - 1.0, 2.6), (-2.6, 1.1, h - 0.8, 2.8),

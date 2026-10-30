@@ -814,6 +814,46 @@ def landmarks(c, ground, spurs):
         sx, sy = px - math.cos(rot) * (24.0 * k_size - k * 2.6), py - math.sin(rot) * (24.0 * k_size - k * 2.6)
         box(c, "Pyramid Stair %d" % k, sx, sy, 2.0, 4.0, WATER_Z - 2.0, WATER_Z + 1.0 + k * 3.4, ("bog_carved", "wall"),
             rot=rot, role="visual")
+    # The bay's walls made rocky plateaus (Blake, Bonebog notes 19 and 20: "this wall is
+    # bland, lets make it have more rocky plateau features", "lets make this wall look
+    # better"): buttresses of the swamp's mossy rock standing out of them, stepped in
+    # flat-topped tiers, ferns and shrubs along their ledges.
+    ca, sa = math.cos(rot), math.sin(rot)
+    base = ground(px - ca * 30.0, py - sa * 30.0)
+    beds = [("moss_rock", "wall"), ("canyon_rock_moss", "wall"), ("canyon_rock_grey", "wall"), ("moss_rock", "wall")]
+    n_out = 0
+    for k, (u, v, side) in enumerate(((31.0, -22.0, 0), (31.0, 3.0, 0), (31.0, 26.0, 0), (14.0, -31.0, 1), (-12.0, -31.0, 1),
+                                      (14.0, 31.0, 1), (-12.0, 31.0, 1))):
+        x, y = px + u * ca - v * sa, py + u * sa + v * ca
+        if not paint.road_clear(c, x, y, 14.0):
+            continue
+        # (Against the bay's wall, standing out of it, up toward the wall's top.)
+        uu, vv = (u + 12.0, v) if side == 0 else (u, v + math.copysign(12.0, v))
+        top = ground(px + uu * ca - vv * sa, py + uu * sa + vv * ca)
+        h = base + (top - base) * (0.55 + 0.12 * (k % 3))
+        if h < base + 6.0:
+            continue
+        ang = rot + (math.pi / 2 if side == 0 else 0.0)
+        rock = c.rock_mass("Bay Plateau %d" % k, x, y, 11.0 + 2.0 * (k % 2), 7.0, h, z0=base - 4.0, n=18, seed=70 + k,
+                           angle=ang, base=base,
+                           bands=[(1.0, 0.0), (1.0, 0.3), (0.86, 0.33), (0.84, 0.6), (0.7, 0.63), (0.68, 0.85),
+                                  (0.55, 0.88), (0.52, 1.0)])
+        groups = {}
+        mw = rock.matrix_world
+        for poly in rock.data.polygons:
+            cen = mw @ poly.center
+            if poly.normal.z > 0.6:
+                groups.setdefault(("bog_moss_ground", "grass"), []).append(poly.index)
+            else:
+                f = (cen.z - base) / max(1.0, h - base)
+                groups.setdefault(beds[min(len(beds) - 1, int(f * len(beds)))], []).append(poly.index)
+        for mat, faces in groups.items():
+            c.assign(rock, c.lib(*mat), faces)
+        rock.data.shade_flat()
+        if not RUIN:
+            vd.ledge_greens(c, rock, ground, seed=80 + k, every=0.7, floor=base)
+        n_out += 1
+    print("bonebog bay: %d rock plateaus" % n_out)
 
 
 def ruined(c, ground, spurs):

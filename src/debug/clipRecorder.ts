@@ -3,8 +3,8 @@
  * saved as a video, with the sound, and beside it a JSON file of your kart's state every
  * frame, so a bug can be watched and then replayed exactly.
  *
- * It's off until you turn it on (the review tool's CLIPS button, F2; the choice is
- * remembered in this browser), so it costs nothing while you just play. While it's on,
+ * It's off until you turn it on (the review tool's CLIPS button, F2), every visit, so it
+ * costs nothing while you just play; a red REC badge shows while it runs. While it's on,
  * two recorders run, half a cycle apart, each restarting every CYCLE seconds; F4 takes
  * whichever has been running longer. Each frame the game's 3D view and
  * the HUD are drawn into one canvas with a line of readings under it (time, speed,
@@ -112,12 +112,21 @@ export function createClipRecorder(src: ClipSources) {
 
   /** Browsers only allow sound after a key or click, so filming starts on the first one. */
   let gestured = false;
+  // (Off at the start of every visit, not remembered: left on, it held the dev game at
+  // ~16 fps for days without anyone knowing why, Blake, Oct 29. And while it's on, a red
+  // REC badge says so.)
   let enabled = false;
   try {
-    enabled = localStorage.getItem(PREF) === "on";
+    localStorage.removeItem(PREF);
   } catch {
-    // no storage: off
+    // no storage
   }
+  const badge = document.createElement("div");
+  badge.textContent = "● REC (F4 saves a clip)";
+  badge.style.cssText =
+    "position:fixed;right:12px;top:12px;z-index:200;padding:3px 8px;background:rgba(120,0,0,.85);" +
+    "color:#fff;font:bold 12px ui-monospace,Menlo,monospace;border-radius:4px;pointer-events:none;display:none";
+  document.body.appendChild(badge);
   const stopAll = () => {
     for (const r of recs) {
       r.dead = true;
@@ -132,11 +141,7 @@ export function createClipRecorder(src: ClipSources) {
   const setEnabled = (on: boolean) => {
     if (on === enabled) return;
     enabled = on;
-    try {
-      localStorage.setItem(PREF, on ? "on" : "off");
-    } catch {
-      // not remembered
-    }
+    badge.style.display = on ? "block" : "none";
     if (!on) stopAll();
     clipSwitch.on = on;
     say(on ? "Clip recorder ON: F4 saves the last 20-40 s" : "Clip recorder off", 3);

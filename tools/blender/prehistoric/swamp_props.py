@@ -54,7 +54,8 @@ def swamp_giant(c, variant=0):
             ca, sa = math.cos(a), math.sin(a)
             reach = 10.0 + 5.0 * rnd(i + variant * 3)
             # A curved fin: thick at the trunk, sweeping down and out to the water.
-            top_z = 7.0 + 3.0 * rnd(i * 2 + variant)
+            # (Low, close to the mud: Blake, Bonebog note 17, "lets lower the roots".)
+            top_z = 3.6 + 1.4 * rnd(i * 2 + variant)
             prof = [(3.2, top_z), (reach * 0.35, top_z * 0.45), (reach * 0.7, top_z * 0.15), (reach, -1.5)]
             off = Vector((-sa, ca, 0)) * 0.7
             up = [bm.verts.new(Vector((r * ca, r * sa, z)) + off * (1.2 - 0.25 * k)) for k, (r, z) in enumerate(prof)]
@@ -67,7 +68,7 @@ def swamp_giant(c, variant=0):
             if i % 2 == 0:
                 b = a + 0.35
                 r2 = reach * 0.8
-                tube(bm, [(3.0 * math.cos(b), 3.0 * math.sin(b), 8.0), (r2 * 0.7 * math.cos(b), r2 * 0.7 * math.sin(b), 5.0), (r2 * math.cos(b), r2 * math.sin(b), -1.5)], [0.9, 0.7, 0.6], n=6)
+                tube(bm, [(3.0 * math.cos(b), 3.0 * math.sin(b), 4.2), (r2 * 0.6 * math.cos(b), r2 * 0.6 * math.sin(b), 2.4), (r2 * math.cos(b), r2 * math.sin(b), -1.5)], [0.9, 0.7, 0.6], n=6)
         limbs = []
         for i in range(6):
             a = i * math.tau / 6 + 0.3 + variant
