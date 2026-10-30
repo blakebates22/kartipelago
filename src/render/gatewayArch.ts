@@ -7,17 +7,18 @@
  *
  * a cave mouth in a hillock of the world's own rock (one mass, weathered in bands, moss
  * or snow on its top, the hill closing over the tunnel behind so it's rock from every
- * side), the course's glow deep inside, a carved sign hung clear in front of the rock
+ * side), the way through a flat swirl of the course's glow filling the mouth (valley
+ * polish 19), a carved sign hung clear in front of the rock
  * with the name cut in big painted letters, and a torch either side: a carved post, an
  * iron basket and a living fire (layered flames that flicker and lick, embers rising).
  * A dragon's lair is the same in scorched rock with a red glow and red fire.
  *
- * Visual only (the gateway's circle is what you drive into). Local space: the mouth
- * faces +z (the way you come out), the tunnel runs back to -z.
+ * Visual only (the gateway's circle is what you drive into; the overworld makes its rock
+ * and posts solid). Local space: the mouth faces +z (the way you come out).
  */
 import * as THREE from "three";
 import { batchStatic } from "./batchStatic";
-import { createFire, glowTexture, type Fire } from "./fire";
+import { createFire, type Fire } from "./fire";
 
 export type ArchTheme =
   "prehistoric" | "ember" | "frostveil" | "desert" | "beach" | "dragon" | "lair";
@@ -280,10 +281,10 @@ function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
     out.x += nx * d;
     out.y += Math.max(-out.y, ny * d);
     out.z += nz * d * 0.8;
-    // (Its feet run 3 m down into the ground, so where the land falls away under one
+    // (Its feet run 6 m down into the ground, so where the land falls away under one
     // side it still meets the land: Blake, valley polish 18, note 1, "the portal is kind
     // of floating on this side".)
-    if (out.y < 0.05) out.y = -3.0;
+    if (out.y < 0.05) out.y = -6.0;
     return out;
   };
   const NU = 84;
@@ -339,6 +340,26 @@ function rockMass(th: (typeof THEMES)[ArchTheme], seed: number) {
   return g;
 }
 
+/** How the way through looks: 0 swirl, 1 light, 2 ripple, 3 window, 4 glow (a
+ * debugging override: `window.__kpPortalStyle`). */
+const PORTAL_STYLE = 1; // (B, light pouring out: Blake, Oct 30, "lets do b for now")
+function portalStyle() {
+  const o = (globalThis as { __kpPortalStyle?: number }).__kpPortalStyle;
+  return typeof o === "number" ? o : PORTAL_STYLE;
+}
+
+/** The mouth's outline: upright sides from `bottom` up to the springing, a half circle of
+ * radius `r` over the ground. */
+function archShape(r: number, bottom: number) {
+  const sh = new THREE.Shape();
+  sh.moveTo(-r, bottom);
+  sh.lineTo(-r, 0.2);
+  sh.absarc(0, 0.2, r, Math.PI, 0, true);
+  sh.lineTo(r, bottom);
+  sh.lineTo(-r, bottom);
+  return sh;
+}
+
 export interface GatewayArch {
   readonly group: THREE.Group;
   update(t: number): void;
@@ -373,56 +394,91 @@ export function createGatewayArch(
   // 14, note 8, "lets remove these rocks in front of al portals. they look weird". Their
   // draws are still taken, so the sign hangs as it did.)
   for (let k = 0; k < 2 * (4 * 7 + 3 * 6); k++) r();
-  // The hole: a dark tunnel back into the rock, the course's glow deep inside.
-  const inside = keep(new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide }));
-  const tunnel = new THREE.Mesh(
-    geo(new THREE.CylinderGeometry(6.4, 6.4, 14, 16, 1, true, -Math.PI / 2, Math.PI)),
-    inside,
-  );
-  tunnel.rotation.x = -Math.PI / 2;
-  tunnel.position.set(0, 0.2, -5.6);
-  group.add(tunnel);
-  const back = new THREE.Mesh(
-    geo(new THREE.CircleGeometry(6.4, 16, 0, Math.PI)),
-    keep(new THREE.MeshBasicMaterial({ color: 0x0a0806 })),
-  );
-  back.position.set(0, 0.2, -12.5);
-  group.add(back);
-  // The tunnel's floor (not the grass outside running on in): trodden earth at the mouth,
-  // darkening only deep inside (it was black right to the mouth: Blake, Bonebog note 21,
-  // "lets not have any black on the floor here").
-  const floorGeo = geo(new THREE.PlaneGeometry(13, 10, 1, 8));
-  {
-    const earth = new THREE.Color(th.dark).lerp(new THREE.Color(th.rock), 0.35);
-    const deep = new THREE.Color(0x0a0806);
-    const fp = floorGeo.getAttribute("position");
-    const fc: number[] = [];
-    const c = new THREE.Color();
-    for (let i = 0; i < fp.count; i++) {
-      // (Laid flat, the plane's -y edge is at the mouth, its +y edge deep inside.)
-      const t = Math.min(1, Math.max(0, (fp.getY(i) + 5) / 10) * 1.4);
-      c.copy(earth).lerp(deep, t * t);
-      fc.push(c.r, c.g, c.b);
-    }
-    floorGeo.setAttribute("color", new THREE.Float32BufferAttribute(fc, 3));
-  }
-  const floor = new THREE.Mesh(floorGeo, keep(new THREE.MeshBasicMaterial({ vertexColors: true })));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.set(0, 0.22, -7.8);
-  group.add(floor);
-  const glowTex = glowTexture(o.glow, true); // (shared: not ours to dispose)
-  const glowMat = keep(
-    new THREE.MeshBasicMaterial({
-      map: glowTex,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+  // The way through: one flat glowing surface filling the mouth, in the arch's own shape,
+  // a slow swirl in the world's colour, bright in the middle, a soft rim where it meets the
+  // rock, and on down into the ground so it always meets the floor. (It was a black tunnel
+  // lined inside with a disc deep in it, which never met the ground: Blake, valley polish
+  // 19, note 1, "maybe we just have the portal flat".)
+  const portalGeo = geo(new THREE.ShapeGeometry(archShape(6.9, -2.5), 24));
+  const portalMat = keep(
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uColor: { value: new THREE.Color(o.glow) },
+        uDeep: { value: new THREE.Color(o.glow).multiplyScalar(0.18) },
+        uStyle: { value: portalStyle() },
+      },
+      vertexShader: /* glsl */ `
+        varying vec2 vP;
+        void main() {
+          vP = position.xy;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform float uTime;
+        uniform float uStyle;
+        uniform vec3 uColor;
+        uniform vec3 uDeep;
+        varying vec2 vP;
+        float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        void main() {
+          vec2 c = vP - vec2(0.0, 3.2);
+          float r = length(c);
+          float a = atan(c.y, c.x);
+          vec3 col;
+          if (uStyle < 0.5) {
+            // Swirl: spiral arms turning slowly in, a bright core.
+            float arms = 0.5 + 0.5 * sin(a * 3.0 + log(r + 0.4) * 5.0 - uTime * 1.6);
+            col = mix(uDeep, uColor, 0.25 + 0.45 * arms * smoothstep(7.0, 0.5, r));
+            col = mix(col, vec3(1.0, 0.97, 0.9), exp(-r * r * 0.09) * 0.85);
+            col += uColor * smoothstep(4.8, 6.6, r) * (0.6 + 0.4 * sin(a * 9.0 + uTime * 2.3)) * 0.55;
+          } else if (uStyle < 1.5) {
+            // Light: warm light pouring out, brightest low in the middle, soft shafts
+            // drifting up, motes of dust.
+            float y = clamp(vP.y / 7.0, 0.0, 1.0);
+            float x = abs(vP.x) / 6.9;
+            float shafts = 0.5 + 0.5 * sin(vP.x * 2.3 + sin(vP.y * 0.7 + uTime * 0.4) * 1.5 + uTime * 0.3);
+            float glow = (1.0 - y * 0.7) * (1.0 - x * x * 0.8);
+            col = mix(uColor, vec3(1.0, 0.96, 0.86), glow * (0.75 + 0.25 * shafts));
+            vec2 m = vec2(vP.x * 1.6, vP.y * 1.6 - uTime * 0.6);
+            vec2 cell = floor(m);
+            float mote = step(0.93, h21(cell)) * (1.0 - smoothstep(0.05, 0.14, length(fract(m) - 0.5)));
+            col += mote * 0.6;
+          } else if (uStyle < 2.5) {
+            // Ripple: a standing pool on its side, rings spreading out from the middle.
+            float rings = 0.5 + 0.5 * sin(r * 3.2 - uTime * 2.4);
+            float shimmer = 0.5 + 0.5 * sin(a * 6.0 + r * 1.5 + uTime);
+            col = mix(uDeep * 2.2, uColor, 0.35 + 0.35 * rings);
+            col += vec3(0.9, 0.95, 1.0) * pow(rings, 8.0) * 0.35 * shimmer;
+            col = mix(col, vec3(1.0), exp(-r * r * 0.25) * 0.6);
+            col += uColor * smoothstep(5.6, 6.8, r) * 0.6;
+          } else if (uStyle < 3.5) {
+            // Window: a glimpse of the world beyond, its sky going pale to the horizon,
+            // a sun, far hills.
+            float y = vP.y;
+            vec3 sky = mix(vec3(1.0, 0.95, 0.85), uColor, smoothstep(0.5, 7.0, y));
+            float hills = 1.4 + 0.6 * sin(vP.x * 0.9 + 1.3) + 0.35 * sin(vP.x * 2.3);
+            vec3 land = uDeep * 2.5;
+            col = y < hills ? land : sky;
+            col = mix(col, vec3(1.0, 0.98, 0.9), (1.0 - smoothstep(0.7, 1.0, length(vP - vec2(1.8, 4.6)))) * step(hills, y));
+            col *= 0.85 + 0.15 * sin(uTime * 0.8 + vP.y);
+          } else {
+            // Glow: a cave going in, dark warm earth at the edges and a bright opening far
+            // off in the middle (flat: it only looks deep).
+            float d = length(vec2(vP.x * 0.9, (vP.y - 2.0) * 1.1));
+            vec3 earth = uDeep * 1.6 + vec3(0.06, 0.04, 0.02);
+            col = mix(vec3(1.0, 0.95, 0.85), uColor, smoothstep(0.4, 1.6, d));
+            col = mix(col, earth, smoothstep(1.8, 6.5, d));
+            col *= 0.92 + 0.08 * sin(uTime * 1.3);
+          }
+          gl_FragColor = vec4(col, 1.0);
+        }`,
       side: THREE.DoubleSide,
     }),
   );
-  const glow = new THREE.Mesh(geo(new THREE.PlaneGeometry(9, 9)), glowMat);
-  glow.position.set(0, 3.6, -11.8);
-  group.add(glow);
+  const portal = new THREE.Mesh(portalGeo, portalMat);
+  portal.position.set(0, 0, -0.6);
+  group.add(portal);
 
   // The sign: in front of the rock, clear of it, hung from two pegs on ropes.
   const signTex = signTexture(o.label, th, o.seed);
@@ -493,8 +549,7 @@ export function createGatewayArch(
   return {
     group,
     update(t) {
-      glow.rotation.z = t * 0.6;
-      glowMat.opacity = 0.75 + 0.2 * Math.sin(t * 2.1 + o.seed);
+      (portalMat.uniforms.uTime as { value: number }).value = t + o.seed;
       for (const f of fires) f.update(t);
       sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.015;
     },

@@ -196,7 +196,10 @@ def classify(c, n, info):
     look = POCKET_LOOK[wi["pocket"]]
     # (on the walls, only the shelves' flat tops are ground: the faces between them rock)
     steep = 0.62 if wi["t"] <= 0.05 else 0.8
-    if n.z < steep:
+    # (A steep bit of the floor, a bump by a river's bank or a road's verge, a hillock,
+    # isn't a cliff: grass, not a triangle of rock, Blake, valley polish 20, notes 1, 2.)
+    low = wi["t"] <= 0.05 and wi["past"] <= 0
+    if n.z < steep and not low:
         if RUIN and c.y > L.GORGE[1] + 20 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
             return ("obsidian_cliff", "wall")  # (the gorge's walls are scorched black)
         beds = STRATA[look]
@@ -222,7 +225,9 @@ def classify(c, n, info):
     # note 11.)
     # (A smooth band along the banks too, by distance, not only where the land dips under
     # the water: the sand came in ragged scraps, Blake, Cascade note 10.)
-    if (d < RIVER_HW + 7 and c.z < wz + 0.35) or (d < RIVER_HW + 4.5 and c.z < wz + 2.5):
+    # (Grass right down to the water's edge now, the sand only under it: valley polish
+    # 19, note 2, "too much sand".)
+    if d < RIVER_HW + 8 and c.z < wz + 0.4:  # (under the water, which stands 0.3 over its bed level)
         return ("valley_sand", "water")  # (the river's wadeable)
     if RUIN and lobe != "bonebog" and burn(c.x, c.y) > 0.5:
         return ("scorched_ground", "dirt")

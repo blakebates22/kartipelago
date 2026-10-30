@@ -103,6 +103,7 @@ import {
   type StoneState,
 } from "../render/storyProps";
 import { createGatewayArch, type ArchTheme } from "../render/gatewayArch";
+import { bumpable, stepBump, type Bumpable } from "../overworld/bump";
 import { instaWin } from "../debug/devFlags";
 import {
   airAt,
@@ -400,7 +401,7 @@ function regionCave(game: Game, session: Session, region: Region) {
   const off = shut ? 1.6 : 3.8;
   const fx = Math.sin(out);
   const fz = Math.cos(out);
-  const guards: { v: VillagerView; x: number; z: number }[] = [-1, 1].map((sd, i) => {
+  const guards: { v: VillagerView; x: number; z: number; b: Bumpable }[] = [-1, 1].map((sd, i) => {
     let x = c.gate.x + rx * sd * off + fx * 1.2;
     let z = c.gate.z + rz * sd * off + fz * 1.2;
     search: for (const f of [1.2, 2.2, 3.2, 4.4])
@@ -413,8 +414,14 @@ function regionCave(game: Game, session: Session, region: Region) {
           break search;
         }
       }
-    return { v: createGuardView(session.root, folk, 7 + i * 11), x, z };
+    return { v: createGuardView(session.root, folk, 7 + i * 11), x, z, b: bumpable(x, z, 0.55, 0) };
   });
+  // (Solid, and they flinch and step back when you bump them: valley polish 20, note 4.)
+  for (const g of guards) {
+    g.b.solid.height = groundAt(g.x, g.z) + 2.4;
+    session.solids.push(g.b.solid);
+  }
+  const standsAt = (x: number, z: number) => session.standFits(x, z, PROBE_Y, 0.45);
   if (shut) session.solids.push(gateSolid({ gate: c.gate }, groundAt(c.gate.x, c.gate.z)));
   // The cave's mouth: a dark arch of rock round the mark.
   const group = new THREE.Group();
@@ -447,9 +454,11 @@ function regionCave(game: Game, session: Session, region: Region) {
   let banner = 0;
   let wants = false;
   return {
-    step(x: number, z: number, dt: number, t: number) {
-      for (const [i, g] of guards.entries())
-        g.v.update(g.x, groundAt(g.x, g.z), g.z, out + Math.PI + (i ? -0.2 : 0.2), 0, t);
+    step(x: number, z: number, dt: number, t: number, speed = 0) {
+      for (const [i, g] of guards.entries()) {
+        const at = stepBump(g.b, { x, z, speed }, dt, standsAt);
+        g.v.update(at.x, groundAt(at.x, at.z), at.z, out + Math.PI + (i ? -0.2 : 0.2), at.cue, t);
+      }
       banner = Math.max(0, banner - dt);
       const now2 = Math.hypot(x - c.gate.x, z - c.gate.z) < c.gate.width + 5;
       if (now2 && !near && now.talk) wants = true;
@@ -481,7 +490,11 @@ function regionCave(game: Game, session: Session, region: Region) {
           );
     },
     dispose() {
-      for (const g of guards) g.v.dispose();
+      for (const g of guards) {
+        g.v.dispose();
+        const k = session.solids.indexOf(g.b.solid);
+        if (k >= 0) session.solids.splice(k, 1);
+      }
       session.root.remove(group);
       rock.dispose();
       dark.dispose();
@@ -692,17 +705,32 @@ function regionDressing(game: Game, session: Session, region: Region) {
     [20, 4],
   ].map(([f, r], i) => {
     const [x, z] = P(f!, r!);
-    // (The dragon's own guards: Dragon Kingdom folk, as in The Hundredth Summer.)
-    return { v: createGuardView(session.root, "dragon", 31 + i * 9), x, z };
+    // (The dragon's own guards: Dragon Kingdom folk, as in The Hundredth Summer. Solid,
+    // flinching when bumped: valley polish 20, note 3.)
+    const b = bumpable(x, z, 0.55, groundAt(x, z) + 2.4);
+    session.solids.push(b.solid);
+    return { v: createGuardView(session.root, "dragon", 31 + i * 9), x, z, b };
   });
+  const standsAt = (x: number, z: number) => session.standFits(x, z, PROBE_Y, 0.45);
   return {
-    step(t: number) {
+    step(
+      t: number,
+      dt = 0,
+      you: { x: number; z: number; speed: number } = { x: 1e9, z: 1e9, speed: 0 },
+    ) {
       for (const b of banners) b.v.update(b.x, groundAt(b.x, b.z), b.z, b.h, t);
-      for (const g of guards) g.v.update(g.x, groundAt(g.x, g.z), g.z, sp.heading + Math.PI, 0, t);
+      for (const g of guards) {
+        const at = stepBump(g.b, you, dt, standsAt);
+        g.v.update(at.x, groundAt(at.x, at.z), at.z, sp.heading + Math.PI, at.cue, t);
+      }
     },
     dispose() {
       for (const b of banners) b.v.dispose();
-      for (const g of guards) g.v.dispose();
+      for (const g of guards) {
+        g.v.dispose();
+        const k = session.solids.indexOf(g.b.solid);
+        if (k >= 0) session.solids.splice(k, 1);
+      }
     },
   };
 }
@@ -1269,8 +1297,11 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
     },
     frame(dt, actions, top) {
       clock += dt;
-      cave?.step(session.entrants[0]!.state.x, session.entrants[0]!.state.z, top ? dt : 0, clock);
-      dressing?.step(clock);
+      {
+        const st = session.entrants[0]!.state;
+        cave?.step(st.x, st.z, top ? dt : 0, clock, st.speed);
+        dressing?.step(clock, top ? dt : 0, st);
+      }
       pactStone?.step(clock);
       gateways?.update(clock);
       if (!top) return;

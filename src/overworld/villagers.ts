@@ -161,6 +161,8 @@ interface Villager {
   name: string;
   line: string;
   radius: number;
+  /** Seconds of cowering left (bumped by a kart). */
+  flinch: number;
   solid: SolidCircle;
   view?: VillagerView;
   rand: () => number;
@@ -268,6 +270,7 @@ export function createVillagers(opts: {
         name: villagerName(h.folk, seed),
         line: LINES[h.folk][seed % LINES[h.folk].length]!,
         radius: size.radius,
+        flinch: 0,
         solid,
         view: opts.root ? createVillagerView(opts.root, h.folk, seed) : undefined,
         rand,
@@ -308,7 +311,25 @@ export function createVillagers(opts: {
         const dz = you.z - v.z;
         const dyou = Math.hypot(dx, dz);
         let want = 0;
-        if (dyou < 7 && Math.abs(you.speed) > 4) {
+        // Run into: they cower a moment and are shoved a step back from the kart (Blake,
+        // valley polish 20: "it would be kind of cool if all npc flinched or something if
+        // you crashed into them").
+        if (dyou < v.radius + 1.3 && Math.abs(you.speed) > 2 && v.flinch < 0.4) {
+          v.flinch = 0.9;
+          const push = Math.min(0.9, 0.12 * Math.abs(you.speed));
+          const nx = v.x - (dx / (dyou || 1)) * push;
+          const nz = v.z - (dz / (dyou || 1)) * push;
+          const g = free(nx, nz, v.y, v.radius * 0.8);
+          if (g && Math.abs(g.height - v.y) < 0.6) {
+            v.x = nx;
+            v.z = nz;
+          }
+          v.heading = Math.atan2(dx, dz);
+        }
+        v.flinch = Math.max(0, v.flinch - dt);
+        if (v.flinch > 0) {
+          // (Cowering: not walking off yet.)
+        } else if (dyou < 7 && Math.abs(you.speed) > 4) {
           // A kart coming: out of its way (if the way is clear; else it stands its ground).
           const ox = v.x - (dx / (dyou || 1)) * 5;
           const oz = v.z - (dz / (dyou || 1)) * 5;
@@ -362,7 +383,7 @@ export function createVillagers(opts: {
         v.solid.x = v.x;
         v.solid.z = v.z;
         v.solid.height = v.y + 2.5;
-        v.view?.update(v.x, v.y, v.z, v.heading, v.walk, t);
+        v.view?.update(v.x, v.y, v.z, v.heading, v.flinch > 0 ? { gesture: "cower" } : v.walk, t);
       }
     },
     near() {

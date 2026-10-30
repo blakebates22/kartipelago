@@ -699,15 +699,15 @@
     {
       "id": "torch_27",
       "type": "torch",
-      "x": 92.95,
-      "y": 29.75,
+      "x": 92.94,
+      "y": 29.9,
       "z": -97.07
     },
     {
       "id": "fire_09",
       "type": "fire",
-      "x": 92.95,
-      "y": 29.57,
+      "x": 92.94,
+      "y": 29.72,
       "z": -97.07,
       "size": 0.5
     },
@@ -715,14 +715,14 @@
       "id": "torch_28",
       "type": "torch",
       "x": 73.16,
-      "y": 29.63,
+      "y": 29.69,
       "z": -105.73
     },
     {
       "id": "fire_10",
       "type": "fire",
       "x": 73.16,
-      "y": 29.45,
+      "y": 29.51,
       "z": -105.73,
       "size": 0.5
     },
@@ -745,14 +745,14 @@
       "id": "torch_30",
       "type": "torch",
       "x": 63.71,
-      "y": 29.65,
+      "y": 29.63,
       "z": -94.11
     },
     {
       "id": "fire_12",
       "type": "fire",
       "x": 63.71,
-      "y": 29.47,
+      "y": 29.45,
       "z": -94.11,
       "size": 0.5
     },
@@ -760,14 +760,14 @@
       "id": "torch_31",
       "type": "torch",
       "x": 75.05,
-      "y": 29.78,
+      "y": 29.75,
       "z": -75.9
     },
     {
       "id": "fire_13",
       "type": "fire",
       "x": 75.05,
-      "y": 29.6,
+      "y": 29.57,
       "z": -75.9,
       "size": 0.5
     },
@@ -775,14 +775,14 @@
       "id": "torch_32",
       "type": "torch",
       "x": 54.9,
-      "y": 29.96,
+      "y": 29.94,
       "z": -83.38
     },
     {
       "id": "fire_14",
       "type": "fire",
       "x": 54.9,
-      "y": 29.78,
+      "y": 29.76,
       "z": -83.38,
       "size": 0.5
     },
@@ -923,7 +923,7 @@
       "puzzle": "secret",
       "x": 137.48,
       "z": -94.99,
-      "heading": 1.2297500194082203,
+      "heading": 1.2297483265681146,
       "width": 9.0,
       "prize_x": 129.0,
       "prize_z": -98.0
@@ -932,14 +932,14 @@
       "id": "torch_33",
       "type": "torch",
       "x": 138.24,
-      "y": 32.7,
+      "y": 32.73,
       "z": -88.46
     },
     {
       "id": "torch_34",
       "type": "torch",
       "x": 142.19,
-      "y": 32.7,
+      "y": 32.73,
       "z": -99.58
     },
     {
@@ -948,7 +948,7 @@
       "gateway": "riverbend",
       "x": -193.68,
       "z": -71.01,
-      "heading": 1.2317034019699933
+      "heading": 1.2317703806321694
     },
     {
       "id": "gateway_spot_02",
@@ -956,7 +956,7 @@
       "gateway": "cascade",
       "x": 176.27,
       "z": -162.55,
-      "heading": -1.7846546675108146
+      "heading": -1.784668037219703
     },
     {
       "id": "gateway_spot_03",
@@ -999,20 +999,20 @@
     {
       "id": "chimney_02",
       "type": "chimney",
-      "x": -165.9,
-      "y": 7.73,
-      "z": -49.15
+      "x": -161.81,
+      "y": 8.41,
+      "z": -3.31
     },
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": -171.78,
-      "z": -43.39,
-      "y": 0.76,
+      "x": -160.71,
+      "z": -11.47,
+      "y": 1.49,
       "r": 14.0,
       "n": 2,
       "folk": "valley",
-      "heading": 2.419
+      "heading": -0.061
     },
     {
       "id": "chimney_03",
@@ -1247,9 +1247,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "1b3345ccbf6898a3a9bee1a3fdf87d5250871efe1d7688bc702ee752af1123c1",
-    "valley_layout.py": "3a93bd20f9b6c5de7f7f6427776a45a5092df2f37086d9d181e8f35459ca1a32",
-    "valley_region.py": "1360c78619fe6af5048462c897b81b23c08941b2754b9cdef10f649dfa2f27cc",
+    "valley_dress.py": "3aaf593890ce52fe82b4ba143c69773d134ffae312275ae796c9e00ef41a1fe3",
+    "valley_layout.py": "273d25b4e2cee56b8066cdd86d7db8fc413a9d3cc7b95302f3997b402f2dc8e2",
+    "valley_region.py": "6adceb60c1e9d3042d9d78ddc4f7e6b215c118d9f0ec37f4a8f352c6f184a5de",
     "valley_village.py": "06f3a7a0b7fc3506ab66dc76ac9817ea172640d7159a7fc211564cdb41c5ad30"
   }
 }

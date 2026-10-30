@@ -261,6 +261,12 @@ def depth_paint(ob, depth):
     ca.data.foreach_set("color", cols)
 
 
+# The rivers' and lakes' surface over their beds' level (was 0.1 under it): full, up over
+# the low sand flats to the grassy banks (Blake, valley polish 19, note 2, "the water needs
+# to be more full").
+WATER_UP = 0.3
+
+
 def water(c, ground=None):
     """The rivers and lakes in living water (Blake, notes 18 and 44: "in our original Oasis
     level before the rework, we had high quality water; let's bring it in"): the lagoon
@@ -273,15 +279,15 @@ def water(c, ground=None):
             n = max(1, int(math.hypot(bx - ax, by - ay) / 3.0))
             for k in range(n):
                 t = k / n
-                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 12, lerp(az, bz, t) - 0.1))
-        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 12, riv[-1][2] - 0.1))
+                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 12, lerp(az, bz, t) + WATER_UP))
+        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 12, riv[-1][2] + WATER_UP))
         # (Wide enough to cover the low grass along its banks: Blake, Riverbend note 11.)
         ob = c.ribbon("River %d" % j, river, 2 * RIVER_HW + 12, 0, mat, role="visual", steps=10)
         depth_paint(ob, lambda x, y: 1.0 - L.river_d(x, y)[0] / (RIVER_HW + 3.0))
         if ground:
             tuck(ob, ground, lambda x, y: L.river_d(x, y)[0] > RIVER_HW - 1.0)
     for k, (lx, ly, lr, lz) in enumerate(L.LAKES):
-        ob = c.disc("Lake %d" % k, lx, ly, lr + 6.0, lz - 0.1, mat, role="visual", n=36, wobble=0.12, seed=20 + k)
+        ob = c.disc("Lake %d" % k, lx, ly, lr + 6.0, lz + WATER_UP, mat, role="visual", n=36, wobble=0.12, seed=20 + k)
         bm = bmesh.new()
         bm.from_mesh(ob.data)
         bmesh.ops.poke(bm, faces=bm.faces[:])
@@ -321,6 +327,10 @@ def banks(c, ground, taken):
     rnd = random.Random(31)
     clumps = [props.cattails(c, v) for v in range(3)]
     pads = [props.lily_pad(c, v) for v in range(3)]
+
+    def deep(x, y, wz, r=1.6):
+        """Water at least 0.4 m deep under (x, y) and all round it, r out."""
+        return all(ground(x + dx, y + dy) < wz - 0.15 for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r)))
     lotus = props.lotus(c)
     logs = [props.log(c, v) for v in range(2)]
     reeds = props.reeds(c)
@@ -367,7 +377,11 @@ def banks(c, ground, taken):
                 a, r = rnd.uniform(0, math.tau), rnd.uniform(0, 3.0)
                 qx, qy = px + r * math.cos(a), py + r * math.sin(a)
                 bloom = m == 0 and k % 4 == 0
-                c.place(lotus if bloom else pads[(k + m) % 3], qx, qy, wz - 0.08, rot=rnd.uniform(0, math.tau),
+                # (Each only where the water's deep under all of it, flat on the surface:
+                # valley polish 19, note 2, "the lilly pads are floating on one side".)
+                if not deep(qx, qy, wz):
+                    continue
+                c.place(lotus if bloom else pads[(k + m) % 3], qx, qy, wz + WATER_UP + 0.02, rot=rnd.uniform(0, math.tau),
                         scale=(1.3 if bloom else 0.8) + 0.6 * rnd.random(), coll="Water Life", role="visual")
                 n[1] += 1
     # Round the lakes too.
@@ -385,7 +399,9 @@ def banks(c, ground, taken):
             a = m * 2.39996 + 1.0
             r = lr * math.sqrt(rnd.random()) * 0.8
             x, y = lx + r * math.cos(a), ly + r * math.sin(a)
-            c.place(lotus if m % 5 == 0 else pads[m % 3], x, y, lz - 0.08, rot=a, scale=1.0 + 0.5 * rnd.random(),
+            if not deep(x, y, lz):
+                continue
+            c.place(lotus if m % 5 == 0 else pads[m % 3], x, y, lz + WATER_UP + 0.02, rot=a, scale=1.0 + 0.5 * rnd.random(),
                     coll="Water Life", role="visual")
             n[1] += 1
         x, y = lx + (lr - 2.0) * math.cos(0.7 + k), ly + (lr - 2.0) * math.sin(0.7 + k)

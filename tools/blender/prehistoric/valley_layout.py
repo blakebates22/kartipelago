@@ -181,10 +181,19 @@ def natural(x, y):
     h = lerp(CAMP_Z, h, smooth((math.hypot(x - cx, y - cy) - cr) / 16.0))
     # The rivers' channels and the lakes.
     d, wz = river_d(x, y)
-    if d < RIVER_HW + 14:
+    if d < RIVER_HW + 8:
         # (Deeper than it was, 1.4 m: the water and the sand under its shallow edge fought,
         # Blake, Riverbend note 8, "perhaps we need to make the river deeper slightly".)
-        h = lerp(h, wz - 2.2, smooth((RIVER_HW + 14 - d) / 14.0))
+        # (Its banks steep, over 8 m, not 14: the gentle ones left a broad beach of sand
+        # with the water a thin strip down the middle, Blake, valley polish 19, note 2,
+        # "we need more water, there is way too much sand".)
+        h = lerp(h, wz - 2.2, smooth((RIVER_HW + 8 - d) / 8.0))
+    if d < RIVER_HW + 16:
+        # (And a bank: where the land round the water lay barely over it, it was a broad
+        # flat of sand; now it rises to 0.6 m over the water 7 m past the channel's
+        # edge, so the water fills its bed right up to a grassy bank with a thin beach.)
+        bank = wz - 2.2 + 2.8 * smooth((d - RIVER_HW - 1.5) / 6.0)
+        h = max(h, min(bank, wz + 0.6))
     for px, py, pr in POOLS:
         dp = math.hypot(x - px, y - py)
         if dp < pr + 12:
