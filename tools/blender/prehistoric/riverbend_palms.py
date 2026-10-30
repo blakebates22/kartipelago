@@ -433,7 +433,7 @@ def main():
     c.roads(kit.plan(c, specials, "road"))
     # A dirt shortcut through the village, cutting the last bend.
     c.shortcut("Village Shortcut", [(x, y, road_z(x, y) - 0.05) for x, y in SHORTCUT],
-               "valley_road", "dirt", width=8.0, shoulder_mat=("valley_grass", "dirt"))
+               "valley_road", "dirt", width=8.0, shoulder_mat=("valley_grass", "dirt"), flush=True)
     # (v2.2's footpath, rv.footpath, is out for now (Oct 24: Blake will come back to it).)
 
     c.terrain("Valley", -250, 250, -250, 250, 3.3, natural, classify)

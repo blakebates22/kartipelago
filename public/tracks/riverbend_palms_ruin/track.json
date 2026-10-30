@@ -30,7 +30,7 @@
       "id": "campfire_03",
       "type": "campfire",
       "x": 100,
-      "y": 0.87,
+      "y": 0.9,
       "z": 72
     },
     {
@@ -79,7 +79,7 @@
       "id": "torch_03",
       "type": "torch",
       "x": 100,
-      "y": 2.07,
+      "y": 2.1,
       "z": 72
     },
     {
@@ -219,14 +219,14 @@
       "id": "torch_23",
       "type": "torch",
       "x": 95.55,
-      "y": 1.99,
+      "y": 2.03,
       "z": 71.48
     },
     {
       "id": "torch_24",
       "type": "torch",
       "x": 99.91,
-      "y": 2.06,
+      "y": 2.1,
       "z": 72.06
     },
     {
@@ -317,7 +317,7 @@
       "id": "campfire_16",
       "type": "campfire",
       "x": 99.91,
-      "y": 1.46,
+      "y": 1.5,
       "z": 72.06
     },
     {
@@ -352,7 +352,7 @@
       "id": "chimney_03",
       "type": "chimney",
       "x": 100,
-      "y": 3.87,
+      "y": 3.9,
       "z": 72
     },
     {
@@ -498,8 +498,8 @@
   ],
   "generator": "tools/blender/prehistoric/riverbend_palms_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "riverbend_palms.py": "8adc1042bca96d200793848f56c93485c7b0e78f0d45777dadb69e69940c4f09",
+    "riverbend_palms.py": "5f589ed8d0fc7ee55bcba784e50278c247a7be139da7b9e663ce27f3f7050f30",
     "riverbend_review.py": "fb2bdd27d704582f3840b1899ff1662ee01ab3a86415554a1ffcb581df1fb4c2",
-    "riverbend_ruins.py": "98b33c37f60116fc5e3ac65cc619c2a0e759ec1459936ea7841da7388b3e79f0"
+    "riverbend_ruins.py": "1f7b48204b484fcc8e7d50688d7bdc6cda0a4900724bcc4b1f0ea13f0bf5c48e"
   }
 }

@@ -526,14 +526,16 @@ def main():
     while s <= t1 + 22:
         q = c.at(s)
         half = c.width / 2 + 3.0 + (7.0 if in_volcano(q.p.x, q.p.y, 0.85) else 0.0)
-        # (Under the road a little; beyond its edges it falls away like the shoulders, a
-        # metre lower at the walls, so it never stands above them.)
+        # (Under the road a little, banked with it; beyond its edges it falls away a little,
+        # so it never stands above them. It fell a metre to the walls, flat across: a
+        # gutter along the high side a kart that slid off couldn't climb back out of.)
         w = c.width / 2
+        tb = math.tan(math.radians(q.bank))
         # (And at its two ends it rises gently out of the ground, rather than starting with
         # an edge.)
         rise = 1.2 * (1.0 - min(1.0, (s - (t0 - 22)) / 18.0, ((t1 + 22) - s) / 18.0))
-        rows.append([bm.verts.new(q.p + q.r * a + Vector((0, 0, dz - rise)))
-                     for a, dz in ((-half, -1.25), (-w, -0.3), (0.0, -0.25), (w, -0.3), (half, -1.25))])
+        rows.append([bm.verts.new(q.p + q.r * a + Vector((0, 0, dz - a * tb - rise)))
+                     for a, dz in ((-half, -0.6), (-w, -0.25), (0.0, -0.25), (w, -0.25), (half, -0.6))])
         s += 2.0
     for lo, hi in zip(rows, rows[1:]):
         for k in range(4):

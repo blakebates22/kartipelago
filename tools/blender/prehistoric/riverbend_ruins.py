@@ -209,7 +209,7 @@ def main():
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "road"))
     c.shortcut("Village Shortcut", [(x, y, road_z(x, y) - 0.05) for x, y in rb.SHORTCUT],
-               "ruin_road", "dirt", width=8.0, shoulder_mat=("ruin_ash", "dirt"))
+               "ruin_road", "dirt", width=8.0, shoulder_mat=("ruin_ash", "dirt"), flush=True)
     # The old road: there to see, cut off at both ends by rubble (grass under it).
     c.side_road("Old Road", [(x, y, road_z(x, y) - 0.08) for x, y in OLD], "ruin_road", "dirt", width=13.0, shoulder=1.2,
                 shoulder_mat=("ruin_ash", "dirt"))

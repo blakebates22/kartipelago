@@ -11,8 +11,12 @@ import { readFile } from "node:fs/promises";
 import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
-/** The courses done so far (Oct 30: the Snow world's, standard and ruin). */
+/** The courses done so far (Oct 30: the Prehistoric world's but Bonebog Pyramid, which
+ * needs none, and the Snow world's; standard and ruin). */
 const COURSES = [
+  "riverbend_palms",
+  "cascade_caverns",
+  "ember_peak",
   "snowy_summit",
   "frostveil_citadel",
   "hearthglow_hollow",
@@ -230,6 +234,14 @@ const ALLOW: Record<string, number> = {
   snow_dragon_pass: 0.95,
   // (A few spots on the snowfield's ridge, 0.4.)
   aurora_rift: 0.45,
+  // (A spot or two where a road meets a path or a cave's mouth, 0.4-0.5.)
+  riverbend_palms: 0.5,
+  cascade_caverns: 0.55,
+  ember_peak: 0.45,
+  ember_peak_ruin: 0.45,
+  // (Beside the ruin's old road, which runs a metre under the new one there: the land
+  // between follows the old road.)
+  riverbend_palms_ruin: 1.3,
 };
 
 describe("back up onto the road", () => {
@@ -243,8 +255,13 @@ describe("back up onto the road", () => {
 });
 
 /** Known, and out of sight: where two of the valley's road pieces overlap at a seam (the
- * land between the lower piece and the upper one). */
-const SEAMS = new Set(["valley_region 24, 16", "valley_region 160, -48"]);
+ * land between the lower piece and the upper one); the foot of Cascade's ruined jump ramp,
+ * set into the canyon floor. */
+const SEAMS = new Set([
+  "valley_region 24, 16",
+  "valley_region 160, -48",
+  "cascade_caverns_ruin -256, 16",
+]);
 
 describe("no grass on the road", () => {
   for (const pkg of [...REGIONS, ...COURSES])

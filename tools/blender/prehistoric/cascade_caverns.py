@@ -417,7 +417,9 @@ def main():
     while s <= t1 + 22:
         q = c.at(s)
         inside_rock = in_tunnel_rock(q.p.x, q.p.y, 0.85)
-        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + (14.0 if inside_rock else 0.0), q.p.z - 0.25))
+        # (Tilted with the road: flat, its high side stood over the floor, a ledge a kart
+        # that slid off couldn't climb back.)
+        floor.append((q.p.x, q.p.y, 2 * (c.width / 2 + 3.6) + (14.0 if inside_rock else 0.0), q.p.z - 0.25, q.bank))
         s += 2.0
     c.ribbon("Tunnel Floor", floor, 26, 0, c.lib("ruin_dark", "road"), coll="Collision", role="collision", steps=4)
 
