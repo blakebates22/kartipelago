@@ -13,8 +13,9 @@ import { heightField, readGlb, type GlbMesh } from "./glb";
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
 /** What's a road (the race line's pieces, the side roads, aprons and lanes), by name. */
 const ROAD = /^(Road \d+ |.* Road$|.* Apron$|.* Lane$)/;
-/** A bridge: its sides are meant to be drops (railed, or over the water). */
-const BRIDGE = /^Road \d+ .*(bridge|boardwalk|pier)|^Pier/;
+/** Built drops: a bridge, a raised deck or causeway, a jump's ramp and landing, a cliff ledge, a ford (its sides are meant to fall away: a rail, water, or a jump). */
+const BRIDGE =
+  /^Road \d+ .*(bridge|boardwalk|pier|landing|ramp|kicker|jump|ford|launch|viaduct|ledge|dike|causeway|spiral)|^Pier/;
 /** The kart climbs 0.25 m; for now a few edges in the tunnels sit a little over that (the
  * skirt's lip under the shoulder), so the test allows 0.35 until the rollout tightens it. */
 const STEP = 0.35;
@@ -96,7 +97,9 @@ export async function roadSteps(pkg: string) {
       for (let i = 1; i <= 20; i++) {
         const qx = x + dx * i;
         const qz = z + dz * i;
-        const rq = roadH(qx, qz, top + 0.3);
+        const rq = roadH(qx, qz, top + 3);
+        // (A rail or barrier: the road's side climbing up, a wall we built on purpose.)
+        if (rq !== undefined && rq > top + 0.25) break;
         if (rq !== undefined && rq > top - 0.25) {
           top = rq;
           continue;

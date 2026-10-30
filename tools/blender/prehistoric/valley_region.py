@@ -407,7 +407,7 @@ def main():
 
     # (v4: finer, for the tiers' risers and shelves)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
-    ter = c.terrain("Valley", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge=True)
+    ter = c.terrain("Valley", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("valley_grass", "grass"))
 
     def ground(x, y):

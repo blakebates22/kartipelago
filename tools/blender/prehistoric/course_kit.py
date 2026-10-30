@@ -61,7 +61,7 @@ def lerp(a, b, t):
 class Sample:
     """A point on the route, every metre or so (Blender coordinates)."""
 
-    __slots__ = ("p", "t", "r", "w", "bank", "s", "ground")
+    __slots__ = ("p", "t", "r", "w", "bank", "s", "ground", "railed")
 
     def __init__(self, p, w, bank, s):
         self.p = p
@@ -71,6 +71,8 @@ class Sample:
         self.t = Vector((0, 1, 0))
         self.r = Vector((1, 0, 0))
         self.ground = True
+        # (A road with a barrier along it: a rail we built, the land beside it left as it is.)
+        self.railed = False
 
     def side(self, o, up=0.0):
         """The point `o` metres to the right of the centre, on the banked road, plus `up`."""
@@ -362,6 +364,7 @@ class Course:
             materials.apply_to_road(ob, self.lib(*dm), "deck", de["tileMetres"], 0, materials.aspect(de))
         for smp in self.span(s0, s1):
             smp.ground = ground
+            smp.railed = barrier > 0
         ob["kp_from"] = round(s0 % self.length, 2)
         ob["kp_to"] = round(s1 % self.length, 2)
         self.pieces.append(ob)
@@ -593,7 +596,7 @@ class Course:
             ev.to_mesh_clear()
         return trees
 
-    def verge_height(self, x, y, z, under=0.2, edge_pad=4.0, slope=3.0, reach=7.5):
+    def verge_height(self, x, y, z, under=0.2, edge_pad=4.0, slope=3.0, reach=7.5, fill=1.5):
         """The land at (x, y), height z, brought up to meet the roads beside it (Blake,
         valley polish 14, note 1: "sometimes the road is higher than the ground and if I
         fall off the road and try to go back on the road, I cant"). A road is a slab with
@@ -625,26 +628,36 @@ class Course:
             out = max(0.0, abs(o) - half)
             key = (round(out, 1), -zs)
             if best is None or key < best[0]:
-                best = (key, out, zs, half)
+                best = (key, out, zs, half, smp.railed)
         if best is None:
             return z
-        _, out, zs, half = best
+        _, out, zs, half, railed = best
         if out <= 1.5:
             # (Under the road and its shoulders: just under its surface.)
             return zs - under
         # (Beside it: no lower than just under its edge out to edge_pad, past its skirt,
-        # then a verge falling 1 in `slope`, for `reach` m.)
-        if out - edge_pad > reach:
+        # then a verge falling 1 in `slope`, for `reach` m. Not beside a railed road: a rail
+        # we built keeps you on it, and the land past it stays as it was, a river and all.)
+        if railed or out - edge_pad > reach:
             return z
-        return max(z, zs - 0.17 - max(0.0, out - edge_pad) / slope)  # (just under the skirt's top)
+        f = zs - 0.17 - max(0.0, out - edge_pad) / slope  # (just under the skirt's top)
+        # (Only a dip is filled, up to `fill` m, tapering off to nothing for one twice as
+        # deep: deeper, it's a river or a drop beside the road, and it stays as it was, so
+        # the scenery barely changes.)
+        need = f - z
+        if need <= 0:
+            return z
+        return f if need <= fill else z + max(0.0, 2 * fill - need)
 
-    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=True):
+    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=True,
+                verge_fill=0.6):
         """
         A height-field grid over [x0, x1] x [y0, y1]. `natural(x, y)` is the land's own
         height; near the roads it's pulled to meet them. `classify(face_centre, normal,
         info)` returns a material per face (info: distance to the route). `verge`: the
         land also brought up to every road's edge, so a kart can always drive back up
-        onto it (`verge_height`).
+        onto it (`verge_height`), dips up to `verge_fill` m deep filled (0.6 by default,
+        so a river or a drop beside a course's road stays as it was; the overworlds, 1.5).
         """
         self.build_ground_tree()
         # (The roads' own top faces, for keeping the land under them: the verge's estimate of
@@ -664,7 +677,7 @@ class Course:
                 w, z = self.road_height(x, y, near, fade, under, nat)
                 h = lerp(nat, z, w)
                 if verge:
-                    h = self.verge_height(x, y, h, under)
+                    h = self.verge_height(x, y, h, under, fill=verge_fill)
                     for t in road_trees:
                         hit = t.ray_cast(Vector((x, y, h + 3.0)), Vector((0, 0, -1)))
                         if hit[0] is not None and hit[0].z < h + 0.15:

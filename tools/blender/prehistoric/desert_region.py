@@ -180,7 +180,7 @@ def main():
 
     # (v4: drawn in, and finer, for the walls' tiers)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
-    ter = c.terrain("Desert World", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
+    ter = c.terrain("Desert World", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("red_sand", "loose_sand"))
 
     def ground(x, y):

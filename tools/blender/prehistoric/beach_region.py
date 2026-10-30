@@ -183,7 +183,7 @@ def main():
 
     # (v4: drawn in, and finer, for the walls' tiers)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
-    ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
+    ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("beach_sand", "sand"))
     c.disc("Sea", 0.0, -200.0, 1600.0, WATER_Z, c.lib("sea_water", "water"), role="visual", n=64)
 
