@@ -269,6 +269,40 @@ def line(a, b, every=8.0, z=None, z0=None):
     return pts
 
 
+def spur_line(c, a, b, z0):
+    """A side road's points from a (on the road's edge) to b: while it's still over the
+    road (a spur leaving at a slant runs along the road's edge a while), just under the
+    road's own banked surface there; then eased into the land over 20 m. So it's flush
+    with the road wherever they meet, never a step below it."""
+    total = math.hypot(b[0] - a[0], b[1] - a[1])
+    pts = []
+    last = None  # (distance along, height) where it left the road
+    k, n = 0, max(2, int(total / 2.0))
+    while k <= n:
+        f = k / n
+        x, y = lerp(a[0], b[0], f), lerp(a[1], b[1], f)
+        land = natural(x, y) + 0.2
+        q, _ = c.nearest(x, y)
+        o = (x - q.p.x) * q.r.x + (y - q.p.y) * q.r.y
+        # (Until all its width has left the road: a spur 10 m wide leaving at a slant still
+        # has a corner over the road's edge some way on.)
+        on = q.ground and abs(o) <= q.w / 2 + 1.5 + 5.0
+        if on:
+            oc = max(-q.w / 2, min(q.w / 2, o))
+            h = q.p.z - oc * math.tan(math.radians(q.bank)) - 0.06
+            last = None
+        else:
+            if last is None:
+                last = (total * f, pts[-1][2] if pts else z0)
+            h = lerp(last[1], land, smooth((total * f - last[0]) / 20.0))
+        pts.append((x, y, h))
+        # (Close together near the road, where the height follows it; further on, every 8 m.)
+        k += 1 if total * f < 30.0 else 4
+    if pts[-1][:2] != (b[0], b[1]):
+        pts.append((b[0], b[1], natural(b[0], b[1]) + 0.2 if last is None else lerp(last[1], natural(*b) + 0.2, 1.0)))
+    return pts
+
+
 def main():
     c = kit.Course(TRACK_ID, "Dinosaur Valley (ruined)" if RUIN else "Dinosaur Valley", "mirror_lake")
     c.route(L.route_points(), width=14.0, bank=6.0)
@@ -335,13 +369,25 @@ def main():
         # spur's surface showed through it in scraps and its edge stood out over the
         # bridge's side, Blake, Cascade note 15, "this is really jank".)
         surf = look[2]
-        if not smp.ground:
-            ax, ay = ax + ux * (c.width / 2 - 0.3), ay + uy * (c.width / 2 - 0.3)
-            if lobe_at(ax, ay) == "cascade":
-                surf = "jungle_temple"  # (paved on from the temple bridge's own stones)
+        # (From the road's edge, at the height the road's banked surface has there, not
+        # from its middle at the middle's height: where the road banked up on that side,
+        # the spur met it a step below its edge, a wall, and you couldn't drive from the
+        # gateway onto the road. Blake, valley polish 14, note 1: "if i exit the bog
+        # portal, I cannot just drive straight onto the road".)
+        across = ux * smp.r.x + uy * smp.r.y
+        o_edge = math.copysign(smp.w / 2 - 0.5, across)
+        lead = abs(o_edge / across) if abs(across) > 0.2 else 0.0
+        ax, ay = ax + ux * lead, ay + uy * lead
+        z_edge = smp.p.z - (o_edge if lead else 0.0) * math.tan(math.radians(smp.bank))
+        if not smp.ground and lobe_at(ax, ay) == "cascade":
+            surf = "jungle_temple"  # (paved on from the temple bridge's own stones)
         # (Its shoulders in the road's own surface, not the world's grass: a green line ran
         # along it into the gate, Blake, Riverbend note 4.)
-        c.side_road(name.title() + " Road", line((ax, ay), into, z0=smp.p.z), surf, "road",
+        # (None where the gateway is right by the road, as Riverbend's is: a spur a metre or
+        # two long lay flat across the banked road, its edges a step below it.)
+        if d - 12.0 < smp.w / 2 + 4.0:
+            continue
+        c.side_road(name.title() + " Road", spur_line(c, (ax, ay), into, z_edge - 0.06), surf, "road",
                     **{**trail, "shoulder_mat": (surf, "dirt")})
     if RUIN:
         # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
@@ -356,7 +402,7 @@ def main():
 
     # (v4: finer, for the tiers' risers and shelves)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
-    ter = c.terrain("Valley", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0)
+    ter = c.terrain("Valley", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge=True)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("valley_grass", "grass"))
 
     def ground(x, y):

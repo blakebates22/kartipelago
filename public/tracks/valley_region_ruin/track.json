@@ -875,7 +875,7 @@
       "id": "campfire_12",
       "type": "campfire",
       "x": 97.5,
-      "y": 10.19,
+      "y": 10.22,
       "z": 193.0
     },
     {
@@ -1080,11 +1080,11 @@
     {
       "id": "geyser_04",
       "type": "geyser",
-      "x": 117.54,
-      "y": 10.65,
-      "z": 145.53,
+      "x": 115.15,
+      "y": 10.48,
+      "z": 145.72,
       "r": 2.6,
-      "height": 20.0,
+      "height": 16.0,
       "period": 8.0,
       "offset": 4.800000000000001,
       "warn": 1.6,
@@ -1125,14 +1125,14 @@
       "id": "torch_37",
       "type": "torch",
       "x": -137.63,
-      "y": 2.72,
+      "y": 2.68,
       "z": 143.16
     },
     {
       "id": "torch_38",
       "type": "torch",
       "x": -113.9,
-      "y": 3.32,
+      "y": 3.41,
       "z": 172.55
     },
     {
@@ -1146,21 +1146,21 @@
       "id": "torch_40",
       "type": "torch",
       "x": -53.75,
-      "y": 4.46,
+      "y": 4.48,
       "z": 180.8
     },
     {
       "id": "torch_41",
       "type": "torch",
       "x": 37.46,
-      "y": 7.05,
+      "y": 7.14,
       "z": 152.09
     },
     {
       "id": "torch_42",
       "type": "torch",
       "x": 41.03,
-      "y": 8.06,
+      "y": 8.02,
       "z": 170.95
     },
     {
@@ -1249,7 +1249,7 @@
   "builtFrom": {
     "valley_dress.py": "1b3345ccbf6898a3a9bee1a3fdf87d5250871efe1d7688bc702ee752af1123c1",
     "valley_layout.py": "3a93bd20f9b6c5de7f7f6427776a45a5092df2f37086d9d181e8f35459ca1a32",
-    "valley_region.py": "d6b1eda438da5d99e9c764040a9302764f76fa87a86a1cd289f71f868f00ca6c",
+    "valley_region.py": "1360c78619fe6af5048462c897b81b23c08941b2754b9cdef10f649dfa2f27cc",
     "valley_village.py": "06f3a7a0b7fc3506ab66dc76ac9817ea172640d7159a7fc211564cdb41c5ad30"
   }
 }

@@ -514,6 +514,17 @@ class Course:
         return ob
 
     def build_ground_tree(self):
+        # (The side roads' samples their own way along, from their neighbours.)
+        ex = self.extra_ground
+        for i, smp in enumerate(ex):
+            a = ex[i - 1].p if i > 0 and (ex[i - 1].p - smp.p).length < 3.0 else smp.p
+            b = ex[i + 1].p if i + 1 < len(ex) and (ex[i + 1].p - smp.p).length < 3.0 else smp.p
+            t = Vector((b.x - a.x, b.y - a.y, b.z - a.z))
+            if Vector((t.x, t.y, 0.0)).length > 1e-6:
+                t.normalize()
+                smp.t = t
+                h = Vector((t.x, t.y, 0.0)).normalized()
+                smp.r = Vector((h.y, -h.x, 0.0))
         g = [s for s in self.S if s.ground] + self.extra_ground
         self._ground = g
         t = kdtree.KDTree(max(1, len(g)))
@@ -527,11 +538,58 @@ class Course:
         a.balance()
         self._all_tree = a
 
-    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2):
+    def verge_height(self, x, y, z, under=0.2, edge_pad=4.0, slope=3.0, reach=7.5):
+        """The land at (x, y), height z, brought up to meet the roads beside it (Blake,
+        valley polish 14, note 1: "sometimes the road is higher than the ground and if I
+        fall off the road and try to go back on the road, I cant"). A road is a slab with
+        a skirt; where the land beside it dipped (a bog pool, a river's cut, the land
+        pulled toward a lower road nearby), its edge stood up as a wall a kart can't
+        climb (more than 0.25 m). So under a road and its shoulders the land lies just
+        under its banked surface, and beside it no lower than that out to `edge_pad` past
+        its surface, then a verge falling 1 in `slope` for `reach` m. Bridges and roads
+        the terrain doesn't meet are left alone: their sides are meant to be drops."""
+        hits = self._ground_tree.find_range(Vector((x, y, 0)), 9.0 + edge_pad + reach)
+        # (The road the point is on, or nearest beside: the one whose surface's edge is
+        # closest, the highest where two overlap. Only that one counts, so the land between
+        # two roads at different heights, a hairpin's legs, follows the nearer.)
+        best = None
+        for _, i, _d in hits:
+            smp = self._ground[i]
+            dp = Vector((x - smp.p.x, y - smp.p.y, 0.0))
+            txy = Vector((smp.t.x, smp.t.y, 0.0))
+            if txy.length < 1e-6:
+                continue
+            along = dp.dot(txy) / txy.length
+            if abs(along) > 2.5:
+                continue  # (only the samples square across from the point)
+            o = dp.dot(smp.r)
+            half = smp.w / 2
+            oc = clamp(o, -half - 1.5, half + 1.5)
+            # (The road's surface there: banked across, and climbing along with its grade.)
+            zs = smp.p.z + along * smp.t.z / txy.length - oc * math.tan(math.radians(smp.bank))
+            out = max(0.0, abs(o) - half)
+            key = (round(out, 1), -zs)
+            if best is None or key < best[0]:
+                best = (key, out, zs, half)
+        if best is None:
+            return z
+        _, out, zs, half = best
+        if out <= 1.5:
+            # (Under the road and its shoulders: just under its surface.)
+            return zs - under
+        # (Beside it: no lower than just under its edge out to edge_pad, past its skirt,
+        # then a verge falling 1 in `slope`, for `reach` m.)
+        if out - edge_pad > reach:
+            return z
+        return max(z, zs - 0.17 - max(0.0, out - edge_pad) / slope)  # (just under the skirt's top)
+
+    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=False):
         """
         A height-field grid over [x0, x1] x [y0, y1]. `natural(x, y)` is the land's own
         height; near the roads it's pulled to meet them. `classify(face_centre, normal,
-        info)` returns a material per face (info: distance to the route).
+        info)` returns a material per face (info: distance to the route). `verge`: the
+        land also brought up to every road's edge, so a kart can always drive back up
+        onto it (`verge_height`).
         """
         self.build_ground_tree()
         nx = int(round((x1 - x0) / cell))
@@ -545,7 +603,10 @@ class Course:
                 y = y0 + (y1 - y0) * j / ny
                 nat = natural(x, y)
                 w, z = self.road_height(x, y, near, fade, under, nat)
-                row.append(bm.verts.new((x, y, lerp(nat, z, w))))
+                h = lerp(nat, z, w)
+                if verge:
+                    h = self.verge_height(x, y, h, under)
+                row.append(bm.verts.new((x, y, h)))
             rows.append(row)
         for j in range(ny):
             for i in range(nx):
@@ -664,9 +725,12 @@ class Course:
         bm.faces.new(rings[-1])
         return self.mesh_object(name, bm, "Rocks")
 
-    def tunnel(self, rock, s0, s1, half=None, height=8.5, pad=12.0, floor=-0.4):
+    def tunnel(self, rock, s0, s1, half=None, height=8.5, pad=12.0, floor=-0.25):
         """Cut a tunnel through `rock` along the route from s0 to s1 (padded at both ends);
-        its floor `floor` under the road (deeper to clear a rock right away)."""
+        its floor `floor` under the road (deeper to clear a rock right away), banked with
+        the road. (It was flat 0.4 m under the road's middle: beside a banked road that
+        left a gutter up to a metre deep along its high side, and a kart that slid off
+        the road in a tunnel couldn't climb back on: Blake, valley polish 14, note 1.)"""
         half = half or self.width / 2 + 3.5
         prof = [(-half, floor), (half, floor), (half, height * 0.62), (half * 0.62, height), (-half * 0.62, height), (-half, height * 0.62)]
         bm = bmesh.new()
@@ -674,7 +738,8 @@ class Course:
         n = max(4, math.ceil((s1 - s0 + 2 * pad) / 2.0))
         for k in range(n + 1):
             smp = self.at(s0 - pad + (s1 - s0 + 2 * pad) * k / n)
-            rings.append([bm.verts.new(smp.p + smp.r * a + Vector((0, 0, b))) for a, b in prof])
+            tb = math.tan(math.radians(smp.bank))
+            rings.append([bm.verts.new(smp.p + smp.r * a + Vector((0, 0, b - a * tb))) for a, b in prof])
         m = len(prof)
         for lo, hi in zip(rings, rings[1:]):
             for k in range(m):
