@@ -943,6 +943,20 @@
       "prize_z": -98.0
     },
     {
+      "id": "torch_35",
+      "type": "torch",
+      "x": 138.24,
+      "y": 32.7,
+      "z": -88.46
+    },
+    {
+      "id": "torch_36",
+      "type": "torch",
+      "x": 142.19,
+      "y": 32.7,
+      "z": -99.58
+    },
+    {
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "riverbend",
@@ -1108,7 +1122,7 @@
       "lava": true
     },
     {
-      "id": "torch_35",
+      "id": "torch_37",
       "type": "torch",
       "x": 86.04,
       "y": 25.06,
@@ -1122,7 +1136,7 @@
       "z": 81.03
     },
     {
-      "id": "torch_36",
+      "id": "torch_38",
       "type": "torch",
       "x": 77.68,
       "y": 42.4,
@@ -1136,7 +1150,7 @@
       "z": 70.73
     },
     {
-      "id": "torch_37",
+      "id": "torch_39",
       "type": "torch",
       "x": 58.54,
       "y": 33.08,
@@ -1150,7 +1164,7 @@
       "z": 99.45
     },
     {
-      "id": "torch_38",
+      "id": "torch_40",
       "type": "torch",
       "x": 59.47,
       "y": 41.63,
@@ -1164,7 +1178,7 @@
       "z": 206.65
     },
     {
-      "id": "torch_39",
+      "id": "torch_41",
       "type": "torch",
       "x": 205.77,
       "y": 44.06,
@@ -1178,7 +1192,7 @@
       "z": 117.2
     },
     {
-      "id": "torch_40",
+      "id": "torch_42",
       "type": "torch",
       "x": 138.67,
       "y": 17.48,
@@ -1192,7 +1206,7 @@
       "z": 212.41
     },
     {
-      "id": "torch_41",
+      "id": "torch_43",
       "type": "torch",
       "x": 183.0,
       "y": 35.53,
@@ -1206,7 +1220,7 @@
       "z": 213.42
     },
     {
-      "id": "torch_42",
+      "id": "torch_44",
       "type": "torch",
       "x": 56.56,
       "y": 22.52,
@@ -1220,7 +1234,7 @@
       "z": 115.52
     },
     {
-      "id": "torch_43",
+      "id": "torch_45",
       "type": "torch",
       "x": 183.2,
       "y": 19.25,
@@ -1234,56 +1248,56 @@
       "z": -52.48
     },
     {
-      "id": "torch_44",
+      "id": "torch_46",
       "type": "torch",
       "x": -133.0,
       "y": 4.52,
       "z": 85.69
     },
     {
-      "id": "torch_45",
+      "id": "torch_47",
       "type": "torch",
       "x": -158.73,
       "y": 3.2,
       "z": 111.47
     },
     {
-      "id": "torch_46",
+      "id": "torch_48",
       "type": "torch",
       "x": -137.63,
       "y": 2.72,
       "z": 143.16
     },
     {
-      "id": "torch_47",
+      "id": "torch_49",
       "type": "torch",
       "x": -113.9,
       "y": 3.32,
       "z": 172.55
     },
     {
-      "id": "torch_48",
+      "id": "torch_50",
       "type": "torch",
       "x": -78.66,
       "y": 3.69,
       "z": 147.54
     },
     {
-      "id": "torch_49",
+      "id": "torch_51",
       "type": "torch",
       "x": -53.75,
       "y": 4.46,
       "z": 180.8
     },
     {
-      "id": "torch_50",
+      "id": "torch_52",
       "type": "torch",
       "x": 43.31,
       "y": 6.61,
       "z": 150.77
     },
     {
-      "id": "torch_51",
+      "id": "torch_53",
       "type": "torch",
       "x": 48.76,
       "y": 7.89,
@@ -1373,9 +1387,9 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "09d77685ce649ec467743cd3cd14359ac2032a65687a75c8d1377dc553651f11",
+    "valley_dress.py": "7efd1e0d34d32b42cdc1346e24891d0dd19634ca3971cf49d16d233b58232653",
     "valley_layout.py": "3a93bd20f9b6c5de7f7f6427776a45a5092df2f37086d9d181e8f35459ca1a32",
-    "valley_region.py": "57fb3f4fb219eb3b9a344b861b32303b28121761c023d8f49125346b383bf3f3",
+    "valley_region.py": "b93193cbc3b194bb0429e39c68f3b63eec2a7186d9f87bc1d15bd1836b5a19bd",
     "valley_village.py": "4756a862ddd1f4ed95ea3e2f7a6f5678ed233206c97da5d2c42588f56ab47bdd"
   }
 }

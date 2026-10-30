@@ -794,6 +794,39 @@ def cascade(c, ground, taken):
     for v in range(2):
         trees += len(place_big(c, rp.great_tree(c, v), 4, (40, 200, 50, 225), near, ground, taken, 160 + v, room=13.0,
                                margin=6.0, trunk=(3.4, 14.0)))
+    # Two more where Blake asked (Cascade notes 12 and 16: "a massive tree here matching
+    # the style", "another big tree here but make sure it is flush with the floor"): set on
+    # the lowest ground round its foot, its roots running into the land.
+    for v, (x0, y0) in enumerate(((110.0, 168.0), (98.0, 139.0))):
+        # (There, or as near as there's room: off the road and out of the river.)
+        x = y = None
+        for r in (0.0, 4.0, 8.0, 12.0):
+            for a in [j * math.tau / 8 for j in range(8 if r else 1)]:
+                tx, ty = x0 + r * math.cos(a), y0 + r * math.sin(a)
+                if paint.road_clear(c, tx, ty, 8.0) and L.river_d(tx, ty)[0] > RIVER_HW + 3 and L.wall_sd(tx, ty) < -3.0:
+                    x, y = tx, ty
+                    break
+            if x is not None:
+                break
+        if x is None:
+            print("great tree at (%.0f, %.0f): no room" % (x0, y0))
+            continue
+        z = min(ground(x + 5.0 * math.cos(t), y + 5.0 * math.sin(t)) for t in (0.0, 1.05, 2.1, 3.14, 4.2, 5.24))
+        c.place(rp.great_tree(c, v), x, y, min(z, ground(x, y)) - 0.4, rot=v * 2.3 + 0.4, scale=1.1, coll="Props",
+                role="visual")
+        c.place(paint.trunk_proto(c, 3.4, 14.0), x, y, z - 0.4, scale=1.1, coll="Collision", role="collision")
+        taken.add(x, y, 13.0)
+        trees += 1
+    # A few ferns by the wall (Cascade note 19).
+    rnd2 = random.Random(19)
+    fern = props.fern(c)
+    for k in range(7):
+        a, r = rnd2.uniform(0, math.tau), rnd2.uniform(1.0, 7.0)
+        x, y = 113.0 + r * math.cos(a), 203.0 + r * math.sin(a)
+        if paint.road_clear(c, x, y, 2.5):
+            gz = min(ground(x + 0.8 * math.cos(t), y + 0.8 * math.sin(t)) for t in (0.0, 2.1, 4.2))
+            c.place(fern if k % 3 else props.bush(c, k % 2), x, y, gz - 0.15, rot=a, scale=1.1 + 0.3 * rnd2.random(),
+                    coll="Props", role="visual")
     print("great trees:", trees)
 
 
@@ -1460,4 +1493,71 @@ def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
         proto = gp.crate_stack(c, k % 2) if k % 2 == 0 else gp.barrel(c, k % 2)
         c.place(proto, x, y, ground(x, y) - 0.05, rot=facing + k, coll="Props")
     print("lookout: a smugglers' den")
+
+
+def jungle_grotto(c, ground, px, py, facing, half, gap, floor, height):
+    """The Grotto made a temple lost in the jungle (Blake, Cascade note 14: "turn this into
+    a super cool indiana jones looking ruin that matches the theme of cascade cavern"): a
+    jungle-grown mound of mossy rock over its walls (the yard a dark chamber under it);
+    on its front a temple's face: great carved columns either side of the way in under a
+    lintel of glyphs, an idol's head glaring out over it, steps up to it, a torch burning
+    on each column, vines hanging down over it all, and fallen blocks about."""
+    fx, fy = math.cos(facing), math.sin(facing)
+    sx, sy = -fy, fx
+
+    def at(u, v):
+        return px + u * fx + v * sx, py + u * fy + v * sy
+
+    def dress(ob):
+        groups = {}
+        mw = ob.matrix_world
+        for poly in ob.data.polygons:
+            cen = mw @ poly.center
+            key = ("canopy_dark", "grass") if poly.normal.z > 0.55 else (
+                ("jungle_mossstone", "wall") if int((cen.z - floor) / 2.4) % 2 else ("canyon_rock_moss", "wall"))
+            groups.setdefault(key, []).append(poly.index)
+        for mat, faces in groups.items():
+            c.assign(ob, c.lib(*mat), faces)
+        ob.data.shade_flat()
+
+    hx, hy = at(-1.0, 0.0)
+    dress(c.rock_mass("Grotto Hill", hx, hy, half + 5.0, half + 4.5, floor + height + 10.0, z0=floor + height - 0.4, n=22,
+                      seed=13, angle=facing, base=floor + height - 0.4,
+                      bands=[(1.0, 0.0), (0.94, 0.3), (0.82, 0.55), (0.62, 0.8), (0.42, 1.0)]))
+    for k, (u, v, rx, ry) in enumerate(((-half - 2.5, 0.0, 3.6, half + 4.0), (0.0, half + 2.5, half + 4.0, 3.6),
+                                        (0.0, -half - 2.5, half + 4.0, 3.6))):
+        x, y = at(u, v)
+        dress(c.rock_mass("Grotto Heap %d" % k, x, y, rx, ry, floor + height + 2.0, z0=floor - 2.0, n=16, seed=21 + k,
+                          angle=facing, base=floor - 2.0,
+                          bands=[(1.0, 0.0), (1.0, 0.35), (0.9, 0.4), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)]))
+    temple = ("jungle_temple", "wall")
+    glyph = ("ruin_glyph", "wall")
+    # The temple's face, across the front wall, the way in through it.
+    for side in (-1, 1):
+        x, y = at(half + 1.0, side * (gap + 1.6))
+        box(c, "Grotto Pier %d" % side, x, y, 1.4, 1.6, floor - 1.0, floor + height + 2.4, temple, rot=facing)
+        cx, cy = at(half + 2.8, side * (gap + 1.4))
+        c.place(props.ruin_column(c, 1 + (side > 0)), cx, cy, floor - 0.1, rot=facing, scale=1.25, coll="Ruins")
+        g = c.game(*at(half + 2.9, side * (gap + 1.4)), floor + 6.4)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+    lx, ly = at(half + 1.2, 0.0)
+    box(c, "Grotto Lintel", lx, ly, 1.7, gap + 3.4, floor + height - 0.6, floor + height + 1.6, glyph, rot=facing)
+    tx, ty = at(half + 1.0, 0.0)
+    box(c, "Grotto Pediment", tx, ty, 1.5, gap + 1.6, floor + height + 1.6, floor + height + 2.6, temple, rot=facing)
+    # The idol over the way in, looking out (its face is local -Y).
+    ix, iy = at(half + 0.6, 0.0)
+    c.place(props.idol_head(c), ix, iy, floor + height + 2.5, rot=math.atan2(fx, -fy), scale=0.6, coll="Ruins",
+            role="visual")
+    # Steps up to it, and vines over it.
+    sx_, sy_ = at(half + 6.5, 0.0)
+    c.place(props.stairs(c, 3, 2 * gap + 1.0, 0.25, 1.1), sx_, sy_, ground(sx_, sy_) - 0.6, rot=facing + math.pi / 2,
+            coll="Ruins", role="visual")
+    for k, v in enumerate((-gap - 3.0, gap + 3.0, -1.6)):
+        vx, vy = at(half + 2.2, v)
+        c.place(props.vine_curtain(c, k % 3, 6.0 + 2.0 * (k % 2)), vx, vy, floor + height + 2.4, rot=facing + math.pi / 2,
+                coll="Vines", role="visual")
+    for k, (u, v) in enumerate(((half + 6.0, gap + 6.0), (half + 8.0, -gap - 5.0), (half + 3.0, -gap - 7.5))):
+        bx, by = at(u, v)
+        c.place(props.ruin_blocks(c, k), bx, by, ground(bx, by) - 0.3, rot=facing + k, coll="Ruins")
+    print("grotto: a temple lost in the jungle")
 

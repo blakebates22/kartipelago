@@ -220,7 +220,9 @@ def classify(c, n, info):
     d, wz = L.river_d(c.x, c.y)
     # (Sand under all the water, out to the sheet's edge, not grass: Blake, Riverbend
     # note 11.)
-    if d < RIVER_HW + 7 and c.z < wz + 0.35:
+    # (A smooth band along the banks too, by distance, not only where the land dips under
+    # the water: the sand came in ragged scraps, Blake, Cascade note 10.)
+    if (d < RIVER_HW + 7 and c.z < wz + 0.35) or (d < RIVER_HW + 4.5 and c.z < wz + 2.5):
         return ("valley_sand", "water")  # (the river's wadeable)
     if RUIN and lobe != "bonebog" and burn(c.x, c.y) > 0.5:
         return ("scorched_ground", "dirt")
@@ -329,10 +331,18 @@ def main():
         # (On a little way into the gateway's mouth, so its end is in the dark of the
         # tunnel: Blake, Riverbend note 6, a green strip across the road before the gate.)
         into = (end[0] + ux * 7.0, end[1] + uy * 7.0)
+        # (Off a bridge, from the deck's edge, not its middle: laid over the deck, the
+        # spur's surface showed through it in scraps and its edge stood out over the
+        # bridge's side, Blake, Cascade note 15, "this is really jank".)
+        surf = look[2]
+        if not smp.ground:
+            ax, ay = ax + ux * (c.width / 2 - 0.3), ay + uy * (c.width / 2 - 0.3)
+            if lobe_at(ax, ay) == "cascade":
+                surf = "jungle_temple"  # (paved on from the temple bridge's own stones)
         # (Its shoulders in the road's own surface, not the world's grass: a green line ran
         # along it into the gate, Blake, Riverbend note 4.)
-        c.side_road(name.title() + " Road", line((ax, ay), into, z0=smp.p.z), look[2], "road",
-                    **{**trail, "shoulder_mat": (look[2], "dirt")})
+        c.side_road(name.title() + " Road", line((ax, ay), into, z0=smp.p.z), surf, "road",
+                    **{**trail, "shoulder_mat": (surf, "dirt")})
     if RUIN:
         # Up the burnt trench to Cinderjaw's Scar, and the Burnt Gorge north.
         smp, _ = c.nearest(*L.SCAR)
@@ -444,6 +454,7 @@ def main():
     vd.smugglers_den(c, ground, *RETURN, to_road(c, *RETURN), 11.0, 4.5, ground(*RETURN), 6.0)
     puzzle_kit.pen(c, "secret", "Grotto", *SECRET, to_road(c, *SECRET), 9.0, 4.5, ("jungle_mossstone", "wall"),
                    ground(*SECRET), height=6.0)
+    vd.jungle_grotto(c, ground, *SECRET, to_road(c, *SECRET), 9.0, 4.5, ground(*SECRET), 6.0)
     roads = [ob for ob in c.coll("Roads").objects]
 
     def on_road(x, y):
@@ -461,7 +472,11 @@ def main():
         look = LOOK[lobe_at(*gxy)]
         # (Wide enough, and on right into the mouth, to meet the tunnel's floor: no grass
         # showing either side or between: Blake, Riverbend notes 3 and 4.)
-        vv.road_apron(c, (end[0] - dx / dl * 14.0, end[1] - dy / dl * 14.0), end, (look[2], "road"), on_road,
+        # (Starting clear of the main road: where it ran back over a bridge's deck it stood
+        # up off the river as a block, Blake, Cascade note 15.)
+        q0, _ = c.nearest(*end)
+        back = max(4.0, min(14.0, math.hypot(end[0] - q0.p.x, end[1] - q0.p.y) - c.width / 2 - 2.0))
+        vv.road_apron(c, (end[0] - dx / dl * back, end[1] - dy / dl * back), end, (look[2], "road"), on_road,
                       width=19.0, past=max(6.0, dl + 5.0), name=name.title() + " Gateway Apron")
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Off the water and out of the walls: Blake's notes 34 and 45, a hut half in the river
@@ -628,7 +643,11 @@ def thresholds(c, ground):
                         ("jungle_temple", "wall"), rot=rot)
                 box(c, "%s Lintel %d" % (name, k), q.p.x, q.p.y, half + 3.4, 2.4, q.p.z + 10.0, q.p.z + 12.6,
                     ("jungle_temple", "wall"), rot=rot)
-                c.place(props.idol_head(c), q.p.x, q.p.y, q.p.z + 12.6, rot=math.atan2(q.t.y, q.t.x) + math.pi * k,
+                # (Its face, local -Y, out along the road, at whoever's coming: it looked
+                # off sideways, Blake, Cascade note 13, "rotate this face so it is facing
+                # outward".)
+                sg = -1.0 if k == 0 else 1.0
+                c.place(props.idol_head(c), q.p.x, q.p.y, q.p.z + 12.6, rot=math.atan2(sg * q.t.x, -sg * q.t.y),
                         role="visual")
             vd.temple_tunnel(c, s0, s1, half)
 

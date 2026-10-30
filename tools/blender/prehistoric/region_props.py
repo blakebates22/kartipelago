@@ -51,7 +51,8 @@ def great_tree(c, variant=0):
         for i in range(9):
             a = i * math.tau / 9 + variant * 0.5 + 0.2 * rnd(i * 3 + variant)
             ca, sa = math.cos(a), math.sin(a)
-            up = 4.0 + 4.0 * rnd(i * 2 + variant)
+            # (Low: 1.6-3 m up, not 4-8: Blake, Cascade note 9, "lets lower all of the roots".)
+            up = 1.6 + 1.4 * rnd(i * 2 + variant)
             reach = 6.5 + 4.0 * rnd(i + variant * 3)
             bend = 0.35 * (rnd(i * 5 + variant) - 0.5)
 
