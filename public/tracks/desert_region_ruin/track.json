@@ -463,8 +463,8 @@
   ],
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "desert_dress.py": "2a068fbbdb8c314cde009203c763c6d00085a45309ab4777e1afec690b61372a",
+    "desert_dress.py": "97c499d7431c86272176e76c4219be225f86ccc406d5042cd726a03eb96de552",
     "desert_layout.py": "587f5489cdc790fa505b1d92ce23f1f26ab9443e91566dc686f816103bb4e7aa",
-    "desert_region.py": "0664671621a5d853b5cca835239bc0b5c0917b1791090b713f5cb96127bb1098"
+    "desert_region.py": "502ed6300c721b6a4ba458b0038d017ce317ffeaf161ee7dc6d1fb0da497f448"
   }
 }

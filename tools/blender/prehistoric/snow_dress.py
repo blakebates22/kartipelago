@@ -12,6 +12,8 @@ import math
 import random
 
 import aurora_props as ap
+import gulch_scenery as gs
+import props
 import hearthglow_props as hp
 import hearthglow_scenery as hs
 import region_paint as paint
@@ -38,30 +40,31 @@ def _pads():
     """Where cottages stand up the hollow's walls (Hearthglow climbing them, its windows
     over the square): level pads cut into the walls round the square, clear of the road,
     the ways through (north and south), the great tree and the bell tower. (x, y, z)."""
-    cx, cy, cr, cz = SL.HUB
+    cx, cy, cr, cz = SL.VILLAGE
     route = [(p[0], p[1]) for p in SL.route_points()]
     gx, gy = SL.GATES["hearthglow"]
     tx, ty = SL.TREE
+    bx, by = SL.BELL
     pads = []
-    for deg in range(0, 360, 9):
+    for deg in range(0, 360, 6):
         a = math.radians(deg)
-        if abs(math.cos(a)) < 0.42:
-            continue
-        for r in range(36, 64, 2):
+        if math.cos(a) < -0.3:
+            continue  # (not the west, where the road runs by)
+        for r in range(20, 56, 2):
             x, y = cx + r * math.cos(a), cy + r * math.sin(a)
             wi = L.wall_info(x, y)
-            if wi["pocket"] != "hearth" or wi["past"] > -3.0:
+            if wi["pocket"] != "lake" or wi["past"] > -3.0:
                 continue
             h = L.natural(x, y)
-            if not 5.0 < h - cz < 20.0:
+            if not 3.5 < h - cz < 24.0:
                 continue
             if min(math.hypot(x - px, y - py) for px, py in route) < 18.0:
                 continue
-            if math.hypot(x - gx, y - gy) < 24.0 or math.hypot(x - 18.0, y + 181.3) < 14.0:
+            if math.hypot(x - gx, y - gy) < 24.0 or math.hypot(x - bx, y - by) < 14.0:
                 continue
-            if math.hypot(x - tx, y - ty) < 20.0 or (x < cx and abs(y - cy) < 18.0):
-                continue  # (the great tree; the lane west to Hearthglow's portal)
-            if any(math.hypot(x - px, y - py) < 15.0 for px, py, _ in pads):
+            if math.hypot(x - tx, y - ty) < 20.0 or (x > cx and abs(y - cy) < 18.0):
+                continue  # (the great tree; the lane east to Hearthglow's portal)
+            if any(math.hypot(x - px, y - py) < 13.0 for px, py, _ in pads):
                 continue
             pads.append((x, y, h))
             break
@@ -161,11 +164,17 @@ def wall_life(c, ground, taken):
     def put(proto, x, y, rot, scale, sink=0.3, coll="Ledges"):
         c.place(proto, x, y, ground(x, y) - sink, rot=rot, scale=scale, coll=coll, role="visual")
 
+    import bpy
+
+    land = bpy.data.objects.get("Snow Kingdom")
+
     def put_tree(proto, x, y, rot, scale, look):
-        # (A ledge of the world's rock under it, set back into the wall a little.)
+        # (A ledge of the rock of the wall it stands out of, set back into it a little:
+        # Blake, review-snow_region note 4.)
         dx, dy = _toward_pocket(x, y)
-        c.place(ledges.get(look, ledges["hearth"]), x - dx * 0.7, y - dy * 0.7, ground(x, y) - 0.2, rot=rot,
-                coll="Ledges", role="visual")
+        tex = paint.wall_texture(land, x, y, dx, dy) if land else None
+        ledge = rp.tree_ledge(c, tex) if tex else ledges.get(look, ledges["hearth"])
+        c.place(ledge, x - dx * 0.7, y - dy * 0.7, ground(x, y) - 0.2, rot=rot, coll="Ledges", role="visual")
         put(proto, x, y, rot, scale)
 
     for x, y, look in shelves:
@@ -205,6 +214,11 @@ def wall_life(c, ground, taken):
     n_lips = 0
     for x, y, look, (dx, dy), drop in lips:
         if not room.clear(x, y, 5.0) or drop < 4.5:
+            continue
+        # (Icicles only over icy rock: not on the brown and black walls, where they looked
+        # wrong: Blake, review-snow_region note 8.)
+        tex = paint.wall_texture(land, x + dx * 3.0, y + dy * 3.0, -dx, -dy, steps=(0.5, 1.5)) if land else None
+        if tex and not any(k_ in tex for k_ in ("frost", "ice", "glacier", "snow", "berg")):
             continue
         # (The fringe runs along the lip, hanging just out over the riser.)
         rot = math.atan2(dy, dx) + math.pi / 2
@@ -275,6 +289,11 @@ def seat_cottage(c, v, x, y, rot, ground, name=None, coll="Village", ter=None):
     if hi is None:
         return None
     z = hi - 0.5
+    # (Its stone footing on down to the lowest ground under it, so no corner of it ever
+    # hangs in the air: tests/buildings.test.ts.)
+    lo, _hi = footing(x, y, rot, w, d, ground, margin=1.2)
+    box(c, "%s Footing" % (name or "Cottage"), x, y, w / 2 + 0.2, d / 2 + 0.2, min(lo, z) - 1.6, z + 0.1,
+        ("hearth_stone", "wall"), rot=rot, role="visual")
     c.place(hp.cottage(c, v), x, y, z, rot=rot, coll=coll, role="visual", name=name)
     c.place(hp.cottage_block(c, v), x, y, z, rot=rot, coll=coll, role="collision")
     hx, hy, hz = hp.CHIMNEY[v % 5]
@@ -307,7 +326,12 @@ def hearthglow(c, ground, ter, taken):
     bonfire either side of the way through (the cutscenes' stage, north to south, is kept
     clear); lantern posts round the square with strings of lights slung between them;
     smoke from every chimney; and the warm light of windows and lanterns on the snow."""
-    cx, cy, cr, cz = SL.HUB
+    cx, cy, cr, cz = SL.VILLAGE
+    import villager_homes as vh
+
+    # (Clear of what was built before the village: the Gatehouse's towers stood through a
+    # cottage once. Taken before the square's own floor is laid.)
+    standing = vh._built()
     sc = hs.Scene()
     paths = []
     vv.plaza(c, cx, cy, SQUARE_R, ground, dirt=("hearth_cobble", "road"),
@@ -315,18 +339,17 @@ def hearthglow(c, ground, ter, taken):
     # (Its floor drives as a road; the snow round it as snow.)
     c.disc("Village Square Floor", cx, cy, SQUARE_R + 0.6, cz + 0.02, c.lib("hearth_cobble", "road"), coll="Props",
            role="collision", n=40)
-    # (Out of the square north to the road and south to the gorge is kept clear: the stage.)
+    # (Out of the square west to the road and east to the portal is kept clear: the way
+    # through, and the cutscenes' stage.)
     def in_lane(x, y, w):
-        # (North to the road, south to the gorge: the stage; and west, the lane to the
-        # portal.)
-        return abs(x - cx) < w or (x < cx - 4.0 and abs(y - cy) < w * 0.75)
+        return abs(y - cy) < w * 0.75
 
-    # The fountain east, the bonfire west, either side of the way through.
-    fx, fy = cx + 12.5, cy - 2.0
-    hs.fountain(c, fx, fy, ground(fx, fy))
+    # The fountain north, the bonfire south, either side of the way through.
+    fx, fy = cx - 2.0, cy + 10.5
+    warm_fountain(c, fx, fy, ground(fx, fy))
     taken.add(fx, fy, 6.5)
     SPOTS.append((fx, fy, 8.0))
-    bx, by = cx - 11.0, cy + 10.5
+    bx, by = cx + 3.0, cy - 10.5
     # (Set down as the valley's are: solid, logs in the fire and log benches round it.)
     vv.place_hearth(c, bx, by, ground, rot=0.7)
     if not RUIN:
@@ -369,27 +392,32 @@ def hearthglow(c, ground, ter, taken):
     # shelves of its walls (the village climbing the hollow, their windows over it).
     built = []
     cands = []
-    for r in (25.0, 30.0, 35.0):
-        n = int(math.tau * r / 6.0)
-        for i in range(n):
-            a = i * math.tau / n
-            cands.append((cx + r * math.cos(a), cy + r * math.sin(a), True))
+    # (The whole basin and the lake's shore by it, both sides of the road, nearest the
+    # square first: a village street, not a ring.)
+    for gx_ in range(-60, 61, 5):
+        for gy_ in range(-60, 61, 5):
+            if 21.0 < math.hypot(gx_, gy_) < 62.0:
+                cands.append((cx + gx_, cy + gy_, True))
+    cands.sort(key=lambda p: math.hypot(p[0] - cx, p[1] - cy))
     cands += [(x, y, False) for x, y, _ in PADS]
     k = 0
-    import villager_homes as vh
-
-    # (Clear of what's built already: the Gatehouse's towers stood through a cottage.)
-    standing = vh._built()
+    why = {}
     for x, y, floor in cands:
         if len(built) >= 18:
             break
         if any(math.hypot(x - ox, y - oy) < orr + 6.0 for ox, oy, orr in standing):
+            why["built"] = why.get("built", 0) + 1
             continue
-        if floor and (L.pocket_at(x, y) != "hearth" or L.wall_sd(x, y) > -5.0):
+        if floor and (L.pocket_at(x, y) != "lake" or L.wall_sd(x, y) > -5.0
+                      or math.hypot(x - SL.LAKE[0], y - SL.LAKE[1]) < SL.LAKE[2] + 7.0):
+            why["pocket"] = why.get("pocket", 0) + 1
             continue
-        if in_lane(x, y, 11.0) or not paint.road_clear(c, x, y, 8.0) or not taken.clear(x, y, 5.0):
+        r_ = "lane" if in_lane(x, y, 8.0) else "road" if not paint.road_clear(c, x, y, 8.0) else (
+            "taken" if not taken.clear(x, y, 5.0) else None)
+        if r_:
+            why[r_] = why.get(r_, 0) + 1
             continue
-        if any(math.hypot(x - hx, y - hy) < 13.0 for hx, hy, _, _ in built):
+        if any(math.hypot(x - hx, y - hy) < 12.0 for hx, hy, _, _ in built):
             continue
         a = math.atan2(y - cy, x - cx)
         rot = a - math.pi / 2  # (its front, local -Y, to the square)
@@ -397,8 +425,9 @@ def hearthglow(c, ground, ter, taken):
         if not floor and v in (0, 3):
             v = (1, 2)[k % 2]  # (on a pad: one that fits on it)
         w, d = hp.COTTAGE_SIZE[v]
-        hi = level_site(c, x, y, rot, w, d, ground, ter)
+        hi = level_site(c, x, y, rot, w, d, ground, ter, most=4.5)
         if hi is None:
+            why["level"] = why.get("level", 0) + 1
             continue  # (only on level ground: Blake, Oct 29)
         if RUIN:
             z = hi - 0.5
@@ -428,6 +457,12 @@ def hearthglow(c, ground, ter, taken):
         door = d - depth[v] / 2 - (1.6 if not RUIN else 3.0)
         end = SQUARE_R - 0.5
         if door - end < 2.0:
+            continue
+        # (Never over the road, nor up to it: the overworld rules. A cottage across the road
+        # from the square has its doorstep, not a lane.)
+        steps = int((door - end) / 1.5) + 1
+        if any(not paint.road_clear(c, cx + (end + (door - end) * t / steps) * math.cos(a),
+                                    cy + (end + (door - end) * t / steps) * math.sin(a), 3.5) for t in range(steps + 1)):
             continue
         paths.append(vv.wander((cx + door * math.cos(a), cy + door * math.sin(a)),
                                (cx + end * math.cos(a), cy + end * math.sin(a)),
@@ -490,3 +525,156 @@ def ice_bridge(c, ground):
             c.place(spike, x, y, ground(x, y) - 1.0, rot=q.s, scale=(q.p.z - 3.0 - ground(x, y)) / 14.0 + 0.1,
                     coll="Bridges", role="visual")
     print("ice bridge: %d fringes" % n)
+
+
+# ------------------------------------------------------------------ Hearthglow, moved
+
+
+def warm_fountain(c, x, y, z):
+    """The square's fountain (Blake, review-snow_region note 6: "this water fountain looks
+    horrible. please lets get a high fidelity water fountain"): a hot spring's, steaming
+    in the cold: a carved octagonal basin of the village's stone, a column rising out of
+    it with two bowls, water spilling over each bowl's lip in a sheet into the one below
+    and into the basin, living water in all three, a lantern's gold finial on top, steam
+    curling off it. Solid (the basin)."""
+    from props import loft, ring, tube
+
+    m = gs.Mesh()
+    stone = ("hearth_stone", "wall")
+    trim = ("gold_trim", "wall")
+    n = 8
+
+    def oct_ring(bm, r, h):
+        return ring(bm, (x, y), r, h, n, phase=math.pi / 8)
+
+    # The basin: its wall, its rim, a step round its foot.
+    m.add(stone, lambda bm: loft(bm, [oct_ring(bm, 5.0, z - 0.4), oct_ring(bm, 5.0, z + 0.2), oct_ring(bm, 4.5, z + 0.2),
+                                      oct_ring(bm, 4.5, z + 0.25)], cap_top=True))
+    m.add(stone, lambda bm: loft(bm, [oct_ring(bm, 4.3, z + 0.2), oct_ring(bm, 4.3, z + 1.0), oct_ring(bm, 4.55, z + 1.05),
+                                      oct_ring(bm, 4.55, z + 1.25), oct_ring(bm, 3.9, z + 1.25), oct_ring(bm, 3.9, z + 0.4)],
+                                  cap_top=False))
+    # The column and its two bowls.
+    m.add(stone, lambda bm: tube(bm, [(x, y, z + 0.4), (x, y, z + 2.2)], [0.75, 0.55], n=8))
+    m.add(stone, lambda bm: loft(bm, [ring(bm, (x, y), 0.55, z + 2.0, 16), ring(bm, (x, y), 2.1, z + 2.45, 16),
+                                      ring(bm, (x, y), 2.3, z + 2.65, 16), ring(bm, (x, y), 2.05, z + 2.65, 16),
+                                      ring(bm, (x, y), 1.9, z + 2.5, 16)], cap_top=True))
+    m.add(stone, lambda bm: tube(bm, [(x, y, z + 2.6), (x, y, z + 3.7)], [0.42, 0.32], n=8))
+    m.add(stone, lambda bm: loft(bm, [ring(bm, (x, y), 0.3, z + 3.55, 14), ring(bm, (x, y), 1.1, z + 3.85, 14),
+                                      ring(bm, (x, y), 1.22, z + 4.0, 14), ring(bm, (x, y), 1.05, z + 4.0, 14),
+                                      ring(bm, (x, y), 0.95, z + 3.9, 14)], cap_top=True))
+    m.add(trim, lambda bm: tube(bm, [(x, y, z + 3.9), (x, y, z + 4.6), (x, y, z + 4.75)], [0.18, 0.12, 0.02], n=6))
+    # The water falling over each bowl's lip, a sheet all round.
+    veil = ("falls_veil", "water")
+    m.add(veil, lambda bm: loft(bm, [ring(bm, (x, y), 1.24, z + 3.98, 16), ring(bm, (x, y), 1.4, z + 3.4, 16),
+                                     ring(bm, (x, y), 1.6, z + 2.7, 16)], cap_top=False))
+    m.add(veil, lambda bm: loft(bm, [ring(bm, (x, y), 2.32, z + 2.62, 20), ring(bm, (x, y), 2.6, z + 1.9, 20),
+                                     ring(bm, (x, y), 2.95, z + 1.0, 20)], cap_top=False))
+    m.build(c, "Warm Fountain", coll="Village", role="visual")
+    water = c.lib("valley_river", "water")
+    c.disc("Warm Fountain Pool", x, y, 4.0, z + 0.95, water, coll="Village", role="visual", n=16)
+    c.disc("Warm Fountain Bowl", x, y, 1.95, z + 2.55, water, coll="Village", role="visual", n=16)
+    c.disc("Warm Fountain Cup", x, y, 1.0, z + 3.92, water, coll="Village", role="visual", n=12)
+    c.place(paint.trunk_proto(c, 5.2, 1.4), x, y, z, coll="Collision", role="collision")
+    for dz, rate in ((1.0, 4), (4.0, 3)):
+        g = c.game(x, y, z + dz)
+        c.entity("steam", x=g[0], y=g[1], z=g[2])
+
+
+def market(c, ground, cx, cy, cr, cz):
+    """Hearthglow's Christmas market, redone (Blake, review-snow_region notes 1 and 5): a
+    crescent of stalls round the square's north edge, off the way through and out of
+    the lanes, each facing in, a lantern between each two and a string of lights over
+    the lot."""
+    sc = hs.Scene()
+    posts = []
+    R = cr + 3.5
+    for k, deg in enumerate((58.0, 76.0, 94.0, 112.0, 130.0)):
+        a = math.radians(deg)
+        x, y = cx + R * math.cos(a), cy + R * math.sin(a)
+        if not paint.road_clear(c, x, y, 4.0):
+            continue
+        rot = a - math.pi / 2  # (its front, local -Y, to the square)
+        z = min(ground(x + dx, y + dy) for dx in (-2.5, 0.0, 2.5) for dy in (-1.5, 0.0, 1.5))
+        c.place(hp.stall(c, k % 2), x, y, z - 0.05, rot=rot, coll="Village")
+        SPOTS.append((x, y, 4.0))
+        a2 = math.radians(deg + 9.0)
+        px, py = cx + (R + 1.0) * math.cos(a2), cy + (R + 1.0) * math.sin(a2)
+        if k < 4:
+            pz = ground(px, py)
+            c.place(hp.lantern_post(c, 0), px, py, pz - 0.1, coll="Village", role="visual")
+            c.place(paint.trunk_proto(c, 0.3, 5.0), px, py, pz, coll="Collision", role="collision")
+            g = c.game(px, py, pz + 4.6)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+            posts.append((px, py, pz))
+    for a, b in zip(posts, posts[1:]):
+        sc.lights.line((a[0], a[1], a[2] + 4.3), (b[0], b[1], b[2] + 4.3), sag=1.2, width=0.35)
+    sc.lights.build(c, "Market Lights")
+    print("market: %d stalls" % len(posts))
+
+
+def entry_pass(c, ground, way):
+    """The hollow the village left: the grand way in to the Snow Kingdom (Blake, Oct 29,
+    review-snow_region notes 7 and 11, "we need to massively overhaul the area when we
+    first enter the snow world"; he chose the grand entry pass): up out of the Burnt Gorge
+    you come through a great stone gateway, banners hung either side of it and lanterns
+    burning on it, the hollow's walls hung with frozen falls, a lookout hut on a ledge
+    over the way, and lantern posts lighting the road on to the kingdom. `way`: the road's
+    points, from the kingdom's road down to the gorge."""
+    import keep_props as kp
+
+    if len(way) < 4:
+        return
+    # The gateway, across the road where it comes up out of the gorge into the hollow.
+    cx, cy, cr, cz = SL.HUB
+    best = min(way, key=lambda p: abs(p[1] - (cy - cr + 4.0)))
+    k = way.index(best)
+    ax, ay = way[max(0, k - 1)]
+    bx, by = way[min(len(way) - 1, k + 1)]
+    rot = math.atan2(by - ay, bx - ax)
+    gz = ground(*best)
+    kp.use_palette({"keep_ashlar": "citadel_stone", "keep_ashlar_dark": "citadel_dark", "keep_parapet": "citadel_stone",
+                    "keep_gold": "temple_gold", "keep_banner": "banner_teal", "keep_pine": "pine_snow"})
+    arch = kp.gate_arch(c, span=22.0, clear=12.0, depth=6.0)
+    c.place(arch, best[0], best[1], gz - 0.3, rot=rot - math.pi / 2, coll="Props", role="visual")
+    nx, ny = -math.sin(rot), math.cos(rot)
+    for sd in (-1, 1):
+        px, py = best[0] + nx * sd * 13.5, best[1] + ny * sd * 13.5
+        tower = kp.round_tower(c, r=3.6, h=18.0)
+        zt = min(ground(px + 3.6 * math.cos(t), py + 3.6 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71))
+        c.place(tower, px, py, zt - 0.5, rot=rot)
+        g = c.game(best[0] + nx * sd * 9.5, best[1] + ny * sd * 9.5, gz + 9.0)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+        bpx, bpy = best[0] + nx * sd * 17.5 + math.cos(rot) * 3.0, best[1] + ny * sd * 17.5 + math.sin(rot) * 3.0
+        c.place(kp.banner_pole(c), bpx, bpy, ground(bpx, bpy) - 0.2, rot=rot, coll="Props")
+    # Lantern posts up the road from the gateway to the kingdom's road.
+    post = hp.lantern_post(c, 0)
+    for j in range(0, k, 2):
+        (x0, y0), (x1, y1) = way[j], way[min(j + 1, len(way) - 1)]
+        tx, ty = x1 - x0, y1 - y0
+        tl = math.hypot(tx, ty) or 1.0
+        for sd in (-1, 1):
+            px, py = x0 - ty / tl * sd * 8.5, y0 + tx / tl * sd * 8.5
+            if not paint.road_clear(c, px, py, 3.0):
+                continue
+            pz = ground(px, py)
+            c.place(post, px, py, pz - 0.1, coll="Props", role="visual")
+            c.place(paint.trunk_proto(c, 0.3, 5.0), px, py, pz, coll="Collision", role="collision")
+            g = c.game(px, py, pz + 4.6)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    # Frozen falls down the hollow's walls, either side, facing the way in.
+    n = 0
+    for deg in (40.0, 140.0, 200.0, 340.0):
+        a = math.radians(deg)
+        for r in range(int(cr) + 14, int(cr) + 60, 2):
+            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+            if L.wall_info(x, y)["past"] > -2.0:
+                top = L.natural(x, y)
+                foot = ground(cx + (r - 14) * math.cos(a), cy + (r - 14) * math.sin(a))
+                if top - foot < 10.0:
+                    break
+                props.falls(c, "Frozen Falls %d" % n, x, y, top, foot, 5.0, 8.0, facing=-1, throw=2.0, bulge=0.8, veils=2,
+                            foam=False, angle=a + math.pi / 2, mats=("icefall_blue", "glacier_ice", "glacier_ice"))
+                n += 1
+                break
+    print("entry pass: the gateway, %d frozen falls" % n)
+

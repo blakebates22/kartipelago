@@ -119,5 +119,41 @@ def grade(c, ter, x, y, rot, w, d, z, margin=1.0, blend=4.0, front=2.0, road=2.5
         v.co.z = z + (v.co.z - z) * t
         n += 1
     me.update()
+    # (So the land's ray casts see the new ground, not the old.)
+    import bpy
+
+    bpy.context.view_layer.update()
     return n
+
+
+def wall_texture(ob, x, y, dx, dy, steps=(1.5, 3.0, 5.0, 8.0)):
+    """The texture (library id) of the wall face behind a spot on a shelf: the land `ob`
+    looked down on a little way back into the wall (the way (dx, dy) points out of it) till
+    it's a wall's, not the shelf's snow or grass. (Blake, review-snow_region note 4: "the
+    ledges that the trees are on need to match the texture that the ledge is on. this needs
+    to apply everywhere.") None if there's no land there."""
+    from mathutils import Vector
+    import course_kit as ck
+
+    mw = ob.matrix_world
+    inv = mw.inverted()
+    down = (inv.to_3x3() @ Vector((0, 0, -1))).normalized()
+    first = None
+    for st in steps:
+        ok, _loc, _n, idx = ob.ray_cast(inv @ Vector((x - dx * st, y - dy * st, 800.0)), down)
+        if not ok:
+            continue
+        mi = ob.data.polygons[idx].material_index
+        if mi >= len(ob.material_slots) or ob.material_slots[mi].material is None:
+            continue
+        tex = ob.material_slots[mi].material.get("kp_texture")
+        if not tex:
+            continue
+        first = first or tex
+        try:
+            if ck.materials.entry(tex)["surface"] == "wall":
+                return tex
+        except Exception:
+            continue
+    return first
 

@@ -339,7 +339,7 @@ def ruined(c, ground):
     box(c, "Dust Road Bend", bx, by - 8.0, 40.0, 6.0, natural(bx, by) - 2.0, RIM_Z + 30.0, ("strata_orange", "wall"))
 
 
-def false_front(c, name, x, y, z, rot, w, d, siding, lit=True):
+def false_front(c, name, x, y, z, rot, w, d, siding, lit=True, foot=None):
     """A frontier false-front building facing the street (local -y): a clapboard body, a
     tall square front over its gable, a porch roof, lit windows."""
     ca, sa = math.cos(rot), math.sin(rot)
@@ -348,7 +348,7 @@ def false_front(c, name, x, y, z, rot, w, d, siding, lit=True):
         return x + lx * ca - ly * sa, y + lx * sa + ly * ca
 
     bx, by = at(0.0, d / 2)
-    box(c, name, bx, by, w / 2, d / 2, z - 1.0, z + 5.0, (siding, "wall"), rot=rot)
+    box(c, name, bx, by, w / 2, d / 2, min(z - 1.0, foot if foot is not None else z - 1.0), z + 5.0, (siding, "wall"), rot=rot)
     fx, fy = at(0.0, 0.3)
     box(c, name + " Front", fx, fy, w / 2 + 0.3, 0.3, z + 4.0, z + 8.5, (siding, "wall"), rot=rot, role="visual")
     rx, ry = at(0.0, d / 2)
@@ -417,8 +417,15 @@ def dress(c, ground, spots):
             if not inside(x, y) or not taken.clear(x, y, 7.0) or not paint.road_clear(c, x, y, 4.0):
                 continue
             rot = math.atan2(smp.r.y * sd, smp.r.x * sd) - math.pi / 2  # (its front, local -y, to the street)
-            false_front(c, "Gulch House %d" % k, x, y, g(x, y), rot, 9.0 + 2.0 * (k % 3), 10.0, sidings[k % len(sidings)],
-                        lit=not RUIN and k % 3 != 1)
+            w = 9.0 + 2.0 * (k % 3)
+            # (Its walls down to the lowest ground under it, and none where the land falls
+            # away under it: Blake, Oct 29, "no more floating buildings" (tests/buildings).)
+            ca, sa = math.cos(rot), math.sin(rot)
+            foot = [g(x + lx * ca - ly * sa, y + lx * sa + ly * ca) for lx in (-w / 2, 0.0, w / 2) for ly in (0.0, 5.0, 10.0)]
+            if max(foot) - min(foot) > 2.5:
+                continue
+            false_front(c, "Gulch House %d" % k, x, y, g(x, y), rot, w, 10.0, sidings[k % len(sidings)],
+                        lit=not RUIN and k % 3 != 1, foot=min(foot) - 0.4)
             taken.add(x, y, 8.0)
             k += 1
     gu = look("gulch")

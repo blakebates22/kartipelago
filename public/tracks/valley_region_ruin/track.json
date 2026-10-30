@@ -1387,7 +1387,7 @@
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "7efd1e0d34d32b42cdc1346e24891d0dd19634ca3971cf49d16d233b58232653",
+    "valley_dress.py": "c2be79c0a3e465c72f6adbaff1d0b8d52bd22bf5fb87550b0c2c4853fdc5dd82",
     "valley_layout.py": "3a93bd20f9b6c5de7f7f6427776a45a5092df2f37086d9d181e8f35459ca1a32",
     "valley_region.py": "b93193cbc3b194bb0429e39c68f3b63eec2a7186d9f87bc1d15bd1836b5a19bd",
     "valley_village.py": "4756a862ddd1f4ed95ea3e2f7a6f5678ed233206c97da5d2c42588f56ab47bdd"

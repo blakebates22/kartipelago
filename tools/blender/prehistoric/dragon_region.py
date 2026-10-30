@@ -162,7 +162,9 @@ def thresholds(c, ground):
                 c.place(arch, q.p.x, q.p.y, q.p.z - 0.2, rot=rot, role="visual")
                 for sd in (-1, 1):
                     x, y = q.p.x + q.r.x * sd * (half + 6.5), q.p.y + q.r.y * sd * (half + 6.5)
-                    c.place(tower, x, y, ground(x, y) - 0.5, rot=rot)
+                    # (Down to the lowest ground round its foot: no floating towers.)
+                    zt = min(ground(x + 4.8 * math.cos(t), y + 4.8 * math.sin(t)) for t in [j * math.tau / 16 for j in range(16)])
+                    c.place(tower, x, y, min(zt, ground(x, y)) - 4.0, rot=rot)  # (its foot well down in the land)
         elif kind == "lava":
             half = pb.bore(c, L, name, s0, s1, ("ember_rock", "wall"), ("ember_moss", "grass"), height=11.0)
             for sd in (-1, 1):
@@ -314,7 +316,7 @@ def dress(c, ground, spots):
     # of the ground, dark pines, torch posts along the road.
     mo = look("moon")
     paint.scatter(c, kp.round_tower(c, r=3.2, h=14.0, roof=True, variant=1), 3, rmax, mo, g, taken, 10, room=14.0,
-                  road_margin=10.0)
+                  road_margin=10.0, seat=3.2)
     for v in range(2):
         paint.scatter(c, ap.spire_cluster(c, v, height=7.0 + 3.0 * v, mat="crystal_violet2", accent="crystal_cyan"), 6, rmax,
                       mo, g, taken, 11 + v, room=7.0, road_margin=6.0)

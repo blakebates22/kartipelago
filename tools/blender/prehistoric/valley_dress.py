@@ -134,13 +134,20 @@ def wall_life(c, ground, taken):
                                                         ("cascade", "canyon_rock_moss"), ("bonebog", "moss_rock"),
                                                         ("ember", "volcano_slag"))}
 
+    import bpy
+
+    land = bpy.data.objects.get("Valley")
+
     def put_tree(proto, x, y, rot, scale, look, sink=0.3, coll="Ledges"):
         if proto in trees:
-            # (Set back into the wall a little, its top at the tree's foot.)
+            # (Set back into the wall a little, its top at the tree's foot; in the rock of
+            # the wall it stands out of: Blake, review-snow_region note 4, "this needs to
+            # apply everywhere".)
             dx, dy = _toward_pocket(x, y)
             lx, ly = x - dx * 0.7, y - dy * 0.7
-            c.place(ledge.get(look, ledge["riverbend"]), lx, ly, ground(x, y) - 0.2, rot=rot, scale=1.0,
-                    coll=coll, role="visual")
+            tex = paint.wall_texture(land, x, y, dx, dy) if land else None
+            lp = rp.tree_ledge(c, tex) if tex else ledge.get(look, ledge["riverbend"])
+            c.place(lp, lx, ly, ground(x, y) - 0.2, rot=rot, scale=1.0, coll=coll, role="visual")
         put(proto, x, y, rot, scale, sink, coll)
 
     for x, y, look in shelves:

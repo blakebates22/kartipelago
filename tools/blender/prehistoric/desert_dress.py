@@ -266,9 +266,16 @@ def wall_life(c, ground, taken):
     def put(proto, x, y, rot, scale, sink=0.3, coll="Ledges"):
         c.place(proto, x, y, ground(x, y) - sink, rot=rot, scale=scale, coll=coll, role="visual")
 
+    import bpy
+
+    land = bpy.data.objects.get("Desert World")
+
     def put_tree(proto, x, y, rot, scale, look):
         dx, dy = _toward_pocket(x, y)
-        c.place(ledges.get(look, ledges["post"]), x - dx * 0.7, y - dy * 0.7, ground(x, y) - 0.2, rot=rot, coll="Ledges",
+        # (In the rock of the wall it stands out of: Blake, review-snow_region note 4.)
+        tex = paint.wall_texture(land, x, y, dx, dy) if land else None
+        c.place(rp.tree_ledge(c, tex) if tex else ledges.get(look, ledges["post"]), x - dx * 0.7, y - dy * 0.7,
+                ground(x, y) - 0.2, rot=rot, coll="Ledges",
                 role="visual")
         put(proto, x, y, rot, scale)
 

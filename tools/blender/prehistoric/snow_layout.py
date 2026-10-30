@@ -28,8 +28,12 @@ import math
 from pocket_kit import Layout, catmull, lerp, smooth  # noqa: F401
 
 TOP = 78.0
-HUB = (0.0, -151.3, 20.8, 20.0)  # x, y, radius, height: the village square
-VILLAGE = HUB
+HUB = (0.0, -151.3, 20.8, 20.0)  # x, y, radius, height: the hollow you arrive in (the Burnt Gorge's top)
+# Hearthglow, moved (Blake, Oct 29, review-snow_region notes 1, 2: "I want to officially
+# move hearthglow hollow to where I drop pin number 2 ... this is now the new section for
+# hearth glow hollow"): in the lake's east basin, its square here (x, y, radius, height).
+# The hollow it left is the grand way in to the kingdom (snow_dress.entry_pass).
+VILLAGE = (130.0, -29.0, 15.0, 12.0)
 LAKE = (71.3, -54.6, 32.2, 12.0)  # the frozen lake's ice: x, y, radius, height
 
 POCKETS = [
@@ -53,7 +57,7 @@ POCKETS = [
      [(187.2, -13.6, 18.5, 34.0), (189.7, -42.2, 17.8, 27.0), (176.1, -68.2, 17.8, 20.0),
       (155.0, -86.8, 19.2, 15.0)]),
     ("lake", "lake",
-     [(71.3, -54.6, 57.7, 12.0), (114.7, -27.9, 29.6, 12.0), (124.0, -79.4, 29.6, 12.0),
+     [(71.3, -54.6, 57.7, 12.0), (126.0, -28.5, 38.0, 12.0), (124.0, -79.4, 29.6, 12.0),
       (43.4, -86.8, 26.6, 12.0)]),
 ]
 
@@ -125,7 +129,7 @@ LIPS = [(160.0, -82.5, 2.4, 8.0), (64.0, 154.5, 2.0, 7.5), (-150.0, 138.0, 1.8, 
 CREVASSE = [(104.0, 104.0), (118.0, 99.0), (130.0, 96.0), (142.0, 93.0), (156.0, 86.0)]
 CREVASSE_DEPTH = 18.0
 CREVASSE_HW = 9.0
-CALM = [(-39.7, -112.8), (-212.0, -38.4), (-155.0, 178.6), (197.2, 64.5), (-105.0, 196.0)]  # gates, lair
+CALM = [(160.0, -29.0), (-212.0, -38.4), (-155.0, 178.6), (197.2, 64.5), (-105.0, 196.0)]  # gates, lair
 
 
 def crevasse_d(x, y):
@@ -231,12 +235,14 @@ GATES = {
     # (Blake, Oct 29: the portal stood in the middle of the road. Now it's in the hollow's
     # west wall, at the end of a lane straight out of the square: the village's own course
     # entered from the village.)
-    "hearthglow": (-55.0, -150.5),
+    # (Oct 29, moved with the village: in its basin's east wall, a lane out of the square.)
+    "hearthglow": (160.0, -29.0),
     "frostveil": (-212.0, -38.4),  # the keep's gate in the bailey's west wall
     "summit": (-155.0, 178.6),  # the giant tree
     "aurora": (197.2, 64.5),  # the rift in the glacier
 }
-TREE = (-31.0, -169.0)  # the village's great tree, south-west of the square
+TREE = (136.0, -55.0)  # the village's great tree, south of the square
+BELL = (146.0, -10.0)  # the bell tower, north-east of the square
 LAIR = (-105.0, 196.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
 FROZEN_PASS = (152.5, -105.4)  # where the Frozen Pass leaves the lake (the ruin), on east
 PASS_END = (260.4, -117.8)

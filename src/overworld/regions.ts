@@ -241,17 +241,18 @@ export const REGIONS: Region[] = [
     kingdom: "snow",
     // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
     challenge: { x: 16, z: 127, heading: -1.7226 },
-    // In the village square, facing north to the road.
-    spawn: { x: 0, z: 155, heading: Math.PI },
+    // In Hearthglow's square (by the lake since Oct 29: Blake moved the village), facing
+    // west to the road.
+    spawn: { x: 130, z: 29, heading: -Math.PI / 2 },
     gateways: [
-      // In the hollow's west wall, at the end of the lane out of the square.
+      // In the village's basin's east wall, at the end of the lane out of the square.
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: -45.0,
-        z: 150.72,
+        x: 150.0,
+        z: 29.0,
         radius: 6,
-        heading: 1.5484,
+        heading: -1.5708,
       },
       // At the keep's gate in the bailey's west wall.
       {
