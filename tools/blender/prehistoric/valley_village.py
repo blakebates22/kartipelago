@@ -397,7 +397,38 @@ def hut_chimney(v):
 EMBER = {"wall": "basalt_block", "thatch": "obsidian_cliff", "name": "Ember Hut"}
 
 
-def hut(c, v, look=None):
+# What stands on the ground about a hut (not hung on it): set down on the land where each
+# thing is, not at the hut's floor (Blake, valley polish 14, notes 14 and 15: pots and logs
+# "partially in the ground"). `GROUND`: the region's ground(x, y), set by the region.
+GROUND_EXTRAS = ("pots", "firewood", "bench", "rack")
+GROUND = None
+
+
+def extra_spots(kind, R):
+    """Each piece of a ground extra (its index, or None for all of it) and the points it
+    stands on, in the hut's space."""
+    def ring_(a, r, along):
+        ca, sa = math.cos(a), math.sin(a)
+        cx, cy = r * ca, r * sa
+        return [(cx, cy)] + [(cx + s_ * along * -sa, cy + s_ * along * ca) for s_ in (-1, 1)] + \
+               [(cx + s_ * min(0.5, along) * ca, cy + s_ * min(0.5, along) * sa) for s_ in (-1, 1)]
+    if kind == "pots":
+        return [(k, ring_(a, R + 0.42, 0.3)) for k, a in enumerate((-0.6, -0.42, 0.75))]
+    if kind == "firewood":
+        return [(None, ring_(-0.75, R + 0.45, 0.6))]
+    if kind == "bench":
+        return [(None, ring_(0.55, R + 0.55, 0.95))]
+    return [(None, ring_(-1.05, R + 1.3, 0.9))]
+
+
+def hut_extra(c, v, kind, which=None):
+    """One of a hut's ground extras on its own (in the hut's space)."""
+    R = HUTS[_vi(v)]["r"]
+    name = "Village Hut %d %s%s" % (_vi(v), kind, "" if which is None else " %d" % which)
+    return proto_mesh(c, name, lambda m: extra(m, kind, R, 0.0, 0.0, 0.0, v, which))
+
+
+def hut(c, v, look=None, bare=False):
     """A villager's hut, look `v` of HUTS (its doorway at +X): a stone plinth, daub walls
     with a real doorway (a frame and lintel, a door or a hide, a dark room behind it),
     windows, a painted band, the roof in its own style, and its odds and ends about it.
@@ -571,9 +602,10 @@ def hut(c, v, look=None):
 
         # What's about it.
         for e in s["extras"]:
-            extra(m, e, R, Hw, Re, ze, v)
+            if not (bare and e in GROUND_EXTRAS):
+                extra(m, e, R, Hw, Re, ze, v)
 
-    return proto_mesh(c, "%s %d" % ((look or {}).get("name", "Village Hut"), _vi(v)), fill)
+    return proto_mesh(c, "%s %d%s" % ((look or {}).get("name", "Village Hut"), _vi(v), " Bare" if bare else ""), fill)
 
 
 def _cone(bm, rings_rz, n, tip=None, jag=0.0, seed=0):
@@ -651,7 +683,7 @@ def roof_fill(m, kind, R, Hw, Re, ze, thatch, v):
                                                                          tilt=(sgn * 0.4, 0)))
 
 
-def extra(m, kind, R, Hw, Re, ze, v):
+def extra(m, kind, R, Hw, Re, ze, v, which=None):
     def at(a, r, z):
         return (r * math.cos(a), r * math.sin(a), z)
 
@@ -676,6 +708,8 @@ def extra(m, kind, R, Hw, Re, ze, v):
                     n=7)
     elif kind == "pots":
         for k, a in enumerate((-0.6, -0.42, 0.75)):
+            if which is not None and k != which:
+                continue
             x, y, _ = at(a, R + 0.42, 0)
             sc = 0.8 + 0.25 * k
 
@@ -742,8 +776,21 @@ def hut_collider(c, v):
 
 def place_hut(c, v, x, y, z, rot, scale=1.0, coll="Village", name=None, look=None):
     """A hut (look v, its doorway turned to `rot`), its collider, and its chimney's
-    smoke if it has one."""
-    c.place(hut(c, v, look), x, y, z, rot=rot, scale=scale, coll=coll, role="visual", name=name)
+    smoke if it has one. Its pots, woodpile, bench and rack each on the land where they
+    stand (on its highest point under them, so none is half buried), if the region has
+    given its ground (GROUND)."""
+    ground = GROUND
+    c.place(hut(c, v, look, bare=ground is not None), x, y, z, rot=rot, scale=scale, coll=coll, role="visual", name=name)
+    if ground is not None:
+        ca, sa = math.cos(rot), math.sin(rot)
+        for e in HUTS[_vi(v)]["extras"]:
+            if e not in GROUND_EXTRAS:
+                continue
+            for which, pts in extra_spots(e, HUTS[_vi(v)]["r"]):
+                zs = [ground(x + (px * ca - py * sa) * scale, y + (px * sa + py * ca) * scale) for px, py in pts]
+                # (Never down into the hut's own floor, nor far off it.)
+                ze = max(z, min(max(zs) - 0.04, z + 1.2))
+                c.place(hut_extra(c, v, e, which), x, y, ze, rot=rot, scale=scale, coll=coll, role="visual")
     c.place(hut_collider(c, v), x, y, z, rot=rot, scale=scale, coll="Collision", role="collision")
     ch = hut_chimney(v)
     if ch:
@@ -1194,7 +1241,31 @@ def clear_paths(c, paths, room=2.6):
 # ------------------------------------------------------------------ the swamp hut
 
 
-def swamp_hut(c):
+SWAMP_DX = 3.6 * 1.15 - 0.15  # (the swamp hut's doorway, out along +X)
+# Its yard (each thing set down on the land where it is, not at the hut's foot: Blake,
+# valley polish 15, note 5, "this stump is floating"): (kind, k, x, y, sink).
+SWAMP_YARD = [("stone", k, SWAMP_DX + 0.9 + k * 0.8, 0.15 * (k % 2), 0.0) for k in range(3)] + \
+             [("pot", k, px, py, 0.03) for k, (px, py) in enumerate(((SWAMP_DX + 0.3, 1.6), (SWAMP_DX - 0.2, 2.1)))] + \
+             [("stool", 0, SWAMP_DX + 1.6, 1.0, 0.3)]
+
+
+def swamp_yard(c, kind, k, px, py):
+    """One thing in the swamp hut's yard, on its own (in the hut's space)."""
+
+    def fill(m):
+        if kind == "stone":
+            m.add(("ruin_stone", "wall"), lambda bm: blob(bm, (px, py, 0.0), 0.45, sx=1.2, sz=0.4, subdiv=1))
+        elif kind == "pot":
+            m.add(("daub_ochre", "wall"), lambda bm: loft(bm, [
+                ring(bm, (px, py), r * (0.9 + 0.2 * k), z, 10) for r, z in ((0.22, 0.0), (0.34, 0.25), (0.3, 0.55), (0.2, 0.7))],
+                cap_top=True))
+        else:
+            log(m, (px, py, 0.25), (px, py, 0.65), 0.28, seed=91, n=9)
+
+    return proto_mesh(c, "Swamp Hut Yard %s %d" % (kind, k), fill)
+
+
+def swamp_hut(c, bare=False):
     """A swamp-dweller's hut (Blake, Bonebog notes 9 and 10: "think yodas house on dagoa
     ... make the hut nice"): a low lumpy dome of mud and wattle grown over with moss,
     old roots arching over it and down into the bog, a round doorway with a bent-wood
@@ -1240,7 +1311,7 @@ def swamp_hut(c):
         m.add(("dark_corridor", "wall"), lambda bm: _round(bm, (dx, 0, 1.05), 0.85, 1.0, 14))
         m.add(BARK, lambda bm: tube(bm, [(dx + 0.08, 0.85 * math.cos(t), 1.05 + 1.0 * math.sin(t))
                                          for t in [i * math.pi / 10 for i in range(-1, 12)]], 0.11, n=6))
-        for k in range(3):
+        for k in range(0 if bare else 3):
             m.add(("ruin_stone", "wall"), lambda bm, k=k: blob(bm, (dx + 0.9 + k * 0.8, 0.15 * (k % 2), 0.0), 0.45, sx=1.2,
                                                                 sz=0.4, subdiv=1))
         # Round windows, glowing, framed.
@@ -1256,14 +1327,16 @@ def swamp_hut(c):
         # A lantern on a crook by the door.
         m.add(BARK, lambda bm: tube(bm, [(dx + 0.6, -1.4, -0.3), (dx + 0.7, -1.4, 2.4), (dx + 1.2, -1.2, 2.7)], 0.07, n=5))
         m.add(("lantern_glow", "wall"), lambda bm: blob(bm, (dx + 1.25, -1.2, 2.2), 0.2, sz=1.3, subdiv=1))
-        # Pots and a stool.
+        # Pots and a stool (in its yard, on their own, if `bare`).
+        if bare:
+            return
         for k, (px, py) in enumerate(((dx + 0.3, 1.6), (dx - 0.2, 2.1))):
             m.add(("daub_ochre", "wall"), lambda bm, px=px, py=py, k=k: loft(bm, [
                 ring(bm, (px, py), r * (0.9 + 0.2 * k), z, 10) for r, z in ((0.22, 0.0), (0.34, 0.25), (0.3, 0.55), (0.2, 0.7))],
                 cap_top=True))
         log(m, (dx + 1.6, 1.0, 0.25), (dx + 1.6, 1.0, 0.65), 0.28, seed=91, n=9)
 
-    return proto_mesh(c, "Swamp Hut", fill)
+    return proto_mesh(c, "Swamp Hut Bare" if bare else "Swamp Hut", fill)
 
 
 def _round(bm, centre, rw, rh, n):
@@ -1291,7 +1364,14 @@ def place_swamp_hut(c, x, y, z, rot):
         near = math.hypot(ob.matrix_world.translation.x - x, ob.matrix_world.translation.y - y) < 8.0
         if ob.type == "MESH" and ("Tree" in ob.name or "Giant" in ob.name) and near:
             bpy.data.objects.remove(ob)
-    c.place(swamp_hut(c), x, y, z, rot=rot, coll="Props", role="visual", name="Swamp Hut")
+    c.place(swamp_hut(c, bare=GROUND is not None), x, y, z, rot=rot, coll="Props", role="visual", name="Swamp Hut")
+    if GROUND is not None:
+        ca, sa = math.cos(rot), math.sin(rot)
+        for kind, k, px, py, sink in SWAMP_YARD:
+            wx, wy = x + px * ca - py * sa, y + px * sa + py * ca
+            pts = [(wx, wy)] + [(wx + 0.3 * math.cos(t), wy + 0.3 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
+            zg = max(GROUND(*p) for p in pts) if kind == "pot" else GROUND(wx, wy)
+            c.place(swamp_yard(c, kind, k, px, py), x, y, zg - sink, rot=rot, coll="Props", role="visual")
 
     def build(bm):
         _cyl(bm, (0, 0, -0.6), 3.9, 3.6, n=14)

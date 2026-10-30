@@ -730,6 +730,76 @@ class Course:
         self.protos[name] = me
         return me
 
+    def foot_proto(self, proto, zmax=5.0, mats=r"root|bark|trunk|wood"):
+        """A collider for a tree's foot (its roots and the bottom of its trunk), cut from
+        its own mesh: the faces of the materials matching `mats` below `zmax` (in the prop's
+        own space) that stand up steep, so a kart runs into a root's side and never rides
+        up onto its back (Blake, valley polish 14, note 2: "all of the roots in this entire
+        overworld have hitboxes. i can just drive right through them"). None if it has no
+        such faces."""
+        import re
+        name = proto + " Foot"
+        if name in self.protos:
+            return name
+        src = self.protos[proto]
+        rx = re.compile(mats, re.I)
+        keep = {i for i, m in enumerate(src.materials) if m is not None and rx.search(m.name)}
+        bm = bmesh.new()
+        bm.from_mesh(src)
+        bm.normal_update()
+        drop = [f for f in bm.faces if f.material_index not in keep or abs(f.normal.z) > 0.6
+                or any(v.co.z > zmax for v in f.verts)]
+        bmesh.ops.delete(bm, geom=drop, context="FACES")
+        if not bm.faces:
+            bm.free()
+            self.protos[name] = None
+            return None
+        me = bpy.data.meshes.new("Prop " + name)
+        bm.to_mesh(me)
+        bm.free()
+        # (A wall, as a tree's trunk collider is.)
+        me.materials.append(self.lib("valley_cliff", "wall"))
+        for poly in me.polygons:
+            poly.material_index = 0
+        self.protos[name] = me
+        return name
+
+    def place_foot(self, proto, x, y, z, rot=0.0, scale=1.0, zmax=5.0, clear=2.0):
+        """The collider for a tree's roots (`foot_proto`) where the tree stands; none of it
+        on a road or its shoulder (`clear` m past the road's edge), where a root mustn't
+        stop a kart."""
+        f = self.foot_proto(proto, zmax)
+        if not f or self.protos.get(f) is None:
+            return
+        bm = bmesh.new()
+        bm.from_mesh(self.protos[f])
+        ca, sa = math.cos(rot), math.sin(rot)
+        for v in bm.verts:
+            lx, ly, lz = v.co.x * scale, v.co.y * scale, v.co.z * scale
+            v.co = Vector((x + lx * ca - ly * sa, y + lx * sa + ly * ca, z + lz))
+
+        spurs = [q for q in self.extra_ground if (q.p.x - x) ** 2 + (q.p.y - y) ** 2 < (40.0 * max(1.0, scale)) ** 2]
+
+        def on_road(p):
+            smp, d = self.nearest(p.x, p.y)
+            if d <= smp.w / 2 + clear:
+                return True
+            return any((q.p.x - p.x) ** 2 + (q.p.y - p.y) ** 2 <= (q.w / 2 + clear) ** 2 for q in spurs)
+
+        drop = [fc for fc in bm.faces if any(on_road(v.co) for v in fc.verts)]
+        if drop:
+            bmesh.ops.delete(bm, geom=drop, context="FACES")
+        if not bm.faces:
+            bm.free()
+            return
+        me = bpy.data.meshes.new(f)
+        bm.to_mesh(me)
+        bm.free()
+        me.materials.append(self.protos[f].materials[0])
+        ob = bpy.data.objects.new(f, me)
+        self.coll("Collision").objects.link(ob)
+        ob["kp_role"] = "collision"
+
     def place(self, proto, x, y, z, rot=0.0, scale=1.0, coll="Props", role="both", name=None):
         me = self.protos[proto]
         self.prop_count += 1

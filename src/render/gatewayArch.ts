@@ -366,33 +366,10 @@ export function createGatewayArch(
     }),
   );
   group.add(new THREE.Mesh(geo(rockMass(th, o.seed % 97)), rockMat));
-  // Stones fallen at its feet, and boulders tumbled against its flanks.
-  const stoneMat = keep(new THREE.MeshLambertMaterial({ color: th.rock, flatShading: true }));
-  const darkStone = keep(new THREE.MeshLambertMaterial({ color: th.band, flatShading: true }));
-  for (const sd of [-1, 1]) {
-    for (let k = 0; k < 4; k++) {
-      const s = 0.5 + r() * 0.9;
-      const st = new THREE.Mesh(
-        geo(new THREE.IcosahedronGeometry(s, 1)),
-        k % 2 ? darkStone : stoneMat,
-      );
-      st.position.set(sd * (8.8 + r() * 4.5), s * 0.3, 2.0 + r() * 4);
-      st.rotation.set(r() * 3, r() * 3, r() * 3);
-      st.scale.set(1, 0.6 + r() * 0.3, 1);
-      group.add(st);
-    }
-    for (let k = 0; k < 3; k++) {
-      const s = 1.6 + r() * 1.4;
-      const st = new THREE.Mesh(
-        geo(new THREE.DodecahedronGeometry(s, 1)),
-        k % 2 ? stoneMat : darkStone,
-      );
-      st.position.set(sd * (11.5 + r() * 2.5), s * 0.35, -3 - k * 4.5 - r() * 2);
-      st.rotation.set(r() * 3, r() * 3, r() * 3);
-      st.scale.set(1.2, 0.75, 1);
-      group.add(st);
-    }
-  }
+  // (No stones at its feet or boulders against its flanks any more: Blake, valley polish
+  // 14, note 8, "lets remove these rocks in front of al portals. they look weird". Their
+  // draws are still taken, so the sign hangs as it did.)
+  for (let k = 0; k < 2 * (4 * 7 + 3 * 6); k++) r();
   // The hole: a dark tunnel back into the rock, the course's glow deep inside.
   const inside = keep(new THREE.MeshBasicMaterial({ color: 0x0a0806, side: THREE.BackSide }));
   const tunnel = new THREE.Mesh(

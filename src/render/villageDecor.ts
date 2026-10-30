@@ -609,6 +609,15 @@ export function createVillageDecor(
   if (visual)
     for (const f of modelledFlames(visual))
       spots.push({ x: f.x, y: f.y, z: f.z, size: Math.max(0.35, Math.min(2.2, f.h / 1.7)) });
+  // (A torch that has its own fire entity already, in its basket, gets no second flame:
+  // a wall sconce's torch mark sat out off the bracket, and its flame floated there,
+  // Blake, valley polish 14, note 11, "make sure all flames are connected to the torches".)
+  const lit: { x: number; y: number; z: number }[] = [];
+  for (const e of entities) {
+    const o = e as Record<string, unknown> | null;
+    if (o && typeof o === "object" && o.type === "fire")
+      lit.push({ x: num(o.x), y: num(o.y), z: num(o.z) });
+  }
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
@@ -617,6 +626,7 @@ export function createVillageDecor(
     const y = num(o.y);
     const z = num(o.z);
     if (spots.some((s) => Math.hypot(s.x - x, s.z - z) < 1.8 && Math.abs(s.y - y) < 3)) continue;
+    if (lit.some((s) => Math.hypot(s.x - x, s.z - z) < 1.8 && Math.abs(s.y - y) < 3)) continue;
     spots.push(
       o.type === "torch" ? { x, y: y - 0.45, z, size: 0.5 } : { x, y: y - 0.3, z, size: 1.0 },
     );

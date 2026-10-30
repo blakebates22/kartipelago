@@ -63,6 +63,7 @@ def place_big(c, proto, n, box, ok, ground, taken, seed, room, margin, trunk=Non
         if trunk:
             c.place(proto, x, y, z, rot=rot, scale=s, coll=coll, role="visual")
             c.place(paint.trunk_proto(c, *trunk), x, y, z, scale=s, coll="Collision", role="collision")
+            c.place_foot(proto, x, y, z, rot=rot, scale=s)
         else:
             c.place(proto, x, y, z, rot=rot, scale=s, coll=coll)
         taken.add(x, y, room * 0.6)
@@ -200,7 +201,10 @@ def wall_life(c, ground, taken):
         if look == "ember":
             # Lava seeping over the lip and down the riser, into a glowing pool below.
             if seeps < 9 and drop > 7.0 and ((int(x) + int(y)) % 3 == 0):
-                lava_seep(c, x, y, dx, dy, z, drop, seeps)
+                # (None at game (161, -11): Blake, valley polish 14, note 6, "lets remove
+                # this piece of lava".)
+                if math.hypot(x - 160.8, y - 11.3) > 8.0:
+                    lava_seep(c, x, y, dx, dy, z, drop, seeps)
                 seeps += 1
                 room.add(x, y, 9.0)
             continue
@@ -767,8 +771,8 @@ def ruin_site(c, x, y, rot, ground, k):
     for s in (-1, 1):
         bx, by = at(s * 11.0, 3.0)
         c.place(props.ruin_blocks(c, k + s), bx, by, ground(bx, by) - 0.3, rot=rot + s, coll="Ruins")
-    vx, vy = at(-9.0, 5.0)
-    c.place(props.vine_curtain(c, 1, 11.0), vx, vy, top - 1.5, rot=rot + math.pi, coll="Vines", role="visual")
+    # (No curtain of vines off its side: it hung from nothing, at the platform's corner, and
+    # stood up out of the ground, Blake, valley polish 14, note 10, "remove these weird vines".)
 
 
 def cascade(c, ground, taken):
@@ -822,6 +826,7 @@ def cascade(c, ground, taken):
         c.place(rp.great_tree(c, v), x, y, min(z, ground(x, y)) - 0.4, rot=v * 2.3 + 0.4, scale=1.1, coll="Props",
                 role="visual")
         c.place(paint.trunk_proto(c, 3.4, 14.0), x, y, z - 0.4, scale=1.1, coll="Collision", role="collision")
+        c.place_foot(rp.great_tree(c, v), x, y, min(z, ground(x, y)) - 0.4, rot=v * 2.3 + 0.4, scale=1.1)
         taken.add(x, y, 13.0)
         trees += 1
     # A few ferns by the wall (Cascade note 19).
@@ -923,7 +928,12 @@ def ember(c, ground, taken):
             continue
         if not paint.road_clear(c, x, y, 8.0) or any(math.hypot(x - px, y - py) < pr + 10 for px, py, pr in L.LAVA):
             continue
-        z = ground(x, y)
+        # (Seated on the lowest ground round its foot, not its middle's: on a slope its
+        # downhill side stood up off the ground, Blake, valley polish 14, note 5.)
+        rim = [ground(x + 5.0 * math.cos(a * math.tau / 12), y + 5.0 * math.sin(a * math.tau / 12)) for a in range(12)]
+        if max(rim) - min(rim) > 2.5:
+            continue
+        z = min(min(rim), ground(x, y)) + 0.2
         c.place(rp.lava_vent(c, k % 2), x, y, z - 0.3, rot=k, coll="Props")
         g = c.game(x, y, z + 1.2)
         c.entity("geyser", x=g[0], y=g[1], z=g[2], r=2.6, height=16.0 + 4.0 * (k % 2), period=8.0, offset=1.6 * geysers,
@@ -1064,10 +1074,11 @@ def sconces(c, s0, s1, half, every=11.0, height=4.6, lit_from=0.0):
         rx, ry = q.r.x * sd, q.r.y * sd
         rot = math.atan2(-rx, ry) + math.pi
         c.place(sc, x, y, z, rot=rot, coll="Tunnels", role="visual")
-        g = c.game(x - rx * 0.7, y - ry * 0.7, z + 1.0)
-        c.entity("torch", x=g[0], y=g[1], z=g[2])
-        # Its fire, the game's own, over the basket (render/fire.ts).
+        # Its fire, the game's own, over the basket (render/fire.ts); its torch mark (the
+        # light and embers) in the same basket, not off the bracket's far side.
         fx, fy = x + 0.7 * math.sin(rot), y - 0.7 * math.cos(rot)
+        g = c.game(fx, fy, z + 1.0)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
         f = c.game(fx, fy, z + 0.82)
         c.entity("fire", x=f[0], y=f[1], z=f[2], size=0.5)
         s += every
@@ -1091,7 +1102,7 @@ def log_tunnel(c, s0, s1, ro, ri, lift):
         p = Vector((q.p.x, q.p.y, q.p.z + lift)) + (side * math.cos(th) + Vector((0, 0, math.sin(th)))) * (ri - 0.2)
         rot = math.atan2(side.x, -side.y) + math.pi
         c.place(sc, p.x, p.y, p.z - 1.0, rot=rot, coll="Tunnels", role="visual")
-        g = c.game(p.x - side.x * 0.8, p.y - side.y * 0.8, p.z)
+        g = c.game(p.x + 0.7 * math.sin(rot), p.y - 0.7 * math.cos(rot), p.z)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
         # Its fire, the game's own (render/fire.ts), over the basket.
         f = c.game(p.x + 0.7 * math.sin(rot), p.y - 0.7 * math.cos(rot), p.z - 1.0 + 0.82)
@@ -1345,12 +1356,16 @@ def ledge_greens(c, ob, ground, seed=5, step=2.2, every=0.55, floor=None):
     return n
 
 
-def bridge_dress(c, keep, ground, every=3.6):
+def bridge_dress(c, keep, ground, every=3.6, railed=lambda q: True, rail=(0.9, 0.9)):
     """The timber bridges made something (Blake, Riverbend note 6: "a higher def bridge
     here to add some flair ... make it come more alive"): stout posts along both rails
     with rope slung between their tops, a tall carved post with a torch at each corner,
     and under the deck pilings down into the river, braced across, every few metres.
-    `keep(q)`: which of the road's bridge stretches (by a sample on it)."""
+    `keep(q)`: which of the road's bridge stretches (by a sample on it).
+    The posts stand on top of the bridge's side wall (Blake, valley polish 15, notes 1 to 4:
+    "move these on top of the side wall"): `rail` = (its centre out from the road's edge,
+    its top over the road). Where the deck is open (`railed(q)` false: a gateway's spur
+    leaves it) there are no posts, and the rope breaks off there."""
     post = "Bridge Post"
 
     def post_build(bm):
@@ -1393,17 +1408,24 @@ def bridge_dress(c, keep, ground, every=3.6):
         L_ = run[-1].s - run[0].s
         k = max(2, int(round(L_ / every)))
         picks = [run[min(len(run) - 1, int(round(i * (len(run) - 1) / k)))] for i in range(k + 1)]
+        out, up = rail
         for sd in (-1, 1):
             tops = []
             for i, q in enumerate(picks):
                 end = i in (0, len(picks) - 1)
-                x, y = q.p.x + q.r.x * sd * (q.w / 2 + 0.35), q.p.y + q.r.y * sd * (q.w / 2 + 0.35)
-                c.place(tall if end else post, x, y, q.p.z, rot=q.s, coll="Bridges", role="visual")
+                if not railed(q):
+                    tops.append(None)
+                    continue
+                at_ = q.side(sd * (q.w / 2 + out), up)
+                x, y, z = at_.x, at_.y, at_.z
+                c.place(tall if end else post, x, y, z, rot=q.s, coll="Bridges", role="visual")
                 if end:
-                    g = c.game(x, y, q.p.z + 3.7)
+                    g = c.game(x, y, z + 3.7)
                     c.entity("torch", x=g[0], y=g[1], z=g[2])
-                tops.append((x, y, q.p.z + (2.9 if end else 1.85)))
+                tops.append((x, y, z + (2.9 if end else 1.85)))
             for a, b in zip(tops, tops[1:]):
+                if a is None or b is None:
+                    continue
                 mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 - 0.35)
                 rope.add(("rope_rail", "wall"), lambda bm, pts=[a, mid, b]: props.tube(bm, pts, 0.05, n=4))
         # Pilings and braces under the deck, down into the water.
@@ -1465,8 +1487,9 @@ def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
                                             (half + 1.5, (half + gap) / 2 + 1.5, 2.6, (half - gap) / 2 + 1.0, 0.0),
                                             (half + 1.5, -(half + gap) / 2 - 1.5, 2.6, (half - gap) / 2 + 1.0, 0.0))):
         x, y = at(u, v)
-        ob = c.rock_mass("Lookout Heap %d" % k, x, y, rx, ry, floor + height + 1.5 + (k % 2), z0=floor - 2.0, n=16, seed=9 + k,
-                         angle=facing, base=floor - 2.0,
+        z0 = min(floor, foot_low(ground, x, y, rx, ry, facing)) - 2.0
+        ob = c.rock_mass("Lookout Heap %d" % k, x, y, rx, ry, floor + height + 1.5 + (k % 2), z0=z0, n=16, seed=9 + k,
+                         angle=facing, base=z0,
                          bands=[(1.0, 0.0), (1.0, 0.35), (0.9, 0.4), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)])
         dress(ob, floor + height)
     # The mine's frame at the way in.
@@ -1483,15 +1506,8 @@ def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
     m.add(beam, lambda bm: props.cuboid(bm, (x, y, floor + 5.6), (0.8, 2 * gap + 2.2, 0.8), rot=facing))
     x2, y2 = at(half + 2.2, 0.0)
     m.add(("board_walk", "wall"), lambda bm: props.cuboid(bm, (x2, y2, floor + 6.5), (0.15, 3.4, 0.9), rot=facing))
-    # Rails in, on their sleepers.
-    for k in range(9):
-        u = half + 7.0 - k * 1.4
-        x, y = at(u, 0.0)
-        m.add(beam, lambda bm, x=x, y=y: props.cuboid(bm, (x, y, ground(x, y) + 0.08), (0.35, 2.4, 0.16), rot=facing))
-    for side in (-1, 1):
-        a, b = at(half + 7.4, side * 0.75), at(half - 4.0, side * 0.75)
-        m.add(("rail_iron", "wall"), lambda bm, a=a, b=b: props.tube(
-            bm, [(a[0], a[1], ground(*a) + 0.22), (b[0], b[1], floor + 0.22)], 0.07, n=4))
+    # (No rails in on sleepers any more: they rode up off the uneven ground, Blake, valley
+    # polish 14, note 3, "these stair railings ... are just floating".)
     m.build(c, "Lookout Frame", coll="Props", role="visual")
     # The smugglers' stock by the door (solid).
     for k, (u, v) in enumerate(((half + 3.5, gap + 3.0), (half + 5.0, gap + 4.6), (half + 3.2, -gap - 3.2),
@@ -1500,6 +1516,19 @@ def smugglers_den(c, ground, px, py, facing, half, gap, floor, height):
         proto = gp.crate_stack(c, k % 2) if k % 2 == 0 else gp.barrel(c, k % 2)
         c.place(proto, x, y, ground(x, y) - 0.05, rot=facing + k, coll="Props")
     print("lookout: a smugglers' den")
+
+
+def foot_low(ground, x, y, rx, ry, angle):
+    """The lowest ground round an ellipse's edge (radii rx, ry, turned by `angle`), and a
+    little out past it: where a heap of rock must reach down to."""
+    ca, sa = math.cos(angle), math.sin(angle)
+    lo = ground(x, y)
+    for k in range(16):
+        a = k * math.tau / 16
+        for f in (1.0, 1.15):
+            u, v = rx * f * math.cos(a), ry * f * math.sin(a)
+            lo = min(lo, ground(x + u * ca - v * sa, y + u * sa + v * ca))
+    return lo
 
 
 def jungle_grotto(c, ground, px, py, facing, half, gap, floor, height):
@@ -1534,8 +1563,11 @@ def jungle_grotto(c, ground, px, py, facing, half, gap, floor, height):
     for k, (u, v, rx, ry) in enumerate(((-half - 2.5, 0.0, 3.6, half + 4.0), (0.0, half + 2.5, half + 4.0, 3.6),
                                         (0.0, -half - 2.5, half + 4.0, 3.6))):
         x, y = at(u, v)
-        dress(c.rock_mass("Grotto Heap %d" % k, x, y, rx, ry, floor + height + 2.0, z0=floor - 2.0, n=16, seed=21 + k,
-                          angle=facing, base=floor - 2.0,
+        # (Down to the lowest ground round its foot: on the slope one corner stood out over
+        # the land, Blake, valley polish 14, note 7, "this grotto heap if floating".)
+        z0 = min(floor, foot_low(ground, x, y, rx, ry, facing)) - 2.0
+        dress(c.rock_mass("Grotto Heap %d" % k, x, y, rx, ry, floor + height + 2.0, z0=z0, n=16, seed=21 + k,
+                          angle=facing, base=z0,
                           bands=[(1.0, 0.0), (1.0, 0.35), (0.9, 0.4), (0.86, 0.75), (0.7, 0.8), (0.6, 1.0)]))
     temple = ("jungle_temple", "wall")
     glyph = ("ruin_glyph", "wall")
@@ -1544,7 +1576,10 @@ def jungle_grotto(c, ground, px, py, facing, half, gap, floor, height):
         x, y = at(half + 1.0, side * (gap + 1.6))
         box(c, "Grotto Pier %d" % side, x, y, 1.4, 1.6, floor - 1.0, floor + height + 2.4, temple, rot=facing)
         cx, cy = at(half + 2.8, side * (gap + 1.4))
-        c.place(props.ruin_column(c, 1 + (side > 0)), cx, cy, floor - 0.1, rot=facing, scale=1.25, coll="Ruins")
+        # (On the lowest ground round its foot: on the slope it stood up off the land,
+        # Blake, valley polish 15, notes 6 and 7, "this is floating".)
+        cz = min(floor, foot_low(ground, cx, cy, 1.6, 1.6, 0.0)) - 0.15
+        c.place(props.ruin_column(c, 1 + (side > 0)), cx, cy, cz, rot=facing, scale=1.25, coll="Ruins")
         g = c.game(*at(half + 2.9, side * (gap + 1.4)), floor + 6.4)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
     lx, ly = at(half + 1.2, 0.0)
@@ -1565,6 +1600,8 @@ def jungle_grotto(c, ground, px, py, facing, half, gap, floor, height):
                 coll="Vines", role="visual")
     for k, (u, v) in enumerate(((half + 6.0, gap + 6.0), (half + 8.0, -gap - 5.0), (half + 3.0, -gap - 7.5))):
         bx, by = at(u, v)
-        c.place(props.ruin_blocks(c, k), bx, by, ground(bx, by) - 0.3, rot=facing + k, coll="Ruins")
+        # (Down on the lowest ground under it: Blake, valley polish 15, note 8, "floating in
+        # the bush".)
+        c.place(props.ruin_blocks(c, k), bx, by, foot_low(ground, bx, by, 3.2, 3.2, 0.0) - 0.2, rot=facing + k, coll="Ruins")
     print("grotto: a temple lost in the jungle")
 

@@ -20,7 +20,7 @@ import math
 import bpy
 
 GROUP_NAME = "KP Road"
-GROUP_VERSION = 5
+GROUP_VERSION = 6
 
 # Semantic surface ids, matching assets/data/surfaces.json in the game.
 SURFACES = [
@@ -371,7 +371,7 @@ def _build_road_nodes(ng):
             out = r.outputs[0]
         return out
 
-    def sweep(profile, material, smooth):
+    def sweep(profile, material, smooth, caps=False):
         # Keep each profile point's position round the profile, for the texture's U:
         # 0..1 (kp_u) and in metres (kp_ul).
         store_u = N.new("GeometryNodeStoreNamedAttribute")
@@ -390,6 +390,10 @@ def _build_road_nodes(ng):
         c2m = N.new("GeometryNodeCurveToMesh")
         L.new(path, c2m.inputs["Curve"])
         L.new(store_ul.outputs[0], c2m.inputs["Profile Curve"])
+        # Solid things (barriers, decks) are closed at their ends: an open end showed the
+        # hollow inside of a bridge's rail (Blake, valley polish 14, note 9).
+        if caps:
+            c2m.inputs["Fill Caps"].default_value = True
         # Point Radius scales the cross-section.
         L.new(N.new("GeometryNodeInputRadius").outputs[0], c2m.inputs["Scale"])
         mat = N.new("GeometryNodeSetMaterial")
@@ -422,7 +426,7 @@ def _build_road_nodes(ng):
         # Profile Y points down: centre the barrier H/2 - 0.1 above the road.
         L.new(_math(ng, "SUBTRACT", 0.1, _math(ng, "MULTIPLY", I["Barrier Height"], 0.5)), c.inputs["Y"])
         L.new(c.outputs[0], t.inputs["Translation"])
-        return sweep(t.outputs[0], I["Barrier Material"], False)
+        return sweep(t.outputs[0], I["Barrier Material"], False, caps=True)
 
     barriers = N.new("GeometryNodeJoinGeometry")
     L.new(barrier(1), barriers.inputs[0])
@@ -446,7 +450,7 @@ def _build_road_nodes(ng):
     # Profile Y points down: the slab's top sits 0.15 m under the road surface.
     L.new(_math(ng, "ADD", 0.15, _math(ng, "MULTIPLY", I["Deck Depth"], 0.5)), dc.inputs["Y"])
     L.new(dc.outputs[0], dt.inputs["Translation"])
-    deck = sweep(dt.outputs[0], I["Deck Material"], False)
+    deck = sweep(dt.outputs[0], I["Deck Material"], False, caps=True)
     dsw = N.new("GeometryNodeSwitch")
     dsw.input_type = "GEOMETRY"
     L.new(_math(ng, "GREATER_THAN", I["Deck Depth"], 0.001), dsw.inputs["Switch"])

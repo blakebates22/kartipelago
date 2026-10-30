@@ -363,6 +363,9 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
+    # (Each hut's pots, woodpile and bench on the land where they stand.)
+    vv.GROUND = ground
+
     # Water: the rivers and lakes in living water (valley_dress), the bog's pools.
     vd.water(c, ground)
     for k, (px, py, pr) in enumerate(L.POOLS):
@@ -952,10 +955,15 @@ def gates(c, ground):
         if to == "bonebog":
             bs.rib_cage(c, None, s - 14.0, s + 22.0, "Bonebog Ribs %d" % k, spine_up=13.0, reach=half + 7.0, every=6.0)
         elif to == "ember":
+            # (The brazier stood in among the basalt stacks, which reach 4.4 m round their
+            # middle: Blake, valley polish 15, note 9, "this torch is in the wall". Now
+            # the stacks stand back off the shoulder, and each brazier a little before its
+            # stack, clear of it.)
+            qb = c.at(s - 7.0)
             for sd in (-1, 1):
-                x, y = side(sd, 5.0)
+                x, y = side(sd, 6.5)
                 c.place(props.basalt_columns(c), x, y, ground(x, y) - 0.3, rot=head, scale=1.6)
-                x, y = side(sd, 2.5)
+                x, y = qb.p.x + qb.r.x * sd * (qb.w / 2 + 2.6), qb.p.y + qb.r.y * sd * (qb.w / 2 + 2.6)
                 c.place(sp.stone_brazier(c), x, y, ground(x, y) - 0.1)
                 gx, gy, gz = c.game(x, y, ground(x, y) + 1.6)
                 c.entity("torch", x=gx, y=gy, z=gz)
@@ -983,7 +991,11 @@ def dress(c, ground, spurs):
     vd.ember(c, ground, taken)
     vd.banks(c, ground, taken)
     if not RUIN:
-        vd.bridge_dress(c, lambda q: lobe_at(q.p.x, q.p.y) != "cascade", ground)
+        # (On the side wall's top: the wall's 0.6 m thick past a 0.6 m shoulder, and stands
+        # 0.9 m over the deck. None where a gateway's spur leaves the bridge: no wall there.)
+        junctions = [c.nearest(gx, gy)[0].s for gx, gy in L.GATES.values()]
+        vd.bridge_dress(c, lambda q: lobe_at(q.p.x, q.p.y) != "cascade", ground, rail=(0.9, 0.9),
+                        railed=lambda q: all(min(abs(q.s - j), c.length - abs(q.s - j)) >= 16.0 for j in junctions))
     vd.wall_life(c, ground, taken)
 
     tunnels = [tunnel_span(c, a, b) for _, _, a, b in L.TUNNELS]

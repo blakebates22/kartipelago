@@ -88,6 +88,7 @@ def scatter(c, proto, n, rmax, ok, ground, taken, seed, room=3.0, scale=(0.8, 1.
             if trunk:
                 c.place(proto, x, y, gz - sink, rot=rot, scale=s, role="visual")
                 c.place(trunk_proto(c, *trunk), x, y, gz - sink, scale=s, coll="Collision", role="collision")
+                c.place_foot(proto, x, y, gz - sink, rot=rot, scale=s)
             else:
                 c.place(proto, x, y, gz - sink, rot=rot, scale=s, role=role)
         taken.add(x, y, room * 0.5)

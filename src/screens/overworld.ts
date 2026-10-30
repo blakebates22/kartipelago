@@ -394,11 +394,25 @@ function regionCave(game: Game, session: Session, region: Region) {
   const folk = ({ valley: "valley", snow: "snow", desert: "desert", beach: "beach" } as const)[
     now.k.id as "valley"
   ];
-  // Shut: the guards stand across the gate; open: either side of it.
+  // Shut: the guards stand across the gate; open: either side of it. Out in front of the
+  // gate, clear of its walls and posts (Blake, valley polish 14, note 4: "both smugglers
+  // guard are in the wall"): the first spot out from the gate with room to stand.
   const off = shut ? 1.6 : 3.8;
+  const fx = Math.sin(out);
+  const fz = Math.cos(out);
   const guards: { v: VillagerView; x: number; z: number }[] = [-1, 1].map((sd, i) => {
-    const x = c.gate.x + rx * sd * off;
-    const z = c.gate.z + rz * sd * off;
+    let x = c.gate.x + rx * sd * off + fx * 1.2;
+    let z = c.gate.z + rz * sd * off + fz * 1.2;
+    search: for (const f of [1.2, 2.2, 3.2, 4.4])
+      for (const o of shut ? [off, off - 0.4] : [off, off - 0.7, off - 1.4]) {
+        const tx = c.gate.x + rx * sd * o + fx * f;
+        const tz = c.gate.z + rz * sd * o + fz * f;
+        if (session.standFits(tx, tz, PROBE_Y, 0.55)) {
+          x = tx;
+          z = tz;
+          break search;
+        }
+      }
     return { v: createGuardView(session.root, folk, 7 + i * 11), x, z };
   });
   if (shut) session.solids.push(gateSolid({ gate: c.gate }, groundAt(c.gate.x, c.gate.z)));

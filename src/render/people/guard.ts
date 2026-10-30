@@ -10,6 +10,12 @@
  * his kingdom: the valley's leather and red bandana, the snow's fur trim and bobble hat,
  * the desert's head wrap and sash, the islands' flowered vest and shell necklace. The
  * seed picks his skin, his colours, the patch and the gold tooth.
+ *
+ * The Dragon Kingdom's own guards (folk "dragon") are another thing altogether (Blake,
+ * valley polish 14, note 13: "these should be different than the smuggler npcs. they are
+ * dragon guards"): soldiers, standing straight, in a steel helm with a crimson crest, a
+ * breastplate over a crimson tabard with the dragon's gold mark, pauldrons, and a spear.
+ * No patch, no gold tooth, no keys.
  */
 import * as THREE from "three";
 import { Build, ellipsoid, gem, loft, tube, cone, type V3 } from "../racers/kit/shapes";
@@ -35,8 +41,8 @@ interface Dress {
   head: string;
   dots: string;
   belt: string;
-  /** What's on his head. */
-  hat: "bandana" | "beanie" | "wrap";
+  /** What's on his head (a helm: a dragon guard, a soldier). */
+  hat: "bandana" | "beanie" | "wrap" | "helm";
   fur?: string;
   flowers?: string[];
   sash?: string;
@@ -132,13 +138,14 @@ const DRESS: Record<Folk, Dress[]> = {
   ],
   dragon: [
     {
-      vest: "#3a2a4a",
-      vestDark: "#241a30",
-      patches: ["#8a2a2a", "#5a5a6a"],
-      head: "#8a2a2a",
-      dots: "#d8b040",
-      belt: "#1a1418",
-      hat: "bandana",
+      // (vest: the steel; head: the crimson of the crest and tabard; dots: the gold mark.)
+      vest: "#8a8e9a",
+      vestDark: "#4e525e",
+      patches: [],
+      head: "#9a1e1e",
+      dots: "#e0b840",
+      belt: "#2a1e18",
+      hat: "helm",
     },
   ],
   road: [
@@ -159,14 +166,17 @@ export function guardLook(folk: Folk, seed: number) {
   const pick = (k: number) => seeded(seed * 7919 + k * 104729)();
   const skins = SKINS[folk] ?? SKINS.valley!;
   const dresses = DRESS[folk] ?? DRESS.valley;
+  const soldier = folk === "dragon";
   return {
     skin: skins[Math.floor(pick(1) * skins.length)]!,
     dress: dresses[seed % dresses.length]!,
     /** The eye under a patch: 1 left, -1 right, 0 none (both squint). */
-    patch: [1, -1, 0][(seed + Math.floor(pick(2) * 2)) % 3]! as 1 | -1 | 0,
+    patch: soldier ? 0 : ([1, -1, 0][(seed + Math.floor(pick(2) * 2)) % 3]! as 1 | -1 | 0),
     gold: pick(3) < 0.5 ? 1 : -1,
-    belly: 0.88 + pick(4) * 0.28,
-    scar: pick(5) < 0.5,
+    belly: soldier ? 0.9 : 0.88 + pick(4) * 0.28,
+    scar: !soldier && pick(5) < 0.5,
+    /** A dragon guard: a soldier, not a smuggler. */
+    soldier,
   };
 }
 
@@ -191,21 +201,22 @@ export function buildGuard(folk: Folk, seed: number): PersonRig {
   const belly = new THREE.Color(C.belly);
   const B = L.belly;
   const rig = skeleton({
-    name: "Smugglers' Guard",
+    name: L.soldier ? "Dragon Guard" : "Smugglers' Guard",
     stance: {
       hipY: 0.52,
       stride: 0.36,
       lift: 0.1,
-      stoop: 0.14,
+      stoop: L.soldier ? 0.02 : 0.14,
       handRest: [0.31, -0.02, 0.12],
+      ...(L.soldier ? { handRestL: [0.3, 0.06, 0.2] as V3 } : {}),
       mouth: [0, 0.07, 0.3],
       breath: 1.3,
       sway: 1.3,
       blinkEvery: 2.6,
       restJaw: 0.24,
-      restLids: 0.46,
-      restBrow: -0.35,
-      glance: 1.3,
+      restLids: L.soldier ? 0.2 : 0.46,
+      restBrow: L.soldier ? -0.2 : -0.35,
+      glance: L.soldier ? 4 : 1.3,
       response: 1.15,
       lookReach: 1.1,
     },
@@ -260,6 +271,7 @@ export function buildGuard(folk: Folk, seed: number): PersonRig {
           : skin.clone().lerp(skinDark, mottle(t * 4, a, seed) * 0.5),
     }),
   );
+  if (L.soldier) armour(body, torsoSecs, d, B);
   // The vest: open down the front, patched and stitched.
   const fur = d.fur;
   const vestPaint = (t: number, a: number) => {
@@ -281,9 +293,10 @@ export function buildGuard(folk: Folk, seed: number): PersonRig {
       })),
     { sides: 16, steps: 2, up: [0, 0, 1], paint: vestPaint },
   );
-  body.addColored(cutFront(vestGeo, (y) => 0.34 + Math.max(0, 0.3 - y) * 1.3, -0.2, 0.7));
+  if (!L.soldier)
+    body.addColored(cutFront(vestGeo, (y) => 0.34 + Math.max(0, 0.3 - y) * 1.3, -0.2, 0.7));
   // Lapels: the vest's front edges (fur, in the snow).
-  for (const s of [1, -1]) {
+  for (const s of L.soldier ? [] : [1, -1]) {
     const edge: V3[] = [];
     for (const y of [0.0, 0.12, 0.24, 0.36, 0.47]) {
       const a = 0.34 + Math.max(0, 0.3 - y) * 1.3;
@@ -326,9 +339,11 @@ export function buildGuard(folk: Folk, seed: number): PersonRig {
       (r() - 0.5) * 0.6,
     );
   };
-  patchAt(1.4 + r() * 0.3, 0.14, 0.09, 0.08, 0);
-  patchAt(-1.6 - r() * 0.3, 0.3, 0.08, 0.1, 1);
-  patchAt(Math.PI - 0.3, 0.22, 0.12, 0.1, 2);
+  if (!L.soldier) {
+    patchAt(1.4 + r() * 0.3, 0.14, 0.09, 0.08, 0);
+    patchAt(-1.6 - r() * 0.3, 0.3, 0.08, 0.1, 1);
+    patchAt(Math.PI - 0.3, 0.22, 0.12, 0.1, 2);
+  }
   // The belt under the belly, a big buckle.
   body.addColored(
     loft(
@@ -389,15 +404,17 @@ export function buildGuard(folk: Folk, seed: number): PersonRig {
   }
   rig.torso.add(mesh(body));
 
-  // The key ring at his right hip.
+  if (L.soldier) spear(rig, d);
+  // The key ring at his right hip (a smuggler's: not a soldier's).
   const keys = new THREE.Group();
   const kr = new THREE.Mesh(keyRingGeometry({ iron: "#6a6a74", gold: C.gold }), skinMaterial());
   kr.scale.setScalar(1.7);
   keys.add(kr);
   keys.userData.inHand = { at: [0, -0.03, 0.05], rot: [0, 0, 0] };
   keys.userData.dangle = true;
-  rig.root.add(keys);
-  rig.props.key = { obj: keys, restAt: [-0.27 * B, 0.0, 0.12], restRot: [0, -0.6, 0.15] };
+  if (!L.soldier) rig.root.add(keys);
+  if (!L.soldier)
+    rig.props.key = { obj: keys, restAt: [-0.27 * B, 0.0, 0.12], restRot: [0, -0.6, 0.15] };
 
   // Tail.
   rig.tail = buildTail(
@@ -541,10 +558,10 @@ function buildHead(
   );
   // Teeth hanging under the lip: a gap, and a gold one.
   for (let k = -3; k <= 3; k++) {
-    if (k === -1 * g) continue;
+    if (k === -1 * g && !L.soldier) continue;
     const x = k * 0.03;
     const z = 0.272 - k * k * 0.004;
-    const gold = k === 2 * g;
+    const gold = k === 2 * g && !L.soldier;
     sk.add(
       new THREE.BoxGeometry(gold ? 0.028 : 0.024, gold ? 0.036 : 0.03, 0.014),
       gold ? C.gold : C.tooth,
@@ -569,8 +586,9 @@ function buildHead(
       ),
     );
 
-  // On his head: a bandana knotted behind, a bobble hat, or a head wrap.
-  if (d.hat === "beanie") {
+  // On his head: a bandana knotted behind, a bobble hat, a head wrap, or a soldier's helm.
+  if (d.hat === "helm") helm(sk, d);
+  else if (d.hat === "beanie") {
     sk.add(
       new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
       (p) => (Math.floor((p.y + 0.2) * 8) % 2 ? d.head : shade(d.head, 0.8)),
@@ -678,8 +696,8 @@ function buildHead(
       tilt: 0.35,
     },
   });
-  // One brow cocked up (suspicious), the other down.
-  const cock = L.patch === 0 ? 1 : -L.patch;
+  // One brow cocked up (suspicious), the other down. (A soldier's both level and stern.)
+  const cock = L.soldier ? 0 : L.patch === 0 ? 1 : -L.patch;
   eyes.brows.forEach((b, i) => {
     const side = i === 0 ? 1 : -1;
     if (side === cock) {
@@ -728,4 +746,139 @@ function buildHead(
     });
   }
   rig.face = { ...eyes, jaw, jawOpen: 0.42 };
+}
+
+/** A dragon guard's armour: a steel breastplate (banded) over a crimson tabard with the
+ * dragon's gold mark on it, a gorget at the neck and a pauldron on each shoulder. */
+function armour(
+  body: Build,
+  torsoSecs: (k: number) => { at: V3; rx: number; ry: number }[],
+  d: Dress,
+  B: number,
+) {
+  const steel = d.vest;
+  const dark = d.vestDark;
+  body.addColored(
+    loft(
+      torsoSecs(1.07)
+        .slice(1, 5)
+        .map((s) => ({ ...s, at: [s.at[0], s.at[1], s.at[2] - 0.004] as V3 })),
+      {
+        sides: 16,
+        steps: 2,
+        up: [0, 0, 1],
+        capStart: true,
+        // (Lames: steel bands, a dark line between each.)
+        paint: (t) => (Math.sin(t * 34) > 0.86 ? dark : steel),
+      },
+    ),
+  );
+  // The tabard: crimson, hanging front and back from under the breastplate to the thighs.
+  for (const z of [1, -1]) {
+    body.add(new THREE.BoxGeometry(0.26, 0.3, 0.02), d.head, {
+      p: [0, -0.1, 0.05 + z * (0.272 * B + 0.012)],
+      r: [z * 0.12, 0, 0],
+    });
+    body.add(new THREE.BoxGeometry(0.27, 0.025, 0.024), d.dots, {
+      p: [0, -0.245, 0.05 + z * (0.272 * B + 0.03)],
+      r: [z * 0.12, 0, 0],
+    });
+  }
+  // The dragon's gold mark on the chest: a diamond, wings either side.
+  body.add(gem(1), d.dots, { p: [0, 0.27, 0.05 + 0.28], s: [0.05, 0.065, 0.02] });
+  for (const s of [1, -1])
+    body.add(cone(0.03, 0.09, 3), d.dots, {
+      p: [s * 0.07, 0.29, 0.05 + 0.27],
+      r: [0, 0, s * 1.2],
+      s: [1, 1, 0.3],
+    });
+  // Gorget and pauldrons.
+  body.addColored(
+    loft(
+      [
+        { at: [0, 0.44, 0.05], rx: 0.2, ry: 0.16 },
+        { at: [0, 0.52, 0.06], rx: 0.15, ry: 0.13 },
+      ],
+      { sides: 14, steps: 2, up: [0, 0, 1], paint: () => steel },
+    ),
+  );
+  for (const s of [1, -1]) {
+    body.add(new THREE.SphereGeometry(1, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), steel, {
+      p: [s * 0.25, 0.43, 0.05],
+      s: [0.13, 0.1, 0.13],
+      r: [0, 0, -s * 0.35],
+    });
+    body.add(new THREE.TorusGeometry(1, 0.12, 5, 14), dark, {
+      p: [s * 0.27, 0.4, 0.05],
+      s: [0.12, 0.12, 0.12],
+      r: [Math.PI / 2, 0, -s * 0.35],
+    });
+  }
+}
+
+/** A dragon guard's spear: always in his left hand, upright, its butt on the ground; a
+ * steel head and a crimson pennant under it. */
+function spear(rig: PersonRig, d: Dress) {
+  const b = new Build()
+    .add(new THREE.CylinderGeometry(0.022, 0.026, 1.9, 7), "#5a3a22", { p: [0, 0.45, 0] })
+    .add(new THREE.CylinderGeometry(0.03, 0.03, 0.06, 7), d.dots, { p: [0, 1.38, 0] })
+    .add(cone(0.045, 0.24, 4), d.vest, { p: [0, 1.52, 0] })
+    .add(new THREE.BoxGeometry(0.012, 0.16, 0.22), d.head, { p: [0, 1.28, -0.12] });
+  const obj = new THREE.Group();
+  obj.add(mesh(b));
+  obj.userData.alwaysHeld = { hand: 0, at: [0.0, 0, 0.03], rot: [0, 0, 0] };
+  obj.userData.foot = 0.5;
+  rig.root.add(obj);
+  rig.props.spear = { obj, restAt: [0.3, 0.1, 0.25], restRot: [0, 0, 0] };
+}
+
+/** A dragon guard's helm: a steel dome over the bony one, a brow band, a crimson crest of
+ * spines from front to back, and a neck guard. */
+function helm(sk: Build, d: Dress) {
+  sk.add(new THREE.SphereGeometry(1, 16, 9, 0, Math.PI * 2, 0, Math.PI * 0.55), d.vest, {
+    p: [0, 0.265, -0.03],
+    s: [0.23, 0.2, 0.23],
+  });
+  sk.addColored(
+    loft(
+      Array.from({ length: 17 }, (_, i) => {
+        const a = (i / 16) * Math.PI * 2;
+        return {
+          at: [Math.sin(a) * 0.228, 0.275, -0.03 + Math.cos(a) * 0.228] as V3,
+          rx: 0.02,
+          ry: 0.03,
+        };
+      }),
+      { sides: 6, steps: 2, paint: () => d.dots },
+    ),
+  );
+  // (The crest: thin spines standing up off the helm, front to back, tallest in the middle.)
+  for (let k = 0; k < 7; k++) {
+    const t = k / 6;
+    const a = 0.85 - t * 1.9;
+    const h = 0.22 - Math.abs(t - 0.4) * 0.16;
+    const rr = 0.2 + h * 0.42;
+    sk.add(cone(0.06, h, 4), d.head, {
+      p: [0, 0.265 + Math.cos(a) * rr, -0.03 + Math.sin(a) * rr],
+      r: [a, 0, 0],
+      s: [0.3, 1, 1.3],
+    });
+  }
+  // The neck guard behind.
+  sk.add(
+    new THREE.SphereGeometry(
+      1,
+      12,
+      6,
+      Math.PI * 1.1,
+      Math.PI * 0.8,
+      Math.PI * 0.45,
+      Math.PI * 0.25,
+    ),
+    d.vestDark,
+    {
+      p: [0, 0.265, -0.03],
+      s: [0.25, 0.24, 0.25],
+    },
+  );
 }

@@ -443,9 +443,9 @@ const KINDS: Record<Species, Kind> = {
     belt: { y: 0.05, rx: 0.25, rz: 0.23, z: 0.02 },
     back: [0, 0.3, -0.23],
     eyes: 1,
-    extras(rig, p, head) {
-      // A bump on the nose, and the thumb spikes.
-      head.add(ellipsoid(8, 6), shade(p.skin, 0.9), { p: [0, 0.18, 0.47], s: [0.05, 0.03, 0.06] });
+    extras(rig) {
+      // The thumb spikes. (No bump on the nose: it looked like an olive, Blake, valley
+      // polish 14, note 12.)
       for (const arm of rig.arms)
         arm.hand.add(
           mesh(

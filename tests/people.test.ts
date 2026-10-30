@@ -114,6 +114,13 @@ describe("the guards, Lumen and the townsfolk", () => {
       for (const seed of [7, 18]) {
         const v = createGuardView(scene, folk, seed);
         standsRight(v, 16000);
+        // (The Dragon Kingdom's own guards are soldiers: a spear, no keys.)
+        if (folk === "dragon") {
+          expect(v.rig.props.key, "a dragon guard has no keys").toBeUndefined();
+          expect(v.rig.props.spear, "a dragon guard has his spear").toBeDefined();
+          v.dispose();
+          continue;
+        }
         const key = () => v.rig.props.key!.obj.getWorldPosition(new THREE.Vector3());
         const before = key();
         for (let t = 0.5; t < 2; t += 1 / 30) v.update(0, 0, 0, 0, { gesture: "holdOut" }, t);
