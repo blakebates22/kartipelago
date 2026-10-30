@@ -178,14 +178,14 @@ def main():
     smp, _ = c.nearest(cx, cy + cr + 20.0)
     gx, gy = SL.GORGE_END
     y0 = int(cy - cr + 2)
-    up = pb.line(natural, (smp.p.x, smp.p.y), (gorge_x(y0), float(y0)), z0=smp.p.z)
+    up = pb.line(natural, (smp.p.x, smp.p.y), (gorge_x(y0), float(y0)), z0=smp.p.z, c=c)
     gorge = up[:-1] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2) for y in range(y0, int(gy + 6), -8)]
     c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
     ENTRY.extend((p[0], p[1]) for p in gorge)
     # Into Hearthglow's square from the road (its west side).
     vx, vy, vr, vz = SL.VILLAGE
     smp, _ = c.nearest(vx - vr - 18.0, vy)
-    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx - vr + 2.0, vy), z0=smp.p.z), "hearth_cobble", "road",
+    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx - vr + 2.0, vy), z0=smp.p.z, c=c), "hearth_cobble", "road",
                 **trail)
     gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
     if RUIN:
@@ -205,7 +205,7 @@ def main():
         # Out of the lake through the Frozen Pass, east.
         smp, _ = c.nearest(*SL.FROZEN_PASS)
         (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
-        way = pb.line(natural, (smp.p.x, smp.p.y), (bx - 10.0, by), z0=smp.p.z)
+        way = pb.line(natural, (smp.p.x, smp.p.y), (bx - 10.0, by), z0=smp.p.z, c=c)
         c.side_road("Frozen Pass Road", way, "packed_snow_road", "road", **trail)
 
     # (v4: drawn in, and finer, for the walls' tiers)

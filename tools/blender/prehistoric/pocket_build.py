@@ -35,9 +35,13 @@ def cone(c, name, cx, cy, r, z0, h, mat, segs=4, role="both", coll="Props"):
     return ob
 
 
-def line(natural, a, b, every=8.0, z0=None):
+def line(natural, a, b, every=8.0, z0=None, c=None):
     """Points from a to b on the land; z0: the height it leaves from (a road it joins),
-    eased into the land over its first 24 m so the joint is flush."""
+    eased into the land over its first 24 m so the joint is flush. With the course `c`:
+    following the main road's banked surface while it's over it (course_kit.spur_points),
+    so it's flush with the road's edge, not its middle."""
+    if c is not None:
+        return c.spur_points(natural, a, b, z0)
     n = max(2, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
     total = math.hypot(b[0] - a[0], b[1] - a[1])
     pts = []
@@ -73,7 +77,7 @@ def spurs(c, natural, gates, look_road, trail, short=None):
         # middle's height, and a spur laid over it from the middle stood up out of it.)
         sx, sy = ax + ux * (smp.w / 2 - 1.0), ay + uy * (smp.w / 2 - 1.0)
         z0 = road_z_at(c, sx, sy)
-        c.side_road(name.title() + " Road", line(natural, (sx, sy), end, z0=smp.p.z if z0 is None else z0),
+        c.side_road(name.title() + " Road", line(natural, (sx, sy), end, z0=smp.p.z if z0 is None else z0, c=c),
                     look_road(gx, gy), "road", **trail)
     return out
 

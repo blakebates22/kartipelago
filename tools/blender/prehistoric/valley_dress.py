@@ -261,41 +261,28 @@ def depth_paint(ob, depth):
     ca.data.foreach_set("color", cols)
 
 
-# The rivers' and lakes' surface over their beds' level (was 0.1 under it): full, up over
-# the low sand flats to the grassy banks (Blake, valley polish 19, note 2, "the water needs
-# to be more full").
-WATER_UP = 0.3
+# The rivers' and lakes' surface, against their beds' level.
+WATER_UP = -0.1
 
 
 def water(c, ground=None):
-    """The rivers and lakes in living water (Blake, notes 18 and 44: "in our original Oasis
-    level before the rework, we had high quality water; let's bring it in"): the lagoon
-    effect (waves, ripples of light, glitter, the sky in it), deep in the middle, clear
-    and pale over the shallows."""
-    mat = c.lib("valley_river", "water")
+    """The rivers and lakes: plain still water, one flat sheet at each river's level and
+    each lake's, wide enough that its edges lie buried under the banks, in the simple
+    scrolling water of Riverbend Palms (Blake, Oct 30: "the water is still really bad.
+    please revert to a simpler way to do water. like look how we do it in riverbend
+    palms"). The banks are steep (valley_layout.natural) and the land meets it cleanly."""
+    mat = c.lib("valley_water", "water")
     for j, riv in enumerate(L.RIVERS):
         river = []
         for (ax, ay, az), (bx, by, bz) in zip(riv, riv[1:]):
             n = max(1, int(math.hypot(bx - ax, by - ay) / 3.0))
             for k in range(n):
                 t = k / n
-                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 12, lerp(az, bz, t) + WATER_UP))
-        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 12, riv[-1][2] + WATER_UP))
-        # (Wide enough to cover the low grass along its banks: Blake, Riverbend note 11.)
-        ob = c.ribbon("River %d" % j, river, 2 * RIVER_HW + 12, 0, mat, role="visual", steps=10)
-        depth_paint(ob, lambda x, y: 1.0 - L.river_d(x, y)[0] / (RIVER_HW + 3.0))
-        if ground:
-            tuck(ob, ground, lambda x, y: L.river_d(x, y)[0] > RIVER_HW - 1.0)
+                river.append((lerp(ax, bx, t), lerp(ay, by, t), 2 * RIVER_HW + 20, lerp(az, bz, t) + WATER_UP))
+        river.append((riv[-1][0], riv[-1][1], 2 * RIVER_HW + 20, riv[-1][2] + WATER_UP))
+        c.ribbon("River %d" % j, river, 2 * RIVER_HW + 20, 0, mat, role="visual", steps=4)
     for k, (lx, ly, lr, lz) in enumerate(L.LAKES):
-        ob = c.disc("Lake %d" % k, lx, ly, lr + 6.0, lz + WATER_UP, mat, role="visual", n=36, wobble=0.12, seed=20 + k)
-        bm = bmesh.new()
-        bm.from_mesh(ob.data)
-        bmesh.ops.poke(bm, faces=bm.faces[:])
-        bm.to_mesh(ob.data)
-        bm.free()
-        depth_paint(ob, lambda x, y, lx=lx, ly=ly, lr=lr: 1.0 - math.hypot(x - lx, y - ly) / (lr + 4.0))
-        if ground:
-            tuck(ob, ground, lambda x, y, lx=lx, ly=ly, lr=lr: math.hypot(x - lx, y - ly) > lr - 1.0)
+        c.disc("Lake %d" % k, lx, ly, lr + 12.0, lz + WATER_UP, mat, role="visual", n=36)
 
 
 def tuck(ob, ground, edge):

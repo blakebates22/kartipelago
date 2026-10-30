@@ -227,7 +227,7 @@ def classify(c, n, info):
     # the water: the sand came in ragged scraps, Blake, Cascade note 10.)
     # (Grass right down to the water's edge now, the sand only under it: valley polish
     # 19, note 2, "too much sand".)
-    if d < RIVER_HW + 8 and c.z < wz + 0.4:  # (under the water, which stands 0.3 over its bed level)
+    if d < RIVER_HW + 8 and c.z < wz + 0.3:  # (under the water and a thin wet edge, as Riverbend Palms)
         return ("valley_sand", "water")  # (the river's wadeable)
     if RUIN and lobe != "bonebog" and burn(c.x, c.y) > 0.5:
         return ("scorched_ground", "dirt")

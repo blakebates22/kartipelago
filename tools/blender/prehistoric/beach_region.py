@@ -136,7 +136,7 @@ def main():
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("isle_jungle", "grass"))
     cx, cy, cr, cz = HUB
     smp, _ = c.nearest(cx, cy - cr - 20.0)
-    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (cx, cy - cr + 2.0), z0=smp.p.z))),
+    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (cx, cy - cr + 2.0), z0=smp.p.z, c=c))),
                 "cove_planks", "road", **trail)
     dx, dy = BL.DUST_END
     dust = [(0.0, y, natural(0.0, y) + 0.2) for y in range(int(cy + cr - 2), int(dy - 6), 8)]
@@ -171,7 +171,7 @@ def main():
         ax, ay = CAUSEWAY_START
         bx, by = BL.CAUSEWAY_END
         smp, _ = c.nearest(ax, ay + 20.0)
-        c.side_road("Causeway Beach", pb.line(natural, (smp.p.x, smp.p.y), (ax, ay), z0=smp.p.z), "beach_road",
+        c.side_road("Causeway Beach", pb.line(natural, (smp.p.x, smp.p.y), (ax, ay), z0=smp.p.z, c=c), "beach_road",
                     "road", width=10.0, shoulder=0.6, shoulder_mat=("beach_sand", "sand"))
         az = natural(ax, ay) + 0.2
         way = [(lerp(ax, bx, k / 24), lerp(ay, by, k / 24), lerp(az, pier_z, min(1.0, k / 4)) + 0.02)

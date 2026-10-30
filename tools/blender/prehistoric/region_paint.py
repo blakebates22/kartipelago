@@ -96,12 +96,14 @@ def scatter(c, proto, n, rmax, ok, ground, taken, seed, room=3.0, scale=(0.8, 1.
     return placed
 
 
-def grade(c, ter, x, y, rot, w, d, z, margin=1.0, blend=4.0, front=2.0, road=2.5):
+def grade(c, ter, x, y, rot, w, d, z, margin=1.0, blend=4.0, front=2.0, road=2.5, verge=8.0):
     """Cut and fill the land (the mesh `ter`) level at height z under a building's
     footprint (w by d, turned `rot`, `margin` round it and `front` more before its door,
     local -Y), easing back to the land over `blend` metres (the overworld rules, Blake,
     Oct 29: buildings on level ground, never set into a slope). Never within `road` of a
-    road. Returns the vertices moved."""
+    road, and within `verge` of one only filling, never cutting (the verge brings the land
+    up to the road's edge, course_kit.verge_height: a cut there left a step beside the
+    road). Returns the vertices moved."""
     me = ter.data
     ca, sa = math.cos(rot), math.sin(rot)
     hx, y0, y1 = w / 2 + margin, -(d / 2 + margin + front), d / 2 + margin
@@ -117,7 +119,10 @@ def grade(c, ter, x, y, rot, w, d, z, margin=1.0, blend=4.0, front=2.0, road=2.5
             continue
         t = e / blend
         t = t * t * (3 - 2 * t)
-        v.co.z = z + (v.co.z - z) * t
+        nz = z + (v.co.z - z) * t
+        if nz < v.co.z and not road_clear(c, v.co.x, v.co.y, verge):
+            continue
+        v.co.z = nz
         n += 1
     me.update()
     # (So the land's ray casts see the new ground, not the old.)

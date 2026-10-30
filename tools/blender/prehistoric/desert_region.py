@@ -163,7 +163,7 @@ def main():
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("dash_shoulder", "dirt"))
     cx, cy, cr, cz = HUB
     smp, _ = c.nearest(cx + cr + 20.0, cy)
-    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (cx + cr - 2.0, cy), z0=smp.p.z))),
+    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (cx + cr - 2.0, cy), z0=smp.p.z, c=c))),
                 "dash_road", "road", **trail)
     px, py = DL.PASS_END
     way = [(x, 0.0, natural(x, 0.0) + 0.2) for x in range(int(cx - cr + 2), int(px + 6), -8)]
@@ -175,7 +175,7 @@ def main():
     if RUIN:
         smp, _ = c.nearest(*DL.DUST_ROAD)
         bx, by = DL.DUST_END
-        c.side_road("Dust Road", pb.line(natural, (smp.p.x, smp.p.y), (bx, by + 10.0), z0=smp.p.z), "dash_road", "road",
+        c.side_road("Dust Road", pb.line(natural, (smp.p.x, smp.p.y), (bx, by + 10.0), z0=smp.p.z, c=c), "dash_road", "road",
                     **trail)
 
     # (v4: drawn in, and finer, for the walls' tiers)

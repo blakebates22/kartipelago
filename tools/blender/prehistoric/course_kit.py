@@ -538,6 +538,37 @@ class Course:
         a.balance()
         self._all_tree = a
 
+    def spur_points(self, natural, a, b, z0=None, half=5.0, ease=20.0):
+        """A side road's points from a to b (a on or by the main road): while any of its
+        width is still over a ground road, just under that road's own banked surface there
+        (a spur leaving at a slant runs along the road's edge a while); then eased into the
+        land (`natural` + 0.2) over `ease` m. So it's flush with the road wherever they
+        meet, never a step below it (Blake, valley polish 14, note 1)."""
+        total = math.hypot(b[0] - a[0], b[1] - a[1])
+        pts = []
+        last = None  # (distance along, height) where it left the road
+        k, n = 0, max(2, int(total / 2.0))
+        while k <= n:
+            f = k / n
+            x, y = lerp(a[0], b[0], f), lerp(a[1], b[1], f)
+            land = natural(x, y) + 0.2
+            q, _ = self.nearest(x, y)
+            o = (x - q.p.x) * q.r.x + (y - q.p.y) * q.r.y
+            if q.ground and abs(o) <= q.w / 2 + 1.5 + half:
+                oc = max(-q.w / 2, min(q.w / 2, o))
+                h = q.p.z - oc * math.tan(math.radians(q.bank)) - 0.06
+                last = None
+            else:
+                if last is None:
+                    last = (total * f, pts[-1][2] if pts else (z0 if z0 is not None else land))
+                h = lerp(last[1], land, smooth((total * f - last[0]) / ease))
+            pts.append((x, y, h))
+            # (Close together near the road, where the height follows it; on, every 8 m.)
+            k += 1 if total * f < 30.0 else 4
+        if (pts[-1][0], pts[-1][1]) != (b[0], b[1]):
+            pts.append((b[0], b[1], natural(b[0], b[1]) + 0.2 if last is None else lerp(last[1], natural(*b) + 0.2, 1.0)))
+        return pts
+
     def verge_height(self, x, y, z, under=0.2, edge_pad=4.0, slope=3.0, reach=7.5):
         """The land at (x, y), height z, brought up to meet the roads beside it (Blake,
         valley polish 14, note 1: "sometimes the road is higher than the ground and if I
@@ -583,7 +614,7 @@ class Course:
             return z
         return max(z, zs - 0.17 - max(0.0, out - edge_pad) / slope)  # (just under the skirt's top)
 
-    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=False):
+    def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=True):
         """
         A height-field grid over [x0, x1] x [y0, y1]. `natural(x, y)` is the land's own
         height; near the roads it's pulled to meet them. `classify(face_centre, normal,
