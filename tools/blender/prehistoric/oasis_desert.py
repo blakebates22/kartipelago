@@ -293,6 +293,76 @@ def rug_line(c):
     return c.proto(name, build) and name
 
 
+# ------------------------------------------------------------------ the corral
+
+
+def horse(c, variant=0):
+    """A horse (or, variant 2, a pack mule with its load): barrel body, neck and head
+    down to graze or up, four legs, mane and tail. About 2.4 m long, facing +X, origin
+    at its feet."""
+    name = "Horse %d" % variant
+    hide = ("mammoth_fur", "door_wood", "dead_wood")[variant % 3]
+
+    def build(bm):
+        P = Parts(bm)
+        P.add(hide, blob, (0.0, 0.0, 1.45), 0.55, sx=1.9, sz=1.0, subdiv=1)
+        graze = variant % 2 == 1
+        nx, nz = (1.05, 1.95) if not graze else (1.1, 1.3)
+        hx, hz = (1.5, 2.25) if not graze else (1.55, 0.55)
+        P.add(hide, tube, [(0.75, 0.0, 1.6), (nx, 0.0, nz), (hx - 0.1, 0.0, hz)], [0.32, 0.26, 0.2], n=6)
+        P.add(hide, blob, (hx, 0.0, hz - (0.12 if not graze else 0.0)), 0.22, sx=1.7, sz=0.9, subdiv=1)
+        for lx in (-0.75, 0.7):
+            for ly in (-0.25, 0.25):
+                P.add(hide, tube, [(lx, ly, 1.2), (lx + 0.03, ly, 0.45), (lx, ly, 0.0)], [0.14, 0.09, 0.08], n=5)
+                P.add("charred_bark", cuboid, (lx + 0.02, ly, 0.06), (0.16, 0.14, 0.12))
+        P.add("charred_bark", tube, [(-1.0, 0.0, 1.65), (-1.25, 0.0, 1.2), (-1.3, 0.0, 0.7)], [0.12, 0.1, 0.05], n=4)
+        P.add("charred_bark", tube, [(0.75, 0.0, 1.95), (nx, 0.0, nz + 0.25), (hx - 0.3, 0.0, hz + 0.2)], [0.08, 0.07, 0.05], n=4)
+        if variant % 3 == 2:
+            # The pack: two panniers and a bedroll.
+            for sy in (-1, 1):
+                P.add("plank_deck", cuboid, (0.0, sy * 0.62, 1.55), (0.8, 0.3, 0.55))
+            P.add("sail_cloth", tube, [(0.0, -0.45, 2.1), (0.0, 0.45, 2.1)], 0.18, n=6)
+        return P.out(c)
+
+    return c.proto(name, build) and name
+
+
+def corral(c, x, y, z, rot, w=20.0, d=14.0):
+    """A pole corral: posts and two rails round it, a gate left open, a trough, hay, and
+    horses (one a pack mule) inside."""
+    ca, sa = math.cos(rot), math.sin(rot)
+
+    def at(lx, ly):
+        return x + lx * ca - ly * sa, y + lx * sa + ly * ca
+
+    m = Mesh()
+    corners = [(-w / 2, -d / 2), (w / 2, -d / 2), (w / 2, d / 2), (-w / 2, d / 2)]
+    for (ax, ay), (bx, by) in zip(corners, corners[1:] + corners[:1]):
+        n = max(2, int(math.hypot(bx - ax, by - ay) / 3.4))
+        for k in range(n + 1):
+            px, py = at(lerp(ax, bx, k / n), lerp(ay, by, k / n))
+            m.add(("weathered_timber", "wall"), lambda bm, px=px, py=py: tube(bm, [(px, py, z - 0.3), (px, py, z + 1.8)], 0.11, n=5))
+        for hz in (0.8, 1.55):
+            if ay == by == -d / 2:
+                # (the gate's gap in the front side)
+                segs = [((ax, ay), (-1.8, ay)), ((1.8, ay), (bx, by))]
+            else:
+                segs = [((ax, ay), (bx, by))]
+            for (sx, sy), (ex, ey) in segs:
+                p0, p1 = at(sx, sy), at(ex, ey)
+                m.add(("weathered_timber", "wall"), lambda bm, p0=p0, p1=p1, hz=hz: tube(bm, [(p0[0], p0[1], z + hz), (p1[0], p1[1], z + hz)], 0.06, n=4))
+    tx, ty = at(w / 2 - 2.0, 0.0)
+    m.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (tx, ty, z + 0.35), (0.9, 3.0, 0.7), rot + math.pi / 2))
+    m.add(("lagoon_shallow", "wall"), lambda bm: cuboid(bm, (tx, ty, z + 0.66), (0.7, 2.8, 0.06), rot + math.pi / 2))
+    for k, (lx, ly) in enumerate(((-w / 2 + 2.0, d / 2 - 2.0), (-w / 2 + 3.4, d / 2 - 2.0), (-w / 2 + 2.6, d / 2 - 2.0))):
+        hx, hy = at(lx, ly)
+        m.add(("dry_grass", "wall"), lambda bm, hx=hx, hy=hy, k=k: cuboid(bm, (hx, hy, z + 0.45 + (0.8 if k == 2 else 0.0)), (1.2, 0.8, 0.8), rot))
+    m.build(c, "Corral %d" % int(x), "Village", "visual")
+    for k, (lx, ly, a) in enumerate(((-3.0, 2.0, 0.4), (2.5, -2.5, 2.6), (4.5, 3.0, -1.2), (-6.0, -3.0, 1.9))):
+        hx, hy = at(lx, ly)
+        c.place(horse(c, k % 3), hx, hy, z, rot=rot + a, coll="Village", role="visual")
+
+
 # ------------------------------------------------------------------ the village
 
 
@@ -345,6 +415,13 @@ def village(c, oh, ter, sc):
         z = ground(c, ter, p.x, p.y)
         if z is not None:
             c.place(trees[k % 2], p.x, p.y, z - 0.2, rot=k * 1.7, scale=0.9 + 0.1 * (k % 3), coll="Village", role="visual")
+    # A corral back from the street on its east side, and another past the S-bend.
+    for s_, off in ((oh.SEG[1] + 14, 34.0), (oh.SEG[3] + 30, -36.0)):
+        q = c.at(s_)
+        p = q.side(off)
+        z = ground(c, ter, p.x, p.y)
+        if z is not None:
+            corral(c, p.x, p.y, z, road_rot(q) + (0.0 if off > 0 else math.pi))
     # The ranch gate over the street at the start: two great log posts, a log lintel and a
     # second under it, the checkered board hung between, a cattle skull up top.
     q = c.at(8.0)
@@ -493,15 +570,15 @@ def havasu(c, oh):
     zp, zc, zf = oh.WATER_Z
     lip = fy - oh.ALCOVE - 1.5
     top = oh.natural(fx, lip - 5.0) - 0.4
-    props.falls(c, "Havasu Falls", fx, lip, top, zf, 9.0, 15.0, facing=1, throw=4.0, bulge=1.2, veils=3,
+    props.falls(c, "Havasu Falls", fx, lip, top, zf, 15.0, 24.0, facing=1, throw=5.0, bulge=1.6, veils=4,
                 mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
     lip2 = fy - oh.ALCOVE * 0.85
     x2 = fx + 14.0
     top2 = oh.natural(x2, lip2 - 5.0) - 0.4
-    props.falls(c, "Havasu Falls Twin", x2, lip2, top2, zf, 2.5, 5.0, facing=1, throw=2.0, bulge=0.6, veils=2,
+    props.falls(c, "Havasu Falls Twin", x2, lip2, top2, zf, 4.0, 7.0, facing=1, throw=2.5, bulge=0.8, veils=2,
                 mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
     g = c.game(fx, lip + 6.0, zf)
-    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - zf, 1), width=14.0, heading=round(math.pi, 4))
+    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - zf, 1), width=22.0, heading=round(math.pi, 4))
     # The rims: a travertine lip round the plunge pool's north side (the creek spills over
     # it) and two more across the creek, each a step down.
     m = Mesh()

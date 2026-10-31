@@ -19,7 +19,7 @@
       "y": 1.4,
       "z": 293.83,
       "top": 38.5,
-      "width": 14.0,
+      "width": 22.0,
       "heading": 3.1416
     },
     {
@@ -476,8 +476,8 @@
   ],
   "generator": "tools/blender/prehistoric/oasis_haven_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "oasis_desert.py": "055d046c2292b119862f4dcb7cefb25222cb81e8c3ff3940c218f23071ca9853",
-    "oasis_haven.py": "1ba4906bbd55b7ad1e4999b1b9ab9597d69dff3495b0567a310ec5b0584319c0",
+    "oasis_desert.py": "f0210f301548d75a02a60f870cd5cde4562e1d3835fd0d463c344fdbe66a25d6",
+    "oasis_haven.py": "c2ff053c6b6955ae477bc4475da77fbfe6edec1129751c3848c4e3c71febb363",
     "oasis_ruins.py": "d3101ba28762d1ef91d52d78a8a1507e214a40c79156cb9b804f410629a3898e"
   }
 }

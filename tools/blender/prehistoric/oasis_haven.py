@@ -353,6 +353,9 @@ def in_wash(x, y, z):
     return any(math.hypot(x - p[0], y - p[1]) < 16.0 for p in WASH) and z < 8.0
 
 
+BANDS = (9.0, 30.0, 38.0, 64.0)  # where the rock changes, foot to rim
+
+
 def layer(z):
     """The canyon's rock in bands, foot to rim: red shale, red and orange sandstone in
     alternating beds, the cream caprock."""
@@ -491,7 +494,7 @@ def main():
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
     c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
+    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
     water(c)
 
     def under(x, y):
@@ -617,7 +620,7 @@ def ruin_course(c):
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
     c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
+    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
     water(c)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("red_sand", "loose_sand"))
     ruin_mode.DRESS(c, sys.modules[__name__])

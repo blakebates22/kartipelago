@@ -780,7 +780,7 @@ class Course:
         return f if need <= fill else z + max(0.0, 2 * fill - need)
 
     def terrain(self, name, x0, x1, y0, y1, cell, natural, classify, *, near=9.0, fade=20.0, under=0.2, verge=True,
-                verge_fill=0.6, fine=1):
+                verge_fill=0.6, fine=1, cut_z=()):
         """
         A height-field grid over [x0, x1] x [y0, y1]. `natural(x, y)` is the land's own
         height; near the roads it's pulled to meet them. `classify(face_centre, normal,
@@ -789,7 +789,9 @@ class Course:
         onto it (`verge_height`), dips up to `verge_fill` m deep filled (0.6 by default,
         so a river or a drop beside a course's road stays as it was; the overworlds, 1.5).
         `fine`: the cells along the ground roads' edges cut into fine x fine, so a coarse
-        grid's land still meets a road's edge.
+        grid's land still meets a road's edge. `cut_z`: heights the steep faces are cut
+        along, so a cliff's rock bands (classified by height) meet in level lines rather
+        than the grid's zigzag.
         """
         self.build_ground_tree()
         # (The roads' own top faces, for keeping the land under them: the verge's estimate of
@@ -920,6 +922,12 @@ class Course:
                     quad(*ring)
         if ngons:
             bmesh.ops.triangulate(bm, faces=ngons)
+        for z in cut_z:
+            bm.normal_update()
+            steep = [f for f in bm.faces if f.normal.z < 0.75]
+            edges = list({e for f in steep for e in f.edges})
+            verts = list({v for f in steep for v in f.verts})
+            bmesh.ops.bisect_plane(bm, geom=verts + edges + steep, plane_co=(0.0, 0.0, z), plane_no=(0.0, 0.0, 1.0))
         ob = self.mesh_object(name, bm, "Terrain")
         groups = {}
         tree = kdtree.KDTree(len(self.S))
