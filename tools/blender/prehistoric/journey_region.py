@@ -52,16 +52,19 @@ TRACK_ID = "journey_%s" % JID + os.environ.get("KP_REGION_SUFFIX", "")
 SPECS = {
     "gorge": {
         "name": "The Burnt Gorge",
-        "env": "ember_volcano",
+        # (v2: clear skies and far horizons, the world opening up: Blake, Oct 31)
+        "env": "summit_pass",
         # look: (ground, cliff, road, shoulder)
         "looks": {
             "ember": (("ash_soil", "dirt"), ("ember_rock", "wall"), "basalt_road", ("scorched_ground", "dirt")),
+            # (v2, the pilgrimage: the green valley, the cleft, the steppe, the snow)
+            "meadow": (("valley_grass", "grass"), ("canyon_rock_moss", "wall"), "valley_road", ("valley_trail", "dirt")),
             "basalt": (("scorched_ground", "dirt"), ("obsidian_cliff", "wall"), "basalt_road", ("ash_soil", "dirt")),
-            "frost": (("snow_ground", "packed_snow"), ("frost_rock", "wall"), "snow_stone_road", ("snow_ground", "packed_snow")),
+            "steppe": (("thaw_grass", "grass"), ("summit_rock", "wall"), "forest_road", ("valley_trail", "dirt")),
             "snow": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "packed_snow_road", ("snow_ground", "deep_snow")),
         },
         "bridge": ("plank_deck", ("weathered_timber", "wall"), ("fence_rail", "wall")),
-        "water": ("river_ice", "ice"),
+        "water": ("valley_water", "water"),
         "ends": {"start": ("valley_cliff", "Dinosaur Valley"), "end": ("frost_cliff", "the Snow Kingdom")},
     },
     "pass": {
@@ -131,6 +134,12 @@ def classify(c, n, info):
             return ("cove_wet_sand", "water")
     if JID == "gorge" and look == "ember" and math.sin(c.x / 13.0) * math.cos(c.y / 11.0) > 0.55:
         return ("lava_crust", "dirt")
+    if JID == "gorge" and look in ("meadow", "steppe"):
+        d, wz = L.water_d(c.x, c.y)
+        if d < L.river_hw + 3 and c.z < wz + 0.4:
+            return ("valley_sand", "water")  # (the river's bed, wadeable)
+        if look == "steppe" and n.z > 0.9 and math.sin(c.x / 19.0) * math.cos(c.y / 15.0 + 0.5) > 0.55:
+            return ("snow_ground", "packed_snow")  # (the first frost lying in hollows)
     if JID == "pass" and look == "glacier" and math.sin(c.x / 17.0 + c.y / 23.0) > 0.4:
         return ("glacier_wall", "packed_snow") if n.z < 0.8 else ground
     if JID == "dust" and look == "dunes" and math.sin(c.x / 29.0 + 1.0) * math.cos(c.y / 23.0) > 0.35:
@@ -342,39 +351,155 @@ def _scatter_look(c, ground, taken, look, items):
 
 
 def dress_gorge(c, ground, taken, on_road):
+    """The pilgrimage (jgorge_layout v2): the burnt narrows; the Long Meadow green and
+    alive, herds grazing, the falls, the traders' camp by the ford; the steppe's basalt,
+    hot springs, prayer flags and the herders' village, mammoths on its grass; the
+    Snowgate's pines and the pilgrims' hostel; the Snow Kingdom's peaks ahead."""
+    import valley_village as vv
+
+    vv.GROUND = ground
     tree = dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))
     _scatter_look(c, ground, taken, "ember", [
-        (props.jungle_tree(c, 0), 10, tree), (props.jungle_tree(c, 1), 10, tree),
-        (props.basalt_columns(c), 6, dict(room=6.0, road_margin=6.0)),
-        (vp.obsidian_cluster(c, 0), 6, dict(room=5.0, road_margin=6.0)),
-        (props.boulder(c, "volcano_basalt", 1), 10, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.0))),
+        (props.jungle_tree(c, 0), 8, tree), (props.jungle_tree(c, 1), 6, tree),
+        (props.basalt_columns(c), 5, dict(room=6.0, road_margin=6.0)),
+        (vp.obsidian_cluster(c, 0), 5, dict(room=5.0, road_margin=6.0)),
+        (props.boulder(c, "volcano_basalt", 1), 8, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.0))),
     ])
-    _scatter_look(c, ground, taken, "basalt", [
-        (props.basalt_columns(c), 8, dict(room=6.0, road_margin=6.0)),
-        (props.boulder(c, "volcano_basalt", 2), 8, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.2))),
-        (props.dead_tree(c), 6, dict(room=5.0, road_margin=5.0, trunk=(0.5, 5.0))),
-    ])
-    _scatter_look(c, ground, taken, "frost", [
-        (smp_.broadleaf(c, 0, frosted=True), 10, tree), (smp_.broadleaf(c, 1, frosted=True), 8, tree),
-        (snp.snow_pine(c, 0), 10, tree), (snp.snow_pine(c, 2), 8, tree),
-        (smp_.boulder(c, 0), 8, dict(room=4.0, road_margin=6.0)),
-    ])
-    _scatter_look(c, ground, taken, "snow", [
-        (snp.snow_pine(c, 1), 14, tree), (snp.snow_pine(c, 3), 10, tree),
-        (snp.ice_spike(c, 0), 8, dict(room=5.0, road_margin=7.0)),
-        (snp.snow_mound(c, 0), 8, dict(room=4.0, road_margin=5.0, role="visual")),
-    ])
-    # The gorge burnt: its trees charred where Cinderjaw's fire came down it.
     ruin_kit.char_trees(c, lambda x, y: 1.0 if L.look_at(x, y) == "ember" else 0.0, ("Jungle Tree",), chance=0.9,
                         threshold=0.5)
-    # Steam off the lava, and vents along the gorge.
-    for k, q in enumerate(c.S[::90]):
+    for k, q in enumerate(c.S[::60]):
         if on_road(q.s) and L.look_at(q.p.x, q.p.y) == "ember":
             sd = 1 if k % 2 else -1
-            x, y = q.p.x + q.r.x * sd * 16.0, q.p.y + q.r.y * sd * 16.0
+            x, y = q.p.x + q.r.x * sd * 12.0, q.p.y + q.r.y * sd * 12.0
             g = c.game(x, y, ground(x, y) + 0.5)
             c.entity("steam", x=g[0], y=g[1], z=g[2])
-    c.entity("ashfall", rate=10, radius=40)
+    # ---- The Long Meadow.
+    _scatter_look(c, ground, taken, "meadow", [
+        (smp_.broadleaf(c, 0, frosted=False), 34, tree), (smp_.broadleaf(c, 1, frosted=False), 28, tree),
+        (ip.cycad(c, 0), 18, dict(room=4.0, road_margin=5.0)), (ip.tree_fern(c, 1), 18, dict(room=4.0, road_margin=5.0)),
+        (smp_.pine(c, 1, 14.0, snowy=False), 20, tree),
+        (smp_.shrub(c, 0, frosted=False), 70, dict(room=2.0, road_margin=3.0, role="visual", scale=(0.7, 1.5))),
+        (ip.horsetails(c, 0), 30, dict(room=2.0, road_margin=4.0, role="visual")),
+        (props.boulder(c, "valley_cliff", 0), 10, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.2))),
+    ])
+    # The falls off the steppe's edge into the meadow's north.
+    fx, fy = J.FALLS
+    top = J.natural(fx, fy + 16.0)
+    foot = L.rivers[0][0][2]
+    props.falls(c, "Meadow Falls", fx, fy + 10.0, top, foot, 14.0, 20.0, facing=-1, throw=7.0, bulge=1.6, veils=3)
+    g = c.game(fx, fy + 2.0, foot)
+    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - foot, 1), width=18.0, heading=0.0)
+    # Herds of long-necks grazing, on two rounds.
+    for k, (cx, cy, rx, ry, n) in enumerate(((-120.0, -100.0, 50.0, 30.0, 3), (-80.0, 60.0, 40.0, 26.0, 2))):
+        pts = []
+        for j in range(16):
+            a = j * math.tau / 16
+            x, y = cx + rx * math.cos(a) + 4.0 * math.sin(3 * a), cy + ry * math.sin(a)
+            pts.append((x, y, ground(x, y)))
+        c.path_curve("Meadow Herd %d" % k, pts, closed=True)
+        for j in range(n):
+            c.entity("dinosaur", route="Meadow Herd %d" % k, speed=1.4, scale=(1.0, 0.6, 0.85)[j], start=j * 9.0)
+    # The traders' camp by the ford: tents round a fire, canoes drawn up, their folk.
+    tx, ty, tr = J.VILLAGES["traders"]
+    for k in range(4):
+        a = k * math.tau / 4 + 0.4
+        x, y = tx + tr * 0.6 * math.cos(a), ty + tr * 0.6 * math.sin(a)
+        if paint.road_clear(c, x, y, 5.0):
+            c.place(ip.tent(c, k % 2), x, y, ground(x, y) - 0.1, rot=a + math.pi / 2, coll="Village")
+            taken.add(x, y, 5.0)
+    g = c.game(tx, ty, ground(tx, ty) + 0.2)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    for k in range(3):
+        x, y = tx + 18.0 + 4.0 * k, ty - 10.0 + 3.0 * k
+        if paint.road_clear(c, x, y, 3.0):
+            c.place(kp.boat(c, k % 2), x, y, ground(x, y) - 0.2, rot=1.2 + 0.2 * k, coll="Props", role="visual")
+    g = c.game(tx + 4.0, ty - 4.0, ground(tx, ty))
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=12.0, n=4, folk="road", heading=0.0)
+    # The stone arch over the cleft's mouth.
+    ax, ay = J.ARCH
+    q, _ = c.nearest(ax, ay)
+    c.place(kp.stone_arch(c, span=q.w + 16.0, h=24.0, depth=7.0), q.p.x, q.p.y, q.p.z - 1.0,
+            rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, coll="Props")
+    # ---- The High Steppe.
+    _scatter_look(c, ground, taken, "steppe", [
+        (props.basalt_columns(c), 14, dict(room=6.0, road_margin=6.0)),
+        (smp_.pine(c, 0, 13.0, snowy=False), 24, tree), (smp_.pine(c, 2, 16.0, snowy=True), 14, tree),
+        (smp_.broadleaf(c, 1, frosted=True), 10, tree),
+        (smp_.shrub(c, 1, frosted=False), 40, dict(room=2.0, road_margin=3.0, role="visual", scale=(0.7, 1.4))),
+        (smp_.boulder(c, 1), 12, dict(room=4.0, road_margin=6.0)),
+    ])
+    for k, (x, y) in enumerate(((150.0, 236.0), (214.0, 176.0), (100.0, 186.0), (230.0, 230.0))):
+        if not paint.road_clear(c, x, y, 9.0) or not taken.clear(x, y, 7.0):
+            continue
+        z = ground(x, y)
+        c.place(smp_.geyser_cone(c, 1 + k % 2), x, y, z - 0.3, rot=k, coll="Props")
+        g = c.game(x, y, z + 2.6)
+        c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.5, height=16.0 + 4 * (k % 2), period=8.0 + k, offset=1.7 * k,
+                 warn=1.4, blast=2.2, launch=0.0)
+        taken.add(x, y, 7.0)
+    flags = smp_.Bunting()
+    hx, hy, hr = J.VILLAGES["herders"]
+    poles = []
+    for k in range(5):
+        a = k * math.tau / 5 + 0.3
+        x, y = hx + hr * math.cos(a), hy + hr * math.sin(a)
+        z = ground(x, y)
+        c.place(smp_.flag_pole(c, 8.0), x, y, z - 0.2, coll="Props")
+        poles.append((x, y, z + 7.6))
+    for a, b in zip(poles, poles[1:] + poles[:1]):
+        flags.line(a, b, sag=1.6)
+    # The herders' huts round their fire, their mammoths on the grass beyond.
+    for k in range(4):
+        a = k * math.tau / 4 + 0.9
+        x, y = hx + hr * 0.55 * math.cos(a), hy + hr * 0.55 * math.sin(a)
+        if paint.road_clear(c, x, y, 6.0):
+            vv.place_hut(c, k + 1, x, y, ground(x, y) - 0.05, a + math.pi, scale=0.9)
+            taken.add(x, y, 6.0)
+    g = c.game(hx, hy, ground(hx, hy) + 0.2)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    g = c.game(hx + 5.0, hy - 5.0, ground(hx, hy))
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=14.0, n=4, folk="valley", heading=0.0)
+    pts = []
+    for j in range(16):
+        a = j * math.tau / 16
+        x, y = 150.0 + 36.0 * math.cos(a), 200.0 + 20.0 * math.sin(a)
+        pts.append((x, y, ground(x, y)))
+    c.path_curve("Steppe Herd", pts, closed=True)
+    for j, sc in enumerate((1.0, 0.6, 0.9)):
+        c.entity("dinosaur", route="Steppe Herd", speed=1.3, scale=sc, model="mammoth", start=j * 10.0)
+    # ---- The Snowgate.
+    _scatter_look(c, ground, taken, "snow", [
+        (snp.snow_pine(c, 1), 16, tree), (snp.snow_pine(c, 3), 12, tree),
+        (snp.ice_spike(c, 0), 6, dict(room=5.0, road_margin=7.0)),
+        (snp.snow_mound(c, 0), 8, dict(room=4.0, road_margin=5.0, role="visual")),
+    ])
+    hx, hy, hr = J.VILLAGES["hostel"]
+    q, _ = c.nearest(hx, hy)
+    side = 1.0 if (hx - q.p.x) * q.r.x + (hy - q.p.y) * q.r.y > 0 else -1.0
+    x, y = q.p.x + q.r.x * side * (q.w / 2 + 12.0), q.p.y + q.r.y * side * (q.w / 2 + 12.0)
+    rot = math.atan2(-q.r.y * side, -q.r.x * side) + math.pi / 2
+    c.place(kp.house(c, 1), x, y, ground(x, y) - 0.1, rot=rot + math.pi, scale=1.6, coll="Village")
+    x2, y2 = x + q.t.x * 14.0, y + q.t.y * 14.0
+    c.place(kp.house(c, 3), x2, y2, ground(x2, y2) - 0.1, rot=rot + math.pi, scale=1.2, coll="Village")
+    g = c.game(x - q.r.x * side * 9.0, y - q.r.y * side * 9.0, ground(x, y) + 0.2)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    c.entity("villager_home", x=g[0], z=g[2], y=g[1], r=10.0, n=3, folk="snow", heading=0.0)
+    for k, qq in enumerate(c.S[::14]):
+        if on_road(qq.s) and L.look_at(qq.p.x, qq.p.y) == "snow":
+            sd = 1 if k % 2 else -1
+            px, py = qq.p.x + qq.r.x * sd * (qq.w / 2 + 1.6), qq.p.y + qq.r.y * sd * (qq.w / 2 + 1.6)
+            if paint.road_clear(c, px, py, 0.8):
+                pz = ground(px, py)
+                c.place(kp.torch_post(c), px, py, pz - 0.1, coll="Props", role="visual")
+                g = c.game(px, py, pz + 2.6)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+    flags.build(c)
+    # ---- The Snow Kingdom's peaks, ahead the whole way (beyond the land's edge).
+    for k, (x, y, r, h) in enumerate(((520.0, 560.0, 150.0, 330.0), (380.0, 620.0, 130.0, 280.0), (640.0, 420.0, 140.0, 300.0),
+                                      (250.0, 640.0, 110.0, 230.0), (680.0, 620.0, 160.0, 360.0))):
+        cone(c, "Far Peak %d" % k, x, y, r, 60.0, h, ("frost_cliff", "wall"), segs=7, role="visual")
+        cone(c, "Far Peak Snow %d" % k, x, y, r * 0.42, 60.0 + h * 0.58, h * 0.42 + 2.0, ("snow_ground", "wall"), segs=7,
+             role="visual")
 
 
 def dress_pass(c, ground, taken, on_road):
