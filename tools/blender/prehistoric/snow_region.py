@@ -244,8 +244,10 @@ def main():
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
+    # (v4: its walls gone, Blake, review-snow_region 2 note 3, "we need to remove this"; the
+    # smugglers' gate stays, for the story, till the Summit's rework gives it a home.)
     puzzle_kit.pen(c, "return", "Hot Spring", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("frost_stone", "wall"),
-                   ground(*RETURN), height=6.0)
+                   ground(*RETURN), height=6.0, walls=False)
     puzzle_kit.pen(c, "secret", "Old Store", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("citadel_stone", "wall"),
                    ground(*SECRET), height=6.0)
     pb.emit_spots(c, spots)
@@ -313,6 +315,11 @@ def thresholds(c, ground):
                     x, y = q.p.x + q.r.x * sd * (half - 0.6), q.p.y + q.r.y * sd * (half - 0.6)
                     g = c.game(x, y, q.p.z + 4.5)
                     c.entity("torch", x=g[0], y=g[1], z=g[2])
+        elif kind == "ice" and name in ("Ice Cave", "Ice Gallery Out"):
+            # (v4: open, no rock over them: Blake, review-snow_region 2 notes 4 and 7, "I need
+            # to be able to drive through this", "this is in the way"; Aurora's ice to be
+            # redone with its section.)
+            continue
         elif kind == "ice":
             half = pb.bore(c, L, name, s0, s1, ("cavern_ice", "wall"), ("summit_snow", "deep_snow"), height=11.0)
             crystals = [ap.fan(c, v, size=5.0, mat=m) for v, m in ((0, ap.CYAN), (1, ap.VIOLET), (2, ap.TEAL))]

@@ -16,10 +16,13 @@ def _shapes():
     return box, cone
 
 
-def pen(c, puzzle, name, px, py, facing, half, gap, mat, floor, roof=None, height=6.0):
+def pen(c, puzzle, name, px, py, facing, half, gap, mat, floor, roof=None, height=6.0, walls=True):
     """A pen at (px, py) whose gateway looks along `facing` (radians, Blender), `gap` metres
-    half wide; walls of `mat` standing on `floor`. Returns the gate's middle (Blender)."""
+    half wide; walls of `mat` standing on `floor` (`walls` False: only its gate). Returns
+    the gate's middle (Blender)."""
     box, cone = _shapes()
+    if not walls:
+        box = lambda *a, **k: None  # noqa: E731
     fx, fy = math.cos(facing), math.sin(facing)
     sx, sy = -fy, fx
     t = 0.8
@@ -31,7 +34,7 @@ def pen(c, puzzle, name, px, py, facing, half, gap, mat, floor, roof=None, heigh
             (half, -(half + gap) / 2, t, (half - gap) / 2 + t))):
         wx, wy = px + cx * fx + cy * sx, py + cx * fy + cy * sy
         box(c, "%s Wall %d" % (name, k), wx, wy, hx, hy, floor - 2.0, floor + height, mat, rot=facing)
-    if roof:
+    if roof and walls:
         cone(c, name + " Roof", px, py, half * 1.55, floor + height, 7.0, roof, segs=4, role="visual")
     for side in (-1, 1):
         gx, gy = px + half * fx + side * (gap + 0.9) * sx, py + half * fy + side * (gap + 0.9) * sy

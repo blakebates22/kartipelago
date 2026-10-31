@@ -305,13 +305,38 @@ def _dense_route():
     keep = set()
     for _name, _kind, a, b in BASE_TUNNELS:
         keep.update(range(a - 2, b + 2))
+    pts = _densify(_L0.route_points(), keep=keep)
+    held = [_L0.tunnel_floor(x, y) is not None or any(math.hypot(x - a, y - b) < 18.0 for a, b in fixed) for x, y, _ in pts]
+    # (The drifts and kickers ease in and out over 24 m from where the road's held to its
+    # set height (tunnels, gates): they stepped on and off it before, too steep to drive:
+    # Blake, review-snow_region 2 notes 5, 6 and 8.)
+    n = len(pts)
+    cum = [0.0]
+    for p, q in zip(pts, pts[1:] + pts[:1]):
+        cum.append(cum[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
+    total = cum[-1]
+    hi = [i for i in range(n) if held[i]]
     out = []
-    for x, y, z in _densify(_L0.route_points(), keep=keep):
-        if _L0.tunnel_floor(x, y) is not None or any(math.hypot(x - a, y - b) < 18.0 for a, b in fixed):
-            out.append((round(x, 2), round(y, 2), round(z, 2)))
+    for i, (x, y, z) in enumerate(pts):
+        if held[i] or not hi:
+            w = 0.0 if hi else 1.0
         else:
-            out.append((round(x, 2), round(y, 2), round(z + drifts(x, y) + lips(x, y), 2)))
-    return out
+            d = min(min(abs(cum[i] - cum[j]), total - abs(cum[i] - cum[j])) for j in hi)
+            w = smooth(d / 24.0)
+        out.append((x, y, z + w * (drifts(x, y) + lips(x, y))))
+    # (And the road's height smoothed along it, 20 m either way: the set heights stepped
+    # up and down at the bends between them, a metre or two in as many metres.)
+    zs = []
+    for i in range(n):
+        acc = wt = 0.0
+        for j in range(i - 16, i + 17):
+            jj = j % n
+            d = cum[i] - cum[jj] if abs(cum[i] - cum[jj]) < total / 2 else (total - abs(cum[i] - cum[jj]))
+            g = math.exp(-0.5 * (d / 20.0) ** 2)
+            acc += g * out[jj][2]
+            wt += g
+        zs.append(acc / wt)
+    return [(round(x, 2), round(y, 2), round(z, 2)) for (x, y, _), z in zip(out, zs)]
 
 
 ROUTE = _dense_route()
@@ -339,7 +364,7 @@ GATES = {
     "summit": (-156.0, 180.0),  # the giant tree, the summit's west end
     "aurora": (122.0, 178.0),  # the rift in the glacier's north wall
 }
-TREE = (-84.0, -158.0)  # the village's great tree, south of the square
+TREE = (-83.0, -181.0)  # the village's great tree, south of the square
 BELL = (-110.0, -122.0)  # the bell tower, north-west of the square
 LAIR = (-90.0, 222.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
 FROZEN_PASS = (164.0, -62.0)  # where the Frozen Pass leaves the glacier's tongue (the ruin), on east

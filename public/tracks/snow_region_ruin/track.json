@@ -16,133 +16,91 @@
       "id": "torch_01",
       "type": "torch",
       "x": -133.31,
-      "y": 50.31,
+      "y": 50.07,
       "z": 98.75
     },
     {
       "id": "torch_02",
       "type": "torch",
       "x": -124.76,
-      "y": 50.31,
+      "y": 50.07,
       "z": 82.01
     },
     {
       "id": "torch_03",
       "type": "torch",
-      "x": -139.38,
-      "y": 51.13,
-      "z": 95.78
+      "x": -139.39,
+      "y": 50.42,
+      "z": 95.77
     },
     {
       "id": "torch_04",
       "type": "torch",
       "x": -131.01,
-      "y": 51.13,
-      "z": 78.95
+      "y": 50.42,
+      "z": 78.94
     },
     {
       "id": "torch_05",
       "type": "torch",
-      "x": -146.32,
-      "y": 51.83,
+      "x": -146.33,
+      "y": 50.74,
       "z": 91.85
     },
     {
       "id": "torch_06",
       "type": "torch",
-      "x": -136.03,
-      "y": 51.83,
-      "z": 76.12
+      "x": -136.04,
+      "y": 50.74,
+      "z": 76.11
     },
     {
       "id": "lantern_01",
       "type": "lantern",
-      "x": 40.21,
-      "y": 78.39,
-      "z": -175.53
+      "x": 151.49,
+      "y": 76.52,
+      "z": -107.33
     },
     {
       "id": "lantern_02",
       "type": "lantern",
-      "x": 42.79,
-      "y": 76.85,
-      "z": -154.18
+      "x": 133.7,
+      "y": 75.11,
+      "z": -96.72
     },
     {
       "id": "lantern_03",
       "type": "lantern",
-      "x": 57.9,
-      "y": 76.99,
-      "z": -169.26
+      "x": 154.84,
+      "y": 73.2,
+      "z": -95.18
     },
     {
       "id": "lantern_04",
       "type": "lantern",
-      "x": 151.6,
-      "y": 78.08,
-      "z": -108.89
+      "x": 142.3,
+      "y": 71.49,
+      "z": -78.03
     },
     {
       "id": "lantern_05",
       "type": "lantern",
-      "x": 132.93,
-      "y": 73.21,
-      "z": -100.05
-    },
-    {
-      "id": "lantern_06",
-      "type": "lantern",
-      "x": 153.87,
-      "y": 70.39,
-      "z": -97.57
-    },
-    {
-      "id": "lantern_07",
-      "type": "lantern",
-      "x": 140.38,
-      "y": 69.14,
-      "z": -81.18
-    },
-    {
-      "id": "lantern_08",
-      "type": "lantern",
-      "x": 161.11,
-      "y": 69.67,
-      "z": -85.23
-    },
-    {
-      "id": "lantern_09",
-      "type": "lantern",
-      "x": 195.56,
-      "y": 69.75,
-      "z": -29.7
-    },
-    {
-      "id": "lantern_10",
-      "type": "lantern",
-      "x": 174.01,
-      "y": 66.28,
-      "z": -33.63
-    },
-    {
-      "id": "lantern_11",
-      "type": "lantern",
-      "x": 188.77,
-      "y": 64.27,
-      "z": -18.38
+      "x": 162.95,
+      "y": 70.22,
+      "z": -83.33
     },
     {
       "id": "steam_01",
       "type": "steam",
       "x": -98.0,
-      "y": 45.56,
+      "y": 45.54,
       "z": 129.5
     },
     {
       "id": "steam_02",
       "type": "steam",
       "x": -98.0,
-      "y": 48.56,
+      "y": 48.54,
       "z": 129.5
     },
     {
@@ -150,7 +108,7 @@
       "type": "villager_home",
       "x": -95.0,
       "z": 155.5,
-      "y": 45.03,
+      "y": 45.9,
       "r": 9.0,
       "n": 3,
       "folk": "snow",
@@ -161,14 +119,14 @@
       "type": "villager_home",
       "x": 16.0,
       "z": 119.0,
-      "y": 61.8,
+      "y": 61.84,
       "r": 8.0,
       "n": 5,
       "folk": "snow",
       "heading": 0.0
     },
     {
-      "id": "lantern_12",
+      "id": "lantern_06",
       "type": "lantern",
       "x": 39.08,
       "y": 64.92,
@@ -182,14 +140,14 @@
       "z": 114.04
     },
     {
-      "id": "lantern_13",
+      "id": "lantern_07",
       "type": "lantern",
       "x": 40.62,
       "y": 64.93,
       "z": 110.8
     },
     {
-      "id": "lantern_14",
+      "id": "lantern_08",
       "type": "lantern",
       "x": 39.32,
       "y": 65.08,
@@ -203,14 +161,14 @@
       "z": 92.57
     },
     {
-      "id": "lantern_15",
+      "id": "lantern_09",
       "type": "lantern",
       "x": 36.17,
       "y": 65.2,
       "z": 90.93
     },
     {
-      "id": "lantern_16",
+      "id": "lantern_10",
       "type": "lantern",
       "x": 28.21,
       "y": 65.35,
@@ -224,14 +182,14 @@
       "z": 76.92
     },
     {
-      "id": "lantern_17",
+      "id": "lantern_11",
       "type": "lantern",
       "x": 22.81,
       "y": 65.45,
       "z": 79.33
     },
     {
-      "id": "lantern_18",
+      "id": "lantern_12",
       "type": "lantern",
       "x": 10.56,
       "y": 65.45,
@@ -245,14 +203,14 @@
       "z": 73.9
     },
     {
-      "id": "lantern_19",
+      "id": "lantern_13",
       "type": "lantern",
       "x": 2.56,
       "y": 65.32,
       "z": 79.36
     },
     {
-      "id": "lantern_20",
+      "id": "lantern_14",
       "type": "lantern",
       "x": -7.01,
       "y": 65.2,
@@ -266,14 +224,14 @@
       "z": 85.44
     },
     {
-      "id": "lantern_21",
+      "id": "lantern_15",
       "type": "lantern",
       "x": -11.18,
       "y": 65.07,
       "z": 90.42
     },
     {
-      "id": "lantern_22",
+      "id": "lantern_16",
       "type": "lantern",
       "x": -15.86,
       "y": 64.93,
@@ -287,28 +245,28 @@
       "z": 105.84
     },
     {
-      "id": "lantern_23",
+      "id": "lantern_17",
       "type": "lantern",
       "x": 81.19,
       "y": 142.78,
       "z": 316.38
     },
     {
-      "id": "lantern_24",
+      "id": "lantern_18",
       "type": "lantern",
       "x": -47.18,
       "y": 121.37,
       "z": 280.86
     },
     {
-      "id": "lantern_25",
+      "id": "lantern_19",
       "type": "lantern",
       "x": 73.19,
       "y": 101.09,
       "z": 245.62
     },
     {
-      "id": "lantern_26",
+      "id": "lantern_20",
       "type": "lantern",
       "x": -47.19,
       "y": 81.05,
@@ -325,8 +283,8 @@
       "type": "puzzle_gate",
       "puzzle": "return",
       "x": -125.94,
-      "z": -135.61,
-      "heading": -2.334739049075236,
+      "z": -135.62,
+      "heading": -2.3354929973331418,
       "width": 9.0,
       "prize_x": -118.0,
       "prize_z": -128.0
@@ -337,7 +295,7 @@
       "puzzle": "secret",
       "x": -148.67,
       "z": 27.59,
-      "heading": -1.8423728836875315,
+      "heading": -1.8423689142486992,
       "width": 9.0,
       "prize_x": -140.0,
       "prize_z": 30.0
@@ -348,7 +306,7 @@
       "gateway": "frostveil",
       "x": -204.12,
       "z": -5.72,
-      "heading": 1.7146657432866677
+      "heading": 1.714511075351856
     },
     {
       "id": "gateway_spot_02",
@@ -356,7 +314,7 @@
       "gateway": "summit",
       "x": -144.08,
       "z": -178.59,
-      "heading": 1.4532564376582497
+      "heading": 1.4532476784719324
     },
     {
       "id": "gateway_spot_03",
@@ -364,7 +322,7 @@
       "gateway": "aurora",
       "x": 121.83,
       "z": -166.0,
-      "heading": -0.013861359162240508
+      "heading": -0.01392274858691621
     },
     {
       "id": "gateway_spot_04",
@@ -372,7 +330,7 @@
       "gateway": "lair",
       "x": -91.1,
       "z": -210.05,
-      "heading": -0.09198343624248258
+      "heading": -0.09198729590418536
     },
     {
       "id": "gateway_spot_05",
@@ -387,7 +345,7 @@
       "type": "villager_home",
       "x": -125.51,
       "z": 176.04,
-      "y": 44.91,
+      "y": 44.92,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
@@ -409,7 +367,7 @@
       "type": "villager_home",
       "x": -56.22,
       "z": 98.25,
-      "y": 45.27,
+      "y": 45.28,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
@@ -420,7 +378,7 @@
       "type": "villager_home",
       "x": -180.36,
       "z": 17.64,
-      "y": 47.69,
+      "y": 47.98,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
@@ -431,7 +389,7 @@
       "type": "villager_home",
       "x": -178.75,
       "z": 61.69,
-      "y": 48.01,
+      "y": 48.11,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
@@ -442,7 +400,7 @@
       "type": "villager_home",
       "x": -161.54,
       "z": -20.03,
-      "y": 50.97,
+      "y": 51.36,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
@@ -453,7 +411,7 @@
       "type": "villager_home",
       "x": -70.48,
       "z": -122.3,
-      "y": 72.2,
+      "y": 72.72,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
@@ -462,31 +420,31 @@
     {
       "id": "villager_home_10",
       "type": "villager_home",
-      "x": -94.81,
-      "z": -163.95,
-      "y": 74.04,
+      "x": -94.86,
+      "z": -164.08,
+      "y": 74.05,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
-      "heading": 1.938
+      "heading": 1.915
     },
     {
       "id": "villager_home_11",
       "type": "villager_home",
-      "x": 0.29,
-      "z": -174.62,
-      "y": 70.41,
+      "x": 0.31,
+      "z": -174.64,
+      "y": 70.43,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
-      "heading": -2.172
+      "heading": -2.168
     },
     {
       "id": "villager_home_12",
       "type": "villager_home",
       "x": 88.98,
       "z": -127.27,
-      "y": 69.85,
+      "y": 69.88,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
@@ -495,13 +453,24 @@
     {
       "id": "villager_home_13",
       "type": "villager_home",
-      "x": 188.21,
-      "z": -76.09,
-      "y": 61.97,
+      "x": 175.67,
+      "z": -40.1,
+      "y": 62.8,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "snow",
-      "heading": 2.72
+      "heading": -2.292
+    },
+    {
+      "id": "villager_home_14",
+      "type": "villager_home",
+      "x": 190.3,
+      "z": -75.99,
+      "y": 62.78,
+      "r": 14.0,
+      "n": 3,
+      "folk": "snow",
+      "heading": 2.66
     },
     {
       "id": "snowfall_01",
@@ -514,8 +483,8 @@
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "snow_dress.py": "dadb7cd62d71a9a411b4610903c5dbe1e8ce06e2feb7d6d1ad7170a29f06b38b",
-    "snow_layout.py": "e8805a56d0ac723b2ac9141f8e14debe5e680c9c18269e8ae9e6ce4a86c5d73a",
+    "snow_layout.py": "6dab9038d192b39a9bf40d0b6577fb187333212a0b492eb51948e3fbd2a988c7",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "c89664fc7e5318327e9b7c60422a46c4e3608d29d996d3a07d3e0e5d5f156f53"
+    "snow_region.py": "73f6700beb58a8f20dcaeb7ea859282eb8838d829fef75d664b442fedb85be7b"
   }
 }
