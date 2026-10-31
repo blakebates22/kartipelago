@@ -140,6 +140,8 @@ def classify(c, n, info):
         return (pb.strata(L, c, n, STRATA), "wall")
     if SL.crevasse_cut(c.x, c.y) > 1.5:
         return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
+    if SL.hollow_floor(c.x, c.y):
+        return ("snow_ground", "packed_snow")  # (the Ice Hollow's floor, driven on)
     lx, ly, lr, lz = SL.LAKE
     if math.hypot(c.x - lx, c.y - ly) < lr + 2 and c.z < lz + 0.1:
         return ("lake_ice", "ice")
@@ -186,17 +188,8 @@ def main():
     a = math.atan2(smp.p.y - vy, smp.p.x - vx)
     c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx + (vr - 2.0) * math.cos(a), vy + (vr - 2.0) * math.sin(a)),
                                        z0=smp.p.z, c=c), "hearth_cobble", "road", **trail, flush=True, ease=8.0)
-    # The Ice Hollow's lane, off the pass's road, round the ice carvers' village and back
-    # (v4c, carvers_village), easing up off the road at either end.
-    lane = SL._hollow_lane()
-    ends = [c.nearest(*lane[0][:2])[0].p.z, c.nearest(*lane[-1][:2])[0].p.z]
-    cum = [0.0]
-    for p, q in zip(lane, lane[1:]):
-        cum.append(cum[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
-    lane = [(x, y, lerp(ends[0], lerp(ends[1], z, smooth((cum[-1] - d) / 14.0)), smooth(d / 14.0)) + 0.05)
-            for (x, y, z), d in zip(lane, cum)]
-    c.side_road("Ice Hollow Lane", lane, "packed_snow_road", "road", width=9.0, shoulder=1.2, shoulder_mat=snow, flush=True,
-                ease=8.0)
+    # (v4c: the Ice Hollow has no lane: its whole floor is packed snow, the land's own
+    # (classify), so nothing's laid over the pass's road: Blake, Oct 30.)
     gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
     if RUIN:
         gates["lair"] = SL.LAIR

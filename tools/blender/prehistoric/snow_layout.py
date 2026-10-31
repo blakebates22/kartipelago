@@ -589,7 +589,7 @@ HOLLOW_MOUTH = (12.0, -141.0, 24.0, 14.0)
 HOLLOW_Z = 62.0
 HOLLOW_LANE_WAY = [(0.0, -157.0), (-5.0, -138.0), (-10.0, -118.0), (-5.0, -95.0), (12.0, -86.0), (29.0, -95.0),
                    (33.0, -114.0), (28.0, -134.0), (22.0, -150.0)]
-HOLLOW_GARDEN = (12.0, -113.0, 11.0)  # the sculpture garden: x, y, radius (inside the lane's loop)
+HOLLOW_GARDEN = (12.0, -110.0, 18.0)  # (the ice harvesters' yard)  # the sculpture garden: x, y, radius (inside the lane's loop)
 
 
 def _ell(x, y, e):
@@ -617,6 +617,11 @@ def hollow(h, x, y):
         return h
     # (The walls sheer, 1.5 m: the carvers' homes are cut straight into them.)
     return lerp(h, min(h, zf) if d < 0.0 else zf, smooth((d + 1.5) / 1.5))
+
+
+def hollow_floor(x, y):
+    """In the Ice Hollow, on its floor (not its walls)."""
+    return _ell(x, y, HOLLOW) < 0.97 or _ell(x, y, HOLLOW_MOUTH) < 0.95
 
 
 def _hollow_lane():

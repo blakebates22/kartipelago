@@ -115,214 +115,263 @@
       "heading": 0.278
     },
     {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": 2.5,
+      "y": 73.62,
+      "z": 103.5
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 0.5,
+      "y": 63.6,
+      "z": 116.0
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": 28.38,
+      "y": 65.47,
+      "z": 104.93
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": 13.21,
+      "y": 65.75,
+      "z": 92.89
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": -2.54,
+      "y": 65.45,
+      "z": 119.09
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": 13.5,
+      "y": 65.39,
+      "z": 127.08
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": 27.19,
+      "y": 65.45,
+      "z": 117.97
+    },
+    {
       "id": "villager_home_02",
       "type": "villager_home",
-      "x": 16.0,
-      "z": 119.0,
-      "y": 61.84,
-      "r": 8.0,
-      "n": 5,
+      "x": 14.0,
+      "z": 118.0,
+      "y": 62.0,
+      "r": 10.0,
+      "n": 6,
       "folk": "snow",
       "heading": 0.0
     },
     {
-      "id": "lantern_06",
+      "id": "lantern_12",
       "type": "lantern",
       "x": 40.86,
-      "y": 66.0,
+      "y": 65.92,
       "z": 128.95
     },
     {
       "id": "chimney_01",
       "type": "chimney",
       "x": 47.53,
-      "y": 74.15,
+      "y": 74.07,
       "z": 123.33000000000001
     },
     {
-      "id": "lantern_07",
+      "id": "lantern_13",
       "type": "lantern",
       "x": 47.59,
-      "y": 65.13,
+      "y": 65.2,
       "z": 107.08
     },
     {
       "id": "chimney_02",
       "type": "chimney",
       "x": 49.67,
-      "y": 72.98,
+      "y": 73.04,
       "z": 113.12
     },
     {
-      "id": "lantern_08",
+      "id": "lantern_14",
       "type": "lantern",
       "x": 38.79,
-      "y": 64.16,
+      "y": 64.27,
       "z": 97.83
     },
     {
       "id": "chimney_03",
       "type": "chimney",
       "x": 46.0,
-      "y": 68.99,
+      "y": 69.1,
       "z": 99.71000000000001
     },
     {
-      "id": "lantern_09",
+      "id": "lantern_15",
       "type": "lantern",
       "x": 43.24,
-      "y": 65.2,
+      "y": 65.43,
       "z": 90.98
     },
     {
-      "id": "lantern_10",
+      "id": "lantern_16",
       "type": "lantern",
       "x": 39.74,
-      "y": 70.8,
+      "y": 71.03,
       "z": 84.15
     },
     {
       "id": "chimney_04",
       "type": "chimney",
       "x": 46.6,
-      "y": 77.27,
+      "y": 77.5,
       "z": 86.18
     },
     {
-      "id": "lantern_11",
+      "id": "lantern_17",
       "type": "lantern",
       "x": 27.12,
-      "y": 65.59,
+      "y": 65.88,
       "z": 75.61
     },
     {
       "id": "chimney_05",
       "type": "chimney",
       "x": 33.06,
-      "y": 73.49,
+      "y": 73.78,
       "z": 73.74000000000001
     },
     {
-      "id": "lantern_12",
+      "id": "lantern_18",
       "type": "lantern",
       "x": 18.99,
-      "y": 65.33,
+      "y": 65.68,
       "z": 77.55
     },
     {
       "id": "chimney_06",
       "type": "chimney",
       "x": 22.89,
-      "y": 75.55,
+      "y": 75.91,
       "z": 75.28
     },
     {
-      "id": "lantern_13",
+      "id": "lantern_19",
       "type": "lantern",
       "x": 8.1,
-      "y": 65.67,
+      "y": 65.98,
       "z": 72.43
     },
     {
-      "id": "lantern_14",
+      "id": "lantern_20",
       "type": "lantern",
       "x": -4.28,
-      "y": 65.67,
+      "y": 65.96,
       "z": 76.93
     },
     {
-      "id": "lantern_15",
+      "id": "lantern_21",
       "type": "lantern",
       "x": -5.05,
-      "y": 64.66,
+      "y": 65.01,
       "z": 78.84
     },
     {
       "id": "chimney_07",
       "type": "chimney",
       "x": -8.19,
-      "y": 69.45,
+      "y": 69.8,
       "z": 78.34
     },
     {
-      "id": "lantern_16",
+      "id": "lantern_22",
       "type": "lantern",
       "x": -11.27,
-      "y": 65.25,
+      "y": 65.52,
       "z": 81.65
     },
     {
-      "id": "lantern_17",
+      "id": "lantern_23",
       "type": "lantern",
       "x": -17.87,
-      "y": 70.85,
+      "y": 71.12,
       "z": 86.28
     },
     {
       "id": "chimney_08",
       "type": "chimney",
       "x": -16.76,
-      "y": 77.56,
+      "y": 77.82,
       "z": 79.37
     },
     {
-      "id": "lantern_18",
+      "id": "lantern_24",
       "type": "lantern",
       "x": -22.3,
-      "y": 65.27,
+      "y": 65.4,
       "z": 100.01
     },
     {
       "id": "chimney_09",
       "type": "chimney",
       "x": -24.24,
-      "y": 74.52,
+      "y": 74.64,
       "z": 97.69000000000001
     },
     {
-      "id": "lantern_19",
+      "id": "lantern_25",
       "type": "lantern",
       "x": -20.24,
-      "y": 64.91,
+      "y": 65.0,
       "z": 108.3
     },
     {
       "id": "chimney_10",
       "type": "chimney",
       "x": -22.0,
-      "y": 74.57,
+      "y": 74.66,
       "z": 104.67
     },
     {
-      "id": "lantern_20",
+      "id": "lantern_26",
       "type": "lantern",
       "x": -20.6,
-      "y": 65.11,
+      "y": 65.2,
       "z": 120.88
     },
     {
-      "id": "lantern_21",
+      "id": "lantern_27",
       "type": "lantern",
       "x": 81.19,
       "y": 142.78,
       "z": 316.38
     },
     {
-      "id": "lantern_22",
+      "id": "lantern_28",
       "type": "lantern",
       "x": -47.18,
       "y": 121.37,
       "z": 280.86
     },
     {
-      "id": "lantern_23",
+      "id": "lantern_29",
       "type": "lantern",
       "x": 73.19,
       "y": 101.09,
       "z": 245.62
     },
     {
-      "id": "lantern_24",
+      "id": "lantern_30",
       "type": "lantern",
       "x": -47.19,
       "y": 81.05,
@@ -539,8 +588,8 @@
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "snow_dress.py": "dadb7cd62d71a9a411b4610903c5dbe1e8ce06e2feb7d6d1ad7170a29f06b38b",
-    "snow_layout.py": "e41f6414fe8b95ea93a8034b12e2c8b1a67a98fbc000c982f67ce5f0182b36de",
+    "snow_layout.py": "7220e73f1beb4609c67b5e77e61eeda582b328ead78cadd107a2ef49be481822",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "73f6700beb58a8f20dcaeb7ea859282eb8838d829fef75d664b442fedb85be7b"
+    "snow_region.py": "b803390c6a666301395f032dc36d640172baed7272b4664dae1887c53341a1f3"
   }
 }

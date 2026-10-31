@@ -236,28 +236,11 @@ def ice_pillar(c):
 def build(c, ground, taken):
     """The village in the Ice Hollow, and the ice pillars down the switchbacks; `taken`
     gets every spot used (snow_dress.entry_pass's lantern posts keep off them)."""
-    hx, hy, rx, ry = SL.HOLLOW
-    gx, gy, gr = SL.HOLLOW_GARDEN
-    # The Frost Spire, in the garden's middle.
-    c.place(frost_spire(c), gx, gy, ground(gx, gy) - 0.4, rot=0.0, coll="Village")
-    taken.add(gx, gy, 7.5)
-    # Its sculptures round it, facing out to the lane, and the carvers' work between.
-    pieces = ((mammoth_sculpture, 0.6, 8.0), (swan_sculpture, 2.4, 8.5), (owl_sculpture, 3.6, 8.0),
-              (swan_sculpture, 5.0, 8.0))
-    for fn, a, r in pieces:
-        x, y = gx + r * math.cos(a), gy + r * math.sin(a)
-        c.place(fn(c), x, y, ground(x, y) - 0.1, rot=a - math.pi / 2, coll="Village")
-        taken.add(x, y, 2.5)
-    for k, (a, r, fn) in enumerate(((1.5, 9.0, bench), (4.3, 9.5, bench), (5.7, 8.5, sled), (0.0, 9.5, lambda c: ice_blocks(c, 0)),
-                                    (3.0, 9.0, lambda c: ice_blocks(c, 1)), (4.9, 10.0, lambda c: ice_blocks(c, 2)))):
-        x, y = gx + r * math.cos(a), gy + r * math.sin(a)
-        if taken.clear(x, y, 1.0):
-            c.place(fn(c), x, y, ground(x, y) - 0.05, rot=a + 0.4 * k, coll="Village")
-            taken.add(x, y, 1.6)
-    # The carvers, at work in the garden.
-    g = c.game(gx + 4.0, gy - 6.0, ground(gx + 4.0, gy - 6.0))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=8.0, n=5, folk="snow",
-             heading=0.0)
+    # The ice harvesters' yard in the middle (ice_yard: Blake, Oct 30, "crafter ice
+    # workers ... blue collar").
+    import ice_yard
+
+    ice_yard.build(c, ground, taken)
     # Their homes, each its own, round the walls and out on the floor (ice_homes).
     import ice_homes
 
