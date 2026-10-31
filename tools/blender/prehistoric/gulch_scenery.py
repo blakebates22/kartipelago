@@ -155,7 +155,7 @@ def near(dg):
 
 def land(c, dg, sc):
     X0, X1, Y0, Y1 = near(dg)
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 5.0, dg.natural, dg.classify, near=9.0, fade=6.0)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 5.0, dg.natural, dg.classify, near=9.0, fade=6.0, fine=3)
     sc.ground_obs = [ter]
     nat = far_natural(dg)
 

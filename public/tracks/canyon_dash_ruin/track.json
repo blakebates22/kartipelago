@@ -328,10 +328,10 @@
   ],
   "generator": "tools/blender/prehistoric/canyon_dash_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "canyon_dash.py": "beb35b5d3e6201769e1daedf43bf660f6b73bf067d699fabd772953d6c1ea16b",
+    "canyon_dash.py": "bcb87ce57c095f339673b41f466dc7eea226cd416c05e0b9490e511e3a28d0fe",
     "canyon_props.py": "d888b93a4570c60100be2f22e3a37f816ea881cea449c1816ba57a3f2afb5181",
     "canyon_ruins.py": "9439a7901361de8899ca1b5f7654efb5cee91688fed31c56a39272549a818a8a",
-    "canyon_scenery.py": "1da6f6672129e3a03d820e3fba80b69eae21ebf168b236bd7550a01e45b638f1",
+    "canyon_scenery.py": "8e409af864886b12abc750f7deee390da080de9dee075a0e7a400f2d85f560d1",
     "canyon_walls.py": "635872098f2a16d03dd0e3de9178dac6dba5c7ffb4b061110ecef667bd01c5b8"
   }
 }

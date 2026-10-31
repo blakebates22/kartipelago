@@ -489,10 +489,19 @@ def abyss_z(x, y):
 
 
 def lane(c, name, pts, mat, surface=None, *, width=10.0, shoulder=0.8, shoulder_mat=None, barrier=0.0, barrier_mat=None,
-         deck=0.0, deck_mat=None, ground=True, step=3.0):
+         deck=0.0, deck_mat=None, ground=True, step=3.0, flush=False, ease=20.0):
     """A road along a dense (x, y, z, ...) polyline (not the race line), open at both
-    ends, built with the add-on's road generator. With `ground`, the land meets it."""
+    ends, built with the add-on's road generator. With `ground`, the land meets it.
+    `flush`: flush with the race line where it leaves and joins it (Course.flush_profile:
+    leaving at the road's middle height, its edge stood over the banked road's)."""
     from course_kit import Vector, bpy, materials, road
+
+    tilts = [0.0] * len(pts)
+    if flush:
+        cos = [Vector(p[:3]) for p in pts]
+        tans = [cos[min(len(cos) - 1, i + 1)] - cos[max(0, i - 1)] for i in range(len(cos))]
+        zs, tilts = c.flush_profile(cos, tans, width / 2 + shoulder + 0.5, ease)
+        pts = [(p[0], p[1], z) + tuple(p[3:]) for p, z in zip(pts, zs)]
 
     # Points every `step` metres, tangents from the polyline itself.
     keep = [0]
@@ -519,6 +528,7 @@ def lane(c, name, pts, mat, surface=None, *, width=10.0, shoulder=0.8, shoulder_
         bp.co = p
         bp.handle_right = p + t * h
         bp.handle_left = p - t * h
+        bp.tilt = tilts[i]
     sp.resolution_u = 6
     ob = bpy.data.objects.new(name, cd)
     c.coll("Roads").objects.link(ob)
@@ -538,8 +548,8 @@ def lane(c, name, pts, mat, surface=None, *, width=10.0, shoulder=0.8, shoulder_
         de = materials.entry(deck_mat[0])
         materials.apply_to_road(ob, c.lib(*deck_mat), "deck", de["tileMetres"], 0, materials.aspect(de))
     if ground:
-        for p in pts:
-            c.extra_ground.append(kit.Sample(Vector(p[:3]), width, 0.0, 0.0))
+        for p, tl in zip(pts, tilts):
+            c.extra_ground.append(kit.Sample(Vector(p[:3]), width, math.degrees(tl), 0.0))
     if not hasattr(c, "lanes"):
         c.lanes = []
     c.lanes.append(ob)
@@ -628,7 +638,7 @@ def mine_roads(c, line):
         seg = line[max(0, i0 - 1 if n else 0):i1 + 1]
         name = "Mine %02d %s" % (n + 1, k)
         if k in ("approach", "ravine"):
-            lane(c, name, seg, "gulch_road", "packed_dirt", width=11.0, shoulder=1.0, shoulder_mat=verge)
+            lane(c, name, seg, "gulch_road", "packed_dirt", width=11.0, shoulder=1.0, shoulder_mat=verge, flush=True)
         elif k == "tunnel":
             lane(c, name, seg, "mine_floor", "packed_dirt", width=10.0, shoulder=0.8, shoulder_mat=("mine_floor", "dirt"), ground=False)
         else:

@@ -584,21 +584,10 @@ class Course:
             pts.append((b[0], b[1], natural(b[0], b[1]) + 0.2 if last is None else lerp(last[1], natural(*b) + 0.2, 1.0)))
         return pts
 
-    def _flush_spline(self, cd, sp, half, ease, step=2.0):
-        """`shortcut(flush=True)`: the spline cut into pieces about `step` long (exactly the
-        same curve) and its heights brought flush with the ground road it's over."""
-        old = [(bp.co.copy(), bp.handle_left.copy(), bp.handle_right.copy(), bp.radius) for bp in sp.bezier_points]
-        pts = []  # [co, tangent (per unit t of its piece), radius]
-        for k in range(len(old) - 1):
-            p0, _, h0, r0 = old[k]
-            p1, h1, _, r1 = old[k + 1]
-            n = max(1, math.ceil((p1 - p0).length / step))
-            for j in range(n + (1 if k == len(old) - 2 else 0)):
-                t = j / n
-                u = 1 - t
-                co = p0 * u ** 3 + h0 * 3 * u * u * t + h1 * 3 * u * t * t + p1 * t ** 3
-                d = (h0 - p0) * 3 * u * u + (h1 - h0) * 6 * u * t + (p1 - h1) * 3 * t * t
-                pts.append([co, d / n, lerp(r0, r1, t)])
+    def flush_profile(self, cos, tangents, half, ease):
+        """A side road's points `cos` (tangents along it): (heights, tilts in radians) so it's
+        flush with the race line's ground road wherever any of its width (`half` each side)
+        is over it, eased back to its own heights over `ease` m."""
         # (Its height over a ground road there, if any of its width is over one.)
         # (Of the race line's stretches there, the one nearest its own height: where the lap
         # zigzags, another leg can be nearer across.)
@@ -635,35 +624,54 @@ class Course:
                     best = (z, tl)
             return best
 
-        flushed = [over(p[0], p[1]) for p in pts]
-        lift = [0.0] * len(pts)
-        tilt = [0.0] * len(pts)
-        for order in (range(len(pts)), range(len(pts) - 1, -1, -1)):
+        flushed = [over(co, d) for co, d in zip(cos, tangents)]
+        lift = [0.0] * len(cos)
+        tilt = [0.0] * len(cos)
+        for order in (range(len(cos)), range(len(cos) - 1, -1, -1)):
             last = None  # (the lift and tilt where it left the road, distance since)
             prev = None
             for i in order:
                 if flushed[i] is not None:
-                    last, prev = (flushed[i][0] - pts[i][0].z, flushed[i][1], 0.0), pts[i][0]
+                    last, prev = (flushed[i][0] - cos[i].z, flushed[i][1], 0.0), cos[i]
                     continue
                 if last is None:
                     continue
-                dist = last[2] + (pts[i][0] - prev).length
-                last, prev = (last[0], last[1], dist), pts[i][0]
+                dist = last[2] + (cos[i] - prev).length
+                last, prev = (last[0], last[1], dist), cos[i]
                 if dist < ease:
                     lift[i] += last[0] * (1 - smooth(dist / ease))
                     tilt[i] += last[1] * (1 - smooth(dist / ease))
+        zs = [f[0] if f is not None else co.z + dz for co, f, dz in zip(cos, flushed, lift)]
+        return zs, [f[1] if f is not None else tl for f, tl in zip(flushed, tilt)]
+
+    def _flush_spline(self, cd, sp, half, ease, step=2.0):
+        """`shortcut(flush=True)`: the spline cut into pieces about `step` long (exactly the
+        same curve) and its heights brought flush with the ground road it's over."""
+        old = [(bp.co.copy(), bp.handle_left.copy(), bp.handle_right.copy(), bp.radius) for bp in sp.bezier_points]
+        pts = []  # [co, tangent (per unit t of its piece), radius]
+        for k in range(len(old) - 1):
+            p0, _, h0, r0 = old[k]
+            p1, h1, _, r1 = old[k + 1]
+            n = max(1, math.ceil((p1 - p0).length / step))
+            for j in range(n + (1 if k == len(old) - 2 else 0)):
+                t = j / n
+                u = 1 - t
+                co = p0 * u ** 3 + h0 * 3 * u * u * t + h1 * 3 * u * t * t + p1 * t ** 3
+                d = (h0 - p0) * 3 * u * u + (h1 - h0) * 6 * u * t + (p1 - h1) * 3 * t * t
+                pts.append([co, d / n, lerp(r0, r1, t)])
+        zs, tilts = self.flush_profile([p[0] for p in pts], [p[1] for p in pts], half, ease)
         cd.splines.remove(sp)
         sp = cd.splines.new("BEZIER")
         sp.bezier_points.add(len(pts) - 1)
-        for bp, (co, d, r), f, dz, tl in zip(sp.bezier_points, pts, flushed, lift, tilt):
+        for bp, (co, d, r), z, tl in zip(sp.bezier_points, pts, zs, tilts):
             bp.handle_left_type = bp.handle_right_type = "FREE"
             c = co.copy()
-            c.z = f[0] if f is not None else co.z + dz
+            c.z = z
             bp.co = c
             bp.handle_left = c - d / 3
             bp.handle_right = c + d / 3
             bp.radius = r
-            bp.tilt = f[1] if f is not None else tl
+            bp.tilt = tl
 
     def hug(self, bm, z, cell=2.5, fill=2.0):
         """Everything in `bm` (a flat floor at height z: a lake's ice, a stump's floor) cut
@@ -700,7 +708,13 @@ class Course:
                 continue
             mw = ev.matrix_world
             verts = [mw @ v.co for v in me.vertices]
-            polys = [tuple(p.vertices) for p in me.polygons if p.normal.z > 0.5]
+            # (The road's own surface, not its shoulders or a rail's top: the land may lie
+            # over a shoulder, up to a fence, as it always has.)
+            mod = materials.road_modifier(ob)
+            top = road.get_input(mod, materials.PART_SOCKETS["road"]) if mod is not None else None
+            mats = list(me.materials)
+            polys = [tuple(p.vertices) for p in me.polygons if p.normal.z > 0.5
+                     and (top is None or p.material_index >= len(mats) or getattr(mats[p.material_index], "name", None) == top.name)]
             if polys:
                 trees.append(BVHTree.FromPolygons(verts, polys))
             ev.to_mesh_clear()
@@ -741,9 +755,13 @@ class Course:
             key = (round(out, 1), -zs)
             if best is None or key < best[0]:
                 best = (key, out, zs, half, smp.railed)
+        self._last_railed = False
         if best is None:
             return z
         _, out, zs, half, railed = best
+        self._last_railed = railed
+        if railed:
+            return z  # (a railed road: the land under and beside it as it was, fence and all)
         if out <= 1.5:
             # (Under the road and its shoulders: just under its surface.)
             return zs - under
@@ -788,7 +806,7 @@ class Course:
             h = lerp(nat, z, w)
             if verge:
                 h = self.verge_height(x, y, h, under, fill=verge_fill)
-                for t in road_trees:
+                for t in ([] if self._last_railed else road_trees):
                     hit = t.ray_cast(Vector((x, y, h + 3.0)), Vector((0, 0, -1)))
                     if hit[0] is not None and hit[0].z < h + 0.15:
                         h = hit[0].z - 0.15
@@ -814,16 +832,20 @@ class Course:
                 for i in range(nx):
                     x = x0 + (x1 - x0) * (i + 0.5) / nx
                     y = y0 + (y1 - y0) * (j + 0.5) / ny
-                    if not any(abs(d - self._ground[k].w / 2 - 1.5) < reach
-                               for _, k, d in self._ground_tree.find_range(Vector((x, y, 0)), 30.0 + reach)):
+                    near_roads = [self._ground[k] for _, k, d in self._ground_tree.find_range(Vector((x, y, 0)), 30.0 + reach)
+                                  if abs(d - self._ground[k].w / 2 - 1.5) < reach]
+                    if not near_roads:
                         continue
-                    # (Only where the land there isn't what the coarse cell would show.)
+                    # (Not by a railed road: the land by its fence stays as it was.)
+                    if all(q.railed for q in near_roads):
+                        continue
                     I, J = i * sub, j * sub
                     za, zb, zc, zd = at(I, J), at(I + sub, J), at(I + sub, J + sub), at(I, J + sub)
                     for b in range(sub + 1):
                         for a in range(sub + 1):
                             u, v = a / sub, b / sub
                             flat = lerp(lerp(za, zb, u), lerp(zd, zc, u), v)
+                            # (Only where the land there isn't what the coarse cell would show.)
                             if abs(at(I + a, J + b) - flat) > 0.12:
                                 refined.add((i, j))
                                 break

@@ -555,7 +555,7 @@ def main():
     c.roads(kit.plan(c, specials, "crater", max_len=200.0))
 
     X0, X1, Y0, Y1 = -560, 560, -560, 560
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=14.0, under=0.2, fine=3)
 
     def under(x, y):
         return natural(x, y) - 0.4

@@ -12,7 +12,7 @@ import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
 /** The courses done so far (Oct 30: the Prehistoric world's but Bonebog Pyramid, which
- * needs none, and the Snow world's; standard and ruin). */
+ * needs none, the Snow world's and the desert's; standard and ruin). */
 const COURSES = [
   "riverbend_palms",
   "cascade_caverns",
@@ -22,6 +22,10 @@ const COURSES = [
   "hearthglow_hollow",
   "aurora_rift",
   "snow_dragon_pass",
+  "canyon_dash",
+  "oasis_haven",
+  "dry_gulch",
+  "impact_depths",
 ].flatMap((t) => [t, `${t}_ruin`]);
 /** What's a road (the race line's pieces, the side roads, aprons and lanes), by name. */
 const ROAD = /^(Road \d+ |.* Road$|.* Apron$|.* Lane$)/;
@@ -242,6 +246,18 @@ const ALLOW: Record<string, number> = {
   // (Beside the ruin's old road, which runs a metre under the new one there: the land
   // between follows the old road.)
   riverbend_palms_ruin: 1.3,
+  // (The desert: a few low spots; where the mine's road leaves the race line; the ruins'
+  // narrow ridges where the land falls straight off, a bridge's abutment in Impact Depths,
+  // and the wreck lying across the oasis ruin's road.)
+  canyon_dash_ruin: 0.55,
+  // (Where the fenced Brink meets the Mesa Run: a dip by the fence, left as it was.)
+  canyon_dash: 2.0,
+  oasis_haven: 0.6,
+  oasis_haven_ruin: 1.65,
+  dry_gulch: 0.8,
+  dry_gulch_ruin: 1.95,
+  impact_depths: 1.85,
+  impact_depths_ruin: 1.3,
 };
 
 describe("back up onto the road", () => {
@@ -263,8 +279,12 @@ const SEAMS = new Set([
   "cascade_caverns_ruin -256, 16",
 ]);
 
+/** Where the land is left as it was by a fenced road (the fence keeps you on): Canyon
+ * Dash's Mesa Run, its hillside coming down over the road's edge, as it always has. */
+const FENCED = new Set(["canyon_dash", "canyon_dash_ruin"]);
+
 describe("no grass on the road", () => {
-  for (const pkg of [...REGIONS, ...COURSES])
+  for (const pkg of [...REGIONS, ...COURSES].filter((p) => !FENCED.has(p)))
     it(`${pkg}: the land never comes up through a road`, async () => {
       const bad = (await landOverRoad(pkg)).filter((l) => !SEAMS.has(`${pkg} ${l.split(":")[0]}`));
       expect(bad).toEqual([]);

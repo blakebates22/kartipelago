@@ -821,7 +821,7 @@ def main():
     c.roads(kit.plan(c, specials, "plateau", max_len=200.0))
 
     sc = [(x, y, _short_z(c, x, y)) for x, y in BUTTE_SHORT]
-    c.shortcut("Butte Slot", sc, "dash_road", "packed_dirt", width=8.0, shoulder=0.8, shoulder_mat=verge)
+    c.shortcut("Butte Slot", sc, "dash_road", "packed_dirt", width=8.0, shoulder=0.8, shoulder_mat=verge, flush=True)
 
     import canyon_scenery  # noqa: E402
 

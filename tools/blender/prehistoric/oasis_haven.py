@@ -357,10 +357,10 @@ def main():
     # The shortcut along the pool's bank, at the road's height where it leaves and rejoins.
     za, zb = road_z(SEG[5], 4), road_z(SEG[8], 8)
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
-    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"))
+    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
     X0, X1, Y0, Y1 = -260, 620, -440, 420
-    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2)
+    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
     c.disc("Pool", POOL[0], POOL[1], POOL[2] + 4.0, 0.0, c.lib("lagoon", "deep_water"), n=40)
 
     def under(x, y):
@@ -482,10 +482,10 @@ def ruin_course(c):
     # The palm-grove shortcut, as it always was.
     za, zb = road_z(SEG[5], 4), road_z(SEG[8], 8)
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
-    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"))
+    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
     X0, X1, Y0, Y1 = -260, 620, -440, 420
-    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2)
+    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
     c.disc("Pool", POOL[0], POOL[1], POOL[2] + 4.0, 0.0, c.lib("lagoon", "deep_water"), n=40)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("gold_sand", "loose_sand"))
     ruin_mode.DRESS(c, sys.modules[__name__])

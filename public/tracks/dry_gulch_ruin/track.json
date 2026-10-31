@@ -197,7 +197,7 @@
       "id": "ghost_02",
       "type": "ghost",
       "x": -16.2,
-      "y": 38.89,
+      "y": 38.87,
       "z": -67.1,
       "heading": 1.571,
       "look": "window",
@@ -208,7 +208,7 @@
       "id": "ghost_03",
       "type": "ghost",
       "x": 17.2,
-      "y": 31.65,
+      "y": 31.64,
       "z": 16.0,
       "heading": -1.571,
       "look": "window",
@@ -232,7 +232,7 @@
       "id": "ghost_05",
       "type": "ghost",
       "x": -4.17,
-      "y": 34.43,
+      "y": 34.78,
       "z": -138.61,
       "heading": -0.785,
       "look": "window",
@@ -254,7 +254,7 @@
       "id": "ghost_07",
       "type": "ghost",
       "x": -244.01,
-      "y": 33.01,
+      "y": 33.08,
       "z": -220.22,
       "heading": 1.571,
       "look": "float",
@@ -276,7 +276,7 @@
       "id": "ghost_09",
       "type": "ghost",
       "x": -209.01,
-      "y": 33.97,
+      "y": 33.98,
       "z": -232.22,
       "heading": 1.571,
       "look": "float",
@@ -287,7 +287,7 @@
       "id": "ghost_10",
       "type": "ghost",
       "x": -237.01,
-      "y": 32.96,
+      "y": 33.01,
       "z": -184.22,
       "heading": 1.571,
       "look": "float",
@@ -307,7 +307,7 @@
       "id": "wisps_02",
       "type": "wisps",
       "x": -229.01,
-      "y": 33.11,
+      "y": 32.79,
       "z": -212.22,
       "radius": 33.6,
       "count": 10
@@ -316,7 +316,7 @@
       "id": "mist_01",
       "type": "mist",
       "x": -229.01,
-      "y": 30.61,
+      "y": 30.29,
       "z": -212.22,
       "radius": 37.8,
       "rate": 20
@@ -406,7 +406,7 @@
       "id": "whispers_01",
       "type": "whispers",
       "x": -229.01,
-      "y": 32.61,
+      "y": 32.29,
       "z": -212.22,
       "radius": 90.0
     },
@@ -422,7 +422,7 @@
       "id": "door_01",
       "type": "door",
       "x": -0.25,
-      "y": 29.98,
+      "y": 30.33,
       "z": -134.75,
       "heading": -0.785,
       "width": 2.4,
@@ -464,7 +464,7 @@
       "id": "lantern_05",
       "type": "lantern",
       "x": -13.9,
-      "y": 33.09,
+      "y": 33.08,
       "z": -12.68,
       "flicker": true
     },
@@ -472,7 +472,7 @@
       "id": "lantern_06",
       "type": "lantern",
       "x": -13.9,
-      "y": 33.37,
+      "y": 33.47,
       "z": -40.17,
       "flicker": true
     },
@@ -480,7 +480,7 @@
       "id": "lantern_07",
       "type": "lantern",
       "x": -13.9,
-      "y": 33.39,
+      "y": 33.37,
       "z": -52.62,
       "flicker": true
     },
@@ -488,7 +488,7 @@
       "id": "lantern_08",
       "type": "lantern",
       "x": 13.9,
-      "y": 33.45,
+      "y": 33.44,
       "z": -1.84,
       "flicker": true
     },
@@ -496,7 +496,7 @@
       "id": "lantern_09",
       "type": "lantern",
       "x": 13.9,
-      "y": 33.65,
+      "y": 33.75,
       "z": -25.1,
       "flicker": true
     },
@@ -504,7 +504,7 @@
       "id": "lantern_10",
       "type": "lantern",
       "x": 13.9,
-      "y": 33.65,
+      "y": 33.76,
       "z": -38.96,
       "flicker": true
     },
@@ -520,7 +520,7 @@
       "id": "lantern_12",
       "type": "lantern",
       "x": 13.9,
-      "y": 33.07,
+      "y": 33.08,
       "z": -86.51,
       "flicker": true
     },
@@ -528,7 +528,7 @@
       "id": "lantern_13",
       "type": "lantern",
       "x": -9.26,
-      "y": 32.53,
+      "y": 32.88,
       "z": -140.44,
       "flicker": true
     },
@@ -536,7 +536,7 @@
       "id": "lantern_14",
       "type": "lantern",
       "x": -94.01,
-      "y": 33.93,
+      "y": 33.96,
       "z": -182.88,
       "flicker": true
     },
@@ -544,7 +544,7 @@
       "id": "lantern_15",
       "type": "lantern",
       "x": -108.78,
-      "y": 34.0,
+      "y": 34.02,
       "z": -186.55,
       "flicker": true
     },
@@ -560,7 +560,7 @@
       "id": "lantern_17",
       "type": "lantern",
       "x": -153.69,
-      "y": 32.19,
+      "y": 32.15,
       "z": -152.74,
       "flicker": true
     },
@@ -568,7 +568,7 @@
       "id": "lantern_18",
       "type": "lantern",
       "x": -34.41,
-      "y": 32.45,
+      "y": 32.4,
       "z": -123.11,
       "flicker": true
     },
@@ -576,7 +576,7 @@
       "id": "lantern_19",
       "type": "lantern",
       "x": -55.85,
-      "y": 33.68,
+      "y": 33.77,
       "z": -122.92,
       "flicker": true
     },
@@ -584,7 +584,7 @@
       "id": "lantern_20",
       "type": "lantern",
       "x": -72.72,
-      "y": 33.93,
+      "y": 33.95,
       "z": -126.59,
       "flicker": true
     },
@@ -592,7 +592,7 @@
       "id": "lantern_21",
       "type": "lantern",
       "x": -87.13,
-      "y": 33.83,
+      "y": 33.89,
       "z": -137.77,
       "flicker": true
     },
@@ -600,7 +600,7 @@
       "id": "lantern_22",
       "type": "lantern",
       "x": -93.1,
-      "y": 32.37,
+      "y": 32.27,
       "z": -149.01,
       "flicker": true
     },
@@ -608,7 +608,7 @@
       "id": "lantern_23",
       "type": "lantern",
       "x": -123.03,
-      "y": 32.45,
+      "y": 32.34,
       "z": -158.86,
       "flicker": true
     },
@@ -616,7 +616,7 @@
       "id": "lantern_24",
       "type": "lantern",
       "x": -136.59,
-      "y": 33.42,
+      "y": 33.66,
       "z": -135.61,
       "flicker": true
     },
@@ -624,7 +624,7 @@
       "id": "lantern_25",
       "type": "lantern",
       "x": -161.21,
-      "y": 33.22,
+      "y": 33.51,
       "z": -123.54,
       "flicker": true
     },
@@ -632,7 +632,7 @@
       "id": "lantern_26",
       "type": "lantern",
       "x": -175.19,
-      "y": 32.93,
+      "y": 32.97,
       "z": -123.1,
       "flicker": true
     },
@@ -648,7 +648,7 @@
       "id": "lantern_28",
       "type": "lantern",
       "x": -241.62,
-      "y": 34.39,
+      "y": 34.74,
       "z": -144.09,
       "flicker": true
     },
@@ -656,7 +656,7 @@
       "id": "lantern_29",
       "type": "lantern",
       "x": -217.95,
-      "y": 34.44,
+      "y": 34.65,
       "z": -285.73,
       "flicker": true
     },
@@ -680,7 +680,7 @@
       "id": "lantern_32",
       "type": "lantern",
       "x": -10.39,
-      "y": 33.24,
+      "y": 33.6,
       "z": -310.84,
       "flicker": true
     },
@@ -872,7 +872,7 @@
       "id": "torch_03",
       "type": "torch",
       "x": 17.36,
-      "y": 31.36,
+      "y": 31.37,
       "z": -242.05
     },
     {
@@ -893,7 +893,7 @@
       "id": "torch_06",
       "type": "torch",
       "x": 83.06,
-      "y": 30.48,
+      "y": 30.76,
       "z": -188.87
     },
     {
@@ -928,14 +928,14 @@
       "id": "torch_11",
       "type": "torch",
       "x": 161.79,
-      "y": 30.86,
+      "y": 31.57,
       "z": -52.33
     },
     {
       "id": "torch_12",
       "type": "torch",
       "x": 151.39,
-      "y": 29.73,
+      "y": 30.6,
       "z": -12.39
     },
     {
@@ -949,14 +949,14 @@
       "id": "torch_14",
       "type": "torch",
       "x": 180.75,
-      "y": 28.6,
+      "y": 29.68,
       "z": 38.1
     },
     {
       "id": "torch_15",
       "type": "torch",
       "x": 213.17,
-      "y": 19.86,
+      "y": 22.4,
       "z": 43.21
     },
     {
@@ -984,14 +984,14 @@
       "id": "torch_19",
       "type": "torch",
       "x": 22.68,
-      "y": 31.47,
+      "y": 31.48,
       "z": 51.44
     },
     {
       "id": "torch_20",
       "type": "torch",
       "x": 18.11,
-      "y": 31.58,
+      "y": 31.57,
       "z": 40.61
     },
     {
@@ -1110,7 +1110,7 @@
       "id": "torch_37",
       "type": "torch",
       "x": -112.35,
-      "y": 38.65,
+      "y": 38.62,
       "z": -157.74
     },
     {
@@ -1131,7 +1131,7 @@
       "id": "torch_40",
       "type": "torch",
       "x": -158.35,
-      "y": 31.8,
+      "y": 31.82,
       "z": -157.99
     },
     {
@@ -1173,7 +1173,7 @@
       "id": "campfire_02",
       "type": "campfire",
       "x": 17.36,
-      "y": 30.76,
+      "y": 30.77,
       "z": -242.05
     },
     {
@@ -1201,7 +1201,7 @@
       "id": "campfire_06",
       "type": "campfire",
       "x": 161.79,
-      "y": 30.26,
+      "y": 30.97,
       "z": -52.33
     },
     {
@@ -1215,7 +1215,7 @@
       "id": "campfire_08",
       "type": "campfire",
       "x": 213.17,
-      "y": 19.26,
+      "y": 21.8,
       "z": 43.21
     },
     {
@@ -1229,7 +1229,7 @@
       "id": "campfire_10",
       "type": "campfire",
       "x": 22.68,
-      "y": 30.87,
+      "y": 30.88,
       "z": 51.44
     },
     {
@@ -1292,7 +1292,7 @@
       "id": "campfire_19",
       "type": "campfire",
       "x": -112.35,
-      "y": 38.05,
+      "y": 38.02,
       "z": -157.74
     },
     {
@@ -1327,9 +1327,9 @@
   "builtFrom": {
     "dry_gulch.py": "47ba565f3493a0318df84fb1e7186fcb796a1f927fb74e74a09e09004d5ad085",
     "dry_gulch_ruins.py": "bf5e33fae54d3768b625e60553d8fc700c224a6fb8dde76780c680c4d529a893",
-    "dry_gulch_v2.py": "5eebd3dc12effff25beb12c5013f55be45fb698c3b6c01e933204fb7410731dd",
+    "dry_gulch_v2.py": "a328f71cf525eb54d745bcb3a5b41dd230628dd90e272650970845f5ca82cf7e",
     "gulch_props.py": "662dc91c0f06f2a53486aed8775a51c361eb1910e0aff7f54de1dc86aac6f9ff",
-    "gulch_scenery.py": "160bb3d0f2dfdee16205db2b329baacca1bcf9bffefe82e5080ff6e1de376cef",
+    "gulch_scenery.py": "b81f40370bd0321a273606a81d0c2af4f0adbbefc059519e17ccc60053e457a0",
     "gulch_town.py": "b1488403dfaf0edd3d1d85838c458faea038eee5b2b3bd4e71729699c178accc"
   }
 }

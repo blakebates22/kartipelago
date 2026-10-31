@@ -107,7 +107,7 @@ FAR_MESAS = [
 
 def land(c, cd, sc):
     X0, X1, Y0, Y1 = NEAR
-    c.terrain("Land", X0, X1, Y0, Y1, 5.0, cd.natural, cd.classify, near=9.0, fade=5.0)
+    c.terrain("Land", X0, X1, Y0, Y1, 5.0, cd.natural, cd.classify, near=9.0, fade=5.0, fine=3)
     # The far land: coarse, only to be seen (no collision), with a hole over the near.
     nat = far_natural(cd)
 
