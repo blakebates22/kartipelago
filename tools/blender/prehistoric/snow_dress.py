@@ -665,20 +665,7 @@ def entry_pass(c, ground, way, taken=None):
             c.place(paint.trunk_proto(c, 0.3, 5.0), px, py, pz, coll="Collision", role="collision")
             g = c.game(px, py, pz + 4.6)
             c.entity("lantern", x=g[0], y=g[1], z=g[2])
-    # Frozen falls down the hollow's walls, either side, facing the way in.
+    # (No frozen falls down the old hollow's walls: Blake, review-snow_region 3, "this is strange".)
     n = 0
-    for deg in (40.0, 140.0, 200.0, 340.0):
-        a = math.radians(deg)
-        for r in range(int(cr) + 14, int(cr) + 60, 2):
-            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
-            if L.wall_info(x, y)["past"] > -2.0:
-                top = L.natural(x, y)
-                foot = ground(cx + (r - 14) * math.cos(a), cy + (r - 14) * math.sin(a))
-                if top - foot < 10.0:
-                    break
-                props.falls(c, "Frozen Falls %d" % n, x, y, top, foot, 5.0, 8.0, facing=-1, throw=2.0, bulge=0.8, veils=2,
-                            foam=False, angle=a + math.pi / 2, mats=("icefall_blue", "glacier_ice", "glacier_ice"))
-                n += 1
-                break
     print("entry pass: the gateway, %d frozen falls" % n)
 

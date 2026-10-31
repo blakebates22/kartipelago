@@ -459,7 +459,7 @@ def dress(c, ground, spots):
     taken = paint.Taken([(HUB[0], HUB[1], 12.0), (vx, vy, vr + 10.0), (*HUT, 26.0), (*RETURN, 18.0), (*SECRET, 16.0),
                          *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
                          *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS,
-                         (SL.HOLLOW[0], SL.HOLLOW[1], 31.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0)])
+                         (SL.HOLLOW[0], SL.HOLLOW[1], 41.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0)])
     # The walls brought to life (snow_dress), both builds.
     sd.wall_life(c, ground, taken)
 
