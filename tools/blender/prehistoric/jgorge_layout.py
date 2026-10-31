@@ -50,8 +50,12 @@ POCKETS = [
     ("cleft", "basalt", [(6, 26, 13, 8), (40, 56, 14, 16.5), (60, 68, 14, 19.2), (62, 82, 14, 20.8), (46, 90, 14, 22.8), (16, 98, 14, 26.3), (-2, 106, 14, 28.6), (-2, 120, 14, 30.2), (12, 128, 14, 32), (40, 138, 14, 35.4), (56, 150, 14, 37.6), (64, 166, 15, 40)]),
     ("steppe", "steppe", [(120, 196, 64, 46.0), (60, 236, 44, 47.0), (190, 160, 54, 48.0), (176, 246, 52, 51.0),
                           (240, 210, 40, 53.0), (96, 160, 30, 44.5)]),
-    ("snowgate", "snow", [(290, 300, 28, 60.0), (326, 334, 46, 63.0), (352, 374, 40, 67.0), (366, 410, 26, 70.0),
-                          (374, 436, 14, 71.0), (300, 368, 30, 64.0)]),
+    # The Snowgate (v2b, Blake, Oct 31: "a bit longer and not straight so we cant see the
+    # portal from before we enter"): a road winding round a rock spur, the hostel in a
+    # bay off its first leg, the gate out of sight till the last bend.
+    ("snowgate", "snow", [(300, 284, 24, 60.0), (340, 292, 24, 61.5), (380, 306, 24, 63.0), (400, 342, 22, 64.5),
+                          (398, 378, 22, 66.0), (368, 404, 22, 67.5), (344, 424, 20, 69.0), (330, 450, 16, 70.0),
+                          (326, 474, 12, 70.5), (338, 328, 17, 62.0)]),
 ]
 
 ROUTE = [
@@ -87,10 +91,14 @@ ROUTE = [
     (240.0, 190.0, None),
     (258.0, 236.0, 54.6),  # 30: the Snow Arch, in
     (282.0, 272.0, 58.6),  # 31: out
-    (318.0, 318.0, None),  # 32: the Snowgate
-    (340.0, 352.0, None),
-    (360.0, 396.0, None),  # 34: END: the gate into the Snow Kingdom
-    (372.0, 430.0, None),  # 35: lead-out (no road)
+    (318.0, 292.0, None),  # 32: the Snowgate, round the spur
+    (360.0, 296.0, None),
+    (396.0, 322.0, None),
+    (404.0, 362.0, None),
+    (384.0, 396.0, None),
+    (348.0, 414.0, None),
+    (330.0, 448.0, None),  # 38: END: the gate into the Snow Kingdom
+    (322.0, 476.0, None),  # 39: lead-out (no road)
     # The way round, unseen (no road): over the mountains back to the start.
     (430.0, 470.0, HIDDEN_Z),
     (470.0, 200.0, HIDDEN_Z),
@@ -99,7 +107,7 @@ ROUTE = [
     (-200.0, -470.0, HIDDEN_Z),
     (-440.0, -455.0, HIDDEN_Z),
 ]
-START, END = 1, 34
+START, END = 1, 38
 HIDDEN = range(END + 2, len(ROUTE))
 TUNNELS = [("Ash Tube", "lava", 4, 5), ("Snow Arch", "ice", 30, 31)]
 # The river: off the steppe's edge in a fall into the meadow's north, across it south-west
@@ -117,7 +125,7 @@ SOFT = {"meadow": (26.0, 0.42), "steppe": (18.0, 0.5)}
 L = Layout(POCKETS, TOP, ROUTE, TUNNELS, rivers=RIVERS, river_hw=RIVER_HW, roll=3.5, mountains=60.0, hidden=HIDDEN)
 
 # The ends: where each loading zone is (the road's last metres) and the landmark beyond.
-ENDS = {"start": ((-385.0, -345.0), (-392.0, -378.0)), "end": ((360.0, 396.0), (372.0, 430.0))}
+ENDS = {"start": ((-385.0, -345.0), (-392.0, -378.0)), "end": ((330.0, 448.0), (322.0, 476.0))}
 GATES = {}
 WATER_Z = -99.0
 # Landmarks: the stone arch over the cleft's mouth, the falls, the look back.
@@ -126,7 +134,7 @@ FALLS = (-120.0, 116.0)
 LOOKBACK = (56.0, 150.0)
 # The villages: the traders' camp by the ford, the herders' on the steppe, the pilgrims'
 # hostel under the Snowgate.
-VILLAGES = {"traders": (-232.0, 10.0, 18.0), "herders": (82.0, 240.0, 20.0), "hostel": (330.0, 330.0, 12.0)}
+VILLAGES = {"traders": (-232.0, 10.0, 18.0), "herders": (82.0, 240.0, 20.0), "hostel": (338.0, 330.0, 14.0)}
 
 
 def _soft(h, x, y):
@@ -149,7 +157,7 @@ def _soft(h, x, y):
 
 # The look back: from the cleft's top, a notch cut through its south-west wall, the meadow
 # laid out below it.
-LOOK_NOTCH = (230.0, 250.0, 100.0, 31.0)  # degrees from, to; reach; floor
+LOOK_NOTCH = (205.0, 265.0, 110.0, 31.0)  # (v2b: wider, Blake)  # degrees from, to; reach; floor
 
 
 def _notch(h, x, y):
@@ -167,9 +175,30 @@ def _notch(h, x, y):
     return lerp(h, min(h, fz), w)
 
 
+def ridges(h, x, y):
+    """The mountains beyond the basins in ranges (v2b, Blake: "layered mountain ridges
+    being consistent with the geography"): ridged bands running with the valley (south-
+    west to north-east), three scales of them, their peaks rising and falling along it,
+    higher toward the Snow Kingdom; nothing over the basins themselves."""
+    best = L.wall_sd(x, y)
+    if best < 8.0:
+        return h
+    u = (x - y) * 0.7071
+    v = (x + y) * 0.7071
+    w = smooth((best - 8.0) / 55.0)
+    r = 0.0
+    for wl, amp, ph in ((150.0, 1.0, 0.3), (71.0, 0.5, 1.7), (33.0, 0.22, 4.1)):
+        n = 1.0 - abs(math.sin(u / wl * math.pi + ph + 0.4 * math.sin(v / 97.0 + ph)))
+        r += amp * n * n
+    peaks = 0.62 + 0.38 * math.sin(v / 83.0 + 1.1) * math.cos(v / 211.0)
+    north = 0.7 + 0.7 * smooth((v + 250.0) / 650.0)
+    return h + w * r * 62.0 * peaks * north
+
+
 def natural(x, y):
     h = L.natural(x, y)
     h = _soft(h, x, y)
+    h = ridges(h, x, y)
     h = _notch(h, x, y)
     for lx, ly, lr in LAVA:
         d = ((x - lx) ** 2 + (y - ly) ** 2) ** 0.5

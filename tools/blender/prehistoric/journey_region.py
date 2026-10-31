@@ -134,6 +134,12 @@ def classify(c, n, info):
             return ("cove_wet_sand", "water")
     if JID == "gorge" and look == "ember" and math.sin(c.x / 13.0) * math.cos(c.y / 11.0) > 0.55:
         return ("lava_crust", "dirt")
+    if JID == "gorge" and L.wall_sd(c.x, c.y) > 20.0:
+        # (The ranges beyond the basins, v2b: snow on their heights, more of it northward;
+        # their faces the rock of the land below them.)
+        snowline = 150.0 - 50.0 * smooth((c.x + c.y + 200.0) / 700.0)
+        if c.z > snowline + 6.0 * math.sin(c.x / 23.0) * math.cos(c.y / 19.0):
+            return ("snow_ground", "deep_snow") if n.z > 0.55 else ("frost_cliff", "wall")
     if JID == "gorge" and look in ("meadow", "steppe"):
         d, wz = L.water_d(c.x, c.y)
         if d < L.river_hw + 3 and c.z < wz + 0.4:
@@ -382,6 +388,15 @@ def dress_gorge(c, ground, taken, on_road):
         (ip.horsetails(c, 0), 30, dict(room=2.0, road_margin=4.0, role="visual")),
         (props.boulder(c, "valley_cliff", 0), 10, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.2))),
     ])
+    # Forested hills round it (v2b): pines and broadleaves up the ranges' lower slopes.
+    def hills(x, y):
+        b = L.wall_sd(x, y)
+        return 6.0 < b < 70.0 and L.look_at(x, y) == "meadow" and J.natural(x, y) < 120.0
+
+    for v, (proto, n) in enumerate(((smp_.pine(c, 0, 16.0, snowy=False), 70), (smp_.pine(c, 2, 20.0, snowy=False), 50),
+                                    (smp_.broadleaf(c, 0, frosted=False), 40))):
+        paint.scatter(c, proto, n, 480.0, hills, ground, taken, 300 + v, room=5.0, road_margin=10.0, role="visual",
+                      scale=(0.9, 1.5))
     # The falls off the steppe's edge into the meadow's north.
     fx, fy = J.FALLS
     top = J.natural(fx, fy + 16.0)
@@ -399,22 +414,74 @@ def dress_gorge(c, ground, taken, on_road):
         c.path_curve("Meadow Herd %d" % k, pts, closed=True)
         for j in range(n):
             c.entity("dinosaur", route="Meadow Herd %d" % k, speed=1.4, scale=(1.0, 0.6, 0.85)[j], start=j * 9.0)
-    # The traders' camp by the ford: tents round a fire, canoes drawn up, their folk.
+    # The traders' camp by the ford (v2b, Blake: "lets add more to the hostels and traders
+    # camps"): tents in a ring round the fire, market stalls along the road, covered
+    # wagons and their goods, a jetty on the river with canoes, fish drying on racks,
+    # lanterns on posts, their folk at the stalls.
     tx, ty, tr = J.VILLAGES["traders"]
-    for k in range(4):
-        a = k * math.tau / 4 + 0.4
-        x, y = tx + tr * 0.6 * math.cos(a), ty + tr * 0.6 * math.sin(a)
-        if paint.road_clear(c, x, y, 5.0):
-            c.place(ip.tent(c, k % 2), x, y, ground(x, y) - 0.1, rot=a + math.pi / 2, coll="Village")
-            taken.add(x, y, 5.0)
+
+    def put(proto, x, y, rot, r, coll="Village", role="both", sink=0.1):
+        if not paint.road_clear(c, x, y, r) or not taken.clear(x, y, r):
+            return False
+        d, _wz = L.water_d(x, y)
+        if d < L.river_hw + 1.0:
+            return False
+        c.place(proto, x, y, ground(x, y) - sink, rot=rot, coll=coll, role=role)
+        taken.add(x, y, r)
+        return True
+
+    for k in range(6):
+        a = k * math.tau / 6 + 0.2
+        put(ip.tent(c, k % 2), tx + tr * 0.75 * math.cos(a), ty + tr * 0.75 * math.sin(a), a + math.pi / 2, 4.0)
     g = c.game(tx, ty, ground(tx, ty) + 0.2)
     c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    q, _ = c.nearest(tx, ty)
+    side = 1.0 if (tx - q.p.x) * q.r.x + (ty - q.p.y) * q.r.y > 0 else -1.0
+    rot = math.atan2(q.t.y, q.t.x)
+    for k in range(4):  # (stalls along the road's camp side, facing it)
+        along = (k - 1.5) * 9.0
+        x = q.p.x + q.t.x * along + q.r.x * side * (q.w / 2 + 5.0)
+        y = q.p.y + q.t.y * along + q.r.y * side * (q.w / 2 + 5.0)
+        if put(op.market_stall(c, k % 3), x, y, rot + (math.pi if side > 0 else 0.0) - math.pi / 2, 3.2):
+            gx_, gy_, gz_ = c.game(x, y, ground(x, y) + 3.0)
+            c.entity("lantern", x=gx_, y=gy_, z=gz_)
+    for k, (dx, dy) in enumerate(((-14.0, 12.0), (12.0, 16.0), (-18.0, -8.0))):
+        put(gp.wagon(c, covered=True), tx + dx, ty + dy, 0.6 * k + 0.4, 4.5)
+        for j in range(2):
+            put(gp.barrel(c, j) if j else gp.crate_stack(c, k % 2), tx + dx + 3.5 + 1.4 * j, ty + dy - 2.5, 0.3 * j, 1.2)
+    put(op.crates(c, 0), tx - 4.0, ty - 13.0, 0.4, 2.0)
     for k in range(3):
-        x, y = tx + 18.0 + 4.0 * k, ty - 10.0 + 3.0 * k
-        if paint.road_clear(c, x, y, 3.0):
-            c.place(kp.boat(c, k % 2), x, y, ground(x, y) - 0.2, rot=1.2 + 0.2 * k, coll="Props", role="visual")
+        put(gp.lantern_post(c), tx + 16.0 * math.cos(k * 2.1 + 1.0), ty + 16.0 * math.sin(k * 2.1 + 1.0), 0.0, 1.0)
+    # The jetty: planks out over the river's edge on posts, canoes moored at it.
+    riv = L.rivers[0]
+    best = min(((math.hypot(px - tx, py - ty), (px, py, pz)) for px, py, pz in riv), key=lambda t: t[0])[1]
+    jx, jy, jz = best
+    ang = math.atan2(jy - ty, jx - tx)
+    for k in range(6):
+        px, py = tx + math.cos(ang) * (tr + k * 2.4), ty + math.sin(ang) * (tr + k * 2.4)
+        box(c, "Jetty Deck %d" % k, px, py, 1.2, 2.2, jz + 0.4, jz + 0.65, ("plank_deck", "road"), rot=ang, role="visual")
+        if k % 2 == 1:
+            for sd in (-1, 1):
+                ox, oy = px - math.sin(ang) * sd * 2.0, py + math.cos(ang) * sd * 2.0
+                box(c, "Jetty Post %d %d" % (k, sd), ox, oy, 0.18, 0.18, jz - 1.5, jz + 1.4, ("weathered_timber", "wall"), role="visual")
+    for k in range(3):
+        px = tx + math.cos(ang) * (tr + 4.0 + 4.0 * k) - math.sin(ang) * 3.4
+        py = ty + math.sin(ang) * (tr + 4.0 + 4.0 * k) + math.cos(ang) * 3.4
+        c.place(op.moored_boat(c, k % 2), px, py, jz - 0.1, rot=ang + 0.1 * k, coll="Props", role="visual")
+    # Fish drying on racks: two rails on posts, the catch hung along them.
+    for k in range(2):
+        rx_, ry_ = tx - 10.0 + 4.0 * k, ty + 14.0 - 2.0 * k
+        if paint.road_clear(c, rx_, ry_, 2.5) and taken.clear(rx_, ry_, 2.5):
+            z = ground(rx_, ry_)
+            for sd in (-1, 1):
+                box(c, "Fish Rack Post %d %d" % (k, sd), rx_ + sd * 1.8, ry_, 0.12, 0.12, z - 0.3, z + 2.2, ("weathered_timber", "wall"),
+                    role="visual")
+            box(c, "Fish Rack Rail %d" % k, rx_, ry_, 2.0, 0.08, z + 2.05, z + 2.15, ("weathered_timber", "wall"), role="visual")
+            for j in range(6):
+                box(c, "Fish %d %d" % (k, j), rx_ - 1.5 + 0.6 * j, ry_, 0.12, 0.05, z + 1.4, z + 2.0, ("crystal_teal", "wall"), role="visual")
+            taken.add(rx_, ry_, 2.5)
     g = c.game(tx + 4.0, ty - 4.0, ground(tx, ty))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=12.0, n=4, folk="road", heading=0.0)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=16.0, n=7, folk="road", heading=0.0)
     # The stone arch over the cleft's mouth.
     ax, ay = J.ARCH
     q, _ = c.nearest(ax, ay)
@@ -473,17 +540,69 @@ def dress_gorge(c, ground, taken, on_road):
         (snp.ice_spike(c, 0), 6, dict(room=5.0, road_margin=7.0)),
         (snp.snow_mound(c, 0), 8, dict(room=4.0, road_margin=5.0, role="visual")),
     ])
+    # The pilgrims' hostel (v2b): a walled courtyard in the bay off the road, its gate to
+    # the road, the great lodge across the yard, a stable lean-to with sledges, braziers at
+    # the gate, prayer flags over the yard, a well, benches, the pilgrims about the fire.
+    import ice_yard
+
     hx, hy, hr = J.VILLAGES["hostel"]
     q, _ = c.nearest(hx, hy)
-    side = 1.0 if (hx - q.p.x) * q.r.x + (hy - q.p.y) * q.r.y > 0 else -1.0
-    x, y = q.p.x + q.r.x * side * (q.w / 2 + 12.0), q.p.y + q.r.y * side * (q.w / 2 + 12.0)
-    rot = math.atan2(-q.r.y * side, -q.r.x * side) + math.pi / 2
-    c.place(kp.house(c, 1), x, y, ground(x, y) - 0.1, rot=rot + math.pi, scale=1.6, coll="Village")
-    x2, y2 = x + q.t.x * 14.0, y + q.t.y * 14.0
-    c.place(kp.house(c, 3), x2, y2, ground(x2, y2) - 0.1, rot=rot + math.pi, scale=1.2, coll="Village")
-    g = c.game(x - q.r.x * side * 9.0, y - q.r.y * side * 9.0, ground(x, y) + 0.2)
+    face = math.atan2(q.p.y - hy, q.p.x - hx)  # (from the yard to the road)
+    cf, sf = math.cos(face), math.sin(face)
+    zy = min(ground(hx + hr * 0.7 * math.cos(t), hy + hr * 0.7 * math.sin(t)) for t in [j * math.tau / 8 for j in range(8)])
+    kp.use_palette({})
+    wall = kp.curtain_wall(c, length=6.0, h=3.2, thick=1.2)
+    for j in range(14):
+        a = face + math.pi / 8 + j * (math.tau - math.pi / 4) / 13
+        x, y = hx + hr * math.cos(a), hy + hr * math.sin(a)
+        c.place(wall, x, y, ground(x, y) - 0.4, rot=a + math.pi / 2, coll="Village")
+    for sd in (-1, 1):  # (the gate's piers and braziers)
+        a = face + sd * math.pi / 8
+        x, y = hx + hr * math.cos(a), hy + hr * math.sin(a)
+        box(c, "Hostel Gate Pier %d" % sd, x, y, 0.9, 0.9, ground(x, y) - 0.5, ground(x, y) + 5.0, ("frost_stone", "wall"))
+        bx, by = x + cf * 2.0, y + sf * 2.0
+        c.place(kp.brazier(c), bx, by, ground(bx, by) - 0.1, coll="Props")
+        g = c.game(bx, by, ground(bx, by) + 2.8)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+    # The lodge across the yard, its door to the gate; a second house beside it.
+    lx, ly = hx - cf * hr * 0.55, hy - sf * hr * 0.55
+    c.place(kp.house(c, 1), lx, ly, zy - 0.1, rot=face - math.pi / 2, scale=1.7, coll="Village")
+    l2x, l2y = lx - sf * 10.5, ly + cf * 10.5
+    c.place(kp.house(c, 2), l2x, l2y, ground(l2x, l2y) - 0.1, rot=face - math.pi / 2, scale=1.2, coll="Village")
+    g = c.game(lx, ly, zy + 13.0)
+    c.entity("chimney", x=g[0], y=g[1], z=g[2])
+    # The stable lean-to on the yard's other side, sledges in it.
+    sx_, sy_ = hx + sf * hr * 0.55 - cf * 2.0, hy - cf * hr * 0.55 - sf * 2.0
+    box(c, "Hostel Stable Roof", sx_, sy_, 5.0, 2.6, zy + 3.6, zy + 3.9, ("weathered_timber", "wall"), rot=face, role="visual")
+    for j in (-1, 1):
+        for k in (-1, 1):
+            px, py = sx_ + cf * j * 4.6 - sf * k * 2.2, sy_ + sf * j * 4.6 + cf * k * 2.2
+            box(c, "Hostel Stable Post %d %d" % (j, k), px, py, 0.15, 0.15, zy - 0.3, zy + 3.7, ("timber_beam", "wall"))
+    c.place(ice_yard.sledge(c, 0), sx_ - cf * 1.5, sy_ - sf * 1.5, zy, rot=face, coll="Props")
+    c.place(ice_yard.sledge(c, 1), sx_ + cf * 2.0, sy_ + sf * 2.0, zy, rot=face + 0.1, coll="Props")
+    # The yard: its fire, benches, a well, flags strung over it.
+    g = c.game(hx, hy, zy + 0.2)
     c.entity("campfire", x=g[0], y=g[1], z=g[2])
-    c.entity("villager_home", x=g[0], z=g[2], y=g[1], r=10.0, n=3, folk="snow", heading=0.0)
+    for k in range(3):
+        a = face + 1.3 + k * 1.6
+        c.place(gp.bench(c), hx + 3.2 * math.cos(a), hy + 3.2 * math.sin(a), zy - 0.05, rot=a + math.pi / 2, coll="Props")
+    wx, wy = hx + sf * 6.0 + cf * 4.0, hy - cf * 6.0 + sf * 4.0
+    import valley_village as vv
+
+    vv.GROUND = ground
+    c.place(vv.well(c), wx, wy, ground(wx, wy) - 0.1, coll="Props")
+    hflags = smp_.Bunting()
+    tops = []
+    for k in range(4):
+        a = face + math.pi / 4 + k * math.pi / 2
+        x, y = hx + hr * 0.85 * math.cos(a), hy + hr * 0.85 * math.sin(a)
+        c.place(smp_.flag_pole(c, 7.0), x, y, ground(x, y) - 0.2, coll="Props")
+        tops.append((x, y, ground(x, y) + 6.6))
+    for k in range(4):
+        hflags.line(tops[k], tops[(k + 2) % 4] if k < 2 else tops[(k + 1) % 4], sag=1.2)
+    hflags.build(c, "Hostel Flags")
+    g = c.game(hx + 2.0, hy + 2.0, zy)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=hr - 2.0, n=5, folk="snow", heading=0.0)
     for k, qq in enumerate(c.S[::14]):
         if on_road(qq.s) and L.look_at(qq.p.x, qq.p.y) == "snow":
             sd = 1 if k % 2 else -1
