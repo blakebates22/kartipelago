@@ -1,5 +1,5 @@
 // Oasis Haven (Desert World, course 2): it's the Desert World's second course with its
-// own bright theme and music; it loads cleanly under its turquoise sky, the spiral round
+// own bright theme and music; it loads cleanly under its blue canyon sky, the spiral round
 // the watchtower passes over itself, there's a twin gate across the palm grove and the
 // grove counts as the stretch it skips; and the AI drives it without a respawn (over
 // the chute's jump too). The boats and fountains (oasis life) are the first version's,
@@ -43,12 +43,12 @@ describe("Oasis Haven", () => {
     expect(SONGS[t.music]?.id).toBe("oasis");
   });
 
-  it("loads cleanly under a turquoise sky; the spiral passes over itself; the grove has its twin gate", async () => {
+  it("loads cleanly under a blue canyon sky; the spiral passes over itself; the grove has its twin gate", async () => {
     const p = await loadTrackPackage(reader, { visual: false });
     expect(p.warnings).toEqual([]);
     expect(p.trackData.zippers?.length).toBeGreaterThanOrEqual(4);
     expect(p.trackData.balloons?.length).toBeGreaterThanOrEqual(8);
-    expect(p.look.skyDome?.top).toBe("#0f8fb0");
+    expect(p.look.skyDome?.top).toBe("#1d64c4");
     const pts = p.trackData.points;
     let over = false;
     for (const a of pts)

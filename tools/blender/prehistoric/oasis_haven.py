@@ -1,26 +1,30 @@
-# Oasis Haven: Desert World, course 2. A small oasis in the deep desert, on a bright
-# turquoise afternoon.
+# Oasis Haven: Desert World, course 2. Havasu: turquoise pools and falls on the floor of
+# a red-rock canyon, on a hot blue afternoon.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/oasis_haven.py      (the bpy module)
 #
-# Back in the desert (Blake's notes, 2026-10-23, and concept A): a pool of green water
-# under its palms, a few mud-brick houses, a nomad camp of dark tents and lanterns, and
-# all round it dunes and wind-carved rock. About 1.56 km, nearly all bends, like Bonebog
-# (the greybox Blake drove, now dressed; the first version is kept as oasis_haven_v2):
+# v3, the Southwest (Blake, Oct 31: "the oasis rework to have it match the theme better",
+# the desert's v4 overhaul: the open Southwest, mesas, the cliff pueblo, the rodeo): the
+# lap Blake drove is kept bend for bend (about 1.56 km); round it, a side canyon of
+# banded red sandstone, its walls stepping up in ledges, Havasu's turquoise water at its
+# heart (the travertine-rimmed pool in the sweep, a creek in terraces under a timber
+# bridge, and the falls off the canyon's south wall into their own plunge pool),
+# cottonwoods along the water, and:
 #
-#   A  The village gate: the start among the mud-brick houses, an S-bend, and a long
-#      sweep south round the pool (or straight on through the palm grove on its north
-#      bank: the shortcut).
-#   B  The camp: weaving north between the tents and their lanterns.
-#   C  The butte: a hairpin round it, then west under the wind-carved arch.
-#   D  The dune sea: rolling crests over fast sweepers.
-#   E  The watchtower: one and a quarter turns up round a ruined tower on its mesa (the
-#      road passes over itself), then the chute down to the start, with a jump over a
-#      dry wash.
+#   A  The village: the start among adobe homes (vigas, ladders, ristras, turquoise
+#      doors) under a log ranch gate, an S-bend, and a long sweep south round the pool
+#      over the creek's bridge, under the falls (or straight on through the cottonwood
+#      grove on its north bank: the shortcut).
+#   B  The camp: weaving north between the canvas tents and ramadas of the campground.
+#   C  The butte: a hairpin round it, then west under the sandstone arch.
+#   D  The slickrock: rolling swells over fast sweepers.
+#   E  The watchtower: one and a quarter turns up round the old stone watchtower (the road
+#      passes over itself), then the chute down to the start, with a jump over a dry wash.
 #
-# Saves tracks-src/oasis_haven.blend and exports public/tracks/oasis_haven/. The scenery
-# is oasis_desert.py, built with the kit in oasis_props.py.
+# (v2, the Arabian oasis of mud brick and dunes, was oasis_desert.py's first dressing; the
+# first version of all is kept as oasis_haven_v2.) Saves tracks-src/oasis_haven.blend and
+# exports public/tracks/oasis_haven/. The scenery is oasis_desert.py.
 
 import json
 import math
@@ -164,7 +168,12 @@ BUTTE = _arc_centre(18)
 TOWER = _arc_centre(25)
 _c6 = _arc_centre(6)
 POOL = (_c6[0], _c6[1] - 8.0, 19.0)  # centre and radius: inside the sweep south
-MID = (180.0, 0.0)
+# Havasu's falls: off the canyon's south wall (out past the sweep) into their plunge pool,
+# and the creek from it north in terraces, under the road's bridge, into the pool.
+FALLS = (POOL[0], POOL[1] - 89.0, 18.0)  # the plunge pool: centre, radius
+ALCOVE = FALLS[2] + 8.0  # the amphitheatre the falls have cut back into the wall
+CREEK = [(FALLS[0], FALLS[1] + FALLS[2] - 2.0), (FALLS[0] + 3.0, (FALLS[1] + POOL[1]) / 2), (POOL[0], POOL[1] - POOL[2] + 2.0)]
+CREEK_HW = 6.0
 
 # The palm-grove shortcut: from the end of the street east (seg 4) straight on along the
 # pool's north bank, between the palms, back onto the road at seg 8.
@@ -176,27 +185,29 @@ SHORTCUT = [(_p4[0] - 6.0, _p4[1]), (_p4[0] + 30.0, _p4[1] + 3.0), ((_p4[0] + _p
 
 TGAP = []  # the ruin: [(x, y)] over the gap off the fallen tower's top
 HUMPS = []  # the ruin: [(at, height, length)]: the road over the fallen arch's span
+# The ruin's lap (laid out in both: the land is shaped round both laps).
+# The course's own lap round the pool (0-9); then, where the camp's tents came down
+# across the weave, the dragon's scorched track out east over the dunes (10-11), a
+# wide hairpin back (12) and west through the burnt camp (13-15) onto the course's
+# own road out to the butte, under the fallen arch and over the dune sea (16-23);
+# then up the fallen tower's rubble (24-26), off its broken top, down the chute and
+# over the wash, and onto the start (27).
+R_LAYOUT = STD_LAYOUT[:10] + [
+    ("R", 45, 90),  # 10 out of the old camp, east along the scorch
+    ("S", 48),  # 11
+    ("L", 41, 180),  # 12 the wide hairpin back...
+    ("S", 83),  # 13 ...west, through the burnt camp
+    ("R", 40, 90),  # 14 north
+    ("S", 8.9),  # 15 onto the course's own road
+] + list(STD_LAYOUT[16:24]) + [
+    ("S", 16),  # 24 off the dune sea (closes the loop)
+    ("L", 60, 40),  # 25 onto the rubble, climbing
+    ("S", 160),  # 26 up the fallen tower, the jump, the chute, the wash (closes the loop)
+    ("L", 40, 50),  # 27 onto the start
+]
+R_LAYOUT, R_PATH = kit.close_turtle(R_LAYOUT, 24, 26, START, 270.0)
 if RUIN:
-    # The course's own lap round the pool (0-9); then, where the camp's tents came down
-    # across the weave, the dragon's scorched track out east over the dunes (10-11), a
-    # wide hairpin back (12) and west through the burnt camp (13-15) onto the course's
-    # own road out to the butte, under the fallen arch and over the dune sea (16-23);
-    # then up the fallen tower's rubble (24-26), off its broken top, down the chute and
-    # over the wash, and onto the start (27).
-    LAYOUT = STD_LAYOUT[:10] + [
-        ("R", 45, 90),  # 10 out of the old camp, east along the scorch
-        ("S", 48),  # 11
-        ("L", 41, 180),  # 12 the wide hairpin back...
-        ("S", 83),  # 13 ...west, through the burnt camp
-        ("R", 40, 90),  # 14 north
-        ("S", 8.9),  # 15 onto the course's own road
-    ] + list(STD_LAYOUT[16:24]) + [
-        ("S", 16),  # 24 off the dune sea (closes the loop)
-        ("L", 60, 40),  # 25 onto the rubble, climbing
-        ("S", 160),  # 26 up the fallen tower, the jump, the chute, the wash (closes the loop)
-        ("L", 40, 50),  # 27 onto the start
-    ]
-    LAYOUT, PATH = kit.close_turtle(LAYOUT, 24, 26, START, 270.0)
+    LAYOUT, PATH = R_LAYOUT, R_PATH
     SEG = kit.segment_starts(PATH)
     LENGTH = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(PATH, PATH[1:]))
     # The jump off the fallen tower's broken top (12 m, down onto the chute), and the
@@ -251,14 +262,79 @@ def _ruin_z(d, seg):
 ROUTE = kit.route_points_by(PATH, road_z, every=10.0, width=road_w)
 
 
+def _seg_d(x, y, a, b):
+    ax, ay = a
+    bx, by = b
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)))
+    return math.hypot(x - ax - t * dx, y - ay - t * dy)
+
+
+def creek_d(x, y):
+    return min(_seg_d(x, y, a, b) for a, b in zip(CREEK, CREEK[1:]))
+
+
+# How far each spot is from either lap (the canyon's walls stand back from both): a field
+# on a 4 m grid, read bilinearly.
+X0, X1, Y0, Y1 = -260, 620, -440, 420
+
+
+def _road_field(cell=4.0):
+    import numpy as np
+
+    pts = np.array([(p[0], p[1]) for p in (STD_PATH[::3] + R_PATH[::3])])
+    xs = np.arange(X0, X1 + cell, cell)
+    ys = np.arange(Y0, Y1 + cell, cell)
+    gx, gy = np.meshgrid(xs, ys, indexing="ij")
+    flat = np.stack([gx.ravel(), gy.ravel()], 1)
+    out = np.empty(len(flat))
+    for k in range(0, len(flat), 4000):
+        d = flat[k:k + 4000, None, :] - pts[None, :, :]
+        out[k:k + 4000] = np.sqrt((d ** 2).sum(-1)).min(1)
+    return out.reshape(gx.shape), cell
+
+
+_FIELD, _CELL = _road_field()
+
+
+def road_d(x, y):
+    i = (x - X0) / _CELL
+    j = (y - Y0) / _CELL
+    nx, ny = _FIELD.shape
+    i = max(0.0, min(nx - 1.001, i))
+    j = max(0.0, min(ny - 1.001, j))
+    i0, j0 = int(i), int(j)
+    u, v = i - i0, j - j0
+    f = _FIELD
+    return float(lerp(lerp(f[i0, j0], f[i0 + 1, j0], u), lerp(f[i0, j0 + 1], f[i0 + 1, j0 + 1], u), v))
+
+
+def wall_h(x, y):
+    """The canyon's walls: three cliffs stepping back in ledges from the floor, their
+    edges wandering (alcoves and buttresses), cut back round the falls' amphitheatre."""
+    dd = road_d(x, y) + 7.0 * math.sin(x / 31.0 + 0.7 * math.sin(y / 17.0)) + 4.0 * math.cos(y / 23.0 - x / 41.0)
+    # (the ledges' widths and the cliffs' heights wander too, slowly, round the canyon)
+    a = math.atan2(y - 0.0, x - 190.0)
+    w1 = 38.0 + 14.0 * math.sin(a * 3.0 + 0.8) + 6.0 * math.sin(a * 7.0)
+    w2 = 46.0 + 18.0 * math.sin(a * 2.0 + 2.1)
+    h1 = 30.0 + 7.0 * math.sin(a * 4.0 + 1.3)
+    h2 = 22.0 + 8.0 * math.sin(a * 5.0 + 0.2)
+    h = h1 * smooth((dd - 58.0) / 5.0) + h2 * smooth((dd - 58.0 - w1) / 6.0) + 34.0 * smooth((dd - 58.0 - w1 - w2) / 8.0)
+    df = math.hypot(x - FALLS[0], y - FALLS[1])
+    return h * smooth((df - ALCOVE) / 4.0)
+
+
 def natural(x, y):
-    """The desert: dunes in long ridges, rising to a plateau in the north, the pool's
-    basin, and mesas all round."""
-    u = 0.5 + 0.5 * math.sin(x / 19.0 + 1.3 * math.sin(y / 37.0))
-    h = 2.0 + 3.2 * u ** 3 + 1.2 * math.sin(y / 23.0 + x / 53.0) + 0.6 * math.sin(x / 7.3) * math.cos(y / 9.1)
+    """The canyon floor: low slickrock swells and red sand, rising a little to the north;
+    the pool's basin, the plunge pool's and the creek's; the canyon's walls all round."""
+    u = 0.5 + 0.5 * math.sin(x / 23.0 + 1.3 * math.sin(y / 41.0))
+    h = 2.0 + 2.2 * u ** 3 + 0.9 * math.sin(y / 23.0 + x / 53.0) + 0.4 * math.sin(x / 7.3) * math.cos(y / 9.1)
     h += 6.0 * smooth((y - 60.0) / 90.0)
     dp = math.hypot(x - POOL[0], y - POOL[1])
     h = lerp(h, -1.6, smooth((POOL[2] + 10.0 - dp) / 12.0))
+    df = math.hypot(x - FALLS[0], y - FALLS[1])
+    h = lerp(h, -2.0, smooth((FALLS[2] + 6.0 - df) / 8.0))
+    h = lerp(h, -1.0, smooth((CREEK_HW + 4.0 - creek_d(x, y)) / 5.0))
     if WASH:
         dw = min(math.hypot(x - p[0], y - p[1]) for p in WASH)
         h = lerp(h, 1.0, smooth((22.0 - dw) / 10.0))
@@ -266,9 +342,7 @@ def natural(x, y):
         # The pit the tower's top came down in: rubble far below the jump.
         dg = min(math.hypot(x - p[0], y - p[1]) for p in TGAP)
         h = lerp(h, 4.0, smooth((16.0 - dg) / 8.0))
-    r = math.hypot((x - MID[0]) * 0.9, y - MID[1])
-    h += 45.0 * smooth((r - 330.0) / 70.0) * (0.85 + 0.15 * math.sin(math.atan2(y, x) * 9))
-    return h
+    return h + wall_h(x, y)
 
 
 def in_wash(x, y, z):
@@ -279,24 +353,57 @@ def in_wash(x, y, z):
     return any(math.hypot(x - p[0], y - p[1]) < 16.0 for p in WASH) and z < 8.0
 
 
+def layer(z):
+    """The canyon's rock in bands, foot to rim: red shale, red and orange sandstone in
+    alternating beds, the cream caprock."""
+    if z < 9.0:
+        return "strata_rust"
+    if z < 30.0:
+        return "strata_red"
+    if z < 38.0:
+        return "strata_orange"
+    if z < 64.0:
+        return "strata_red"
+    return "strata_cream"
+
+
+def in_water(x, y):
+    return (math.hypot(x - POOL[0], y - POOL[1]) < POOL[2] + 5 or math.hypot(x - FALLS[0], y - FALLS[1]) < FALLS[2] + 4
+            or creek_d(x, y) < CREEK_HW + 1.5)
+
+
 def classify(c, n, info):
     if in_wash(c.x, c.y, c.z):
-        return ("gold_sand", "abyss")
+        return ("red_sand", "abyss")
     if n.z < 0.62:
-        return ("gold_cliff", "wall")
-    if math.hypot(c.x - POOL[0], c.y - POOL[1]) < POOL[2] + 5 and c.z < 0.5:
-        return ("lake_sand", "water")
-    if math.hypot(c.x - POOL[0], c.y - POOL[1]) < POOL[2] + 22:
+        return (layer(c.z), "wall")
+    if c.z < 0.6 and in_water(c.x, c.y):
+        return ("sinter", "water")  # the travertine under the water
+    if c.z > 14.0:
+        return ("slickrock" if n.z > 0.9 else "talus", "dirt")  # the ledges up the walls
+    if n.z < 0.85:
+        return ("talus", "dirt")
+    near_water = min(math.hypot(c.x - POOL[0], c.y - POOL[1]) - POOL[2], math.hypot(c.x - FALLS[0], c.y - FALLS[1]) - FALLS[2],
+                     creek_d(c.x, c.y) - CREEK_HW)
+    if near_water < 5.0:
+        return ("sinter", "dirt")  # the travertine banks
+    if near_water < 18.0:
         return ("oasis_lawn", "grass")
     if RUIN and info["d"] < 13 and 10 <= seg_of(info["sample"].s) <= 15:
-        return ("ruin_ash", "dirt")  # the dragon's scorch across the dunes
+        return ("ruin_ash", "dirt")  # the dragon's scorch across the slickrock
     if RUIN and info["d"] < 16 and SEG[24] <= info["sample"].s <= SEG[26] + 10:
         return ("ruin_rubble", "dirt")  # the spiral's fallen decks, heaped
     if info["d"] < 11:
         return ("pale_sand", "dirt")
-    if c.z > 4.5 and n.z < 0.97:
-        return ("dune_crest", "loose_sand")  # the dunes' wind-rippled faces
-    return ("gold_sand", "loose_sand")
+    if c.z > 4.6 and n.z < 0.985:
+        return ("slickrock", "dirt")  # the swells
+    v = math.sin(c.x / 29.0) * math.cos(c.y / 31.0) + 0.3 * math.sin(c.x / 11.0 + c.y / 13.0)
+    return ("red_sand" if v < -0.25 else "desert_sand", "loose_sand")
+
+
+def on_bridge(smp):
+    """Where the road crosses Havasu Creek."""
+    return creek_d(smp.p.x, smp.p.y) < CREEK_HW + 5.0
 
 
 def box(bm, centre, size, rot=0.0):
@@ -305,27 +412,50 @@ def box(bm, centre, size, rot=0.0):
     props.cuboid(bm, centre, size, rot=rot)
 
 
+WATER_Z = (0.0, 0.7, 1.4)  # the pool's, the creek's and the plunge pool's surfaces
+
+
+def water(c):
+    """Havasu's water, turquoise over travertine: the pool in the sweep, the creek down to
+    it in two terraces (each held by a travertine rim), the plunge pool under the falls."""
+    zp, zc, zf = WATER_Z
+    c.disc("Pool", POOL[0], POOL[1], POOL[2] + 4.0, zp, c.lib("lagoon", "deep_water"), n=40, wobble=0.08, seed=3)
+    c.disc("Plunge Pool", FALLS[0], FALLS[1], FALLS[2] + 3.0, zf, c.lib("lagoon", "deep_water"), n=40, wobble=0.1, seed=4)
+    strip = []
+    for (ax, ay), (bx, by) in zip(CREEK, CREEK[1:]):
+        n = max(1, int(math.hypot(bx - ax, by - ay) / 4))
+        for k in range(n):
+            t = k / n
+            strip.append((lerp(ax, bx, t), lerp(ay, by, t), CREEK_HW * 2 + 1.0, lerp(zf, zp, smooth((CREEK[0][1] - lerp(ay, by, t)) / (CREEK[0][1] - CREEK[-1][1])))))
+    strip.append((CREEK[-1][0], CREEK[-1][1], CREEK_HW * 2 + 1.0, zp))
+    c.ribbon("Havasu Creek", strip, CREEK_HW * 2 + 1.0, 0, c.lib("lagoon_shallow", "water"), steps=2)
+
+
 def main():
     import props  # noqa: E402
 
     c = kit.Course(TRACK_ID, "Oasis Haven (Ruined)" if RUIN else "Oasis Haven", "oasis_ruins" if RUIN else "oasis_haven")
     c.route(ROUTE, width=15.0, bank=7.0)
-    wall = ("oasis_stone", "wall")
+    wall = ("adobe", "wall")
     c.kinds = {
-        "street": {"mat": "oasis_paving", "shoulder": 1.4, "shoulder_mat": ("tile_border", "road"), "barrier": 0.8, "barrier_mat": wall},
-        "trail": {"mat": "dash_road", "surface": "road", "shoulder": 1.6, "shoulder_mat": ("adobe_dark", "dirt")},
+        "street": {"mat": "oasis_paving", "shoulder": 1.4, "shoulder_mat": ("adobe_dark", "road"), "barrier": 0.8, "barrier_mat": wall},
+        "trail": {"mat": "dash_road", "surface": "road", "shoulder": 1.6, "shoulder_mat": ("dash_shoulder", "dirt")},
         "spiral": {
             "mat": "oasis_paving",
             "surface": "road",
             "shoulder": 0.6,
-            "shoulder_mat": ("tile_border", "road"),
+            "shoulder_mat": ("masonry", "road"),
             "barrier": 1.3,
-            "barrier_mat": ("balustrade", "wall"),
+            "barrier_mat": ("masonry", "wall"),
             "deck": 2.2,
-            "deck_mat": wall,
+            "deck_mat": ("masonry", "wall"),
             "ground": False,
         },
         "ramp": {"mat": "dash_road", "surface": "road", "shoulder": 1.6, "shoulder_mat": ("pale_sand", "dirt")},
+        # Over Havasu Creek: a timber bridge, plank deck, ranch rails.
+        "bridge": {"mat": "plank_deck", "surface": "road", "shoulder": 0.5, "shoulder_mat": ("weathered_timber", "road"),
+                   "barrier": 1.1, "barrier_mat": ("fence_rail", "wall"), "deck": 1.0, "deck_mat": ("weathered_timber", "wall"),
+                   "ground": False},
     }
     if RUIN:
         ruin_course(c)
@@ -340,6 +470,8 @@ def main():
             return "ramp"
         if seg in (0, 1, 2, 28):
             return "street"
+        if on_bridge(smp):
+            return "bridge"
         if seg == 25 or (seg == 26 and s < SEG[26] + 12):
             return "spiral"
         return "trail"
@@ -357,16 +489,15 @@ def main():
     # The shortcut along the pool's bank, at the road's height where it leaves and rejoins.
     za, zb = road_z(SEG[5], 4), road_z(SEG[8], 8)
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
-    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
+    c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    X0, X1, Y0, Y1 = -260, 620, -440, 420
-    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
-    c.disc("Pool", POOL[0], POOL[1], POOL[2] + 4.0, 0.0, c.lib("lagoon", "deep_water"), n=40)
+    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
+    water(c)
 
     def under(x, y):
         return natural(x, y) - 0.4
 
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("gold_sand", "loose_sand"))
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, under, c.lib("red_sand", "loose_sand"))
 
     import oasis_desert  # noqa: E402
 
@@ -411,17 +542,17 @@ def main():
 
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish()
-    # A bright turquoise desert afternoon (Blake's pick of the concept skies).
+    # A hot blue Southwest afternoon over the red rock.
     path = os.path.join(kit.TRACKS_DIR, TRACK_ID, "look.json")
     with open(path, encoding="utf-8") as f:
         look = json.load(f)
-    look["sky"] = "#2fb8cf"
-    look.setdefault("fog", {}).update({"enabled": True, "color": "#cdeee6", "near": 500, "far": 2600})
+    look["sky"] = "#3d8fd6"
+    look.setdefault("fog", {}).update({"enabled": True, "color": "#d9d4c8", "near": 500, "far": 2600})
     dome = look.setdefault("skyDome", {})
-    dome.update({"top": "#0f8fb0", "horizon": "#bfe8df", "bottom": "#f6e2b0"})
-    dome.setdefault("sun", {}).update({"color": "#fffdf2", "glow": "#fff3c4", "elevation": 52})
-    dome.setdefault("hills", {}).update({"color": "#c98a63", "far": "#e9b27e", "style": "mesas"})
-    look.setdefault("ambient", {}).update({"sky": "#c8f0ec"})
+    dome.update({"top": "#1d64c4", "horizon": "#b9d9f0", "bottom": "#d9875a"})
+    dome.setdefault("sun", {}).update({"color": "#fff6e0", "glow": "#ffd9a0", "elevation": 48})
+    dome.setdefault("hills", {}).update({"color": "#b4532e", "far": "#d98a5c", "style": "mesas"})
+    look.setdefault("ambient", {}).update({"sky": "#cfe2f2"})
     with open(path, "w", encoding="utf-8") as f:
         json.dump(look, f, indent=2)
         f.write("\n")
@@ -457,6 +588,8 @@ def ruin_course(c):
             return "kicker"
         if seg in (0, 1, 2, 27):
             return "street"
+        if on_bridge(smp):
+            return "bridge"
         if 10 <= seg <= 15:
             return "scorch"
         if seg >= 24 and s < SEG[26] + 4:
@@ -482,12 +615,11 @@ def ruin_course(c):
     # The palm-grove shortcut, as it always was.
     za, zb = road_z(SEG[5], 4), road_z(SEG[8], 8)
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
-    c.shortcut("Palm Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
+    c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    X0, X1, Y0, Y1 = -260, 620, -440, 420
-    c.terrain("Desert", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
-    c.disc("Pool", POOL[0], POOL[1], POOL[2] + 4.0, 0.0, c.lib("lagoon", "deep_water"), n=40)
-    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("gold_sand", "loose_sand"))
+    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3)
+    water(c)
+    c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("red_sand", "loose_sand"))
     ruin_mode.DRESS(c, sys.modules[__name__])
     c.start_line()
 

@@ -42,8 +42,8 @@ from course_kit import Vector, bmesh, rnd  # noqa: E402
 from oasis_desert import Mesh, Parts  # noqa: E402
 from props import blob, cuboid, tube  # noqa: E402
 
-ADOBE = ("adobe", "wall")
-DARK = ("adobe_dark", "wall")
+ADOBE = ("masonry", "wall")  # (v3: the watchtower is laid sandstone)
+DARK = ("strata_rust", "wall")
 # Where the fire fell: the camp, the dragon's scorch over the dunes, round the fallen
 # tower, by the fallen arch, the village's south end.
 BURNS = [(345.0, -40.0, 30.0), (420.0, -75.0, 24.0), (465.0, -30.0, 22.0), (400.0, 10.0, 22.0), (134.0, 118.0, 34.0),
@@ -55,7 +55,7 @@ def burnt_tent(c, variant=0, w=14.0, d=9.0):
     burnt away but for scorched rags hanging off the ridge and heaped on the carpet,
     embers glowing in them. (The grand tent's footprint, facing -Y.)"""
     name = "Burnt Tent %d" % variant
-    cloth = ("tent_cloth", "tent_cloth_red")[variant % 2]
+    cloth = ("sail_cloth", "canvas_torn")[variant % 2]
 
     def build(bm):
         P = Parts(bm)
@@ -210,15 +210,15 @@ def fallen_arch(c, m, fires):
         p = q.side(side * (q.w / 2 + 6.0))
         lg = c.rock_mass("Broken Arch Leg %d" % (side > 0), p.x, p.y, 5.0, 4.5, base + 5.5 + 2.5 * (side > 0), z0=base - 4.0, n=12,
                          seed=11 + side, angle=rot)
-        c.paint_rock(lg, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+        od.paint_strata(c, lg, m.layer)
         e = q.side(side * (q.w / 2 + 2.6))
         ch = c.rock_mass("Fallen Span %d" % (side > 0), e.x, e.y, 3.6, 2.6, q.p.z + 1.6, z0=base - 3.0, n=10, seed=21 + side, angle=rot)
-        c.paint_rock(ch, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+        od.paint_strata(c, ch, m.layer)
     for k in range(6):
         e = c.at(at + (k - 2.5) * 5.0).side((1 if k % 2 else -1) * (q.w / 2 + 4.0 + 5 * rnd(k)))
         bl = c.rock_mass("Arch Rubble %d" % k, e.x, e.y, 1.8 + rnd(k), 1.4 + rnd(k + 3), base + 1.0 + 1.5 * rnd(k * 2), z0=base - 2.0, n=8,
                          seed=31 + k, angle=k)
-        c.paint_rock(bl, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+        od.paint_strata(c, bl, m.layer)
     fires.append((q.side(q.w / 2 + 9).x, q.side(q.w / 2 + 9).y, base + 1.0))
 
 

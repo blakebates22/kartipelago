@@ -1,9 +1,9 @@
-# Oasis Haven's scenery (see oasis_haven.py): a small oasis in the deep desert. Mud-brick
-# houses with lit windows and beam ends along the village street and a gateway over the
-# start, a nomad camp of dark woven tents (rugs, cushions and hanging lanterns inside,
-# a campfire, rugs airing on lines), palms round the green pool and through the grove,
-# the wind-carved butte and arch, the ruined watchtower on its mesa, scrub and rocks on
-# the dunes, and far buttes on the horizon.
+# Oasis Haven's scenery (see oasis_haven.py), v3: Havasu in a red-rock side canyon. Adobe
+# homes along the village street (vigas, parapets, ladders, ristras, turquoise doors and
+# window frames, portals, beehive ovens) under a log ranch gate; ramadas; the campground's
+# canvas wall tents and shades; cottonwoods and reeds along the turquoise water, the
+# travertine rims, the falls off the south wall; the butte and its arch in the canyon's
+# bands; the old stone watchtower; sage, agave, cactus and boulders on the slickrock.
 # SPDX-License-Identifier: MIT
 #
 # All original designs. Every solid near the road keeps the footprint the greybox had,
@@ -11,9 +11,13 @@
 
 import math
 
-import oasis_props as op
+import canyon_props as cp
+import gulch_props as gp
+import summit_props as smp_
 from course_kit import Vector, bmesh, lerp, rnd
 from props import _faces, blob, cuboid, loft, ring, tube
+
+TURQ = "dome_teal"  # the turquoise of doors and window frames
 
 
 def road_rot(q):
@@ -72,113 +76,94 @@ class Parts:
         return [(c.lib(m), f) for m, f in self.slots.items() if f]
 
 
-def _arch(cx, y, z0, w, h, n=6, point=0.3):
-    """The outline of a pointed arch (a doorway or window) on the plane at depth y,
-    from its sill z0, w wide and h tall: straight sides, then two arcs, each centred
-    `point` of the half-width across the middle, meeting in a point."""
-    e = point * w / 2
-    r = w / 2 + e
-    rise = math.sqrt(r * r - e * e)
-    spring = z0 + h - rise
-    top = math.acos(e / r)
-    right = [(cx - e + r * math.cos(top * k / n), y, spring + r * math.sin(top * k / n)) for k in range(n + 1)]
-    left = [(2 * cx - x, y, z) for x, y, z in reversed(right[:-1])]
-    return [(cx - w / 2, y, z0), (cx + w / 2, y, z0)] + right + left[: -1] + [(cx - w / 2, y, spring)]
-
-
-def _merlons(P, mat, x0, x1, y0, y1, z, every=1.3):
-    """Stepped merlons (two tiers) along the four edges of a roof at height z."""
-    def row(a, b, fixed, along_x):
-        n = max(2, int(abs(b - a) / every))
-        for i in range(n):
-            u = a + (b - a) * (i + 0.5) / n
-            x, y = (u, fixed) if along_x else (fixed, u)
-            P.add(mat, cuboid, (x, y, z + 0.3), (0.75, 0.42, 0.6) if along_x else (0.42, 0.75, 0.6))
-            P.add(mat, cuboid, (x, y, z + 0.8), (0.4, 0.42, 0.45) if along_x else (0.42, 0.4, 0.45))
-
-    row(x0, x1, y0, True)
-    row(x0, x1, y1, True)
-    row(y0, y1, x0, False)
-    row(y0, y1, x1, False)
+def _log(P, mat, a, b, r, n=6):
+    P.add(mat, tube, [a, b], r, n=n)
 
 
 def house(c, variant=0, w=9.0, d=8.0, h=7.0):
-    """A rich mud-brick town house: a ground floor and a set-back upper storey with a
-    terrace in front, stepped merlons in white plaster on every roof line over a blue
-    tiled frieze, a pointed-arch doorway in a framed, tiled surround with a studded
-    door and lanterns either side, pointed lit windows, a latticed wooden oriel on the
-    upper floor, and (by variant) a turquoise onion dome on a drum, a wind tower or a
-    hanging carpet. Faces -Y (its door), origin at its foot. Visual only: house_collider
-    is its solid."""
-    name = "Town House %d %d %d" % (variant, int(w), int(h))
+    """An adobe home: a thick-walled block, its parapet stepping up at the corners, a
+    smaller storey set back on its roof (most), roof beams (vigas) out through the walls
+    under both roofs, canales spouting off the parapet, a plank door in a turquoise frame
+    under a timber lintel, deep-set lit windows framed turquoise, ristras of red chiles
+    by the door, and by variant a portal (a porch on posts and corbels under a roof of
+    latillas), a ladder up to the roof, a beehive oven, a round kiva-fireplace chimney.
+    Faces -Y (its door), origin at its foot. Visual only: collider is its solid."""
+    name = "Adobe Home %d %d %d" % (variant, int(w), int(h))
 
     def build(bm):
         P = Parts(bm)
-        h1 = h * 0.58
-        # The ground floor, its plinth, and the upper storey set back for a terrace.
-        P.add("adobe", cuboid, (0, 0, h1 / 2), (w, d, h1))
-        P.add("adobe_dark", cuboid, (0, 0, 0.45), (w + 0.3, d + 0.3, 0.9))
-        uw, ud = w * 0.72, d * 0.7
-        uy = d / 2 - ud / 2
-        P.add("adobe", cuboid, (w * 0.08 * (1 if variant % 2 else -1), uy, h1 + (h - h1) / 2), (uw, ud, h - h1))
-        ux = w * 0.08 * (1 if variant % 2 else -1)
-        # Tiled friezes under each roof line, and white plaster cornices over them.
-        P.add("tile_border", cuboid, (0, 0, h1 - 0.45), (w + 0.12, d + 0.12, 0.5))
-        P.add("white_plaster", cuboid, (0, 0, h1 + 0.05), (w + 0.35, d + 0.35, 0.22))
-        P.add("tile_border", cuboid, (ux, uy, h - 0.45), (uw + 0.12, ud + 0.12, 0.5))
-        P.add("white_plaster", cuboid, (ux, uy, h + 0.05), (uw + 0.35, ud + 0.35, 0.22))
-        _merlons(P, "white_plaster", -w / 2 + 0.25, w / 2 - 0.25, -d / 2 + 0.25, d / 2 - 0.25, h1 + 0.15)
-        _merlons(P, "white_plaster", ux - uw / 2 + 0.25, ux + uw / 2 - 0.25, uy - ud / 2 + 0.25, uy + ud / 2 - 0.25, h + 0.15)
-        # The doorway: a framed surround (white, then tile), a pointed arch, a studded door.
-        fy = -d / 2 - 0.2
-        P.add("white_plaster", cuboid, (0, -d / 2 - 0.08, 2.0), (3.2, 0.16, 4.0))
-        P.add("tile_border", cuboid, (0, -d / 2 - 0.12, 2.0), (2.7, 0.12, 3.6))
-        P.poly("door_wood", _arch(0.0, fy - 0.01, 0.0, 1.9, 3.3))
-        for i in range(3):
-            for j in range(4):
-                P.add("gold_trim", cuboid, (-0.55 + i * 0.55, fy - 0.04, 0.5 + j * 0.6), (0.1, 0.06, 0.1))
-        for side in (-1, 1):
-            P.add("iron", cuboid, (side * 1.9, -d / 2 - 0.3, 2.9), (0.08, 0.5, 0.08))
-            P.add("lantern_glow", blob, (side * 1.9, -d / 2 - 0.55, 2.6), 0.24, sz=1.5, subdiv=0)
-        # Pointed windows, lit, either side of the door and round the back.
-        for x in (-w / 2 + 1.5, w / 2 - 1.5):
-            P.poly("lantern_glow", _arch(x, -d / 2 - 0.03, h1 * 0.38, 0.9, 1.6))
-            P.poly("lantern_glow", list(reversed(_arch(x, d / 2 + 0.03, h1 * 0.38, 0.9, 1.6))))
-        # The upper storey: windows, and a latticed oriel over the door.
-        for x in (ux - uw / 2 + 1.2, ux + uw / 2 - 1.2):
-            P.poly("lantern_glow", _arch(x, uy - ud / 2 - 0.03, h1 + 0.8, 0.8, 1.5))
-        oy = uy - ud / 2
-        P.add("door_wood", cuboid, (ux, oy - 0.4, h1 + 0.6), (2.0, 0.85, 0.3))
-        P.add("door_wood", cuboid, (ux, oy - 0.4, h1 + 2.5), (2.2, 0.95, 0.25))
-        for sx in (-0.95, 0.95):
-            P.add("door_wood", cuboid, (ux + sx, oy - 0.75, h1 + 1.55), (0.14, 0.14, 1.9))
-        P.poly("lattice_window", [(ux - 0.9, oy - 0.8, h1 + 0.75), (ux + 0.9, oy - 0.8, h1 + 0.75), (ux + 0.9, oy - 0.8, h1 + 2.4), (ux - 0.9, oy - 0.8, h1 + 2.4)])
+        h1 = h * 0.62 if variant % 4 != 2 else h * 0.8
+        P.add("adobe", cuboid, (0, 0, h1 / 2 - 0.3), (w, d, h1 + 0.6))
+        P.add("adobe_dark", cuboid, (0, 0, 0.25), (w + 0.25, d + 0.25, 0.5))
+        # The parapet: low walls round the roof, up a step at the corners.
+        t = 0.35
+        for (cx, cy, sx, sy) in ((0, -d / 2 + t / 2, w, t), (0, d / 2 - t / 2, w, t), (-w / 2 + t / 2, 0, t, d), (w / 2 - t / 2, 0, t, d)):
+            P.add("adobe", cuboid, (cx, cy, h1 + 0.25), (sx, sy, 0.5))
         for sx in (-1, 1):
-            P.poly("lattice_window", [(ux + sx * 0.92, oy - 0.05, h1 + 0.75), (ux + sx * 0.92, oy - 0.78, h1 + 0.75), (ux + sx * 0.92, oy - 0.78, h1 + 2.4), (ux + sx * 0.92, oy - 0.05, h1 + 2.4)][:: -sx])
-        # Variants: a dome on a drum; a wind tower; a carpet hung over the terrace wall.
-        if variant % 4 in (1, 3):
-            dx, dy = ux - uw * 0.18, uy + ud * 0.1
-            r = min(uw, ud) * 0.3
-            P.add("white_plaster", lambda bm: oasis_props_cyl(bm, dx, dy, h, h + 1.1, r * 1.05, n=12))
-            P.add("tile_border", lambda bm: oasis_props_cyl(bm, dx, dy, h + 1.1, h + 1.35, r * 1.12, n=12))
-            P.add("dome_teal" if variant % 4 == 1 else "dome_blue", lambda bm: op.dome(bm, dx, dy, h + 1.35, r, h=r * 1.25, n=14, rings=6, onion=0.45))
-            P.add("gold_trim", lambda bm: op.finial(bm, dx, dy, h + 1.35 + r * 1.25 * 1.4, 0.7))
+            for sy in (-1, 1):
+                P.add("adobe", cuboid, (sx * (w / 2 - 0.6), sy * (d / 2 - 0.6), h1 + 0.55), (1.2, 1.2, 1.1))
+        # Vigas out the front and back under the roof.
+        nb = max(3, int(w / 1.3))
+        for j in range(nb):
+            x = -w / 2 + 0.7 + j * (w - 1.4) / (nb - 1)
+            for sy in (-1, 1):
+                _log(P, "weathered_timber", (x, sy * (d / 2 - 0.1), h1 - 0.45), (x, sy * (d / 2 + 0.6), h1 - 0.5), 0.15, n=5)
+        # Canales: timber spouts off the parapet.
+        for x in (-w / 2 + 1.6, w / 2 - 1.6):
+            P.add("weathered_timber", cuboid, (x, d / 2 + 0.5, h1 + 0.1), (0.3, 1.0, 0.2))
+        # The upper storey, set back.
+        if variant % 4 != 2:
+            uw, ud, uh = w * 0.55, d * 0.55, h - h1
+            ux, uy = w * 0.18 * (1 if variant % 2 else -1), d * 0.18
+            P.add("adobe", cuboid, (ux, uy, h1 + uh / 2), (uw, ud, uh))
+            for (cx, cy, sx, sy) in ((ux, uy - ud / 2 + 0.15, uw, 0.3), (ux, uy + ud / 2 - 0.15, uw, 0.3),
+                                     (ux - uw / 2 + 0.15, uy, 0.3, ud), (ux + uw / 2 - 0.15, uy, 0.3, ud)):
+                P.add("adobe", cuboid, (cx, cy, h + 0.2), (sx, sy, 0.4))
+            for j in range(3):
+                x = ux - uw / 2 + 0.6 + j * (uw - 1.2) / 2
+                _log(P, "weathered_timber", (x, uy - ud / 2 + 0.1, h - 0.4), (x, uy - ud / 2 - 0.5, h - 0.45), 0.13, n=5)
+            P.add("window_warm", cuboid, (ux, uy - ud / 2 - 0.02, h1 + uh * 0.5), (0.9, 0.06, 0.9))
+            P.add(TURQ, cuboid, (ux, uy - ud / 2 - 0.05, h1 + uh * 0.5), (1.2, 0.04, 1.2))
+        # The door: plank leaf, turquoise frame, timber lintel; windows either side.
+        fy = -d / 2
+        P.add(TURQ, cuboid, (0, fy - 0.04, 1.2), (1.7, 0.08, 2.5))
+        P.add("door_wood", cuboid, (0, fy - 0.09, 1.1), (1.2, 0.06, 2.2))
+        P.add("weathered_timber", cuboid, (0, fy - 0.15, 2.55), (2.4, 0.3, 0.3))
+        for x in (-w / 2 + 1.7, w / 2 - 1.7):
+            P.add(TURQ, cuboid, (x, fy - 0.04, h1 * 0.5), (1.4, 0.08, 1.3))
+            P.add("window_warm", cuboid, (x, fy - 0.09, h1 * 0.5), (1.0, 0.06, 0.95))
+            P.add("weathered_timber", cuboid, (x, fy - 0.14, h1 * 0.5 + 0.75), (1.7, 0.26, 0.22))
+            P.add("window_warm", cuboid, (x, d / 2 + 0.03, h1 * 0.5), (0.9, 0.06, 0.9))
+        # Ristras by the door.
+        for sx in ((-1.3,) if variant % 2 else (-1.3, 1.3)):
+            for k in range(7):
+                P.add("party_red", blob, (sx, fy - 0.35, 2.2 - k * 0.22), 0.16 - 0.008 * k, sz=1.4, subdiv=0)
+        if variant % 4 in (0, 3):
+            # The portal: posts with corbels, a beam, a roof of latillas.
+            py = fy - 2.2
+            for x in (-w / 2 + 0.6, -1.6, 1.6, w / 2 - 0.6):
+                _log(P, "weathered_timber", (x, py, 0.0), (x, py, 2.9), 0.16, n=6)
+                P.add("weathered_timber", cuboid, (x, py, 2.95), (0.9, 0.3, 0.22))
+            P.add("weathered_timber", cuboid, (0, py, 3.15), (w + 0.2, 0.32, 0.3))
+            for k in range(int(w / 0.5)):
+                x = -w / 2 + 0.25 + k * 0.5
+                _log(P, "dead_wood", (x, py - 0.3, 3.35), (x, fy, 3.55), 0.07, n=4)
+        if variant % 4 in (1, 2):
+            # A ladder up to the roof, its rails long past the parapet.
+            lx = w / 2 - 1.2 if variant % 2 else -w / 2 + 1.2
+            for sx in (-0.35, 0.35):
+                _log(P, "weathered_timber", (lx + sx, fy - 1.4, 0.0), (lx + sx * 0.8, fy - 0.2, h1 + 1.6), 0.07, n=4)
+            for k in range(int(h1 / 0.6)):
+                u = (k + 0.7) / (h1 / 0.6 + 1.5)
+                P.add("weathered_timber", cuboid, (lx, fy - 1.4 + 1.2 * u, (h1 + 1.6) * u), (0.75, 0.08, 0.08))
         if variant % 4 == 2:
-            tx, ty = ux + uw / 2 - 1.0, uy + ud / 2 - 1.0
-            P.add("adobe", cuboid, (tx, ty, h + 2.2), (1.8, 1.8, 4.4))
-            P.add("white_plaster", cuboid, (tx, ty, h + 4.55), (2.2, 2.2, 0.3))
-            for a in range(4):
-                nx, ny = (0, -1, 0, 1)[a], (-1, 0, 1, 0)[a]
-                for k in (-0.45, 0.0, 0.45):
-                    cx, cy = tx + nx * 0.91 + (ny != 0) * k, ty + ny * 0.91 + (nx != 0) * k
-                    P.add("oasis_bark", cuboid, (cx, cy, h + 3.4), (0.22 if ny else 0.04, 0.22 if nx else 0.04, 1.6))
-            _merlons(P, "white_plaster", tx - 0.9, tx + 0.9, ty - 0.9, ty + 0.9, h + 4.7, every=0.9)
-        if variant % 4 in (0, 2):
-            cx = -w / 2 + 1.8 if variant % 2 == 0 else w / 2 - 1.8
-            P.poly("royal_carpet", [(cx - 0.9, -d / 2 - 0.2, h1 + 0.35), (cx + 0.9, -d / 2 - 0.2, h1 + 0.35), (cx + 0.9, -d / 2 - 0.24, h1 - 2.0), (cx - 0.9, -d / 2 - 0.24, h1 - 2.0)][::-1], both=True)
-        # A striped awning over the door on some.
-        if variant % 3 == 0:
-            P.poly("awning_teal", [(-1.7, -d / 2 - 0.2, 4.2), (1.7, -d / 2 - 0.2, 4.2), (1.7, -d / 2 - 1.5, 3.6), (-1.7, -d / 2 - 1.5, 3.6)][::-1], both=True)
+            # A beehive oven (horno) beside the door.
+            P.add("adobe", blob, (w / 2 + 1.4, fy + 1.0, 0.6), 1.1, sz=0.9, subdiv=1)
+            P.add("dark_corridor", cuboid, (w / 2 + 1.4, fy - 0.05, 0.5), (0.6, 0.1, 0.5))
+        if variant % 4 == 3:
+            # A round chimney off the roof's corner.
+            cx, cy = (w / 2 - 1.0, d / 2 - 1.0)
+            P.add("adobe", lambda bm: oasis_props_cyl(bm, cx, cy, h1, h1 + 2.0, 0.55, n=10))
         return P.out(c)
 
     return c.proto(name, build) and name
@@ -200,101 +185,90 @@ def collider(c, w, d, h, y0=0.0, mat="adobe"):
     return c.proto(name, build) and name
 
 
-def tent(c, variant=0, w=14.0, d=9.0):
-    """A grand nomad pavilion: a long striped roof over three tall poles (gold finials
-    and pennants above), its back and sides pegged down with guy ropes, and a deep
-    canopy out front on its own poles, hung with a scalloped, tasselled valance. Inside,
-    a great carpet, heaps of cushions, a low brass table and lanterns. Faces -Y (its open
-    front), origin at the middle of its foot; the body spans y in (-d/2, d/2) and the
-    canopy reaches 2.5 m further out. Visual only: TENT_SOLID is its footprint."""
-    name = "Grand Tent %d" % variant
-    cloths = ("tent_cloth", "tent_cloth_red") if variant % 2 == 0 else ("tent_cloth_red", "tent_cloth")
-    trim = ("banner_red", "banner_royal")[variant % 2]
+def wall_tent(c, variant=0):
+    """A campground site: a canvas wall tent (straight walls, a ridge roof, its door flaps
+    tied back on a dark inside, its fly out front on two poles) and beside it a ramada
+    (a shade of latillas on four posts) over a plank table and benches, a cooler, a
+    folding chair. Faces -Y (its open front), origin at the middle of its foot; it fills
+    the greybox tent's footprint (TENT_SOLID: 14 x 12.3, centred 0.85 back)."""
+    name = "Camp Site %d" % variant
+    cloth = "sail_cloth"
 
     def build(bm):
         P = Parts(bm)
-        H, E = 6.2, 2.6  # the poles' height and the eaves'
-        xs = [-w / 2 + w * i / 8 for i in range(9)]
-        # Peaks over the three poles (at -w/3, 0, w/3), dipping between.
-        def ridge_z(x):
-            return E + 1.0 + (H - E - 1.0) * max(0.0, 1 - min(abs(x - p) for p in (-w / 3, 0.0, w / 3)) / (w / 5)) ** 0.8
-
-        front = [(x, -d / 2, E) for x in xs]
-        ridge = [(x, 0.0, ridge_z(x)) for x in xs]
-        back = [(x, d / 2, E - 0.2) for x in xs]
-        foot = [(x, d / 2 + 0.8, 0.0) for x in xs]
-        for i in range(8):
-            m = cloths[i % 2]
-            P.poly(m, [front[i], front[i + 1], ridge[i + 1], ridge[i]], both=True)
-            P.poly(m, [ridge[i], ridge[i + 1], back[i + 1], back[i]], both=True)
-            P.poly(m, [back[i], back[i + 1], foot[i + 1], foot[i]], both=True)
-        for side, i in ((-1, 0), (1, 8)):
-            fl = (side * (w / 2 + 0.7), -d / 2 + 0.6, 0.0)
-            pts = [front[i], ridge[i], back[i], foot[i], fl]
-            P.poly(cloths[0], pts if side < 0 else pts[::-1], both=True)
-        # The canopy out front, sloping a little, and its valance.
-        cz0, cz1, cy = E + 0.1, E - 0.3, -d / 2 - 2.5
-        P.poly(cloths[1], [(-w / 2, -d / 2, cz0), (w / 2, -d / 2, cz0), (w / 2, cy, cz1), (-w / 2, cy, cz1)][::-1], both=True)
-        n = 14
-        for i in range(n):
-            x0, x1 = -w / 2 + w * i / n, -w / 2 + w * (i + 1) / n
-            P.poly(trim, [(x0, cy - 0.02, cz1), (x1, cy - 0.02, cz1), ((x0 + x1) / 2, cy - 0.02, cz1 - 0.6)], both=True)
-            P.add("gold_trim", blob, ((x0 + x1) / 2, cy - 0.04, cz1 - 0.72), 0.09, subdiv=0)
-        P.add("gold_trim", cuboid, (0, cy - 0.03, cz1 + 0.05), (w, 0.06, 0.12))
-        # Poles: the three tall ones (through the roof, finials and pennants on top), the
-        # canopy's, and the eave's.
-        for x in (-w / 3, 0.0, w / 3):
-            P.add("weathered_timber", tube, [(x, 0.0, 0.0), (x, 0.0, H + 1.6)], 0.14, n=6)
-            P.add("gold_trim", lambda bm, x=x: op.finial(bm, x, 0.0, H + 1.6, 0.5))
-            P.poly(trim, [(x, 0.0, H + 2.7), (x + 1.6, 0.0, H + 2.45), (x, 0.0, H + 2.15)], both=True)
-        for x in (-w / 2, -w / 6, w / 6, w / 2):
-            P.add("weathered_timber", tube, [(x, cy, 0.0), (x, cy, cz1)], 0.1, n=5)
-            P.add("gold_trim", blob, (x, cy, cz1 + 0.12), 0.16, subdiv=0)
-        P.add("weathered_timber", tube, [(-w / 2, -d / 2, E), (w / 2, -d / 2, E)], 0.08, n=4)
-        # Guy ropes out to pegs at the back and sides.
-        for x in (-w / 3, 0.0, w / 3):
-            P.add("rope_rail", tube, [(x, d / 2 * 0.6, ridge_z(x) * 0.8), (x, d / 2 + 3.5, 0.0)], 0.03, n=3)
-        for side in (-1, 1):
-            P.add("rope_rail", tube, [(side * w / 2, cy, cz1), (side * (w / 2 + 2.2), cy - 1.2, 0.0)], 0.03, n=3)
-        # Inside: the carpet, cushions, a low brass table, lanterns under the canopy.
-        P.add("royal_carpet", cuboid, (0, -0.6, 0.05), (w - 1.4, d + 1.6, 0.1))
-        for i in range(7):
-            x = -w / 2 + 1.4 + i * (w - 2.8) / 6
-            P.add(("awning_sun", "awning_red", "awning_teal")[i % 3], blob, (x, d / 2 - 1.0, 0.4), 0.6, sx=1.5, sz=0.6, subdiv=0)
-            if i % 2 == 0:
-                P.add(("awning_teal", "awning_sun")[i % 4 == 0], blob, (x + 0.4, d / 2 - 1.9, 0.3), 0.45, sx=1.2, sz=0.55, subdiv=0)
-        P.add("gold_trim", lambda bm: oasis_props_cyl(bm, 0.0, 0.2, 0.0, 0.45, 1.1, n=12))
-        P.add("gold_trim", lambda bm: oasis_props_cyl(bm, 0.0, 0.2, 0.45, 0.55, 1.35, n=12))
-        for x in (-w / 3, 0.0, w / 3):
-            P.add("iron", tube, [(x, cy + 0.3, cz1), (x, cy + 0.3, cz1 - 0.5)], 0.02, n=3)
-            P.add("lantern_glow", loft, [ring(bm, (x, cy + 0.3), r, z, 6) for r, z in ((0.05, cz1 - 0.5), (0.26, cz1 - 0.75), (0.26, cz1 - 1.15), (0.05, cz1 - 1.35))], cap_top=True, cap_bottom=True)
+        tx = -3.2 if variant % 2 == 0 else 3.2
+        rx = -tx
+        tw, td, wh, rh = 6.0, 8.0, 1.8, 3.6
+        y0, y1 = -td / 2, td / 2
+        # Walls and roof.
+        for sx in (-1, 1):
+            P.poly(cloth, [(tx + sx * tw / 2, y0, 0), (tx + sx * tw / 2, y1, 0), (tx + sx * tw / 2, y1, wh), (tx + sx * tw / 2, y0, wh)][:: sx], both=True)
+            P.poly(cloth, [(tx + sx * (tw / 2 + 0.25), y0 - 0.2, wh - 0.15), (tx + sx * (tw / 2 + 0.25), y1 + 0.2, wh - 0.15),
+                           (tx, y1 + 0.2, rh), (tx, y0 - 0.2, rh)][:: sx], both=True)
+        P.poly(cloth, [(tx - tw / 2, y1, 0), (tx + tw / 2, y1, 0), (tx + tw / 2, y1, wh), (tx, y1, rh), (tx - tw / 2, y1, wh)], both=True)
+        # The front: gable, the doorway dark, the flaps tied back.
+        P.poly(cloth, [(tx - tw / 2, y0, wh), (tx + tw / 2, y0, wh), (tx, y0, rh)], both=True)
+        P.poly("dark_corridor", [(tx - 1.6, y0 + 0.05, 0), (tx + 1.6, y0 + 0.05, 0), (tx + 1.6, y0 + 0.05, wh), (tx, y0 + 0.05, rh - 0.2), (tx - 1.6, y0 + 0.05, wh)])
+        for sx in (-1, 1):
+            P.poly(cloth, [(tx + sx * 1.6, y0, 0), (tx + sx * tw / 2, y0, 0), (tx + sx * tw / 2, y0, wh), (tx + sx * 1.6, y0, wh)][:: sx], both=True)
+            P.add(cloth, blob, (tx + sx * 1.9, y0 - 0.15, 1.1), 0.35, sx=0.7, sz=2.6, subdiv=0)
+        # The fly out front, on two poles, with guy lines.
+        fy = y0 - 2.6
+        P.poly(cloth, [(tx - tw / 2 - 0.3, y0, wh + 0.4), (tx + tw / 2 + 0.3, y0, wh + 0.4), (tx + tw / 2 + 0.3, fy, wh), (tx - tw / 2 - 0.3, fy, wh)], both=True)
+        for sx in (-1, 1):
+            _log(P, "weathered_timber", (tx + sx * (tw / 2 + 0.1), fy, 0), (tx + sx * (tw / 2 + 0.1), fy, wh + 0.1), 0.06, n=4)
+            P.add("rope_rail", tube, [(tx + sx * (tw / 2 + 0.1), fy, wh), (tx + sx * (tw / 2 + 1.2), fy - 1.4, 0.0)], 0.025, n=3)
+        _log(P, "weathered_timber", (tx, y0 - 0.2, 0), (tx, y0 - 0.2, rh + 0.4), 0.07, n=4)
+        # The ramada: four posts, beams, latillas; under it the table, benches, a cooler.
+        rw, rd, rz = 5.0, 6.0, 2.8
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                _log(P, "weathered_timber", (rx + sx * rw / 2, sy * rd / 2, 0), (rx + sx * rw / 2, sy * rd / 2, rz), 0.13, n=6)
+            P.add("weathered_timber", cuboid, (rx + sx * rw / 2, 0, rz + 0.1), (0.26, rd + 0.6, 0.26))
+        for k in range(int(rd / 0.45)):
+            y = -rd / 2 + 0.2 + k * 0.45
+            _log(P, "dead_wood", (rx - rw / 2 - 0.3, y, rz + 0.3), (rx + rw / 2 + 0.3, y, rz + 0.3), 0.06, n=4)
+        P.add("plank_deck", cuboid, (rx, 0, 0.8), (1.0, 3.2, 0.1))
+        for sx in (-1, 1):
+            P.add("plank_deck", cuboid, (rx + sx * 1.0, 0, 0.45), (0.35, 3.2, 0.08))
+            for sy in (-1.2, 1.2):
+                P.add("weathered_timber", cuboid, (rx + sx * 0.35, sy, 0.4), (0.1, 0.1, 0.8))
+        P.add(("awning_red", "awning_teal")[variant % 2], cuboid, (rx + 1.8, -2.2, 0.3), (0.9, 0.6, 0.6))
+        P.add("white_plaster", cuboid, (rx + 1.8, -2.2, 0.62), (0.95, 0.65, 0.06))
         return P.out(c)
 
     return c.proto(name, build) and name
 
 
-def scrub(c, variant=0):
-    """A desert shrub: a low dusty clump."""
-    name = "Desert Scrub %d" % variant
+def tent(c, variant=0, w=14.0, d=9.0):
+    return wall_tent(c, variant)
+
+
+def ramada(c, variant=0):
+    """A market shade at the roadside: four peeled posts, a roof of latillas over beams,
+    and under it a plank counter laid with pots and woven blankets."""
+    name = "Ramada %d" % variant
 
     def build(bm):
-        for i in range(5):
-            a = i * 1.3 + variant
-            blob(bm, (0.7 * math.cos(a), 0.7 * math.sin(a), 0.4), 0.55 + 0.15 * rnd(i + variant), sz=0.7, subdiv=0)
-        return [(c.lib("dry_grass"), _faces(bm, 0))]
-
-    return c.proto(name, build) and name
-
-
-def stones(c, variant=0):
-    name = "Desert Stone %d" % variant
-
-    def build(bm):
-        res = bmesh.ops.create_icosphere(bm, subdivisions=1, radius=1.0)
-        for i, v in enumerate(res["verts"]):
-            k = 0.75 + 0.5 * rnd(i * 3.1 + variant * 7)
-            v.co = Vector((v.co.x * k * 1.3, v.co.y * k, v.co.z * k * 0.7 + 0.25))
-        return [(c.lib("gold_cliff"), _faces(bm, 0))]
+        P = Parts(bm)
+        w, d, h = 5.0, 3.6, 2.8
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                _log(P, "weathered_timber", (sx * w / 2, sy * d / 2, 0), (sx * w / 2, sy * d / 2, h), 0.13, n=6)
+            P.add("weathered_timber", cuboid, (sx * w / 2, 0, h + 0.1), (0.24, d + 0.5, 0.24))
+        for k in range(int(w / 0.42) + 2):
+            x = -w / 2 - 0.3 + k * 0.42
+            _log(P, "dead_wood", (x, -d / 2 - 0.3, h + 0.3), (x, d / 2 + 0.3, h + 0.3), 0.06, n=4)
+        P.add("plank_deck", cuboid, (0, -d / 2 + 0.6, 0.95), (w - 0.6, 0.9, 0.1))
+        for x in (-1.6, 1.6):
+            P.add("weathered_timber", cuboid, (x, -d / 2 + 0.6, 0.45), (0.12, 0.7, 0.9))
+        for k in range(5):
+            x = -1.8 + k * 0.9
+            r = 0.26 + 0.08 * ((k + variant) % 3)
+            P.add("terracotta", blob, (x, -d / 2 + 0.6, 1.0 + r), r, sz=1.1 - 0.2 * (k % 2), subdiv=1)
+        P.poly("rug", [(-w / 2 + 0.2, -d / 2 + 0.15, 0.95), (-w / 2 + 1.6, -d / 2 + 0.15, 0.95), (-w / 2 + 1.6, -d / 2 + 0.1, 0.1), (-w / 2 + 0.2, -d / 2 + 0.1, 0.1)][::-1], both=True)
+        P.poly("rug", [(-1.4, d / 2 - 0.1, h - 0.1), (0.2, d / 2 - 0.1, h - 0.1), (0.2, d / 2 - 0.1, 0.6), (-1.4, d / 2 - 0.1, 0.6)], both=True)
+        return P.out(c)
 
     return c.proto(name, build) and name
 
@@ -323,15 +297,15 @@ def rug_line(c):
 
 
 def village(c, oh, ter, sc):
-    """The mud-brick houses (where the greybox's blocks stood), lantern posts, palms and
-    a couple of stalls along the street, and the gateway over the start."""
+    """The adobe homes (where the greybox's blocks stood), lantern posts, ramadas and
+    cottonwoods along the street, and the log ranch gate over the start."""
     s = 6.0
     k = 0
     while s < oh.SEG[3]:
         q = c.at(s)
         for side in (-1, 1):
             p = q.side(side * (q.w / 2 + 9.0 + 3 * (k % 2)))
-            h = 6.0 + 2.5 * ((k + (side > 0)) % 3)
+            h = 6.0 + 1.6 * ((k + (side > 0)) % 3)
             rot = road_rot(q) + (math.pi if side > 0 else 0.0)
             c.place(house(c, (k + (side > 0)) % 4, 9.0, 8.0, h), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="visual")
             c.place(collider(c, 9.0, 8.0, h), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="collision")
@@ -342,58 +316,67 @@ def village(c, oh, ter, sc):
     for side in (-1, 1):
         p = q.side(side * (q.w / 2 + 10.0))
         rot = road_rot(q) + (math.pi if side > 0 else 0.0)
-        c.place(house(c, 1 + 2 * (side > 0), 10.0, 9.0, 8.0), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="visual")
-        c.place(collider(c, 10.0, 9.0, 8.0), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="collision")
-    # Lantern posts along the street, a stall or two and some palms behind the houses.
-    post = op.lantern_post(c)
+        c.place(house(c, 1 + 2 * (side > 0), 10.0, 9.0, 7.5), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="visual")
+        c.place(collider(c, 10.0, 9.0, 7.5), p.x, p.y, q.p.z - 0.5, rot=rot, coll="Village", role="collision")
+    # Lantern posts along the street (their lanterns out over it).
+    post = gp.lantern_post(c)
+    lx, ly, lz = gp.LANTERN_POST_LIGHT
     s = 4.0
     k = 0
     while s < oh.SEG[3] + 10:
         q = c.at(s)
         side = 1 if k % 2 else -1
         p = q.side(side * (q.w / 2 + 2.6))
-        c.place(post, p.x, p.y, ground(c, ter, p.x, p.y, q.p.z) - 0.1, rot=road_rot(q), coll="Village", role="visual")
-        sc["lanterns"].append((p.x, p.y, ground(c, ter, p.x, p.y, q.p.z) + 4.4))
+        z = ground(c, ter, p.x, p.y, q.p.z) - 0.1
+        rot = road_rot(q) + (math.pi / 2 if side > 0 else -math.pi / 2)
+        c.place(post, p.x, p.y, z, rot=rot, coll="Village", role="visual")
+        sc["lanterns"].append((p.x + lx * math.cos(rot), p.y + lx * math.sin(rot), z + lz))
         s += 24.0
         k += 1
     for k, s in enumerate((oh.SEG[1] + 8, oh.SEG[2] + 22)):
         q = c.at(s)
         p = q.side((1 if k else -1) * (q.w / 2 + 5.0))
-        c.place(op.market_stall(c, k), p.x, p.y, ground(c, ter, p.x, p.y, q.p.z) - 0.1, rot=road_rot(q) + (math.pi if k else 0.0), coll="Village", role="visual")
-    palms = [op.palm(c, v, 9.0 + 2 * v) for v in range(4)]
+        c.place(ramada(c, k), p.x, p.y, ground(c, ter, p.x, p.y, q.p.z) - 0.1, rot=road_rot(q) + (math.pi if k else 0.0), coll="Village", role="visual")
+    trees = [smp_.broadleaf(c, v, frosted=False) for v in range(2)]
     for k in range(10):
         s = 12.0 + k * 17.0
         q = c.at(s)
         p = q.side((1 if k % 2 else -1) * (q.w / 2 + 22.0 + 4 * (k % 3)))
         z = ground(c, ter, p.x, p.y)
         if z is not None:
-            c.place(palms[k % 4], p.x, p.y, z - 0.2, rot=k * 1.7, coll="Village", role="visual")
-    # The gateway over the street at the start: two towers and a crenellated span with the
-    # checkered board.
+            c.place(trees[k % 2], p.x, p.y, z - 0.2, rot=k * 1.7, scale=0.9 + 0.1 * (k % 3), coll="Village", role="visual")
+    # The ranch gate over the street at the start: two great log posts, a log lintel and a
+    # second under it, the checkered board hung between, a cattle skull up top.
     q = c.at(8.0)
     m = Mesh()
     rot = road_rot(q)
+    span = q.w + 6.0
+    ends = []
     for side in (-1, 1):
-        p = q.side(side * (q.w / 2 + 2.6))
-        m.add(("adobe", "wall"), lambda bm, p=p: cuboid(bm, (p.x, p.y, q.p.z + 5.5), (3.6, 3.6, 12.0), rot))
-        m.add(("adobe_dark", "wall"), lambda bm, p=p: cuboid(bm, (p.x, p.y, q.p.z + 0.4), (4.0, 4.0, 1.4), rot))
-    span = q.w + 8.8
-    m.add(("adobe", "wall"), lambda bm: cuboid(bm, (q.p.x, q.p.y, q.p.z + 10.4), (span, 2.6, 2.4), rot + math.pi / 2))
-    for i in range(7):
-        o = -span / 2 + 0.8 + i * (span - 1.6) / 6
-        p = q.side(o, 0.0)
-        m.add(("adobe", "wall"), lambda bm, p=p: cuboid(bm, (p.x, p.y, q.p.z + 12.1), (0.9, 2.2, 1.0), rot))
-    m.add(("start_checker", "wall"), lambda bm: cuboid(bm, (q.p.x + q.t.x * -1.4, q.p.y + q.t.y * -1.4, q.p.z + 9.0), (q.w - 1.0, 0.2, 1.8), rot + math.pi / 2))
-    m.build(c, "Village Gate", "Village", "visual")
+        p = q.side(side * (span / 2))
+        ends.append(p)
+        m.add(("weathered_timber", "wall"), lambda bm, p=p: tube(bm, [(p.x, p.y, q.p.z - 1.0), (p.x, p.y, q.p.z + 11.5)], 0.55, n=8))
+        m.add(("strata_red", "wall"), lambda bm, p=p: blob(bm, (p.x, p.y, q.p.z + 0.2), 1.6, sz=0.6, subdiv=0))
+    a, b = ends
+    for z, r, over in ((10.6, 0.5, 1.6), (8.4, 0.32, 0.6)):
+        dx, dy = (b.x - a.x) / span, (b.y - a.y) / span
+        m.add(("weathered_timber", "wall"), lambda bm, z=z, r=r, over=over: tube(
+            bm, [(a.x - dx * over, a.y - dy * over, q.p.z + z), (b.x + dx * over, b.y + dy * over, q.p.z + z)], r, n=7))
+    for o in (-q.w / 2 + 1.0, q.w / 2 - 1.0):
+        p = q.side(o)
+        m.add(("rope_rail", "wall"), lambda bm, p=p: tube(bm, [(p.x, p.y, q.p.z + 8.3), (p.x, p.y, q.p.z + 7.7)], 0.04, n=3))
+    m.add(("start_checker", "wall"), lambda bm: cuboid(bm, (q.p.x, q.p.y, q.p.z + 6.9), (q.w - 1.0, 0.2, 1.6), rot + math.pi / 2))
+    m.build(c, "Ranch Gate", "Village", "visual")
+    c.place(gp.cattle_skull(c), q.p.x, q.p.y, q.p.z + 11.4, rot=rot - math.pi / 2, scale=2.2, coll="Village", role="visual")
 
 
 # ------------------------------------------------------------------ the camp
 
 
 def camp(c, oh, ter, sc, make=None):
-    """The nomad camp along the weave: a tent where each of the greybox's stood, a
-    lantern by each, rugs airing on lines and a campfire in the middle. (`make(c, k)`:
-    another tent in each one's place: the ruin's burnt ones.)"""
+    """The campground along the weave: a site (wall tent and ramada) where each of the
+    greybox's tents stood, a lantern by each, blankets airing on lines and a campfire in
+    the middle. (`make(c, k)`: another in each one's place: the ruin's burnt tents.)"""
     s = oh.SEG[10] + 8
     k = 0
     fire = None
@@ -401,12 +384,10 @@ def camp(c, oh, ter, sc, make=None):
     while s < oh.SEG[16]:
         q = c.at(s)
         side = 1 if k % 2 else -1
-        # The canopy's front is where the greybox tent's front was (4 m off the road);
-        # the solid covers the canopy and the body.
         p = q.side(side * (q.w / 2 + 11.0))
         rot = road_rot(q) + (math.pi if side > 0 else 0.0)
         c.place((make or tent)(c, k % 2), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="visual")
-        c.place(collider(c, 14.0, 12.3, 3.0, -0.85, "tent_cloth"), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="collision")
+        c.place(collider(c, 14.0, 12.3, 3.0, -0.85, "sail_cloth"), p.x, p.y, q.p.z - 0.05, rot=rot, coll="Camp", role="collision")
         lp = q.side(side * (q.w / 2 + 2.2))
         sc["torches"].append((lp.x, lp.y, q.p.z + 3.2))
         sc["lanterns"].append((lp.x, lp.y, q.p.z + 3.2))
@@ -433,30 +414,35 @@ def camp(c, oh, ter, sc, make=None):
         sc["fires"].append((fire.x, fire.y, z))
 
 
-# ------------------------------------------------------------------ the pool and the grove
+# ------------------------------------------------------------------ Havasu's water
+
+
+def _trunk_solid(c):
+    name = "Cottonwood Trunk Solid"
+
+    def build(bm):
+        oasis_props_cyl(bm, 0.0, 0.0, 0.0, 6.0, 0.55, n=8)
+        return [(c.lib("weathered_timber", "wall"), _faces(bm, 0))]
+
+    c.proto(name, build)
+    return name
 
 
 def pool(c, oh, ter, sc):
-    """Palms round the pool (where the greybox's stood) and two in the grove to dodge,
-    reeds in the shallows and a few rocks on the bank."""
+    """Cottonwoods round the pool (where the greybox's palms stood) and two in the grove
+    to dodge, more back from the grove, reeds in the shallows; the travertine rims along
+    the creek's terraces; cottonwoods and reeds round the plunge pool."""
     import props  # noqa: E402
 
-    palms = [op.palm(c, v, 10.0 + 1.5 * v) for v in range(4)]
-    # Only a palm's trunk is solid: its fronds are leaves, not something to land on.
-    trunk = "Palm Trunk Solid"
-
-    def _trunk(bm):
-        op._cyl(bm, 0.0, 0.0, 0.0, 6.0, 0.55, 0.45, n=8)
-        return [(c.lib("oasis_bark", "wall"), _faces(bm, 0))]
-
-    c.proto(trunk, _trunk)
+    trees = [smp_.broadleaf(c, v, frosted=False) for v in range(2)]
+    trunk = _trunk_solid(c)
     for k in range(22):
         a = k * math.tau / 22
         r = oh.POOL[2] + 9.0 + 4.0 * math.sin(k * 2.1)
         x, y = oh.POOL[0] + r * math.cos(a), oh.POOL[1] + r * math.sin(a)
-        if props.clear_of_road(c, x, y, 3.0):
+        if props.clear_of_road(c, x, y, 3.0) and oh.creek_d(x, y) > oh.CREEK_HW + 2:
             z = ground(c, ter, x, y, 1.0)
-            c.place(palms[k % 4], x, y, z - 0.2, rot=a * 3, scale=0.9 + 0.3 * math.sin(k), coll="Grove", role="visual")
+            c.place(trees[k % 2], x, y, z - 0.2, rot=a * 3, scale=0.8 + 0.25 * math.sin(k), coll="Grove", role="visual")
             c.place(trunk, x, y, z - 0.2, coll="Grove", role="collision")
     for f, off in ((0.38, 1.8), (0.66, -1.8)):
         i = int(f * (len(oh.SHORTCUT) - 1))
@@ -465,9 +451,8 @@ def pool(c, oh, ter, sc):
         t = f * (len(oh.SHORTCUT) - 1) - i
         x, y = lerp(x0, x1, t), lerp(y0, y1, t) + off
         z = ground(c, ter, x, y, 2.0)
-        c.place(palms[(i + 1) % 4], x, y, z - 0.2, rot=f * 9, scale=1.1, coll="Grove", role="visual")
+        c.place(trees[i % 2], x, y, z - 0.2, rot=f * 9, scale=1.0, coll="Grove", role="visual")
         c.place(trunk, x, y, z - 0.2, coll="Grove", role="collision")
-    # More palms back from the grove, either side of the shortcut.
     for k in range(14):
         t = (k + 0.5) / 14
         i = min(len(oh.SHORTCUT) - 2, int(t * (len(oh.SHORTCUT) - 1)))
@@ -477,25 +462,88 @@ def pool(c, oh, ter, sc):
         if props.clear_of_road(c, x, y, 5.0) and math.hypot(x - oh.POOL[0], y - oh.POOL[1]) > oh.POOL[2] + 3:
             z = ground(c, ter, x, y)
             if z is not None:
-                c.place(palms[k % 4], x, y, z - 0.2, rot=k * 2.3, scale=0.85 + 0.3 * rnd(k + 3), coll="Grove", role="visual")
+                c.place(trees[k % 2], x, y, z - 0.2, rot=k * 2.3, scale=0.8 + 0.3 * rnd(k + 3), coll="Grove", role="visual")
     reeds = props.reeds(c)
-    for k in range(16):
-        a = k * math.tau / 16 + 0.2
-        r = oh.POOL[2] + 2.0 + 1.5 * rnd(k)
-        x, y = oh.POOL[0] + r * math.cos(a), oh.POOL[1] + r * math.sin(a)
-        c.place(reeds, x, y, ground(c, ter, x, y, 0.0) - 0.2, rot=k, coll="Grove", role="visual")
+    for cx, cy, r0, n in ((oh.POOL[0], oh.POOL[1], oh.POOL[2], 16), (oh.FALLS[0], oh.FALLS[1], oh.FALLS[2], 14)):
+        for k in range(n):
+            a = k * math.tau / n + 0.2
+            r = r0 + 2.5 + 1.5 * rnd(k)
+            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+            if props.clear_of_road(c, x, y, 2.0) and oh.creek_d(x, y) > oh.CREEK_HW:
+                c.place(reeds, x, y, ground(c, ter, x, y, 0.0) - 0.2, rot=k, coll="Grove", role="visual")
+    # Cottonwoods round the plunge pool, clear of the falls' side.
+    fx, fy, fr = oh.FALLS
+    for k in range(9):
+        a = math.pi / 2 + (k - 4) * 0.42
+        r = fr + 9.0 + 2.0 * math.sin(k * 1.7)
+        x, y = fx + r * math.cos(a) * 1.15, fy + r * math.sin(a) * 0.7 + 4.0
+        if props.clear_of_road(c, x, y, 4.0) and oh.creek_d(x, y) > oh.CREEK_HW + 3:
+            z = ground(c, ter, x, y)
+            if z is not None:
+                c.place(trees[k % 2], x, y, z - 0.2, rot=k, scale=0.85 + 0.2 * rnd(k), coll="Grove", role="visual")
+
+
+def havasu(c, oh):
+    """The falls off the south wall into the plunge pool (a second thinner fall beside
+    it), the travertine rim holding the plunge pool, and the rims across the creek where
+    it steps down, white water spilling over each."""
+    import props  # noqa: E402
+
+    fx, fy, fr = oh.FALLS
+    zp, zc, zf = oh.WATER_Z
+    lip = fy - oh.ALCOVE - 1.5
+    top = oh.natural(fx, lip - 5.0) - 0.4
+    props.falls(c, "Havasu Falls", fx, lip, top, zf, 9.0, 15.0, facing=1, throw=4.0, bulge=1.2, veils=3,
+                mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
+    lip2 = fy - oh.ALCOVE * 0.85
+    x2 = fx + 14.0
+    top2 = oh.natural(x2, lip2 - 5.0) - 0.4
+    props.falls(c, "Havasu Falls Twin", x2, lip2, top2, zf, 2.5, 5.0, facing=1, throw=2.0, bulge=0.6, veils=2,
+                mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
+    g = c.game(fx, lip + 6.0, zf)
+    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - zf, 1), width=14.0, heading=round(math.pi, 4))
+    # The rims: a travertine lip round the plunge pool's north side (the creek spills over
+    # it) and two more across the creek, each a step down.
+    m = Mesh()
+    for k in range(13):
+        a = math.pi / 2 + (k - 6) * 0.2
+        x, y = fx + (fr + 2.6) * math.cos(a), fy + (fr + 2.6) * math.sin(a)
+        if abs(x - fx) < oh.CREEK_HW + 1:
+            continue
+        m.add(("sinter_rim", "wall"), lambda bm, x=x, y=y, a=a: blob(bm, (x, y, zf - 0.2), 1.8, sx=1.4, sz=0.45, subdiv=0))
+    for t in (0.0, 0.4, 0.78):
+        x, y = lerp(oh.CREEK[0][0], oh.CREEK[-1][0], t), lerp(oh.CREEK[0][1], oh.CREEK[-1][1], t)
+        if not props.clear_of_road(c, x, y, 2.0):
+            continue
+        z = lerp(zf, zp, t) + 0.15
+        m.add(("sinter_rim", "wall"), lambda bm, x=x, y=y, z=z: cuboid(bm, (x, y, z - 0.9), (oh.CREEK_HW * 2 + 2.0, 1.4, 1.8)))
+        m.add(("falls_curtain_oasis", "wall"), lambda bm, x=x, y=y, z=z: bm.faces.new([bm.verts.new(v) for v in (
+            (x - oh.CREEK_HW, y + 0.72, z), (x + oh.CREEK_HW, y + 0.72, z), (x + oh.CREEK_HW, y + 1.6, z - 0.55), (x - oh.CREEK_HW, y + 1.6, z - 0.55))]))
+    m.build(c, "Travertine Rims", "Grove", "visual")
 
 
 # ------------------------------------------------------------------ rock
 
 
+def paint_strata(c, ob, layer):
+    """A rock's faces by the canyon's bands (its flat tops slickrock)."""
+    groups = {}
+    for p in ob.data.polygons:
+        z = (ob.matrix_world @ p.center).z
+        mat = "slickrock" if p.normal.z > 0.75 else layer(z)
+        groups.setdefault(mat, []).append(p.index)
+    for mat, faces in groups.items():
+        c.assign(ob, c.lib(mat, "dirt" if mat == "slickrock" else "wall"), faces)
+    ob.data.shade_flat()
+
+
 def butte_and_arch(c, oh, ter, span=True):
-    """The butte inside the hairpin, banded like the canyons, and the wind-carved arch
-    over the road beyond it (its legs where the greybox's stood). (No span: only the
-    butte, the ruin's arch has fallen.)"""
-    bt = c.rock_mass("Butte", oh.BUTTE[0], oh.BUTTE[1], 15.0, 14.0, 34.0, z0=-4, n=18, seed=5,
+    """The butte inside the hairpin, in the canyon's bands, and the sandstone arch over the
+    road beyond it (its legs where the greybox's stood). (No span: only the butte, the
+    ruin's arch has fallen.)"""
+    bt = c.rock_mass("Butte", oh.BUTTE[0], oh.BUTTE[1], 15.0, 14.0, 40.0, z0=-4, n=18, seed=5,
                      bands=[(1.15, 0.0), (1.0, 0.1), (0.92, 0.45), (0.88, 0.5), (0.86, 0.9), (0.8, 1.0)])
-    c.paint_rock(bt, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+    paint_strata(c, bt, oh.layer)
     if not span:
         return
     q = c.at(oh.SEG[19] + 20)
@@ -505,8 +553,7 @@ def butte_and_arch(c, oh, ter, span=True):
         p = q.side(side * (q.w / 2 + 6.0))
         legs.append(p)
         lg = c.rock_mass("Arch Leg %d" % (side > 0), p.x, p.y, 5.0, 4.5, q.p.z + 13.0, z0=q.p.z - 4.0, n=12, seed=11 + side, angle=rot)
-        c.paint_rock(lg, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
-    # The span: a thick rib of rock arching from leg to leg, sagging a little.
+        paint_strata(c, lg, oh.layer)
     (a, b) = legs
     bm = bmesh.new()
     rings = []
@@ -530,85 +577,92 @@ def butte_and_arch(c, oh, ter, span=True):
     bm.faces.new(vs[-1])
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     span = c.mesh_object("Rock Arch", bm, "Rocks", "both")
-    c.paint_rock(span, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+    c.paint_rock(span, ("strata_orange", "wall"), ("slickrock", "dirt"))
 
 
 def watchtower(c, oh):
-    """The ruined watchtower the spiral climbs round: a tapering round tower of mud
-    brick, its top broken (merlons fallen here and there, a bite out of one side), dark
-    arched windows, and a faded banner."""
+    """The old stone watchtower the spiral climbs round: a tapering round tower of laid
+    sandstone, banded with darker courses, its top an uneven parapet (stepped, a bite out
+    of one side), small dark windows in rings up it, a T-shaped doorway at its foot."""
     tx, ty = oh.TOWER
     m = Mesh()
-
-    def body(bm):
-        loft(bm, [ring(bm, (tx, ty), 17.0, -2.0, 24), ring(bm, (tx, ty), 16.2, 10.0, 24), ring(bm, (tx, ty), 15.5, 24.0, 24)], cap_top=True)
-
-    m.add(("adobe", "wall"), body)
-    m.add(("adobe_dark", "wall"), lambda bm: loft(bm, [ring(bm, (tx, ty), 17.4, -2.0, 24), ring(bm, (tx, ty), 17.4, 1.5, 24)], cap_top=True))
-    for k in range(18):
-        a = k * math.tau / 18
-        if k in (5, 6, 7):
-            continue  # the broken side
-        hgt = 3.0 - (1.4 if k in (4, 8, 13) else 0.0)
-        m.add(("adobe", "wall"), lambda bm, a=a, hgt=hgt: cuboid(bm, (tx + 14.9 * math.cos(a), ty + 14.9 * math.sin(a), 24.0 + hgt / 2), (2.6, 1.6, hgt), a + math.pi / 2))
-    for k in range(8):
-        a = k * math.tau / 8 + 0.2
-        for z in (8.0, 17.0):
-            r = 16.6 if z < 10 else 15.9
+    TOP = 36.0
+    m.add(("masonry", "wall"), lambda bm: loft(bm, [ring(bm, (tx, ty), 17.0, -2.0, 28), ring(bm, (tx, ty), 16.2, 10.0, 28),
+                                                     ring(bm, (tx, ty), 15.5, 24.0, 28), ring(bm, (tx, ty), 14.2, TOP, 28)], cap_top=True))
+    for z0, z1, r in ((-2.0, 1.2, 17.4), (9.6, 10.4, 16.35), (17.8, 18.6, 15.95), (28.0, 28.8, 15.1), (TOP - 1.2, TOP, 14.5)):
+        m.add(("strata_rust", "wall"), lambda bm, z0=z0, z1=z1, r=r: loft(bm, [ring(bm, (tx, ty), r, z0, 28), ring(bm, (tx, ty), r, z1, 28)], cap_top=True))
+    for k in range(20):
+        a = k * math.tau / 20
+        if k in (6, 7):
+            continue  # the bite out of its top
+        hgt = 2.4 + (1.3 if k % 5 == 0 else 0.0) - (1.0 if k in (5, 8, 14) else 0.0)
+        m.add(("masonry", "wall"), lambda bm, a=a, hgt=hgt: cuboid(bm, (tx + 13.8 * math.cos(a), ty + 13.8 * math.sin(a), TOP + hgt / 2),
+                                                                   (4.4, 1.3, hgt), a + math.pi / 2))
+    for k in range(10):
+        a = k * math.tau / 10 + 0.15
+        for z in (6.5, 14.0, 21.0, 31.0):
+            r = 16.6 if z < 10 else (16.0 if z < 18 else (15.6 if z < 24 else 14.8))
             x, y = tx + r * math.cos(a), ty + r * math.sin(a)
             n = Vector((math.cos(a), math.sin(a), 0))
             t = Vector((-math.sin(a), math.cos(a), 0))
 
             def win(bm, x=x, y=y, z=z, n=n, t=t):
-                c0 = Vector((x, y, z)) + n * 0.05
-                v = [bm.verts.new(c0 + t * dx + Vector((0, 0, dz))) for dx, dz in ((-0.7, -1.4), (0.7, -1.4), (0.7, 0.6), (0.0, 1.4), (-0.7, 0.6))]
+                c0 = Vector((x, y, z)) + n * 0.06
+                v = [bm.verts.new(c0 + t * dx + Vector((0, 0, dz))) for dx, dz in ((-0.45, -0.7), (0.45, -0.7), (0.45, 0.7), (-0.45, 0.7))]
                 bm.faces.new(v)
 
-            m.add(("oasis_bark", "wall"), win)
-    m.add(("oasis_banner", "wall"), lambda bm: cuboid(bm, (tx + 15.9, ty, 19.0), (0.12, 2.0, 5.0)))
+            m.add(("dark_corridor", "wall"), win)
     m.build(c, "Watchtower", "Rocks", "both")
 
 
-# ------------------------------------------------------------------ the dunes
+# ------------------------------------------------------------------ the floor
+
+
+def desert(c, oh, ter):
+    """Sage, agave, barrel cactus, dry grass, the odd joshua tree, boulders and tumbleweeds
+    on the canyon floor and its ledges; a cattle skull or two."""
+    import props  # noqa: E402
+
+    def floor(x, y, z):
+        return props.clear_of_road(c, x, y, 8.0) and not oh.in_water(x, y) and oh.creek_d(x, y) > oh.CREEK_HW + 6 and z < 14.0
+
+    def anywhere(x, y, z):
+        return props.clear_of_road(c, x, y, 8.0) and not oh.in_water(x, y)
+
+    area = (-240, 600, -420, 400)
+    for v in range(2):
+        props.scatter(c, cp.sagebrush(c, v), 160, area, anywhere, ter, seed=40 + v, scale=(0.8, 1.5), coll="Dunes", role="visual")
+        props.scatter(c, cp.barrel_cactus(c, v), 40, area, floor, ter, seed=44 + v, scale=(0.8, 1.3), coll="Dunes", role="visual")
+        props.scatter(c, cp.boulder(c, v), 40, area, anywhere, ter, seed=50 + v, scale=(0.9, 2.4), coll="Dunes", role="visual")
+        props.scatter(c, cp.joshua_tree(c, v), 8, area, floor, ter, seed=46 + v, scale=(0.8, 1.2), coll="Dunes", role="visual")
+    props.scatter(c, cp.agave(c, 0), 70, area, floor, ter, seed=52, scale=(0.8, 1.4), coll="Dunes", role="visual")
+    props.scatter(c, cp.dry_grass(c, 0), 140, area, floor, ter, seed=53, coll="Dunes", role="visual")
+    props.scatter(c, gp.tumbleweed(c, 0), 16, area, floor, ter, seed=54, coll="Dunes", role="visual")
+    props.scatter(c, gp.cattle_skull(c), 5, area, floor, ter, seed=55, coll="Dunes", role="visual")
 
 
 def dunes(c, oh, ter):
-    """Scrub, stones and the odd palm out on the dunes, and far buttes on the horizon."""
-    import props  # noqa: E402
-
-    sc_ = [scrub(c, v) for v in range(3)]
-    st = [stones(c, v) for v in range(3)]
-
-    def ok(x, y, z):
-        return props.clear_of_road(c, x, y, 8.0) and math.hypot(x - oh.POOL[0], y - oh.POOL[1]) > oh.POOL[2] + 14
-
-    for v in range(3):
-        props.scatter(c, sc_[v], 70, (-200, 560, -380, 360), ok, ter, seed=40 + v, scale=(0.8, 1.6), coll="Dunes", role="visual")
-        props.scatter(c, st[v], 40, (-200, 560, -380, 360), ok, ter, seed=50 + v, scale=(0.7, 2.2), coll="Dunes", role="visual")
-    for k, (x, y, rx, ry, h) in enumerate(((-230.0, 330.0, 40.0, 30.0, 70.0), (560.0, 280.0, 50.0, 34.0, 80.0), (600.0, -260.0, 36.0, 28.0, 64.0),
-                                           (-210.0, -360.0, 46.0, 30.0, 58.0), (250.0, 420.0, 30.0, 24.0, 76.0), (90.0, -430.0, 40.0, 26.0, 50.0))):
-        r = c.rock_mass("Far Butte %d" % k, x, y, rx, ry, h + 40.0, z0=0.0, n=16, seed=20 + k,
-                        bands=[(1.0, 0.0), (0.9, 0.12), (0.72, 0.25), (0.7, 0.85), (0.64, 1.0)])
-        c.paint_rock(r, ("gold_cliff", "wall"), ("pale_sand", "dirt"))
+    desert(c, oh, ter)
 
 
 # ------------------------------------------------------------------ build
 
 
 def build(c, oh, ruin=None):
-    """The oasis. (`ruin`: {"tent": the burnt tent}; then the arch and the watchtower are
+    """Havasu. (`ruin`: {"tent": the burnt tent}; then the arch and the watchtower are
     left to the ruin, and its lights and merging too: returns what finish needs.)"""
     ter = list(c.coll("Terrain").objects)
     sc = {"lights": [], "lanterns": [], "torches": [], "fires": []}
     village(c, oh, ter, sc)
     camp(c, oh, ter, sc, make=ruin and ruin["tent"])
     pool(c, oh, ter, sc)
+    havasu(c, oh)
     butte_and_arch(c, oh, ter, span=not ruin)
     if ruin:
-        dunes(c, oh, ter)
+        desert(c, oh, ter)
         return sc
     watchtower(c, oh)
-    dunes(c, oh, ter)
+    desert(c, oh, ter)
     finish(c, sc)
 
 
