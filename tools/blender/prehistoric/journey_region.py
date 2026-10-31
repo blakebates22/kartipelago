@@ -171,11 +171,18 @@ def main():
     s_start = c.nearest(*J.ROUTE[J.START][:2])[0].s
     s_end = c.nearest(*J.ROUTE[J.END][:2])[0].s
 
+    arch = [pb.tunnel_span(c, L, a, b) for name, kind, a, b in L.tunnels if JID == "gorge" and name == "Snow Arch"]
+
     def label(q):
         if not s_start <= q.s <= s_end:
             return None  # (no road: the way round out of sight)
+        if arch and arch[0][0] - 12.0 <= q.s <= arch[0][1] + 4.0:
+            return "snow"  # (snow from the Snow Arch's mouth: Blake, Oct 31)
         if L.tunnel_floor(q.p.x, q.p.y) is not None and L.wall_sd(q.p.x, q.p.y) > -6:
-            return L.look_at(q.p.x, q.p.y)
+            lk = L.look_at(q.p.x, q.p.y)
+            if JID == "gorge" and lk in ("steppe", "snow"):
+                return "snow"  # (the Snow Arch's road is snow already: Blake, Oct 31)
+            return lk
         d, wz = L.water_d(q.p.x, q.p.y)
         if d < L.river_hw + 4 and q.p.z > wz + 0.9:
             return "bridge"
