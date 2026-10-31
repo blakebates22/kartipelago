@@ -204,13 +204,15 @@ def water(c):
                 mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
     g = c.game(fx, fy, 12.6)
     c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - 12.6, 1), width=14.0, heading=0.0)
-    # (two thinner falls off the pinnacle's other faces, seen from the coast)
-    for k, a in enumerate((2.3, 4.1)):
-        px, py = M.PEAK
+    # (more falls off the pinnacle's other faces: the big one facing the crest's lookout,
+    # two thinner ones seen from the coast)
+    px, py = M.PEAK
+    toward = math.atan2(M.CREST[1] - py, M.CREST[0] - px)
+    for k, (a, wt, wb) in enumerate(((toward, 6.0, 11.0), (2.3, 3.0, 6.0), (4.1, 3.0, 6.0))):
         lx2, ly2 = px + 46.0 * math.cos(a), py + 46.0 * math.sin(a)
         t2 = M._land(lx2, ly2) - 1.0
-        b2 = M._land(px + 70.0 * math.cos(a), py + 70.0 * math.sin(a))
-        props.falls(c, "Spire Falls %d" % k, lx2, ly2, t2, b2, 3.0, 6.0, facing=1, throw=4.0, bulge=0.8, veils=2,
+        b2 = M.natural(px + 70.0 * math.cos(a), py + 70.0 * math.sin(a))
+        props.falls(c, "Spire Falls %d" % k, lx2, ly2, t2, b2, wt, wb, facing=1, throw=4.0, bulge=0.8, veils=3 if k == 0 else 2,
                     angle=a - math.pi / 2, mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
 
 

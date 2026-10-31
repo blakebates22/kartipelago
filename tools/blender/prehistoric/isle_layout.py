@@ -295,10 +295,31 @@ def on_boardwalk(x, y):
     return d < 26.0 and 0.05 < t < 0.95
 
 
+# The crest's look: a notch cut down through the ridge between the lookout and the
+# pinnacle, so from the road the whole spire and its falls stand across the valley.
+LOOK_NOTCH = (24.0, 100.0, 23.0)  # half angle (degrees), reach, floor
+
+
+def _notch(h, x, y):
+    cx, cy = CREST
+    d = math.hypot(x - cx, y - cy)
+    if d < 10.0 or d > LOOK_NOTCH[1] + 20.0:
+        return h
+    half, reach, floor = LOOK_NOTCH
+    to_peak = math.atan2(PEAK[1] - cy, PEAK[0] - cx)
+    off = abs(math.degrees(_adiff(math.atan2(y - cy, x - cx), to_peak)))
+    if off > half + 12.0:
+        return h
+    # (the floor falls away gently from the lookout, the sides of the cut sloping up)
+    z = floor - 0.12 * max(0.0, d - 12.0)
+    w = smooth((half + 12.0 - off) / 12.0) * smooth((reach + 20.0 - d) / 20.0) * smooth((d - 10.0) / 8.0)
+    return lerp(h, min(h, z), w)
+
+
 def natural(x, y):
     """The land, with the road's shelf cut into the hills (built up over the low ground);
-    open water under the boardwalk."""
-    h = _land(x, y)
+    open water under the boardwalk; the crest's notch."""
+    h = _notch(_land(x, y), x, y)
     if on_boardwalk(x, y):
         return h
     d, z = road_floor(x, y)
