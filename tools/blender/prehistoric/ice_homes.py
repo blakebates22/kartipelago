@@ -35,9 +35,15 @@ GLASS = "window_warm"
 WREATH = "wreath"
 LIGHTS = "xmas_lights"
 LOGS = "log_end"
-DOORS = ("siding_red", "siding_green", "awning_teal", "wrap_blue", "siding_ochre", "party_pink")
-CLOTH = ("party_red", "party_teal", "party_yellow", "party_blue", "party_pink", "party_white")
-AWNINGS = ("awning_red", "awning_green", "awning_teal", "awning_rose", "candy_stripe")
+# (Blake, Oct 30, on draft 7: "it feels a bit too whimsical ... hearthglow hallow is
+# supposed to be the whimsical portion of this world"; he chose the craftsmen's hollow:
+# plain sturdy homes of stone, timber and packed snow, warm windows, dark wood doors; ice
+# only as the carvers' craft, in their signs, lintels and showpieces.)
+STONES = ("frost_stone", "rift_stone", "frost_stone")
+DOORS = ("door_wood", "timber_beam", "weathered_timber", "door_wood", "siding_red", "siding_grey")
+CLOTH = ("siding_red", "siding_grey", "timber_beam", "rift_stone", "snow_ground", "door_wood")
+AWNINGS = ("weathered_timber", "timber_beam", "siding_grey", "siding_red")
+LAMP = "lantern_amber"
 SIGNS = ("fish", "owl", "bear", "star", "snowflake", "crown")
 
 
@@ -88,7 +94,7 @@ def sign(P, bm, kind, x, y, z, s=1.0):
                                                                     (0, 0, 1), (0.9 + 0.3 * (k % 2)) * s, 0.2 * s, n=4))
 
 
-def arch(P, bm, shape, w, h, y=0.0, mat=ICE, key=BLUE):
+def arch(P, bm, shape, w, h, y=0.0, mat="frost_stone", key=ICE):
     """An opening's frame of cut blocks, `w` wide and `h` to the top of its curve: round,
     pointed, keyhole or crooked."""
     lean = 0.12 if shape == "crooked" else 0.0
@@ -122,7 +128,7 @@ def door(P, bm, w, h, col, y=-0.1):
     P.add(IRON, lambda: cuboid(bm, (w * 0.3, y + 0.1, h * 0.48), (0.12, 0.1, 0.12)))
 
 
-def window(P, bm, x, z, shape, frame=BLUE, s=1.0, y=-0.05):
+def window(P, bm, x, z, shape, frame=TIMBER, s=1.0, y=-0.05):
     """A warm window in a frame: square, round, tall or a pair."""
     if shape == "round":
         # (An octagon: a square and a diamond.)
@@ -212,8 +218,12 @@ def tool_rack(P, bm, x, y):
         P.add(IRON, lambda k=k: cuboid(bm, (x - 0.55 + k * 0.37, y + 0.12, 1.7 + 0.1 * (k % 2)), (0.18 + 0.1 * (k % 2), 0.06, 0.12)))
 
 
-def lights(P, bm, w, z, y=0.6):
-    P.add(LIGHTS, lambda: cuboid(bm, (0, y, z), (w, 0.1, 0.18)))
+def lamp(P, bm, x, z, y=0.0):
+    """An iron bracket off the wall, a lamp of amber glass hanging from it."""
+    P.add(IRON, lambda: cuboid(bm, (x, y + 0.45, z), (0.08, 0.9, 0.08)))
+    P.add(IRON, lambda: cuboid(bm, (x, y + 0.85, z - 0.3), (0.04, 0.04, 0.6)))
+    P.add(LAMP, lambda: cuboid(bm, (x, y + 0.85, z - 0.75), (0.36, 0.36, 0.5)))
+    P.add(IRON, lambda: cuboid(bm, (x, y + 0.85, z - 0.45), (0.46, 0.46, 0.08)))
 
 
 # ------------------------------------------------------------------ the kinds
@@ -221,16 +231,16 @@ def lights(P, bm, w, z, y=0.6):
 
 def _clutter(P, bm, rng, w, h, door_col, wins, used):
     """A home's own mix of clutter round its front (`wins`: its windows' x, z)."""
-    picks = rng.sample(("awning", "shutters", "wreath", "woodpile", "line", "rack", "lights"), rng.randint(3, 4))
+    picks = rng.sample(("awning", "shutters", "lamp", "woodpile", "line", "rack", "lamp2"), rng.randint(3, 4))
     for it in picks:
         if it == "awning" and wins:
             x, z = wins[0]
             awning(P, bm, x, z + 1.2, 2.2, rng.choice(AWNINGS), y=0.1)
         elif it == "shutters" and wins:
             for x, z in wins:
-                shutters(P, bm, x, z, rng.choice((door_col, "siding_green", "siding_red", PLANK)), y=0.0)
-        elif it == "wreath":
-            wreath(P, bm, 0.0, used["door_h"] * 0.72, y=0.0)
+                shutters(P, bm, x, z, rng.choice((door_col, PLANK, TIMBER)), y=0.0)
+        elif it in ("lamp", "lamp2"):
+            lamp(P, bm, (-1 if it == "lamp" else 1) * (used["door_w"] / 2 + 0.6), used["door_h"] + 0.4, y=0.0)
         elif it == "woodpile":
             sx = rng.choice((-1, 1))
             woodpile(P, bm, sx * (w / 2 + 0.6), 1.4, rot=0.0)
@@ -239,28 +249,31 @@ def _clutter(P, bm, rng, w, h, door_col, wins, used):
             drying_line(P, bm, sx * (w / 2 - 0.4), sx * (w / 2 + 2.6), 2.4, rng)
         elif it == "rack":
             tool_rack(P, bm, rng.choice((-1, 1)) * (w / 2 + 0.2), 0.7)
-        elif it == "lights":
-            lights(P, bm, w * 0.9, h - 0.2)
     return picks
 
 
 def cut_home(c, idx, rng, w, h, sign_kind, door_col, arch_shape, deep=0.0):
+    stone = rng.choice(STONES)
     """Cut into the wall: a front of packed ice, the arch, the door, windows, the sign over
     the door, the snow and icicles along its top, the clutter; the snow behind runs back
     into the wall (`deep`: how far the front sits back in a cut of its own)."""
     info = {}
 
     def build(P, bm):
-        P.add(ROCK, lambda: _wedge(bm, -w / 2 - 1.8, w / 2 + 1.8, -9.0, -0.6 - deep, -1.5, h + 1.6, h + 2.6))
-        if deep > 0.5:  # (its own cut: side walls of snow out to the hollow's floor)
+        # The house itself, stone, its body back in the wall, packed snow on its top.
+        P.add(stone, lambda: cuboid(bm, (0, -2.8 - deep, h / 2 - 0.8), (w, 4.6, h + 0.6)))
+        P.add(SNOW, lambda: cuboid(bm, (0, -2.7 - deep, h - 0.3), (w + 0.5, 5.0, 0.6)))
+        P.add(TIMBER, lambda: cuboid(bm, (0, -0.4 - deep, h - 0.9), (w + 0.3, 0.5, 0.4)))
+        if deep > 0.5:  # (set back between stone cheeks, a porch)
             for sx in (-1, 1):
-                P.add(ROCK, lambda sx=sx: _wedge(bm, sx * (w / 2 + 0.2) - 0.8, sx * (w / 2 + 0.2) + 0.8, -deep - 0.6, 0.6, -1.0, h * 0.5, h + 1.2))
-        P.add(CLEAR, lambda: cuboid(bm, (0, -0.5 - deep, h / 2 - 0.8), (w, 0.6, h + 0.6)))
+                P.add(stone, lambda sx=sx: _wedge(bm, sx * (w / 2 + 0.1) - 0.7, sx * (w / 2 + 0.1) + 0.7, -deep - 0.6, 0.4, -1.0, h * 0.6, h + 0.2))
+            P.add(PLANK, lambda: cuboid(bm, (0, -deep / 2, h - 0.2), (w + 1.6, deep + 1.0, 0.3), tilt=(0.12, 0.0)))
         dw, dh = (2.6, 3.6) if arch_shape != "keyhole" else (2.2, 4.0)
         y0 = -deep
-        arch(P, bm, arch_shape, dw, dh, y=y0, key=rng.choice((BLUE, "gold_trim", CLEAR)))
+        arch(P, bm, arch_shape, dw, dh, y=y0, mat=rng.choice((stone, "frost_stone")), key=ICE)
         P.add(door_col, lambda: cuboid(bm, (0, y0 - 0.1, (dh - 0.6) / 2), (dw - 0.6, 0.12, dh - 0.6)))
         info["door_h"] = dh
+        info["door_w"] = dw
         wins = []
         shapes = ("square", "round", "tall", "pair")
         for sx in (-1, 1):
@@ -268,11 +281,11 @@ def cut_home(c, idx, rng, w, h, sign_kind, door_col, arch_shape, deep=0.0):
             if abs(x) < dw / 2 + 1.1 or rng.random() < 0.2:
                 continue
             z = rng.uniform(2.0, 2.8)
-            window(P, bm, x, z, rng.choice(shapes[:1] + shapes[2:]), frame=rng.choice((BLUE, ICE, TIMBER)), y=y0 - 0.1)
+            window(P, bm, x, z, rng.choice(shapes[:1] + shapes[2:]), frame=rng.choice((TIMBER, TIMBER, stone)), y=y0 - 0.1)
             wins.append((x, z))
         if h >= 6.5:
             x = rng.uniform(-w / 4, w / 4)
-            window(P, bm, x, h - 1.5, rng.choice(("square", "pair")), frame=BLUE, s=0.8, y=y0 - 0.1)
+            window(P, bm, x, h - 1.5, rng.choice(("square", "pair")), frame=TIMBER, s=0.8, y=y0 - 0.1)
         sign(P, bm, sign_kind, 0.0, y0 + 0.7, dh + 1.3, s=rng.uniform(0.9, 1.25))
         cornice(P, bm, w, h, rng, y=y0 + 0.2)
         if rng.random() < 0.6:
@@ -292,13 +305,15 @@ def stack_home(c, idx, rng, w, sign_kinds, door_cols):
     h0, h1, lift = 5.2, 4.6, 6.0
 
     def build(P, bm):
-        P.add(ROCK, lambda: _wedge(bm, -w / 2 - 2.0, w / 2 + 4.0, -11.0, -0.6, -1.5, lift + 0.2, lift + 2.0))
-        P.add(ROCK, lambda: _wedge(bm, -w / 2 - 1.5, w / 2 + 1.5, -11.0, -3.6, lift - 0.5, lift + h1 + 1.4, lift + h1 + 2.4))
+        stone = rng.choice(STONES)
+        P.add(stone, lambda: cuboid(bm, (0, -3.4, lift / 2 - 0.8), (w, 6.0, lift + 1.4)))
+        P.add("rift_stone" if stone != "rift_stone" else "frost_stone",
+              lambda: cuboid(bm, (0, -5.2, lift + h1 / 2), (w - 1.0, 4.6, h1)))
+        P.add(SNOW, lambda: cuboid(bm, (0, -5.0, lift + h1 + 0.2), (w - 0.4, 5.0, 0.6)))
         # The lower home.
-        P.add(CLEAR, lambda: cuboid(bm, (0, -0.5, h0 / 2 - 0.8), (w, 0.6, h0 + 0.6)))
-        arch(P, bm, rng.choice(("round", "crooked")), 2.4, 3.4, y=0.0)
+        arch(P, bm, rng.choice(("round", "crooked")), 2.4, 3.4, y=0.0, mat=stone)
         door(P, bm, 1.8, 2.8, door_cols[0])
-        window(P, bm, -w / 2 + 1.3, 2.3, "square", frame=BLUE)
+        window(P, bm, -w / 2 + 1.3, 2.3, "square", frame=TIMBER)
         sign(P, bm, sign_kinds[0], 0.0, 0.7, 4.6, s=0.9)
         # The ledge in front of the upper home, its balcony rail, the stairs up.
         P.add(PLANK, lambda: cuboid(bm, (0.6, -1.3, lift + 0.1), (w + 1.6, 2.6, 0.3)))
@@ -307,16 +322,15 @@ def stack_home(c, idx, rng, w, sign_kinds, door_cols):
         P.add(TIMBER, lambda: cuboid(bm, (0.6, -0.15, lift + 1.4), (w + 1.4, 0.14, 0.14)))
         for k in range(8):
             top = 0.75 * (k + 1)
-            P.add(SNOW, lambda k=k, top=top: cuboid(bm, (w / 2 + 4.6 - k * 0.55, -0.9, top / 2 - 0.2), (0.6, 1.8, top + 0.4)))
+            P.add("frost_stone", lambda k=k, top=top: cuboid(bm, (w / 2 + 4.6 - k * 0.55, -0.9, top / 2 - 0.2), (0.6, 1.8, top + 0.4)))
         # The upper home.
-        P.add(ICE, lambda: cuboid(bm, (0, -3.1, lift + h1 / 2), (w - 1.0, 0.6, h1)))
-        arch(P, bm, rng.choice(("pointed", "keyhole")), 2.2, 3.4, y=-2.7, mat=ICE)
+        arch(P, bm, rng.choice(("pointed", "keyhole")), 2.2, 3.4, y=-2.7, mat="frost_stone")
         P.add(door_cols[1], lambda: cuboid(bm, (0, -2.85, lift + 1.35), (1.5, 0.12, 2.6)))
         for sx in (-1, 1):
-            window(P, bm, sx * (w / 2 - 1.5), lift + 2.2, "round" if sx > 0 else "tall", frame=BLUE, y=-2.9)
+            window(P, bm, sx * (w / 2 - 1.5), lift + 2.2, "round" if sx > 0 else "tall", frame=TIMBER, y=-2.9)
         sign(P, bm, sign_kinds[1], 0.0, -2.1, lift + 4.4, s=0.9)
         cornice(P, bm, w - 0.6, lift + h1, rng, y=-2.9)
-        wreath(P, bm, 0.0, lift + 2.3, y=-2.75)
+        lamp(P, bm, -1.6, lift + 3.4, y=-2.9)
         info["chimney"] = stovepipe(P, bm, -w / 3, -5.0, lift + h1 + 1.2, rng)
         drying_line(P, bm, -w / 2 - 0.4, -w / 2 - 3.0, 1.6, rng)
 
@@ -336,17 +350,17 @@ def dome_home(c, idx, rng, r, sign_kind, door_col):
         for k in range(7):
             a = k * (math.pi / 2) / 6
             rings.append(ring(bm, (0, -r), r * math.cos(a) + 0.01, r * 0.92 * math.sin(a) - 0.4, n, phase=0.2 * k))
-        P.add(ICE, lambda: loft(bm, rings, cap_top=True))
+        P.add(SNOW, lambda: loft(bm, rings, cap_top=True))
         for k in range(1, 6):  # (the courses' seams, a ring of blue at each)
             z = r * 0.92 * math.sin(k * (math.pi / 2) / 6) - 0.4
             rr = r * math.cos(k * (math.pi / 2) / 6) + 0.06
-            P.add(BLUE, lambda z=z, rr=rr: loft(bm, [ring(bm, (0, -r), rr, z - 0.06, n), ring(bm, (0, -r), rr, z + 0.06, n)], cap_top=False))
+            P.add("frost_stone", lambda z=z, rr=rr: loft(bm, [ring(bm, (0, -r), rr, z - 0.06, n), ring(bm, (0, -r), rr, z + 0.06, n)], cap_top=False))
         # The tunnel to the door.
-        P.add(ICE, lambda: cuboid(bm, (0, 0.6, 1.0), (3.0, 2.6, 2.6)))
+        P.add("frost_stone", lambda: cuboid(bm, (0, 0.6, 1.0), (3.0, 2.6, 2.6)))
         P.add(SNOW, lambda: blob(bm, (0, 0.6, 2.4), 1.7, sx=1.0, sy=1.1, sz=0.45))
         P.add(door_col, lambda: cuboid(bm, (0, 1.92, 0.95), (1.5, 0.1, 1.9)))
-        arch(P, bm, "round", 2.2, 2.4, y=1.85, mat=CLEAR)
-        window(P, bm, r * 0.55, r * 0.45, "square", frame=BLUE, s=0.8, y=-r + r * 0.78)
+        arch(P, bm, "round", 2.2, 2.4, y=1.85, mat="rift_stone")
+        window(P, bm, r * 0.55, r * 0.45, "square", frame=TIMBER, s=0.8, y=-r + r * 0.78)
         info["chimney"] = stovepipe(P, bm, -r * 0.3, -r - 0.3, r * 0.8, rng)
         sign(P, bm, sign_kind, 0.0, -r, r * 0.92 + 0.6, s=1.0)
         if rng.random() < 0.6:
@@ -368,11 +382,11 @@ def tower_home(c, idx, rng, sign_kind, door_col):
         s = 4.6
         for k in range(5):
             hh = rng.uniform(2.4, 3.0)
-            mat = ICE if k % 2 == 0 else CLEAR
+            mat = "frost_stone" if k % 2 == 0 else "rift_stone"
             P.add(mat, lambda x=x, y=y, z=z, s=s, hh=hh, rot=rot: cuboid(bm, (x, y, z + hh / 2), (s, s, hh), rot=rot))
-            P.add(BLUE, lambda x=x, y=y, z=z, s=s, hh=hh, rot=rot: cuboid(bm, (x, y, z + hh), (s + 0.3, s + 0.3, 0.2), rot=rot))
+            P.add(TIMBER, lambda x=x, y=y, z=z, s=s, hh=hh, rot=rot: cuboid(bm, (x, y, z + hh), (s + 0.3, s + 0.3, 0.2), rot=rot))
             if k > 0:
-                window(P, bm, x + rng.uniform(-0.6, 0.6), z + hh * 0.55, rng.choice(("square", "tall", "round")), frame=BLUE, s=0.75,
+                window(P, bm, x + rng.uniform(-0.6, 0.6), z + hh * 0.55, rng.choice(("square", "tall", "round")), frame=TIMBER, s=0.75,
                        y=y + s / 2 - 0.05)
             z += hh
             x += rng.uniform(-0.35, 0.35)
@@ -382,13 +396,13 @@ def tower_home(c, idx, rng, sign_kind, door_col):
         P.add(BLUE, lambda x=x, y=y, z=z: _crystal(bm, (x, y, z), (0.08, 0, 1.0), 4.0, s * 0.62, phase=rot))
         sign(P, bm, sign_kind, x, y + s / 2 + 0.5, z - 1.4, s=0.85)
         # The door and its arch, the balcony round the second storey.
-        arch(P, bm, rng.choice(("round", "pointed")), 2.2, 3.2, y=-0.2)
+        arch(P, bm, rng.choice(("round", "pointed")), 2.2, 3.2, y=-0.2, mat="rift_stone")
         P.add(door_col, lambda: cuboid(bm, (0, -0.3, 1.3), (1.6, 0.12, 2.6)))
         P.add(PLANK, lambda: cuboid(bm, (0, -2.6, 5.4), (6.0, 6.0, 0.25)))
         for k in range(8):
             a = k * math.tau / 8
             P.add(TIMBER, lambda a=a: cuboid(bm, (math.cos(a) * 2.9, -2.6 + math.sin(a) * 2.9, 6.0), (0.14, 0.14, 1.1)))
-        lights(P, bm, 4.4, 5.7, y=0.5)
+        lamp(P, bm, 1.6, 5.2, y=-0.3)
         info["chimney"] = (x - 1.0, y, z - 0.5)
 
     name = _p(c, "Ice Home %d" % idx, build)
@@ -404,19 +418,19 @@ def workshop(c, idx, rng, sign_kind, door_col):
     info = {}
 
     def build(P, bm):
-        P.add(ROCK, lambda: _wedge(bm, -w / 2 - 1.8, w / 2 + 1.8, -11.0, -0.6, -1.5, h + 1.6, h + 2.6))
-        P.add(CLEAR, lambda: cuboid(bm, (-w / 2 + 1.5, -0.5, h / 2 - 0.8), (3.0, 0.6, h + 0.6)))
-        P.add(CLEAR, lambda: cuboid(bm, (w / 2 - 1.5, -0.5, h / 2 - 0.8), (3.0, 0.6, h + 0.6)))
-        P.add(CLEAR, lambda: cuboid(bm, (0, -0.5, h - 1.2), (w - 6.0, 0.6, 2.4)))
+        P.add("frost_stone", lambda: cuboid(bm, (-w / 2 + 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("frost_stone", lambda: cuboid(bm, (w / 2 - 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("frost_stone", lambda: cuboid(bm, (0, -3.0, h - 1.2), (w - 6.0, 5.6, 2.4)))
+        P.add(SNOW, lambda: cuboid(bm, (0, -2.9, h + 0.1), (w + 0.5, 6.0, 0.6)))
         P.add("cave_rock", lambda: cuboid(bm, (0, -3.0, 2.4), (w - 6.0, 4.6, 5.0)))  # (the dark inside)
         for k, (x, z) in enumerate(((-1.4, 0.6), (0.6, 0.6), (-0.4, 1.8), (1.8, 0.6))):
-            P.add(CLEAR, lambda x=x, z=z, k=k: cuboid(bm, (x, -1.6 - 0.3 * k, z), (1.2, 1.2, 1.2), rot=0.2 * k))
+            P.add(ICE, lambda x=x, z=z, k=k: cuboid(bm, (x, -1.6 - 0.3 * k, z), (1.2, 1.2, 1.2), rot=0.2 * k))
         for sx in (-1, 1):
             P.add(door_col, lambda sx=sx: cuboid(bm, (sx * (w / 2 - 2.9) + sx * 0.9, 1.2, 2.6), (2.9, 0.15, 5.2), rot=-sx * 1.15))
         P.add(TIMBER, lambda: cuboid(bm, (0, 1.0, h - 0.2), (w + 0.6, 2.4, 0.5)))
         P.add(TIMBER, lambda: cuboid(bm, (1.5, 2.6, h + 0.4), (0.4, 3.4, 0.4)))
         P.add(IRON, lambda: cuboid(bm, (1.5, 4.0, h - 1.6), (0.08, 0.08, 3.6)))
-        P.add(CLEAR, lambda: cuboid(bm, (1.5, 4.0, h - 3.9), (1.4, 1.4, 1.2), rot=0.3))
+        P.add(ICE, lambda: cuboid(bm, (1.5, 4.0, h - 3.9), (1.4, 1.4, 1.2), rot=0.3))
         sign(P, bm, sign_kind, -w / 2 + 1.5, 0.6, h + 1.0, s=1.3)
         window(P, bm, w / 2 - 1.5, 3.2, "tall", frame=TIMBER)
         cornice(P, bm, w, h, rng, y=0.3)
@@ -435,11 +449,11 @@ def tiny_hut(c, idx, rng, sign_kind, door_col):
 
     def build(P, bm):
         P.add(SNOW, lambda: cuboid(bm, (0, -1.6, 1.4), (3.6, 3.2, 3.0)))
-        P.add(ICE, lambda: cuboid(bm, (0.15, -1.6, 3.15), (4.2, 3.8, 0.6), tilt=(0.06, 0.1)))
-        P.add(BLUE, lambda: _crystal(bm, (0.3, -1.6, 3.4), (0.15, 0.0, 1.0), 1.6, 0.9, n=5))
+        P.add(PLANK, lambda: cuboid(bm, (0.15, -1.6, 3.15), (4.2, 3.8, 0.3), tilt=(0.06, 0.1)))
+        P.add(SNOW, lambda: blob(bm, (0.2, -1.6, 3.4), 2.0, sx=1.05, sy=0.95, sz=0.3))
         P.add(door_col, lambda: cuboid(bm, (-0.5, 0.02, 0.95), (1.1, 0.1, 1.9)))
-        arch(P, bm, "crooked", 1.6, 2.2, y=0.05, mat=ICE)
-        window(P, bm, 1.0, 1.8, "round", frame=BLUE, s=0.6, y=0.0)
+        arch(P, bm, "crooked", 1.6, 2.2, y=0.05, mat=TIMBER)
+        window(P, bm, 1.0, 1.8, "round", frame=TIMBER, s=0.6, y=0.0)
         sign(P, bm, sign_kind, 0.4, 0.4, 4.4, s=0.7)
         P.add(TIMBER, lambda: cuboid(bm, (2.1, -0.4, 1.0), (0.1, 1.4, 2.2), tilt=(0.0, -0.25)))
         P.add(TIMBER, lambda: cuboid(bm, (2.25, -0.4, 1.0), (0.1, 0.2, 2.2), tilt=(0.0, -0.25)))
@@ -457,20 +471,18 @@ def block_home(c, idx, rng, sign_kind, door_col):
     info = {}
 
     def build(P, bm):
-        P.add(ROCK, lambda: _wedge(bm, -s / 2 - 1.0, s / 2 + 1.0, -s - 4.0, -s + 1.0, -1.5, s * 0.6, s + 2.0))
-        P.add(CLEAR, lambda: cuboid(bm, (0, -s / 2, s / 2 - 0.4), (s, s, s), tilt=(0.05, 0.04)))
-        P.add(BLUE, lambda: cuboid(bm, (0, -s / 2, s / 2 - 0.4), (s * 0.7, s * 0.7, s * 0.7), tilt=(0.05, 0.04)))
+        P.add(ICE, lambda: cuboid(bm, (0, -s / 2, s / 2 - 0.4), (s, s, s), tilt=(0.05, 0.04)))
         P.add("cave_rock", lambda: cuboid(bm, (0, 0.02, 1.6), (2.4, 0.2, 3.2)))
-        arch(P, bm, rng.choice(("round", "keyhole")), 2.6, 3.8, y=0.15, mat=ICE)
+        arch(P, bm, rng.choice(("round", "keyhole")), 2.6, 3.8, y=0.15, mat="frost_stone")
         P.add(door_col, lambda: cuboid(bm, (0, 0.08, 1.45), (1.9, 0.1, 2.9)))
         for x, z in ((-2.6, 4.6), (2.4, 2.6), (1.6, 5.9)):
-            window(P, bm, x, z, rng.choice(("square", "round", "tall")), frame=ICE, s=0.8, y=0.05)
+            window(P, bm, x, z, rng.choice(("square", "round", "tall")), frame=TIMBER, s=0.8, y=0.05)
         P.add(SNOW, lambda: blob(bm, (0.3, -s / 2, s - 0.1), s * 0.55, sx=1.0, sy=1.0, sz=0.25))
         for k in range(10):
             x = -s / 2 + 0.4 + k * (s - 0.8) / 9
             P.add(BLUE, lambda x=x, ln=rng.choice((0.5, 0.9, 1.4, 2.0)): _crystal(bm, (x, 0.25, s - 0.6), (0, 0, -1), ln, 0.16, n=4))
         sign(P, bm, sign_kind, -1.8, 0.7, s + 0.6, s=1.15)
-        info["clutter"] = _clutter(P, bm, rng, s, s - 0.6, door_col, [(2.4, 2.6)], {"door_h": 3.4})
+        info["clutter"] = _clutter(P, bm, rng, s, s - 0.6, door_col, [(2.4, 2.6)], {"door_h": 3.4, "door_w": 2.6})
 
     name = _p(c, "Ice Home %d" % idx, build)
     info.update(w=s + 2.0, lantern=(s / 2 + 0.6, 0.8, 3.2))
@@ -482,21 +494,22 @@ def block_home(c, idx, rng, sign_kind, door_col):
 # (Round the hollow from its mouth's east side, by the back, to its west: the ellipse's
 # angle, how far in from the wall the front stands (m), the kind, a turn off true. "free"
 # kinds stand out on the floor.)
+# (The walls' foot is 2 m soft on the land's 2.5 m grid: the fronts stand 2 m out, their
+# bodies back in the rock.)
 SLOTS = [
-    (-0.50, 2.0, "workshop", 0.10),
-    (-0.05, 1.2, "cut", -0.12),
-    (0.32, 7.5, "dome", 0.0),
-    (0.62, 1.6, "stack", 0.08),
-    (0.98, 4.0, "cut_deep", -0.06),
+    (-0.50, 2.0, "workshop", 0.06),
+    (-0.08, 2.0, "cut", -0.08),
+    (0.30, 7.5, "dome", 0.0),
+    (0.62, 2.0, "stack", 0.05),
+    (0.98, 2.0, "cut_deep", -0.04),
     (1.28, 5.8, "tower", 0.2),
-    (1.55, 1.0, "block", -0.1),
-    (1.90, 1.8, "cut", 0.14),
+    (1.55, 2.0, "block", -0.06),
+    (1.90, 2.0, "cut", 0.08),
     (2.15, 4.5, "hut", 0.5),
-    (2.40, 1.4, "stack", -0.08),
-    (2.76, 2.0, "cut", 0.05),
-    (3.05, 5.8, "tower", -0.25),
-    (3.33, 1.2, "cut_deep", 0.12),
-    (3.62, 7.0, "dome", 0.0),
+    (2.42, 2.0, "stack", -0.05),
+    (2.78, 2.0, "cut", 0.04),
+    (3.08, 5.8, "tower", -0.25),
+    (3.40, 2.0, "cut_deep", 0.07),
 ]
 
 

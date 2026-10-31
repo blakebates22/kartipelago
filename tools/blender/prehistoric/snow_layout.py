@@ -607,7 +607,7 @@ def hollow(h, x, y):
     d1 = (1.0 - e1) * min(HOLLOW[2], HOLLOW[3])
     d2 = (1.0 - e2) * min(HOLLOW_MOUTH[2], HOLLOW_MOUTH[3])
     d = max(d1, d2)
-    if d < -4.0:
+    if d < -1.5:
         return h
     zf = HOLLOW_Z + 0.8 * smooth((cy - y) / -ry)
     if d2 > d1:
@@ -615,7 +615,8 @@ def hollow(h, x, y):
         zf = lerp(zf, 60.6, smooth((HOLLOW_MOUTH[1] - y) / HOLLOW_MOUTH[3]))
     if zf > h and d < 0.0:
         return h
-    return lerp(h, min(h, zf) if d < 0.0 else zf, smooth((d + 4.0) / 4.0))
+    # (The walls sheer, 1.5 m: the carvers' homes are cut straight into them.)
+    return lerp(h, min(h, zf) if d < 0.0 else zf, smooth((d + 1.5) / 1.5))
 
 
 def _hollow_lane():
