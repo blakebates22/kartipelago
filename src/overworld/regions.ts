@@ -402,70 +402,74 @@ export const REGIONS: Region[] = [
     // Tiki Steps back to the village. (The positions below are the build's entities.)
     id: "tropic_isles",
     name: "Tropic Isles",
+    // v4 (Blake, Oct 31: "Needs to be an island ... tropical dense forest in the center"):
+    // one big island (tools/blender/prehistoric/isle_layout.py, isle_region.py), the coast
+    // road round it and in over the jungle crest; the island hop comes in over the east bay
+    // to Raptor's stilt village. (The positions below are the build's entities.)
     packageId: "beach_region",
     ruinPackageId: "beach_region_ruin",
-    // A secret, for the way back: a smugglers' cave in the pier's cove, behind a rockfall the Valley Tool shifts.
+    // A secret, for the way back: a smugglers' cave behind the north beach, behind a rockfall the Valley Tool shifts.
     secret: {
       obstacle: "rockfall",
       tool: "valley",
-      gate: { x: -31.58, z: 149.91, heading: 2.9267, width: 9 },
-      spot: { x: -33.5, z: 158.7 },
+      gate: { x: 34.13, z: -291.0, heading: 0.014, width: 9 },
+      spot: { x: 34, z: -300 },
     },
-    // The smugglers' Sea Cave: a walled yard in the shipwreck cove, Raptor's old haunt.
+    // Raptor's old cove: a walled yard at the jungle's edge behind the west beach.
     cave: {
-      gate: { x: -153.54, z: 60.27, heading: 1.9653, width: 9 },
-      spot: { x: -163.7, z: 64.5 },
+      gate: { x: -260.99, z: 39.48, heading: -1.6181, width: 9 },
+      spot: { x: -250, z: 40 },
     },
     music: "coral_cove",
     worldId: "beach",
     kingdom: "beach",
-    // The main road's start line, south of the village square (the 1-on-1 is raced from it).
-    challenge: { x: 16, z: -140, heading: -1.8809 },
-    // On the village square's boardwalk, facing south to the road.
-    spawn: { x: 0, z: -155, heading: 0 },
+    // The main road's start line, by the village (the 1-on-1 is raced from it).
+    challenge: { x: 273.6, z: -48.2, heading: 0.5417 },
+    // On the village square's boardwalk, facing west to the road.
+    spawn: { x: 252, z: -30, heading: -1.5708 },
     gateways: [
-      // At the water park's slide tower, north-west.
-      { id: "splash", track: "splash_lagoon", x: -174.0, z: -77.08, radius: 6, heading: 1.5858 },
-      // By the wrecked hull up the shipwreck cove's beach, south-west.
-      { id: "wreck", track: "shipwreck_bay", x: -150.56, z: 91.07, radius: 6, heading: 1.7321 },
-      // At the end of the pier, Volcano Isle smoking offshore.
-      { id: "volcano", track: "volcano_isle", x: 1.98, z: 186.23, radius: 6, heading: 2.6233 },
-      // By the coral heads in the shallows, south-east.
-      { id: "coral", track: "coral_cove", x: 123.77, z: 117.75, radius: 6, heading: -2.5955 },
-      // Tidewyrm's lair: a sea cave in the coral cove's east headland.
+      // At the water park's slide tower by the lagoon, south-west.
+      { id: "splash", track: "splash_lagoon", x: -117.93, z: 246.43, radius: 6, heading: -0.5169 },
+      // By the galleon down Shipwreck Bay's beach, north-west.
+      { id: "wreck", track: "shipwreck_bay", x: -241.65, z: -177.74, radius: 6, heading: 0.0949 },
+      // At the end of the north pier, Volcano Isle smoking offshore.
+      { id: "volcano", track: "volcano_isle", x: 14.03, z: -390.77, radius: 6, heading: 0.0623 },
+      // By the coral heads off Coral Cove's beach, south-east.
+      { id: "coral", track: "coral_cove", x: 168.63, z: 190.39, radius: 6, heading: -3.0456 },
+      // Tidewyrm's lair: a sea cave at the foot of the headland's south cliffs, below the village.
       {
         id: "lair",
         track: "boss_tropic",
-        x: 178.19,
-        z: 58.01,
+        x: 243.4,
+        z: 175.69,
         radius: 6,
-        heading: -1.2828,
+        heading: -1.8141,
         boss: true,
         label: "TIDEWYRM'S LAIR",
       },
     ],
     passages: [
-      // Back up the Dust Road to Desert World.
+      // Back over the island hop (for now the Dust Road's section) to Desert World: the pier's end, east over the bay.
       {
         id: "dust_road",
-        label: "THE DUST ROAD · BACK TO DESERT WORLD",
+        label: "THE ISLAND HOP · BACK TO DESERT WORLD",
         to: "journey_dust",
         toPassage: "end",
-        x: 0,
-        z: -279.4,
+        x: 442,
+        z: -26,
         radius: 8,
-        heading: 0,
+        heading: -1.5935,
       },
-      // Tidewyrm's Causeway, on from the pier's end over the sea: to the Dragon Kingdom.
+      // Tidewyrm's Causeway, west over the sea from the west beach: to the Dragon Kingdom.
       {
         id: "causeway",
         label: "TIDEWYRM'S CAUSEWAY · TO THE DRAGON KINGDOM",
         to: "journey_cause",
         toPassage: "start",
-        x: 0,
-        z: 285.2,
+        x: -446,
+        z: -92,
         radius: 8,
-        heading: -2.861, // (along the Causeway, back to the beach west of the pier)
+        heading: 1.3979, // (along the Causeway, back east to the beach)
         ruinOnly: true,
         blocker: { kind: "water", width: 14 },
         opensAfter: "beach",
