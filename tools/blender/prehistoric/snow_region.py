@@ -33,6 +33,7 @@ import winter_props as wp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import snow_layout as SL  # noqa: E402
 import snow_dress as sd  # noqa: E402
+import carvers_village as cv  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("snow_region") + os.environ.get("KP_REGION_SUFFIX", "")
@@ -185,6 +186,17 @@ def main():
     a = math.atan2(smp.p.y - vy, smp.p.x - vx)
     c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx + (vr - 2.0) * math.cos(a), vy + (vr - 2.0) * math.sin(a)),
                                        z0=smp.p.z, c=c), "hearth_cobble", "road", **trail, flush=True, ease=8.0)
+    # The Ice Hollow's lane, off the pass's road, round the ice carvers' village and back
+    # (v4c, carvers_village), easing up off the road at either end.
+    lane = SL._hollow_lane()
+    ends = [c.nearest(*lane[0][:2])[0].p.z, c.nearest(*lane[-1][:2])[0].p.z]
+    cum = [0.0]
+    for p, q in zip(lane, lane[1:]):
+        cum.append(cum[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
+    lane = [(x, y, lerp(ends[0], lerp(ends[1], z, smooth((cum[-1] - d) / 14.0)), smooth(d / 14.0)) + 0.05)
+            for (x, y, z), d in zip(lane, cum)]
+    c.side_road("Ice Hollow Lane", lane, "packed_snow_road", "road", width=9.0, shoulder=1.2, shoulder_mat=snow, flush=True,
+                ease=8.0)
     gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
     if RUIN:
         gates["lair"] = SL.LAIR
@@ -224,8 +236,11 @@ def main():
     thresholds(c, ground)
     sd.ice_bridge(c, ground)
     village(c, ground, ter)
+    # The stone-carvers' village, cut into the switchbacks' terraces (v4b).
+    carved = paint.Taken()
+    cv.build(c, ground, carved)
     if not RUIN:
-        sd.entry_pass(c, ground, ENTRY)
+        sd.entry_pass(c, ground, ENTRY, carved)
     landmarks(c, ground, spots)
     if RUIN:
         ruined(c, ground)
@@ -443,7 +458,8 @@ def dress(c, ground, spots):
     vx, vy, vr, _vz = SL.VILLAGE
     taken = paint.Taken([(HUB[0], HUB[1], 12.0), (vx, vy, vr + 10.0), (*HUT, 26.0), (*RETURN, 18.0), (*SECRET, 16.0),
                          *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
-                         *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS])
+                         *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS,
+                         (SL.HOLLOW[0], SL.HOLLOW[1], 31.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0)])
     # The walls brought to life (snow_dress), both builds.
     sd.wall_life(c, ground, taken)
 

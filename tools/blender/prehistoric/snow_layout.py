@@ -477,6 +477,43 @@ def lookout_floor(x, y):
     return best
 
 
+def _terrace_cols():
+    """The descent's samples by metre of x: [(y, z)] sorted by y, for terrace()."""
+    tx, ty = CREST_WAY[_CREST_TOP]
+    top = min(range(len(LOOKOUT_LINE)), key=lambda i: math.hypot(LOOKOUT_LINE[i][0] - tx, LOOKOUT_LINE[i][1] - ty))
+    # (Every metre along the descent, so no column misses a leg.)
+    pts = []
+    for a, b in zip(LOOKOUT_LINE[top:], LOOKOUT_LINE[top + 1:]):
+        n = max(1, int(math.hypot(b[0] - a[0], b[1] - a[1])))
+        pts.extend((lerp(a[0], b[0], j / n), lerp(a[1], b[1], j / n), lerp(a[2], b[2], j / n)) for j in range(n))
+    cols = {}
+    for x, y, z in pts:
+        for k in range(int(math.floor(x)) - 1, int(math.floor(x)) + 2):
+            cols.setdefault(k, []).append((y, z))
+    for v in cols.values():
+        v.sort()
+    return cols
+
+
+_TERRACE = _terrace_cols()
+
+
+def terrace(h, x, y):
+    """Between two legs of the switchbacks the mountain is cut in terraces, as the carvers
+    cut it (Blake, Oct 30, "a little village that is carved straight into the plateau"):
+    each leg's shelf runs level out to the next leg's sheer face (lookout_land cuts it)."""
+    col = _TERRACE.get(int(math.floor(x)))
+    if not col or y < col[0][0] or y > col[-1][0]:
+        return h
+    south = [z for yy, z in col if yy < y - 1.0]
+    north = [yy for yy, z in col if yy > y + 1.0]
+    if not south or not north:
+        return h
+    # (The leg just south, uphill: the highest-y sample below this point.)
+    zs = max(((yy, z) for yy, z in col if yy < y - 1.0))[1]
+    return zs - 0.25
+
+
 def crest_height(x, y):
     """The mountain the Crest is: a broad top at MOUNT's height; its inner face falling north
     as steeply as the legs step down it (so from the gate you look down over them), its
@@ -496,6 +533,7 @@ def lookout_land(h, x, y, wsd):
         ch = crest_height(x, y)
         if ch > h:
             h = lerp(h, ch, smooth((wsd - 6.0) / 14.0))
+        h = terrace(h, x, y)
     f = lookout_floor(x, y)
     cx, cy, cr = CARVERS
     d = math.hypot(x - cx, y - cy)
@@ -507,9 +545,57 @@ def lookout_land(h, x, y, wsd):
     dd, z = f
     if dd < 7.0:
         return z - 0.25
-    if dd < 16.0:
-        return lerp(z - 0.25, h, smooth((dd - 7.0) / 9.0))
+    # (Cut into the mountain, the face stands sheer: the carvers' rock, their houses cut
+    # into it; built out over lower ground, it falls away more gently.)
+    span = 3.5 if h > z else 9.0
+    if dd < 7.0 + span:
+        return lerp(z - 0.25, h, smooth((dd - 7.0) / span))
     return h
+
+
+# v4c (Blake, Oct 30: "I do want a little village that we can drive around in as soon as
+# we get down into the switch backs ... we can just go into the plateau and carve out
+# space"; the ice carvers): the Ice Hollow, cut into the plateau's south flank over the
+# pass where the switchbacks come down: sheer snow and ice walls round a level floor, open
+# to the pass by its mouth, a lane looping round the carvers' homes in its walls and the
+# sculpture garden in its middle.
+HOLLOW = (12.0, -108.0, 32.0, 34.0)  # (Blake's pin, review-snow_region 1: (20, -133))  # x, y, half-widths across and along
+HOLLOW_MOUTH = (12.0, -141.0, 24.0, 14.0)
+HOLLOW_Z = 62.0
+HOLLOW_LANE_WAY = [(0.0, -157.0), (-5.0, -138.0), (-10.0, -118.0), (-5.0, -95.0), (12.0, -86.0), (29.0, -95.0),
+                   (33.0, -114.0), (28.0, -134.0), (22.0, -150.0)]
+HOLLOW_GARDEN = (12.0, -113.0, 11.0)  # the sculpture garden: x, y, radius (inside the lane's loop)
+
+
+def _ell(x, y, e):
+    cx, cy, rx, ry = e
+    return math.hypot((x - cx) / rx, (y - cy) / ry)
+
+
+def hollow(h, x, y):
+    """The Ice Hollow cut out of the land: its floor level (a hair higher to the back), its
+    walls sheer (4 m), the mouth's floor easing down to the pass's road."""
+    e1 = _ell(x, y, HOLLOW)
+    e2 = _ell(x, y, HOLLOW_MOUTH)
+    _, cy, _, ry = HOLLOW
+    # (Inside: how far in from the wall, in metres, near enough.)
+    d1 = (1.0 - e1) * min(HOLLOW[2], HOLLOW[3])
+    d2 = (1.0 - e2) * min(HOLLOW_MOUTH[2], HOLLOW_MOUTH[3])
+    d = max(d1, d2)
+    if d < -4.0:
+        return h
+    zf = HOLLOW_Z + 0.8 * smooth((cy - y) / -ry)
+    if d2 > d1:
+        # (The mouth: down towards the road at its south.)
+        zf = lerp(zf, 60.6, smooth((HOLLOW_MOUTH[1] - y) / HOLLOW_MOUTH[3]))
+    if zf > h and d < 0.0:
+        return h
+    return lerp(h, min(h, zf) if d < 0.0 else zf, smooth((d + 4.0) / 4.0))
+
+
+def _hollow_lane():
+    pts = _round_way(HOLLOW_LANE_WAY, every=2.5, r=9.0)
+    return [(x, y, natural(x, y) + 0.05) for x, y in pts]
 
 
 def natural(x, y):
@@ -519,6 +605,7 @@ def natural(x, y):
     wsd = L.wall_sd(x, y)
     h = plateau(h, x, y, wsd)
     h = lookout_land(h, x, y, wsd)
+    h = hollow(h, x, y)
     lx, ly, lr, lz = LAKE
     d = math.hypot(x - lx, y - ly)
     if d < lr + 14:

@@ -241,9 +241,9 @@ export const REGIONS: Region[] = [
     kingdom: "snow",
     // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
     challenge: { x: 18, z: 150, heading: -1.7226 },
-    // In the stone-carvers' square, on its terrace halfway down the switchbacks from the
-    // Crest Gate, facing north over the kingdom.
-    spawn: { x: 14, z: 265, heading: Math.PI },
+    // In the ice carvers' village, in the Ice Hollow over the pass, facing in to the Frost
+    // Spire.
+    spawn: { x: 12, z: 140, heading: Math.PI },
     gateways: [
       // In the village's basin's east wall, at the end of the lane out of the square.
       {

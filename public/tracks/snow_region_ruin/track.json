@@ -157,6 +157,164 @@
       "heading": 0.278
     },
     {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 16.0,
+      "z": 119.0,
+      "y": 61.8,
+      "r": 8.0,
+      "n": 5,
+      "folk": "snow",
+      "heading": 0.0
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": 39.08,
+      "y": 64.92,
+      "z": 116.93
+    },
+    {
+      "id": "chimney_01",
+      "type": "chimney",
+      "x": 44.3,
+      "y": 69.92,
+      "z": 114.04
+    },
+    {
+      "id": "lantern_13",
+      "type": "lantern",
+      "x": 40.62,
+      "y": 64.93,
+      "z": 110.8
+    },
+    {
+      "id": "lantern_14",
+      "type": "lantern",
+      "x": 39.32,
+      "y": 65.08,
+      "z": 98.52
+    },
+    {
+      "id": "chimney_02",
+      "type": "chimney",
+      "x": 41.4,
+      "y": 70.08,
+      "z": 92.57
+    },
+    {
+      "id": "lantern_15",
+      "type": "lantern",
+      "x": 36.17,
+      "y": 65.2,
+      "z": 90.93
+    },
+    {
+      "id": "lantern_16",
+      "type": "lantern",
+      "x": 28.21,
+      "y": 65.35,
+      "z": 82.7
+    },
+    {
+      "id": "chimney_03",
+      "type": "chimney",
+      "x": 26.74,
+      "y": 70.35,
+      "z": 76.92
+    },
+    {
+      "id": "lantern_17",
+      "type": "lantern",
+      "x": 22.81,
+      "y": 65.45,
+      "z": 79.33
+    },
+    {
+      "id": "lantern_18",
+      "type": "lantern",
+      "x": 10.56,
+      "y": 65.45,
+      "z": 77.61
+    },
+    {
+      "id": "chimney_04",
+      "type": "chimney",
+      "x": 5.47,
+      "y": 70.45,
+      "z": 73.9
+    },
+    {
+      "id": "lantern_19",
+      "type": "lantern",
+      "x": 2.56,
+      "y": 65.32,
+      "z": 79.36
+    },
+    {
+      "id": "lantern_20",
+      "type": "lantern",
+      "x": -7.01,
+      "y": 65.2,
+      "z": 85.7
+    },
+    {
+      "id": "chimney_05",
+      "type": "chimney",
+      "x": -12.97,
+      "y": 70.2,
+      "z": 85.44
+    },
+    {
+      "id": "lantern_21",
+      "type": "lantern",
+      "x": -11.18,
+      "y": 65.07,
+      "z": 90.42
+    },
+    {
+      "id": "lantern_22",
+      "type": "lantern",
+      "x": -15.86,
+      "y": 64.93,
+      "z": 101.86
+    },
+    {
+      "id": "chimney_06",
+      "type": "chimney",
+      "x": -20.74,
+      "y": 69.93,
+      "z": 105.84
+    },
+    {
+      "id": "lantern_23",
+      "type": "lantern",
+      "x": 81.19,
+      "y": 142.78,
+      "z": 316.38
+    },
+    {
+      "id": "lantern_24",
+      "type": "lantern",
+      "x": -47.18,
+      "y": 121.37,
+      "z": 280.86
+    },
+    {
+      "id": "lantern_25",
+      "type": "lantern",
+      "x": 73.19,
+      "y": 101.09,
+      "z": 245.62
+    },
+    {
+      "id": "lantern_26",
+      "type": "lantern",
+      "x": -47.19,
+      "y": 81.05,
+      "z": 210.3
+    },
+    {
       "id": "sparkles_01",
       "type": "sparkles",
       "rate": 12,
@@ -225,7 +383,7 @@
       "heading": 1.9576720445259248
     },
     {
-      "id": "villager_home_02",
+      "id": "villager_home_03",
       "type": "villager_home",
       "x": -125.51,
       "z": 176.04,
@@ -236,7 +394,7 @@
       "heading": -0.652
     },
     {
-      "id": "villager_home_03",
+      "id": "villager_home_04",
       "type": "villager_home",
       "x": -145.67,
       "z": 137.47,
@@ -247,7 +405,7 @@
       "heading": -1.743
     },
     {
-      "id": "villager_home_04",
+      "id": "villager_home_05",
       "type": "villager_home",
       "x": -56.22,
       "z": 98.25,
@@ -258,7 +416,7 @@
       "heading": 1.832
     },
     {
-      "id": "villager_home_05",
+      "id": "villager_home_06",
       "type": "villager_home",
       "x": -180.36,
       "z": 17.64,
@@ -269,7 +427,7 @@
       "heading": -1.715
     },
     {
-      "id": "villager_home_06",
+      "id": "villager_home_07",
       "type": "villager_home",
       "x": -178.75,
       "z": 61.69,
@@ -280,7 +438,7 @@
       "heading": -0.918
     },
     {
-      "id": "villager_home_07",
+      "id": "villager_home_08",
       "type": "villager_home",
       "x": -161.54,
       "z": -20.03,
@@ -291,7 +449,7 @@
       "heading": 0.995
     },
     {
-      "id": "villager_home_08",
+      "id": "villager_home_09",
       "type": "villager_home",
       "x": -70.48,
       "z": -122.3,
@@ -302,7 +460,7 @@
       "heading": -1.09
     },
     {
-      "id": "villager_home_09",
+      "id": "villager_home_10",
       "type": "villager_home",
       "x": -94.81,
       "z": -163.95,
@@ -313,7 +471,7 @@
       "heading": 1.938
     },
     {
-      "id": "villager_home_10",
+      "id": "villager_home_11",
       "type": "villager_home",
       "x": 0.29,
       "z": -174.62,
@@ -324,7 +482,7 @@
       "heading": -2.172
     },
     {
-      "id": "villager_home_11",
+      "id": "villager_home_12",
       "type": "villager_home",
       "x": 88.98,
       "z": -127.27,
@@ -335,7 +493,7 @@
       "heading": -0.35
     },
     {
-      "id": "villager_home_12",
+      "id": "villager_home_13",
       "type": "villager_home",
       "x": 188.21,
       "z": -76.09,
@@ -355,9 +513,9 @@
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
-    "snow_dress.py": "3904139d3a7ae8ae2cd5f0f00aaeb673948985286b06fc79c7ed118fe24e3524",
-    "snow_layout.py": "1fbb2c86025ac708e67afb142eceb262e24efbb5c124362fd572d4178a2dffd1",
+    "snow_dress.py": "dadb7cd62d71a9a411b4610903c5dbe1e8ce06e2feb7d6d1ad7170a29f06b38b",
+    "snow_layout.py": "e8805a56d0ac723b2ac9141f8e14debe5e680c9c18269e8ae9e6ce4a86c5d73a",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "98f94b5923c1b182dcf8cc0ed945342c98f767f7bbe59bed6adcf9ed6d050b87"
+    "snow_region.py": "c89664fc7e5318327e9b7c60422a46c4e3608d29d996d3a07d3e0e5d5f156f53"
   }
 }

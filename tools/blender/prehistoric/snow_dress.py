@@ -612,7 +612,7 @@ def market(c, ground, cx, cy, cr, cz):
     print("market: %d stalls" % len(posts))
 
 
-def entry_pass(c, ground, way):
+def entry_pass(c, ground, way, taken=None):
     """The hollow the village left: the grand way in to the Snow Kingdom (Blake, Oct 29,
     review-snow_region notes 7 and 11, "we need to massively overhaul the area when we
     first enter the snow world"; he chose the grand entry pass): up out of the Burnt Gorge
@@ -658,7 +658,7 @@ def entry_pass(c, ground, way):
         tl = math.hypot(tx, ty) or 1.0
         for sd in ((-1, 1)[(j // 4) % 2],):
             px, py = x0 - ty / tl * sd * 8.5, y0 + tx / tl * sd * 8.5
-            if not paint.road_clear(c, px, py, 3.0):
+            if not paint.road_clear(c, px, py, 3.0) or (taken is not None and not taken.clear(px, py, 1.5)):
                 continue
             pz = ground(px, py)
             c.place(post, px, py, pz - 0.1, coll="Props", role="visual")
