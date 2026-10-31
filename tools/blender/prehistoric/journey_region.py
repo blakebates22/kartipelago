@@ -264,7 +264,10 @@ def thresholds(c, ground):
                 g = c.game(q.p.x, q.p.y, q.p.z + 12.0)
                 c.entity("steam", x=g[0], y=g[1], z=g[2])
         elif kind == "ice":  # the Snow Arch / the Ice Cave: bored through blue ice
-            half = pb.bore(c, L, name, s0, s1, ("glacier_wall", "wall"), ("snow_ground", "deep_snow"), height=12.0)
+            # (The Burnt Gorge's Snow Arch in Aurora's clear mirror ice, v2c: Blake, "can we
+            # make it out of the mirror material transparent lake we see in aurora".)
+            wall = ("mirror_ice", "wall") if JID == "gorge" else ("glacier_wall", "wall")
+            half = pb.bore(c, L, name, s0, s1, wall, ("snow_ground", "deep_snow"), height=12.0)
             s = s0 + 4.0
             k = 0
             while s < s1 - 3.0:
@@ -482,6 +485,79 @@ def dress_gorge(c, ground, taken, on_road):
             taken.add(rx_, ry_, 2.5)
     g = c.game(tx + 4.0, ty - 4.0, ground(tx, ty))
     c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=16.0, n=7, folk="road", heading=0.0)
+    # Two more little villages in the meadow (v2c, Blake): Fallsfoot, the fishers at the
+    # falls' foot (huts round a hearth, boats drawn up, fish drying); and the hamlet on the
+    # south side, farmers (huts, a fenced paddock, hay, a trough and a well).
+    def village(key, huts, folk_n):
+        vx_, vy_, vr_ = J.VILLAGES[key]
+        placed = 0
+        for k in range(huts):
+            a = k * math.tau / huts + 0.5
+            x, y = vx_ + vr_ * 0.7 * math.cos(a), vy_ + vr_ * 0.7 * math.sin(a)
+            if L.water_d(x, y)[0] < L.river_hw + 3.0 or not paint.road_clear(c, x, y, 6.0) or not taken.clear(x, y, 4.5):
+                continue
+            ring = [ground(x + 4.0 * math.cos(t), y + 4.0 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
+            vv.place_hut(c, k + 1, x, y, min(ring) - 0.05, a + math.pi, scale=0.9)
+            taken.add(x, y, 5.5)
+            placed += 1
+        g = c.game(vx_, vy_, ground(vx_, vy_) + 0.2)
+        c.entity("campfire", x=g[0], y=g[1], z=g[2])
+        c.place(vv.hearth(c), vx_, vy_, ground(vx_, vy_) - 0.05, coll="Props")
+        taken.add(vx_, vy_, 3.0)
+        g = c.game(vx_ + 3.0, vy_ - 3.0, ground(vx_, vy_))
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=vr_, n=folk_n, folk="valley", heading=0.0)
+        return vx_, vy_, vr_
+
+    fx_, fy_, fr_ = village("fallsfoot", 5, 4)
+    for k in range(3):  # (their boats, drawn up toward the river)
+        a = math.atan2(J.FALLS[1] - fy_, J.FALLS[0] - fx_) + (k - 1) * 0.35
+        x, y = fx_ + (fr_ + 4.0) * math.cos(a), fy_ + (fr_ + 4.0) * math.sin(a)
+        if L.water_d(x, y)[0] > L.river_hw and taken.clear(x, y, 2.0):
+            c.place(kp.boat(c, k % 2), x, y, ground(x, y) - 0.15, rot=a, coll="Props", role="visual")
+            taken.add(x, y, 2.0)
+    for k in range(2):
+        rx_, ry_ = fx_ - fr_ + 2.0, fy_ - 4.0 + 6.0 * k
+        if taken.clear(rx_, ry_, 2.5):
+            z = ground(rx_, ry_)
+            for sd in (-1, 1):
+                box(c, "Falls Rack Post %d %d" % (k, sd), rx_, ry_ + sd * 1.8, 0.12, 0.12, z - 0.3, z + 2.2, ("weathered_timber", "wall"),
+                    role="visual")
+            box(c, "Falls Rack Rail %d" % k, rx_, ry_, 0.08, 2.0, z + 2.05, z + 2.15, ("weathered_timber", "wall"), role="visual")
+            for j in range(6):
+                box(c, "Falls Fish %d %d" % (k, j), rx_, ry_ - 1.5 + 0.6 * j, 0.05, 0.12, z + 1.4, z + 2.0, ("crystal_teal", "wall"),
+                    role="visual")
+            taken.add(rx_, ry_, 2.5)
+    hx_, hy_, hr_ = village("hamlet", 5, 4)
+    # Their paddock: a timber fence round a square of trampled ground, a trough, hay.
+    px_, py_ = hx_ + hr_ + 10.0, hy_ - 4.0
+    pz = ground(px_, py_)
+    for k in range(12):
+        side, t = divmod(k, 3)
+        u = (t - 1) * 5.0
+        ox, oy = ((u, -8.0), (8.0, u), (-u, 8.0), (-8.0, -u))[side]
+        rot = (0.0, math.pi / 2, 0.0, math.pi / 2)[side]
+        if side == 3 and t == 1:
+            continue  # (its gate's gap, toward the huts)
+        x, y = px_ + ox, py_ + oy
+        box(c, "Paddock Rail %d" % k, x, y, 2.5 if rot == 0.0 else 0.08, 0.08 if rot == 0.0 else 2.5, ground(x, y) + 0.9,
+            ground(x, y) + 1.05, ("fence_rail", "wall"), role="visual")
+        box(c, "Paddock Post %d" % k, x, y, 0.12, 0.12, ground(x, y) - 0.3, ground(x, y) + 1.3, ("weathered_timber", "wall"))
+    c.place(gp.trough(c), px_, py_ + 3.0, pz - 0.05, coll="Props")
+    for k, (dx, dy) in enumerate(((-3.0, -3.0), (2.5, -4.0), (4.0, 2.0))):
+        x, y = px_ + dx, py_ + dy
+        hz = ground(x, y)
+        cone(c, "Haystack %d" % k, x, y, 1.6, hz - 0.2, 2.4, ("dry_grass", "wall"), segs=8)
+    taken.add(px_, py_, 9.0)
+    wx_, wy_ = hx_ - hr_ * 0.2, hy_ + hr_ * 0.45
+    c.place(vv.well(c), wx_, wy_, ground(wx_, wy_) - 0.1, coll="Props")
+    taken.add(wx_, wy_, 2.5)
+    pts = []
+    for j in range(12):
+        a = j * math.tau / 12
+        x, y = px_ + 5.0 * math.cos(a), py_ + 5.0 * math.sin(a)
+        pts.append((x, y, ground(x, y)))
+    c.path_curve("Paddock Round", pts, closed=True)
+    c.entity("dinosaur", route="Paddock Round", speed=0.9, scale=0.35, start=0.0)
     # The stone arch over the cleft's mouth.
     ax, ay = J.ARCH
     q, _ = c.nearest(ax, ay)
@@ -603,6 +679,35 @@ def dress_gorge(c, ground, taken, on_road):
     hflags.build(c, "Hostel Flags")
     g = c.game(hx + 2.0, hy + 2.0, zy)
     c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=hr - 2.0, n=5, folk="snow", heading=0.0)
+    # The pilgrims' camp in its bay in the spur (v2c): tents round a fire, a cairn shrine
+    # under prayer flags with lanterns about it, a standing stone, pilgrims resting.
+    cx_, cy_, cr_ = J.VILLAGES["camp"]
+    cz_ = ground(cx_, cy_)
+    q, _ = c.nearest(cx_, cy_)
+    toward = math.atan2(q.p.y - cy_, q.p.x - cx_)
+    for k in range(4):
+        a = toward + math.pi / 2 + k * (math.pi / 3.2)
+        x, y = cx_ + cr_ * 0.75 * math.cos(a), cy_ + cr_ * 0.75 * math.sin(a)
+        c.place(ip.tent(c, k % 2), x, y, ground(x, y) - 0.1, rot=a + math.pi / 2, coll="Village")
+    g = c.game(cx_, cy_, cz_ + 0.2)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    sx2, sy2 = cx_ - math.cos(toward) * cr_ * 0.7, cy_ - math.sin(toward) * cr_ * 0.7
+    for k, (r, z0, h) in enumerate(((1.8, 0.0, 1.2), (1.3, 1.1, 1.0), (0.9, 2.0, 0.9), (0.5, 2.8, 0.8))):
+        box(c, "Shrine Cairn %d" % k, sx2, sy2, r, r, ground(sx2, sy2) + z0 - 0.3, ground(sx2, sy2) + z0 + h, ("frost_stone", "wall"),
+            rot=0.4 * k)
+    c.place(ip.obelisk(c, 1, 6.0), sx2 + math.sin(toward) * 3.5, sy2 - math.cos(toward) * 3.5, ground(sx2, sy2) - 0.2, rot=toward,
+            coll="Props")
+    cflags = smp_.Bunting()
+    for sd in (-1, 1):
+        x, y = sx2 + math.sin(toward) * sd * 6.0, sy2 - math.cos(toward) * sd * 6.0
+        c.place(smp_.flag_pole(c, 6.0), x, y, ground(x, y) - 0.2, coll="Props")
+        cflags.line((sx2, sy2, ground(sx2, sy2) + 4.6), (x, y, ground(x, y) + 5.6), sag=0.8)
+        g = c.game(x - math.cos(toward) * 1.0, y - math.sin(toward) * 1.0, ground(x, y) + 1.2)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    cflags.build(c, "Camp Flags")
+    g = c.game(cx_ + 2.0, cy_, cz_)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=cr_ - 1.0, n=4, folk="snow", heading=0.0)
+    taken.add(cx_, cy_, cr_ + 2.0)
     for k, qq in enumerate(c.S[::14]):
         if on_road(qq.s) and L.look_at(qq.p.x, qq.p.y) == "snow":
             sd = 1 if k % 2 else -1

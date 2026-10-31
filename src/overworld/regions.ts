@@ -558,7 +558,7 @@ export const REGIONS: Region[] = [
         x: 330,
         z: -448,
         radius: 8,
-        heading: 0.3843,
+        heading: 0.3844,
       },
     ],
   },

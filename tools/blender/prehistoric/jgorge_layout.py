@@ -55,7 +55,7 @@ POCKETS = [
     # bay off its first leg, the gate out of sight till the last bend.
     ("snowgate", "snow", [(300, 284, 24, 60.0), (340, 292, 24, 61.5), (380, 306, 24, 63.0), (400, 342, 22, 64.5),
                           (398, 378, 22, 66.0), (368, 404, 22, 67.5), (344, 424, 20, 69.0), (330, 450, 16, 70.0),
-                          (326, 474, 12, 70.5), (338, 328, 17, 62.0)]),
+                          (326, 474, 12, 70.5), (338, 328, 17, 62.0), (370, 352, 13, 65.0)]),
 ]
 
 ROUTE = [
@@ -134,7 +134,10 @@ FALLS = (-120.0, 116.0)
 LOOKBACK = (56.0, 150.0)
 # The villages: the traders' camp by the ford, the herders' on the steppe, the pilgrims'
 # hostel under the Snowgate.
-VILLAGES = {"traders": (-232.0, 10.0, 18.0), "herders": (82.0, 240.0, 20.0), "hostel": (338.0, 330.0, 14.0)}
+VILLAGES = {"traders": (-232.0, 10.0, 18.0), "herders": (82.0, 240.0, 20.0), "hostel": (338.0, 330.0, 14.0),
+            # (v2c, Blake: two more little villages in the meadow; a pilgrims' camp in the
+            # Snowgate's spur)
+            "fallsfoot": (-84.0, 82.0, 16.0), "hamlet": (-96.0, -132.0, 18.0), "camp": (370.0, 352.0, 10.0)}
 
 
 def _soft(h, x, y):
