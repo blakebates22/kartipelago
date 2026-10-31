@@ -383,10 +383,10 @@ def main():
     # The Courtyard Passage: straight across the temple's S, at the road's height.
     za, zb = road_z(SEG[13], 13), road_z(SEG[16], 16)
     sc = [(x, y, lerp(za, zb, i / (len(COURTYARD) - 1)) - 0.05) for i, (x, y) in enumerate(COURTYARD)]
-    c.shortcut("Courtyard Passage", sc, "keep_flag", "road", width=10.0, shoulder=0.8, shoulder_mat=curb)
+    c.shortcut("Courtyard Passage", sc, "keep_flag", "road", width=10.0, shoulder=0.8, shoulder_mat=curb, flush=True)
 
     X0, X1, Y0, Y1 = -220, 560, -320, 520
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2, fine=3)
     c.disc("Lagoon", (LAGOON_X + X1) / 2 + 40, (SHORE_Y + Y1) / 2, 520.0, 0.0, c.lib("keep_lake", "deep_water"), n=48)
 
     def under(x, y):
@@ -490,7 +490,7 @@ def ruin_course(c):
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "gate", max_len=200.0))
     X0, X1, Y0, Y1 = -220, 560, -320, 520
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2, fine=3)
     c.disc("Lagoon", (LAGOON_X + X1) / 2 + 40, (SHORE_Y + Y1) / 2, 520.0, 0.0, c.lib("keep_lake", "deep_water"), n=48)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("keep_grass", "grass"))
     S = lambda i: TO_ROAD(SEG[i])  # noqa: E731

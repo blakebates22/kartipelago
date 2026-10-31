@@ -26,7 +26,7 @@
       "id": "steam_01",
       "type": "steam",
       "x": 212.49,
-      "y": 5.73,
+      "y": 5.82,
       "z": 90.31
     },
     {
@@ -75,14 +75,14 @@
       "id": "torch_03",
       "type": "torch",
       "x": -12.5,
-      "y": 10.21,
+      "y": 10.78,
       "z": -2.0
     },
     {
       "id": "torch_04",
       "type": "torch",
       "x": -12.5,
-      "y": 10.69,
+      "y": 11.22,
       "z": -26.0
     },
     {
@@ -103,35 +103,35 @@
       "id": "torch_07",
       "type": "torch",
       "x": 12.5,
-      "y": 10.63,
+      "y": 11.03,
       "z": -2.0
     },
     {
       "id": "torch_08",
       "type": "torch",
       "x": 12.5,
-      "y": 10.68,
+      "y": 11.23,
       "z": -26.0
     },
     {
       "id": "torch_09",
       "type": "torch",
       "x": -13.98,
-      "y": 9.88,
+      "y": 9.74,
       "z": -102.32
     },
     {
       "id": "torch_10",
       "type": "torch",
       "x": 12.88,
-      "y": 9.04,
+      "y": 9.08,
       "z": -100.2
     },
     {
       "id": "torch_11",
       "type": "torch",
       "x": 13.68,
-      "y": 10.12,
+      "y": 10.14,
       "z": -143.49
     },
     {
@@ -642,28 +642,28 @@
       "id": "torch_84",
       "type": "torch",
       "x": -7.71,
-      "y": 12.62,
+      "y": 13.75,
       "z": 40.82
     },
     {
       "id": "torch_85",
       "type": "torch",
       "x": 13.19,
-      "y": 11.16,
+      "y": 11.46,
       "z": 32.77
     },
     {
       "id": "torch_86",
       "type": "torch",
       "x": -12.58,
-      "y": 10.99,
+      "y": 11.65,
       "z": 18.98
     },
     {
       "id": "torch_87",
       "type": "torch",
       "x": 12.55,
-      "y": 10.44,
+      "y": 11.07,
       "z": 19.33
     },
     {
@@ -710,7 +710,7 @@
       "id": "torch_88",
       "type": "torch",
       "x": 36.58,
-      "y": 9.11,
+      "y": 9.14,
       "z": -153.84
     },
     {
@@ -794,14 +794,14 @@
       "id": "torch_100",
       "type": "torch",
       "x": 94.84,
-      "y": 6.71,
+      "y": 6.82,
       "z": -43.31
     },
     {
       "id": "torch_101",
       "type": "torch",
       "x": 184.35,
-      "y": 4.03,
+      "y": 4.27,
       "z": 55.44
     },
     {
@@ -822,7 +822,7 @@
       "id": "campfire_01",
       "type": "campfire",
       "x": 36.58,
-      "y": 8.51,
+      "y": 8.54,
       "z": -153.84
     },
     {
@@ -864,7 +864,7 @@
       "id": "campfire_07",
       "type": "campfire",
       "x": 94.84,
-      "y": 6.11,
+      "y": 6.22,
       "z": -43.31
     },
     {
@@ -1141,7 +1141,7 @@
   ],
   "generator": "tools/blender/prehistoric/dragon_isles_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "dragon_isles.py": "cd520402c4f92744ce08e519232da69ad5a91c836d5f55bf5b1d6aa5899072b6",
+    "dragon_isles.py": "70b2411572da304490191facbf177aa0d31f92b267a7b367af9620fbd2b5a25a",
     "dragon_isles_ruins.py": "7874722b0669e84bb38755750175a1fc24b1029d8fd2dae67e4f7c763df4057d",
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "keep_scenery.py": "29de2d1cd20999b5cac82fc55b299cb979bc0a33ab41fb586f996fa33ddfe855"

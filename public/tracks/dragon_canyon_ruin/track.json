@@ -671,7 +671,7 @@
       "id": "torch_09",
       "type": "torch",
       "x": 115.57,
-      "y": 19.75,
+      "y": 19.44,
       "z": 69.01
     },
     {
@@ -720,7 +720,7 @@
       "id": "campfire_05",
       "type": "campfire",
       "x": 115.57,
-      "y": 19.15,
+      "y": 18.84,
       "z": 69.01
     },
     {
@@ -863,7 +863,7 @@
   "builtFrom": {
     "dcanyon_land.py": "b99f364dedc3a5c1bc2bd54de365b4d9b9408d156a13e504a0511f0b279d4a5c",
     "dcanyon_props.py": "f4277cfafb698ab9fa418b2bb2db2d954647f0e894a76be8e51c321cb9c78814",
-    "dcanyon_scenery.py": "59e26fe11cb321da007db83a7b9add13ce1d9f13456012d3f214052d05e191b6",
+    "dcanyon_scenery.py": "d44f5faaffdc292ab3e0b17a8b52a47b1a6091273b33a33be4512f4a0f447d6f",
     "dcanyon_town.py": "50e23c0c16ac2f471b8574731ed585259315400959ad4ed11148d176fda1e4c8",
     "dragon_canyon.py": "c520cb2338d4be65d0b63014f68f3d69754671d500cc57f6f54b482f9462263a",
     "dragon_canyon_ruins.py": "31deb4fab6ec5feba2b256613a053a8ecf64126e28e79ba4411b1a3362f2ec9d",

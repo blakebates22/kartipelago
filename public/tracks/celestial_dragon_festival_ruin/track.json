@@ -68,21 +68,21 @@
       "id": "torch_07",
       "type": "torch",
       "x": 55.98,
-      "y": 23.84,
+      "y": 23.86,
       "z": -12.3
     },
     {
       "id": "torch_08",
       "type": "torch",
       "x": 55.98,
-      "y": 23.88,
+      "y": 23.98,
       "z": 12.3
     },
     {
       "id": "torch_09",
       "type": "torch",
       "x": 107.73,
-      "y": 24.15,
+      "y": 24.24,
       "z": 8.53
     },
     {
@@ -208,7 +208,7 @@
       "id": "torch_27",
       "type": "torch",
       "x": 117.9,
-      "y": 50.03,
+      "y": 50.08,
       "z": -331.56
     },
     {
@@ -257,7 +257,7 @@
       "id": "torch_34",
       "type": "torch",
       "x": -76.63,
-      "y": 42.41,
+      "y": 42.5,
       "z": -102.77
     },
     {
@@ -403,7 +403,7 @@
       "id": "glow_14",
       "type": "glow",
       "x": 134.84,
-      "y": 49.25,
+      "y": 49.08,
       "z": -308.26,
       "color": "#8ab8ff"
     },
@@ -443,7 +443,7 @@
       "id": "glow_19",
       "type": "glow",
       "x": 41.59,
-      "y": 48.93,
+      "y": 49.21,
       "z": -333.59,
       "color": "#8ab8ff"
     },
@@ -467,7 +467,7 @@
       "id": "glow_22",
       "type": "glow",
       "x": 139.91,
-      "y": 25.12,
+      "y": 25.22,
       "z": -66.23,
       "color": "#8ab8ff"
     },
@@ -475,7 +475,7 @@
       "id": "glow_23",
       "type": "glow",
       "x": 143.14,
-      "y": 69.36,
+      "y": 69.41,
       "z": -157.52,
       "color": "#8ab8ff"
     },
@@ -483,7 +483,7 @@
       "id": "glow_24",
       "type": "glow",
       "x": 140.2,
-      "y": 72.2,
+      "y": 72.34,
       "z": -251.88,
       "color": "#8ab8ff"
     },
@@ -491,7 +491,7 @@
       "id": "glow_25",
       "type": "glow",
       "x": 124.19,
-      "y": 48.18,
+      "y": 48.17,
       "z": -330.59,
       "color": "#8ab8ff"
     },
@@ -507,7 +507,7 @@
       "id": "glow_27",
       "type": "glow",
       "x": -69.39,
-      "y": 43.14,
+      "y": 43.42,
       "z": -167.42,
       "color": "#8ab8ff"
     },
@@ -521,14 +521,14 @@
       "id": "torch_40",
       "type": "torch",
       "x": 134.12,
-      "y": 23.03,
+      "y": 23.11,
       "z": -26.9
     },
     {
       "id": "torch_41",
       "type": "torch",
       "x": 139.91,
-      "y": 23.12,
+      "y": 23.22,
       "z": -66.23
     },
     {
@@ -542,35 +542,35 @@
       "id": "torch_43",
       "type": "torch",
       "x": 143.14,
-      "y": 67.36,
+      "y": 67.41,
       "z": -157.52
     },
     {
       "id": "torch_44",
       "type": "torch",
       "x": 137.24,
-      "y": 54.61,
+      "y": 53.14,
       "z": -202.81
     },
     {
       "id": "torch_45",
       "type": "torch",
       "x": 140.2,
-      "y": 70.2,
+      "y": 70.34,
       "z": -251.88
     },
     {
       "id": "torch_46",
       "type": "torch",
       "x": 140.2,
-      "y": 68.24,
+      "y": 68.43,
       "z": -293.08
     },
     {
       "id": "torch_47",
       "type": "torch",
       "x": 124.19,
-      "y": 46.18,
+      "y": 46.17,
       "z": -330.59
     },
     {
@@ -591,21 +591,21 @@
       "id": "torch_50",
       "type": "torch",
       "x": -71.21,
-      "y": 42.58,
+      "y": 42.97,
       "z": -209.91
     },
     {
       "id": "torch_51",
       "type": "torch",
       "x": -69.39,
-      "y": 41.14,
+      "y": 41.42,
       "z": -167.42
     },
     {
       "id": "torch_52",
       "type": "torch",
       "x": -69.4,
-      "y": 39.25,
+      "y": 39.5,
       "z": -120.37
     },
     {
@@ -626,14 +626,14 @@
       "id": "torch_55",
       "type": "torch",
       "x": 12.32,
-      "y": 48.29,
+      "y": 48.71,
       "z": -365.59
     },
     {
       "id": "campfire_01",
       "type": "campfire",
       "x": 134.12,
-      "y": 22.43,
+      "y": 22.51,
       "z": -26.9
     },
     {
@@ -647,14 +647,14 @@
       "id": "campfire_03",
       "type": "campfire",
       "x": 137.24,
-      "y": 54.01,
+      "y": 52.54,
       "z": -202.81
     },
     {
       "id": "campfire_04",
       "type": "campfire",
       "x": 140.2,
-      "y": 67.64,
+      "y": 67.83,
       "z": -293.08
     },
     {
@@ -668,14 +668,14 @@
       "id": "campfire_06",
       "type": "campfire",
       "x": -71.21,
-      "y": 41.98,
+      "y": 42.37,
       "z": -209.91
     },
     {
       "id": "campfire_07",
       "type": "campfire",
       "x": -69.4,
-      "y": 38.65,
+      "y": 38.9,
       "z": -120.37
     },
     {
@@ -934,7 +934,7 @@
   ],
   "generator": "tools/blender/prehistoric/celestial_dragon_festival_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "celestial_dragon_festival.py": "f634b92cbdcb4a7a889d5b9da157ea892bebdd97ad23acb4567ab6f6456e4df1",
+    "celestial_dragon_festival.py": "4be1b600afc448f7de39ab4f42b99c8f58826a31000f16c4f20117f7e6ca6701",
     "celestial_dragon_festival_ruins.py": "183d7651c61e9ac59cdc09027f49385603f4cc7f9b46af77c74cdd6464654e1c",
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "keep_scenery.py": "29de2d1cd20999b5cac82fc55b299cb979bc0a33ab41fb586f996fa33ddfe855",

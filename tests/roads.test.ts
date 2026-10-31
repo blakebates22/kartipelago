@@ -12,7 +12,7 @@ import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
 /** The courses done so far (Oct 30: the Prehistoric world's but Bonebog Pyramid, which
- * needs none, the Snow world's, the desert's and the beach's; standard and ruin). */
+ * needs none, the Snow world's, the desert's, the beach's and the dragon world's; standard and ruin). */
 const COURSES = [
   "riverbend_palms",
   "cascade_caverns",
@@ -30,6 +30,9 @@ const COURSES = [
   "shipwreck_bay",
   "volcano_isle",
   "splash_lagoon",
+  "dragon_isles",
+  "dragon_canyon",
+  "celestial_dragon_festival",
 ].flatMap((t) => [t, `${t}_ruin`]);
 /** What's a road (the race line's pieces, the side roads, aprons and lanes), by name. */
 const ROAD = /^(Road \d+ |.* Road$|.* Apron$|.* Lane$)/;
@@ -272,6 +275,13 @@ const ALLOW: Record<string, number> = {
   volcano_isle_ruin: 0.5,
   splash_lagoon: 0.5,
   splash_lagoon_ruin: 0.5,
+  // (The dragon world: a few spots; the Festival's railed terraces, where the land falls
+  // away past the end of a balustrade, left as they were.)
+  dragon_isles: 0.8,
+  dragon_isles_ruin: 0.5,
+  dragon_canyon: 0.75,
+  celestial_dragon_festival: 1.7,
+  celestial_dragon_festival_ruin: 1.75,
 };
 
 describe("back up onto the road", () => {
@@ -286,11 +296,18 @@ describe("back up onto the road", () => {
 
 /** Known, and out of sight: where two of the valley's road pieces overlap at a seam (the
  * land between the lower piece and the upper one); the foot of Cascade's ruined jump ramp,
- * set into the canyon floor. */
+ * set into the canyon floor; where Dragon Isles' and Dragon Canyon's bridges and railed
+ * roads meet the banks, as they always have. */
 const SEAMS = new Set([
   "valley_region 24, 16",
   "valley_region 160, -48",
   "cascade_caverns_ruin -256, 16",
+  "dragon_isles 40, -216",
+  "dragon_isles 40, -224",
+  "dragon_isles 64, -336",
+  "dragon_isles 56, -336",
+  "dragon_canyon 176, 112",
+  "dragon_canyon 168, 80",
 ]);
 
 /** Where the land is left as it was by a fenced road (the fence keeps you on): Canyon

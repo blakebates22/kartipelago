@@ -305,7 +305,7 @@ def main():
     c.roads(kit.plan(c, specials, "plaza", max_len=200.0))
 
     X0, X1, Y0, Y1 = -260, 560, -160, 560
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2, fine=3)
     c.disc("Lagoon", LAGOON_X + 160.0, MOUNT[1] - 120.0, 240.0, -1.5, c.lib("moon_lake", "deep_water"), n=40)
 
     def under(x, y):
@@ -388,7 +388,7 @@ def ruin_course(c):
             specials.append((s0, s1, k))
     c.roads(kit.plan(c, specials, "plaza", max_len=200.0))
     X0, X1, Y0, Y1 = -260, 560, -160, 560
-    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2)
+    ter = c.terrain("Land", X0, X1, Y0, Y1, 6.0, natural, classify, near=9.0, fade=14.0, under=0.2, fine=3)
     c.disc("Lagoon", LAGOON_X + 160.0, MOUNT[1] - 120.0, 240.0, -1.5, c.lib("moon_lake", "deep_water"), n=40)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("moon_grass", "grass"))
     zp = STD_HEIGHT[23]

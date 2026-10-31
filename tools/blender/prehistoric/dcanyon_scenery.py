@@ -89,7 +89,7 @@ def land(c, sc):
     def classify(cen, n, info):
         return land_mat(cen.x, cen.y, cen.z, n.z, info["d"], info["sample"].w)
 
-    ter = c.terrain("Land", x0, x1, y0, y1, L.CELL, sc.info, classify, near=8.0, fade=10.0)
+    ter = c.terrain("Land", x0, x1, y0, y1, L.CELL, sc.info, classify, near=8.0, fade=10.0, fine=3)
     sc.ground_obs = [ter]
     sc.land = ter
 
@@ -255,7 +255,7 @@ def shortcut(c, sc):
     pts, a, b = L.SERVICE, L.SERVICE_A, L.SERVICE_B
     sc.short = (pts, a, b)
     dry_gulch.lane(c, "Quarry Service Road", pts, "quarry_dust", "dirt", width=8.0, shoulder=0.8, shoulder_mat=("quarry_dust", "dirt"),
-                   step=3.0)
+                   step=3.0, flush=True)
 
 
 # ------------------------------------------------------------------ gameplay
