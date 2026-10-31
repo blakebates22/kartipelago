@@ -34,6 +34,7 @@ import region_paint as paint  # noqa: E402
 import snow_layout as SL  # noqa: E402
 import snow_dress as sd  # noqa: E402
 import carvers_village as cv  # noqa: E402
+import snow_sections as ss  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("snow_region") + os.environ.get("KP_REGION_SUFFIX", "")
@@ -140,6 +141,11 @@ def classify(c, n, info):
         return (pb.strata(L, c, n, STRATA), "wall")
     if SL.crevasse_cut(c.x, c.y) > 1.5:
         return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
+    if (not RUIN and look == "summit" and n.z > 0.93 and L.wall_sd(c.x, c.y) < -6.0
+            and math.sin(c.x / 11.0 + 0.4) * math.cos(c.y / 9.0) + 0.4 * math.sin((c.x + c.y) / 5.0) > 0.75):
+        return ("thaw_grass", "grass")  # (the deep thaw: grass through the snow)
+    if not RUIN and look == "aurora" and n.z > 0.97 and math.sin(c.x / 21.0) * math.cos(c.y / 15.0 + 0.7) > 0.45:
+        return ("mirror_ice", "ice")  # (the rift's mirror ice)
     if SL.hollow_floor(c.x, c.y):
         return ("snow_ground", "packed_snow")  # (the Ice Hollow's floor, driven on)
     lx, ly, lr, lz = SL.LAKE
@@ -217,6 +223,8 @@ def main():
     X0, X1, Y0, Y1 = -310, 310, -442, 310
     ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     sd.level_pads(ter)
+    global TER
+    TER = ter
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
 
     def ground(x, y):
@@ -247,7 +255,28 @@ def main():
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Hearthglow's cottages, each set level and solid: the overworld rules, Blake, Oct 29,
     # where they were plain boxes half sunk in the snow.)
+    # v4 (Blake, Oct 30: "there are random houses that probably no longer fit ... if there
+    # is a house, it needs to match the theme for the section, like how we did for dino
+    # valley"): Hearthglow's cottages in Hearthglow; the citadel's town houses in
+    # Frostveil; the course's stone lookout huts up the summit; none in the rift or the
+    # passes (the ice carvers live in their hollow).
     def home(c, name, x, y, z, rot, k):
+        pocket = name.split()[1].lower()
+        if pocket in ("frostveil",) and not RUIN:
+            hi = sd.level_site(c, x, y, rot, 8.0, 7.5, ground, ter)
+            if hi is None:
+                return False
+            box(c, name + " Footing", x, y, 4.2, 4.0, hi - 2.5, hi + 0.1, ("citadel_dark", "wall"), rot=rot, role="visual")
+            c.place(kp.house(c, k % 4), x, y, hi - 0.05, rot=rot + math.pi, coll="Village")
+            return True
+        if pocket in ("summit", "climb") and not RUIN:
+            hi = sd.level_site(c, x, y, rot, 6.5, 5.5, ground, ter)
+            if hi is None:
+                return False
+            c.place(sp.lookout_hut(c), x, y, hi - 0.1, rot=rot, coll="Village")
+            g = c.game(x, y, hi + 7.4)
+            c.entity("chimney", x=g[0], y=g[1], z=g[2])
+            return True
         v = (1, 4, 2)[k % 3]
         if RUIN:
             w, d = hp.COTTAGE_SIZE[v]
@@ -264,7 +293,7 @@ def main():
         c.entity("chimney", x=g[0], y=g[1], z=g[2])
         return True
 
-    vh.homes(c, L, ground, "snow", home, avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
+    vh.homes(c, L, ground, "snow", home, pockets=["hearth", "descent", "frostveil", "summit", "climb"], avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
              wall=-12.0, per=4, level=3.0, foot=6.5)
     dress(c, ground, spots)
     vv.clear_paths(c, LANES)
@@ -378,6 +407,7 @@ def thresholds(c, ground):
 
 
 LANES = []
+TER = None  # (the terrain, once built: for seating buildings)
 
 
 def village(c, ground, ter):
@@ -518,7 +548,7 @@ def dress(c, ground, spots):
     rmax = 470.0
     g = ground
     pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=True) for v in range(3)]
-    for name in ("hearth", "frostveil", "summit", "lake"):
+    for name in ("summit", "lake"):  # (v4: none in Hearthglow's streets or the castle)
         for v in range(2):
             paint.scatter(c, sp.boulder(c, v), 6, rmax, lambda x, y, n=name: look(n)(x, y) and L.wall_sd(x, y) > -30, g,
                           taken, 90 + v + len(name), room=4.0, scale=(1.0, 2.2), road_margin=9.0)
@@ -537,38 +567,34 @@ def dress(c, ground, spots):
         paint.scatter(c, hp.xmas_pine(c, v, height=12.0 + 3.0 * v), 8, rmax, near_village, g, taken, 60 + v, room=6.0,
                       road_margin=6.0, trunk=(0.8, 6.0))
     paint.scatter(c, hp.snowman(c, 0), 5, rmax, near_village, g, taken, 63, room=3.0)
+    ss.hearthglow(c, ground, taken, lambda v, x, y, rot, name: sd.seat_cottage(c, v, x, y, rot, ground, name=name, ter=TER))
     hub = look("hearth")
     for v, p in enumerate(pines):
         paint.scatter(c, p, 8, rmax, lambda x, y: hub(x, y) and L.wall_sd(x, y) < -14.0, g, taken, 64 + v, room=6.0,
                       scale=(0.9, 1.4), road_margin=8.0, trunk=(0.8, 6.0))
-    # Frostveil: towers and curtain walls round the bailey's edge, braziers, banners.
+    # Frostveil (v4): the road walled in, inside the castle (snow_sections.frostveil).
     fv = look("frostveil")
-    for x, y in paint.scatter(c, kp.round_tower(c, r=4.0, h=20.0), 8, rmax,
-                              lambda x, y: fv(x, y) and L.wall_sd(x, y) > -16, g, taken, 70, room=26.0, road_margin=10.0):
-        pass
-    wall = kp.curtain_wall(c, length=18.0, h=10.0)
-    for x, y in paint.scatter(c, wall, 10, rmax, lambda x, y: fv(x, y) and L.wall_sd(x, y) > -14, g, taken, 71, room=14.0,
-                              road_margin=10.0):
-        pass
-    for x, y in paint.scatter(c, kp.brazier(c), 8, rmax, fv, g, taken, 72, room=8.0, near_road=(3.0, 6.0)):
-        gx, gy, gz = c.game(x, y, g(x, y) + 2.4)
-        c.entity("torch", x=gx, y=gy, z=gz)
-    paint.scatter(c, kp.banner_pole(c), 8, rmax, fv, g, taken, 73, room=8.0, near_road=(3.0, 6.0))
+    clear = [(e[0], e[1], 14.0) for e, _ in spots.values()] + [(x, y, 22.0) for x, y in SL.GATES.values()] + [(*SECRET, 20.0)]
+    ss.frostveil(c, ground, taken, clear)
     for v, p in enumerate(pines[:2]):
         paint.scatter(c, p, 14, rmax, fv, g, taken, 74 + v, room=6.0, scale=(0.9, 1.3), road_margin=7.0, trunk=(0.8, 6.0))
     # The summit: pines, broadleaves, shrubs, the frozen shipwreck, the tusk gate over the road.
     su = look("summit")
+    # (v4: the deep thaw, Blake, Oct 30: green trees; geysers, ponds, mammoths: snow_sections)
+    pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=False) for v in range(3)]
+    ss.summit(c, ground, taken)
     for v, p in enumerate(pines):
         paint.scatter(c, p, 40, rmax, su, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0, trunk=(0.8, 6.0))
     for v in range(2):
-        paint.scatter(c, sp.broadleaf(c, v, frosted=True), 12, rmax, su, g, taken, 30 + v, room=5.0, road_margin=7.0,
+        paint.scatter(c, sp.broadleaf(c, v, frosted=False), 16, rmax, su, g, taken, 30 + v, room=5.0, road_margin=7.0,
                       trunk=(0.9, 6.0))
-        paint.scatter(c, sp.shrub(c, v), 50, rmax, su, g, taken, 40 + v, room=2.5, role="visual", scale=(0.7, 1.4))
+        paint.scatter(c, sp.shrub(c, v, frosted=False), 60, rmax, su, g, taken, 40 + v, room=2.5, role="visual", scale=(0.7, 1.4))
     paint.scatter(c, sp.shipwreck(c), 1, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -24, g, taken, 44, room=40.0,
                   road_margin=18.0)
     paint.scatter(c, sp.lookout_hut(c), 2, rmax, su, g, taken, 45, room=10.0, road_margin=8.0)
     # The glacier: ice columns, spires, crystal gardens, ice spikes.
     au = look("aurora")
+    ss.aurora(c, ground, taken)
     for v in range(2):
         paint.scatter(c, ap.ice_column(c, v, height=30.0, radius=4.0), 6, rmax,
                       lambda x, y: au(x, y) and L.wall_sd(x, y) > -24, g, taken, 80 + v, room=14.0, road_margin=10.0)

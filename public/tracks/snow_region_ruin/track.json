@@ -476,101 +476,68 @@
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": -125.51,
-      "z": 176.04,
-      "y": 44.92,
+      "x": -59.68,
+      "z": 92.06,
+      "y": 45.58,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
-      "heading": -0.652
+      "heading": 2.129
     },
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -56.22,
-      "z": 98.25,
-      "y": 45.28,
+      "x": -127.76,
+      "z": 173.02,
+      "y": 44.98,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
-      "heading": 1.832
+      "heading": -0.698
     },
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -180.36,
-      "z": 17.64,
-      "y": 47.95,
+      "x": -180.83,
+      "z": 15.35,
+      "y": 48.02,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "snow",
-      "heading": -1.715
+      "heading": -1.369
     },
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": -154.19,
-      "z": -23.16,
-      "y": 49.71,
+      "x": -153.74,
+      "z": -23.45,
+      "y": 49.77,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
-      "heading": 0.537
+      "heading": 0.539
     },
     {
       "id": "villager_home_07",
       "type": "villager_home",
-      "x": -178.75,
-      "z": 61.69,
-      "y": 48.11,
+      "x": -93.4,
+      "z": -163.79,
+      "y": 74.38,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
-      "heading": -0.918
+      "heading": 1.903
     },
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": -70.48,
-      "z": -122.3,
-      "y": 72.72,
+      "x": -70.83,
+      "z": -127.15,
+      "y": 73.28,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
-      "heading": -1.09
-    },
-    {
-      "id": "villager_home_09",
-      "type": "villager_home",
-      "x": -94.86,
-      "z": -164.08,
-      "y": 73.88,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 1.915
-    },
-    {
-      "id": "villager_home_10",
-      "type": "villager_home",
-      "x": 88.98,
-      "z": -127.27,
-      "y": 69.85,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": -0.35
-    },
-    {
-      "id": "villager_home_11",
-      "type": "villager_home",
-      "x": 188.06,
-      "z": -78.0,
-      "y": 62.17,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": 2.745
+      "heading": -1.164
     },
     {
       "id": "snowfall_01",
@@ -585,6 +552,7 @@
     "snow_dress.py": "99c275e8cbff83c0499b5d7585e1138522e6df477af45dfadc5ad76a4c33ff67",
     "snow_layout.py": "10deda85add4b801436937786f2d6771c8f68d1ba60f2af50087c2a20cc882b0",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "8bd5350f3292312d594585a641da0bd5c610217845ab928c0098fc1677f201ea"
+    "snow_region.py": "0b6c839e8e23a5e4582e1d0449e018961e0cb363bacaaabd4c4a503c6eee2d55",
+    "snow_sections.py": "695329d04d261f3c13b9fb41b3edb5e5164a29dfa48a420a6ad8e421fd733322"
   }
 }

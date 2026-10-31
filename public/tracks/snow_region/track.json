@@ -678,164 +678,757 @@
     {
       "id": "chimney_12",
       "type": "chimney",
-      "x": -131.81,
-      "y": 54.57,
-      "z": 180.59
+      "x": -94.63,
+      "y": 54.38,
+      "z": 195.73
     },
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": -125.51,
-      "z": 176.04,
-      "y": 44.92,
+      "x": -93.66,
+      "z": 188.02,
+      "y": 44.68,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "snow",
-      "heading": -0.652
+      "heading": 0.169
     },
     {
       "id": "chimney_13",
       "type": "chimney",
-      "x": -48.21,
-      "y": 58.75,
-      "z": 98.7
+      "x": -134.58,
+      "y": 58.54,
+      "z": 177.26
     },
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -56.22,
-      "z": 98.25,
-      "y": 45.28,
+      "x": -127.76,
+      "z": 173.02,
+      "y": 44.98,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
-      "heading": 1.832
-    },
-    {
-      "id": "chimney_14",
-      "type": "chimney",
-      "x": -187.43,
-      "y": 63.66,
-      "z": 14.59
+      "heading": -0.698
     },
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -180.36,
-      "z": 17.64,
-      "y": 47.95,
+      "x": -180.83,
+      "z": 15.35,
+      "y": 48.01,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "snow",
-      "heading": -1.715
-    },
-    {
-      "id": "chimney_15",
-      "type": "chimney",
-      "x": -152.31,
-      "y": 59.41,
-      "z": -15.62
+      "heading": -1.369
     },
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": -154.19,
-      "z": -23.16,
+      "x": -153.74,
+      "z": -23.45,
       "y": 49.71,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
-      "heading": 0.537
+      "heading": 0.539
     },
     {
-      "id": "chimney_16",
+      "id": "chimney_14",
       "type": "chimney",
-      "x": -186.32,
-      "y": 61.75,
-      "z": 64.33
+      "x": -76.34,
+      "y": 80.63,
+      "z": -124.77
     },
     {
       "id": "villager_home_07",
       "type": "villager_home",
-      "x": -178.75,
-      "z": 61.69,
-      "y": 48.11,
+      "x": -70.83,
+      "z": -127.15,
+      "y": 73.14,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "snow",
-      "heading": -0.918
+      "heading": -1.164
     },
     {
-      "id": "chimney_17",
+      "id": "chimney_15",
       "type": "chimney",
-      "x": -78.0,
-      "y": 88.3,
-      "z": -120.63
+      "x": -90.66,
+      "y": 82.72,
+      "z": -165.19
     },
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": -70.48,
-      "z": -122.3,
-      "y": 72.72,
+      "x": -96.29,
+      "z": -163.11,
+      "y": 75.1,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "snow",
-      "heading": -1.09
+      "heading": 1.924
+    },
+    {
+      "id": "lantern_63",
+      "type": "lantern",
+      "x": -25.25,
+      "y": 63.8,
+      "z": 181.12
+    },
+    {
+      "id": "lantern_64",
+      "type": "lantern",
+      "x": -38.75,
+      "y": 59.07,
+      "z": 166.19
+    },
+    {
+      "id": "lantern_65",
+      "type": "lantern",
+      "x": -51.69,
+      "y": 57.96,
+      "z": 181.82
+    },
+    {
+      "id": "lantern_66",
+      "type": "lantern",
+      "x": -55.81,
+      "y": 54.49,
+      "z": 162.8
+    },
+    {
+      "id": "lantern_67",
+      "type": "lantern",
+      "x": -73.57,
+      "y": 52.61,
+      "z": 171.22
+    },
+    {
+      "id": "chimney_16",
+      "type": "chimney",
+      "x": -83.74,
+      "y": 62.68,
+      "z": 176.34
+    },
+    {
+      "id": "lantern_68",
+      "type": "lantern",
+      "x": -86.6,
+      "y": 50.63,
+      "z": 169.07
+    },
+    {
+      "id": "chimney_17",
+      "type": "chimney",
+      "x": -101.69,
+      "y": 59.36,
+      "z": 180.98
     },
     {
       "id": "chimney_18",
       "type": "chimney",
-      "x": -87.55,
-      "y": 85.67,
-      "z": -145.89
-    },
-    {
-      "id": "villager_home_09",
-      "type": "villager_home",
-      "x": -94.71,
-      "z": -148.9,
-      "y": 75.97,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 1.466
+      "x": -121.06,
+      "y": 55.36,
+      "z": 173.53
     },
     {
       "id": "chimney_19",
       "type": "chimney",
-      "x": 84.01,
-      "y": 83.33,
-      "z": -120.97
-    },
-    {
-      "id": "villager_home_10",
-      "type": "villager_home",
-      "x": 88.98,
-      "z": -127.27,
-      "y": 69.85,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": -0.35
+      "x": -130.0,
+      "y": 57.83,
+      "z": 121.86
     },
     {
       "id": "chimney_20",
       "type": "chimney",
-      "x": 192.78,
-      "y": 77.78,
-      "z": -84.09
+      "x": -116.07,
+      "y": 61.21,
+      "z": 110.7
     },
     {
-      "id": "villager_home_11",
-      "type": "villager_home",
-      "x": 188.06,
-      "z": -78.0,
-      "y": 62.17,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": 2.745
+      "id": "lantern_69",
+      "type": "lantern",
+      "x": -113.79,
+      "y": 50.12,
+      "z": 119.18
+    },
+    {
+      "id": "chimney_21",
+      "type": "chimney",
+      "x": -96.29,
+      "y": 60.95,
+      "z": 107.65
+    },
+    {
+      "id": "chimney_22",
+      "type": "chimney",
+      "x": -84.35,
+      "y": 56.89,
+      "z": 106.5
+    },
+    {
+      "id": "lantern_70",
+      "type": "lantern",
+      "x": -77.49,
+      "y": 48.54,
+      "z": 110.38
+    },
+    {
+      "id": "chimney_23",
+      "type": "chimney",
+      "x": -49.59,
+      "y": 57.12,
+      "z": 106.75
+    },
+    {
+      "id": "lantern_71",
+      "type": "lantern",
+      "x": -78.18,
+      "y": 48.5,
+      "z": 99.94
+    },
+    {
+      "id": "lantern_72",
+      "type": "lantern",
+      "x": -78.57,
+      "y": 49.91,
+      "z": 80.61
+    },
+    {
+      "id": "lantern_73",
+      "type": "lantern",
+      "x": -87.93,
+      "y": 48.56,
+      "z": 97.89
+    },
+    {
+      "id": "lantern_74",
+      "type": "lantern",
+      "x": -105.06,
+      "y": 48.92,
+      "z": 88.13
+    },
+    {
+      "id": "lantern_75",
+      "type": "lantern",
+      "x": -111.97,
+      "y": 50.15,
+      "z": 107.15
+    },
+    {
+      "id": "lantern_76",
+      "type": "lantern",
+      "x": -117.09,
+      "y": 49.47,
+      "z": 87.38
+    },
+    {
+      "id": "lantern_77",
+      "type": "lantern",
+      "x": -134.9,
+      "y": 50.26,
+      "z": 97.07
+    },
+    {
+      "id": "present_01",
+      "type": "present",
+      "x": -68.75,
+      "y": 48.23,
+      "z": 157.78,
+      "size": 2.4,
+      "variant": 0,
+      "heading": -2.102
+    },
+    {
+      "id": "present_02",
+      "type": "present",
+      "x": -119.1,
+      "y": 45.28,
+      "z": 127.15,
+      "size": 2.4,
+      "variant": 1,
+      "heading": 2.356
+    },
+    {
+      "id": "present_03",
+      "type": "present",
+      "x": -72.23,
+      "y": 45.07,
+      "z": 86.92,
+      "size": 2.4,
+      "variant": 2,
+      "heading": -2.17
+    },
+    {
+      "id": "ornament_01",
+      "type": "ornament",
+      "x": -77.58,
+      "y": 52.45,
+      "z": 132.21,
+      "r": 1.4,
+      "color": "#d82a3a"
+    },
+    {
+      "id": "ornament_02",
+      "type": "ornament",
+      "x": -103.79,
+      "y": 52.02,
+      "z": 121.58,
+      "r": 1.4,
+      "color": "#2a8a4a"
+    },
+    {
+      "id": "ornament_03",
+      "type": "ornament",
+      "x": -114.42,
+      "y": 51.23,
+      "z": 147.79,
+      "r": 1.4,
+      "color": "#e8b64a"
+    },
+    {
+      "id": "ornament_04",
+      "type": "ornament",
+      "x": -88.21,
+      "y": 52.88,
+      "z": 158.42,
+      "r": 1.4,
+      "color": "#3a6ad8"
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -161.7,
+      "y": 49.41,
+      "z": 76.28
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -149.46,
+      "y": 49.27,
+      "z": 65.36
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -184.79,
+      "y": 50.19,
+      "z": 37.4
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -168.51,
+      "y": 48.95,
+      "z": 39.39
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -181.41,
+      "y": 51.89,
+      "z": 6.86
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": -168.72,
+      "y": 51.61,
+      "z": -3.52
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -175.38,
+      "y": 58.47,
+      "z": -39.48
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -163.45,
+      "y": 57.34,
+      "z": -28.23
+    },
+    {
+      "id": "geyser_01",
+      "type": "geyser",
+      "x": -16.55,
+      "y": 72.66,
+      "z": -180.3,
+      "r": 3.5,
+      "height": 16.0,
+      "period": 8.0,
+      "offset": 0.0,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": -17.1,
+      "y": 70.19,
+      "z": -171.32
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": -24.53,
+      "y": 73.05,
+      "z": -184.46
+    },
+    {
+      "id": "geyser_02",
+      "type": "geyser",
+      "x": -129.04,
+      "y": 77.48,
+      "z": -158.99,
+      "r": 3.5,
+      "height": 21.0,
+      "period": 9.0,
+      "offset": 1.3,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": -129.76,
+      "y": 76.01,
+      "z": -167.96
+    },
+    {
+      "id": "geyser_03",
+      "type": "geyser",
+      "x": -0.74,
+      "y": 73.64,
+      "z": -169.15,
+      "r": 3.5,
+      "height": 26.0,
+      "period": 10.0,
+      "offset": 2.6,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 5.41,
+      "y": 75.3,
+      "z": -175.72
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 1.95,
+      "y": 71.42,
+      "z": -177.74
+    },
+    {
+      "id": "geyser_04",
+      "type": "geyser",
+      "x": -82.84,
+      "y": 78.01,
+      "z": -151.29,
+      "r": 3.5,
+      "height": 16.0,
+      "period": 8.0,
+      "offset": 3.9000000000000004,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": -89.65,
+      "y": 76.6,
+      "z": -145.4
+    },
+    {
+      "id": "steam_09",
+      "type": "steam",
+      "x": -91.46,
+      "y": 75.56,
+      "z": -153.88
+    },
+    {
+      "id": "geyser_05",
+      "type": "geyser",
+      "x": -91.7,
+      "y": 77.7,
+      "z": -124.97,
+      "r": 3.5,
+      "height": 21.0,
+      "period": 9.0,
+      "offset": 5.2,
+      "warn": 1.4,
+      "blast": 2.2,
+      "launch": 0.0
+    },
+    {
+      "id": "steam_10",
+      "type": "steam",
+      "x": -100.54,
+      "y": 74.83,
+      "z": -126.68
+    },
+    {
+      "id": "steam_11",
+      "type": "steam",
+      "x": -89.1,
+      "y": 76.53,
+      "z": -133.59
+    },
+    {
+      "id": "steam_12",
+      "type": "steam",
+      "x": -42.75,
+      "y": 75.33,
+      "z": -183.97
+    },
+    {
+      "id": "steam_13",
+      "type": "steam",
+      "x": 18.89,
+      "y": 70.31,
+      "z": -129.88
+    },
+    {
+      "id": "steam_14",
+      "type": "steam",
+      "x": -173.67,
+      "y": 63.44,
+      "z": -63.52
+    },
+    {
+      "id": "steam_15",
+      "type": "steam",
+      "x": -73.3,
+      "y": 75.19,
+      "z": -164.89
+    },
+    {
+      "id": "steam_16",
+      "type": "steam",
+      "x": -51.76,
+      "y": 73.41,
+      "z": -101.36
+    },
+    {
+      "id": "steam_17",
+      "type": "steam",
+      "x": -68.99,
+      "y": 70.75,
+      "z": -109.45
+    },
+    {
+      "id": "dinosaur_01",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.5,
+      "scale": 1.0,
+      "model": "mammoth",
+      "start": 0.0
+    },
+    {
+      "id": "dinosaur_02",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.5,
+      "scale": 0.6,
+      "model": "mammoth",
+      "start": 12.0
+    },
+    {
+      "id": "dinosaur_03",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.5,
+      "scale": 0.95,
+      "model": "mammoth",
+      "start": 70.0
+    },
+    {
+      "id": "dinosaur_04",
+      "type": "dinosaur",
+      "route": "Mammoth Path",
+      "speed": 1.5,
+      "scale": 0.55,
+      "model": "mammoth",
+      "start": 82.0
+    },
+    {
+      "id": "lantern_78",
+      "type": "lantern",
+      "x": 49.83,
+      "y": 75.98,
+      "z": -171.33
+    },
+    {
+      "id": "lantern_79",
+      "type": "lantern",
+      "x": 56.81,
+      "y": 74.97,
+      "z": -149.8
+    },
+    {
+      "id": "lantern_80",
+      "type": "lantern",
+      "x": 76.27,
+      "y": 73.87,
+      "z": -161.02
+    },
+    {
+      "id": "lantern_81",
+      "type": "lantern",
+      "x": 82.2,
+      "y": 73.2,
+      "z": -139.44
+    },
+    {
+      "id": "lantern_82",
+      "type": "lantern",
+      "x": 101.56,
+      "y": 66.87,
+      "z": -150.65
+    },
+    {
+      "id": "lantern_83",
+      "type": "lantern",
+      "x": 115.08,
+      "y": 64.94,
+      "z": -133.68
+    },
+    {
+      "id": "lantern_84",
+      "type": "lantern",
+      "x": 129.34,
+      "y": 74.35,
+      "z": -129.06
+    },
+    {
+      "id": "lantern_85",
+      "type": "lantern",
+      "x": 150.63,
+      "y": 76.16,
+      "z": -121.66
+    },
+    {
+      "id": "lantern_86",
+      "type": "lantern",
+      "x": 132.97,
+      "y": 75.28,
+      "z": -107.19
+    },
+    {
+      "id": "lantern_87",
+      "type": "lantern",
+      "x": 153.06,
+      "y": 71.54,
+      "z": -96.97
+    },
+    {
+      "id": "lantern_88",
+      "type": "lantern",
+      "x": 144.4,
+      "y": 69.99,
+      "z": -76.53
+    },
+    {
+      "id": "lantern_89",
+      "type": "lantern",
+      "x": 167.17,
+      "y": 67.15,
+      "z": -77.95
+    },
+    {
+      "id": "lantern_90",
+      "type": "lantern",
+      "x": 171.79,
+      "y": 67.36,
+      "z": -56.97
+    },
+    {
+      "id": "lantern_91",
+      "type": "lantern",
+      "x": 192.29,
+      "y": 67.62,
+      "z": -66.84
+    },
+    {
+      "id": "lantern_92",
+      "type": "lantern",
+      "x": 183.12,
+      "y": 66.16,
+      "z": -47.24
+    },
+    {
+      "id": "lantern_93",
+      "type": "lantern",
+      "x": 194.45,
+      "y": 67.1,
+      "z": -29.72
+    },
+    {
+      "id": "lantern_94",
+      "type": "lantern",
+      "x": 171.68,
+      "y": 66.39,
+      "z": -25.97
+    },
+    {
+      "id": "lantern_95",
+      "type": "lantern",
+      "x": 186.16,
+      "y": 65.49,
+      "z": -8.81
+    },
+    {
+      "id": "lantern_96",
+      "type": "lantern",
+      "x": 167.34,
+      "y": 64.72,
+      "z": 2.01
+    },
+    {
+      "id": "lantern_97",
+      "type": "lantern",
+      "x": 176.05,
+      "y": 65.22,
+      "z": 21.69
+    },
+    {
+      "id": "lantern_98",
+      "type": "lantern",
+      "x": 153.66,
+      "y": 64.91,
+      "z": 25.76
+    },
+    {
+      "id": "lantern_99",
+      "type": "lantern",
+      "x": 170.44,
+      "y": 63.49,
+      "z": 40.65
+    },
+    {
+      "id": "area_ambient_01",
+      "type": "area_ambient",
+      "area": "aurora",
+      "effect": "sparkles",
+      "rate": 14,
+      "radius": 34,
+      "colors": [
+        "#9ef3ff",
+        "#c9a2ff",
+        "#ffffff"
+      ]
     },
     {
       "id": "snowfall_01",
