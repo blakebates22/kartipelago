@@ -289,14 +289,14 @@
       "id": "torch_21",
       "type": "torch",
       "x": 77.13,
-      "y": 7.35,
+      "y": 7.37,
       "z": -84.32
     },
     {
       "id": "torch_22",
       "type": "torch",
       "x": 99.13,
-      "y": 7.56,
+      "y": 7.6,
       "z": -84.32
     },
     {
@@ -317,7 +317,7 @@
       "id": "torch_25",
       "type": "torch",
       "x": 45.2,
-      "y": 6.88,
+      "y": 6.86,
       "z": -104.4
     },
     {
@@ -373,7 +373,7 @@
       "id": "torch_33",
       "type": "torch",
       "x": -40.15,
-      "y": 4.63,
+      "y": 4.78,
       "z": -70.02
     },
     {
@@ -394,7 +394,7 @@
       "id": "campfire_03",
       "type": "campfire",
       "x": -40.15,
-      "y": 4.03,
+      "y": 4.18,
       "z": -70.02
     },
     {
@@ -406,7 +406,7 @@
   ],
   "generator": "tools/blender/prehistoric/shipwreck_bay_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "shipwreck_bay.py": "16ff73a868723ef488b23622b9a013a0a07854a18a8c49fe0e94d8efaba6f5a7",
+    "shipwreck_bay.py": "1c0a71aa46c451eefe31c68f16347216bddeb6c7f5eba3be7b00520d87809af6",
     "shipwreck_bay_ruins.py": "46ab8aff2d21f54e864b6b92019b34170725526f7b7dfb8e6286203df3f198ff",
     "wreck_scenery.py": "aca837f2811b7648a1d03511091fbbd67d989972bfc2fca456ee47a38ef9fd89"
   }

@@ -321,7 +321,7 @@ def main():
                 deck=1.2, deck_mat=planks, ground=False)
 
     X0, X1, Y0, Y1 = -200, 330, -200, 300
-    ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
+    ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2, verge_fill=1.5, fine=3)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2600.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     # (The paint: the sea all round the headland.)

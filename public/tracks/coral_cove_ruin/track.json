@@ -148,7 +148,7 @@
       "id": "torch_05",
       "type": "torch",
       "x": 51.87,
-      "y": 7.15,
+      "y": 7.36,
       "z": -65.55
     },
     {
@@ -162,21 +162,21 @@
       "id": "torch_07",
       "type": "torch",
       "x": 29.29,
-      "y": 6.3,
+      "y": 6.65,
       "z": -59.2
     },
     {
       "id": "torch_08",
       "type": "torch",
       "x": 28.64,
-      "y": 5.39,
+      "y": 5.52,
       "z": -80.79
     },
     {
       "id": "torch_09",
       "type": "torch",
       "x": 10.98,
-      "y": 5.17,
+      "y": 5.26,
       "z": -59.2
     },
     {
@@ -190,22 +190,22 @@
       "id": "torch_11",
       "type": "torch",
       "x": -4.46,
-      "y": 4.05,
+      "y": 4.08,
       "z": -58.67
     },
     {
       "id": "torch_12",
       "type": "torch",
       "x": -9.43,
-      "y": 5.65,
+      "y": 5.89,
       "z": -79.69
     },
     {
       "id": "torch_13",
       "type": "torch",
-      "x": 49.65,
-      "y": 9.59,
-      "z": -103.84
+      "x": 49.74,
+      "y": 11.26,
+      "z": -103.86
     },
     {
       "id": "torch_14",
@@ -238,9 +238,9 @@
     {
       "id": "campfire_01",
       "type": "campfire",
-      "x": 49.65,
-      "y": 8.99,
-      "z": -103.84
+      "x": 49.74,
+      "y": 10.66,
+      "z": -103.86
     },
     {
       "id": "campfire_02",
@@ -265,7 +265,7 @@
   ],
   "generator": "tools/blender/prehistoric/coral_cove_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "coral_cove.py": "e8ff318d381dbf3e905e2e88cb92e213470ccb16d11353686be500c76eac89ad",
+    "coral_cove.py": "7b8317f660400ffec2a71b18dfd5df1ac9251ee1317c12f3b95e1bd4c96c55c0",
     "coral_cove_ruins.py": "400a8d901f68055100b0edae49f8b73f7f1e7a377a067b80e0443ee59377ae6d",
     "cove_scenery.py": "c6e45236ba02fcee4a4413fe88e4e2e8212a7aeb7566bb3d27b0693a63268725"
   }

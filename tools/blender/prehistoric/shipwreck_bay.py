@@ -355,7 +355,7 @@ def main():
     c.roads(kit.plan(c, specials, "road", max_len=150.0))
 
     X0, X1, Y0, Y1 = BOUNDS
-    ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2)
+    ter = c.terrain("Sand", X0, X1, Y0, Y1, 4.0, natural, classify, near=9.0, fade=10.0, under=0.2, verge_fill=1.5, fine=3)
     c.underfloor_flat("Seabed", X0, X1, Y0, Y1, 4.0, lambda x, y: natural(x, y) - 0.6, c.lib("wet_sand", "deep_water"))
     c.ribbon("Sea South", [(x, -1340.0) for x in range(-1600, 1801, 200)], 2700.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)
     c.ribbon("Sea East", [(1260.0, y) for y in range(-1400, 1401, 200)], 2200.0, WATER_Z, c.lib("sea_water"), role="visual", steps=2)

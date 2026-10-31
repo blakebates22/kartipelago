@@ -248,7 +248,7 @@
   "generator": "tools/blender/prehistoric/splash_lagoon_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "lagoon_scenery.py": "e55370f37afbdc6cd195a5ef58046b3b521c7cad5f6f9f70834e3efc0dc5ac96",
-    "splash_lagoon.py": "c11e75d74d1fd94372cea27047a93a20b9a72050faec9d35d0bf3dd76eef25ba",
+    "splash_lagoon.py": "005af7ea6afcdb979a68dcacca7eacb1f55b905df67fca2de18ab8c2f47136ed",
     "splash_lagoon_ruins.py": "3ede24811491fc497504dc659cfdee1f6ac76e605b074fb1c387d2118f87ccbe"
   }
 }

@@ -12,7 +12,7 @@ import { heightField, readGlb, type GlbMesh } from "./glb";
 
 const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region", "dragon_region"];
 /** The courses done so far (Oct 30: the Prehistoric world's but Bonebog Pyramid, which
- * needs none, the Snow world's and the desert's; standard and ruin). */
+ * needs none, the Snow world's, the desert's and the beach's; standard and ruin). */
 const COURSES = [
   "riverbend_palms",
   "cascade_caverns",
@@ -26,12 +26,16 @@ const COURSES = [
   "oasis_haven",
   "dry_gulch",
   "impact_depths",
+  "coral_cove",
+  "shipwreck_bay",
+  "volcano_isle",
+  "splash_lagoon",
 ].flatMap((t) => [t, `${t}_ruin`]);
 /** What's a road (the race line's pieces, the side roads, aprons and lanes), by name. */
 const ROAD = /^(Road \d+ |.* Road$|.* Apron$|.* Lane$)/;
 /** Built drops: a bridge, a raised deck or causeway, a jump's ramp and landing, a cliff ledge, a ford (its sides are meant to fall away: a rail, water, or a jump). */
 const BRIDGE =
-  /^Road \d+ .*(bridge|boardwalk|pier|landing|ramp|kicker|jump|ford|launch|viaduct|ledge|dike|causeway|spiral)|^Pier/;
+  /^Road \d+ .*(bridge|boardwalk|pier|landing|ramp|kicker|jump|ford|launch|viaduct|ledge|dike|causeway|spiral|wreck|mast)|^Pier/;
 /** The kart climbs 0.25 m; for now a few edges in the tunnels sit a little over that (the
  * skirt's lip under the shoulder), so the test allows 0.35 until the rollout tightens it. */
 const STEP = 0.35;
@@ -66,7 +70,8 @@ export async function roadSteps(pkg: string) {
     const n = base(m.name);
     if (BRIDGE.test(n)) bridges.push(m);
     else if (ROAD.test(n)) roads.push(m);
-    else if (/^Underfloor/.test(n)) continue;
+    // (The seabed under the beach world's deep water: in there you sink and respawn.)
+    else if (/^(Underfloor|Seabed)/.test(n)) continue;
     else if (extent(m) > 80) land.push(m);
     else other.push(m);
   }
@@ -258,6 +263,15 @@ const ALLOW: Record<string, number> = {
   dry_gulch_ruin: 1.95,
   impact_depths: 1.85,
   impact_depths_ruin: 1.3,
+  // (The beach: a spot or two, 0.4-0.8 m.)
+  coral_cove: 0.45,
+  coral_cove_ruin: 0.8,
+  shipwreck_bay: 0.45,
+  shipwreck_bay_ruin: 0.45,
+  volcano_isle: 0.45,
+  volcano_isle_ruin: 0.5,
+  splash_lagoon: 0.5,
+  splash_lagoon_ruin: 0.5,
 };
 
 describe("back up onto the road", () => {
