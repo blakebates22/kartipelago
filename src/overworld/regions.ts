@@ -319,68 +319,72 @@ export const REGIONS: Region[] = [
     name: "Desert World",
     packageId: "desert_region",
     ruinPackageId: "desert_region_ruin",
-    // A secret, for the way back: a sunken garden in the oasis, cut off by deep water the Beach Tool gets you over.
+    // v4, the open Southwest (Blake, Oct 31; tools/blender/prehistoric/mesa_region.py): one
+    // open desert floor, its mesas and buttes on it, the road out along the Grand Canyon's
+    // rim, past Havasu's pools, through the boomtown, round Meteor Crater, by Scorchwind's
+    // rodeo arena, up the Ledge Road and over Sun Arch. (The positions are the build's.)
+    // A secret, for the way back: a sunken garden by the falls' side canyon, cut off by deep water the Beach Tool gets you over.
     secret: {
       obstacle: "water",
       tool: "beach",
-      gate: { x: 168.74, z: -126.04, heading: -0.7382, width: 9 },
-      spot: { x: 174.8, z: -132.7 },
+      gate: { x: 324.01, z: -252.28, heading: -0.7278, width: 9 },
+      spot: { x: 330, z: -259 },
     },
     // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.
     cave: {
-      gate: { x: -172.5, z: 17.5, heading: 1.5621, width: 9 },
-      spot: { x: -183.5, z: 17.4 },
+      gate: { x: -353.64, z: 88.22, heading: 2.1239, width: 9 },
+      spot: { x: -363, z: 94 },
     },
     music: "canyon",
     worldId: "desert",
     kingdom: "desert",
-    // The main road's start line, on the post's east side (the 1-on-1 is raced from it).
-    challenge: { x: -146, z: 6, heading: 3.0636 },
+    // The main road's start line, by the trading post (the 1-on-1 is raced from it).
+    challenge: { x: -320, z: 40, heading: -3.0853 },
     // In the trading post's square, facing east to the road.
-    spawn: { x: -167.4, z: 0, heading: Math.PI / 2 },
+    spawn: { x: -360, z: 40, heading: Math.PI / 2 },
     gateways: [
-      // At the slot canyon's mouth in the canyon's north wall.
-      { id: "canyon", track: "canyon_dash", x: -40.75, z: -188.14, radius: 6, heading: -0.3006 },
-      // In the palm grove by the spring.
-      { id: "oasis", track: "oasis_haven", x: 183.97, z: -99.17, radius: 6, heading: -0.9034 },
-      // At the end of the ghost town's false-front street.
-      { id: "gulch", track: "dry_gulch", x: 137.23, z: 135.37, radius: 6, heading: -2.0975 },
-      // By the meteorite in the crater's floor.
-      { id: "impact", track: "impact_depths", x: -12.97, z: 149.31, radius: 6, heading: 1.737 },
-      // Scorchwind's lair: a rock arch in the canyon's west wall.
+      // At the Horseshoe Bend overlook on the Grand Canyon's rim.
+      { id: "canyon", track: "canyon_dash", x: 150.43, z: -307.99, radius: 6, heading: 3.1055 },
+      // Over Havasu's pools at the side canyon's end.
+      { id: "oasis", track: "oasis_haven", x: 336.74, z: -163.22, radius: 6, heading: -2.1156 },
+      // At the boomtown's street, by the railroad.
+      { id: "gulch", track: "dry_gulch", x: 260, z: 60.34, radius: 6, heading: 1.5423 },
+      // By the observatory on Meteor Crater's rim.
+      { id: "impact", track: "impact_depths", x: 188.94, z: 224.05, radius: 6, heading: -3.053 },
+      // Scorchwind's lair: out of his rodeo arena's east gate.
       {
         id: "lair",
         track: "boss_desert",
-        x: -109.01,
-        z: -159.23,
+        x: 37.93,
+        z: 189.27,
         radius: 6,
-        heading: 0.822,
+        heading: 1.465,
         boss: true,
         label: "SCORCHWIND'S LAIR",
       },
     ],
     passages: [
-      // Back up the Frozen Pass to the Snow Kingdom.
+      // Back up the Frozen Pass to the Snow Kingdom (west, through the rim).
       {
         id: "frozen_pass",
         label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
         to: "journey_pass",
         toPassage: "end",
-        x: -279,
-        z: 0,
+        x: -444,
+        z: 40,
         radius: 8,
         heading: Math.PI / 2,
       },
-      // The Dust Road south out of the crater, under Scorchwind's drifts: on to Tropic Isles.
+      // The Dust Road south through the rim, under Scorchwind's drifts: on to Tropic Isles.
       {
         id: "dust_road",
         label: "THE DUST ROAD · TO TROPIC ISLES",
         to: "journey_dust",
         toPassage: "start",
-        x: 0,
-        z: 270,
+        x: -80,
+        z: 444,
         radius: 8,
-        heading: Math.PI,
+        heading: 2.9791,
         ruinOnly: true,
         blocker: { kind: "drift", width: 13 },
         opensAfter: "desert",
