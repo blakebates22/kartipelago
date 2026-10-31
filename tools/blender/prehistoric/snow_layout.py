@@ -344,64 +344,51 @@ BELL = (-110.0, -122.0)  # the bell tower, north-west of the square
 LAIR = (-90.0, 222.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
 FROZEN_PASS = (164.0, -62.0)  # where the Frozen Pass leaves the glacier's tongue (the ruin), on east
 PASS_END = (262.0, -90.0)
-GORGE_END = (0.0, -314.0)  # the Burnt Gorge's far end: the passage back to the valley
-
-# The Lookout Road (Blake, Oct 30: "what if we had to drive a bit before we get to the
-# actual lap, that way it isnt so steep ... so we can see everything with switchbacks"):
-# up out of the Burnt Gorge onto the Lookout, the high shoulder of the mountain south of
-# the pass, 100 m up, over every world's walls, the whole kingdom laid out below; then down
-# its north face in three legs and two hairpins into the pass, onto the lap. (x, y, road
-# height) at its turns; between them it runs straight, the corners rounded.
-LOOKOUT_WAY = [
-    (0.0, -306.0, 0.0),  # the passage (back down the gorge to the valley)
-    (56.0, -300.0, 0.0),  # east along the mountain's south face
-    (70.0, -288.0, 0.0),  # the first hairpin
-    (40.0, -278.0, 0.0),
-    (-30.0, -276.0, 0.0),  # west, climbing
-    (-44.0, -264.0, 0.0),  # the second hairpin
-    (-30.0, -254.0, 0.0),  # 6: the Lookout, on the shoulder's north edge
-    (20.0, -250.0, 0.0),  # down: the first leg, east
-    (64.0, -248.0, 0.0),
-    (76.0, -236.0, 0.0),  # hairpin
-    (60.0, -226.0, 0.0),
-    (0.0, -226.0, 0.0),  # the second leg, west
-    (-36.0, -224.0, 0.0),
-    (-46.0, -214.0, 0.0),  # hairpin
-    (-34.0, -204.0, 0.0),
-    (20.0, -204.0, 0.0),  # the third leg, east
-    (66.0, -202.0, 0.0),
-    (76.0, -190.0, 0.0),  # hairpin
-    (62.0, -180.0, 0.0),
-    (40.0, -176.0, 0.0),  # the last leg, west, into the pass
-    (26.0, -160.0, 0.0),  # onto the lap, on the pass
+# v4b (Blake, Oct 30: "go higher still ... build the mountain up and relocate the portal",
+# "a little village that is carved straight into the plateau ... a small village that
+# captures the culture of the area and is independent of the level designs, like ... the
+# little village in dino valley"; he chose the stone-carvers, and the mountain in the
+# south: the Burnt Gorge is a road from the valley, it comes over the kingdom's rim): the
+# Carvers' Crest. Up the outside of the southern mountains from the passage in two
+# hairpins to the Crest Gate, 140 m, over every world's walls, the whole kingdom below;
+# then down the inner cliff in five legs into the pass, onto the lap. The carvers'
+# village is cut into the faces between the legs, its square on a terrace halfway down.
+GORGE_END = (0.0, -410.0)  # the passage back to the valley, at the climb's foot
+CREST = (-24.0, -348.0)  # the Crest Gate
+CREST_WAY = [  # (x, y) from the passage to the lap (v4b: pushed back 50 m, Blake, Oct 30)
+    (0.0, -410.0),
+    (60.0, -402.0),
+    (74.0, -390.0),  # hairpin
+    (40.0, -382.0),
+    (-20.0, -378.0),
+    (-34.0, -366.0),  # and up north
+    (-24.0, -348.0),  # 6: the Crest Gate, the top, facing the kingdom
+    (-4.0, -340.0),
+    (40.0, -340.1),
+    (66.0, -334.2),
+    (78.0, -316.6),
+    (50.0, -301.8),
+    (-30.0, -298.9),
+    (-44.0, -281.2),
+    (-30.0, -266.5),
+    (56.0, -263.6),
+    (70.0, -245.9),
+    (50.0, -231.2),
+    (-30.0, -228.3),
+    (-44.0, -210.6),
+    (-26.0, -195.9),
+    (24.0, -190.0),
+    (30.0, -176.0),
+    (24.0, -158.0),
 ]
-_LK_TOP = 6  # (the Lookout's index)
-_LK_Z = (90.0, 116.0, 58.4)  # the road's height at the passage, the Lookout and the lap
+_CREST_TOP = 6
+_CREST_Z = (124.0, 155.0, 58.4)  # the passage, the Crest Gate, the lap
+CARVERS = (14.0, -271.0, 15.0)  # the carvers' square: x, y, radius (on the third leg's terrace)
+MOUNT = (-74.0, 104.0, -342.0, -350.0, 157.0)  # the Crest's x from, to; its inner and outer edges' y; its top
 
 
-def _lookout_heights(way):
-    """The heights along the way: climbing evenly from the passage to the Lookout, then
-    falling evenly to the lap."""
-    cum = [0.0]
-    for a, b in zip(way, way[1:]):
-        cum.append(cum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
-    z0, zt, z1 = _LK_Z
-    k = _LK_TOP
-    out = []
-    for i, (x, y, _z) in enumerate(way):
-        z = lerp(z0, zt, cum[i] / cum[k]) if i <= k else lerp(zt, z1, (cum[i] - cum[k]) / (cum[-1] - cum[k]))
-        out.append((x, y, z))
-    return out
-
-
-LOOKOUT_WAY = _lookout_heights(LOOKOUT_WAY)
-LOOKOUT = (-30.0, -254.0)
-LOOKOUT_PEAK = (-74.0, 104.0, -256.0, 117.0)  # x from, x to, the edge's y, the top: the shoulder it's cut into
-
-
-def lookout_line(every=3.0, r=11.0):
-    """The Lookout Road's centre line, dense: (x, y, z), its corners rounded (radius `r`)."""
-    pts = LOOKOUT_WAY
+def _round_way(pts, every=3.0, r=11.0):
+    """(x, y) waypoints, their corners rounded, sampled every `every` m."""
     out = [pts[0]]
     for i in range(1, len(pts) - 1):
         a, b, c = pts[i - 1], pts[i], pts[i + 1]
@@ -420,21 +407,35 @@ def lookout_line(every=3.0, r=11.0):
         cx, cy = p0[0] - uy * rr * side, p0[1] + ux * rr * side
         a0 = math.atan2(p0[1] - cy, p0[0] - cx)
         k = max(2, int(rr * th / 2.0))
-        za = lerp(a[2], b[2], 1.0 - t / lu)
-        zc = lerp(b[2], c[2], t / lv)
         for j in range(k + 1):
             ang = a0 + side * th * j / k
-            out.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang), lerp(za, zc, j / k)))
+            out.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
     out.append(pts[-1])
     dense = [out[0]]
     for a, b in zip(out, out[1:]):
         n = max(1, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
         for j in range(1, n + 1):
-            dense.append((lerp(a[0], b[0], j / n), lerp(a[1], b[1], j / n), lerp(a[2], b[2], j / n)))
+            dense.append((lerp(a[0], b[0], j / n), lerp(a[1], b[1], j / n)))
     return dense
 
 
-LOOKOUT_LINE = lookout_line()
+def _crest_line():
+    pts = _round_way(CREST_WAY)
+    cum = [0.0]
+    for p, q in zip(pts, pts[1:]):
+        cum.append(cum[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
+    tx, ty = CREST_WAY[_CREST_TOP]
+    top = min(range(len(pts)), key=lambda i: math.hypot(pts[i][0] - tx, pts[i][1] - ty))
+    z0, zt, z1 = _CREST_Z
+    out = []
+    for i, (x, y) in enumerate(pts):
+        z = lerp(z0, zt, cum[i] / cum[top]) if i <= top else lerp(zt, z1, (cum[i] - cum[top]) / (cum[-1] - cum[top]))
+        out.append((x, y, z))
+    return out
+
+
+LOOKOUT_LINE = _crest_line()  # (the whole way in, from the passage to the lap)
+LOOKOUT = CREST
 _LK_BOX = (min(p[0] for p in LOOKOUT_LINE) - 30, max(p[0] for p in LOOKOUT_LINE) + 30,
            min(p[1] for p in LOOKOUT_LINE) - 30, max(p[1] for p in LOOKOUT_LINE) + 30)
 
@@ -459,13 +460,15 @@ def plateau(h, x, y, wsd):
 
 
 def lookout_floor(x, y):
-    """(distance from the Lookout Road's line, its road height there) or None far off."""
+    """(distance from the way in's line, its road height there) or None far off."""
     x0, x1, y0, y1 = _LK_BOX
     if not (x0 <= x <= x1 and y0 <= y <= y1):
         return None
     best = None
     for a, b in zip(LOOKOUT_LINE, LOOKOUT_LINE[1:]):
         dx, dy = b[0] - a[0], b[1] - a[1]
+        if abs(x - a[0]) > 40 and abs(x - b[0]) > 40:
+            continue
         L2 = dx * dx + dy * dy or 1e-9
         t = max(0.0, min(1.0, ((x - a[0]) * dx + (y - a[1]) * dy) / L2))
         d = math.hypot(x - a[0] - dx * t, y - a[1] - dy * t)
@@ -474,24 +477,37 @@ def lookout_floor(x, y):
     return best
 
 
+def crest_height(x, y):
+    """The mountain the Crest is: a broad top at MOUNT's height; its inner face falling north
+    as steeply as the legs step down it (so from the gate you look down over them), its
+    outer face falling south to the passage; its ends falling away east and west."""
+    x0, x1, yin, yout, top = MOUNT
+    side = smooth((x - x0) / 30.0) * smooth((x1 - x) / 30.0)
+    return top - 0.78 * max(0.0, y - yin) - 0.5 * max(0.0, yout - y) - (1.0 - side) * 70.0
+
+
 def lookout_land(h, x, y, wsd):
-    """The mountain the Lookout Road is cut into: its shoulder built up (never in a pocket),
-    then the road's shelf cut level across, 7 m each side, banked back into the slope; a leg
-    below another sits on its own shelf, the slope between them a cut face."""
-    # (A face falling north from the Lookout's edge as steeply as the legs cut into it
-    # step down, so from the Lookout you look down over them into the kingdom; flat behind.)
-    x0, x1, edge, top = LOOKOUT_PEAK
-    side = smooth((x - x0) / 26.0) * smooth((x1 - x) / 26.0)
-    peak = top - max(0.0, y - edge) * 0.74 - (1.0 - side) * 60.0
-    if peak > h:
-        h = lerp(h, peak, smooth((wsd - 2.0) / 16.0))
+    """The Crest raised over the walls (never in a pocket), the carvers' square levelled,
+    and the way in's shelf cut level across (cut into the mountain, built up where it
+    crosses lower ground), 7 m each side, banked back into the land; a leg below another
+    sits on its own shelf, the face between them a cliff (the carvers' village cut into
+    them)."""
+    if y < -150.0:
+        ch = crest_height(x, y)
+        if ch > h:
+            h = lerp(h, ch, smooth((wsd - 6.0) / 14.0))
     f = lookout_floor(x, y)
+    cx, cy, cr = CARVERS
+    d = math.hypot(x - cx, y - cy)
+    if d < cr + 12.0 and f is not None:
+        zsq = lookout_floor(cx, cy)[1]
+        h = lerp(zsq - 0.25, h, smooth((d - cr) / 12.0)) if d > cr else zsq - 0.25
     if f is None:
         return h
     dd, z = f
     if dd < 7.0:
         return z - 0.25
-    if dd < 16.0 and h > z - 0.25:
+    if dd < 16.0:
         return lerp(z - 0.25, h, smooth((dd - 7.0) / 9.0))
     return h
 

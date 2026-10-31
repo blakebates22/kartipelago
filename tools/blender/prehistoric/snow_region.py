@@ -172,9 +172,9 @@ def main():
     # The way in: up out of the Burnt Gorge (from the valley, south) through the hollow and
     # onto the road (Blake, Oct 29: the old square's gone, with the village; the hollow is
     # the grand way in to the kingdom, snow_dress.entry_pass).
-    # v4: the Lookout Road (Blake, Oct 30: "drive a bit before we get to the actual lap ...
-    # so we can see everything with switchbacks"), up out of the Burnt Gorge to the
-    # Lookout, 100 m up, then down three legs into the pass, onto the lap.
+    # v4b: the way in (Blake, Oct 30: "go higher still"): out of the tunnel onto the
+    # Carvers' Peak's summit, round its top, spiralling down its flanks into the carvers'
+    # village, and down onto the lap at the pass (snow_layout.LOOKOUT_LINE).
     gorge = [(x, y, z + 0.05) for x, y, z in SL.LOOKOUT_LINE]
     c.side_road("Lookout Road", gorge, "packed_snow_road", "road", width=11.0, shoulder=1.2, shoulder_mat=snow, flush=True,
                 ease=10.0)
@@ -208,7 +208,8 @@ def main():
         c.side_road("Frozen Pass Road", way, "packed_snow_road", "road", **trail)
 
     # (v4: drawn in, and finer, for the walls' tiers)
-    X0, X1, Y0, Y1 = -310, 310, -310, 310
+    # (v4b: out south to the passage at the Crest's foot)
+    X0, X1, Y0, Y1 = -310, 310, -442, 310
     ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     sd.level_pads(ter)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
@@ -258,7 +259,8 @@ def main():
     dress(c, ground, spots)
     vv.clear_paths(c, LANES)
     # The gorge's far end, back towards the valley: it bends out of sight.
-    sd.gorge_bend(c, natural)
+    # (v4b: the way in comes out of a tunnel on the peak's summit now; its mouth is the
+    # carvers' village's work.)
     c.entity("snowfall", rate=60, radius=60)
 
     # (Raced too: the champion's challenge, once round the loop, from this line.)

@@ -624,10 +624,14 @@ def entry_pass(c, ground, way):
 
     if len(way) < 4:
         return
-    # The gateway, across the road where it comes up out of the gorge into the hollow.
+    # The gateway: the Crest Gate, across the road at the top of the climb, the kingdom
+    # below it (v4b).
     cx, cy, cr, cz = SL.HUB
-    best = min(way, key=lambda p: abs(p[1] - (cy - cr + 4.0)))
-    k = way.index(best)
+    # (Down the climb from the top, so nothing's in the way when you crest the lip: Blake,
+    # Oct 30, "the castle is in the way".)
+    top = min(way, key=lambda p: math.hypot(p[0] - SL.CREST[0], p[1] - SL.CREST[1]))
+    k = max(0, way.index(top) - 9)
+    best = way[k]
     ax, ay = way[max(0, k - 1)]
     bx, by = way[min(len(way) - 1, k + 1)]
     rot = math.atan2(by - ay, bx - ax)
@@ -646,13 +650,13 @@ def entry_pass(c, ground, way):
         c.entity("torch", x=g[0], y=g[1], z=g[2])
         bpx, bpy = best[0] + nx * sd * 17.5 + math.cos(rot) * 3.0, best[1] + ny * sd * 17.5 + math.sin(rot) * 3.0
         c.place(kp.banner_pole(c), bpx, bpy, ground(bpx, bpy) - 0.2, rot=rot, coll="Props")
-    # Lantern posts up the road from the gateway to the kingdom's road.
+    # Lantern posts the whole way, up the climb and down the switchbacks (v4b).
     post = hp.lantern_post(c, 0)
-    for j in range(0, k, 2):
+    for j in range(0, len(way) - 1, 4):
         (x0, y0), (x1, y1) = way[j], way[min(j + 1, len(way) - 1)]
         tx, ty = x1 - x0, y1 - y0
         tl = math.hypot(tx, ty) or 1.0
-        for sd in (-1, 1):
+        for sd in ((-1, 1)[(j // 4) % 2],):
             px, py = x0 - ty / tl * sd * 8.5, y0 + tx / tl * sd * 8.5
             if not paint.road_clear(c, px, py, 3.0):
                 continue

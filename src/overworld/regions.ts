@@ -241,9 +241,9 @@ export const REGIONS: Region[] = [
     kingdom: "snow",
     // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
     challenge: { x: 18, z: 150, heading: -1.7226 },
-    // In Hearthglow's square (by the lake since Oct 29: Blake moved the village), facing
-    // west to the road.
-    spawn: { x: -96, z: 140, heading: -Math.PI / 2 },
+    // In the stone-carvers' square, on its terrace halfway down the switchbacks from the
+    // Crest Gate, facing north over the kingdom.
+    spawn: { x: 14, z: 265, heading: Math.PI },
     gateways: [
       // In the village's basin's east wall, at the end of the lane out of the square.
       {
@@ -286,10 +286,10 @@ export const REGIONS: Region[] = [
         label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
         to: "journey_gorge",
         toPassage: "end",
-        x: 1.5,
-        z: 306,
+        x: -5,
+        z: 412,
         radius: 8,
-        heading: Math.PI,
+        heading: 1.711,
       },
       // The Frozen Pass, east out of the lake: on to Desert World.
       {
