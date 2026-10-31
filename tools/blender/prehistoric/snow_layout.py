@@ -27,7 +27,7 @@ import math
 
 from pocket_kit import Layout, catmull, lerp, smooth  # noqa: F401
 
-TOP = 96.0
+TOP = 90.0
 # v4 (Blake, Oct 30: "massively overhaul ... to the level of Dino valley in terms of
 # immersion ... every section brings you to the world created in that level", and "if we
 # would see the whole kingdom from the entrance that would be incredible"): Dino Valley's
@@ -43,9 +43,6 @@ LAKE = (-30.0, 148.0, 20.0, 70.6)  # the frozen lake in the summit: x, y, radius
 
 POCKETS = [
     ("pass", "pass", [(18.0, -160.0, 22.0, 58.0), (48.0, -148.0, 18.0, 58.0), (-8.0, -168.0, 16.0, 57.0)]),
-    # (the Burnt Gorge, south, down to the valley's passage)
-    ("gorge", "pass", [(10.0, -205.0, 15.0, 55.0), (4.0, -232.0, 14.0, 51.0), (8.0, -260.0, 14.0, 47.0),
-                       (2.0, -286.0, 16.0, 43.0)]),
     ("descent", "hearth", [(-30.0, -176.0, 16.0, 54.0), (-56.0, -170.0, 16.0, 49.0)]),
     ("hearth", "hearth",
      [(-86.0, -132.0, 40.0, 44.0), (-120.0, -102.0, 28.0, 45.0), (-62.0, -98.0, 24.0, 44.0), (-118.0, -158.0, 26.0, 44.0),
@@ -346,13 +343,119 @@ BELL = (-110.0, -122.0)  # the bell tower, north-west of the square
 LAIR = (-90.0, 222.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
 FROZEN_PASS = (164.0, -62.0)  # where the Frozen Pass leaves the glacier's tongue (the ruin), on east
 PASS_END = (262.0, -90.0)
-GORGE_END = (0.0, -291.4)  # the Burnt Gorge's far end: the passage back to the valley
+GORGE_END = (0.0, -314.0)  # the Burnt Gorge's far end: the passage back to the valley
+
+# The Lookout Road (Blake, Oct 30: "what if we had to drive a bit before we get to the
+# actual lap, that way it isnt so steep ... so we can see everything with switchbacks"):
+# up out of the Burnt Gorge onto the Lookout, the high shoulder of the mountain south of
+# the pass, 100 m up, over every world's walls, the whole kingdom laid out below; then down
+# its north face in three legs and two hairpins into the pass, onto the lap. (x, y, road
+# height) at its turns; between them it runs straight, the corners rounded.
+LOOKOUT_WAY = [
+    (0.0, -314.0, 88.0),  # the passage (back down the gorge to the valley)
+    (10.0, -286.0, 90.6),
+    (36.0, -266.0, 93.6),
+    (62.0, -254.0, 96.1),
+    (80.0, -238.0, 98.2),
+    (66.0, -224.0, 100.0),  # 5: the Lookout
+    (30.0, -228.0, 95.0),
+    (-10.0, -230.0, 89.4),
+    (-34.0, -224.0, 86.0),  # the first hairpin
+    (-40.0, -210.0, 83.9),
+    (-26.0, -202.0, 81.6),
+    (10.0, -206.0, 76.6),
+    (46.0, -208.0, 71.6),
+    (70.0, -200.0, 68.1),  # the second hairpin
+    (74.0, -186.0, 66.1),
+    (60.0, -176.0, 63.7),
+    (40.0, -170.0, 60.8),
+    (26.0, -160.0, 58.4),  # onto the lap, on the pass
+]
+LOOKOUT = (66.0, -224.0)
+LOOKOUT_PEAK = (20.0, -222.0, 104.0, 58.0)  # x, y, top, flat radius: the shoulder it's cut into
+
+
+def lookout_line(every=3.0, r=11.0):
+    """The Lookout Road's centre line, dense: (x, y, z), its corners rounded (radius `r`)."""
+    pts = LOOKOUT_WAY
+    out = [pts[0]]
+    for i in range(1, len(pts) - 1):
+        a, b, c = pts[i - 1], pts[i], pts[i + 1]
+        ux, uy = b[0] - a[0], b[1] - a[1]
+        vx, vy = c[0] - b[0], c[1] - b[1]
+        lu, lv = math.hypot(ux, uy), math.hypot(vx, vy)
+        ux, uy, vx, vy = ux / lu, uy / lu, vx / lv, vy / lv
+        th = math.acos(max(-1.0, min(1.0, ux * vx + uy * vy)))
+        if th < 0.05:
+            out.append(b)
+            continue
+        t = min(r * math.tan(th / 2), 0.48 * min(lu, lv))
+        rr = t / math.tan(th / 2)
+        p0 = (b[0] - ux * t, b[1] - uy * t)
+        side = 1.0 if ux * vy - uy * vx > 0 else -1.0
+        cx, cy = p0[0] - uy * rr * side, p0[1] + ux * rr * side
+        a0 = math.atan2(p0[1] - cy, p0[0] - cx)
+        k = max(2, int(rr * th / 2.0))
+        za = lerp(a[2], b[2], 1.0 - t / lu)
+        zc = lerp(b[2], c[2], t / lv)
+        for j in range(k + 1):
+            ang = a0 + side * th * j / k
+            out.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang), lerp(za, zc, j / k)))
+    out.append(pts[-1])
+    dense = [out[0]]
+    for a, b in zip(out, out[1:]):
+        n = max(1, int(math.hypot(b[0] - a[0], b[1] - a[1]) / every))
+        for j in range(1, n + 1):
+            dense.append((lerp(a[0], b[0], j / n), lerp(a[1], b[1], j / n), lerp(a[2], b[2], j / n)))
+    return dense
+
+
+LOOKOUT_LINE = lookout_line()
+_LK_BOX = (min(p[0] for p in LOOKOUT_LINE) - 30, max(p[0] for p in LOOKOUT_LINE) + 30,
+           min(p[1] for p in LOOKOUT_LINE) - 30, max(p[1] for p in LOOKOUT_LINE) + 30)
+
+
+def lookout_floor(x, y):
+    """(distance from the Lookout Road's line, its road height there) or None far off."""
+    x0, x1, y0, y1 = _LK_BOX
+    if not (x0 <= x <= x1 and y0 <= y <= y1):
+        return None
+    best = None
+    for a, b in zip(LOOKOUT_LINE, LOOKOUT_LINE[1:]):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L2 = dx * dx + dy * dy or 1e-9
+        t = max(0.0, min(1.0, ((x - a[0]) * dx + (y - a[1]) * dy) / L2))
+        d = math.hypot(x - a[0] - dx * t, y - a[1] - dy * t)
+        if best is None or d < best[0]:
+            best = (d, lerp(a[2], b[2], t))
+    return best
+
+
+def lookout_land(h, x, y, wsd):
+    """The mountain the Lookout Road is cut into: its shoulder built up (never in a pocket),
+    then the road's shelf cut level across, 7 m each side, banked back into the slope; a leg
+    below another sits on its own shelf, the slope between them a cut face."""
+    px, py, top, flat = LOOKOUT_PEAK
+    d = math.hypot(x - px, y - py)
+    peak = top - max(0.0, d - flat) * 0.55
+    if peak > h:
+        h = lerp(h, peak, smooth((wsd - 2.0) / 16.0))
+    f = lookout_floor(x, y)
+    if f is None:
+        return h
+    dd, z = f
+    if dd < 7.0:
+        return z - 0.25
+    if dd < 16.0 and h > z - 0.25:
+        return lerp(z - 0.25, h, smooth((dd - 7.0) / 9.0))
+    return h
 
 
 def natural(x, y):
     """The land, with the frozen lake's ice laid level in its hollow (and v5's drifts,
     kickers and the crevasse)."""
     h = L.natural(x, y) + drifts(x, y) + lips(x, y) - crevasse_cut(x, y)
+    h = lookout_land(h, x, y, L.wall_sd(x, y))
     lx, ly, lr, lz = LAKE
     d = math.hypot(x - lx, y - ly)
     if d < lr + 14:

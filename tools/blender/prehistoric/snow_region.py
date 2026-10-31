@@ -41,7 +41,6 @@ HUB = SL.HUB
 ENTRY = []  # the way in, up out of the Burnt Gorge (its points)
 FLOOR_Z = HUB[3]  # (the village's height: the old name)
 RIM_Z = SL.TOP
-GORGE_HW = 16.0
 
 # The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut on an island in the frozen
 # lake, its ice door shut, and three bells out on the ice round it to ring in order (their
@@ -78,10 +77,6 @@ STRATA = {
     "lake": ["frost_cliff", "frost_rock", "frost_stone", "frost_cliff", "summit_cliff"],
     "pass": ["frost_rock", "frost_cliff", "summit_cliff", "frost_cliff", "frost_rock"],
 }
-
-
-def gorge_x(y):
-    return 4.0 * math.sin(max(0.0, -y - 186.0) / 26.0)
 
 
 def _natural(x, y):
@@ -132,14 +127,8 @@ def pb_seg(x, y, a, b):
     return seg_d(x, y, a, b)
 
 
-# The Burnt Gorge Road's way down from the square to the passage, cut through the pockets'
-# walls it crosses (pocket_kit.Cut).
-GORGE_CUT = pocket_kit.Cut([(gorge_x(y), float(y)) for y in range(int(HUB[1] - HUB[2] + 2), int(SL.GORGE_END[1]) - 8, -8)],
-                           _natural(0.0, HUB[1] - HUB[2] + 2), _natural(*SL.GORGE_END))
-
-
 def natural(x, y):
-    return NOTCHES.apply(GORGE_CUT.apply(_natural(x, y), x, y), x, y)
+    return NOTCHES.apply(_natural(x, y), x, y)
 
 
 def classify(c, n, info):
@@ -147,8 +136,6 @@ def classify(c, n, info):
     ground, cliff, _, _ = LOOK[look]
     # (on the tiered walls only the shelves' flat tops are ground)
     if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
-        if c.y < -180 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
-            return ("obsidian_cliff", "wall")  # (the Burnt Gorge's scorched walls)
         return (pb.strata(L, c, n, STRATA), "wall")
     if SL.crevasse_cut(c.x, c.y) > 1.5:
         return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
@@ -185,12 +172,12 @@ def main():
     # The way in: up out of the Burnt Gorge (from the valley, south) through the hollow and
     # onto the road (Blake, Oct 29: the old square's gone, with the village; the hollow is
     # the grand way in to the kingdom, snow_dress.entry_pass).
-    smp, _ = c.nearest(cx, cy - 6.0)  # (v4: the road crosses the pass's crest)
-    gx, gy = SL.GORGE_END
-    y0 = int(cy - cr + 2)
-    up = pb.line(natural, (smp.p.x, smp.p.y), (gorge_x(y0), float(y0)), z0=smp.p.z, c=c)
-    gorge = up[:-1] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2) for y in range(y0, int(gy + 6), -8)]
-    c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail, flush=True, ease=12.0)
+    # v4: the Lookout Road (Blake, Oct 30: "drive a bit before we get to the actual lap ...
+    # so we can see everything with switchbacks"), up out of the Burnt Gorge to the
+    # Lookout, 100 m up, then down three legs into the pass, onto the lap.
+    gorge = [(x, y, z + 0.05) for x, y, z in SL.LOOKOUT_LINE]
+    c.side_road("Lookout Road", gorge, "packed_snow_road", "road", width=11.0, shoulder=1.2, shoulder_mat=snow, flush=True,
+                ease=10.0)
     ENTRY.extend((p[0], p[1]) for p in gorge)
     # Into Hearthglow's square from the road (its west side).
     vx, vy, vr, vz = SL.VILLAGE
