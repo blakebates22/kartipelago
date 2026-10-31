@@ -142,9 +142,9 @@
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": 168.26,
-      "z": 212.94,
-      "y": 27.63,
+      "x": 107.35,
+      "z": 284.29,
+      "y": 19.04,
       "r": 10.0,
       "n": 3,
       "folk": "desert",
@@ -247,6 +247,8 @@
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "desert_dress.py": "97c499d7431c86272176e76c4219be225f86ccc406d5042cd726a03eb96de552",
-    "desert_layout.py": "587f5489cdc790fa505b1d92ce23f1f26ab9443e91566dc686f816103bb4e7aa"
+    "desert_layout.py": "587f5489cdc790fa505b1d92ce23f1f26ab9443e91566dc686f816103bb4e7aa",
+    "mesa_layout.py": "3771f55b029257e811237044959723f1b4401ea8ad77fd835a86e6f736e650d5",
+    "mesa_region.py": "5b2cf310acc63b2af22b0608b9f8d3c6983175aff2c155d45322f2c2d0bc4362"
   }
 }

@@ -18,6 +18,8 @@ ALSO = {
     "volcano": ("isle_",),
     "splash": ("lagoon_",),
     "shipwreck": ("wreck_",),
+    "desert": ("mesa_",),  # (Desert World v4: mesa_region.py, mesa_layout.py)
+    "beach": ("isle_",),  # (Tropic Isles v4: isle_region.py, isle_layout.py)
 }
 
 

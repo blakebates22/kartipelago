@@ -216,6 +216,13 @@ def sun_arch(c, ground):
 # ------------------------------------------------------------------ the worlds
 
 
+def _foot(ground, x, y, rot, w, d):
+    """The lowest of the land under a building's footprint (w across, d deep, turned rot):
+    where it stands, so none of its foot hangs over a slope."""
+    ca, sa = math.cos(rot), math.sin(rot)
+    return min(ground(x + lx * ca - ly * sa, y + lx * sa + ly * ca) for lx in (-w / 2, 0.0, w / 2) for ly in (-d / 2, 0.0, d / 2))
+
+
 def trading_post(c, ground, taken):
     """The roadside trading post where the Frozen Pass comes down: adobe houses round its
     square, the diner, its neon sign on a tall post, a gas pump under a canopy, the
@@ -226,7 +233,7 @@ def trading_post(c, ground, taken):
     for k, (a, w, d, h) in enumerate(((0.9, 12.0, 9.0, 5.0), (1.9, 9.0, 8.0, 6.0), (2.9, 10.0, 8.0, 5.5), (4.2, 11.0, 9.0, 6.5),
                                       (5.2, 8.0, 7.0, 5.0))):
         x, y = px + (pr + 7.0) * math.cos(a), py + (pr + 7.0) * math.sin(a)
-        dd.adobe_house(c, "Post House %d" % k, x, y, ground(x, y) - 0.1, a - math.pi / 2, w, d, h, k)
+        dd.adobe_house(c, "Post House %d" % k, x, y, _foot(ground, x, y, a - math.pi / 2, w, d) - 0.1, a - math.pi / 2, w, d, h, k)
         taken.add(x, y, 7.0)
     # The diner: a long low block with a big lit window band, its neon sign up on a post.
     dx_, dy_ = px + 4.0, py - pr - 12.0
@@ -248,7 +255,7 @@ def trading_post(c, ground, taken):
     box(c, "Gas Pump Globe", gx_, gy_, 0.3, 0.3, gz + 1.9, gz + 2.4, ("lantern_amber", "wall"), role="visual")
     taken.add(gx_, gy_, 5.0)
     wx, wy = px - 10.0, py + pr + 10.0
-    c.place(cp.windmill_tower(c), wx, wy, ground(wx, wy) - 0.2)
+    c.place(cp.windmill_tower(c), wx, wy, _foot(ground, wx, wy, 0.0, 5.0, 5.0) - 0.2)
     c.place(cp.water_tank(c), wx + 7.0, wy + 2.0, ground(wx + 7.0, wy + 2.0) - 0.2)
     taken.add(wx, wy, 8.0)
     for k in range(3):
@@ -459,7 +466,7 @@ def crater(c, ground, taken):
     meteorite in its floor."""
     cx, cy, R, rim, fz = M.CRATER
     gx, gy = M.GATES["impact"]
-    ox, oy = cx + (R + 14.0) * math.cos(1.9), cy + (R + 14.0) * math.sin(1.9)
+    ox, oy, _r = M.OBSERVATORY  # (on its pad, cut level into the rim)
     oz = ground(ox, oy)
     c.place(paint.trunk_proto(c, 5.0, 9.0), ox, oy, oz - 1.0, coll="Collision", role="collision")
     cone(c, "Observatory Tower", ox, oy, 5.4, oz - 1.0, 9.0 + 4.0, ("arcade_white", "wall"), segs=16, role="visual")

@@ -268,10 +268,24 @@ def _land(x, y):
     h = _canyon(h, x, y)
     h = _falls(h, x, y)
     h = _crater(h, x, y)
+    h = _pad(h, x, y)
     h = _alcove(h, x, y)
     h = _arch_gap(h, x, y)
     h = _passes(h, x, y)
     return h
+
+
+# The observatory on the crater's west rim (clear of the road): its pad cut level into the rim's slope.
+OBSERVATORY = (CRATER[0] + (CRATER[2] + 14.0) * math.cos(2.97), CRATER[1] + (CRATER[2] + 14.0) * math.sin(2.97), 9.0)
+
+
+def _pad(h, x, y):
+    ox, oy, r = OBSERVATORY
+    d = math.hypot(x - ox, y - oy)
+    if d > r + 8.0:
+        return h
+    pz = _crater(_floor(ox, oy), ox, oy)
+    return lerp(pz, h, smooth((d - r) / 8.0))
 
 
 def _alcove(h, x, y):

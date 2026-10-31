@@ -99,7 +99,16 @@ describe("overworld regions", () => {
       expect(r.ruinPackageId, r.id).toBe(`${r.packageId}_ruin`);
       const meta = JSON.parse(readFileSync(`public/tracks/${r.ruinPackageId}/track.json`, "utf8"));
       const from = meta.builtFrom as Record<string, string>;
-      expect(Object.keys(from), r.id).toContain(`${r.packageId}.py`);
+      // (A region rebuilt by a new script: Desert World v4's mesa_region.py, Tropic Isles
+      // v4's isle_region.py; the old scripts are kept, unused.)
+      const script =
+        (
+          { desert_region: "mesa_region.py", beach_region: "isle_region.py" } as Record<
+            string,
+            string
+          >
+        )[r.packageId] ?? `${r.packageId}.py`;
+      expect(Object.keys(from), r.id).toContain(script);
       for (const [file, sha] of Object.entries(from)) {
         const bytes = readFileSync(`tools/blender/prehistoric/${file}`);
         const hash = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);

@@ -40,21 +40,21 @@
       "id": "campfire_01",
       "type": "campfire",
       "x": 386.46,
-      "y": 2.18,
+      "y": 2.21,
       "z": 95.64
     },
     {
       "id": "torch_03",
       "type": "torch",
       "x": 370.64,
-      "y": 4.78,
+      "y": 4.77,
       "z": 58.12
     },
     {
       "id": "torch_04",
       "type": "torch",
       "x": 346.26,
-      "y": 4.7,
+      "y": 4.69,
       "z": 30.66
     },
     {
@@ -68,14 +68,14 @@
       "id": "torch_06",
       "type": "torch",
       "x": 132.4,
-      "y": 16.79,
+      "y": 16.81,
       "z": -101.77
     },
     {
       "id": "torch_07",
       "type": "torch",
       "x": 148.32,
-      "y": 12.9,
+      "y": 12.94,
       "z": -109.43
     },
     {
@@ -89,35 +89,35 @@
       "id": "torch_09",
       "type": "torch",
       "x": 124.87,
-      "y": 11.81,
+      "y": 11.94,
       "z": -153.18
     },
     {
       "id": "torch_10",
       "type": "torch",
       "x": 175.27,
-      "y": 9.39,
+      "y": 9.4,
       "z": -109.24
     },
     {
       "id": "torch_11",
       "type": "torch",
       "x": 110.86,
-      "y": 14.27,
+      "y": 14.28,
       "z": -90.23
     },
     {
       "id": "torch_12",
       "type": "torch",
       "x": 118.98,
-      "y": 3.81,
+      "y": 3.78,
       "z": -75.79
     },
     {
       "id": "torch_13",
       "type": "torch",
       "x": 134.46,
-      "y": 5.09,
+      "y": 5.08,
       "z": -76.76
     },
     {
@@ -131,56 +131,56 @@
       "id": "torch_15",
       "type": "torch",
       "x": 333.26,
-      "y": 4.54,
+      "y": 4.58,
       "z": 105.88
     },
     {
       "id": "torch_16",
       "type": "torch",
       "x": 378.1,
-      "y": 4.75,
+      "y": 4.74,
       "z": 61.43
     },
     {
       "id": "torch_17",
       "type": "torch",
       "x": 432.11,
-      "y": 4.18,
+      "y": 4.19,
       "z": 61.34
     },
     {
       "id": "torch_18",
       "type": "torch",
       "x": 461.81,
-      "y": 3.49,
+      "y": 3.48,
       "z": 43.57
     },
     {
       "id": "torch_19",
       "type": "torch",
       "x": 455.1,
-      "y": 3.88,
+      "y": 3.93,
       "z": 11.45
     },
     {
       "id": "torch_20",
       "type": "torch",
       "x": 414.37,
-      "y": 6.45,
+      "y": 6.47,
       "z": 3.18
     },
     {
       "id": "torch_21",
       "type": "torch",
       "x": 362.57,
-      "y": 6.14,
+      "y": 6.13,
       "z": 4.98
     },
     {
       "id": "torch_22",
       "type": "torch",
       "x": 306.0,
-      "y": 6.77,
+      "y": 6.75,
       "z": -23.23
     },
     {
@@ -194,35 +194,35 @@
       "id": "torch_24",
       "type": "torch",
       "x": 342.14,
-      "y": 4.4,
+      "y": 4.39,
       "z": 57.71
     },
     {
       "id": "torch_25",
       "type": "torch",
       "x": 457.32,
-      "y": 4.28,
+      "y": 4.27,
       "z": 14.41
     },
     {
       "id": "torch_26",
       "type": "torch",
       "x": 29.89,
-      "y": 2.38,
+      "y": 2.43,
       "z": 60.08
     },
     {
       "id": "torch_27",
       "type": "torch",
       "x": 37.82,
-      "y": 2.7,
+      "y": 2.71,
       "z": 56.46
     },
     {
       "id": "campfire_02",
       "type": "campfire",
       "x": 370.64,
-      "y": 4.18,
+      "y": 4.17,
       "z": 58.12
     },
     {
@@ -236,56 +236,56 @@
       "id": "campfire_04",
       "type": "campfire",
       "x": 148.32,
-      "y": 12.3,
+      "y": 12.34,
       "z": -109.43
     },
     {
       "id": "campfire_05",
       "type": "campfire",
       "x": 124.87,
-      "y": 11.21,
+      "y": 11.34,
       "z": -153.18
     },
     {
       "id": "campfire_06",
       "type": "campfire",
       "x": 110.86,
-      "y": 13.67,
+      "y": 13.68,
       "z": -90.23
     },
     {
       "id": "campfire_07",
       "type": "campfire",
       "x": 134.46,
-      "y": 4.49,
+      "y": 4.48,
       "z": -76.76
     },
     {
       "id": "campfire_08",
       "type": "campfire",
       "x": 333.26,
-      "y": 3.94,
+      "y": 3.98,
       "z": 105.88
     },
     {
       "id": "campfire_09",
       "type": "campfire",
       "x": 432.11,
-      "y": 3.58,
+      "y": 3.59,
       "z": 61.34
     },
     {
       "id": "campfire_10",
       "type": "campfire",
       "x": 455.1,
-      "y": 3.28,
+      "y": 3.33,
       "z": 11.45
     },
     {
       "id": "campfire_11",
       "type": "campfire",
       "x": 362.57,
-      "y": 5.54,
+      "y": 5.53,
       "z": 4.98
     },
     {
@@ -299,14 +299,14 @@
       "id": "campfire_13",
       "type": "campfire",
       "x": 457.32,
-      "y": 3.68,
+      "y": 3.67,
       "z": 14.41
     },
     {
       "id": "campfire_14",
       "type": "campfire",
       "x": 37.82,
-      "y": 2.1,
+      "y": 2.11,
       "z": 56.46
     },
     {
@@ -477,7 +477,7 @@
   "generator": "tools/blender/prehistoric/oasis_haven_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "oasis_desert.py": "f0210f301548d75a02a60f870cd5cde4562e1d3835fd0d463c344fdbe66a25d6",
-    "oasis_haven.py": "c2ff053c6b6955ae477bc4475da77fbfe6edec1129751c3848c4e3c71febb363",
+    "oasis_haven.py": "dca5419297018f3929a1dfed23c8fec8bc97ac504b69263ffdadb4b9126b6893",
     "oasis_ruins.py": "d3101ba28762d1ef91d52d78a8a1507e214a40c79156cb9b804f410629a3898e"
   }
 }

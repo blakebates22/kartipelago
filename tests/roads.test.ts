@@ -260,7 +260,9 @@ const ALLOW: Record<string, number> = {
   canyon_dash_ruin: 0.55,
   // (Where the fenced Brink meets the Mesa Run: a dip by the fence, left as it was.)
   canyon_dash: 2.0,
-  oasis_haven: 0.6,
+  // (Oasis Haven v3: the jump's landing, the dry wash falling away beside it: off the
+  // road there you're in the wash, and put back.)
+  oasis_haven: 1.55,
   oasis_haven_ruin: 1.65,
   dry_gulch: 0.8,
   dry_gulch_ruin: 1.95,

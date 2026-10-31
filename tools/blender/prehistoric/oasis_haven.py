@@ -163,6 +163,9 @@ _D = [0.0]
 for _a, _b in zip(STD_PATH, STD_PATH[1:]):
     _D.append(_D[-1] + math.hypot(_b[0] - _a[0], _b[1] - _a[1]))
 WASH = [(p[0], p[1]) for p, d in zip(STD_PATH, _D) if STD_LIP - 2 <= d <= STD_LAND + 2][::2]
+# The landing's embankment: the land beside the road past the wash built up to it (v3: the
+# canyon floor lies lower than the dunes did).
+LANDING = [(p[0], p[1], _chute(d)) for p, d in zip(STD_PATH, _D) if STD_LAND <= d <= STD_LAND + 34][::2]
 
 BUTTE = _arc_centre(18)
 TOWER = _arc_centre(25)
@@ -338,6 +341,10 @@ def natural(x, y):
     if WASH:
         dw = min(math.hypot(x - p[0], y - p[1]) for p in WASH)
         h = lerp(h, 1.0, smooth((22.0 - dw) / 10.0))
+        dl, zl = min((math.hypot(x - p[0], y - p[1]), p[2]) for p in LANDING)
+        if dl < 20.0 and dl < dw + 1.0:
+            # (only beside the road past the gap: the wash under the jump stays open)
+            h = lerp(h, max(h, zl - 0.4), smooth((20.0 - dl) / 9.0) * smooth((dw + 1.0 - dl) / 4.0))
     if TGAP:
         # The pit the tower's top came down in: rubble far below the jump.
         dg = min(math.hypot(x - p[0], y - p[1]) for p in TGAP)
@@ -494,7 +501,7 @@ def main():
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
     c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
+    c.terrain("Canyon", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
     water(c)
 
     def under(x, y):
@@ -620,7 +627,7 @@ def ruin_course(c):
     sc = [(x, y, lerp(za, zb, i / (len(SHORTCUT) - 1)) - 0.05) for i, (x, y) in enumerate(SHORTCUT)]
     c.shortcut("Cottonwood Grove", sc, "dash_road", "road", width=8.0, shoulder=0.8, shoulder_mat=("oasis_lawn", "grass"), flush=True)
 
-    c.terrain("Canyon", X0, X1, Y0, Y1, 5.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
+    c.terrain("Canyon", X0, X1, Y0, Y1, 6.0, natural, classify, near=10.0, fade=18.0, under=0.2, fine=3, cut_z=BANDS)
     water(c)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.4, c.lib("red_sand", "loose_sand"))
     ruin_mode.DRESS(c, sys.modules[__name__])

@@ -11,8 +11,10 @@ const REGIONS = ["valley_region", "snow_region", "desert_region", "beach_region"
 /** What's a building, by its name; and what isn't, though it matches. */
 const BUILDING =
   /Cottage|Hut|House|Home|Shed|Cabin|Stall|Store|Tower|Lodge|Chapel|Barn|Mill|Keep|Temple Ruin/i;
-/** (Stilt huts over the water, the avalanche gallery, statues and plinths, colliders, boats.) */
-const NOT = /Snowshed|Collider|Block|Gate|Frame|Boat|Slide Tower|Swamp Hut|Statue|Road|Wreck/i;
+/** (Stilt huts over the water, the cliff pueblo's homes on their own terraces, the
+ * avalanche gallery, statues and plinths, colliders, boats.) */
+const NOT =
+  /Stilt|Pueblo Home|Snowshed|Collider|Block|Gate|Frame|Boat|Slide Tower|Swamp Hut|Statue|Road|Wreck/i;
 /** How far the land may fall away under a building's foot before it floats (m). */
 const GAP = 0.5;
 
