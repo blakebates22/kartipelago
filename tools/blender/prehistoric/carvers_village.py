@@ -66,7 +66,7 @@ def _crystal(bm, base, axis, length, r, n=6, phase=0.0):
         bm.faces.new((r1[k], r1[j], tip))
 
 
-def ice_home(c, variant):
+def _old_ice_home(c, variant):
     """A carver's home cut into the snow wall: a round arch of cut ice blocks, the oak door
     in it and warm windows either side in frames of blue ice, a snow cornice over the
     front; the snow it's cut from runs back into the wall."""
@@ -258,32 +258,10 @@ def build(c, ground, taken):
     g = c.game(gx + 4.0, gy - 6.0, ground(gx + 4.0, gy - 6.0))
     c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=8.0, n=5, folk="snow",
              heading=0.0)
-    # Their homes, cut into the walls all round, facing in, off the lane.
-    homes = 0
-    k = 0
-    t = -math.pi / 2 + 0.75  # (from the mouth's east side, round by the back, to its west)
-    while t < 1.5 * math.pi - 0.75:
-        w = (7.0, 8.5, 6.0, 9.5)[k % 4]
-        cx, cy = hx + rx * math.cos(t), hy + ry * math.sin(t)
-        # (In from the wall, its back in the snow.)
-        nx, ny = hx - cx, hy - cy
-        nl = math.hypot(nx, ny)
-        nx, ny = nx / nl, ny / nl
-        x, y = cx + nx * 2.2, cy + ny * 2.2
-        step = (w + 3.0) / math.hypot(rx * math.sin(t), ry * math.cos(t))
-        if paint.road_clear(c, x + nx * 2.0, y + ny * 2.0, 1.5) and taken.clear(x, y, w / 2):
-            z = ground(x + nx * 2.0, y + ny * 2.0)
-            c.place(ice_home(c, k), x, y, z - 0.25, rot=math.atan2(ny, nx) - math.pi / 2, coll="Village")
-            taken.add(x, y, w / 2 + 0.5)
-            px, py = x + nx * 1.6 - ny * (w / 2 + 0.8), y + ny * 1.6 + nx * (w / 2 + 0.8)
-            g = c.game(px, py, z + 3.0)
-            c.entity("lantern", x=g[0], y=g[1], z=g[2])
-            if k % 2 == 0:
-                g = c.game(x - nx * 3.0, y - ny * 3.0, z + 8.0)
-                c.entity("chimney", x=g[0], y=g[1], z=g[2])
-            homes += 1
-        k += 1
-        t += step
+    # Their homes, each its own, round the walls and out on the floor (ice_homes).
+    import ice_homes
+
+    homes = ice_homes.place_homes(c, ground, taken)
     # Ice pillars on the switchbacks' hairpins, on their outsides, lanterns on them.
     w = SL.CREST_WAY
     pil = 0

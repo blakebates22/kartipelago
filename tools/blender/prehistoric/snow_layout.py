@@ -584,7 +584,7 @@ def lookout_land(h, x, y, wsd):
 # pass where the switchbacks come down: sheer snow and ice walls round a level floor, open
 # to the pass by its mouth, a lane looping round the carvers' homes in its walls and the
 # sculpture garden in its middle.
-HOLLOW = (12.0, -108.0, 32.0, 34.0)  # (Blake's pin, review-snow_region 1: (20, -133))  # x, y, half-widths across and along
+HOLLOW = (12.0, -108.0, 38.0, 38.0)  # (Blake's pin, review-snow_region 1: (20, -133))  # x, y, half-widths across and along
 HOLLOW_MOUTH = (12.0, -141.0, 24.0, 14.0)
 HOLLOW_Z = 62.0
 HOLLOW_LANE_WAY = [(0.0, -157.0), (-5.0, -138.0), (-10.0, -118.0), (-5.0, -95.0), (12.0, -86.0), (29.0, -95.0),
