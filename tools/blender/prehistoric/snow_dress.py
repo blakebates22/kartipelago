@@ -487,13 +487,13 @@ def hearthglow(c, ground, ter, taken):
 
 def gorge_bend(c, natural):
     """The far end of the Burnt Gorge, where it bends out of sight back to the valley: a
-    fall of scorched rock (it was a black slab across the gorge, seen from the square)."""
+    fall of frosted rock behind the passage (it was a black slab across the gorge)."""
     gx, gy = SL.GORGE_END
     z0 = natural(gx, gy) - 3.0
     for k, (dx, dy, rx, ry, h) in enumerate(((0.0, -10.0, 26.0, 9.0, 34.0), (-14.0, -4.0, 12.0, 8.0, 22.0),
                                               (15.0, -3.0, 13.0, 9.0, 26.0), (2.0, -18.0, 30.0, 10.0, 46.0))):
         ob = c.rock_mass("Gorge Bend %d" % k, gx + dx, gy + dy, rx, ry, z0 + h, z0=z0 - 4.0, n=14, seed=31 + k)
-        c.assign(ob, c.lib("obsidian_cliff", "wall"))
+        c.assign(ob, c.lib("frost_cliff", "wall"))  # (v4: snowy rock, not the scorched gorge's)
 
 
 # ------------------------------------------------------------------ the ice bridge
