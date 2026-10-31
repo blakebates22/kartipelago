@@ -281,6 +281,48 @@ def main():
     print("loop", round(c.length, 1), "gates", len(gts))
 
 
+def gatehouse(c, ground, s0, s1):
+    """Frostveil's gatehouse over the way from Hearthglow, built from the citadel's own
+    kit (its stone, slate and teal banners)."""
+    half = c.width / 2 + 3.0
+    arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0)
+    tower = kp.round_tower(c, r=4.8, h=22.0, variant=1)
+    small = kp.round_tower(c, r=3.4, h=15.0, variant=0)
+    wall = kp.curtain_wall(c, length=8.4, h=11.0, thick=3.0)
+    out = kp.curtain_wall(c, length=10.0, h=10.0, thick=3.0)
+    for k, s in enumerate((s0 - 4.0, s1 + 4.0)):
+        q = c.at(s)
+        rot = math.atan2(q.t.y, q.t.x) - math.pi / 2
+        c.place(arch, q.p.x, q.p.y, q.p.z - 0.2, rot=rot, role="visual")
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * (half + 6.5), q.p.y + q.r.y * sd * (half + 6.5)
+            zt = min(ground(x + 5.0 * math.cos(t), y + 5.0 * math.sin(t)) for t in [j * math.tau / 16 for j in range(16)])
+            c.place(tower, x, y, min(zt, ground(x, y)) - 3.0, rot=rot)
+            # The wall out from the tower to the cliff, two lengths and a small tower.
+            for j in range(2):
+                d = half + 6.5 + 5.0 + 9.6 * j + 5.0
+                wx, wy = q.p.x + q.r.x * sd * d, q.p.y + q.r.y * sd * d
+                c.place(out, wx, wy, ground(wx, wy) - 0.5, rot=rot + (math.pi if (sd > 0) == (k == 0) else 0.0))
+            d = half + 6.5 + 25.0
+            tx, ty = q.p.x + q.r.x * sd * d, q.p.y + q.r.y * sd * d
+            c.place(small, tx, ty, ground(tx, ty) - 2.0, rot=rot)
+            bp = (q.p.x + q.r.x * sd * (half + 1.5) + q.t.x * (2.0 if k == 0 else -2.0) * -1,
+                  q.p.y + q.r.y * sd * (half + 1.5) + q.t.y * (2.0 if k == 0 else -2.0) * -1)
+            c.place(kp.banner_pole(c), bp[0], bp[1], ground(*bp) - 0.2, rot=rot, coll="Props")
+    # The curtain walls either side of the road between the gates, on its shoulders.
+    s = s0 + 1.0
+    while s < s1 - 1.0:
+        q = c.at(s)
+        rot = math.atan2(q.t.y, q.t.x)
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * (half + 2.0), q.p.y + q.r.y * sd * (half + 2.0)
+            c.place(wall, x, y, q.p.z - 0.4, rot=rot + (0.0 if sd < 0 else math.pi))
+            if int((s - s0) / 8.0) % 2 == 0:
+                g = c.game(q.p.x + q.r.x * sd * (half + 0.4), q.p.y + q.r.y * sd * (half + 0.4), q.p.z + 4.5)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+        s += 8.0
+
+
 def thresholds(c, ground):
     """The Gatehouse (through Frostveil's curtain wall, a castle gate at each end) and the
     ice bores (the Ice Cave onto the glacier, the Ice Gallery in and out of the crystal
@@ -290,24 +332,12 @@ def thresholds(c, ground):
     for name, kind, a, b in L.tunnels:
         s0, s1 = pb.tunnel_span(c, L, a, b)
         if kind == "gatehouse":
-            half = pb.bore(c, L, name, s0, s1, ("citadel_stone", "wall"), ("snow_ground", "deep_snow"), height=11.0)
-            arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0)
-            tower = kp.round_tower(c, r=4.5, h=24.0)
-            for k, s in enumerate((s0 - 3.0, s1 + 3.0)):
-                q = c.at(s)
-                rot = math.atan2(q.t.y, q.t.x) - math.pi / 2
-                c.place(arch, q.p.x, q.p.y, q.p.z - 0.2, rot=rot, role="visual")
-                for sd in (-1, 1):
-                    x, y = q.p.x + q.r.x * sd * (half + 6.5), q.p.y + q.r.y * sd * (half + 6.5)
-                    # (Down to the lowest ground round its foot: no floating towers.)
-                    zt = min(ground(x + 4.8 * math.cos(t), y + 4.8 * math.sin(t)) for t in [j * math.tau / 16 for j in range(16)])
-                    c.place(tower, x, y, min(zt, ground(x, y)) - 4.0, rot=rot)  # (its foot well down in the land)
-            for k in range(3):
-                q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
-                for sd in (-1, 1):
-                    x, y = q.p.x + q.r.x * sd * (half - 0.6), q.p.y + q.r.y * sd * (half - 0.6)
-                    g = c.game(x, y, q.p.z + 4.5)
-                    c.entity("torch", x=g[0], y=g[1], z=g[2])
+            # v4 (Blake, Oct 30: "that bad tan tunnel going into frostveil, it is a massive
+            # eye sore ... needs to be done away with and completely reworked"): no rock
+            # over it; the road runs open through the cut in the wall, between curtain
+            # walls, a gatehouse at each end (towers with slate spires, the gate's arch
+            # and banners), the walls running out from the towers to the cliffs.
+            gatehouse(c, ground, s0, s1)
         elif kind == "ice" and name in ("Ice Cave", "Ice Gallery Out"):
             # (v4: open, no rock over them: Blake, review-snow_region 2 notes 4 and 7, "I need
             # to be able to drive through this", "this is in the way"; Aurora's ice to be
@@ -356,7 +386,7 @@ def village(c, ground, ter):
     bonfire, the great tree, the market, the bell tower, lanterns and lights
     (snow_dress.hearthglow; after the attack: frozen solid, the tree iced)."""
     cx, cy, cr, cz = SL.VILLAGE
-    taken = paint.Taken([(*SL.BELL, 8.0), (*SL.GATES["hearthglow"], 16.0), (*SL.TREE, 13.0)])
+    taken = paint.Taken([(*SL.BELL, 8.0), (*SL.GATES["hearthglow"], 16.0), (*SL.TREE, 18.0)])
     LANES.extend(sd.hearthglow(c, ground, ter, taken))
     gx, gy = SL.TREE
     if RUIN:
@@ -365,7 +395,7 @@ def village(c, ground, ter):
             cone(c, "Great Tree Ice %d" % k, gx, gy, r, ground(gx, gy) + z, 6.0, ("glacier_ice", "wall"), segs=8,
                  role="visual")
     else:
-        hp.giant_tree(c, "Great Tree", gx, gy, ground(gx, gy), height=28.0)
+        hp.giant_tree(c, "Great Tree", gx, gy, ground(gx, gy), height=52.0)  # (v4: bigger, seen from the Crest)
     # The bell tower, on level ground, its door to the square, its stone footing down to
     # the land all round (Blake, review-snow_region note 3: "this building is floating ...
     # please no more floating buildings": tests/buildings.test.ts).
@@ -403,25 +433,38 @@ def landmarks(c, ground, spots):
     c.place(arch, gx, gy, ground(gx, gy) - 0.3, rot=f - math.pi / 2, role="visual")
     box(c, "Keep Gate Dark", gx + 2.0 * math.cos(f), gy + 2.0 * math.sin(f), 6.0, 1.0, ground(gx, gy) - 1.0,
         ground(gx, gy) + 9.0, ("dark_corridor", "wall"), rot=f + math.pi / 2, role="visual")
-    # Snowy Summit: the giant tree.
+    # Snowy Summit: the giant tree at its gate, and a second giant out in the meadow (v4:
+    # proper evergreens, green, seen from the Crest; frozen after the attack).
     gx, gy = SL.GATES["summit"]
-    z = ground(gx, gy)
-    box(c, "Giant Tree Trunk", gx, gy, 6.0, 6.0, z - 2.0, z + 50.0, ("giant_bark", "wall"))
-    for k, (r, h) in enumerate(((24.0, 34.0), (18.0, 48.0), (12.0, 60.0))):
-        cone(c, "Giant Tree Crown %d" % k, gx, gy, r, z + h, 18.0, ("glacier_ice" if RUIN else "pine_snow", "wall"), segs=8,
-             role="visual")
+    sd.giant_pine(c, "Giant Tree", gx, gy, ground(gx, gy), height=64.0, seed=1)
+    sd.giant_pine(c, "Giant Tree 2", -16.0, 191.0, ground(-16.0, 191.0), height=54.0, seed=2)
     # Aurora Rift: the crack in the glacier, ice spires either side, the sky alight.
     gx, gy = SL.GATES["aurora"]
     f = facing("aurora")
     z = ground(gx, gy)
     box(c, "Rift Crack", gx + 3.0 * math.cos(f), gy + 3.0 * math.sin(f), 5.0, 1.0, z - 1.0, z + 22.0, ("icefall_rift", "wall"),
         rot=f + math.pi / 2, role="visual")
-    for sd in (-1, 1):
-        x, y = gx + sd * 12.0 * math.cos(f + math.pi / 2), gy + sd * 12.0 * math.sin(f + math.pi / 2)
-        c.place(ap.spire_cluster(c, 0 if sd < 0 else 1, height=34.0), x, y, ground(x, y) - 0.5, role="visual")
+    for side in (-1, 1):
+        x, y = gx + side * 12.0 * math.cos(f + math.pi / 2), gy + side * 12.0 * math.sin(f + math.pi / 2)
+        c.place(ap.spire_cluster(c, 0 if side < 0 else 1, height=34.0), x, y, ground(x, y) - 0.5, role="visual")
         c.place(paint.trunk_proto(c, 5.0, 16.0), x, y, ground(x, y) - 0.5, coll="Collision", role="collision")
     g = c.game(gx, gy, z + 30.0)
     c.entity("sparkles", rate=12, radius=40)
+    # v4 (Blake, Oct 30: "a few more crystals and glacier features visible for aurora,
+    # nothing crazy"): crystal spires and ice columns along the glacier's and the
+    # cavern's rims, catching the light from the Crest; an ice arch over the glacier.
+    for k, (x, y, h, kind) in enumerate(((96.0, 176.0, 30.0, "spire"), (66.0, 130.0, 24.0, "column"), (150.0, 40.0, 34.0, "spire"),
+                                         (120.0, 116.0, 18.0, "needles"), (206.0, 60.0, 22.0, "column"))):
+        z = ground(x, y)
+        if kind == "spire":
+            c.place(ap.spire_cluster(c, k % 2, height=h), x, y, z - 0.5, role="visual")
+        elif kind == "column":
+            c.place(ap.ice_column(c, k % 2, height=h, radius=3.5), x, y, z - 0.5, role="visual")
+        else:
+            c.place(ap.needles(c, k % 2, height=h), x, y, z - 0.5, role="visual")
+        c.place(paint.trunk_proto(c, 3.5, 12.0), x, y, z - 0.5, coll="Collision", role="collision")
+        g = c.game(x, y, z + 2.0)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
 
 
 def ruined(c, ground):

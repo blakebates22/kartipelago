@@ -15,44 +15,30 @@
     {
       "id": "torch_01",
       "type": "torch",
-      "x": -133.31,
-      "y": 50.07,
-      "z": 98.75
+      "x": -131.84,
+      "y": 49.97,
+      "z": 100.65
     },
     {
       "id": "torch_02",
       "type": "torch",
-      "x": -124.76,
-      "y": 50.07,
-      "z": 82.01
+      "x": -121.91,
+      "y": 49.97,
+      "z": 82.38
     },
     {
       "id": "torch_03",
       "type": "torch",
-      "x": -139.39,
-      "y": 50.42,
-      "z": 95.77
+      "x": -146.67,
+      "y": 50.73,
+      "z": 92.82
     },
     {
       "id": "torch_04",
       "type": "torch",
-      "x": -131.01,
-      "y": 50.42,
-      "z": 78.94
-    },
-    {
-      "id": "torch_05",
-      "type": "torch",
-      "x": -146.33,
-      "y": 50.74,
-      "z": 91.85
-    },
-    {
-      "id": "torch_06",
-      "type": "torch",
-      "x": -136.04,
-      "y": 50.74,
-      "z": 76.11
+      "x": -135.36,
+      "y": 50.73,
+      "z": 75.36
     },
     {
       "id": "lantern_01",
@@ -391,6 +377,41 @@
       "radius": 40
     },
     {
+      "id": "lantern_31",
+      "type": "lantern",
+      "x": 96.0,
+      "y": 83.29,
+      "z": -176.0
+    },
+    {
+      "id": "lantern_32",
+      "type": "lantern",
+      "x": 66.0,
+      "y": 82.83,
+      "z": -130.0
+    },
+    {
+      "id": "lantern_33",
+      "type": "lantern",
+      "x": 150.0,
+      "y": 82.34,
+      "z": -40.0
+    },
+    {
+      "id": "lantern_34",
+      "type": "lantern",
+      "x": 120.0,
+      "y": 70.63,
+      "z": -116.0
+    },
+    {
+      "id": "lantern_35",
+      "type": "lantern",
+      "x": 206.0,
+      "y": 71.88,
+      "z": -60.0
+    },
+    {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
@@ -466,17 +487,6 @@
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": -145.67,
-      "z": 137.47,
-      "y": 44.89,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": -1.743
-    },
-    {
-      "id": "villager_home_05",
-      "type": "villager_home",
       "x": -56.22,
       "z": 98.25,
       "y": 45.28,
@@ -486,15 +496,26 @@
       "heading": 1.832
     },
     {
-      "id": "villager_home_06",
+      "id": "villager_home_05",
       "type": "villager_home",
       "x": -180.36,
       "z": 17.64,
-      "y": 47.98,
+      "y": 47.95,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
       "heading": -1.715
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -154.19,
+      "z": -23.16,
+      "y": 49.71,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": 0.537
     },
     {
       "id": "villager_home_07",
@@ -510,17 +531,6 @@
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": -161.54,
-      "z": -20.03,
-      "y": 51.36,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 0.995
-    },
-    {
-      "id": "villager_home_09",
-      "type": "villager_home",
       "x": -70.48,
       "z": -122.3,
       "y": 72.72,
@@ -530,59 +540,37 @@
       "heading": -1.09
     },
     {
-      "id": "villager_home_10",
+      "id": "villager_home_09",
       "type": "villager_home",
       "x": -94.86,
       "z": -164.08,
-      "y": 74.05,
+      "y": 73.88,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
       "heading": 1.915
     },
     {
-      "id": "villager_home_11",
-      "type": "villager_home",
-      "x": 0.31,
-      "z": -174.64,
-      "y": 70.43,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": -2.168
-    },
-    {
-      "id": "villager_home_12",
+      "id": "villager_home_10",
       "type": "villager_home",
       "x": 88.98,
       "z": -127.27,
-      "y": 69.88,
+      "y": 69.85,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
       "heading": -0.35
     },
     {
-      "id": "villager_home_13",
+      "id": "villager_home_11",
       "type": "villager_home",
-      "x": 175.67,
-      "z": -40.1,
-      "y": 62.8,
+      "x": 188.06,
+      "z": -78.0,
+      "y": 62.17,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "snow",
-      "heading": -2.292
-    },
-    {
-      "id": "villager_home_14",
-      "type": "villager_home",
-      "x": 190.3,
-      "z": -75.99,
-      "y": 62.78,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 2.66
+      "heading": 2.745
     },
     {
       "id": "snowfall_01",
@@ -594,9 +582,9 @@
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
-    "snow_dress.py": "383ce8260915782f8bbb056af49c3d34d6d697746b4446fa7f7e628636674d07",
-    "snow_layout.py": "7220e73f1beb4609c67b5e77e61eeda582b328ead78cadd107a2ef49be481822",
+    "snow_dress.py": "99c275e8cbff83c0499b5d7585e1138522e6df477af45dfadc5ad76a4c33ff67",
+    "snow_layout.py": "10deda85add4b801436937786f2d6771c8f68d1ba60f2af50087c2a20cc882b0",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "3481b518cdc8ee2e67551c714f7e462728cef8ffb4f0a445e7cdd4c38be784f2"
+    "snow_region.py": "8bd5350f3292312d594585a641da0bd5c610217845ab928c0098fc1677f201ea"
   }
 }

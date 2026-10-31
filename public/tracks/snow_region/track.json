@@ -15,44 +15,30 @@
     {
       "id": "torch_01",
       "type": "torch",
-      "x": -133.31,
-      "y": 50.07,
-      "z": 98.75
+      "x": -131.84,
+      "y": 49.97,
+      "z": 100.65
     },
     {
       "id": "torch_02",
       "type": "torch",
-      "x": -124.76,
-      "y": 50.07,
-      "z": 82.01
+      "x": -121.91,
+      "y": 49.97,
+      "z": 82.38
     },
     {
       "id": "torch_03",
       "type": "torch",
-      "x": -139.39,
-      "y": 50.42,
-      "z": 95.77
+      "x": -146.67,
+      "y": 50.73,
+      "z": 92.82
     },
     {
       "id": "torch_04",
       "type": "torch",
-      "x": -131.01,
-      "y": 50.42,
-      "z": 78.94
-    },
-    {
-      "id": "torch_05",
-      "type": "torch",
-      "x": -146.33,
-      "y": 50.74,
-      "z": 91.85
-    },
-    {
-      "id": "torch_06",
-      "type": "torch",
-      "x": -136.04,
-      "y": 50.74,
-      "z": 76.11
+      "x": -135.36,
+      "y": 50.73,
+      "z": 75.36
     },
     {
       "id": "lantern_01",
@@ -406,14 +392,14 @@
       "z": 210.3
     },
     {
-      "id": "torch_07",
+      "id": "torch_05",
       "type": "torch",
       "x": -21.42,
       "y": 160.3,
       "z": 364.14
     },
     {
-      "id": "torch_08",
+      "id": "torch_06",
       "type": "torch",
       "x": -38.35,
       "y": 160.3,
@@ -601,6 +587,41 @@
       "radius": 40
     },
     {
+      "id": "lantern_58",
+      "type": "lantern",
+      "x": 96.0,
+      "y": 83.29,
+      "z": -176.0
+    },
+    {
+      "id": "lantern_59",
+      "type": "lantern",
+      "x": 66.0,
+      "y": 82.83,
+      "z": -130.0
+    },
+    {
+      "id": "lantern_60",
+      "type": "lantern",
+      "x": 150.0,
+      "y": 82.34,
+      "z": -40.0
+    },
+    {
+      "id": "lantern_61",
+      "type": "lantern",
+      "x": 120.0,
+      "y": 70.63,
+      "z": -116.0
+    },
+    {
+      "id": "lantern_62",
+      "type": "lantern",
+      "x": 206.0,
+      "y": 71.88,
+      "z": -60.0
+    },
+    {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
@@ -675,30 +696,12 @@
     {
       "id": "chimney_13",
       "type": "chimney",
-      "x": -152.75,
-      "y": 58.39,
-      "z": 133.7
+      "x": -48.21,
+      "y": 58.75,
+      "z": 98.7
     },
     {
       "id": "villager_home_04",
-      "type": "villager_home",
-      "x": -145.67,
-      "z": 137.47,
-      "y": 44.89,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": -1.743
-    },
-    {
-      "id": "chimney_14",
-      "type": "chimney",
-      "x": -48.51,
-      "y": 60.86,
-      "z": 98.26
-    },
-    {
-      "id": "villager_home_05",
       "type": "villager_home",
       "x": -56.22,
       "z": 98.25,
@@ -709,22 +712,40 @@
       "heading": 1.832
     },
     {
-      "id": "chimney_15",
+      "id": "chimney_14",
       "type": "chimney",
-      "x": -187.4,
-      "y": 57.77,
-      "z": 14.34
+      "x": -187.43,
+      "y": 63.66,
+      "z": 14.59
     },
     {
-      "id": "villager_home_06",
+      "id": "villager_home_05",
       "type": "villager_home",
       "x": -180.36,
       "z": 17.64,
-      "y": 47.98,
+      "y": 47.95,
       "r": 14.0,
       "n": 2,
       "folk": "snow",
       "heading": -1.715
+    },
+    {
+      "id": "chimney_15",
+      "type": "chimney",
+      "x": -152.31,
+      "y": 59.41,
+      "z": -15.62
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -154.19,
+      "z": -23.16,
+      "y": 49.71,
+      "r": 14.0,
+      "n": 2,
+      "folk": "snow",
+      "heading": 0.537
     },
     {
       "id": "chimney_16",
@@ -747,30 +768,12 @@
     {
       "id": "chimney_17",
       "type": "chimney",
-      "x": -156.39,
-      "y": 66.85,
-      "z": -14.3
+      "x": -78.0,
+      "y": 88.3,
+      "z": -120.63
     },
     {
       "id": "villager_home_08",
-      "type": "villager_home",
-      "x": -161.54,
-      "z": -20.03,
-      "y": 51.36,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 0.995
-    },
-    {
-      "id": "chimney_18",
-      "type": "chimney",
-      "x": -78.12,
-      "y": 82.35,
-      "z": -120.85
-    },
-    {
-      "id": "villager_home_09",
       "type": "villager_home",
       "x": -70.48,
       "z": -122.3,
@@ -781,94 +784,58 @@
       "heading": -1.09
     },
     {
-      "id": "chimney_19",
+      "id": "chimney_18",
       "type": "chimney",
-      "x": -87.39,
-      "y": 89.45,
-      "z": -145.62
+      "x": -87.55,
+      "y": 85.67,
+      "z": -145.89
     },
     {
-      "id": "villager_home_10",
+      "id": "villager_home_09",
       "type": "villager_home",
       "x": -94.71,
       "z": -148.9,
-      "y": 75.91,
+      "y": 75.97,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
       "heading": 1.466
     },
     {
-      "id": "chimney_20",
+      "id": "chimney_19",
       "type": "chimney",
-      "x": -4.72,
-      "y": 86.1,
-      "z": -180.48
+      "x": 84.01,
+      "y": 83.33,
+      "z": -120.97
     },
     {
-      "id": "villager_home_11",
-      "type": "villager_home",
-      "x": 0.31,
-      "z": -174.64,
-      "y": 70.43,
-      "r": 14.0,
-      "n": 2,
-      "folk": "snow",
-      "heading": -2.168
-    },
-    {
-      "id": "chimney_21",
-      "type": "chimney",
-      "x": 84.31,
-      "y": 79.55,
-      "z": -121.05
-    },
-    {
-      "id": "villager_home_12",
+      "id": "villager_home_10",
       "type": "villager_home",
       "x": 88.98,
       "z": -127.27,
-      "y": 69.88,
+      "y": 69.85,
       "r": 14.0,
       "n": 3,
       "folk": "snow",
       "heading": -0.35
     },
     {
-      "id": "chimney_22",
+      "id": "chimney_20",
       "type": "chimney",
-      "x": 171.6,
-      "y": 76.39,
-      "z": -47.01
+      "x": 192.78,
+      "y": 77.78,
+      "z": -84.09
     },
     {
-      "id": "villager_home_13",
+      "id": "villager_home_11",
       "type": "villager_home",
-      "x": 175.67,
-      "z": -40.1,
-      "y": 62.8,
+      "x": 188.06,
+      "z": -78.0,
+      "y": 62.17,
       "r": 14.0,
-      "n": 3,
+      "n": 2,
       "folk": "snow",
-      "heading": -2.292
-    },
-    {
-      "id": "chimney_23",
-      "type": "chimney",
-      "x": 195.52,
-      "y": 78.28,
-      "z": -81.65
-    },
-    {
-      "id": "villager_home_14",
-      "type": "villager_home",
-      "x": 190.3,
-      "z": -75.99,
-      "y": 62.78,
-      "r": 14.0,
-      "n": 3,
-      "folk": "snow",
-      "heading": 2.66
+      "heading": 2.745
     },
     {
       "id": "snowfall_01",

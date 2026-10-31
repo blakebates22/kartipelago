@@ -669,3 +669,70 @@ def entry_pass(c, ground, way, taken=None):
     n = 0
     print("entry pass: the gateway, %d frozen falls" % n)
 
+
+
+def giant_pine(c, name, x, y, z, height=60.0, seed=0, snowy=True):
+    """A giant evergreen (Blake, Oct 30: "another large green everpine for snowy pass"):
+    a buttressed trunk, twelve tiers of drooping green boughs, each a little turned and
+    ragged at its edge, snow lying on their tops, the leader at its crown. Built in place,
+    one of a kind; its trunk is solid, its boughs visual."""
+    import bmesh as _bm
+    from course_kit import Vector
+
+    rng = random.Random(seed)
+    bm = _bm.new()
+    k = hp.Parts(bm)
+    r0 = height * 0.05
+    k.add("giant_bark", lambda bm: props.tube(bm, [(x, y, z - 2.0), (x, y, z + height * 0.15), (x, y, z + height * 0.9)],
+                                              [r0 * 1.3, r0, r0 * 0.3], n=12))
+    for j in range(6):  # (the buttress roots)
+        a = j * math.tau / 6 + rng.uniform(-0.2, 0.2)
+        k.add("giant_bark", lambda bm, a=a: props.tube(bm, [(x + math.cos(a) * r0 * 0.6, y + math.sin(a) * r0 * 0.6, z + r0 * 1.4),
+                                                            (x + math.cos(a) * r0 * 2.2, y + math.sin(a) * r0 * 2.2, z - 0.6)],
+                                                       [r0 * 0.5, r0 * 0.15], n=6))
+    tiers = 12
+
+    def tier(bm, i, snow):
+        t = i / tiers
+        r = height * 0.32 * (1 - t * 0.86) * rng.uniform(0.94, 1.06)
+        zc = z + height * (0.16 + 0.065 * i)
+        depth = height * 0.1
+        n = 16
+        top = []
+        rim = []
+        for j in range(n):
+            a = j * math.tau / n + i * 0.37
+            rr = r * (1.0 + 0.12 * math.sin(a * 3 + i)) * (1.0 if j % 2 else 0.86)
+            droop = depth * (0.55 if j % 2 else 0.4)
+            rim.append(bm.verts.new((x + rr * math.cos(a), y + rr * math.sin(a), zc - droop + (0.35 if snow else 0.0))))
+            top.append(bm.verts.new((x + rr * 0.3 * math.cos(a), y + rr * 0.3 * math.sin(a), zc + depth * 0.45 + (0.3 if snow else 0.0))))
+        tip = bm.verts.new((x, y, zc + depth * 0.7 + (0.3 if snow else 0.0)))
+        for j in range(n):
+            j2 = (j + 1) % n
+            bm.faces.new((rim[j], rim[j2], top[j2], top[j]))
+            bm.faces.new((top[j], top[j2], tip))
+        if not snow:
+            bm.faces.new(list(reversed(rim)))
+
+    for i in range(tiers):
+        k.add("pine_bright", lambda bm, i=i: tier(bm, i, False))
+        if snowy and i % 2 == 0:
+            k.add("snow_ground", lambda bm, i=i: _snow_cap(bm, x, y, z + height * (0.16 + 0.065 * i), height * 0.32 * (1 - i / tiers * 0.86), height * 0.1))
+    k.add("pine_bright", lambda bm: props.tube(bm, [(x, y, z + height * 0.9), (x, y, z + height * 1.02)], [height * 0.02, 0.05], n=6))
+    ob = c.mesh_object(name, bm, "Props", "visual")
+    for mat, faces in k.groups.items():
+        if faces:
+            c.assign(ob, c.lib(mat), faces)
+    ob.data.shade_flat()
+    c.place(paint.trunk_proto(c, r0 * 1.2, height * 0.5), x, y, z - 1.0, coll="Collision", role="collision")
+    return ob
+
+
+def _snow_cap(bm, x, y, zc, r, depth):
+    """Snow lying on a tier of boughs: a thin ring on its upper slope."""
+    n = 12
+    lo = [bm.verts.new((x + r * 0.78 * math.cos(j * math.tau / n), y + r * 0.78 * math.sin(j * math.tau / n), zc - depth * 0.25 + 0.45)) for j in range(n)]
+    hi = [bm.verts.new((x + r * 0.42 * math.cos(j * math.tau / n), y + r * 0.42 * math.sin(j * math.tau / n), zc + depth * 0.3 + 0.45)) for j in range(n)]
+    for j in range(n):
+        j2 = (j + 1) % n
+        bm.faces.new((lo[j], lo[j2], hi[j2], hi[j]))

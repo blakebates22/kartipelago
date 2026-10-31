@@ -364,7 +364,10 @@ GATES = {
     "summit": (-156.0, 180.0),  # the giant tree, the summit's west end
     "aurora": (122.0, 178.0),  # the rift in the glacier's north wall
 }
-TREE = (-83.0, -181.0)  # the village's great tree, south of the square
+TREE = (-90.0, -192.0)
+# (Blake, Oct 30: "we can remove some of the cliff behind the big christmas tree to make
+# more room for a larger tree": its court cut back into the basin's south wall.)
+TREE_COURT = (-90.0, -196.0, 19.0, 44.8)  # the village's great tree, south of the square
 BELL = (-110.0, -122.0)  # the bell tower, north-west of the square
 LAIR = (-90.0, 222.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
 FROZEN_PASS = (164.0, -62.0)  # where the Frozen Pass leaves the glacier's tongue (the ruin), on east
@@ -637,6 +640,10 @@ def natural(x, y):
     h = plateau(h, x, y, wsd)
     h = lookout_land(h, x, y, wsd)
     h = hollow(h, x, y)
+    tx, ty, tr, tz = TREE_COURT
+    dt = math.hypot(x - tx, y - ty)
+    if dt < tr + 5.0 and h > tz:
+        h = lerp(tz, h, smooth((dt - tr) / 5.0))
     lx, ly, lr, lz = LAKE
     d = math.hypot(x - lx, y - ly)
     if d < lr + 14:
