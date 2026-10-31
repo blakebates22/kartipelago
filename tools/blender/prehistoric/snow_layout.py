@@ -27,90 +27,157 @@ import math
 
 from pocket_kit import Layout, catmull, lerp, smooth  # noqa: F401
 
-TOP = 78.0
-HUB = (0.0, -151.3, 20.8, 20.0)  # x, y, radius, height: the hollow you arrive in (the Burnt Gorge's top)
-# Hearthglow, moved (Blake, Oct 29, review-snow_region notes 1, 2: "I want to officially
-# move hearthglow hollow to where I drop pin number 2 ... this is now the new section for
-# hearth glow hollow"): in the lake's east basin, its square here (x, y, radius, height).
-# The hollow it left is the grand way in to the kingdom (snow_dress.entry_pass).
-VILLAGE = (130.0, -29.0, 15.0, 12.0)
-LAKE = (71.3, -54.6, 32.2, 12.0)  # the frozen lake's ice: x, y, radius, height
+TOP = 96.0
+# v4 (Blake, Oct 30: "massively overhaul ... to the level of Dino valley in terms of
+# immersion ... every section brings you to the world created in that level", and "if we
+# would see the whole kingdom from the entrance that would be incredible"): Dino Valley's
+# size, Layout A. Up the Burnt Gorge to the Arrival Pass, the highest road in the kingdom,
+# every world's landmark in view; down the switchbacks into Hearthglow's winding lanes;
+# through the Gatehouse into Frostveil's citadel, bailey and courtyard; up the Climb to the
+# Summit (geysers, the frozen lake, pines, mammoths); through the Ice Cave onto the
+# glacier and into the ice (the long gallery, the crystal cavern); out through a crevasse
+# and back up the glacier's tongue to the pass.
+HUB = (18.0, -160.0, 16.0, 58.0)  # x, y, radius, height: the Arrival Pass's crest
+VILLAGE = (-96.0, -140.0, 14.0, 44.0)  # Hearthglow's little square (x, y, radius, height)
+LAKE = (-30.0, 148.0, 20.0, 70.6)  # the frozen lake in the summit: x, y, radius, ice height
 
 POCKETS = [
-    ("hearth", "hearth", [(0.0, -148.8, 42.9, 20.0), (24.8, -124.0, 22.2, 20.0), (-27.9, -127.1, 23.7, 20.0)]),
+    ("pass", "pass", [(18.0, -160.0, 22.0, 58.0), (48.0, -148.0, 18.0, 58.0), (-8.0, -168.0, 16.0, 57.0)]),
     # (the Burnt Gorge, south, down to the valley's passage)
-    ("gorge", "hearth", [(2.5, -204.6, 14.8, 18.0), (-3.7, -232.5, 14.1, 16.0), (3.7, -260.4, 14.1, 14.0),
-                         (0.0, -286.4, 16.3, 12.0)]),
+    ("gorge", "pass", [(10.0, -205.0, 15.0, 55.0), (4.0, -232.0, 14.0, 51.0), (8.0, -260.0, 14.0, 47.0),
+                       (2.0, -286.0, 16.0, 43.0)]),
+    ("descent", "hearth", [(-30.0, -176.0, 16.0, 54.0), (-56.0, -170.0, 16.0, 49.0)]),
+    ("hearth", "hearth",
+     [(-86.0, -132.0, 40.0, 44.0), (-120.0, -102.0, 28.0, 45.0), (-62.0, -98.0, 24.0, 44.0), (-118.0, -158.0, 26.0, 44.0),
+      (-80.0, -172.0, 20.0, 44.0), (-92.0, -84.0, 16.0, 45.0)]),
     ("frostveil", "frostveil",
-     [(-145.7, -74.4, 45.9, 26.0), (-179.8, -31.0, 38.5, 28.0), (-117.8, -117.8, 26.6, 25.0),
-      (-186.0, 18.6, 29.6, 32.0)]),
-    ("climb", "summit",
-     [(-184.8, 42.2, 16.3, 35.0), (-189.1, 58.9, 18.5, 38.0), (-173.6, 81.8, 17.0, 44.0), (-186.0, 106.6, 17.8, 50.0),
-      (-162.4, 129.0, 18.5, 54.0)]),
+     [(-164.0, -46.0, 40.0, 48.0), (-178.0, 4.0, 32.0, 51.0), (-150.0, 32.0, 24.0, 53.0), (-140.0, -82.0, 22.0, 48.0)]),
+    ("climb", "summit", [(-170.0, 62.0, 16.0, 57.0), (-160.0, 88.0, 17.0, 62.0), (-136.0, 112.0, 17.0, 67.0),
+                         (-124.0, 126.0, 14.0, 69.0)]),
     ("summit", "summit",
-     [(-93.0, 142.6, 53.3, 58.0), (-37.2, 167.4, 38.5, 58.0), (-139.5, 158.1, 33.3, 56.0),
-      (-55.8, 117.8, 29.6, 57.0)]),
-    ("aurora", "aurora",
-     [(117.8, 105.4, 51.8, 44.0), (161.2, 62.0, 37.0, 42.0), (83.7, 151.9, 31.1, 48.0),
-      (172.4, 18.6, 25.2, 40.0)]),
-    ("snowshed", "aurora",
-     [(187.2, -13.6, 18.5, 34.0), (189.7, -42.2, 17.8, 27.0), (176.1, -68.2, 17.8, 20.0),
-      (155.0, -86.8, 19.2, 15.0)]),
-    ("lake", "lake",
-     [(71.3, -54.6, 57.7, 12.0), (126.0, -28.5, 38.0, 12.0), (124.0, -79.4, 29.6, 12.0),
-      (43.4, -86.8, 26.6, 12.0)]),
+     [(-84.0, 152.0, 48.0, 72.0), (-24.0, 166.0, 36.0, 72.0), (-122.0, 170.0, 28.0, 73.0), (-50.0, 116.0, 28.0, 71.0),
+      (14.0, 140.0, 24.0, 71.0), (-90.0, 196.0, 20.0, 73.0), (24.0, 166.0, 16.0, 72.0),
+      (-14.0, 124.0, 16.0, 71.0)]),
+    ("glacier", "aurora", [(76.0, 156.0, 26.0, 72.0), (116.0, 140.0, 32.0, 70.0), (92.0, 118.0, 20.0, 70.0),
+                           (140.0, 122.0, 16.0, 70.0)]),
+    ("cavern", "aurora", [(176.0, 58.0, 32.0, 62.0), (196.0, 82.0, 16.0, 62.0)]),
+    ("crevasse", "aurora", [(178.0, 8.0, 18.0, 58.0), (170.0, -28.0, 18.0, 58.0), (168.0, -50.0, 16.0, 58.0)]),
+    ("tongue", "pass", [(150.0, -66.0, 22.0, 58.0), (112.0, -104.0, 22.0, 58.0), (80.0, -130.0, 20.0, 58.0)]),
 ]
 
-BASE_ROUTE = [
-    (15.5, -127.1, None),  # 0: the start, the village's north side, westbound
-    (-18.6, -124.0, None),
-    (-44.6, -131.4, 20.3),
-    (-59.5, -130.2, 20.6),  # 3: the Gatehouse
-    (-85.6, -124.0, 23.4),
-    (-109.1, -115.3, None),  # Frostveil's bailey
-    (-137.6, -94.2, None),
-    (-157.8, -72.2, None),
-    (-157.1, -45.7, None),
-    (-179.8, -24.8, None),
-    (-191.2, 2.3, None),
-    (-179.2, 27.8, None),
-    (-187.0, 58.3, None),  # 12: the Climb
-    (-176.5, 82.0, None),
-    (-179.4, 106.2, None),
-    (-162.4, 129.0, None),
-    (-132.7, 152.5, None),  # 16: the summit meadow
-    (-108.5, 152.4, None),
-    (-91.8, 132.7, None),
-    (-62.5, 118.6, None),
-    (-38.4, 141.4, None),
-    (-24.8, 171.1, None),
-    (-2.5, 174.8, 57.0),  # 22: the Ice Cave
-    (26.0, 167.4, 53.0),
-    (53.3, 158.1, 49.0),
-    (80.6, 148.8, None),  # 25: the glacier
-    (109.1, 132.7, None),
-    (129.6, 109.8, None),
-    (128.8, 82.5, None),
-    (149.3, 62.5, None),
-    (169.3, 54.3, None),
-    (181.0, 31.0, None),
-    (176.7, 8.7, None),
-    (187.2, -13.6, None),  # 33: the Snowshed, down the cliff
-    (189.7, -42.2, None),
-    (174.8, -69.4, None),
-    (153.8, -88.0, None),
-    (126.5, -90.5, None),  # 37: the lake
-    (110.4, -62.0, None),
-    (99.2, -24.8, None),
-    (68.2, -16.1, None),
-    (38.4, -40.9, None),
-    (38.4, -75.6, None),
-    (59.5, -98.0, None),
-    (55.8, -116.6, 15.6),  # 44: the Frozen Falls
-    (37.2, -131.4, 19.0),
+WAYPOINTS = [
+    (18.0, -150.0, None),  # 0: the start, on the pass's crest, westbound
+    (-8.0, -160.0, None),
+    (-32.0, -176.0, None),  # 2: over the edge, down the switchbacks
+    (-58.0, -172.0, None),
+    (-80.0, -156.0, None),  # 4: Hearthglow's lanes
+    (-104.0, -168.0, None),
+    (-128.0, -146.0, None),
+    (-108.0, -122.0, None),
+    (-80.0, -128.0, None),
+    (-62.0, -104.0, None),
+    (-82.0, -84.0, None),
+    (-110.0, -101.0, None),
+    (-126.0, -92.0, 45.5),  # 12: the Gatehouse
+    (-144.0, -82.0, 47.5),
+    (-160.0, -66.0, None),  # 15: Frostveil's bailey
+    (-182.0, -42.0, None),
+    (-164.0, -16.0, None),
+    (-184.0, 10.0, None),  # 18: up into the courtyard
+    (-170.0, 34.0, None),
+    (-150.0, 48.0, None),
+    (-162.0, 70.0, None),  # 21: the Climb
+    (-160.0, 88.0, None),
+    (-142.0, 106.0, None),
+    (-128.0, 122.0, None),
+    (-104.0, 150.0, None),  # 25: the summit
+    (-120.0, 176.0, None),
+    (-96.0, 200.0, None),
+    (-70.0, 182.0, None),
+    (-52.0, 166.0, None),  # 29: round the frozen lake
+    (-66.0, 138.0, None),
+    (-48.0, 110.0, None),
+    (-18.0, 124.0, None),
+    (8.0, 138.0, None),
+    (22.0, 170.0, None),
+    (44.0, 164.0, 72.0),  # 34: the Ice Cave
+    (60.0, 158.0, 72.0),
+    (80.0, 150.0, None),  # 37: the glacier, under the sky
+    (104.0, 140.0, None),
+    (128.0, 146.0, None),
+    (142.0, 126.0, None),
+    (142.0, 104.0, 69.0),  # 40: into the ice (the Ice Gallery)
+    (150.0, 84.0, 64.0),
+    (164.0, 68.0, None),  # 42: the crystal cavern
+    (188.0, 62.0, None),
+    (194.0, 44.0, None),
+    (182.0, 28.0, 61.0),  # 45: out through the ice
+    (178.0, 14.0, 59.0),
+    (176.0, -6.0, None),  # 48: the crevasse
+    (160.0, -30.0, None),
+    (164.0, -58.0, None),  # 50: up the glacier's tongue
+    (140.0, -76.0, None),
+    (114.0, -90.0, None),
+    (96.0, -114.0, None),
+    (70.0, -128.0, None),
+    (44.0, -146.0, None),
 ]
-BASE_TUNNELS = [("Gatehouse", "gatehouse", 3, 4), ("Ice Cave", "ice", 22, 24), ("Frozen Falls", "icefall", 44, 45)]
-_KW = dict(hub=HUB, roll=4.0, flat=("hearth", "lake"), mountains=50.0, tiers=True)
+WAY_TUNNELS = [("Gatehouse", "gatehouse", 12, 13), ("Ice Cave", "ice", 34, 35), ("Ice Gallery", "ice", 40, 41),
+               ("Ice Gallery Out", "ice", 45, 46)]
+
+
+def _fillet(points, tunnels, rmax=22.0, every=7.0):
+    """v4: the waypoints' corners rounded into arcs (as big as `rmax`, as the segments either
+    side allow), sampled every `every` m: Dino Valley's bends are 12 m at least, and a lane's
+    corner any tighter folds the road over itself on its inside. The tunnels' ends (their
+    heights set) stay sharp points, the bores straight between them. Returns the points
+    (x, y, z or None) and the tunnels re-indexed into them."""
+    n = len(points)
+    sharp = set()
+    for _name, _kind, a, b in tunnels:
+        sharp.update((a, b))
+    out = []
+    index = {}
+    for i in range(n):
+        a, b, c = points[i - 1], points[i], points[(i + 1) % n]
+        if i in sharp:
+            index[i] = len(out)
+            out.append(b)
+            continue
+        ux, uy = b[0] - a[0], b[1] - a[1]
+        vx, vy = c[0] - b[0], c[1] - b[1]
+        lu, lv = math.hypot(ux, uy), math.hypot(vx, vy)
+        ux, uy, vx, vy = ux / lu, uy / lu, vx / lv, vy / lv
+        th = math.acos(max(-1.0, min(1.0, ux * vx + uy * vy)))  # (the turn)
+        if th < 0.05:
+            index[i] = len(out)
+            out.append(b)
+            continue
+        t = min(rmax * math.tan(th / 2), 0.48 * min(lu, lv))
+        r = t / math.tan(th / 2)
+        p0 = (b[0] - ux * t, b[1] - uy * t)
+        side = 1.0 if ux * vy - uy * vx > 0 else -1.0
+        cx, cy = p0[0] - uy * r * side, p0[1] + ux * r * side
+        a0 = math.atan2(p0[1] - cy, p0[0] - cx)
+        k = max(2, int(r * th / every))
+        index[i] = len(out) + k // 2
+        for j in range(k + 1):
+            ang = a0 + side * th * j / k
+            out.append((cx + r * math.cos(ang), cy + r * math.sin(ang), None))
+        # (and along the straight to the next corner)
+        q1 = (b[0] + vx * t, b[1] + vy * t)
+        nxt = points[(i + 1) % n]
+        tn = 0.0 if (i + 1) % n in sharp else None
+        end = (nxt[0] - vx * (tn if tn is not None else min(0.48 * lv, 0.48 * lv)), nxt[1] - vy * (tn if tn is not None else 0.48 * lv))
+        seg = math.hypot(end[0] - q1[0], end[1] - q1[1])
+        for j in range(1, int(seg / every)):
+            f = j / int(seg / every)
+            out.append((q1[0] + (end[0] - q1[0]) * f, q1[1] + (end[1] - q1[1]) * f, None))
+    return out, [(nm, kd, index[a], index[b]) for nm, kd, a, b in tunnels]
+
+
+BASE_ROUTE, BASE_TUNNELS = _fillet(WAYPOINTS, WAY_TUNNELS)
+_KW = dict(hub=HUB, roll=4.0, flat=("hearth",), mountains=50.0, tiers=True)
 _L0 = Layout(POCKETS, TOP, BASE_ROUTE, BASE_TUNNELS, **_KW)
 
 # ------------------------------------------------------------------ v5: the driving
@@ -124,12 +191,12 @@ DRIFT = {  # look: (height m, crest spacing m)
     "aurora": (1.9, 30.0),
 }
 # Kickers: x, y, height, half-width along the road.
-LIPS = [(160.0, -82.5, 2.4, 8.0), (64.0, 154.5, 2.0, 7.5), (-150.0, 138.0, 1.8, 7.0)]
+LIPS = [(146.0, -70.0, 2.2, 8.0), (66.0, 154.0, 2.0, 7.5), (-112.0, 164.0, 1.8, 7.0)]
 # The crevasse across the glacier: its line, depth and half-width at the top.
-CREVASSE = [(104.0, 104.0), (118.0, 99.0), (130.0, 96.0), (142.0, 93.0), (156.0, 86.0)]
+CREVASSE = [(100.0, 156.0), (106.0, 142.0), (110.0, 128.0), (112.0, 114.0), (110.0, 102.0)]
 CREVASSE_DEPTH = 18.0
 CREVASSE_HW = 9.0
-CALM = [(160.0, -29.0), (-212.0, -38.4), (-155.0, 178.6), (197.2, 64.5), (-105.0, 196.0)]  # gates, lair
+CALM = [(-150.0, -162.0), (-216.0, 4.0), (-156.0, 180.0), (122.0, 178.0), (-90.0, 222.0)]  # gates, lair
 
 
 def crevasse_d(x, y):
@@ -201,6 +268,40 @@ def _densify(points, step=12.0, keep=()):
     return out
 
 
+def _radius(a, b, c):
+    """The radius of the circle through three points (xy)."""
+    ab, bc, ca = math.dist(a[:2], b[:2]), math.dist(b[:2], c[:2]), math.dist(c[:2], a[:2])
+    cr = abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]))
+    return 1e9 if cr < 1e-9 else ab * bc * ca / (2.0 * cr)
+
+
+def _ease(points, fixed, rmin=16.0, rounds=400):
+    """v4: the bends eased to `rmin` at least (as Dino Valley's, 12 m): a lane's corner any
+    tighter folds the road over itself on its inside. Each point on too tight a bend moves
+    a little toward its neighbours' middle, round after round; the tunnels' and the fixed
+    points stay as they are."""
+    pts = [list(p) for p in points]
+    n = len(pts)
+    still = [_L0.tunnel_floor(p[0], p[1]) is not None or any(math.hypot(p[0] - a, p[1] - b) < 10.0 for a, b in fixed)
+             for p in pts]
+    for _ in range(rounds):
+        moved = False
+        for i in range(n):
+            if still[i]:
+                continue
+            a, b, c = pts[i - 1], pts[i], pts[(i + 1) % n]
+            a2, c2 = pts[i - 2], pts[(i + 2) % n]
+            if min(_radius(a, b, c), _radius(a2, b, c2)) >= rmin:
+                continue
+            mx, my = (a[0] + c[0]) / 2, (a[1] + c[1]) / 2
+            b[0] += 0.3 * (mx - b[0])
+            b[1] += 0.3 * (my - b[1])
+            moved = True
+        if not moved:
+            break
+    return [tuple(p) for p in pts]
+
+
 def _dense_route():
     fixed = [(p[0], p[1]) for p in BASE_ROUTE if p[2] is not None]
     keep = set()
@@ -232,20 +333,19 @@ L._corridors = _L0._corridors
 
 # The gateways' landmarks (x, y), each at the end of a short spur off the road.
 GATES = {
-    # (Blake, Oct 29: the portal stood in the middle of the road. Now it's in the hollow's
-    # west wall, at the end of a lane straight out of the square: the village's own course
-    # entered from the village.)
-    # (Oct 29, moved with the village: in its basin's east wall, a lane out of the square.)
-    "hearthglow": (160.0, -29.0),
-    "frostveil": (-212.0, -38.4),  # the keep's gate in the bailey's west wall
-    "summit": (-155.0, 178.6),  # the giant tree
-    "aurora": (197.2, 64.5),  # the rift in the glacier
+    # (Blake, Oct 29: the portal stood in the middle of the road. v4: in the hollow's
+    # west wall, at the end of a lane out of the square: the village's own course entered
+    # from the village.)
+    "hearthglow": (-150.0, -162.0),
+    "frostveil": (-216.0, 4.0),  # the keep's gate in the courtyard's west wall
+    "summit": (-156.0, 180.0),  # the giant tree, the summit's west end
+    "aurora": (122.0, 178.0),  # the rift in the glacier's north wall
 }
-TREE = (136.0, -55.0)  # the village's great tree, south of the square
-BELL = (146.0, -10.0)  # the bell tower, north-east of the square
-LAIR = (-105.0, 196.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
-FROZEN_PASS = (152.5, -105.4)  # where the Frozen Pass leaves the lake (the ruin), on east
-PASS_END = (260.4, -117.8)
+TREE = (-84.0, -158.0)  # the village's great tree, south of the square
+BELL = (-110.0, -122.0)  # the bell tower, north-west of the square
+LAIR = (-90.0, 222.0)  # Rimefang's lair (the ruin's boss gateway), the summit's north wall
+FROZEN_PASS = (164.0, -62.0)  # where the Frozen Pass leaves the glacier's tongue (the ruin), on east
+PASS_END = (262.0, -90.0)
 GORGE_END = (0.0, -291.4)  # the Burnt Gorge's far end: the passage back to the valley
 
 

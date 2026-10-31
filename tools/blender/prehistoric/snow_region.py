@@ -46,16 +46,16 @@ GORGE_HW = 16.0
 # The Ice Bells (src/overworld/puzzles.ts): a frost-stone hut on an island in the frozen
 # lake, its ice door shut, and three bells out on the ice round it to ring in order (their
 # lanterns: one, two, three).
-HUT = (73.2, -57.0)
+HUT = (-30.0, 148.0)  # (v4: the frozen lake's in the summit now)
 HUT_HALF = 10.0
 HUT_GAP = 4.5
-BELLS = [(55.8, -37.2), (93.0, -69.4), (64.5, -81.8)]
+BELLS = [(-44.0, 136.0), (-14.0, 160.0), (-16.0, 134.0)]
 LANTERNS = [1, 2, 3]
 # Brachio's hot spring (Act V's return task): a walled yard in the summit meadow, frozen shut.
-RETURN = (-63.2, 166.2)
+RETURN = (-118.0, 128.0)
 # A secret (regions.ts secret): an old store in Frostveil's bailey, buried under a drift
 # (the Desert Tool's).
-SECRET = (-120.9, -63.2)
+SECRET = (-140.0, -30.0)
 
 LOOK = {
     # look: (ground, cliff, road, shoulder)
@@ -64,6 +64,7 @@ LOOK = {
     "summit": (("summit_snow", "deep_snow"), ("summit_cliff", "wall"), "summit_road", ("summit_snow", "deep_snow")),
     "aurora": (("rift_snow", "deep_snow"), ("glacier_wall", "wall"), "rift_road", ("rift_snow", "deep_snow")),
     "lake": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "packed_snow_road", ("snow_ground", "deep_snow")),
+    "pass": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "packed_snow_road", ("snow_ground", "deep_snow")),
 }
 
 
@@ -75,6 +76,7 @@ STRATA = {
     "summit": ["summit_rock", "summit_cliff", "frost_rock", "summit_cliff", "summit_rock"],
     "aurora": ["rift_rock", "rift_cliff", "rift_stone", "rift_cliff", "rift_rock"],
     "lake": ["frost_cliff", "frost_rock", "frost_stone", "frost_cliff", "summit_cliff"],
+    "pass": ["frost_rock", "frost_cliff", "summit_cliff", "frost_cliff", "frost_rock"],
 }
 
 
@@ -96,15 +98,15 @@ def _natural(x, y):
         (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
         dd, t = pb_seg(x, y, (ax - 30.0, ay + 10.0), (bx, by))
         if dd < 30:
-            h = lerp(h, SL.LAKE[3] + 0.3 + 6.0 * t, smooth((30.0 - dd) / 12.0))
+            h = lerp(h, 58.3 + 6.0 * t, smooth((30.0 - dd) / 12.0))  # (up from the glacier's tongue)
         # Rimefang's lair: a cleft in the summit's north wall.
         lx, ly = SL.LAIR
         dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
         if dd < 26:
-            h = lerp(h, 57.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
+            h = lerp(h, 73.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
     # The lane out of the square east to Hearthglow's portal, cut level into the wall.
     vx, vy, vr, vz = SL.VILLAGE
-    d, _t = pb_seg(x, y, (vx + vr, vy), SL.GATES["hearthglow"])
+    d, _t = pb_seg(x, y, _square_edge(), SL.GATES["hearthglow"])
     if d < 14.0:
         h = lerp(h, vz + 0.3, smooth((14.0 - d) / 5.0))
     # The pads Hearthglow's cottages stand on, up the hollow's walls (snow_dress).
@@ -115,6 +117,14 @@ def _natural(x, y):
 # spur mustn't climb a wall).
 NOTCHES = pocket_kit.Notches(SL.route_points(), {k: v for k, v in dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})).items()
                                                   if k != "hearthglow"})
+
+
+def _square_edge():
+    """Where Hearthglow's lane to its portal leaves the square: its edge, toward the portal."""
+    vx, vy, vr, _vz = SL.VILLAGE
+    hx, hy = SL.GATES["hearthglow"]
+    a = math.atan2(hy - vy, hx - vx)
+    return vx + (vr - 1.5) * math.cos(a), vy + (vr - 1.5) * math.sin(a)
 
 
 def pb_seg(x, y, a, b):
@@ -175,18 +185,19 @@ def main():
     # The way in: up out of the Burnt Gorge (from the valley, south) through the hollow and
     # onto the road (Blake, Oct 29: the old square's gone, with the village; the hollow is
     # the grand way in to the kingdom, snow_dress.entry_pass).
-    smp, _ = c.nearest(cx, cy + cr + 20.0)
+    smp, _ = c.nearest(cx, cy - 6.0)  # (v4: the road crosses the pass's crest)
     gx, gy = SL.GORGE_END
     y0 = int(cy - cr + 2)
     up = pb.line(natural, (smp.p.x, smp.p.y), (gorge_x(y0), float(y0)), z0=smp.p.z, c=c)
     gorge = up[:-1] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2) for y in range(y0, int(gy + 6), -8)]
-    c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail)
+    c.side_road("Burnt Gorge Road", gorge, "packed_snow_road", "road", **trail, flush=True, ease=12.0)
     ENTRY.extend((p[0], p[1]) for p in gorge)
     # Into Hearthglow's square from the road (its west side).
     vx, vy, vr, vz = SL.VILLAGE
-    smp, _ = c.nearest(vx - vr - 18.0, vy)
-    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx - vr + 2.0, vy), z0=smp.p.z, c=c), "hearth_cobble", "road",
-                **trail)
+    smp, _ = c.nearest(vx, vy)
+    a = math.atan2(smp.p.y - vy, smp.p.x - vx)
+    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (vx + (vr - 2.0) * math.cos(a), vy + (vr - 2.0) * math.sin(a)),
+                                       z0=smp.p.z, c=c), "hearth_cobble", "road", **trail, flush=True, ease=8.0)
     gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
     if RUIN:
         gates["lair"] = SL.LAIR
@@ -194,12 +205,13 @@ def main():
     # Hearthglow's portal: in its basin's east wall, the lane to it straight out of the
     # square (Blake, Oct 29: it stood in the middle of the road; then the village moved).
     hx, hy = SL.GATES["hearthglow"]
-    sx, sy = vx + vr - 1.5, vy
+    sx, sy = _square_edge()
     ux, uy = hx - sx, hy - sy
     ul = math.hypot(ux, uy)
     ux, uy = ux / ul, uy / ul
     end = (hx - ux * 10.0, hy - uy * 10.0)
-    c.side_road("Hollow Lane", pb.line(natural, (sx, sy), end, z0=vz + 0.05), "hearth_cobble", "road", **trail)
+    c.side_road("Hollow Lane", pb.line(natural, (sx, sy), end, z0=vz + 0.05), "hearth_cobble", "road", **trail, flush=True,
+                ease=10.0)
     spots["hearthglow"] = (end, math.atan2(-ux, uy))
     if RUIN:
         # Out of the lake through the Frozen Pass, east.
@@ -254,8 +266,8 @@ def main():
         c.entity("chimney", x=g[0], y=g[1], z=g[2])
         return True
 
-    vh.homes(c, L, ground, "snow", home, avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 40.0), (HUB[0], HUB[1], 40.0)],
-             wall=-15.0, per=3, level=3.0, foot=6.5)
+    vh.homes(c, L, ground, "snow", home, avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
+             wall=-12.0, per=4, level=3.0, foot=6.5)
     dress(c, ground, spots)
     vv.clear_paths(c, LANES)
     # The gorge's far end, back towards the valley: it bends out of sight.
@@ -271,10 +283,9 @@ def main():
 
 
 def thresholds(c, ground):
-    """The Gatehouse (through Frostveil's curtain wall, a castle gate at each end), the Ice
-    Cave (blue ice, crystals in its walls), the Frozen Falls (a tunnel up behind a frozen
-    waterfall into the village), and the Snowshed (a timber avalanche gallery down the
-    cliff to the lake)."""
+    """The Gatehouse (through Frostveil's curtain wall, a castle gate at each end) and the
+    ice bores (the Ice Cave onto the glacier, the Ice Gallery in and out of the crystal
+    cavern: blue ice, crystals in their walls)."""
     kp.use_palette({"keep_ashlar": "citadel_stone", "keep_ashlar_dark": "citadel_dark", "keep_parapet": "citadel_stone",
                     "keep_gold": "temple_gold", "keep_banner": "banner_teal", "keep_pine": "pine_snow"})
     for name, kind, a, b in L.tunnels:
@@ -330,41 +341,6 @@ def thresholds(c, ground):
                 q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
                 g = c.game(q.p.x + q.r.x * (half - 0.6), q.p.y + q.r.y * (half - 0.6), q.p.z + 4.5)
                 c.entity("lantern", x=g[0], y=g[1], z=g[2])
-    snowshed(c, ground)
-
-
-def snowshed(c, ground):
-    """The Snowshed: down the cliff from the glacier to the lake, a timber gallery over the
-    road (posts on the open, lake side; its roof sloping back into the cliff)."""
-    a = SL.BASE_ROUTE[33]
-    b = SL.BASE_ROUTE[35]
-    s0 = c.nearest(*a[:2])[0].s
-    s1 = c.nearest(*b[:2])[0].s
-    if s1 < s0:
-        s1 += c.length
-    timber = ("weathered_timber", "wall")
-    s = s0
-    k = 0
-    while s < s1:
-        q = c.at(s)
-        half = q.w / 2 + 2.0
-        # Which side is the cliff (the higher ground)?
-        hl = ground(q.p.x - q.r.x * (half + 8), q.p.y - q.r.y * (half + 8))
-        hr = ground(q.p.x + q.r.x * (half + 8), q.p.y + q.r.y * (half + 8))
-        out = 1 if hr < hl else -1
-        rot = math.atan2(q.r.y, q.r.x)
-        x, y = q.p.x + q.r.x * out * half, q.p.y + q.r.y * out * half
-        box(c, "Snowshed Post %d" % k, x, y, 0.5, 0.5, q.p.z - 1.0, q.p.z + 7.0, timber, rot=rot)
-        # (the roof: from over the posts up into the cliff, visual)
-        rx, ry = q.p.x + q.r.x * -out * 2.0, q.p.y + q.r.y * -out * 2.0
-        box(c, "Snowshed Roof %d" % k, rx, ry, half + 5.0, 3.4, q.p.z + 7.0, q.p.z + 7.5, timber, rot=rot, role="visual")
-        box(c, "Snowshed Snow %d" % k, rx, ry, half + 5.2, 3.5, q.p.z + 7.5, q.p.z + 8.2, ("snow_ground", "deep_snow"),
-            rot=rot, role="visual")
-        if k % 2 == 0:
-            g = c.game(x, y, q.p.z + 6.0)
-            c.entity("lantern", x=g[0], y=g[1], z=g[2])
-        s += 6.0
-        k += 1
 
 
 LANES = []
@@ -507,7 +483,7 @@ def dress(c, ground, spots):
         return
     # Hearthglow (by the lake now): Christmas pines with lights round it, snowmen. The
     # hollow it left, the way in: snowy pines (its lanterns are snow_dress.entry_pass's).
-    near_village = lambda x, y: (inside(x, y) and L.look_at(x, y) == "lake"  # noqa: E731
+    near_village = lambda x, y: (inside(x, y) and L.look_at(x, y) == "hearth"  # noqa: E731
                                  and math.hypot(x - vx, y - vy) < vr + 45.0)
     for v in range(2):
         paint.scatter(c, hp.xmas_pine(c, v, height=12.0 + 3.0 * v), 8, rmax, near_village, g, taken, 60 + v, room=6.0,

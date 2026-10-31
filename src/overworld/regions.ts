@@ -228,53 +228,53 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "drift",
       tool: "desert",
-      gate: { x: -126.71, z: 70.07, heading: -0.7017, width: 9 },
-      spot: { x: -120.9, z: 63.2 },
+      gate: { x: -148.67, z: 27.59, heading: -1.8424, width: 9 },
+      spot: { x: -140, z: 30 },
     },
     // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
     cave: {
-      gate: { x: -52.56, z: -163.42, heading: 1.315, width: 9 },
-      spot: { x: -63.2, z: -166.2 },
+      gate: { x: -125.94, z: -135.61, heading: -2.3349, width: 9 },
+      spot: { x: -118, z: -128 },
     },
     music: "hearthglow",
     worldId: "frostveil",
     kingdom: "snow",
     // The main road's start line, on the village's north side (the 1-on-1 is raced from it).
-    challenge: { x: 16, z: 127, heading: -1.7226 },
+    challenge: { x: 18, z: 150, heading: -1.7226 },
     // In Hearthglow's square (by the lake since Oct 29: Blake moved the village), facing
     // west to the road.
-    spawn: { x: 130, z: 29, heading: -Math.PI / 2 },
+    spawn: { x: -96, z: 140, heading: -Math.PI / 2 },
     gateways: [
       // In the village's basin's east wall, at the end of the lane out of the square.
       {
         id: "hearthglow",
         track: "hearthglow_hollow",
-        x: 150.0,
-        z: 29.0,
+        x: -140.74,
+        z: 158.23,
         radius: 6,
-        heading: -1.5708,
+        heading: 1.9577,
       },
       // At the keep's gate in the bailey's west wall.
       {
         id: "frostveil",
         track: "frostveil_citadel",
-        x: -201.95,
-        z: 31.84,
+        x: -204.12,
+        z: -5.66,
         radius: 6,
-        heading: 2.149,
+        heading: 1.7099,
       },
       // At the foot of the giant tree in the summit meadow.
-      { id: "summit", track: "snowy_summit", x: -148.63, z: -168.43, radius: 6, heading: 0.5596 },
+      { id: "summit", track: "snowy_summit", x: -144.08, z: -178.59, radius: 6, heading: 1.4533 },
       // At the rift in the glacier.
-      { id: "aurora", track: "aurora_rift", x: 187.09, z: -58.03, radius: 6, heading: -1.0015 },
+      { id: "aurora", track: "aurora_rift", x: 121.83, z: -166.0, radius: 6, heading: -0.0138 },
       // Rimefang's lair, an ice cave in the summit's north wall: the dragon's race.
       {
         id: "lair",
         track: "boss_snowy",
-        x: -107.6,
-        z: -184.28,
+        x: -91.1,
+        z: -210.05,
         radius: 6,
-        heading: -0.218,
+        heading: -0.092,
         boss: true,
         label: "RIMEFANG'S LAIR",
       },
@@ -297,10 +297,10 @@ export const REGIONS: Region[] = [
         label: "THE FROZEN PASS · TO DESERT WORLD",
         to: "journey_pass",
         toPassage: "start",
-        x: 244,
-        z: 117.8,
+        x: 245.6,
+        z: 90,
         radius: 8,
-        heading: -1.692, // (along the Frozen Pass Road, west down to the lake)
+        heading: -1.849, // (along the Frozen Pass Road, west down to the glacier's tongue)
         ruinOnly: true,
         blocker: { kind: "ice", width: 13 },
         opensAfter: "snow",
