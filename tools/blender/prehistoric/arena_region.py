@@ -14,9 +14,11 @@
 #          it, its roof the high ground, reached by two bridges off the walk)
 #   docks  Smugglers' Cove (Smugglers' Run): a sandy cove, a crew's dock at each corner,
 #          crate stacks to dodge round, where the crates fall in the middle
-#   rink   Crumble Rink: a round sheet of ice over a crevasse (the tiles are the game's:
-#          src/screens/minigames.ts draws them; the build is the crevasse round it and an
-#          invisible floor under the ice)
+#   rink   The Cutting Pond (Crumble Rink; Oct 31, Blake picked "A"): the snow kingdom's
+#          ice harvesters' pond, cut into square blocks (the game's: src/screens/
+#          minigames.ts draws them; the build is an invisible floor under them, the dark
+#          water, the snowbanks round it), the derrick on its crib in the middle lifting
+#          runs of blocks out, the yard round it (the ice house, sledges, the brazier)
 #   stars  Meteor Crater (Star Fall; Oct 31, Blake picked "B": "an exciting level with
 #          precision driving", matching the desert it's played in): the desert's meteor
 #          crater at dusk, terraced down to its floor, each terrace a ring road, narrow
@@ -76,13 +78,12 @@ SPECS = {
         "mats": (("beach_sand", "sand"), ("cove_rock", "wall"), ("cove_planks", "road")),
     },
     "rink": {
-        "name": "Crumble Rink",
-        "env": "aurora_rift",
-        # (The crevasse's floor, far under the ice.)
-        "floor": -34.0,
-        "r": 66.0,
-        "top": 40.0,
-        "mats": (("cavern_ice", "wall"), ("icefall_rift", "wall"), ("lake_ice", "ice")),
+        "name": "The Cutting Pond",
+        "env": "summit_pass",
+        "floor": 2.6,
+        "r": 74.0,
+        "top": 34.0,
+        "mats": (("snow_ground", "packed_snow"), ("summit_cliff", "wall"), ("lake_ice", "ice")),
     },
     "stars": {
         "name": "Meteor Crater",
@@ -103,8 +104,11 @@ DECK_W = 12.0 if AID == "bowl" else 16.0
 if TWO:
     RING = DECK[0]
 DECK_Z = F + DECK[1] if TWO else None
-# Crumble Rink's ice: its height and radius (the tiles are the game's).
-ICE_Z, ICE_R, TILE = 2.0, 40.0, 2.6
+# Crumble Rink's ice: its height and radius (the tiles are the game's); the Cutting Pond's
+# blocks a side, the derrick's crib (blocks out from the middle each way).
+ICE_Z, ICE_R, TILE = 2.0, 40.0, 3.6
+POND_N, POND_ISLAND = 17, 1.5
+POND_H = POND_N * TILE / 2
 if AID == "rink":
     RING = 24.0
 
@@ -196,6 +200,12 @@ def feature(x, y):
         return -1.6 * smooth((d - m0) / 1.5) * smooth((m1 - d) / 1.5) + 5.0 * smooth((d - m1 - 1.0) / 6.0)
     if AID == "docks":
         return 4.0 * smooth((d - (R - 16.0)) / 14.0)
+    if AID == "rink":
+        # The pond's bed, dug down under the ice; its snowbanks round it.
+        e = max(abs(x), abs(y)) - POND_H
+        if e < 0.6:
+            return ICE_Z - 3.0 - F
+        return 1.4 * smooth((e - 0.6) / 1.0) - 1.0 * smooth((e - 4.0) / 3.0)
     return 0.0
 
 
@@ -255,7 +265,7 @@ def main():
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 2.5, lambda x, y: natural(x, y) - 0.5, c.lib(*ground_m))
 
     def ground(x, y):
-        if AID == "rink" and math.hypot(x, y) < ICE_R:
+        if AID == "rink" and max(abs(x), abs(y)) < POND_H:
             return ICE_Z
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
@@ -281,7 +291,12 @@ def main():
     # Item balloons round the ring and nearer the middle.
     n = 0
     for k in range(10 if not TWO else 6):
-        c.balloon(c.length * (k + 0.5) / (10 if not TWO else 6), (k % 3 - 1) * (2.0 if AID == "stars" else 4.0),
+        if AID == "rink" and k >= 8:
+            break
+        at = c.length * (k + 0.5) / (10 if not TWO else 6)
+        if AID == "rink":
+            at = c.length * ((k + 0.5) / 8 + 0.2 / math.tau)  # (between the starts, not in front of them)
+        c.balloon(at, (k % 3 - 1) * (2.0 if AID == "stars" else 4.0),
                   ("red", "blue", "green", "yellow", "rainbow")[k % 5])
         n += 1
     if TWO:
@@ -314,6 +329,22 @@ def main():
 # Each arena's own sky and light where its kingdom's is wrong for it (Blake, Oct 29: the
 # Crater Bowl was too dark: now a volcano at dusk, glowing orange, the floor lit warm).
 LOOKS = {
+    # The Cutting Pond: the snow kingdom's own sky (snow_region's look).
+    "rink": {
+        "theme": "summit_pass",
+        "sky": "#5ab8ff",
+        "fog": {"enabled": True, "color": "#d4eeff", "near": 200, "far": 1100},
+        "sun": {"color": "#fff4dc", "intensity": 2.7, "direction": [0.42, 0.74, 0.52]},
+        "ambient": {"sky": "#eaf6ff", "ground": "#8ea2bc", "intensity": 1.35},
+        "skyDome": {
+            "top": "#1c7ee8",
+            "horizon": "#c8ecff",
+            "bottom": "#e4f4ff",
+            "sun": {"color": "#fffbe6", "size": 8, "glow": "#fff0b0", "elevation": 32},
+            "clouds": {"count": 30, "color": "#ffffff", "shade": "#d2e6fa", "seed": 61, "low": 8, "high": 26, "drift": 0.005},
+            "hills": {"color": "#9eb8de", "far": "#d2e4f8", "height": 16, "seed": 67, "layers": 3},
+        },
+    },
     # Meteor Crater at dusk (the stars come out): the desert's own sky gone indigo, a
     # rising moon, the mesas dark against the last light.
     "stars": {
@@ -646,18 +677,66 @@ def build_docks(c, ground, taken):
 
 
 def build_rink(c, ground, taken):
-    """The ice's invisible floor (the karts drive on it; what they see is the game's
-    tiles), a rim of ice boulders round the crevasse's lip, icicles down its walls."""
-    c.disc("Ice Floor", 0.0, 0.0, ICE_R + 0.5, ICE_Z, c.lib("lake_ice", "ice"), coll="Props", role="collision", n=64)
-    for k in range(14):
-        a = k * math.tau / 14 + 0.1
-        rr = R - 4.0
+    """The Cutting Pond, like the snow kingdom's (ice_yard.py, its props): the ice's
+    invisible floor (the karts drive on it; what they see is the game's blocks), the dark
+    water under it, the pond's banks walled in snow (nobody drives off it), the derrick on
+    its crib in the middle, its boom out over the ice; the ice house, sledges, the
+    brazier, the tool bench, lantern poles, pines round the hollow, snow falling."""
+    import ice_yard as iy
+    import summit_props as sp
+    H = POND_H
+    box(c, "Ice Floor", 0.0, 0.0, H, H, ICE_Z - 0.6, ICE_Z, ("lake_ice", "ice"), role="collision")
+    box(c, "Pond Water", 0.0, 0.0, H + 0.4, H + 0.4, ICE_Z - 2.6, ICE_Z - 1.4, ("frost_pool", "water"), role="visual")
+    # The banks: snow walls round it (and a collider, so no kart leaves the ice but down).
+    for k in range(4):
+        a = k * math.pi / 2
+        cx, cy = (H + 0.9) * math.cos(a), (H + 0.9) * math.sin(a)
+        box(c, "Snowbank %d" % k, cx, cy, 0.9, H + 1.8, ICE_Z - 1.0, ICE_Z + 1.1, ("snow_ground", "wall"), rot=a)
+        box(c, "Bank Collider %d" % k, cx, cy, 0.9, H + 1.8, ICE_Z - 1.0, ICE_Z + 3.0, ("snow_ground", "wall"), rot=a,
+            role="collision")
+    # The derrick's crib in the middle, and the derrick on it, its boom out over the ice.
+    ih = POND_ISLAND * TILE
+    box(c, "Derrick Crib", 0.0, 0.0, ih, ih, ICE_Z - 2.0, ICE_Z + 1.0, ("timber_beam", "wall"))
+    c.place(iy.derrick(c), 0.0, -1.5, ICE_Z + 1.0, rot=0.5, coll="Props")
+    g = c.game(0.0, 0.0, ICE_Z + 12.6)
+    c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    taken.add(0.0, 0.0, H + 3.0)
+
+    def put(proto, x, y, rot, r):
+        z = ground(x, y)
+        c.place(proto, x, y, z - 0.1, rot=rot)
+        taken.add(x, y, r)
+        return z
+
+    # The yard round it: the ice house north, sledges, the brazier, the bench and stump.
+    put(iy.ice_house(c), 0.0, H + 12.0, math.pi, 7.0)
+    put(iy.sledge(c, 0), H + 9.0, 8.0, 1.2, 3.0)
+    put(iy.sledge(c, 1), H + 8.0, -14.0, 1.9, 3.0)
+    put(iy.sledge(c, 2), -14.0, H + 9.0, 0.3, 3.0)
+    z = put(iy.brazier(c), -(H + 9.0), -10.0, 0.0, 3.5)
+    g = c.game(-(H + 9.0), -10.0, z + 1.6)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    put(iy.tool_bench(c), -(H + 8.0), 6.0, math.pi / 2, 3.0)
+    put(iy.stump(c), -(H + 10.0), 13.0, 0.7, 1.2)
+    for k in range(12):
+        a = k * math.tau / 12 + 0.26
+        rr = H * 1.414 + 3.0 if k % 3 == 1 else H + 5.0
         x, y = rr * math.cos(a), rr * math.sin(a)
-        c.assign(c.rock_mass("Lip Boulder %d" % k, x, y, 4.0, 3.0, ground(x, y) + 5.0 + (k % 3) * 2.0, z0=ground(x, y) - 3.0,
-                             n=10, seed=k + 5), c.lib("glacier_ice", "wall"))
+        if not taken.clear(x, y, 1.5):
+            continue
+        z = ground(x, y)
+        c.place(iy.lantern_pole(c), x, y, z - 0.1, rot=a + math.pi / 2)
+        taken.add(x, y, 1.5)
+        g = c.game(x, y, z + 3.45)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    # Pines round the hollow.
+    for v in range(3):
+        paint.scatter(c, sp.pine(c, v, 12.0 + 4.0 * v, snowy=True), 26, R + 6, lambda x, y: max(abs(x), abs(y)) > H + 16, ground,
+                      taken, 40 + v, room=5.0, scale=(0.9, 1.4), road_margin=-60.0)
+    # The rink: the blocks' grid, its crib (the game's).
     g = c.game(0.0, 0.0, ICE_Z)
-    c.entity("rink", x=g[0], z=g[2], y=g[1], r=ICE_R, tile=TILE)
-    c.entity("fireflies", rate=20, radius=40)
+    c.entity("rink", x=g[0], z=g[2], y=g[1], r=H, tile=TILE, square=POND_N, island=POND_ISLAND)
+    c.entity("snowfall", rate=50, radius=50)
 
 
 def build_stars(c, ground, taken):

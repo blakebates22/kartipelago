@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "arena_rink",
-  "name": "Crumble Rink",
+  "name": "The Cutting Pond",
   "geometry": {
     "visual": "visual.glb",
     "collision": "collision.glb",
@@ -79,72 +79,156 @@
     {
       "id": "bal_01",
       "type": "balloon",
-      "at": 7.6,
+      "at": 14.2,
       "across": -4.0,
       "color": "red"
     },
     {
       "id": "bal_02",
       "type": "balloon",
-      "at": 22.7,
+      "at": 33.1,
       "across": 0.0,
       "color": "blue"
     },
     {
       "id": "bal_03",
       "type": "balloon",
-      "at": 37.8,
+      "at": 52.0,
       "across": 4.0,
       "color": "green"
     },
     {
       "id": "bal_04",
       "type": "balloon",
-      "at": 52.9,
+      "at": 70.9,
       "across": -4.0,
       "color": "yellow"
     },
     {
       "id": "bal_05",
       "type": "balloon",
-      "at": 68.0,
+      "at": 89.8,
       "across": 0.0,
       "color": "rainbow"
     },
     {
       "id": "bal_06",
       "type": "balloon",
-      "at": 83.1,
+      "at": 108.7,
       "across": 4.0,
       "color": "red"
     },
     {
       "id": "bal_07",
       "type": "balloon",
-      "at": 98.2,
+      "at": 127.5,
       "across": -4.0,
       "color": "blue"
     },
     {
       "id": "bal_08",
       "type": "balloon",
-      "at": 113.3,
+      "at": 146.4,
       "across": 0.0,
       "color": "green"
     },
     {
-      "id": "bal_09",
-      "type": "balloon",
-      "at": 128.4,
-      "across": 4.0,
-      "color": "yellow"
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": 0.0,
+      "y": 14.6,
+      "z": -0.0
     },
     {
-      "id": "bal_10",
-      "type": "balloon",
-      "at": 143.5,
-      "across": -4.0,
-      "color": "rainbow"
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": -39.6,
+      "y": 3.96,
+      "z": 10.0
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": 34.4,
+      "y": 8.89,
+      "z": -9.15
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": 32.78,
+      "y": 8.63,
+      "z": -32.66
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": 9.28,
+      "y": 7.82,
+      "z": -34.37
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -9.15,
+      "y": 7.31,
+      "z": -34.4
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -32.66,
+      "y": 6.8,
+      "z": -32.78
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -34.37,
+      "y": 6.67,
+      "z": -9.28
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": -34.4,
+      "y": 6.84,
+      "z": 9.15
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": -32.78,
+      "y": 7.4,
+      "z": 32.66
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": -9.28,
+      "y": 7.95,
+      "z": 34.37
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": 9.15,
+      "y": 8.4,
+      "z": 34.4
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": 32.66,
+      "y": 8.95,
+      "z": 32.78
+    },
+    {
+      "id": "lantern_13",
+      "type": "lantern",
+      "x": 34.37,
+      "y": 8.98,
+      "z": 9.28
     },
     {
       "id": "rink_01",
@@ -152,20 +236,22 @@
       "x": 0.0,
       "z": -0.0,
       "y": 2.0,
-      "r": 40.0,
-      "tile": 2.6
+      "r": 30.6,
+      "tile": 3.6,
+      "square": 17,
+      "island": 1.5
     },
     {
-      "id": "fireflies_01",
-      "type": "fireflies",
-      "rate": 20,
-      "radius": 40
+      "id": "snowfall_01",
+      "type": "snowfall",
+      "rate": 50,
+      "radius": 50
     },
     {
       "id": "arena_01",
       "type": "arena",
       "game": "crumble",
-      "radius": 58.0
+      "radius": 66.0
     }
   ],
   "generator": "tools/blender/prehistoric/arena_rink.py (re-running it rewrites entities)",

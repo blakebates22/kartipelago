@@ -77,7 +77,17 @@ export interface Arena {
   spawns: { x: number; z: number; heading: number }[];
   radius: number;
   /** The ice (Crumble Rink): its centre, height, radius and tile size. */
-  rink?: { x: number; z: number; y: number; r: number; tile: number };
+  rink?: {
+    x: number;
+    z: number;
+    y: number;
+    r: number;
+    tile: number;
+    /** The Cutting Pond's (Oct 31): square blocks, this many a side (none: hexagons in a
+     * round rink), the derrick's crib over the middle `island` blocks each way. */
+    square?: number;
+    island?: number;
+  };
   /** The upper level (the two-storey arenas): a ring deck round the middle, its centre
    * line's radius, its width and its height. */
   deck?: { r: number; w: number; y: number };
@@ -156,6 +166,7 @@ export function parseArena(entities: unknown[]): Arena {
         y: num(o.y, 0),
         r: num(o.r, 40),
         tile: num(o.tile, 2.6),
+        ...(typeof o.square === "number" ? { square: o.square, island: num(o.island, 0) } : {}),
       };
   }
   a.spawns = a.spawns.filter(Boolean);
@@ -181,8 +192,15 @@ export interface Ice {
   readonly x: Float32Array;
   readonly z: Float32Array;
   /** 0 solid; 1 cracked (driven over once); 3 breaking (driven onto again, or the edge
-   * crumbling: it falls when its timer runs out); 2 gone. */
+   * crumbling: it falls when its timer runs out); 2 gone; 4 marked (the derrick's next
+   * lift: it goes when its timer runs out). */
   readonly state: Uint8Array;
+  /** Lifted out by the derrick (not fallen through). */
+  readonly lifted: Uint8Array;
+  /** The block's row and column (square ice; -1 for hexagons). */
+  readonly row: Int16Array;
+  readonly col: Int16Array;
+  readonly square: boolean;
   /** Seconds since it cracked (cracked), left to fall (breaking), since it fell (gone). */
   readonly timer: Float32Array;
   /** Its distance from the middle, in tiles (the edge crumbles in by these). */
@@ -194,6 +212,7 @@ export interface Ice {
 }
 
 export function makeIce(rink: NonNullable<Arena["rink"]>): Ice {
+  if (rink.square) return makeSquareIce(rink, rink.square, rink.island ?? 0);
   const size = rink.tile;
   const w = Math.sqrt(3) * size;
   const xs: number[] = [];
@@ -217,6 +236,10 @@ export function makeIce(rink: NonNullable<Arena["rink"]>): Ice {
     state: new Uint8Array(xs.length),
     timer: new Float32Array(xs.length),
     ring: Uint8Array.from(rings),
+    lifted: new Uint8Array(xs.length),
+    row: new Int16Array(xs.length).fill(-1),
+    col: new Int16Array(xs.length).fill(-1),
+    square: false,
     size,
     y: rink.y,
     at(px, pz) {
@@ -238,6 +261,87 @@ export function makeIce(rink: NonNullable<Arena["rink"]>): Ice {
     },
   };
   return ice;
+}
+
+/** The Cutting Pond's ice: an n by n grid of cut blocks round (x, z), but under the
+ * derrick's crib in the middle. */
+function makeSquareIce(rink: NonNullable<Arena["rink"]>, n: number, island: number): Ice {
+  const size = rink.tile;
+  const half = (n * size) / 2;
+  const mid = (n - 1) / 2;
+  const index = new Int32Array(n * n).fill(-1);
+  const xs: number[] = [];
+  const zs: number[] = [];
+  const rings: number[] = [];
+  const rows: number[] = [];
+  const cols: number[] = [];
+  for (let r = 0; r < n; r++)
+    for (let q = 0; q < n; q++) {
+      const ring = Math.max(Math.abs(q - mid), Math.abs(r - mid));
+      if (ring <= island - 0.5) continue;
+      index[r * n + q] = xs.length;
+      xs.push(rink.x - half + (q + 0.5) * size);
+      zs.push(rink.z - half + (r + 0.5) * size);
+      rings.push(Math.round(ring));
+      rows.push(r);
+      cols.push(q);
+    }
+  return {
+    x: Float32Array.from(xs),
+    z: Float32Array.from(zs),
+    state: new Uint8Array(xs.length),
+    timer: new Float32Array(xs.length),
+    ring: Uint8Array.from(rings),
+    lifted: new Uint8Array(xs.length),
+    row: Int16Array.from(rows),
+    col: Int16Array.from(cols),
+    square: true,
+    size,
+    y: rink.y,
+    at(px, pz) {
+      const q = Math.floor((px - rink.x + half) / size);
+      const r = Math.floor((pz - rink.z + half) / size);
+      if (q < 0 || r < 0 || q >= n || r >= n) return -1;
+      return index[r * n + q]!;
+    },
+  };
+}
+
+/** The derrick's next lift (The Cutting Pond): a run of `len` blocks along a row or a
+ * column, the one with the most ice left in it and karts near it (some chance in it). */
+export function pickLift(
+  ice: Ice,
+  karts: { x: number; z: number }[],
+  len: number,
+  rand: () => number,
+): number[] {
+  const n = Math.max(...ice.row) + 1;
+  const grid = new Int32Array(n * n).fill(-1);
+  for (let t = 0; t < ice.state.length; t++) grid[ice.row[t]! * n + ice.col[t]!] = t;
+  let best: number[] = [];
+  let bestV = -Infinity;
+  for (let line = 0; line < n; line++)
+    for (const across of [false, true])
+      for (let s = 0; s + len <= n; s++) {
+        const run: number[] = [];
+        let v = 0;
+        for (let k = s; k < s + len; k++) {
+          const t = across ? grid[k * n + line]! : grid[line * n + k]!;
+          if (t < 0) continue;
+          if (ice.state[t] === 0 || ice.state[t] === 1) {
+            run.push(t);
+            v += 1;
+            for (const p of karts)
+              if (Math.hypot(p.x - ice.x[t]!, p.z - ice.z[t]!) < ice.size * 2) v += 1.5;
+          }
+        }
+        v += rand() * 4;
+        if (run.length >= 2 && v > bestV) {
+          bestV = v;
+          best = run;
+        }
+      }
+  return best;
 }
 
 export interface MiniGame {
@@ -295,6 +399,15 @@ export const RULES = {
   graceSec: 4,
   /** The edge crumbles in a ring every this many seconds. */
   edgeEvery: 10,
+  /** The Cutting Pond's derrick: its first lift after the countdown, then every so often
+   * (sooner each time, down to `liftMin`), the warning before it goes (its shadow), how
+   * many blocks a lift takes. */
+  liftFirst: 5,
+  liftEvery: 8,
+  liftMin: 3.5,
+  liftSpeedUp: 0.4,
+  liftWarnSec: 2.5,
+  liftLen: [5, 9] as const,
   // Star Fall.
   starsToWin: 15,
   starEvery: 1.6,
@@ -320,6 +433,8 @@ export function createMiniGame(
   let winner: number | undefined;
   let starIn = 0;
   let edgeIn = RULES.edgeEvery;
+  let liftIn = RULES.liftFirst;
+  let liftGap: number = RULES.liftEvery;
   let edgeRing = ice ? Math.max(...ice.ring) : 0;
   /** The tile each kart was on last step (Crumble Rink: a tile breaks as you drive onto
    * it, not while you're on it). */
@@ -403,9 +518,30 @@ export function createMiniGame(
               say("break", i);
             }
           }
-          // And the edge crumbles in, a ring at a time.
+          // The Cutting Pond's derrick lifts out a run of blocks now and then: marked
+          // first (its shadow), then gone.
+          if (ice.square) {
+            liftIn -= dt;
+            if (liftIn <= 0) {
+              const [l0, l1] = RULES.liftLen;
+              const run = pickLift(
+                ice,
+                ks.filter((_, j) => !out[j]),
+                l0 + Math.floor(rand() * (l1 - l0 + 1)),
+                rand,
+              );
+              for (const t of run) {
+                ice.state[t] = 4;
+                ice.timer[t] = RULES.liftWarnSec;
+              }
+              if (run.length) say("lift", -1);
+              liftGap = Math.max(RULES.liftMin, liftGap - RULES.liftSpeedUp);
+              liftIn = liftGap;
+            }
+          }
+          // And the edge crumbles in, a ring at a time (the round rink).
           edgeIn -= dt;
-          if (edgeIn <= 0 && edgeRing > 2) {
+          if (!ice.square && edgeIn <= 0 && edgeRing > 2) {
             edgeIn = RULES.edgeEvery;
             for (let t = 0; t < ice.state.length; t++)
               if (ice.ring[t]! >= edgeRing && (ice.state[t] === 0 || ice.state[t] === 1)) {
@@ -417,7 +553,14 @@ export function createMiniGame(
           }
         }
         for (let t = 0; t < ice.state.length; t++) {
-          if (ice.state[t] === 3) {
+          if (ice.state[t] === 4) {
+            ice.timer[t]! -= dt;
+            if (ice.timer[t]! <= 0) {
+              ice.state[t] = 2;
+              ice.lifted[t] = 1;
+              ice.timer[t] = 0;
+            }
+          } else if (ice.state[t] === 3) {
             ice.timer[t]! -= dt;
             if (ice.timer[t]! <= 0) {
               ice.state[t] = 2;

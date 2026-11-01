@@ -11,6 +11,7 @@ import {
   navPath,
   navSpot,
   navWaypoint,
+  pickLift,
   newMind,
   shouldFire,
   parseArena,
@@ -179,5 +180,42 @@ describe("the mini-games", () => {
     expect(new Set(a.starSpots.map((s) => Math.round(s.y))).size).toBeGreaterThanOrEqual(5);
     const nav = a.nav!;
     for (let t = 1; t < nav.nodes.length; t++) expect(navPath(nav, 0, t).at(-1), String(t)).toBe(t);
+  });
+
+  it("The Cutting Pond: square blocks round the derrick's crib; the derrick lifts runs of them out, and you go with them", async () => {
+    const bytes = await readFile(
+      new URL("../public/tracks/arena_rink/track.json", import.meta.url),
+    );
+    const a = parseArena(
+      (JSON.parse(new TextDecoder().decode(bytes)) as { entities: unknown[] }).entities,
+    );
+    const ice = makeIce(a.rink!);
+    expect(ice.square).toBe(true);
+    // (No block under the crib in the middle.)
+    expect(ice.at(a.rink!.x, a.rink!.z)).toBe(-1);
+    for (let t = 0; t < ice.state.length; t += 13) expect(ice.at(ice.x[t]!, ice.z[t]!)).toBe(t);
+    // A lift: a straight run along a row or a column.
+    const run = pickLift(ice, [], 6, () => 0.5);
+    expect(run.length).toBeGreaterThanOrEqual(2);
+    const rows = new Set(run.map((t) => ice.row[t]));
+    const cols = new Set(run.map((t) => ice.col[t]));
+    expect(rows.size === 1 || cols.size === 1).toBe(true);
+    // In a game: after the countdown the derrick marks a run, then it goes; a kart sat
+    // on it goes too.
+    const g = createMiniGame(minigameById("crumble")!, a, 4, 5);
+    const ks = a.spawns
+      .slice(0, 4)
+      .map((s) => ({ x: s.x, y: a.rink!.y, z: s.z, heading: 0, speed: 0 }));
+    let marked = -1;
+    for (let k = 0; k < 60 * 12 && marked < 0; k++) {
+      g.step(ks, 1 / 60);
+      marked = g.ice!.state.findIndex((s) => s === 4);
+    }
+    expect(marked).toBeGreaterThanOrEqual(0);
+    Object.assign(ks[0]!, { x: g.ice!.x[marked]!, z: g.ice!.z[marked]! });
+    for (let k = 0; k < 60 * 3; k++) g.step(ks, 1 / 60);
+    expect(g.ice!.state[marked]).toBe(2);
+    expect(g.ice!.lifted[marked]).toBe(1);
+    expect(g.out[0]).toBe(true);
   });
 });

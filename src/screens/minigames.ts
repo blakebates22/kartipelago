@@ -225,6 +225,8 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
 const KART_COLORS = ["#ffd23f", "#ff5a4f", "#2f80ed", "#3fbf6a"];
 const CRACKED = new THREE.Color("#7d98ad");
 const BREAKING = new THREE.Color("#2a4258");
+/** The Cutting Pond: a block the derrick's about to lift (its shadow). */
+const MARKED = new THREE.Color("#3a3428");
 
 /** The rules' things in the arena. */
 function arenaView(session: Session, g: MiniGame) {
@@ -283,8 +285,11 @@ function arenaView(session: Session, g: MiniGame) {
   const tileColor = new THREE.Color();
   const m4 = new THREE.Matrix4();
   if (ice) {
-    const hex = geo(new THREE.CylinderGeometry(ice.size * 0.96, ice.size * 0.9, 0.9, 6));
-    hex.rotateY(Math.PI / 6);
+    // (The Cutting Pond's are cut blocks, the saw cuts dark between them.)
+    const hex = ice.square
+      ? geo(new THREE.BoxGeometry(ice.size * 0.94, 0.9, ice.size * 0.94))
+      : geo(new THREE.CylinderGeometry(ice.size * 0.96, ice.size * 0.9, 0.9, 6));
+    if (!ice.square) hex.rotateY(Math.PI / 6);
     hex.translate(0, -0.45, 0);
     const iceMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
     made.push(iceMat);
@@ -351,6 +356,16 @@ function arenaView(session: Session, g: MiniGame) {
             dz = Math.cos(t * 53 + n) * 0.08 * (0.4 + k);
             tileColor.lerp(BREAKING, 0.45 + k * 0.4);
             y -= 0.1;
+          } else if (st === 4) {
+            // Marked for the derrick: the hook's shadow over it, pulsing faster as it comes.
+            const k = Math.max(0, 1 - ice.timer[n]! / RULES.liftWarnSec);
+            tileColor.lerp(MARKED, 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(t * (6 + 14 * k))));
+            dx = Math.sin(t * 41 + n) * 0.03 * k;
+          } else if (st === 2 && ice.lifted[n]) {
+            // Lifted out: up and away on the hook.
+            const f = ice.timer[n]!;
+            y += 14 * f * f + 3 * f;
+            scale = f > 2.2 ? 0 : 1;
           } else if (st === 2) {
             const f = ice.timer[n]!;
             y -= 9 * f * f;
