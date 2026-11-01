@@ -11,7 +11,7 @@ DRESS = None
 ALSO = {
     "snowy": ("summit_",),
     "dry": ("gulch_",),
-    "dragon": ("dcanyon_", "isles_", "keep_", "emerald"),
+    "dragon": ("dcanyon_", "isles_", "keep_", "emerald", "sky_"),  # (v4: sky_region.py, sky_layout.py)
     "celestial": ("cdf_", "moon_", "keep_"),
     "coral": ("cove_",),
     "snow": ("ember_", "keep_"),

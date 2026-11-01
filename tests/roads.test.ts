@@ -239,7 +239,8 @@ const ALLOW: Record<string, number> = {
   snow_region: 0.75,
   desert_region: 0.6,
   beach_region: 0.5,
-  dragon_region: 0.55,
+  // (The Dragon Kingdom v4: where the railed Gate Bridge leaves the Crown's rim, 0.9.)
+  dragon_region: 0.95,
   // (Where a side road leaves the race line at a slant off its banked high side: you drop
   // onto it going that way. Where it joins again, it's flush.)
   hearthglow_hollow: 0.5,
@@ -263,7 +264,8 @@ const ALLOW: Record<string, number> = {
   // (Oasis Haven v3: the jump's landing, the dry wash falling away beside it: off the
   // road there you're in the wash, and put back.)
   oasis_haven: 1.55,
-  oasis_haven_ruin: 1.65,
+  // (v3: the canyon floor lies lower beside the fallen tower's rubble, 1.74.)
+  oasis_haven_ruin: 1.8,
   dry_gulch: 0.8,
   dry_gulch_ruin: 1.95,
   impact_depths: 1.85,

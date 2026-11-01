@@ -100,13 +100,15 @@ describe("overworld regions", () => {
       const meta = JSON.parse(readFileSync(`public/tracks/${r.ruinPackageId}/track.json`, "utf8"));
       const from = meta.builtFrom as Record<string, string>;
       // (A region rebuilt by a new script: Desert World v4's mesa_region.py, Tropic Isles
-      // v4's isle_region.py; the old scripts are kept, unused.)
+      // v4's isle_region.py, the Dragon Kingdom v4's sky_region.py; the old scripts are kept,
+      // unused.)
       const script =
         (
-          { desert_region: "mesa_region.py", beach_region: "isle_region.py" } as Record<
-            string,
-            string
-          >
+          {
+            desert_region: "mesa_region.py",
+            beach_region: "isle_region.py",
+            dragon_region: "sky_region.py",
+          } as Record<string, string>
         )[r.packageId] ?? `${r.packageId}.py`;
       expect(Object.keys(from), r.id).toContain(script);
       for (const [file, sha] of Object.entries(from)) {

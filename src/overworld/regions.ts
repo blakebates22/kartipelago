@@ -481,13 +481,13 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // The last region (tools/blender/prehistoric/dragon_region.py), v3: far over the
-    // horizon at the end of Tidewyrm's Causeway. A pocket for each of its worlds walled
-    // off by dark crags, the main road one loop through them: the Harbour and Dragonfire
-    // Square (the hub, the Causeway in over the sea), the Dragon Gate to Moonstone, the
-    // Climb to Dragonspire, the Keep Gate onto the Citadel's approach, the Lava Tube to
-    // Emberdeep, the Storm Pass to the Emerald Canyon, the Root Tunnel back to the
-    // harbour. Ruined after the sacrifice (the end of its first championship).
+    // The last region, v4 (Blake, Oct 31: "the most breathtaking kingdom by far"; built for
+    // dragons, floating isles and sky bridges; tools/blender/prehistoric/sky_layout.py,
+    // sky_region.py): isles of rock hanging over a sea of cloud on chains of dragon light,
+    // round the Citadel's spire. In through the Sky Gate onto the Gate isle, over its bridge
+    // to the Crown (Dragonfire Square, the avenue of giant steps up to the Citadel's door);
+    // the road climbs the isles round the spire on sky bridges. Ruined after the sacrifice
+    // (the end of its first championship). (The positions below are the build's.)
     id: "dragon_kingdom",
     name: "Dragon Kingdom",
     packageId: "dragon_region",
@@ -495,32 +495,32 @@ export const REGIONS: Region[] = [
     music: "dragon",
     worldId: "dragon",
     kingdom: "dragon",
-    // On Dragonfire Square's north side, facing north to the road.
-    spawn: { x: 0, z: 138.8, heading: Math.PI },
+    // On Dragonfire Square, by the great dragon, facing south to the road.
+    spawn: { x: 0, z: 92, heading: 0 },
     gateways: [
-      // Under Dragonspire Keep's tower on its crag, north-west.
-      { id: "keep", track: "dragon_isles", x: -126.54, z: -154.6, radius: 6, heading: 0.5389 },
-      // At the overgrown jungle castle's gate, east.
-      { id: "canyon", track: "dragon_canyon", x: 192.68, z: 68.02, radius: 6, heading: -1.6862 },
-      // At Emberdeep Hold's fortress gate under its storm, north-east.
-      { id: "hold", track: "snow_dragon_pass", x: 125.26, z: -138.19, radius: 6, heading: -0.6693 },
-      // Before the moon gate among the violet lanterns, west.
+      // Before Dragonspire Keep's tall tower, on its isle, west.
+      { id: "keep", track: "dragon_isles", x: -364.52, z: 38.62, radius: 6, heading: 2.4682 },
+      // At the overgrown jungle castle's gate on the Emerald Canyon's isle, east.
+      { id: "canyon", track: "dragon_canyon", x: 385.18, z: 78.81, radius: 6, heading: -2.0179 },
+      // At Emberdeep Hold's fortress gate on its isle, its lava falling into the void, north-east.
+      { id: "hold", track: "snow_dragon_pass", x: 215.49, z: -341.92, radius: 6, heading: -0.573 },
+      // Before the moon gate's standing stones on the Moonstone isle, the highest, north-west.
       {
         id: "moon",
         track: "celestial_dragon_festival",
-        x: -197.93,
-        z: -14.01,
+        x: -191.32,
+        z: -352.95,
         radius: 6,
-        heading: 1.8073,
+        heading: 0.4004,
       },
-      // King Pyrrhax's Citadel's gate in the north wall: the King's race.
+      // King Pyrrhax's Citadel: its forty-metre door in the spire's foot, up the avenue.
       {
         id: "citadel",
         track: "boss_dragon",
-        x: 7.24,
-        z: -198.14,
+        x: 1.95,
+        z: -14.12,
         radius: 6,
-        heading: 0.2998,
+        heading: 0.1223,
         king: true,
         label: "KING PYRRHAX'S CITADEL",
       },
@@ -533,7 +533,7 @@ export const REGIONS: Region[] = [
         to: "journey_cause",
         toPassage: "end",
         x: 0,
-        z: 283,
+        z: 424,
         radius: 8,
         heading: Math.PI,
       },
