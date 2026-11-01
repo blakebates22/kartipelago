@@ -308,7 +308,7 @@ export function tracksMenu(game: Game): Screen {
     }
     if (e.kind === "minigames")
       return {
-        body: "Balloon Brawl, Crumble Rink and Star Fall. Here in the dev tab for now.",
+        body: "Caldera Brawl, Crumble Rink and Star Fall. Here in the dev tab for now.",
         lines: ["3 GAMES · 2 BATTLES"],
       };
     if (e.track.comingSoon) return { body: "Still being built. Coming soon!", lines: [] };

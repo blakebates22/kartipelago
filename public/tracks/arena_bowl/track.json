@@ -746,65 +746,65 @@
     {
       "id": "arena_spawn_01",
       "type": "arena_spawn",
-      "x": 48.11,
-      "z": -32.4,
-      "heading": -0.978,
+      "x": 53.59,
+      "z": -22.2,
+      "heading": -2.749,
       "index": 0
     },
     {
       "id": "arena_spawn_02",
       "type": "arena_spawn",
-      "x": 11.11,
-      "z": -56.93,
-      "heading": -0.193,
+      "x": 22.2,
+      "z": -53.59,
+      "heading": -1.963,
       "index": 1
     },
     {
       "id": "arena_spawn_03",
       "type": "arena_spawn",
-      "x": -32.4,
-      "z": -48.11,
-      "heading": 0.593,
+      "x": -22.2,
+      "z": -53.59,
+      "heading": -1.178,
       "index": 2
     },
     {
       "id": "arena_spawn_04",
       "type": "arena_spawn",
-      "x": -56.93,
-      "z": -11.11,
-      "heading": 1.378,
+      "x": -53.59,
+      "z": -22.2,
+      "heading": -0.393,
       "index": 3
     },
     {
       "id": "arena_spawn_05",
       "type": "arena_spawn",
-      "x": -48.11,
-      "z": 32.4,
-      "heading": 2.163,
+      "x": -53.59,
+      "z": 22.2,
+      "heading": 0.393,
       "index": 4
     },
     {
       "id": "arena_spawn_06",
       "type": "arena_spawn",
-      "x": -11.11,
-      "z": 56.93,
-      "heading": 2.949,
+      "x": -22.2,
+      "z": 53.59,
+      "heading": 1.178,
       "index": 5
     },
     {
       "id": "arena_spawn_07",
       "type": "arena_spawn",
-      "x": 32.4,
-      "z": 48.11,
-      "heading": -2.549,
+      "x": 22.2,
+      "z": 53.59,
+      "heading": 1.963,
       "index": 6
     },
     {
       "id": "arena_spawn_08",
       "type": "arena_spawn",
-      "x": 56.93,
-      "z": 11.11,
-      "heading": -1.763,
+      "x": 53.59,
+      "z": 22.2,
+      "heading": 2.749,
       "index": 7
     },
     {
@@ -944,7 +944,7 @@
     {
       "id": "arena_01",
       "type": "arena",
-      "game": "balloons",
+      "game": "brawl",
       "radius": 78.0
     }
   ],

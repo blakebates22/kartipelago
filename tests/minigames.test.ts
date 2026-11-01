@@ -29,11 +29,15 @@ const karts = (): Kart[] =>
   arena.spawns.map((s) => ({ x: s.x, y: 0, z: s.z, heading: 0, speed: 0 }));
 
 describe("the mini-games", () => {
-  it("Balloon Brawl: three hits and you're out; the last one flying wins", () => {
-    const g = createMiniGame(minigameById("balloons")!, arena, 4);
+  it("Caldera Brawl: three hits and your health's gone, you're out; the last one running wins", () => {
+    const g = createMiniGame(minigameById("brawl")!, arena, 4);
     const ks = karts();
+    expect(g.score[0]).toBe(RULES.health);
+    // (The lava takes less than a hit.)
+    g.hit(0, RULES.hazardDamage);
+    expect(g.score[0]).toBe(RULES.health - RULES.hazardDamage);
     for (const i of [1, 2, 3])
-      for (let h = 0; h < RULES.lives; h++) {
+      for (let h = 0; h < 3; h++) {
         g.hit(i);
         g.hit(i); // (immune just after a hit: the second doesn't count)
         for (let k = 0; k < 150; k++) g.step(ks, 1 / 60);

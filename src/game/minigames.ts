@@ -7,8 +7,10 @@
  * at whoever's in front), the rules here as plain logic (no rendering: the screen,
  * src/screens/minigames.ts, draws them):
  *
- *   balloons   BALLOON BRAWL: three balloons each; a hit from any item pops one; with none
- *              left you're out. The last kart with balloons wins (or the most when the
+ *   brawl      CALDERA BRAWL (Balloon Brawl till Oct 31: Blake, "let's just have a health
+ *              bar or something. We don't need anything dragging behind us"): a health bar
+ *              each; a hit from any item knocks a third off it, the lava a quarter; at
+ *              none you're out. The last kart running wins (or the healthiest when the
  *              clock runs out).
  *   crumble    CRUMBLE RINK: the floor is ice tiles over a crevasse. A tile cracks when a
  *              kart drives over it; drive onto a cracked tile and it breaks and falls a
@@ -20,7 +22,7 @@
  */
 import type { DeviceReading } from "../core/input";
 
-export type MiniGameId = "balloons" | "crumble" | "stars";
+export type MiniGameId = "brawl" | "crumble" | "stars";
 
 export interface MiniGameInfo {
   id: MiniGameId;
@@ -35,11 +37,11 @@ export interface MiniGameInfo {
 
 export const MINIGAMES: MiniGameInfo[] = [
   {
-    id: "balloons",
-    name: "Balloon Brawl",
+    id: "brawl",
+    name: "Caldera Brawl",
     arena: "arena_bowl",
     kind: "battle",
-    blurb: "THREE BALLOONS EACH. EVERY HIT POPS ONE. LAST KART FLYING WINS.",
+    blurb: "EVERY HIT KNOCKS YOUR HEALTH DOWN, AND SO DOES THE LAVA. LAST KART RUNNING WINS.",
     seconds: 180,
   },
   {
@@ -239,7 +241,7 @@ export interface MiniGame {
   readonly arena: Arena;
   /** Each kart's score: balloons left, seconds on the ice, stars. */
   readonly score: number[];
-  /** Out of the game (Balloon Brawl, Crumble Rink). */
+  /** Out of the game (Caldera Brawl, Crumble Rink). */
   readonly out: boolean[];
   readonly stars: Star[];
   /** Crumble Rink's ice (undefined in the other games). */
@@ -253,7 +255,7 @@ export interface MiniGame {
   readonly news: { what: string; who: number }[];
   step(karts: Kart[], dt: number): void;
   /** A kart was hit by an item (not blocked by a shield). */
-  hit(i: number): void;
+  hit(i: number, damage?: number): void;
   /** Where a rival should drive now. */
   target(i: number, karts: Kart[]): { x: number; z: number; high?: boolean };
   /** Standings: kart indices, best first. */
@@ -272,7 +274,11 @@ function rng(seed: number) {
 }
 
 export const RULES = {
-  lives: 3,
+  /** Caldera Brawl: everyone's health, what a hit takes off it, and what the lava (or a
+   * fall) does. */
+  health: 100,
+  hitDamage: 34,
+  hazardDamage: 25,
   hitImmuneSec: 2,
   // Crumble Rink: thin ice. The first kart over a tile cracks it; driving onto a cracked
   // tile breaks it (it falls a moment later: keep going and you're across).
@@ -300,7 +306,7 @@ export function createMiniGame(
   seed = 1,
 ): MiniGame {
   const rand = rng(seed);
-  const score = new Array<number>(karts).fill(info.id === "balloons" ? RULES.lives : 0);
+  const score = new Array<number>(karts).fill(info.id === "brawl" ? RULES.health : 0);
   const out = new Array<boolean>(karts).fill(false);
   const immune = new Array<number>(karts).fill(0);
   const stars: Star[] = [];
@@ -367,7 +373,7 @@ export function createMiniGame(
       clock -= dt;
       played += dt;
       for (let i = 0; i < karts; i++) immune[i] = Math.max(0, immune[i]! - dt);
-      if (info.id === "balloons") {
+      if (info.id === "brawl") {
         const left = out.map((o, i) => (o ? -1 : i)).filter((i) => i >= 0);
         if (left.length <= 1) winner = left[0] ?? best()[0];
       } else if (info.id === "crumble" && ice) {
@@ -477,12 +483,12 @@ export function createMiniGame(
       }
       if (winner !== undefined) say("over", winner);
     },
-    hit(i) {
+    hit(i, damage = RULES.hitDamage) {
       if (winner !== undefined || immune[i]! > 0) return;
       immune[i] = RULES.hitImmuneSec;
-      if (info.id === "balloons") {
+      if (info.id === "brawl") {
         if (out[i]) return;
-        score[i] = Math.max(0, score[i]! - 1);
+        score[i] = Math.max(0, score[i]! - damage);
         say("pop", i);
         if (score[i] === 0) {
           out[i] = true;
@@ -539,7 +545,7 @@ export function createMiniGame(
         }, undefined);
         return pick ?? { x: 0, z: 0 };
       }
-      // Balloon Brawl: the nearest kart still in (on the same level counts for more).
+      // Caldera Brawl: the nearest kart still in (on the same level counts for more).
       const rivals = ks
         .map((o, j) => ({ ...o, j, high: onDeck(arena, o) }))
         .filter((o) => o.j !== i && !out[o.j]);

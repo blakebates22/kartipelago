@@ -148,7 +148,14 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
               // By the levels (up a ramp to the deck, round it, off it), round what's in
               // the way.
               const w = waypoint(g.arena, k, tg);
-              const c = clearLine(k, w.x, w.z, (x, z, y) => live!.kartFits(x, z, y));
+              // (Lava's as good as a wall to them: Caldera Keep's moat.)
+              const ground = live.entrants[0]!.ground;
+              const c = clearLine(
+                k,
+                w.x,
+                w.z,
+                (x, z, y) => live!.kartFits(x, z, y) && ground.at(x, z, y + 3).surface !== "lava",
+              );
               return seek(box.minds[i]!, k, c.x, c.z, dt);
             },
             fire(i, k) {
@@ -163,7 +170,7 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
             },
             // (Burnt in Caldera Keep's moat, or fell off: it costs you, like a hit.)
             onHazard(i) {
-              box.g?.hit(i);
+              box.g?.hit(i, RULES.hazardDamage);
             },
           },
         })
@@ -244,16 +251,31 @@ function arenaView(session: Session, g: MiniGame) {
     depthWrite: false,
   });
   made.push(shadowMat);
-  // Balloons over each kart (Balloon Brawl): one per life.
-  const balloonGeo = geo(new THREE.SphereGeometry(0.45, 10, 8));
-  const lives = session.entrants.map((_, i) => {
-    const m = mat(KART_COLORS[i % 4]!, 0.3);
-    return [0, 1, 2].map(() => {
-      const b = new THREE.Mesh(balloonGeo, m);
-      group.add(b);
-      return b;
+  // A health bar over each rival (Caldera Brawl; Blake, Oct 31: "a health bar or
+  // something. We don't need anything dragging behind us"): a dark frame, the health in
+  // the kart's colour, always facing you. (Yours is on the board.)
+  const sprite = (color: string, opacity: number, order: number) => {
+    // (The same size on screen however near or far: a nameplate, not a thing in the world.)
+    const m = new THREE.SpriteMaterial({
+      color,
+      transparent: true,
+      opacity,
+      depthTest: false,
+      sizeAttenuation: false,
     });
-  });
+    made.push(m);
+    const s = new THREE.Sprite(m);
+    s.renderOrder = order;
+    s.center.set(0, 0.5);
+    group.add(s);
+    return s;
+  };
+  const BAR_W = 0.12;
+  const BAR_H = 0.018;
+  const bars = session.entrants.map((_, i) => ({
+    back: sprite("#1a1210", 0.75, 10),
+    fill: sprite(KART_COLORS[i % 4]!, 1, 11),
+  }));
   // The ice (Crumble Rink): a hexagonal slab per tile; cracking ones shiver and darken,
   // gone ones drop away into the crevasse.
   let tiles: THREE.InstancedMesh | undefined;
@@ -290,14 +312,19 @@ function arenaView(session: Session, g: MiniGame) {
     update(t: number) {
       session.entrants.forEach((e, i) => {
         const k = e.state;
-        lives[i]!.forEach((b, j) => {
-          b.visible = g.info.id === "balloons" && j < g.score[i]!;
-          b.position.set(
-            k.x + Math.sin(t * 2 + j * 2.1) * 0.5 + (j - 1) * 0.6,
-            k.y + 3.2 + j * 0.25 + Math.sin(t * 3 + j) * 0.1,
-            k.z + Math.cos(t * 2 + j * 2.1) * 0.5,
-          );
-        });
+        const bar = bars[i]!;
+        const show = g.info.id === "brawl" && i > 0 && !g.out[i];
+        bar.back.visible = bar.fill.visible = show;
+        if (show) {
+          const f = Math.max(0, g.score[i]!) / RULES.health;
+          bar.back.position.set(k.x, k.y + 3.0, k.z);
+          bar.back.center.set(0.5, 0.5);
+          bar.back.scale.set(BAR_W + BAR_H * 0.6, BAR_H * 1.6, 1);
+          bar.fill.position.set(k.x, k.y + 3.0, k.z);
+          // (Left-aligned: the sprite's centre at its left end, offset by half the bar.)
+          bar.fill.center.set(0.5 / Math.max(0.01, f), 0.5);
+          bar.fill.scale.set(BAR_W * Math.max(0.01, f), BAR_H, 1);
+        }
         if (ice && g.out[i] && !gone[i]) {
           gone[i] = true;
           e.mesh.visible = false;
@@ -379,7 +406,7 @@ function minigamePlay(
   let over: VMenu | undefined;
   const names = session.entrants.map((e, i) => (i === 0 ? "YOU" : e.name.toUpperCase()));
   const label = (v: number) =>
-    info.id === "balloons" ? `${v} LEFT` : info.id === "crumble" ? "ON THE ICE" : `${v}`;
+    info.id === "brawl" ? `${Math.ceil(v)}` : info.id === "crumble" ? "ON THE ICE" : `${v}`;
   const finish = () => {
     const won = g.winner === 0;
     over = new VMenu(
@@ -425,7 +452,7 @@ function minigamePlay(
       const ks = session.entrants.map((e) => e.state);
       const before = g.winner;
       g.step(ks, dt);
-      // (Out of Balloon Brawl: your kart stops.)
+      // (Out of Caldera Brawl: your kart stops.)
       if (g.out[0]) ks[0]!.speed *= 0.9;
       for (const n of g.news) {
         if (n.what === "pop" && n.who === 0) game.sounds.error();
@@ -466,11 +493,17 @@ function minigamePlay(
           color: dead ? "#8a8a8a" : KART_COLORS[i % 4],
           outline: PAL.shadow,
         });
-        ui.text(dead ? "OUT" : label(g.score[i]!), 6 + w - 10, 22 + i * 11, {
-          color: dead ? "#8a8a8a" : PAL.cream,
-          outline: PAL.shadow,
-          align: "right",
-        });
+        if (info.id === "brawl" && !dead) {
+          // A health bar for each, in their colour.
+          const f = Math.max(0, g.score[i]!) / RULES.health;
+          ui.rect(6 + w - 62, 22 + i * 11, 54, 7, "#1a1210");
+          ui.rect(6 + w - 61, 23 + i * 11, 52 * f, 5, f < 0.34 ? PAL.coral : KART_COLORS[i % 4]!);
+        } else
+          ui.text(dead ? "OUT" : label(g.score[i]!), 6 + w - 10, 22 + i * 11, {
+            color: dead ? "#8a8a8a" : PAL.cream,
+            outline: PAL.shadow,
+            align: "right",
+          });
       });
       const c = Math.max(0, g.clock);
       ui.text(`${Math.floor(c / 60)}:${String(Math.floor(c % 60)).padStart(2, "0")}`, ui.W / 2, 8, {

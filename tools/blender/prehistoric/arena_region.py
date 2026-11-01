@@ -7,7 +7,7 @@
 #
 #   python tools/blender/prehistoric/arena_region.py <bowl|docks|rink|stars>
 #
-#   bowl   Caldera Keep (Balloon Brawl): a castle in a crater, a lava moat round it (Oct
+#   bowl   Caldera Keep (Caldera Brawl): a castle in a crater, a lava moat round it (Oct
 #          31, Blake picked "A": three heights to fight on). The outer bailey, the round
 #          curtain wall's walk (four ramps up its outer face, two up its inner), four
 #          gates through it into the courtyard, the keep in the middle (a tunnel through
@@ -174,10 +174,14 @@ def main():
     # Where the karts start: round the ring, facing in (on the outer floor, two-storey).
     for k in range(8):
         a = k * math.tau / 8 + 0.2 + (math.pi / 8 if TWO else 0.0)
+        if AID == "bowl":
+            a = k * math.tau / 8 + math.pi / 8  # (clear of the gates' towers)
         sr = 18.0 if AID == "rink" else (RING + DECK_W / 2 + 12.0 if TWO else RING - 6.0)
         x, y = sr * math.cos(a), sr * math.sin(a)
         g = c.game(x, y, ground(x, y))
-        c.entity("arena_spawn", x=round(g[0], 2), z=round(g[2], 2), heading=round(math.atan2(-x, y), 3), index=k)
+        # Facing in; in Caldera Keep, round the bailey (anticlockwise), not at the wall.
+        hd = math.atan2(-math.sin(a), -math.cos(a)) if AID == "bowl" else math.atan2(-x, y)
+        c.entity("arena_spawn", x=round(g[0], 2), z=round(g[2], 2), heading=round(hd, 3), index=k)
     # Item balloons round the ring and nearer the middle.
     n = 0
     for k in range(10 if not TWO else 6):
@@ -195,7 +199,7 @@ def main():
             c.entities.append({"id": "bal_g%02d" % k, "type": "balloon", "route": "ground", "at": round(math.tau * rg * (k + 0.5) / 8, 1),
                                "across": 0.0, "color": ("red", "blue", "green", "yellow", "rainbow")[(k + 2) % 5]})
     BUILD[AID](c, ground, taken)
-    c.entity("arena", game={"bowl": "balloons", "docks": "smugglers", "rink": "crumble", "stars": "stars"}[AID],
+    c.entity("arena", game={"bowl": "brawl", "docks": "smugglers", "rink": "crumble", "stars": "stars"}[AID],
              radius=round(R - 8.0, 1))
     kit.paint.shade_roads(c.pieces, 0.3)
     c.checkpoints(height=12.0)
@@ -276,6 +280,26 @@ def two_levels(c, ground, taken):
     del g
 
 
+def ring_wall(c, name, r0, r1, z0, z1, skip, mat, n=96):
+    """A ring of wall between radii r0 and r1, z0 to z1, but where skip(angle)."""
+    bm = kit.bmesh.new()
+    for k in range(n):
+        a0, a1 = k * math.tau / n, (k + 1) * math.tau / n
+        if skip((a0 + a1) / 2):
+            continue
+        vs = []
+        for r in (r0, r1):
+            for a in (a0, a1):
+                for z in (z0, z1):
+                    vs.append(bm.verts.new((r * math.cos(a), r * math.sin(a), z)))
+        # (vs: [r0 a0 lo, r0 a0 hi, r0 a1 lo, r0 a1 hi, r1 a0 lo, r1 a0 hi, r1 a1 lo, r1 a1 hi])
+        for f in ((0, 2, 3, 1), (4, 5, 7, 6), (1, 3, 7, 5), (0, 4, 6, 2), (0, 1, 5, 4), (2, 6, 7, 3)):
+            bm.faces.new([vs[i] for i in f])
+    kit.bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01)
+    kit.bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    c.assign(c.mesh_object(name, bm, "Props", "both"), c.lib(*mat))
+
+
 def keep(c, ground, taken):
     """Caldera Keep's castle (Blake, Oct 31: "A"): the round curtain wall under the walk
     (the route's deck: solid stone under it, four gates through it), battlements along
@@ -291,23 +315,12 @@ def keep(c, ground, taken):
     gate_half = math.radians(7.5)
     near_gate = lambda a: min(abs(math.atan2(math.sin(a - g), math.cos(a - g))) for g in gates)  # noqa: E731
     # The curtain wall: solid from the floor to under the walk, but at the gates.
-    bm = kit.bmesh.new()
-    n = 96
-    for k in range(n):
-        a0, a1 = k * math.tau / n, (k + 1) * math.tau / n
-        if near_gate((a0 + a1) / 2) < gate_half:
-            continue
-        vs = []
-        for r in (wi, wo):
-            for a in (a0, a1):
-                for z in (F - 1.0, zt - 1.35):
-                    vs.append(bm.verts.new((r * math.cos(a), r * math.sin(a), z)))
-        # (vs: [ri a0 lo, ri a0 hi, ri a1 lo, ri a1 hi, ro a0 lo, ro a0 hi, ro a1 lo, ro a1 hi])
-        for f in ((0, 2, 3, 1), (4, 5, 7, 6), (1, 3, 7, 5), (0, 4, 6, 2), (0, 1, 5, 4), (2, 6, 7, 3)):
-            bm.faces.new([vs[i] for i in f])
-    kit.bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01)
-    kit.bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    c.assign(c.mesh_object("Curtain Wall", bm, "Props", "both"), c.lib(*stone))
+    ring_wall(c, "Curtain Wall", wi, wo, F - 1.0, zt - 1.35, lambda a: near_gate(a) < gate_half, stone)
+    # The moat's parapet: a low stone rail round its inner edge, broken in eight places
+    # (where you can be knocked in).
+    m0 = MOAT[0] - 1.2
+    ring_wall(c, "Moat Parapet", m0 - 0.5, m0 + 0.5, F - 1.0, F + 0.9,
+              lambda a: (a * 8 / math.tau + 0.5) % 1.0 < 0.14, ("basalt_block", "wall"), n=160)
     # The gates: their arches' piers either side, and a pair of towers out front.
     for k, g in enumerate(gates):
         for sd in (-1, 1):

@@ -56,8 +56,8 @@ export const KINGDOMS: Kingdom[] = [
     ],
     boss: { name: "Cinderjaw", track: "boss_prehistoric", speed: 1.0 },
     champion: { name: "Rex", look: "rex" },
-    // (Oct 31: Smugglers' Run ditched; Balloon Brawl here till its replacement's chosen.)
-    minigame: "balloons",
+    // (Oct 31: Smugglers' Run ditched; Caldera Brawl, the volcano's, here instead.)
+    minigame: "brawl",
     cave: "THE LOOKOUT CAVE",
     next: "snow",
     tunnel: "journey_gorge",
@@ -108,7 +108,7 @@ export const KINGDOMS: Kingdom[] = [
     ],
     boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.0 },
     champion: { name: "Raptor", look: "raptor" },
-    minigame: "balloons",
+    minigame: "brawl",
     cave: "THE SEA CAVE",
     next: "dragon",
     tunnel: "journey_cause",
