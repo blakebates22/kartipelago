@@ -321,15 +321,17 @@ export const REGIONS: Region[] = [
     packageId: "desert_region",
     ruinPackageId: "desert_region_ruin",
     // v4, the open Southwest (Blake, Oct 31; tools/blender/prehistoric/mesa_region.py): one
-    // open desert floor, its mesas and buttes on it, the road out along the Grand Canyon's
-    // rim, past Havasu's pools, through the boomtown, round Meteor Crater, by Scorchwind's
-    // rodeo arena, up the Ledge Road and over Sun Arch. (The positions are the build's.)
-    // A secret, for the way back: a sunken garden by the falls' side canyon, cut off by deep water the Beach Tool gets you over.
+    // open desert floor, its mesas and buttes on it. v4b (Blake, Nov 1: "spread the levels
+    // ... further apart", each its own region): the road down into the Grand Canyon onto
+    // its terrace, up to Havasu at its head, south over the open floor to the boomtown,
+    // down round Meteor Crater's spiral and out, by Scorchwind's rodeo arena, up the Ledge
+    // Road and over Sun Arch; zippers on the drives between. (The positions are the build's.)
+    // A secret, for the way back: a sunken garden below Havasu, cut off by deep water the Beach Tool gets you over.
     secret: {
       obstacle: "water",
       tool: "beach",
-      gate: { x: 324.01, z: -252.28, heading: -0.7278, width: 9 },
-      spot: { x: 330, z: -259 },
+      gate: { x: 431.01, z: -200.42, heading: -1.6172, width: 9 },
+      spot: { x: 440, z: -200 },
     },
     // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.
     cave: {
@@ -344,22 +346,22 @@ export const REGIONS: Region[] = [
     // In the trading post's square, facing east to the road.
     spawn: { x: -360, z: 40, heading: Math.PI / 2 },
     gateways: [
-      // At the Horseshoe Bend overlook on the Grand Canyon's rim.
-      { id: "canyon", track: "canyon_dash", x: 150.43, z: -307.99, radius: 6, heading: 3.1055 },
-      // Over Havasu's pools at the side canyon's end.
-      { id: "oasis", track: "oasis_haven", x: 336.74, z: -163.22, radius: 6, heading: -2.1156 },
-      // At the boomtown's street, by the railroad.
-      { id: "gulch", track: "dry_gulch", x: 260, z: 60.34, radius: 6, heading: 1.5423 },
-      // By the observatory on Meteor Crater's rim.
-      { id: "impact", track: "impact_depths", x: 188.94, z: 224.05, radius: 6, heading: -3.053 },
+      // Down in the Grand Canyon, in its south wall off the terrace.
+      { id: "canyon", track: "canyon_dash", x: 48.63, z: -272.73, radius: 6, heading: -2.6779 },
+      // On Havasu's rim over the falls' pool, at the canyon's head.
+      { id: "oasis", track: "oasis_haven", x: 370.66, z: -262.07, radius: 6, heading: -0.1116 },
+      // Off the boomtown's Main Street, west.
+      { id: "gulch", track: "dry_gulch", x: 262, z: 122.17, radius: 6, heading: 1.5565 },
+      // Down on Meteor Crater's floor, by the core.
+      { id: "impact", track: "impact_depths", x: 89.44, z: 322.61, radius: 6, heading: -2.1324 },
       // Scorchwind's lair: out of his rodeo arena's east gate.
       {
         id: "lair",
         track: "boss_desert",
-        x: 37.93,
-        z: 189.27,
+        x: 157.79,
+        z: 171.77,
         radius: 6,
-        heading: 1.465,
+        heading: 1.7579,
         boss: true,
         label: "SCORCHWIND'S LAIR",
       },
@@ -382,10 +384,10 @@ export const REGIONS: Region[] = [
         label: "THE DUST ROAD · TO TROPIC ISLES",
         to: "journey_dust",
         toPassage: "start",
-        x: -80,
+        x: -10,
         z: 444,
         radius: 8,
-        heading: 2.9791,
+        heading: 3.0108,
         ruinOnly: true,
         blocker: { kind: "drift", width: 13 },
         opensAfter: "desert",

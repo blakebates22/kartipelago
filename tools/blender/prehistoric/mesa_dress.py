@@ -168,7 +168,7 @@ def boomtown(c, ground, taken, ter):
     ground into town. Returns where the folk live (x, y)."""
     sc = _scene(c, ter)
     gs.protos(c)
-    runs = _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "town" and q.p.x > 200 and -140 < q.p.y < 100)
+    runs = _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "town" and q.p.x > 240 and -240 < q.p.y < 10)
     s0, s1 = max(runs, key=lambda r: r[1] - r[0])
     m = gs.Mesh()
     built = _row(c, sc, m, s0 + 4.0, s1 - 4.0, 1, WEST, ground, ter, taken, seed=1)
@@ -210,7 +210,7 @@ def boomtown(c, ground, taken, ter):
     # The water tower, behind the west row.
     q = c.at((s0 + s1) / 2 + 30.0)
     h = road_rot(q)
-    for off in (40.0, 48.0, 56.0):
+    for off in (30.0, 36.0, 42.0):
         x, y = q.p.x + math.sin(h) * off, q.p.y - math.cos(h) * off
         if taken.clear(x, y, 7.0) and _spread(ground, x, y, 6.0) < 2.0:
             gt.water_tower(c, sc, x, y, _lowest(ground, x, y, 6.0))
@@ -226,7 +226,7 @@ def boomtown(c, ground, taken, ter):
     return q.p.x, q.p.y
 
 
-BOOT_HILL = (196.0, 44.0, 15.0)  # Boot Hill: its middle and radius, out west of town
+BOOT_HILL = (196.0, -66.0, 15.0)  # Boot Hill: its middle and radius, out west of town over the railroad
 
 
 def boot_hill(c, sc, ground, ter, taken):
@@ -235,7 +235,7 @@ def boot_hill(c, sc, ground, ter, taken):
     gx, gy, R = BOOT_HILL
     z = sum(ground(gx + R * math.cos(t), gy + R * math.sin(t)) for t in [k * math.tau / 8 for k in range(8)]) / 8
     paint.grade(c, ter, gx, gy, 0.0, 2 * R + 2.0, 2 * R + 2.0, z, front=0.0)
-    gate_a = math.atan2(-40.0 - gy, 278.0 - gx)  # (toward Main Street)
+    gate_a = math.atan2(-100.0 - gy, 282.0 - gx)  # (toward Main Street)
     n = 14
     for k in range(n):
         am = (k + 0.5) * math.tau / n
@@ -266,7 +266,7 @@ def boot_hill(c, sc, ground, ter, taken):
     taken.add(gx, gy, R + 2.0)
 
 
-RAIL = [(236.0, -262.0), (230.0, -190.0), (224.0, -120.0), (222.0, -40.0), (224.0, 20.0), (230.0, 64.0)]
+RAIL = [(228.0, -205.0), (222.0, -130.0), (220.0, -60.0), (224.0, 0.0), (232.0, 46.0)]
 
 
 def railroad(c, ground, taken):
@@ -342,11 +342,10 @@ def canyon_outpost(c, ground, taken, ter):
     over the road with its banners and amber board, banner poles down both sides, braziers
     by the arch, the windmill, the lookout tower and the water tank back from the rim,
     crates; and a timber guard rail along the rim wherever the road runs by the drop."""
-    gx, gy = M.GATES["canyon"]
-    smp, _ = c.nearest(gx, gy)
+    # (At the top of the shelf road down into the canyon: v4b.)
+    smp, _ = c.nearest(*M.ROUTE[7][:2])
     sg = smp.s
-    # The arch, 40 m before the gateway.
-    q = c.at(sg - 40.0)
+    q = c.at(sg - 6.0)
     timber_arch(c, ground, q, "Outpost Arch", h=10.0)
     for sd in (-1, 1):
         p = q.side(sd * (q.w / 2 + 3.4)) - q.t * 2.5
@@ -354,7 +353,7 @@ def canyon_outpost(c, ground, taken, ter):
         g = c.game(p.x, p.y, ground(p.x, p.y) + 2.4)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
     # Banner poles down both sides, every 20 m round the gateway.
-    for k, ds in enumerate(range(-100, 61, 20)):
+    for k, ds in enumerate(range(-120, 1, 20)):
         q = c.at(sg + ds)
         for sd in (-1, 1):
             p = q.side(sd * (q.w / 2 + 3.0))
@@ -363,9 +362,9 @@ def canyon_outpost(c, ground, taken, ter):
                         rot=road_rot(q) + (math.pi if sd < 0 else 0.0), coll="Village", role="both")
     # The windmill, the water tank, the lookout tower and crates, away from the rim.
     away = 1 if M.canyon_d(*(c.at(sg).side(20.0).xy)) > M.canyon_d(*(c.at(sg).side(-20.0).xy)) else -1
-    for proto, ds, off, room in ((cp.windmill_tower(c), -70.0, 24.0, 5.0), (cp.water_tank(c), -46.0, 18.0, 4.0),
-                                 (cp.lookout_tower(c), 30.0, 22.0, 5.0), (cp.crates(c, 0), -20.0, 11.0, 2.0),
-                                 (cp.crates(c, 1), 12.0, 12.0, 2.0)):
+    for proto, ds, off, room in ((cp.windmill_tower(c), -80.0, 24.0, 5.0), (cp.water_tank(c), -56.0, 18.0, 4.0),
+                                 (cp.lookout_tower(c), -104.0, 22.0, 5.0), (cp.crates(c, 0), -28.0, 11.0, 2.0),
+                                 (cp.crates(c, 1), -14.0, 12.0, 2.0)):
         q = c.at(sg + ds)
         for extra in (0.0, 6.0, 12.0, -4.0):
             p = q.side(away * (q.w / 2 + off + extra))
@@ -545,9 +544,8 @@ def crater_camp(c, ground, taken, ter):
     surveyors' camp (tents, a scope, crates) back from the rim."""
     cx, cy, R, _rim, _fz = M.CRATER
     gx, gy = M.GATES["impact"]
-    smp, _ = c.nearest(gx, gy)
-    sg = smp.s
-    q = c.at(sg - 36.0)
+    smp, _ = c.nearest(*M.ROUTE[29][:2])  # (over the crater's east rim: where the road goes down into it)
+    q = c.at(smp.s - 14.0)
     timber_arch(c, ground, q, "Impact Arch", h=9.0, banners=False)  # (not "Crater ...": tests/hitboxes reads that as a crate)
     n = 0
     for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "crater"):
@@ -568,8 +566,9 @@ def crater_camp(c, ground, taken, ter):
         if tents >= 3:
             break
         a = rng.uniform(0, math.tau)
-        r = rng.uniform(22.0, 70.0)
-        x, y = gx + r * math.cos(a), gy + r * math.sin(a)
+        r = rng.uniform(14.0, 50.0)
+        ox, oy, _r = M.OBSERVATORY
+        x, y = ox + r * math.cos(a), oy + r * math.sin(a)
         if math.hypot(x - cx, y - cy) < R + 10.0 or not _off_roads(c, x, y, 6.0) or not taken.clear(x, y, 5.0):
             continue
         if _spread(ground, x, y, 3.5) > 2.5:
@@ -587,7 +586,7 @@ def crater_camp(c, ground, taken, ter):
 # ------------------------------------------------------------------ the roads
 
 
-def chevrons(c, ground, taken, skip=("town", "post", "pueblo")):
+def chevrons(c, ground, taken, skip=("town", "post", "pueblo", "crater")):
     """Amber chevron boards round the outside of every big bend (the heading turning more
     than 30 degrees over 40 m), every 12 m through it, facing the drivers coming in."""
     n = 0
@@ -633,13 +632,13 @@ def telegraph_pole(c):
     return c.proto(name, build) and name
 
 
-def telegraph(c, ground, taken, looks=("canyon", "falls", "crater", "show")):
+def telegraph(c, ground, taken, looks=("canyon", "falls", "show", "pueblo")):
     """Telegraph poles down the long open stretches, on the left of the road 6 m off it,
     every 34 m, the wires strung pole to pole with a sag (broken where a pole can't stand)."""
     pole = telegraph_pole(c)
     m = gs.Mesh()
     n = 0
-    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) in looks and q.p.z < 16.0):
+    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) in looks and 8.0 < q.p.z < 16.0):
         if s1 - s0 < 80.0:
             continue
         last = None
@@ -892,3 +891,129 @@ def post_store(c, ground, taken, ter):
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
     taken.add(cx, cy, 11.0)
     return True
+
+
+# ------------------------------------------------------------------ the crater's depths
+
+
+def crater_depths(c, ground, taken):
+    """Down in the crater (Blake, Nov 1: "drive down into the actual crater ... encorporate
+    themes from this level"): Impact Depths' worlds on the way down its spiral, as the
+    course's terraces: the crystal wall on the upper south wall (great clusters of aqua,
+    amethyst and rose crystal, flaring crystals at the road's edge), the Lost World's
+    jungle ledge lower down (cycads, tree ferns, horsetails, glowing fungi), and the core
+    on its floor (the meteorite in a ring of lava, black lava spires, glowing rocks); the
+    climb out up its north wall through black volcanic rock."""
+    import aurora_props as ap
+    import volcano_props as vp
+
+    cx, cy, R, _rim, _fz = M.CRATER
+    AQUA, AMETHYST, ROSE = "crystal_aqua", "crystal_amethyst", "crystal_rose"
+
+    def zone(x, y):
+        a = math.degrees(math.atan2(y - cy, x - cx))
+        r = math.hypot(x - cx, y - cy)
+        if r < 20.0:
+            return "core"
+        if -100.0 <= a <= 10.0:
+            return "crystal"
+        if a < -100.0 or a > 150.0:
+            return "jungle"
+        return "volcanic"
+
+    def ring_pts(n, rmin, rmax, seed, room, want):
+        rng = random.Random(seed)
+        out = []
+        for _ in range(n * 30):
+            if len(out) >= n:
+                break
+            a = rng.uniform(0, math.tau)
+            r = rng.uniform(rmin, rmax)
+            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+            if zone(x, y) != want or not _off_roads(c, x, y, room) or not taken.clear(x, y, room * 0.8):
+                continue
+            out.append((x, y))
+            taken.add(x, y, room * 0.8)
+        return out
+
+    big = [ap.spire_cluster(c, k, 16.0 + 5 * k, mat=(AQUA, AMETHYST, ROSE)[k], accent=(AMETHYST, ROSE, AQUA)[k]) for k in range(3)]
+    small = [vp.crystals(c, m, k) for k, m in enumerate((AQUA, AMETHYST, ROSE))]
+    nb = 0
+    for k, (x, y) in enumerate(ring_pts(9, 30.0, R + 6.0, 31, 6.0, "crystal")):
+        c.place(big[k % 3], x, y, _lowest(ground, x, y, 2.0) - 1.5, rot=rnd(k * 3.1) * math.tau, scale=0.45 + 0.2 * rnd(k * 1.7),
+                coll="Crater", role="visual")
+        nb += 1
+    for k, (x, y) in enumerate(ring_pts(26, 24.0, R + 4.0, 37, 2.5, "crystal")):
+        c.place(small[k % 3], x, y, _lowest(ground, x, y, 1.0) - 0.3, rot=k, scale=0.4 + 0.3 * rnd(k), coll="Crater", role="visual")
+    # The flaring crystals at the road's edge down the crystal wall, by turns either side.
+    for s0, s1 in _runs(c, lambda q: math.hypot(q.p.x - cx, q.p.y - cy) < R and zone(q.p.x, q.p.y) == "crystal"):
+        s, k = s0 + 8.0, 0
+        while s < s1:
+            q = c.at(s)
+            p = q.side((1 if k % 2 else -1) * (q.w / 2 + 2.2))
+            if _off_roads(c, p.x, p.y, 0.6):
+                z = _lowest(ground, p.x, p.y, 0.6)
+                c.place(small[k % 2], p.x, p.y, z - 0.3, rot=k, scale=0.35, coll="Crater", role="visual")
+                g = c.game(p.x, p.y, z + 1.4)
+                c.entity("shimmer", x=g[0], y=g[1], z=g[2], size=1.4, color="#5ae8ff" if k % 2 else "#d27aff")
+            s += 18.0
+            k += 1
+    # The jungle ledge.
+    nj = 0
+    plants = [ip.cycad(c, k) for k in range(3)] + [ip.tree_fern(c, k) for k in range(2)] + [ip.horsetails(c, k) for k in range(2)]
+    for k, (x, y) in enumerate(ring_pts(34, 20.0, R + 6.0, 51, 3.0, "jungle")):
+        c.place(plants[k % len(plants)], x, y, _lowest(ground, x, y, 0.8) - 0.2, rot=rnd(k) * 6.28, scale=0.8 + 0.4 * rnd(k * 2.3),
+                coll="Crater", role="visual")
+        nj += 1
+    for k, (x, y) in enumerate(ring_pts(6, 20.0, R, 63, 4.0, "jungle")):
+        c.place(ip.giant_fungi(c, k % 3), x, y, _lowest(ground, x, y, 1.0) - 0.2, rot=k, scale=0.6, coll="Crater", role="both")
+    # The core: the meteorite in its ring of lava, black spires round it.
+    bm = bmesh.new()
+    n = 40
+    zc = ground(cx, cy)
+    inner = [bm.verts.new((cx + 9.0 * math.cos(k * math.tau / n), cy + 9.0 * math.sin(k * math.tau / n), zc + 0.08)) for k in range(n)]
+    outer = [bm.verts.new((cx + (13.5 + 0.8 * math.sin(k * 1.7)) * math.cos(k * math.tau / n),
+                           cy + (13.5 + 0.8 * math.sin(k * 1.7)) * math.sin(k * math.tau / n), zc + 0.08)) for k in range(n)]
+    for k in range(n):
+        bm.faces.new((inner[k], outer[k], outer[(k + 1) % n], inner[(k + 1) % n]))
+    ob = c.mesh_object("Core Lava Ring", bm, "Crater", "visual")
+    c.assign(ob, c.lib("lava_flow", "wall"))
+    for k in range(5):
+        a = k * math.tau / 5 + 0.4
+        x, y = cx + 16.5 * math.cos(a), cy + 16.5 * math.sin(a)
+        if _off_roads(c, x, y, 2.5):
+            c.place(ip.lava_spire(c, k % 3, 7.0 + 2.0 * (k % 3)), x, y, _lowest(ground, x, y, 1.2) - 0.6, rot=a, coll="Crater", role="both")
+    taken.add(cx, cy, 18.0)
+    # The volcanic north wall: black rocks with glowing fissures.
+    for k, (x, y) in enumerate(ring_pts(14, 24.0, R + 4.0, 83, 3.0, "volcanic")):
+        c.place(ip.rock(c, "black_rock", k % 3, 2.0 + (k % 3), glow="fissure_glow"), x, y, _lowest(ground, x, y, 1.0) - 0.4, rot=k,
+                coll="Crater", role="both")
+    print("crater depths: %d crystal clusters, %d jungle plants" % (nb, nj))
+
+
+# ------------------------------------------------------------------ the zippers
+
+
+def zippers(c, anchors):
+    """Zippers on the long drives between the worlds (Blake, Nov 1: "it also feels long to
+    go through ... putting zippers throughout the overworld in strategic places,
+    specifically between level areas"): between each pair of places along the lap (x, y),
+    one every 110 m or so of the stretch, each on its straightest bit."""
+    ss = sorted(c.nearest(x, y)[0].s for x, y in anchors)
+    ss.append(ss[0] + c.length)
+    n = 0
+    for a, b in zip(ss, ss[1:]):
+        gap = b - a
+        k = int(gap // 110.0)
+        for j in range(k):
+            want = a + gap * (j + 1) / (k + 1)
+            best, bs = None, want
+            for ds in range(-24, 25, 4):
+                s = want + ds
+                q0, q1 = c.at(s - 12.0), c.at(s + 12.0)
+                turn = abs((math.atan2(q1.t.y, q1.t.x) - math.atan2(q0.t.y, q0.t.x) + math.pi) % math.tau - math.pi)
+                if best is None or turn < best:
+                    best, bs = turn, s
+            c.zipper(bs % c.length, 0.0)
+            n += 1
+    print("zippers: %d" % n)

@@ -66,6 +66,18 @@ def classify(c, n, info):
         for top, rock in BEDS:
             if c.z < top + 1.5 * math.sin(c.x / 17.0):
                 return (rock, "wall")
+    cx, cy, R, _rim, _cz = M.CRATER
+    if math.hypot(c.x - cx, c.y - cy) < R - 2.0:
+        # (Down in the crater, Impact Depths' worlds: the crystal wall, the jungle ledge,
+        # black volcanic rock round the core: v4b.)
+        a = math.degrees(math.atan2(c.y - cy, c.x - cx))
+        if math.hypot(c.x - cx, c.y - cy) < 20.0:
+            return ("black_rock", "dirt")
+        if -100.0 <= a <= 10.0:
+            return ("crystal_rock", "dirt")
+        if a < -100.0 or a > 150.0:
+            return ("moss_rock", "dirt")
+        return ("black_rock", "dirt")
     if n.z < 0.85:
         return ("talus", "dirt")
     fx, fy, fr, fz = M.FALLS
@@ -119,7 +131,7 @@ def main():
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][1], trail)
     if RUIN:
         (ax, ay), (bx, by), _z, _hw = M.PASS_WAYS[1]
-        smp, _ = c.nearest(ax, ay)
+        smp, _ = c.nearest(*M.DUST_FROM)
         first = pb.line(natural, (smp.p.x, smp.p.y), (ax, ay), z0=smp.p.z, c=c)
         rest = pb.line(natural, (ax, ay), (bx, by + 8.0), z0=first[-1][2], c=c)
         c.side_road("Dust Road", first + rest[1:], "dash_road", "road", **trail)
@@ -147,13 +159,14 @@ def main():
     town_at = md.boomtown(c, ground, taken, ter)
     boomtown(c, ground, taken, town_at)
     crater(c, ground, taken)
+    md.crater_depths(c, ground, taken)
     md.crater_camp(c, ground, taken, ter)
     showground(c, ground, taken)
     ledge(c, ground, taken)
     md.chevrons(c, ground, taken)
     md.telegraph(c, ground, taken)
     # (Folk along the roads, far from the towns'.)
-    paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (268.0, -40.0), (107.0, -284.0), (-20.0, -128.0)], 4)
+    paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (282.0, -120.0), (110.0, -335.0), (100.0, -168.0)], 4)
     puzzle_kit.pen(c, "return", "Old Well", *M.CAVE, pb.to_road(c, *M.CAVE), 11.0, 4.5, ("adobe", "wall"), ground(*M.CAVE),
                    height=6.0)
     puzzle_kit.pen(c, "secret", "Sunken Garden", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("oasis_stone", "wall"),
@@ -163,6 +176,9 @@ def main():
     if RUIN:
         c.entity("ashfall", rate=8, radius=40)  # (dust on the wind)
 
+    # Zippers on the long drives between the worlds (Blake, Nov 1).
+    md.zippers(c, [M.POST[:2], M.ALCOVE[:2], M.ROUTE[7][:2], M.ROUTE[19][:2], M.ROUTE[21][:2], M.ROUTE[25][:2], M.ROUTE[27][:2],
+                   M.ROUTE[29][:2], M.ROUTE[41][:2], M.ROUTE[43][:2], M.ROUTE[46][:2], M.ARCH])
     c.start_line()
     gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
@@ -386,6 +402,8 @@ def crater(c, ground, taken):
         a = rng.uniform(0, math.tau)
         r = rng.uniform(4.0, R * 0.8)
         x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+        if not paint.road_clear(c, x, y, 2.0):
+            continue
         c.place(ip.glass_shards(c, k % 2), x, y, ground(x, y) - 0.3, rot=a, role="visual")
     c.place(ip.meteorite(c, 0, size=8.0), cx, cy, ground(cx, cy) - 1.5)
     g = c.game(ox + 8.0, oy, oz)
@@ -412,7 +430,7 @@ def showground(c, ground, taken):
     for k in range(9):
         a = math.pi / 2 + (k - 4) * 0.14
         x, y = ax + (ar + 13.0) * math.cos(a), ay + (ar + 13.0) * math.sin(a)
-        box(c, "Stand Roof Post %d" % k, x, y, 0.15, 0.15, z - 0.3, z + 8.0, ("weathered_timber", "wall"), role="visual")
+        box(c, "Stand Roof Post %d" % k, x, y, 0.15, 0.15, z - 0.3, z + 8.0, ("weathered_timber", "wall"))  # (solid)
         x2, y2 = ax + (ar + 8.5) * math.cos(a), ay + (ar + 8.5) * math.sin(a)
         box(c, "Stand Roof %d" % k, x2, y2, 5.2, (ar + 8.5) * 0.075, z + 7.6, z + 8.0, ("candy_stripe" if k % 2 else "awning_red", "wall"),
             rot=a, role="visual")

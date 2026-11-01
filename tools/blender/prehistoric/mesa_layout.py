@@ -61,28 +61,34 @@ MESAS = [
 BUTTES = [
     (-120.0, -120.0, 20.0, 96.0),
     (-150.0, -160.0, 14.0, 84.0),
-    (210.0, -190.0, 18.0, 110.0),
+    (214.0, -172.0, 18.0, 110.0),
     (130.0, 150.0, 16.0, 88.0),
     (-370.0, 130.0, 13.0, 70.0),
     (270.0, 130.0, 12.0, 76.0),
 ]
 # The Canyon: its line, the river's height at its foot, its rim's half width.
+# (v4b, Blake, Nov 1: "spread the levels ... way further apart ... each area its own
+# region", "the canyon dash to be more immersive": wider, its south wall stepping down
+# to a broad terrace the road drops onto, the inner gorge and the river below it; it runs
+# from Havasu's falls at its head, east, out west past the pueblo.)
 CANYON = [(-160.0, 330.0), (-60.0, 320.0), (40.0, 300.0), (110.0, 330.0), (150.0, 372.0), (190.0, 330.0), (240.0, 318.0),
-          (300.0, 324.0), (352.0, 302.0), (384.0, 250.0), (396.0, 204.0)]
+          (300.0, 324.0), (352.0, 318.0), (392.0, 304.0)]
 CANYON_DEPTH = -34.0  # the river's height
-CANYON_HW = 34.0
-# The Falls' basin at the side canyon's end: x, y, radius, pool height.
-FALLS = (398.0, 196.0, 28.0, -22.0)
-# The Crater: x, y, rim radius, rim height above the floor, floor height.
-CRATER = (190.0, -300.0, 78.0, 12.0, -18.0)
+CANYON_HW = 46.0
+TERRACE = -6.5  # the canyon's terrace (the road's, through Canyon Dash's stretch)
+# The Falls' basin at the canyon's head (Havasu, Oasis Haven): x, y, radius, pool height.
+FALLS = (410.0, 300.0, 26.0, -18.0)
+# The Crater: x, y, rim radius, rim height above the floor, floor height. (v4b: shallower,
+# so the road can drive down into it and back out: Blake, Nov 1.)
+CRATER = (110.0, -335.0, 64.0, 8.0, 6.0)
 # The Pueblo's alcove in Pueblo Mesa's south face: x, y, width, depth (into the cliff).
 ALCOVE = (-250.0, 166.0, 70.0, 26.0)
 # The Showground: the arena's middle and radius.
-ARENA = (-20.0, -170.0, 34.0)
+ARENA = (100.0, -168.0, 34.0)  # (v4b: between the crater and Sky Mesa, the road by its east gate)
 # The Trading Post: its square.
 POST = (-360.0, -40.0, 22.0)
 # The Boomtown's street (x, y, length, heading).
-TOWN = (278.0, -40.0, 80.0, math.pi / 2)
+TOWN = (280.0, -125.0, 90.0, math.pi / 2)
 
 
 def _mesa(h, x, y, m):
@@ -138,14 +144,15 @@ def _canyon(h, x, y):
     d = canyon_d(x, y)
     if d > CANYON_HW + 4.0:
         return h
-    # Stepped walls: a sheer upper band, a bench, the inner gorge, the river.
+    # Stepped walls (Canyon Dash's): a sheer upper wall, the broad terrace, the inner
+    # gorge, the river far below.
     u = d / CANYON_HW
-    if u > 0.78:
-        z = lerp(CANYON_DEPTH * 0.18, FLOOR, smooth((u - 0.78) / 0.24))
-    elif u > 0.5:
-        z = lerp(CANYON_DEPTH * 0.42, CANYON_DEPTH * 0.18, smooth((u - 0.5) / 0.28) ** 0.5)
+    if u > 0.8:
+        z = lerp(TERRACE, FLOOR, smooth((u - 0.8) / 0.22))
+    elif u > 0.42:
+        z = TERRACE + 0.4 * math.sin(x / 9.0) * math.cos(y / 7.0)
     elif u > 0.24:
-        z = lerp(CANYON_DEPTH * 0.92, CANYON_DEPTH * 0.42, smooth((u - 0.24) / 0.26))
+        z = lerp(CANYON_DEPTH * 0.92, TERRACE, smooth((u - 0.24) / 0.18) ** 0.6)
     else:
         z = CANYON_DEPTH - 0.6
     return min(h, z)
@@ -189,55 +196,76 @@ ROUTE = [
     (-290.0, 110.0, None),  # 2: along the pueblo mesa's foot, the alcove up on the right
     (-230.0, 128.0, None),
     (-150.0, 138.0, None),
-    (-66.0, 190.0, None),  # 5: up to the canyon's rim
-    (-40.0, 262.0, None),
-    (30.0, 248.0, None),  # 7: along the rim
-    (96.0, 270.0, None),
-    (150.0, 314.0, None),  # 9: Horseshoe overlook
-    (204.0, 268.0, None),
-    (256.0, 262.0, None),
-    (316.0, 250.0, None),
-    (340.0, 196.0, None),  # 13: the Falls, down at its pools on the right
-    (316.0, 140.0, None),
-    (282.0, 60.0, None),
-    (278.0, -20.0, None),  # 16: the Boomtown's street, Copper Mesa over it
-    (274.0, -100.0, None),
-    (264.0, -170.0, None),
-    (258.0, -236.0, None),  # 19: up onto the crater's rim
-    (190.0, -214.0, None),  # 20: along the rim, the observatory over the bowl
-    (116.0, -246.0, None),
-    (50.0, -214.0, None),  # 22: past the Showground
-    (96.0, -110.0, None),
-    (150.0, -30.0, None),  # 24: round Sky Mesa's east end, onto its ledge
-    (121.0, -3.0, 12.0),  # 25: the Ledge Road up its south cliff, west
+    (-100.0, 200.0, None),  # 5: out to the canyon's rim (clear of the pueblo mesa), Canyon Dash's outpost
+    (-86.0, 248.0, None),
+    (-78.5, 276.7, 10.0),  # 7: down the shelf road cut into its south wall
+    (-56.3, 276.3, 7.0),
+    (-30.0, 272.4, 4.0),
+    (-3.8, 268.4, 1.0),
+    (20.5, 264.9, -2.0),
+    (64.6, 281.2, -5.0),  # 12: along the terrace, the gorge and the river below
+    (112.0, 306.0, -5.4),
+    (150.0, 334.0, -5.4),  # 14: across the Horseshoe's neck
+    (196.2, 289.9, -3.5),  # 15: and up the shelf road out of it
+    (218.9, 282.8, 0.0),
+    (256.0, 278.8, 3.5),
+    (280.2, 279.6, 7.0),
+    (300.0, 274.0, 10.0),
+    (342.0, 252.0, None),  # 20: Havasu, its falls at the canyon's head
+    (392.0, 236.0, None),
+    (392.0, 160.0, None),
+    (334.0, 84.0, None),  # 23: south down the open floor (clear of Copper Mesa's talus)
+    (296.0, 10.0, None),
+    (284.0, -60.0, None),  # 25: the boomtown's street
+    (281.0, -140.0, None),
+    (276.0, -220.0, None),
+    (228.0, -286.0, None),
+    (176.5, -349.1, 18.0),  # 29: over the crater's east rim
+    (154.4, -372.3, 16.4),  # 30: down round its south wall
+    (127.1, -382.0, 14.6),
+    (102.5, -377.3, 12.6),
+    (86.2, -363.3, 10.6),
+    (79.9, -345.9, 8.8),
+    (82.4, -330.1, 7.2),  # 35: across its floor
+    (87.9, -319.5, 6.6),
+    (95.0, -309.0, 7.6),
+    (106.9, -299.1, 9.6),  # 38: up round its north wall
+    (125.0, -293.7, 12.2),
+    (141.0, -290.8, 15.0),
+    (158.1, -286.9, 18.0),  # 41: out over its rim, north-east
+    (182.0, -250.0, None),
+    (176.0, -195.0, None),  # 43: past the Showground
+    (162.0, -120.0, None),
+    (150.0, -30.0, None),  # 45: round Sky Mesa's east end, onto its ledge
+    (121.0, -3.0, 12.0),  # 46: the Ledge Road up its south cliff, west
     (82.0, -12.0, 17.6),
     (43.0, -22.0, 23.2),
     (4.0, -32.0, 28.6),
     (-34.0, -42.0, 33.0),
-    (-66.0, -16.0, 35.6),  # 30: over its west tip
+    (-66.0, -16.0, 35.6),  # 51: over its west tip
     (-90.0, 8.0, 36.0),
-    (-122.0, 14.0, 36.0),  # 32: over Sun Arch
-    (-160.0, 0.0, 36.0),  # 33: on Dawn Mesa
-    (-200.0, -34.0, 31.4),  # 34: its causeway down, west
+    (-122.0, 14.0, 36.0),  # 53: over Sun Arch
+    (-160.0, 0.0, 36.0),  # 54: on Dawn Mesa
+    (-200.0, -34.0, 31.4),  # 55: its causeway down, west
     (-236.0, -60.0, 26.2),
     (-276.0, -74.0, 20.4),
-    (-312.0, -70.0, 15.0),  # 37: and back into the post
+    (-312.0, -70.0, 15.0),  # 58: and back into the post
 ]
 ARCH = (-122.0, 14.0)  # Sun Arch: the road over it; the floor under it open
 ARCH_SPAN = (-108.0, 20.0, -140.0, 8.0)  # its ends (x0, y0, x1, y1) where the mesas' rims are
 
 # The worlds' gates (x, y): beside the road, each at its rock.
 GATES = {
-    "canyon": (150.0, 296.0),
-    "oasis": (347.0, 157.0),
-    "gulch": (248.0, -60.0),
-    "impact": (190.0, -236.0),
-    "lair": (26.0, -188.0),  # (out of the arena's east gate)
+    "canyon": (54.0, 262.0),  # (in the canyon's south wall, off the terrace)
+    "oasis": (372.0, 274.0),  # (on Havasu's rim over the falls' pool)
+    "gulch": (250.0, -122.0),  # (off Main Street, west)
+    "impact": (99.6, -329.0),  # (down on the crater's floor, by the core)
+    "lair": (146.0, -174.0),  # (out of the arena's east gate)
 }
 FROZEN_PASS = (-440.0, -40.0)  # the way in from the snow, west
 CAVE = (-363.0, -94.0)  # the smugglers' Drift Cave's yard, behind the post
-SECRET = (330.0, 259.0)  # the sunken garden by the falls' side canyon (the Beach Tool's)
-DUST_ROAD = (-80.0, -440.0)  # the way out south to Tropic Isles
+SECRET = (440.0, 200.0)  # the sunken garden below Havasu (the Beach Tool's)
+DUST_ROAD = (-10.0, -440.0)  # the way out south to Tropic Isles
 
 
 def _dense(points, every=4.0):
@@ -276,7 +304,7 @@ def _land(x, y):
 
 
 # The observatory on the crater's west rim (clear of the road): its pad cut level into the rim's slope.
-OBSERVATORY = (CRATER[0] + (CRATER[2] + 14.0) * math.cos(2.97), CRATER[1] + (CRATER[2] + 14.0) * math.sin(2.97), 9.0)
+OBSERVATORY = (CRATER[0] + (CRATER[2] + 16.0) * math.cos(2.35), CRATER[1] + (CRATER[2] + 16.0) * math.sin(2.35), 9.0)
 
 
 def _pad(h, x, y):
@@ -382,7 +410,8 @@ def road_floor(x, y):
 # The ways out through the rim walls: (from (x, y), to (x, y), floor at the far end,
 # half width). The Frozen Pass west (up to the snow); the Dust Road south (after
 # Scorchwind's fall).
-PASS_WAYS = [((-380.0, -40.0), (-452.0, -40.0), 22.0, 9.0), ((-60.0, -330.0), (-80.0, -452.0), 14.0, 9.0)]
+PASS_WAYS = [((-380.0, -40.0), (-452.0, -40.0), 22.0, 9.0), ((10.0, -300.0), (-10.0, -452.0), 14.0, 9.0)]
+DUST_FROM = (176.0, -195.0)  # (the Dust Road leaves the road here, by the Showground, v4b)
 
 
 def _passes(h, x, y):
