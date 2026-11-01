@@ -196,7 +196,7 @@
       "id": "lantern_09",
       "type": "lantern",
       "x": -9.9,
-      "y": 7.38,
+      "y": 7.36,
       "z": 116.0
     },
     {
@@ -210,14 +210,14 @@
       "id": "lantern_11",
       "type": "lantern",
       "x": -9.9,
-      "y": 7.51,
+      "y": 7.48,
       "z": 72.0
     },
     {
       "id": "lantern_12",
       "type": "lantern",
       "x": 9.9,
-      "y": 7.34,
+      "y": 7.33,
       "z": 72.0
     },
     {
@@ -364,14 +364,14 @@
       "id": "lantern_33",
       "type": "lantern",
       "x": -202.19,
-      "y": 7.58,
+      "y": 7.49,
       "z": -46.22
     },
     {
       "id": "lantern_34",
       "type": "lantern",
       "x": -221.99,
-      "y": 8.11,
+      "y": 8.1,
       "z": -46.26
     },
     {
@@ -518,7 +518,7 @@
       "id": "lantern_55",
       "type": "lantern",
       "x": -10.16,
-      "y": 8.15,
+      "y": 8.14,
       "z": 174.05
     },
     {
@@ -532,14 +532,14 @@
       "id": "lantern_57",
       "type": "lantern",
       "x": -9.9,
-      "y": 6.82,
+      "y": 6.93,
       "z": 131.18
     },
     {
       "id": "lantern_58",
       "type": "lantern",
       "x": 9.9,
-      "y": 7.85,
+      "y": 7.84,
       "z": 131.18
     },
     {
@@ -1036,7 +1036,7 @@
       "id": "chimney_61",
       "type": "chimney",
       "x": -191.66,
-      "y": 15.16,
+      "y": 15.21,
       "z": -40.42
     },
     {
@@ -1322,7 +1322,7 @@
       "id": "torch_11",
       "type": "torch",
       "x": -192.62,
-      "y": 5.18,
+      "y": 5.19,
       "z": -51.58
     },
     {
@@ -1462,7 +1462,7 @@
       "id": "campfire_06",
       "type": "campfire",
       "x": -192.62,
-      "y": 4.58,
+      "y": 4.59,
       "z": -51.58
     },
     {
@@ -1574,7 +1574,7 @@
   "generator": "tools/blender/prehistoric/hearthglow_hollow_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "hearthglow_hollow.py": "f2b4008dbc1eb0e947b1491b1ec0f379b45792a4ca2cb40c2c145cf4284b127f",
-    "hearthglow_props.py": "854c84ce8845f35f8f47d76c55c73530c66d1d2a48841bc17ba500ae4be4d3bd",
+    "hearthglow_props.py": "f7e19210e2db931edd6089705e21d4dd5d5e00102dd7fd95409e1be06b3fa30a",
     "hearthglow_ruins.py": "984a658fe0aa438d50bcc9b99417f23c4d6d1f6631d5bbedcaa539ca4ccd1fa6",
     "hearthglow_scenery.py": "a8e34b0ad3e5c7abf9a6b0263bfb05443e7f967e0f944a7213d37876f98c6a38"
   }
