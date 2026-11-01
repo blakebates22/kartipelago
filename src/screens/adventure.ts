@@ -931,22 +931,32 @@ const clipLabel = () => (clipSwitch.on ? "RECORD CLIPS: ON · F4 SAVES" : "RECOR
  * screen): the switches first, then the pages of jumps, scenes and warps. `back`: where
  * ESC goes (the overworld's pause menu it was opened from).
  */
-export function devMenu(game: Game, opts: { back?: () => void } = {}): Screen {
+export function devMenu(
+  game: Game,
+  opts: {
+    back?: () => void;
+    /** Tools for where you were (the overworld's pause: back to the road, the ruin). */
+    here?: { label: string; action: () => void }[];
+  } = {},
+): Screen {
   const back = opts.back ?? (() => goHome(game));
   const again = () => game.screens.go(devMenu(game, opts));
   const items: { label: string; action: () => void }[] = [
+    ...(opts.here ?? []),
     {
       label: instaWin() ? "INSTA-WIN RACES: ON" : "INSTA-WIN RACES: OFF",
       action: () => {
         setInstaWin(!instaWin());
-        items[0]!.label = instaWin() ? "INSTA-WIN RACES: ON" : "INSTA-WIN RACES: OFF";
+        const it = items.find((i) => i.label.startsWith("INSTA-WIN"));
+        if (it) it.label = instaWin() ? "INSTA-WIN RACES: ON" : "INSTA-WIN RACES: OFF";
       },
     },
     {
       label: freeRoam() ? "GO ANYWHERE: ON" : "GO ANYWHERE: OFF",
       action: () => {
         setFreeRoam(!freeRoam());
-        items[1]!.label = freeRoam() ? "GO ANYWHERE: ON" : "GO ANYWHERE: OFF";
+        const it = items.find((i) => i.label.startsWith("GO ANYWHERE"));
+        if (it) it.label = freeRoam() ? "GO ANYWHERE: ON" : "GO ANYWHERE: OFF";
       },
     },
     {

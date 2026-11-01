@@ -1885,20 +1885,6 @@ function overworldPause(game: Game, region: Region, session: Session): Screen {
             },
           ]
         : []),
-      // Dev free roam: the region before or after the Rage.
-      ...(!story && region.ruinPackageId
-        ? [
-            {
-              label: game.overworld?.ruined ? "SHOW IT STANDARD" : "SHOW IT RUINED",
-              action: () => {
-                const ruined = !game.overworld?.ruined;
-                game.overworld = { region: region.id, ruined };
-                devState.delete(region.id);
-                game.screens.go(overworldLoading(game, region.id, undefined, false));
-              },
-            },
-          ]
-        : []),
       // Dev builds: the level review tool, on this region.
       ...(import.meta.env.DEV
         ? [
@@ -1921,19 +1907,32 @@ function overworldPause(game: Game, region: Region, session: Session): Screen {
                   game.overworld = { region: region.id, adventure: story };
                   game.screens.go(overworldLoading(game, region.id, here(), story));
                 };
-                game.screens.go(devMenu(game, { back }));
-              },
-            },
-          ]
-        : []),
-      // Dev builds only (Blake: not in the main game): stuck, back on the road.
-      ...(import.meta.env.DEV
-        ? [
-            {
-              label: "BACK TO THE ROAD",
-              action: () => {
-                backToRoad(session, region);
-                resume();
+                // (Blake: the pause menu was overflowing; these two moved here, dev only.)
+                const here_ = [
+                  // Stuck: back on the road where you were.
+                  {
+                    label: "BACK TO THE ROAD",
+                    action: () => {
+                      backToRoad(session, region);
+                      back();
+                    },
+                  },
+                  // Free roam: the region before or after the Rage.
+                  ...(!story && region.ruinPackageId
+                    ? [
+                        {
+                          label: game.overworld?.ruined ? "SHOW IT STANDARD" : "SHOW IT RUINED",
+                          action: () => {
+                            const ruined = !game.overworld?.ruined;
+                            game.overworld = { region: region.id, ruined };
+                            devState.delete(region.id);
+                            game.screens.go(overworldLoading(game, region.id, undefined, false));
+                          },
+                        },
+                      ]
+                    : []),
+                ];
+                game.screens.go(devMenu(game, { back, here: here_ }));
               },
             },
           ]
