@@ -46,8 +46,13 @@ export interface Passage {
   heading: number;
   /** It's only there in the ruined region (what the dragon's attack broke open). */
   ruinOnly?: boolean;
+  /** Underground (Oct 31: the Edge of the World's tunnel): the ground is looked for down
+   * from this height, not from the sky (which finds the land over the tunnel). */
+  y?: number;
   /** Adventure: it opens once this kingdom's dragon has fallen (dev free roam: always). */
   opensAfter?: KingdomId;
+  /** Adventure: or once this kingdom's smugglers' key is won (its underground games). */
+  keyOf?: KingdomId;
   /** What's in the way until then. */
   locked?: string;
   /** What stands across the way on until then, on the passage itself (shown, solid, and
@@ -76,7 +81,8 @@ export interface Region {
    * in at each end (its passages "start", from `from`, and "end", to `to`). `road`: the
    * stretch of its route that's road (the rest goes round out of sight). */
   journey?: { from: KingdomId; to: KingdomId; road: [number, number] };
-  spawn: { x: number; z: number; heading: number };
+  /** Where you start; `y`: look for the ground down from here (an underground spawn). */
+  spawn: { x: number; z: number; heading: number; y?: number };
   gateways: Gateway[];
   passages?: Passage[];
   /** Adventure: where the champion waits to race you 1 on 1 once round the ring (beside
@@ -462,8 +468,9 @@ export const REGIONS: Region[] = [
         heading: -1.5935,
       },
       // The last smugglers' tunnel: its sea door under Smugglers' Point, west coast; under the
-      // sea to the old causeway, past the border, on to the Dragon Kingdom. (In Adventure the
-      // Sea Cave's key takes you through; in the ruin it's shut until Tidewyrm falls.)
+      // sea to the old causeway, past the border, on to the Dragon Kingdom. There in both
+      // states (Blake, Oct 31: "I cant even find the entrance"): in Adventure it opens with
+      // the Sea Cave's key (or once Tidewyrm's fallen); free roam, always.
       {
         id: "causeway",
         label: "THE SMUGGLERS' TUNNEL · TO THE DRAGON KINGDOM",
@@ -473,10 +480,10 @@ export const REGIONS: Region[] = [
         z: -5.3,
         radius: 8,
         heading: 1.6874, // (out of the sea door, up the track to the road)
-        ruinOnly: true,
         blocker: { kind: "water", width: 14 },
+        keyOf: "beach",
         opensAfter: "beach",
-        locked: "THE TIDE HAS FLOODED THE SMUGGLERS' TUNNEL, HELD IN BY TIDEWYRM: BEAT HIM FIRST",
+        locked: "THE SMUGGLERS' SEA DOOR IS BARRED: WIN THE KEY AT THE SEA CAVE'S GAMES FIRST",
       },
     ],
   },
@@ -495,8 +502,9 @@ export const REGIONS: Region[] = [
     music: "dragon",
     worldId: "dragon",
     kingdom: "dragon",
-    // On Dragonfire Square, by the great dragon, facing south to the road.
-    spawn: { x: 0, z: 92, heading: 0 },
+    // On the road just south of Dragonfire Square, westbound (Blake, Oct 31: the old spot,
+    // on the square, was inside the great dragon's statue).
+    spawn: { x: 0, z: 132, heading: -Math.PI / 2 },
     gateways: [
       // In the castle's Dragonspire wing, a great door in its hall's wall, west.
       { id: "keep", track: "dragon_isles", x: -340.97, z: 27.89, radius: 6, heading: -0.5225 },
@@ -655,7 +663,8 @@ export const REGIONS: Region[] = [
     music: "journey_cause",
     worldId: "beach",
     journey: { from: "beach", to: "dragon", road: [53, 1514] },
-    spawn: { x: -51.5, z: 416.5, heading: 2.7925 },
+    // (Underground: the ground's looked for from just over the tunnel's floor, not the sky.)
+    spawn: { x: -51.5, z: 416.5, heading: 2.7925, y: -12 },
     gateways: [],
     passages: [
       {
@@ -667,6 +676,7 @@ export const REGIONS: Region[] = [
         z: 440,
         radius: 8,
         heading: 2.8705,
+        y: -12,
       },
       {
         id: "end",

@@ -746,8 +746,11 @@ function regionBlockers(game: Game, session: Session, region: Region) {
   let banner: { text: string; t: number } | undefined;
   const items = (region.passages ?? []).flatMap((p) => {
     const b = p.blocker;
-    if (!b || !p.opensAfter) return [];
-    const open = !story || Boolean(story.save.bosses[p.opensAfter]);
+    if (!b || (!p.opensAfter && !p.keyOf)) return [];
+    const open =
+      !story ||
+      Boolean(p.opensAfter && story.save.bosses[p.opensAfter]) ||
+      Boolean(p.keyOf && story.save.games[p.keyOf]);
     const seen = `opened:${region.id}.${p.id}`;
     const breaking = Boolean(story) && open && !story!.save.seen.includes(seen);
     if (open && !breaking) return [];
@@ -923,6 +926,8 @@ function regionAir(game: Game, session: Session, region: Region, ruined: boolean
 
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
 const PROBE_Y = 200;
+/** How high to look down for the ground at a mark (an underground passage: its own). */
+const markProbe = (m: object) => ("y" in m && typeof m.y === "number" ? m.y : PROBE_Y);
 
 const fmt = (s?: number) =>
   s === undefined ? "-:--.--" : `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}`;
@@ -1121,7 +1126,7 @@ function buildGateways(
   ];
   const themes = ["prehistoric", "frostveil", "desert", "beach", "dragon"];
   const arches = marks.map((g, i) => {
-    const y = you.ground.at(g.x, g.z, PROBE_Y).height;
+    const y = you.ground.at(g.x, g.z, markProbe(g)).height;
     const own = themes.includes(region.worldId) ? region.worldId : "prehistoric";
     const arch = createGatewayArch(session.root, {
       label: g.label,
@@ -1260,25 +1265,27 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       // front of a mark (`<id>:front`), just where you were (`@x,z,heading`: a change of
       // driver), or at the region's spawn.
       const you = session.entrants[0]!;
-      const fits = (x: number, z: number) => session.kartFits(x, z, PROBE_Y);
       const front = at?.endsWith(":front") ?? false;
       const markId = front ? at!.slice(0, -":front".length) : at;
       const from = marks.find((g) => g.id === markId);
+      // (Underground marks look for the ground down from their own height.)
+      const probe = from ? markProbe(from) : PROBE_Y;
+      const fits = (x: number, z: number) => session.kartFits(x, z, probe);
       if (at?.startsWith("@")) {
         const [x, z, h] = at.slice(1).split(",").map(Number) as [number, number, number];
         session.placeYou(x, z, h, PROBE_Y);
       } else if (from && front) {
         const p = frontSpot(from, fits);
-        session.placeYou(p.x, p.z, p.heading, PROBE_Y);
+        session.placeYou(p.x, p.z, p.heading, probe);
       } else if (from) {
         const out = exitSpot(from, fits);
         const gate = region.gateways.some((g) => g.id === from.id);
         const road = gate && session.track ? roadSpot(session.track.samples, out, fits) : undefined;
         const p = road ?? out;
-        session.placeYou(p.x, p.z, p.heading, PROBE_Y);
+        session.placeYou(p.x, p.z, p.heading, probe);
       } else {
         const sp = region.spawn;
-        session.placeYou(sp.x, sp.z, sp.heading, you.state.y + 20);
+        session.placeYou(sp.x, sp.z, sp.heading, sp.y ?? you.state.y + 20);
       }
       void game.audio.music.play(region.music, { fade: 1.2, restart: true });
     },
@@ -1694,10 +1701,11 @@ function gatewayCard(game: Game, region: Region, g: Gateway): Screen {
   };
 }
 
-/** Is the way on open (Adventure: once its dragon's beaten)? */
+/** Is the way on open (Adventure: once its dragon's beaten, or its smugglers' key won)? */
 function passageOpen(game: Game, p: Passage) {
   const s = game.overworld?.adventure ? adventureOf(game).save : undefined;
-  return !s || !p.opensAfter || freeRoam() || Boolean(s.bosses[p.opensAfter]);
+  if (!s || freeRoam() || (!p.opensAfter && !p.keyOf)) return true;
+  return Boolean(p.opensAfter && s.bosses[p.opensAfter]) || Boolean(p.keyOf && s.games[p.keyOf]);
 }
 
 /** On through a passage: the region (or the journey) beyond loads. A journey's way back
