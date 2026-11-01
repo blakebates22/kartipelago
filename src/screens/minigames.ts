@@ -155,10 +155,15 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
               const g = box.g;
               if (!g || !live || g.out[i]) return false;
               const ks = live.entrants.map((e) => e.state);
-              return shouldFire(i, k, ks, live.entrants[i]!.items.held.color, g.out);
+              const held = live.entrants[i]!.items.held.color;
+              return shouldFire(i, k, ks, held, g.out, box.minds[i], performance.now() / 1000);
             },
             onItem(ev) {
               if (ev.type === "hit" && !ev.blocked) box.g?.hit(ev.racer);
+            },
+            // (Burnt in Caldera Keep's moat, or fell off: it costs you, like a hit.)
+            onHazard(i) {
+              box.g?.hit(i);
             },
           },
         })

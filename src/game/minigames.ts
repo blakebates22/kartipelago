@@ -81,6 +81,14 @@ export interface Arena {
   deck?: { r: number; w: number; y: number };
   /** The ramps between the levels: the foot (x, z) and the top (tx, tz). */
   ramps: { x: number; z: number; tx: number; tz: number }[];
+  /** The rivals' map of the levels (Caldera Keep): spots on each level, and which you can
+   * drive straight between (each spot's neighbours). */
+  nav?: Nav;
+}
+
+export interface Nav {
+  nodes: { x: number; y: number; z: number }[];
+  next: number[][];
 }
 
 /** On the upper level? (Over the deck's ring and up at its height.) */
@@ -120,7 +128,22 @@ export function parseArena(entities: unknown[]): Arena {
         tx: num(o.tx, 0),
         tz: num(o.tz, 0),
       };
-    else if (o.type === "rink")
+    else if (o.type === "nav" && Array.isArray(o.nodes) && Array.isArray(o.links)) {
+      const nodes = (o.nodes as unknown[]).map((v) => {
+        const p = Array.isArray(v) ? v : [];
+        return { x: num(p[0], 0), y: num(p[1], 0), z: num(p[2], 0) };
+      });
+      const next = nodes.map(() => [] as number[]);
+      for (const l of o.links as unknown[]) {
+        if (!Array.isArray(l)) continue;
+        const a = num(l[0], -1);
+        const b = num(l[1], -1);
+        if (a < 0 || b < 0 || a >= nodes.length || b >= nodes.length) continue;
+        next[a]!.push(b);
+        next[b]!.push(a);
+      }
+      a.nav = { nodes, next };
+    } else if (o.type === "rink")
       a.rink = {
         x: num(o.x, 0),
         z: num(o.z, 0),
@@ -540,9 +563,17 @@ export function createMiniGame(
 export interface Mind {
   stuck: number;
   reverse: number;
+  /** Firing (Blake, Oct 31: the rivals were too good): when it first had a shot lined
+   * up (it waits a moment before taking it), and until when it holds fire after one. */
+  aimSince?: number;
+  restUntil?: number;
 }
 
 export const newMind = (): Mind => ({ stuck: 0, reverse: 0 });
+
+/** How long a rival holds a shot before taking it (plus up to half again, by chance),
+ * and holds fire after one. */
+export const AIM = { reactSec: 0.6, restSec: 2.5 };
 
 /** Steer for (tx, tz): full throttle, easing off for a sharp turn; backing out when stuck
  * against something. Positive steer lowers the heading (src/vehicles/kart.ts). */
@@ -571,18 +602,39 @@ export function shouldFire(
   karts: Kart[],
   color: string | null,
   out: boolean[],
+  mind?: Mind,
+  now = 0,
 ): boolean {
   if (!color) return false;
-  if (color === "blue" || color === "yellow") return Math.random() < 0.02;
-  if (color === "green")
-    return karts.some((o, j) => j !== i && !out[j] && Math.hypot(o.x - k.x, o.z - k.z) < 14);
-  return karts.some((o, j) => {
-    if (j === i || out[j]) return false;
-    const d = Math.hypot(o.x - k.x, o.z - k.z);
-    const a = Math.atan2(o.x - k.x, o.z - k.z);
-    const err = Math.abs(Math.atan2(Math.sin(a - k.heading), Math.cos(a - k.heading)));
-    return d < 45 && err < 0.4;
-  });
+  if (mind && now < (mind.restUntil ?? -Infinity)) return false;
+  let lined: boolean;
+  if (color === "blue" || color === "yellow") lined = Math.random() < 0.02;
+  else if (color === "green")
+    lined = karts.some(
+      (o, j) =>
+        j !== i && !out[j] && Math.hypot(o.x - k.x, o.z - k.z) < 14 && Math.abs(o.y - k.y) < 2.5,
+    );
+  else
+    lined = karts.some((o, j) => {
+      if (j === i || out[j]) return false;
+      // (Not through a floor: only at one on its own level.)
+      if (Math.abs(o.y - k.y) > 2.5) return false;
+      const d = Math.hypot(o.x - k.x, o.z - k.z);
+      const a = Math.atan2(o.x - k.x, o.z - k.z);
+      const err = Math.abs(Math.atan2(Math.sin(a - k.heading), Math.cos(a - k.heading)));
+      return d < 40 && err < 0.3;
+    });
+  if (!mind) return lined;
+  if (!lined) {
+    mind.aimSince = undefined;
+    return false;
+  }
+  // A moment to react (a shot has to stay lined up that long), then a rest after it.
+  if (mind.aimSince === undefined) mind.aimSince = now + AIM.reactSec * Math.random() * 0.5;
+  if (now - mind.aimSince < AIM.reactSec) return false;
+  mind.aimSince = undefined;
+  mind.restUntil = now + AIM.restSec;
+  return true;
 }
 
 // ---------------------------------------------------------------- finding the way
@@ -593,8 +645,9 @@ export function shouldFire(
 export function waypoint(
   arena: Arena,
   k: Kart,
-  tg: { x: number; z: number; high?: boolean },
+  tg: { x: number; z: number; y?: number; high?: boolean },
 ): { x: number; z: number } {
+  if (arena.nav) return navWaypoint(arena.nav, k, tg);
   const d = arena.deck;
   if (!d || !arena.ramps.length) return tg;
   const up = onDeck(arena, k);
@@ -632,6 +685,66 @@ export function waypoint(
     return { x: best.x - (ux / len) * 7, z: best.z - (uz / len) * 7 };
   }
   return tg;
+}
+
+/** The nav spot nearest a place (a metre of height counts as four across: the level
+ * matters most). With no height known, the nearest across. */
+export function navSpot(nav: Nav, p: { x: number; z: number; y?: number }): number {
+  let best = 0;
+  let bv = Infinity;
+  nav.nodes.forEach((n, i) => {
+    const v = Math.hypot(n.x - p.x, n.z - p.z) + (p.y === undefined ? 0 : 4 * Math.abs(n.y - p.y));
+    if (v < bv) {
+      bv = v;
+      best = i;
+    }
+  });
+  return best;
+}
+
+/** The shortest way between two nav spots (Dijkstra: the map's a few dozen spots). */
+export function navPath(nav: Nav, from: number, to: number): number[] {
+  const n = nav.nodes.length;
+  const cost = new Array<number>(n).fill(Infinity);
+  const prev = new Array<number>(n).fill(-1);
+  const done = new Array<boolean>(n).fill(false);
+  cost[from] = 0;
+  for (;;) {
+    let u = -1;
+    for (let i = 0; i < n; i++)
+      if (!done[i] && cost[i]! < Infinity && (u < 0 || cost[i]! < cost[u]!)) u = i;
+    if (u < 0 || u === to) break;
+    done[u] = true;
+    const a = nav.nodes[u]!;
+    for (const v of nav.next[u]!) {
+      const b = nav.nodes[v]!;
+      const c = cost[u]! + Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+      if (c < cost[v]!) {
+        cost[v] = c;
+        prev[v] = u;
+      }
+    }
+  }
+  if (cost[to] === Infinity) return [from];
+  const path = [to];
+  while (path[0] !== from) path.unshift(prev[path[0]!]!);
+  return path;
+}
+
+/** Where to drive for a target by the nav map: straight at it when it's by the same spot
+ * or the next, else on to the next spot of the shortest way. */
+export function navWaypoint(
+  nav: Nav,
+  k: Kart,
+  tg: { x: number; z: number; y?: number },
+): { x: number; z: number } {
+  const path = navPath(nav, navSpot(nav, k), navSpot(nav, tg));
+  if (path.length <= 2) return tg;
+  // (Past the first spot already, heading for the second: on to the third.)
+  const n1 = nav.nodes[path[1]!]!;
+  if (Math.hypot(n1.x - k.x, n1.z - k.z) < 4 && Math.abs(n1.y - k.y) < 2)
+    return nav.nodes[path[2]!]!;
+  return n1;
 }
 
 /** Steer round what's in the way: try the line to (tx, tz), then lines turned a little

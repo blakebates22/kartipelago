@@ -212,6 +212,8 @@ export interface ArenaHooks {
   drive?(i: number, kart: KartState, dt: number): DeviceReading | undefined;
   fire?(i: number, kart: KartState): boolean;
   onItem?(ev: ItemEvent): void;
+  /** A kart came to grief by the track (burnt in lava, fell off, put back). */
+  onHazard?(i: number): void;
   /** A mini-game's handicap on a kart's top speed (none uses one now). */
   topSpeed?(i: number): number | undefined;
 }
@@ -1184,6 +1186,7 @@ function buildSession(
       if (hazards && !riding) {
         const hz = hazards.stepKart(i, e.state, under, lastGate, dt, road);
         if (hz.burnt) e.racer.react("burn");
+        if (hz.burnt || hz.respawned) opts.arena?.onHazard?.(i);
         if (hz.splashed === "deep") e.racer.react("splash");
         if (hz.struck) e.racer.react("burn");
         // A present bursts into confetti and gives a small boost: a level 1 blue balloon's.
@@ -1244,6 +1247,7 @@ function buildSession(
       const lost = e.driver?.wantsRespawn && !riding ? lastGate : undefined;
       if (e.driver) e.driver.wantsRespawn = false;
       if (raceEvents.respawn || fell || lost) {
+        if (fell) opts.arena?.onHazard?.(i);
         const g = (raceEvents.respawn ?? fell ?? lost)!;
         const bananas = e.state.bananas; // a respawn keeps what you've collected
         Object.assign(e.state, createKartState(g.x, g.z, g.heading, g.y));

@@ -8,7 +8,11 @@ import {
   createMiniGame,
   makeIce,
   minigameById,
+  navPath,
+  navSpot,
+  navWaypoint,
   newMind,
+  shouldFire,
   parseArena,
   seek,
   type Arena,
@@ -116,5 +120,42 @@ describe("the mini-games", () => {
         for (const s of a.spawns) expect(ice.at(s.x, s.z), m.arena).toBeGreaterThanOrEqual(0);
       }
     }
+  });
+
+  it("Caldera Keep: the rivals' map links every level (bailey, courtyard, walk, keep roof)", async () => {
+    const bytes = await readFile(
+      new URL("../public/tracks/arena_bowl/track.json", import.meta.url),
+    );
+    const a = parseArena(
+      (JSON.parse(new TextDecoder().decode(bytes)) as { entities: unknown[] }).entities,
+    );
+    const nav = a.nav!;
+    expect(nav.nodes.length).toBeGreaterThan(40);
+    // Every spot reaches every other.
+    for (let t = 1; t < nav.nodes.length; t++) expect(navPath(nav, 0, t).at(-1), String(t)).toBe(t);
+    // From out in the bailey up onto the keep's roof: up a ramp onto the walk, over a bridge.
+    const deck = a.deck!;
+    const bailey = { x: 58, y: 2, z: 0, heading: 0, speed: 0 };
+    const roof = { x: 0, y: deck.y, z: 0 };
+    const path = navPath(nav, navSpot(nav, bailey), navSpot(nav, roof));
+    const ys = path.map((n) => nav.nodes[n]!.y);
+    expect(Math.min(...ys)).toBeLessThan(3);
+    expect(Math.max(...ys)).toBeGreaterThan(deck.y - 1);
+    const w = navWaypoint(nav, bailey, roof);
+    expect(Math.hypot(w.x - roof.x, w.z - roof.z)).toBeGreaterThan(5); // (not straight at it)
+  });
+
+  it("the rivals wait a moment before they fire, and rest after", () => {
+    const ks: Kart[] = [
+      { x: 0, y: 0, z: 0, heading: 0, speed: 10 },
+      { x: 0, y: 0, z: 20, heading: 0, speed: 10 },
+    ];
+    const m = newMind();
+    expect(shouldFire(0, ks[0]!, ks, "red", [false, false], m, 10)).toBe(false);
+    expect(shouldFire(0, ks[0]!, ks, "red", [false, false], m, 10.95)).toBe(true);
+    expect(shouldFire(0, ks[0]!, ks, "red", [false, false], m, 11.5)).toBe(false);
+    // Not through a floor.
+    const up = [ks[0]!, { ...ks[1]!, y: 6 }];
+    expect(shouldFire(0, ks[0]!, up, "red", [false, false])).toBe(false);
   });
 });

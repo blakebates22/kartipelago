@@ -7,21 +7,21 @@
    "index": 0,
    "route": "main",
    "position": [
-    32.0,
-    7.5,
+    40.0,
+    8.0,
     -0.0
    ],
    "heading": 3.14159,
-   "width": 50.0,
+   "width": 46.0,
    "height": 12.0,
    "below": 3.0,
    "respawn": {
     "position": [
-     31.871,
-     7.5,
-     -3.47
+     39.893,
+     8.0,
+     -3.616
     ],
-    "heading": -3.05662
+    "heading": -3.07529
    }
   },
   {
@@ -29,21 +29,21 @@
    "index": 1,
    "route": "main",
    "position": [
-    -32.0,
-    7.5,
+    -40.0,
+    8.0,
     -0.0
    ],
    "heading": -0.0,
-   "width": 50.0,
+   "width": 46.0,
    "height": 12.0,
    "below": 3.0,
    "respawn": {
     "position": [
-     -31.871,
-     7.5,
-     3.47
+     -39.893,
+     8.0,
+     3.616
     ],
-    "heading": 0.08497
+    "heading": 0.0663
    }
   }
  ]
