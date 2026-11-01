@@ -57,19 +57,30 @@ BAYS = {
 # round it (his cave in its south face, after his attack).
 HEAD = (math.radians(-22.0), 0.14, 40.0)  # angle, half width, how far it reaches out
 HEAD_Z = 24.0
+# Smugglers' Point: a smaller headland on the west coast, sea cliffs round it; the
+# smugglers' Sea Cave at the foot of its south cliff, their tunnel's sea door in its north
+# one (the last tunnel, under the sea to the old causeway past the border).
+POINT = (math.radians(-172.0), 0.11, 34.0)
+POINT_Z = 18.0
 
 
-def shore_r(a):
-    """The coastline's distance from the island's middle at angle a."""
+def _reach(a, head):
+    ha, hhw, reach = head
+    d = abs(_adiff(a, ha))
+    return reach * (0.5 + 0.5 * math.cos(math.pi * d / hhw)) if d < hhw else 0.0
+
+
+def shore_r(a, point=True):
+    """The coastline's distance from the island's middle at angle a (`point`: with
+    Smugglers' Point; the road's coast points are laid out without it)."""
     r = 352.0 + 22.0 * math.sin(3.0 * a + 0.7) + 12.0 * math.sin(5.0 * a + 2.0) + 6.0 * math.sin(9.0 * a + 1.1)
     for ang, hw, depth in BAYS.values():
         d = abs(_adiff(a, ang))
         if d < hw:
             r -= depth * (0.5 + 0.5 * math.cos(math.pi * d / hw))
-    ha, hhw, reach = HEAD
-    d = abs(_adiff(a, ha))
-    if d < hhw:
-        r += reach * (0.5 + 0.5 * math.cos(math.pi * d / hhw))
+    r += _reach(a, HEAD)
+    if point:
+        r += _reach(a, POINT)
     return r
 
 
@@ -133,6 +144,13 @@ def _land(x, y):
     if d < hhw * 1.6 and s < 70.0:
         w = smooth((hhw * 1.4 - d) / (hhw * 0.6)) * smooth(s / 6.0)
         h = lerp(h, max(h, HEAD_Z + 3.0 * math.sin(x / 11.0)), w)
+    # Smugglers' Point: the same, smaller, only out past the coast (the road behind it).
+    pa, phw, _ = POINT
+    d = abs(_adiff(a, pa))
+    if d < phw * 1.6:
+        sb = shore_r(a, point=False) - math.hypot(x, y)
+        w = smooth((phw * 1.4 - d) / (phw * 0.6)) * smooth(s / 5.0) * smooth((16.0 - sb) / 10.0)
+        h = lerp(h, max(h, POINT_Z + 2.0 * math.sin(y / 9.0)), w)
     # Tidewyrm's ledge: a rock shelf at the cliffs' foot, his cave's mouth on it (level with
     # the road above the beach).
     dl = math.hypot(x - LAIR[0], y - LAIR[1])
@@ -160,10 +178,10 @@ def _land(x, y):
 
 # ---------------------------------------------------------------- the road
 
-def _coast(a_deg, back=46.0):
+def _coast(a_deg, back=46.0, point=False):
     """A point on the coast road: `back` m inland at angle a."""
     a = math.radians(a_deg)
-    r = shore_r(a) - back
+    r = shore_r(a, point) - back
     return (r * math.cos(a), r * math.sin(a))
 
 
@@ -206,9 +224,9 @@ GATES = {
 }
 LAIR = _coast(-35.0, 16.0)  # Tidewyrm's sea cave, at the foot of the Head's south cliffs
 VOLCANO = (250.0, 640.0)  # Volcano Isle, smoking offshore north
-CAVE = (-250.0, -40.0)  # the return yard: Raptor's old cove, in the jungle's edge behind the west beach
+CAVE = _coast(-163.0, 16.0)  # the smugglers' Sea Cave (its yard): on the beach under Smugglers' Point's south cliff
 SECRET = (34.0, 300.0)  # the smugglers' cave, behind the north beach
-CAUSEWAY = [(-330.0, 70.0), (-456.0, 92.0)]  # Tidewyrm's Causeway, west over the sea (the ruin)
+TUNNEL = _coast(-181.0, 16.0)  # the last tunnel's sea door, in the Point's north cliff: on to the old causeway
 
 
 def _dense(points, every=4.0):

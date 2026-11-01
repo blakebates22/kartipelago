@@ -137,12 +137,40 @@
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
-      "x": -260.99,
-      "z": 39.48,
-      "heading": -1.618081326792496,
+      "x": -296.51,
+      "z": 93.66,
+      "heading": 1.602623290639563,
       "width": 9.0,
-      "prize_x": -250.0,
-      "prize_z": 40.0
+      "prize_x": -307.51,
+      "prize_z": 94.01
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -310.49,
+      "y": 6.15,
+      "z": 81.38
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -316.61,
+      "y": 10.98,
+      "z": 84.76
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": -314.23,
+      "y": 4.38,
+      "z": 2.48
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": -308.46,
+      "y": 4.33,
+      "z": 5.47
     },
     {
       "id": "puzzle_gate_02",

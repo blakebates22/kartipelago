@@ -124,16 +124,12 @@ def main():
                 width=10.0, shoulder=0.4, shoulder_mat=("cove_planks", "road"), barrier=1.0, barrier_mat=("cove_rail", "wall"),
                 deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
     spots["volcano"] = ((px - ux * 4.0, py - uy * 4.0), math.atan2(-ux, uy))
-    if RUIN:
-        # Tidewyrm's Causeway: west over the sea from the west beach (his reef raised).
-        (cx0, cy0), (cx1, cy1) = M.CAUSEWAY
-        smp, _ = c.nearest(cx0, cy0)
-        c.side_road("Causeway Beach", pb.line(natural, (smp.p.x, smp.p.y), (cx0, cy0), z0=smp.p.z, c=c), "beach_road", "road",
-                    width=10.0, shoulder=0.6, shoulder_mat=("beach_sand", "sand"))
-        cz = natural(cx0, cy0) + 0.2
-        way = [(lerp(cx0, cx1, k / 24), lerp(cy0, cy1, k / 24), lerp(cz, WATER_Z + 2.2, min(1.0, k / 4)) + 0.02) for k in range(25)]
-        c.side_road("Tidewyrm's Causeway", way, "beach_road", "road", width=10.0, shoulder=0.6, shoulder_mat=("isle_rock", "road"),
-                    barrier=0.6, barrier_mat=("isle_rock", "wall"), deck=1.4, deck_mat=("isle_rock", "wall"), ground=False)
+    # The smugglers' track down the beach to the last tunnel's sea door, under Smugglers'
+    # Point (the way on to the Dragon Kingdom: under the sea to the old causeway).
+    tx, ty = M.TUNNEL
+    smp, _ = c.nearest(tx, ty)
+    c.side_road("Tunnel Track", pb.line(natural, (smp.p.x, smp.p.y), (tx, ty), z0=smp.p.z, c=c), "beach_road", "road",
+                width=10.0, shoulder=0.6, shoulder_mat=("beach_sand", "sand"))
 
     X0, X1, Y0, Y1 = -470, 470, -470, 470
     ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 3.0, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
@@ -144,7 +140,7 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 16.0), (*M.SECRET, 14.0), (*M.CREST, 14.0),
+    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 18.0), (*M.TUNNEL, 16.0), (*M.SECRET, 14.0), (*M.CREST, 14.0),
                          (M.LAGOON[0], M.LAGOON[1], M.LAGOON[2] + 4.0), (*M.FALLS, 26.0),
                          *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 22.0) for x, y in M.GATES.values()),
                          (*M.LAIR, 22.0)])
@@ -153,9 +149,8 @@ def main():
     landmarks(c, ground, spots, taken)
     if RUIN:
         ruined(c, ground)
-    puzzle_kit.pen(c, "return", "Cove Yard", *M.CAVE, pb.to_road(c, *M.CAVE), 11.0, 4.5, ("tiki_wood", "wall"), ground(*M.CAVE),
-                   height=5.0)
-    puzzle_kit.pen(c, "secret", "Smugglers Cave", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("isle_rock", "wall"),
+    sea_cave(c, ground)
+    puzzle_kit.pen(c, "secret", "Hidden Cove", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("isle_rock", "wall"),
                    ground(*M.SECRET), height=6.0)
     pb.emit_spots(c, spots)
     dress(c, ground, taken)
@@ -172,12 +167,51 @@ def main():
     print("hub x %.1f z %.1f" % (g[0], g[2]))
     g = c.game(bx - 10.0, by, 0.0)
     print("passage hop: x %.1f z %.1f heading %.4f" % (g[0], g[2], math.atan2(ax - bx, -(ay - by))))
-    if RUIN:
-        g = c.game(cx1 + 10.0, cy1, 0.0)
-        print("passage causeway: x %.1f z %.1f heading %.4f" % (g[0], g[2], math.atan2(cx0 - cx1, -(cy0 - cy1))))
+    g = c.game(tx, ty, 0.0)
+    print("passage tunnel: x %.1f z %.1f heading %.4f" % (g[0], g[2], math.atan2(smp.p.x - tx, -(smp.p.y - ty))))
     for name, (end, hd) in spots.items():
         g = c.game(end[0], end[1], 0.0)
         print("spot %s x %.2f z %.2f heading %.4f" % (name, g[0], g[2], hd))
+
+
+# ------------------------------------------------------------------ Smugglers' Point
+
+
+def _into_point(x, y, d):
+    """(x, y) moved d metres in toward Smugglers' Point's cliffs."""
+    a = M.POINT[0]
+    r = M.shore_r(a) - 20.0
+    px, py = r * math.cos(a), r * math.sin(a)
+    L = math.hypot(px - x, py - y)
+    return x + (px - x) / L * d, y + (py - y) / L * d, math.atan2(py - y, px - x)
+
+
+def sea_cave(c, ground):
+    """The smugglers' Sea Cave: its yard on the beach under the Point's south cliff (rock
+    walls, the cave's dark mouth at its back, lanterns, their chests and crates); and the
+    last tunnel's sea door in the north cliff, timber-framed, lanterns either side, crates
+    stacked by it."""
+    cx, cy = M.CAVE
+    puzzle_kit.pen(c, "return", "Sea Cave", cx, cy, pb.to_road(c, cx, cy), 11.0, 4.5, ("cove_rock", "wall"), ground(cx, cy),
+                   height=6.0)
+    for name, (x, y), w, h in (("Sea Cave Mouth", M.CAVE, 6.0, 7.0), ("Tunnel Door", M.TUNNEL, 5.5, 6.5)):
+        mx, my, rot = _into_point(x, y, 13.0 if name == "Tunnel Door" else 15.0)
+        z = ground(x, y)
+        box(c, name, mx, my, 1.2, w / 2, z - 1.0, z + h, ("dark_corridor", "wall"), rot=rot, role="visual")
+        box(c, name + " Lintel", mx - 1.3 * math.cos(rot), my - 1.3 * math.sin(rot), 0.4, w / 2 + 0.8, z + h, z + h + 0.7,
+            ("weathered_timber", "wall"), rot=rot, role="visual")
+        for sd in (-1, 1):
+            px, py = mx - 1.3 * math.cos(rot) - sd * (w / 2 + 0.5) * math.sin(rot), my - 1.3 * math.sin(rot) + sd * (w / 2 + 0.5) * math.cos(rot)
+            box(c, name + " Post %d" % sd, px, py, 0.35, 0.35, z - 0.5, z + h, ("weathered_timber", "wall"), rot=rot, role="visual")
+            lx, ly = px - 1.2 * math.cos(rot), py - 1.2 * math.sin(rot)
+            c.place(bp.tiki_torch(c, 0), lx, ly, ground(lx, ly))
+            g = c.game(lx, ly, ground(lx, ly) + 2.6)
+            c.entity("torch", x=g[0], y=g[1], z=g[2])
+        for k in range(4):
+            bx_ = mx - 6.0 * math.cos(rot) + (k - 1.5) * 2.2 * math.sin(rot) * (1 if name == "Tunnel Door" else -1)
+            by_ = my - 6.0 * math.sin(rot) - (k - 1.5) * 2.2 * math.cos(rot) * (1 if name == "Tunnel Door" else -1)
+            if paint.road_clear(c, bx_, by_, 2.0) and math.hypot(bx_ - x, by_ - y) > 6.0:
+                c.place(tp.barrel(c), bx_, by_, ground(bx_, by_) - 0.1, rot=k)
 
 
 # ------------------------------------------------------------------ water

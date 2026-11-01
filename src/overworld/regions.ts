@@ -408,17 +408,18 @@ export const REGIONS: Region[] = [
     // to Raptor's stilt village. (The positions below are the build's entities.)
     packageId: "beach_region",
     ruinPackageId: "beach_region_ruin",
-    // A secret, for the way back: a smugglers' cave behind the north beach, behind a rockfall the Valley Tool shifts.
+    // A secret, for the way back: a hidden cove behind the north beach, behind a rockfall the Valley Tool shifts.
     secret: {
       obstacle: "rockfall",
       tool: "valley",
       gate: { x: 34.13, z: -291.0, heading: 0.014, width: 9 },
       spot: { x: 34, z: -300 },
     },
-    // Raptor's old cove: a walled yard at the jungle's edge behind the west beach.
+    // The smugglers' Sea Cave, Raptor's old haunt: its yard on the beach under Smugglers'
+    // Point's south cliff, on the west coast (the last tunnel's sea door is in its north cliff).
     cave: {
-      gate: { x: -260.99, z: 39.48, heading: -1.6181, width: 9 },
-      spot: { x: -250, z: 40 },
+      gate: { x: -296.51, z: 93.66, heading: 1.6026, width: 9 },
+      spot: { x: -307.51, z: 94.01 },
     },
     music: "coral_cove",
     worldId: "beach",
@@ -460,20 +461,22 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: -1.5935,
       },
-      // Tidewyrm's Causeway, west over the sea from the west beach: to the Dragon Kingdom.
+      // The last smugglers' tunnel: its sea door under Smugglers' Point, west coast; under the
+      // sea to the old causeway, past the border, on to the Dragon Kingdom. (In Adventure the
+      // Sea Cave's key takes you through; in the ruin it's shut until Tidewyrm falls.)
       {
         id: "causeway",
-        label: "TIDEWYRM'S CAUSEWAY · TO THE DRAGON KINGDOM",
+        label: "THE SMUGGLERS' TUNNEL · TO THE DRAGON KINGDOM",
         to: "journey_cause",
         toPassage: "start",
-        x: -446,
-        z: -92,
+        x: -306.5,
+        z: -5.3,
         radius: 8,
-        heading: 1.3979, // (along the Causeway, back east to the beach)
+        heading: 1.6874, // (out of the sea door, up the track to the road)
         ruinOnly: true,
         blocker: { kind: "water", width: 14 },
         opensAfter: "beach",
-        locked: "THE REEF LIES UNDER DEEP WATER, HELD DOWN BY TIDEWYRM: BEAT HIM FIRST",
+        locked: "THE TIDE HAS FLOODED THE SMUGGLERS' TUNNEL, HELD IN BY TIDEWYRM: BEAT HIM FIRST",
       },
     ],
   },
