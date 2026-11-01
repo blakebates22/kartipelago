@@ -154,6 +154,7 @@ def main():
                    ground(*M.SECRET), height=6.0)
     pb.emit_spots(c, spots)
     dress(c, ground, taken)
+    paint.wayfolk(c, ground, "beach", [M.HUB[:2]], 8, apart=110.0, every=25)
 
     c.start_line()
     gts = c.checkpoints(height=10.0)

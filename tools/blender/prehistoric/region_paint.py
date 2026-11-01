@@ -163,3 +163,27 @@ def wall_texture(ob, x, y, dx, dy, steps=(1.5, 3.0, 5.0, 8.0)):
             continue
     return first
 
+
+
+def wayfolk(c, ground, folk, towns, count, apart=130.0, every=40):
+    """Folk out along the roads between the towns (Oct 31: every kingdom has homes all
+    over it, not just in its towns): a few by the roadside where the ground's level with
+    the road, `apart` m from the towns (blender (x, y)) and from each other."""
+    homes = list(towns)
+    n = 0
+    for q in c.S[::every]:
+        if n >= count:
+            break
+        for sd in (1, -1):
+            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 7.0), q.p.y + q.r.y * sd * (q.w / 2 + 7.0)
+            if homes and min(math.hypot(x - hx, y - hy) for hx, hy in homes) < apart:
+                continue
+            if abs(ground(x, y) - q.p.z) > 0.8 or abs(ground(x + q.r.x * sd * 4.0, y + q.r.y * sd * 4.0) - q.p.z) > 1.2:
+                continue
+            g = c.game(x, y, ground(x, y))
+            c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=6.0, n=2, folk=folk, heading=0.0)
+            homes.append((x, y))
+            n += 1
+            break
+    print("wayfolk homes", n)
+    return n

@@ -18,13 +18,6 @@ import {
 const arena: Arena = {
   spawns: [0, 1, 2, 3].map((k) => ({ x: Math.sin(k) * 40, z: Math.cos(k) * 40, heading: 0 })),
   radius: 60,
-  docks: [
-    { x: 30, z: 30, y: 0, color: "red" },
-    { x: -30, z: 30, y: 0, color: "blue" },
-    { x: -30, z: -30, y: 0, color: "green" },
-    { x: 30, z: -30, y: 0, color: "yellow" },
-  ],
-  crateSpawn: { x: 0, z: 0, y: 0, r: 0.1 },
   rink: { x: 0, z: 0, y: 2, r: 30, tile: 2.6 },
   ramps: [],
 };
@@ -42,42 +35,6 @@ describe("the mini-games", () => {
         for (let k = 0; k < 150; k++) g.step(ks, 1 / 60);
       }
     expect(g.out).toEqual([false, true, true, true]);
-    expect(g.winner).toBe(0);
-  });
-
-  it("Smugglers' Run: grab a crate, run it to your dock; rammed, you drop it; five wins", () => {
-    const g = createMiniGame(minigameById("smugglers")!, arena, 4);
-    const ks = karts();
-    const fetch = () => {
-      // Wait for a crate to land in the middle, drive over it, run it home.
-      for (let k = 0; k < 60 * 6 && !g.crates.some((c) => c.carrier < 0 && c.fall <= 0); k++)
-        g.step(ks, 1 / 60);
-      const free = g.crates.find((c) => c.carrier < 0 && c.fall <= 0)!;
-      Object.assign(ks[0]!, { x: free.x, z: free.z, speed: 0 });
-      g.step(ks, 1 / 60);
-      expect(g.carrying(0)).toBe(true);
-      Object.assign(ks[0]!, { x: 30, z: 30 });
-      g.step(ks, 1 / 60);
-      Object.assign(ks[0]!, { x: 50, z: 0 });
-    };
-    fetch();
-    expect(g.score[0]).toBe(1);
-    expect(g.carrying(0)).toBe(false);
-    // Rammed while carrying: dropped.
-    for (let k = 0; k < 60 * 6 && !g.crates.some((c) => c.carrier < 0 && c.fall <= 0); k++)
-      g.step(ks, 1 / 60);
-    const free = g.crates.find((c) => c.carrier < 0 && c.fall <= 0)!;
-    Object.assign(ks[0]!, { x: free.x, z: free.z });
-    g.step(ks, 1 / 60);
-    expect(g.carrying(0)).toBe(true);
-    Object.assign(ks[1]!, { x: free.x + 1, z: free.z, speed: RULES.bumpSpeed + 5 });
-    g.step(ks, 1 / 60);
-    expect(g.carrying(0)).toBe(false);
-    Object.assign(ks[1]!, { x: -50, z: 0, speed: 0 });
-    Object.assign(ks[0]!, { x: 50, z: 0 });
-    for (let k = 0; k < 60 * 3; k++) g.step(ks, 1 / 60);
-    // (Hit by an item while carrying: dropped too.)
-    for (let n = 0; n < 4; n++) fetch();
     expect(g.winner).toBe(0);
   });
 
@@ -152,10 +109,6 @@ describe("the mini-games", () => {
       const meta = JSON.parse(new TextDecoder().decode(bytes)) as { entities: unknown[] };
       const a = parseArena(meta.entities);
       expect(a.spawns.length, m.arena).toBeGreaterThanOrEqual(4);
-      if (m.id === "smugglers") {
-        expect(a.docks).toHaveLength(4);
-        expect(a.crateSpawn).toBeDefined();
-      }
       if (m.id === "crumble") {
         expect(a.rink).toBeDefined();
         // Every kart starts on the ice.

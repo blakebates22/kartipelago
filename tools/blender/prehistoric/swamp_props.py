@@ -668,3 +668,96 @@ def tier_tree(c, variant=0):
         return [(c.lib("bog_root"), trunk), (c.lib("bog_canopy"), leaves)]
 
     return _p(c, name, build)
+
+
+def broker_croc(c):
+    """The Broker (Blake, Oct 31: "a big croc for now without looking too much like King K.
+    Rool"): the Sump's crime boss, a huge old saltwater croc sprawled on his belly along
+    his ship's deck, not stood up like a man. No crown, no cape, no gold belly: a teal
+    silk scarf, gold pince-nez on his snout, heavy lids over sly yellow eyes, one gold
+    tooth in a long grin, a clay pipe, a ledger under one claw and loot spilling beside
+    him; his tail hangs over the rail. About 14 m nose to tail. Origin on the deck, facing
+    +X."""
+    name = "The Broker"
+
+    def build(bm):
+        # The body: low and long, the chest propped up on a cushion.
+        blob(bm, (0.0, 0, 1.1), 1.0, sx=3.0, sy=1.5, sz=0.95, subdiv=2)
+        blob(bm, (2.6, 0, 1.55), 1.0, sx=1.5, sy=1.25, sz=1.0, subdiv=2)
+        # The neck and head: a broad flat skull, the long snout reaching over the bow.
+        blob(bm, (4.2, 0, 2.15), 1.0, sx=1.2, sy=1.0, sz=0.72, subdiv=2)
+        blob(bm, (6.5, 0, 1.98), 1.0, sx=2.3, sy=0.62, sz=0.36, subdiv=2)
+        blob(bm, (6.3, 0, 1.58), 1.0, sx=2.1, sy=0.56, sz=0.22, subdiv=1)  # the jaw, a grin
+        for s in (-1, 1):
+            blob(bm, (8.55, s * 0.22, 2.2), 0.16, subdiv=1)  # nostrils
+            blob(bm, (4.45, s * 0.55, 2.98), 0.34, sx=1.1, sz=0.55, subdiv=1)  # heavy lids
+        # The tail: back off the stern end of him, over the rail and down the hull.
+        tube(bm, [(-2.6, 0, 1.0), (-4.4, 1.0, 0.9), (-5.4, 2.6, 0.5), (-5.2, 3.8, -0.6), (-4.8, 4.3, -2.8), (-4.4, 4.2, -4.8)],
+             [1.0, 0.78, 0.55, 0.38, 0.22, 0.06], n=10)
+        # Legs, splayed: the front ones braced, the back ones lazy.
+        for s in (-1, 1):
+            tube(bm, [(2.7, s * 1.0, 1.2), (3.2, s * 1.8, 0.6), (3.7, s * 1.95, 0.12)], [0.5, 0.38, 0.3], n=8)
+            blob(bm, (3.95, s * 2.0, 0.12), 0.32, sx=1.4, sz=0.4, subdiv=1)
+            tube(bm, [(-1.6, s * 1.2, 0.9), (-1.6, s * 2.1, 0.4), (-1.2, s * 2.5, 0.12)], [0.55, 0.4, 0.3], n=8)
+            blob(bm, (-0.95, s * 2.55, 0.12), 0.32, sx=1.4, sz=0.4, subdiv=1)
+        # Scutes: two rows down the back, one down the tail.
+        for k in range(9):
+            x = -2.4 + k * 0.62
+            for s in (-1, 1):
+                z = 1.1 + 0.95 * math.sqrt(max(0.0, 1 - (x / 3.0) ** 2)) - 0.08
+                cone(bm, (x, s * 0.42, z), (x, s * 0.48, z + 0.42), 0.2, n=4)
+        for k, (x, y, z, h) in enumerate(((-3.4, 0.4, 1.85, 0.36), (-4.3, 1.0, 1.62, 0.3), (-5.0, 1.9, 1.3, 0.26), (-5.4, 2.7, 0.95, 0.2))):
+            cone(bm, (x, y, z - 0.1), (x, y, z + h), 0.17, n=4)
+        skin = _faces(bm, 0)
+        k0 = len(bm.faces)
+        for s in (-1, 1):
+            blob(bm, (4.62, s * 0.56, 2.9), 0.22, subdiv=1)  # the eyes, under the lids
+        eyes = _faces(bm, k0)
+        k0 = len(bm.faces)
+        # Teeth along the grin (one gold, below).
+        for k in range(11):
+            x = 4.9 + k * 0.33
+            for s in (-1, 1):
+                if (k, s) == (3, 1):
+                    continue
+                w = 0.6 - 0.02 * k
+                cone(bm, (x, s * w * 0.95, 1.78), (x, s * w, 1.5), 0.07, n=4)
+        teeth = _faces(bm, k0)
+        k0 = len(bm.faces)
+        cone(bm, (5.9, 0.57, 1.78), (5.9, 0.6, 1.46), 0.1, n=5)  # the gold tooth
+        # Gold pince-nez on the snout, a chain down to the scarf.
+        for s in (-1, 1):
+            pts = [(5.05, s * 0.48 + 0.24 * math.cos(a), 2.78 + 0.24 * math.sin(a)) for a in (k * math.tau / 12 for k in range(13))]
+            tube(bm, pts, 0.035, n=4)
+        tube(bm, [(5.05, -0.24, 2.8), (5.15, 0.0, 2.88), (5.05, 0.24, 2.8)], 0.035, n=4)
+        tube(bm, [(5.05, 0.72, 2.7), (4.6, 1.0, 2.0), (3.6, 1.15, 1.85)], 0.025, n=4)
+        gold = _faces(bm, k0)
+        k0 = len(bm.faces)
+        # A silk scarf round the neck, its ends trailing over his shoulder.
+        pts = [(3.5 + 0.1 * math.cos(a), 1.12 * math.sin(a), 2.0 + 0.95 * math.cos(a)) for a in (k * math.tau / 16 for k in range(17))]
+        tube(bm, pts, 0.2, n=6)
+        tube(bm, [(3.4, -1.0, 2.5), (2.6, -1.5, 2.3), (1.6, -1.7, 1.7)], [0.22, 0.17, 0.08], n=5)
+        tube(bm, [(3.4, -1.0, 2.4), (2.8, -1.7, 1.9), (2.2, -1.9, 1.2)], [0.2, 0.15, 0.06], n=5)
+        scarf = _faces(bm, k0)
+        k0 = len(bm.faces)
+        # A long clay pipe from the corner of the grin, its bowl out to the side.
+        tube(bm, [(6.4, 0.55, 1.7), (7.1, 1.2, 1.62), (7.7, 1.75, 1.7)], 0.06, n=5)
+        tube(bm, [(7.75, 1.8, 1.58), (7.75, 1.8, 2.02)], [0.16, 0.2], n=8)
+        pipe = _faces(bm, k0)
+        k0 = len(bm.faces)
+        cuboid(bm, (2.9, 0.0, 0.3), (3.4, 2.6, 0.6), rot=0.0)  # the cushion
+        rug = _faces(bm, k0)
+        k0 = len(bm.faces)
+        cuboid(bm, (4.4, 2.15, 0.12), (1.3, 0.95, 0.24), rot=0.3)  # the ledger, under his claw
+        book = _faces(bm, k0)
+        k0 = len(bm.faces)
+        # Loot spilling beside him: coins and cups.
+        for k in range(7):
+            a = k * 2.399
+            blob(bm, (1.0 + 0.9 * math.cos(a), -2.2 + 0.5 * math.sin(a), 0.15), 0.45 - 0.04 * k, sx=1.3, sz=0.5, subdiv=1)
+        tube(bm, [(0.6, -2.0, 0.3), (0.6, -2.0, 0.9)], [0.12, 0.28], n=8)
+        loot = _faces(bm, k0)
+        return [(c.lib("croc_skin"), skin), (c.lib("bog_eye"), eyes), (c.lib("bone_ivory"), teeth + pipe),
+                (c.lib("gold_trim"), gold + loot), (c.lib("party_teal"), scarf), (c.lib("rug"), rug), (c.lib("door_wood"), book)]
+
+    return _p(c, name, build)

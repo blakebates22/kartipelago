@@ -222,12 +222,100 @@
       "x": 14.03,
       "z": -390.77,
       "heading": 0.06233901931778614
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 241.46,
+      "z": 109.3,
+      "y": 7.07,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": 168.41,
+      "z": 206.39,
+      "y": 4.07,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": 116.52,
+      "z": 304.13,
+      "y": 3.23,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": 0.77,
+      "z": 311.83,
+      "y": 3.18,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -112.37,
+      "z": 310.22,
+      "y": 3.02,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -188.54,
+      "z": 220.96,
+      "y": 3.27,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": -279.04,
+      "z": 147.41,
+      "y": 3.11,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": -289.03,
+      "z": 29.67,
+      "y": 3.13,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
     "isle_layout.py": "da194e4aad146d0d4c33216ccc2691a737c1cff81cebb65b274f34a749b1c31e",
-    "isle_region.py": "91b81333b60eb12e86b1eece833a1eb68d449956409e43499f820e84b41dcaef"
+    "isle_region.py": "cb0570524dc132fd2ffd2e2d55e5fc011247ec31fcd4a74dd9d352589759f5d7"
   }
 }

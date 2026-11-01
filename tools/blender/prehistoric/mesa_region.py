@@ -144,6 +144,8 @@ def main():
     crater(c, ground, taken)
     showground(c, ground, taken)
     ledge(c, ground, taken)
+    # (Folk along the roads, far from the towns'.)
+    paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (268.0, -40.0), (107.0, -284.0), (-20.0, -128.0)], 4)
     puzzle_kit.pen(c, "return", "Old Well", *M.CAVE, pb.to_road(c, *M.CAVE), 11.0, 4.5, ("adobe", "wall"), ground(*M.CAVE),
                    height=6.0)
     puzzle_kit.pen(c, "secret", "Sunken Garden", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("oasis_stone", "wall"),

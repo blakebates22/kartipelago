@@ -512,6 +512,94 @@
       "z": -343.43
     },
     {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -112.49,
+      "z": 78.91,
+      "y": 11.04,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": -263.28,
+      "z": 20.72,
+      "y": 27.76,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -374.69,
+      "z": 37.82,
+      "y": 28.53,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": -212.31,
+      "z": -271.89,
+      "y": 57.18,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -133.78,
+      "z": -356.88,
+      "y": 57.8,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": 124.06,
+      "z": -327.97,
+      "y": 40.24,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 217.91,
+      "z": -269.6,
+      "y": 40.39,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 322.13,
+      "z": -23.86,
+      "y": 17.71,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
       "id": "campfire_01",
       "type": "campfire",
       "x": -336.98,
@@ -551,6 +639,6 @@
   "builtFrom": {
     "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
     "sky_layout.py": "62d2eb29a68c25c10489fcba380a72dd65ec307174da8e812d7e23dfa4494e94",
-    "sky_region.py": "fcc9bbb57b44480158d5f489d5c5f9c7491d06bc68f64a24cbfaa8ed069200bd"
+    "sky_region.py": "165817f80b78222cd55d1b96c5d1468e921f1b01cdc589e7f949d3642e773377"
   }
 }

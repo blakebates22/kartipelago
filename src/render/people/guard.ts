@@ -32,6 +32,7 @@ const SKINS: Record<string, string[]> = {
   beach: ["#4f9a8a", "#a8786a", "#7a9a4a"],
   dragon: ["#7a6a8a", "#6a7a6a"],
   road: ["#8a8a6a", "#8a7058"],
+  sump: ["#7a8a6a", "#6a7a78"],
 };
 
 interface Dress {
@@ -156,6 +157,18 @@ const DRESS: Record<Folk, Dress[]> = {
       head: "#8a6a2a",
       dots: "#f4e8d0",
       belt: "#3a2618",
+      hat: "bandana",
+    },
+  ],
+  // The Sump's: grubbier still.
+  sump: [
+    {
+      vest: "#4a3e30",
+      vestDark: "#30281e",
+      patches: ["#6a3a3a", "#3a4a4a"],
+      head: "#5a2a2a",
+      dots: "#c8a040",
+      belt: "#2a1e14",
       hat: "bandana",
     },
   ],

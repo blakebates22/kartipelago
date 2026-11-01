@@ -212,7 +212,7 @@ export interface ArenaHooks {
   drive?(i: number, kart: KartState, dt: number): DeviceReading | undefined;
   fire?(i: number, kart: KartState): boolean;
   onItem?(ev: ItemEvent): void;
-  /** A mini-game's handicap on a kart's top speed (Smugglers' Run: carrying a crate). */
+  /** A mini-game's handicap on a kart's top speed (none uses one now). */
   topSpeed?(i: number): number | undefined;
 }
 

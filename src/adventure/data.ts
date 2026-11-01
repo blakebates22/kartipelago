@@ -56,7 +56,8 @@ export const KINGDOMS: Kingdom[] = [
     ],
     boss: { name: "Cinderjaw", track: "boss_prehistoric", speed: 1.0 },
     champion: { name: "Rex", look: "rex" },
-    minigame: "smugglers",
+    // (Oct 31: Smugglers' Run ditched; Balloon Brawl here till its replacement's chosen.)
+    minigame: "balloons",
     cave: "THE LOOKOUT CAVE",
     next: "snow",
     tunnel: "journey_gorge",

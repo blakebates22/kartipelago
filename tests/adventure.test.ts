@@ -90,7 +90,8 @@ describe("the story data", () => {
       expect(regionOfKingdom(k.id)?.cave, k.id).toBeDefined();
     }
     // One mini-game each.
-    expect(new Set(KINGDOMS.map((k) => k.minigame)).size).toBe(4);
+    // (Oct 31: three games while Smugglers' Run's replacement is chosen.)
+    expect(new Set(KINGDOMS.map((k) => k.minigame)).size).toBeGreaterThanOrEqual(3);
     for (const c of DRAGON.courses) {
       expect(trackById(c.track)).toBeDefined();
       expect(shardCourse(c, exists).standIn).toBe(false);

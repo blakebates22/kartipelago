@@ -41,6 +41,7 @@ import props  # noqa: E402
 import beach_props as bp  # noqa: E402
 import tropic_props as tp  # noqa: E402
 import gulch_props as gp  # noqa: E402
+import swamp_props as sw  # noqa: E402
 import region_paint as paint  # noqa: E402
 import region_ruin as rr  # noqa: E402
 
@@ -597,13 +598,14 @@ def sump(c, ground):
             cone(c, "Dragon Light Heap %d" % j, x, y, 1.6, ground(x, y) - 0.4, 3.0 + 1.5 * (j % 3), ("crystal_cyan", "wall"), segs=5,
                  role="visual")
     g = c.game(sx, sy, SUMP_FLOOR + 2.0)
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=f0 - 8.0, n=12, folk="beach", heading=0.0)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=f0 - 8.0, n=12, folk="sump", heading=0.0)
     broker(c)
 
 
 def broker(c):
     """The Broker's palace: a gilded ship hanging over the middle of the Sump on four chains
-    from the roof, lit from within, its stern galleries gold, a gangway hanging down."""
+    from the roof, lit from within, its stern galleries gold, a gangway hanging down; the
+    Broker (a huge croc) sprawled on its deck."""
     sx, sy = SUMP
     z = -26.0
     rot = 0.6
@@ -624,8 +626,8 @@ def broker(c):
             box(c, "Broker Window %d %d" % (int(w), sd), wx, wy, 0.6, 0.08, z + 4.0, z + 6.6, ("window_warm", "wall"), rot=rot, role="visual")
     gx, gy = at(-16.2, 0.0)
     box(c, "Broker Gallery", gx, gy, 0.4, 5.0, z - 1.0, z + 8.0, ("gold_trim", "wall"), rot=rot, role="visual")
-    for sd in (-1, 1):
-        mx, my = at(4.0 * sd, 0.0)
+    for sd, (lx, ly) in ((-1, (-3.6, -2.3)), (1, (6.2, -2.3))):
+        mx, my = at(lx, ly)
         box(c, "Broker Lantern %d" % sd, mx, my, 0.5, 0.5, z + 2.4, z + 4.0, ("lantern_amber", "wall"), role="visual")
         g = c.game(mx, my, z + 4.4)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
@@ -635,6 +637,11 @@ def broker(c):
         bm = bmesh.new()
         props.tube(bm, [(px, py, z + 2.0), (tx, ty, -6.0)], 0.4, n=6)
         c.assign(c.mesh_object("Broker Chain %d %d" % (int(lx), int(ly)), bm, "Props", "visual"), c.lib("iron", "wall"))
+    # The Broker himself, sprawled along his deck, his snout over the bow, his tail over the
+    # rail (Blake, Oct 31: "a big croc for now without looking too much like king k rool").
+    # (Half as big again as a croc could be: his snout over the bow, his feet over the sides.)
+    bx, by = at(-1.5, 0.0)
+    c.place(sw.broker_croc(c), bx, by, z + 2.4, rot=rot, scale=1.5, role="visual", name="The Broker")
     gx, gy = at(10.0, 5.0)
     box(c, "Broker Gangway", gx, gy, 0.8, 0.3, z - 22.0, z + 2.0, ("weathered_timber", "wall"), rot=rot, role="visual")
 

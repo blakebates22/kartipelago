@@ -510,6 +510,94 @@
       "x": 146.04,
       "y": 42.46,
       "z": -343.43
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": -112.49,
+      "z": 78.91,
+      "y": 11.04,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": -263.28,
+      "z": 20.72,
+      "y": 27.76,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": -374.69,
+      "z": 37.82,
+      "y": 28.53,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": -212.31,
+      "z": -271.89,
+      "y": 57.18,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -133.78,
+      "z": -356.88,
+      "y": 57.8,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": 124.06,
+      "z": -327.97,
+      "y": 40.24,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": 217.91,
+      "z": -269.6,
+      "y": 40.39,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": 322.13,
+      "z": -23.86,
+      "y": 17.71,
+      "r": 6.0,
+      "n": 2,
+      "folk": "dragon",
+      "heading": 0.0
     }
   ],
   "generator": "tools/blender/prehistoric/dragon_region.py (re-running it rewrites entities)"

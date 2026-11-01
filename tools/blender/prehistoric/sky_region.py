@@ -125,6 +125,7 @@ def main():
     falls(c)
     pb.emit_spots(c, spots)
     dress(c, ground, spots)
+    paint.wayfolk(c, ground, "dragon", [M.SQUARE[:2]], 8, apart=110.0, every=25)
     if RUIN:
         ruined(c, ground, spots)
 

@@ -160,9 +160,6 @@ export function minigameLoading(game: Game, info: MiniGameInfo, story?: MiniGame
             onItem(ev) {
               if (ev.type === "hit" && !ev.blocked) box.g?.hit(ev.racer);
             },
-            topSpeed(i) {
-              return box.g?.carrying(i) ? RULES.carrySpeed : undefined;
-            },
           },
         })
         .then((s) => {
@@ -252,20 +249,6 @@ function arenaView(session: Session, g: MiniGame) {
       return b;
     });
   });
-  // Docks (Smugglers' Run): a glowing ring of the crew's colour at each.
-  const ringGeo = geo(new THREE.TorusGeometry(RULES.dockRadius, 0.35, 6, 28));
-  g.arena.docks.forEach((n, i) => {
-    const r = new THREE.Mesh(ringGeo, mat(KART_COLORS[i % 4]!, 0.6));
-    r.rotation.x = Math.PI / 2;
-    r.position.set(n.x, n.y + 0.3, n.z);
-    group.add(r);
-  });
-  // The crates: planks with dark iron bands.
-  const crateGeo = geo(new THREE.BoxGeometry(1.5, 1.2, 1.5));
-  const bandGeo = geo(new THREE.BoxGeometry(1.56, 0.18, 1.56));
-  const crateMat = mat("#a8743a", 0.1);
-  const bandMat = mat("#3a2a1c", 0.05);
-  const crates: { g: THREE.Group; s: THREE.Mesh }[] = [];
   // The ice (Crumble Rink): a hexagonal slab per tile; cracking ones shiver and darken,
   // gone ones drop away into the crevasse.
   let tiles: THREE.InstancedMesh | undefined;
@@ -315,32 +298,6 @@ function arenaView(session: Session, g: MiniGame) {
           e.mesh.visible = false;
           e.racer.shadow.visible = false;
         }
-      });
-      while (crates.length < g.crates.length) {
-        const c = new THREE.Group();
-        c.add(new THREE.Mesh(crateGeo, crateMat));
-        for (const y of [-0.38, 0.38]) {
-          const b = new THREE.Mesh(bandGeo, bandMat);
-          b.position.y = y;
-          c.add(b);
-        }
-        const s = new THREE.Mesh(shadowGeo, shadowMat);
-        s.rotation.x = -Math.PI / 2;
-        group.add(c, s);
-        crates.push({ g: c, s });
-      }
-      crates.forEach((v, i) => {
-        const c = g.crates[i];
-        v.g.visible = v.s.visible = Boolean(c);
-        if (!c) return;
-        const carried = c.carrier >= 0;
-        const k = carried ? session.entrants[c.carrier]!.state : undefined;
-        const y = k ? k.y : groundAt(c.x, c.z);
-        v.g.position.set(c.x, (k ? y + 2.4 : y + 0.6) + Math.max(0, c.fall) * 20, c.z);
-        v.g.rotation.y = carried ? k!.heading : i * 1.3;
-        v.s.visible = c.fall > 0;
-        v.s.position.set(c.x, groundAt(c.x, c.z) + 0.08, c.z);
-        v.s.scale.setScalar(1.2 - Math.max(0, c.fall) * 0.3);
       });
       if (ice && tiles) {
         for (let n = 0; n < ice.state.length; n++) {
@@ -467,10 +424,8 @@ function minigamePlay(
       if (g.out[0]) ks[0]!.speed *= 0.9;
       for (const n of g.news) {
         if (n.what === "pop" && n.who === 0) game.sounds.error();
-        if (n.what === "drop" && n.who === 0) game.sounds.error();
         if (n.what === "fall" && n.who === 0) game.sounds.error();
-        if ((n.what === "star" || n.what === "dock" || n.what === "grab") && n.who === 0)
-          game.sounds.confirm();
+        if (n.what === "star" && n.who === 0) game.sounds.confirm();
       }
       if (before === undefined && g.winner !== undefined) finish();
     },

@@ -30,7 +30,7 @@ export interface Home {
   heading: number;
 }
 
-const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road"];
+const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road", "sump"];
 
 /** How far above a villager the ground is looked for: a roof over a spot (a house) is
  * found first, and isn't ground it can stand on, so it never walks into a house. */
@@ -86,6 +86,10 @@ const SYLL: Record<Folk, [string[], string[]]> = {
     ["Way", "Rov", "Tra", "Pil", "Wan", "Jour", "Pack", "Hob", "Trek", "Mil"],
     ["fa", "er", "vel", "grim", "do", "ney", "ley", "bo", "ka", "ly"],
   ],
+  sump: [
+    ["Grub", "Mog", "Skiv", "Rat", "Nib", "Slag", "Dreg", "Fen", "Murk", "Gil"],
+    ["sy", "ly", "gins", "wick", "bit", "ty", "o", "nose", "kin", "per"],
+  ],
 };
 
 /** Placeholder lines (Blake: the dialogue comes later), a few for each kingdom. */
@@ -125,6 +129,20 @@ const LINES: Record<Folk, string[]> = {
     "I'M WALKING TO THE NEXT KINGDOM. YOU'RE QUICKER.",
     "KEEP TO THE ROAD. THE ROCKS DON'T MOVE FOR KARTS.",
     "I TRADE BETWEEN THE KINGDOMS. BUSY TIMES.",
+  ],
+  // The Sump's tunnel folk (Blake, Oct 31: "give them new dialogue"): a grubby, thriving
+  // underworld, everything in it lifted from some kingdom, the Broker over it all.
+  sump: [
+    "NEW FACE? KEEP YOUR HANDS ON YOUR WHEEL AND YOUR KEYS IN YOUR POCKET.",
+    "EVERYTHING DOWN HERE FELL OFF A CART. OR OFF A KINGDOM.",
+    "THE BROKER SEES THE WHOLE SUMP FROM UP ON HIS SHIP. SMILE.",
+    "TWO SHELLS FOR A LANTERN. THREE IF YOU WANT IT LIT.",
+    "SUNLIGHT? IT COMES DOWN THE EYE AT NOON. THAT'S PLENTY.",
+    "THAT GOLD'S FROM THE DESERT. THAT ICE IS FROM THE SNOW. THE GRUDGES ARE EVERYBODY'S.",
+    "THE TIDE COMES IN UNDER THE HARBOUR. SO DOES EVERYTHING ELSE.",
+    "SPIRALLING DOWN'S FREE. CLIMBING OUT COSTS YOU.",
+    "THE EDGE OF THE WORLD? DOWN THE TUNNEL AND OUT. MIND THE DROP.",
+    "I DON'T SELL MAPS. MAPS GET PEOPLE FOUND.",
   ],
 };
 

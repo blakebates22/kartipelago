@@ -47,7 +47,7 @@ export const SPECIES: readonly Species[] = [
   "ovi",
   "sauro",
 ];
-export type Folk = "valley" | "snow" | "desert" | "beach" | "dragon" | "road";
+export type Folk = "valley" | "snow" | "desert" | "beach" | "dragon" | "road" | "sump";
 
 /** Four-legged kinds (the rest walk on two). */
 export const FOURS = new Set<Species>(["ankylo", "trike", "sauro"]);
@@ -72,6 +72,8 @@ const SKINS: Record<Folk, string[]> = {
   beach: ["#3fb8a0", "#ff9a6a", "#6fc06a", "#e0b040", "#5aa0e0"],
   dragon: ["#7a6aa0", "#5f8a6a", "#9a5a5a", "#6a7a9a", "#a08a5a"],
   road: ["#8a9a6a", "#a08060", "#7a8aa0", "#b0906a", "#6a8a7a"],
+  // The Sump's tunnel folk: pale from the dark, mossy, sooty.
+  sump: ["#7a8a6a", "#8a7a68", "#6a7a78", "#9a8a5a", "#7a6a78"],
 };
 /** Clothes colours (main, trim) per folk. */
 const CLOTH: Record<Folk, [string, string][]> = {
@@ -102,6 +104,12 @@ const CLOTH: Record<Folk, [string, string][]> = {
   road: [
     ["#8a6a3a", "#e0d0a0"],
     ["#4a6a8a", "#e0d0a0"],
+  ],
+  // (Second-hand: dingy cloth and a bit of stolen colour.)
+  sump: [
+    ["#5a4a3a", "#c8a040"],
+    ["#3a4a4a", "#b05a3a"],
+    ["#6a3a3a", "#d0c0a0"],
   ],
 };
 const IRIS = ["#6a3a10", "#2a6a3a", "#2a4a8a", "#7a2a6a", "#8a6a10"];
@@ -1038,6 +1046,52 @@ function dress(
         r: [Math.PI / 2 - 0.25, 0, 0],
       });
     }
+  } else if (folk === "sump") {
+    // The tunnel folk: a grubby neckerchief, its knot at the front; a headscarf on some.
+    ring(col.r * 1.04, 0.032, () => main);
+    const kn: V3 = qc
+      ? [0, col.at[1] - col.r, col.at[2] + 0.02]
+      : [0, col.at[1] - 0.04, col.at[2] + col.r];
+    cb.add(ellipsoid(8, 6), main, { p: kn, s: [0.04, 0.035, 0.035] });
+    for (const sd of [1, -1])
+      cb.addColored(
+        tube(
+          [
+            kn,
+            [kn[0] + sd * 0.03, kn[1] - 0.07, kn[2] + 0.02],
+            [kn[0] + sd * 0.05, kn[1] - 0.13, kn[2] + 0.03],
+          ],
+          [0.02, 0.016, 0.006],
+          main,
+          {
+            sides: 4,
+            steps: 2,
+          },
+        ),
+      );
+    if (v === 1 && !k.noHat) {
+      hb.add(new THREE.SphereGeometry(1, 14, 7, 0, Math.PI * 2, 0, Math.PI * 0.5), trim, {
+        p: [crown[0], crown[1] - R * 0.3, crown[2]],
+        s: [R * 0.95, R * 0.7, R * 1.0],
+      });
+      const back: V3 = [crown[0], crown[1] - R * 0.25, crown[2] - R * 0.9];
+      hb.add(ellipsoid(8, 6), trim, { p: back, s: [R * 0.18, R * 0.14, R * 0.14] });
+      hb.addColored(
+        tube(
+          [
+            back,
+            [back[0] + 0.03, back[1] - 0.08, back[2] - 0.05],
+            [back[0] + 0.05, back[1] - 0.16, back[2] - 0.06],
+          ],
+          [0.025, 0.018, 0.006],
+          trim,
+          {
+            sides: 4,
+            steps: 2,
+          },
+        ),
+      );
+    }
   } else {
     // On the road: a traveller's pack and a bedroll.
     const bk = k.back;
@@ -1159,6 +1213,21 @@ function dress(
           },
         ),
       );
+    } else if (folk === "sump") {
+      // A strap of a belt, a pouch, and a little tin lantern (it's dark down there).
+      band("#3a2a1c", 0.022);
+      builds.torso.add(new THREE.BoxGeometry(0.09, 0.08, 0.05), shade(main, 0.8), {
+        p: at(-1.1, 1.08, -0.03),
+        r: [0, -1.1, 0],
+      });
+      const lp = at(1.15, 1.1, -0.06);
+      builds.torso.add(new THREE.BoxGeometry(0.06, 0.08, 0.06), "#ffcf5a", { p: lp });
+      builds.torso.add(new THREE.BoxGeometry(0.075, 0.015, 0.075), "#3a3a3a", {
+        p: [lp[0], lp[1] + 0.045, lp[2]],
+      });
+      builds.torso.add(new THREE.BoxGeometry(0.075, 0.015, 0.075), "#3a3a3a", {
+        p: [lp[0], lp[1] - 0.045, lp[2]],
+      });
     } else if (folk === "road") {
       // A belt with a pouch.
       band("#6a4426", 0.02);

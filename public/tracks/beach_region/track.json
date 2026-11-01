@@ -214,6 +214,94 @@
       "x": 14.03,
       "z": -390.77,
       "heading": 0.06233901931778614
+    },
+    {
+      "id": "villager_home_02",
+      "type": "villager_home",
+      "x": 241.46,
+      "z": 109.3,
+      "y": 7.07,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_03",
+      "type": "villager_home",
+      "x": 168.41,
+      "z": 206.39,
+      "y": 4.07,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_04",
+      "type": "villager_home",
+      "x": 116.52,
+      "z": 304.13,
+      "y": 3.23,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_05",
+      "type": "villager_home",
+      "x": 0.77,
+      "z": 311.83,
+      "y": 3.18,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_06",
+      "type": "villager_home",
+      "x": -112.37,
+      "z": 310.22,
+      "y": 3.02,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_07",
+      "type": "villager_home",
+      "x": -188.54,
+      "z": 220.96,
+      "y": 3.27,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_08",
+      "type": "villager_home",
+      "x": -279.04,
+      "z": 147.41,
+      "y": 3.11,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_09",
+      "type": "villager_home",
+      "x": -289.03,
+      "z": 29.67,
+      "y": 3.13,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
     }
   ],
   "generator": "tools/blender/prehistoric/beach_region.py (re-running it rewrites entities)"

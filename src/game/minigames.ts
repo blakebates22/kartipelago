@@ -1,7 +1,8 @@
 /**
  * The mini-games (Blake, Oct 26: two battle royales like the old kart racers' and two of
  * our own; Oct 27: keep Balloon Brawl's and Star Fall's rules, replace the other two with
- * Smugglers' Run and Crumble Rink). Four karts in an arena (tools/blender/prehistoric/
+ * Smugglers' Run and Crumble Rink; Oct 31: Smugglers' Run ditched, "it's not fun and the
+ * ai is too good"). Four karts in an arena (tools/blender/prehistoric/
  * arena_region.py), the rivals driven by the games' own simple minds (seek a target, fire
  * at whoever's in front), the rules here as plain logic (no rendering: the screen,
  * src/screens/minigames.ts, draws them):
@@ -9,10 +10,6 @@
  *   balloons   BALLOON BRAWL: three balloons each; a hit from any item pops one; with none
  *              left you're out. The last kart with balloons wins (or the most when the
  *              clock runs out).
- *   smugglers  SMUGGLERS' RUN: crates drop round the cove. Drive over one to grab it and
- *              take it to your crew's dock; a crate's heavy (you're slower carrying it).
- *              Ram a carrier, or hit them with an item, and they drop it. Five delivered
- *              wins.
  *   crumble    CRUMBLE RINK: the floor is ice tiles over a crevasse. A tile cracks when a
  *              kart drives over it; drive onto a cracked tile and it breaks and falls a
  *              moment later (keep going and you're across). The edge crumbles in every
@@ -23,7 +20,7 @@
  */
 import type { DeviceReading } from "../core/input";
 
-export type MiniGameId = "balloons" | "smugglers" | "crumble" | "stars";
+export type MiniGameId = "balloons" | "crumble" | "stars";
 
 export interface MiniGameInfo {
   id: MiniGameId;
@@ -43,15 +40,6 @@ export const MINIGAMES: MiniGameInfo[] = [
     arena: "arena_bowl",
     kind: "battle",
     blurb: "THREE BALLOONS EACH. EVERY HIT POPS ONE. LAST KART FLYING WINS.",
-    seconds: 180,
-  },
-  {
-    id: "smugglers",
-    name: "Smugglers' Run",
-    arena: "arena_docks",
-    kind: "own",
-    blurb:
-      "GRAB A FALLING CRATE AND RUN IT TO YOUR DOCK. RAM A CARRIER TO MAKE THEM DROP IT. FIVE WINS.",
     seconds: 180,
   },
   {
@@ -86,10 +74,6 @@ export interface Kart {
 export interface Arena {
   spawns: { x: number; z: number; heading: number }[];
   radius: number;
-  /** Each crew's dock (Smugglers' Run), in the karts' order. */
-  docks: { x: number; z: number; y: number; color: string }[];
-  /** Where crates drop (Smugglers' Run). */
-  crateSpawn?: { x: number; z: number; y: number; r: number };
   /** The ice (Crumble Rink): its centre, height, radius and tile size. */
   rink?: { x: number; z: number; y: number; r: number; tile: number };
   /** The upper level (the two-storey arenas): a ring deck round the middle, its centre
@@ -117,7 +101,7 @@ const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite
 
 /** An arena's things from its package's entities. */
 export function parseArena(entities: unknown[]): Arena {
-  const a: Arena = { spawns: [], radius: 60, docks: [], ramps: [] };
+  const a: Arena = { spawns: [], radius: 60, ramps: [] };
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
@@ -128,15 +112,6 @@ export function parseArena(entities: unknown[]): Arena {
         heading: num(o.heading, 0),
       };
     else if (o.type === "arena") a.radius = num(o.radius, 60);
-    else if (o.type === "dock")
-      a.docks[num(o.index, a.docks.length)] = {
-        x: num(o.x, 0),
-        z: num(o.z, 0),
-        y: num(o.y, 0),
-        color: String(o.color ?? "red"),
-      };
-    else if (o.type === "crate_spawn")
-      a.crateSpawn = { x: num(o.x, 0), z: num(o.z, 0), y: num(o.y, 0), r: num(o.r, 30) };
     else if (o.type === "deck") a.deck = { r: num(o.r, 30), w: num(o.w, 16), y: num(o.y, 6) };
     else if (o.type === "ramp")
       a.ramps[num(o.index, a.ramps.length)] = {
@@ -155,23 +130,11 @@ export function parseArena(entities: unknown[]): Arena {
       };
   }
   a.spawns = a.spawns.filter(Boolean);
-  a.docks = a.docks.filter(Boolean);
   a.ramps = a.ramps.filter(Boolean);
   return a;
 }
 
 // ---------------------------------------------------------------- the rules
-
-export interface Crate {
-  x: number;
-  z: number;
-  /** Seconds until it lands (> 0: falling, its shadow showing). */
-  fall: number;
-  /** Who's carrying it (-1: on the ground). */
-  carrier: number;
-  /** Up on the deck (it fell there, or was dropped there). */
-  high?: boolean;
-}
 
 export interface Star {
   x: number;
@@ -251,11 +214,10 @@ export function makeIce(rink: NonNullable<Arena["rink"]>): Ice {
 export interface MiniGame {
   readonly info: MiniGameInfo;
   readonly arena: Arena;
-  /** Each kart's score: balloons left, crates delivered, seconds on the ice, stars. */
+  /** Each kart's score: balloons left, seconds on the ice, stars. */
   readonly score: number[];
   /** Out of the game (Balloon Brawl, Crumble Rink). */
   readonly out: boolean[];
-  readonly crates: Crate[];
   readonly stars: Star[];
   /** Crumble Rink's ice (undefined in the other games). */
   readonly ice: Ice | undefined;
@@ -263,14 +225,12 @@ export interface MiniGame {
   readonly clock: number;
   /** The winner once it's over (index), or undefined. */
   readonly winner: number | undefined;
-  /** What just happened, for sound and the screen ("pop", "grab", "dock", "drop", "bump",
+  /** What just happened, for sound and the screen ("pop", "out",
    * "crack", "fall", "star"...), with whose it was. */
   readonly news: { what: string; who: number }[];
   step(karts: Kart[], dt: number): void;
   /** A kart was hit by an item (not blocked by a shield). */
   hit(i: number): void;
-  /** Is this kart carrying a crate (Smugglers' Run: it's slower)? */
-  carrying(i: number): boolean;
   /** Where a rival should drive now. */
   target(i: number, karts: Kart[]): { x: number; z: number; high?: boolean };
   /** Standings: kart indices, best first. */
@@ -291,20 +251,6 @@ function rng(seed: number) {
 export const RULES = {
   lives: 3,
   hitImmuneSec: 2,
-  // Smugglers' Run.
-  cratesToWin: 5,
-  maxCrates: 5,
-  crateEvery: 2.6,
-  crateFall: 2.0,
-  cratePick: 3.6,
-  dockRadius: 7,
-  /** A carrier's top speed (of their own). */
-  carrySpeed: 0.72,
-  /** Ram a carrier: this close, this fast. */
-  bumpDist: 3.4,
-  bumpSpeed: 7,
-  /** After dropping one, how long before you can grab again. */
-  dropCooldown: 1.2,
   // Crumble Rink: thin ice. The first kart over a tile cracks it; driving onto a cracked
   // tile breaks it (it falls a moment later: keep going and you're across).
   /** Seconds from a tile breaking to its fall. */
@@ -334,14 +280,11 @@ export function createMiniGame(
   const score = new Array<number>(karts).fill(info.id === "balloons" ? RULES.lives : 0);
   const out = new Array<boolean>(karts).fill(false);
   const immune = new Array<number>(karts).fill(0);
-  const cooldown = new Array<number>(karts).fill(0);
-  const crates: Crate[] = [];
   const stars: Star[] = [];
   const ice = info.id === "crumble" && arena.rink ? makeIce(arena.rink) : undefined;
   let clock = info.seconds;
   let played = 0;
   let winner: number | undefined;
-  let crateIn = 0;
   let starIn = 0;
   let edgeIn = RULES.edgeEvery;
   let edgeRing = ice ? Math.max(...ice.ring) : 0;
@@ -353,13 +296,10 @@ export function createMiniGame(
   const goals: ({ x: number; z: number; t: number } | undefined)[] = new Array(karts);
   const news: { what: string; who: number }[] = [];
   const say = (what: string, who: number) => news.push({ what, who });
-  /** The karts as last stepped (where a dropped crate lands, which level). */
-  let lastKarts: Kart[] = [];
   /** Is kart k at the level of something there (high: on the deck)? */
   const sameLevel = (k: Kart, high: boolean | undefined) =>
     !arena.deck || onDeck(arena, k) === Boolean(high);
 
-  const dockOf = (i: number) => arena.docks[i % Math.max(1, arena.docks.length)];
   const randomSpot = (r: number) => {
     const a = rand() * Math.PI * 2;
     const d = r * Math.sqrt(rand());
@@ -375,16 +315,6 @@ export function createMiniGame(
           lasted[b]! - lasted[a]! ||
           a - b,
       );
-  const drop = (i: number) => {
-    const c = crates.find((c) => c.carrier === i);
-    if (!c) return false;
-    c.carrier = -1;
-    c.x += (rand() - 0.5) * 5;
-    c.z += (rand() - 0.5) * 5;
-    c.high = Boolean(lastKarts[i]) && onDeck(arena, lastKarts[i]!) && overDeck(arena, c.x, c.z);
-    cooldown[i] = RULES.dropCooldown;
-    return true;
-  };
   const solidAround = (x: number, z: number, r: number) => {
     if (!ice) return 0;
     let n = 0;
@@ -398,7 +328,6 @@ export function createMiniGame(
     arena,
     score,
     out,
-    crates,
     stars,
     ice,
     get clock() {
@@ -409,75 +338,15 @@ export function createMiniGame(
     },
     news,
     standings: best,
-    carrying: (i) => crates.some((c) => c.carrier === i),
     step(ks, dt) {
       news.length = 0;
-      lastKarts = ks;
       if (winner !== undefined) return;
       clock -= dt;
       played += dt;
-      for (let i = 0; i < karts; i++) {
-        immune[i] = Math.max(0, immune[i]! - dt);
-        cooldown[i] = Math.max(0, cooldown[i]! - dt);
-      }
+      for (let i = 0; i < karts; i++) immune[i] = Math.max(0, immune[i]! - dt);
       if (info.id === "balloons") {
         const left = out.map((o, i) => (o ? -1 : i)).filter((i) => i >= 0);
         if (left.length <= 1) winner = left[0] ?? best()[0];
-      } else if (info.id === "smugglers") {
-        // New crates out of the sky now and then (their shadows first).
-        crateIn -= dt;
-        const s = arena.crateSpawn ?? { x: 0, z: 0, y: 0, r: 30 };
-        if (crateIn <= 0 && crates.length < RULES.maxCrates) {
-          const p = randomSpot(s.r);
-          crates.push({ x: s.x + p.x, z: s.z + p.z, fall: RULES.crateFall, carrier: -1 });
-          crateIn = RULES.crateEvery;
-        }
-        for (const c of crates) if (c.fall > 0) c.fall -= dt;
-        for (let i = 0; i < karts; i++) {
-          const k = ks[i]!;
-          const held = crates.find((c) => c.carrier === i);
-          if (held) {
-            held.x = k.x;
-            held.z = k.z;
-            const home = dockOf(i);
-            if (home && Math.hypot(k.x - home.x, k.z - home.z) < RULES.dockRadius) {
-              crates.splice(crates.indexOf(held), 1);
-              score[i]! += 1;
-              say("dock", i);
-            }
-            continue;
-          }
-          if (cooldown[i]! > 0) continue;
-          const free = crates.find(
-            (c) =>
-              c.carrier < 0 &&
-              c.fall <= 0 &&
-              Math.hypot(c.x - k.x, c.z - k.z) < RULES.cratePick &&
-              sameLevel(k, c.high),
-          );
-          if (free) {
-            free.carrier = i;
-            say("grab", i);
-          }
-        }
-        // Rammed: a kart driving into a carrier knocks the crate loose.
-        for (let i = 0; i < karts; i++) {
-          if (!game.carrying(i) || immune[i]! > 0) continue;
-          const k = ks[i]!;
-          const by = ks.findIndex(
-            (o, j) =>
-              j !== i &&
-              Math.abs(o.speed) > RULES.bumpSpeed &&
-              Math.hypot(o.x - k.x, o.z - k.z) < RULES.bumpDist,
-          );
-          if (by >= 0 && drop(i)) {
-            immune[i] = RULES.hitImmuneSec;
-            say("bump", by);
-            say("drop", i);
-          }
-        }
-        const w = score.findIndex((v) => v >= RULES.cratesToWin);
-        if (w >= 0) winner = w;
       } else if (info.id === "crumble" && ice) {
         if (played > RULES.graceSec) {
           // Where karts drive, the ice cracks; onto cracked ice, it breaks.
@@ -596,8 +465,6 @@ export function createMiniGame(
           out[i] = true;
           say("out", i);
         }
-      } else if (info.id === "smugglers") {
-        if (drop(i)) say("drop", i);
       } else if (info.id === "stars") {
         if (score[i]! > 0) {
           score[i]! -= 1;
@@ -608,21 +475,6 @@ export function createMiniGame(
     target(i, ks) {
       const k = ks[i]!;
       const dist = (p: { x: number; z: number }) => Math.hypot(p.x - k.x, p.z - k.z);
-      const near = <T extends { x: number; z: number }>(list: T[]) =>
-        list.reduce<T | undefined>((a, b) => (!a || dist(b) < dist(a) ? b : a), undefined);
-      if (info.id === "smugglers") {
-        if (game.carrying(i)) return dockOf(i) ?? { x: 0, z: 0 };
-        const free = near(crates.filter((c) => c.carrier < 0 && c.fall < 0.8));
-        // A loose crate near enough, or else go and ram whoever's carrying one.
-        const carrier = near(
-          ks
-            .filter((_, j) => j !== i && game.carrying(j))
-            .map((o) => ({ x: o.x, z: o.z, high: onDeck(arena, o) })),
-        );
-        if (free && (!carrier || dist(free) < dist(carrier) * 1.5)) return free;
-        if (carrier) return carrier;
-        return arena.crateSpawn ?? { x: 0, z: 0 };
-      }
       if (info.id === "crumble" && ice) {
         // A spot on solid ice with plenty of solid ice round it, not too far; picked
         // afresh now and then, or when the ice under the goal goes.
