@@ -169,6 +169,10 @@ def wall_life(c, ground, taken):
     land = bpy.data.objects.get("Snow Kingdom")
 
     def put_tree(proto, x, y, rot, scale, look):
+        # (None up Frostveil's walls: its towers and spires against the rock, not trees,
+        # Blake, review-snow_region 8 note 14.)
+        if look == "frostveil":
+            return
         # (A ledge of the rock of the wall it stands out of, set back into it a little:
         # Blake, review-snow_region note 4.)
         dx, dy = _toward_pocket(x, y)
@@ -215,10 +219,9 @@ def wall_life(c, ground, taken):
     for x, y, look, (dx, dy), drop in lips:
         if not room.clear(x, y, 5.0) or drop < 4.5:
             continue
-        # (None round Hearthglow's basin: Blake, review-snow_region 7, "remove all of these
-        # weird icicles in this area".)
-        if math.hypot(x - SL.VILLAGE[0], y - SL.VILLAGE[1]) < 120.0:
-            continue
+        # (None anywhere now: Blake, review-snow_region 7 and 8, "remove these weird icicles
+        # and any others in the area", time after time.)
+        continue
         # (Icicles only over icy rock: not on the brown and black walls, where they looked
         # wrong: Blake, review-snow_region note 8.)
         tex = paint.wall_texture(land, x + dx * 3.0, y + dy * 3.0, -dx, -dy, steps=(0.5, 1.5)) if land else None
@@ -535,7 +538,6 @@ def hearthglow(c, ground, ter, taken):
         near = [o for o in c.coll("Village").objects if o.type == "MESH" and o.data.users == 1]
         c.glow([ter] + near, sc.warm, 16.0, (1.35, 1.12, 0.82), base=1.0,
                region=lambda w: math.hypot(w.x - cx, w.y - cy) < 110.0)
-    print("hearthglow: why not", why)
     print("hearthglow: %d cottages, %d stalls, %d posts" % (len(built), len(stalls), sum(1 for p in pairs for q in p if q)))
     return []
 

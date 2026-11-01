@@ -39,7 +39,8 @@ TOP = 90.0
 # and back up the glacier's tongue to the pass.
 HUB = (18.0, -160.0, 16.0, 58.0)  # x, y, radius, height: the Arrival Pass's crest
 VILLAGE = (-96.0, -140.0, 14.0, 44.0)  # Hearthglow's little square (x, y, radius, height)
-LAKE = (-30.0, 148.0, 20.0, 70.6)  # the frozen lake in the summit: x, y, radius, ice height
+LAKE = (-24.0, 155.0, 23.0, 69.2)  # the frozen lake in the summit: x, y, radius, ice height (v4: larger, note 21;
+# sunk below all its shore, so its ice never shows past it)
 
 POCKETS = [
     ("pass", "pass", [(18.0, -160.0, 22.0, 58.0), (48.0, -148.0, 18.0, 58.0), (-8.0, -168.0, 16.0, 57.0)]),
@@ -385,6 +386,7 @@ GATES = {
     "aurora": (122.0, 178.0),  # the rift in the glacier's north wall
 }
 TREE = (-90.0, -192.0)
+FROST_COVE = (-204.0, -42.0, 13.0, 47.2)  # Frostveil's cove carved west of the courtyard: x, y, radius, floor
 # (Blake, Oct 30: "we can remove some of the cliff behind the big christmas tree to make
 # more room for a larger tree": its court cut back into the basin's south wall.)
 TREE_COURT = (-90.0, -196.0, 19.0, 44.8)  # the village's great tree, south of the square

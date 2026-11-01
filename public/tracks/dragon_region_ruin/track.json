@@ -637,7 +637,7 @@
   ],
   "generator": "tools/blender/prehistoric/dragon_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "keep_props.py": "4a1bf66d26e480fcb5a1a54a0d26cb8851e9b1e0af34f932b156d834cd02760d",
+    "keep_props.py": "30a8d9886a2255a7b89beff946827746d5aef1fd678e3dc1671ed684c9b56b8c",
     "sky_layout.py": "62d2eb29a68c25c10489fcba380a72dd65ec307174da8e812d7e23dfa4494e94",
     "sky_region.py": "165817f80b78222cd55d1b96c5d1468e921f1b01cdc589e7f949d3642e773377"
   }

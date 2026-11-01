@@ -24,6 +24,7 @@ import pocket_build as pb  # noqa: E402
 from pocket_build import box, cone  # noqa: E402
 import hearthglow_props as hp  # noqa: E402
 import summit_props as sp  # noqa: E402
+import iceage_props as ia  # noqa: E402
 import aurora_props as ap  # noqa: E402
 import keep_props as kp  # noqa: E402
 import villager_homes as vh  # noqa: E402
@@ -86,10 +87,8 @@ def _natural(x, y):
     tz = L.tunnel_floor(x, y)
     if tz is not None:
         h = min(h, tz - 0.25)  # (under a tunnel's rock: flush under its road, out to the walls)
-    # The Ice Bells' island in the lake.
-    d = math.hypot(x - HUT[0], y - HUT[1])
-    if d < 26:
-        h = max(h, lerp(SL.LAKE[3] + 0.5, h, smooth((d - 14.0) / 12.0)))
+    # (No island in the lake any more: the Ice Bells are long gone, and it left the lake a
+    # thin ring of ice round it; review-snow_region 9 note 21, "make the frozen lake larger".)
     if RUIN:
         # The Frozen Pass: a slot through the mountains east, out of the lake.
         (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
@@ -101,6 +100,11 @@ def _natural(x, y):
         dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
         if dd < 26:
             h = lerp(h, 73.0 + 2.0 * t, smooth((26.0 - dd) / 10.0))
+    # Frostveil's cove, carved back into the mountain west of its courtyard (note 5).
+    fx, fy, fr, fz = SL.FROST_COVE
+    d = math.hypot(x - fx, y - fy)
+    if d < fr + 12.0:
+        h = min(h, lerp(fz, h, smooth((d - fr) / 12.0)))
     # The lane out of the square east to Hearthglow's portal, cut level into the wall.
     vx, vy, vr, vz = SL.VILLAGE
     d, _t = pb_seg(x, y, _square_edge(), SL.GATES["hearthglow"])
@@ -232,7 +236,7 @@ def main():
         return natural(x, y) if z is None else z
 
     lx, ly, lr, lz = SL.LAKE
-    c.disc("Frozen Lake", lx, ly, lr + 4.0, lz - 0.05, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.06)
+    c.disc("Frozen Lake", lx, ly, lr + 2.0, lz - 0.05, c.lib("lake_ice", "ice"), role="visual", n=48, wobble=0.06)
 
     thresholds(c, ground)
     sd.ice_bridge(c, ground)
@@ -249,8 +253,7 @@ def main():
     # smugglers' gate stays, for the story, till the Summit's rework gives it a home.)
     puzzle_kit.pen(c, "return", "Hot Spring", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("frost_stone", "wall"),
                    ground(*RETURN), height=6.0, walls=False)
-    puzzle_kit.pen(c, "secret", "Old Store", *SECRET, pb.to_road(c, *SECRET), 9.0, 4.5, ("citadel_stone", "wall"),
-                   ground(*SECRET), height=6.0)
+    # (No Old Store any more: "we arent going to be using it", review-snow_region 8 notes 1, 13.)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
     # (Hearthglow's cottages, each set level and solid: the overworld rules, Blake, Oct 29,
@@ -273,8 +276,9 @@ def main():
             hi = sd.level_site(c, x, y, rot, 6.5, 5.5, ground, ter)
             if hi is None:
                 return False
-            c.place(sp.lookout_hut(c), x, y, hi - 0.1, rot=rot, coll="Village")
-            g = c.game(x, y, hi + 7.4)
+            # (Ice-age bone huts, not the course's lookout huts: review-snow_region 9 note 22.)
+            c.place(ia.bone_hut(c, k % 2), x, y, hi - 0.05, rot=rot, coll="Village")
+            g = c.game(x, y, hi + 5.4)
             c.entity("chimney", x=g[0], y=g[1], z=g[2])
             return True
         v = (1, 4, 2)[k % 3]
@@ -293,7 +297,8 @@ def main():
         c.entity("chimney", x=g[0], y=g[1], z=g[2])
         return True
 
-    vh.homes(c, L, ground, "snow", home, pockets=["hearth", "descent", "frostveil", "summit", "climb"], avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
+    # (None in Hearthglow, its street's built: nor Frostveil, review-snow_region 8 note 8.)
+    vh.homes(c, L, ground, "snow", home, pockets=["descent", "summit", "climb"], avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
              wall=-12.0, per=4, level=3.0, foot=6.5)
     dress(c, ground, spots)
     vv.clear_paths(c, LANES)
@@ -310,11 +315,55 @@ def main():
     print("loop", round(c.length, 1), "gates", len(gts))
 
 
+def ladder_up(c, ground, at, normal):
+    """A timber ladder up the face of the gatehouse wall nearest `at` (facing `normal`),
+    from the snow to the wall's top (Blake, review-snow_region 8 note 12: "put a ladder up
+    this wall all the way to the top")."""
+    import bpy
+    import bmesh
+    from canyon_props import _beam
+
+    x, y = at
+    walls = [o for o in bpy.data.objects if o.name.startswith("Curtain Wall 10.0 10.0")]
+    if not walls:
+        return
+    nx, ny = normal
+    # the wall's own top, straight down onto it just inside its face (the nearest wall by
+    # its origin can be a different, lower one)
+    from mathutils import Vector
+
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    hit, loc, _n, _i, ob, _m = bpy.context.scene.ray_cast(
+        dg, Vector((x - nx * 0.6, y - ny * 0.6, 400.0)), Vector((0, 0, -1))
+    )
+    if hit and ("Wall" in ob.name or "Gate" in ob.name):
+        top = loc.z
+    else:
+        w = min(walls, key=lambda o: math.hypot(o.location.x - x, o.location.y - y))
+        top = w.location.z + 10.0 + 0.4
+    print("ladder: up to %.1f on %s" % (top, ob.name if hit else "-"))
+    bx, by = x + nx * 1.0, y + ny * 1.0
+    z0 = ground(bx, by) - 0.1
+    tx, ty = x + nx * 0.25, y + ny * 0.25
+    sx, sy = -ny * 0.45, nx * 0.45
+    bm = bmesh.new()
+    for sd in (-1, 1):
+        _beam(bm, (bx + sx * sd, by + sy * sd, z0), (tx + sx * sd, ty + sy * sd, top + 0.6), 0.09)
+    n = int((top - z0) / 0.4)
+    for k in range(1, n):
+        u = k / n
+        px, py, pz = bx + (tx - bx) * u, by + (ty - by) * u, z0 + (top + 0.6 - z0) * u
+        _beam(bm, (px - sx, py - sy, pz), (px + sx, py + sy, pz), 0.05)
+    c.assign(c.mesh_object("Gatehouse Ladder", bm, "Village", "visual"), c.lib("keep_timber"))
+
+
 def gatehouse(c, ground, s0, s1):
     """Frostveil's gatehouse over the way from Hearthglow, built from the citadel's own
     kit (its stone, slate and teal banners)."""
     half = c.width / 2 + 3.0
-    arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0)
+    # (No gold plaque: "lame and doesnt match castle vibes", review-snow_region 8 note 6.)
+    arch = kp.gate_arch(c, span=2 * half + 6.0, clear=11.0, depth=7.0, gold=False)
     tower = kp.round_tower(c, r=4.8, h=22.0, variant=1)
     small = kp.round_tower(c, r=3.4, h=15.0, variant=0)
     wall = kp.curtain_wall(c, length=8.4, h=11.0, thick=3.0)
@@ -367,6 +416,7 @@ def thresholds(c, ground):
             # walls, a gatehouse at each end (towers with slate spires, the gate's arch
             # and banners), the walls running out from the towers to the cliffs.
             gatehouse(c, ground, s0, s1)
+            ladder_up(c, ground, (-126.72, -56.01), (-0.65, -0.76))
         elif kind == "ice" and name in ("Ice Cave", "Ice Gallery Out"):
             # (v4: open, no rock over them: Blake, review-snow_region 2 notes 4 and 7, "I need
             # to be able to drive through this", "this is in the way"; Aurora's ice to be
@@ -537,7 +587,7 @@ def dress(c, ground, spots):
     ice columns, spires and crystal gardens; the lake's icebergs. After the attack: the
     pines frozen into ice, the undergrowth gone."""
     vx, vy, vr, _vz = SL.VILLAGE
-    taken = paint.Taken([(HUB[0], HUB[1], 12.0), (vx, vy, vr + 10.0), (*HUT, 26.0), (*RETURN, 18.0), (*SECRET, 16.0),
+    taken = paint.Taken([(HUB[0], HUB[1], 12.0), (vx, vy, vr + 10.0), (SL.LAKE[0], SL.LAKE[1], SL.LAKE[2] + 4.0), (*RETURN, 18.0),
                          *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
                          *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS,
                          (SL.HOLLOW[0], SL.HOLLOW[1], 41.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0)])
@@ -589,15 +639,17 @@ def dress(c, ground, spots):
                       scale=(0.9, 1.4), road_margin=8.0, trunk=(0.8, 6.0))
     # Frostveil (v4): the road walled in, inside the castle (snow_sections.frostveil).
     fv = look("frostveil")
-    clear = [(e[0], e[1], 14.0) for e, _ in spots.values()] + [(x, y, 22.0) for x, y in SL.GATES.values()] + [(*SECRET, 20.0)]
+    clear = [(e[0], e[1], 14.0) for e, _ in spots.values()] + [(x, y, 22.0) for x, y in SL.GATES.values()]
     ss.frostveil(c, ground, taken, clear)
     for v, p in enumerate(pines[:2]):
-        paint.scatter(c, p, 14, rmax, fv, g, taken, 74 + v, room=6.0, scale=(0.9, 1.3), road_margin=7.0, trunk=(0.8, 6.0))
+        # (On the courtyard's floor only: none up on the cliffs, note 14.)
+        paint.scatter(c, p, 14, rmax, lambda x, y: fv(x, y) and L.wall_sd(x, y) < -6.0, g, taken, 74 + v, room=6.0,
+                      scale=(0.9, 1.3), road_margin=7.0, trunk=(0.8, 6.0))
     # The summit: pines, broadleaves, shrubs, the frozen shipwreck, the tusk gate over the road.
     su = look("summit")
     # (v4: the deep thaw, Blake, Oct 30: green trees; geysers, ponds, mammoths: snow_sections)
     pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=False) for v in range(3)]
-    ss.summit(c, ground, taken)
+    ss.summit(c, ground, taken, TER)
     for v, p in enumerate(pines):
         paint.scatter(c, p, 40, rmax, su, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0, trunk=(0.8, 6.0))
     for v in range(2):
@@ -606,7 +658,8 @@ def dress(c, ground, spots):
         paint.scatter(c, sp.shrub(c, v, frosted=False), 60, rmax, su, g, taken, 40 + v, room=2.5, role="visual", scale=(0.7, 1.4))
     paint.scatter(c, sp.shipwreck(c), 1, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -24, g, taken, 44, room=40.0,
                   road_margin=18.0)
-    paint.scatter(c, sp.lookout_hut(c), 2, rmax, su, g, taken, 45, room=10.0, road_margin=8.0)
+    paint.scatter(c, ia.bone_hut(c, 1), 2, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -8, g, taken, 45, room=10.0,
+                  road_margin=8.0)
     # The glacier: ice columns, spires, crystal gardens, ice spikes.
     au = look("aurora")
     ss.aurora(c, ground, taken)

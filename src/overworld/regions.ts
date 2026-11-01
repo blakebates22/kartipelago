@@ -230,13 +230,8 @@ export const REGIONS: Region[] = [
     name: "Snow Kingdom",
     packageId: "snow_region",
     ruinPackageId: "snow_region_ruin",
-    // A secret, for the way back: an old store in Frostveil's bailey, buried under a drift the Desert Tool blows away.
-    secret: {
-      obstacle: "drift",
-      tool: "desert",
-      gate: { x: -148.67, z: 27.59, heading: -1.8424, width: 9 },
-      spot: { x: -140, z: 30 },
-    },
+    // (No secret any more: the Old Store in Frostveil's bailey is gone, Blake, review-snow_region 8:
+    // "we arent going to be using it".)
     // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
     cave: {
       gate: { x: -125.94, z: -135.61, heading: -2.3349, width: 9 },

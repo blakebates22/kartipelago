@@ -4,12 +4,14 @@
  * round it, a domed head, a long swinging trunk, great curling ivory tusks, little
  * flapping ears, kind eyes, four stout furry legs and a tufted tail.
  *
- * Built in code from simple shapes (about 9k triangles), with the same interface as the
+ * Built in code from simple shapes (about 20k triangles), with the same interface as the
  * long-neck (render/dinosaur.ts), so game/hazards.ts walks it round its path the same
  * way. Purely visual. (Blake's Snowy Summit review asked for better mammoths: the back
  * now slopes from a high shoulder hump to low hips, the fur hangs in two layered
  * fringes in three shades with shaggy legs, the head has a brow, a forelock and a lip,
- * and the trunk is longer, tapering to a two-fingered tip.)
+ * and the trunk is longer, tapering to a two-fingered tip. Smooth-shaded and rounder
+ * since review-snow_region 9 note 18: "smooth out these mammoths and make them less
+ * polygonal".)
  */
 import * as THREE from "three";
 import type { DinoView } from "./dinosaur";
@@ -18,7 +20,7 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
   const mat = (color: string, opts: THREE.MeshLambertMaterialParameters = {}) => {
-    const m = new THREE.MeshLambertMaterial({ color, flatShading: true, ...opts });
+    const m = new THREE.MeshLambertMaterial({ color, flatShading: false, ...opts });
     mats.push(m);
     return m;
   };
@@ -40,8 +42,8 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   const body = new THREE.Group();
   root.add(body);
 
-  const ball = geo(new THREE.IcosahedronGeometry(1, 3));
-  const lowBall = geo(new THREE.IcosahedronGeometry(1, 1));
+  const ball = geo(new THREE.IcosahedronGeometry(1, 4));
+  const lowBall = geo(new THREE.IcosahedronGeometry(1, 3));
   const add = (
     g: THREE.BufferGeometry,
     m: THREE.Material,
@@ -68,7 +70,7 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   add(lowBall, SNOW, [-0.3, 5.9, -1.8], [1.0, 0.3, 1.1], body);
   // The fur: long locks in two layered fringes (round the belly, and lower down the
   // flanks from the shoulders), in three shades.
-  const lock = geo(new THREE.ConeGeometry(0.5, 2.8, 5));
+  const lock = geo(new THREE.ConeGeometry(0.5, 2.8, 10));
   const shades = [FUR, DARK, LIGHT];
   for (const [n, r, rz, y0, len] of [
     [30, 2.25, 3.4, 2.8, 1.0],
@@ -118,7 +120,7 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
       new THREE.Vector3(sd * 1.1, -0.6, 5.9),
       new THREE.Vector3(sd * 0.4, 0.6, 5.8),
     ]);
-    const tusk = geo(new THREE.TubeGeometry(curve, 16, 0.32, 6, false));
+    const tusk = geo(new THREE.TubeGeometry(curve, 24, 0.32, 12, false));
     // Taper it towards the tip.
     const p = tusk.attributes.position!;
     const v = new THREE.Vector3();
@@ -140,7 +142,7 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   // The trunk: a chain of segments, each hung from the one before, so it can swing and
   // curl.
   const trunk: THREE.Group[] = [];
-  const seg = geo(new THREE.CylinderGeometry(0.42, 0.5, 1.0, 10));
+  const seg = geo(new THREE.CylinderGeometry(0.42, 0.5, 1.0, 16));
   let hang: THREE.Object3D = head;
   for (let i = 0; i < 8; i++) {
     const g = new THREE.Group();
@@ -156,8 +158,8 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   add(ball, SKIN, [-0.12, -0.95, -0.08], [0.12, 0.2, 0.12], hang);
 
   // ------------------------------------------------------------- legs and tail
-  const legGeo = geo(new THREE.CylinderGeometry(0.75, 0.85, 3.6, 8));
-  const cuff = geo(new THREE.ConeGeometry(1.05, 1.4, 8, 1, true));
+  const legGeo = geo(new THREE.CylinderGeometry(0.75, 0.85, 3.6, 16));
+  const cuff = geo(new THREE.ConeGeometry(1.05, 1.4, 16, 1, true));
   const legs: THREE.Group[] = [];
   for (const [x, z] of [
     [1.25, 1.7],

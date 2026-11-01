@@ -227,11 +227,11 @@ def curtain_wall(c, length=16.0, h=9.0, thick=3.0, mat=ASHLAR):
     return _p(c, name, build)
 
 
-def gate_arch(c, span=26.0, clear=11.0, depth=7.0, banners=True):
+def gate_arch(c, span=26.0, clear=11.0, depth=7.0, banners=True, gold=True):
     """The span of the castle gate over the road: a battlemented bridge between the gate
     towers, a pointed arch under it (its lowest edge `clear` metres up at the middle),
     banners hanging on its face. Along X, the road passes along Y. Visual only."""
-    name = "Gate Arch %.1f %.1f" % (span, clear)
+    name = "Gate Arch %.1f %.1f%s" % (span, clear, "" if gold else " plain")
     top = clear + 6.0
 
     def build(P, bm):
@@ -256,7 +256,8 @@ def gate_arch(c, span=26.0, clear=11.0, depth=7.0, banners=True):
             if k % 2 == 0:
                 for y in (-depth / 2 - 0.2, depth / 2 + 0.2):
                     P.add(PARAPET, lambda x=x, y=y: cuboid(bm, (x, y, top + 0.6), (1.1, 0.6, 1.2)))
-        P.add(GOLD, lambda: cuboid(bm, (0, -depth / 2 - 0.25, clear + 2.2), (4.5, 0.3, 3.0)))
+        if gold:
+            P.add(GOLD, lambda: cuboid(bm, (0, -depth / 2 - 0.25, clear + 2.2), (4.5, 0.3, 3.0)))
         if banners:
             for x in (-half * 0.55, half * 0.55):
                 for y, nrm in ((-depth / 2 - 0.15, -1), (depth / 2 + 0.15, 1)):

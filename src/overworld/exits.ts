@@ -44,6 +44,9 @@ export function frontSpot(
   return at(8);
 }
 
+/** How far down the road a gateway's way out faces you (metres). */
+const AIM_AHEAD = 20;
+
 /**
  * Out of a gateway after its race (Blake, Oct 27: always facing the way the road goes,
  * never across it at a wall): onto the main road where the gateway's way out meets it,
@@ -58,16 +61,29 @@ export function roadSpot(
   near: { x: number; z: number },
   fits: (x: number, z: number) => boolean,
 ): { x: number; z: number; heading: number } | undefined {
-  let best: (typeof samples)[number] | undefined;
+  let bi = -1;
   let bd = Infinity;
-  for (const s of samples) {
+  samples.forEach((s, i) => {
     const d = (s.pos.x - near.x) ** 2 + (s.pos.z - near.z) ** 2;
     if (d < bd) {
       bd = d;
-      best = s;
+      bi = i;
     }
+  });
+  if (bi < 0 || bd > 45 * 45) return undefined;
+  const best = samples[bi]!;
+  // Facing a point on the road AHEAD, not just along it here: where it bends just past
+  // the gateway (Frostveil's walled street) the tangent points you into the wall on the
+  // bend's outside.
+  let ahead = best;
+  for (let k = 1; k < samples.length; k++) {
+    ahead = samples[(bi + k) % samples.length]!;
+    if (Math.hypot(ahead.pos.x - best.pos.x, ahead.pos.z - best.pos.z) >= AIM_AHEAD) break;
   }
-  if (!best || bd > 45 * 45) return undefined;
-  const p = { x: best.pos.x, z: best.pos.z, heading: Math.atan2(best.forward.x, best.forward.z) };
+  const heading =
+    ahead === best
+      ? Math.atan2(best.forward.x, best.forward.z)
+      : Math.atan2(ahead.pos.x - best.pos.x, ahead.pos.z - best.pos.z);
+  const p = { x: best.pos.x, z: best.pos.z, heading };
   return fits(p.x, p.z) ? p : undefined;
 }
