@@ -17,8 +17,12 @@
 #   rink   Crumble Rink: a round sheet of ice over a crevasse (the tiles are the game's:
 #          src/screens/minigames.ts draws them; the build is the crevasse round it and an
 #          invisible floor under the ice)
-#   stars  Star Fall (catch the falling stars): a plaza of three terraces with gentle
-#          slopes between (no step a kart can't climb), a shallow ring road round it
+#   stars  Meteor Crater (Star Fall; Oct 31, Blake picked "B": "an exciting level with
+#          precision driving", matching the desert it's played in): the desert's meteor
+#          crater at dusk, terraced down to its floor, each terrace a ring road, narrow
+#          switchback ramps between them (a lane beside each, a drop off its side), a
+#          thin ledge round the rim, the meteorite in the middle; the stars land on the
+#          terraces, the gold ones in the hard places (the rim, the floor, the ramps' tops)
 #
 # Oct 29 (Blake: "completely scrap the level layout ... each needs a new cool level with 2
 # levels to drive up and down. no stupid mound in the middle that cant be climbed"): Crater
@@ -81,20 +85,20 @@ SPECS = {
         "mats": (("cavern_ice", "wall"), ("icefall_rift", "wall"), ("lake_ice", "ice")),
     },
     "stars": {
-        "name": "Star Fall",
-        "env": "moonstone_kingdom",
+        "name": "Meteor Crater",
+        "env": "canyon_dash",
         "floor": 2.0,
-        "r": 80.0,
-        "top": 40.0,
-        "mats": (("moon_grass", "grass"), ("moon_rock", "wall"), ("moon_paving", "road")),
+        "r": 132.0,
+        "top": 46.0,
+        "mats": (("red_sand", "loose_sand"), ("strata_purple", "wall"), ("dash_road", "road")),
     },
 }
 SP = SPECS[AID]
 F, R, TOP = SP["floor"], SP["r"], SP["top"]
 RING = R - 22.0  # (the route's ring)
 # The two-storey arenas: the deck's radius, its height over the floor, its road's width.
-TWO = AID in ("bowl", "docks", "stars")
-DECK = {"bowl": (40.0, 6.0), "docks": (30.0, 4.5), "stars": (33.0, 6.0)}.get(AID)
+TWO = AID in ("bowl", "docks")
+DECK = {"bowl": (40.0, 6.0), "docks": (30.0, 4.5)}.get(AID)
 DECK_W = 12.0 if AID == "bowl" else 16.0
 if TWO:
     RING = DECK[0]
@@ -104,8 +108,78 @@ ICE_Z, ICE_R, TILE = 2.0, 40.0, 2.6
 if AID == "rink":
     RING = 24.0
 
+# Meteor Crater's terraces, from the floor up to the rim: (inner radius, outer, height).
+# The ramps between them run along each terrace's outer RAMP_W metres (and up over the
+# riser): (the lower terrace, the ramp's middle in degrees, rising anticlockwise?).
+TIERS = [(0.0, 18.0, 2.0), (21.0, 34.0, 7.5), (37.0, 50.0, 13.0), (53.0, 66.0, 18.5), (69.0, 75.0, 24.0)]
+RAMPS = [(0, 30.0, True), (0, 210.0, True), (1, 120.0, False), (1, 300.0, False), (2, 75.0, True), (2, 255.0, True),
+         (3, 165.0, False), (3, 345.0, False)]
+RAMP_W, RAMP_L = 6.0, 28.0
+METEOR_R = 5.0
+if AID == "stars":
+    RING = (TIERS[2][0] + TIERS[2][1] - RAMP_W) / 2  # (the route: round the middle terrace's lane)
+
+
+def lane_r(i):
+    """The middle of a terrace's lane (beside its ramps up)."""
+    r0, r1, _ = TIERS[i]
+    if i == 0:
+        r0 = METEOR_R + 1.0
+    return (r0 + (r1 - RAMP_W if i < len(TIERS) - 1 else r1)) / 2
+
+
+def ramp_span(k):
+    """A ramp's band (radii), its start and end angles (from the foot up) and heights."""
+    lo, mid, ccw = RAMPS[k]
+    r0, r1 = TIERS[lo][1] - RAMP_W, TIERS[lo + 1][0] + 0.5
+    rm = (r0 + r1) / 2
+    half = RAMP_L / 2 / rm
+    a = math.radians(mid)
+    a0, a1 = (a - half, a + half) if ccw else (a + half, a - half)
+    return r0, r1, a0, a1, TIERS[lo][2], TIERS[lo + 1][2]
+
+
+def crater_profile(d):
+    """The crater's height at d from its middle (terraces, risers, then the flank out)."""
+    for (ra, rb, za), (rc, _rd, zc) in zip(TIERS, TIERS[1:]):
+        if d <= rb:
+            return za
+        if d < rc:
+            return lerp(za, zc, smooth((d - rb) / (rc - rb)))
+    rim_out, rim_z = TIERS[-1][1], TIERS[-1][2]
+    if d < rim_out + 2.0:
+        return lerp(rim_z, rim_z - 6.0, smooth((d - rim_out) / 2.0))
+    return lerp(rim_z - 6.0, F + 2.0, min(1.0, (d - rim_out - 2.0) / 30.0))
+
+
+def in_ramp(x, y):
+    """(k, t) for the ramp (x, y)'s on, t from its foot (0) to its top (1); or None."""
+    d = math.hypot(x, y)
+    a = math.atan2(y, x)
+    for k in range(len(RAMPS)):
+        r0, r1, a0, a1, z0, z1 = ramp_span(k)
+        if not (r0 <= d <= r1):
+            continue
+        t = math.atan2(math.sin(a - a0), math.cos(a - a0)) / (a1 - a0)
+        if 0.0 <= t <= 1.0:
+            return k, t
+    return None
+
+
+def crater_z(x, y):
+    d = math.hypot(x, y)
+    z = crater_profile(d)
+    rp = in_ramp(x, y)
+    if rp:
+        _r0, _r1, _a0, _a1, z0, z1 = ramp_span(rp[0])
+        z = lerp(z0, z1, rp[1])
+    # Out past the flank, the desert (the pocket's own, its mesas round it).
+    out = L.natural(x, y) + 2.0
+    return lerp(z, out, smooth((d - 100.0) / 14.0))
+
+
 ROUTE = [(RING * math.cos(k * math.tau / 16), RING * math.sin(k * math.tau / 16),
-          ICE_Z if AID == "rink" else DECK_Z) for k in range(16)]
+          ICE_Z if AID == "rink" else (TIERS[2][2] if AID == "stars" else DECK_Z)) for k in range(16)]
 L = Layout([("floor", "floor", [(0.0, 0.0, R, F)])], TOP, ROUTE, [], roll=1.2, flat=(), mountains=30.0)
 
 
@@ -120,17 +194,32 @@ def feature(x, y):
         # The lava moat round the bailey (MOAT), then the crater's banked wall.
         m0, m1 = MOAT
         return -1.6 * smooth((d - m0) / 1.5) * smooth((m1 - d) / 1.5) + 5.0 * smooth((d - m1 - 1.0) / 6.0)
-    if AID in ("bowl", "docks", "stars"):
+    if AID == "docks":
         return 4.0 * smooth((d - (R - 16.0)) / 14.0)
     return 0.0
 
 
 def natural(x, y):
+    if AID == "stars":
+        return crater_z(x, y)
     return L.natural(x, y) + feature(x, y)
 
 
 def classify(c, n, info):
     ground, cliff, _ = SP["mats"]
+    if AID == "stars":
+        # Like the desert's own crater: purple-banded walls, slickrock terraces, talus
+        # on the flank, red sand out round it; the ramps paler (so you can see them).
+        d = math.hypot(c.x, c.y)
+        if n.z < 0.62:
+            if d < 100.0:
+                return ("strata_purple", "wall") if int(c.z / 4.0) % 2 else ("strata_rust", "wall")
+            return (("strata_red", "strata_cream", "strata_orange")[int(c.z / 9.0) % 3], "wall")
+        if d < TIERS[-1][1] + 0.5:
+            return ("dash_shoulder", "dirt") if in_ramp(c.x, c.y) else ("slickrock", "dirt")
+        if d < 100.0:
+            return ("talus", "dirt")
+        return ground
     if n.z < 0.62:
         return cliff
     if AID == "docks" and math.hypot(c.x, c.y) > R - 6:
@@ -154,10 +243,15 @@ def main():
     if TWO:
         # The upper level: the whole ring a deck.
         c.roads(kit.plan(c, [], "floor", max_len=60.0))
-    elif AID != "rink":
+    elif AID not in ("rink", "stars"):
         c.roads(kit.plan(c, [(0.0, c.length, None)], "floor", max_len=160.0))
-    X0, X1, Y0, Y1 = -200, 200, -200, 200
-    ter = c.terrain(SP["name"], X0, X1, Y0, Y1, 2.5, natural, classify, near=4.0, fade=8.0)
+    X0, X1, Y0, Y1 = (-160, 160, -160, 160) if AID == "stars" else (-200, 200, -200, 200)
+    if AID == "stars":
+        # (Finer, its terraces' edges sharp, the risers' bands cut level.)
+        ter = c.terrain(SP["name"], X0, X1, Y0, Y1, 1.25, natural, classify, near=4.0, fade=8.0,
+                        cut_z=tuple(t[2] - 2.0 for t in TIERS[1:]))
+    else:
+        ter = c.terrain(SP["name"], X0, X1, Y0, Y1, 2.5, natural, classify, near=4.0, fade=8.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 2.5, lambda x, y: natural(x, y) - 0.5, c.lib(*ground_m))
 
     def ground(x, y):
@@ -176,16 +270,18 @@ def main():
         a = k * math.tau / 8 + 0.2 + (math.pi / 8 if TWO else 0.0)
         if AID == "bowl":
             a = k * math.tau / 8 + math.pi / 8  # (clear of the gates' towers)
-        sr = 18.0 if AID == "rink" else (RING + DECK_W / 2 + 12.0 if TWO else RING - 6.0)
+        if AID == "stars":
+            a = k * math.tau / 8 + math.radians(10.0)
+        sr = 18.0 if AID == "rink" else (RING + DECK_W / 2 + 12.0 if TWO else (RING if AID == "stars" else RING - 6.0))
         x, y = sr * math.cos(a), sr * math.sin(a)
         g = c.game(x, y, ground(x, y))
         # Facing in; in Caldera Keep, round the bailey (anticlockwise), not at the wall.
-        hd = math.atan2(-math.sin(a), -math.cos(a)) if AID == "bowl" else math.atan2(-x, y)
+        hd = math.atan2(-math.sin(a), -math.cos(a)) if AID in ("bowl", "stars") else math.atan2(-x, y)
         c.entity("arena_spawn", x=round(g[0], 2), z=round(g[2], 2), heading=round(hd, 3), index=k)
     # Item balloons round the ring and nearer the middle.
     n = 0
     for k in range(10 if not TWO else 6):
-        c.balloon(c.length * (k + 0.5) / (10 if not TWO else 6), (k % 3 - 1) * 4.0,
+        c.balloon(c.length * (k + 0.5) / (10 if not TWO else 6), (k % 3 - 1) * (2.0 if AID == "stars" else 4.0),
                   ("red", "blue", "green", "yellow", "rainbow")[k % 5])
         n += 1
     if TWO:
@@ -218,6 +314,24 @@ def main():
 # Each arena's own sky and light where its kingdom's is wrong for it (Blake, Oct 29: the
 # Crater Bowl was too dark: now a volcano at dusk, glowing orange, the floor lit warm).
 LOOKS = {
+    # Meteor Crater at dusk (the stars come out): the desert's own sky gone indigo, a
+    # rising moon, the mesas dark against the last light.
+    "stars": {
+        "theme": "canyon_dash",
+        "sky": "#2a2a5e",
+        "fog": {"enabled": True, "color": "#4a3a6a", "near": 260, "far": 1600},
+        "sun": {"color": "#d8d0ff", "intensity": 1.9, "direction": [-0.5, 0.6, 0.55]},
+        "ambient": {"sky": "#a0a0e0", "ground": "#6a3a40", "intensity": 1.35},
+        "skyDome": {
+            "top": "#0e1034",
+            "horizon": "#b0607a",
+            "bottom": "#4a2a4a",
+            "sun": {"color": "#f4f0ff", "size": 20, "glow": "#8a8ad8", "elevation": 24, "face": "moon"},
+            "clouds": {"count": 10, "color": "#6a4a80", "shade": "#2a2040", "seed": 731, "low": 4, "high": 20, "drift": 0.003},
+            "hills": {"color": "#2a1a2a", "far": "#6a3a5a", "height": 6, "seed": 733, "layers": 3, "style": "mesas"},
+            "stars": {"count": 260, "color": "#f0f0ff", "seed": 735, "low": 8},
+        },
+    },
     "bowl": {
         "sky": "#ff8a4a",
         "fog": {"enabled": True, "color": "#b0563a", "near": 140, "far": 900},
@@ -547,14 +661,111 @@ def build_rink(c, ground, taken):
 
 
 def build_stars(c, ground, taken):
-    """Lanterns round the terraces (their slopes are gentle all round: no ramps needed)."""
-    for k in range(12):
-        a = k * math.tau / 12 + 0.26
-        x, y = 56.0 * math.cos(a), 56.0 * math.sin(a)
-        g = c.game(x, y, ground(x, y) + 3.0)
+    """Meteor Crater's dressing, like the desert's own crater (mesa_region.py crater()):
+    the meteorite in the floor, glowing shards round the terraces, boulders to steer
+    round on the lanes, a rail round the rim's outer edge (its warning signs on it), the
+    observatory out on the flank, the surveyors' tents; where the stars land (`star_spot`:
+    the gold ones the hard places), and the rivals' map (`nav`)."""
+    import impact_props as ip
+    import oasis_props as op
+    from pocket_build import cone
+    c.place(ip.meteorite(c, 0, size=3.5), 0.0, 0.0, ground(0.0, 0.0) - 0.8)
+    taken.add(0.0, 0.0, METEOR_R + 1.0)
+    # Boulders on the lanes, here and there (not on a ramp, nor its foot).
+    k = 0
+    for i in (1, 2, 3):
+        rl = lane_r(i)
+        for j in range(3):
+            a = j * math.tau / 3 + 0.9 * i + 0.4 + (0.35 if i == 2 else 0.0)  # (clear of the karts' starts)
+            x, y = rl * math.cos(a), rl * math.sin(a)
+            if in_ramp(x, y) or any(in_ramp(x + 6 * dx, y + 6 * dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                continue
+            c.assign(c.rock_mass("Crater Boulder %d" % k, x, y, 1.8, 1.5, TIERS[i][2] + 2.0, z0=TIERS[i][2] - 1.0, n=9,
+                                 seed=30 + k), c.lib("strata_purple", "wall"))
+            taken.add(x, y, 4.0)
+            k += 1
+    # Shards glowing round the risers' feet (visual).
+    for j in range(26):
+        i = j % 4
+        a = j * 2.399
+        rr = TIERS[i][1] - 0.8
+        x, y = rr * math.cos(a), rr * math.sin(a)
+        if not in_ramp(x, y):
+            c.place(ip.glass_shards(c, j % 2), x, y, ground(x, y) - 0.3, rot=a, role="visual")
+    # The rim's rail (nobody falls out of the crater), its signs, lanterns.
+    rim_out, rim_z = TIERS[-1][1], TIERS[-1][2]
+    ring_wall(c, "Rim Rail", rim_out - 0.6, rim_out - 0.2, rim_z - 0.6, rim_z + 0.9, lambda a: False, ("weathered_timber", "wall"),
+              n=120)
+    for j in range(12):
+        a = j * math.tau / 12 + 0.13
+        x, y = (rim_out + 0.6) * math.cos(a), (rim_out + 0.6) * math.sin(a)
+        if j % 2 == 0:
+            c.place(ip.warning_sign(c, j // 2 % 2), x, y, rim_z - 0.6, rot=a, role="visual")
+        g = c.game((rim_out - 0.4) * math.cos(a + 0.13), (rim_out - 0.4) * math.sin(a + 0.13), rim_z + 1.4)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
-    c.entity("star_field", radius=R - 12.0)
-    c.entity("fireflies", rate=30, radius=36)
+    # The observatory out on the flank (south-west, where you can see it from everywhere),
+    # the surveyors' tents by it.
+    oa = math.radians(215.0)
+    ox, oy = 90.0 * math.cos(oa), 90.0 * math.sin(oa)
+    oz = ground(ox, oy)
+    cone(c, "Observatory Tower", ox, oy, 5.4, oz - 1.0, 9.0 + 4.0, ("arcade_white", "wall"), segs=16, role="visual")
+    box(c, "Observatory Base", ox, oy, 5.0, 5.0, oz - 1.0, oz + 7.0, ("arcade_white", "wall"), role="visual")
+    bm = kit.bmesh.new()
+    op.dome(bm, ox, oy, oz + 7.0, 5.2)
+    c.assign(c.mesh_object("Observatory Dome", bm, "Props", "visual"), c.lib("tin_roof", "wall"))
+    box(c, "Observatory Slit", ox, oy, 0.7, 5.3, oz + 8.0, oz + 12.0, ("dark_corridor", "wall"), rot=oa, role="visual")
+    for j in range(3):
+        a = oa + (j - 1) * 0.28
+        x, y = 98.0 * math.cos(a), 98.0 * math.sin(a)
+        c.place(ip.tent(c, j % 2), x, y, ground(x, y) - 0.1, rot=a, role="visual")
+    # Where the stars land: round every terrace's lane; the gold ones (more often) on the
+    # rim, the floor and the ramps' tops.
+    spots = []
+    for i in range(len(TIERS)):
+        rl = lane_r(i)
+        n = max(6, int(rl * math.tau / (18.0 if i == len(TIERS) - 1 else 11.0)))
+        for j in range(n):
+            a = (j + 0.5 * (i % 2)) * math.tau / n
+            spots.append((rl * math.cos(a), rl * math.sin(a), i in (0, len(TIERS) - 1)))
+    for k in range(len(RAMPS)):
+        r0, r1, a0, a1, z0, z1 = ramp_span(k)
+        a = a0 + (a1 - a0) * 0.85
+        spots.append(((r0 + r1) / 2 * math.cos(a), (r0 + r1) / 2 * math.sin(a), True))
+    for x, y, gold in spots:
+        g = c.game(x, y, ground(x, y))
+        c.entity("star_spot", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), gold=gold)
+    # The rivals' map: round every terrace's lane, and up and down every ramp.
+    nodes, links = [], []
+
+    def node(x, y, z):
+        nodes.append((x, y, z))
+        return len(nodes) - 1
+
+    rings = []
+    for i, (_r0, _r1, z) in enumerate(TIERS):
+        rl = lane_r(i)
+        m = max(8, int(rl * math.tau / 14.0))
+        ids = [node(rl * math.cos(j * math.tau / m), rl * math.sin(j * math.tau / m), z) for j in range(m)]
+        links.extend((ids[j], ids[(j + 1) % m]) for j in range(m))
+        rings.append(ids)
+
+    def nearest(ids, x, y):
+        return min(ids, key=lambda q: math.hypot(nodes[q][0] - x, nodes[q][1] - y))
+
+    for k, (lo, _mid, _ccw) in enumerate(RAMPS):
+        r0, r1, a0, a1, z0, z1 = ramp_span(k)
+        rb = (r0 + r1) / 2
+        sg = 1.0 if a1 > a0 else -1.0
+        at = lambda a, r=rb: (r * math.cos(a), r * math.sin(a))  # noqa: E731
+        ra = node(*at(a0 - sg * 7.0 / rb), z0)
+        rf = node(*at(a0 + sg * 2.0 / rb), z0 + 0.3)
+        rt = node(*at(a1 - sg * 2.0 / rb), z1 - 0.3)
+        land = node(*at(a1, lane_r(lo + 1)), z1)
+        links.extend(((nearest(rings[lo], *nodes[ra][:2]), ra), (ra, rf), (rf, rt), (rt, land),
+                      (land, nearest(rings[lo + 1], *nodes[land][:2]))))
+    gn = [[round(v, 2) for v in c.game(x, y, z)] for x, y, z in nodes]
+    c.entity("nav", nodes=gn, links=[list(q) for q in links])
+    c.entity("fireflies", rate=24, radius=60)
 
 
 BUILD = {"bowl": build_bowl, "docks": build_docks, "rink": build_rink, "stars": build_stars}

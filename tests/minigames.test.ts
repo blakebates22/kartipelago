@@ -24,6 +24,7 @@ const arena: Arena = {
   radius: 60,
   rink: { x: 0, z: 0, y: 2, r: 30, tile: 2.6 },
   ramps: [],
+  starSpots: [],
 };
 const karts = (): Kart[] =>
   arena.spawns.map((s) => ({ x: s.x, y: 0, z: s.z, heading: 0, speed: 0 }));
@@ -161,5 +162,22 @@ describe("the mini-games", () => {
     // Not through a floor.
     const up = [ks[0]!, { ...ks[1]!, y: 6 }];
     expect(shouldFire(0, ks[0]!, up, "red", [false, false])).toBe(false);
+  });
+
+  it("Meteor Crater: the stars land round every terrace, the gold ones in the hard places; every terrace reached", async () => {
+    const bytes = await readFile(
+      new URL("../public/tracks/arena_stars/track.json", import.meta.url),
+    );
+    const a = parseArena(
+      (JSON.parse(new TextDecoder().decode(bytes)) as { entities: unknown[] }).entities,
+    );
+    expect(a.starSpots.length).toBeGreaterThan(60);
+    const gold = a.starSpots.filter((s) => s.gold);
+    expect(gold.length).toBeGreaterThan(5);
+    expect(gold.length).toBeLessThan(a.starSpots.length / 2);
+    // Five levels of them, floor to rim.
+    expect(new Set(a.starSpots.map((s) => Math.round(s.y))).size).toBeGreaterThanOrEqual(5);
+    const nav = a.nav!;
+    for (let t = 1; t < nav.nodes.length; t++) expect(navPath(nav, 0, t).at(-1), String(t)).toBe(t);
   });
 });

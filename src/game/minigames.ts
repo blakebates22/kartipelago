@@ -86,6 +86,8 @@ export interface Arena {
   /** The rivals' map of the levels (Caldera Keep): spots on each level, and which you can
    * drive straight between (each spot's neighbours). */
   nav?: Nav;
+  /** Where the stars land (Meteor Crater), the gold ones' places marked. */
+  starSpots: { x: number; z: number; y: number; gold: boolean }[];
 }
 
 export interface Nav {
@@ -111,7 +113,7 @@ const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite
 
 /** An arena's things from its package's entities. */
 export function parseArena(entities: unknown[]): Arena {
-  const a: Arena = { spawns: [], radius: 60, ramps: [] };
+  const a: Arena = { spawns: [], radius: 60, ramps: [], starSpots: [] };
   for (const e of entities) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
@@ -130,6 +132,8 @@ export function parseArena(entities: unknown[]): Arena {
         tx: num(o.tx, 0),
         tz: num(o.tz, 0),
       };
+    else if (o.type === "star_spot")
+      a.starSpots.push({ x: num(o.x, 0), z: num(o.z, 0), y: num(o.y, 0), gold: o.gold === true });
     else if (o.type === "nav" && Array.isArray(o.nodes) && Array.isArray(o.links)) {
       const nodes = (o.nodes as unknown[]).map((v) => {
         const p = Array.isArray(v) ? v : [];
@@ -324,6 +328,8 @@ export function createMiniGame(
   const lasted = new Array<number>(karts).fill(0);
   const goals: ({ x: number; z: number; t: number } | undefined)[] = new Array(karts);
   const news: { what: string; who: number }[] = [];
+  /** The karts as last stepped (where a knocked-out star lands). */
+  let lastKarts: Kart[] = [];
   const say = (what: string, who: number) => news.push({ what, who });
   /** Is kart k at the level of something there (high: on the deck)? */
   const sameLevel = (k: Kart, high: boolean | undefined) =>
@@ -369,6 +375,7 @@ export function createMiniGame(
     standings: best,
     step(ks, dt) {
       news.length = 0;
+      lastKarts = ks;
       if (winner !== undefined) return;
       clock -= dt;
       played += dt;
@@ -436,16 +443,32 @@ export function createMiniGame(
       } else if (info.id === "stars") {
         starIn -= dt;
         if (starIn <= 0) {
-          const p = randomSpot(arena.radius - 8);
-          stars.push({
-            x: p.x,
-            z: p.z,
-            fall: RULES.starFall,
-            life: RULES.starLife,
-            gold: rand() < 0.15,
-            // (One falling over the deck's ring lands on the deck.)
-            high: overDeck(arena, p.x, p.z),
-          });
+          const spots = arena.starSpots;
+          if (spots.length) {
+            // On one of the arena's places (Meteor Crater's): gold, mostly, only where
+            // it's hard to get to (Blake, Oct 31: the good catches take driving).
+            const sp = spots[Math.floor(rand() * spots.length)]!;
+            const j = randomSpot(1.5);
+            stars.push({
+              x: sp.x + j.x,
+              z: sp.z + j.z,
+              fall: RULES.starFall,
+              life: RULES.starLife,
+              gold: rand() < (sp.gold ? 0.4 : 0.04),
+              high: false,
+            });
+          } else {
+            const p = randomSpot(arena.radius - 8);
+            stars.push({
+              x: p.x,
+              z: p.z,
+              fall: RULES.starFall,
+              life: RULES.starLife,
+              gold: rand() < 0.15,
+              // (One falling over the deck's ring lands on the deck.)
+              high: overDeck(arena, p.x, p.z),
+            });
+          }
           starIn = RULES.starEvery;
         }
         for (let s = stars.length - 1; s >= 0; s--) {
@@ -498,6 +521,20 @@ export function createMiniGame(
         if (score[i]! > 0) {
           score[i]! -= 1;
           say("knock", i);
+          // Knocked loose, not lost: it lands a little way off, for anyone to catch
+          // (Blake, Oct 31: comebacks).
+          const k = lastKarts[i];
+          if (k) {
+            const a = rand() * Math.PI * 2;
+            stars.push({
+              x: k.x + Math.sin(a) * 5,
+              z: k.z + Math.cos(a) * 5,
+              fall: 0.6,
+              life: RULES.starLife,
+              gold: false,
+              high: Boolean(arena.deck) && onDeck(arena, k),
+            });
+          }
         }
       }
     },

@@ -1,59 +1,60 @@
 {
   "schemaVersion": 1,
-  "theme": "moonstone_kingdom",
-  "sky": "#2a2a6a",
+  "theme": "canyon_dash",
+  "sky": "#2a2a5e",
   "fog": {
     "enabled": true,
-    "color": "#3a3a78",
-    "near": 380,
-    "far": 2300
+    "color": "#4a3a6a",
+    "near": 260,
+    "far": 1600
   },
   "sun": {
-    "color": "#c8d4ff",
-    "intensity": 1.8,
+    "color": "#d8d0ff",
+    "intensity": 1.9,
     "direction": [
-      0.5,
-      0.62,
-      -0.6
+      -0.5,
+      0.6,
+      0.55
     ]
   },
   "ambient": {
-    "sky": "#9a9ae0",
-    "ground": "#3a3060",
-    "intensity": 1.3
+    "sky": "#a0a0e0",
+    "ground": "#6a3a40",
+    "intensity": 1.35
   },
   "skyDome": {
-    "top": "#120e3a",
-    "horizon": "#5a4a9a",
-    "bottom": "#3a3478",
+    "top": "#0e1034",
+    "horizon": "#b0607a",
+    "bottom": "#4a2a4a",
     "sun": {
       "color": "#f4f0ff",
-      "size": 22,
+      "size": 20,
       "glow": "#8a8ad8",
-      "elevation": 28,
+      "elevation": 24,
       "face": "moon"
     },
     "clouds": {
-      "count": 22,
-      "color": "#6a62b0",
-      "shade": "#2a2460",
-      "seed": 721,
-      "low": 3,
-      "high": 26,
+      "count": 10,
+      "color": "#6a4a80",
+      "shade": "#2a2040",
+      "seed": 731,
+      "low": 4,
+      "high": 20,
       "drift": 0.003
     },
     "hills": {
-      "color": "#2a2458",
-      "far": "#5a52a0",
-      "height": 12,
-      "seed": 723,
-      "layers": 3
+      "color": "#2a1a2a",
+      "far": "#6a3a5a",
+      "height": 6,
+      "seed": 733,
+      "layers": 3,
+      "style": "mesas"
     },
     "stars": {
-      "count": 220,
+      "count": 260,
       "color": "#f0f0ff",
-      "seed": 725,
-      "low": 6
+      "seed": 735,
+      "low": 8
     }
   }
 }
