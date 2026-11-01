@@ -80,7 +80,7 @@
       "type": "villager_home",
       "x": -63.18,
       "z": 148.39,
-      "y": 46.85,
+      "y": 47.11,
       "r": 10.0,
       "n": 4,
       "folk": "snow",
@@ -404,13 +404,21 @@
     {
       "id": "gateway_spot_01",
       "type": "gateway_spot",
+      "gateway": "hearthglow",
+      "x": -138.82,
+      "z": 157.63,
+      "heading": 1.9436006181807486
+    },
+    {
+      "id": "gateway_spot_02",
+      "type": "gateway_spot",
       "gateway": "frostveil",
       "x": -204.12,
       "z": -5.72,
       "heading": 1.7144611056209422
     },
     {
-      "id": "gateway_spot_02",
+      "id": "gateway_spot_03",
       "type": "gateway_spot",
       "gateway": "summit",
       "x": -144.08,
@@ -418,7 +426,7 @@
       "heading": 1.4532476784719324
     },
     {
-      "id": "gateway_spot_03",
+      "id": "gateway_spot_04",
       "type": "gateway_spot",
       "gateway": "aurora",
       "x": 121.83,
@@ -426,20 +434,12 @@
       "heading": -0.01392274858691621
     },
     {
-      "id": "gateway_spot_04",
+      "id": "gateway_spot_05",
       "type": "gateway_spot",
       "gateway": "lair",
       "x": -91.1,
       "z": -210.05,
       "heading": -0.09198729590418536
-    },
-    {
-      "id": "gateway_spot_05",
-      "type": "gateway_spot",
-      "gateway": "hearthglow",
-      "x": -140.74,
-      "z": 158.23,
-      "heading": 1.9576720445259248
     },
     {
       "id": "villager_home_03",
@@ -468,7 +468,7 @@
       "type": "villager_home",
       "x": -132.8,
       "z": 158.02,
-      "y": 45.6,
+      "y": 45.43,
       "r": 6.0,
       "n": 2,
       "folk": "snow",
@@ -528,10 +528,10 @@
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "keep_props.py": "30a8d9886a2255a7b89beff946827746d5aef1fd678e3dc1671ed684c9b56b8c",
-    "snow_dress.py": "1c13663c362e353f30ef0007cf2355989db030e99334612c9b97db1d1fb8e5e9",
+    "snow_dress.py": "b3ce7f57565b8c56586ae988d7f36133b76e1ac42e64a0d294ad45bff8e4e6b0",
     "snow_layout.py": "d1ebfcf4649718ff8546add56f1b97e547b5216a8832027170adadd9a40dc0ff",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "e38ab7f2616cdfd6fffd887b895a12abe9c75a9c3ef43b30733daf260c1f8cc0",
+    "snow_region.py": "4ea167d9328b939a1524d355b1aeb05b1e56063a82f519a5f2852a60ec6bdd82",
     "snow_sections.py": "021ef2d2cac08185c1be2ed74857fc0438eecc6cdcce624bf12ef87afc8c23ed"
   }
 }

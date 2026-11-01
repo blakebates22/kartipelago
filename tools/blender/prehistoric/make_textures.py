@@ -871,6 +871,31 @@ def log_sawn():
     return paint(f, 64, 64)
 
 
+def ice_bricks():
+    # Stacked bricks of ice (Blake, review-snow_region 9 note 1: "lets replace this texture
+    # with stacked bricks of ice"): long blocks in running bond, pale blue-white, each a
+    # little different, lighter along its top edge, a seam of packed snow between them.
+    a = noise(8, 8, 3301, 64, 64)
+    b = noise(24, 24, 3302, 64, 64)
+
+    def f(x, y):
+        row = y // 16
+        off = 16 if row % 2 else 0
+        bx = (x + off) % 32
+        by = y % 16
+        if by < 2 or bx < 2:
+            return pick(["#eef6fb", "#f6fbff"], b(x, y))  # snow in the seams
+        k = ((x + off) // 32 + row * 7) % 5
+        tone = 0.15 * k + 0.35 * a(x, y) + 0.2 * b(x, y)
+        if by < 4:
+            return pick(["#d8f0fb", "#e4f6ff"], tone)  # the lit top edge
+        if by > 13:
+            return pick(["#7fb2cf", "#8cc0dc"], tone)  # the shadowed foot
+        return pick(["#9fd0ea", "#a9d8f0", "#b4def2", "#bfe4f5"], tone)
+
+    return paint(f, 64, 64)
+
+
 def _bulb(core, rim):
     # A glowing Christmas bulb's colour (a bright core, its rim deeper): one per colour
     # (Blake, review-snow_region 7: the great tree's lights "look terrible", redone as
@@ -5096,6 +5121,7 @@ MATERIALS = [
     ("frog_skin", "Frog Skin", "jungle_cascade", "wall", frog_skin, 0.4, None),
     ("log_end", "Log End", "jungle_cascade", "wall", log_end, 1, None),
     ("log_sawn", "Log End (Sawn)", "summit_pass", "wall", log_sawn, 1, None),
+    ("ice_bricks", "Ice Bricks", "summit_pass", "wall", ice_bricks, 3, {"scrollU": 0, "scrollV": 0, "glow": 0.15}),
     ("bulb_red", "Christmas Bulb (Red)", "hearthglow", "wall", bulb_red, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
     ("bulb_gold", "Christmas Bulb (Gold)", "hearthglow", "wall", bulb_gold, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
     ("bulb_green", "Christmas Bulb (Green)", "hearthglow", "wall", bulb_green, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),

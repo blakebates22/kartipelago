@@ -105,27 +105,15 @@ def _natural(x, y):
     d = math.hypot(x - fx, y - fy)
     if d < fr + 12.0:
         h = min(h, lerp(fz, h, smooth((d - fr) / 12.0)))
-    # The lane out of the square east to Hearthglow's portal, cut level into the wall.
-    vx, vy, vr, vz = SL.VILLAGE
-    d, _t = pb_seg(x, y, _square_edge(), SL.GATES["hearthglow"])
-    if d < 14.0:
-        h = lerp(h, vz + 0.3, smooth((14.0 - d) / 5.0))
+    # (No lane out of the old square to Hearthglow's portal any more: its gateway's spur
+    # comes off the street like every other's; Blake, review-snow_region 9 note 14.)
     # The pads Hearthglow's cottages stand on, up the hollow's walls (snow_dress).
     return sd.pad_height(x, y, h)
 
 
 # The ways in to the gateways cut level with the road (pocket_kit.Notches: a gateway's
 # spur mustn't climb a wall).
-NOTCHES = pocket_kit.Notches(SL.route_points(), {k: v for k, v in dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})).items()
-                                                  if k != "hearthglow"})
-
-
-def _square_edge():
-    """Where Hearthglow's lane to its portal leaves the square: its edge, toward the portal."""
-    vx, vy, vr, _vz = SL.VILLAGE
-    hx, hy = SL.GATES["hearthglow"]
-    a = math.atan2(hy - vy, hx - vx)
-    return vx + (vr - 1.5) * math.cos(a), vy + (vr - 1.5) * math.sin(a)
+NOTCHES = pocket_kit.Notches(SL.route_points(), dict(SL.GATES, **({"lair": SL.LAIR} if RUIN else {})))
 
 
 def pb_seg(x, y, a, b):
@@ -200,21 +188,10 @@ def main():
                                        z0=smp.p.z, c=c), "hearth_cobble", "road", **trail, flush=True, ease=8.0)
     # (v4c: the Ice Hollow has no lane: its whole floor is packed snow, the land's own
     # (classify), so nothing's laid over the pass's road: Blake, Oct 30.)
-    gates = {k: v for k, v in SL.GATES.items() if k != "hearthglow"}
+    gates = dict(SL.GATES)
     if RUIN:
         gates["lair"] = SL.LAIR
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
-    # Hearthglow's portal: in its basin's east wall, the lane to it straight out of the
-    # square (Blake, Oct 29: it stood in the middle of the road; then the village moved).
-    hx, hy = SL.GATES["hearthglow"]
-    sx, sy = _square_edge()
-    ux, uy = hx - sx, hy - sy
-    ul = math.hypot(ux, uy)
-    ux, uy = ux / ul, uy / ul
-    end = (hx - ux * 10.0, hy - uy * 10.0)
-    c.side_road("Hollow Lane", pb.line(natural, (sx, sy), end, z0=vz + 0.05), "hearth_cobble", "road", **trail, flush=True,
-                ease=10.0)
-    spots["hearthglow"] = (end, math.atan2(-ux, uy))
     if RUIN:
         # Out of the lake through the Frozen Pass, east.
         smp, _ = c.nearest(*SL.FROZEN_PASS)

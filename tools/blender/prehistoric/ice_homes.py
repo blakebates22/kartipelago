@@ -41,7 +41,8 @@ DECK = "plank_deck"
 # supposed to be the whimsical portion of this world"; he chose the craftsmen's hollow:
 # plain sturdy homes of stone, timber and packed snow, warm windows, dark wood doors; ice
 # only as the carvers' craft, in their signs, lintels and showpieces.)
-STONES = ("frost_stone", "rift_stone", "frost_stone")
+# (The carvers build in their own ice: stacked bricks of it, Blake, review-snow_region 9 note 1.)
+STONES = ("ice_bricks", "ice_bricks", "ice_bricks")
 DOORS = ("door_wood", "timber_beam", "weathered_timber", "door_wood", "siding_red", "siding_grey")
 CLOTH = ("siding_red", "siding_grey", "timber_beam", "rift_stone", "snow_ground", "door_wood")
 AWNINGS = ("weathered_timber", "timber_beam", "siding_grey", "siding_red")
@@ -673,9 +674,10 @@ def workshop(c, idx, rng, sign_kind, door_col):
     info = {}
 
     def build(P, bm):
-        P.add("frost_stone", lambda: cuboid(bm, (-w / 2 + 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
-        P.add("frost_stone", lambda: cuboid(bm, (w / 2 - 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
-        P.add("frost_stone", lambda: cuboid(bm, (0, -3.0, h - 1.2), (w - 6.0, 5.6, 2.4)))
+        # (Stacked ice bricks: Blake, review-snow_region 9 note 1.)
+        P.add("ice_bricks", lambda: cuboid(bm, (-w / 2 + 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("ice_bricks", lambda: cuboid(bm, (w / 2 - 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("ice_bricks", lambda: cuboid(bm, (0, -3.0, h - 1.2), (w - 6.0, 5.6, 2.4)))
         P.add(SNOW, lambda: cuboid(bm, (0, -2.9, h + 0.1), (w + 0.5, 6.0, 0.6)))
         P.add("cave_rock", lambda: cuboid(bm, (0, -3.0, 2.4), (w - 6.0, 4.6, 5.0)))  # (the dark inside)
         for k, (x, z) in enumerate(((-1.4, 0.6), (0.6, 0.6), (-0.4, 1.8), (1.8, 0.6))):

@@ -5759,6 +5759,20 @@
       "tileMetres": 1
     },
     {
+      "id": "ice_bricks",
+      "name": "Ice Bricks",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "ice_bricks.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0,
+        "glow": 0.15
+      }
+    },
+    {
       "id": "bulb_red",
       "name": "Christmas Bulb (Red)",
       "theme": "hearthglow",

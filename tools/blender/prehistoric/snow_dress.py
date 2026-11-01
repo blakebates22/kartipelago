@@ -326,6 +326,10 @@ def railing(c, px, py, toward, R, z, ground, span=1.25):
     return n
 
 
+XMAS_TREE = (-110.4, -146.2)  # (review-snow_region 9 note 14: where the old lane left the street)
+EXTRA_HOME = (-117.0, -114.0)  # (note 16: "SOMETHING NEEds to go here ... another house")
+
+
 def hearthglow(c, ground, ter, taken):
     """Hearthglow, a street village (Blake, review-snow_region 7: the square, its fountain
     and bonfire gone; "houses lining the other side of this road. it needs to be done
@@ -470,8 +474,15 @@ def hearthglow(c, ground, ter, taken):
         x, y = side_of(q, MARKET[2], q.w / 2 + 3.2)
         rot = math.atan2(-q.r.y * MARKET[2], -q.r.x * MARKET[2]) + math.pi / 2
         if inside(x, y) and clear(x, y, 2.8):
-            z = min(ground(x + dx, y + dy) for dx in (-2.0, 0.0, 2.0) for dy in (-1.5, 0.0, 1.5))
-            c.place(hp.stall(c, len(stalls) % 2), x, y, z - 0.05, rot=rot, coll="Village")
+            # (Level, on a stone footing down to the lowest ground under it, so the snow on
+            # the steep street never fills it: Blake, review-snow_region 9 note 3.)
+            hi = level_site(c, x, y, rot, 6.0, 4.0, ground, ter, most=3.0)
+            lo, hi2 = footing(x, y, rot, 6.0, 4.0, ground)
+            z = hi if hi is not None else hi2
+            # (Stall and footing one building, "Market Stall n ...": tests/buildings.)
+            box(c, "Market Stall %d Footing" % len(stalls), x, y, 3.1, 2.1, min(lo, z) - 0.8, z + 0.05, ("hearth_stone", "wall"),
+                rot=rot)
+            c.place(hp.stall(c, len(stalls) % 2), x, y, z + 0.05, rot=rot, coll="Village", name="Market Stall %d" % len(stalls))
             taken.add(x, y, 3.0)
             SPOTS.append((x, y, 3.5))
             stalls.append((x, y))
@@ -484,6 +495,47 @@ def hearthglow(c, ground, ter, taken):
         hx, hy = mx + (mx - q.p.x) * 0.6, my + (my - q.p.y) * 0.6
         g = c.game(hx, hy, ground(hx, hy))
         c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=4, folk="snow", heading=0.0)
+    if not RUIN:
+        # A Christmas tree with its presents where the old lane left the street (note 14),
+        # and a cottage on the empty stretch below the market (note 16).
+        def near(x0, y0, r, rmax=16.0):
+            for k in range(200):
+                a, d = k * 2.399, 0.5 * math.sqrt(k) * 2.0
+                if d > rmax:
+                    break
+                x, y = x0 + d * math.cos(a), y0 + d * math.sin(a)
+                if clear(x, y, r) and inside(x, y):
+                    return x, y
+            return None
+
+        spot = near(*XMAS_TREE, 4.0)
+        print("hearthglow: christmas tree at", spot)
+        if spot:
+            tx, ty = spot
+            tz = min(ground(tx + 2.5 * math.cos(a), ty + 2.5 * math.sin(a)) for a in [k * 0.785 for k in range(8)])
+            c.place(hp.xmas_pine(c, 1, 11.0, lights=True), tx, ty, tz - 0.3, coll="Village")
+            for k in range(5):
+                a = k * 1.26 + 0.3
+                px, py = tx + 3.2 * math.cos(a), ty + 3.2 * math.sin(a)
+                c.place(hp.present_pile(c, k % 3), px, py, ground(px, py) - 0.05, rot=a, coll="Village", role="visual")
+            taken.add(tx, ty, 5.0)
+            SPOTS.append((tx, ty, 5.0))
+        w, d = hp.COTTAGE_SIZE[1]
+        spot = near(*EXTRA_HOME, max(w, d) / 2 + 0.5, 20.0)
+        print("hearthglow: the extra cottage at", spot)
+        hx, hy = spot or EXTRA_HOME
+        q, _ = c.nearest(hx, hy)
+        rot = math.atan2(q.p.y - hy, q.p.x - hx) + math.pi / 2
+        v = 1
+        w, d = hp.COTTAGE_SIZE[v]
+        if clear(hx, hy, max(w, d) / 2 + 0.5):
+            smoke = seat_cottage(c, v, hx, hy, rot, ground, name="Street Cottage %d" % len(built), ter=ter)
+            if smoke is not None:
+                sc.chimneys.append(smoke)
+                sc.warm.append((hx, hy, ground(hx, hy) + 2.5))
+                taken.add(hx, hy, max(w, d) / 2 + 0.8)
+                SPOTS.append((hx, hy, max(w, d) / 2 + 1.0))
+                built.append((hx, hy))
     # The lantern posts: every 18 m along, on both sides, opposite each other; lights
     # along each side post to post, and across the road from every other pair; a candy
     # cane between each two posts on each side.
@@ -776,8 +828,9 @@ def giant_pine(c, name, x, y, z, height=60.0, seed=0, snowy=True):
         if snowy and i % 2 == 0:
             k.add("snow_ground", lambda bm, i=i: _snow_cap(bm, x, y, z + height * (0.16 + 0.065 * i), height * 0.32 * (1 - i / tiers * 0.86), height * 0.1))
     k.add("pine_bright", lambda bm: props.tube(bm, [(x, y, z + height * 0.9), (x, y, z + height * 1.02)], [height * 0.02, 0.05], n=6))
+    groups = k.groups  # (before the bmesh goes into the mesh)
     ob = c.mesh_object(name, bm, "Props", "visual")
-    for mat, faces in k.groups.items():
+    for mat, faces in groups.items():
         if faces:
             c.assign(ob, c.lib(mat), faces)
     ob.data.shade_flat()

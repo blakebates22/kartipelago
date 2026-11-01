@@ -27,16 +27,40 @@ def _p(c, name, build):
 
 
 class Parts:
-    """Faces grouped by material while a prop is built."""
+    """Faces grouped by material while a prop is built. (Each face is tagged with its
+    group as it's made, not counted by its index: bmesh can hand out a new face in a freed
+    face's slot, so the faces made since a count aren't always the last ones. The great
+    tree's top tiers came out in its bulbs' colours: review-snow_region 9 notes 2, 11, 12.)"""
 
     def __init__(self, bm):
         self.bm = bm
-        self.groups = {}
+        self.layer = bm.faces.layers.int.get("kp_part") or bm.faces.layers.int.new("kp_part")
+        self.names = []
+        self.fresh = 0
 
     def add(self, mat, make):
-        k0 = len(self.bm.faces)
         make(self.bm)
-        self.groups.setdefault(mat, []).extend(_faces(self.bm, k0))
+        if mat not in self.names:
+            self.names.append(mat)
+        gid = self.names.index(mat) + 1
+        lay = self.layer
+        n = 0
+        for f in self.bm.faces:
+            if f[lay] == 0:
+                f[lay] = gid
+                n += 1
+        self.fresh = n
+
+    @property
+    def groups(self):
+        """{material: [face index]} in the order the faces will be in the mesh."""
+        self.bm.faces.index_update()
+        out = {m: [] for m in self.names}
+        lay = self.layer
+        for f in self.bm.faces:
+            if f[lay]:
+                out[self.names[f[lay] - 1]].append(f.index)
+        return out
 
     def box(self, mat, centre, size, rot=0.0, tilt=(0.0, 0.0)):
         self.add(mat, lambda bm: cuboid(bm, centre, size, rot, tilt))
@@ -58,6 +82,26 @@ def _icicle_row(bm, x0, x1, y, z, n, length, seed=0):
         res = bmesh.ops.create_cone(bm, cap_ends=False, segments=4, radius1=0.0, radius2=0.1, depth=ln)
         for v in res["verts"]:
             v.co += Vector((x, y, z - ln / 2))
+
+
+BULBS = ("bulb_red", "bulb_gold", "bulb_green", "bulb_blue")
+
+
+def _bulb_string(k, p0, p1, sag=0.25, every=0.5, r=0.11, wire="keep_iron", phase=0):
+    """A string of Christmas bulbs (Blake, review-snow_region 9: "real christmas lights"):
+    a dark wire sagging from p0 to p1, a little glowing bulb hung from it every `every` m,
+    the colours in turn."""
+    a, b = Vector(p0), Vector(p1)
+    n = max(2, int((b - a).length / every))
+    pts = []
+    for i in range(n + 1):
+        t = i / n
+        p = a.lerp(b, t)
+        p.z -= sag * 4 * t * (1 - t)
+        pts.append(p)
+    k.add(wire, lambda bm: tube(bm, [tuple(p) for p in pts], 0.025, n=3))
+    for i, p in enumerate(pts[1:-1]):
+        k.add(BULBS[(i + phase) % 4], lambda bm, p=p: blob(bm, (p.x, p.y, p.z - r * 1.3), r, sx=0.8, sy=0.8, sz=1.35, subdiv=1))
 
 
 def _gable(k, w, d, h, rh, wall, over=1.0, snow=0.8):
@@ -103,28 +147,37 @@ def cottage(c, variant=0):
         k.box(SNOW, (cx, cy, top + 0.15), (1.7, 1.7, 0.35))
         CHIMNEY[variant % 5] = (cx, cy, top + 0.4)
         # Windows: front, back and sides, storey by storey.
+        # (Spaced evenly about the middle, an odd number on every face, so each face is
+        # symmetric: Blake, review-snow_region 9 note 10, "3 windows on this side".)
+        def row(span):
+            n = max(3, int((span - 2.0) / 2.6)) | 1
+            gap = min(2.8, (span - 2.4) / (n - 1))
+            return [(j - (n - 1) / 2) * gap for j in range(n)]
+
         for st in range(storeys):
             z = 2.2 + st * 2.6
             if z > h - 1.0:
                 break
-            for x in [(-w / 2 + 1.8) + j * 3.0 for j in range(max(1, int((w - 2.5) / 3.0)))]:
-                if st == 0 and abs(x) < 1.4:
-                    continue  # the door
+            for x in row(w):
                 for sd in (-1, 1):
+                    if st == 0 and sd < 0 and abs(x) < 1.4:
+                        continue  # the door
                     y0 = sd * (d / 2 + 0.04)
                     pts = [(x - 0.75, y0, z - 0.4), (x + 0.75, y0, z - 0.4), (x + 0.75, y0, z + 1.2), (x - 0.75, y0, z + 1.2)]
                     k.quad(GLOW, pts if sd < 0 else list(reversed(pts)))
-            for sx in (-1, 1):
-                x0 = sx * (w / 2 + 0.04)
-                pts = [(x0, -0.75, z - 0.4), (x0, 0.75, z - 0.4), (x0, 0.75, z + 1.2), (x0, -0.75, z + 1.2)]
-                k.quad(GLOW, pts if sx > 0 else list(reversed(pts)))
+            for yy in row(d):
+                for sx in (-1, 1):
+                    x0 = sx * (w / 2 + 0.04)
+                    pts = [(x0, yy - 0.75, z - 0.4), (x0, yy + 0.75, z - 0.4), (x0, yy + 0.75, z + 1.2), (x0, yy - 0.75, z + 1.2)]
+                    k.quad(GLOW, pts if sx > 0 else list(reversed(pts)))
         # The door, with a wreath and a lamp.
-        k.box(BEAM, (0, -d / 2 - 0.05, 1.9), (1.8, 0.15, 2.8))
+        # (Down to the ground, out past the stone base course: notes 6, 7 and 9.)
+        k.box(BEAM, (0, -d / 2 - 0.22, 1.65), (1.8, 0.15, 3.3))
         k.add("wreath", lambda bm: _ring_wreath(bm, (0, -d / 2 - 0.25, 3.7), 0.55))
         k.box(LAMP, (1.4, -d / 2 - 0.3, 3.0), (0.3, 0.3, 0.45))
-        # Lights along the front eave.
+        # Lights along the front eave: a string of bulbs.
         D = d / 2 + 1.0
-        k.quad("xmas_lights", [(-w / 2 - 1.0, -D - 0.05, h - 0.55), (w / 2 + 1.0, -D - 0.05, h - 0.55), (w / 2 + 1.0, -D - 0.05, h - 0.15), (-w / 2 - 1.0, -D - 0.05, h - 0.15)])
+        _bulb_string(k, (-w / 2 - 1.0, -D - 0.08, h - 0.2), (w / 2 + 1.0, -D - 0.08, h - 0.2), sag=0.3, phase=variant)
         return k.slots(c)
 
     return _p(c, name, build)
@@ -191,12 +244,12 @@ def stall(c, variant=0):
         k.box("cabin_wall", (0, 1.7, 1.6), (5.0, 0.2, 3.2))
         k.box(BEAM, (0, -1.0, 0.6), (4.8, 1.0, 1.2))
         k.quad(aw, [(-2.9, -2.6, 2.7), (2.9, -2.6, 2.7), (2.9, 1.9, 3.8), (-2.9, 1.9, 3.8)])
-        k.box(SNOW, (0, -0.35, 3.45), (6.0, 4.7, 0.25), tilt=(-0.24, 0.0))
+        # (No snow sheet over the awning: notes 4, 5.)
         for i, wr in enumerate(("wrap_red", "wrap_green", "wrap_gold", "wrap_blue")):
             s = 0.45 + 0.15 * ((i + variant) % 3)
             k.box(wr, (-1.6 + i * 1.05, -1.0, 1.2 + s / 2), (s, s, s), rot=0.3 * i)
         k.box(LAMP, (2.2, -1.8, 2.4), (0.3, 0.3, 0.45))
-        k.quad("xmas_lights", [(-2.9, -2.62, 2.35), (2.9, -2.62, 2.35), (2.9, -2.62, 2.7), (-2.9, -2.62, 2.7)])
+        _bulb_string(k, (-2.9, -2.66, 2.68), (2.9, -2.66, 2.68), sag=0.25, phase=variant)  # (real bulbs: note 13)
         return k.slots(c)
 
     return _p(c, name, build)
@@ -228,20 +281,6 @@ def _roof4(bm, x, y, z, r, h):
 # ------------------------------------------------------------------ trees
 
 
-def _light_spiral(bm, height, base_r, top_r, z0, turns, width=0.35, seg=48, phase=0.0, at=(0.0, 0.0)):
-    """A ribbon of lights spiralling up a cone (centred on `at`)."""
-    rows = []
-    for i in range(seg + 1):
-        t = i / seg
-        a = phase + t * turns * math.tau
-        z = z0 + t * height
-        r = (base_r + (top_r - base_r) * t) + 0.35
-        p = Vector((at[0] + r * math.cos(a), at[1] + r * math.sin(a), z))
-        rows.append((bm.verts.new(p - Vector((0, 0, width / 2))), bm.verts.new(p + Vector((0, 0, width / 2)))))
-    for (a0, a1), (b0, b1) in zip(rows, rows[1:]):
-        bm.faces.new((a0, b0, b1, a1))
-
-
 def xmas_pine(c, variant=0, height=14.0, lights=True):
     """A pine heavy with snow, optionally wound with coloured lights and a gold star."""
     name = "Xmas Pine %d %d %s" % (variant, int(height), "lit" if lights else "plain")
@@ -261,7 +300,18 @@ def xmas_pine(c, variant=0, height=14.0, lights=True):
 
         k.add("pine_night", boughs)
         if lights:
-            k.add("xmas_lights", lambda bm: _light_spiral(bm, height * 0.72, height * 0.27, height * 0.05, height * 0.18, 3.0, 0.4, 40, variant))
+            # (Bulbs round each tier's rim, not a ribbon: review-snow_region 9, "real christmas lights".)
+            n = 0
+            for i in range(4):
+                r = height * 0.3 * (1 - i / 4 * 0.75) * 0.92
+                zt = height * (0.17 + 0.2 * i) + height * 0.17 - height * 0.15
+                m = max(6, int(r * math.tau / 0.9))
+                for j in range(m):
+                    a = j * math.tau / m + 0.3 * i
+                    px, py = r * math.cos(a), r * math.sin(a)
+                    px += 0.15 * math.sin(zt * 1.3 + variant)
+                    k.add(BULBS[n % 4], lambda bm, px=px, py=py, zt=zt: blob(bm, (px, py, zt), 0.16, sz=1.3, subdiv=1))
+                    n += 1
             k.add("star_gold", lambda bm: _star(bm, (0, 0, height * 1.0 + 0.4), height * 0.06))
         return k.slots(c)
 
@@ -332,8 +382,10 @@ def giant_tree(c, name, x, y, z, height=44.0):
         t = i / 8
         r = height * 0.3 * (1 - t * 0.82)
         zb = z + height * (0.12 + 0.105 * i) + height * 0.085 - height * 0.085 + 0.4
-        tips = 14
-        per = max(3, int(r * math.tau / tips / 1.1))
+        # (Fewer, smaller bulbs up the narrow top tiers, so they never pack into a sheet over
+        # the boughs: Blake, review-snow_region 9 notes 2, 11, 12, 15.)
+        tips = max(6, min(14, int(r * math.tau / 4.0)))
+        per = max(1, int(r * math.tau / tips / 1.6))
         n = 0
         for j in range(tips):
             for m in range(per):
@@ -344,14 +396,15 @@ def giant_tree(c, name, x, y, z, height=44.0):
                 px, py = x + rr * math.cos(a), y + rr * math.sin(a)
                 # (bough wobble, as the cones are: v.co.x += 0.35 sin(z 0.9 + i))
                 px += 0.35 * math.sin(zz * 0.9 + i)
-                k.add(cols[n % 4], lambda bm, px=px, py=py, zz=zz: blob(bm, (px, py, zz), 0.3 + 0.002 * height, subdiv=1))
+                k.add(cols[n % 4], lambda bm, px=px, py=py, zz=zz: blob(bm, (px, py, zz), 0.22, sz=1.3, subdiv=1))
                 n += 1
     k.add("star_gold", lambda bm: _star(bm, (x, y, z + height + 2.2), 3.4))
     # A low fence round its foot, with posts.
     k.add(BEAM, lambda bm: [cuboid(bm, (x + 12 * math.cos(a), y + 12 * math.sin(a), z + 0.6), (0.4, 0.4, 1.4)) for a in [i * math.tau / 16 for i in range(16)]])
     k.add("timber_rail", lambda bm: [cuboid(bm, (x + 12 * math.cos(a), y + 12 * math.sin(a), z + 0.95), (4.7, 0.2, 0.25), rot=a + math.pi / 2) for a in [(i + 0.5) * math.tau / 16 for i in range(16)]])
+    groups = k.groups  # (before the bmesh goes into the mesh)
     ob = c.mesh_object(name, bm, "Village", "both")
-    for mat, faces in k.groups.items():
+    for mat, faces in groups.items():
         if faces:
             c.assign(ob, c.lib(mat), faces)
     ob.data.shade_flat()
@@ -495,44 +548,27 @@ def log(c, variant=0):
 
 
 class Lights:
-    """Strings of coloured lights slung between points (across streets, along bridges),
-    all in one mesh: thin sagging ribbons of bulbs, their UVs running along so the
-    lights chase."""
+    """Strings of Christmas lights slung between points (across streets, along bridges),
+    all in one mesh: a dark wire sagging between them, glowing bulbs hung from it in turn
+    red, gold, green and blue (Blake, review-snow_region 9 note 8: "look like christmas
+    lightbulbs and light up"; they were flat ribbons)."""
 
     def __init__(self):
         self.bm = bmesh.new()
-        self.uv = self.bm.loops.layers.uv.new("UVMap")
+        self.k = Parts(self.bm)
+        self.n = 0
 
     def line(self, p0, p1, sag=1.2, width=0.35, tile=3.0):
-        a, b = Vector(p0), Vector(p1)
-        n = max(4, int((b - a).length / 1.5))
-        along = 0.0
-        prev = None
-        rows = []
-        for i in range(n + 1):
-            t = i / n
-            p = a.lerp(b, t)
-            p.z -= sag * 4 * t * (1 - t)
-            if prev is not None:
-                along += (p - prev).length
-            rows.append((p, along))
-            prev = p
-        for sd in (-1, 1):
-            vs = [(self.bm.verts.new(p + Vector((0, 0, -width / 2))), self.bm.verts.new(p + Vector((0, 0, width / 2))), u) for p, u in rows]
-            for (a0, a1, u0), (b0, b1, u1) in zip(vs, vs[1:]):
-                quad = (a0, b0, b1, a1) if sd > 0 else (a1, b1, b0, a0)
-                uvs = ((u0, 0.25), (u1, 0.25), (u1, 0.75), (u0, 0.75)) if sd > 0 else ((u0, 0.75), (u1, 0.75), (u1, 0.25), (u0, 0.25))
-                f = self.bm.faces.new(quad)
-                for loop, (u, v) in zip(f.loops, uvs):
-                    loop[self.uv].uv = (u / tile, v)
+        _bulb_string(self.k, p0, p1, sag=sag, every=0.55, r=0.13, phase=self.n)
+        self.n += 1
 
     def build(self, c, name="Lights"):
         if not self.bm.faces:
             self.bm.free()
             return None
-        from kartipelago_tools import materials
-
+        groups = self.k.groups  # (before the bmesh goes into the mesh)
         ob = c.mesh_object(name, self.bm, "Lights", "visual")
-        ob.data.materials.append(c.lib("xmas_lights"))
-        materials.ensure_paint(ob.data)
+        for mat, faces in groups.items():
+            if faces:
+                c.assign(ob, c.lib(mat), faces)
         return ob
