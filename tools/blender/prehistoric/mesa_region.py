@@ -29,6 +29,7 @@ import summit_props as smp_  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
 import desert_dress as dd  # noqa: E402
+import mesa_dress as md  # noqa: E402
 import mesa_layout as M  # noqa: E402
 
 RUIN = ruin.ON
@@ -136,14 +137,21 @@ def main():
                          *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 16.0) for x, y in M.GATES.values())])
     water(c)
     sun_arch(c, ground)
-    trading_post(c, ground, taken)
+    trading_post(c, ground, taken, ter)
     pueblo(c, ground, taken)
     canyon_rim(c, ground, taken)
     havasu(c, ground, taken)
-    boomtown(c, ground, taken)
+    # (The deep pass, Nov 1: each section in its own course's kit: mesa_dress.)
+    md.canyon_outpost(c, ground, taken, ter)
+    md.havasu_village(c, ground, taken, ter)
+    town_at = md.boomtown(c, ground, taken, ter)
+    boomtown(c, ground, taken, town_at)
     crater(c, ground, taken)
+    md.crater_camp(c, ground, taken, ter)
     showground(c, ground, taken)
     ledge(c, ground, taken)
+    md.chevrons(c, ground, taken)
+    md.telegraph(c, ground, taken)
     # (Folk along the roads, far from the towns'.)
     paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (268.0, -40.0), (107.0, -284.0), (-20.0, -128.0)], 4)
     puzzle_kit.pen(c, "return", "Old Well", *M.CAVE, pb.to_road(c, *M.CAVE), 11.0, 4.5, ("adobe", "wall"), ground(*M.CAVE),
@@ -225,24 +233,20 @@ def _foot(ground, x, y, rot, w, d):
     return min(ground(x + lx * ca - ly * sa, y + lx * sa + ly * ca) for lx in (-w / 2, 0.0, w / 2) for ly in (-d / 2, 0.0, d / 2))
 
 
-def trading_post(c, ground, taken):
+def trading_post(c, ground, taken, ter):
     """The roadside trading post where the Frozen Pass comes down: adobe houses round its
     square, the diner, its neon sign on a tall post, a gas pump under a canopy, the
     windmill and its tank, stalls of blankets and pots."""
     px, py, pr = M.POST
     z = ground(px, py)
     c.disc("Post Square", px, py, pr, z + 0.03, c.lib("palace_paving", "road"), coll="Props", role="collision", n=36)
-    for k, (a, w, d, h) in enumerate(((0.9, 12.0, 9.0, 5.0), (1.9, 9.0, 8.0, 6.0), (2.9, 10.0, 8.0, 5.5), (4.2, 11.0, 9.0, 6.5),
-                                      (5.2, 8.0, 7.0, 5.0))):
-        x, y = px + (pr + 7.0) * math.cos(a), py + (pr + 7.0) * math.sin(a)
-        dd.adobe_house(c, "Post House %d" % k, x, y, _foot(ground, x, y, a - math.pi / 2, w, d) - 0.1, a - math.pi / 2, w, d, h, k)
-        taken.add(x, y, 7.0)
-    # The diner: a long low block with a big lit window band, its neon sign up on a post.
+    # (Oasis Haven's adobe homes round it, on graded land: mesa_dress.post_homes.)
+    md.post_homes(c, ground, taken, ter)
+    # The store (the trading post itself: mesa_dress.post_store, Dry Gulch's frontier kit), its
+    # neon sign up on a post.
     dx_, dy_ = px + 4.0, py - pr - 12.0
-    dz = ground(dx_, dy_)
-    box(c, "Diner", dx_, dy_, 9.0, 4.5, dz - 1.0, dz + 4.2, ("siding_ochre", "wall"))
-    box(c, "Diner Roof", dx_, dy_, 9.6, 5.0, dz + 4.2, dz + 4.8, ("tin_roof", "wall"), role="visual")
-    box(c, "Diner Windows", dx_, dy_ + 4.52, 7.5, 0.05, dz + 1.2, dz + 3.2, ("window_lit", "wall"), role="visual")
+    md.post_store(c, ground, taken, ter)
+    dz = ground(dx_ + 12.0, dy_ + 6.0)
     box(c, "Neon Post", dx_ + 12.0, dy_ + 6.0, 0.25, 0.25, dz - 0.5, dz + 11.0, ("rail_iron", "wall"))
     box(c, "Neon Sign", dx_ + 12.0, dy_ + 6.0, 3.2, 0.3, dz + 8.0, dz + 11.5, ("lantern_amber", "wall"), role="visual")
     box(c, "Neon Arrow", dx_ + 12.0, dy_ + 6.0, 1.6, 0.32, dz + 6.8, dz + 7.6, ("fire_glow", "wall"), role="visual")
@@ -279,40 +283,10 @@ def pueblo(c, ground, taken):
     ristras by the doors; its folk; the farms in the wash below."""
     ax, ay, w, dp = M.ALCOVE
     fz = M.FLOOR + 6.0
-    # The overhang: a slab of the mesa's caprock out over the alcove, its lip ragged.
-    top = 82.0
-    for k in range(7):
-        t = (k - 3) / 3.0
-        x = ax + t * w * 0.42
-        reach = dp * (1.0 - 0.5 * abs(t) ** 2)
-        box(c, "Alcove Overhang %d" % k, x, ay + dp - reach / 2, w * 0.08, reach / 2 + 1.0, fz + 22.0 + 2.0 * abs(t),
-            top - 8.0, ("strata_cream" if k % 2 else "strata_orange", "wall"), role="visual")
-    box(c, "Alcove Back", ax, ay + dp + 1.0, w / 2, 3.0, fz - 1.0, top - 6.0, ("strata_rust", "wall"))
-    # The homes: three tiers stepping back into the alcove.
-    k = 0
-    for tier in range(3):
-        n = (6, 5, 3)[tier]
-        y = ay + 3.0 + tier * 6.5
-        z = fz + tier * 4.2
-        span = w * (0.78 - 0.14 * tier)
-        for j in range(n):
-            x = ax - span / 2 + (j + 0.5) * span / n
-            ww, dd_ = 7.5 - 0.6 * (j % 2), 6.0
-            dd.adobe_house(c, "Pueblo Home %d" % k, x, y, z - 0.1, math.pi, ww, dd_, 4.2, k, lit=True)
-            # A ladder up its front to the roof (the tier above's terrace).
-            lx, ly = x + ww * 0.3, y - dd_ / 2 - 0.6
-            for sd in (-1, 1):
-                box(c, "Pueblo Ladder %d %d" % (k, sd), lx + sd * 0.35, ly, 0.06, 0.06, z - 0.2, z + 5.0, ("weathered_timber", "wall"),
-                    role="visual")
-            for r in range(6):
-                box(c, "Pueblo Rung %d %d" % (k, r), lx, ly, 0.38, 0.04, z + 0.6 + 0.75 * r, z + 0.66 + 0.75 * r,
-                    ("weathered_timber", "wall"), role="visual")
-            # Ristras (strings of red chiles) by its door.
-            box(c, "Ristra %d" % k, x - ww * 0.3, y - dd_ / 2 - 0.15, 0.12, 0.12, z + 1.6, z + 3.0, ("party_red", "wall"),
-                role="visual")
-            k += 1
-        # The terrace in front of the tier: the roofs below it, a level floor.
-        box(c, "Pueblo Terrace %d" % tier, ax, y - 3.6, span / 2 + 2.0, 1.4, fz - 1.0 + tier * 4.2, z - 0.05, ("adobe", "wall"))
+    # The overhang (one shell of the mesa's caprock over the alcove) and the homes in three
+    # tiers under it, Oasis Haven's adobe (mesa_dress, the deep pass).
+    md.alcove_overhang(c)
+    md.pueblo_homes(c, ground, taken)
     # The plaza in front: two kivas (round, sunken rooms, their ladders poking out), beehive
     # ovens, pots.
     for j, sx in enumerate((-1, 1)):
@@ -341,13 +315,7 @@ def canyon_rim(c, ground, taken):
     """The Grand Canyon's rim: a timber railing along the overlook at Horseshoe Bend, its
     viewing scope, hoodoos in a crowd along the rim west (Bryce), junipers."""
     gx, gy = M.GATES["canyon"]
-    for k in range(12):
-        t = (k - 5.5) / 5.5
-        x, y = gx + t * 22.0, gy + 12.0 - 3.0 * t * t
-        if M.canyon_d(x, y) > M.CANYON_HW - 2.0:
-            z = ground(x, y)
-            box(c, "Overlook Post %d" % k, x, y, 0.12, 0.12, z - 0.3, z + 1.2, ("weathered_timber", "wall"))
-            box(c, "Overlook Rail %d" % k, x, y, 2.0, 0.08, z + 1.0, z + 1.15, ("fence_rail", "wall"), role="visual")
+    # (The overlook's rail: mesa_dress.rim_rail, all along the rim.)
     c.place(ip.survey_scope(c), gx + 4.0, gy + 6.0, ground(gx + 4.0, gy + 6.0))
     rng = random.Random(7)
     n = 0
@@ -377,89 +345,15 @@ def havasu(c, ground, taken):
         a = k * math.tau / 10 + 0.0
         x, y = fx + (fr - 7.0) * math.cos(a), fy + (fr - 7.0) * math.sin(a)
         c.place(ip.tree_fern(c, k % 2), x, y, ground(x, y) - 0.2, rot=a, role="visual")
-    gx, gy = M.GATES["oasis"]
-    for k in range(3):
-        c.place(op.palm(c, k, height=9.0 + 2.0 * k), gx + 8.0 * math.cos(k * 2.1), gy + 8.0 * math.sin(k * 2.1),
-                ground(gx, gy) - 0.2)
+    # (No palms: Oasis Haven's cottonwoods, mesa_dress.havasu_village.)
 
 
-def boomtown(c, ground, taken):
-    """The mining town on the road under Copper Mesa: false fronts down both sides of its
-    street, the water tower, the railroad in along the mesa's foot to the depot, ore carts,
-    the mine's headframe up on the talus, barrels and wagons."""
-    sidings = ("siding_brown", "siding_grey", "siding_red", "siding_ochre", "siding_green")
-    k = 0
-    for q in c.S[::12]:
-        if M.look_at(q.p.x, q.p.y) != "town" or not -110.0 < q.p.y < 50.0:
-            continue
-        for sd in (-1, 1):
-            off = q.w / 2 + 5.5
-            x, y = q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off
-            if not taken.clear(x, y, 7.0) or not paint.road_clear(c, x, y, 4.0):
-                continue
-            rot = math.atan2(q.r.y * sd, q.r.x * sd) - math.pi / 2
-            w = 9.0 + 2.0 * (k % 3)
-            ca, sa = math.cos(rot), math.sin(rot)
-            foot = [ground(x + lx * ca - ly * sa, y + lx * sa + ly * ca) for lx in (-w / 2, 0.0, w / 2) for ly in (0.0, 5.0, 10.0)]
-            if max(foot) - min(foot) > 3.0:
-                continue
-            _false_front(c, "Boomtown House %d" % k, x, y, ground(x, y), rot, w, 10.0, sidings[k % len(sidings)],
-                         lit=not RUIN and k % 3 != 1, foot=min(foot) - 0.4)
-            taken.add(x, y, 8.0)
-            k += 1
-    tx, ty, tl, th = M.TOWN
-    wx, wy = tx - 30.0, ty + 40.0
-    c.place(cp.water_tank(c), wx, wy, ground(wx, wy) - 0.2, scale=1.4)
-    taken.add(wx, wy, 6.0)
-    # The railroad: ties and rails along the mesa's foot into the depot, a cart on it.
-    pts = [(250.0, -260.0), (262.0, -190.0), (258.0, -140.0), (240.0, -80.0), (236.0, -10.0), (244.0, 60.0)]
-    for (ax, ay), (bx, by) in zip(pts, pts[1:]):
-        L = math.hypot(bx - ax, by - ay)
-        rot = math.atan2(by - ay, bx - ax)
-        n = int(L / 2.4)
-        for j in range(n):
-            t = (j + 0.5) / n
-            x, y = lerp(ax, bx, t), lerp(ay, by, t)
-            if not paint.road_clear(c, x, y, 1.5):
-                continue
-            z = ground(x, y)
-            box(c, "Tie %d %d" % (int(ax), j), x, y, 0.3, 1.5, z - 0.1, z + 0.12, ("weathered_timber", "wall"), rot=rot, role="visual")
-        for sd in (-1, 1):
-            ox, oy = -math.sin(rot) * sd * 0.75, math.cos(rot) * sd * 0.75
-            strip = [(lerp(ax, bx, t) + ox, lerp(ay, by, t) + oy) for t in (0.0, 1.0)]
-            zr = (ground(ax, ay) + ground(bx, by)) / 2 + 0.2
-            c.ribbon("Rail %d %d" % (int(ax), sd), strip, 0.14, zr, c.lib("rail_iron", "wall"), role="visual")
-    for k, (x, y) in enumerate(((238.0, -40.0), (240.0, -30.0))):
-        c.place(gp.ore_cart(c, glow=False), x, y, ground(x, y) + 0.1, rot=math.pi / 2)
-    for k in range(6):
-        a = k * 1.3
-        x, y = tx - 12.0 + 6.0 * math.cos(a), ty - 50.0 + 6.0 * math.sin(a)
-        if taken.clear(x, y, 1.5):
-            c.place(gp.barrel(c, k % 2), x, y, ground(x, y))
-    g = c.game(tx - 10.0, ty, ground(tx - 10.0, ty))
+def boomtown(c, ground, taken, at):
+    """The boomtown's folk (its buildings, Main Street's dressing, the water tower, Boot
+    Hill and the railroad: mesa_dress.boomtown, Dry Gulch's own kit)."""
+    x, y = at
+    g = c.game(x - 30.0, y, ground(x - 30.0, y))
     c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=16.0, n=5, folk="desert", heading=0.0)
-
-
-def _false_front(c, name, x, y, z, rot, w, d, siding, lit=True, foot=None):
-    ca, sa = math.cos(rot), math.sin(rot)
-
-    def at(lx, ly):
-        return x + lx * ca - ly * sa, y + lx * sa + ly * ca
-
-    bx, by = at(0.0, d / 2)
-    box(c, name, bx, by, w / 2, d / 2, min(z - 1.0, foot if foot is not None else z - 1.0), z + 5.0, (siding, "wall"), rot=rot)
-    fx, fy = at(0.0, 0.3)
-    box(c, name + " Front", fx, fy, w / 2 + 0.3, 0.3, z + 4.0, z + 8.5, (siding, "wall"), rot=rot, role="visual")
-    rx, ry = at(0.0, d / 2)
-    box(c, name + " Roof", rx, ry, w / 2 + 0.4, d / 2 + 0.3, z + 5.0, z + 5.6, ("shingle_roof", "wall"), rot=rot, role="visual")
-    px, py = at(0.0, -1.6)
-    box(c, name + " Porch", px, py, w / 2, 1.6, z + 3.4, z + 3.7, ("tin_roof", "wall"), rot=rot, role="visual")
-    for k in (-1, 1):
-        wx, wy = at(k * w / 4, -0.05)
-        box(c, name + " Window %d" % k, wx, wy, 1.0, 0.06, z + 1.2, z + 2.8, ("window_lit" if lit else "window_dark", "wall"),
-            rot=rot, role="visual")
-        p2x, p2y = at(k * (w / 2 - 0.3), -3.0)
-        box(c, name + " Porch Post %d" % k, p2x, p2y, 0.12, 0.12, z - 0.2, z + 3.5, ("weathered_timber", "wall"), rot=rot)
 
 
 def crater(c, ground, taken):
@@ -486,17 +380,7 @@ def crater(c, ground, taken):
     c.assign(ob, c.lib("tin_roof", "wall"))
     box(c, "Observatory Slit", ox, oy - 0.2, 0.7, 5.3, oz + 8.0, oz + 12.0, ("dark_corridor", "wall"), rot=1.9, role="visual")
     taken.add(ox, oy, 9.0)
-    for k in range(3):
-        a = 1.4 + k * 0.35
-        x, y = cx + (R + 24.0) * math.cos(a), cy + (R + 24.0) * math.sin(a)
-        if taken.clear(x, y, 4.0) and paint.road_clear(c, x, y, 4.0):
-            c.place(ip.tent(c, k % 2), x, y, ground(x, y) - 0.1, rot=a)
-            taken.add(x, y, 4.0)
-    for k in range(10):
-        a = k * math.tau / 10 + 0.2
-        x, y = cx + (R + 3.0) * math.cos(a), cy + (R + 3.0) * math.sin(a)
-        if paint.road_clear(c, x, y, 3.0):
-            c.place(ip.warning_sign(c, k % 2), x, y, ground(x, y), rot=a)
+    # (The survey camp and the rim's warning signs: mesa_dress.crater_camp.)
     rng = random.Random(11)
     for k in range(22):
         a = rng.uniform(0, math.tau)
@@ -516,16 +400,8 @@ def showground(c, ground, taken):
     GATE_A = math.atan2(M.GATES["lair"][1] - ay, M.GATES["lair"][0] - ax)
     z = ground(ax, ay)
     c.disc("Arena Floor", ax, ay, ar, z + 0.04, c.lib("red_sand", "loose_sand"), coll="Props", role="visual", n=40)
-    n = 36
-    for k in range(n):
-        a = k * math.tau / n
-        if abs((a - GATE_A + math.pi) % math.tau - math.pi) < 0.12:
-            continue  # (its gate, east, to the lair)
-        x, y = ax + ar * math.cos(a), ay + ar * math.sin(a)
-        box(c, "Arena Post %d" % k, x, y, 0.16, 0.16, ground(x, y) - 0.3, ground(x, y) + 1.9, ("weathered_timber", "wall"))
-        for j in (0.8, 1.6):
-            box(c, "Arena Rail %d %d" % (k, j * 10), x, y, 0.08, ar * math.pi / n, ground(x, y) + j, ground(x, y) + j + 0.14,
-                ("fence_rail", "wall"), rot=a, role="visual")
+    # (Its fence one solid mesh, its gate east to the lair: mesa_dress.arena_fence.)
+    md.arena_fence(c, ground, GATE_A)
     # The grandstand, north, in tiers, under a striped roof.
     for t in range(5):
         r = ar + 4.0 + t * 1.6
@@ -560,18 +436,9 @@ def showground(c, ground, taken):
 
 
 def ledge(c, ground, taken):
-    """The Ledge Road and the High Road: a low stone parapet along the drop side, cairns at
-    its bends."""
-    k = 0
-    for q in c.S[::6]:
-        if not (q.p.z > 16.0 and M.look_at(q.p.x, q.p.y) in ("mesa", "show", "post")):
-            continue
-        for sd in (-1, 1):
-            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 1.0), q.p.y + q.r.y * sd * (q.w / 2 + 1.0)
-            if natural(x + q.r.x * sd * 5.0, y + q.r.y * sd * 5.0) < q.p.z - 3.0 and paint.road_clear(c, x, y, 0.4):
-                box(c, "Ledge Wall %d" % k, x, y, 0.4, 1.6, q.p.z - 1.0, q.p.z + 0.7, ("strata_cream", "wall"),
-                    rot=math.atan2(q.t.y, q.t.x) + math.pi / 2)
-                k += 1
+    """The Ledge Road's and the High Road's parapet: mesa_dress.parapet (one continuous wall,
+    no blocks with gaps between)."""
+    md.parapet(c, ground, taken)
 
 
 def desert(c, ground, taken):
@@ -585,17 +452,21 @@ def desert(c, ground, taken):
 
     g = ground
     for v in range(2):
+        # (Each set down on the lowest ground under it, nothing floating on a slope; the barrel
+        # cacti knee-high, so solid: the overworld rules, the deep pass.)
         paint.scatter(c, cp.saguaro(c, v), 90, rmax, floor, g, taken, 10 + v, room=6.0, road_margin=6.0, trunk=(0.6, 6.0),
-                      scale=(0.9, 1.5))
-        paint.scatter(c, cp.joshua_tree(c, v), 30, rmax, floor, g, taken, 12 + v, room=6.0, road_margin=6.0, trunk=(0.6, 5.0))
-        paint.scatter(c, cp.barrel_cactus(c, v), 60, rmax, floor, g, taken, 14 + v, room=2.5, road_margin=3.0, role="visual")
-        paint.scatter(c, cp.sagebrush(c, v), 220, rmax, floor, g, taken, 16 + v, room=2.5, role="visual")
+                      scale=(0.9, 1.5), seat=0.8)
+        paint.scatter(c, cp.joshua_tree(c, v), 30, rmax, floor, g, taken, 12 + v, room=6.0, road_margin=6.0, trunk=(0.6, 5.0),
+                      seat=1.0)
+        paint.scatter(c, cp.barrel_cactus(c, v), 60, rmax, floor, g, taken, 14 + v, room=2.5, road_margin=3.0, trunk=(0.5, 1.2),
+                      seat=0.6)
+        paint.scatter(c, cp.sagebrush(c, v), 220, rmax, floor, g, taken, 16 + v, room=2.5, role="visual", seat=0.8)
         paint.scatter(c, cp.boulder(c, v), 40, rmax, lambda x, y: natural(x, y) < 40.0, g, taken, 18 + v, room=4.0,
-                      road_margin=7.0, scale=(1.0, 2.6))
-    paint.scatter(c, cp.agave(c, 0), 80, rmax, floor, g, taken, 20, room=2.5, road_margin=3.0, role="visual")
-    paint.scatter(c, cp.dry_grass(c, 0), 160, rmax, floor, g, taken, 21, room=2.0, role="visual")
-    paint.scatter(c, gp.tumbleweed(c, 0), 30, rmax, floor, g, taken, 22, room=3.0, role="visual")
-    paint.scatter(c, gp.cattle_skull(c), 10, rmax, floor, g, taken, 23, room=3.0, role="visual")
+                      road_margin=7.0, scale=(1.0, 2.6), seat=1.6)
+    paint.scatter(c, cp.agave(c, 0), 80, rmax, floor, g, taken, 20, room=2.5, road_margin=3.0, role="visual", seat=0.8)
+    paint.scatter(c, cp.dry_grass(c, 0), 160, rmax, floor, g, taken, 21, room=2.0, role="visual", seat=0.6)
+    paint.scatter(c, gp.tumbleweed(c, 0), 30, rmax, floor, g, taken, 22, room=3.0, role="visual", seat=0.6)
+    paint.scatter(c, gp.cattle_skull(c), 10, rmax, floor, g, taken, 23, room=3.0, role="visual", seat=0.5)
 
 
 if __name__ == "__main__":

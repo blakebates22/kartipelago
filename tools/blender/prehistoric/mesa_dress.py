@@ -1,0 +1,894 @@
+# Desert World v4's dressing, the deep pass (Blake, Nov 1: "rigorously go through beach and
+# desert world and do the stuff that you have been seeing me do with dino and snow ... like
+# nothing floating, make it immersive for that level"): every section dressed from its
+# own course's kit, the way Frostveil wears the citadel's and Hearthglow the Hollow's:
+#
+#   the boomtown     Dry Gulch's frontier buildings (gulch_town), its lantern posts down
+#                    both sides of Main Street, hitching rails and troughs between them,
+#                    its water tower, Boot Hill, the railroad on the ground;
+#   the canyon rim   Canyon Dash's outpost: the timber arch and its banners, braziers, the
+#                    windmill, the lookout tower, the water tank; a guard rail along the rim;
+#   Havasu           Oasis Haven's village: adobe homes with vigas and ristras, the log
+#                    ranch gate, lantern posts, ramadas, the campground, a corral;
+#   the crater       Impact Depths' approach: the rustic timber arch, the survey camp,
+#                    warning signs along the rim;
+#   the roads        chevron boards round every big bend, telegraph poles down the long
+#                    open stretches, their wires strung pole to pole.
+#
+# Every building on land graded level under it (region_paint.grade), its foot down to the
+# lowest ground; every prop on the lowest ground under it.
+# SPDX-License-Identifier: MIT
+
+import math
+import random
+
+import canyon_props as cp
+import gulch_props as gp
+import gulch_scenery as gs
+import gulch_town as gt
+import impact_props as ip
+import mesa_layout as M
+import oasis_desert as od
+import oasis_props as op
+import region_paint as paint
+import summit_props as smp_
+from canyon_props import _beam
+from course_kit import Vector, bmesh, rnd
+from props import _faces, blob, cuboid, tube
+
+TIMBER = ("weathered_timber", "wall")
+
+
+def road_rot(q):
+    return math.atan2(q.t.y, q.t.x)
+
+
+def _runs(c, test, step=2.0):
+    """The stretches (s0, s1) of the lap where test(q) holds."""
+    runs, cur = [], None
+    s = 0.0
+    while s < c.length:
+        if test(c.at(s)):
+            cur = [s, s] if cur is None else [cur[0], s]
+        elif cur:
+            runs.append(tuple(cur))
+            cur = None
+        s += step
+    if cur:
+        runs.append(tuple(cur))
+    return runs
+
+
+def _lowest(ground, x, y, r):
+    """The lowest ground round (x, y) at r (and under it): where a thing's foot goes."""
+    return min([ground(x + r * math.cos(t), y + r * math.sin(t)) for t in [k * math.tau / 8 for k in range(8)]] + [ground(x, y)])
+
+
+def _spread(ground, x, y, r):
+    hs = [ground(x + r * math.cos(t), y + r * math.sin(t)) for t in [k * math.tau / 8 for k in range(8)]] + [ground(x, y)]
+    return max(hs) - min(hs)
+
+
+def _off_roads(c, x, y, margin):
+    """Clear of the lap and every side road by `margin` past their edges."""
+    return gs.clear(c, x, y, margin)
+
+
+class _DG:
+    """What gulch_scenery's Scene asks of a course: its land."""
+
+    natural = staticmethod(M.natural)
+
+
+def _scene(c, ter):
+    sc = gs.Scene(c, _DG)
+    sc.ground_obs = [ter]
+    return sc
+
+
+# ------------------------------------------------------------------ the boomtown
+
+WEST = [
+    (20.0, 16.0, {"special": gt.hotel}),
+    (10.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.6}),
+    (9.0, 11.0, {"siding": "siding_grey", "sign": "barber", "lit": 0.5}),
+    (22.0, 18.0, {"special": gt.saloon}),
+    (12.0, 13.0, {"siding": "siding_brown", "sign": "undertaker", "lit": 0.4}),
+    (11.0, 12.0, {"siding": "siding_ochre", "storeys": 2, "balcony": True, "lit": 0.6}),
+    (8.0, 10.0, {"siding": "siding_red", "lit": 0.6}),
+]
+EAST = [
+    (18.0, 15.0, {"siding": "siding_ochre", "storeys": 2, "sign": "general", "lit": 0.8}),
+    (11.0, 12.0, {"special": gt.sheriff, "extra": 9.0}),
+    (12.0, 13.0, {"siding": "siding_brown", "sign": "assay", "lit": 0.6}),
+    (16.0, 20.0, {"special": gt.livery}),
+    (10.0, 12.0, {"siding": "siding_green", "storeys": 2, "balcony": True, "lit": 0.6}),
+    (9.0, 11.0, {"siding": "siding_grey", "lit": 0.5}),
+]
+SETBACK = 13.5  # Main Street's fronts from the road's middle (porches 3.2 m in front of them)
+
+
+def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0):
+    """gulch_town.along's row of frontier buildings, each on land graded level under it
+    (its footprint and its porch), its door sill at the ground."""
+    s, k, out = s0, 0, []
+    while s < s1:
+        w, d, opts = kinds[k % len(kinds)]
+        ex = opts.get("extra", 0.0)
+        mid = s + (w + ex) / 2
+        if mid + (w + ex) / 2 > s1:
+            break
+        q = c.at(s + w / 2)
+        h = road_rot(q)
+        rot = h + math.pi if side > 0 else h
+        nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
+        x, y = q.p.x + nx * SETBACK, q.p.y + ny * SETBACK
+        f = gt.Frame(x, y, 0.0, rot)
+        # (A building's extra: the jail beside the sheriff's, on its +u side: forward along the
+        # lap on the left (side -1), so the sheriff's only goes on that side.)
+        lo_u, hi_u = -w / 2, w / 2 + ex
+        corners = [f.P(lo_u - 0.6, -3.4), f.P(hi_u + 0.6, -3.4), f.P(lo_u, d), f.P(hi_u, d)]
+        cx, cy, _ = f.P((lo_u + hi_u) / 2, d / 2)
+        R = math.hypot(hi_u - lo_u, d + 3.4) / 2
+        why = None
+        if not all(_off_roads(c, px, py, 1.4) for px, py, _ in corners):
+            why = "road"
+        elif not all(sc.free(px, py, 0.5) for px, py, _ in corners):
+            why = "built"
+        elif not taken.clear(cx, cy, R - 2.0):
+            why = "taken"
+        else:
+            hs = [ground(px, py) for px, py, _ in corners] + [ground(cx, cy)]
+            if max(hs) - min(hs) >= 4.0:
+                why = "slope %.1f" % (max(hs) - min(hs))
+        ok = why is None
+        if not ok:
+            print("  row %+d at s %.0f (%.0f, %.0f): %s" % (side, s, cx, cy, why))
+        if ok:
+            zf = (ground(*corners[0][:2]) + ground(*corners[1][:2])) / 2
+            paint.grade(c, ter, cx, cy, rot, hi_u - lo_u + 1.0, d + 1.0, zf, front=3.8)
+            kw = {kk: v for kk, v in opts.items() if kk not in ("special", "extra")}
+            kw.setdefault("ghost", 0.0)
+            if "special" in opts:
+                opts["special"](m, sc, x, y, zf + 0.05, rot)
+            else:
+                gt.building(m, sc, x, y, zf + 0.05, rot, w, d, seed=seed * 50 + k, **kw)
+            out.append((x, y, rot, w, cx, cy, R))
+        s += w + ex + 2.0 + 2.0 * rnd(seed * 13 + k)
+        k += 1
+    return out
+
+
+def boomtown(c, ground, taken, ter):
+    """The boomtown on the road under Copper Mesa, as Dry Gulch's own Main Street: the
+    frontier buildings down both sides (saloon, hotel, bank, barber, undertaker, general
+    store, sheriff and jail, assay office, livery), lantern posts down both kerbs, the
+    boardwalks dressed between them (hitching rails, troughs, barrels, crates, benches),
+    the water tower behind, Boot Hill out west on its knoll, the railroad along the
+    ground into town. Returns where the folk live (x, y)."""
+    sc = _scene(c, ter)
+    gs.protos(c)
+    runs = _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "town" and q.p.x > 200 and -140 < q.p.y < 100)
+    s0, s1 = max(runs, key=lambda r: r[1] - r[0])
+    m = gs.Mesh()
+    built = _row(c, sc, m, s0 + 4.0, s1 - 4.0, 1, WEST, ground, ter, taken, seed=1)
+    built += _row(c, sc, m, s0 + 12.0, s1 - 4.0, -1, EAST, ground, ter, taken, seed=2)
+    # (Their ground kept after both rows: each row keeps clear of its own by footprints.)
+    for b in built:
+        taken.add(b[4], b[5], b[6])
+    m.build(c, "Boomtown Buildings", "Village", role="both")
+    # Lantern posts down both kerbs, every 16 m, their lanterns out over the street (a light
+    # on every other one); between them, the boardwalks' things.
+    post = gp.lantern_post(c)
+    lx, _ly, lz = gp.LANTERN_POST_LIGHT
+    things = ["Hitching Rail", "Water Trough", "Barrel 0", "Bench", "Crate Stack 0", "Barrel 1", "Hitching Rail", "Crate Stack 1"]
+    s, k = s0 + 6.0, 0
+    while s < s1 - 4.0:
+        q = c.at(s)
+        h = road_rot(q)
+        for side in (-1, 1):
+            nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
+            x, y = q.p.x + nx * (q.w / 2 + 2.3), q.p.y + ny * (q.w / 2 + 2.3)
+            rot = math.atan2(-ny, -nx)
+            if _off_roads(c, x, y, 0.4) and taken.clear(x, y, 0.3):
+                z = _lowest(ground, x, y, 0.3) - 0.1
+                c.place(post, x, y, z, rot=rot, coll="Village", role="both")
+                if k % 2 == 0:
+                    g = c.game(x + lx * math.cos(rot), y + lx * math.sin(rot), z + lz)
+                    c.entity("lantern", x=g[0], y=g[1], z=g[2])
+            q2 = c.at(s + 8.0)
+            h2 = road_rot(q2)
+            nx, ny = (math.sin(h2), -math.cos(h2)) if side > 0 else (-math.sin(h2), math.cos(h2))
+            x, y = q2.p.x + nx * (q2.w / 2 + 2.6), q2.p.y + ny * (q2.w / 2 + 2.6)
+            name = things[(k * 2 + (side > 0)) % len(things)]
+            if _off_roads(c, x, y, 1.0) and taken.clear(x, y, 0.5):
+                along = name in ("Hitching Rail", "Water Trough", "Bench")
+                c.place(name, x, y, _lowest(ground, x, y, 0.9 if along else 0.5), rot=h2 if along else rnd(k) * 6.0, coll="Village",
+                        role="both")
+        s += 16.0
+        k += 1
+    # The water tower, behind the west row.
+    q = c.at((s0 + s1) / 2 + 30.0)
+    h = road_rot(q)
+    for off in (40.0, 48.0, 56.0):
+        x, y = q.p.x + math.sin(h) * off, q.p.y - math.cos(h) * off
+        if taken.clear(x, y, 7.0) and _spread(ground, x, y, 6.0) < 2.0:
+            gt.water_tower(c, sc, x, y, _lowest(ground, x, y, 6.0))
+            taken.add(x, y, 8.0)
+            break
+    boot_hill(c, sc, ground, ter, taken)
+    railroad(c, ground, taken)
+    for x, y, z in sc.lanterns[::2]:
+        g = c.game(x, y, z)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    print("boomtown: %d buildings, the street %.0f m" % (len(built), s1 - s0))
+    q = c.at((s0 + s1) / 2)
+    return q.p.x, q.p.y
+
+
+BOOT_HILL = (196.0, 44.0, 15.0)  # Boot Hill: its middle and radius, out west of town
+
+
+def boot_hill(c, sc, ground, ter, taken):
+    """Boot Hill, as Dry Gulch's: an iron fence round it, its gate toward town, rows of
+    headstones and wooden crosses, a crypt, two dead trees; on ground graded level."""
+    gx, gy, R = BOOT_HILL
+    z = sum(ground(gx + R * math.cos(t), gy + R * math.sin(t)) for t in [k * math.tau / 8 for k in range(8)]) / 8
+    paint.grade(c, ter, gx, gy, 0.0, 2 * R + 2.0, 2 * R + 2.0, z, front=0.0)
+    gate_a = math.atan2(-40.0 - gy, 278.0 - gx)  # (toward Main Street)
+    n = 14
+    for k in range(n):
+        am = (k + 0.5) * math.tau / n
+        if abs(((am - gate_a + math.pi) % math.tau) - math.pi) < 0.2:
+            continue
+        x, y = gx + math.cos(am) * R, gy + math.sin(am) * R
+        L = 2 * R * math.sin(math.pi / n)
+        c.place("Iron Fence 10", x, y, _lowest(ground, x, y, L / 2), rot=am + math.pi / 2, scale=(L / 10.0 * 1.04, 1.0, 1.0),
+                coll="Village", role="both")
+    x, y = gx + math.cos(gate_a) * R, gy + math.sin(gate_a) * R
+    c.place("Cemetery Gate", x, y, _lowest(ground, x, y, 2.0), rot=gate_a + math.pi / 2, coll="Village", role="both")
+    rng = random.Random(4)
+    ca, sa = math.cos(gate_a + math.pi / 2), math.sin(gate_a + math.pi / 2)
+    for row in range(4):
+        for j in range(5):
+            u, v = (j - 2) * 3.4, -R * 0.55 + row * 4.2
+            px, py = gx + u * ca - v * sa, gy + u * sa + v * ca
+            if math.hypot(px - gx, py - gy) > R - 2.0:
+                continue
+            name = ("Headstone %d" % rng.randrange(6)) if (row + j) % 3 else ("Grave Cross %d" % rng.randrange(3))
+            c.place(name, px, py, _lowest(ground, px, py, 0.5) - 0.15, rot=gate_a + math.pi / 2 + rng.uniform(-0.12, 0.12),
+                    coll="Village", role="both")
+    cx, cy = gx - math.cos(gate_a) * R * 0.6, gy - math.sin(gate_a) * R * 0.6
+    c.place("Crypt 0", cx, cy, _lowest(ground, cx, cy, 2.5), rot=gate_a + math.pi / 2, coll="Village", role="both")
+    for k, a in enumerate((gate_a + 2.2, gate_a - 2.4)):
+        tx, ty = gx + math.cos(a) * (R - 3.0), gy + math.sin(a) * (R - 3.0)
+        c.place("Dead Tree %d" % k, tx, ty, _lowest(ground, tx, ty, 0.6) - 0.2, rot=a, coll="Village", role="both")
+    taken.add(gx, gy, R + 2.0)
+
+
+RAIL = [(236.0, -262.0), (230.0, -190.0), (224.0, -120.0), (222.0, -40.0), (224.0, 20.0), (230.0, 64.0)]
+
+
+def railroad(c, ground, taken):
+    """The railroad in along the ground (ties on the ground every 2.4 m, the rails on
+    them, following its every rise and dip): one mesh, ore carts standing on it."""
+    m = gs.Mesh()
+    pts = []
+    for (ax, ay), (bx, by) in zip(RAIL, RAIL[1:]):
+        n = int(math.hypot(bx - ax, by - ay) / 2.4)
+        for j in range(n):
+            t = j / n
+            pts.append((ax + (bx - ax) * t, ay + (by - ay) * t))
+    pts.append(RAIL[-1])
+    ties = []
+    for i, (x, y) in enumerate(pts):
+        a = pts[max(0, i - 1)]
+        b = pts[min(len(pts) - 1, i + 1)]
+        rot = math.atan2(b[1] - a[1], b[0] - a[0])
+        ok = _off_roads(c, x, y, 2.0)
+        z = _lowest(ground, x, y, 1.2) if ok else None
+        ties.append((x, y, z, rot))
+        if ok:
+            m.add(TIMBER, lambda bm, x=x, y=y, z=z, rot=rot: cuboid(bm, (x, y, z + 0.06), (0.3, 2.6, 0.22), rot))
+            taken.add(x, y, 1.6)
+    for sd in (-1, 1):
+        for (x0, y0, z0, r0), (x1, y1, z1, r1) in zip(ties, ties[1:]):
+            if z0 is None or z1 is None:
+                continue
+            o0 = (-math.sin(r0) * sd * 0.75, math.cos(r0) * sd * 0.75)
+            o1 = (-math.sin(r1) * sd * 0.75, math.cos(r1) * sd * 0.75)
+            m.add(("rail_iron", "wall"), lambda bm, a=(x0 + o0[0], y0 + o0[1], z0 + 0.26), b=(x1 + o1[0], y1 + o1[1], z1 + 0.26):
+                  _beam(bm, a, b, 0.12))
+    m.build(c, "Railroad", "Village", role="visual")
+    for k, i in enumerate((len(ties) * 3 // 5, len(ties) * 3 // 5 + 2)):
+        x, y, z, rot = ties[i]
+        if z is not None:
+            c.place(gp.ore_cart(c, glow=False), x, y, z + 0.3, rot=rot, coll="Village", role="both")
+
+
+# ------------------------------------------------------------------ the canyon rim
+
+
+def timber_arch(c, ground, q, name, h=10.0, banners=True, post=1.0):
+    """Canyon Dash's timber gateway over the road (canyon_scenery.portal), its posts down to
+    the lowest ground under each (none of them hanging over the road's fill): two posts
+    each side, a double crossbeam, braced corners, its banners and amber board."""
+    rot = road_rot(q)
+    half = q.w / 2 + 1.6
+    m = gs.Mesh()
+    for side in (-1, 1):
+        for along in (-0.8, 0.8):
+            p = q.side(side * half) + q.t * along
+            z0 = _lowest(ground, p.x, p.y, post * 0.7) - 0.4
+            top = q.p.z + h + 0.5
+            m.add(TIMBER, lambda bm, p=p, z0=z0, top=top: cuboid(bm, (p.x, p.y, (z0 + top) / 2), (post, post, top - z0), rot))
+        a = q.side(side * half)
+        b = q.side(side * (half - 2.6))
+        m.add(TIMBER, lambda bm, a=a, b=b: _beam(bm, (a.x, a.y, q.p.z + h - 3.0), (b.x, b.y, q.p.z + h - 0.4), 0.35))
+    for dz in (h - 0.4, h + 0.6):
+        a, b = q.side(-half - 1.2), q.side(half + 1.2)
+        m.add(TIMBER, lambda bm, a=a, b=b, dz=dz: _beam(bm, (a.x, a.y, q.p.z + dz), (b.x, b.y, q.p.z + dz), 0.55))
+    if banners:
+        for o in (-half * 0.55, half * 0.55):
+            p = q.side(o)
+            m.add(("canvas_sun", "wall"), lambda bm, p=p: cuboid(bm, (p.x, p.y, q.p.z + h - 2.0), (0.08, 2.6, 3.0), rot + math.pi / 2))
+        p = q.side(0)
+        m.add(("chevron_amber", "wall"), lambda bm, p=p: cuboid(bm, (p.x, p.y, q.p.z + h + 1.6), (0.12, 7.0, 1.4), rot + math.pi / 2))
+    m.build(c, name, "Village", role="both")
+
+
+def canyon_outpost(c, ground, taken, ter):
+    """Canyon Dash's racing outpost where its gateway stands on the rim: the timber arch
+    over the road with its banners and amber board, banner poles down both sides, braziers
+    by the arch, the windmill, the lookout tower and the water tank back from the rim,
+    crates; and a timber guard rail along the rim wherever the road runs by the drop."""
+    gx, gy = M.GATES["canyon"]
+    smp, _ = c.nearest(gx, gy)
+    sg = smp.s
+    # The arch, 40 m before the gateway.
+    q = c.at(sg - 40.0)
+    timber_arch(c, ground, q, "Outpost Arch", h=10.0)
+    for sd in (-1, 1):
+        p = q.side(sd * (q.w / 2 + 3.4)) - q.t * 2.5
+        c.place(cp.brazier(c), p.x, p.y, _lowest(ground, p.x, p.y, 0.6) - 0.1, coll="Village", role="both")
+        g = c.game(p.x, p.y, ground(p.x, p.y) + 2.4)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+    # Banner poles down both sides, every 20 m round the gateway.
+    for k, ds in enumerate(range(-100, 61, 20)):
+        q = c.at(sg + ds)
+        for sd in (-1, 1):
+            p = q.side(sd * (q.w / 2 + 3.0))
+            if _off_roads(c, p.x, p.y, 1.0) and taken.clear(p.x, p.y, 0.5) and M.canyon_d(p.x, p.y) > M.CANYON_HW + 1.0:
+                c.place(cp.banner_pole(c, (k + (sd > 0)) % 2), p.x, p.y, _lowest(ground, p.x, p.y, 0.4) - 0.2,
+                        rot=road_rot(q) + (math.pi if sd < 0 else 0.0), coll="Village", role="both")
+    # The windmill, the water tank, the lookout tower and crates, away from the rim.
+    away = 1 if M.canyon_d(*(c.at(sg).side(20.0).xy)) > M.canyon_d(*(c.at(sg).side(-20.0).xy)) else -1
+    for proto, ds, off, room in ((cp.windmill_tower(c), -70.0, 24.0, 5.0), (cp.water_tank(c), -46.0, 18.0, 4.0),
+                                 (cp.lookout_tower(c), 30.0, 22.0, 5.0), (cp.crates(c, 0), -20.0, 11.0, 2.0),
+                                 (cp.crates(c, 1), 12.0, 12.0, 2.0)):
+        q = c.at(sg + ds)
+        for extra in (0.0, 6.0, 12.0, -4.0):
+            p = q.side(away * (q.w / 2 + off + extra))
+            if (_off_roads(c, p.x, p.y, room) and taken.clear(p.x, p.y, room) and M.canyon_d(p.x, p.y) > M.CANYON_HW + room + 2
+                    and _spread(ground, p.x, p.y, room) < 1.5):
+                c.place(proto, p.x, p.y, _lowest(ground, p.x, p.y, room) - 0.2, rot=road_rot(q) + 0.3, coll="Village", role="both")
+                taken.add(p.x, p.y, room + 1.0)
+                break
+    rim_rail(c, ground, taken)
+
+
+def rim_rail(c, ground, taken):
+    """A timber guard rail on the canyon's side of the road wherever the road runs within
+    30 m of its rim: posts every 3 m at the road's edge, two rails between, one solid
+    run (broken only where a side road or a spur leaves)."""
+    m = gs.Mesh()
+    n = 0
+    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "canyon"):
+        last = None
+        s = s0
+        while s <= s1:
+            q = c.at(s)
+            sd = 1 if M.canyon_d(*q.side(8.0).xy) < M.canyon_d(*q.side(-8.0).xy) else -1
+            p = q.side(sd * (q.w / 2 + 1.4))
+            near = M.canyon_d(p.x, p.y) < M.CANYON_HW + 30.0
+            ok = near and _off_roads(c, p.x, p.y, 0.6) and taken.clear(p.x, p.y, 0.2)
+            if ok:
+                z = ground(p.x, p.y)
+                m.add(TIMBER, lambda bm, p=p, z=z: cuboid(bm, (p.x, p.y, z + 0.45), (0.22, 0.22, 1.5), 0.0))
+                if last is not None and last[3] == sd and math.hypot(p.x - last[0], p.y - last[1]) < 4.5:
+                    for hz in (0.55, 1.05):
+                        m.add(("fence_rail", "wall"), lambda bm, a=(last[0], last[1], last[2] + hz), b=(p.x, p.y, z + hz):
+                              _beam(bm, a, b, 0.14))
+                last = (p.x, p.y, z, sd)
+                n += 1
+            else:
+                last = None
+            s += 3.0
+    m.build(c, "Rim Rail", "Village", role="both")
+    print("canyon rim rail: %d posts" % n)
+
+
+# ------------------------------------------------------------------ Havasu
+
+
+def havasu_village(c, ground, taken, ter):
+    """Oasis Haven's village by Havasu's rim, where its gateway stands: the log ranch gate
+    over the road, adobe homes either side (vigas, ristras, turquoise doors) on land graded
+    level, lantern posts down the road, a ramada, the campground's sites back from the
+    road, a corral with its horses, cottonwoods. Returns where the folk live."""
+    gx, gy = M.GATES["oasis"]
+    smp, _ = c.nearest(gx, gy)
+    sg = smp.s
+    # The ranch gate, 50 m before the gateway.
+    q = c.at(sg - 50.0)
+    m = gs.Mesh()
+    rot = road_rot(q)
+    span = q.w + 6.0
+    ends = []
+    for sd in (-1, 1):
+        p = q.side(sd * span / 2)
+        ends.append(p)
+        z0 = _lowest(ground, p.x, p.y, 0.6)
+        m.add(TIMBER, lambda bm, p=p, z0=z0: tube(bm, [(p.x, p.y, z0 - 0.6), (p.x, p.y, q.p.z + 11.5)], 0.55, n=8))
+    a, b = ends
+    for z, r, over in ((10.6, 0.5, 1.6), (8.4, 0.32, 0.6)):
+        dx, dy = (b.x - a.x) / span, (b.y - a.y) / span
+        m.add(TIMBER, lambda bm, z=z, r=r, over=over: tube(
+            bm, [(a.x - dx * over, a.y - dy * over, q.p.z + z), (b.x + dx * over, b.y + dy * over, q.p.z + z)], r, n=7))
+    m.build(c, "Ranch Gate", "Village", role="both")
+    c.place(gp.cattle_skull(c), q.p.x, q.p.y, q.p.z + 11.4, rot=rot - math.pi / 2, scale=2.2, coll="Village", role="visual")
+    # Adobe homes either side, every 18 m, from the gate on.
+    homes = []
+    k = 0
+    for ds in range(-40, 70, 18):
+        q = c.at(sg + ds)
+        for sd in (-1, 1):
+            w, d, h = 9.0 + (k % 2), 8.0, 6.0 + 1.4 * (k % 3)
+            p = q.side(sd * (q.w / 2 + 10.0 + 2.0 * (k % 2)))
+            rot = math.atan2(q.p.y - p.y, q.p.x - p.x) + math.pi / 2  # (it faces -Y: its door to the road)
+            if not (_off_roads(c, p.x, p.y, 7.0) and taken.clear(p.x, p.y, 6.5)):
+                k += 1
+                continue
+            hs = [ground(p.x + dx, p.y + dy) for dx in (-5, 0, 5) for dy in (-5, 0, 5)]
+            if max(hs) - min(hs) > 3.5 or _near_water(p.x, p.y, 8.0):
+                k += 1
+                continue
+            z = sum(hs) / len(hs)
+            paint.grade(c, ter, p.x, p.y, rot, w + 1.0, d + 1.0, z, front=2.5)
+            c.place(od.house(c, k % 4, w, d, h), p.x, p.y, z - 0.05, rot=rot, coll="Village", role="visual")
+            c.place(od.collider(c, w, d, h * 0.62), p.x, p.y, z - 0.6, rot=rot, coll="Village", role="collision")
+            taken.add(p.x, p.y, 7.0)
+            homes.append((p.x, p.y))
+            k += 1
+    # Lantern posts down the road through the village, by turns either side, every 24 m.
+    post = gp.lantern_post(c)
+    lx, _ly, lz = gp.LANTERN_POST_LIGHT
+    for j, ds in enumerate(range(-56, 80, 24)):
+        q = c.at(sg + ds)
+        sd = 1 if j % 2 else -1
+        p = q.side(sd * (q.w / 2 + 2.6))
+        if _off_roads(c, p.x, p.y, 0.4) and taken.clear(p.x, p.y, 0.4):
+            r = road_rot(q) + (math.pi / 2 if sd > 0 else -math.pi / 2)
+            z = _lowest(ground, p.x, p.y, 0.3) - 0.1
+            c.place(post, p.x, p.y, z, rot=r, coll="Village", role="both")
+            g = c.game(p.x + lx * math.cos(r), p.y + lx * math.sin(r), z + lz)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    # A ramada at the roadside; the campground's sites and a corral back from the road.
+    q = c.at(sg + 26.0)
+    for sd in (1, -1):
+        p = q.side(sd * (q.w / 2 + 5.5))
+        if _off_roads(c, p.x, p.y, 3.0) and taken.clear(p.x, p.y, 3.5) and _spread(ground, p.x, p.y, 3.0) < 0.8:
+            c.place(od.ramada(c, 0), p.x, p.y, _lowest(ground, p.x, p.y, 3.0) - 0.05, rot=road_rot(q) + (math.pi if sd > 0 else 0.0),
+                    coll="Village", role="both")
+            taken.add(p.x, p.y, 4.0)
+            break
+    n_sites = 0
+    for j, ds in enumerate((-30.0, -6.0, 18.0, 42.0)):
+        q = c.at(sg + ds)
+        for sd in (-1, 1):
+            p = q.side(sd * (q.w / 2 + 32.0))
+            if (n_sites >= 3 or not _off_roads(c, p.x, p.y, 9.0) or not taken.clear(p.x, p.y, 9.0) or _near_water(p.x, p.y, 10.0)
+                    or _spread(ground, p.x, p.y, 7.0) > 3.0):
+                continue
+            z = ground(p.x, p.y)
+            rot = math.atan2(q.p.y - p.y, q.p.x - p.x) + math.pi / 2
+            paint.grade(c, ter, p.x, p.y, rot, 15.0, 13.0, z, front=1.0)
+            c.place(od.wall_tent(c, n_sites % 2), p.x, p.y, z - 0.05, rot=rot, coll="Village", role="visual")
+            c.place(od.collider(c, 14.0, 12.3, 3.2, 0.85, "sail_cloth"), p.x, p.y, z - 0.1, rot=rot, coll="Village", role="collision")
+            taken.add(p.x, p.y, 10.0)
+            n_sites += 1
+            break
+    for ds, sd in ((70.0, 1), (70.0, -1), (-60.0, 1), (-60.0, -1)):
+        q = c.at(sg + ds)
+        p = q.side(sd * (q.w / 2 + 26.0))
+        if (_off_roads(c, p.x, p.y, 12.0) and taken.clear(p.x, p.y, 13.0) and not _near_water(p.x, p.y, 14.0)
+                and _spread(ground, p.x, p.y, 10.0) < 3.0):
+            z = ground(p.x, p.y)
+            rot = road_rot(q) + (0.0 if sd > 0 else math.pi)
+            paint.grade(c, ter, p.x, p.y, rot, 22.0, 16.0, z, front=0.0)
+            od.corral(c, p.x, p.y, z, rot)
+            taken.add(p.x, p.y, 13.0)
+            break
+    # Cottonwoods along the road through the village, back from it.
+    trees = [smp_.broadleaf(c, v, frosted=False) for v in range(2)]
+    for j, ds in enumerate(range(-50, 80, 15)):
+        q = c.at(sg + ds)
+        sd = 1 if j % 2 else -1
+        p = q.side(sd * (q.w / 2 + 20.0 + 3.0 * (j % 3)))
+        if _off_roads(c, p.x, p.y, 8.0) and taken.clear(p.x, p.y, 4.0):
+            c.place(trees[j % 2], p.x, p.y, _lowest(ground, p.x, p.y, 1.0) - 0.2, rot=j * 1.7, scale=0.9 + 0.1 * (j % 3),
+                    coll="Village", role="both")
+            taken.add(p.x, p.y, 4.0)
+    print("havasu village: %d homes, %d camp sites" % (len(homes), n_sites))
+    q = c.at(sg)
+    return q.p.x, q.p.y
+
+
+def _hazard_d(x, y):
+    """How far (x, y) is from the canyon's rim, Havasu's water and the crater's rim."""
+    fx, fy, fr, _fz = M.FALLS
+    cx, cy, R, _r, _f = M.CRATER
+    return min(M.canyon_d(x, y) - M.CANYON_HW, math.hypot(x - fx, y - fy) - fr, math.hypot(x - cx, y - cy) - R)
+
+
+def _near_water(x, y, r):
+    fx, fy, fr, _fz = M.FALLS
+    return math.hypot(x - fx, y - fy) < fr + r or M.canyon_d(x, y) < M.CANYON_HW + r
+
+
+# ------------------------------------------------------------------ the crater
+
+
+def crater_camp(c, ground, taken, ter):
+    """Impact Depths' approach where its gateway stands on the crater's rim: the rustic
+    timber arch over the road, warning signs down the rim side of the road every 16 m, the
+    surveyors' camp (tents, a scope, crates) back from the rim."""
+    cx, cy, R, _rim, _fz = M.CRATER
+    gx, gy = M.GATES["impact"]
+    smp, _ = c.nearest(gx, gy)
+    sg = smp.s
+    q = c.at(sg - 36.0)
+    timber_arch(c, ground, q, "Impact Arch", h=9.0, banners=False)  # (not "Crater ...": tests/hitboxes reads that as a crate)
+    n = 0
+    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "crater"):
+        s = s0 + 6.0
+        while s < s1 - 6.0:
+            q = c.at(s)
+            sd = 1 if math.hypot(*(q.side(8.0).xy - Vector((cx, cy)))) < math.hypot(*(q.side(-8.0).xy - Vector((cx, cy)))) else -1
+            p = q.side(sd * (q.w / 2 + 2.2))
+            if math.hypot(p.x - cx, p.y - cy) < R + 30.0 and _off_roads(c, p.x, p.y, 0.8) and taken.clear(p.x, p.y, 0.5):
+                c.place(ip.warning_sign(c, n % 2), p.x, p.y, _lowest(ground, p.x, p.y, 0.4) - 0.1, rot=road_rot(q) + math.pi / 2 * sd,
+                        coll="Village", role="both")
+                n += 1
+            s += 16.0
+    # The survey camp: three tents on graded ground out of the bowl, near the gateway.
+    tents = 0
+    rng = random.Random(9)
+    for _ in range(600):
+        if tents >= 3:
+            break
+        a = rng.uniform(0, math.tau)
+        r = rng.uniform(22.0, 70.0)
+        x, y = gx + r * math.cos(a), gy + r * math.sin(a)
+        if math.hypot(x - cx, y - cy) < R + 10.0 or not _off_roads(c, x, y, 6.0) or not taken.clear(x, y, 5.0):
+            continue
+        if _spread(ground, x, y, 3.5) > 2.5:
+            continue
+        z = ground(x, y)
+        q, _d = c.nearest(x, y)
+        rot = math.atan2(q.p.y - y, q.p.x - x) + math.pi / 2
+        paint.grade(c, ter, x, y, rot, 7.0, 7.0, z, front=1.5)
+        c.place(ip.tent(c, tents % 2), x, y, z - 0.1, rot=rot, coll="Village", role="both")
+        taken.add(x, y, 6.0)
+        tents += 1
+    print("crater: %d warning signs, %d tents" % (n, tents))
+
+
+# ------------------------------------------------------------------ the roads
+
+
+def chevrons(c, ground, taken, skip=("town", "post", "pueblo")):
+    """Amber chevron boards round the outside of every big bend (the heading turning more
+    than 30 degrees over 40 m), every 12 m through it, facing the drivers coming in."""
+    n = 0
+    s = 0.0
+    while s < c.length:
+        a, b = c.at(s - 20.0), c.at(s + 20.0)
+        turn = (math.atan2(b.t.y, b.t.x) - math.atan2(a.t.y, a.t.x) + math.pi) % math.tau - math.pi
+        q = c.at(s)
+        if abs(turn) > 0.52 and M.look_at(q.p.x, q.p.y) not in skip and q.p.z < 16.0:
+            sd = 1 if turn > 0 else -1  # (a left turn's outside is on the right: +)
+            p = q.side(sd * (q.w / 2 + 3.2))
+            if _off_roads(c, p.x, p.y, 1.2) and taken.clear(p.x, p.y, 0.6):
+                back = c.at(s - 30.0).p
+                nv = Vector((back.x - p.x, back.y - p.y, 0)).normalized()
+                c.place(cp.chevron_sign(c, 1), p.x, p.y, _lowest(ground, p.x, p.y, 0.5) - 0.2, rot=math.atan2(-nv.x, nv.y),
+                        coll="Village", role="both")
+                taken.add(p.x, p.y, 0.8)
+                n += 1
+            s += 12.0
+        else:
+            s += 3.0
+    print("chevrons: %d" % n)
+
+
+def telegraph_pole(c):
+    """A telegraph pole: a tall peeled pole, a crossarm with four glass insulators, a
+    brace under it. About 8 m. Wires go from the insulators (x +-1.0, z 7.5)."""
+    name = "Telegraph Pole"
+
+    def build(bm):
+        k0 = len(bm.faces)
+        tube(bm, [(0, 0, -0.6), (0, 0, 8.2)], [0.17, 0.12], n=7)
+        cuboid(bm, (0, 0, 7.35), (2.6, 0.14, 0.16))
+        _beam(bm, (-0.7, 0, 7.25), (0, 0, 6.5), 0.06)
+        _beam(bm, (0.7, 0, 7.25), (0, 0, 6.5), 0.06)
+        wood = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for x in (-1.15, -0.45, 0.45, 1.15):
+            blob(bm, (x, 0, 7.55), 0.09, sz=1.3, subdiv=1)
+        glass = _faces(bm, k1)
+        return [(c.lib("weathered_timber", "wall"), wood), (c.lib("lantern_glass", "wall"), glass)]
+
+    return c.proto(name, build) and name
+
+
+def telegraph(c, ground, taken, looks=("canyon", "falls", "crater", "show")):
+    """Telegraph poles down the long open stretches, on the left of the road 6 m off it,
+    every 34 m, the wires strung pole to pole with a sag (broken where a pole can't stand)."""
+    pole = telegraph_pole(c)
+    m = gs.Mesh()
+    n = 0
+    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) in looks and q.p.z < 16.0):
+        if s1 - s0 < 80.0:
+            continue
+        last = None
+        s = s0 + 10.0
+        while s < s1 - 10.0:
+            q = c.at(s)
+            # (On the side away from the canyon and the crater: the wires keep to one side
+            # over a run, and break where it swaps.)
+            sd = 1 if _hazard_d(*q.side(10.0).xy) > _hazard_d(*q.side(-10.0).xy) else -1
+            p = q.side(sd * (q.w / 2 + 6.0))
+            if last is not None and last[4] != sd:
+                last = None
+            if _off_roads(c, p.x, p.y, 4.0) and taken.clear(p.x, p.y, 0.8) and _hazard_d(p.x, p.y) > 6.0:
+                z = _lowest(ground, p.x, p.y, 0.3)
+                rot = road_rot(q) + math.pi / 2  # (its crossarm across the line, the wires along it)
+                c.place(pole, p.x, p.y, z, rot=rot, coll="Village", role="both")
+                taken.add(p.x, p.y, 1.0)
+                n += 1
+                if last is not None:
+                    for u in (-1.15, -0.45, 0.45, 1.15):
+                        a = (last[0] + u * math.cos(last[3]), last[1] + u * math.sin(last[3]), last[2] + 7.62)
+                        b = (p.x + u * math.cos(rot), p.y + u * math.sin(rot), z + 7.62)
+                        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 - 0.9)
+                        m.add(("rail_iron", "wall"), lambda bm, a=a, mid=mid: _beam(bm, a, mid, 0.025))
+                        m.add(("rail_iron", "wall"), lambda bm, mid=mid, b=b: _beam(bm, mid, b, 0.025))
+                last = (p.x, p.y, z, rot, sd)
+            else:
+                last = None
+            s += 34.0
+    m.build(c, "Telegraph Wires", "Village", role="visual")
+    print("telegraph: %d poles" % n)
+
+
+# ------------------------------------------------------------------ the pueblo and the post
+
+# (mesa_region.BEDS: the cliffs' beds of colour by height.)
+BEDS = [(4.0, "strata_red"), (16.0, "strata_rust"), (22.0, "strata_orange"), (34.0, "strata_red"), (40.0, "strata_cream"),
+        (58.0, "strata_orange"), (64.0, "strata_rust"), (80.0, "strata_red"), (88.0, "strata_cream"), (999.0, "strata_orange")]
+
+
+def _bed(z, x=0.0):
+    for top, rock in BEDS:
+        if z < top + 1.5 * math.sin(x / 17.0):
+            return rock
+    return BEDS[-1][1]
+
+
+def alcove_overhang(c, top=81.6):
+    """The pueblo's alcove's roof: the mesa's caprock carried on out over the alcove in one
+    shell of rock (its top the mesa's, under it a vault rising from a ragged lip at the
+    front to the back), its faces in the cliff's own beds of colour; its sides and back
+    run into the cliff. Solid."""
+    ax, ay, w, dp = M.ALCOVE
+    fz = M.FLOOR + 6.0
+    NU, NV = 28, 12
+    us = [-1.32 + 2.64 * i / NU for i in range(NU + 1)]
+    vs = [-0.22 + 1.52 * j / NV for j in range(NV + 1)]
+    rng = random.Random(3)
+    lip = [rng.uniform(-1.6, 1.2) for _ in us]
+
+    def under(i, j):
+        u, v = us[i], vs[j]
+        e = math.hypot(u, max(0.0, v))
+        if e > 1.08:
+            return fz - 2.0  # (in the cliff)
+        z = fz + 15.0 + 8.0 * max(0.0, 1.0 - e * e) - 2.0 * max(0.0, -v) / 0.22
+        if j == 0:
+            z += lip[i]
+        return z
+
+    bm = bmesh.new()
+    T = [[bm.verts.new((ax + u * w / 2, ay + v * dp, top)) for v in vs] for u in us]
+    B = [[bm.verts.new((ax + us[i] * w / 2, ay + vs[j] * dp, under(i, j))) for j in range(NV + 1)] for i in range(NU + 1)]
+    faces = []
+    for i in range(NU):
+        for j in range(NV):
+            faces.append(bm.faces.new((T[i][j], T[i + 1][j], T[i + 1][j + 1], T[i][j + 1])))
+            faces.append(bm.faces.new((B[i][j], B[i][j + 1], B[i + 1][j + 1], B[i + 1][j])))
+        faces.append(bm.faces.new((T[i][0], B[i][0], B[i + 1][0], T[i + 1][0])))  # (the lip)
+        faces.append(bm.faces.new((T[i][NV], T[i + 1][NV], B[i + 1][NV], B[i][NV])))
+    for i in (0, NU):
+        for j in range(NV):
+            faces.append(bm.faces.new((T[i][j], T[i][j + 1], B[i][j + 1], B[i][j])))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.faces.ensure_lookup_table()
+    mats = {}
+    for f in bm.faces:
+        cz = f.calc_center_median()
+        key = "slickrock" if f.normal.z > 0.7 else _bed(cz.z, cz.x)
+        mats.setdefault(key, []).append(f.index)
+    ob = c.mesh_object("Alcove Overhang", bm, "Village", "both")
+    for key, idx in mats.items():
+        c.assign(ob, c.lib(key, "dirt" if key == "slickrock" else "wall"), idx)
+
+
+def pueblo_homes(c, ground, taken):
+    """The pueblo's homes in three tiers stepping back into the alcove, each Oasis Haven's
+    adobe home (vigas out through its walls, ristras, its turquoise door, a ladder up to
+    its roof on some), each tier's terrace the level floor it stands on. Returns how many."""
+    from pocket_build import box
+
+    ax, ay, w, dp = M.ALCOVE
+    fz = M.FLOOR + 6.0
+    k = 0
+    for tier in range(3):
+        n = (6, 5, 3)[tier]
+        y = ay + 3.5 + tier * 6.5
+        z = fz + tier * 4.2
+        span = w * (0.78 - 0.14 * tier)
+        for j in range(n):
+            x = ax - span / 2 + (j + 0.5) * span / n
+            ww, dd_, h = 7.0 - 0.6 * (j % 2), 6.0, 4.4 + 0.8 * ((j + tier) % 2)
+            c.place(od.house(c, (k + tier) % 4, ww, dd_, h), x, y, z - 0.05, rot=0.0, coll="Village", role="visual")
+            c.place(od.collider(c, ww, dd_, h * 0.62), x, y, z - 0.6, rot=0.0, coll="Village", role="collision")
+            k += 1
+        box(c, "Pueblo Terrace %d" % tier, ax, y - 3.6, span / 2 + 2.0, 1.4, fz - 1.0 + tier * 4.2, z - 0.05, ("adobe", "wall"))
+    taken.add(ax, ay + 10.0, 34.0)
+    return k
+
+
+def post_homes(c, ground, taken, ter):
+    """The trading post's adobe homes round its square, each Oasis Haven's, on land graded
+    level, their doors to the square."""
+    px, py, pr = M.POST
+    n = 0
+    for k, (a, w, d, h) in enumerate(((0.9, 11.0, 9.0, 6.0), (1.9, 9.0, 8.0, 7.0), (2.9, 10.0, 8.0, 6.5), (4.2, 11.0, 9.0, 7.5),
+                                      (5.2, 9.0, 8.0, 6.0))):
+        x, y = px + (pr + 7.0) * math.cos(a), py + (pr + 7.0) * math.sin(a)
+        rot = a + math.pi / 2  # (its -Y, its door, to the square's middle)
+        hs = [ground(x + dx, y + dy) for dx in (-5, 0, 5) for dy in (-5, 0, 5)]
+        if max(hs) - min(hs) > 3.5:
+            continue
+        z = sum(hs) / len(hs)
+        paint.grade(c, ter, x, y, rot, w + 1.0, d + 1.0, z, front=2.5)
+        c.place(od.house(c, k % 4, w, d, h), x, y, z - 0.05, rot=rot, coll="Village", role="visual")
+        c.place(od.collider(c, w, d, h * 0.62), x, y, z - 0.6, rot=rot, coll="Village", role="collision")
+        taken.add(x, y, 7.0)
+        n += 1
+    return n
+
+
+# ------------------------------------------------------------------ the ledge
+
+
+def parapet(c, ground, taken):
+    """The Ledge Road's and the High Road's parapet: one continuous wall of the cliff's
+    cream stone along the drop side of the road (no gaps, no blocks), its coping a little
+    proud of it. Solid."""
+    n = 0
+    for side in (-1, 1):
+        run = []
+
+        def flush(run):
+            if len(run) < 4:
+                return 0
+            bm = bmesh.new()
+            rings = []
+            for i, (x, y, z0, z1, nx, ny) in enumerate(run):
+                hw = 0.45
+                rings.append([bm.verts.new((x - nx * hw, y - ny * hw, z0)), bm.verts.new((x + nx * hw, y + ny * hw, z0)),
+                              bm.verts.new((x + nx * hw, y + ny * hw, z1)), bm.verts.new((x - nx * hw, y - ny * hw, z1))])
+            for r0, r1 in zip(rings, rings[1:]):
+                for k in range(4):
+                    bm.faces.new((r0[k], r1[k], r1[(k + 1) % 4], r0[(k + 1) % 4]))
+            bm.faces.new(list(reversed(rings[0])))
+            bm.faces.new(rings[-1])
+            body = len(bm.faces)
+            crings = []
+            for x, y, z0, z1, nx, ny in run:
+                hw = 0.6
+                crings.append([bm.verts.new((x - nx * hw, y - ny * hw, z1)), bm.verts.new((x + nx * hw, y + ny * hw, z1)),
+                               bm.verts.new((x + nx * hw, y + ny * hw, z1 + 0.22)), bm.verts.new((x - nx * hw, y - ny * hw, z1 + 0.22))])
+            for r0, r1 in zip(crings, crings[1:]):
+                for k in range(4):
+                    bm.faces.new((r0[k], r1[k], r1[(k + 1) % 4], r0[(k + 1) % 4]))
+            bm.faces.new(list(reversed(crings[0])))
+            bm.faces.new(crings[-1])
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+            ob = c.mesh_object("Ledge Parapet %d %d" % (side, len(run)), bm, "Village", "both")
+            c.assign(ob, c.lib("strata_cream", "wall"), range(body))
+            c.assign(ob, c.lib("slickrock", "wall"), range(body, len(ob.data.polygons)))
+            return 1
+
+        s = 0.0
+        while s < c.length:
+            q = c.at(s)
+            ok = q.p.z > 16.0 and M.look_at(q.p.x, q.p.y) in ("mesa", "show", "post")
+            if ok:
+                x, y = q.p.x + q.r.x * side * (q.w / 2 + 1.0), q.p.y + q.r.y * side * (q.w / 2 + 1.0)
+                drop = M.natural(x + q.r.x * side * 5.0, y + q.r.y * side * 5.0) < q.p.z - 3.0
+                ok = drop and _off_roads(c, x, y, 0.3) and not any(
+                    (e.p.x - x) ** 2 + (e.p.y - y) ** 2 < (e.w / 2 + 1.5) ** 2 for e in c.extra_ground)
+            if ok:
+                run.append((x, y, max(min(ground(x, y), q.p.z) - 1.2, q.p.z - 12.0), q.p.z + 0.75, q.r.x, q.r.y))
+                taken.add(x, y, 1.0)
+            else:
+                n += flush(run)
+                run = []
+            s += 2.0
+        n += flush(run)
+    print("ledge parapet: %d runs" % n)
+
+
+# ------------------------------------------------------------------ the arena
+
+
+def arena_fence(c, ground, gate_a):
+    """The rodeo ring's fence: stout timber posts every 2.6 m round it, three rails between
+    them, its gate open toward the lair; one solid mesh, every post on the ground."""
+    ax, ay, ar = M.ARENA
+    m = gs.Mesh()
+    n = int(math.tau * ar / 2.6)
+    pts = []
+    for k in range(n + 1):
+        a = k * math.tau / n
+        gap = abs((a - gate_a + math.pi) % math.tau - math.pi) < 0.12
+        x, y = ax + ar * math.cos(a), ay + ar * math.sin(a)
+        pts.append(None if gap else (x, y, _lowest(ground, x, y, 0.3)))
+    for p in pts[:-1]:
+        if p:
+            m.add(TIMBER, lambda bm, p=p: tube(bm, [(p[0], p[1], p[2] - 0.5), (p[0], p[1], p[2] + 2.2)], 0.16, n=6))
+    for a, b in zip(pts, pts[1:]):
+        if a and b:
+            for hz in (0.7, 1.35, 2.0):
+                m.add(("fence_rail", "wall"), lambda bm, a=a, b=b, hz=hz: _beam(bm, (a[0], a[1], a[2] + hz), (b[0], b[1], b[2] + hz), 0.12))
+    m.build(c, "Arena Fence", "Village", role="both")
+
+
+def post_store(c, ground, taken, ter):
+    """The trading post's store on the square's south side, Dry Gulch's frontier kit: a
+    long false-fronted store, its GENERAL sign, a boardwalk porch with lanterns, lit
+    windows, its door to the square; on land graded level."""
+    px, py, pr = M.POST
+    sc = _scene(c, ter)
+    gs.protos(c)
+    x, y = px + 4.0, py - pr - 4.0
+    rot = math.pi  # (its front north, to the square; its body south of it)
+    w, d = 18.0, 11.0
+    cx, cy = x, y - d / 2
+    hs = [ground(cx + dx, cy + dy) for dx in (-w / 2, 0.0, w / 2) for dy in (-d / 2 - 3.4, 0.0, d / 2)]
+    z = ground(x, y + 1.0)
+    if max(hs) - min(hs) > 4.0:
+        return False
+    paint.grade(c, ter, cx, cy, rot, w + 1.0, d + 1.0, z, front=3.8)
+    m = gs.Mesh()
+    gt.building(m, sc, x, y, z + 0.05, rot, w, d, siding="siding_ochre", sign="general", lit=0.8, ghost=0.0, seed=7)
+    m.build(c, "Trading Post Store", "Village", role="both")
+    for lx, ly, lz in sc.lanterns:
+        g = c.game(lx, ly, lz)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    taken.add(cx, cy, 11.0)
+    return True
