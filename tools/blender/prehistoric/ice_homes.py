@@ -20,7 +20,7 @@ import random
 import region_paint as paint
 import snow_layout as SL
 from carvers_village import _crystal, _wedge
-from keep_props import _p
+from keep_props import _p as _kp_p
 from canyon_props import _beam
 from props import blob, cuboid, loft, ring, tube
 
@@ -35,7 +35,7 @@ IRON = "keep_iron"
 GLASS = "window_warm"
 WREATH = "wreath"
 LIGHTS = "xmas_lights"
-LOGS = "log_end"
+LOGS = "log_sawn"  # (each sawn end a whole end grain: keep_props.disc_fit)
 DECK = "plank_deck"
 # (Blake, Oct 30, on draft 7: "it feels a bit too whimsical ... hearthglow hallow is
 # supposed to be the whimsical portion of this world"; he chose the craftsmen's hollow:
@@ -122,6 +122,11 @@ def sign(P, bm, kind, x, y, z, s=1.0):
             P.add(CLEAR, lambda a=a: blob(bm, (x + math.cos(a) * 0.8 * s, y + math.sin(a) * 0.8 * s, z - 0.1 * s), 0.09 * s, subdiv=1))
 
 
+def _p(c, name, build, fit=None):
+    """keep_props._p, its logs' sawn ends each a whole end grain."""
+    return _kp_p(c, name, build, fit=fit, discs=(LOGS,))
+
+
 def _fin(bm, base, vec, r, n=8):
     """A smooth tapered spike or fin from `base` along `vec`: eight-sided, rounded at its
     root, drawn to a point."""
@@ -205,8 +210,9 @@ def door(P, bm, w, h, col, y=-0.1, x=0.0, open_=0.0, side=1, dz=0.0):
 def door_in_arch(P, bm, shape, dw, dh, col, frame, y0, rng, dz=0.0):
     """An arched doorway: the arch of cut stone, a planked door up to where its curve
     springs, a warm fanlight in the curve over it."""
-    key = ICE if dw >= 2.4 and shape != "crooked" else frame
-    arch(P, bm, shape, dw, dh, y=y0, mat=frame, key=key, dz=dz)
+    # (Its keystone the arch's own stone: Blake, review-snow_region 6, the ice ones on top
+    # of the door frames "glitch out and look weird".)
+    arch(P, bm, shape, dw, dh, y=y0, mat=frame, key=frame, dz=dz)
     if shape == "keyhole":
         spring = dh - dw * 0.64
         inner = dw * 0.44 - 0.45
@@ -644,7 +650,9 @@ def tower_home(c, idx, rng, sign_kind, door_col):
         P.add(IRON, lambda x=x, y=y, z=z: _beam(bm, (x, y, z + 3.0), (x, y, z + 4.0), 0.08))
         sign(P, bm, sign_kind, x, y + s / 2 + 0.5, z - 1.4, s=0.85)
         # The door and its arch, the balcony round the second storey.
-        door_in_arch(P, bm, rng.choice(("round", "pointed")), 2.4, 3.4, door_col, "rift_stone", -0.2, rng)
+        # (Out a little from the tower's face: Blake, review-snow_region 6, the door was
+        # behind the wall.)
+        door_in_arch(P, bm, rng.choice(("round", "pointed")), 2.4, 3.4, door_col, "rift_stone", 0.1, rng)
         P.add(PLANK, lambda: cuboid(bm, (0, -2.6, 5.4), (6.0, 6.0, 0.25)))
         for k in range(8):
             a = k * math.tau / 8

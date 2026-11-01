@@ -698,8 +698,6 @@ def build_rink(c, ground, taken):
     ih = POND_ISLAND * TILE
     box(c, "Derrick Crib", 0.0, 0.0, ih, ih, ICE_Z - 2.0, ICE_Z + 1.0, ("timber_beam", "wall"))
     c.place(iy.derrick(c), 0.0, -1.5, ICE_Z + 1.0, rot=0.5, coll="Props")
-    g = c.game(0.0, 0.0, ICE_Z + 12.6)
-    c.entity("lantern", x=g[0], y=g[1], z=g[2])
     taken.add(0.0, 0.0, H + 3.0)
 
     def put(proto, x, y, rot, r):

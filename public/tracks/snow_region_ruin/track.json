@@ -101,13 +101,6 @@
       "heading": 0.278
     },
     {
-      "id": "lantern_06",
-      "type": "lantern",
-      "x": 2.5,
-      "y": 73.62,
-      "z": 103.5
-    },
-    {
       "id": "campfire_01",
       "type": "campfire",
       "x": 5.0,
@@ -115,35 +108,35 @@
       "z": 124.0
     },
     {
-      "id": "lantern_07",
+      "id": "lantern_06",
       "type": "lantern",
       "x": 28.38,
       "y": 65.47,
       "z": 104.93
     },
     {
-      "id": "lantern_08",
+      "id": "lantern_07",
       "type": "lantern",
       "x": 13.21,
       "y": 65.75,
       "z": 92.89
     },
     {
-      "id": "lantern_09",
+      "id": "lantern_08",
       "type": "lantern",
       "x": -2.7,
       "y": 65.53,
       "z": 101.16
     },
     {
-      "id": "lantern_10",
+      "id": "lantern_09",
       "type": "lantern",
       "x": 13.5,
       "y": 65.39,
       "z": 127.08
     },
     {
-      "id": "lantern_11",
+      "id": "lantern_10",
       "type": "lantern",
       "x": 27.19,
       "y": 65.45,
@@ -161,7 +154,7 @@
       "heading": 0.0
     },
     {
-      "id": "lantern_12",
+      "id": "lantern_11",
       "type": "lantern",
       "x": 40.86,
       "y": 65.92,
@@ -175,7 +168,7 @@
       "z": 123.59
     },
     {
-      "id": "lantern_13",
+      "id": "lantern_12",
       "type": "lantern",
       "x": 47.59,
       "y": 65.2,
@@ -189,7 +182,7 @@
       "z": 110.53
     },
     {
-      "id": "lantern_14",
+      "id": "lantern_13",
       "type": "lantern",
       "x": 38.79,
       "y": 64.27,
@@ -203,14 +196,14 @@
       "z": 99.86
     },
     {
-      "id": "lantern_15",
+      "id": "lantern_14",
       "type": "lantern",
       "x": 43.24,
       "y": 65.43,
       "z": 90.98
     },
     {
-      "id": "lantern_16",
+      "id": "lantern_15",
       "type": "lantern",
       "x": 39.74,
       "y": 71.03,
@@ -224,7 +217,7 @@
       "z": 86.72
     },
     {
-      "id": "lantern_17",
+      "id": "lantern_16",
       "type": "lantern",
       "x": 24.48,
       "y": 65.91,
@@ -238,7 +231,7 @@
       "z": 74.9
     },
     {
-      "id": "lantern_18",
+      "id": "lantern_17",
       "type": "lantern",
       "x": 17.15,
       "y": 65.69,
@@ -252,14 +245,14 @@
       "z": 74.03
     },
     {
-      "id": "lantern_19",
+      "id": "lantern_18",
       "type": "lantern",
       "x": 6.33,
       "y": 65.98,
       "z": 72.67
     },
     {
-      "id": "lantern_20",
+      "id": "lantern_19",
       "type": "lantern",
       "x": -4.28,
       "y": 65.96,
@@ -273,7 +266,7 @@
       "z": 71.43
     },
     {
-      "id": "lantern_21",
+      "id": "lantern_20",
       "type": "lantern",
       "x": -5.05,
       "y": 65.01,
@@ -287,14 +280,14 @@
       "z": 78.88000000000001
     },
     {
-      "id": "lantern_22",
+      "id": "lantern_21",
       "type": "lantern",
       "x": -11.27,
       "y": 65.52,
       "z": 81.65
     },
     {
-      "id": "lantern_23",
+      "id": "lantern_22",
       "type": "lantern",
       "x": -17.87,
       "y": 71.12,
@@ -308,14 +301,14 @@
       "z": 79.65
     },
     {
-      "id": "lantern_24",
+      "id": "lantern_23",
       "type": "lantern",
       "x": -22.72,
       "y": 65.34,
       "z": 102.08
     },
     {
-      "id": "lantern_25",
+      "id": "lantern_24",
       "type": "lantern",
       "x": -20.2,
       "y": 65.0,
@@ -329,7 +322,7 @@
       "z": 106.69000000000001
     },
     {
-      "id": "lantern_26",
+      "id": "lantern_25",
       "type": "lantern",
       "x": -20.33,
       "y": 65.2,
@@ -343,28 +336,28 @@
       "z": 121.49000000000001
     },
     {
-      "id": "lantern_27",
+      "id": "lantern_26",
       "type": "lantern",
       "x": 81.19,
       "y": 142.78,
       "z": 316.38
     },
     {
-      "id": "lantern_28",
+      "id": "lantern_27",
       "type": "lantern",
       "x": -47.18,
       "y": 121.37,
       "z": 280.86
     },
     {
-      "id": "lantern_29",
+      "id": "lantern_28",
       "type": "lantern",
       "x": 73.19,
       "y": 101.09,
       "z": 245.62
     },
     {
-      "id": "lantern_30",
+      "id": "lantern_29",
       "type": "lantern",
       "x": -47.19,
       "y": 81.05,
@@ -377,35 +370,35 @@
       "radius": 40
     },
     {
-      "id": "lantern_31",
+      "id": "lantern_30",
       "type": "lantern",
       "x": 96.0,
       "y": 83.29,
       "z": -176.0
     },
     {
-      "id": "lantern_32",
+      "id": "lantern_31",
       "type": "lantern",
       "x": 66.0,
       "y": 82.83,
       "z": -130.0
     },
     {
-      "id": "lantern_33",
+      "id": "lantern_32",
       "type": "lantern",
       "x": 150.0,
       "y": 82.34,
       "z": -40.0
     },
     {
-      "id": "lantern_34",
+      "id": "lantern_33",
       "type": "lantern",
       "x": 120.0,
       "y": 70.63,
       "z": -116.0
     },
     {
-      "id": "lantern_35",
+      "id": "lantern_34",
       "type": "lantern",
       "x": 206.0,
       "y": 71.88,
@@ -548,7 +541,7 @@
   ],
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "keep_props.py": "7ed5ea8327f4fe09fedac9ba7556828b45f5f2397b8ad9fa788bbc8a9a12acd1",
+    "keep_props.py": "4a1bf66d26e480fcb5a1a54a0d26cb8851e9b1e0af34f932b156d834cd02760d",
     "snow_dress.py": "99c275e8cbff83c0499b5d7585e1138522e6df477af45dfadc5ad76a4c33ff67",
     "snow_layout.py": "10deda85add4b801436937786f2d6771c8f68d1ba60f2af50087c2a20cc882b0",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",

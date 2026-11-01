@@ -75,9 +75,30 @@ def fit_whole(c, name, faces):
             uv.data[li].uv = ((u - u0) / max(1e-6, u1 - u0), (w - w0) / max(1e-6, w1 - w0))
 
 
-def _p(c, name, build, fit=None):
+def disc_fit(c, name, faces):
+    """Map each of these faces (a log's sawn end) round its centre onto the picture's
+    middle disc: one end grain per end, however big, rather than the texture tiled."""
+    from mathutils import Vector
+
+    me = c.protos[name]
+    uv = me.uv_layers.active
+    if uv is None:
+        return
+    for i in faces:
+        p = me.polygons[i]
+        vs = [me.vertices[me.loops[li].vertex_index].co for li in p.loop_indices]
+        centre = sum(vs, Vector()) / len(vs)
+        a = p.normal.orthogonal().normalized()
+        b = p.normal.cross(a).normalized()
+        r = max((v - centre).length for v in vs) or 1.0
+        for li, v in zip(p.loop_indices, vs):
+            d = v - centre
+            uv.data[li].uv = (0.5 + 0.48 * d.dot(a) / r, 0.5 + 0.48 * d.dot(b) / r)
+
+
+def _p(c, name, build, fit=None, discs=()):
     """Build a prototype once; `fit` lists materials whose faces show their picture whole
-    (banners)."""
+    (banners); `discs`, those whose faces each show its middle disc (sawn log ends)."""
     if name in c.protos:
         return name
     got = {}
@@ -91,6 +112,8 @@ def _p(c, name, build, fit=None):
     c.proto(name, b)
     for m in fit or ():
         fit_whole(c, name, got.get(m, []))
+    for m in discs:
+        disc_fit(c, name, got.get(m, []))
     return name
 
 

@@ -840,6 +840,37 @@ def log_end():
     return paint(f)
 
 
+def log_sawn():
+    # A sawn log's end, whole (Blake, review-snow_region 6: "redo the texture on the ends of
+    # all of the logs"): one disc filling the picture (props map each cut end onto it):
+    # the bark's rim, pale sapwood, crisp growth rings round a dark pith, wobbling as real
+    # ones do, one fine check split out from the heart.
+    a = noise(6, 6, 2811, 64, 64)
+    b = noise(16, 16, 2812, 64, 64)
+
+    def f(x, y):
+        dx, dy = x + 0.5 - 32, y + 0.5 - 32
+        r = math.hypot(dx, dy)
+        t = math.atan2(dy, dx)
+        if r > 29.5:
+            return pick(["#3a2616", "#4a3220", "#5a3c26"], b(x, y))  # bark
+        if r > 27.0:
+            return pick(["#d4ae78", "#dcb984"], b(x, y))  # sapwood
+        if r < 1.4:
+            return "#6a4424"  # pith
+        # A fine check out from the heart, a little way, narrowing.
+        if 1.5 < r < 15.0 and abs(math.sin(t - 0.6)) * r < 0.45 - 0.02 * r and math.cos(t - 0.6) > 0:
+            return "#5a3a1e"
+        rr = r + 1.3 * (a(x, y) - 0.5) + 0.4 * math.sin(t * 3 + 1.0)
+        ring = (rr / 2.6) % 1.0
+        tone = 0.2 + 0.5 * (r / 27.0) + 0.2 * (b(x, y) - 0.5)
+        if ring > 0.8:
+            return pick(["#8e5c2e", "#9c6834"], tone)  # late wood: a crisp dark line
+        return pick(["#c8965a", "#d2a466", "#dbb072", "#e2bc80"], tone)
+
+    return paint(f, 64, 64)
+
+
 def torch_glow():
     # A flickering torch flame: hot white-yellow core to orange (scrolls upward).
     cols = ["#fffbe0", "#ffe58a", "#ffbb3a", "#ff8a22", "#e85a1a"]
@@ -5044,6 +5075,7 @@ MATERIALS = [
     ("vine_leaf", "Vine Leaves", "jungle_cascade", "grass", vine_leaf, 1.5, None),
     ("frog_skin", "Frog Skin", "jungle_cascade", "wall", frog_skin, 0.4, None),
     ("log_end", "Log End", "jungle_cascade", "wall", log_end, 1, None),
+    ("log_sawn", "Log End (Sawn)", "summit_pass", "wall", log_sawn, 1, None),
     ("torch_glow", "Torch Flame", "jungle_cascade", "wall", torch_glow, 1, {"scrollU": 0.2, "scrollV": -1.6, "wave": 0.1, "wavePeriod": 0.4, "glow": 1.0}),
     ("jungle_mud", "Jungle Mud", "jungle_cascade", "mud", jungle_mud, 5, None),
     ("pterosaur_skin", "Pterosaur Skin", "jungle_cascade", "wall", pterosaur_skin, 2, None),

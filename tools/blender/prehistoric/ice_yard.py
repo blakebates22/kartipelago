@@ -20,7 +20,7 @@ import math
 import snow_layout as SL
 from canyon_props import _beam
 from carvers_village import _crystal, _wedge
-from keep_props import _p
+from keep_props import _p as _kp_p
 from ice_homes import _fin, _log
 from props import blob, cuboid, loft, ring, tube
 
@@ -36,10 +36,15 @@ ROPE = "rope_rail"
 IRON = "keep_iron"
 STRAW = "thatch"
 STONE = "frost_stone"
-LOGS = "log_end"
+LOGS = "log_sawn"  # (each sawn end a whole end grain: keep_props.disc_fit)
 LAMP = "lantern_amber"
 SNOW = "snow_ground"
 FIRE = "keep_flame"
+
+
+def _p(c, name, build, fit=None):
+    """keep_props._p, its logs' sawn ends each a whole end grain."""
+    return _kp_p(c, name, build, fit=fit, discs=(LOGS,))
 
 
 def _cyl(P, bm, mat, x, y, z0, z1, r0, r1=None, n=8):
@@ -123,9 +128,7 @@ def derrick(c):
         for sx in (-1, 1):
             _rope(P, bm, (sx * 0.2, -0.3, H - 0.8), (sx * 6.0, -8.0, 0.4), 0.06)
             P.add(TIMBER, lambda sx=sx: cuboid(bm, (sx * 6.0, -8.0, 0.3), (0.3, 0.3, 1.0), tilt=(0.3, 0.0)))
-        # A lantern up the mast.
-        P.add(IRON, lambda: cuboid(bm, (0, 0.6, 12.0), (0.08, 1.0, 0.08)))
-        P.add(LAMP, lambda: cuboid(bm, (0, 1.05, 11.6), (0.36, 0.36, 0.5)))
+        # (No lantern up the mast: Blake, review-snow_region 6, "it is just floating".)
 
     return _p(c, "Ice Yard Derrick", build)
 
@@ -329,7 +332,7 @@ def stump(c):
         # Chips about its foot.
         for k in range(6):
             a = k * 1.1
-            P.add(LOGS, lambda a=a: cuboid(bm, (math.cos(a) * 0.9, math.sin(a) * 0.8, 0.03), (0.16, 0.08, 0.05), rot=a))
+            P.add(PLANK, lambda a=a: cuboid(bm, (math.cos(a) * 0.9, math.sin(a) * 0.8, 0.03), (0.16, 0.08, 0.05), rot=a))
 
     return _p(c, "Ice Yard Stump", build)
 
@@ -350,8 +353,9 @@ def stuck_tools(c, k):
 
     def build(P, bm):
         if k % 2 == 0:
-            P.add(IRON, lambda: cuboid(bm, (0, 0, 0.6), (0.05, 0.35, 1.8), tilt=(0.12, 0.0)))
-            P.add(TIMBER, lambda: cuboid(bm, (0, -0.12, 1.55), (0.7, 0.12, 0.12)))
+            # An ice saw, the real thing (Blake, review-snow_region 6: "make this look more
+            # like a saw"): its toothed blade down in the cut, the T handle up.
+            _saw(P, bm, 0.0, 0.0, 1.15, L=1.7)
         else:
             P.add(TIMBER, lambda: _beam(bm, (0, 0, -0.3), (0.5, 0.2, 3.2), 0.08))
             P.add(IRON, lambda: _crystal(bm, (0.5, 0.2, 3.2), (0.14, 0.06, 1.0), 0.4, 0.06, n=4))
@@ -467,8 +471,6 @@ def build(c, ground, taken):
 
     # The derrick on the pond's north-west, its boom over the water.
     x, y, z = put(derrick(c), -9.5, 6.5, math.atan2(-6.5, 9.5) - math.pi / 2, 5.0)
-    g = c.game(x, y, z + 11.6)
-    c.entity("lantern", x=g[0], y=g[1], z=g[2])
     # The ice house north-east, its deck to the pond.
     x, y, z = put(ice_house(c), 8.0, 13.0, math.atan2(-13.0, -8.0) - math.pi / 2, 6.5)
     # Sledges on the yard's east and south, harness poles out.

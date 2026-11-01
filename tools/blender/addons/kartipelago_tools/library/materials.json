@@ -5750,6 +5750,15 @@
       "tileMetres": 1
     },
     {
+      "id": "log_sawn",
+      "name": "Log End (Sawn)",
+      "theme": "summit_pass",
+      "surface": "wall",
+      "image": "log_sawn.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
       "id": "torch_glow",
       "name": "Torch Flame",
       "theme": "jungle_cascade",

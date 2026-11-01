@@ -133,13 +133,6 @@
       "color": "green"
     },
     {
-      "id": "lantern_01",
-      "type": "lantern",
-      "x": 0.0,
-      "y": 14.6,
-      "z": -0.0
-    },
-    {
       "id": "campfire_01",
       "type": "campfire",
       "x": -39.6,
@@ -147,84 +140,84 @@
       "z": 10.0
     },
     {
-      "id": "lantern_02",
+      "id": "lantern_01",
       "type": "lantern",
       "x": 34.4,
       "y": 8.89,
       "z": -9.15
     },
     {
-      "id": "lantern_03",
+      "id": "lantern_02",
       "type": "lantern",
       "x": 32.78,
       "y": 8.63,
       "z": -32.66
     },
     {
-      "id": "lantern_04",
+      "id": "lantern_03",
       "type": "lantern",
       "x": 9.28,
       "y": 7.82,
       "z": -34.37
     },
     {
-      "id": "lantern_05",
+      "id": "lantern_04",
       "type": "lantern",
       "x": -9.15,
       "y": 7.31,
       "z": -34.4
     },
     {
-      "id": "lantern_06",
+      "id": "lantern_05",
       "type": "lantern",
       "x": -32.66,
       "y": 6.8,
       "z": -32.78
     },
     {
-      "id": "lantern_07",
+      "id": "lantern_06",
       "type": "lantern",
       "x": -34.37,
       "y": 6.67,
       "z": -9.28
     },
     {
-      "id": "lantern_08",
+      "id": "lantern_07",
       "type": "lantern",
       "x": -34.4,
       "y": 6.84,
       "z": 9.15
     },
     {
-      "id": "lantern_09",
+      "id": "lantern_08",
       "type": "lantern",
       "x": -32.78,
       "y": 7.4,
       "z": 32.66
     },
     {
-      "id": "lantern_10",
+      "id": "lantern_09",
       "type": "lantern",
       "x": -9.28,
       "y": 7.95,
       "z": 34.37
     },
     {
-      "id": "lantern_11",
+      "id": "lantern_10",
       "type": "lantern",
       "x": 9.15,
       "y": 8.4,
       "z": 34.4
     },
     {
-      "id": "lantern_12",
+      "id": "lantern_11",
       "type": "lantern",
       "x": 32.66,
       "y": 8.95,
       "z": 32.78
     },
     {
-      "id": "lantern_13",
+      "id": "lantern_12",
       "type": "lantern",
       "x": 34.37,
       "y": 8.98,
