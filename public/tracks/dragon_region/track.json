@@ -13,6 +13,300 @@
   },
   "entities": [
     {
+      "id": "torch_01",
+      "type": "torch",
+      "x": -294.59,
+      "y": 30.57,
+      "z": 71.45
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": -341.56,
+      "y": 31.6,
+      "z": 65.59
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": -378.94,
+      "y": 30.71,
+      "z": 42.06
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": -400.85,
+      "y": 31.24,
+      "z": 0.52
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -304.14,
+      "y": 31.05,
+      "z": 32.6
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -327.22,
+      "y": 30.33,
+      "z": 28.24
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -350.48,
+      "y": 30.22,
+      "z": 13.96
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -361.62,
+      "y": 30.85,
+      "z": -7.29
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": 133.89,
+      "y": 43.05,
+      "z": -308.71
+    },
+    {
+      "id": "steam_01",
+      "type": "steam",
+      "x": 133.89,
+      "y": 72.05,
+      "z": -308.71
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": 144.29,
+      "y": 42.99,
+      "z": -301.23
+    },
+    {
+      "id": "steam_02",
+      "type": "steam",
+      "x": 144.29,
+      "y": 71.99,
+      "z": -301.23
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": 155.54,
+      "y": 43.02,
+      "z": -292.78
+    },
+    {
+      "id": "steam_03",
+      "type": "steam",
+      "x": 155.54,
+      "y": 72.02,
+      "z": -292.78
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 167.71,
+      "y": 43.03,
+      "z": -284.05
+    },
+    {
+      "id": "steam_04",
+      "type": "steam",
+      "x": 167.71,
+      "y": 72.03,
+      "z": -284.05
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 180.9,
+      "y": 42.99,
+      "z": -275.55
+    },
+    {
+      "id": "steam_05",
+      "type": "steam",
+      "x": 180.9,
+      "y": 71.99,
+      "z": -275.55
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 194.89,
+      "y": 43.12,
+      "z": -268.01
+    },
+    {
+      "id": "steam_06",
+      "type": "steam",
+      "x": 194.89,
+      "y": 72.12,
+      "z": -268.01
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 207.55,
+      "y": 43.4,
+      "z": -261.87
+    },
+    {
+      "id": "steam_07",
+      "type": "steam",
+      "x": 207.55,
+      "y": 72.4,
+      "z": -261.87
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 217.59,
+      "y": 43.59,
+      "z": -256.41
+    },
+    {
+      "id": "steam_08",
+      "type": "steam",
+      "x": 217.59,
+      "y": 72.59,
+      "z": -256.41
+    },
+    {
+      "id": "lantern_01",
+      "type": "lantern",
+      "x": -240.54,
+      "y": 66.78,
+      "z": -302.59
+    },
+    {
+      "id": "lantern_02",
+      "type": "lantern",
+      "x": -233.31,
+      "y": 66.84,
+      "z": -316.54
+    },
+    {
+      "id": "lantern_03",
+      "type": "lantern",
+      "x": -223.16,
+      "y": 66.92,
+      "z": -329.55
+    },
+    {
+      "id": "lantern_04",
+      "type": "lantern",
+      "x": -211.34,
+      "y": 67.09,
+      "z": -340.02
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -197.96,
+      "y": 67.26,
+      "z": -348.45
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -183.58,
+      "y": 67.41,
+      "z": -354.48
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -169.76,
+      "y": 67.48,
+      "z": -358.24
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": -157.32,
+      "y": 67.45,
+      "z": -360.75
+    },
+    {
+      "id": "lantern_09",
+      "type": "lantern",
+      "x": -146.23,
+      "y": 67.3,
+      "z": -363.0
+    },
+    {
+      "id": "lantern_10",
+      "type": "lantern",
+      "x": -198.2,
+      "y": 66.78,
+      "z": -284.61
+    },
+    {
+      "id": "lantern_11",
+      "type": "lantern",
+      "x": -194.42,
+      "y": 66.84,
+      "z": -291.96
+    },
+    {
+      "id": "lantern_12",
+      "type": "lantern",
+      "x": -189.84,
+      "y": 66.92,
+      "z": -297.85
+    },
+    {
+      "id": "lantern_13",
+      "type": "lantern",
+      "x": -183.69,
+      "y": 67.09,
+      "z": -303.25
+    },
+    {
+      "id": "lantern_14",
+      "type": "lantern",
+      "x": -176.8,
+      "y": 67.26,
+      "z": -307.6
+    },
+    {
+      "id": "lantern_15",
+      "type": "lantern",
+      "x": -169.07,
+      "y": 67.41,
+      "z": -310.83
+    },
+    {
+      "id": "lantern_16",
+      "type": "lantern",
+      "x": -159.73,
+      "y": 67.48,
+      "z": -313.34
+    },
+    {
+      "id": "lantern_17",
+      "type": "lantern",
+      "x": -148.64,
+      "y": 67.45,
+      "z": -315.58
+    },
+    {
+      "id": "lantern_18",
+      "type": "lantern",
+      "x": -136.22,
+      "y": 67.3,
+      "z": -318.1
+    },
+    {
       "id": "villager_home_01",
       "type": "villager_home",
       "x": 0.0,
@@ -24,147 +318,147 @@
       "heading": 0.0
     },
     {
-      "id": "torch_01",
+      "id": "torch_17",
       "type": "torch",
       "x": 29.4,
       "y": 13.84,
       "z": 86.04
     },
     {
-      "id": "torch_02",
+      "id": "torch_18",
       "type": "torch",
       "x": -5.96,
       "y": 13.71,
       "z": 62.6
     },
     {
-      "id": "torch_03",
+      "id": "torch_19",
       "type": "torch",
       "x": -25.0,
       "y": 13.79,
       "z": 75.42
     },
     {
-      "id": "torch_04",
+      "id": "torch_20",
       "type": "torch",
       "x": -29.4,
       "y": 12.56,
       "z": 97.96
     },
     {
-      "id": "torch_05",
+      "id": "torch_21",
       "type": "torch",
       "x": -16.58,
       "y": 12.16,
       "z": 117.0
     },
     {
-      "id": "torch_06",
+      "id": "torch_22",
       "type": "torch",
       "x": 5.96,
       "y": 12.28,
       "z": 121.4
     },
     {
-      "id": "torch_07",
+      "id": "torch_23",
       "type": "torch",
       "x": 25.0,
       "y": 13.51,
       "z": 108.58
     },
     {
-      "id": "torch_08",
+      "id": "torch_24",
       "type": "torch",
       "x": -13.0,
       "y": 15.24,
       "z": 56.0
     },
     {
-      "id": "torch_09",
+      "id": "torch_25",
       "type": "torch",
       "x": 13.0,
       "y": 13.69,
       "z": 56.0
     },
     {
-      "id": "torch_10",
+      "id": "torch_26",
       "type": "torch",
       "x": -13.0,
       "y": 15.16,
       "z": 42.4
     },
     {
-      "id": "torch_11",
+      "id": "torch_27",
       "type": "torch",
       "x": 13.0,
       "y": 13.97,
       "z": 42.4
     },
     {
-      "id": "torch_12",
+      "id": "torch_28",
       "type": "torch",
       "x": -13.0,
       "y": 15.75,
       "z": 28.8
     },
     {
-      "id": "torch_13",
+      "id": "torch_29",
       "type": "torch",
       "x": 13.0,
       "y": 15.64,
       "z": 28.8
     },
     {
-      "id": "torch_14",
+      "id": "torch_30",
       "type": "torch",
       "x": -13.0,
       "y": 18.97,
       "z": 15.2
     },
     {
-      "id": "torch_15",
+      "id": "torch_31",
       "type": "torch",
       "x": 13.0,
       "y": 19.62,
       "z": 15.2
     },
     {
-      "id": "torch_16",
+      "id": "torch_32",
       "type": "torch",
       "x": -13.0,
       "y": 19.99,
       "z": 1.6
     },
     {
-      "id": "torch_17",
+      "id": "torch_33",
       "type": "torch",
       "x": 13.0,
       "y": 20.92,
       "z": 1.6
     },
     {
-      "id": "torch_18",
+      "id": "torch_34",
       "type": "torch",
       "x": -13.0,
       "y": 20.23,
       "z": -12.0
     },
     {
-      "id": "torch_19",
+      "id": "torch_35",
       "type": "torch",
       "x": 13.0,
       "y": 20.88,
       "z": -12.0
     },
     {
-      "id": "torch_20",
+      "id": "torch_36",
       "type": "torch",
       "x": -15.0,
       "y": 15.04,
       "z": 431.0
     },
     {
-      "id": "torch_21",
+      "id": "torch_37",
       "type": "torch",
       "x": 15.0,
       "y": 15.04,
@@ -174,33 +468,33 @@
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "keep",
-      "x": -364.52,
-      "z": 38.62,
-      "heading": 2.468230736021388
+      "x": -340.97,
+      "z": 27.89,
+      "heading": -0.522526216869646
     },
     {
       "id": "gateway_spot_02",
       "type": "gateway_spot",
-      "gateway": "moon",
-      "x": -191.32,
-      "z": -352.95,
-      "heading": 0.40040118579592565
+      "gateway": "hold",
+      "x": 195.62,
+      "z": -313.63,
+      "heading": -0.5677344825172631
     },
     {
       "id": "gateway_spot_03",
       "type": "gateway_spot",
-      "gateway": "hold",
-      "x": 215.49,
-      "z": -341.92,
-      "heading": -0.5729652553501646
+      "gateway": "canyon",
+      "x": 357.05,
+      "z": 44.58,
+      "heading": 1.4448518505613503
     },
     {
       "id": "gateway_spot_04",
       "type": "gateway_spot",
-      "gateway": "canyon",
-      "x": 385.18,
-      "z": 78.81,
-      "heading": -2.0179358794400013
+      "gateway": "moon",
+      "x": -180.56,
+      "z": -315.23,
+      "heading": -2.6607635364282793
     },
     {
       "id": "gateway_spot_05",
@@ -211,28 +505,7 @@
       "heading": 0.12228028857873485
     },
     {
-      "id": "torch_22",
-      "type": "torch",
-      "x": -189.54,
-      "y": 60.23,
-      "z": -312.74
-    },
-    {
-      "id": "torch_23",
-      "type": "torch",
-      "x": -210.46,
-      "y": 60.8,
-      "z": -324.3
-    },
-    {
-      "id": "steam_01",
-      "type": "steam",
-      "x": 184.73,
-      "y": 41.93,
-      "z": -325.24
-    },
-    {
-      "id": "torch_24",
+      "id": "torch_38",
       "type": "torch",
       "x": 146.04,
       "y": 42.46,

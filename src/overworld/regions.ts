@@ -498,20 +498,20 @@ export const REGIONS: Region[] = [
     // On Dragonfire Square, by the great dragon, facing south to the road.
     spawn: { x: 0, z: 92, heading: 0 },
     gateways: [
-      // Before Dragonspire Keep's tall tower, on its isle, west.
-      { id: "keep", track: "dragon_isles", x: -364.52, z: 38.62, radius: 6, heading: 2.4682 },
-      // At the overgrown jungle castle's gate on the Emerald Canyon's isle, east.
-      { id: "canyon", track: "dragon_canyon", x: 385.18, z: 78.81, radius: 6, heading: -2.0179 },
-      // At Emberdeep Hold's fortress gate on its isle, its lava falling into the void, north-east.
-      { id: "hold", track: "snow_dragon_pass", x: 215.49, z: -341.92, radius: 6, heading: -0.573 },
-      // Before the moon gate's standing stones on the Moonstone isle, the highest, north-west.
+      // In the castle's Dragonspire wing, a great door in its hall's wall, west.
+      { id: "keep", track: "dragon_isles", x: -340.97, z: 27.89, radius: 6, heading: -0.5225 },
+      // In the jungle-swallowed wing's hall (trees through its roof), east.
+      { id: "canyon", track: "dragon_canyon", x: 357.05, z: 44.58, radius: 6, heading: 1.4449 },
+      // In Emberdeep's forge hall, furnaces glowing, lava running, north-east.
+      { id: "hold", track: "snow_dragon_pass", x: 195.62, z: -313.63, radius: 6, heading: -0.5677 },
+      // In the moon temple's court, open to the stars, the highest wing, north-west.
       {
         id: "moon",
         track: "celestial_dragon_festival",
-        x: -191.32,
-        z: -352.95,
+        x: -180.56,
+        z: -315.23,
         radius: 6,
-        heading: 0.4004,
+        heading: -2.6608,
       },
       // King Pyrrhax's Citadel: its forty-metre door in the spire's foot, up the avenue.
       {

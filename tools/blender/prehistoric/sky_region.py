@@ -23,6 +23,7 @@ import region_ruin as ruin  # noqa: E402
 import pocket_build as pb  # noqa: E402
 from pocket_build import box, cone  # noqa: E402
 import keep_props as kp  # noqa: E402
+import swamp_props as swp  # noqa: E402
 import aurora_props as ap  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
@@ -98,7 +99,8 @@ def main():
                 deck_mat=("keep_ashlar", "wall"), ground=False)
     gx, gy = M.GATE_ZONE
     c.side_road("Gate Isle Road", pb.line(natural, (bx, by), (gx, gy + 4.0), z0=zb), "keep_flag", "road", **trail)
-    gates = dict(M.GATES)
+    wing_gates(c)
+    gates = dict(GATES)
     gates["citadel"] = M.CITADEL_DOOR
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][2], trail, short={"citadel": 16.0})
 
@@ -112,6 +114,9 @@ def main():
         return natural(x, y) if z is None else z
 
     undersides(c)
+    battlements(c, ground)
+    for name in WINGS:
+        hall(c, ground, name)
     spire(c, ground)
     crown(c, ground, spots)
     sky_gate(c, ground)
@@ -139,6 +144,198 @@ def main():
     for name, (end, hd) in spots.items():
         g = c.game(end[0], end[1], 0.0)
         print("spot %s x %.2f z %.2f heading %.4f" % (name, g[0], g[2], hd))
+
+
+# ------------------------------------------------------------------ the castle
+
+# The floating castle (Blake, Oct 31: "more of a floating castle and we still have bridges
+# but they are connecting large chunks of the castle together and these large chunks are
+# the different immersive entrances to the levels capturing the theme from the levels";
+# he picked driving through each wing): each gateway isle a wing of the castle in its
+# course's world, the road through its great hall, the course's gateway a great door in the
+# hall's side wall; battlements and towers round every chunk's rim.
+WINGS = {
+    # name: (walls, pillars, roof (None: open to the sky), height)
+    "keep": (("keep_ashlar", "wall"), ("keep_ashlar_dark", "wall"), ("keep_slate", "wall"), 22.0),
+    "hold": (("fortress_wall", "wall"), ("obsidian_cliff", "wall"), ("ember_rock", "wall"), 20.0),
+    "canyon": (("limestone_moss", "wall"), ("moss_rock", "wall"), ("limestone_moss", "wall"), 20.0),
+    "moon": (("moon_stone", "wall"), ("keep_ashlar_dark", "wall"), None, 24.0),
+}
+# (Their objects' names: "Keep" would read as a building in tests/buildings.test.ts.)
+LABEL = {"keep": "Dragonspire", "hold": "Emberdeep", "canyon": "Jungle", "moon": "Moon", "crown": "Crown", "gate": "Gate Isle"}
+HALF = 28.0  # the halls' half width (the walls this far from the road's middle)
+GATES = {}  # each wing's gateway, in its hall's side wall (wing_gates)
+SPANS = {}  # each wing's hall: (s0, s1, the gate's s, its side)
+
+
+def wing_gates(c):
+    """Where each wing's hall runs (the road across its isle) and its gateway, a door in the
+    side wall towards the isle's middle."""
+    for name in WINGS:
+        ss = [q.s for q in c.S if M.isle_at(q.p.x, q.p.y)[0] == name and M.isle_e(name, q.p.x, q.p.y) < 0.72]
+        if not ss:
+            continue
+        mid = (min(ss) + max(ss)) / 2
+        s0, s1 = max(min(ss), mid - 60.0), min(max(ss), mid + 60.0)
+        q = c.at(mid)
+        cx, cy = M.ISLES[name][:2]
+        sd = 1 if (cx - q.p.x) * q.r.x + (cy - q.p.y) * q.r.y > 0 else -1
+        GATES[name] = (q.p.x + q.r.x * sd * (HALF - 1.5), q.p.y + q.r.y * sd * (HALF - 1.5))
+        SPANS[name] = (s0, s1, mid, sd)
+
+
+def hall(c, ground, name):
+    """A wing's great hall over the road: its walls (the gate's door in one), pillars down
+    both sides, ribs across, the roof (the moon temple's open to the stars, the jungle's
+    broken), a great arch at each end between towers; then its world inside."""
+    if name not in SPANS:
+        return
+    wall, pillar, roof, H = WINGS[name]
+    s0, s1, sg, gsd = SPANS[name]
+    z0 = min(c.at(s0).p.z, c.at(s1).p.z) - 3.0
+    s = s0
+    k = 0
+    while s <= s1:
+        q = c.at(s)
+        rot = math.atan2(q.t.y, q.t.x)
+        z = q.p.z
+        for sd in (-1, 1):
+            if sd == gsd and abs(s - sg) < 11.0:
+                continue  # (the gate's door stands here)
+            x, y = q.p.x + q.r.x * sd * HALF, q.p.y + q.r.y * sd * HALF
+            box(c, "%s Hall Wall %d %d" % (LABEL[name], k, sd), x, y, 3.4, 1.6, z - 4.0, z + H, wall, rot=rot)
+            if k % 2 == 0:
+                px, py = q.p.x + q.r.x * sd * (HALF - 5.0), q.p.y + q.r.y * sd * (HALF - 5.0)
+                box(c, "%s Hall Pillar %d %d" % (LABEL[name], k, sd), px, py, 1.5, 1.5, z - 1.0, z + H, pillar, rot=rot)
+        if k % 2 == 0:
+            box(c, "%s Hall Rib %d" % (LABEL[name], k), q.p.x, q.p.y, 1.2, HALF + 1.5, z + H, z + H + 2.2, pillar, rot=rot,
+                role="visual")
+        if roof and not (name == "canyon" and k % 3 == 1):
+            box(c, "%s Hall Roof %d" % (LABEL[name], k), q.p.x, q.p.y, 3.2, HALF + 1.6, z + H + 2.2, z + H + 3.2, roof, rot=rot,
+                role="visual")
+        s += 6.0
+        k += 1
+    # The great arches at the ends, between towers.
+    for e, se in enumerate((s0, s1)):
+        q = c.at(se)
+        rot = math.atan2(q.t.y, q.t.x)
+        z = q.p.z
+        for sd in (-1, 1):
+            x, y = q.p.x + q.r.x * sd * (HALF - 7.5), q.p.y + q.r.y * sd * (HALF - 7.5)
+            box(c, "%s Arch Side %d %d" % (LABEL[name], e, sd), x, y, 1.8, 7.5, z - 4.0, z + H + 3.0, wall, rot=rot)
+            tx, ty = q.p.x + q.r.x * sd * (HALF + 4.0), q.p.y + q.r.y * sd * (HALF + 4.0)
+            box(c, "%s Arch Bastion %d %d" % (LABEL[name], e, sd), tx, ty, 5.0, 5.0, z - 6.0, z + H + 20.0, wall, rot=rot)
+            cone(c, "%s Arch Bastion Cap %d %d" % (LABEL[name], e, sd), tx, ty, 6.8, z + H + 20.0, 14.0,
+                 roof or ("crystal_violet2", "wall"), segs=4, role="visual")
+        box(c, "%s Arch Lintel %d" % (LABEL[name], e), q.p.x, q.p.y, 1.8, HALF, z + 15.0, z + H + 3.0, wall, rot=rot, role="visual")
+    WORLD[name](c, ground, name)
+
+
+def _hall_spots(c, name, every, off, side=None):
+    """Spots down a hall at `off` m from the road's middle (its side away from the gate, or
+    `side`), every `every` m: [(x, y, z, rot)]."""
+    s0, s1, sg, gsd = SPANS[name]
+    sd = side or -gsd
+    out = []
+    s = s0 + every / 2
+    while s < s1:
+        q = c.at(s)
+        out.append((q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off, q.p.z, math.atan2(q.t.y, q.t.x)))
+        s += every
+    return out
+
+
+def _keep_world(c, ground, name):
+    """Dragonspire's hall: banners down its pillars, braziers, tapestries on the walls."""
+    for sd in (-1, 1):
+        for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 18.0, HALF - 8.0, sd)):
+            c.place(kp.banner_pole(c, h=12.0), x, y, ground(x, y), rot=rot)
+            if k % 2 == 0:
+                c.place(kp.brazier(c), x, y + 0.0, ground(x, y))
+                g = c.game(x, y, ground(x, y) + 2.4)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 12.0, HALF - 1.8)):
+        box(c, "Dragonspire Tapestry %d" % k, x, y, 2.0, 0.2, z + 4.0, z + 14.0, (("banner_red", "banner_royal")[k % 2], "wall"), rot=rot,
+            role="visual")
+
+
+def _hold_world(c, ground, name):
+    """Emberdeep's forge hall: furnaces glowing in the far wall, a lava channel along it
+    behind a low kerb, chimneys up through the roof smoking, anvils, braziers."""
+    s0, s1, sg, gsd = SPANS[name]
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 14.0, HALF - 2.4)):
+        box(c, "Furnace %d" % k, x, y, 3.0, 1.2, z - 0.5, z + 7.0, ("obsidian_cliff", "wall"), rot=rot)
+        box(c, "Furnace Mouth %d" % k, x, y, 2.0, 1.25, z + 0.8, z + 4.0, ("fire_glow", "wall"), rot=rot, role="visual")
+        g = c.game(x, y, z + 3.0)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+        box(c, "Chimney %d" % k, x, y, 1.6, 1.6, z + 7.0, z + WINGS[name][3] + 12.0, ("obsidian_cliff", "wall"), rot=rot, role="visual")
+        g = c.game(x, y, z + WINGS[name][3] + 12.0)
+        c.entity("steam", x=g[0], y=g[1], z=g[2])
+    pts = [(x, y, z) for x, y, z, rot in _hall_spots(c, name, 4.0, HALF - 9.0)]
+    if len(pts) > 2:
+        c.ribbon("Forge Lava", [(x, y, 4.0, z - 0.3) for x, y, z in pts], 4.0, 0, c.lib("volcano_lava", "lava"), role="both")
+        for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 6.0, HALF - 12.0)):
+            box(c, "Forge Kerb %d" % k, x, y, 3.2, 0.4, z - 0.5, z + 0.9, ("obsidian_cliff", "wall"), rot=rot)
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 20.0, HALF - 15.0)):
+        c.place(kp.brazier(c), x, y, ground(x, y))
+
+
+def _canyon_world(c, ground, name):
+    """The jungle's hall: trees grown up through the broken roof, vines hanging off the ribs,
+    water pouring in where the roof's gone into pools, ferns and big leaves."""
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 16.0, HALF - 13.0)):
+        c.place(props.jungle_tree(c, k % 2), x, y, ground(x, y) - 0.2, rot=k, scale=1.6)
+    for sd in (-1, 1):
+        for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 12.0, HALF - 6.0, sd)):
+            c.place(swp.hanging_vine(c, k % 2, length=10.0), x, y, z + WINGS[name][3] + 1.0, rot=rot, role="visual")
+            c.place(props.big_leaf_plant(c, k % 2), x, y, ground(x, y), rot=k, role="visual")
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 36.0, HALF - 18.0)):
+        props.falls(c, "Hall Falls %d" % k, x, y, z + WINGS[name][3] + 1.0, z + 0.2, 2.4, 4.0, facing=1, throw=1.0, bulge=0.4, veils=2,
+                    angle=rot, mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
+        c.disc("Hall Pool %d" % k, x, y, 4.5, ground(x, y) + 0.12, c.lib("lagoon_shallow", "water"), role="visual", n=16, wobble=0.2,
+               seed=k)
+
+
+def _moon_world(c, ground, name):
+    """The moon temple's court: open to the sky, violet crystals growing down both sides,
+    moonstones glowing in the pillars, lanterns."""
+    for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 14.0, HALF - 12.0)):
+        c.place(ap.spire_cluster(c, k % 2, height=8.0 + 3.0 * (k % 2), mat="crystal_violet2", accent="crystal_cyan"), x, y,
+                ground(x, y) - 0.3, rot=k)
+    for sd in (-1, 1):
+        for k, (x, y, z, rot) in enumerate(_hall_spots(c, name, 12.0, HALF - 5.0, sd)):
+            box(c, "Moonstone %d %d" % (k, sd), x - math.sin(rot) * sd * 1.6, y + math.cos(rot) * sd * 1.6, 0.6, 0.2, z + 6.0, z + 8.0,
+                ("crystal_violet2", "wall"), rot=rot, role="visual")
+            g = c.game(x, y, z + 9.0)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+
+
+WORLD = {"keep": _keep_world, "hold": _hold_world, "canyon": _canyon_world, "moon": _moon_world}
+
+
+def battlements(c, ground):
+    """Round every chunk's rim: a battlemented wall, towers every so often (none across the
+    road or the bridges' ends)."""
+    for name, (x, y, rx, ry, z, look) in M.ISLES.items():
+        wall = ("keep_ashlar", "wall") if look != "hold" else ("fortress_wall", "wall")
+        n = int(2 * math.pi * max(rx, ry) / 9.0)
+        for k in range(n):
+            a = k * math.tau / n
+            e = 0.93
+            wob = 1.0 + 0.07 * math.sin(3.0 * a + len(name)) + 0.04 * math.sin(7.0 * a + 2.0 * len(name))
+            px, py = x + rx * e * wob * math.cos(a), y + ry * e * wob * math.sin(a)
+            if not paint.road_clear(c, px, py, 12.0):
+                continue
+            gz = ground(px, py)
+            if gz < z - 8.0:
+                continue
+            rot = a + math.pi / 2
+            if k % 8 == 0:
+                box(c, "Rim Bastion %s %d" % (LABEL.get(name, name.title()), k), px, py, 3.6, 3.6, gz - 6.0, gz + 16.0, wall, rot=rot)
+                cone(c, "Rim Bastion Cap %s %d" % (LABEL.get(name, name.title()), k), px, py, 5.0, gz + 16.0, 9.0, ("keep_slate", "wall"), segs=4, role="visual")
+            else:
+                box(c, "Rim Wall %s %d" % (LABEL.get(name, name.title()), k), px, py, 4.8, 1.2, gz - 6.0, gz + 3.2, wall, rot=rot)
+                box(c, "Rim Merlon %s %d" % (LABEL.get(name, name.title()), k), px, py, 1.2, 1.3, gz + 3.2, gz + 4.4, wall, rot=rot, role="visual")
 
 
 # ------------------------------------------------------------------ the isles
@@ -282,11 +479,11 @@ def landmarks(c, ground, spots):
     Hold's fortress gate, the jungle castle's overgrown gate."""
     def facing(name):
         (ex, ey), _ = spots[name]
-        gx, gy = M.GATES[name]
+        gx, gy = GATES[name]
         return math.atan2(gy - ey, gx - ex)
 
     def gateway(name, mat, width=8.0, height=14.0, towers=0.0, roof=None):
-        x, y = M.GATES[name]
+        x, y = GATES[name]
         f = facing(name)
         rot = f + math.pi / 2
         z0 = ground(x - 6.0 * math.cos(f), y - 6.0 * math.sin(f))
@@ -310,7 +507,7 @@ def landmarks(c, ground, spots):
         cone(c, "Dragonspire Roof", kx, ky, 8.0, z0 + 64.0, 16.0, roof, segs=4, role="visual")
     gateway("canyon", ("limestone_moss", "wall"), towers=22.0, roof=("lush_grass", "wall"))
     gateway("hold", ("fortress_wall", "wall"), height=18.0, towers=32.0)
-    mx, my = M.GATES["moon"]
+    mx, my = GATES["moon"]
     f = facing("moon")
     rot = f + math.pi / 2
     z0 = ground(mx - 6.0 * math.cos(f), my - 6.0 * math.sin(f))
@@ -369,7 +566,8 @@ def dress(c, ground, spots):
     houses, round towers; Moonstone's violet crystals, torch posts, dark pines; Emberdeep's
     black walls, basalt and lava pools; the Emerald Canyon's jungle and ruins."""
     taken = paint.Taken([(M.SQUARE[0], M.SQUARE[1], M.SQUARE[2] + 14.0), *((e[0], e[1], 16.0) for e, _ in spots.values()),
-                         *((x, y, 28.0) for x, y in M.GATES.values()), (M.SPIRE[0], M.SPIRE[1], M.SPIRE[2] + 70.0),
+                         *((x, y, 28.0) for x, y in GATES.values()), (M.SPIRE[0], M.SPIRE[1], M.SPIRE[2] + 70.0),
+                         *((M.ISLES[n][0], M.ISLES[n][1], 40.0) for n in WINGS),
                          (M.ISLES["gate"][0], M.ISLES["gate"][1], 64.0)])  # (the Gate isle bare: the view in, clear)
 
     def on(*names):
