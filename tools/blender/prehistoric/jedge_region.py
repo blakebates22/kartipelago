@@ -10,15 +10,18 @@
 # The story's last smugglers' tunnel ("THE ONE UNDER THE BORDER"), driven:
 #
 #   the Underground    in from the isles' sea door under the seabed: lantern-lit bores,
-#     the Wreck Hall   a cavern with old ships' hulls set in its walls,
-#     Undertown        the tunnel folk's town round a great cavern, its roof open to the sea
-#                      overhead (a skylight of water), homes carved in its walls, coral and
-#                      crystals glowing, then
-#     the Long Stair   climbing up and out through a knoll of rock into the light, onto
-#   the Edge           a reef of rock at the very edge of the world: the sea pours off its
-#                      rim into the clouds, and across the void the Dragon Kingdom's isles
-#                      hang in the sky; then
-#   the Sky Bridge     out over the void on chains between stone towers, to
+#     the Wreck Hall   a cavern with old ships' hulls set in its walls, then
+#     the Sump         (v3, Blake: "the tunnel to descend leading to a massive underground
+#                      trade hub of scum and villainy"; the Sump, loot from the kingdoms,
+#                      Tortuga, a crime boss) a vast pit under the seabed, the road spiralling
+#                      down its wall like a haul road past shacks and taverns stacked on its
+#                      ledges, rope bridges and cranes across it, to the black-water harbour
+#                      and the loot market on its floor; the Broker's gilded ship hanging
+#                      over it all on chains; the Eye, a hole to the sea, high overhead;
+#     the Long Bore    out of the Sump's foot and on under the reef, to come out through
+#   the Edge           the very cliff of the world's edge, the sea pouring off the rim over
+#                      you into the clouds, the Dragon Kingdom's isles hanging above; then
+#   the Sky Bridge     climbing out over the void on chains between stone towers, to
 #   the Sky Gate       the Dragon Kingdom's gate, colossal: the loading zone.
 #
 # Blender coordinates (x east, y north, z up). The route is a loop (the kit's courses are),
@@ -49,6 +52,27 @@ WATER_Z = 0.0
 SLAB_N = 40.0  # the slab (the seabed's rock, the underground in it) runs north to here
 VOID_Z = -170.0
 
+# The Sump: the pit's middle, its floor, the rim's height and radius, the cavern's.
+SUMP = (0.0, -130.0)
+SUMP_FLOOR = -68.0
+SUMP_RIM = DEPTH
+SUMP_R = (48.0, 88.0, 104.0)  # floor edge, rim, cavern wall
+HARBOUR = (-22.0, -150.0, 24.0)  # the black water on its floor
+HARBOUR_Z = SUMP_FLOOR - 1.4
+
+
+def _spiral():
+    """The road down the Sump's wall: from the rim (south-east), clockwise 300 degrees,
+    tightening, to the floor."""
+    out = []
+    for k in range(13):
+        a = math.radians(-30.0 - 25.0 * k)
+        r = 84.0 - 30.0 * k / 12.0
+        out.append((SUMP[0] + r * math.cos(a), SUMP[1] + r * math.sin(a), SUMP_RIM - 44.0 * k / 12.0))
+    return out
+
+
+MOUTH = (24.0, 190.0)  # where the Long Bore comes out of the world's edge
 ROUTE = [
     (-70.0, -490.0, DEPTH),  # 0: lead-in (no road): back towards the isles' sea door
     (-60.0, -440.0, DEPTH),  # 1: START, from Tropic Isles
@@ -56,44 +80,40 @@ ROUTE = [
     (10.0, -332.0, DEPTH),  # 3: into the Wreck Hall
     (70.0, -302.0, DEPTH),
     (96.0, -250.0, DEPTH),
-    (82.0, -196.0, DEPTH),  # 6: the narrows
-    (44.0, -150.0, DEPTH),  # 7: into Undertown
-    (-24.0, -142.0, DEPTH),
-    (-66.0, -92.0, DEPTH),
-    (-42.0, -40.0, DEPTH),
-    (8.0, -26.0, DEPTH),  # 11: out of Undertown, the Long Stair
-    (36.0, 6.0, -16.0),
-    (56.0, 46.0, -6.0),
-    (72.0, 90.0, 3.0),  # 14: up into the light, out of the knoll
-    (122.0, 120.0, 5.0),  # 15: the Edge
-    (112.0, 156.0, 6.0),
-    (52.0, 166.0, 7.0),  # 17: along the rim
-    (6.0, 186.0, 9.0),  # 18: the bridgehead
-    (-26.0, 250.0, 12.0),  # 19: the Sky Bridge
-    (10.0, 320.0, 15.0),
-    (-10.0, 390.0, 18.0),
-    (0.0, 445.0, 20.0),  # 22: END, at the Sky Gate
-    (0.0, 476.0, 20.0),  # 23: lead-out (no road)
+    (88.0, -205.0, DEPTH),  # 6: the narrows, to the Sump's rim
+] + _spiral() + [  # 7-19: down the Sump's wall
+    (62.0, -121.0, SUMP_FLOOR + 1.4),  # 20: across its floor
+    (88.0, -130.0, SUMP_FLOOR + 1.8),  # 21: the Long Bore, out of its foot
+    (112.0, -126.0, -65.0),
+    (152.0, -86.0, -63.0),
+    (166.0, -16.0, -60.0),
+    (140.0, 62.0, -56.0),
+    (92.0, 132.0, -52.0),
+    (46.0, 172.0, -50.0),  # 27: out through the cliff of the world's edge
+    (14.0, 214.0, -48.0),  # 28: the Sky Bridge, climbing
+    (-22.0, 270.0, -42.0),
+    (10.0, 330.0, -34.0),
+    (-10.0, 392.0, -26.0),
+    (0.0, 445.0, -20.0),  # 32: END, at the Sky Gate
+    (0.0, 476.0, -20.0),  # 33: lead-out (no road)
     (250.0, 520.0, HZ),
     (480.0, 200.0, HZ),
     (450.0, -300.0, HZ),
     (150.0, -530.0, HZ),
     (-150.0, -530.0, HZ),
 ]
-START, END = 1, 22
+START, END = 1, 32
 ENDS = {"start": ((-60.0, -440.0), (-70.0, -490.0)), "end": ((0.0, 445.0), (0.0, 476.0))}
 
 # The caverns: (name, x, y, rx, ry, roof height over the road).
 CAVERNS = [
     ("Wreck Hall", 52.0, -278.0, 64.0, 56.0, 16.0),
-    ("Undertown", -6.0, -96.0, 84.0, 74.0, 21.0),  # (its roof breaks the seabed: the skylight)
     ("Sea Door Grotto", -55.0, -430.0, 30.0, 38.0, 31.0),  # (open overhead too: where you come in)
 ]
-# The holes in the seabed over Undertown and the grotto: open to the sea overhead.
-SKYLIGHTS = [(-6.0, -96.0, 34.0), (-55.0, -430.0, 20.0)]
+# The holes in the seabed over the Sump (the Eye) and the grotto: open to the sea overhead.
+SKYLIGHTS = [(SUMP[0], SUMP[1], 26.0), (-55.0, -430.0, 20.0)]
 SKYLIGHT = SKYLIGHTS[0]
-KNOLL = (58.0, 52.0, 48.0, 44.0, 14.0)  # the rock the Long Stair climbs out through
-# The Edge: the reef the road runs on, and the rim where the sea falls off the world.
+# The Edge: the reef standing out of the sea on the slab, the rim where the sea falls off.
 SHELF = (64.0, 122.0, 118.0)  # x, y, radius
 
 
@@ -143,7 +163,14 @@ def road_floor(x, y):
     return best
 
 
+def sump_r(x, y):
+    return math.hypot(x - SUMP[0], y - SUMP[1])
+
+
 def cavern_at(x, y):
+    r = sump_r(x, y)
+    if r < SUMP_R[2]:
+        return "Sump", r / SUMP_R[2]
     for name, cx, cy, rx, ry, _h in CAVERNS:
         e = math.hypot((x - cx) / rx, (y - cy) / ry)
         if e < 1.0:
@@ -151,32 +178,40 @@ def cavern_at(x, y):
     return None, 9.0
 
 
-def _land(x, y):
-    ry = rim_y(x)
-    if y > ry:
-        # Over the edge: a sheer fall to the void.
-        return lerp(-2.0, VOID_Z, smooth((y - ry) / 7.0))
-    if y < SLAB_N:
-        # Under the seabed's slab: the caverns' floors; elsewhere hidden in the rock.
-        name, e = cavern_at(x, y)
-        if name:
-            return DEPTH - 0.6 + 1.4 * smooth((e - 0.55) / 0.45) + 0.4 * math.sin(x / 7.0) * math.cos(y / 9.0)
-        return DEPTH - 8.0
-    # The Edge: the sea floor, and the reef the road runs on.
+def reef_z(x, y):
+    """The slab's top: the sea floor, and the reef standing out of the sea by the rim."""
     sx, sy, sr = SHELF
     d = math.hypot((x - sx) * 0.9, y - sy)
-    h = SEABED - 0.6 * smooth((y - SLAB_N) / 30.0)
-    reef = 4.5 + 1.6 * math.sin(x / 9.0) * math.cos(y / 11.0) + 2.0 * smooth((60.0 - abs(x - 120.0)) / 40.0) * 0.0
-    h = lerp(h, reef, smooth((sr - d) / 22.0))
-    # (Rocks standing out of the sea along the rim, here and there.)
-    h = max(h, (ry - y < 14.0) * (2.0 + 5.0 * max(0.0, math.sin(x / 23.0 + 1.3)) ** 3))
-    return h
+    reef = 4.5 + 1.6 * math.sin(x / 9.0) * math.cos(y / 11.0)
+    return lerp(SEABED, reef, smooth((sr - d) / 22.0))
+
+
+def _land(x, y):
+    """The ground under the slab (the slab is the rock: its own mesh): the caverns' floors,
+    the Sump's pit; elsewhere hidden in the rock. Off the edge: the void."""
+    if y > rim_y(x):
+        return VOID_Z
+    r = sump_r(x, y)
+    f0, f1, f2 = SUMP_R
+    if r < f2:
+        dh = math.hypot(x - HARBOUR[0], y - HARBOUR[1])
+        if dh < HARBOUR[2] + 4.0:
+            return lerp(HARBOUR_Z - 1.5, SUMP_FLOOR, smooth((dh - HARBOUR[2] + 2.0) / 6.0))
+        if r < f0:
+            return SUMP_FLOOR + 0.4 * math.sin(x / 7.0) * math.cos(y / 9.0)
+        if r < f1:
+            return lerp(SUMP_FLOOR, SUMP_RIM, (r - f0) / (f1 - f0))
+        return SUMP_RIM - 0.5
+    name, e = cavern_at(x, y)
+    if name:
+        return DEPTH - 0.6 + 1.4 * smooth((e - 0.55) / 0.45) + 0.4 * math.sin(x / 7.0) * math.cos(y / 9.0)
+    return -100.0
 
 
 def natural(x, y):
     h = _land(x, y)
     d, z = road_floor(x, y)
-    if y > rim_y(x) - 2.0 and d < 30.0:
+    if y > rim_y(x) - 1.0:
         return h  # (the bridge: open under it)
     if d < 8.0:
         return z - 0.25
@@ -186,23 +221,19 @@ def natural(x, y):
 
 
 def classify(c, n, info):
-    ry = rim_y(c.x)
-    if c.y > ry + 4.0 and c.z < -20.0:
+    if c.y > rim_y(c.x) - 1.0:
         return ("cloud_bank", "abyss")  # (off the edge of the world: put back)
     if n.z < 0.62:
-        return ("cave_rock", "wall") if c.y < SLAB_N else ("keep_rock", "wall")
-    if c.y < SLAB_N:
-        name, _ = cavern_at(c.x, c.y)
-        if any(math.hypot(c.x - sx, c.y - sy) < sr + 6.0 for sx, sy, sr in SKYLIGHTS):
-            return ("bog_mud", "dirt")  # (the floor under a skylight, sea-wet muck)
-        if math.sin(c.x / 9.0 + c.y / 13.0) * math.cos(c.y / 7.0) > 0.25:
-            return ("bog_mud", "dirt")  # (trodden mud, oil, muck)
-        return ("cave_rock", "dirt")
-    if c.z < WATER_Z - 0.4:
-        return ("cove_wet_sand", "deep_water")  # (off the reef into the sea)
-    if math.sin(c.x / 17.0) * math.cos(c.y / 13.0) > 0.45:
-        return ("keep_grass", "grass")
-    return ("cove_rock", "dirt")
+        return ("cave_rock", "wall")
+    if math.hypot(c.x - HARBOUR[0], c.y - HARBOUR[1]) < HARBOUR[2] + 2.0 and c.z < HARBOUR_Z:
+        return ("bog_mud", "deep_water")  # (into the harbour's black water: put back)
+    if any(math.hypot(c.x - sx, c.y - sy) < sr + 6.0 for sx, sy, sr in SKYLIGHTS):
+        return ("bog_mud", "dirt")  # (the floor under a skylight, sea-wet muck)
+    if sump_r(c.x, c.y) < SUMP_R[2] and math.sin(c.x / 9.0 + c.y / 13.0) * math.cos(c.y / 7.0) > -0.2:
+        return ("ash_soil", "dirt")  # (the Sump's floor and ledges: soot, ash, trodden filth)
+    if math.sin(c.x / 9.0 + c.y / 13.0) * math.cos(c.y / 7.0) > 0.25:
+        return ("bog_mud", "dirt")  # (trodden mud, oil, muck)
+    return ("cave_rock", "dirt")
 
 
 def main():
@@ -211,7 +242,9 @@ def main():
     c.kinds = {
         # (v2, Blake: "grungy, dirty, but a thriving underworld": old setts worn to mud)
         "under": {"mat": "ruin_road", "shoulder": 1.6, "shoulder_mat": ("bog_mud", "dirt")},
-        "edge": {"mat": "keep_cobble", "shoulder": 1.5, "shoulder_mat": ("cove_rock", "dirt")},
+        # (down the Sump's wall: railed against the drop)
+        "ledge": {"mat": "ruin_road", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("bog_mud", "dirt"), "barrier": 1.1,
+                  "barrier_mat": ("weathered_timber", "wall")},
         "bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("plank_road", "road"), "barrier": 1.2,
                    "barrier_mat": ("rope_rail", "wall"), "deck": 1.4, "deck_mat": ("weathered_timber", "wall"), "ground": False},
     }
@@ -223,7 +256,9 @@ def main():
             return None
         if q.p.y > rim_y(q.p.x) - 2.0:
             return "bridge"
-        return "under" if q.p.y < SLAB_N + 40.0 and q.p.z < 2.0 else "edge"
+        if sump_r(q.p.x, q.p.y) < SUMP_R[1] + 2.0 and q.p.z > SUMP_FLOOR + 4.0:
+            return "ledge"
+        return "under"
 
     c.roads(kit.plan(c, [(s0, s1, k) for s0, s1, k in kit.runs(c, label)], "under", max_len=160.0))
 
@@ -235,10 +270,11 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    s_light = c.nearest(*ROUTE[14][:2])[0].s
+    s_light = c.nearest(*ROUTE[27][:2])[0].s
     underground(c, s_start, s_light)
     sea_and_sky(c)
-    undertown(c, ground)
+    skylights(c, ground)
+    sump(c, ground)
     wreck_hall(c, ground)
     grime(c, ground, s_start, s_light)
     the_edge(c, ground)
@@ -246,8 +282,9 @@ def main():
     ends(c)
     far_kingdom(c)
     # The air: the underground's dark, lantern-lit; the sky's bright, out at the edge.
-    for x, y, look in ((-55.0, -430.0, "under"), (52.0, -278.0, "under"), (-6.0, -96.0, "skylight"), (20.0, -10.0, "under"),
-                       (90.0, 120.0, "edge"), (0.0, 320.0, "edge")):
+    for x, y, look in ((-55.0, -430.0, "under"), (52.0, -278.0, "under"), (0.0, -130.0, "sump"), (60.0, -200.0, "sump"),
+                       (-60.0, -90.0, "sump"), (160.0, -40.0, "under"), (110.0, 110.0, "under"), (20.0, 230.0, "edge"),
+                       (0.0, 380.0, "edge")):
         g = c.game(x, y, 0.0)
         c.entity("air_spot", x=round(g[0], 1), z=round(g[2], 1), look=LOOKS[look])
 
@@ -270,6 +307,10 @@ LOOKS = {
     "under": {"sky": "#120e09", "fog": {"enabled": True, "color": "#2a2116", "near": 24, "far": 220},
               "sun": {"color": "#ffc98a", "intensity": 0.5, "direction": [-0.3, 0.9, 0.2]},
               "ambient": {"sky": "#9a7a58", "ground": "#2a1c10", "intensity": 0.8}},
+    # (the Sump: smoke and lamplight, the Eye's sea-green light falling through it)
+    "sump": {"sky": "#1a140c", "fog": {"enabled": True, "color": "#3a2c1a", "near": 40, "far": 320},
+             "sun": {"color": "#c8f0e0", "intensity": 0.9, "direction": [-0.15, 0.97, 0.1]},
+             "ambient": {"sky": "#b08a5c", "ground": "#2c2012", "intensity": 0.9}},
     "skylight": {"sky": "#123a4a", "fog": {"enabled": True, "color": "#1d4a58", "near": 40, "far": 300},
                  "sun": {"color": "#bff0ff", "intensity": 1.2, "direction": [-0.2, 0.95, 0.1]},
                  "ambient": {"sky": "#7fd0e0", "ground": "#2a3a34", "intensity": 0.95}},
@@ -287,14 +328,20 @@ LOOKS = {
 
 
 def underground(c, s0, s1):
-    """The seabed's rock, a slab over the whole underground, and the bores and caverns cut
-    out of it; the knoll the Long Stair climbs out through."""
+    """The seabed's rock: a slab over the whole underground out to the world's edge (its top
+    the sea floor and the reef, its north face the cliff of the edge), and the bores, the
+    caverns and the Sump cut out of it."""
     bm = bmesh.new()
-    x0, x1, y0, y1 = -490.0, 490.0, -490.0, SLAB_N
-    zb, zt = DEPTH - 24.0, SEABED
-    n = 24
-    top = [[bm.verts.new((lerp(x0, x1, i / n), lerp(y0, y1, j / n), zt + 0.4 * math.sin(i * 1.7) * math.cos(j * 2.3)))
-            for i in range(n + 1)] for j in range(n + 1)]
+    zb = -115.0
+    n = 60
+    top = []
+    for j in range(n + 1):
+        row = []
+        for i in range(n + 1):
+            x = lerp(-490.0, 490.0, i / n)
+            y = lerp(-490.0, rim_y(x), j / n)
+            row.append(bm.verts.new((x, y, reef_z(x, y) + (0.0 if j < n else -0.5))))
+        top.append(row)
     for j in range(n):
         for i in range(n):
             bm.faces.new((top[j][i], top[j][i + 1], top[j + 1][i + 1], top[j + 1][i]))
@@ -314,18 +361,41 @@ def underground(c, s0, s1):
         for v in res["verts"]:
             wob = 1.0 + 0.08 * math.sin(v.co.x * 7.0 + v.co.y * 5.0) * (v.co.z > -0.2)
             v.co = Vector((cx + v.co.x * rx * wob, cy + v.co.y * ry * wob, DEPTH - 3.0 + (v.co.z + 0.2) / 1.2 * (h + 3.0) * wob))
-        cut = c.mesh_object(name + " Cutter", dm, "Rocks", "visual")
-        _subtract(slab, cut)
-    c.tunnel(slab, s0 - 30.0, s1, half=c.width / 2 + 4.0, height=11.0, pad=6.0)
-    kx, ky, krx, kry, kz = KNOLL
-    knoll = c.rock_mass("Knoll", kx, ky, krx, kry, kz, z0=DEPTH, n=22, seed=9,
-                        bands=[(1.15, 0.0), (1.0, 0.3), (0.85, 0.7), (0.6, 1.0)])
-    c.tunnel(knoll, s1 - 140.0, s1, half=c.width / 2 + 4.0, height=11.0, pad=10.0)
-    c.paint_rock(knoll, ("keep_rock", "wall"), ("keep_grass", "grass"))
+        _subtract(slab, c.mesh_object(name + " Cutter", dm, "Rocks", "visual"))
+    # The Sump: a great drum of a cavern, its roof domed up to the Eye.
+    dm = bmesh.new()
+    prof = [(0.0, SUMP_FLOOR - 12.0), (SUMP_R[2], SUMP_FLOOR - 12.0), (SUMP_R[2], -16.0), (SUMP_R[2] - 12.0, -9.0), (66.0, -5.5),
+            (36.0, -3.6), (24.0, 2.0), (0.0, 4.0)]
+    rings = []
+    for r, z in prof:
+        if r == 0.0:
+            rings.append([dm.verts.new((SUMP[0], SUMP[1], z))])
+            continue
+        rings.append([dm.verts.new((SUMP[0] + r * (1.0 + 0.04 * math.sin(3 * a)) * math.cos(a),
+                                    SUMP[1] + r * (1.0 + 0.04 * math.sin(3 * a)) * math.sin(a), z))
+                      for a in [k * math.tau / 40 for k in range(40)]])
+    for lo, hi in zip(rings, rings[1:]):
+        if len(lo) == 1:
+            for k in range(40):
+                dm.faces.new((lo[0], hi[(k + 1) % 40], hi[k]))
+        elif len(hi) == 1:
+            for k in range(40):
+                dm.faces.new((lo[k], lo[(k + 1) % 40], hi[0]))
+        else:
+            for k in range(40):
+                dm.faces.new((lo[k], lo[(k + 1) % 40], hi[(k + 1) % 40], hi[k]))
+    bmesh.ops.recalc_face_normals(dm, faces=dm.faces)
+    _subtract(slab, c.mesh_object("Sump Cutter", dm, "Rocks", "visual"))
+    c.tunnel(slab, s0 - 30.0, s1 + 24.0, half=c.width / 2 + 4.0, height=11.0, pad=6.0)
     groups = {}
     for p in slab.data.polygons:
-        if p.normal.z > 0.6 and p.center.z > SEABED - 1.5:
-            k = ("cove_wet_sand", "deep_water")
+        z = p.center.z
+        if p.normal.z > 0.6 and z > 1.0:
+            k = ("cove_rock", "dirt")  # (the reef, out of the sea)
+        elif p.normal.z > 0.6 and z > SEABED - 1.5:
+            k = ("cove_wet_sand", "deep_water")  # (the sea floor)
+        elif p.center.y > rim_y(p.center.x) - 3.0 and p.normal.y > 0.5:
+            k = ("keep_rock", "wall")  # (the cliff of the world's edge)
         else:
             k = ("cave_rock", "wall")
         groups.setdefault(k, []).append(p.index)
@@ -361,80 +431,6 @@ def _glow_crystal(c, name, x, y, z, h, mat, lean=0.0):
     cone(c, name, x, y, h * 0.22, z - 0.3, h, (mat, "wall"), segs=5, role="visual")
 
 
-def undertown(c, ground):
-    """The tunnel folk's town round Undertown: homes carved into the cavern's walls in two
-    tiers (doors, lit windows, timber lintels, ledges and ladders), stalls and crates on the
-    floor, coral and crystals glowing, and over it all the skylight: the sea, lit from
-    above."""
-    name, cx, cy, rx, ry, h = CAVERNS[1]
-    sx, sy, sr = SKYLIGHT
-    skylights(c, ground)
-    k = 0
-    for j in range(22):
-        a = j * math.tau / 22 + 0.2
-        for tier in (0, 1):
-            e = 0.93 - 0.06 * tier
-            x, y = cx + rx * e * math.cos(a), cy + ry * e * math.sin(a)
-            if not paint.road_clear(c, x, y, 5.0):
-                continue
-            z = ground(x, y) + tier * 6.0
-            rot = a + math.pi  # (facing in)
-            ox, oy = x - 1.2 * math.cos(a), y - 1.2 * math.sin(a)
-            box(c, "Undertown Door %d" % k, ox, oy, 0.2, 1.0, z - 0.2, z + 2.4, ("dark_corridor", "wall"), rot=rot, role="visual")
-            box(c, "Undertown Lintel %d" % k, ox - 0.15 * math.cos(a), oy - 0.15 * math.sin(a), 0.25, 1.6, z + 2.4, z + 2.8,
-                ("weathered_timber", "wall"), rot=rot, role="visual")
-            for sd in (-1, 1):
-                wx, wy = ox - sd * 2.4 * math.sin(a), oy + sd * 2.4 * math.cos(a)
-                box(c, "Undertown Window %d %d" % (k, sd), wx, wy, 0.2, 0.55, z + 1.1, z + 2.0, ("window_warm", "wall"), rot=rot,
-                    role="visual")
-            if tier:
-                box(c, "Undertown Ledge %d" % k, x - 2.0 * math.cos(a), y - 2.0 * math.sin(a), 1.6, 3.6, z - 0.5, z - 0.1,
-                    ("plank_deck", "wall"), rot=rot, role="visual")
-                lx, ly = x - 3.6 * math.cos(a), y - 3.6 * math.sin(a)
-                box(c, "Undertown Ladder %d" % k, lx, ly, 0.08, 0.5, z - 6.0, z, ("weathered_timber", "wall"), rot=rot, role="visual")
-            g = c.game(ox - 1.0 * math.cos(a), oy - 1.0 * math.sin(a), z + 3.2)
-            if k % 2 == 0:
-                c.entity("lantern", x=g[0], y=g[1], z=g[2])
-            k += 1
-    # The floor: crates and barrels, rowboats on blocks, stalls' awnings, a fire in the middle.
-    for j in range(16):
-        a = j * 2.399
-        r = 0.35 + 0.45 * ((j * 0.618) % 1.0)
-        x, y = cx + rx * r * math.cos(a), cy + ry * r * math.sin(a)
-        if not paint.road_clear(c, x, y, 4.0):
-            continue
-        z = ground(x, y)
-        if j % 4 == 0:
-            c.place(tp.rowboat(c), x, y, z + 0.6, rot=a)
-        elif j % 4 == 1:
-            box(c, "Stall %d" % j, x, y, 2.2, 1.4, z, z + 1.0, ("plank_deck", "wall"), rot=a)
-            box(c, "Stall Awning %d" % j, x, y, 2.6, 1.8, z + 2.6, z + 2.75, (("awning_red", "awning_teal")[j % 2], "wall"), rot=a,
-                role="visual")
-            for sx_ in (-1, 1):
-                box(c, "Stall Post %d %d" % (j, sx_), x + sx_ * 2.2 * math.cos(a), y + sx_ * 2.2 * math.sin(a), 0.1, 0.1, z, z + 2.6,
-                    ("weathered_timber", "wall"), role="visual")
-        else:
-            c.place(tp.barrel(c), x, y, z - 0.1, rot=a)
-    g = c.game(cx, cy, ground(cx, cy) + 0.2)
-    c.entity("campfire", x=g[0], y=g[1], z=g[2])
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=min(rx, ry) * 0.6, n=9, folk="beach",
-             heading=0.0)
-    # Coral and crystals glowing round the walls' feet, and under the skylight.
-    for j in range(34):
-        a = j * math.tau / 34 + 0.1
-        e = 0.82 + 0.1 * math.sin(j * 1.3)
-        x, y = cx + rx * e * math.cos(a), cy + ry * e * math.sin(a)
-        if not paint.road_clear(c, x, y, 3.0):
-            continue
-        z = ground(x, y)
-        if j % 3 == 0:
-            c.place(tp.coral(c, j % 3), x, y, z - 0.2, rot=a, role="visual")
-        else:
-            _glow_crystal(c, "Undertown Crystal %d" % j, x, y, z, 2.5 + 2.0 * ((j * 0.37) % 1.0), ("crystal_cyan", "crystal_teal")[j % 2])
-    g = c.game(sx, sy, SEABED - 2.0)
-    c.entity("sparkles", x=g[0], y=g[1], z=g[2], r=sr, rate=20)
-
-
 def skylights(c, ground):
     """The holes in the seabed: the sea's water over them seen from below, and the sea
     spilling in round their rims in thin falls to pools on the floor."""
@@ -454,6 +450,193 @@ def skylights(c, ground):
                         veils=2, angle=a + math.pi / 2, mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
             c.disc("Skylight Pool %d %d" % (j, k), lx, ly, 3.6, foot + 0.12, c.lib("lagoon_shallow", "water"), role="visual", n=16,
                    wobble=0.2, seed=k)
+
+
+def _egg(c, name, x, y, z, r, mat):
+    bm = bmesh.new()
+    props.blob(bm, (x, y, z + r * 1.2), r, sz=1.35, subdiv=1)
+    c.assign(c.mesh_object(name, bm, "Props", "visual"), c.lib(mat, "wall"))
+
+
+def sump(c, ground):
+    """The Sump (Blake: "a massive underground trade hub of scum and villainy"; Tortuga, coming
+    off the isles; loot from every kingdom; a crime boss): pirates' shacks and taverns stacked
+    on its ledges, flags, lamps; rope bridges and cargo cranes across it; the black-water
+    harbour on its floor, the smugglers' ships moored at its docks; the loot market (the
+    Snow Kingdom's ice, the Valley's eggs, the desert's neon, the isles' coral and pearls,
+    dragon light stolen in crystals, gold); the Broker's gilded ship hanging over it all on
+    chains from the roof."""
+    sx, sy = SUMP
+    f0, f1, f2 = SUMP_R
+    # Shacks and taverns along the ledges' wall side, a lamp at each, flags.
+    k = 0
+    for q in c.S[::12]:
+        r = sump_r(q.p.x, q.p.y)
+        if not (f0 + 4.0 < r < f1 + 2.0) or q.p.z < SUMP_FLOOR + 5.0:
+            continue
+        ox, oy = (q.p.x - sx) / r, (q.p.y - sy) / r
+        x, y = q.p.x + ox * (q.w / 2 + 6.5), q.p.y + oy * (q.w / 2 + 6.5)
+        rot = math.atan2(oy, ox) + math.pi / 2
+        if k % 3 == 2:
+            # A tavern: two storeys, balcony, lit windows all along.
+            box(c, "Tavern %d" % k, x, y, 6.0, 3.6, q.p.z - 1.0, q.p.z + 9.0, ("wreck_planks", "wall"), rot=rot - math.pi / 2)
+            box(c, "Tavern Balcony %d" % k, x - ox * 4.2, y - oy * 4.2, 6.2, 0.8, q.p.z + 4.6, q.p.z + 4.9, ("plank_deck", "wall"),
+                rot=rot - math.pi / 2, role="visual")
+            for w in (-3.6, 0.0, 3.6):
+                for h in (1.4, 6.0):
+                    wx, wy = x - ox * 3.65 + oy * w, y - oy * 3.65 - ox * w
+                    box(c, "Tavern Window %d %d %d" % (k, int(w), int(h)), wx, wy, 0.8, 0.1, q.p.z + h, q.p.z + h + 1.4,
+                        ("window_warm", "wall"), rot=rot - math.pi / 2, role="visual")
+        else:
+            c.place(tp.pirate_hut(c, k % 2), x, y, q.p.z - 0.3, rot=rot + math.pi, role="visual")
+        # (its flag: black, on a pole off the roof)
+        fx, fy = x + oy * 3.0, y - ox * 3.0
+        box(c, "Flag Pole %d" % k, fx, fy, 0.08, 0.08, q.p.z, q.p.z + 13.0, ("weathered_timber", "wall"), role="visual")
+        _cloth(c, "Flag %d" % k, [(fx, fy, q.p.z + 12.8), (fx + oy * 2.6, fy - ox * 2.6, q.p.z + 12.4),
+                                  (fx + oy * 2.6, fy - ox * 2.6, q.p.z + 10.9), (fx, fy, q.p.z + 11.3)],
+               ("dark_corridor", "banner_red", "dark_corridor", "awning_teal")[k % 4])
+        g = c.game(q.p.x + ox * (q.w / 2 + 2.0), q.p.y + oy * (q.w / 2 + 2.0), q.p.z + 4.0)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+        k += 1
+    # Rope bridges slung across the pit (high over the road), cargo cranes on the rim.
+    for j, (a0, a1, z) in enumerate(((0.3, 2.6, -30.0), (1.4, 4.1, -38.0), (3.0, 5.4, -27.0), (4.6, 0.9, -44.0))):
+        p0 = (sx + f1 * 0.98 * math.cos(a0), sy + f1 * 0.98 * math.sin(a0))
+        p1 = (sx + f1 * 0.98 * math.cos(a1), sy + f1 * 0.98 * math.sin(a1))
+        pts = []
+        for i in range(17):
+            t = i / 16
+            pts.append((lerp(p0[0], p1[0], t), lerp(p0[1], p1[1], t), z - 6.0 * (1.0 - (2 * t - 1) ** 2)))
+        for sd in (-1, 1):
+            dx, dy = p1[0] - p0[0], p1[1] - p0[1]
+            L = math.hypot(dx, dy)
+            nx, ny = -dy / L * sd * 1.2, dx / L * sd * 1.2
+            bm = bmesh.new()
+            props.tube(bm, [(x + nx, y + ny, zz + 1.1) for x, y, zz in pts], 0.06, n=3)
+            c.assign(c.mesh_object("Rope Bridge Rope %d %d" % (j, sd), bm, "Props", "visual"), c.lib("rope_rail", "wall"))
+        for i in range(0, 16):
+            x, y, zz = pts[i]
+            box(c, "Rope Bridge Plank %d %d" % (j, i), x, y, 1.3, 0.4, zz - 0.1, zz + 0.05, ("plank_deck", "wall"),
+                rot=math.atan2(p1[1] - p0[1], p1[0] - p0[0]) + math.pi / 2, role="visual")
+    for j in range(4):
+        a = j * math.tau / 4 + 0.8
+        x, y = sx + (f1 + 8.0) * math.cos(a), sy + (f1 + 8.0) * math.sin(a)
+        if not paint.road_clear(c, x, y, 5.0):
+            continue
+        z = SUMP_RIM - 0.5
+        box(c, "Crane Post %d" % j, x, y, 0.6, 0.6, z, z + 18.0, ("weathered_timber", "wall"))
+        ax_, ay_ = sx + (f1 - 22.0) * math.cos(a), sy + (f1 - 22.0) * math.sin(a)
+        bm = bmesh.new()
+        props.tube(bm, [(x, y, z + 17.0), (ax_, ay_, z + 15.0)], 0.35, n=5)
+        props.tube(bm, [(ax_, ay_, z + 15.0), (ax_, ay_, z - 6.0)], 0.05, n=3)
+        c.assign(c.mesh_object("Crane Arm %d" % j, bm, "Props", "visual"), c.lib("weathered_timber", "wall"))
+        box(c, "Crane Load %d" % j, ax_, ay_, 1.6, 1.6, z - 9.0, z - 6.0, ("wreck_planks", "wall"), role="visual")
+    # The harbour: docks round the black water, the smugglers' ships moored.
+    hx, hy, hr = HARBOUR
+    c.disc("Harbour", hx, hy, hr + 3.0, HARBOUR_Z, c.lib("keep_lake", "water"), role="visual", n=32, wobble=0.1, seed=6)
+    for j in range(10):
+        a = j * math.tau / 10 + 0.2
+        x, y = hx + (hr + 2.0) * math.cos(a), hy + (hr + 2.0) * math.sin(a)
+        if paint.road_clear(c, x, y, 3.0):
+            box(c, "Dock %d" % j, x, y, 4.0, 1.6, HARBOUR_Z - 1.0, SUMP_FLOOR + 0.3, ("plank_deck", "wall"), rot=a + math.pi / 2)
+    for j, (dx, dy, a) in enumerate(((-6.0, 6.0, 0.4), (8.0, -8.0, 2.1))):
+        x, y = hx + dx, hy + dy
+        box(c, "Smuggler Ship %d" % j, x, y, 9.0, 2.8, HARBOUR_Z - 2.0, HARBOUR_Z + 2.6, ("wreck_hull", "wall"), rot=a, role="visual")
+        c.place(tp.mast(c, h=16.0), x, y, HARBOUR_Z + 2.4, rot=a, role="visual")
+        _cloth(c, "Ship Sail %d" % j, [(x - 3.0 * math.sin(a), y + 3.0 * math.cos(a), HARBOUR_Z + 15.0),
+                                       (x + 3.0 * math.sin(a), y - 3.0 * math.cos(a), HARBOUR_Z + 15.0),
+                                       (x + 3.4 * math.sin(a), y - 3.4 * math.cos(a), HARBOUR_Z + 6.0),
+                                       (x - 3.4 * math.sin(a), y + 3.4 * math.cos(a), HARBOUR_Z + 6.0)], ("canvas_torn", "sail_cloth")[j])
+    # The loot market on the floor: each stall's loot from another kingdom.
+    loot = ("ice", "eggs", "neon", "coral", "crystals", "gold")
+    k = 0
+    for j in range(26):
+        a = j * 2.399 + 0.3
+        r = 10.0 + 34.0 * ((j * 0.618) % 1.0)
+        x, y = sx + r * math.cos(a), sy + r * math.sin(a)
+        if not paint.road_clear(c, x, y, 3.5) or math.hypot(x - hx, y - hy) < hr + 6.0:
+            continue
+        z = ground(x, y)
+        rot = a
+        box(c, "Loot Stall %d" % j, x, y, 2.6, 1.2, z - 0.2, z + 1.1, ("plank_deck", "wall"), rot=rot)
+        _cloth(c, "Loot Awning %d" % j, [(x - 3.0 * math.cos(rot), y - 3.0 * math.sin(rot), z + 3.2),
+                                         (x + 3.0 * math.cos(rot), y + 3.0 * math.sin(rot), z + 3.2),
+                                         (x + 3.0 * math.cos(rot) - 2.0 * math.sin(rot), y + 3.0 * math.sin(rot) + 2.0 * math.cos(rot), z + 2.4),
+                                         (x - 3.0 * math.cos(rot) - 2.0 * math.sin(rot), y - 3.0 * math.sin(rot) + 2.0 * math.cos(rot), z + 2.4)],
+               ("canvas_torn", "awning_red", "sail_cloth", "awning_teal", "rug")[j % 5])
+        kind = loot[k % len(loot)]
+        for i in range(3):
+            lx, ly = x + (i - 1) * 1.5 * math.cos(rot), y + (i - 1) * 1.5 * math.sin(rot)
+            if kind == "ice":
+                box(c, "Loot Ice %d %d" % (j, i), lx, ly, 0.6, 0.6, z + 1.1, z + 2.2, ("glacier_ice", "wall"), rot=rot + i, role="visual")
+            elif kind == "eggs":
+                _egg(c, "Loot Egg %d %d" % (j, i), lx, ly, z + 1.1, 0.4, ("party_white", "party_red", "lush_grass")[i])
+            elif kind == "neon":
+                box(c, "Loot Neon %d %d" % (j, i), lx, ly, 0.6, 0.08, z + 1.2, z + 2.0, (("lantern_amber", "fire_glow", "crystal_magenta")[i], "wall"),
+                    rot=rot, role="visual")
+            elif kind == "coral":
+                c.place(tp.coral(c, i % 3), lx, ly, z + 1.1, rot=i, scale=0.35, role="visual")
+            elif kind == "crystals":
+                cone(c, "Loot Crystal %d %d" % (j, i), lx, ly, 0.35, z + 1.1, 1.4, ("crystal_cyan", "wall"), segs=5, role="visual")
+            else:
+                cone(c, "Loot Gold %d %d" % (j, i), lx, ly, 0.6, z + 1.1, 0.6, ("gold_trim", "wall"), segs=8, role="visual")
+        g = c.game(x, y, z + 2.8)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+        k += 1
+    # Fires on the floor, smoke rising to the Eye; the stolen dragon light glowing in heaps.
+    for j in range(6):
+        a = j * 1.05 + 0.4
+        x, y = sx + 30.0 * math.cos(a), sy + 30.0 * math.sin(a)
+        if paint.road_clear(c, x, y, 5.0) and math.hypot(x - hx, y - hy) > hr + 6.0:
+            g = c.game(x, y, ground(x, y) + 0.2)
+            c.entity("campfire", x=g[0], y=g[1], z=g[2])
+            rr.smoke(c, x, y, ground(x, y) + 0.5)
+    for j in range(16):
+        a = j * math.tau / 16 + 0.1
+        x, y = sx + (f0 - 2.0) * math.cos(a), sy + (f0 - 2.0) * math.sin(a)
+        if paint.road_clear(c, x, y, 3.0):
+            cone(c, "Dragon Light Heap %d" % j, x, y, 1.6, ground(x, y) - 0.4, 3.0 + 1.5 * (j % 3), ("crystal_cyan", "wall"), segs=5,
+                 role="visual")
+    g = c.game(sx, sy, SUMP_FLOOR + 2.0)
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=f0 - 8.0, n=12, folk="beach", heading=0.0)
+    broker(c)
+
+
+def broker(c):
+    """The Broker's palace: a gilded ship hanging over the middle of the Sump on four chains
+    from the roof, lit from within, its stern galleries gold, a gangway hanging down."""
+    sx, sy = SUMP
+    z = -26.0
+    rot = 0.6
+    ca, sa = math.cos(rot), math.sin(rot)
+
+    def at(lx, ly):
+        return sx + lx * ca - ly * sa, sy + lx * sa + ly * ca
+
+    box(c, "Broker Hull", sx, sy, 16.0, 5.0, z - 4.0, z + 2.0, ("wreck_hull", "wall"), rot=rot, role="visual")
+    box(c, "Broker Keel", sx, sy, 13.0, 2.0, z - 6.0, z - 4.0, ("wreck_hull", "wall"), rot=rot, role="visual")
+    box(c, "Broker Deck", sx, sy, 16.4, 5.4, z + 2.0, z + 2.4, ("plank_deck", "wall"), rot=rot, role="visual")
+    bx, by = at(-8.0, 0.0)
+    box(c, "Broker Cabin", bx, by, 6.0, 4.6, z + 2.4, z + 9.0, ("door_wood", "wall"), rot=rot, role="visual")
+    box(c, "Broker Cabin Roof", bx, by, 6.6, 5.2, z + 9.0, z + 9.8, ("gold_trim", "wall"), rot=rot, role="visual")
+    for w in (-3.0, -1.0, 1.0, 3.0):
+        for sd in (-1, 1):
+            wx, wy = at(-8.0 + w, sd * 4.65)
+            box(c, "Broker Window %d %d" % (int(w), sd), wx, wy, 0.6, 0.08, z + 4.0, z + 6.6, ("window_warm", "wall"), rot=rot, role="visual")
+    gx, gy = at(-16.2, 0.0)
+    box(c, "Broker Gallery", gx, gy, 0.4, 5.0, z - 1.0, z + 8.0, ("gold_trim", "wall"), rot=rot, role="visual")
+    for sd in (-1, 1):
+        mx, my = at(4.0 * sd, 0.0)
+        box(c, "Broker Lantern %d" % sd, mx, my, 0.5, 0.5, z + 2.4, z + 4.0, ("lantern_amber", "wall"), role="visual")
+        g = c.game(mx, my, z + 4.4)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    for lx, ly in ((-14.0, -4.0), (-14.0, 4.0), (14.0, -4.0), (14.0, 4.0)):
+        px, py = at(lx, ly)
+        tx, ty = at(lx * 1.9, ly * 3.5)
+        bm = bmesh.new()
+        props.tube(bm, [(px, py, z + 2.0), (tx, ty, -6.0)], 0.4, n=6)
+        c.assign(c.mesh_object("Broker Chain %d %d" % (int(lx), int(ly)), bm, "Props", "visual"), c.lib("iron", "wall"))
+    gx, gy = at(10.0, 5.0)
+    box(c, "Broker Gangway", gx, gy, 0.8, 0.3, z - 22.0, z + 2.0, ("weathered_timber", "wall"), rot=rot, role="visual")
 
 
 def wreck_hall(c, ground):
@@ -524,7 +707,7 @@ def grime(c, ground, s0, s1):
         k += 1
     # The caverns: stalls along the road, laundry overhead, scaffolds, soot, smoke.
     for name, cx, cy, rx, ry, h in CAVERNS:
-        if name == "Sea Door Grotto":
+        if name != "Wreck Hall":
             continue
         ss = [q.s for q in c.S if s0 <= q.s <= s1 and cavern_at(q.p.x, q.p.y)[0] == name]
         if not ss:
@@ -630,7 +813,7 @@ def the_edge(c, ground):
         w = 34.0 + 10.0 * math.sin(x / 31.0)
         ry = rim_y(x)
         on_reef = math.hypot((x - SHELF[0]) * 0.9, ry - SHELF[1]) < SHELF[2] - 6.0
-        if not on_reef and abs(x) > 14.0:
+        if not on_reef and abs(x - MOUTH[0]) > 26.0:
             props.falls(c, "Edge Falls %d" % k, x, ry + 1.0, WATER_Z + 0.2, VOID_Z + 72.0, w, w * 1.3, facing=1, throw=8.0, bulge=1.8,
                         veils=3 if k % 2 else 2, foam=False, mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
         x += w * 0.92

@@ -644,16 +644,17 @@ export const REGIONS: Region[] = [
   {
     // The last smugglers' tunnel, driven (v2, Blake, Oct 31: "tunnel through smugglers
     // underground layer, to 'edge of the world' to sky bridge to dragon island"): in from the
-    // isles' sea door under the seabed, the Wreck Hall, Undertown (the tunnel folk's town
-    // under a skylight of sea), the Long Stair up into the light at the Edge, where the sea
-    // falls off the world, then the Sky Bridge over the void to the Dragon Kingdom's Sky
-    // Gate. (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
+    // isles' sea door under the seabed, the Wreck Hall, down the Sump (v3: the smugglers'
+    // trade hub of scum and villainy, the road spiralling down its pit past Tortuga's shacks
+    // to the harbour and the loot market, the Broker's ship hanging over it), the Long Bore
+    // out through the cliff of the world's edge, then the Sky Bridge climbing over the void
+    // to the Dragon Kingdom's Sky Gate. (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
     id: "journey_cause",
     name: "The Edge of the World",
     packageId: "journey_cause",
     music: "journey_cause",
     worldId: "beach",
-    journey: { from: "beach", to: "dragon", road: [53, 1317] },
+    journey: { from: "beach", to: "dragon", road: [53, 1514] },
     spawn: { x: -51.5, z: 416.5, heading: 2.7925 },
     gateways: [],
     passages: [
@@ -675,7 +676,7 @@ export const REGIONS: Region[] = [
         x: 0,
         z: -445,
         radius: 8,
-        heading: -0.0861,
+        heading: -0.0896,
       },
     ],
   },
