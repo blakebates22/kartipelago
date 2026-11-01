@@ -322,16 +322,17 @@ def frost_cove(c, ground, taken):
 
 # ------------------------------------------------------------------ Snowy Summit
 
-HOT_SPRING = (-82.0, 146.0)  # where to look for the hot spring's level ground (note 24)
+HOT_SPRING = (-84.9, 152.2)  # where to look for the hot spring's level ground (note 24; where it stood, note 11)
 CAMP = (-176.0, 62.0)  # the hunters' camp: its fire, in the bay west of the climb (note 19)
-CAIRNS = (70.0, 130.0)  # the climb's cairns: between these (blender y)
+CAIRNS = (70.0, 130.0)  # the climb: the camp is looked for between these (blender y)
 
 
 def summit(c, ground, taken, ter=None):
     """The deep thaw: ice ponds half melted, a hot spring steaming in the snow, a
     mammoth's skull frozen in the lake, green pines (the region's scatter), the mammoth
-    herd on its round in the meadow; the hunters' camp and the cairns up the climb.
-    (No geysers or terrace pools: review-snow_region 9 note 20, "remove these geysers".)"""
+    herd on its round in the meadow; the hunters' camp up the climb; geysers.
+    (No terrace pools; the geyser in the wall gone, review-snow_region 9 note 20, and
+    geysers where Blake pinned them instead, review-snow_region 10.)"""
     rng = random.Random(53)
     pockets = [p for p in SL.POCKETS if p[0] in ("summit", "climb")]
     circles = [ci for p in pockets for ci in p[2]]
@@ -356,6 +357,25 @@ def summit(c, ground, taken, ter=None):
             return x, y, min(ring)
         return None
 
+    # The mammoths' round: a loop through the meadow, on the ground, off the road.
+    pts = []
+    mx, my = -60.0, 186.0
+    # (Drawn in wherever it would climb a wall or a bank: the meadow's floor only, review-
+    # snow_region 9 notes 18, 23, "mammoths shouldnt be able to go up here".)
+    z0 = ground(mx, my)
+    for k in range(36):
+        a = k * math.tau / 36
+        for f in (1.0, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44, 0.36):
+            x, y = mx + f * (30.0 * math.cos(a) + 5.0 * math.sin(3 * a)), my + f * 14.0 * math.sin(a)
+            if L.wall_sd(x, y) < -10.0 and abs(ground(x, y) - z0) < 3.0 and paint.road_clear(c, x, y, 5.0):
+                break
+        pts.append((x, y, ground(x, y)))
+    c.path_curve("Mammoth Path", pts, closed=True)
+    for k, (scale, start) in enumerate(((1.0, 0.0), (0.6, 12.0), (0.95, 70.0), (0.55, 82.0))):
+        c.entity("dinosaur", route="Mammoth Path", speed=1.5, scale=scale, model="mammoth", start=start)
+    # (The hot spring and the geysers first, where Blake pinned them: the rest fit round.)
+    springs = hot_spring(c, ground, taken, ter)
+    blown = geysers(c, ground, taken, ter, avoid=pts)
     # Ice ponds, half melted: a ring of thin ice round dark open water, floes in it.
     for k in range(5):
         p = spot(8.0, 8.0)
@@ -375,26 +395,67 @@ def summit(c, ground, taken, ter=None):
         c.entity("steam", x=g[0], y=g[1], z=g[2])
         taken.add(x, y, r + 1.0)
         ponds += 1
-    # The mammoths' round: a loop through the meadow, on the ground, off the road.
-    pts = []
-    mx, my = -60.0, 186.0
-    # (Drawn in wherever it would climb a wall or a bank: the meadow's floor only, review-
-    # snow_region 9 notes 18, 23, "mammoths shouldnt be able to go up here".)
-    z0 = ground(mx, my)
-    for k in range(36):
-        a = k * math.tau / 36
-        for f in (1.0, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44, 0.36):
-            x, y = mx + f * (30.0 * math.cos(a) + 5.0 * math.sin(3 * a)), my + f * 14.0 * math.sin(a)
-            if L.wall_sd(x, y) < -10.0 and abs(ground(x, y) - z0) < 3.0 and paint.road_clear(c, x, y, 5.0):
-                break
-        pts.append((x, y, ground(x, y)))
-    c.path_curve("Mammoth Path", pts, closed=True)
-    for k, (scale, start) in enumerate(((1.0, 0.0), (0.6, 12.0), (0.95, 70.0), (0.55, 82.0))):
-        c.entity("dinosaur", route="Mammoth Path", speed=1.5, scale=scale, model="mammoth", start=start)
-    springs = hot_spring(c, ground, taken, ter)
     frozen_skull(c, ground, taken)
     camp = climb_camp(c, ground, taken, ter)
-    print("snowy summit: %d ponds, %d hot springs, the skull, camp %d, 4 mammoths" % (ponds, springs, camp))
+    print("snowy summit: %d ponds, %d hot springs, the skull, camp %d, %d geysers, 4 mammoths" % (ponds, springs, camp, blown))
+
+
+# Where the geysers blow (review-snow_region 10, Nov 1: notes 1, 7, "I still want a couple
+# of geysers here. I just meant to remove the geyser that was literally in the wall";
+# note 10, "a couple of big geysers up here", on the high meadow over the wall): the pins,
+# blender (x, y), how many, how big, and whether they're up out of the play area.
+GEYSERS = [((-96.5, 164.8), 2, 0.85, False), ((-45.0, 133.7), 1, 0.8, False), ((-97.3, 228.1), 2, 1.6, True)]
+
+
+def geysers(c, ground, taken, ter=None, avoid=()):
+    """Geysers in their sinter cones, each well out of the walls and off the road, on
+    ground cut level for it, blowing in turns; steam from vents round them."""
+    n = 0
+    homes = [(e["x"], -e["z"]) for e in c.entities if e["type"] == "villager_home"]
+    for (px, py), count, big, up in GEYSERS:
+        got = 0
+        for k in range(900):
+            if got >= count:
+                break
+            a = k * 2.399
+            r = 1.2 * math.sqrt(k)
+            x, y = px + r * math.cos(a), py + r * math.sin(a)
+            room = 6.0 * big
+            # (Down in the meadow: well inside the walls. Up on the high meadow: well back
+            # from its edge, out of the walls' slopes.)
+            sd = L.wall_sd(x, y)
+            if (sd < 9.0 + room) if up else (sd > -(6.0 + room)):
+                continue
+            if not paint.road_clear(c, x, y, room + 0.8) or not taken.clear(x, y, room):
+                continue
+            if any(math.hypot(x - ax, y - ay) < room + 2.5 for ax, ay, _ in avoid):
+                continue  # (off the mammoths' round)
+            if any(math.hypot(x - hx, y - hy) < room + 7.0 for hx, hy in homes):
+                continue  # (clear of the huts)
+            ring = [ground(x + room * math.cos(t), y + room * math.sin(t)) for t in [j * 0.785 for j in range(8)]]
+            if max(ring) - min(ring) > 2.0:
+                continue
+            z = min(ring)
+            if ter is not None and not up:
+                paint.grade(c, ter, x, y, 0.0, room * 2.0, room * 2.0, z)
+            v = (n + got) % 3
+            c.place(sp.geyser_cone(c, v), x, y, z - 0.3, rot=1.7 * (n + got), scale=big, coll="Props")
+            taken.add(x, y, room)
+            g = c.game(x, y, z - 0.3 + (2.4 + 0.6 * v) * big)
+            c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.5 * big, height=(16.0 + 4.0 * v) * big, period=8.0 + v + got,
+                     offset=1.7 * (n + got), warn=1.4, blast=2.2 * big, launch=0.0)
+            for j in range(2):
+                b = 1.3 + j * 2.6 + got
+                vx, vy = x + (room + 1.5) * math.cos(b), y + (room + 1.5) * math.sin(b)
+                if paint.road_clear(c, vx, vy, 3.0) and L.wall_sd(vx, vy) < (99 if up else -4.0):
+                    g = c.game(vx, vy, ground(vx, vy) + 0.2)
+                    c.entity("steam", x=g[0], y=g[1], z=g[2])
+            print("geyser at (%.0f, %.0f) x%.1f" % (x, y, big))
+            got += 1
+        if got < count:
+            print("geysers: only %d of %d by (%.0f, %.0f)" % (got, count, px, py))
+        n += got
+    return n
 
 
 def hot_spring(c, ground, taken, ter=None):
@@ -407,17 +468,17 @@ def hot_spring(c, ground, taken, ter=None):
         a = k * 2.399
         r = 1.5 * math.sqrt(k)
         x, y = HOT_SPRING[0] + r * math.cos(a), HOT_SPRING[1] + r * math.sin(a)
-        if L.wall_sd(x, y) > -9.0:
+        if L.wall_sd(x, y) > -12.0:
             why[0] += 1
             continue
-        if not paint.road_clear(c, x, y, 7.0):
+        if not paint.road_clear(c, x, y, 7.5):
             why[1] += 1
             continue
-        if not taken.clear(x, y, 6.5):
+        if not taken.clear(x, y, 5.2):
             why[2] += 1
             continue
-        ring = [ground(x + 6.5 * math.cos(t), y + 6.5 * math.sin(t)) for t in [j * 0.785 for j in range(8)]]
-        if max(ring) - min(ring) > 2.4:
+        ring = [ground(x + 7.0 * math.cos(t), y + 7.0 * math.sin(t)) for t in [j * 0.785 for j in range(8)]]
+        if max(ring) - min(ring) > 3.5:
             why[3] += 1
             continue
         best = (x, y, min(ring))
@@ -429,16 +490,17 @@ def hot_spring(c, ground, taken, ter=None):
     # (Its ground cut level at the lowest of its rim first: the water in the basin, not
     # under the snow.)
     if ter is not None:
-        paint.grade(c, ter, x, y, 0.0, 12.0, 11.0, z)
+        paint.grade(c, ter, x, y, 0.0, 19.0, 19.0, z)
         z = min([ground(x + 4.0 * math.cos(t), y + 4.0 * math.sin(t)) for t in [j * 0.785 for j in range(8)]] + [ground(x, y)])
-    print("hot spring at (%.0f, %.0f)" % (x, y))
+    print("hot spring at (%.0f, %.0f)" % (x, y), why)
     # (Sunk to the lowest of its rim: the basin's outside runs 1.2 m down into the snow.)
-    c.place(ia.hot_spring(c, 5.0), x, y, z + 0.1, rot=0.4, coll="Props")
-    c.disc("Hot Spring Water", x, y, 4.9, z + 0.05, c.lib("hot_spring", "water"), coll="Props", role="collision", n=18)
+    # (Its water is its own: a lopsided pool, review-snow_region 10 note 11.)
+    c.place(ia.hot_spring(c, 4.2), x, y, z + 0.1, rot=0.4, coll="Props")
+    c.place(ia.spring_steam(c, 4.2), x, y, z + 0.1, rot=0.4, coll="Props", role="visual")
     taken.add(x, y, 8.0)
-    for j in range(3):
-        a = j * 2.1 + 0.3
-        g = c.game(x + 2.5 * math.cos(a), y + 2.5 * math.sin(a), z + 0.4)
+    for j in range(5):
+        a = j * 1.26 + 0.3
+        g = c.game(x + 2.8 * math.cos(a), y + 2.8 * math.sin(a), z + 0.4)
         c.entity("steam", x=g[0], y=g[1], z=g[2])
     return 1
 
@@ -455,7 +517,7 @@ def climb_camp(c, ground, taken, ter=None):
     """The climb between the snowy pass and Frostveil (review-snow_region 9 note 19:
     "this strip ... is boring. lets add something here. nothing crazy, but something"):
     a hunters' camp in the bay west of the road (two hide tents, a fire, a hide rack, a
-    sled), cairns marking the way up the rest of it."""
+    sled)."""
     n = 0
 
     def flat(x, y, r):
@@ -523,18 +585,7 @@ def climb_camp(c, ground, taken, ter=None):
     if paint.road_clear(c, x, y, 2.0) and taken.clear(x, y, 2.0) and level(x, y, 1.6) is not None:
         c.place(snp.sled(c, 0), x, y, level(x, y, 1.6), rot=0.5, coll="Props")
         taken.add(x, y, 2.0)
-    # Cairns up the climb, either side by turns, 3 m off the road's edge.
-    last = -999.0
-    side = 1
-    for s, q in _stretches(c, "summit", 3.0):
-        if not (CAIRNS[0] <= q.p.y <= CAIRNS[1]) or q.p.x > -100 or s - last < 24.0:
-            continue
-        x, y = q.p.x + q.r.x * side * (q.w / 2 + 3.0), q.p.y + q.r.y * side * (q.w / 2 + 3.0)
-        if L.wall_sd(x, y) < -2.5 and paint.road_clear(c, x, y, 1.8) and taken.clear(x, y, 1.5) and level(x, y, 1.0) is not None:
-            c.place(ia.cairn(c, int(s) % 3), x, y, level(x, y, 1.0), rot=s, coll="Props")
-            taken.add(x, y, 1.5)
-            last = s
-            side = -side
+    # (No cairns up the climb: review-snow_region 10 note 5, "lets remove these rock props".)
     return n
 
 

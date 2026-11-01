@@ -41,8 +41,7 @@ DECK = "plank_deck"
 # supposed to be the whimsical portion of this world"; he chose the craftsmen's hollow:
 # plain sturdy homes of stone, timber and packed snow, warm windows, dark wood doors; ice
 # only as the carvers' craft, in their signs, lintels and showpieces.)
-# (The carvers build in their own ice: stacked bricks of it, Blake, review-snow_region 9 note 1.)
-STONES = ("ice_bricks", "ice_bricks", "ice_bricks")
+STONES = ("frost_stone", "rift_stone", "frost_stone")
 DOORS = ("door_wood", "timber_beam", "weathered_timber", "door_wood", "siding_red", "siding_grey")
 CLOTH = ("siding_red", "siding_grey", "timber_beam", "rift_stone", "snow_ground", "door_wood")
 AWNINGS = ("weathered_timber", "timber_beam", "siding_grey", "siding_red")
@@ -674,14 +673,28 @@ def workshop(c, idx, rng, sign_kind, door_col):
     info = {}
 
     def build(P, bm):
-        # (Stacked ice bricks: Blake, review-snow_region 9 note 1.)
-        P.add("ice_bricks", lambda: cuboid(bm, (-w / 2 + 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
-        P.add("ice_bricks", lambda: cuboid(bm, (w / 2 - 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
-        P.add("ice_bricks", lambda: cuboid(bm, (0, -3.0, h - 1.2), (w - 6.0, 5.6, 2.4)))
+        P.add("frost_stone", lambda: cuboid(bm, (-w / 2 + 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("frost_stone", lambda: cuboid(bm, (w / 2 - 1.5, -3.0, h / 2 - 0.8), (3.0, 5.6, h + 0.6)))
+        P.add("frost_stone", lambda: cuboid(bm, (0, -3.0, h - 1.2), (w - 6.0, 5.6, 2.4)))
         P.add(SNOW, lambda: cuboid(bm, (0, -2.9, h + 0.1), (w + 0.5, 6.0, 0.6)))
-        P.add("cave_rock", lambda: cuboid(bm, (0, -3.0, 2.4), (w - 6.0, 4.6, 5.0)))  # (the dark inside)
-        for k, (x, z) in enumerate(((-1.4, 0.6), (0.6, 0.6), (-0.4, 1.8), (1.8, 0.6))):
-            P.add(ICE, lambda x=x, z=z, k=k: cuboid(bm, (x, -1.6 - 0.3 * k, z), (1.2, 1.2, 1.2), rot=0.2 * k))
+        # The inside, open behind the doors (it was one dark block filling the doorway, like
+        # a board across it): a dark back wall, a plank floor, and the carvers' stock of ice
+        # blocks stacked in it, three deep, in a stepped pile (Blake, review-snow_region 9
+        # note 1, explained: "I wanted the shed to have ice blocks in it").
+        P.add("cave_rock", lambda: cuboid(bm, (0, -5.5, 2.4), (w - 6.0, 0.6, 5.0)))
+        P.add("cave_rock", lambda: cuboid(bm, (0, -3.0, 4.95), (w - 6.0, 5.6, 0.3)))
+        P.add(TIMBER, lambda: cuboid(bm, (0, -2.9, -0.05), (w - 6.0, 5.4, 0.3)))
+        n = 0
+        for row, (y, layers) in enumerate(((-4.4, 3), (-3.05, 2), (-1.7, 1))):
+            for lay in range(layers):
+                cols = 4 - (lay if row else 0)
+                for i in range(cols):
+                    x = (i - (cols - 1) / 2) * 1.32 + 0.12 * math.sin(n * 1.7)
+                    z = 0.72 + lay * 1.26
+                    P.add(ICE if (n * 7) % 3 else CLEAR,
+                          lambda x=x, y=y, z=z, n=n: cuboid(bm, (x, y + 0.08 * math.sin(n * 2.3), z), (1.22, 1.22, 1.22),
+                                                           rot=0.06 * math.sin(n * 3.1)))
+                    n += 1
         # The great doors, each hung on its side of the opening and swung out (Blake,
         # review-snow_region 3: "redo these doors. this one is in the window").
         for sx in (-1, 1):

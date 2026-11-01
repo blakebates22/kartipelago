@@ -9,6 +9,8 @@
 
 import math
 
+from mathutils import Vector
+
 from course_kit import rnd
 from props import _faces, blob, cuboid, loft, ring, tube
 from summit_props import BONE, ROCK, SNOW, STONE, _cap, _p
@@ -16,7 +18,7 @@ from summit_props import BONE, ROCK, SNOW, STONE, _cap, _p
 def bone_hut(c, variant=0):
     """An ice-age dwelling (review-snow_region 9 note 22: "stone huts ... that matches more
     ice age era"): a low dry-stone drum, a dome of hides over it, two great tusk hoops
-    crossed over the dome holding them down, a tusk arch round a fire-lit doorway (-Y),
+    crossed over the dome holding them down, a hide porch with a tusk arch and a flap (-Y),
     snow on its crown. About 7 m across, 5 m high; its base sunk a metre (set level on
     its pad, nothing floating)."""
     name = "Bone Hut %d" % variant
@@ -53,22 +55,131 @@ def bone_hut(c, variant=0):
                 zz = 0.7 + (H + 0.35) * math.sin(ang)
                 path.append((x * math.cos(h), x * math.sin(h), zz))
             tube(bm, path, [0.22] * len(path), n=8)
-        # The doorway's tusk arch (-Y), and its fire-lit opening.
-        door = []
-        for sd in (-1, 1):
-            door.append([(sd * 1.0, -R - 0.15, 0.2), (sd * 1.05, -R - 0.35, 1.4), (sd * 0.75, -R - 0.4, 2.35),
-                         (sd * 0.12, -R - 0.3, 2.75)])
-        for pth in door:
-            tube(bm, pth, [0.2, 0.18, 0.15, 0.1], n=8)
         ivory = _faces(bm, k2)
-        k3 = len(bm.faces)
-        cuboid(bm, (0, -R + 0.05, 1.25), (1.5, 0.5, 2.1))
-        glow = _faces(bm, k3)
+        k2 = len(bm.faces)
+        # The doorway (-Y): a short hide-covered porch out of the drum, a tusk arch round its
+        # mouth, a hide flap hung across most of it and tied back, a warm glow from the
+        # fire inside past it, a stone step (review-snow_region 10 note 3: "we need to
+        # improve the doors on these huts. they look terrible": it was a flat glow box).
+        y0, y1 = -(R - 0.7), -(R + 0.75)
+        W, HH, Z0, M = 1.2, 2.45, -0.3, 10
+
+        def arch(w, h, y):
+            return [bm.verts.new((w * math.cos(j * math.pi / M), y, Z0 + h * math.sin(j * math.pi / M))) for j in range(M + 1)]
+
+        def face(vs, out):
+            f = bm.faces.new(vs)
+            f.normal_update()
+            if f.normal.dot(Vector(out)) < 0:
+                f.normal_flip()
+            return f
+
+        out0, out1 = arch(W, HH, y0), arch(W, HH, y1)
+        in1, in0 = arch(W - 0.24, HH - 0.22, y1), arch(W - 0.24, HH - 0.22, y0 + 0.2)
+        for j in range(M):
+            a = (j + 0.5) * math.pi / M
+            face([out0[j], out0[j + 1], out1[j + 1], out1[j]], (math.cos(a), 0, math.sin(a)))
+        porch = _faces(bm, k2)
+        k2b = len(bm.faces)
+        for j in range(M):
+            a = (j + 0.5) * math.pi / M
+            face([out1[j], out1[j + 1], in1[j + 1], in1[j]], (0, -1, 0))  # (the frame round its mouth)
+        frame = _faces(bm, k2b)
+        k2c = len(bm.faces)
+        for j in range(M):
+            a = (j + 0.5) * math.pi / M
+            face([in1[j], in1[j + 1], in0[j + 1], in0[j]], (-math.cos(a), 0, -math.sin(a)))  # (inside it)
+        face(list(in0), (0, -1, 0))  # (the dark back of it)
+        dark = _faces(bm, k2c)
+        # The flap: hung from the frame's top left, across to just past the middle, its
+        # foot tied back to the left post, so a wedge of the inside shows on the right.
+        k2d = len(bm.faces)
+        yf = y1 + 0.1
+        top = [(in1[j].co.x * 0.98, yf, in1[j].co.z - 0.02) for j in range(M // 2 - 1, M + 1)]
+        flap = [bm.verts.new(p) for p in top + [(-(W - 0.3), yf - 0.04, Z0 + 0.35), (-0.15, yf - 0.12, Z0 + 0.7),
+                                               (0.22, yf - 0.06, Z0 + 1.7)]]
+        face(flap, (0, -1, 0))
+        flaps = _faces(bm, k2d)
+        k2e = len(bm.faces)
+        glow = [bm.verts.new(p) for p in ((0.1, y0 + 0.16, Z0 + 0.3), (W - 0.45, y0 + 0.16, Z0 + 0.3),
+                                         (W - 0.5, y0 + 0.16, Z0 + 1.4), (0.3, y0 + 0.16, Z0 + 1.6))]
+        face(glow, (0, -1, 0))
+        glows = _faces(bm, k2e)
+        k2f = len(bm.faces)
+        # (A bone toggle on the tie, and the tusk arch round the porch's mouth.)
+        blob(bm, (-(W - 0.32), yf - 0.12, Z0 + 0.45), 0.12, sx=0.6, sz=1.6, subdiv=1)
+        for sd in (-1, 1):
+            tube(bm, [(sd * 1.32, y1 - 0.08, -0.4), (sd * 1.38, y1 - 0.14, 1.1), (sd * 1.08, y1 - 0.16, 2.2),
+                      (sd * 0.15, y1 - 0.1, 2.75)], [0.2, 0.18, 0.15, 0.1], n=8)
+        ivory += _faces(bm, k2f)
+        k2g = len(bm.faces)
+        cuboid(bm, (0, y1 - 0.45, -0.12), (1.9, 0.9, 0.3), rot=0.04)  # (the step)
+        stone += _faces(bm, k2g)
+        k2h = len(bm.faces)
+        _cap(bm, (0, (y0 + y1) / 2 - 0.15, Z0 + HH + 0.05), 0.9, h=0.22, sx=1.25, subdiv=2)
+        porch_snow = _faces(bm, k2h)
         k4 = len(bm.faces)
         _cap(bm, (0, 0, 1.0 + H - 0.15), 1.7, h=0.45, subdiv=2)
         snow = _faces(bm, k4)
-        return [(c.lib(STONE), stone), (c.lib("mammoth_fur"), hide), (c.lib("bone_ivory"), ivory),
-                (c.lib("fire_glow"), glow), (c.lib(SNOW), snow)]
+        return [(c.lib(STONE), stone), (c.lib("mammoth_fur"), hide + porch), (c.lib("bone_ivory"), ivory),
+                (c.lib("log_bark"), frame), (c.lib("ship_hull"), dark), (c.lib("painted_hide"), flaps),
+                (c.lib("fire_glow"), glows), (c.lib(SNOW), snow + porch_snow)]
+
+    return _p(c, name, build)
+
+
+def _pot(bm, x, y, r, h):
+    """A coil-built clay pot: a round belly, a narrow neck, a lip (lathed, low-poly)."""
+    prof = [(0.55, -0.05), (0.95, 0.25), (1.0, 0.5), (0.8, 0.78), (0.55, 0.9), (0.62, 1.0), (0.48, 0.97)]
+    rings = [ring(bm, (x, y), r * pr_, h * pz, 9) for pr_, pz in prof]
+    loft(bm, rings, cap_top=True, cap_bottom=True)
+
+
+def _bucket(bm, x, y, r, h):
+    """A stave bucket: a short tapered drum, open, a rope bail over it."""
+    loft(bm, [ring(bm, (x, y), r * 0.85, -0.05, 10), ring(bm, (x, y), r, h, 10), ring(bm, (x, y), r * 0.9, h, 10),
+              ring(bm, (x, y), r * 0.78, 0.12, 10)], cap_top=True, cap_bottom=True)
+
+
+def hut_clutter(c, variant=0):
+    """What lies about a hut's door (review-snow_region 10 note 4: "lets have some tools
+    and buckets and pots laying around the huts"): clay pots, a stave bucket or two, a
+    stone axe and a bone shovel leant on a log, a stack of firewood, a hide bundle. About
+    3 m across, on level ground at its origin; set beside a hut."""
+    name = "Camp Clutter %d" % variant
+
+    def build(bm):
+        v = variant % 3
+        k0 = len(bm.faces)
+        for x, y, r, h in ((-0.9, 0.4, 0.38, 0.85), (-0.35, 0.85, 0.28, 0.6), (0.9 if v else -1.3, -0.6, 0.32, 0.7))[:2 + (v != 1)]:
+            _pot(bm, x, y, r, h)
+        pots = _faces(bm, k0)
+        k1 = len(bm.faces)
+        for x, y in ((0.6, 0.7), (1.15, 0.2))[:1 + (v == 1)]:
+            _bucket(bm, x, y, 0.32, 0.55)
+        buckets = _faces(bm, k1)
+        k2 = len(bm.faces)
+        # The log, the handles leant on it, the firewood.
+        tube(bm, [(-1.4, -0.9, 0.22), (0.6, -1.25, 0.22)], [0.24, 0.22], n=7)
+        tube(bm, [(-0.6, -1.5, 0.0), (-0.2, -1.0, 1.25)], [0.05, 0.045], n=5)  # (the axe's haft)
+        tube(bm, [(0.2, -1.6, 0.0), (0.45, -1.05, 1.4)], [0.05, 0.045], n=5)  # (the shovel's)
+        if v != 2:
+            for i in range(6):
+                zz, yy = 0.13 + 0.22 * (i // 3), 1.35 + 0.24 * (i % 3) - 0.12 * (i // 3)
+                tube(bm, [(1.0, yy, zz), (1.0 + 1.1 * (1 if v == 0 else -1), yy, zz)], [0.11, 0.1], n=5)
+        wood = _faces(bm, k2)
+        k3 = len(bm.faces)
+        blob(bm, (-0.22, -0.98, 1.2), 0.2, sx=1.3, sy=0.6, sz=0.85, subdiv=1)  # (the axe's head)
+        stone_ = _faces(bm, k3)
+        k4 = len(bm.faces)
+        cuboid(bm, (0.48, -1.02, 1.35), (0.42, 0.08, 0.5), tilt=(-0.4, 0.0))  # (a shoulder blade for a shovel)
+        bone = _faces(bm, k4)
+        k5 = len(bm.faces)
+        if v != 1:
+            blob(bm, (1.25 * (1 if v == 2 else -1), -0.1, 0.25), 0.45, sx=1.3, sy=0.8, sz=0.6, subdiv=1)  # (a hide bundle)
+        hides = _faces(bm, k5)
+        return [(c.lib("terracotta"), pots), (c.lib("barrel_wood"), buckets), (c.lib("log_bark"), wood),
+                (c.lib(STONE), stone_), (c.lib("bone_ivory"), bone), (c.lib("painted_hide"), hides)]
 
     return _p(c, name, build)
 
@@ -156,38 +267,106 @@ def cairn(c, variant=0):
     return _p(c, name, build)
 
 
+def spring_edge(r, a):
+    """The hot spring's water's edge at angle a: a rounded, lopsided natural pool."""
+    return r * (1.0 + 0.16 * math.sin(2 * a + 0.6) + 0.08 * math.sin(3 * a + 1.7))
+
+
 def hot_spring(c, r=7.0):
-    """A hot spring in the snow (review-snow_region 9 note 24: "maybe a hot spring
-    pool"): a ring of round boulders, steaming turquoise water sunk a little inside,
-    a flat stone to sit on; snow drifted on the stones. Origin at the water."""
+    """A hot spring in the snow (review-snow_region 10 note 11: "this needs to look more
+    like a hot spring"; it was a neat ring of stones round flat water): a lopsided natural
+    pool in a bowl of white travertine, orange mineral staining at the waterline, the deep
+    blue of its vent in the middle, a little upper pool spilling into it over a mineral
+    lip, a bank of boulders on its far side only, snow melted off in a ring round it, steam
+    rising in veils (spring_steam). Origin at the water."""
     name = "Hot Spring %.0f" % r
+    n = 28
 
     def build(bm):
+        def edge(k, f, z, dr=0.0):
+            a = k * math.tau / n
+            e = spring_edge(r, a) * f + dr
+            return bm.verts.new((e * math.cos(a), e * math.sin(a), z))
+
+        # The bowl: thawed ground falling to a travertine shelf, the stained waterline,
+        # then down under the water.
         k0 = len(bm.faces)
-        n = 18
-        outer = ring(bm, (0, 0), r + 1.6, -1.2, n, rx=(r + 1.6) * 1.15)
-        lip = ring(bm, (0, 0), r + 0.2, 0.35, n, rx=(r + 0.2) * 1.15)
-        inner = ring(bm, (0, 0), r - 0.2, -0.4, n, rx=(r - 0.2) * 1.15)
-        loft(bm, [outer, lip, inner], cap_top=False)
-        basin = _faces(bm, k0)
+        melt = [edge(k, 1.0, 0.02, 1.5 + 0.3 * math.sin(k * 1.3)) for k in range(n)]
+        bank = [edge(k, 1.0, 0.08, 0.9) for k in range(n)]
+        loft(bm, [melt, bank], cap_top=False)
+        thaw = _faces(bm, k0)
         k1 = len(bm.faces)
-        bm.faces.new(ring(bm, (0, 0), r - 0.05, -0.05, n, rx=(r - 0.05) * 1.15))
-        water = _faces(bm, k1)
+        shelf = [edge(k, 1.0, 0.04, 0.35) for k in range(n)]
+        loft(bm, [bank, shelf], cap_top=False)
+        trav = _faces(bm, k1)
         k2 = len(bm.faces)
-        m = 22
-        for i in range(m):
-            a = i * math.tau / m
-            br = 0.7 + 0.35 * rnd(i * 3 + 1)
-            blob(bm, ((r + 0.4) * 1.15 * math.cos(a), (r + 0.4) * math.sin(a), 0.25 + 0.2 * rnd(i)), br, sx=1.2, sy=1.0,
-                 sz=0.75, subdiv=1)
-        cuboid(bm, (r * 0.95, -1.5, 0.45), (2.4, 1.6, 0.5), rot=0.3)
-        stones = _faces(bm, k2)
+        stain = [edge(k, 1.0, -0.02) for k in range(n)]
+        deep = [edge(k, 0.8, -0.9) for k in range(n)]
+        loft(bm, [shelf, stain, deep], cap_top=True)
+        rim = _faces(bm, k2)
         k3 = len(bm.faces)
-        for i in range(0, m, 3):
-            a = i * math.tau / m + 0.1
-            _cap(bm, ((r + 0.5) * 1.15 * math.cos(a), (r + 0.5) * math.sin(a), 0.75 + 0.2 * rnd(i)), 0.6, h=0.2)
-        snow = _faces(bm, k3)
-        return [(c.lib(ROCK), basin), (c.lib("hot_spring"), water), (c.lib(STONE), stones), (c.lib(SNOW), snow)]
+        bm.faces.new([edge(k, 0.995, -0.06) for k in range(n)])
+        water = _faces(bm, k3)
+        # The vent: a deep blue eye in it, off the middle.
+        k4 = len(bm.faces)
+        bm.faces.new(ring(bm, (-r * 0.12, r * 0.08), r * 0.34, -0.04, 14, rx=r * 0.4))
+        vent = _faces(bm, k4)
+        # The upper pool, spilling in over a stained lip (+X).
+        k5 = len(bm.faces)
+        ux, uy, ur = r * 1.12, -r * 0.35, r * 0.34
+        loft(bm, [ring(bm, (ux, uy), ur + 1.0, -0.1, 12), ring(bm, (ux, uy), ur + 0.25, 0.5, 12, phase=0.1),
+                  ring(bm, (ux, uy), ur, 0.42, 12)], cap_top=False)
+        trav += _faces(bm, k5)
+        k6 = len(bm.faces)
+        bm.faces.new(ring(bm, (ux, uy), ur + 0.02, 0.38, 12))
+        water += _faces(bm, k6)
+        k7 = len(bm.faces)
+        # (the spill: a sloped tongue of mineral down into the pool)
+        vs = [bm.verts.new(p) for p in ((ux - ur * 0.9, uy - 0.6, 0.42), (ux - ur * 0.9, uy + 0.6, 0.42),
+                                       (ux - ur - 1.3, uy + 0.9, -0.04), (ux - ur - 1.3, uy - 0.9, -0.04))]
+        bm.faces.new(vs)
+        rim += _faces(bm, k7)
+        # Boulders banked up on its far side (-X, -Y), big and small, snow on the big ones.
+        k8 = len(bm.faces)
+        caps = []
+        for i in range(11):
+            a = 2.3 + i * 0.22 + 0.1 * rnd(i * 5)
+            e = spring_edge(r, a) + 0.9 + 0.9 * rnd(i * 7 + 2)
+            br = 0.55 + 1.05 * rnd(i * 3 + 1) * (1.0 - abs(i - 5) / 7.0)
+            x, y = e * math.cos(a), e * math.sin(a)
+            blob(bm, (x, y, br * 0.25), br, sx=1.25, sy=1.0, sz=0.8, subdiv=1)
+            if br > 0.9:
+                caps.append((x, y, br * 0.25 + br * 0.72, br * 0.65))
+        stones = _faces(bm, k8)
+        k9 = len(bm.faces)
+        for x, y, z, cr in caps:
+            _cap(bm, (x, y, z), cr, h=0.2)
+        snow = _faces(bm, k9)
+        return [(c.lib("thaw_grass"), thaw), (c.lib("sinter"), trav), (c.lib("sinter_rim"), rim),
+                (c.lib("hot_spring"), water), (c.lib("hot_pool"), vent), (c.lib(STONE), stones), (c.lib(SNOW), snow)]
+
+    return _p(c, name, build)
+
+
+def spring_steam(c, r=7.0):
+    """The hot spring's steam, rising in veils off it (only seen: set role="visual")."""
+    name = "Hot Spring Steam %.0f" % r
+    ux, uy, ur = r * 1.12, -r * 0.35, r * 0.34
+
+    def build(bm):
+        k10 = 0
+        # Open, wobbly, tapering columns off the water.
+        for j, (x, y, sr, h) in enumerate(((-r * 0.12, r * 0.08, r * 0.45, 4.5), (r * 0.4, -r * 0.3, r * 0.3, 3.2),
+                                           (ux, uy, ur * 0.8, 2.6))):
+            rings = []
+            for t in range(4):
+                tt = t / 3
+                rg = ring(bm, (x + 0.4 * math.sin(j + tt * 2), y + 0.3 * math.cos(j + tt * 3)), sr * (1.0 - 0.45 * tt),
+                          0.1 + h * tt, 10, phase=j)
+                rings.append(rg)
+            loft(bm, rings, cap_top=False)
+        steam = _faces(bm, k10)
+        return [(c.lib("steam_mist"), steam)]
 
     return _p(c, name, build)
 

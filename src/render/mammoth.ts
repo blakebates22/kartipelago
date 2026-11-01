@@ -68,27 +68,65 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   add(ball, DARK, [0, 6.9, 1.2], [1.1, 0.7, 1.4], body); // the hump's dark crest
   add(lowBall, SNOW, [0.2, 7.3, 1.1], [1.3, 0.4, 1.6], body); // snow on its back
   add(lowBall, SNOW, [-0.3, 5.9, -1.8], [1.0, 0.3, 1.1], body);
-  // The fur: long locks in two layered fringes (round the belly, and lower down the
-  // flanks from the shoulders), in three shades.
-  const lock = geo(new THREE.ConeGeometry(0.5, 2.8, 10));
-  const shades = [FUR, DARK, LIGHT];
-  for (const [n, r, rz, y0, len] of [
-    [30, 2.25, 3.4, 2.8, 1.0],
-    [24, 2.35, 2.6, 4.4, 0.75],
-  ] as const) {
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      const x = Math.cos(a) * r;
-      const z = Math.sin(a) * rz - 0.3;
-      const l = len * (0.85 + 0.3 * Math.abs(Math.sin(i * 2.3)));
-      add(lock, shades[i % 3]!, [x, y0 + 0.25 * Math.sin(i * 1.7), z], [1, l, 1], body, [
-        Math.PI + Math.sin(a) * 0.22,
-        0,
-        -Math.cos(a) * 0.22,
-      ]);
+  // The fur: shaggy skirts, not separate locks (review-snow_region 10 note 2: "the fur
+  // that is draping down looks horrible"): a long one round the belly hanging to the
+  // knees, a cape over the shoulders on top of it, each a single smooth sheet with a
+  // ragged hem of pointed tufts.
+  const SHAG = mat("#7a4528", { side: THREE.DoubleSide });
+  const CAPE = mat("#5e3420", { side: THREE.DoubleSide });
+  const LEGFUR = mat("#8a5232", { side: THREE.DoubleSide });
+  /** A skirt of fur round an ellipse (rx across, rz along, centred cz), from yTop down to
+   * the hem at yBot, flaring out by `flare`, its hem cut in `teeth` tufts `jag` deep. */
+  const skirt = (
+    rx: number,
+    rz: number,
+    cz: number,
+    yTop: number,
+    yBot: number,
+    teeth: number,
+    jag: number,
+    flare: number,
+    seed: number,
+  ) => {
+    const n = teeth * 2;
+    const rows = [0, 0.35, 0.7, 1];
+    const pos: number[] = [];
+    const idx: number[] = [];
+    for (const [r, t] of rows.entries()) {
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const h = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453;
+        const rand = h - Math.floor(h);
+        const out = 1 + flare * t * t + (r > 0 ? 0.05 * (rand - 0.5) : 0);
+        let y = yTop + (yBot - yTop) * t;
+        if (r === rows.length - 1) y -= i % 2 ? 0 : jag * (0.6 + 0.8 * rand);
+        else if (r === rows.length - 2) y -= i % 2 ? 0 : jag * 0.15;
+        pos.push(Math.cos(a) * rx * out, y, cz + Math.sin(a) * rz * out);
+      }
     }
-  }
-
+    for (let r = 0; r < rows.length - 1; r++)
+      for (let i = 0; i < n; i++) {
+        const a0 = r * n + i;
+        const a1 = r * n + ((i + 1) % n);
+        const b0 = a0 + n;
+        const b1 = a1 + n;
+        idx.push(a0, b0, a1, a1, b0, b1);
+      }
+    const g = geo(new THREE.BufferGeometry());
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  };
+  const sheet = (g: THREE.BufferGeometry, m: THREE.Material, to: THREE.Object3D) => {
+    const mesh = new THREE.Mesh(g, m);
+    mesh.castShadow = true;
+    to.add(mesh);
+    return mesh;
+  };
+  sheet(skirt(2.2, 3.4, -0.5, 4.0, 2.2, 22, 0.55, 0.12, 1), SHAG, body); // round the belly
+  sheet(skirt(2.25, 2.25, 1.4, 6.2, 3.7, 16, 0.45, 0.18, 2), CAPE, body); // the shoulder cape
+  sheet(skirt(1.95, 1.6, -2.4, 4.8, 3.0, 14, 0.4, 0.12, 3), SHAG, body); // over the hips
   // ------------------------------------------------------------- the head
   const head = new THREE.Group();
   head.position.set(0, 5.6, 3.4);
@@ -98,10 +136,10 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
   add(ball, DARK, [0, 1.2, 1.38], [1.15, 0.24, 0.45], head); // the brow
   add(lowBall, SNOW, [0, 2.85, 0.1], [0.8, 0.25, 0.8], head);
   for (let i = 0; i < 5; i++)
-    add(lock, DARK, [(i - 2) * 0.32, 1.6, 1.55], [0.6, 0.45, 0.6], head, [
-      Math.PI + 0.5,
+    add(ball, DARK, [(i - 2) * 0.3, 1.55 - Math.abs(i - 2) * 0.08, 1.45], [0.26, 0.38, 0.2], head, [
+      0.5,
       0,
-      (i - 2) * 0.12,
+      (i - 2) * 0.15,
     ]); // forelock
   add(ball, SKIN, [0, -0.9, 1.35], [0.55, 0.3, 0.45], head); // the lower lip
   const ears: THREE.Mesh[] = [];
@@ -111,26 +149,29 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
     add(ball, BLACK, [sd * 0.92, 0.64, 1.86], [0.14, 0.17, 0.11], head);
     add(ball, WHITE, [sd * 0.97, 0.72, 1.93], [0.05, 0.06, 0.04], head);
   }
-  // The tusks: long ivory curves sweeping down, out, forward and up.
+  // The tusks: long ivory curves sweeping down, out, forward and up, tapering to a point
+  // (review-snow_region 10 note 2, "the tusks are all glitched out": the taper used to
+  // pick the wrong ring for each vertex, crumpling them).
+  const TUBE = 32;
+  const RADIAL = 12;
   for (const sd of [-1, 1]) {
     const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(sd * 0.8, -0.6, 1.5),
-      new THREE.Vector3(sd * 1.3, -2.1, 3.0),
-      new THREE.Vector3(sd * 1.6, -2.0, 4.8),
-      new THREE.Vector3(sd * 1.1, -0.6, 5.9),
-      new THREE.Vector3(sd * 0.4, 0.6, 5.8),
+      new THREE.Vector3(sd * 0.75, -0.5, 1.3),
+      new THREE.Vector3(sd * 1.2, -1.9, 2.8),
+      new THREE.Vector3(sd * 1.65, -2.0, 4.4),
+      new THREE.Vector3(sd * 1.55, -0.9, 5.6),
+      new THREE.Vector3(sd * 1.05, 0.4, 5.9),
     ]);
-    const tusk = geo(new THREE.TubeGeometry(curve, 24, 0.32, 12, false));
-    // Taper it towards the tip.
+    const tusk = geo(new THREE.TubeGeometry(curve, TUBE, 0.34, RADIAL, false));
     const p = tusk.attributes.position!;
     const v = new THREE.Vector3();
     const c = new THREE.Vector3();
     for (let i = 0; i < p.count; i++) {
-      const u = Math.floor(i / 7) / 16;
-      curve.getPoint(u, c);
+      const u = Math.floor(i / (RADIAL + 1)) / TUBE;
+      curve.getPointAt(u, c);
       v.fromBufferAttribute(p, i)
         .sub(c)
-        .multiplyScalar(1.15 - u * 0.85)
+        .multiplyScalar(1.1 - 0.95 * u * u)
         .add(c);
       p.setXYZ(i, v.x, v.y, v.z);
     }
@@ -138,6 +179,10 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
     const m = new THREE.Mesh(tusk, IVORY);
     m.castShadow = true;
     head.add(m);
+    // (a ring of skin where it leaves the head, and a rounded tip)
+    add(ball, SKIN, [sd * 0.75, -0.5, 1.3], [0.42, 0.42, 0.42], head);
+    curve.getPointAt(1, c);
+    add(ball, IVORY, [c.x, c.y, c.z], [0.05, 0.05, 0.05], head);
   }
   // The trunk: a chain of segments, each hung from the one before, so it can swing and
   // curl.
@@ -172,25 +217,15 @@ export function createMammothView(parent: THREE.Object3D, scale = 1): DinoView {
     body.add(hip);
     add(legGeo, FUR, [0, -1.8, 0], [1, 1, 1], hip);
     add(cuff, DARK, [0, -2.7, 0], [1, 1, 1], hip);
-    // Shaggy fur down the leg.
-    for (let k = 0; k < 6; k++) {
-      const a = (k / 6) * Math.PI * 2;
-      add(
-        lock,
-        shades[k % 3]!,
-        [Math.cos(a) * 0.8, -0.9, Math.sin(a) * 0.8],
-        [0.9, 0.7, 0.9],
-        hip,
-        [Math.PI + Math.sin(a) * 0.15, 0, -Math.cos(a) * 0.15],
-      );
-    }
+    // Shaggy fur down the leg: a little skirt of it to the ankle.
+    sheet(skirt(0.98, 0.98, 0, -0.4, -2.5, 9, 0.35, 0.15, x * 3 + z), LEGFUR, hip);
     add(lowBall, LIGHT, [0, -3.55, 0.35], [0.85, 0.3, 0.85], hip);
     for (const tx of [-0.45, 0, 0.45])
       add(ball, IVORY, [tx, -3.5, 0.95 - Math.abs(tx) * 0.3], [0.2, 0.16, 0.14], hip);
     legs.push(hip);
   }
   const tail = new THREE.Group();
-  tail.position.set(0, 5.0, -3.9);
+  tail.position.set(0, 5.0, -4.3);
   body.add(tail);
   add(seg, SKIN, [0, -0.6, -0.1], [0.3, 1.3, 0.3], tail, [0.3, 0, 0]);
   add(ball, DARK, [0, -1.4, -0.4], [0.35, 0.55, 0.35], tail);

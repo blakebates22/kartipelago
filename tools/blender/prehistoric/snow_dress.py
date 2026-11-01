@@ -23,6 +23,7 @@ import region_textures as TX
 import snow_layout as SL
 import summit_props as sp
 import valley_village as vv
+import yule_props as yp
 from pocket_build import box
 
 RUIN = ruin.ON
@@ -328,6 +329,12 @@ def railing(c, px, py, toward, R, z, ground, span=1.25):
 
 XMAS_TREE = (-110.4, -146.2)  # (review-snow_region 9 note 14: where the old lane left the street)
 EXTRA_HOME = (-117.0, -114.0)  # (note 16: "SOMETHING NEEds to go here ... another house")
+# review-snow_region 11 (Nov 1), Blake's pins (blender x, y):
+NO_STALL = (-54.2, -164.1)  # note 1: "lets just remove this stall. and put a small christmas tree here."
+SMALL_TREES = [(-54.2, -164.1), (-134.3, -128.8)]  # notes 1, 2
+GRAND_SNOWMAN = (-66.2, -135.2)  # note 5: "a high fidelity snowman here facing the road"
+LITTLE_SNOWMEN = (-88.2, -101.6)  # note 8: "like 3 little snow men here"
+BEND_MARKET = (-82.2, -80.9)  # note 6: "this bend feels empty ... a couple of marktets and candy canes"
 
 
 def hearthglow(c, ground, ter, taken):
@@ -381,21 +388,22 @@ def hearthglow(c, ground, ter, taken):
                 continue
             v = SMALL[k % len(SMALL)]
             w, d = hp.COTTAGE_SIZE[v]
+            room = max(w, d) / 2 + 0.8
             x, y = side_of(q, sd, q.w / 2 + SET + d / 2)
             rot = math.atan2(-q.r.y * sd, -q.r.x * sd) + math.pi / 2  # (its front, local -Y, to the road)
             if not inside(x, y):
                 no("outside" if L.look_at(x, y) == "hearth" else "look:" + L.look_at(x, y))
                 s += 2.0
                 continue
-            if not taken.clear(x, y, max(w, d) / 2 + 0.8):
+            if not taken.clear(x, y, room):
                 no("taken")
                 s += 2.0
                 continue
-            if not paint.road_clear(c, x, y, max(w, d) / 2 + 0.8):
+            if not paint.road_clear(c, x, y, room):
                 no("road")
                 s += 2.0
                 continue
-            if not clear(x, y, max(w, d) / 2 + 0.8):
+            if not clear(x, y, room):
                 no("standing")
                 s += 2.0
                 continue
@@ -417,8 +425,8 @@ def hearthglow(c, ground, ter, taken):
                     continue
                 sc.chimneys.append(smoke)
                 sc.warm.append((x, y, ground(x, y) + 2.5))
-            taken.add(x, y, max(w, d) / 2 + 0.8)
-            SPOTS.append((x, y, max(w, d) / 2 + 1.0))
+            taken.add(x, y, room)
+            SPOTS.append((x, y, room + 0.2))
             built.append((x, y))
             k += 1
             s += w + GAP
@@ -439,12 +447,15 @@ def hearthglow(c, ground, ter, taken):
     for edge, x, y, q in cands:
         v = SMALL[k % len(SMALL)]
         w, d = hp.COTTAGE_SIZE[v]
+        # (Corner to corner, and the row's corners too: no two overlap, review-snow_region 11
+        # note 3, "move this house over so it isnt interdecting with the other house".)
+        room = math.hypot(w, d) / 2 + 1.8
         if not (SET - 1.0 + d / 2 <= edge <= SET + 2.0 + d / 2):
             continue
         sd = 1 if (x - q.p.x) * q.r.x + (y - q.p.y) * q.r.y > 0 else -1
         if MARKET[0] <= q.s <= MARKET[1] and sd == MARKET[2]:
             continue
-        if not clear(x, y, max(w, d) / 2 + 0.8):
+        if not clear(x, y, room):
             continue
         rot = math.atan2(-q.r.y * sd, -q.r.x * sd) + math.pi / 2
         if RUIN:
@@ -462,8 +473,8 @@ def hearthglow(c, ground, ter, taken):
                 continue
             sc.chimneys.append(smoke)
             sc.warm.append((x, y, ground(x, y) + 2.5))
-        taken.add(x, y, max(w, d) / 2 + 0.8)
-        SPOTS.append((x, y, max(w, d) / 2 + 1.0))
+        taken.add(x, y, room)
+        SPOTS.append((x, y, room + 0.2))
         built.append((x, y))
         k += 1
     # The market's stalls, along its stretch, facing the road, the folk about them.
@@ -473,6 +484,9 @@ def hearthglow(c, ground, ter, taken):
         q = c.at(s)
         x, y = side_of(q, MARKET[2], q.w / 2 + 3.2)
         rot = math.atan2(-q.r.y * MARKET[2], -q.r.x * MARKET[2]) + math.pi / 2
+        if math.hypot(x - NO_STALL[0], y - NO_STALL[1]) < 5.0:
+            s += 2.0
+            continue
         if inside(x, y) and clear(x, y, 2.8):
             # (Level, on a stone footing down to the lowest ground under it, so the snow on
             # the steep street never fills it: Blake, review-snow_region 9 note 3.)
@@ -536,6 +550,8 @@ def hearthglow(c, ground, ter, taken):
                 taken.add(hx, hy, max(w, d) / 2 + 0.8)
                 SPOTS.append((hx, hy, max(w, d) / 2 + 1.0))
                 built.append((hx, hy))
+    if not RUIN:
+        yule(c, ground, ter, taken, clear, inside, stalls)
     # The lantern posts: every 18 m along, on both sides, opposite each other; lights
     # along each side post to post, and across the road from every other pair; a candy
     # cane between each two posts on each side.
@@ -592,6 +608,97 @@ def hearthglow(c, ground, ter, taken):
                region=lambda w: math.hypot(w.x - cx, w.y - cy) < 110.0)
     print("hearthglow: %d cottages, %d stalls, %d posts" % (len(built), len(stalls), sum(1 for p in pairs for q in p if q)))
     return []
+
+
+def _near(x0, y0, ok, rmax=14.0):
+    """The nearest spot to (x0, y0) where ok(x, y) holds (a spiral out), or None."""
+    for k in range(400):
+        a, d = k * 2.399, 0.6 * math.sqrt(k)
+        if d > rmax:
+            break
+        x, y = x0 + d * math.cos(a), y0 + d * math.sin(a)
+        if ok(x, y):
+            return x, y
+    return None
+
+
+def yule(c, ground, ter, taken, clear, inside, stalls):
+    """review-snow_region 11 (Nov 1): small Christmas trees where a stall stood and up the
+    street (notes 1, 2), a grand snowman facing the road (note 5), three little snowmen
+    (note 8), and a couple of market stalls with candy canes round the empty bend (note 6)."""
+    def low(x, y, r):
+        return min([ground(x, y)] + [ground(x + r * math.cos(a), y + r * math.sin(a)) for a in [k * 0.785 for k in range(8)]])
+
+    def facing(x, y):
+        """A prop's front (-Y) turned to the road."""
+        q, _ = c.nearest(x, y)
+        return math.atan2(q.p.y - y, q.p.x - x) + math.pi / 2
+
+    for k, (x0, y0) in enumerate(SMALL_TREES):
+        spot = _near(x0, y0, lambda x, y: inside(x, y) and clear(x, y, 2.6))
+        print("hearthglow: small christmas tree", k, spot)
+        if not spot:
+            continue
+        x, y = spot
+        c.place(hp.xmas_pine(c, k % 2, 6.0, lights=True), x, y, low(x, y, 1.6) - 0.2, rot=k * 1.3, coll="Village")
+        for j in range(2):
+            a = j * 2.6 + 0.8 + k
+            px, py = x + 1.9 * math.cos(a), y + 1.9 * math.sin(a)
+            c.place(hp.present_pile(c, (j + k) % 3), px, py, ground(px, py) - 0.05, rot=a, scale=0.7, coll="Village",
+                    role="visual")
+        taken.add(x, y, 2.8)
+        SPOTS.append((x, y, 2.8))
+    spot = _near(*GRAND_SNOWMAN, lambda x, y: inside(x, y) and clear(x, y, 1.8))
+    print("hearthglow: the grand snowman at", spot)
+    if spot:
+        x, y = spot
+        c.place(yp.grand_snowman(c, 0), x, y, low(x, y, 1.2) - 0.25, rot=facing(x, y), coll="Village")
+        taken.add(x, y, 2.2)
+        SPOTS.append((x, y, 2.2))
+    for j, (dx, dy) in enumerate(((0.0, 0.0), (2.4, 0.9), (1.0, 2.5))):
+        spot = _near(LITTLE_SNOWMEN[0] + dx, LITTLE_SNOWMEN[1] + dy, lambda x, y: inside(x, y) and clear(x, y, 0.9), 8.0)
+        if not spot:
+            continue
+        x, y = spot
+        c.place(hp.snowman(c, j), x, y, low(x, y, 0.6) - 0.15, rot=facing(x, y) + (j - 1) * 0.35, scale=0.45 + 0.08 * j,
+                coll="Village")
+        taken.add(x, y, 1.1)
+        SPOTS.append((x, y, 1.1))
+    # The bend: a stall either side of where Blake pinned, on the outside of the road, on
+    # footings like the market's; candy canes flanking each.
+    q0, _ = c.nearest(*BEND_MARKET)
+    cane = hp.candy_cane(c, 5.0)
+    made = 0
+    here = []
+    for sd in (-1, 1):
+        for ds in (-4.0, 4.0, -10.0, 10.0, -14.0, 14.0):
+            if made >= 2:
+                break
+            q = c.at(q0.s + ds)
+            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 3.4), q.p.y + q.r.y * sd * (q.w / 2 + 3.4)
+            if math.hypot(x - BEND_MARKET[0], y - BEND_MARKET[1]) > 15.0:
+                continue  # (at the bend, not up the street)
+            if not (inside(x, y) and clear(x, y, 3.2)) or any(math.hypot(x - a, y - b) < 7.5 for a, b in here):
+                continue
+            here.append((x, y))
+            rot = math.atan2(-q.r.y * sd, -q.r.x * sd) + math.pi / 2
+            hi = level_site(c, x, y, rot, 6.0, 4.0, ground, ter, most=3.0)
+            lo, hi2 = footing(x, y, rot, 6.0, 4.0, ground)
+            z = hi if hi is not None else hi2
+            n = len(stalls)
+            box(c, "Market Stall %d Footing" % n, x, y, 3.1, 2.1, min(lo, z) - 0.8, z + 0.05, ("hearth_stone", "wall"), rot=rot)
+            c.place(hp.stall(c, n % 2), x, y, z + 0.05, rot=rot, coll="Village", name="Market Stall %d" % n)
+            taken.add(x, y, 3.3)
+            SPOTS.append((x, y, 3.6))
+            stalls.append((x, y))
+            made += 1
+            for side in (-1, 1):
+                cx_, cy_ = x + q.t.x * side * 4.3, y + q.t.y * side * 4.3
+                if inside(cx_, cy_) and clear(cx_, cy_, 0.7):
+                    c.place(cane, cx_, cy_, ground(cx_, cy_) - 0.1, rot=math.atan2(q.t.y, q.t.x) + (0.0 if side > 0 else math.pi),
+                            coll="Village")
+                    taken.add(cx_, cy_, 0.8)
+    print("hearthglow: %d stalls on the bend" % made, here)
 
 
 def gorge_bend(c, natural):

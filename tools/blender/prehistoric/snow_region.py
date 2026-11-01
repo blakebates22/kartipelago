@@ -51,7 +51,7 @@ RIM_Z = SL.TOP
 HUT = (-30.0, 148.0)  # (v4: the frozen lake's in the summit now)
 HUT_HALF = 10.0
 HUT_GAP = 4.5
-BELLS = [(-44.0, 136.0), (-14.0, 160.0), (-16.0, 134.0)]
+BELLS = [(-44.0, 136.0), (-14.0, 160.0), (-16.0, 134.0)]  # (none out on the ice now: nothing kept clear for them)
 LANTERNS = [1, 2, 3]
 # Brachio's hot spring (Act V's return task): a walled yard in the summit meadow, frozen shut.
 RETURN = (-118.0, 128.0)
@@ -125,6 +125,59 @@ def natural(x, y):
     return NOTCHES.apply(_natural(x, y), x, y)
 
 
+class _RoadNear:
+    """How far a point is from the ring road's middle line, quickly (a grid of its
+    segments): (distance, metres along it, side +1 left / -1 right)."""
+
+    def __init__(self, pts, cell=24.0):
+        self.cell = cell
+        self.segs = []
+        s = 0.0
+        self.grid = {}
+        for i, p in enumerate(pts):
+            q = pts[(i + 1) % len(pts)]
+            ln = math.hypot(q[0] - p[0], q[1] - p[1])
+            self.segs.append((p[0], p[1], q[0], q[1], s, ln))
+            n = max(1, int(ln / (cell * 0.5)))
+            for k in range(n + 1):
+                t = k / n
+                gx, gy = int((p[0] + (q[0] - p[0]) * t) // cell), int((p[1] + (q[1] - p[1]) * t) // cell)
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        self.grid.setdefault((gx + dx, gy + dy), set()).add(i)
+            s += ln
+
+    def near(self, x, y):
+        best = (1e9, 0.0, 1)
+        for i in self.grid.get((int(x // self.cell), int(y // self.cell)), ()):
+            ax, ay, bx, by, s, ln = self.segs[i]
+            dx, dy = bx - ax, by - ay
+            t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / max(ln * ln, 1e-9)))
+            d = math.hypot(x - ax - dx * t, y - ay - dy * t)
+            if d < best[0]:
+                best = (d, s + ln * t, 1 if dx * (y - ay) - dy * (x - ax) > 0 else -1)
+        return best
+
+
+ROAD = _RoadNear(SL.route_points())
+# The grass verge up the climb (review-snow_region 10 note 6, "lets add a grass strip
+# here"): along the road either way of Blake's pin, on its side, from the shoulder out to
+# the foot of the wall.
+_VERGE_PIN = (-147.1, 116.6)
+_VD, _VS, _VSIDE = ROAD.near(*_VERGE_PIN)
+
+
+def thaw_grass(x, y, nz):
+    """Grass through the snow on the summit: in patches well off the road (none in thin
+    slivers along its edge, note 8: "this little green strip looks weird"), and the verge
+    up the climb."""
+    d, s, side = ROAD.near(x, y)
+    if side == _VSIDE and abs(s - _VS) < 34.0 + 3.0 * math.sin(s / 7.0) and 8.6 < d < 22.0 and nz > 0.85:
+        return True
+    return (d > 16.0 and nz > 0.93 and L.wall_sd(x, y) < -9.0
+            and math.sin(x / 11.0 + 0.4) * math.cos(y / 9.0) + 0.4 * math.sin((x + y) / 5.0) > 0.75)
+
+
 def classify(c, n, info):
     look = L.look_at(c.x, c.y)
     ground, cliff, _, _ = LOOK[look]
@@ -133,8 +186,7 @@ def classify(c, n, info):
         return (pb.strata(L, c, n, STRATA), "wall")
     if SL.crevasse_cut(c.x, c.y) > 1.5:
         return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
-    if (not RUIN and look == "summit" and n.z > 0.93 and L.wall_sd(c.x, c.y) < -6.0
-            and math.sin(c.x / 11.0 + 0.4) * math.cos(c.y / 9.0) + 0.4 * math.sin((c.x + c.y) / 5.0) > 0.75):
+    if not RUIN and look == "summit" and thaw_grass(c.x, c.y, n.z):
         return ("thaw_grass", "grass")  # (the deep thaw: grass through the snow)
     if not RUIN and look == "aurora" and n.z > 0.97 and math.sin(c.x / 21.0) * math.cos(c.y / 15.0 + 0.7) > 0.45:
         return ("mirror_ice", "ice")  # (the rift's mirror ice)
@@ -240,6 +292,20 @@ def main():
     # valley"): Hearthglow's cottages in Hearthglow; the citadel's town houses in
     # Frostveil; the course's stone lookout huts up the summit; none in the rift or the
     # passes (the ice carvers live in their hollow).
+    def hut_yard(x, y, rot, k):
+        """Pots, buckets, tools and firewood either side of a bone hut's door (review-
+        snow_region 10 note 4), each on the lowest of the ground under it."""
+        cs, sn = math.cos(rot), math.sin(rot)
+        for j, (lx, ly) in enumerate(((4.9, -1.6), (-4.7, -1.0))):
+            px, py = x + lx * cs - ly * sn, y + lx * sn + ly * cs
+            if L.wall_sd(px, py) > -3.0 or not paint.road_clear(c, px, py, 2.0):
+                continue
+            hs = [ground(px + 1.6 * math.cos(t), py + 1.6 * math.sin(t)) for t in [i * 1.047 for i in range(6)]]
+            if max(hs) - min(hs) > 1.2:
+                continue
+            c.place(ia.hut_clutter(c, (k + j) % 3), px, py, min(hs) - 0.02, rot=rot + (j - 0.5) * 0.6, coll="Props",
+                    role="visual")
+
     def home(c, name, x, y, z, rot, k):
         pocket = name.split()[1].lower()
         if pocket in ("frostveil",) and not RUIN:
@@ -257,6 +323,7 @@ def main():
             c.place(ia.bone_hut(c, k % 2), x, y, hi - 0.05, rot=rot, coll="Village")
             g = c.game(x, y, hi + 5.4)
             c.entity("chimney", x=g[0], y=g[1], z=g[2])
+            hut_yard(x, y, rot, k)
             return True
         v = (1, 4, 2)[k % 3]
         if RUIN:
@@ -565,9 +632,12 @@ def dress(c, ground, spots):
     pines frozen into ice, the undergrowth gone."""
     vx, vy, vr, _vz = SL.VILLAGE
     taken = paint.Taken([(HUB[0], HUB[1], 12.0), (vx, vy, vr + 10.0), (SL.LAKE[0], SL.LAKE[1], SL.LAKE[2] + 4.0), (*RETURN, 18.0),
-                         *((x, y, 9.0) for x, y in BELLS), *((e[0], e[1], 16.0) for e, _ in spots.values()),
+                         *((e[0], e[1], 16.0) for e, _ in spots.values()),
                          *((x, y, 26.0) for x, y in SL.GATES.values()), (*SL.LAIR, 24.0), *sd.SPOTS,
-                         (SL.HOLLOW[0], SL.HOLLOW[1], 41.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0)])
+                         (SL.HOLLOW[0], SL.HOLLOW[1], 41.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0),
+                         # (No shrub or boulder here: review-snow_region 11 notes 4, 7, "remove this
+                         # shrub", "remove this rock.")
+                         (-31.7, -150.3, 2.5), (-109.6, -74.2, 2.5)])
     # The walls brought to life (snow_dress), both builds.
     sd.wall_life(c, ground, taken)
 
@@ -627,16 +697,23 @@ def dress(c, ground, spots):
     # (v4: the deep thaw, Blake, Oct 30: green trees; geysers, ponds, mammoths: snow_sections)
     pines = [sp.pine(c, v, 12.0 + 4.0 * v, snowy=False) for v in range(3)]
     ss.summit(c, ground, taken, TER)
-    for v, p in enumerate(pines):
-        paint.scatter(c, p, 40, rmax, su, g, taken, 10 + v, room=5.0, scale=(0.9, 1.5), road_margin=7.0, trunk=(0.8, 6.0))
+    # (Biggest first, each kept its boughs' spread clear of the last's: no little pine stood
+    # right under a big one, review-snow_region 10 note 9.)
+    for v, p in reversed(list(enumerate(pines))):
+        paint.scatter(c, p, 40, rmax, su, g, taken, 10 + v, room=(12.0 + 4.0 * v) * 0.3 * 1.5 * 1.4, scale=(0.9, 1.5),
+                      road_margin=7.0, trunk=(0.8, 6.0))
     for v in range(2):
-        paint.scatter(c, sp.broadleaf(c, v, frosted=False), 16, rmax, su, g, taken, 30 + v, room=5.0, road_margin=7.0,
+        paint.scatter(c, sp.broadleaf(c, v, frosted=False), 16, rmax, su, g, taken, 30 + v, room=7.5, road_margin=7.0,
                       trunk=(0.9, 6.0))
         paint.scatter(c, sp.shrub(c, v, frosted=False), 60, rmax, su, g, taken, 40 + v, room=2.5, role="visual", scale=(0.7, 1.4))
     paint.scatter(c, sp.shipwreck(c), 1, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -24, g, taken, 44, room=40.0,
                   road_margin=18.0)
+    def lone_hut(x, y, z, s):
+        rot = 2.3 * x + 1.1 * y
+        c.place(ia.bone_hut(c, 1), x, y, z - 0.2, rot=rot, scale=s, coll="Props")
+        hut_yard(x, y, rot, int(abs(x)))
     paint.scatter(c, ia.bone_hut(c, 1), 2, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -8, g, taken, 45, room=10.0,
-                  road_margin=8.0)
+                  road_margin=8.0, instead=lone_hut, scale=(1.0, 1.0))
     # The glacier: ice columns, spires, crystal gardens, ice spikes.
     au = look("aurora")
     ss.aurora(c, ground, taken)
