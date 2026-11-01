@@ -334,6 +334,328 @@
       "z": 319.89
     },
     {
+      "id": "lantern_43",
+      "type": "lantern",
+      "x": 20.24,
+      "y": -19.29,
+      "z": 312.57
+    },
+    {
+      "id": "lantern_44",
+      "type": "lantern",
+      "x": 37.09,
+      "y": -19.8,
+      "z": 331.93
+    },
+    {
+      "id": "lantern_45",
+      "type": "lantern",
+      "x": 38.17,
+      "y": -19.46,
+      "z": 306.37
+    },
+    {
+      "id": "lantern_46",
+      "type": "lantern",
+      "x": 54.85,
+      "y": -19.23,
+      "z": 325.88
+    },
+    {
+      "id": "lantern_47",
+      "type": "lantern",
+      "x": 52.48,
+      "y": -19.61,
+      "z": 300.45
+    },
+    {
+      "id": "lantern_48",
+      "type": "lantern",
+      "x": 73.46,
+      "y": -19.09,
+      "z": 315.04
+    },
+    {
+      "id": "lantern_49",
+      "type": "lantern",
+      "x": 63.73,
+      "y": -19.71,
+      "z": 291.25
+    },
+    {
+      "id": "lantern_50",
+      "type": "lantern",
+      "x": 87.62,
+      "y": -19.11,
+      "z": 300.56
+    },
+    {
+      "id": "lantern_51",
+      "type": "lantern",
+      "x": 73.87,
+      "y": -19.72,
+      "z": 278.99
+    },
+    {
+      "id": "lantern_52",
+      "type": "lantern",
+      "x": 99.1,
+      "y": -19.05,
+      "z": 283.34
+    },
+    {
+      "id": "lantern_53",
+      "type": "lantern",
+      "x": 80.52,
+      "y": -19.69,
+      "z": 265.75
+    },
+    {
+      "id": "lantern_54",
+      "type": "lantern",
+      "x": 106.0,
+      "y": -19.1,
+      "z": 263.54
+    },
+    {
+      "id": "lantern_55",
+      "type": "lantern",
+      "x": 83.85,
+      "y": -19.65,
+      "z": 250.65
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": 37.07,
+      "y": -21.82,
+      "z": 247.04
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": 14.35,
+      "y": -21.71,
+      "z": 284.62
+    },
+    {
+      "id": "lantern_56",
+      "type": "lantern",
+      "x": 37.28,
+      "y": -20.26,
+      "z": 160.03
+    },
+    {
+      "id": "lantern_57",
+      "type": "lantern",
+      "x": 36.95,
+      "y": -19.04,
+      "z": 134.55
+    },
+    {
+      "id": "lantern_58",
+      "type": "lantern",
+      "x": 24.85,
+      "y": -19.59,
+      "z": 157.06
+    },
+    {
+      "id": "lantern_59",
+      "type": "lantern",
+      "x": 15.3,
+      "y": -19.31,
+      "z": 133.39
+    },
+    {
+      "id": "lantern_60",
+      "type": "lantern",
+      "x": 8.54,
+      "y": -19.38,
+      "z": 158.19
+    },
+    {
+      "id": "lantern_61",
+      "type": "lantern",
+      "x": -1.94,
+      "y": -19.5,
+      "z": 134.89
+    },
+    {
+      "id": "lantern_62",
+      "type": "lantern",
+      "x": -12.35,
+      "y": -19.17,
+      "z": 158.28
+    },
+    {
+      "id": "lantern_63",
+      "type": "lantern",
+      "x": -15.01,
+      "y": -19.72,
+      "z": 132.96
+    },
+    {
+      "id": "lantern_64",
+      "type": "lantern",
+      "x": -33.23,
+      "y": -19.02,
+      "z": 150.62
+    },
+    {
+      "id": "lantern_65",
+      "type": "lantern",
+      "x": -28.72,
+      "y": -19.79,
+      "z": 125.42
+    },
+    {
+      "id": "lantern_66",
+      "type": "lantern",
+      "x": -49.75,
+      "y": -18.93,
+      "z": 140.07
+    },
+    {
+      "id": "lantern_67",
+      "type": "lantern",
+      "x": -41.15,
+      "y": -19.8,
+      "z": 116.0
+    },
+    {
+      "id": "lantern_68",
+      "type": "lantern",
+      "x": -64.96,
+      "y": -18.93,
+      "z": 125.36
+    },
+    {
+      "id": "lantern_69",
+      "type": "lantern",
+      "x": -49.68,
+      "y": -19.82,
+      "z": 104.91
+    },
+    {
+      "id": "lantern_70",
+      "type": "lantern",
+      "x": -75.2,
+      "y": -18.86,
+      "z": 105.79
+    },
+    {
+      "id": "lantern_71",
+      "type": "lantern",
+      "x": -53.94,
+      "y": -19.83,
+      "z": 91.56
+    },
+    {
+      "id": "lantern_72",
+      "type": "lantern",
+      "x": -78.52,
+      "y": -18.94,
+      "z": 84.45
+    },
+    {
+      "id": "lantern_73",
+      "type": "lantern",
+      "x": -53.91,
+      "y": -19.86,
+      "z": 77.71
+    },
+    {
+      "id": "lantern_74",
+      "type": "lantern",
+      "x": -74.32,
+      "y": -18.84,
+      "z": 62.39
+    },
+    {
+      "id": "lantern_75",
+      "type": "lantern",
+      "x": -48.92,
+      "y": -19.89,
+      "z": 65.24
+    },
+    {
+      "id": "lantern_76",
+      "type": "lantern",
+      "x": -62.94,
+      "y": -18.82,
+      "z": 43.89
+    },
+    {
+      "id": "lantern_77",
+      "type": "lantern",
+      "x": -39.27,
+      "y": -19.9,
+      "z": 53.7
+    },
+    {
+      "id": "lantern_78",
+      "type": "lantern",
+      "x": -48.24,
+      "y": -19.2,
+      "z": 29.61
+    },
+    {
+      "id": "lantern_79",
+      "type": "lantern",
+      "x": -28.86,
+      "y": -19.85,
+      "z": 45.97
+    },
+    {
+      "id": "lantern_80",
+      "type": "lantern",
+      "x": -25.83,
+      "y": -19.94,
+      "z": 20.78
+    },
+    {
+      "id": "lantern_81",
+      "type": "lantern",
+      "x": -14.63,
+      "y": -19.82,
+      "z": 43.95
+    },
+    {
+      "id": "lantern_82",
+      "type": "lantern",
+      "x": -8.2,
+      "y": -20.51,
+      "z": 19.27
+    },
+    {
+      "id": "lantern_83",
+      "type": "lantern",
+      "x": 6.67,
+      "y": -19.26,
+      "z": 40.05
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": 35.6,
+      "y": -22.03,
+      "z": 70.93
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
+      "x": -25.59,
+      "y": -21.89,
+      "z": 55.09
+    },
+    {
+      "id": "campfire_06",
+      "type": "campfire",
+      "x": 43.36,
+      "y": -22.08,
+      "z": 104.96
+    },
+    {
       "id": "steam_01",
       "type": "steam",
       "x": -300.0,
@@ -465,16 +787,16 @@
       "x": -55.0,
       "z": 430.0,
       "look": {
-        "sky": "#0d1418",
+        "sky": "#120e09",
         "fog": {
           "enabled": true,
-          "color": "#14232a",
-          "near": 30,
-          "far": 260
+          "color": "#2a2116",
+          "near": 24,
+          "far": 220
         },
         "sun": {
-          "color": "#9fd8ff",
-          "intensity": 0.55,
+          "color": "#ffc98a",
+          "intensity": 0.5,
           "direction": [
             -0.3,
             0.9,
@@ -482,9 +804,9 @@
           ]
         },
         "ambient": {
-          "sky": "#5c8aa0",
-          "ground": "#2a1c14",
-          "intensity": 0.75
+          "sky": "#9a7a58",
+          "ground": "#2a1c10",
+          "intensity": 0.8
         }
       }
     },
@@ -494,16 +816,16 @@
       "x": 52.0,
       "z": 278.0,
       "look": {
-        "sky": "#0d1418",
+        "sky": "#120e09",
         "fog": {
           "enabled": true,
-          "color": "#14232a",
-          "near": 30,
-          "far": 260
+          "color": "#2a2116",
+          "near": 24,
+          "far": 220
         },
         "sun": {
-          "color": "#9fd8ff",
-          "intensity": 0.55,
+          "color": "#ffc98a",
+          "intensity": 0.5,
           "direction": [
             -0.3,
             0.9,
@@ -511,9 +833,9 @@
           ]
         },
         "ambient": {
-          "sky": "#5c8aa0",
-          "ground": "#2a1c14",
-          "intensity": 0.75
+          "sky": "#9a7a58",
+          "ground": "#2a1c10",
+          "intensity": 0.8
         }
       }
     },
@@ -552,16 +874,16 @@
       "x": 20.0,
       "z": 10.0,
       "look": {
-        "sky": "#0d1418",
+        "sky": "#120e09",
         "fog": {
           "enabled": true,
-          "color": "#14232a",
-          "near": 30,
-          "far": 260
+          "color": "#2a2116",
+          "near": 24,
+          "far": 220
         },
         "sun": {
-          "color": "#9fd8ff",
-          "intensity": 0.55,
+          "color": "#ffc98a",
+          "intensity": 0.5,
           "direction": [
             -0.3,
             0.9,
@@ -569,9 +891,9 @@
           ]
         },
         "ambient": {
-          "sky": "#5c8aa0",
-          "ground": "#2a1c14",
-          "intensity": 0.75
+          "sky": "#9a7a58",
+          "ground": "#2a1c10",
+          "intensity": 0.8
         }
       }
     },

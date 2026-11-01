@@ -39,6 +39,7 @@ import beach_props as bp  # noqa: E402
 import tropic_props as tp  # noqa: E402
 import gulch_props as gp  # noqa: E402
 import region_paint as paint  # noqa: E402
+import region_ruin as rr  # noqa: E402
 
 TRACK_ID = "journey_cause" + os.environ.get("KP_REGION_SUFFIX", "")
 HZ = 260.0
@@ -193,7 +194,9 @@ def classify(c, n, info):
     if c.y < SLAB_N:
         name, _ = cavern_at(c.x, c.y)
         if any(math.hypot(c.x - sx, c.y - sy) < sr + 6.0 for sx, sy, sr in SKYLIGHTS):
-            return ("wreck_sand", "sand")  # (the floor under a skylight, sea-wet sand)
+            return ("bog_mud", "dirt")  # (the floor under a skylight, sea-wet muck)
+        if math.sin(c.x / 9.0 + c.y / 13.0) * math.cos(c.y / 7.0) > 0.25:
+            return ("bog_mud", "dirt")  # (trodden mud, oil, muck)
         return ("cave_rock", "dirt")
     if c.z < WATER_Z - 0.4:
         return ("cove_wet_sand", "deep_water")  # (off the reef into the sea)
@@ -206,7 +209,8 @@ def main():
     c = kit.Course(TRACK_ID, "The Edge of the World", "dragon_isles")
     c.route(ROUTE, width=14.0, bank=5.0)
     c.kinds = {
-        "under": {"mat": "keep_cobble", "shoulder": 1.4, "shoulder_mat": ("cave_rock", "dirt")},
+        # (v2, Blake: "grungy, dirty, but a thriving underworld": old setts worn to mud)
+        "under": {"mat": "ruin_road", "shoulder": 1.6, "shoulder_mat": ("bog_mud", "dirt")},
         "edge": {"mat": "keep_cobble", "shoulder": 1.5, "shoulder_mat": ("cove_rock", "dirt")},
         "bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("plank_road", "road"), "barrier": 1.2,
                    "barrier_mat": ("rope_rail", "wall"), "deck": 1.4, "deck_mat": ("weathered_timber", "wall"), "ground": False},
@@ -236,6 +240,7 @@ def main():
     sea_and_sky(c)
     undertown(c, ground)
     wreck_hall(c, ground)
+    grime(c, ground, s_start, s_light)
     the_edge(c, ground)
     sky_bridge(c, s_end)
     ends(c)
@@ -261,9 +266,10 @@ def main():
 
 LOOKS = {
     # (overworld/air.ts: an area's look, blended as you drive between them)
-    "under": {"sky": "#0d1418", "fog": {"enabled": True, "color": "#14232a", "near": 30, "far": 260},
-              "sun": {"color": "#9fd8ff", "intensity": 0.55, "direction": [-0.3, 0.9, 0.2]},
-              "ambient": {"sky": "#5c8aa0", "ground": "#2a1c14", "intensity": 0.75}},
+    # (v2: smoky, the lamps' oily light)
+    "under": {"sky": "#120e09", "fog": {"enabled": True, "color": "#2a2116", "near": 24, "far": 220},
+              "sun": {"color": "#ffc98a", "intensity": 0.5, "direction": [-0.3, 0.9, 0.2]},
+              "ambient": {"sky": "#9a7a58", "ground": "#2a1c10", "intensity": 0.8}},
     "skylight": {"sky": "#123a4a", "fog": {"enabled": True, "color": "#1d4a58", "near": 40, "far": 300},
                  "sun": {"color": "#bff0ff", "intensity": 1.2, "direction": [-0.2, 0.95, 0.1]},
                  "ambient": {"sky": "#7fd0e0", "ground": "#2a3a34", "intensity": 0.95}},
@@ -437,7 +443,7 @@ def skylights(c, ground):
         pts = [(sx + (sr + 6.0) * math.cos(a), sy + (sr + 6.0) * math.sin(a)) for a in [k * math.tau / 40 for k in range(40)]]
         bm.faces.new([bm.verts.new((x, y, SEABED + 1.2)) for x, y in pts])
         bm.faces.new([bm.verts.new((x, y, SEABED + 1.15)) for x, y in reversed(pts)])
-        c.assign(c.mesh_object("Skylight %d" % j, bm, "Water", "visual"), c.lib("lagoon", "water"))
+        c.assign(c.mesh_object("Skylight %d" % j, bm, "Water", "visual"), c.lib("canyon_river", "water"))
         for k in range(3 + j % 2):
             a = k * math.tau / (3 + j % 2) + 0.7 * j
             lx, ly = sx + (sr - 2.0) * math.cos(a), sy + (sr - 2.0) * math.sin(a)
@@ -474,6 +480,130 @@ def wreck_hall(c, ground):
         x, y = cx + rx * 0.78 * math.cos(a), cy + ry * 0.78 * math.sin(a)
         if paint.road_clear(c, x, y, 3.0):
             _glow_crystal(c, "Wreck Crystal %d" % j, x, y, ground(x, y), 2.0 + 1.5 * (j % 3), "crystal_teal")
+
+
+# ------------------------------------------------------------------ the grime
+
+
+def _cloth(c, name, pts, mat):
+    bm = bmesh.new()
+    bm.faces.new([bm.verts.new(p) for p in pts])
+    bm.faces.new([bm.verts.new(p) for p in reversed(pts)])
+    c.assign(c.mesh_object(name, bm, "Props", "visual"), c.lib(mat, "wall"))
+
+
+def grime(c, ground, s0, s1):
+    """The underworld lived in (Blake: "grungy, dirty, but a thriving underworld"): along
+    the bores, timber shoring, pipes down the walls, puddles of oily water, junk heaped in
+    the corners, crates; in the caverns, stalls crammed along the road under patched
+    awnings, laundry strung across between the homes, scaffold walkways along the walls,
+    soot streaking them, smoke from the cookfires and the lamps."""
+    sets = gp.timber_set(c, half=c.width / 2 + 3.4, height=10.4)
+    s = s0 + 4.0
+    k = 0
+    while s < s1 - 10.0:
+        q = c.at(s)
+        rot = math.atan2(q.t.y, q.t.x)
+        cav = cavern_at(q.p.x, q.p.y)[0]
+        if cav is None:
+            if k % 2 == 0:
+                c.place(sets, q.p.x, q.p.y, q.p.z - 0.3, rot=rot - math.pi / 2, role="visual")
+            sd = 1 if k % 2 else -1
+            ex, ey = q.p.x + q.r.x * sd * (c.width / 2 + 2.6), q.p.y + q.r.y * sd * (c.width / 2 + 2.6)
+            bm = bmesh.new()
+            props.tube(bm, [(ex - q.t.x * 4.5, ey - q.t.y * 4.5, q.p.z + 6.5), (ex + q.t.x * 4.5, ey + q.t.y * 4.5, q.p.z + 6.5)], 0.35,
+                       n=6)
+            c.assign(c.mesh_object("Pipe %d" % k, bm, "Props", "visual"), c.lib("iron", "wall"))
+            if k % 3 == 0:
+                c.disc("Puddle %d" % k, q.p.x - q.r.x * sd * 3.0, q.p.y - q.r.y * sd * 3.0, 2.2, q.p.z + 0.04,
+                       c.lib("bog_water", "water"), role="visual", n=12, wobble=0.25, seed=k)
+            if k % 4 == 1:
+                jx, jy = q.p.x + q.r.x * sd * (c.width / 2 + 1.8), q.p.y + q.r.y * sd * (c.width / 2 + 1.8)
+                c.place(tp.barrel(c), jx, jy, ground(jx, jy) - 0.1, rot=k)
+        s += 9.0
+        k += 1
+    # The caverns: stalls along the road, laundry overhead, scaffolds, soot, smoke.
+    for name, cx, cy, rx, ry, h in CAVERNS:
+        if name == "Sea Door Grotto":
+            continue
+        ss = [q.s for q in c.S if s0 <= q.s <= s1 and cavern_at(q.p.x, q.p.y)[0] == name]
+        if not ss:
+            continue
+        s = min(ss) + 6.0
+        j = 0
+        while s < max(ss) - 6.0:
+            q = c.at(s)
+            rot = math.atan2(q.t.y, q.t.x)
+            for sd in (-1, 1):
+                if (j + (sd > 0)) % 2:
+                    continue
+                x, y = q.p.x + q.r.x * sd * (c.width / 2 + 5.0), q.p.y + q.r.y * sd * (c.width / 2 + 5.0)
+                if not paint.road_clear(c, x, y, 2.5):
+                    continue
+                z = ground(x, y)
+                box(c, "Stall Counter %s %d %d" % (name, j, sd), x, y, 2.6, 1.0, z - 0.2, z + 1.1, ("plank_deck", "wall"), rot=rot)
+                for px in (-2.4, 2.4):
+                    box(c, "Stall Pole %s %d %d %d" % (name, j, sd, px), x + q.t.x * px, y + q.t.y * px, 0.1, 0.1, z, z + 3.0,
+                        ("weathered_timber", "wall"), role="visual")
+                ax_, ay_ = x - q.r.x * sd * 1.4, y - q.r.y * sd * 1.4
+                _cloth(c, "Stall Awning %s %d %d" % (name, j, sd),
+                       [(x + q.t.x * 2.8 + q.r.x * sd * 1.2, y + q.t.y * 2.8 + q.r.y * sd * 1.2, z + 3.2),
+                        (x - q.t.x * 2.8 + q.r.x * sd * 1.2, y - q.t.y * 2.8 + q.r.y * sd * 1.2, z + 3.2),
+                        (ax_ - q.t.x * 2.8, ay_ - q.t.y * 2.8, z + 2.5), (ax_ + q.t.x * 2.8, ay_ + q.t.y * 2.8, z + 2.5)],
+                       ("canvas_torn", "awning_red", "sail_cloth", "awning_teal")[j % 4])
+                for b in range(2):
+                    bx_, by_ = x + q.r.x * sd * 2.4 + q.t.x * (b * 1.6 - 0.8), y + q.r.y * sd * 2.4 + q.t.y * (b * 1.6 - 0.8)
+                    c.place(tp.barrel(c), bx_, by_, ground(bx_, by_) - 0.1, rot=b + j, role="visual")
+                g = c.game(x, y, z + 2.8)
+                c.entity("lantern", x=g[0], y=g[1], z=g[2])
+            s += 9.0
+            j += 1
+        # Laundry strung across between the walls' homes, over the floor (not the road).
+        for j in range(10):
+            a = j * 0.63 + 0.3
+            p0 = (cx + rx * 0.9 * math.cos(a), cy + ry * 0.9 * math.sin(a))
+            p1 = (cx + rx * 0.9 * math.cos(a + 0.5), cy + ry * 0.9 * math.sin(a + 0.5))
+            mid = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+            if not paint.road_clear(c, mid[0], mid[1], 6.0):
+                continue
+            z = DEPTH + 7.0
+            bm = bmesh.new()
+            props.tube(bm, [(p0[0], p0[1], z), (mid[0], mid[1], z - 1.2), (p1[0], p1[1], z)], 0.04, n=3)
+            c.assign(c.mesh_object("Line %s %d" % (name, j), bm, "Props", "visual"), c.lib("rope_rail", "wall"))
+            for f in range(4):
+                t = (f + 0.5) / 4
+                x, y = lerp(p0[0], p1[0], t), lerp(p0[1], p1[1], t)
+                zz = z - 1.2 * (1.0 - (2 * t - 1) ** 2)
+                dx, dy = (p1[0] - p0[0]), (p1[1] - p0[1])
+                L = math.hypot(dx, dy) or 1.0
+                ux, uy = dx / L * 0.6, dy / L * 0.6
+                _cloth(c, "Wash %s %d %d" % (name, j, f), [(x - ux, y - uy, zz), (x + ux, y + uy, zz), (x + ux, y + uy, zz - 1.4),
+                                                          (x - ux, y - uy, zz - 1.2)],
+                       ("rug", "canvas_torn", "awning_red", "sail_cloth")[(j + f) % 4])
+        # Scaffold walkways along the walls, and soot streaking them over the homes' doors.
+        for j in range(18):
+            a = j * math.tau / 18 + 0.15
+            x, y = cx + rx * 0.97 * math.cos(a), cy + ry * 0.97 * math.sin(a)
+            if not paint.road_clear(c, x, y, 5.0):
+                continue
+            z = ground(x, y)
+            rot = a + math.pi / 2
+            box(c, "Scaffold %s %d" % (name, j), x - 3.0 * math.cos(a), y - 3.0 * math.sin(a), 4.0, 1.2, z + 11.5, z + 11.8,
+                ("plank_deck", "wall"), rot=rot, role="visual")
+            for sx in (-1, 1):
+                box(c, "Scaffold Post %s %d %d" % (name, j, sx), x - 3.6 * math.cos(a) + sx * 3.6 * math.cos(rot),
+                    y - 3.6 * math.sin(a) + sx * 3.6 * math.sin(rot), 0.12, 0.12, z, z + 11.8, ("weathered_timber", "wall"), role="visual")
+            box(c, "Soot %s %d" % (name, j), x - 0.6 * math.cos(a), y - 0.6 * math.sin(a), 1.4, 0.1, z + 3.0, z + 10.0,
+                ("ash_soil", "wall"), rot=rot, role="visual")
+        # Smoke from the cookfires, junk heaped by the walls.
+        for j in range(5):
+            a = j * 1.37 + 0.6
+            x, y = cx + rx * 0.6 * math.cos(a), cy + ry * 0.6 * math.sin(a)
+            if paint.road_clear(c, x, y, 5.0):
+                rr.smoke(c, x, y, ground(x, y) + 0.5)
+            x, y = cx + rx * 0.84 * math.cos(a + 0.6), cy + ry * 0.84 * math.sin(a + 0.6)
+            if paint.road_clear(c, x, y, 6.0):
+                rr.rubble(c, "Junk %s %d" % (name, j), x, y, ground, ("wreck_planks", "wall"), n=6, spread=3.0, size=1.0, seed=j + 3)
 
 
 # ------------------------------------------------------------------ the edge
