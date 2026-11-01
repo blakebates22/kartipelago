@@ -821,8 +821,8 @@ ON STAGE: you, Raptor, Sketchy Guard, Elder Mossback, Rex.
 
     [Sketchy Guard holds it out.]
     SKETCHY GUARD
-        THERE. THE LAST KEY. THE TUNNEL COMES UP ON THE OLD CAUSEWAY,
-        PAST THE BORDER.
+        THERE. THE LAST KEY. THE TUNNEL COMES UP AT THE EDGE OF THE
+        WORLD, PAST THE BORDER. THE OLD SKY BRIDGE TAKES YOU ON.
 
     [Elder Mossback nods. Music: hope.]
     ELDER MOSSBACK

@@ -710,7 +710,7 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
       [
         say(
           "guard",
-          "THERE. THE LAST KEY. THE TUNNEL COMES UP ON THE OLD CAUSEWAY, PAST THE BORDER.",
+          "THERE. THE LAST KEY. THE TUNNEL COMES UP AT THE EDGE OF THE WORLD, PAST THE BORDER. THE OLD SKY BRIDGE TAKES YOU ON.",
         ),
         say("elder", "THE DRAGON KINGDOM. A CHAMPION IS GOING TO THE KING AFTER ALL."),
         say("rex", "A CHAMPION AND A CREW."),

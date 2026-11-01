@@ -526,10 +526,10 @@ export const REGIONS: Region[] = [
       },
     ],
     passages: [
-      // Back along Tidewyrm's Causeway to Tropic Isles.
+      // Back over the Sky Bridge, the edge of the world and the smugglers' tunnel to Tropic Isles.
       {
         id: "causeway",
-        label: "TIDEWYRM'S CAUSEWAY · BACK TO TROPIC ISLES",
+        label: "THE SKY BRIDGE · BACK TO TROPIC ISLES",
         to: "journey_cause",
         toPassage: "end",
         x: 0,
@@ -642,36 +642,40 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // Over the sea on the reef Tidewyrm raised: the Reef, the Sea Cave, the Stacks, the Isle and its lighthouse, the serpent's Ribs over the strait, the Crags up to the Dragon Kingdom's gate.
-    // (tools/blender/prehistoric/journey_region.py cause; the positions are the build's.)
+    // The last smugglers' tunnel, driven (v2, Blake, Oct 31: "tunnel through smugglers
+    // underground layer, to 'edge of the world' to sky bridge to dragon island"): in from the
+    // isles' sea door under the seabed, the Wreck Hall, Undertown (the tunnel folk's town
+    // under a skylight of sea), the Long Stair up into the light at the Edge, where the sea
+    // falls off the world, then the Sky Bridge over the void to the Dragon Kingdom's Sky
+    // Gate. (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
     id: "journey_cause",
-    name: "Tidewyrm's Causeway",
+    name: "The Edge of the World",
     packageId: "journey_cause",
     music: "journey_cause",
     worldId: "beach",
-    journey: { from: "beach", to: "dragon", road: [50, 1158] },
-    spawn: { x: -1.1, z: -386.4, heading: -0.2245 },
+    journey: { from: "beach", to: "dragon", road: [53, 1317] },
+    spawn: { x: -51.5, z: 416.5, heading: 2.7925 },
     gateways: [],
     passages: [
       {
         id: "start",
-        label: "TIDEWYRM'S CAUSEWAY · BACK TO TROPIC ISLES",
+        label: "THE SMUGGLERS' TUNNEL · BACK TO TROPIC ISLES",
         to: "tropic_isles",
         toPassage: "causeway",
-        x: 2,
-        z: -400,
+        x: -60,
+        z: 440,
         radius: 8,
-        heading: -0.2245,
+        heading: 2.8705,
       },
       {
         id: "end",
-        label: "TIDEWYRM'S CAUSEWAY · ON TO THE DRAGON KINGDOM",
+        label: "THE SKY GATE · ON TO THE DRAGON KINGDOM",
         to: "dragon_kingdom",
         toPassage: "causeway",
-        x: 70,
-        z: 390,
+        x: 0,
+        z: -445,
         radius: 8,
-        heading: -2.7008,
+        heading: -0.0861,
       },
     ],
   },

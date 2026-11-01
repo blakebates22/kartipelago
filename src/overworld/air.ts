@@ -94,6 +94,25 @@ export function areaAmbient(entities: readonly unknown[]): Record<string, Ambien
   return out;
 }
 
+/**
+ * A region's own areas with looks of their own (an `air_spot` entity: { x, z, look }, the
+ * look a TrackLook): where a journey with no gateways changes its air as you drive (the
+ * Edge of the World: the dark of the smugglers' underground, the bright sky at the edge).
+ */
+export function airSpotsOf(
+  entities: readonly unknown[],
+): { x: number; z: number; look: TrackLook }[] {
+  const out: { x: number; z: number; look: TrackLook }[] = [];
+  for (const e of entities) {
+    if (!e || typeof e !== "object") continue;
+    const r = e as Record<string, unknown>;
+    if (r.type !== "air_spot" || typeof r.x !== "number" || typeof r.z !== "number") continue;
+    if (!r.look || typeof r.look !== "object") continue;
+    out.push({ x: r.x, z: r.z, look: r.look as TrackLook });
+  }
+  return out;
+}
+
 /** How much of each area holds at (x, z) (the same blend as the air: they sum to 1). */
 export function airWeights(spots: readonly AirSpot[], x: number, z: number, width = BLEND_WIDTH) {
   const w = spots.map(() => 0);

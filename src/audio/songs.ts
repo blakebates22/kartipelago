@@ -3229,7 +3229,7 @@ export const SONGS: Record<string, Song> = {
   }),
   journey_cause: journey({
     id: "journey_cause",
-    title: "Tidewyrm's Causeway",
+    title: "The Edge of the World",
     bpm: 132,
     melody: CAUSEWAY_MELODY,
     chords: CAUSEWAY_CHORDS,

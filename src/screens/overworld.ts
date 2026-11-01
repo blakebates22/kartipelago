@@ -108,6 +108,7 @@ import { instaWin } from "../debug/devFlags";
 import {
   airAt,
   airOf,
+  airSpotsOf,
   airWeights,
   areaAmbient,
   courseAmbient,
@@ -837,7 +838,8 @@ function ambientOf(id: string): Promise<AmbientSpec[]> {
  */
 function regionAir(game: Game, session: Session, region: Region, ruined: boolean) {
   const courses = region.gateways.filter((g) => !g.boss && !g.king && trackById(g.track));
-  if (!courses.length) return undefined;
+  const ownSpots = airSpotsOf(session.entities);
+  if (!courses.length && !ownSpots.length) return undefined;
   const pkg = (ruined && region.ruinPackageId) || region.packageId;
   let spots: (AirSpot & { air: Air })[] | undefined;
   let alive = true;
@@ -864,6 +866,13 @@ function regionAir(game: Game, session: Session, region: Region, ruined: boolean
         ambient: [...ambient[i]!, ...(extras[g.id] ?? [])],
       })),
     ];
+    // (A journey's own areas, its air_spots: the region's look with theirs over it; then
+    // the spawn's own spot isn't needed, they cover the way.)
+    if (ownSpots.length) {
+      if (!courses.length) list.length = 0;
+      for (const q of ownSpots)
+        list.push({ x: q.x, z: q.z, look: { ...own, ...q.look }, ambient: [] });
+    }
     // (A square with no sky of its own: the nearest course's.)
     if (!list[0]!.look.skyDome) {
       const near = list
