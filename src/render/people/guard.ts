@@ -172,6 +172,26 @@ const DRESS: Record<Folk, Dress[]> = {
       hat: "bandana",
     },
   ],
+  pilgrim: [
+    {
+      vest: "#5a3a5a",
+      vestDark: "#3a2440",
+      patches: ["#2a5a8a", "#8a2a2a"],
+      head: "#d83a3a",
+      dots: "#ffffff",
+      belt: "#2a2028",
+      hat: "beanie",
+    },
+    {
+      vest: "#2a4a6a",
+      vestDark: "#1a3048",
+      patches: ["#6a2a2a", "#3a6a4a"],
+      head: "#3a8a5a",
+      dots: "#ffe060",
+      belt: "#2a2028",
+      hat: "beanie",
+    },
+  ],
 };
 
 export function guardLook(folk: Folk, seed: number) {

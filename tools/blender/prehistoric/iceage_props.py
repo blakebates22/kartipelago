@@ -141,47 +141,61 @@ def _bucket(bm, x, y, r, h):
               ring(bm, (x, y), r * 0.78, 0.12, 10)], cap_top=True, cap_bottom=True)
 
 
-def hut_clutter(c, variant=0):
-    """What lies about a hut's door (review-snow_region 10 note 4: "lets have some tools
-    and buckets and pots laying around the huts"): clay pots, a stave bucket or two, a
-    stone axe and a bone shovel leant on a log, a stack of firewood, a hide bundle. About
-    3 m across, on level ground at its origin; set beside a hut."""
-    name = "Camp Clutter %d" % variant
+def _kit():
+    import ice_homes  # (the carvers' kit: logs with whole end grain on their sawn ends)
+    return ice_homes
 
-    def build(bm):
-        v = variant % 3
-        k0 = len(bm.faces)
-        for x, y, r, h in ((-0.9, 0.4, 0.38, 0.85), (-0.35, 0.85, 0.28, 0.6), (0.9 if v else -1.3, -0.6, 0.32, 0.7))[:2 + (v != 1)]:
-            _pot(bm, x, y, r, h)
-        pots = _faces(bm, k0)
-        k1 = len(bm.faces)
-        for x, y in ((0.6, 0.7), (1.15, 0.2))[:1 + (v == 1)]:
-            _bucket(bm, x, y, 0.32, 0.55)
-        buckets = _faces(bm, k1)
-        k2 = len(bm.faces)
-        # The log, the handles leant on it, the firewood.
-        tube(bm, [(-1.4, -0.9, 0.22), (0.6, -1.25, 0.22)], [0.24, 0.22], n=7)
-        tube(bm, [(-0.6, -1.5, 0.0), (-0.2, -1.0, 1.25)], [0.05, 0.045], n=5)  # (the axe's haft)
-        tube(bm, [(0.2, -1.6, 0.0), (0.45, -1.05, 1.4)], [0.05, 0.045], n=5)  # (the shovel's)
-        if v != 2:
-            for i in range(6):
-                zz, yy = 0.13 + 0.22 * (i // 3), 1.35 + 0.24 * (i % 3) - 0.12 * (i // 3)
-                tube(bm, [(1.0, yy, zz), (1.0 + 1.1 * (1 if v == 0 else -1), yy, zz)], [0.11, 0.1], n=5)
-        wood = _faces(bm, k2)
-        k3 = len(bm.faces)
-        blob(bm, (-0.22, -0.98, 1.2), 0.2, sx=1.3, sy=0.6, sz=0.85, subdiv=1)  # (the axe's head)
-        stone_ = _faces(bm, k3)
-        k4 = len(bm.faces)
-        cuboid(bm, (0.48, -1.02, 1.35), (0.42, 0.08, 0.5), tilt=(-0.4, 0.0))  # (a shoulder blade for a shovel)
-        bone = _faces(bm, k4)
-        k5 = len(bm.faces)
-        if v != 1:
-            blob(bm, (1.25 * (1 if v == 2 else -1), -0.1, 0.25), 0.45, sx=1.3, sy=0.8, sz=0.6, subdiv=1)  # (a hide bundle)
-        hides = _faces(bm, k5)
-        return [(c.lib("terracotta"), pots), (c.lib("barrel_wood"), buckets), (c.lib("log_bark"), wood),
-                (c.lib(STONE), stone_), (c.lib("bone_ivory"), bone), (c.lib("painted_hide"), hides)]
 
-    return _p(c, name, build)
+def camp_pots(c, variant=0):
+    """Coil-built clay pots, one big and one or two small, standing together (review-
+    snow_region 10 note 4). Origin on the ground under them; set each on its own spot."""
+    ih = _kit()
+    name = "Camp Pots %d" % variant
+
+    def build(P, bm):
+        P.add("terracotta", lambda: _pot(bm, 0.0, 0.0, 0.4, 0.9))
+        P.add("terracotta", lambda: _pot(bm, 0.62, 0.3, 0.27, 0.58))
+        if variant % 2:
+            P.add("terracotta", lambda: _pot(bm, -0.25, 0.65, 0.22, 0.48))
+
+    return ih._p(c, name, build)
+
+
+def camp_bucket(c):
+    """A stave bucket with its rope bail."""
+    ih = _kit()
+
+    def build(P, bm):
+        P.add("barrel_wood", lambda: _bucket(bm, 0.0, 0.0, 0.34, 0.6))
+        P.add("iron", lambda: loft(bm, [ring(bm, (0, 0), 0.36, 0.42, 12), ring(bm, (0, 0), 0.36, 0.48, 12)], cap_top=False))
+        P.add("log_bark", lambda: tube(bm, [(-0.33, 0, 0.55), (-0.2, 0, 0.85), (0.2, 0, 0.85), (0.33, 0, 0.55)], 0.025, n=4))
+
+    return ih._p(c, "Camp Bucket", build)
+
+
+def camp_woodpile(c):
+    """A stack of split logs on sleepers, their cut ends whole end grain (review-snow_region
+    12 note 6: "lets improve the quality of these logs. make sure the textures at the end of
+    the logs are right"): the carvers' woodpile."""
+    ih = _kit()
+    return ih._p(c, "Camp Woodpile", lambda P, bm: ih.woodpile(P, bm, 0.0, 0.0, 0.0, n=4))
+
+
+def camp_block(c):
+    """A chopping block (a sawn round of log, end grain on top), a stone axe sunk in it, a
+    bone shovel and a spear leant against it."""
+    ih = _kit()
+
+    def build(P, bm):
+        ih._log(P, bm, (0.0, 0.0, 0.75), (0.0, 0.0, -0.1), 0.42, 0)
+        P.add("log_bark", lambda: tube(bm, [(0.05, -0.05, 0.75), (0.35, -0.3, 1.45)], [0.045, 0.04], n=6))  # (the axe's haft)
+        P.add(STONE, lambda: blob(bm, (0.06, -0.04, 0.82), 0.16, sx=1.4, sy=0.55, sz=0.9, subdiv=2))
+        P.add("log_bark", lambda: tube(bm, [(0.55, 0.15, 0.0), (0.42, 0.05, 1.5)], [0.045, 0.04], n=6))  # (the shovel's)
+        P.add("bone_ivory", lambda: cuboid(bm, (0.57, 0.17, 0.25), (0.34, 0.07, 0.46), tilt=(0.0, 0.08)))
+        P.add("log_bark", lambda: tube(bm, [(-0.45, 0.35, 0.0), (-0.3, 0.2, 2.3)], [0.04, 0.03], n=5))  # (a spear)
+        P.add(STONE, lambda: blob(bm, (-0.3, 0.2, 2.42), 0.08, sx=0.6, sy=0.6, sz=2.0, subdiv=1))
+
+    return ih._p(c, "Camp Chopping Block", build)
 
 
 def hide_tent(c, variant=0):

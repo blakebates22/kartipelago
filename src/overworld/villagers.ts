@@ -30,7 +30,7 @@ export interface Home {
   heading: number;
 }
 
-const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road", "sump"];
+const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road", "sump", "pilgrim"];
 
 /** How far above a villager the ground is looked for: a roof over a spot (a house) is
  * found first, and isn't ground it can stand on, so it never walks into a house. */
@@ -86,6 +86,10 @@ const SYLL: Record<Folk, [string[], string[]]> = {
     ["Way", "Rov", "Tra", "Pil", "Wan", "Jour", "Pack", "Hob", "Trek", "Mil"],
     ["fa", "er", "vel", "grim", "do", "ney", "ley", "bo", "ka", "ly"],
   ],
+  pilgrim: [
+    ["Bo", "Fro", "Hild", "Nils", "Ing", "Sno", "Tove", "Kari", "Pel", "Yul"],
+    ["rin", "sty", "da", "mer", "ka", "by", "gar", "ra", "vik", "ni"],
+  ],
   sump: [
     ["Grub", "Mog", "Skiv", "Rat", "Nib", "Slag", "Dreg", "Fen", "Murk", "Gil"],
     ["sy", "ly", "gins", "wick", "bit", "ty", "o", "nose", "kin", "per"],
@@ -129,6 +133,15 @@ const LINES: Record<Folk, string[]> = {
     "I'M WALKING TO THE NEXT KINGDOM. YOU'RE QUICKER.",
     "KEEP TO THE ROAD. THE ROCKS DON'T MOVE FOR KARTS.",
     "I TRADE BETWEEN THE KINGDOMS. BUSY TIMES.",
+  ],
+  // The snow folk at the outpost on the crest, packed for the walk down to Dino Valley
+  // (review-snow_region 13 note 1).
+  pilgrim: [
+    "WE SET OFF FOR DINO VALLEY AT FIRST LIGHT. THE WHOLE WAY ON FOOT!",
+    "THEY SAY IT'S SO WARM DOWN IN THE VALLEY YOU DON'T NEED A SCARF.",
+    "I'VE PACKED THREE JUMPERS. JUST IN CASE THE VALLEY'S COLD TOO.",
+    "THE GORGE ROAD'S STEEP. WE'LL REST HERE ONE MORE NIGHT.",
+    "MY GRANDFATHER MADE THIS PILGRIMAGE. NOW IT'S MY TURN.",
   ],
   // The Sump's tunnel folk (Blake, Oct 31: "give them new dialogue"): a grubby, thriving
   // underworld, everything in it lifted from some kingdom, the Broker over it all.

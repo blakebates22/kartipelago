@@ -142,16 +142,16 @@
     {
       "id": "lantern_11",
       "type": "lantern",
-      "x": 40.86,
-      "y": 65.92,
-      "z": 128.95
+      "x": 39.11,
+      "y": 66.04,
+      "z": 127.99
     },
     {
       "id": "chimney_01",
       "type": "chimney",
-      "x": 47.19,
-      "y": 72.45,
-      "z": 123.59
+      "x": 45.43,
+      "y": 72.57,
+      "z": 122.63000000000001
     },
     {
       "id": "lantern_12",
@@ -359,35 +359,35 @@
       "id": "lantern_30",
       "type": "lantern",
       "x": 96.0,
-      "y": 83.29,
+      "y": 79.23,
       "z": -176.0
     },
     {
       "id": "lantern_31",
       "type": "lantern",
       "x": 66.0,
-      "y": 82.83,
+      "y": 78.21,
       "z": -130.0
     },
     {
       "id": "lantern_32",
       "type": "lantern",
       "x": 150.0,
-      "y": 82.34,
+      "y": 78.34,
       "z": -40.0
     },
     {
       "id": "lantern_33",
       "type": "lantern",
       "x": 120.0,
-      "y": 70.63,
+      "y": 69.11,
       "z": -116.0
     },
     {
       "id": "lantern_34",
       "type": "lantern",
       "x": 206.0,
-      "y": 71.88,
+      "y": 65.49,
       "z": -60.0
     },
     {
@@ -512,7 +512,7 @@
       "type": "villager_home",
       "x": 95.92,
       "z": -128.53,
-      "y": 68.95,
+      "y": 69.62,
       "r": 6.0,
       "n": 2,
       "folk": "snow",
@@ -528,10 +528,10 @@
   "generator": "tools/blender/prehistoric/snow_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "keep_props.py": "30a8d9886a2255a7b89beff946827746d5aef1fd678e3dc1671ed684c9b56b8c",
-    "snow_dress.py": "86958d14c87b94884f20cd4afa28a079f1d10db6308fd868f636794330eb229c",
-    "snow_layout.py": "d1ebfcf4649718ff8546add56f1b97e547b5216a8832027170adadd9a40dc0ff",
+    "snow_dress.py": "e4082958d3f0a05c580035e09e1bea6420ad705d3b6145711b64792640f4a9ab",
+    "snow_layout.py": "3e67e1621e6d57ab69a028ae1b4a8e675ed106b2b4bfe38110e68db49d5a10ea",
     "snow_props.py": "8a20c89a0be5b82b540d73dea615cba82c257b068a27a2e882b4a628957e8552",
-    "snow_region.py": "54a43503dedd97be6ac80533080297ca58bb29f0aa11e2add7f6ef5681ee45a6",
-    "snow_sections.py": "9b7d661ae76542e98d4fc8f2ee5cc944c0599268092bd927333b28058245884c"
+    "snow_region.py": "0f03c90952e9f7536c7aaa6a6ae8ad9e03a2c8ac9d9113bdea854d5a7f58f101",
+    "snow_sections.py": "d23c4f293d1ca5d61aab7e6e61e423c5af269845e5ed01091a628511d4ccaf0c"
   }
 }

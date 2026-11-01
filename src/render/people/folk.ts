@@ -47,7 +47,17 @@ export const SPECIES: readonly Species[] = [
   "ovi",
   "sauro",
 ];
-export type Folk = "valley" | "snow" | "desert" | "beach" | "dragon" | "road" | "sump";
+export type Folk =
+  | "valley"
+  | "snow"
+  | "desert"
+  | "beach"
+  | "dragon"
+  | "road"
+  | "sump"
+  /** Snow folk setting out on the pilgrimage to Dino Valley (review-snow_region 13 note 1):
+   * the traveller's pack and bedroll, in the kingdom's knits. */
+  | "pilgrim";
 
 /** Four-legged kinds (the rest walk on two). */
 export const FOURS = new Set<Species>(["ankylo", "trike", "sauro"]);
@@ -74,6 +84,7 @@ const SKINS: Record<Folk, string[]> = {
   road: ["#8a9a6a", "#a08060", "#7a8aa0", "#b0906a", "#6a8a7a"],
   // The Sump's tunnel folk: pale from the dark, mossy, sooty.
   sump: ["#7a8a6a", "#8a7a68", "#6a7a78", "#9a8a5a", "#7a6a78"],
+  pilgrim: ["#8aa6c9", "#b7b1d8", "#6f8f9e", "#c9c2b0", "#7d9b8a"],
 };
 /** Clothes colours (main, trim) per folk. */
 const CLOTH: Record<Folk, [string, string][]> = {
@@ -110,6 +121,11 @@ const CLOTH: Record<Folk, [string, string][]> = {
     ["#5a4a3a", "#c8a040"],
     ["#3a4a4a", "#b05a3a"],
     ["#6a3a3a", "#d0c0a0"],
+  ],
+  pilgrim: [
+    ["#d83a3a", "#ffffff"],
+    ["#2f6fd0", "#ffe060"],
+    ["#8a6a3a", "#ffffff"],
   ],
 };
 const IRIS = ["#6a3a10", "#2a6a3a", "#2a4a8a", "#7a2a6a", "#8a6a10"];
@@ -1228,7 +1244,7 @@ function dress(
       builds.torso.add(new THREE.BoxGeometry(0.075, 0.015, 0.075), "#3a3a3a", {
         p: [lp[0], lp[1] - 0.045, lp[2]],
       });
-    } else if (folk === "road") {
+    } else if (folk === "road" || folk === "pilgrim") {
       // A belt with a pouch.
       band("#6a4426", 0.02);
       builds.torso.add(new THREE.BoxGeometry(0.09, 0.08, 0.05), shade(main, 0.8), {
@@ -1287,7 +1303,7 @@ export function buildFolk(folk: Folk, seed: number, kind?: Species): PersonRig {
   };
   // (The dragon folk's tunics have sleeves.)
   const sleeves =
-    (folk === "dragon" || folk === "snow") && !quad
+    (folk === "dragon" || folk === "snow" || folk === "pilgrim") && !quad
       ? { upper: look.cloth[0], fore: look.cloth[0] }
       : { upper: null, fore: null };
   const rig = skeleton({

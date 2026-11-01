@@ -154,18 +154,23 @@ def cottage(c, variant=0):
             gap = min(2.8, (span - 2.4) / (n - 1))
             return [(j - (n - 1) / 2) * gap for j in range(n)]
 
+        def few(xs, st):
+            """(A tall house's faces, three by three, were nine windows each: too many, review-
+            snow_region 12 note 11. The ground storey's row, then just the middle one up.)"""
+            return xs if st == 0 or len(xs) * storeys < 9 else [0.0]
+
         for st in range(storeys):
             z = 2.2 + st * 2.6
             if z > h - 1.0:
                 break
-            for x in row(w):
+            for x in few(row(w), st):
                 for sd in (-1, 1):
                     if st == 0 and sd < 0 and abs(x) < 1.4:
                         continue  # the door
                     y0 = sd * (d / 2 + 0.04)
                     pts = [(x - 0.75, y0, z - 0.4), (x + 0.75, y0, z - 0.4), (x + 0.75, y0, z + 1.2), (x - 0.75, y0, z + 1.2)]
                     k.quad(GLOW, pts if sd < 0 else list(reversed(pts)))
-            for yy in row(d):
+            for yy in few(row(d), st):
                 for sx in (-1, 1):
                     x0 = sx * (w / 2 + 0.04)
                     pts = [(x0, yy - 0.75, z - 0.4), (x0, yy + 0.75, z - 0.4), (x0, yy + 0.75, z + 1.2), (x0, yy - 0.75, z + 1.2)]
@@ -341,17 +346,19 @@ def pine_lo(c, variant=0, height=14.0):
 
 
 def _star(bm, centre, r):
-    """A chunky five-pointed star, upright, facing ±Y (a thick slab)."""
+    """A chunky five-pointed star, upright, facing ±Y: one ring of points, swelling to a
+    point front and back (one star, not two slabs side by side: review-snow_region 12
+    note 2, "lets only have 1 star on the tree")."""
     cx, cy, cz = centre
+    vs = []
+    for i in range(10):
+        a = math.pi / 2 + i * math.pi / 5
+        rr = r if i % 2 == 0 else r * 0.45
+        vs.append(bm.verts.new((cx + rr * math.cos(a), cy, cz + rr * math.sin(a))))
     for sd in (-1, 1):
-        vs = []
+        apex = bm.verts.new((cx, cy + sd * r * 0.32, cz))
         for i in range(10):
-            a = math.pi / 2 + i * math.pi / 5
-            rr = r if i % 2 == 0 else r * 0.45
-            vs.append(bm.verts.new((cx + rr * math.cos(a), cy + sd * r * 0.18, cz + rr * math.sin(a))))
-        centre_v = bm.verts.new((cx, cy + sd * r * 0.35, cz))
-        for i in range(10):
-            f = (vs[i], vs[(i + 1) % 10], centre_v)
+            f = (vs[i], vs[(i + 1) % 10], apex)
             bm.faces.new(f if sd < 0 else tuple(reversed(f)))
 
 
@@ -398,7 +405,11 @@ def giant_tree(c, name, x, y, z, height=44.0):
                 px += 0.35 * math.sin(zz * 0.9 + i)
                 k.add(cols[n % 4], lambda bm, px=px, py=py, zz=zz: blob(bm, (px, py, zz), 0.22, sz=1.3, subdiv=1))
                 n += 1
-    k.add("star_gold", lambda bm: _star(bm, (x, y, z + height + 2.2), 3.4))
+    # The star, centred on the peak, set down over the top tier's tip (note 2:
+    # "make it centered in the peak of the tree").
+    top = z + height * (0.12 + 0.105 * 7) + height * 0.17
+    sr = 3.4 * height / 52.0
+    k.add("star_gold", lambda bm: _star(bm, (x + 0.35 * math.sin(top * 0.9 + 7), y, top + sr * 0.35), sr))
     # A low fence round its foot, with posts.
     k.add(BEAM, lambda bm: [cuboid(bm, (x + 12 * math.cos(a), y + 12 * math.sin(a), z + 0.6), (0.4, 0.4, 1.4)) for a in [i * math.tau / 16 for i in range(16)]])
     k.add("timber_rail", lambda bm: [cuboid(bm, (x + 12 * math.cos(a), y + 12 * math.sin(a), z + 0.95), (4.7, 0.2, 0.25), rot=a + math.pi / 2) for a in [(i + 0.5) * math.tau / 16 for i in range(16)]])
@@ -426,7 +437,10 @@ def present_pile(c, variant=0):
             a = i * 2.1 + variant
             r = 0.0 if i == 0 else 1.2 + 0.4 * rnd(i)
             k.box(wraps[(i + variant) % 4], (r * math.cos(a), r * math.sin(a), s / 2), (s, s * (0.8 + 0.3 * rnd(i * 7)), s), rot=a)
-        k.box(wraps[(variant + 1) % 4], (0.1, -0.1, 1.5 + 0.35), (0.7, 0.7, 0.7), rot=0.5)
+        # (the little one on top, sat on the middle one: review-snow_region 12 note 3, "no
+        # floating presents")
+        s0 = 0.8 + 0.7 * rnd(variant)
+        k.box(wraps[(variant + 1) % 4], (0.1, -0.1, s0 + 0.33), (0.7, 0.7, 0.7), rot=0.5)
         return k.slots(c)
 
     return _p(c, name, build)

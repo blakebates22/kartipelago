@@ -26,6 +26,7 @@ import hearthglow_props as hp  # noqa: E402
 import summit_props as sp  # noqa: E402
 import iceage_props as ia  # noqa: E402
 import aurora_props as ap  # noqa: E402
+import rift_props as rp  # noqa: E402
 import keep_props as kp  # noqa: E402
 import villager_homes as vh  # noqa: E402
 import valley_village as vv  # noqa: E402
@@ -213,7 +214,10 @@ def main():
     c.kinds = kinds
 
     def label(smp):
-        if SL.crevasse_d(smp.p.x, smp.p.y) < SL.CREVASSE_HW + 6.0:
+        # (The bridge, with its rails, only where the crevasse is deep under the road: not on
+        # past its shallow end across the way to Aurora Rift, review-snow_region 13 note 8.)
+        if SL.crevasse_d(smp.p.x, smp.p.y) < SL.CREVASSE_HW + 8.0 and max(
+                SL.crevasse_cut(smp.p.x + smp.r.x * f * smp.w / 2, smp.p.y + smp.r.y * f * smp.w / 2) for f in (-1.2, 0.0, 1.2)) > 2.0:
             return "icebridge"
         return L.look_at(smp.p.x, smp.p.y)
 
@@ -292,20 +296,6 @@ def main():
     # valley"): Hearthglow's cottages in Hearthglow; the citadel's town houses in
     # Frostveil; the course's stone lookout huts up the summit; none in the rift or the
     # passes (the ice carvers live in their hollow).
-    def hut_yard(x, y, rot, k):
-        """Pots, buckets, tools and firewood either side of a bone hut's door (review-
-        snow_region 10 note 4), each on the lowest of the ground under it."""
-        cs, sn = math.cos(rot), math.sin(rot)
-        for j, (lx, ly) in enumerate(((4.9, -1.6), (-4.7, -1.0))):
-            px, py = x + lx * cs - ly * sn, y + lx * sn + ly * cs
-            if L.wall_sd(px, py) > -3.0 or not paint.road_clear(c, px, py, 2.0):
-                continue
-            hs = [ground(px + 1.6 * math.cos(t), py + 1.6 * math.sin(t)) for t in [i * 1.047 for i in range(6)]]
-            if max(hs) - min(hs) > 1.2:
-                continue
-            c.place(ia.hut_clutter(c, (k + j) % 3), px, py, min(hs) - 0.02, rot=rot + (j - 0.5) * 0.6, coll="Props",
-                    role="visual")
-
     def home(c, name, x, y, z, rot, k):
         pocket = name.split()[1].lower()
         if pocket in ("frostveil",) and not RUIN:
@@ -323,7 +313,7 @@ def main():
             c.place(ia.bone_hut(c, k % 2), x, y, hi - 0.05, rot=rot, coll="Village")
             g = c.game(x, y, hi + 5.4)
             c.entity("chimney", x=g[0], y=g[1], z=g[2])
-            hut_yard(x, y, rot, k)
+            YARDS.append((x, y, rot, k))  # (its yard: hut_yards)
             return True
         v = (1, 4, 2)[k % 3]
         if RUIN:
@@ -501,6 +491,7 @@ def thresholds(c, ground):
 
 
 LANES = []
+YARDS = []  # (the bone huts' yards to dress: hut_yards)
 TER = None  # (the terrain, once built: for seating buildings)
 
 
@@ -526,7 +517,7 @@ def village(c, ground, ter):
             a = k * math.tau / 10 + 0.3
             r = 5.2 + 1.6 * (k % 2)
             px, py = gx + r * math.cos(a), gy + r * math.sin(a)
-            c.place(hp.present_pile(c, k % 3), px, py, ground(px, py) - 0.1, rot=a + 0.4 * (k % 3), scale=1.25 + 0.15 * (k % 3),
+            c.place(hp.present_pile(c, k % 3), px, py, sd.low(ground, px, py, 2.2) - 0.1, rot=a + 0.4 * (k % 3), scale=1.25 + 0.15 * (k % 3),
                     coll="Village")
     # The bell tower, on level ground, its door to the square, its stone footing down to
     # the land all round (Blake, review-snow_region note 3: "this building is floating ...
@@ -574,8 +565,7 @@ def landmarks(c, ground, spots):
     gx, gy = SL.GATES["aurora"]
     f = facing("aurora")
     z = ground(gx, gy)
-    box(c, "Rift Crack", gx + 3.0 * math.cos(f), gy + 3.0 * math.sin(f), 5.0, 1.0, z - 1.0, z + 22.0, ("icefall_rift", "wall"),
-        rot=f + math.pi / 2, role="visual")
+    # (No sheet of ice behind it: review-snow_region 13 note 6, "remove this blue sheet".)
     for side in (-1, 1):
         x, y = gx + side * 12.0 * math.cos(f + math.pi / 2), gy + side * 12.0 * math.sin(f + math.pi / 2)
         c.place(ap.spire_cluster(c, 0 if side < 0 else 1, height=34.0), x, y, ground(x, y) - 0.5, role="visual")
@@ -587,11 +577,13 @@ def landmarks(c, ground, spots):
     # cavern's rims, catching the light from the Crest; an ice arch over the glacier.
     for k, (x, y, h, kind) in enumerate(((96.0, 176.0, 30.0, "spire"), (66.0, 130.0, 24.0, "column"), (150.0, 40.0, 34.0, "spire"),
                                          (120.0, 116.0, 18.0, "needles"), (206.0, 60.0, 22.0, "column"))):
-        z = ground(x, y)
+        # (On the lowest ground under it: review-snow_region 13 note 3, "some of these crystals
+        # are floating".)
+        z = min([ground(x, y)] + [ground(x + 5.0 * math.cos(a), y + 5.0 * math.sin(a)) for a in [j * 0.785 for j in range(8)]])
         if kind == "spire":
             c.place(ap.spire_cluster(c, k % 2, height=h), x, y, z - 0.5, role="visual")
         elif kind == "column":
-            c.place(ap.ice_column(c, k % 2, height=h, radius=3.5), x, y, z - 0.5, role="visual")
+            c.place(rp.rift_column(c, k % 2, height=h, radius=3.5), x, y, z - 0.5, role="visual")
         else:
             c.place(ap.needles(c, k % 2, height=h), x, y, z - 0.5, role="visual")
         c.place(paint.trunk_proto(c, 3.5, 12.0), x, y, z - 0.5, coll="Collision", role="collision")
@@ -624,6 +616,27 @@ def ruined(c, ground):
     ruin.shards(c, "Ice Shard", spots, ground, ("glacier_ice", "wall"), seed=7)
 
 
+def hut_yards(c, ground):
+    """Pots, a bucket, a woodpile and a chopping block with its tools about each bone hut
+    (review-snow_region 10 note 4), each on its own level spot. (Put down once the
+    summit's ground is all cut: review-snow_region 12 notes 4, 5, "these things are
+    floating".)"""
+    for x, y, rot, k in YARDS:
+        cs, sn = math.cos(rot), math.sin(rot)
+        pieces = [(ia.camp_pots(c, k % 2), 4.5, -1.6, 0.55, 0.0), (ia.camp_bucket(c), 4.9, 0.4, 0.4, 0.0),
+                  (ia.camp_woodpile(c), -4.7, 0.6, 0.95, math.pi / 2), (ia.camp_block(c), -4.3, -2.3, 0.5, 0.0)]
+        for j, (proto, lx, ly, r, turn) in enumerate(pieces):
+            if (k + j) % 4 == 3:
+                continue  # (not every hut has everything)
+            px, py = x + lx * cs - ly * sn, y + lx * sn + ly * cs
+            if L.wall_sd(px, py) > -3.0 or not paint.road_clear(c, px, py, 1.5):
+                continue
+            hs = [ground(px, py)] + [ground(px + r * math.cos(t), py + r * math.sin(t)) for t in [i * 0.785 for i in range(8)]]
+            if max(hs) - min(hs) > 0.45:
+                continue  # (no spot level enough for it)
+            c.place(proto, px, py, min(hs) - 0.04, rot=rot + turn + 0.3 * math.sin(k + j), coll="Props", role="visual")
+
+
 def dress(c, ground, spots):
     """The paint pass, world by world: the village's lantern posts, Christmas pines and
     snowmen; the bailey's curtain walls, towers, braziers and banners; the summit's pines,
@@ -637,7 +650,10 @@ def dress(c, ground, spots):
                          (SL.HOLLOW[0], SL.HOLLOW[1], 41.0), (SL.HOLLOW_MOUTH[0], SL.HOLLOW_MOUTH[1], 16.0),
                          # (No shrub or boulder here: review-snow_region 11 notes 4, 7, "remove this
                          # shrub", "remove this rock.")
-                         (-31.7, -150.3, 2.5), (-109.6, -74.2, 2.5)])
+                         (-31.7, -150.3, 2.5), (-109.6, -74.2, 2.5),
+                         # (review-snow_region 12 notes 7, 8: "remove this shrub", a broadleaf and a
+                         # shrub up the summit; and no little pine inside the great tree)
+                         (-27.0, 193.3, 3.0), (-87.4, 112.2, 2.0), (*SL.TREE, 14.0)])
     # The walls brought to life (snow_dress), both builds.
     sd.wall_life(c, ground, taken)
 
@@ -711,19 +727,28 @@ def dress(c, ground, spots):
     def lone_hut(x, y, z, s):
         rot = 2.3 * x + 1.1 * y
         c.place(ia.bone_hut(c, 1), x, y, z - 0.2, rot=rot, scale=s, coll="Props")
-        hut_yard(x, y, rot, int(abs(x)))
+        YARDS.append((x, y, rot, int(abs(x))))
     paint.scatter(c, ia.bone_hut(c, 1), 2, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -8, g, taken, 45, room=10.0,
                   road_margin=8.0, instead=lone_hut, scale=(1.0, 1.0))
+    hut_yards(c, ground)
     # The glacier: ice columns, spires, crystal gardens, ice spikes.
     au = look("aurora")
     ss.aurora(c, ground, taken)
+    if not RUIN:
+        ss.rift_folk(c, ground, taken, TER)
+        ss.outpost(c, ground, taken, TER)
     for v in range(2):
-        paint.scatter(c, ap.ice_column(c, v, height=30.0, radius=4.0), 6, rmax,
-                      lambda x, y: au(x, y) and L.wall_sd(x, y) > -24, g, taken, 80 + v, room=14.0, road_margin=10.0)
+        # (Each set down on the lowest ground under its spread, so none floats on the rift's
+        # slopes, review-snow_region 13 note 3; the columns' crystals rooted in them, note 5.)
+        paint.scatter(c, rp.rift_column(c, v, height=30.0, radius=4.0), 6, rmax,
+                      lambda x, y: au(x, y) and L.wall_sd(x, y) > -24, g, taken, 80 + v, room=14.0, road_margin=10.0, seat=4.5,
+                      sink=0.8)
         paint.scatter(c, ap.spire_cluster(c, v, height=22.0), 5, rmax, au, g, taken, 82 + v, room=14.0, road_margin=10.0,
-                      trunk=(4.0, 12.0))
-        paint.scatter(c, ap.ice_spike(c, v, height=10.0), 14, rmax, au, g, taken, 84 + v, room=5.0, road_margin=6.0)
-    paint.scatter(c, ap.garden(c, 0, radius=8.0), 4, rmax, au, g, taken, 86, room=14.0, road_margin=9.0, role="visual")
+                      trunk=(4.0, 12.0), seat=4.0, sink=0.6)
+        paint.scatter(c, ap.ice_spike(c, v, height=10.0), 14, rmax, au, g, taken, 84 + v, room=5.0, road_margin=6.0, seat=1.8,
+                      sink=0.5)
+    paint.scatter(c, ap.garden(c, 0, radius=8.0), 4, rmax, au, g, taken, 86, room=14.0, road_margin=9.0, role="visual", seat=5.0,
+                  sink=0.4)
     # The lake: pines on its shores, icebergs frozen in the ice.
     la = look("lake")
     for v, p in enumerate(pines[:2]):

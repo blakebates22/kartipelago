@@ -216,7 +216,10 @@ def crevasse_cut(x, y):
     (sx, sy), (ex, ey) = CREVASSE[0], CREVASSE[-1]
     ends = min(math.hypot(x - sx, y - sy), math.hypot(x - ex, y - ey))
     hw = CREVASSE_HW * (1.0 + 0.15 * math.sin(x * 0.27 + y * 0.11))
-    return CREVASSE_DEPTH * (1.0 - smooth((d - 2.0) / (hw - 2.0))) * smooth(ends / 18.0)
+    # (Its ends ramp up out of it gently, under 37°, so a kart that goes in can always drive
+    # out along its floor: Blake, review-snow_region 13 notes 9, 10, "I just got stuck down
+    # here with my car".)
+    return CREVASSE_DEPTH * (1.0 - smooth((d - 2.0) / (hw - 2.0))) * smooth(ends / 46.0)
 
 
 def _floor(x, y):

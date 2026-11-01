@@ -681,11 +681,13 @@ def workshop(c, idx, rng, sign_kind, door_col):
         # a board across it): a dark back wall, a plank floor, and the carvers' stock of ice
         # blocks stacked in it, three deep, in a stepped pile (Blake, review-snow_region 9
         # note 1, explained: "I wanted the shed to have ice blocks in it").
-        P.add("cave_rock", lambda: cuboid(bm, (0, -5.5, 2.4), (w - 6.0, 0.6, 5.0)))
-        P.add("cave_rock", lambda: cuboid(bm, (0, -3.0, 4.95), (w - 6.0, 5.6, 0.3)))
-        P.add(TIMBER, lambda: cuboid(bm, (0, -2.9, -0.05), (w - 6.0, 5.4, 0.3)))
+        # (The pile pulled forward, clear of the rock behind: review-snow_region 12 note 1, "the
+        # are partially in the wall".)
+        P.add("cave_rock", lambda: cuboid(bm, (0, -4.3, 2.4), (w - 6.0, 0.6, 5.0)))
+        P.add("cave_rock", lambda: cuboid(bm, (0, -2.3, 4.95), (w - 6.0, 4.2, 0.3)))
+        P.add(TIMBER, lambda: cuboid(bm, (0, -2.2, -0.05), (w - 6.0, 4.0, 0.3)))
         n = 0
-        for row, (y, layers) in enumerate(((-4.4, 3), (-3.05, 2), (-1.7, 1))):
+        for row, (y, layers) in enumerate(((-3.3, 3), (-2.05, 2), (-0.95, 1))):
             for lay in range(layers):
                 cols = 4 - (lay if row else 0)
                 for i in range(cols):
@@ -773,7 +775,7 @@ def block_home(c, idx, rng, sign_kind, door_col):
 # (The walls' foot is 2 m soft on the land's 2.5 m grid: the fronts stand 2 m out, their
 # bodies back in the rock.)
 SLOTS = [
-    (-0.50, 2.0, "workshop", 0.06),
+    (-0.50, 4.0, "workshop", 0.06),  # (2 m further out of the wall: review-snow_region 12 note 1)
     (-0.08, 2.0, "cut", -0.08),
     (0.30, 7.5, "dome", 0.0),
     (0.62, 2.0, "stack", 0.05),

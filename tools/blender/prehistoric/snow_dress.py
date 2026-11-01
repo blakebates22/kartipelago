@@ -531,7 +531,7 @@ def hearthglow(c, ground, ter, taken):
             for k in range(5):
                 a = k * 1.26 + 0.3
                 px, py = tx + 3.2 * math.cos(a), ty + 3.2 * math.sin(a)
-                c.place(hp.present_pile(c, k % 3), px, py, ground(px, py) - 0.05, rot=a, coll="Village", role="visual")
+                c.place(hp.present_pile(c, k % 3), px, py, low(ground, px, py, 1.6) - 0.08, rot=a, coll="Village", role="visual")
             taken.add(tx, ty, 5.0)
             SPOTS.append((tx, ty, 5.0))
         w, d = hp.COTTAGE_SIZE[1]
@@ -610,6 +610,13 @@ def hearthglow(c, ground, ter, taken):
     return []
 
 
+def low(ground, x, y, r):
+    """The lowest ground round (x, y) out to r: what a thing that wide is set down on, so
+    no part of it floats."""
+    return min([ground(x, y)] + [ground(x + f * r * math.cos(a), y + f * r * math.sin(a))
+                                 for f in (0.5, 1.0) for a in [k * 0.785 for k in range(8)]])
+
+
 def _near(x0, y0, ok, rmax=14.0):
     """The nearest spot to (x0, y0) where ok(x, y) holds (a spiral out), or None."""
     for k in range(400):
@@ -626,9 +633,6 @@ def yule(c, ground, ter, taken, clear, inside, stalls):
     """review-snow_region 11 (Nov 1): small Christmas trees where a stall stood and up the
     street (notes 1, 2), a grand snowman facing the road (note 5), three little snowmen
     (note 8), and a couple of market stalls with candy canes round the empty bend (note 6)."""
-    def low(x, y, r):
-        return min([ground(x, y)] + [ground(x + r * math.cos(a), y + r * math.sin(a)) for a in [k * 0.785 for k in range(8)]])
-
     def facing(x, y):
         """A prop's front (-Y) turned to the road."""
         q, _ = c.nearest(x, y)
@@ -640,11 +644,11 @@ def yule(c, ground, ter, taken, clear, inside, stalls):
         if not spot:
             continue
         x, y = spot
-        c.place(hp.xmas_pine(c, k % 2, 6.0, lights=True), x, y, low(x, y, 1.6) - 0.2, rot=k * 1.3, coll="Village")
+        c.place(hp.xmas_pine(c, k % 2, 6.0, lights=True), x, y, low(ground, x, y, 1.6) - 0.2, rot=k * 1.3, coll="Village")
         for j in range(2):
             a = j * 2.6 + 0.8 + k
             px, py = x + 1.9 * math.cos(a), y + 1.9 * math.sin(a)
-            c.place(hp.present_pile(c, (j + k) % 3), px, py, ground(px, py) - 0.05, rot=a, scale=0.7, coll="Village",
+            c.place(hp.present_pile(c, (j + k) % 3), px, py, low(ground, px, py, 1.1) - 0.08, rot=a, scale=0.7, coll="Village",
                     role="visual")
         taken.add(x, y, 2.8)
         SPOTS.append((x, y, 2.8))
@@ -652,7 +656,7 @@ def yule(c, ground, ter, taken, clear, inside, stalls):
     print("hearthglow: the grand snowman at", spot)
     if spot:
         x, y = spot
-        c.place(yp.grand_snowman(c, 0), x, y, low(x, y, 1.2) - 0.25, rot=facing(x, y), coll="Village")
+        c.place(yp.grand_snowman(c, 0), x, y, low(ground, x, y, 1.2) - 0.25, rot=facing(x, y), coll="Village")
         taken.add(x, y, 2.2)
         SPOTS.append((x, y, 2.2))
     for j, (dx, dy) in enumerate(((0.0, 0.0), (2.4, 0.9), (1.0, 2.5))):
@@ -660,7 +664,7 @@ def yule(c, ground, ter, taken, clear, inside, stalls):
         if not spot:
             continue
         x, y = spot
-        c.place(hp.snowman(c, j), x, y, low(x, y, 0.6) - 0.15, rot=facing(x, y) + (j - 1) * 0.35, scale=0.45 + 0.08 * j,
+        c.place(hp.snowman(c, j), x, y, low(ground, x, y, 0.6) - 0.15, rot=facing(x, y) + (j - 1) * 0.35, scale=0.45 + 0.08 * j,
                 coll="Village")
         taken.add(x, y, 1.1)
         SPOTS.append((x, y, 1.1))

@@ -19,6 +19,8 @@ import math
 import random
 
 import aurora_props as ap
+import frost_props as fp
+import rift_props as rp
 import hearthglow_props as hp
 import keep_props as kp
 import props as pr
@@ -257,8 +259,10 @@ def frost_chapel(c, ground, taken):
     bm.faces.new(ring)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     c.assign(c.mesh_object("Frost Chapel 1 Rose Window", bm, "Village", "visual"), c.lib("window_warm"))
-    box(c, "Frost Chapel 1 Door", fx - 0.1, fy, 0.3, 2.0, z + 0.4, z + 6.5, ("dark_corridor", "wall"), rot=rot, role="visual")
-    box(c, "Frost Chapel 1 Door Arch", fx - 0.2, fy, 0.4, 2.8, z + 6.5, z + 7.6, stone, rot=rot, role="visual")
+    # The great door: oak leaves under a pointed arch, iron straps, a stone surround
+    # (review-snow_region 12 note 10: "a nice wooden castle door").
+    c.place(fp.chapel_door(c, 4.0, 6.1), fx + 0.1, fy, z + 0.4, rot=rot - math.pi / 2, coll="Village", role="visual",
+            name="Frost Chapel 1 Door")
     # Lancets down both sides of the nave.
     for k in range(5):
         lx = -7.0 + k * 3.6
@@ -316,7 +320,9 @@ def frost_cove(c, ground, taken):
     c.disc("Frost Cove Pool", bx + 6.0, cy, 7.0, cz + 0.05, c.lib("lake_ice", "ice"), coll="Village", role="both", n=24)
     # The ice dragon on its plinth, before the falls, facing the road (east).
     dx, dy = cx + 2.0, cy
-    c.place(kp.dragon_statue(c, mat="glacier_ice"), dx, dy, ground(dx, dy) - 0.2, rot=-math.pi / 2, scale=2.6, coll="Village")
+    # (Finer, on a finer pedestal: review-snow_region 12 note 9.)
+    dz = min(ground(dx + 4.9 * math.cos(a), dy + 4.9 * math.sin(a)) for a in [k * 0.785 for k in range(8)])
+    c.place(fp.ice_dragon(c), dx, dy, dz - 0.1, rot=-math.pi / 2, scale=1.5, coll="Village")
     taken.add(cx, cy, cr)
 
 
@@ -611,11 +617,135 @@ def aurora(c, ground, taken):
             taken.add(x, y, 1.2)
             n += 1
         if k % 2 == 0:
-            ox = q.w / 2 + 6.0
-            x, y = q.p.x + q.r.x * -side * ox, q.p.y + q.r.y * -side * ox
-            if taken.clear(x, y, 3.0) and paint.road_clear(c, x, y, 3.0):
-                proto = amber if k % 6 == 0 else fans[k % 3]
-                c.place(proto, x, y, ground(x, y) - 0.3, rot=math.atan2(q.t.y, q.t.x) + k, coll="Props", role="visual")
+            # (Grown out of the foot of the rift's wall, their roots in it, fanned out toward
+            # the road: review-snow_region 13 note 4, "move this so the base is more into
+            # the wall". Out from the road till the wall rises.)
+            ux, uy = q.r.x * -side, q.r.y * -side
+            z0 = ground(q.p.x + ux * (q.w / 2 + 2.0), q.p.y + uy * (q.w / 2 + 2.0))
+            spot = None
+            for ox in [q.w / 2 + 3.0 + 0.5 * j for j in range(30)]:
+                x, y = q.p.x + ux * ox, q.p.y + uy * ox
+                if ground(x, y) > z0 + 1.6 or L.wall_sd(x, y) > -2.0:
+                    spot = (x + ux * 0.6, y + uy * 0.6)
+                    break
+            proto = amber if k % 6 == 0 else fans[k % 3]
+            if spot and taken.clear(spot[0], spot[1], 2.5) and paint.road_clear(c, spot[0], spot[1], 2.5):
+                x, y = spot
+                z = min(ground(x + 1.5 * math.cos(a), y + 1.5 * math.sin(a)) for a in [j * 0.785 for j in range(8)])
+                c.place(proto, x, y, z - 0.9, rot=math.atan2(ux, -uy), coll="Props", role="visual")
                 taken.add(x, y, 3.0)
     c.entity("area_ambient", area="aurora", effect="sparkles", rate=14, radius=34, colors=["#9ef3ff", "#c9a2ff", "#ffffff"])
     print("aurora: %d lantern posts" % n)
+
+
+# review-snow_region 13 (Nov 1), Blake's pins (blender x, y):
+CRYSTAL_HUT = (165.4, 46.7)  # note 2: "a nice crystal hut with npcs ... like they built a home from the crystals"
+RIFT_FIRE = (95.5, 122.5)  # note 7: "a little fire here with some stump chairs around it"
+OUTPOST = (84.7, -401.9)  # note 1: "a little outpost here with some npcs they are about to pilgramige to dino valley"
+
+
+def _level_spot(c, ground, taken, x0, y0, room, slope, rmax=20.0, wall=None, margin=None):
+    """The nearest spot to (x0, y0) with `room` clear and level to within `slope` (a spiral
+    out), with the lowest ground under it, or None."""
+    why = [0, 0, 0, 99.0]
+    for k in range(2000):
+        a, d = k * 2.399, 0.55 * math.sqrt(k)
+        if d > rmax:
+            break
+        x, y = x0 + d * math.cos(a), y0 + d * math.sin(a)
+        if wall is not None and L.wall_sd(x, y) > wall:
+            why[0] += 1
+            continue
+        if not taken.clear(x, y, room):
+            why[1] += 1
+            continue
+        if not paint.road_clear(c, x, y, room if margin is None else margin):
+            why[2] += 1
+            continue
+        hs = [ground(x, y)] + [ground(x + room * math.cos(t), y + room * math.sin(t)) for t in [j * 0.785 for j in range(8)]]
+        why[3] = min(why[3], max(hs) - min(hs))
+        if max(hs) - min(hs) <= slope:
+            return x, y, min(hs)
+    print("  no level spot by (%.0f, %.0f): walls, taken, road, flattest" % (x0, y0), why)
+    return None
+
+
+def _face(c, x, y):
+    """A prop's front (-Y) turned to the nearest road."""
+    q, _ = c.nearest(x, y)
+    return math.atan2(q.p.y - y, q.p.x - x) + math.pi / 2
+
+
+def rift_folk(c, ground, taken, ter=None):
+    """The crystal hut and its folk (note 2), a fire with stump seats round it (note 7)."""
+    import props as pr
+
+    spot = _level_spot(c, ground, taken, *CRYSTAL_HUT, 6.0, 2.5, wall=-6.0, margin=4.0)
+    print("rift: the crystal hut at", spot and (round(spot[0]), round(spot[1])))
+    if spot:
+        x, y, z = spot
+        if ter is not None:
+            paint.grade(c, ter, x, y, 0.0, 13.0, 13.0, z)
+        rot = _face(c, x, y)
+        c.place(rp.crystal_hut(c, 0), x, y, z, rot=rot, coll="Village", name="Crystal Hut 1")
+        taken.add(x, y, 7.0)
+        fx, fy = x + 6.5 * math.sin(rot), y - 6.5 * math.cos(rot)  # (before its door)
+        g = c.game(fx, fy, ground(fx, fy))
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=9.0, n=3, folk="snow",
+                 heading=round(-rot, 3))
+        g = c.game(x, y, z + 6.0)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    spot = _level_spot(c, ground, taken, *RIFT_FIRE, 3.6, 1.0, wall=-3.0, margin=3.0)
+    print("rift: the fire at", spot and (round(spot[0]), round(spot[1])))
+    if spot:
+        x, y, z = spot
+        c.place(pr.campfire(c), x, y, z, coll="Fire", role="visual")
+        g = c.game(x, y, z + 1.2)
+        c.entity("torch", x=g[0], y=g[1], z=g[2])
+        for j in range(4):
+            a = j * math.tau / 4 + 0.4
+            sx, sy = x + 2.5 * math.cos(a), y + 2.5 * math.sin(a)
+            sz = min(ground(sx + 0.5 * math.cos(t), sy + 0.5 * math.sin(t)) for t in [i * 1.047 for i in range(6)])
+            c.place(rp.stump_seat(c, j % 3), sx, sy, sz, rot=a, coll="Props")
+        taken.add(x, y, 3.8)
+        g = c.game(x, y, z)
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=5.0, n=2, folk="snow", heading=0.0)
+
+
+def outpost(c, ground, taken, ter=None):
+    """The pilgrims' outpost on the crest over the way down to the Burnt Gorge (note 1):
+    two hide tents, a fire, a loaded sled, a woodpile, and the snow folk packed for the
+    long walk to Dino Valley (the "pilgrim" folk)."""
+    import props as pr
+    import snow_props as snp
+
+    spot = _level_spot(c, ground, taken, *OUTPOST, 7.5, 2.5, rmax=30.0, margin=5.0)
+    print("outpost at", spot and (round(spot[0]), round(spot[1])))
+    if not spot:
+        return 0
+    x, y, z = spot
+    if ter is not None:
+        paint.grade(c, ter, x, y, 0.0, 17.0, 17.0, z)
+    rot = _face(c, x, y)
+    cs, sn = math.cos(rot), math.sin(rot)
+
+    def at(lx, ly):
+        return x + lx * cs - ly * sn, y + lx * sn + ly * cs
+
+    for proto, lx, ly, turn, coll in ((ia.hide_tent(c, 0), -3.8, 2.4, 0.5, "Village"), (ia.hide_tent(c, 1), 3.6, 3.0, -0.6, "Village"),
+                                      (snp.sled(c, 1), 4.6, -2.6, 1.9, "Props"), (ia.camp_woodpile(c), -4.4, -1.8, 0.3, "Props"),
+                                      (ia.camp_pots(c, 1), -1.6, 4.4, 0.0, "Props"), (ia.hide_rack(c), 0.4, 5.6, 0.0, "Props")):
+        px, py = at(lx, ly)
+        c.place(proto, px, py, ground(px, py) - 0.05, rot=rot + turn, coll=coll)
+    c.place(pr.campfire(c), x, y, ground(x, y), coll="Fire", role="visual")
+    g = c.game(x, y, ground(x, y) + 1.2)
+    c.entity("torch", x=g[0], y=g[1], z=g[2])
+    for j in range(3):
+        a = j * math.tau / 3 - 0.6
+        sx, sy = x + 2.4 * math.cos(a), y + 2.4 * math.sin(a)
+        c.place(rp.stump_seat(c, j), sx, sy, ground(sx, sy), rot=a, coll="Props")
+    taken.add(x, y, 9.0)
+    g = c.game(x, y, ground(x, y))
+    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=9.0, n=4, folk="pilgrim",
+             heading=round(-rot, 3))
+    return 1
