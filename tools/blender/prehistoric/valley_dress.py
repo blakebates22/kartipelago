@@ -754,8 +754,11 @@ def ruin_site(c, x, y, rot, ground, k):
     z = min(ground(*at(dx, dy)) for dx in (-8, 0, 8) for dy in (-7, 0, 7)) - 0.3
     temple = ("jungle_temple", "wall")
     glyph = ("ruin_glyph", "wall")
-    for t, (hx, hy, hh) in enumerate(((9.0, 7.5, 1.8), (7.0, 5.8, 1.7), (5.0, 4.2, 1.6))):
-        zz = z + sum(q[2] for q in ((9.0, 7.5, 1.8), (7.0, 5.8, 1.7))[:t])
+    # (Two tiers, the ledge round the top one wide enough to turn a kart on: the narrow
+    # ledges of three trapped a kart for good, Blake, review-valley_region_ruin.)
+    tiers = ((9.0, 7.5, 1.8), (4.6, 3.6, 3.3))
+    for t, (hx, hy, hh) in enumerate(tiers):
+        zz = z + sum(q[2] for q in tiers[:t])
         box(c, "Temple Ruin %d Tier %d" % (k, t), x, y, hx, hy, zz - (1.5 if t == 0 else 0.0), zz + hh,
             glyph if t == 1 else temple, rot=rot)
     sx, sy = at(0.0, -8.8)

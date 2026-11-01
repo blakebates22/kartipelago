@@ -1178,7 +1178,12 @@
       "effect": "sparkles",
       "rate": 9,
       "radius": 34,
-      "colors": ["#fff6c0", "#ffe9a0", "#ffffff", "#f8ffd0"]
+      "colors": [
+        "#fff6c0",
+        "#ffe9a0",
+        "#ffffff",
+        "#f8ffd0"
+      ]
     },
     {
       "id": "area_ambient_02",
@@ -1187,7 +1192,11 @@
       "effect": "sparkles",
       "rate": 12,
       "radius": 28,
-      "colors": ["#e8fbff", "#c8f0ff", "#ffffff"]
+      "colors": [
+        "#e8fbff",
+        "#c8f0ff",
+        "#ffffff"
+      ]
     },
     {
       "id": "area_ambient_03",
@@ -1196,7 +1205,10 @@
       "effect": "sparkles",
       "rate": 4,
       "radius": 30,
-      "colors": ["#fff6c0", "#ffffff"]
+      "colors": [
+        "#fff6c0",
+        "#ffffff"
+      ]
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region.py (re-running it rewrites entities)"

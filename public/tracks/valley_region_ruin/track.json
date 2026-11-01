@@ -1224,7 +1224,12 @@
       "effect": "sparkles",
       "rate": 9,
       "radius": 34,
-      "colors": ["#fff6c0", "#ffe9a0", "#ffffff", "#f8ffd0"]
+      "colors": [
+        "#fff6c0",
+        "#ffe9a0",
+        "#ffffff",
+        "#f8ffd0"
+      ]
     },
     {
       "id": "area_ambient_02",
@@ -1233,7 +1238,11 @@
       "effect": "sparkles",
       "rate": 12,
       "radius": 28,
-      "colors": ["#e8fbff", "#c8f0ff", "#ffffff"]
+      "colors": [
+        "#e8fbff",
+        "#c8f0ff",
+        "#ffffff"
+      ]
     },
     {
       "id": "area_ambient_03",
@@ -1242,12 +1251,15 @@
       "effect": "sparkles",
       "rate": 4,
       "radius": 30,
-      "colors": ["#fff6c0", "#ffffff"]
+      "colors": [
+        "#fff6c0",
+        "#ffffff"
+      ]
     }
   ],
   "generator": "tools/blender/prehistoric/valley_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "valley_dress.py": "317f7fe95b9ec873cfdaaec5b27684794abd1972083572c8bd701c78ce504542",
+    "valley_dress.py": "af0f837b184741dcd61c7a38a1fbc724222aa9db8959eda26e210c0e5c7c8ab3",
     "valley_layout.py": "273d25b4e2cee56b8066cdd86d7db8fc413a9d3cc7b95302f3997b402f2dc8e2",
     "valley_region.py": "3802d80a5feea18c559dc7a3b52b5a8cc75bf5fb76e606216044e43b1cd5f221",
     "valley_village.py": "06f3a7a0b7fc3506ab66dc76ac9817ea172640d7159a7fc211564cdb41c5ad30"

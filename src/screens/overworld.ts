@@ -926,6 +926,33 @@ function regionAir(game: Game, session: Session, region: Region, ruined: boolean
 
 /** Where to look down from for the ground (the floor search doesn't reach from far above). */
 const PROBE_Y = 200;
+/** Put your kart back on the region's road, at its nearest point, facing along it (the
+ * ground looked for from just over the road there: underground roads too). */
+function backToRoad(session: Session, region: Region) {
+  const st = session.entrants[0]!.state;
+  // (A journey: only its road, not the way round out of sight.)
+  const road = region.journey?.road;
+  const samples = (session.track?.samples ?? []).filter(
+    (p) => !road || (p.dist >= road[0] && p.dist <= road[1]),
+  );
+  let best: (typeof samples)[number] | undefined;
+  let bd = Infinity;
+  for (const s of samples) {
+    const d = (s.pos.x - st.x) ** 2 + (s.pos.z - st.z) ** 2 + 4 * (s.pos.y - st.y) ** 2;
+    if (d < bd && session.kartFits(s.pos.x, s.pos.z, s.pos.y + 3)) {
+      bd = d;
+      best = s;
+    }
+  }
+  if (!best) return;
+  session.placeYou(
+    best.pos.x,
+    best.pos.z,
+    Math.atan2(best.forward.x, best.forward.z),
+    best.pos.y + 3,
+  );
+}
+
 /** How high to look down for the ground at a mark (an underground passage: its own). */
 const markProbe = (m: object) => ("y" in m && typeof m.y === "number" ? m.y : PROBE_Y);
 
@@ -1272,8 +1299,17 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
       const probe = from ? markProbe(from) : PROBE_Y;
       const fits = (x: number, z: number) => session.kartFits(x, z, probe);
       if (at?.startsWith("@")) {
-        const [x, z, h] = at.slice(1).split(",").map(Number) as [number, number, number];
-        session.placeYou(x, z, h, PROBE_Y);
+        const [x, z, h, y] = at.slice(1).split(",").map(Number) as [
+          number,
+          number,
+          number,
+          number?,
+        ];
+        const py = y !== undefined && Number.isFinite(y) ? y + 3 : PROBE_Y;
+        session.placeYou(x, z, h, py);
+        // (Somewhere a kart doesn't fit, a wall in it: back to the road, not stuck there for
+        // good. Blake, review-valley_region_ruin: stuck in the temple ruin, every time.)
+        if (!session.kartFits(x, z, py)) backToRoad(session, region);
       } else if (from && front) {
         const p = frontSpot(from, fits);
         session.placeYou(p.x, p.z, p.heading, probe);
@@ -1829,7 +1865,7 @@ function overworldPause(game: Game, region: Region, session: Session): Screen {
   const story = Boolean(game.overworld?.adventure);
   const here = () => {
     const s = session.entrants[0]!.state;
-    return `@${s.x.toFixed(2)},${s.z.toFixed(2)},${s.heading.toFixed(3)}`;
+    return `@${s.x.toFixed(2)},${s.z.toFixed(2)},${s.heading.toFixed(3)},${s.y.toFixed(2)}`;
   };
   const menu = new VMenu(
     game,
@@ -1886,6 +1922,18 @@ function overworldPause(game: Game, region: Region, session: Session): Screen {
                   game.screens.go(overworldLoading(game, region.id, here(), story));
                 };
                 game.screens.go(devMenu(game, { back }));
+              },
+            },
+          ]
+        : []),
+      // Dev builds only (Blake: not in the main game): stuck, back on the road.
+      ...(import.meta.env.DEV
+        ? [
+            {
+              label: "BACK TO THE ROAD",
+              action: () => {
+                backToRoad(session, region);
+                resume();
               },
             },
           ]
