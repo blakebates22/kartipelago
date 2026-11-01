@@ -13,9 +13,9 @@ const BUILDING =
   /Cottage|Hut|House|Home|Shed|Cabin|Stall|Store|Tower|Lodge|Chapel|Barn|Mill|Keep|Temple Ruin/i;
 /** (Stilt huts over the water, the cliff pueblo's homes on their own terraces, the
  * Dragon Kingdom's Citadel up on its spire, the avalanche gallery, statues and plinths,
- * colliders, boats.) */
+ * colliders, boats, buoys afloat.) */
 const NOT =
-  /Stilt|Pueblo Home|Citadel|Snowshed|Collider|Block|Gate|Frame|Boat|Slide Tower|Swamp Hut|Statue|Road|Wreck/i;
+  /Stilt|Pueblo Home|Citadel|Snowshed|Collider|Block|Gate|Frame|Boat|Buoy|Slide Tower|Swamp Hut|Statue|Road|Wreck/i;
 /** How far the land may fall away under a building's foot before it floats (m). */
 const GAP = 0.5;
 
@@ -48,7 +48,8 @@ async function floating(pkg: string) {
       z0 = Math.min(z0, m.pos[k + 2]!);
       z1 = Math.max(z1, m.pos[k + 2]!);
     }
-    return Math.max(x1 - x0, z1 - z0) > 80;
+    // (And a rock a building stands on: Coral Cove's lighthouse on its sea stack.)
+    return Math.max(x1 - x0, z1 - z0) > 80 || /Rock/i.test(m.name);
   });
   const ground = heightField(land);
   const bad: string[] = [];

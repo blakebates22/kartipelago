@@ -29,6 +29,7 @@ import beach_props as bp  # noqa: E402
 import tropic_props as tp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import isle_layout as M  # noqa: E402
+import isle_dress as idr  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("beach_region") + os.environ.get("KP_REGION_SUFFIX", "")
@@ -81,7 +82,8 @@ def main():
     kinds = {}
     for look, (ground, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
-    kinds["boardwalk"] = {"mat": "cove_planks", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("cove_planks", "road"),
+    # (Warm dock planks, the deep pass: the cove's grey planks read as concrete from the road.)
+    kinds["boardwalk"] = {"mat": "wood_dock", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("wood_dock", "road"),
                           "barrier": 1.0, "barrier_mat": ("cove_rail", "wall"), "deck": 1.6, "deck_mat": ("cove_post", "wall"),
                           "ground": False}
     c.kinds = kinds
@@ -98,12 +100,12 @@ def main():
     # Raptor's square, off the road; the island hop's pier out east over the bay.
     hx, hy, hr = M.HUB
     smp, _ = c.nearest(hx, hy)
-    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (hx, hy), z0=smp.p.z, c=c), "cove_planks", "road", **trail)
+    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (hx, hy), z0=smp.p.z, c=c), "wood_dock", "road", **trail)
     hz = natural(hx, hy)
     (ax, ay), (bx, by) = M.HOP_PIER
     pier_z = max(WATER_Z + 2.2, hz)
     hop = [(lerp(ax, bx, k / 20), lerp(ay, by, k / 20), lerp(hz + 0.05, pier_z, min(1.0, k / 3)) + 0.02) for k in range(21)]
-    c.side_road("Hop Pier", hop, "cove_planks", "road", width=10.0, shoulder=0.4, shoulder_mat=("cove_planks", "road"),
+    c.side_road("Hop Pier", hop, "wood_dock", "road", width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"),
                 barrier=1.0, barrier_mat=("cove_rail", "wall"), deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
     gates = {k: v for k, v in M.GATES.items() if k != "volcano"}
     if RUIN:
@@ -119,9 +121,9 @@ def main():
     vz = max(WATER_Z + 2.2, z0)
     qx, qy = smp.p.x + ux * (smp.w / 2 + 14.0), smp.p.y + uy * (smp.w / 2 + 14.0)
     c.side_road("Volcano Pier Road", [(lerp(sx, qx, k / 4), lerp(sy, qy, k / 4), lerp(z0, vz, k / 4) + 0.02) for k in range(5)],
-                "cove_planks", "road", width=10.0, shoulder=0.4, shoulder_mat=("cove_planks", "road"))
-    c.side_road("Volcano Pier", [(lerp(qx, px, k / 16), lerp(qy, py, k / 16), vz + 0.02) for k in range(17)], "cove_planks", "road",
-                width=10.0, shoulder=0.4, shoulder_mat=("cove_planks", "road"), barrier=1.0, barrier_mat=("cove_rail", "wall"),
+                "wood_dock", "road", width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"))
+    c.side_road("Volcano Pier", [(lerp(qx, px, k / 16), lerp(qy, py, k / 16), vz + 0.02) for k in range(17)], "wood_dock", "road",
+                width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"), barrier=1.0, barrier_mat=("cove_rail", "wall"),
                 deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
     spots["volcano"] = ((px - ux * 4.0, py - uy * 4.0), math.atan2(-ux, uy))
     # The smugglers' track down the beach to the last tunnel's sea door, under Smugglers'
@@ -145,10 +147,18 @@ def main():
                          *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 22.0) for x, y in M.GATES.values()),
                          (*M.LAIR, 22.0)])
     water(c)
-    village(c, ground, taken)
+    village(c, ground, taken, ter)
     landmarks(c, ground, spots, taken)
     if RUIN:
         ruined(c, ground)
+    else:
+        # (The deep pass, Nov 1: each gateway's coast in its own course's kit: isle_dress.)
+        idr.coral_cove(c, ground, taken, ter)
+        idr.splash(c, ground, taken, ter)
+        idr.shipwreck(c, ground, taken, ter)
+        idr.pier_lamps(c, "Hop Pier", (ax, ay), (bx, by), pier_z, start=math.hypot(bx - ax, by - ay) * 3 / 20 + 2.0)
+        idr.volcano_pier(c, (qx, qy), (px, py), vz)
+    idr.jungle(c, ground, taken)
     sea_cave(c, ground)
     puzzle_kit.pen(c, "secret", "Hidden Cove", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("isle_rock", "wall"),
                    ground(*M.SECRET), height=6.0)
@@ -199,11 +209,17 @@ def sea_cave(c, ground):
         mx, my, rot = _into_point(x, y, 13.0 if name == "Tunnel Door" else 15.0)
         z = ground(x, y)
         box(c, name, mx, my, 1.2, w / 2, z - 1.0, z + h, ("dark_corridor", "wall"), rot=rot, role="visual")
+        # (Its rock round it: the mouth in the face of a rock, not a dark slab standing on
+        # the beach: the deep pass.)
+        rx, ry = mx + 8.4 * math.cos(rot), my + 8.4 * math.sin(rot)
+        if all(paint.road_clear(c, rx + 9.0 * math.cos(t), ry + 9.0 * math.sin(t), 1.0) for t in [k * 0.785 for k in range(8)]):
+            rk = c.rock_mass(name + " Rock", rx, ry, 7.8, w / 2 + 6.0, z + h + 5.0, z0=z - 3.0, n=16, seed=len(name), angle=rot, base=z)
+            c.assign(rk, c.lib("cove_rock", "wall"))
         box(c, name + " Lintel", mx - 1.3 * math.cos(rot), my - 1.3 * math.sin(rot), 0.4, w / 2 + 0.8, z + h, z + h + 0.7,
             ("weathered_timber", "wall"), rot=rot, role="visual")
         for sd in (-1, 1):
             px, py = mx - 1.3 * math.cos(rot) - sd * (w / 2 + 0.5) * math.sin(rot), my - 1.3 * math.sin(rot) + sd * (w / 2 + 0.5) * math.cos(rot)
-            box(c, name + " Post %d" % sd, px, py, 0.35, 0.35, z - 0.5, z + h, ("weathered_timber", "wall"), rot=rot, role="visual")
+            box(c, name + " Post %d" % sd, px, py, 0.35, 0.35, z - 0.5, z + h, ("weathered_timber", "wall"), rot=rot)  # (solid)
             lx, ly = px - 1.2 * math.cos(rot), py - 1.2 * math.sin(rot)
             c.place(bp.tiki_torch(c, 0), lx, ly, ground(lx, ly))
             g = c.game(lx, ly, ground(lx, ly) + 2.6)
@@ -254,26 +270,24 @@ def water(c):
 # ------------------------------------------------------------------ the village
 
 
-def village(c, ground, taken):
+def village(c, ground, taken, ter):
     """Raptor's village: a boardwalk square above the east bay, huts round it, stilt huts
     out over the bay either side of the hop's pier, tiki torches, a fire, its folk."""
     hx, hy, hr = M.HUB
-    hz = natural(hx, hy)
-    c.disc("Village Boardwalk", hx, hy, hr, hz + 0.05, c.lib("cove_planks", "road"), coll="Props", n=40)
-    for k in range(8):
-        a = k * math.tau / 8 + 0.3
-        if math.cos(a) > 0.7 or math.cos(a) < -0.7 and math.sin(a) > -0.2:
-            continue  # (clear of the pier, east, and the road, west)
-        x, y = hx + (hr + 7) * math.cos(a), hy + (hr + 7) * math.sin(a)
-        if not paint.road_clear(c, x, y, 6.0):
-            continue
-        if RUIN:
+    # (The square a deck of planks on land graded level, not a plane over the sand: the deep
+    # pass, isle_dress.village_deck; its huts graded round it: isle_dress.village.)
+    hz = idr.village_deck(c, ground, ter) - 0.12
+    if RUIN:
+        for k in range(8):
+            a = k * math.tau / 8 + 0.3
+            if math.cos(a) > 0.7 or math.cos(a) < -0.7 and math.sin(a) > -0.2:
+                continue  # (clear of the pier, east, and the road, west)
+            x, y = hx + (hr + 7) * math.cos(a), hy + (hr + 7) * math.sin(a)
+            if not paint.road_clear(c, x, y, 6.0):
+                continue
             box(c, "Hut %d" % k, x, y, 3.5, 3.5, ground(x, y) - 1.0, ground(x, y) + 1.4, ("tiki_wood", "wall"), rot=a)
             ruin.rubble(c, "Hut Wreck %d" % k, x + 4 * math.cos(a), y + 4 * math.sin(a), ground, ("thatch", "wall"), n=4, spread=3.0,
                         size=1.0, seed=k)
-            continue
-        foot = min(ground(x + dx, y + dy) for dx in (-3.5, 0.0, 3.5) for dy in (-3.5, 0.0, 3.5))
-        c.place(tp.beach_hut(c, k % 3), x, y, foot - 0.2, rot=a + math.pi / 2)
     # Stilt huts over the bay, along the pier.
     (ax, ay), (bx, by) = M.HOP_PIER
     for k in range(8):
@@ -286,8 +300,8 @@ def village(c, ground, taken):
             for sy in (-1, 1):
                 box(c, "Stilt %d %d%d" % (k, sx, sy), x + sx * 3.0, y + sy * 3.0, 0.2, 0.2, WATER_Z - 3.0, WATER_Z + 2.4,
                     ("cove_post", "wall"), role="visual")
-        box(c, "Stilt Deck %d" % k, x, y, 4.0, 4.0, WATER_Z + 2.2, WATER_Z + 2.45, ("cove_planks", "wall"))
-        box(c, "Stilt Walk %d" % k, x, lerp(y, lerp(ay, by, t), 0.5), 1.0, 5.0, WATER_Z + 2.2, WATER_Z + 2.4, ("cove_planks", "wall"),
+        box(c, "Stilt Deck %d" % k, x, y, 4.0, 4.0, WATER_Z + 2.2, WATER_Z + 2.45, ("wood_dock", "wall"))
+        box(c, "Stilt Walk %d" % k, x, lerp(y, lerp(ay, by, t), 0.5), 1.0, 5.0, WATER_Z + 2.2, WATER_Z + 2.4, ("wood_dock", "wall"),
             role="visual")
         if RUIN:
             ruin.rubble(c, "Stilt Wreck %d" % k, x, y, lambda x_, y_: WATER_Z + 2.4, ("thatch", "wall"), n=3, spread=2.5, size=1.0,
@@ -307,6 +321,8 @@ def village(c, ground, taken):
         c.place(torch, x, y, ground(x, y))
         g = c.game(x, y, ground(x, y) + 2.6)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
+    if not RUIN:
+        idr.village(c, ground, taken, ter, hz + 0.12)
 
 
 # ------------------------------------------------------------------ the landmarks
@@ -320,26 +336,7 @@ def landmarks(c, ground, spots, taken):
         gx, gy = M.GATES[name] if name in M.GATES else M.LAIR
         return math.atan2(gy - ey, gx - ex)
 
-    # Splash Lagoon: the slide tower by the lagoon.
-    x, y = M.GATES["splash"]
-    rot = facing("splash") + math.pi / 2
-    z = ground(x, y)
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            box(c, "Slide Tower Leg %d%d" % (sx, sy), x + sx * 9.0 * math.cos(rot) + sy * 3.0 * math.cos(rot - math.pi / 2),
-                y + sx * 9.0 * math.sin(rot) + sy * 3.0 * math.sin(rot - math.pi / 2), 0.6, 0.6, z - 1.0, z + 18.0,
-                ("party_white", "wall"))
-    box(c, "Slide Tower Deck", x, y, 10.0, 4.0, z + 18.0, z + 19.0, ("splash_deck", "wall"), rot=rot, role="visual")
-    for k, m in enumerate(("splash_slide_red", "splash_slide_yellow", "splash_slide_blue")):
-        box(c, "Slide %d" % k, x + (k - 1) * 6.0 * math.cos(rot) + 5 * math.cos(rot + math.pi / 2),
-            y + (k - 1) * 6.0 * math.sin(rot) + 5 * math.sin(rot + math.pi / 2), 1.2, 8.0, z + 4.0 + 4 * k, z + 5.0 + 4 * k,
-            (m, "wall"), rot=rot, role="visual")
-    # Shipwreck Bay: a galleon on its side down the beach.
-    x, y = M.GATES["wreck"]
-    f = facing("wreck")
-    gx, gy = x + 16.0 * math.cos(f), y + 16.0 * math.sin(f)
-    box(c, "Wreck Hull", gx, gy, 16.0, 4.5, WATER_Z - 1.0, ground(gx, gy) + 5.0, ("wreck_hull", "wall"), rot=f + math.pi / 2)
-    c.place(tp.mast(c, h=16.0, broken=True), gx + 4.0 * math.cos(f), gy + 4.0 * math.sin(f), ground(gx, gy) + 4.0, rot=f)
+    # (Splash Lagoon's slide tower and Shipwreck Bay's galleon: isle_dress, the deep pass.)
     # Volcano Isle offshore, smoking.
     vx, vy = M.VOLCANO
     volc = c.rock_mass("Volcano Isle", vx, vy, 90.0, 74.0, 120.0, z0=WATER_Z - 6.0, n=20, seed=7,
@@ -364,7 +361,7 @@ def landmarks(c, ground, spots, taken):
     d = math.hypot(ux, uy)
     ox, oy = q.p.x + ux / d * (q.w / 2 + 6.0), q.p.y + uy / d * (q.w / 2 + 6.0)
     oz = q.p.z
-    box(c, "Lookout Deck", ox, oy, 5.0, 4.0, oz - 3.0, oz + 0.3, ("cove_planks", "wall"), rot=math.atan2(uy, ux))
+    box(c, "Lookout Deck", ox, oy, 5.0, 4.0, oz - 3.0, oz + 0.3, ("wood_dock", "wall"), rot=math.atan2(uy, ux))
     torch = bp.tiki_torch(c, 0)
     for sd in (-1, 1):
         tx, ty = ox - uy / d * 4.5 * sd, oy + ux / d * 4.5 * sd

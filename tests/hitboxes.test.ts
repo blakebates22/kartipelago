@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { readGlb, type GlbMesh } from "./glb";
 
-export const HIT_REGIONS = ["valley_region"];
+export const HIT_REGIONS = ["valley_region", "desert_region", "beach_region"];
 /** What you'd expect to hit, by name. */
 const SOLID =
   /Column|Pillar|Pilaster|Post|Pole|Boulder|Rock|Stack|Totem|Statue|Brazier|Crate|Barrel|Lip|Log\b|Stump|Well|Tower|Lantern|Block|Stela|Obelisk|Heap|Hut|House|Home|Cottage|Shed|Stall|Tree|Palm|Giant/i;
