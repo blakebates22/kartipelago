@@ -53,52 +53,9 @@ def _game_heading(fx, fy):
 
 
 def hearthglow(c, ground, taken, seat):
-    """Cottages along both sides of the road through Hearthglow, set back from it facing
-    it, lantern posts between, presents by the road (a boost when burst), candy canes
-    and baubles. `seat(v, x, y, rot, name)`: sets a cottage level and solid, returns its
-    chimney or None."""
-    rng = random.Random(41)
-    post = hp.lantern_post(c, 0)
-    cane = hp.candy_cane(c, 5.0)
-    houses = 0
-    for k, (s, q) in enumerate(_stretches(c, "hearth", 11.0)):
-        for side in (-1, 1):
-          for v in rng.sample(range(5), 3):
-            w, d = hp.COTTAGE_SIZE[v]
-            off = q.w / 2 + 3.0 + d / 2 + rng.uniform(0.0, 2.0)
-            x, y = q.p.x + q.r.x * side * off, q.p.y + q.r.y * side * off
-            if not taken.clear(x, y, max(w, d) / 2 + 1.0) or not paint.road_clear(c, x, y, d / 2 + 1.5):
-                continue
-            if not _off_side_roads(c, x, y, max(w, d) / 2 + 2.0):
-                continue
-            if L.wall_sd(x, y) > -3.0:
-                continue
-            # (Its front, local -Y, to the road.)
-            rot = math.atan2(-q.r.y * side, -q.r.x * side) + math.pi / 2
-            smoke = seat(v, x, y, rot, "Street Cottage %d" % houses)
-            if smoke is None:
-                continue
-            taken.add(x, y, max(w, d) / 2 + 1.0)
-            g = c.game(*smoke)
-            c.entity("chimney", x=g[0], y=g[1], z=g[2])
-            houses += 1
-            break
-        # A lantern post at the road's edge between houses, sides alternating.
-        side = 1 if k % 2 else -1
-        x, y = q.p.x + q.r.x * side * (q.w / 2 + 1.6), q.p.y + q.r.y * side * (q.w / 2 + 1.6)
-        if taken.clear(x, y, 1.0) and paint.road_clear(c, x, y, 0.8) and _off_side_roads(c, x, y, 1.0):
-            z = ground(x, y)
-            c.place(post, x, y, z - 0.1, coll="Props", role="visual")
-            c.place(paint.trunk_proto(c, 0.3, 5.0), x, y, z, coll="Collision", role="collision")
-            g = c.game(x, y, z + 4.6)
-            c.entity("lantern", x=g[0], y=g[1], z=g[2])
-            taken.add(x, y, 1.2)
-        elif k % 3 == 1:
-            x, y = q.p.x + q.r.x * -side * (q.w / 2 + 1.8), q.p.y + q.r.y * -side * (q.w / 2 + 1.8)
-            if taken.clear(x, y, 1.0) and paint.road_clear(c, x, y, 0.8):
-                c.place(cane, x, y, ground(x, y) - 0.1, rot=rng.uniform(0, 6.28), coll="Props")
-                taken.add(x, y, 1.0)
-    # Presents by the road, three, on its shoulder: burst one for a small boost.
+    """Presents by the road through Hearthglow (a boost when burst). (Its cottages, lantern
+    posts, lights and candy canes are the village's street now: snow_dress.hearthglow;
+    its baubles are gone, floating over nothing: Blake, review-snow_region 7.)"""
     st = _stretches(c, "hearth", 6.0)
     n = 0
     for frac, side in ((0.22, 1), (0.5, -1), (0.78, 1)):
@@ -109,14 +66,7 @@ def hearthglow(c, ground, taken, seat):
         g = c.game(x, y, ground(x, y))
         c.entity("present", x=g[0], y=g[1], z=g[2], size=2.4, variant=n % 4, heading=_game_heading(q.t.x, q.t.y))
         n += 1
-    # Baubles turning over the square's edge.
-    vx, vy, vr, vz = SL.VILLAGE
-    for k, col in enumerate(("#d82a3a", "#2a8a4a", "#e8b64a", "#3a6ad8")):
-        a = k * math.tau / 4 + 0.4
-        x, y = vx + (vr + 6.0) * math.cos(a), vy + (vr + 6.0) * math.sin(a)
-        g = c.game(x, y, ground(x, y) + 7.0)
-        c.entity("ornament", x=g[0], y=g[1], z=g[2], r=1.4, color=col)
-    print("hearthglow streets: %d cottages, %d presents" % (houses, n))
+    print("hearthglow presents: %d" % n)
 
 
 # ------------------------------------------------------------------ Frostveil

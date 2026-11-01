@@ -324,11 +324,28 @@ def giant_tree(c, name, x, y, z, height=44.0):
 
     k.add("pine_night", boughs)
 
-    def garlands(bm):
-        for g in range(3):
-            _light_spiral(bm, height * 0.82, height * 0.28, height * 0.03, z + height * 0.12, 3.5, 0.7, 120, g * 2.1, (x, y))
-
-    k.add("xmas_lights", garlands)
+    # The lights (Blake, review-snow_region 7: the spiral ribbons "look terrible"): a
+    # string of bulbs round every tier, hung in scallops from bough tip to bough tip just
+    # out from the tier's rim, the colours in turn.
+    cols = ("bulb_red", "bulb_gold", "bulb_green", "bulb_blue")
+    for i in range(8):
+        t = i / 8
+        r = height * 0.3 * (1 - t * 0.82)
+        zb = z + height * (0.12 + 0.105 * i) + height * 0.085 - height * 0.085 + 0.4
+        tips = 14
+        per = max(3, int(r * math.tau / tips / 1.1))
+        n = 0
+        for j in range(tips):
+            for m in range(per):
+                u = m / per
+                a = (j + u) * math.tau / tips
+                rr = r * (0.97 - 0.06 * math.sin(math.pi * u)) + 0.25
+                zz = zb + 0.35 * math.sin(math.pi * u) * -1.0 + 0.35
+                px, py = x + rr * math.cos(a), y + rr * math.sin(a)
+                # (bough wobble, as the cones are: v.co.x += 0.35 sin(z 0.9 + i))
+                px += 0.35 * math.sin(zz * 0.9 + i)
+                k.add(cols[n % 4], lambda bm, px=px, py=py, zz=zz: blob(bm, (px, py, zz), 0.3 + 0.002 * height, subdiv=1))
+                n += 1
     k.add("star_gold", lambda bm: _star(bm, (x, y, z + height + 2.2), 3.4))
     # A low fence round its foot, with posts.
     k.add(BEAM, lambda bm: [cuboid(bm, (x + 12 * math.cos(a), y + 12 * math.sin(a), z + 0.6), (0.4, 0.4, 1.4)) for a in [i * math.tau / 16 for i in range(16)]])

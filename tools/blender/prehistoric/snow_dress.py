@@ -215,6 +215,10 @@ def wall_life(c, ground, taken):
     for x, y, look, (dx, dy), drop in lips:
         if not room.clear(x, y, 5.0) or drop < 4.5:
             continue
+        # (None round Hearthglow's basin: Blake, review-snow_region 7, "remove all of these
+        # weird icicles in this area".)
+        if math.hypot(x - SL.VILLAGE[0], y - SL.VILLAGE[1]) < 120.0:
+            continue
         # (Icicles only over icy rock: not on the brown and black walls, where they looked
         # wrong: Blake, review-snow_region note 8.)
         tex = paint.wall_texture(land, x + dx * 3.0, y + dy * 3.0, -dx, -dy, steps=(0.5, 1.5)) if land else None
@@ -320,154 +324,204 @@ def railing(c, px, py, toward, R, z, ground, span=1.25):
 
 
 def hearthglow(c, ground, ter, taken):
-    """Hearthglow, a real village (as the valley's camp was made: Blake, Oct 28, "lets
-    add more to this village"): the cobbled square and round it the cottages, facing it,
-    each with its lane trodden through the snow to the square; the frozen fountain and a
-    bonfire either side of the way through (the cutscenes' stage, north to south, is kept
-    clear); lantern posts round the square with strings of lights slung between them;
-    smoke from every chimney; and the warm light of windows and lanterns on the snow."""
+    """Hearthglow, a street village (Blake, review-snow_region 7: the square, its fountain
+    and bonfire gone; "houses lining the other side of this road. it needs to be done
+    methodically"): small cottages in a row along both sides of the road through the
+    basin, all set back the same, each facing the road, spaced evenly; a lantern post
+    every so often on both sides, opposite each other, Christmas lights strung along each
+    side and across the road between them; candy canes between the posts; the Christmas
+    market's stalls along the road's south-east stretch (note 5), the folk about them;
+    the warm light of the windows and lanterns on the snow. Returns its lanes (none now)."""
     cx, cy, cr, cz = SL.VILLAGE
     import villager_homes as vh
 
-    # (Clear of what was built before the village: the Gatehouse's towers stood through a
-    # cottage once. Taken before the square's own floor is laid.)
     standing = vh._built()
     sc = hs.Scene()
-    paths = []
-    vv.plaza(c, cx, cy, SQUARE_R, ground, dirt=("hearth_cobble", "road"),
-             edge=(TX.blend_id("packed_snow_road", "hearth_cobble", 50), "road"), verge=1.6, name="Village Square")
-    # (Its floor drives as a road; the snow round it as snow.)
-    c.disc("Village Square Floor", cx, cy, SQUARE_R + 0.6, cz + 0.02, c.lib("hearth_cobble", "road"), coll="Props",
-           role="collision", n=40)
-    # (Out of the square west to the road and east to the portal is kept clear: the way
-    # through, and the cutscenes' stage.)
-    def in_lane(x, y, w):
-        return abs(y - cy) < w * 0.75
-
-    # The fountain north, the bonfire south, either side of the way through.
-    fx, fy = cx - 2.0, cy + 10.5
-    warm_fountain(c, fx, fy, ground(fx, fy))
-    taken.add(fx, fy, 6.5)
-    SPOTS.append((fx, fy, 8.0))
-    bx, by = cx + 3.0, cy - 10.5
-    # (Set down as the valley's are: solid, logs in the fire and log benches round it.)
-    vv.place_hearth(c, bx, by, ground, rot=0.7)
-    if not RUIN:
-        g = c.game(bx, by, ground(bx, by) + 0.3)
-        c.entity("campfire", x=g[0], y=g[1], z=g[2])
-        sc.warm.append((bx, by, ground(bx, by) + 1.5))
-    taken.add(bx, by, 5.0)
-    SPOTS.append((bx, by, 6.0))
-    # The folk who live here, about the bonfire.
-    face = math.atan2(cy - by, cx - bx)
-    g = c.game(bx - 2.0, by - 5.0, ground(bx, by))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=9.0, n=3, folk="snow",
-             heading=round(math.atan2(-math.cos(face), math.sin(face)), 3))
-    # Lantern posts round the square, and lights slung between them (and over to the
-    # fountain's crown).
     post = hp.lantern_post(c, 0)
-    posts = []
-    for k in range(10):
-        a = k * math.tau / 10 + math.pi / 10
-        x, y = cx + (SQUARE_R + 1.8) * math.cos(a), cy + (SQUARE_R + 1.8) * math.sin(a)
-        if in_lane(x, y, 7.0) or not paint.road_clear(c, x, y, 3.0):
-            posts.append(None)
-            continue
-        z = ground(x, y)
-        c.place(post, x, y, z - 0.1, coll="Village", role="visual")
-        c.place(paint.trunk_proto(c, 0.3, 5.0), x, y, z, coll="Collision", role="collision")
-        posts.append((x, y, z))
-        taken.add(x, y, 1.5)
-        if not RUIN:
-            sc.lanterns.append((x, y, z + 4.6))
-            sc.warm.append((x, y, z + 4.0))
-    if not RUIN:
-        for a, b in zip(posts, posts[1:] + posts[:1]):
-            if a and b:
-                sc.lights.line((a[0], a[1], a[2] + 4.3), (b[0], b[1], b[2] + 4.3), sag=1.4, width=0.35)
-        for p in posts:
-            if p and math.hypot(p[0] - fx, p[1] - fy) < 12.0:
-                sc.lights.line((p[0], p[1], p[2] + 4.3), (fx, fy, ground(fx, fy) + 5.0), sag=0.8, width=0.3)
-    # The cottages, facing the square: round it on the hollow's floor, and up on the
-    # shelves of its walls (the village climbing the hollow, their windows over it).
+    cane = hp.candy_cane(c, 5.0)
+    # The road through the basin, as it goes (only where it's Hearthglow's, inside the
+    # basin's walls).
+    S0, S1 = 40.0, 250.0
+    # The market: the road's south-east stretch, its north side (note 5's spot).
+    MARKET = (80.0, 124.0, 1)
+    SMALL = (2, 1, 4, 2, 4, 1)  # (the cottages in turn: the small ones, hp.COTTAGE_SIZE)
+    SET = 4.0  # (each front yard: the road's edge to the cottage's front)
+    GAP = 3.5  # (between neighbours)
+
+    def side_of(q, sd, off):
+        return q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off
+
+    def inside(x, y):
+        return L.wall_sd(x, y) < -4.0 and L.look_at(x, y) == "hearth"
+
+    def clear(x, y, r):
+        return (taken.clear(x, y, r) and paint.road_clear(c, x, y, r)
+                and all(math.hypot(x - ox, y - oy) > orr + r for ox, oy, orr in standing))
+
     built = []
-    cands = []
-    # (The whole basin and the lake's shore by it, both sides of the road, nearest the
-    # square first: a village street, not a ring.)
-    for gx_ in range(-60, 61, 5):
-        for gy_ in range(-60, 61, 5):
-            if 21.0 < math.hypot(gx_, gy_) < 62.0:
-                cands.append((cx + gx_, cy + gy_, True))
-    cands.sort(key=lambda p: math.hypot(p[0] - cx, p[1] - cy))
-    cands += [(x, y, False) for x, y, _ in PADS]
-    k = 0
     why = {}
-    for x, y, floor in cands:
-        if len(built) >= 18:
-            break
-        if any(math.hypot(x - ox, y - oy) < orr + 6.0 for ox, oy, orr in standing):
-            why["built"] = why.get("built", 0) + 1
-            continue
-        if floor and (L.pocket_at(x, y) != "lake" or L.wall_sd(x, y) > -5.0
-                      or math.hypot(x - SL.LAKE[0], y - SL.LAKE[1]) < SL.LAKE[2] + 7.0):
-            why["pocket"] = why.get("pocket", 0) + 1
-            continue
-        r_ = "lane" if in_lane(x, y, 8.0) else "road" if not paint.road_clear(c, x, y, 8.0) else (
-            "taken" if not taken.clear(x, y, 5.0) else None)
-        if r_:
-            why[r_] = why.get(r_, 0) + 1
-            continue
-        if any(math.hypot(x - hx, y - hy) < 12.0 for hx, hy, _, _ in built):
-            continue
-        a = math.atan2(y - cy, x - cx)
-        rot = a - math.pi / 2  # (its front, local -Y, to the square)
-        v = (k * 3 + 1) % 5
-        if not floor and v in (0, 3):
-            v = (1, 2)[k % 2]  # (on a pad: one that fits on it)
+
+    def no(r):
+        why[r] = why.get(r, 0) + 1
+
+    for sd in (-1, 1):
+        s = S0
+        k = 0
+        while s < S1:
+            q = c.at(s)
+            if MARKET[0] <= s <= MARKET[1] and sd == MARKET[2]:
+                s += 2.0
+                continue
+            v = SMALL[k % len(SMALL)]
+            w, d = hp.COTTAGE_SIZE[v]
+            x, y = side_of(q, sd, q.w / 2 + SET + d / 2)
+            rot = math.atan2(-q.r.y * sd, -q.r.x * sd) + math.pi / 2  # (its front, local -Y, to the road)
+            if not inside(x, y):
+                no("outside" if L.look_at(x, y) == "hearth" else "look:" + L.look_at(x, y))
+                s += 2.0
+                continue
+            if not taken.clear(x, y, max(w, d) / 2 + 0.8):
+                no("taken")
+                s += 2.0
+                continue
+            if not paint.road_clear(c, x, y, max(w, d) / 2 + 0.8):
+                no("road")
+                s += 2.0
+                continue
+            if not clear(x, y, max(w, d) / 2 + 0.8):
+                no("standing")
+                s += 2.0
+                continue
+            if RUIN:
+                hi = level_site(c, x, y, rot, w, d, ground, ter)
+                if hi is None:
+                    s += 2.0
+                    continue
+                z = hi - 0.5
+                box(c, "Street House %d" % len(built), x, y, w / 2 - 0.5, d / 2 - 0.5, z - 0.8, z + 4.5, ("hearth_stone", "wall"),
+                    rot=rot)
+                box(c, "Street House Ice %d" % len(built), x, y, w / 2 + 0.4, d / 2 + 0.4, z - 0.8, z + 7.0, ("berg_ice", "wall"),
+                    rot=rot + 0.08)
+            else:
+                smoke = seat_cottage(c, v, x, y, rot, ground, name="Street Cottage %d" % len(built), ter=ter)
+                if smoke is None:
+                    no("level")
+                    s += 2.0
+                    continue
+                sc.chimneys.append(smoke)
+                sc.warm.append((x, y, ground(x, y) + 2.5))
+            taken.add(x, y, max(w, d) / 2 + 0.8)
+            SPOTS.append((x, y, max(w, d) / 2 + 1.0))
+            built.append((x, y))
+            k += 1
+            s += w + GAP
+    # Then the rest of the street's frontage (where the road bends, the walk along it skips
+    # over room on its inside): every spot a cottage fits facing the road, its front the
+    # same few metres back from the road's edge, nearest the road first.
+    k = 0
+    cands = []
+    for gx_ in range(-75, 76, 3):
+        for gy_ in range(-75, 76, 3):
+            x, y = cx + gx_, cy + gy_
+            q, _ = c.nearest(x, y)
+            if not (S0 <= q.s <= S1) or not inside(x, y):
+                continue
+            dd = math.hypot(x - q.p.x, y - q.p.y)
+            cands.append((dd - q.w / 2, x, y, q))
+    cands.sort(key=lambda t: t[0])
+    for edge, x, y, q in cands:
+        v = SMALL[k % len(SMALL)]
         w, d = hp.COTTAGE_SIZE[v]
-        hi = level_site(c, x, y, rot, w, d, ground, ter, most=4.5)
-        if hi is None:
-            why["level"] = why.get("level", 0) + 1
-            continue  # (only on level ground: Blake, Oct 29)
+        if not (SET - 1.0 + d / 2 <= edge <= SET + 2.0 + d / 2):
+            continue
+        sd = 1 if (x - q.p.x) * q.r.x + (y - q.p.y) * q.r.y > 0 else -1
+        if MARKET[0] <= q.s <= MARKET[1] and sd == MARKET[2]:
+            continue
+        if not clear(x, y, max(w, d) / 2 + 0.8):
+            continue
+        rot = math.atan2(-q.r.y * sd, -q.r.x * sd) + math.pi / 2
         if RUIN:
+            hi = level_site(c, x, y, rot, w, d, ground, ter)
+            if hi is None:
+                continue
             z = hi - 0.5
-            box(c, "House %d" % k, x, y, w / 2 - 0.5, d / 2 - 0.5, z - 0.8, z + 4.5, ("hearth_stone", "wall"), rot=rot)
-            box(c, "House Ice %d" % k, x, y, w / 2 + 0.4, d / 2 + 0.4, z - 0.8, z + 7.0, ("berg_ice", "wall"), rot=rot + 0.08)
+            box(c, "Street House %d" % len(built), x, y, w / 2 - 0.5, d / 2 - 0.5, z - 0.8, z + 4.5, ("hearth_stone", "wall"),
+                rot=rot)
+            box(c, "Street House Ice %d" % len(built), x, y, w / 2 + 0.4, d / 2 + 0.4, z - 0.8, z + 7.0, ("berg_ice", "wall"),
+                rot=rot + 0.08)
         else:
-            smoke = seat_cottage(c, v, x, y, rot, ground, ter=ter)
+            smoke = seat_cottage(c, v, x, y, rot, ground, name="Street Cottage %d" % len(built), ter=ter)
+            if smoke is None:
+                continue
             sc.chimneys.append(smoke)
-            sc.warm.append((x, y, hi + 2.5))
-        # (A terrace over a drop: a railing along its edge, before the door.)
-        fx, fy = x - math.cos(a) * (d / 2 + 6.0), y - math.sin(a) * (d / 2 + 6.0)
-        if not floor:
-            railing(c, x, y, a + math.pi, PAD_R - 1.5, hi, ground)
-        elif ground(fx, fy) < hi - 1.5:
-            railing(c, x, y, a + math.pi, d / 2 + 2.6, hi, ground, span=0.6)
-        built.append((x, y, v, floor))
-        taken.add(x, y, 7.0)
-        SPOTS.append((x, y, 9.0))
+            sc.warm.append((x, y, ground(x, y) + 2.5))
+        taken.add(x, y, max(w, d) / 2 + 0.8)
+        SPOTS.append((x, y, max(w, d) / 2 + 1.0))
+        built.append((x, y))
         k += 1
-    # Each cottage's lane: from before its door to the square's edge.
-    depth = (8.0, 8.0, 8.0, 9.0, 9.0)
-    for x, y, v, floor in built:
-        if not floor:
-            continue
-        a = math.atan2(y - cy, x - cx)
-        d = math.hypot(x - cx, y - cy)
-        door = d - depth[v] / 2 - (1.6 if not RUIN else 3.0)
-        end = SQUARE_R - 0.5
-        if door - end < 2.0:
-            continue
-        # (Never over the road, nor up to it: the overworld rules. A cottage across the road
-        # from the square has its doorstep, not a lane.)
-        steps = int((door - end) / 1.5) + 1
-        if any(not paint.road_clear(c, cx + (end + (door - end) * t / steps) * math.cos(a),
-                                    cy + (end + (door - end) * t / steps) * math.sin(a), 3.5) for t in range(steps + 1)):
-            continue
-        paths.append(vv.wander((cx + door * math.cos(a), cy + door * math.sin(a)),
-                               (cx + end * math.cos(a), cy + end * math.sin(a)),
-                               bend=1.2 * math.sin(a * 3.0), seed=int(d) % 7))
-    vv.path_ribbons(c, paths, ground, look=_lane_look, width=2.6, verge=1.1, name="Village Lanes")
+    # The market's stalls, along its stretch, facing the road, the folk about them.
+    stalls = []
+    s = MARKET[0] + 3.0
+    while s < MARKET[1] - 3.0:
+        q = c.at(s)
+        x, y = side_of(q, MARKET[2], q.w / 2 + 3.2)
+        rot = math.atan2(-q.r.y * MARKET[2], -q.r.x * MARKET[2]) + math.pi / 2
+        if inside(x, y) and clear(x, y, 2.8):
+            z = min(ground(x + dx, y + dy) for dx in (-2.0, 0.0, 2.0) for dy in (-1.5, 0.0, 1.5))
+            c.place(hp.stall(c, len(stalls) % 2), x, y, z - 0.05, rot=rot, coll="Village")
+            taken.add(x, y, 3.0)
+            SPOTS.append((x, y, 3.5))
+            stalls.append((x, y))
+            s += 7.5
+        else:
+            s += 2.0
+    if stalls:
+        mx, my = stalls[len(stalls) // 2]
+        q, _ = c.nearest(mx, my)
+        hx, hy = mx + (mx - q.p.x) * 0.6, my + (my - q.p.y) * 0.6
+        g = c.game(hx, hy, ground(hx, hy))
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=4, folk="snow", heading=0.0)
+    # The lantern posts: every 18 m along, on both sides, opposite each other; lights
+    # along each side post to post, and across the road from every other pair; a candy
+    # cane between each two posts on each side.
+    pairs = []
+    s = S0 + 4.0
+    while s < S1:
+        q = c.at(s)
+        pair = []
+        for sd in (-1, 1):
+            x, y = side_of(q, sd, q.w / 2 + 1.6)
+            if not inside(x, y) or not taken.clear(x, y, 0.9) or not paint.road_clear(c, x, y, 0.8):
+                pair.append(None)
+                continue
+            z = ground(x, y)
+            c.place(post, x, y, z - 0.1, coll="Village", role="visual")
+            c.place(paint.trunk_proto(c, 0.3, 5.0), x, y, z, coll="Collision", role="collision")
+            taken.add(x, y, 1.0)
+            if not RUIN:
+                sc.lanterns.append((x, y, z + 4.6))
+                sc.warm.append((x, y, z + 4.0))
+            pair.append((x, y, z, s))
+        pairs.append(pair)
+        s += 18.0
+    if not RUIN:
+        for n, (a, b) in enumerate(zip(pairs, pairs[1:])):
+            for p0, p1 in zip(a, b):
+                if p0 and p1 and math.hypot(p0[0] - p1[0], p0[1] - p1[1]) < 26.0:
+                    sc.lights.line((p0[0], p0[1], p0[2] + 4.3), (p1[0], p1[1], p1[2] + 4.3), sag=1.2, width=0.35)
+        for n, pr in enumerate(pairs):
+            if n % 2 == 0 and pr[0] and pr[1]:
+                sc.lights.line((pr[0][0], pr[0][1], pr[0][2] + 4.4), (pr[1][0], pr[1][1], pr[1][2] + 4.4), sag=1.6, width=0.35)
+    for a, b in zip(pairs, pairs[1:]):
+        for sd, (p0, p1) in zip((-1, 1), zip(a, b)):
+            if not (p0 and p1):
+                continue
+            q = c.at((p0[3] + p1[3]) / 2)
+            x, y = side_of(q, sd, q.w / 2 + 1.4)
+            if inside(x, y) and taken.clear(x, y, 0.8) and paint.road_clear(c, x, y, 0.6):
+                c.place(cane, x, y, ground(x, y) - 0.1, rot=math.atan2(q.t.y, q.t.x) + (0.0 if sd > 0 else math.pi),
+                        coll="Village")
+                taken.add(x, y, 0.8)
     # The finishing: lanterns, chimney smoke, the lights, the warm light on the snow.
     for x, y, z in sc.lanterns:
         g = c.game(x, y, z)
@@ -480,9 +534,10 @@ def hearthglow(c, ground, ter, taken):
         # (Only meshes of their own: a prop's mesh is shared by all its copies.)
         near = [o for o in c.coll("Village").objects if o.type == "MESH" and o.data.users == 1]
         c.glow([ter] + near, sc.warm, 16.0, (1.35, 1.12, 0.82), base=1.0,
-               region=lambda w: math.hypot(w.x - cx, w.y - cy) < 80.0)
-    print("hearthglow: %d cottages, %d lanes, %d lights" % (len(built), len(paths), len(sc.lanterns)))
-    return paths
+               region=lambda w: math.hypot(w.x - cx, w.y - cy) < 110.0)
+    print("hearthglow: why not", why)
+    print("hearthglow: %d cottages, %d stalls, %d posts" % (len(built), len(stalls), sum(1 for p in pairs for q in p if q)))
+    return []
 
 
 def gorge_bend(c, natural):

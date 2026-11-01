@@ -336,7 +336,27 @@ def _dense_route():
             acc += g * out[jj][2]
             wt += g
         zs.append(acc / wt)
-    return [(round(x, 2), round(y, 2), round(z, 2)) for (x, y, _), z in zip(out, zs)]
+    # (Out of Frostveil's courtyard up the Climb, eased out longer, 45 m either way: it rose
+    # a quarter in places, and a kart out of the keep's gate crawled up it. The 4 snow test
+    # failures, Blake, Oct 31.)
+    cx, cy, cr = CLIMB_EASE
+    eased = list(zs)
+    for i in range(n):
+        w = smooth((cr - math.hypot(out[i][0] - cx, out[i][1] - cy)) / 25.0)
+        if w <= 0.0:
+            continue
+        acc = wt = 0.0
+        for j in range(i - 40, i + 41):
+            jj = j % n
+            d = cum[i] - cum[jj] if abs(cum[i] - cum[jj]) < total / 2 else (total - abs(cum[i] - cum[jj]))
+            g = math.exp(-0.5 * (d / 45.0) ** 2)
+            acc += g * zs[jj]
+            wt += g
+        eased[i] = lerp(zs[i], acc / wt, w)
+    return [(round(x, 2), round(y, 2), round(z, 2)) for (x, y, _), z in zip(out, eased)]
+
+
+CLIMB_EASE = (-160.0, 40.0, 110.0)  # (x, y, radius): the Climb out of Frostveil's courtyard
 
 
 ROUTE = _dense_route()
@@ -385,11 +405,11 @@ GORGE_END = (0.0, -410.0)  # the passage back to the valley, at the climb's foot
 CREST = (-24.0, -348.0)  # the Crest Gate
 CREST_WAY = [  # (x, y) from the passage to the lap (v4b: pushed back 50 m, Blake, Oct 30)
     (0.0, -410.0),
-    (60.0, -402.0),
-    (74.0, -390.0),  # hairpin
-    (40.0, -382.0),
-    (-20.0, -378.0),
-    (-34.0, -366.0),  # and up north
+    (60.0, -405.0),
+    (82.0, -389.0),  # hairpin (opened out: its legs were too close, the one over the other)
+    (40.0, -372.0),
+    (-20.0, -372.0),
+    (-34.0, -362.0),  # and up north
     (-24.0, -348.0),  # 6: the Crest Gate, the top, facing the kingdom
     (-4.0, -340.0),
     (40.0, -340.1),
@@ -451,7 +471,12 @@ def _crest_line():
     pts = _round_way(CREST_WAY)
     cum = [0.0]
     for p, q in zip(pts, pts[1:]):
-        cum.append(cum[-1] + math.hypot(q[0] - p[0], q[1] - p[1]))
+        # (Round the climb's hairpin the road runs level, the climbing done on the legs
+        # either side: its inside edge, a fraction of the way round, was too steep to drive.)
+        mx, my = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
+        hx, hy = CREST_WAY[2]
+        f = 0.15 + 0.85 * smooth((math.hypot(mx - hx, my - hy) - 12.0) / 10.0)
+        cum.append(cum[-1] + f * math.hypot(q[0] - p[0], q[1] - p[1]))
     tx, ty = CREST_WAY[_CREST_TOP]
     top = min(range(len(pts)), key=lambda i: math.hypot(pts[i][0] - tx, pts[i][1] - ty))
     z0, zt, z1 = _CREST_Z

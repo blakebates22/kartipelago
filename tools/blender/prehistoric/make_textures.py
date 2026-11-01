@@ -871,6 +871,26 @@ def log_sawn():
     return paint(f, 64, 64)
 
 
+def _bulb(core, rim):
+    # A glowing Christmas bulb's colour (a bright core, its rim deeper): one per colour
+    # (Blake, review-snow_region 7: the great tree's lights "look terrible", redone as
+    # bulbs hung round its boughs).
+    def make():
+        def f(x, y):
+            d = math.hypot(x - 7.5, y - 7.5)
+            return core if d < 4.5 else rim
+
+        return paint(f, 16, 16)
+
+    return make
+
+
+bulb_red = _bulb("#ff8a7a", "#e8202a")
+bulb_gold = _bulb("#fff2a0", "#f0b020")
+bulb_green = _bulb("#a8ffb0", "#20c040")
+bulb_blue = _bulb("#a8d4ff", "#2a6aff")
+
+
 def torch_glow():
     # A flickering torch flame: hot white-yellow core to orange (scrolls upward).
     cols = ["#fffbe0", "#ffe58a", "#ffbb3a", "#ff8a22", "#e85a1a"]
@@ -5076,6 +5096,10 @@ MATERIALS = [
     ("frog_skin", "Frog Skin", "jungle_cascade", "wall", frog_skin, 0.4, None),
     ("log_end", "Log End", "jungle_cascade", "wall", log_end, 1, None),
     ("log_sawn", "Log End (Sawn)", "summit_pass", "wall", log_sawn, 1, None),
+    ("bulb_red", "Christmas Bulb (Red)", "hearthglow", "wall", bulb_red, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
+    ("bulb_gold", "Christmas Bulb (Gold)", "hearthglow", "wall", bulb_gold, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
+    ("bulb_green", "Christmas Bulb (Green)", "hearthglow", "wall", bulb_green, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
+    ("bulb_blue", "Christmas Bulb (Blue)", "hearthglow", "wall", bulb_blue, 1, {"scrollU": 0, "scrollV": 0, "glow": 1.0}),
     ("torch_glow", "Torch Flame", "jungle_cascade", "wall", torch_glow, 1, {"scrollU": 0.2, "scrollV": -1.6, "wave": 0.1, "wavePeriod": 0.4, "glow": 1.0}),
     ("jungle_mud", "Jungle Mud", "jungle_cascade", "mud", jungle_mud, 5, None),
     ("pterosaur_skin", "Pterosaur Skin", "jungle_cascade", "wall", pterosaur_skin, 2, None),

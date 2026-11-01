@@ -449,6 +449,13 @@ def pond(c, x, y, r, z):
 
     proto = _p(c, "Ice Yard Pond Works", build)
     c.place(proto, x, y, z, rot=0.0, coll="Village", role="visual")
+    # The open water's own surface, solid as water (the villagers walked on it: Blake, Oct 31,
+    # "the npcs can walk on the water where they are cutting the ice"): just over the ice
+    # under it, so the ground there is water to them (and to a kart, a splash).
+    from pocket_build import box
+
+    box(c, "Ice Yard Pond Water", x + r * 0.45, y, r * 0.45, r * 0.45, z - 0.2, z + 0.05, (WATER, "water"),
+        coll="Village", role="collision")
 
 
 # ------------------------------------------------------------------ placing it

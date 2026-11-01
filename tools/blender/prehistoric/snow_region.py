@@ -426,6 +426,14 @@ def village(c, ground, ter):
                  role="visual")
     else:
         hp.giant_tree(c, "Great Tree", gx, gy, ground(gx, gy), height=52.0)  # (v4: bigger, seen from the Crest)
+        # Its foot heaped with presents, inside its fence (Blake, review-snow_region 7).
+        gz = ground(gx, gy)
+        for k in range(10):
+            a = k * math.tau / 10 + 0.3
+            r = 5.2 + 1.6 * (k % 2)
+            px, py = gx + r * math.cos(a), gy + r * math.sin(a)
+            c.place(hp.present_pile(c, k % 3), px, py, ground(px, py) - 0.1, rot=a + 0.4 * (k % 3), scale=1.25 + 0.15 * (k % 3),
+                    coll="Village")
     # The bell tower, on level ground, its door to the square, its stone footing down to
     # the land all round (Blake, review-snow_region note 3: "this building is floating ...
     # please no more floating buildings": tests/buildings.test.ts).
@@ -558,6 +566,9 @@ def dress(c, ground, spots):
                                       10 + v, room=5.0, scale=(0.9, 1.4), road_margin=7.0):
                 cone(c, "Frozen Pine %d %d" % (v, int(x)), x, y, 3.2, g(x, y) - 0.5, 9.0 + 3.0 * v, ("glacier_ice", "wall"),
                      segs=6, role="visual")
+        # (The survivors, out along the roads: tests/villagers.test.ts wants eight homes.)
+        homes = [(e["x"], -e["z"]) for e in c.entities if e["type"] == "villager_home"]
+        paint.wayfolk(c, ground, "snow", homes, max(0, 8 - len(homes)) + 1, apart=70.0, every=12)
         return
     # Hearthglow (by the lake now): Christmas pines with lights round it, snowmen. The
     # hollow it left, the way in: snowy pines (its lanterns are snow_dress.entry_pass's).
@@ -568,6 +579,10 @@ def dress(c, ground, spots):
                       road_margin=6.0, trunk=(0.8, 6.0))
     paint.scatter(c, hp.snowman(c, 0), 5, rmax, near_village, g, taken, 63, room=3.0)
     ss.hearthglow(c, ground, taken, lambda v, x, y, rot, name: sd.seat_cottage(c, v, x, y, rot, ground, name=name, ter=TER))
+    # Folk out along the roads too, away from the villages' own (every part of the kingdom
+    # with someone to stop and talk to: tests/villagers.test.ts wants eight homes).
+    homes = [(e["x"], -e["z"]) for e in c.entities if e["type"] == "villager_home"]
+    paint.wayfolk(c, ground, "snow", homes, max(0, 8 - len(homes)) + 1, apart=70.0, every=12)
     hub = look("hearth")
     for v, p in enumerate(pines):
         paint.scatter(c, p, 8, rmax, lambda x, y: hub(x, y) and L.wall_sd(x, y) < -14.0, g, taken, 64 + v, room=6.0,
