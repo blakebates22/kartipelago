@@ -658,7 +658,7 @@ ON STAGE: you, Stego, Sketchy Guard.
         THE GAME FIRST. THE STAR SHOULD LIKE THAT.
 
 
-SCENE 22. THE DUST ROAD   [desert_key]
+SCENE 22. THE ISLAND HOP   [desert_key]
 ------------------------------------------------------------------------
 WHEN: The underground games' mini-game won.
 WHERE: Desert World, staged in 3D.
@@ -666,8 +666,8 @@ ON STAGE: you, Stego, Sketchy Guard, Elder Mossback, Rex.
 
     [Sketchy Guard holds it out.]
     SKETCHY GUARD
-        A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT ON THE DUST
-        ROAD, BY THE TROPIC ISLES.
+        A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT IN A SEA CAVE.
+        HOP THE ISLANDS FROM THERE TO THE TROPIC ISLES.
 
     STEGO
         THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR POCKETS.

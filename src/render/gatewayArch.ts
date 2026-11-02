@@ -368,7 +368,7 @@ export interface GatewayArch {
 
 export function createGatewayArch(
   parent: THREE.Object3D,
-  o: { label: string; theme: ArchTheme; glow: string; seed: number },
+  o: { label: string; theme: ArchTheme; glow: string; seed: number; tunnel?: boolean },
 ): GatewayArch {
   const th = THEMES[o.theme];
   const r = rng(o.seed + 7);
@@ -406,7 +406,8 @@ export function createGatewayArch(
         uTime: { value: 0 },
         uColor: { value: new THREE.Color(o.glow) },
         uDeep: { value: new THREE.Color(o.glow).multiplyScalar(0.18) },
-        uStyle: { value: portalStyle() },
+        // (A passage: the smugglers' tunnel going in, no portal: Blake, Nov 1.)
+        uStyle: { value: o.tunnel ? 5 : portalStyle() },
       },
       vertexShader: /* glsl */ `
         varying vec2 vP;
@@ -462,6 +463,24 @@ export function createGatewayArch(
             col = y < hills ? land : sky;
             col = mix(col, vec3(1.0, 0.98, 0.9), (1.0 - smoothstep(0.7, 1.0, length(vP - vec2(1.8, 4.6)))) * step(hills, y));
             col *= 0.85 + 0.15 * sin(uTime * 0.8 + vP.y);
+          } else if (uStyle > 4.5) {
+            // Tunnel: the smugglers' bore going on in, dark: its timber sets one behind
+            // another, each smaller and dimmer, a lantern's warm glints along it, black far
+            // in (flat: it only looks deep).
+            vec2 q = vec2(vP.x / 6.9, (vP.y + 2.5) / 9.4);
+            float depth = 0.0;
+            for (int k = 1; k < 7; k++) {
+              float sc = 1.0 / (1.0 + float(k) * 0.55);
+              vec2 u = vec2(q.x / sc, (q.y - 0.12) / sc + 0.12);
+              float frame = step(abs(abs(u.x) - 0.82), 0.05) * step(u.y, 0.86) * step(0.0, u.y)
+                + step(abs(u.y - 0.84), 0.04) * step(abs(u.x), 0.86);
+              depth = max(depth, frame * (1.0 - float(k) / 7.0));
+            }
+            vec3 timber = vec3(0.34, 0.22, 0.12);
+            col = vec3(0.025, 0.02, 0.018) + timber * depth * 0.9;
+            float lamp = exp(-pow(length(vec2(q.x - 0.45 + 0.03 * sin(uTime * 0.7), q.y - 0.52) * vec2(6.0, 9.0)), 2.0));
+            float lamp2 = exp(-pow(length(vec2(q.x + 0.18, q.y - 0.42) * vec2(14.0, 20.0)), 2.0));
+            col += vec3(1.0, 0.62, 0.25) * (lamp * (0.55 + 0.1 * sin(uTime * 5.0)) + lamp2 * 0.35);
           } else {
             // Glow: a cave going in, dark warm earth at the edges and a bright opening far
             // off in the middle (flat: it only looks deep).
@@ -480,31 +499,35 @@ export function createGatewayArch(
   portal.position.set(0, 0, -0.6);
   group.add(portal);
 
-  // The sign: in front of the rock, clear of it, hung from two pegs on ropes.
-  const signTex = signTexture(o.label, th, o.seed);
-  texs.push(signTex);
-  const signMat = keep(
-    new THREE.MeshLambertMaterial({ map: signTex, side: THREE.DoubleSide, alphaTest: 0.5 }),
-  );
-  const sign = new THREE.Group();
-  sign.position.set(0, 9.6, 3.2);
-  sign.rotation.z = (r() - 0.5) * 0.05;
-  sign.add(new THREE.Mesh(geo(new THREE.PlaneGeometry(13, 3.25)), signMat));
-  // (A plank's thickness behind it, so it isn't paper from the side.)
-  const backBoard = new THREE.Mesh(
-    geo(new THREE.BoxGeometry(12.4, 3.0, 0.18)),
-    keep(new THREE.MeshLambertMaterial({ color: new THREE.Color(th.plank).multiplyScalar(0.7) })),
-  );
-  backBoard.position.z = -0.12;
-  sign.add(backBoard);
-  const rope = keep(new THREE.MeshLambertMaterial({ color: "#8a7450" }));
-  for (const sd of [-1, 1]) {
-    const rp = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.07, 0.07, 2.6, 5)), rope);
-    rp.position.set(sd * 4.6, 2.7, -0.4);
-    rp.rotation.set(-0.35, 0, sd * 0.08);
-    sign.add(rp);
+  // The sign: in front of the rock, clear of it, hung from two pegs on ropes. (None over
+  // a passage's tunnel: it's the smugglers', they don't advertise.)
+  let sign: THREE.Group | undefined;
+  if (!o.tunnel) {
+    const signTex = signTexture(o.label, th, o.seed);
+    texs.push(signTex);
+    const signMat = keep(
+      new THREE.MeshLambertMaterial({ map: signTex, side: THREE.DoubleSide, alphaTest: 0.5 }),
+    );
+    sign = new THREE.Group();
+    sign.position.set(0, 9.6, 3.2);
+    sign.rotation.z = (r() - 0.5) * 0.05;
+    sign.add(new THREE.Mesh(geo(new THREE.PlaneGeometry(13, 3.25)), signMat));
+    // (A plank's thickness behind it, so it isn't paper from the side.)
+    const backBoard = new THREE.Mesh(
+      geo(new THREE.BoxGeometry(12.4, 3.0, 0.18)),
+      keep(new THREE.MeshLambertMaterial({ color: new THREE.Color(th.plank).multiplyScalar(0.7) })),
+    );
+    backBoard.position.z = -0.12;
+    sign.add(backBoard);
+    const rope = keep(new THREE.MeshLambertMaterial({ color: "#8a7450" }));
+    for (const sd of [-1, 1]) {
+      const rp = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.07, 0.07, 2.6, 5)), rope);
+      rp.position.set(sd * 4.6, 2.7, -0.4);
+      rp.rotation.set(-0.35, 0, sd * 0.08);
+      sign.add(rp);
+    }
+    group.add(sign);
   }
-  group.add(sign);
 
   // Torches either side of the mouth: a carved post, an iron basket, a living fire.
   const lair = o.theme === "lair";
@@ -551,7 +574,7 @@ export function createGatewayArch(
     update(t) {
       (portalMat.uniforms.uTime as { value: number }).value = t + o.seed;
       for (const f of fires) f.update(t);
-      sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.015;
+      if (sign) sign.rotation.z = Math.sin(t * 0.9 + o.seed) * 0.015;
     },
     dispose() {
       parent.remove(group);

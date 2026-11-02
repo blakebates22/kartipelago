@@ -630,11 +630,11 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
       say("guard", "THE GAME FIRST. THE STAR SHOULD LIKE THAT."),
     ],
     key: [
-      "The Dust Road",
+      "The Island Hop",
       [
         say(
           "guard",
-          "A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT ON THE DUST ROAD, BY THE TROPIC ISLES.",
+          "A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT IN A SEA CAVE. HOP THE ISLANDS FROM THERE TO THE TROPIC ISLES.",
         ),
         say("stego", "THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR POCKETS."),
       ],

@@ -129,7 +129,9 @@ def main():
     if not RUIN:
         gates.pop("lair")
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][1], trail)
-    if RUIN:
+    # (No Dust Road out through the south rim after Scorchwind's fall any more: the only way
+    # out is the smugglers' tunnel from the Drift Cave, Blake, Nov 1.)
+    if RUIN and False:
         (ax, ay), (bx, by), _z, _hw = M.PASS_WAYS[1]
         smp, _ = c.nearest(*M.DUST_FROM)
         first = pb.line(natural, (smp.p.x, smp.p.y), (ax, ay), z0=smp.p.z, c=c)

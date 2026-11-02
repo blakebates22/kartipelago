@@ -39,6 +39,9 @@ import carvers_village as cv  # noqa: E402
 import snow_sections as ss  # noqa: E402
 
 RUIN = ruin.ON
+# (The Frozen Pass Rimefang's attack opened out of the lake: gone. The only way out is the
+# smugglers' tunnel from the Ice Cave: Blake, Nov 1.)
+BROKEN_WAYS = False
 TRACK_ID = ruin.track_id("snow_region") + os.environ.get("KP_REGION_SUFFIX", "")
 L = SL.L
 HUB = SL.HUB
@@ -90,12 +93,13 @@ def _natural(x, y):
         h = min(h, tz - 0.25)  # (under a tunnel's rock: flush under its road, out to the walls)
     # (No island in the lake any more: the Ice Bells are long gone, and it left the lake a
     # thin ring of ice round it; review-snow_region 9 note 21, "make the frozen lake larger".)
-    if RUIN:
+    if RUIN and BROKEN_WAYS:
         # The Frozen Pass: a slot through the mountains east, out of the lake.
         (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
         dd, t = pb_seg(x, y, (ax - 30.0, ay + 10.0), (bx, by))
         if dd < 30:
             h = lerp(h, 58.3 + 6.0 * t, smooth((30.0 - dd) / 12.0))  # (up from the glacier's tongue)
+    if RUIN:
         # Rimefang's lair: a cleft in the summit's north wall.
         lx, ly = SL.LAIR
         dd, t = pb_seg(x, y, (lx, ly - 40.0), (lx, ly + 26.0))
@@ -248,7 +252,7 @@ def main():
     if RUIN:
         gates["lair"] = SL.LAIR
     spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[L.look_at(x, y)][2], trail)
-    if RUIN:
+    if RUIN and BROKEN_WAYS:
         # Out of the lake through the Frozen Pass, east.
         smp, _ = c.nearest(*SL.FROZEN_PASS)
         (ax, ay), (bx, by) = SL.FROZEN_PASS, SL.PASS_END
@@ -604,8 +608,9 @@ def ruined(c, ground):
         px, py = lx + t * 13.0, ly + 2.0
         cone(c, "Lair Ice %d" % k, px, py, 3.0 + abs(t) * 1.5, ground(px, py) - 1.0, 10.0 + 8.0 * (1 - abs(t)),
              ("glacier_ice", "wall"), segs=5)
-    bx, by = SL.PASS_END
-    box(c, "Frozen Pass Bend", bx + 6.0, by, 6.0, 40.0, natural(bx, by) - 2.0, RIM_Z + 20.0, ("frost_cliff", "wall"))
+    if BROKEN_WAYS:
+        bx, by = SL.PASS_END
+        box(c, "Frozen Pass Bend", bx + 6.0, by, 6.0, 40.0, natural(bx, by) - 2.0, RIM_Z + 20.0, ("frost_cliff", "wall"))
     spots = []
     for k in range(40):
         a = k * 2.399

@@ -322,7 +322,10 @@ interface CaveNow {
 
 function caveOf(game: Game, region: Region): CaveNow | undefined {
   const k = region.kingdom ? kingdomById(region.kingdom) : undefined;
-  if (!k || !region.cave || !game.overworld?.adventure) return undefined;
+  if (!k || !region.cave) return undefined;
+  // (Out of the story the smugglers' tunnel is always open: it's the only way between the
+  // kingdoms now, Blake, Nov 1.)
+  if (!game.overworld?.adventure) return { k, mode: "tunnel", say: "" };
   const s = adventureOf(game).save;
   const ph = kingdomPhase(s, k);
   const champ = k.champion.name.toUpperCase();
@@ -626,8 +629,7 @@ function caveCard(game: Game, region: Region): Screen {
   };
   const tunnel = () => {
     game.sounds.confirm();
-    game.overworld = { region: k.tunnel, at: "start", adventure: true };
-    game.screens.go(overworldLoading(game, k.tunnel, "start", true));
+    throughTunnel(game, k, true);
   };
   const items =
     now.mode === "games"
@@ -1143,12 +1145,18 @@ function buildGateways(
       world: worldOfTrack(g.track)?.id ?? region.worldId,
       lair: Boolean(g.boss || g.king),
     })),
-    ...(region.passages ?? []).map((p) => ({
-      ...p,
-      label: `TO ${(regionById(p.to)?.name ?? p.to).toUpperCase()}`,
-      world: regionById(p.to)?.worldId ?? region.worldId,
-      lair: false,
-    })),
+    // (The ways on: the mouth of the smugglers' tunnel in the rock, dark, no sign; or
+    // nothing at all where the road just runs on out of sight. No glowing portals: Blake,
+    // Nov 1.)
+    ...(region.passages ?? [])
+      .filter((p) => p.look !== "open")
+      .map((p) => ({
+        ...p,
+        label: "",
+        world: regionById(p.to)?.worldId ?? region.worldId,
+        lair: false,
+        tunnel: true,
+      })),
     ...extra.map((e) => ({ ...e, lair: false })),
   ];
   const themes = ["prehistoric", "frostveil", "desert", "beach", "dragon"];
@@ -1166,6 +1174,7 @@ function buildGateways(
           : own) as ArchTheme,
       glow: g.lair ? "#ff4a20" : (worldById(g.world)?.color ?? "#e0a040"),
       seed: i * 31 + Math.round(Math.abs(g.x) + Math.abs(g.z)),
+      tunnel: "tunnel" in g && g.tunnel === true,
     });
     arch.group.position.set(g.x, y, g.z);
     arch.group.rotation.y = g.heading;
@@ -1234,7 +1243,7 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
   const challenge =
     champ && region.challenge ? { id: "challenge", radius: 6, ...region.challenge } : undefined;
   // The smugglers' cave, inside its yard.
-  const caveNow = story ? caveOf(game, region) : undefined;
+  const caveNow = caveOf(game, region);
   const caveAt = caveNow ? caveMark(region) : undefined;
   const marks = [
     ...region.gateways,
@@ -1379,6 +1388,13 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
         );
         const ch = challenge && inGateway(challenge, s.x, s.z) ? challenge : undefined;
         const cv = caveAt && inGateway(caveAt, s.x, s.z) ? caveAt : undefined;
+        // (The smugglers' tunnel, once it's yours: straight on into it, no card, Blake, Nov
+        // 1: "every passage way between 2 regions only ... through the smugglers tunnels".)
+        if (cv && caveNow?.mode === "tunnel" && !g && !p) {
+          inside = cv;
+          game.sounds.confirm();
+          return throughTunnel(game, caveNow.k, story);
+        }
         if (p && !g && passageOpen(game, p)) {
           inside = p;
           game.sounds.confirm();
@@ -1742,6 +1758,18 @@ function passageOpen(game: Game, p: Passage) {
   const s = game.overworld?.adventure ? adventureOf(game).save : undefined;
   if (!s || freeRoam() || (!p.opensAfter && !p.keyOf)) return true;
   return Boolean(p.opensAfter && s.bosses[p.opensAfter]) || Boolean(p.keyOf && s.games[p.keyOf]);
+}
+
+/** Into a kingdom's smugglers' tunnel: on into the journey to the next kingdom, out of the
+ * tunnel's far mouth. */
+function throughTunnel(game: Game, k: Kingdom, story: boolean) {
+  game.overworld = {
+    region: k.tunnel,
+    at: "start",
+    adventure: story,
+    ruined: game.overworld?.ruined,
+  };
+  game.screens.go(overworldLoading(game, k.tunnel, "start", story));
 }
 
 /** On through a passage: the region (or the journey) beyond loads. A journey's way back

@@ -340,7 +340,7 @@
       "type": "villager_home",
       "x": 61.78,
       "z": 278.08,
-      "y": 15.68,
+      "y": 15.59,
       "r": 10.0,
       "n": 3,
       "folk": "desert",
@@ -634,6 +634,6 @@
     "desert_layout.py": "587f5489cdc790fa505b1d92ce23f1f26ab9443e91566dc686f816103bb4e7aa",
     "mesa_dress.py": "571d9277b1aeff825fc4542be38931e6ba69b7259e0dfce7c1bea5340e20d5cd",
     "mesa_layout.py": "1de7514f46b952f4a0707af2e5628a3d3ac18532befa4a7c8116c210c06075a5",
-    "mesa_region.py": "8bdb509baaa303869085cd45ae3e8dbc2b1fac3cf4d249e042e30a157152ad89"
+    "mesa_region.py": "b2fadc2b73b2152df65be650a71677bfbac20e5e1184ec0113f3e23a35bed322"
   }
 }

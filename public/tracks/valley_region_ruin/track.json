@@ -886,27 +886,6 @@
       "z": 193.0
     },
     {
-      "id": "campfire_14",
-      "type": "campfire",
-      "x": -112.96,
-      "y": 12.48,
-      "z": -300.0
-    },
-    {
-      "id": "campfire_15",
-      "type": "campfire",
-      "x": -77.71,
-      "y": 14.48,
-      "z": -350.0
-    },
-    {
-      "id": "campfire_16",
-      "type": "campfire",
-      "x": -101.29,
-      "y": 16.48,
-      "z": -400.0
-    },
-    {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
@@ -988,13 +967,13 @@
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": -95.53,
-      "z": -77.12,
-      "y": 3.65,
+      "x": -101.71,
+      "z": -78.77,
+      "y": 3.03,
       "r": 14.0,
-      "n": 2,
+      "n": 3,
       "folk": "valley",
-      "heading": 2.129
+      "heading": 2.235
     },
     {
       "id": "chimney_02",
@@ -1261,7 +1240,7 @@
   "builtFrom": {
     "valley_dress.py": "af0f837b184741dcd61c7a38a1fbc724222aa9db8959eda26e210c0e5c7c8ab3",
     "valley_layout.py": "273d25b4e2cee56b8066cdd86d7db8fc413a9d3cc7b95302f3997b402f2dc8e2",
-    "valley_region.py": "3802d80a5feea18c559dc7a3b52b5a8cc75bf5fb76e606216044e43b1cd5f221",
+    "valley_region.py": "5abcc9f29ac580602024c9f930c4d96c1deeb955b76f3780189c87e2b121e11e",
     "valley_village.py": "06f3a7a0b7fc3506ab66dc76ac9817ea172640d7159a7fc211564cdb41c5ad30"
   }
 }

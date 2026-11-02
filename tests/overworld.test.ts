@@ -20,6 +20,14 @@ describe("overworld regions", () => {
   it("join up: every passage leads to one back in the region it goes to", () => {
     for (const r of REGIONS)
       for (const p of r.passages ?? []) {
+        // (A journey's way back into the kingdom it left comes out of that kingdom's
+        // smugglers' cave, and the cave's tunnel leads back into the journey: Blake, Nov 1.)
+        if (p.toPassage === "cave") {
+          const to = regionById(p.to)!;
+          expect(to.cave, `${r.id}.${p.id}`).toBeDefined();
+          expect(KINGDOMS.find((k) => k.id === to.kingdom)?.tunnel, `${r.id}.${p.id}`).toBe(r.id);
+          continue;
+        }
         const back = regionById(p.to)?.passages?.find((q) => q.id === p.toPassage);
         expect(back?.to, `${r.id}.${p.id}`).toBe(r.id);
       }

@@ -115,34 +115,6 @@
       "z": -272.82
     },
     {
-      "id": "torch_08",
-      "type": "torch",
-      "x": -397.3,
-      "y": 14.28,
-      "z": 349.96
-    },
-    {
-      "id": "torch_09",
-      "type": "torch",
-      "x": -375.77,
-      "y": 14.28,
-      "z": 354.52
-    },
-    {
-      "id": "torch_10",
-      "type": "torch",
-      "x": 338.54,
-      "y": 76.76,
-      "z": -458.14
-    },
-    {
-      "id": "torch_11",
-      "type": "torch",
-      "x": 317.39,
-      "y": 76.76,
-      "z": -452.09
-    },
-    {
       "id": "campfire_01",
       "type": "campfire",
       "x": -224.57,
@@ -452,14 +424,14 @@
       "start": 20.0
     },
     {
-      "id": "torch_12",
+      "id": "torch_08",
       "type": "torch",
       "x": 332.03,
       "y": 67.25,
       "z": -315.3
     },
     {
-      "id": "torch_13",
+      "id": "torch_09",
       "type": "torch",
       "x": 342.73,
       "y": 66.5,
@@ -523,273 +495,273 @@
       "heading": 0.0
     },
     {
-      "id": "torch_14",
+      "id": "torch_10",
       "type": "torch",
       "x": 266.87,
       "y": 59.94,
       "z": -268.37
     },
     {
-      "id": "torch_15",
+      "id": "torch_11",
       "type": "torch",
       "x": 285.0,
       "y": 60.3,
       "z": -262.93
     },
     {
-      "id": "torch_16",
+      "id": "torch_12",
       "type": "torch",
       "x": 279.68,
       "y": 61.73,
       "z": -281.45
     },
     {
-      "id": "torch_17",
+      "id": "torch_13",
       "type": "torch",
       "x": 296.54,
       "y": 62.06,
       "z": -272.85
     },
     {
-      "id": "torch_18",
+      "id": "torch_14",
       "type": "torch",
       "x": 293.54,
       "y": 63.38,
       "z": -291.29
     },
     {
-      "id": "torch_19",
+      "id": "torch_15",
       "type": "torch",
       "x": 307.75,
       "y": 63.51,
       "z": -279.17
     },
     {
-      "id": "torch_20",
+      "id": "torch_16",
       "type": "torch",
       "x": 308.69,
       "y": 64.94,
       "z": -297.99
     },
     {
-      "id": "torch_21",
+      "id": "torch_17",
       "type": "torch",
       "x": 322.01,
       "y": 65.04,
       "z": -284.2
     },
     {
-      "id": "torch_22",
+      "id": "torch_18",
       "type": "torch",
       "x": 327.36,
       "y": 66.19,
       "z": -302.39
     },
     {
-      "id": "torch_23",
+      "id": "torch_19",
       "type": "torch",
       "x": 335.09,
       "y": 66.47,
       "z": -285.23
     },
     {
-      "id": "torch_24",
+      "id": "torch_20",
       "type": "torch",
       "x": 343.01,
       "y": 66.78,
       "z": -302.09
     },
     {
-      "id": "torch_25",
+      "id": "torch_21",
       "type": "torch",
       "x": 351.11,
       "y": 67.56,
       "z": -285.15
     },
     {
-      "id": "torch_26",
+      "id": "torch_22",
       "type": "torch",
       "x": 355.55,
       "y": 67.3,
       "z": -303.55
     },
     {
-      "id": "torch_27",
+      "id": "torch_23",
       "type": "torch",
       "x": 369.66,
       "y": 68.5,
       "z": -290.55
     },
     {
-      "id": "torch_28",
+      "id": "torch_24",
       "type": "torch",
       "x": 369.77,
       "y": 67.93,
       "z": -309.48
     },
     {
-      "id": "torch_29",
+      "id": "torch_25",
       "type": "torch",
       "x": 384.87,
       "y": 68.91,
       "z": -298.35
     },
     {
-      "id": "torch_30",
+      "id": "torch_26",
       "type": "torch",
       "x": 380.25,
       "y": 68.3,
       "z": -316.43
     },
     {
-      "id": "torch_31",
+      "id": "torch_27",
       "type": "torch",
       "x": 397.94,
       "y": 69.38,
       "z": -310.08
     },
     {
-      "id": "torch_32",
+      "id": "torch_28",
       "type": "torch",
       "x": 389.08,
       "y": 68.75,
       "z": -327.15
     },
     {
-      "id": "torch_33",
+      "id": "torch_29",
       "type": "torch",
       "x": 408.27,
       "y": 69.94,
       "z": -326.33
     },
     {
-      "id": "torch_34",
+      "id": "torch_30",
       "type": "torch",
       "x": 395.02,
       "y": 69.11,
       "z": -339.66
     },
     {
-      "id": "torch_35",
+      "id": "torch_31",
       "type": "torch",
       "x": 413.3,
       "y": 70.03,
       "z": -343.56
     },
     {
-      "id": "torch_36",
+      "id": "torch_32",
       "type": "torch",
       "x": 396.45,
       "y": 69.4,
       "z": -351.98
     },
     {
-      "id": "torch_37",
+      "id": "torch_33",
       "type": "torch",
       "x": 412.71,
       "y": 70.48,
       "z": -362.04
     },
     {
-      "id": "torch_38",
+      "id": "torch_34",
       "type": "torch",
       "x": 394.13,
       "y": 69.53,
       "z": -366.74
     },
     {
-      "id": "torch_39",
+      "id": "torch_35",
       "type": "torch",
       "x": 407.42,
       "y": 70.48,
       "z": -380.06
     },
     {
-      "id": "torch_40",
+      "id": "torch_36",
       "type": "torch",
       "x": 388.88,
       "y": 69.6,
       "z": -377.86
     },
     {
-      "id": "torch_41",
+      "id": "torch_37",
       "type": "torch",
       "x": 397.65,
       "y": 70.66,
       "z": -394.43
     },
     {
-      "id": "torch_42",
+      "id": "torch_38",
       "type": "torch",
       "x": 379.46,
       "y": 69.66,
       "z": -388.46
     },
     {
-      "id": "torch_43",
+      "id": "torch_39",
       "type": "torch",
       "x": 382.97,
       "y": 70.74,
       "z": -407.43
     },
     {
-      "id": "torch_44",
+      "id": "torch_40",
       "type": "torch",
       "x": 368.75,
       "y": 70.26,
       "z": -395.04
     },
     {
-      "id": "torch_45",
+      "id": "torch_41",
       "type": "torch",
       "x": 366.81,
       "y": 70.36,
       "z": -413.61
     },
     {
-      "id": "torch_46",
+      "id": "torch_42",
       "type": "torch",
       "x": 353.81,
       "y": 70.94,
       "z": -399.96
     },
     {
-      "id": "torch_47",
+      "id": "torch_43",
       "type": "torch",
       "x": 355.7,
       "y": 70.22,
       "z": -418.67
     },
     {
-      "id": "torch_48",
+      "id": "torch_44",
       "type": "torch",
       "x": 337.61,
       "y": 71.79,
       "z": -412.58
     },
     {
-      "id": "torch_49",
+      "id": "torch_45",
       "type": "torch",
       "x": 347.22,
       "y": 71.09,
       "z": -428.74
     },
     {
-      "id": "torch_50",
+      "id": "torch_46",
       "type": "torch",
       "x": 328.64,
       "y": 72.29,
       "z": -427.51
     },
     {
-      "id": "torch_51",
+      "id": "torch_47",
       "type": "torch",
       "x": 341.88,
       "y": 72.4,
       "z": -440.87
     },
     {
-      "id": "torch_52",
+      "id": "torch_48",
       "type": "torch",
       "x": 322.91,
       "y": 73.16,

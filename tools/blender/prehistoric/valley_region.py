@@ -53,6 +53,9 @@ FLOOR_Z = 1.4  # (the other regions' builds still read these)
 RIM_Z = L.RIM_Z
 CAMP_R = L.CAMP[2]
 GORGE_HW = 16.0
+# (The Burnt Gorge Cinderjaw split through the north cliff: gone. The only way out is the
+# smugglers' tunnel from the Lookout Cave: Blake, Nov 1.)
+BROKEN_WAYS = False
 GORGE_END = L.GORGE_END
 RIVER_HW = L.RIVER_HW
 
@@ -88,7 +91,7 @@ def _natural(x, y):
     bz = L.bridge_floor(x, y)
     if bz is not None:
         h = min(h, bz)  # (under a bridge's deck)
-    if RUIN:
+    if RUIN and BROKEN_WAYS:
         # The Burnt Gorge: the split in the north cliff, its floor rising gently to the far
         # end, where the way on to the Snow Kingdom begins.
         # (Cut down from inside Riverbend, at its floor's height, rising gently: it used to
@@ -97,6 +100,7 @@ def _natural(x, y):
         g = smooth((GORGE_HW + 12 - abs(x - gorge_x(y))) / 12) * smooth((y - L.GORGE[1] + 30.0) / 24.0)
         if g > 0:
             h = lerp(h, 4.0 + 0.04 * max(0.0, y - L.GORGE[1]), g)
+    if RUIN:
         # The burnt trench up to the Scar.
         sx, sy = L.SCAR
         if y < -170 and abs(x - sx) < 26:
@@ -200,7 +204,7 @@ def classify(c, n, info):
     # isn't a cliff: grass, not a triangle of rock, Blake, valley polish 20, notes 1, 2.)
     low = wi["t"] <= 0.05 and wi["past"] <= 0
     if n.z < steep and not low:
-        if RUIN and c.y > L.GORGE[1] + 20 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
+        if RUIN and BROKEN_WAYS and c.y > L.GORGE[1] + 20 and abs(c.x - gorge_x(c.y)) < GORGE_HW + 30:
             return ("obsidian_cliff", "wall")  # (the gorge's walls are scorched black)
         beds = STRATA[look]
         if wi["past"] > 0:
@@ -400,10 +404,11 @@ def main():
         c.side_road("Scar Road", line((smp.p.x, smp.p.y), (L.SCAR[0], L.SCAR[1] + 18.0), z0=smp.p.z), "basalt_road", "road",
                     width=10.0,
                     shoulder=1.2, shoulder_mat=("lava_crust", "dirt"))
-        smp, _ = c.nearest(*L.GORGE)
-        gorge = [(smp.p.x, smp.p.y, smp.p.z)] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2)
-                                                 for y in range(int(L.GORGE[1]) + 24, int(GORGE_END) + 1, 8)]
-        c.side_road("Burnt Gorge Road", gorge, "valley_trail", "road", **trail)
+        if BROKEN_WAYS:
+            smp, _ = c.nearest(*L.GORGE)
+            gorge = [(smp.p.x, smp.p.y, smp.p.z)] + [(gorge_x(y), y, natural(gorge_x(y), y) + 0.2)
+                                                     for y in range(int(L.GORGE[1]) + 24, int(GORGE_END) + 1, 8)]
+            c.side_road("Burnt Gorge Road", gorge, "valley_trail", "road", **trail)
 
     # (v4: finer, for the tiers' risers and shelves)
     X0, X1, Y0, Y1 = -310, 310, -310, 310
@@ -949,12 +954,13 @@ def ruined(c, ground, spurs):
     for k in range(4):
         px, py = sx + (k - 1.5) * 9.0, sy + 12.0
         ruin.smoke(c, px, py, ground(px, py) + 0.2)
-    # The gorge's far end: it bends out of sight (the passage on starts just before it).
-    box(c, "Gorge Bend", gorge_x(GORGE_END + 25.0), GORGE_END + 25.0, GORGE_HW + 24.0, 6.0, 0.0, RIM_Z + 10.0,
-        ("obsidian_cliff", "wall"))
-    for k, y in enumerate((300.0, 350.0, 400.0)):
-        x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
-        ruin.smoke(c, x, y, ground(x, y) + 0.2)
+    if BROKEN_WAYS:
+        # The gorge's far end: it bends out of sight (the passage on starts just before it).
+        box(c, "Gorge Bend", gorge_x(GORGE_END + 25.0), GORGE_END + 25.0, GORGE_HW + 24.0, 6.0, 0.0, RIM_Z + 10.0,
+            ("obsidian_cliff", "wall"))
+        for k, y in enumerate((300.0, 350.0, 400.0)):
+            x = gorge_x(y) + (GORGE_HW - 2.0) * (1 if k % 2 else -1)
+            ruin.smoke(c, x, y, ground(x, y) + 0.2)
     # Rubble at the cave and tunnel mouths.
     for name in ("cascade", "ember"):
         gx, gy = L.GATES[name]
@@ -1067,7 +1073,7 @@ def dress(c, ground, spurs):
             return False
         if L.river_d(x, y)[0] < RIVER_HW + 5:
             return False
-        if RUIN and abs(x - gorge_x(y)) < GORGE_HW + 14 and y > L.GORGE[1]:
+        if RUIN and BROKEN_WAYS and abs(x - gorge_x(y)) < GORGE_HW + 14 and y > L.GORGE[1]:
             return False
         return True
 

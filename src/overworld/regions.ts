@@ -59,6 +59,10 @@ export interface Passage {
    * the passage won't open; it breaks open the first time you come back after the dragon
    * falls). */
   blocker?: { kind: ObstacleKind | "fire"; width: number };
+  /** How the way on looks (Blake, Nov 1: "No portals"): "tunnel", the mouth of the
+   * smugglers' tunnel in the rock (the default), or "open", the road just runs on out of
+   * sight (a pier, a bridge), its loading zone unmarked. */
+  look?: "tunnel" | "open";
 }
 
 export interface Region {
@@ -201,23 +205,9 @@ export const REGIONS: Region[] = [
         label: "CINDERJAW'S SCAR",
       },
     ],
-    passages: [
-      // The Burnt Gorge, through Riverbend's north cliff: on to the Snow Kingdom.
-      {
-        id: "burnt_gorge",
-        label: "THE BURNT GORGE · TO THE SNOW KINGDOM",
-        to: "journey_gorge",
-        toPassage: "start",
-        x: -96.8,
-        z: -270,
-        radius: 8,
-        heading: 0,
-        ruinOnly: true,
-        blocker: { kind: "fire", width: 30 },
-        opensAfter: "valley",
-        locked: "CINDERJAW'S FIRE SPLIT THE CLIFF, BUT THE GORGE STILL BURNS: BEAT HIM FIRST",
-      },
-    ],
+    // (No way out but the smugglers' tunnel, from the Lookout Cave: Blake, Nov 1. The Burnt
+    // Gorge Cinderjaw split open is gone.)
+    passages: [],
   },
   {
     // The second region (tools/blender/prehistoric/snow_layout.py, snow_region.py): walled
@@ -292,21 +282,6 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: 1.711,
       },
-      // The Frozen Pass, east out of the lake: on to Desert World.
-      {
-        id: "frozen_pass",
-        label: "THE FROZEN PASS · TO DESERT WORLD",
-        to: "journey_pass",
-        toPassage: "start",
-        x: 245.6,
-        z: 90,
-        radius: 8,
-        heading: -1.849, // (along the Frozen Pass Road, west down to the glacier's tongue)
-        ruinOnly: true,
-        blocker: { kind: "ice", width: 13 },
-        opensAfter: "snow",
-        locked: "RIMEFANG'S ICE WALLS THE PASS SHUT: BEAT HIM FIRST",
-      },
     ],
   },
   {
@@ -378,21 +353,6 @@ export const REGIONS: Region[] = [
         radius: 8,
         heading: Math.PI / 2,
       },
-      // The Dust Road south through the rim, under Scorchwind's drifts: on to Tropic Isles.
-      {
-        id: "dust_road",
-        label: "THE DUST ROAD · TO TROPIC ISLES",
-        to: "journey_dust",
-        toPassage: "start",
-        x: -10,
-        z: 444,
-        radius: 8,
-        heading: 3.0108,
-        ruinOnly: true,
-        blocker: { kind: "drift", width: 13 },
-        opensAfter: "desert",
-        locked: "SCORCHWIND'S DRIFTS BURY THE DUST ROAD: BEAT HIM FIRST",
-      },
     ],
   },
   {
@@ -453,7 +413,8 @@ export const REGIONS: Region[] = [
       },
     ],
     passages: [
-      // Back over the island hop (for now the Dust Road's section) to Desert World: the pier's end, east over the bay.
+      // Back over the island hop to Desert World: the pier's end, east over the bay (the
+      // pier just runs on: no arch over it).
       {
         id: "dust_road",
         label: "THE ISLAND HOP · BACK TO DESERT WORLD",
@@ -463,6 +424,7 @@ export const REGIONS: Region[] = [
         z: -26,
         radius: 8,
         heading: -1.5935,
+        look: "open",
       },
       // The last smugglers' tunnel: its sea door under Smugglers' Point, west coast; under the
       // sea to the old causeway, past the border, on to the Dragon Kingdom. There in both
@@ -537,6 +499,7 @@ export const REGIONS: Region[] = [
         label: "THE SKY BRIDGE · BACK TO TROPIC ISLES",
         to: "journey_cause",
         toPassage: "end",
+        look: "open",
         x: 0,
         z: 424,
         radius: 8,
@@ -560,7 +523,8 @@ export const REGIONS: Region[] = [
         id: "start",
         label: "THE BURNT GORGE · BACK TO DINOSAUR VALLEY",
         to: "dinosaur_valley",
-        toPassage: "burnt_gorge",
+        // (Back through the smugglers' tunnel: out of its cave, Blake, Nov 1.)
+        toPassage: "cave",
         x: -385,
         z: 345,
         radius: 8,
@@ -587,18 +551,19 @@ export const REGIONS: Region[] = [
     music: "journey_pass",
     worldId: "frostveil",
     journey: { from: "snow", to: "desert", road: [58, 1367] },
-    spawn: { x: -361.0, z: -351.2, heading: 0.6936 },
+    spawn: { x: -361.0, z: -351.2, heading: 0.6986 },
     gateways: [],
     passages: [
       {
         id: "start",
         label: "THE FROZEN PASS · BACK TO THE SNOW KINGDOM",
         to: "snow_kingdom",
-        toPassage: "frozen_pass",
+        // (Back through the smugglers' tunnel: out of its cave, Blake, Nov 1.)
+        toPassage: "cave",
         x: -370,
         z: -362,
         radius: 8,
-        heading: 0.6936,
+        heading: 0.6986,
       },
       {
         id: "end",
@@ -608,41 +573,43 @@ export const REGIONS: Region[] = [
         x: 368,
         z: 368,
         radius: 8,
-        heading: -2.634,
+        heading: -2.6203,
       },
     ],
   },
   {
-    // Out of the sand into the jungle: the Dunes, the Mesa Tunnel, the Scrub, the Ford's river and bridge, the Vine Gorge, the Jungle.
-    // (tools/blender/prehistoric/journey_region.py dust; the positions are the build's.)
+    // The island hop (Blake, Nov 1): out of the desert's smugglers' tunnel at a sea cave dock, over Sandbar Key, the causeway, Mangrove Cay, Fishers' Isle, Turtle Rocks and Palm Cay, the long pier to Tropic Isles.
+    // (tools/blender/prehistoric/journey_region.py hop (its package keeps the Dust Road's id); the positions are the build's.)
     id: "journey_dust",
-    name: "The Dust Road",
+    name: "The Island Hop",
     packageId: "journey_dust",
     music: "journey_dust",
-    worldId: "desert",
-    journey: { from: "desert", to: "beach", road: [43, 1292] },
-    spawn: { x: -358.3, z: 54.8, heading: 1.3713 },
+    worldId: "beach",
+    journey: { from: "desert", to: "beach", road: [31, 1135] },
+    spawn: { x: -387, z: 312.3, heading: 1.9319 },
     gateways: [],
     passages: [
       {
         id: "start",
-        label: "THE DUST ROAD · BACK TO DESERT WORLD",
+        label: "THE SMUGGLERS' TUNNEL · BACK TO DESERT WORLD",
         to: "desert_world",
-        toPassage: "dust_road",
-        x: -372,
-        z: 52,
+        // (Back through the smugglers' tunnel: out of its cave, Blake, Nov 1.)
+        toPassage: "cave",
+        x: -402,
+        z: 318,
         radius: 8,
-        heading: 1.3713,
+        heading: 1.9319,
       },
       {
         id: "end",
-        label: "THE DUST ROAD · ON TO TROPIC ISLES",
+        label: "THE ISLAND HOP · ON TO TROPIC ISLES",
         to: "tropic_isles",
         toPassage: "dust_road",
-        x: 380,
-        z: -322,
+        look: "open",
+        x: 440,
+        z: -314,
         radius: 8,
-        heading: -1.1288,
+        heading: -1.2514,
       },
     ],
   },
@@ -680,6 +647,7 @@ export const REGIONS: Region[] = [
         label: "THE SKY GATE · ON TO THE DRAGON KINGDOM",
         to: "dragon_kingdom",
         toPassage: "causeway",
+        look: "open",
         x: 0,
         z: -445,
         radius: 8,
