@@ -104,7 +104,10 @@ def main():
     hz = natural(hx, hy)
     (ax, ay), (bx, by) = M.HOP_PIER
     pier_z = max(WATER_Z + 2.2, hz)
-    hop = [(lerp(ax, bx, k / 20), lerp(ay, by, k / 20), lerp(hz + 0.05, pier_z, min(1.0, k / 3)) + 0.02) for k in range(21)]
+    # (From on the square's deck, flush with it, out over the beach and the bay: there was a
+    # gap between the deck's edge and the pier's foot you couldn't drive across, back to the
+    # desert, review-beach_region 1 note 1.)
+    hop = [(lerp(ax, bx, k / 20), lerp(ay, by, k / 20), lerp(hz + 0.14, pier_z + 0.02, min(1.0, k / 3))) for k in range(21)]
     c.side_road("Hop Pier", hop, "wood_dock", "road", width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"),
                 barrier=1.0, barrier_mat=("cove_rail", "wall"), deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
     gates = {k: v for k, v in M.GATES.items() if k != "volcano"}
@@ -126,12 +129,8 @@ def main():
                 width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"), barrier=1.0, barrier_mat=("cove_rail", "wall"),
                 deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
     spots["volcano"] = ((px - ux * 4.0, py - uy * 4.0), math.atan2(-ux, uy))
-    # The smugglers' track down the beach to the last tunnel's sea door, under Smugglers'
-    # Point (the way on to the Dragon Kingdom: under the sea to the old causeway).
-    tx, ty = M.TUNNEL
-    smp, _ = c.nearest(tx, ty)
-    c.side_road("Tunnel Track", pb.line(natural, (smp.p.x, smp.p.y), (tx, ty), z0=smp.p.z, c=c), "beach_road", "road",
-                width=10.0, shoulder=0.6, shoulder_mat=("beach_sand", "sand"))
+    # (No sea door to the last tunnel any more: the way on to the Dragon Kingdom and back is
+    # the smugglers' Sea Cave, like every kingdom's, review-beach_region notes 1, 2.)
 
     X0, X1, Y0, Y1 = -470, 470, -470, 470
     ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 3.0, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
@@ -142,7 +141,8 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 18.0), (*M.TUNNEL, 16.0), (*M.SECRET, 14.0), (*M.CREST, 14.0),
+    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 18.0),
+                         *((lerp(ax, bx, k / 24), lerp(ay, by, k / 24), 7.0) for k in range(25)),  # (nothing on the pier) (*M.SECRET, 14.0), (*M.CREST, 14.0),
                          (M.LAGOON[0], M.LAGOON[1], M.LAGOON[2] + 4.0), (*M.FALLS, 26.0),
                          *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 22.0) for x, y in M.GATES.values()),
                          (*M.LAIR, 22.0)])
@@ -178,8 +178,6 @@ def main():
     print("hub x %.1f z %.1f" % (g[0], g[2]))
     g = c.game(bx - 10.0, by, 0.0)
     print("passage hop: x %.1f z %.1f heading %.4f" % (g[0], g[2], math.atan2(ax - bx, -(ay - by))))
-    g = c.game(tx, ty, 0.0)
-    print("passage tunnel: x %.1f z %.1f heading %.4f" % (g[0], g[2], math.atan2(smp.p.x - tx, -(smp.p.y - ty))))
     for name, (end, hd) in spots.items():
         g = c.game(end[0], end[1], 0.0)
         print("spot %s x %.2f z %.2f heading %.4f" % (name, g[0], g[2], hd))
@@ -199,13 +197,12 @@ def _into_point(x, y, d):
 
 def sea_cave(c, ground):
     """The smugglers' Sea Cave: its yard on the beach under the Point's south cliff (rock
-    walls, the cave's dark mouth at its back, lanterns, their chests and crates); and the
-    last tunnel's sea door in the north cliff, timber-framed, lanterns either side, crates
-    stacked by it."""
+    walls, the cave's dark mouth at its back, lanterns, their chests and crates): the way in
+    and out to the Dragon Kingdom (no sea door any more)."""
     cx, cy = M.CAVE
     puzzle_kit.pen(c, "return", "Sea Cave", cx, cy, pb.to_road(c, cx, cy), 11.0, 4.5, ("cove_rock", "wall"), ground(cx, cy),
                    height=6.0)
-    for name, (x, y), w, h in (("Sea Cave Mouth", M.CAVE, 6.0, 7.0), ("Tunnel Door", M.TUNNEL, 5.5, 6.5)):
+    for name, (x, y), w, h in (("Sea Cave Mouth", M.CAVE, 6.0, 7.0),):
         mx, my, rot = _into_point(x, y, 13.0 if name == "Tunnel Door" else 15.0)
         z = ground(x, y)
         box(c, name, mx, my, 1.2, w / 2, z - 1.0, z + h, ("dark_corridor", "wall"), rot=rot, role="visual")

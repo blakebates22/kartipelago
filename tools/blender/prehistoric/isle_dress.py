@@ -200,6 +200,33 @@ def village(c, ground, taken, ter, hz):
         c.place(bp.canoe(c, m % 2), x, y, _lowest(ground, x, y, 1.6) - 0.05, rot=a + math.pi / 2, coll="Village", role="both")
         taken.add(x, y, 3.0)
         m += 1
+    # The way in from the island hop (review-beach_region 1 note 1: "this whole front entrance
+    # looks terrible"): a palm-trunk welcome arch over the pier's foot where it leaves the
+    # square, flags under it; tiki torches and flag poles either side; bunting from the arch
+    # to the square's torches.
+    (ax, ay), (bx, by) = M.HOP_PIER
+    ux, uy = (bx - ax), (by - ay)
+    d = math.hypot(ux, uy)
+    ux, uy = ux / d, uy / d
+    gx, gy = hx + (hr + 2.0) * ux, hy + (hr + 2.0) * uy
+    rot = math.atan2(uy, ux) + math.pi / 2  # (the arch spans across the pier)
+    c.place(tp.start_arch(c, span=15.0, h=7.8, flag="cove_flag"), gx, gy, hz - 0.1, rot=rot, coll="Village", role="visual")
+    for sd in (-1, 1):
+        px, py = gx - uy * sd * 7.5, gy + ux * sd * 7.5
+        c.place(paint.trunk_proto(c, 0.5, 8.0), px, py, hz - 0.5, coll="Collision", role="collision")
+        for f, kind in ((-3.5, "torch"), (3.0, "flag")):
+            x, y = gx - uy * sd * 9.5 + ux * f, gy + ux * sd * 9.5 + uy * f
+            z = _lowest(ground, x, y, 0.6)
+            if kind == "torch":
+                c.place(bp.tiki_torch(c, 0), x, y, z, coll="Village")
+                g = c.game(x, y, z + 2.6)
+                c.entity("torch", x=g[0], y=g[1], z=g[2])
+            else:
+                c.place(tp.flag_pole(c, flag="cove_flag", h=9.0), x, y, z - 0.2, coll="Village")
+        top = (px, py, hz + 7.2)
+        k = min(range(12), key=lambda j: math.hypot(tops[j][0] - px, tops[j][1] - py) if tops[j] else 1e9)
+        if tops[k]:
+            bp.string_line(c, "Pier Bunting %d" % sd, top, tops[k], 0.8, kind="bunting", coll="Village")
     print("village: %d huts, %d canoes" % (n, m))
 
 

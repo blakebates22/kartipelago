@@ -297,47 +297,54 @@
     {
       "id": "torch_36",
       "type": "torch",
+      "x": 29.27,
+      "y": 5.97,
+      "z": -297.27
+    },
+    {
+      "id": "torch_37",
+      "type": "torch",
       "x": 92.12,
       "y": 6.15,
       "z": -287.4
     },
     {
-      "id": "torch_37",
+      "id": "torch_38",
       "type": "torch",
       "x": 159.46,
       "y": 11.2,
       "z": -243.49
     },
     {
-      "id": "torch_38",
+      "id": "torch_39",
       "type": "torch",
       "x": 130.39,
       "y": 16.85,
       "z": -193.22
     },
     {
-      "id": "torch_39",
+      "id": "torch_40",
       "type": "torch",
       "x": 134.42,
       "y": 27.26,
       "z": -144.15
     },
     {
-      "id": "torch_40",
+      "id": "torch_41",
       "type": "torch",
       "x": 177.4,
       "y": 26.71,
       "z": -118.01
     },
     {
-      "id": "torch_41",
+      "id": "torch_42",
       "type": "torch",
       "x": 237.35,
       "y": 16.78,
       "z": -116.25
     },
     {
-      "id": "torch_42",
+      "id": "torch_43",
       "type": "torch",
       "x": 267.09,
       "y": 11.33,
@@ -355,32 +362,18 @@
       "prize_z": 94.01
     },
     {
-      "id": "torch_43",
+      "id": "torch_44",
       "type": "torch",
       "x": -310.49,
       "y": 6.15,
       "z": 81.38
     },
     {
-      "id": "torch_44",
+      "id": "torch_45",
       "type": "torch",
       "x": -316.61,
       "y": 10.98,
       "z": 84.76
-    },
-    {
-      "id": "torch_45",
-      "type": "torch",
-      "x": -314.23,
-      "y": 4.38,
-      "z": 2.48
-    },
-    {
-      "id": "torch_46",
-      "type": "torch",
-      "x": -308.46,
-      "y": 4.33,
-      "z": 5.47
     },
     {
       "id": "puzzle_gate_02",
@@ -525,8 +518,8 @@
   "generator": "tools/blender/prehistoric/beach_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
-    "isle_dress.py": "60d2dad09b814ba4061cba3dbd81b5351adafd55bb9ea813327532b029f8bca0",
-    "isle_layout.py": "da194e4aad146d0d4c33216ccc2691a737c1cff81cebb65b274f34a749b1c31e",
-    "isle_region.py": "18a225d0cf8e6bf0e027d86c8d3d3f0fbd0554afada36fd75f3fa0643d146fc6"
+    "isle_dress.py": "ad1789ead53a453c74a992a49df8a5ec4cb3d1496e9a287cf2f26a7669e7521a",
+    "isle_layout.py": "cb0fa7e6256d2b49f8794bf03f768f2f658604fde2c7d647843f7c9d3fd268a7",
+    "isle_region.py": "3bb8cd1912a4a604bde2dac2b15c886704167bd02786bb88762179cf5d66d82f"
   }
 }

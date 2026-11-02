@@ -423,27 +423,11 @@ export const REGIONS: Region[] = [
         x: 442,
         z: -26,
         radius: 8,
-        heading: -1.5935,
+        heading: -1.5923,
         look: "open",
       },
-      // The last smugglers' tunnel: its sea door under Smugglers' Point, west coast; under the
-      // sea to the old causeway, past the border, on to the Dragon Kingdom. There in both
-      // states (Blake, Oct 31: "I cant even find the entrance"): in Adventure it opens with
-      // the Sea Cave's key (or once Tidewyrm's fallen); free roam, always.
-      {
-        id: "causeway",
-        label: "THE SMUGGLERS' TUNNEL · TO THE DRAGON KINGDOM",
-        to: "journey_cause",
-        toPassage: "start",
-        x: -306.5,
-        z: -5.3,
-        radius: 8,
-        heading: 1.6874, // (out of the sea door, up the track to the road)
-        blocker: { kind: "water", width: 14 },
-        keyOf: "beach",
-        opensAfter: "beach",
-        locked: "THE SMUGGLERS' SEA DOOR IS BARRED: WIN THE KEY AT THE SEA CAVE'S GAMES FIRST",
-      },
+      // (No sea door to the last tunnel any more: to the Dragon Kingdom and back through the
+      // smugglers' Sea Cave, like every kingdom; review-beach_region notes 1, 2.)
     ],
   },
   {
@@ -635,7 +619,8 @@ export const REGIONS: Region[] = [
         id: "start",
         label: "THE SMUGGLERS' TUNNEL · BACK TO TROPIC ISLES",
         to: "tropic_isles",
-        toPassage: "causeway",
+        // (Back out of the smugglers' Sea Cave.)
+        toPassage: "cave",
         x: -60,
         z: 440,
         radius: 8,

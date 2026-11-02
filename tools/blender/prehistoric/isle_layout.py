@@ -214,7 +214,7 @@ CREST = (138.0, 126.0)
 # Raptor's village: its square on the flats above the east bay (the island hop's pier comes
 # in past it), the stilt huts out over the bay.
 HUB = (252.0, 30.0, 20.0)  # x, y, radius (the square)
-HOP_PIER = [(276.0, 30.0), (452.0, 26.0)]  # the pier out east over the bay to the island hop
+HOP_PIER = [(266.0, 30.0), (452.0, 26.0)]  # the pier out east over the bay to the island hop (from on the square: no gap)
 # The gateways' landmarks.
 GATES = {
     "coral": _coast(-50.0, 6.0),
