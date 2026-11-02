@@ -291,13 +291,13 @@ ON STAGE: Elder Mossback, you, Rex, Lumen.
 
     NARRATOR (CAPTION)
         THEIR CAVE IS UP ON EMBER'S LOWER SLOPE. (REX IS IN YOUR CREW
-        NOW: TO DRIVE AS HIM, PAUSE AND CHOOSE YOUR CREW.)
+        NOW: THE GUARDS WILL LET YOU THROUGH.)
 
 
 SCENE 7. THE UNDERGROUND   [valley_underground]
 ------------------------------------------------------------------------
-WHEN: Driving into THE LOOKOUT CAVE as Rex; the mini-game starts
-straight after.
+WHEN: Driving into THE LOOKOUT CAVE with Rex in your crew; the smugglers
+let you through.
 WHERE: Dinosaur Valley, staged in 3D.
 ON STAGE: you, Rex, Sketchy Guard, Elder Mossback, Lumen.
 
@@ -315,17 +315,18 @@ ON STAGE: you, Rex, Sketchy Guard, Elder Mossback, Lumen.
 
     [Sketchy Guard shrugs. The other guard nods.]
     SKETCHY GUARD
-        THE TUNNEL'S FOR WINNERS. WIN OUR GAME, AND THE KEY IS YOURS.
+        ANY RACER GOOD ENOUGH TO BEAT REX IS GOOD FOR BUSINESS. FINE.
+        YOU'RE WITH REX, YOU'RE WITH US.
 
 
 SCENE 8. THE SMUGGLERS' KEY   [valley_key]
 ------------------------------------------------------------------------
-WHEN: The underground games' mini-game won.
+WHEN: Straight after the smugglers let you through.
 WHERE: Dinosaur Valley, staged in 3D.
 ON STAGE: you, Rex, Sketchy Guard, Elder Mossback.
 
     SKETCHY GUARD
-        HUH. YOU ACTUALLY WON. A DEAL'S A DEAL.
+        DON'T TELL CINDERJAW WE LET YOU THROUGH. WE NEVER SAW YOU.
 
     [Sketchy Guard holds it out.]
     SKETCHY GUARD
@@ -473,14 +474,14 @@ Crowd.
 
     [The townsfolk cheer. The Crowd cheer. Music: hope.]
     NARRATOR (CAPTION)
-        BRACHIO JOINS YOUR CREW! (SWITCH TO BRACHIO TO GET PAST THE ICE
-        CAVE'S GUARDS.)
+        BRACHIO JOINS YOUR CREW! (THE ICE CAVE'S GUARDS WILL LET YOU
+        THROUGH NOW.)
 
 
 SCENE 14. THE UNDERGROUND   [snow_underground]
 ------------------------------------------------------------------------
-WHEN: Driving into THE ICE CAVE as Brachio; the mini-game starts
-straight after.
+WHEN: Driving into THE ICE CAVE with Brachio in your crew; the smugglers
+let you through.
 WHERE: Snow Kingdom, staged in 3D.
 ON STAGE: you, Brachio, Sketchy Guard.
 
@@ -496,19 +497,20 @@ ON STAGE: you, Brachio, Sketchy Guard.
 
     [Sketchy Guard shrugs. The other guard nods.]
     SKETCHY GUARD
-        WIN THE GAME, GET THE KEY. SAME AS ALWAYS.
+        BRACHIO'S WORD IS GOOD ENOUGH FOR US. MIND THE ICE ON THE WAY
+        DOWN.
 
 
 SCENE 15. THE FROZEN PASS   [snow_key]
 ------------------------------------------------------------------------
-WHEN: The underground games' mini-game won.
+WHEN: Straight after the smugglers let you through.
 WHERE: Snow Kingdom, staged in 3D.
 ON STAGE: you, Brachio, Sketchy Guard, Elder Mossback, Rex.
 
     [Sketchy Guard holds it out.]
     SKETCHY GUARD
-        A WIN'S A WIN. THE KEY: THE TUNNEL COMES OUT ON THE FROZEN PASS,
-        ON DESERT WORLD'S SIDE.
+        THE KEY. THE TUNNEL COMES OUT ON THE FROZEN PASS, ON DESERT
+        WORLD'S SIDE.
 
     YOU
         HAS ANYONE SEEN A HOODED KID? ABOUT THIS TALL?
@@ -630,14 +632,14 @@ Crowd.
 
     [The townsfolk cheer. The Crowd cheer. Music: hope.]
     NARRATOR (CAPTION)
-        STEGO JOINS YOUR CREW! (SWITCH TO STEGO TO GET PAST THE DRIFT
-        CAVE'S GUARDS.)
+        STEGO JOINS YOUR CREW! (THE DRIFT CAVE'S GUARDS WILL LET YOU
+        THROUGH NOW.)
 
 
 SCENE 21. THE UNDERGROUND   [desert_underground]
 ------------------------------------------------------------------------
-WHEN: Driving into THE DRIFT CAVE as Stego; the mini-game starts
-straight after.
+WHEN: Driving into THE DRIFT CAVE with Stego in your crew; the smugglers
+let you through.
 WHERE: Desert World, staged in 3D.
 ON STAGE: you, Stego, Sketchy Guard.
 
@@ -655,19 +657,19 @@ ON STAGE: you, Stego, Sketchy Guard.
 
     [Sketchy Guard shrugs. The other guard nods.]
     SKETCHY GUARD
-        THE GAME FIRST. THE STAR SHOULD LIKE THAT.
+        FOR STEGO? ON THE HOUSE. JUST SIGN THIS FOR MY KID FIRST.
 
 
 SCENE 22. THE ISLAND HOP   [desert_key]
 ------------------------------------------------------------------------
-WHEN: The underground games' mini-game won.
+WHEN: Straight after the smugglers let you through.
 WHERE: Desert World, staged in 3D.
 ON STAGE: you, Stego, Sketchy Guard, Elder Mossback, Rex.
 
     [Sketchy Guard holds it out.]
     SKETCHY GUARD
-        A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT IN A SEA CAVE.
-        HOP THE ISLANDS FROM THERE TO THE TROPIC ISLES.
+        THE KEY. THE TUNNEL COMES OUT IN A SEA CAVE. HOP THE ISLANDS
+        FROM THERE TO THE TROPIC ISLES.
 
     STEGO
         THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR POCKETS.
@@ -784,14 +786,14 @@ Crowd.
 
     [The townsfolk cheer. The Crowd cheer. Music: hope.]
     NARRATOR (CAPTION)
-        RAPTOR JOINS YOUR CREW! (SWITCH TO RAPTOR TO GET PAST THE SEA
-        CAVE'S GUARDS.)
+        RAPTOR JOINS YOUR CREW! (THE SEA CAVE'S GUARDS WILL LET YOU
+        THROUGH NOW.)
 
 
 SCENE 28. THE UNDERGROUND   [beach_underground]
 ------------------------------------------------------------------------
-WHEN: Driving into THE SEA CAVE as Raptor; the mini-game starts straight
-after.
+WHEN: Driving into THE SEA CAVE with Raptor in your crew; the smugglers
+let you through.
 WHERE: Tropic Isles, staged in 3D.
 ON STAGE: you, Raptor, Sketchy Guard.
 
@@ -809,13 +811,13 @@ ON STAGE: you, Raptor, Sketchy Guard.
 
     [Sketchy Guard shrugs. The other guard nods.]
     SKETCHY GUARD
-        NOBODY USES THAT ONE. NOBODY COMES BACK. WIN THE GAME AND IT'S
-        YOURS ANYWAY.
+        NOBODY USES THAT ONE. NOBODY COMES BACK. BUT FOR RAPTOR? WE OWE
+        HER. IT'S YOURS.
 
 
 SCENE 29. THE LAST KEY   [beach_key]
 ------------------------------------------------------------------------
-WHEN: The underground games' mini-game won.
+WHEN: Straight after the smugglers let you through.
 WHERE: Tropic Isles, staged in 3D.
 ON STAGE: you, Raptor, Sketchy Guard, Elder Mossback, Rex.
 

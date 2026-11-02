@@ -439,7 +439,7 @@ export function objective(s: AdventureSave): string {
     const champ = k.champion.name.toUpperCase();
     if (ph === "games") return `${name}: WIN ITS 4 COURSES (${winsOf(s, k.id)}/4 WON)`;
     if (ph === "duel") return `${name}: BEAT ${champ}, 1 ON 1`;
-    if (ph === "underground") return `${name}: THE UNDERGROUND GAMES (${k.cave})`;
+    if (ph === "underground") return `${name}: THE SMUGGLERS' TUNNEL (${k.cave})`;
     if (ph === "shards") return `${name}: WIN ITS LIGHT SHARDS (${shardsOf(s, k.id)}/4)`;
     if (ph === "boss") return `${name}: RACE ${k.boss.name.toUpperCase()}`;
   }

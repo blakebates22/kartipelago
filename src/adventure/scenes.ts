@@ -228,8 +228,7 @@ const scenes: Scene[] = [
       "THE SMUGGLERS ONLY OPEN UP FOR RACERS THEY KNOW. THEY KNOW ME. I CAN GET US THROUGH.",
     ),
     cap(
-      "THEIR CAVE IS UP ON EMBER'S LOWER SLOPE. (REX IS IN YOUR CREW NOW: TO DRIVE AS HIM, PAUSE AND CHOOSE YOUR CREW.)",
-      { switchTo: "rex" },
+      "THEIR CAVE IS UP ON EMBER'S LOWER SLOPE. (REX IS IN YOUR CREW NOW: THE GUARDS WILL LET YOU THROUGH.)",
     ),
   ]),
   S(
@@ -245,11 +244,14 @@ const scenes: Scene[] = [
         "rex",
         "YEAH. THIS RACER BEAT ME FAIR. THAT'S HOW GOOD THEY ARE. WE NEED THE TUNNEL OUT TO THE SNOW KINGDOM'S PASS.",
       ),
-      say("guard", "THE TUNNEL'S FOR WINNERS. WIN OUR GAME, AND THE KEY IS YOURS."),
+      say(
+        "guard",
+        "ANY RACER GOOD ENOUGH TO BEAT REX IS GOOD FOR BUSINESS. FINE. YOU'RE WITH REX, YOU'RE WITH US.",
+      ),
     ],
   ),
   S(sceneOf("valley", "key"), "The Smugglers' Key", { track: "ember_peak", color: "#2a1a10" }, [
-    say("guard", "HUH. YOU ACTUALLY WON. A DEAL'S A DEAL."),
+    say("guard", "DON'T TELL CINDERJAW WE LET YOU THROUGH. WE NEVER SAW YOU."),
     say(
       "guard",
       "THE SMUGGLERS' KEY. THE TUNNEL COMES OUT IN THE BURNT GORGE, ON THE SNOW KINGDOM'S SIDE.",
@@ -534,9 +536,8 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
           "...HE'S RIGHT, AND HE KNOWS IT. BUT A FREE RACER CAN GO WHERE A CAPTIVE CAN'T.",
         ),
         say("brachio", "THE SMUGGLERS' ICE CAVE. THEY KNOW MY NAME THERE. I'M WITH YOU."),
-        cap("BRACHIO JOINS YOUR CREW! (SWITCH TO BRACHIO TO GET PAST THE ICE CAVE'S GUARDS.)", {
+        cap("BRACHIO JOINS YOUR CREW! (THE ICE CAVE'S GUARDS WILL LET YOU THROUGH NOW.)", {
           crew: "brachio",
-          switchTo: "brachio",
         }),
       ],
     ],
@@ -544,15 +545,12 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
       cap("A CAVE IN THE ICE. THE GUARDS HERE ARE BIGGER, AND SKETCHIER."),
       say("guard", "BRACHIO! RIMEFANG LET YOU GO? HE NEVER LETS ANYTHING GO."),
       say("brachio", "HE DIDN'T. THE LAW DID. WE WANT THE TUNNEL TO DESERT WORLD."),
-      say("guard", "WIN THE GAME, GET THE KEY. SAME AS ALWAYS."),
+      say("guard", "BRACHIO'S WORD IS GOOD ENOUGH FOR US. MIND THE ICE ON THE WAY DOWN."),
     ],
     key: [
       "The Frozen Pass",
       [
-        say(
-          "guard",
-          "A WIN'S A WIN. THE KEY: THE TUNNEL COMES OUT ON THE FROZEN PASS, ON DESERT WORLD'S SIDE.",
-        ),
+        say("guard", "THE KEY. THE TUNNEL COMES OUT ON THE FROZEN PASS, ON DESERT WORLD'S SIDE."),
         say("you", "HAS ANYONE SEEN A HOODED KID? ABOUT THIS TALL?"),
         say("guard", "SEEN NOTHING. HEARD NOTHING. THAT'S HOW WE STAY IN BUSINESS."),
       ],
@@ -614,9 +612,8 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
           "stego",
           "HE'LL SPIN ANYTHING. BUT FREE IS FREE. THE SMUGGLERS IN THE DRIFT CAVE OWE ME A FAVOUR.",
         ),
-        cap("STEGO JOINS YOUR CREW! (SWITCH TO STEGO TO GET PAST THE DRIFT CAVE'S GUARDS.)", {
+        cap("STEGO JOINS YOUR CREW! (THE DRIFT CAVE'S GUARDS WILL LET YOU THROUGH NOW.)", {
           crew: "stego",
-          switchTo: "stego",
         }),
       ],
     ],
@@ -627,14 +624,14 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
         "stego",
         "HE KNOWS. HE'S TELLING EVERYONE IT WAS HIS IDEA. WE NEED THE TUNNEL TO THE ISLES.",
       ),
-      say("guard", "THE GAME FIRST. THE STAR SHOULD LIKE THAT."),
+      say("guard", "FOR STEGO? ON THE HOUSE. JUST SIGN THIS FOR MY KID FIRST."),
     ],
     key: [
       "The Island Hop",
       [
         say(
           "guard",
-          "A FINE PERFORMANCE. THE KEY: THE TUNNEL COMES OUT IN A SEA CAVE. HOP THE ISLANDS FROM THERE TO THE TROPIC ISLES.",
+          "THE KEY. THE TUNNEL COMES OUT IN A SEA CAVE. HOP THE ISLANDS FROM THERE TO THE TROPIC ISLES.",
         ),
         say("stego", "THE TROPIC ISLES. TIDEWYRM'S. WATCH YOUR POCKETS."),
       ],
@@ -693,9 +690,8 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
           "...EVERYONE'S A LAWYER. FINE. FINE! TAKE HER. FREE FROM MY GAMES. NOT ONE BIT MORE.",
         ),
         say("raptor", "I KNOW EVERY SMUGGLER ON THESE ISLANDS. AND THEY ALL OWE ME."),
-        cap("RAPTOR JOINS YOUR CREW! (SWITCH TO RAPTOR TO GET PAST THE SEA CAVE'S GUARDS.)", {
+        cap("RAPTOR JOINS YOUR CREW! (THE SEA CAVE'S GUARDS WILL LET YOU THROUGH NOW.)", {
           crew: "raptor",
-          switchTo: "raptor",
         }),
       ],
     ],
@@ -703,7 +699,10 @@ const ACT2: Record<"snow" | "desert" | "beach", Kingdom2> = {
       cap("A SEA CAVE AT LOW TIDE. THE GUARDS ARE SITTING ON A CHEST THAT ISN'T THEIRS."),
       say("guard", "RAPTOR? OUT OF THE CHEST AT LAST! WHAT'S IT TO BE?"),
       say("raptor", "THE LAST TUNNEL. THE ONE UNDER THE BORDER, INTO THE DRAGON KINGDOM."),
-      say("guard", "NOBODY USES THAT ONE. NOBODY COMES BACK. WIN THE GAME AND IT'S YOURS ANYWAY."),
+      say(
+        "guard",
+        "NOBODY USES THAT ONE. NOBODY COMES BACK. BUT FOR RAPTOR? WE OWE HER. IT'S YOURS.",
+      ),
     ],
     key: [
       "The Last Key",

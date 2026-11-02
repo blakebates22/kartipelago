@@ -330,7 +330,6 @@ function caveOf(game: Game, region: Region): CaveNow | undefined {
   const ph = kingdomPhase(s, k);
   const champ = k.champion.name.toUpperCase();
   const dragon = k.boss.name.toUpperCase();
-  const isChamp = game.selection.racer === k.champion.look || youOf(game) === k.champion.look;
   if (freeRoam())
     return {
       k,
@@ -339,19 +338,9 @@ function caveOf(game: Game, region: Region): CaveNow | undefined {
     };
   switch (ph) {
     case "underground":
-      return isChamp
-        ? { k, mode: "games", say: `"${champ}! COME ON IN."` }
-        : {
-            k,
-            mode: "shut",
-            // (Blake, Oct 28: the smugglers say it, not a menu hint.)
-            say: `"NEVER SEEN YOU BEFORE. WE OPEN UP FOR ${champ}'S CREW, AND ONLY WITH ${champ} AT THE WHEEL."`,
-            talk: [
-              [0, "WHOA, WHOA. HOLD IT RIGHT THERE. NEVER SEEN YOU BEFORE."],
-              [1, `THIS CAVE OPENS FOR ${champ}'S CREW. AND ONLY WITH ${champ} AT THE WHEEL.`],
-              [0, `NO ${champ}, NO GAMES. GO ON, BEAT IT.`],
-            ],
-          };
+      // (The champion's in your crew: that's all the smugglers need now; no mini-game first,
+      // Blake, Nov 1: "We simply need to have the racer unlocked".)
+      return { k, mode: "games", say: `"${champ}'S CREW! COME ON THROUGH."` };
     case "escaped":
     case "restored":
       return {
@@ -368,7 +357,17 @@ function caveOf(game: Game, region: Region): CaveNow | undefined {
         say: `${dragon}'S GUARDS HOLD THE TUNNEL NOW. BEAT ${dragon} FIRST.`,
       };
     default:
-      return { k, mode: "shut", say: `SKETCHY GUARDS: "NEVER HEARD OF YOU. GET LOST."` };
+      // (Before the champion's in your crew: they don't know you.)
+      return {
+        k,
+        mode: "shut",
+        say: `"NEVER SEEN YOU BEFORE. WE ONLY OPEN UP FOR ${champ}'S CREW."`,
+        talk: [
+          [0, "WHOA, WHOA. HOLD IT RIGHT THERE. NEVER SEEN YOU BEFORE."],
+          [1, `THIS TUNNEL'S FOR ${champ}'S CREW. NOBODY ELSE GETS THROUGH.`],
+          [0, `COME BACK WITH ${champ} IN YOUR CREW. GO ON, BEAT IT.`],
+        ],
+      };
   }
 }
 
@@ -600,8 +599,28 @@ function caveTalk(
   };
 }
 
-/** The cave's card: the underground games (the welcome the first time, then the
- * mini-game), or the smugglers' tunnel on. */
+/** The smugglers' mini-games in Adventure: out for now (Blake, Nov 1: "remove the mini
+ * games for now in adventure mode. We simply need to have the racer unlocked"). With them
+ * out, the champion in your crew gets you straight through the cave. */
+const ADVENTURE_MINIGAMES = false;
+
+/** The smugglers let you through (the champion's in your crew): their welcome the first
+ * time, then the key and the stone (goHome plays them) and on through the tunnel. */
+function smugglersLetYouThrough(game: Game, region: Region, k: Kingdom) {
+  const s = adventureOf(game).save;
+  const through = () => {
+    gamesFinished(s, k.id, true);
+    s.where = { region: region.id, at: "cave" };
+    persist(game);
+    goHome(game);
+  };
+  if (!s.seen.includes(UNDERGROUND(k.id)))
+    return game.screens.go(sceneScreen(game, UNDERGROUND(k.id), through));
+  through();
+}
+
+/** The cave's card (with the mini-games in): the underground games (the welcome the first
+ * time, then the mini-game), or the smugglers' tunnel on. */
 function caveCard(game: Game, region: Region): Screen {
   const now = caveOf(game, region)!;
   const k = now.k;
@@ -1394,6 +1413,12 @@ export function overworldScreen(game: Game, session: Session, region: Region, at
           inside = cv;
           game.sounds.confirm();
           return throughTunnel(game, caveNow.k, story);
+        }
+        if (cv && caveNow?.mode === "games" && !ADVENTURE_MINIGAMES && !g && !p) {
+          inside = cv;
+          s.speed = 0;
+          game.sounds.confirm();
+          return smugglersLetYouThrough(game, region, caveNow.k);
         }
         if (p && !g && passageOpen(game, p)) {
           inside = p;

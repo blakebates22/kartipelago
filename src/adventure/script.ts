@@ -111,9 +111,9 @@ function when(id: string): string {
     case "way_out":
       return "Straight after The Hundredth Summer.";
     case "underground":
-      return `Driving into ${k!.cave} as ${k!.champion.name}; the mini-game starts straight after.`;
+      return `Driving into ${k!.cave} with ${k!.champion.name} in your crew; the smugglers let you through.`;
     case "key":
-      return `The underground games' mini-game won.`;
+      return `Straight after the smugglers let you through.`;
     case "stone":
       return `Straight after the key; then you're through the smugglers' tunnel.`;
     case "caught":
