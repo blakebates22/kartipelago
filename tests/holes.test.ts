@@ -95,6 +95,8 @@ describe("no holes in the world", () => {
     "volcano_isle_v2",
     "splash_lagoon",
     "splash_lagoon_v2",
+    "rainforest_rush",
+    "rainforest_rush_ruin",
     "valley_region",
     "snow_region",
     "desert_region",

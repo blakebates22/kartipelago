@@ -88,6 +88,26 @@ SPLASH = {
 }
 
 
+RAINFOREST = {
+    "id": "rainforest_rush",
+    "name": "Rainforest Rush",
+    "description": "The island's rainforest heart in the late morning: a humid green haze under the canopy, shafts of sun, mossy temple stone, giant trees and their buttress roots, lianas, falls off the cliffs, a gorge far below a rope bridge",
+    "environment": {
+        "sky": "#8cc8b4",
+        "fog": {"enabled": True, "color": "#a8d4b0", "near": 90, "far": 720},
+        "sun": {"color": "#fff2c8", "intensity": 2.5, "direction": [0.3, 0.86, -0.4]},
+        "ambient": {"sky": "#d8f4d0", "ground": "#4a6a30", "intensity": 1.35},
+        "skyDome": {
+            "top": "#2e8ab8",
+            "horizon": "#bfe6c8",
+            "bottom": "#6aa878",
+            "sun": {"color": "#fff8dc", "size": 9, "glow": "#f6f0b0", "elevation": 52},
+            "clouds": {"count": 30, "color": "#f4fff4", "shade": "#b8d8c0", "seed": 167, "low": 6, "high": 26, "drift": 0.005},
+            "hills": {"color": "#1e5a34", "far": "#6aa88a", "height": 9, "seed": 169, "layers": 3},
+        },
+    },
+}
+
 def materials(mt):
     noise, pick, paint, speckle = mt.noise, mt.pick, mt.paint, mt.speckle
     W, H = 64, 32

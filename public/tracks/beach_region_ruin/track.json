@@ -13,20 +13,66 @@
   },
   "entities": [
     {
-      "id": "waterfall_01",
-      "type": "waterfall",
-      "x": 6.0,
-      "y": 12.6,
-      "z": 18.0,
-      "top": 164.1,
-      "width": 14.0,
-      "heading": 0.0
+      "id": "torch_01",
+      "type": "torch",
+      "x": 60.34,
+      "y": 21.21,
+      "z": -6.9
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 76.82,
+      "y": 21.21,
+      "z": 6.44
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 75.54,
+      "y": 20.66,
+      "z": -94.81
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 96.22,
+      "y": 20.66,
+      "z": -99.46
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": -44.84,
+      "y": 26.24,
+      "z": 91.51
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": -35.01,
+      "y": 26.24,
+      "z": 77.39
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": -89.95,
+      "y": 25.47,
+      "z": 59.29
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": -79.65,
+      "y": 25.47,
+      "z": 45.52
     },
     {
       "id": "campfire_01",
       "type": "campfire",
       "x": 252.0,
-      "y": 10.96,
+      "y": 0.65,
       "z": -30.0
     },
     {
@@ -34,80 +80,87 @@
       "type": "villager_home",
       "x": 252.0,
       "z": -30.0,
-      "y": 10.96,
+      "y": 0.65,
       "r": 18.0,
       "n": 7,
       "folk": "beach",
       "heading": 0.0
     },
     {
-      "id": "torch_01",
-      "type": "torch",
-      "x": 257.6,
-      "y": 12.7,
-      "z": -50.76
-    },
-    {
-      "id": "torch_02",
-      "type": "torch",
-      "x": 246.47,
-      "y": 13.31,
-      "z": -50.78
-    },
-    {
-      "id": "torch_03",
-      "type": "torch",
-      "x": 236.82,
-      "y": 13.26,
-      "z": -45.23
-    },
-    {
-      "id": "torch_04",
-      "type": "torch",
-      "x": 231.24,
-      "y": 13.32,
-      "z": -35.6
-    },
-    {
-      "id": "torch_05",
-      "type": "torch",
-      "x": 231.22,
-      "y": 13.3,
-      "z": -24.47
-    },
-    {
-      "id": "torch_06",
-      "type": "torch",
-      "x": 236.77,
-      "y": 13.26,
-      "z": -14.82
-    },
-    {
-      "id": "torch_07",
-      "type": "torch",
-      "x": 246.4,
-      "y": 13.27,
-      "z": -9.24
-    },
-    {
-      "id": "torch_08",
-      "type": "torch",
-      "x": 257.53,
-      "y": 13.23,
-      "z": -9.22
-    },
-    {
       "id": "torch_09",
       "type": "torch",
-      "x": 267.18,
-      "y": 13.26,
-      "z": -14.77
+      "x": 272.78,
+      "y": 2.96,
+      "z": -35.53
     },
     {
       "id": "torch_10",
       "type": "torch",
+      "x": 267.23,
+      "y": 2.95,
+      "z": -45.18
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": 257.6,
+      "y": 3.09,
+      "z": -50.76
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 246.47,
+      "y": 3.1,
+      "z": -50.78
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": 236.82,
+      "y": 2.95,
+      "z": -45.23
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": 231.24,
+      "y": 3.93,
+      "z": -35.6
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 236.77,
+      "y": 3.26,
+      "z": -14.82
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 246.4,
+      "y": 2.95,
+      "z": -9.24
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": 257.53,
+      "y": 2.95,
+      "z": -9.22
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": 267.18,
+      "y": 2.95,
+      "z": -14.77
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
       "x": 272.76,
-      "y": 13.14,
+      "y": 2.96,
       "z": -24.4
     },
     {
@@ -120,318 +173,196 @@
       "offset": 2.0
     },
     {
-      "id": "torch_11",
-      "type": "torch",
-      "x": 124.9,
-      "y": 29.9,
-      "z": -121.8
-    },
-    {
-      "id": "torch_12",
-      "type": "torch",
-      "x": 130.3,
-      "y": 29.9,
-      "z": -114.6
-    },
-    {
-      "id": "torch_13",
-      "type": "torch",
-      "x": 289.09,
-      "y": 11.13,
-      "z": -39.26
-    },
-    {
-      "id": "torch_14",
-      "type": "torch",
-      "x": 301.19,
-      "y": 10.47,
-      "z": 23.94
-    },
-    {
-      "id": "torch_15",
-      "type": "torch",
-      "x": 271.59,
-      "y": 10.35,
-      "z": 81.18
-    },
-    {
-      "id": "torch_16",
-      "type": "torch",
-      "x": 224.19,
-      "y": 8.93,
-      "z": 115.12
-    },
-    {
-      "id": "torch_17",
-      "type": "torch",
-      "x": 136.89,
-      "y": 5.64,
-      "z": 221.51
-    },
-    {
-      "id": "torch_18",
-      "type": "torch",
-      "x": 126.38,
-      "y": 6.0,
-      "z": 279.51
-    },
-    {
-      "id": "torch_19",
-      "type": "torch",
-      "x": 78.38,
-      "y": 5.94,
-      "z": 324.68
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": 8.0,
+      "y": 9.4,
+      "z": 24.0,
+      "top": 47.4,
+      "width": 16.0,
+      "heading": 0.0
     },
     {
       "id": "torch_20",
       "type": "torch",
-      "x": 16.32,
-      "y": 5.78,
-      "z": 335.65
+      "x": 51.14,
+      "y": 18.89,
+      "z": 36.69
     },
     {
       "id": "torch_21",
       "type": "torch",
-      "x": -45.33,
-      "y": 5.73,
-      "z": 323.62
+      "x": 61.98,
+      "y": 18.69,
+      "z": 34.81
+    },
+    {
+      "id": "area_ambient_01",
+      "type": "area_ambient",
+      "area": "rainforest",
+      "effect": "fireflies",
+      "rate": 26,
+      "radius": 40
     },
     {
       "id": "torch_22",
       "type": "torch",
-      "x": -102.73,
-      "y": 5.81,
-      "z": 308.03
+      "x": 59.47,
+      "y": 11.33,
+      "z": 166.78
     },
     {
       "id": "torch_23",
       "type": "torch",
-      "x": -159.7,
-      "y": 5.87,
-      "z": 280.95
+      "x": -37.93,
+      "y": 19.68,
+      "z": 97.0
     },
     {
       "id": "torch_24",
       "type": "torch",
-      "x": -204.13,
-      "y": 5.64,
-      "z": 238.28
+      "x": -134.41,
+      "y": 15.99,
+      "z": 23.66
     },
     {
       "id": "torch_25",
       "type": "torch",
-      "x": -242.38,
-      "y": 2.79,
-      "z": 191.53
+      "x": -169.62,
+      "y": 14.04,
+      "z": -28.51
     },
     {
       "id": "torch_26",
       "type": "torch",
-      "x": -277.03,
-      "y": 5.95,
-      "z": 139.05
+      "x": -193.09,
+      "y": 11.11,
+      "z": -83.68
     },
     {
       "id": "torch_27",
       "type": "torch",
-      "x": -284.45,
-      "y": 5.82,
-      "z": 77.13
+      "x": -123.31,
+      "y": 6.53,
+      "z": 78.89
     },
     {
       "id": "torch_28",
       "type": "torch",
-      "x": -283.61,
-      "y": 5.62,
-      "z": 16.6
+      "x": 31.75,
+      "y": 16.7,
+      "z": -1.23
     },
     {
       "id": "torch_29",
       "type": "torch",
-      "x": -292.85,
-      "y": 5.61,
-      "z": -38.74
+      "x": 67.44,
+      "y": 17.2,
+      "z": -17.35
     },
     {
       "id": "torch_30",
       "type": "torch",
-      "x": -303.99,
-      "y": 5.79,
-      "z": -100.2
+      "x": 79.04,
+      "y": 18.58,
+      "z": -72.9
     },
     {
       "id": "torch_31",
       "type": "torch",
-      "x": -211.14,
-      "y": 5.09,
-      "z": -204.23
+      "x": 64.37,
+      "y": 14.94,
+      "z": -124.68
     },
     {
       "id": "torch_32",
       "type": "torch",
-      "x": -209.74,
-      "y": 6.18,
-      "z": -266.0
-    },
-    {
-      "id": "torch_33",
-      "type": "torch",
-      "x": -147.86,
-      "y": 5.95,
-      "z": -290.64
-    },
-    {
-      "id": "torch_34",
-      "type": "torch",
-      "x": -87.99,
-      "y": 5.64,
-      "z": -286.78
-    },
-    {
-      "id": "torch_35",
-      "type": "torch",
-      "x": -31.51,
-      "y": 5.65,
-      "z": -287.31
-    },
-    {
-      "id": "torch_36",
-      "type": "torch",
-      "x": 29.27,
-      "y": 5.97,
-      "z": -297.27
-    },
-    {
-      "id": "torch_37",
-      "type": "torch",
-      "x": 92.12,
-      "y": 6.15,
-      "z": -287.4
-    },
-    {
-      "id": "torch_38",
-      "type": "torch",
-      "x": 159.46,
-      "y": 11.2,
-      "z": -243.49
-    },
-    {
-      "id": "torch_39",
-      "type": "torch",
-      "x": 130.39,
-      "y": 16.85,
-      "z": -193.22
-    },
-    {
-      "id": "torch_40",
-      "type": "torch",
-      "x": 134.42,
-      "y": 27.26,
-      "z": -144.15
-    },
-    {
-      "id": "torch_41",
-      "type": "torch",
-      "x": 177.4,
-      "y": 26.71,
-      "z": -118.01
-    },
-    {
-      "id": "torch_42",
-      "type": "torch",
-      "x": 237.35,
-      "y": 16.78,
-      "z": -116.25
-    },
-    {
-      "id": "torch_43",
-      "type": "torch",
-      "x": 267.09,
-      "y": 11.33,
-      "z": -65.43
+      "x": 34.67,
+      "y": 11.96,
+      "z": -177.2
     },
     {
       "id": "puzzle_gate_01",
       "type": "puzzle_gate",
       "puzzle": "return",
-      "x": -296.51,
-      "z": 93.66,
-      "heading": 1.602623290639563,
+      "x": -271.71,
+      "z": 90.77,
+      "heading": 2.0854914426557953,
       "width": 9.0,
-      "prize_x": -307.51,
-      "prize_z": 94.01
+      "prize_x": -281.28,
+      "prize_z": 96.19
     },
     {
-      "id": "torch_44",
+      "id": "torch_33",
       "type": "torch",
-      "x": -310.49,
-      "y": 6.15,
-      "z": 81.38
+      "x": -287.97,
+      "y": 5.52,
+      "z": 85.06
     },
     {
-      "id": "torch_45",
+      "id": "torch_34",
       "type": "torch",
-      "x": -316.61,
-      "y": 10.98,
-      "z": 84.76
+      "x": -292.78,
+      "y": 5.22,
+      "z": 90.15
     },
     {
       "id": "puzzle_gate_02",
       "type": "puzzle_gate",
       "puzzle": "secret",
-      "x": 34.13,
-      "z": -291.0,
-      "heading": 0.0140111694199126,
+      "x": 81.69,
+      "z": -297.22,
+      "heading": -0.30548904082652,
       "width": 9.0,
-      "prize_x": 34.0,
-      "prize_z": -300.0
+      "prize_x": 84.4,
+      "prize_z": -305.8
     },
     {
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "coral",
-      "x": 168.63,
-      "z": 190.39,
-      "heading": -3.045645051526935
+      "x": 148.31,
+      "z": 187.2,
+      "heading": -2.825929592170955
     },
     {
       "id": "gateway_spot_02",
       "type": "gateway_spot",
-      "gateway": "splash",
-      "x": -117.93,
-      "z": 246.43,
-      "heading": -0.5169445513634564
+      "gateway": "wreck",
+      "x": -264.4,
+      "z": -135.86,
+      "heading": 1.0100291998512003
     },
     {
       "id": "gateway_spot_03",
       "type": "gateway_spot",
-      "gateway": "wreck",
-      "x": -241.65,
-      "z": -177.74,
-      "heading": 0.09486482128427093
+      "gateway": "volcano",
+      "x": 29.8,
+      "z": -300.35,
+      "heading": -0.09986857612414615
     },
     {
       "id": "gateway_spot_04",
       "type": "gateway_spot",
-      "gateway": "lair",
-      "x": 243.4,
-      "z": 175.69,
-      "heading": -1.8141014529552
+      "gateway": "rainforest",
+      "x": 54.34,
+      "z": 22.94,
+      "heading": -2.9699290858462764
     },
     {
       "id": "gateway_spot_05",
       "type": "gateway_spot",
-      "gateway": "volcano",
-      "x": 14.03,
-      "z": -390.77,
-      "heading": 0.06233901931778614
+      "gateway": "lair",
+      "x": 198.59,
+      "z": 163.74,
+      "heading": -2.4274145090273995
     },
     {
       "id": "villager_home_02",
       "type": "villager_home",
-      "x": 241.46,
-      "z": 109.3,
-      "y": 7.07,
+      "x": 215.92,
+      "z": 131.9,
+      "y": 5.36,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -440,9 +371,9 @@
     {
       "id": "villager_home_03",
       "type": "villager_home",
-      "x": 168.41,
-      "z": 206.39,
-      "y": 4.07,
+      "x": 109.36,
+      "z": 162.68,
+      "y": 4.06,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -451,9 +382,9 @@
     {
       "id": "villager_home_04",
       "type": "villager_home",
-      "x": 116.52,
-      "z": 304.13,
-      "y": 3.23,
+      "x": -190.42,
+      "z": -130.01,
+      "y": 5.53,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -462,9 +393,9 @@
     {
       "id": "villager_home_05",
       "type": "villager_home",
-      "x": 0.77,
-      "z": 311.83,
-      "y": 3.18,
+      "x": -283.55,
+      "z": -66.53,
+      "y": 3.45,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -473,9 +404,9 @@
     {
       "id": "villager_home_06",
       "type": "villager_home",
-      "x": -112.37,
-      "z": 310.22,
-      "y": 3.02,
+      "x": -277.26,
+      "z": 49.29,
+      "y": 4.16,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -484,9 +415,9 @@
     {
       "id": "villager_home_07",
       "type": "villager_home",
-      "x": -188.54,
-      "z": 220.96,
-      "y": 3.27,
+      "x": 40.55,
+      "z": 24.0,
+      "y": 14.99,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -495,9 +426,9 @@
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": -279.04,
-      "z": 147.41,
-      "y": 3.11,
+      "x": 59.71,
+      "z": -123.1,
+      "y": 12.3,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -506,9 +437,20 @@
     {
       "id": "villager_home_09",
       "type": "villager_home",
-      "x": -289.03,
-      "z": 29.67,
-      "y": 3.13,
+      "x": 24.95,
+      "z": -245.27,
+      "y": 5.49,
+      "r": 6.0,
+      "n": 2,
+      "folk": "beach",
+      "heading": 0.0
+    },
+    {
+      "id": "villager_home_10",
+      "type": "villager_home",
+      "x": 135.14,
+      "z": -270.83,
+      "y": 3.06,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -518,8 +460,9 @@
   "generator": "tools/blender/prehistoric/beach_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
-    "isle_dress.py": "ad1789ead53a453c74a992a49df8a5ec4cb3d1496e9a287cf2f26a7669e7521a",
-    "isle_layout.py": "cb0fa7e6256d2b49f8794bf03f768f2f658604fde2c7d647843f7c9d3fd268a7",
-    "isle_region.py": "3bb8cd1912a4a604bde2dac2b15c886704167bd02786bb88762179cf5d66d82f"
+    "isle_dress.py": "f6c712f8c628410796b454cb70fd3cd8d2adcff079c31692bde2668eabc0ea98",
+    "isle_layout.py": "c9fd3b6c4eafbdb7ae461823670227af6114f1e22e37316b13f84c98dbe149e3",
+    "isle_region.py": "f951654f8c9c0040f9108e719f9658e9b738364e9a8b831ac7f77f262975983d",
+    "isle_sections.py": "02626360f079705b4d9fe0ef1d331a7c9305adf7d6a7ebc887ffb2288653cc69"
   }
 }

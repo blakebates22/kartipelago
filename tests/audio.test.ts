@@ -46,6 +46,7 @@ const melodies: [string, string, number][] = [
   ["shipwreck_bay", S.WRECK_MELODY, 64],
   ["volcano_isle", S.VOLCANO_MELODY, 64],
   ["splash_lagoon", S.SPLASH_MELODY, 64],
+  ["rainforest_rush", S.RAINFOREST_MELODY, 64],
   ["boss", S.BOSS_MELODY, 64],
   ["emberdeep", S.EMBERDEEP_MELODY, 64],
 ];
@@ -74,6 +75,7 @@ const charts: [string, string, number, string][] = [
   ["shipwreck_bay", S.WRECK_CHORDS, 64, S.WRECK_MELODY],
   ["volcano_isle", S.VOLCANO_CHORDS, 64, S.VOLCANO_MELODY],
   ["splash_lagoon", S.SPLASH_CHORDS, 64, S.SPLASH_MELODY],
+  ["rainforest_rush", S.RAINFOREST_CHORDS, 64, S.RAINFOREST_MELODY],
   ["boss", S.BOSS_CHORDS, 64, S.BOSS_MELODY],
   ["emberdeep", S.EMBERDEEP_CHORDS, 64, S.EMBERDEEP_MELODY],
   ["journey_gorge", S.GORGE_CHORDS, 64, S.GORGE_MELODY],

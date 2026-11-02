@@ -341,6 +341,26 @@ SPLASH = {
 }
 
 
+RAINFOREST = {
+    "id": "rainforest_ruins",
+    "name": "Rainforest Rush in Ruins",
+    "description": "The rainforest after Tidewyrm's storm: a dark, rain-heavy afternoon, the river in flood, trees down across the way, the temple's braziers smoking",
+    "environment": {
+        "sky": "#6a8a84",
+        "fog": {"enabled": True, "color": "#8aa49a", "near": 70, "far": 560},
+        "sun": {"color": "#e8e8d0", "intensity": 1.9, "direction": [0.3, 0.86, -0.4]},
+        "ambient": {"sky": "#b8ccc4", "ground": "#3a4a30", "intensity": 1.25},
+        "skyDome": {
+            "top": "#3a5a6a",
+            "horizon": "#a8bcb4",
+            "bottom": "#5a7a6a",
+            "sun": {"color": "#f0f0e0", "size": 8, "glow": "#c8d0c0", "elevation": 46},
+            "clouds": {"count": 50, "color": "#8a9894", "shade": "#4a5652", "seed": 391, "low": 5, "high": 22, "drift": 0.012},
+            "hills": {"color": "#1a4028", "far": "#5a7a6a", "height": 9, "seed": 169, "layers": 3},
+        },
+    },
+}
+
 KEEP = {
     "id": "keep_ruins",
     "name": "Dragonspire Keep Remade",

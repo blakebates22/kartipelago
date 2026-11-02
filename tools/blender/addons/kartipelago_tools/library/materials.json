@@ -2502,6 +2502,108 @@
           }
         }
       }
+    },
+    {
+      "id": "rainforest_rush",
+      "name": "Rainforest Rush",
+      "description": "The island's rainforest heart in the late morning: a humid green haze under the canopy, shafts of sun, mossy temple stone, giant trees and their buttress roots, lianas, falls off the cliffs, a gorge far below a rope bridge",
+      "environment": {
+        "sky": "#8cc8b4",
+        "fog": {
+          "enabled": true,
+          "color": "#a8d4b0",
+          "near": 90,
+          "far": 720
+        },
+        "sun": {
+          "color": "#fff2c8",
+          "intensity": 2.5,
+          "direction": [0.3, 0.86, -0.4]
+        },
+        "ambient": {
+          "sky": "#d8f4d0",
+          "ground": "#4a6a30",
+          "intensity": 1.35
+        },
+        "skyDome": {
+          "top": "#2e8ab8",
+          "horizon": "#bfe6c8",
+          "bottom": "#6aa878",
+          "sun": {
+            "color": "#fff8dc",
+            "size": 9,
+            "glow": "#f6f0b0",
+            "elevation": 52
+          },
+          "clouds": {
+            "count": 30,
+            "color": "#f4fff4",
+            "shade": "#b8d8c0",
+            "seed": 167,
+            "low": 6,
+            "high": 26,
+            "drift": 0.005
+          },
+          "hills": {
+            "color": "#1e5a34",
+            "far": "#6aa88a",
+            "height": 9,
+            "seed": 169,
+            "layers": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "rainforest_ruins",
+      "name": "Rainforest Rush in Ruins",
+      "description": "The rainforest after Tidewyrm's storm: a dark, rain-heavy afternoon, the river in flood, trees down across the way, the temple's braziers smoking",
+      "environment": {
+        "sky": "#6a8a84",
+        "fog": {
+          "enabled": true,
+          "color": "#8aa49a",
+          "near": 70,
+          "far": 560
+        },
+        "sun": {
+          "color": "#e8e8d0",
+          "intensity": 1.9,
+          "direction": [0.3, 0.86, -0.4]
+        },
+        "ambient": {
+          "sky": "#b8ccc4",
+          "ground": "#3a4a30",
+          "intensity": 1.25
+        },
+        "skyDome": {
+          "top": "#3a5a6a",
+          "horizon": "#a8bcb4",
+          "bottom": "#5a7a6a",
+          "sun": {
+            "color": "#f0f0e0",
+            "size": 8,
+            "glow": "#c8d0c0",
+            "elevation": 46
+          },
+          "clouds": {
+            "count": 50,
+            "color": "#8a9894",
+            "shade": "#4a5652",
+            "seed": 391,
+            "low": 5,
+            "high": 22,
+            "drift": 0.012
+          },
+          "hills": {
+            "color": "#1a4028",
+            "far": "#5a7a6a",
+            "height": 9,
+            "seed": 169,
+            "layers": 3
+          }
+        }
+      }
     }
   ],
   "materials": [
@@ -3275,6 +3377,51 @@
       "image": "salt_flat.png",
       "wrap": "repeat",
       "tileMetres": 6
+    },
+    {
+      "id": "isle_sand_road",
+      "name": "Island Sand Road",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "isle_sand_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "isle_jungle_road",
+      "name": "Island Jungle Road",
+      "theme": "volcano_isle",
+      "surface": "road",
+      "image": "isle_jungle_road.png",
+      "wrap": "repeat",
+      "tileMetres": 5
+    },
+    {
+      "id": "black_sand",
+      "name": "Black Sand",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "black_sand.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "rain_paving",
+      "name": "Temple Paving",
+      "theme": "jungle_cascade",
+      "surface": "road",
+      "image": "rain_paving.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "giant_heartwood",
+      "name": "Giant Heartwood",
+      "theme": "jungle_cascade",
+      "surface": "road",
+      "image": "giant_heartwood.png",
+      "wrap": "repeat",
+      "tileMetres": 5
     },
     {
       "id": "salt_brine",
@@ -11613,6 +11760,114 @@
       "image": "tx_cove_road__wreck_road_75.png",
       "wrap": "repeat",
       "tileMetres": 4.0
+    },
+    {
+      "id": "tx_isle_sand_road__isle_jungle_road_25",
+      "name": "Island Sand Road to Island Jungle Road (25%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_isle_sand_road__isle_jungle_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_isle_sand_road__isle_jungle_road_50",
+      "name": "Island Sand Road to Island Jungle Road (50%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_isle_sand_road__isle_jungle_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_isle_sand_road__isle_jungle_road_75",
+      "name": "Island Sand Road to Island Jungle Road (75%)",
+      "theme": "coral_cove",
+      "surface": "road",
+      "image": "tx_isle_sand_road__isle_jungle_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_black_sand__beach_sand_25",
+      "name": "Black Sand to Beach Sand (25%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_black_sand__beach_sand_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_black_sand__beach_sand_50",
+      "name": "Black Sand to Beach Sand (50%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_black_sand__beach_sand_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_black_sand__beach_sand_75",
+      "name": "Black Sand to Beach Sand (75%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_black_sand__beach_sand_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_black_sand__isle_jungle_25",
+      "name": "Black Sand to Jungle Floor (25%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_black_sand__isle_jungle_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_black_sand__isle_jungle_50",
+      "name": "Black Sand to Jungle Floor (50%)",
+      "theme": "volcano_isle",
+      "surface": "sand",
+      "image": "tx_black_sand__isle_jungle_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_black_sand__isle_jungle_75",
+      "name": "Black Sand to Jungle Floor (75%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_black_sand__isle_jungle_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.5
+    },
+    {
+      "id": "tx_isle_jungle__jungle_leafcover_25",
+      "name": "Jungle Floor to Jungle Leaf Cover (25%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__jungle_leafcover_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_isle_jungle__jungle_leafcover_50",
+      "name": "Jungle Floor to Jungle Leaf Cover (50%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__jungle_leafcover_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_isle_jungle__jungle_leafcover_75",
+      "name": "Jungle Floor to Jungle Leaf Cover (75%)",
+      "theme": "volcano_isle",
+      "surface": "grass",
+      "image": "tx_isle_jungle__jungle_leafcover_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
     },
     {
       "id": "tx_keep_grass__moon_grass_25",

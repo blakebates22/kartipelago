@@ -1,65 +1,62 @@
-# Tropic Isles v4: one big island (Blake, Oct 31: "Needs to be an island I think, with maybe
-# tropical dense forest in the center"; he picked a jungle peak at the centre). Pure
-# geometry, no Blender (isle_region.py builds it).
+# Tropic Isles v5: the island lived in, not driven round (Blake, Nov 1: "I like the
+# geograhpy in general, but the driving is terribly boring, the sections with the levels
+# are not immersive. the only immersive aspect is being on an island. i want to also
+# travel through the island. not just around it. maybe we can have some figure 8 type
+# loop going through the island ... homeomorphic to a figure 8"; "all of the areas
+# containing the levels need to be their own sub world"). Pure geometry, no Blender
+# (isle_region.py builds it).
 # SPDX-License-Identifier: MIT
 #
-# A high island in a turquoise sea: a ring of beach and shallows round the coast, the
-# coastal flats behind it, then dense rainforest climbing in ridges and valleys to a sheer
-# green pinnacle in the middle, its falls dropping into a river gorge that runs out to the
-# lagoon. The road: round the coast (the island hop comes in to Raptor's stilt village on
-# the east bay; Coral Cove's reef, south-east; Splash Lagoon by the lagoon, south-west;
-# Shipwreck Bay, north-west; the Volcano Isle pier, north), then in from the north coast
-# up through the jungle over a crest (the look across to the pinnacle and its falls) and
-# down to the village. Tidewyrm's sea cave is in the cliffs of the headland south of the
-# village.
+# The same island (v4's coast, bays, headlands, lagoon, the jungle peak and its falls), the
+# road a figure eight through it: two loops crossing at the island's middle, where the
+# Ridge Road goes over the river gorge on a high bridge and the Gorge Road runs along the
+# river under it. Each part of the island its own basin, walled by jungle ridges, the road
+# squeezing between them from one to the next:
+#
+#   Raptor's Bay        the stilt village (the island hop's pier in to its square, east)
+#     the Head Pass     behind Tidewyrm's Head, down into
+#   Coral Cove          its reef, its beach, its bay (Coral Cove's gateway)
+#     the Ridge Road    up a jungle ravine onto the mountain's flank, over
+#     the High Bridge   across the river gorge, the falls up it, the lagoon down it
+#     the Cloud Forest  down through the mist, giant trees, to
+#   Shipwreck Bay       the galleon, the pirates' camp (Shipwreck Bay's gateway)
+#   Smugglers' Point    down the west coast: the smugglers' Sea Cave
+#   the Lagoon          round its shore, mangroves; in at the river's mouth
+#     the Gorge Road    up the river, under the High Bridge, to
+#   the Jungle Heart    the falls (the road under their arc), the old temple, the
+#                       rainforest's own course's gateway (Rainforest Rush)
+#     the Temple Gate   bored through the ridge, out into
+#   the North Valley    down to
+#   the Black Shore     the north coast facing Volcano Isle: black sand, lava rock, steam
+#                       (Volcano Isle's gateway); then round the north-east coast home
 #
 # Blender coordinates (x east, y north, z up).
 
 import math
 
+from pocket_kit import Layout, Notches, catmull, lerp, smooth, seg_d  # noqa: F401
+
 EXTENT = 470.0
 WATER_Z = 0.0
-PEAK = (10.0, 30.0)  # the pinnacle
-PEAK_Z = 150.0
-
-
-def smooth(t):
-    t = max(0.0, min(1.0, t))
-    return t * t * (3 - 2 * t)
-
-
-def lerp(a, b, t):
-    return a + (b - a) * t
-
-
-def _seg(px, py, a, b):
-    ax, ay = a[0], a[1]
-    bx, by = b[0], b[1]
-    dx, dy = bx - ax, by - ay
-    L2 = dx * dx + dy * dy
-    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
-    return math.hypot(px - ax - t * dx, py - ay - t * dy), t
+TOP = 52.0
+PEAK = (10.0, 62.0)  # the pinnacle (north of the heart: its falls into it)
+PEAK_R = 34.0
+PEAK_Z = 205.0
 
 
 def _adiff(a, b):
     return (a - b + math.pi) % math.tau - math.pi
 
 
-# ---------------------------------------------------------------- the coast
+# ---------------------------------------------------------------- the coast (v4's)
 
-# The bays: (angle from the island's middle, half width in radians, depth in metres).
 BAYS = {
-    "village": (math.radians(4.0), 0.22, 46.0),  # Raptor's bay, east: the stilt village over it
-    "coral": (math.radians(-52.0), 0.2, 54.0),  # Coral Cove, south-east: the reef across its mouth
-    "wreck": (math.radians(140.0), 0.24, 64.0),  # Shipwreck Bay, north-west
+    "village": (math.radians(4.0), 0.22, 46.0),
+    "coral": (math.radians(-52.0), 0.2, 54.0),
+    "wreck": (math.radians(140.0), 0.24, 64.0),
 }
-# Tidewyrm's Head: a rocky headland reaching out south of the village bay, sea cliffs
-# round it (his cave in its south face, after his attack).
-HEAD = (math.radians(-22.0), 0.14, 40.0)  # angle, half width, how far it reaches out
+HEAD = (math.radians(-22.0), 0.14, 40.0)
 HEAD_Z = 24.0
-# Smugglers' Point: a smaller headland on the west coast, sea cliffs round it; the
-# smugglers' Sea Cave at the foot of its south cliff, their tunnel's sea door in its north
-# one (the last tunnel, under the sea to the old causeway past the border).
 POINT = (math.radians(-172.0), 0.11, 34.0)
 POINT_Z = 18.0
 
@@ -71,8 +68,6 @@ def _reach(a, head):
 
 
 def shore_r(a, point=True):
-    """The coastline's distance from the island's middle at angle a (`point`: with
-    Smugglers' Point; the road's coast points are laid out without it)."""
     r = 352.0 + 22.0 * math.sin(3.0 * a + 0.7) + 12.0 * math.sin(5.0 * a + 2.0) + 6.0 * math.sin(9.0 * a + 1.1)
     for ang, hw, depth in BAYS.values():
         d = abs(_adiff(a, ang))
@@ -89,277 +84,270 @@ def inland(x, y):
     return shore_r(math.atan2(y, x)) - math.hypot(x, y)
 
 
-# The lagoon: shallow still water behind the south-west shore, open to the sea by an inlet
-# (the road crosses it on a boardwalk).
-LAGOON = (-168.0, -150.0, 58.0)
-LAGOON_INLET = [(-196.0, -178.0), (-262.0, -238.0)]
-LAGOON_Z = -0.6
-
-# The river: off the pinnacle's falls, down its gorge to the lagoon.
-RIVER = [(0.0, -28.0), (-30.0, -62.0), (-70.0, -92.0), (-110.0, -112.0), (-140.0, -128.0)]
-RIVER_HW = 7.0
-FALLS = (6.0, -18.0)  # the pinnacle's great falls' foot (off its south cliff)
-
-
-def river_d(x, y):
-    best = 1e9
-    tt = 0.0
-    k = 0
-    for i, (a, b) in enumerate(zip(RIVER, RIVER[1:])):
-        d, t = _seg(x, y, a, b)
-        if d < best:
-            best, tt, k = d, t, i
-    return best, (k + tt) / (len(RIVER) - 1)
-
-
-def _mountain(x, y):
-    """The jungle mountain: a cone to the pinnacle, ribbed in radial ridges and valleys,
-    the pinnacle itself sheer."""
-    px, py = PEAK
-    r = math.hypot(x - px, y - py)
-    a = math.atan2(y - py, x - px)
-    cone = 150.0 * max(0.0, 1.0 - r / 290.0) ** 1.35
-    ribs = 0.62 + 0.38 * abs(math.sin(3.5 * a + 0.25 * math.sin(r / 37.0) + 0.6))
-    knobs = 1.0 + 0.12 * math.sin(x / 23.0) * math.cos(y / 29.0)
-    h = cone * ribs * knobs
-    # The pinnacle: a green spire, sheer on every side.
-    h += 70.0 * smooth((58.0 - r) / 22.0) * (0.9 + 0.1 * math.sin(a * 5.0))
-    return h
-
-
-def _land(x, y):
-    s = inland(x, y)
-    if s < 0.0:
-        # The sea: shallows (turquoise, wadeable) a little way out, then deep.
-        h = WATER_Z - 0.35 + s * 0.045
-        h = max(h, WATER_Z - 2.2 + s * 0.12)
-        return max(h, -40.0)  # (falling away to the deep blue)
-    beach = WATER_Z - 0.3 + 2.6 * smooth(s / 34.0)
-    flats = beach + 3.5 * smooth((s - 34.0) / 50.0) + 1.2 * math.sin(x / 31.0) * math.cos(y / 37.0) * smooth((s - 30.0) / 40.0)
-    h = flats + _mountain(x, y) * smooth((s - 50.0) / 90.0)
-    # Tidewyrm's Head: the headland's top a grassy shelf, cliffs to the sea.
-    ha, hhw, reach = HEAD
-    a = math.atan2(y, x)
-    d = abs(_adiff(a, ha))
-    if d < hhw * 1.6 and s < 70.0:
-        w = smooth((hhw * 1.4 - d) / (hhw * 0.6)) * smooth(s / 6.0)
-        h = lerp(h, max(h, HEAD_Z + 3.0 * math.sin(x / 11.0)), w)
-    # Smugglers' Point: the same, smaller, only out past the coast (the road behind it).
-    pa, phw, _ = POINT
-    d = abs(_adiff(a, pa))
-    if d < phw * 1.6:
-        sb = shore_r(a, point=False) - math.hypot(x, y)
-        w = smooth((phw * 1.4 - d) / (phw * 0.6)) * smooth(s / 5.0) * smooth((16.0 - sb) / 10.0)
-        h = lerp(h, max(h, POINT_Z + 2.0 * math.sin(y / 9.0)), w)
-    # Tidewyrm's ledge: a rock shelf at the cliffs' foot, his cave's mouth on it (level with
-    # the road above the beach).
-    dl = math.hypot(x - LAIR[0], y - LAIR[1])
-    if dl < 34.0:
-        h = lerp(h, max(h, 5.2), smooth((34.0 - dl) / 12.0))
-    # The lagoon: still shallow water behind the shore, its inlet out to sea.
-    lx, ly, lr = LAGOON
-    dl = math.hypot(x - lx, y - ly)
-    if dl < lr + 30.0:
-        h = lerp(h, LAGOON_Z - 1.4, smooth((lr + 14.0 - dl) / 18.0))
-    di, _ = _seg(x, y, *LAGOON_INLET)
-    if di < 30.0:
-        h = lerp(h, min(h, LAGOON_Z - 1.4), smooth((22.0 - di) / 10.0))
-    # The river's gorge: cut down from the falls to the lagoon, its floor falling with it.
-    dr, t = river_d(x, y)
-    if dr < 40.0:
-        floor = lerp(14.0, LAGOON_Z - 0.6, t)
-        h = lerp(h, min(h, floor), smooth((34.0 - dr) / (34.0 - RIVER_HW)) if dr > RIVER_HW else 1.0)
-    # The plunge pool under the pinnacle's falls.
-    df = math.hypot(x - FALLS[0], y - FALLS[1])
-    if df < 30.0:
-        h = lerp(h, min(h, 12.0), smooth((30.0 - df) / 12.0))
-    return h
-
-
-# ---------------------------------------------------------------- the road
-
 def _coast(a_deg, back=46.0, point=False):
-    """A point on the coast road: `back` m inland at angle a."""
     a = math.radians(a_deg)
     r = shore_r(a, point) - back
     return (r * math.cos(a), r * math.sin(a))
 
 
-# Clockwise round the coast from the village (east), then in from the north coast over the
-# jungle crest and back down to the village. (x, y, height or None: the land's.)
-ROUTE = []
-for _a in (10, -6):
-    ROUTE.append(_coast(_a, 76.0) + (None,))
-# (round the back of Tidewyrm's Head: inland of its cliffs)
-for _a, _b in ((-18, 96.0), (-28, 96.0)):
-    ROUTE.append(_coast(_a, _b) + (None,))
-for _a in (-40, -56, -70, -86, -102, -116, -128):
-    ROUTE.append(_coast(_a, 48.0 if _a != -56 else 40.0) + (None,))
-# (the lagoon's inlet, crossed on a boardwalk: on_boardwalk)
-for _a in (-140, -152, -166, 178, 164, 150, 138, 126, 112, 100, 88, 76, 64):
-    ROUTE.append(_coast(_a, 48.0 if _a not in (138, 150) else 40.0) + (None,))
-# (in from the north coast: up through the jungle, over the crest, down to the village)
-ROUTE += [
-    (150.0, 262.0, 6.0),
-    (128.0, 214.0, 12.0),
-    (118.0, 166.0, 20.0),
-    (138.0, 126.0, 27.0),  # the crest: the look across to the pinnacle and its falls
-    (182.0, 108.0, 24.0),
-    (220.0, 112.0, 17.0),
-    (248.0, 96.0, 10.0),
-    (258.0, 62.0, None),
+# The lagoon: still water behind the south-west shore, its inlet out to sea.
+LAGOON = (-168.0, -150.0, 54.0)
+LAGOON_INLET = [(-196.0, -178.0), (-262.0, -238.0)]
+LAGOON_Z = -0.6
+# The river: out of the falls' plunge pool, down its gorge to the lagoon (x, y, water z).
+RIVER = [(8.0, -24.0, 9.4), (-18.0, -48.0, 8.0), (-48.0, -74.0, 6.2), (-80.0, -94.0, 4.2), (-110.0, -110.0, 2.2),
+         (-140.0, -126.0, LAGOON_Z)]
+RIVER_HW = 6.0
+FALLS = (8.0, -24.0)  # the plunge pool's middle (the falls come off the pinnacle's south face)
+FALLS_LIP = (8.0, 24.0)
+POOL_R = 13.0
+
+
+def river_d(x, y):
+    best, tt, k = 1e9, 0.0, 0
+    for i, (a, b) in enumerate(zip(RIVER, RIVER[1:])):
+        d, t = seg_d(x, y, a, b)
+        if d < best:
+            best, tt, k = d, t, i
+    return best, (k + tt) / (len(RIVER) - 1)
+
+
+# ---------------------------------------------------------------- the basins
+
+HUB = (252.0, 30.0, 20.0)  # Raptor's square (x, y, radius)
+HOP_PIER = [(266.0, 30.0), (452.0, 26.0)]  # out east over the bay from the square to the island hop
+
+POCKETS = [
+    # Raptor's Bay: the village's flats above the east bay (the road on their inland side,
+    # west of the square: the hop's pier goes out east, never across it).
+    ("village", "village", [(214.0, 92.0, 26.0, 3.4), (214.0, 40.0, 30.0, 3.2), (250.0, 22.0, 30.0, 3.0),
+                            (212.0, -18.0, 26.0, 3.4), (296.0, 30.0, 30.0, 2.4), (298.0, -14.0, 24.0, 2.6),
+                            (290.0, 70.0, 24.0, 2.6)]),
+    # The Head Pass: between Tidewyrm's Head and the mountain's spur.
+    ("head", "head", [(212.0, -66.0, 16.0, 5.0), (212.0, -100.0, 16.0, 4.6)]),
+    # Coral Cove: its bay's beach and flats.
+    ("coral", "coral", [(206.0, -138.0, 22.0, 3.6), (172.0, -160.0, 30.0, 3.2), (130.0, -178.0, 28.0, 3.2),
+                        (96.0, -176.0, 20.0, 4.2), (176.0, -194.0, 26.0, 2.4), (224.0, -186.0, 22.0, 2.6),
+                        (140.0, -208.0, 24.0, 2.4)]),
+    # The Ridge Road: up a jungle ravine onto the mountain's south flank.
+    ("ridge", "ridge", [(66.0, -160.0, 15.0, 8.0), (36.0, -138.0, 14.0, 13.5), (8.0, -116.0, 14.0, 18.5),
+                        (-20.0, -98.0, 14.0, 22.5), (-36.0, -87.0, 11.0, 16.8)]),
+    # (the far side of the gorge: the Cloud Forest's top, the bridge between)
+    ("cloud", "cloud", [(-80.0, -56.0, 14.0, 25.0), (-108.0, -34.0, 15.0, 23.5), (-140.0, -4.0, 16.0, 20.0),
+                        (-164.0, 38.0, 17.0, 15.5), (-184.0, 86.0, 18.0, 10.0), (-124.0, -19.0, 13.0, 14.0),
+                        (-153.0, 18.0, 13.0, 12.5), (-175.0, 62.0, 13.0, 11.0)]),
+    # Shipwreck Bay.
+    ("wreck", "wreck", [(-206.0, 132.0, 24.0, 4.0), (-238.0, 146.0, 28.0, 3.2), (-262.0, 106.0, 22.0, 3.2), (-232.0, 180.0, 28.0, 2.4), (-272.0, 150.0, 24.0, 2.6)]),
+    # Smugglers' Point: down the west coast behind it.
+    ("point", "point", [(-270.0, 52.0, 20.0, 3.4), (-270.0, -4.0, 20.0, 3.6), (-260.0, -58.0, 24.0, 3.2), (-302.0, 62.0, 22.0, 2.6), (-292.0, -82.0, 22.0, 2.6)]),
+    # The Lagoon: its north shore.
+    ("lagoon", "lagoon", [(-236.0, -94.0, 20.0, 2.6), (-198.0, -84.0, 18.0, 2.4), (-158.0, -82.0, 18.0, 2.4),
+                          (-168.0, -150.0, 50.0, -1.6)]),
+    # The Gorge Road: up the river's north-west bank.
+    ("gorge", "gorge", [(-122.0, -88.0, 15.0, 3.6), (-92.0, -74.0, 14.0, 5.6), (-64.0, -56.0, 14.0, 7.8),
+                        (-38.0, -34.0, 15.0, 9.8), (-60.0, -78.0, 10.0, 5.0)]),
+    # The Jungle Heart: the falls' basin under the pinnacle, the old temple.
+    ("heart", "heart", [(-14.0, -10.0, 20.0, 11.6), (10.0, -14.0, 26.0, 11.6), (40.0, -14.0, 22.0, 12.0),
+                        (64.0, -6.0, 16.0, 13.0)]),
+    # The North Valley: out of the Temple Gate, down to the coast.
+    ("north", "north", [(84.0, 104.0, 16.0, 17.0), (60.0, 150.0, 19.0, 12.5), (34.0, 198.0, 20.0, 8.0)]),
+    # The Black Shore: the north coast, facing Volcano Isle.
+    ("volcano", "volcano", [(10.0, 246.0, 22.0, 4.0), (0.0, 280.0, 26.0, 3.0), (52.0, 282.0, 26.0, 3.0),
+                            (100.0, 268.0, 24.0, 3.2), (2.0, 306.0, 26.0, 2.4), (46.0, 312.0, 24.0, 2.4),
+                            (96.0, 300.0, 22.0, 2.5)]),
+    # Round the north-east coast home.
+    ("northeast", "northeast", [(148.0, 246.0, 22.0, 3.2), (182.0, 204.0, 22.0, 3.4), (200.0, 156.0, 22.0, 3.6), (162.0, 278.0, 22.0, 2.6), (214.0, 238.0, 22.0, 2.6)]),
 ]
-CREST = (138.0, 126.0)
 
-# Raptor's village: its square on the flats above the east bay (the island hop's pier comes
-# in past it), the stilt huts out over the bay.
-HUB = (252.0, 30.0, 20.0)  # x, y, radius (the square)
-HOP_PIER = [(266.0, 30.0), (452.0, 26.0)]  # the pier out east over the bay to the island hop (from on the square: no gap)
-# The gateways' landmarks.
-GATES = {
-    "coral": _coast(-50.0, 6.0),
-    "splash": (-112.0, -236.0),  # (on the flats between the lagoon and the south road)
-    "wreck": _coast(142.0, 10.0),
-    "volcano": _coast(88.0, -60.0),  # the pier's end, out over the shallows
+# The route: the figure eight. (x, y, height or None: the land's.)
+ROUTE = [
+    (204.0, 40.0, None),  # 0: Raptor's Bay (the start line), south past the square
+    (210.0, -14.0, None),
+    (212.0, -64.0, None),  # 2: the Head Pass
+    (210.0, -102.0, None),
+    (196.0, -138.0, None),  # 4: Coral Cove
+    (162.0, -164.0, None),
+    (124.0, -176.0, None),
+    (94.0, -174.0, None),
+    (66.0, -160.0, 8.6),  # 8: the Ridge Road, up the ravine
+    (36.0, -138.0, 13.0),
+    (8.0, -116.0, 16.6),
+    (-20.0, -98.0, 17.0),
+    (-52.0, -76.0, 17.4),  # 12: the High Bridge, over the gorge
+    (-80.0, -56.0, 16.8),
+    (-108.0, -34.0, 15.0),  # 14: the Cloud Forest, down
+    (-140.0, -4.0, 12.6),
+    (-164.0, 38.0, None),
+    (-184.0, 86.0, None),
+    (-208.0, 128.0, None),  # 18: Shipwreck Bay
+    (-240.0, 140.0, None),
+    (-264.0, 104.0, None),
+    (-270.0, 52.0, None),  # 21: Smugglers' Point
+    (-270.0, -4.0, None),
+    (-260.0, -56.0, None),
+    (-236.0, -92.0, 3.4),  # 24: the Lagoon's north shore
+    (-198.0, -84.0, 3.2),
+    (-158.0, -82.0, 3.4),
+    (-122.0, -88.0, 4.4),  # 27: the Gorge Road, up the river
+    (-92.0, -74.0, 6.4),
+    (-64.0, -56.0, 8.6),  # 29: under the High Bridge
+    (-38.0, -34.0, 10.6),
+    (-14.0, -10.0, None),  # 31: the Jungle Heart: under the falls' arc
+    (10.0, -2.0, None),
+    (40.0, -10.0, None),
+    (64.0, -4.0, None),
+    (80.0, 26.0, 15.0),  # 35: the Temple Gate (bored through the ridge)
+    (88.0, 66.0, 16.5),
+    (84.0, 104.0, None),  # 37: the North Valley
+    (60.0, 150.0, None),
+    (34.0, 198.0, None),
+    (10.0, 246.0, None),  # 40: the Black Shore
+    (6.0, 280.0, None),
+    (52.0, 284.0, None),
+    (100.0, 270.0, None),
+    (148.0, 246.0, None),  # 44: the north-east coast
+    (182.0, 204.0, None),
+    (200.0, 156.0, None),
+    (210.0, 96.0, None),
+]
+TUNNELS = [("Temple Gate", "temple", 35, 36)]
+BRIDGE = (11, 13)  # the High Bridge's route points (its deck)
+CROSS = (-58.0, -66.0)  # where the figure eight crosses itself (the bridge over the gorge road)
+BRIDGE_HALF = 24.0  # (the bridge's half length, round CROSS)
+
+# The gateways' landmarks: (route point, along to the next, side +1 right/-1 left of the
+# way of travel, how far from the road's middle). Each gateway stands at the end of a short
+# path off the road (Blake, Nov 1: "never on the road intersecting, but off on the side of
+# the road with a short path, a few meters to get to it").
+GATE_AT = {
+    "coral": (5, 0.5, -1, 30.0),  # on the cove's beach, the reef off it
+    "wreck": (19, 0.4, 1, 30.0),  # down Shipwreck Bay's beach toward the galleon
+    "volcano": (41, 0.6, -1, 30.0),  # on the Black Shore, toward Volcano Isle
+    "rainforest": (33, 0.4, 1, 28.0),  # in the Jungle Heart, the temple's steps (south)
 }
-LAIR = _coast(-35.0, 16.0)  # Tidewyrm's sea cave, at the foot of the Head's south cliffs
+LAIR_AT = (4, 0.3, -1, 34.0)  # Tidewyrm's sea cave, in the Head's south cliff
+CAVE_AT = (23, 0.5, 1, 40.0)  # the smugglers' Sea Cave's yard, under the Point
+SECRET_AT = (42, 0.5, -1, 30.0)  # the hidden cove behind the Black Shore
+
+
+def _gate_xy(spec):
+    i, f, side, dist = spec
+    (ax, ay, _), (bx, by, _) = ROUTE[i], ROUTE[i + 1]
+    x, y = lerp(ax, bx, f), lerp(ay, by, f)
+    tx, ty = bx - ax, by - ay
+    L_ = math.hypot(tx, ty)
+    rx, ry = ty / L_, -tx / L_  # (right of the way of travel)
+    return (x + rx * side * dist, y + ry * side * dist)
+
+
+GATES = {k: _gate_xy(v) for k, v in GATE_AT.items()}
+LAIR = _gate_xy(LAIR_AT)
+CAVE = _gate_xy(CAVE_AT)
+SECRET = _gate_xy(SECRET_AT)
 VOLCANO = (250.0, 640.0)  # Volcano Isle, smoking offshore north
-CAVE = _coast(-163.0, 16.0)  # the smugglers' Sea Cave (its yard): on the beach under Smugglers' Point's south cliff
-SECRET = (34.0, 300.0)  # the smugglers' cave, behind the north beach
-TUNNEL = _coast(-181.0, 16.0)  # the last tunnel's sea door, in the Point's north cliff: on to the old causeway
+TEMPLE = (34.0, -40.0)  # the old temple, its steps up from the heart's floor (south side)
 
 
-def _dense(points, every=4.0):
-    n = len(points)
-    out = []
-    for i in range(n):
-        p0, p1, p2, p3 = points[(i - 1) % n], points[i], points[(i + 1) % n], points[(i + 2) % n]
-        L = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
-        k = max(2, int(L / every))
-        for j in range(k):
-            t = j / k
-            t2, t3 = t * t, t * t * t
-            x = 0.5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
-                       + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3)
-            y = 0.5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
-                       + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)
-            out.append((x, y, i, t))
-    return out
+# ---------------------------------------------------------------- the land
 
 
-_RP = None
+def _spire(x, y):
+    """The pinnacle: a green spire, sheer, its falls off the south face."""
+    px, py = PEAK
+    r = math.hypot(x - px, y - py)
+    if r > PEAK_R + 26.0:
+        return 0.0
+    a = math.atan2(y - py, x - px)
+    wob = 1.0 + 0.08 * math.sin(5.0 * a) + 0.05 * math.sin(11.0 * a + 1.0)
+    return PEAK_Z * smooth((PEAK_R * wob + 10.0 - r) / 18.0) * (0.92 + 0.08 * math.sin(a * 3.0 + r / 9.0))
 
 
-def route_points():
-    """The road's points: its set heights where given, the land's (a ring average, never
-    below the beach's top) elsewhere, smoothed."""
-    global _RP
-    if _RP is not None:
-        return _RP
-    zs = []
-    for x, y, z in ROUTE:
-        if z is None:
-            ring = [_land(x + 10 * math.cos(a), y + 10 * math.sin(a)) for a in (0, 1.57, 3.14, 4.71)]
-            z = max(2.4, (sum(ring) + _land(x, y)) / 5.0 + 0.3)
-        zs.append(z)
-    n = len(ROUTE)
-    for _ in range(3):
-        zs = [z if ROUTE[i][2] is not None else 0.25 * zs[i - 1] + 0.5 * z + 0.25 * zs[(i + 1) % n] for i, z in enumerate(zs)]
-    _RP = [(x, y, z) for (x, y, _), z in zip(ROUTE, zs)]
-    return _RP
+def _sea_cap(x, y, wallness):
+    """The coast: the shallows and the deep out to sea; a beach up from the water; behind
+    it the basins' floors, or (where a ridge comes down to the sea) a rocky bluff."""
+    s = inland(x, y)
+    if s < 0.0:
+        h = WATER_Z - 0.35 + s * 0.045
+        h = max(h, WATER_Z - 2.2 + s * 0.12)
+        return max(h, -40.0)
+    beach = WATER_Z - 0.3 + 2.6 * smooth(s / 30.0)
+    return beach + max(0.0, s - 26.0) * lerp(0.06, 1.6, wallness)
 
 
-_DENSE = None
-
-
-def road_line():
-    global _DENSE
-    if _DENSE is not None:
-        return _DENSE
-    rp = route_points()
-    n = len(rp)
-    _DENSE = [(x, y, lerp(rp[i][2], rp[(i + 1) % n][2], t)) for x, y, i, t in _dense(rp)]
-    return _DENSE
-
-
-_GRID = None
-_CELL = 24.0
-
-
-def _grid():
-    global _GRID
-    if _GRID is None:
-        line = road_line()
-        _GRID = {}
-        for a, b in zip(line, line[1:] + line[:1]):
-            for gx in range(int(math.floor(min(a[0], b[0]) / _CELL)) - 1, int(math.floor(max(a[0], b[0]) / _CELL)) + 2):
-                for gy in range(int(math.floor(min(a[1], b[1]) / _CELL)) - 1, int(math.floor(max(a[1], b[1]) / _CELL)) + 2):
-                    _GRID.setdefault((gx, gy), []).append((a, b))
-    return _GRID
-
-
-def road_floor(x, y):
-    best = (1e9, 0.0)
-    for a, b in _grid().get((int(math.floor(x / _CELL)), int(math.floor(y / _CELL))), ()):
-        d, t = _seg(x, y, a, b)
-        if d < best[0]:
-            best = (d, lerp(a[2], b[2], t))
-    return best
-
-
-def on_boardwalk(x, y):
-    """Over the lagoon's inlet (the road crosses it on a boardwalk)."""
-    d, t = _seg(x, y, *LAGOON_INLET)
-    return d < 26.0 and 0.05 < t < 0.95
-
-
-# The crest's look: a notch cut down through the ridge between the lookout and the
-# pinnacle, so from the road the whole spire and its falls stand across the valley.
-LOOK_NOTCH = (24.0, 100.0, 23.0)  # half angle (degrees), reach, floor
-
-
-def _notch(h, x, y):
-    cx, cy = CREST
-    d = math.hypot(x - cx, y - cy)
-    if d < 10.0 or d > LOOK_NOTCH[1] + 20.0:
+class _IsleLayout(Layout):
+    def natural(self, x, y):
+        h = Layout.natural(self, x, y)
+        best = self.wall_sd(x, y)
+        # The pinnacle, over everything round it.
+        h = max(h, _spire(x, y))
+        # The coast cuts it all off: beaches into the coves, bluffs at the ridges' ends.
+        h = min(h, _sea_cap(x, y, smooth((best + 2.0) / 18.0)))
+        a = math.atan2(y, x)
+        s = inland(x, y)
+        # Tidewyrm's Head: the headland's top a grassy shelf, cliffs to the sea.
+        ha, hhw, _ = HEAD
+        d = abs(_adiff(a, ha))
+        if d < hhw * 1.6 and s < 80.0 and best > 4.0:
+            w = smooth((hhw * 1.4 - d) / (hhw * 0.6)) * smooth(s / 6.0) * smooth((best - 4.0) / 8.0)
+            h = lerp(h, max(h, HEAD_Z + 3.0 * math.sin(x / 11.0)), w)
+        # Smugglers' Point: the same, smaller.
+        pa, phw, _ = POINT
+        d = abs(_adiff(a, pa))
+        if d < phw * 1.6 and best > 4.0:
+            sb = shore_r(a, point=False) - math.hypot(x, y)
+            w = smooth((phw * 1.4 - d) / (phw * 0.6)) * smooth(s / 5.0) * smooth((16.0 - sb) / 10.0) * smooth((best - 4.0) / 8.0)
+            h = lerp(h, max(h, POINT_Z + 2.0 * math.sin(y / 9.0)), w)
+        # The lagoon's inlet out to sea.
+        di, _ = seg_d(x, y, *LAGOON_INLET)
+        if di < 30.0:
+            h = lerp(h, min(h, LAGOON_Z - 1.4), smooth((22.0 - di) / 10.0))
+        # The falls' plunge pool.
+        fx, fy = FALLS
+        df = math.hypot(x - fx, y - fy)
+        if df < POOL_R + 10.0:
+            h = lerp(h, min(h, RIVER[0][2] - 1.6), smooth((POOL_R + 10.0 - df) / 10.0))
+        # The gateways' ways in, level with the road.
+        h = _NOTCHES.apply(h, x, y)
         return h
-    half, reach, floor = LOOK_NOTCH
-    to_peak = math.atan2(PEAK[1] - cy, PEAK[0] - cx)
-    off = abs(math.degrees(_adiff(math.atan2(y - cy, x - cx), to_peak)))
-    if off > half + 12.0:
-        return h
-    # (the floor falls away gently from the lookout, the sides of the cut sloping up)
-    z = floor - 0.12 * max(0.0, d - 12.0)
-    w = smooth((half + 12.0 - off) / 12.0) * smooth((reach + 20.0 - d) / 20.0) * smooth((d - 10.0) / 8.0)
-    return lerp(h, min(h, z), w)
+
+
+L = _IsleLayout(POCKETS, TOP, ROUTE, TUNNELS, rivers=[RIVER], river_hw=RIVER_HW, roll=1.6, mountains=70.0,
+                flat=("lagoon",), tiers=True)
+_NOTCHES = Notches([], {})
+
+
+def _init_notches():
+    global _NOTCHES
+    rp = L.route_points()
+    _NOTCHES = Notches(rp, dict(GATES, lair=LAIR, cave=CAVE, secret=SECRET), reach=6.0, flat=7.0, blend=8.0)
+
+
+_init_notches()
+L._rp = None  # (the road's heights again, with the notches in)
 
 
 def natural(x, y):
-    """The land, with the road's shelf cut into the hills (built up over the low ground);
-    open water under the boardwalk; the crest's notch."""
-    h = _notch(_land(x, y), x, y)
-    if on_boardwalk(x, y):
-        return h
-    d, z = road_floor(x, y)
-    if d < 8.0:
-        return z - 0.25
-    if d < 20.0:
-        return lerp(z - 0.25, h, smooth((d - 8.0) / 12.0))
-    return h
+    return L.natural(x, y)
+
+
+def route_points():
+    return L.route_points()
+
+
+route_line = route_points
+wall_sd = L.wall_sd
+pocket_at = L.pocket_at
+look_weights = L.look_weights
 
 
 def look_at(x, y):
-    """Which part of the island (x, y) is in."""
-    s = inland(x, y)
-    if s < 40.0:
-        a = math.degrees(math.atan2(y, x))
-        if -40 < a < 30:
-            return "village"
-        if -90 <= a <= -40:
-            return "coral"
-        if -160 <= a < -90 or a < -160 and math.hypot(x - LAGOON[0], y - LAGOON[1]) < 140:
-            return "lagoon"
-        if a > 115 or a < -160:
-            return "wreck"
-        return "beach"
-    return "jungle"
+    return L.look_at(x, y)
+
+
+def tunnel_floor(x, y):
+    return L.tunnel_floor(x, y)
+
+
+def is_bridge(x, y, z):
+    """Over the gorge on the High Bridge (the land well below the road)."""
+    return math.hypot(x - CROSS[0], y - CROSS[1]) < BRIDGE_HALF and z > 13.0

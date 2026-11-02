@@ -356,58 +356,61 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // Tropic Isles (tools/blender/prehistoric/beach_region.py), v3: a pocket for each of
-    // its worlds walled off by jungle hills and rocky headlands, the main road one loop
-    // through them (Raptor's 1-on-1) by a threshold each time: Raptor's village on its
-    // plateau (the hub, the Dust Road down into it from the desert), the Vine Tunnel to
-    // the water park, behind the Falls to the shipwreck cove, through the Hull to the
-    // pier's cove, the Sea Arch to the coral cove, the Mangroves to the lagoon, up the
-    // Tiki Steps back to the village. (The positions below are the build's entities.)
+    // Tropic Isles.
     id: "tropic_isles",
     name: "Tropic Isles",
-    // v4 (Blake, Oct 31: "Needs to be an island ... tropical dense forest in the center"):
-    // one big island (tools/blender/prehistoric/isle_layout.py, isle_region.py), the coast
-    // road round it and in over the jungle crest; the island hop comes in over the east bay
-    // to Raptor's stilt village. (The positions below are the build's entities.)
+    // v5 (Blake, Nov 1: "i want to also travel through the island. not just around it ...
+    // homeomorphic to a figure 8"; "all of the areas containing the levels need to be their
+    // own sub world"): the island (tools/blender/prehistoric/isle_layout.py, isle_region.py),
+    // the road a figure eight through it, crossing at the High Bridge over the river gorge;
+    // each part its own basin walled by jungle ridges. The island hop comes in over the east
+    // bay to Raptor's stilt village. (The positions below are the build's entities.)
     packageId: "beach_region",
     ruinPackageId: "beach_region_ruin",
-    // A secret, for the way back: a hidden cove behind the north beach, behind a rockfall the Valley Tool shifts.
+    // A secret, for the way back: a hidden cove behind the Black Shore, behind a rockfall the Valley Tool shifts.
     secret: {
       obstacle: "rockfall",
       tool: "valley",
-      gate: { x: 34.13, z: -291.0, heading: 0.014, width: 9 },
-      spot: { x: 34, z: -300 },
+      gate: { x: 81.69, z: -297.22, heading: -0.3055, width: 9 },
+      spot: { x: 84.4, z: -305.8 },
     },
     // The smugglers' Sea Cave, Raptor's old haunt: its yard on the beach under Smugglers'
-    // Point's south cliff, on the west coast (the last tunnel's sea door is in its north cliff).
+    // Point, on the west coast.
     cave: {
-      gate: { x: -296.51, z: 93.66, heading: 1.6026, width: 9 },
-      spot: { x: -307.51, z: 94.01 },
+      gate: { x: -271.71, z: 90.77, heading: 2.0854, width: 9 },
+      spot: { x: -281.28, z: 96.19 },
     },
     music: "coral_cove",
     worldId: "beach",
     kingdom: "beach",
-    // The main road's start line, by the village (the 1-on-1 is raced from it).
-    challenge: { x: 273.6, z: -48.2, heading: 0.5417 },
+    // The main road's start line, west of the village square (the 1-on-1 is raced from it).
+    challenge: { x: 204.0, z: -40.0, heading: 0.0015 },
     // On the village square's boardwalk, facing west to the road.
     spawn: { x: 252, z: -30, heading: -1.5708 },
     gateways: [
-      // At the water park's slide tower by the lagoon, south-west.
-      { id: "splash", track: "splash_lagoon", x: -117.93, z: 246.43, radius: 6, heading: -0.5169 },
-      // By the galleon down Shipwreck Bay's beach, north-west.
-      { id: "wreck", track: "shipwreck_bay", x: -241.65, z: -177.74, radius: 6, heading: 0.0949 },
-      // At the end of the north pier, Volcano Isle smoking offshore.
-      { id: "volcano", track: "volcano_isle", x: 14.03, z: -390.77, radius: 6, heading: 0.0623 },
-      // By the coral heads off Coral Cove's beach, south-east.
-      { id: "coral", track: "coral_cove", x: 168.63, z: 190.39, radius: 6, heading: -3.0456 },
-      // Tidewyrm's lair: a sea cave at the foot of the headland's south cliffs, below the village.
+      // Coral Cove: on the cove's beach, a short path off the road, the reef off it.
+      { id: "coral", track: "coral_cove", x: 148.31, z: 187.2, radius: 6, heading: -2.8259 },
+      // Shipwreck Bay: down its beach toward the galleon.
+      { id: "wreck", track: "shipwreck_bay", x: -264.4, z: -135.86, radius: 6, heading: 1.01 },
+      // The Black Shore: under the obsidian arch, toward Volcano Isle smoking offshore.
+      { id: "volcano", track: "volcano_isle", x: 29.8, z: -300.35, radius: 6, heading: -0.0999 },
+      // The Jungle Heart: at the foot of the old temple's steps.
+      {
+        id: "rainforest",
+        track: "rainforest_rush",
+        x: 54.34,
+        z: 22.94,
+        radius: 6,
+        heading: -2.9699,
+      },
+      // Tidewyrm's lair: his sea cave in the Head's south cliff, off Coral Cove.
       {
         id: "lair",
         track: "boss_tropic",
-        x: 243.4,
-        z: 175.69,
+        x: 198.59,
+        z: 163.74,
         radius: 6,
-        heading: -1.8141,
+        heading: -2.4274,
         boss: true,
         label: "TIDEWYRM'S LAIR",
       },

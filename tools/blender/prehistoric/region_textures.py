@@ -95,6 +95,12 @@ PAIRS = [
     ("snow_ground", "packed_snow_road"),
     # (The camp's road edged into the grass: Blake, Oct 29, village note 19.)
     ("valley_grass", "valley_road"),
+    # (Tropic Isles v5, Nov 1: the coast road's sand turning to the jungle road's earth; the
+    # Black Shore's sand into the beaches' and the jungle's.)
+    ("isle_sand_road", "isle_jungle_road"),
+    ("black_sand", "beach_sand"),
+    ("black_sand", "isle_jungle"),
+    ("isle_jungle", "jungle_leafcover"),
 ]
 
 

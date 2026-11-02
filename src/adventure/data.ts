@@ -104,7 +104,7 @@ export const KINGDOMS: Kingdom[] = [
       { track: "coral_cove", ruin: "coral_cove_ruin" },
       { track: "shipwreck_bay", ruin: "shipwreck_bay_ruin" },
       { track: "volcano_isle", ruin: "volcano_isle_ruin" },
-      { track: "splash_lagoon", ruin: "splash_lagoon_ruin" },
+      { track: "rainforest_rush", ruin: "rainforest_rush_ruin" },
     ],
     boss: { name: "Tidewyrm", track: "boss_tropic", speed: 1.0 },
     champion: { name: "Raptor", look: "raptor" },

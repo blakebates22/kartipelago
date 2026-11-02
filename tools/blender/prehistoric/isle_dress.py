@@ -443,7 +443,7 @@ def shipwreck(c, ground, taken, ter):
     sea = 1 if M.inland(*q.side(30.0).xy) < M.inland(*q.side(-30.0).xy) else -1
     # The galleon: in the shallows seaward of the gateway.
     hull = None
-    for off in (34.0, 42.0, 50.0, 26.0):
+    for off in (34.0, 42.0, 50.0, 26.0, 60.0, 70.0, 80.0, 90.0):
         p = q.side(sea * (q.w / 2 + off))
         if M.inland(p.x, p.y) < -3.0 and clear_of(c, p.x, p.y, 18.0) and taken.clear(p.x, p.y, 10.0):
             hull = p
@@ -578,12 +578,12 @@ def tiki_head(c, variant=0):
     return c.proto(name, build) and name
 
 
-def jungle(c, ground, taken):
+def jungle(c, ground, taken, looks=("jungle",)):
     """The trail through the jungle: tiki torches by turns either side every 30 m (a fire on
     every other), and the old stone heads standing back from it every 90 m or so."""
     torch = bp.tiki_torch(c, 0)
     nt = nh = 0
-    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) == "jungle"):
+    for s0, s1 in _runs(c, lambda q: M.look_at(q.p.x, q.p.y) in looks):
         if s1 - s0 < 60.0:
             continue
         s, j = s0 + 15.0, 0

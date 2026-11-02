@@ -65,6 +65,8 @@ const RUINS: [string, string, string, [number, number], number][] = [
   ["volcano_isle", "volcano_isle_ruin", "isle_ruins", [0.98, 1.02], 1.03],
   // Blake: Tropic Isles ruins change little: one decent change each, plus rubble to avoid.
   ["splash_lagoon", "splash_lagoon_ruin", "splash_ruins", [0.98, 1.02], 1.05],
+  // Blake: Splash Lagoon's replacement, the rainforest; its ruin the same lap, storm-felled trees across it.
+  ["rainforest_rush", "rainforest_rush_ruin", "rainforest_ruins", [0.98, 1.02], 1.12],
 ];
 
 describe.each(RUINS)("%s's ruin", (full, ruin, theme, [least, most], slowest) => {

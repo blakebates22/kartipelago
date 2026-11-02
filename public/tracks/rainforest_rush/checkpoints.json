@@ -1,0 +1,270 @@
+{
+ "schemaVersion": 1,
+ "about": "Checkpoint gates, exported from Blender (the KP Checkpoints collection). Game coordinates; heading 0 faces +z.",
+ "checkpoints": [
+  {
+   "id": "cp00",
+   "index": 0,
+   "route": "main",
+   "position": [
+    0.0,
+    20.2,
+    180.0
+   ],
+   "heading": 1.59675,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     3.775,
+     20.196,
+     179.922
+    ],
+    "heading": 1.58723
+   }
+  },
+  {
+   "id": "cp01",
+   "index": 1,
+   "route": "main",
+   "position": [
+    117.429,
+    14.739,
+    147.328
+   ],
+   "heading": 2.24037,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     120.565,
+     14.448,
+     144.79
+    ],
+    "heading": 2.26421
+   }
+  },
+  {
+   "id": "cp02",
+   "index": 2,
+   "route": "main",
+   "position": [
+    181.747,
+    10.342,
+    42.933
+   ],
+   "heading": 2.77804,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     183.104,
+     10.102,
+     39.032
+    ],
+    "heading": 2.83472
+   }
+  },
+  {
+   "id": "cp03",
+   "index": 3,
+   "route": "main",
+   "position": [
+    169.715,
+    6.878,
+    -78.58
+   ],
+   "heading": -2.68352,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     167.779,
+     7.012,
+     -82.452
+    ],
+    "heading": -2.67161
+   }
+  },
+  {
+   "id": "cp04",
+   "index": 4,
+   "route": "main",
+   "position": [
+    75.47,
+    10.537,
+    -152.427
+   ],
+   "heading": -1.72837,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     71.863,
+     10.684,
+     -152.946
+    ],
+    "heading": -1.6988
+   }
+  },
+  {
+   "id": "cp05",
+   "index": 5,
+   "route": "main",
+   "position": [
+    -68.729,
+    11.184,
+    -150.214
+   ],
+   "heading": -1.41,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -73.09,
+     11.106,
+     -149.444
+    ],
+    "heading": -1.38648
+   }
+  },
+  {
+   "id": "cp06",
+   "index": 6,
+   "route": "main",
+   "position": [
+    -161.497,
+    10.977,
+    -102.904
+   ],
+   "heading": -0.76432,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -164.018,
+     11.0,
+     -100.117
+    ],
+    "heading": -0.70641
+   }
+  },
+  {
+   "id": "cp07",
+   "index": 7,
+   "route": "main",
+   "position": [
+    -136.754,
+    13.925,
+    -9.686
+   ],
+   "heading": 1.33109,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -132.579,
+     14.033,
+     -8.773
+    ],
+    "heading": 1.38021
+   }
+  },
+  {
+   "id": "cp08",
+   "index": 8,
+   "route": "main",
+   "position": [
+    -48.722,
+    14.585,
+    0.206
+   ],
+   "heading": 1.41429,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -45.04,
+     14.663,
+     0.751
+    ],
+    "heading": 1.43273
+   }
+  },
+  {
+   "id": "cp09",
+   "index": 9,
+   "route": "main",
+   "position": [
+    28.602,
+    17.848,
+    35.959
+   ],
+   "heading": 0.62693,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     30.607,
+     17.891,
+     38.864
+    ],
+    "heading": 0.57733
+   }
+  },
+  {
+   "id": "cp10",
+   "index": 10,
+   "route": "main",
+   "position": [
+    -10.963,
+    17.586,
+    89.258
+   ],
+   "heading": -1.57141,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -15.043,
+     17.659,
+     89.39
+    ],
+    "heading": -1.50124
+   }
+  },
+  {
+   "id": "cp11",
+   "index": 11,
+   "route": "main",
+   "position": [
+    -84.165,
+    18.772,
+    141.744
+   ],
+   "heading": 0.16046,
+   "width": 52.0,
+   "height": 10.0,
+   "below": 3.0,
+   "respawn": {
+    "position": [
+     -83.332,
+     18.935,
+     145.446
+    ],
+    "heading": 0.28203
+   }
+  }
+ ]
+}

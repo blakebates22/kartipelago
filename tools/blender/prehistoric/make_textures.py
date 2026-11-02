@@ -3369,6 +3369,100 @@ def salt_brine():
     return paint(f)
 
 
+def isle_sand_road():
+    # Tropic Isles v5's coast road (Blake, Nov 1: "the track texture looks too much like
+    # dirt ... if we are close to beach it can be sand color"): pale golden sand packed hard,
+    # wind ripples across it, a fleck of shell here and there; no ruts.
+    pal = ["#dcbc84", "#e2c48c", "#e8cc96", "#eed4a0", "#f2dcaa"]
+    a, b = noise(4, 2, 4911), noise(16, 8, 4912)
+    shells = speckle(4913, 10)
+    pink = speckle(4914, 4)
+
+    def f(x, y):
+        if (x, y) in shells:
+            return "#fbf6ea"
+        if (x, y) in pink:
+            return "#f2c8b8"
+        rip = 0.5 + 0.5 * math.sin(y * 0.9 + x * 0.12 + a(x, y) * 5)
+        return pick(pal, 0.18 + rip * 0.3 + b(x, y) * 0.4)
+
+    return paint(f)
+
+
+def isle_jungle_road():
+    # ...and in the middle of the island browner (Blake, Nov 1): red-brown earth packed by
+    # wheels, leaves fallen on it (green, gold), a root's line across now and then.
+    pal = ["#8a5634", "#965e38", "#a2683e", "#ad7346", "#b87e4e"]
+    a, b = noise(4, 2, 4921), noise(16, 8, 4922)
+    green = speckle(4923, 14)
+    gold = speckle(4924, 8)
+    root = noise(8, 4, 4925)
+
+    def f(x, y):
+        if (x, y) in green or ((x + 1) % W, y) in green:
+            return "#5c8a2e"
+        if (x, y) in gold:
+            return "#d8a03a"
+        if abs(root(x, y) - 0.5) < 0.02:
+            return "#6a4026"
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def black_sand():
+    # The Black Shore (Tropic Isles v5): volcanic black sand facing Volcano Isle, glinting.
+    pal = ["#2a2726", "#33302e", "#3c3836", "#46413e", "#504a46"]
+    a, b = noise(4, 2, 4931), noise(16, 8, 4932)
+    glint = speckle(4933, 16)
+    olive = speckle(4934, 6)
+
+    def f(x, y):
+        if (x, y) in glint:
+            return "#9a9aa4"
+        if (x, y) in olive:
+            return "#5a5a3a"
+        rip = 0.5 + 0.5 * math.sin(y * 0.8 + a(x, y) * 4)
+        return pick(pal, 0.1 + rip * 0.35 + b(x, y) * 0.45)
+
+    return paint(f)
+
+
+def rain_paving():
+    # Rainforest Rush's temple paving: big grey-green flagstones, worn smooth, moss in the
+    # joints and creeping over their edges.
+    pal = ["#7a8270", "#848c78", "#8e9680", "#98a08a", "#a2aa92"]
+    a, b = noise(4, 2, 4941), noise(16, 8, 4942)
+    moss = noise(8, 4, 4943)
+
+    def f(x, y):
+        row = y // 16
+        jx = (x + (8 if row % 2 else 0)) % 21
+        jy = y % 16
+        if jx == 0 or jy == 0:
+            return "#4a6a2a" if moss(x, y) > 0.45 else "#5a5e50"
+        if moss(x, y) > 0.72:
+            return pick(["#4e7a2e", "#5a8a34", "#66963a"], b(x, y))
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def giant_heartwood():
+    # The hollow log's floor: the fallen giant's heartwood, warm red-brown, its grain running
+    # along it, worn pale down the middle where karts run.
+    pal = ["#7a4428", "#86502e", "#925a34", "#9e643a", "#aa6e42"]
+    a, b = noise(2, 8, 4951), noise(16, 8, 4952)
+
+    def f(x, y):
+        grain = 0.5 + 0.5 * math.sin(x * 0.9 + a(x, y) * 6)
+        if grain > 0.93:
+            return "#5a3018"
+        return pick(pal, 0.2 + grain * 0.4 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
 def slickrock():
     # The mesa tops: smooth pink-orange sandstone pavement, cracked into slabs, with
     # sand drifted in the cracks and a few dark potholes.
@@ -4907,6 +5001,11 @@ MATERIALS = [
     ("red_sand", "Red Sand (Deep)", "canyon_dash", "loose_sand", red_sand, 8, None),
     ("pale_sand", "Pale Sand", "canyon_dash", "loose_sand", pale_sand, 8, None),
     ("salt_flat", "Salt Flat", "canyon_dash", "dirt", salt_flat, 6, None),
+    ("isle_sand_road", "Island Sand Road", "coral_cove", "road", isle_sand_road, 5, None),
+    ("isle_jungle_road", "Island Jungle Road", "volcano_isle", "road", isle_jungle_road, 5, None),
+    ("black_sand", "Black Sand", "volcano_isle", "sand", black_sand, 6, None),
+    ("rain_paving", "Temple Paving", "jungle_cascade", "road", rain_paving, 6, None),
+    ("giant_heartwood", "Giant Heartwood", "jungle_cascade", "road", giant_heartwood, 5, None),
     ("salt_brine", "Salt Brine", "canyon_dash", "water", salt_brine, 6, {"scrollU": 0.004, "scrollV": 0.002, "wave": 0.02, "wavePeriod": 5, "opacity": 0.9}),
     ("strata_cream", "Caprock Sandstone", "canyon_dash", "wall", strata_cream, 14, None),
     ("strata_orange", "Orange Sandstone", "canyon_dash", "wall", strata_orange, 14, None),
@@ -5268,13 +5367,13 @@ THEMES.append(cdf_textures.THEME)
 import tropic_textures  # noqa: E402
 
 MATERIALS += tropic_textures.materials(sys.modules[__name__])
-THEMES += [tropic_textures.COVE, tropic_textures.WRECK, tropic_textures.ISLE, tropic_textures.SPLASH]
+THEMES += [tropic_textures.COVE, tropic_textures.WRECK, tropic_textures.ISLE, tropic_textures.SPLASH, tropic_textures.RAINFOREST]
 
 # The ruined courses (Adventure's treasure map challenge): Riverbend in ruins first.
 import ruin_textures  # noqa: E402
 
 MATERIALS += ruin_textures.materials(sys.modules[__name__])
-THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG, ruin_textures.EMBER, ruin_textures.FROST, ruin_textures.SUMMIT, ruin_textures.HEARTH, ruin_textures.AURORA, ruin_textures.CANYON, ruin_textures.OASIS, ruin_textures.GULCH, ruin_textures.IMPACT, ruin_textures.COVE, ruin_textures.WRECK, ruin_textures.ISLE, ruin_textures.SPLASH, ruin_textures.KEEP, ruin_textures.EMERALD, ruin_textures.HOLD, ruin_textures.MOON]
+THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG, ruin_textures.EMBER, ruin_textures.FROST, ruin_textures.SUMMIT, ruin_textures.HEARTH, ruin_textures.AURORA, ruin_textures.CANYON, ruin_textures.OASIS, ruin_textures.GULCH, ruin_textures.IMPACT, ruin_textures.COVE, ruin_textures.WRECK, ruin_textures.ISLE, ruin_textures.SPLASH, ruin_textures.RAINFOREST, ruin_textures.KEEP, ruin_textures.EMERALD, ruin_textures.HOLD, ruin_textures.MOON]
 
 
 def thumb(im):

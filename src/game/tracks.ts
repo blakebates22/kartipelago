@@ -464,8 +464,34 @@ export const TRACKS: TrackEntry[] = [
     music: "boss",
     load: { scene: "track", packageId: "boss_tropic", bossVariant: "alt" },
   },
-  // The beach world's fourth course, painted (the Tropic Isles, Oct 26): the greybox's lap
-  // exactly, a seaside water park. ?track=splash_lagoon.
+  // The beach world's fourth course (Blake, Nov 1: "I dont like splash lagoon. it reminds me
+  // of a cheap water park ... maybe this becomes a super fast island tropical jungle
+  // course"): the island's rainforest heart. ?track=rainforest_rush.
+  {
+    id: "rainforest_rush",
+    name: "Rainforest Rush",
+    description:
+      "Flat out through the rainforest: behind the great falls, over the rope bridge, through the hollow log.",
+    preview: "previews/rainforest_rush.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "rainforest_rush",
+    music: "rainforest_rush",
+    load: { scene: "track", packageId: "rainforest_rush" },
+    ruin: "rainforest_rush_ruin",
+  },
+  {
+    id: "rainforest_rush_ruin",
+    name: "Rainforest Rush (Ruined)",
+    description:
+      "After Tidewyrm's storm: giant trees down across the way, smouldering. Weave past their trunks.",
+    preview: "previews/rainforest_rush_ruin.jpg",
+    modes: ["race", "timeTrial"],
+    theme: "rainforest_ruins",
+    music: "rainforest_rush_ruin",
+    load: { scene: "track", packageId: "rainforest_rush_ruin" },
+  },
+  // The beach world's old fourth course, painted (the Tropic Isles, Oct 26): the greybox's
+  // lap exactly, a seaside water park; retired for Rainforest Rush (Nov 1). ?track=splash_lagoon.
   {
     id: "splash_lagoon",
     name: "Splash Lagoon",
@@ -1053,7 +1079,7 @@ export const TITLE_MONTAGE = [
   "riverbend_palms",
   "dragon_isles",
   "aurora_rift",
-  "splash_lagoon",
+  "rainforest_rush",
   "ember_peak",
   "oasis_haven",
   "hearthglow_hollow",

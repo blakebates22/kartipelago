@@ -1,16 +1,17 @@
-# Tropic Isles' overworld region, v4: one big island (isle_layout.py), replacing the
-# walled coves of beach_region.py (kept, unused). Builds beach_region and, with --ruin,
-# beach_region_ruin.
+# Tropic Isles' overworld region, v5: the island lived in, a figure eight through it
+# (isle_layout.py: Blake, Nov 1: "i want to also travel through the island. not just around
+# it"; "all of the areas containing the levels need to be their own sub world"). Builds
+# beach_region and, with --ruin, beach_region_ruin.
 # SPDX-License-Identifier: MIT
 #
 #   python tools/blender/prehistoric/isle_region.py [--ruin]
 #
-# Blake, Oct 31: "It's currently quite bad. Needs to be an island I think, with maybe
-# tropical dense forest in the center." The island hop (the Dust Road's replacement) comes
-# in over the east bay to Raptor's stilt village; the coast road round past Coral Cove's
-# reef, the lagoon (its inlet on a boardwalk) and Splash Lagoon's slide tower, Shipwreck
-# Bay's galleon, the Volcano Isle pier; then in through the jungle over the crest, the
-# pinnacle and its falls across the valley, and down to the village.
+# Raptor's Bay, the Head Pass, Coral Cove, up the Ridge Road and over the High Bridge, down
+# the Cloud Forest to Shipwreck Bay, Smugglers' Point, round the Lagoon, up the Gorge Road
+# under the High Bridge to the Jungle Heart (the falls over the road, the temple, Rainforest
+# Rush's gateway), through the Temple Gate, down the North Valley to the Black Shore
+# (Volcano Isle's gateway), round the north-east coast home. Each its own basin, walled by
+# jungle ridges; the coves' beaches the island's ring.
 
 import math
 import os
@@ -30,109 +31,119 @@ import tropic_props as tp  # noqa: E402
 import region_paint as paint  # noqa: E402
 import isle_layout as M  # noqa: E402
 import isle_dress as idr  # noqa: E402
+import isle_sections as isec  # noqa: E402
 
 RUIN = ruin.ON
 TRACK_ID = ruin.track_id("beach_region") + os.environ.get("KP_REGION_SUFFIX", "")
 WATER_Z = M.WATER_Z
+L = M.L
 
+# (Blake, Nov 1: "the track texture looks too much like dirt. ... if we are close to beach it
+# can be sand color, if in the center of the island it can be browner.")
+SAND_ROAD = "isle_sand_road"
+JUNGLE_ROAD = "isle_jungle_road"
 LOOK = {
-    # look: (ground, road, shoulder)
-    "village": (("beach_sand", "sand"), "beach_road", ("beach_sand", "sand")),
-    "coral": (("cove_sand", "sand"), "cove_road", ("cove_sand", "sand")),
-    "lagoon": (("beach_sand", "sand"), "beach_road", ("beach_sand", "sand")),
-    "wreck": (("wreck_sand", "sand"), "wreck_road", ("wreck_sand", "sand")),
-    "beach": (("cove_sand", "sand"), "cove_road", ("cove_sand", "sand")),
-    "jungle": (("isle_jungle", "grass"), "jungle_path", ("isle_jungle", "grass")),
+    # look: (ground, cliff, road, shoulder)
+    "village": (("beach_sand", "sand"), ("cove_rock", "wall"), SAND_ROAD, ("beach_sand", "sand")),
+    "head": (("cove_grass", "grass"), ("cove_rock", "wall"), SAND_ROAD, ("cove_sand", "sand")),
+    "coral": (("cove_sand", "sand"), ("cove_rock", "wall"), SAND_ROAD, ("cove_sand", "sand")),
+    "ridge": (("isle_jungle", "grass"), ("jungle_mossstone", "wall"), JUNGLE_ROAD, ("isle_jungle", "grass")),
+    "cloud": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), JUNGLE_ROAD, ("jungle_leafcover", "grass")),
+    "wreck": (("wreck_sand", "sand"), ("wreck_rock", "wall"), SAND_ROAD, ("wreck_sand", "sand")),
+    "point": (("cove_sand", "sand"), ("cove_rock", "wall"), SAND_ROAD, ("cove_sand", "sand")),
+    "lagoon": (("beach_sand", "sand"), ("jungle_mossstone", "wall"), SAND_ROAD, ("beach_sand", "sand")),
+    "gorge": (("isle_jungle", "grass"), ("canyon_rock_moss", "wall"), JUNGLE_ROAD, ("isle_jungle", "grass")),
+    "heart": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), JUNGLE_ROAD, ("jungle_leafcover", "grass")),
+    "north": (("isle_jungle", "grass"), ("jungle_mossstone", "wall"), JUNGLE_ROAD, ("isle_jungle", "grass")),
+    "volcano": (("black_sand", "sand"), ("isle_rock", "wall"), SAND_ROAD, ("black_sand", "sand")),
+    "northeast": (("beach_sand", "sand"), ("cove_rock", "wall"), SAND_ROAD, ("beach_sand", "sand")),
 }
+JUNGLE_LOOKS = ("ridge", "cloud", "gorge", "heart", "north")
+BEACH_SAND = {"volcano": ("black_sand", "sand"), "wreck": ("wreck_sand", "sand"), "coral": ("cove_sand", "sand"),
+              "point": ("cove_sand", "sand")}
+FALLS_MATS = ("falls_oasis", "falls_curtain_oasis", "falls_foam")
 
 
 def natural(x, y):
-    return M.natural(x, y)
+    h = M.natural(x, y)
+    tz = M.tunnel_floor(x, y)
+    if tz is not None:
+        h = min(h, tz - 0.25)
+    return h
 
 
 def classify(c, n, info):
     look = M.look_at(c.x, c.y)
     s = M.inland(c.x, c.y)
     if n.z < 0.62:
-        if s < 90.0:
-            return ("cove_rock", "wall")  # (the Head's sea cliffs)
-        return ("jungle_mossstone" if c.z < 80.0 or n.z > 0.3 else "isle_rock", "wall")
+        if s < 70.0:
+            return ("isle_rock", "wall") if look == "volcano" else ("cove_rock", "wall")  # (the sea bluffs)
+        return LOOK[look][1] if M.wall_sd(c.x, c.y) < 30.0 else ("jungle_mossstone", "wall")
     if c.z < WATER_Z - 2.0 and s < 0.0:
         return ("cove_wet_sand", "deep_water")  # (out of your depth: back to the road)
     if c.z < WATER_Z + 0.25:
         if math.hypot(c.x - M.LAGOON[0], c.y - M.LAGOON[1]) < M.LAGOON[2] + 20 or M.river_d(c.x, c.y)[0] < M.RIVER_HW + 3:
             return ("lagoon_shallow", "water")
-        return ("cove_wet_sand", "water")  # (the shallows: wadeable)
+        return ("black_sand", "water") if look == "volcano" else ("cove_wet_sand", "water")
     if n.z < 0.85:
-        return ("jungle_mossstone", "dirt") if s > 90.0 else ("cove_rock", "dirt")
-    if s < 10.0:
-        return ("cove_wet_sand", "sand")
-    if s < 36.0 and c.z < 4.0:
-        return LOOK[look][0] if look != "jungle" else ("beach_sand", "sand")
-    if s < 70.0 and c.z < 7.0 and look != "jungle":
-        return LOOK[look][0] if math.sin(c.x / 13.0) * math.cos(c.y / 17.0) < 0.3 else ("isle_jungle", "grass")
-    if c.z > 90.0:
+        return ("jungle_mossstone", "dirt") if s > 70.0 else ("cove_rock", "dirt")
+    if s < 8.0:
+        return ("black_sand", "sand") if look == "volcano" else ("cove_wet_sand", "sand")
+    if s < 40.0 and c.z < 4.2:
+        return BEACH_SAND.get(look, ("beach_sand", "sand"))
+    sd = M.wall_sd(c.x, c.y)
+    if sd < 2.0:
+        # (a basin's floor: its own ground, turning into the next's where two meet)
+        return pb.transition(M.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
+    if c.z > 120.0:
         return ("jungle_mossstone", "dirt")  # (the pinnacle's mossy shoulders)
-    return ("isle_jungle", "grass")
+    return ("isle_jungle", "grass") if math.sin(c.x / 19.0) * math.cos(c.y / 23.0) < 0.45 else ("jungle_leafcover", "grass")
 
 
 def main():
     c = kit.Course(TRACK_ID, "Tropic Isles (ruined)" if RUIN else "Tropic Isles", "coral_cove")
     c.route(M.route_points(), width=14.0, bank=5.0)
     kinds = {}
-    for look, (ground, road, shoulder) in LOOK.items():
+    for look, (ground, cliff, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
-    # (Warm dock planks, the deep pass: the cove's grey planks read as concrete from the road.)
-    kinds["boardwalk"] = {"mat": "wood_dock", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("wood_dock", "road"),
-                          "barrier": 1.0, "barrier_mat": ("cove_rail", "wall"), "deck": 1.6, "deck_mat": ("cove_post", "wall"),
-                          "ground": False}
+    # The High Bridge: planks on rope rails, high over the gorge.
+    kinds["highbridge"] = {"mat": "plank_deck", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("plank_deck", "road"),
+                           "barrier": 1.1, "barrier_mat": ("rope_rail", "wall"), "deck": 2.2,
+                           "deck_mat": ("weathered_timber", "wall"), "ground": False}
     c.kinds = kinds
 
     def label(q):
-        if M.on_boardwalk(q.p.x, q.p.y):
-            return "boardwalk"
+        # (the whole span over the gorge: no land raised under it, the Gorge Road's under it)
+        if M.is_bridge(q.p.x, q.p.y, q.p.z):
+            return "highbridge"
         return M.look_at(q.p.x, q.p.y)
 
-    c.roads(kit.plan(c, pb.blend_runs(c, list(kit.runs(c, label)), {k: (v[0], None, v[1], v[2]) for k, v in LOOK.items()}),
-                     "village", max_len=160.0))
+    runs = list(kit.runs(c, label))
+    c.roads(kit.plan(c, pb.blend_runs(c, runs, LOOK), "village", max_len=160.0))
+    bridge = [(s0, s1) for s0, s1, k in runs if k == "highbridge"]
 
-    trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("beach_sand", "sand"))
-    # Raptor's square, off the road; the island hop's pier out east over the bay.
+    trail = dict(width=9.0, shoulder=1.2, shoulder_mat=("beach_sand", "sand"))
+    # Raptor's square, off the road; the island hop's pier out east over the bay (the road's
+    # west of the square: the pier never crosses it).
     hx, hy, hr = M.HUB
     smp, _ = c.nearest(hx, hy)
-    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (hx, hy), z0=smp.p.z, c=c), "wood_dock", "road", **trail)
+    a = math.atan2(smp.p.y - hy, smp.p.x - hx)
+    c.side_road("Square Road", pb.line(natural, (smp.p.x, smp.p.y), (hx + (hr - 3.0) * math.cos(a), hy + (hr - 3.0) * math.sin(a)),
+                                       z0=smp.p.z, c=c), "wood_dock", "road", **trail)
     hz = natural(hx, hy)
     (ax, ay), (bx, by) = M.HOP_PIER
     pier_z = max(WATER_Z + 2.2, hz)
-    # (From on the square's deck, flush with it, out over the beach and the bay: there was a
-    # gap between the deck's edge and the pier's foot you couldn't drive across, back to the
-    # desert, review-beach_region 1 note 1.)
     hop = [(lerp(ax, bx, k / 20), lerp(ay, by, k / 20), lerp(hz + 0.14, pier_z + 0.02, min(1.0, k / 3))) for k in range(21)]
     c.side_road("Hop Pier", hop, "wood_dock", "road", width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"),
                 barrier=1.0, barrier_mat=("cove_rail", "wall"), deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
-    gates = {k: v for k, v in M.GATES.items() if k != "volcano"}
+    # The gateways: each at the end of a short path off the road (Blake, Nov 1).
+    gates = dict(M.GATES)
     if RUIN:
         gates["lair"] = M.LAIR
-    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][1], trail)
-    # The Volcano Isle pier: out over the shallows north (the gateway at its end).
-    px, py = M.GATES["volcano"]
-    smp, _ = c.nearest(px, py)
-    d = math.hypot(px - smp.p.x, py - smp.p.y)
-    ux, uy = (px - smp.p.x) / d, (py - smp.p.y) / d
-    sx, sy = smp.p.x + ux * (smp.w / 2 - 1.0), smp.p.y + uy * (smp.w / 2 - 1.0)
-    z0 = pb.road_z_at(c, sx, sy) or smp.p.z
-    vz = max(WATER_Z + 2.2, z0)
-    qx, qy = smp.p.x + ux * (smp.w / 2 + 14.0), smp.p.y + uy * (smp.w / 2 + 14.0)
-    c.side_road("Volcano Pier Road", [(lerp(sx, qx, k / 4), lerp(sy, qy, k / 4), lerp(z0, vz, k / 4) + 0.02) for k in range(5)],
-                "wood_dock", "road", width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"))
-    c.side_road("Volcano Pier", [(lerp(qx, px, k / 16), lerp(qy, py, k / 16), vz + 0.02) for k in range(17)], "wood_dock", "road",
-                width=10.0, shoulder=0.4, shoulder_mat=("wood_dock", "road"), barrier=1.0, barrier_mat=("cove_rail", "wall"),
-                deck=1.6, deck_mat=("cove_post", "wall"), ground=False)
-    spots["volcano"] = ((px - ux * 4.0, py - uy * 4.0), math.atan2(-ux, uy))
-    # (No sea door to the last tunnel any more: the way on to the Dragon Kingdom and back is
-    # the smugglers' Sea Cave, like every kingdom's, review-beach_region notes 1, 2.)
+    path_mat = lambda x, y: LOOK[M.look_at(x, y)][2]  # noqa: E731
+    spots = pb.spurs(c, natural, gates, path_mat, trail)
 
-    X0, X1, Y0, Y1 = -470, 470, -470, 470
+    X0, X1, Y0, Y1 = -476, 476, -476, 476
     ter = c.terrain("Tropic Isles", X0, X1, Y0, Y1, 3.0, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.5, c.lib("beach_sand", "sand"))
     c.disc("Sea", 0.0, 0.0, 1800.0, WATER_Z, c.lib("sea_water", "water"), role="visual", n=72)
@@ -141,30 +152,39 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 18.0),
-                         *((lerp(ax, bx, k / 24), lerp(ay, by, k / 24), 7.0) for k in range(25)),  # (nothing on the pier) (*M.SECRET, 14.0), (*M.CREST, 14.0),
-                         (M.LAGOON[0], M.LAGOON[1], M.LAGOON[2] + 4.0), (*M.FALLS, 26.0),
-                         *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 22.0) for x, y in M.GATES.values()),
-                         (*M.LAIR, 22.0)])
+    taken = paint.Taken([(hx, hy, hr + 12.0), (*M.CAVE, 18.0), (*M.SECRET, 14.0),
+                         *((lerp(ax, bx, k / 24), lerp(ay, by, k / 24), 7.0) for k in range(25)),
+                         (M.LAGOON[0], M.LAGOON[1], M.LAGOON[2] - 6.0), (*M.FALLS, M.POOL_R + 4.0),
+                         *((e[0], e[1], 12.0) for e, _ in spots.values()), *((x, y, 14.0) for x, y in M.GATES.values()),
+                         (*M.LAIR, 18.0)])
     water(c)
+    isec.temple_gate(c, ground)
+    if bridge:
+        isec.high_bridge(c, ground, bridge[0])
     village(c, ground, taken, ter)
     landmarks(c, ground, spots, taken)
+    isec.heart(c, ground, taken, ter, FALLS_MATS)
+    isec.gorge(c, ground, taken, FALLS_MATS)
+    isec.lagoon(c, ground, taken)
     if RUIN:
         ruined(c, ground)
     else:
-        # (The deep pass, Nov 1: each gateway's coast in its own course's kit: isle_dress.)
         idr.coral_cove(c, ground, taken, ter)
-        idr.splash(c, ground, taken, ter)
         idr.shipwreck(c, ground, taken, ter)
         idr.pier_lamps(c, "Hop Pier", (ax, ay), (bx, by), pier_z, start=math.hypot(bx - ax, by - ay) * 3 / 20 + 2.0)
-        idr.volcano_pier(c, (qx, qy), (px, py), vz)
-    idr.jungle(c, ground, taken)
+        isec.black_shore(c, ground, taken)
+    isec.cloud_forest(c, ground, taken)
+    isec.head_pass(c, ground, taken)
+    if not RUIN:
+        isec.fishing_camp(c, ground, taken, ter)
+        isec.valley_hamlet(c, ground, taken, ter)
+    idr.jungle(c, ground, taken, looks=JUNGLE_LOOKS)
     sea_cave(c, ground)
     puzzle_kit.pen(c, "secret", "Hidden Cove", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("isle_rock", "wall"),
                    ground(*M.SECRET), height=6.0)
     pb.emit_spots(c, spots)
     dress(c, ground, taken)
-    paint.wayfolk(c, ground, "beach", [M.HUB[:2]], 8, apart=110.0, every=25)
+    paint.wayfolk(c, ground, "beach", [M.HUB[:2]], 10, apart=110.0, every=25)
 
     c.start_line()
     gts = c.checkpoints(height=10.0)
@@ -232,36 +252,17 @@ def sea_cave(c, ground):
 
 
 def water(c):
-    """The lagoon, the river down its gorge, the pinnacle's falls into their plunge pool."""
+    """The lagoon, the river down its gorge from the falls' pool (the falls: isle_sections.heart)."""
     lx, ly, lr = M.LAGOON
     c.disc("Lagoon", lx, ly, lr + 10.0, M.LAGOON_Z, c.lib("lagoon_shallow", "water"), role="visual", n=40, wobble=0.12, seed=3)
     strip = []
-    for (ax, ay), (bx, by) in zip(M.RIVER, M.RIVER[1:]):
-        n = max(1, int(math.hypot(bx - ax, by - ay) / 6))
+    for (ax, ay, az), (bx, by, bz) in zip(M.RIVER, M.RIVER[1:]):
+        n = max(1, int(math.hypot(bx - ax, by - ay) / 5))
         for k in range(n):
             t = k / n
-            x, y = lerp(ax, bx, t), lerp(ay, by, t)
-            _, u = M.river_d(x, y)
-            strip.append((x, y, M.RIVER_HW * 2 + 2.0, lerp(14.0, M.LAGOON_Z, u) + 0.5))
-    c.ribbon("River", strip, M.RIVER_HW * 2 + 2.0, 0, c.lib("lagoon_shallow", "water"), role="visual", steps=3)
-    fx, fy = M.FALLS
-    c.disc("Plunge Pool", fx, fy, 20.0, 12.6, c.lib("lagoon_shallow", "water"), role="visual", n=28, wobble=0.1, seed=5)
-    lip = fy + 22.0
-    top = M._land(fx, lip + 6.0) - 1.0
-    props.falls(c, "Pinnacle Falls", fx, lip, top, 12.6, 8.0, 14.0, facing=-1, throw=6.0, bulge=1.4, veils=4,
-                mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
-    g = c.game(fx, fy, 12.6)
-    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - 12.6, 1), width=14.0, heading=0.0)
-    # (more falls off the pinnacle's other faces: the big one facing the crest's lookout,
-    # two thinner ones seen from the coast)
-    px, py = M.PEAK
-    toward = math.atan2(M.CREST[1] - py, M.CREST[0] - px)
-    for k, (a, wt, wb) in enumerate(((toward, 6.0, 11.0), (2.3, 3.0, 6.0), (4.1, 3.0, 6.0))):
-        lx2, ly2 = px + 46.0 * math.cos(a), py + 46.0 * math.sin(a)
-        t2 = M._land(lx2, ly2) - 1.0
-        b2 = M.natural(px + 70.0 * math.cos(a), py + 70.0 * math.sin(a))
-        props.falls(c, "Spire Falls %d" % k, lx2, ly2, t2, b2, wt, wb, facing=1, throw=4.0, bulge=0.8, veils=3 if k == 0 else 2,
-                    angle=a - math.pi / 2, mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
+            strip.append((lerp(ax, bx, t), lerp(ay, by, t), M.RIVER_HW * 2 + 3.0, lerp(az, bz, t)))
+    strip.append((M.RIVER[-1][0], M.RIVER[-1][1], M.RIVER_HW * 2 + 3.0, M.RIVER[-1][2]))
+    c.ribbon("River", strip, M.RIVER_HW * 2 + 3.0, 0, c.lib("lagoon_shallow", "water"), role="visual", steps=3)
 
 
 # ------------------------------------------------------------------ the village
@@ -326,8 +327,7 @@ def village(c, ground, taken, ter):
 
 
 def landmarks(c, ground, spots, taken):
-    """Splash Lagoon's slide tower, Shipwreck Bay's galleon, Volcano Isle smoking offshore,
-    Coral Cove's coral heads and lifeguard tower, the crest's lookout."""
+    """Volcano Isle smoking offshore, Coral Cove's coral heads and lifeguard tower."""
     def facing(name):
         (ex, ey), _ = spots[name]
         gx, gy = M.GATES[name] if name in M.GATES else M.LAIR
@@ -351,20 +351,6 @@ def landmarks(c, ground, spots, taken):
     lx, ly = x - 22.0 * math.sin(f), y + 22.0 * math.cos(f)
     c.place(tp.lifeguard_tower(c), lx, ly, ground(lx, ly))
     taken.add(lx, ly, 6.0)
-    # The crest's lookout: a tiki platform at the road's edge looking across to the pinnacle.
-    q, _ = c.nearest(*M.CREST)
-    px, py = M.PEAK
-    ux, uy = px - q.p.x, py - q.p.y
-    d = math.hypot(ux, uy)
-    ox, oy = q.p.x + ux / d * (q.w / 2 + 6.0), q.p.y + uy / d * (q.w / 2 + 6.0)
-    oz = q.p.z
-    box(c, "Lookout Deck", ox, oy, 5.0, 4.0, oz - 3.0, oz + 0.3, ("wood_dock", "wall"), rot=math.atan2(uy, ux))
-    torch = bp.tiki_torch(c, 0)
-    for sd in (-1, 1):
-        tx, ty = ox - uy / d * 4.5 * sd, oy + ux / d * 4.5 * sd
-        c.place(torch, tx, ty, oz + 0.3)
-        g = c.game(tx, ty, oz + 2.9)
-        c.entity("torch", x=g[0], y=g[1], z=g[2])
 
 
 def ruined(c, ground):
@@ -403,11 +389,12 @@ def dress(c, ground, taken):
 
     def beach(x, y):
         s = M.inland(x, y)
-        return 6.0 < s < 60.0 and natural(x, y) < 8.0
+        return 6.0 < s < 60.0 and natural(x, y) < 8.0 and M.look_at(x, y) != "volcano"
 
     def jungle(x, y):
         s = M.inland(x, y)
-        return s > 40.0 and natural(x, y) > 3.5 and M.river_d(x, y)[0] > M.RIVER_HW + 3
+        return (s > 40.0 and natural(x, y) > 3.5 and M.river_d(x, y)[0] > M.RIVER_HW + 3 and M.look_at(x, y) != "volcano"
+                and natural(x, y) < 140.0)
 
     def look(name):
         return lambda x, y: beach(x, y) and M.look_at(x, y) == name
@@ -442,9 +429,6 @@ def dress(c, ground, taken):
     paint.scatter(c, tp.cannon(c), 3, rmax, sw, g, taken, 63, room=5.0, road_margin=5.0)
     paint.scatter(c, tp.rowboat(c), 5, rmax, lambda x, y: beach(x, y) and M.inland(x, y) < 16.0, g, taken, 64, room=6.0,
                   road_margin=5.0)
-    la = look("lagoon")
-    for k, (p, n) in enumerate(((bp.umbrella(c, 0), 6), (bp.deck_chair(c, 1), 8), (bp.beach_ball(c, 0), 6))):
-        paint.scatter(c, p, n, rmax, la, g, taken, 70 + k, room=3.0, role="visual", sink=0.05)
 
 
 if __name__ == "__main__":

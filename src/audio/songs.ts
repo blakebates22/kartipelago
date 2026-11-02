@@ -2713,6 +2713,71 @@ function splashLagoon(): Song {
   };
 }
 
+export const RAINFOREST_MELODY = bars(
+  "A5:.5 C6:.5 E6:1 D6:.5 C6:.5 A5:1",
+  "G5:.5 A5:.5 B5:1 E5:2",
+  "F#5:.5 A5:.5 D6:1 C6:.5 B5:.5 A5:1",
+  "E5:1 G5:.5 A5:.5 B5:2",
+  "A5:.5 C6:.5 E6:1 G6:1 E6:1",
+  "D6:.5 C6:.5 B5:1 G5:1 D6:1",
+  "C6:.5 B5:.5 A5:1 F#5:1 A5:1",
+  "B5:1 G#5:1 E5:2",
+  "C6:.5 C6:.5 A5:.5 E5:.5 A5:1 C6:1",
+  "D6:.5 E6:.5 D6:1 B5:1 G5:1",
+  "F#5:.5 G5:.5 A5:1 D6:1 F#6:1",
+  "E6:.5 D6:.5 C6:1 A5:1 E5:1",
+  "F5:.5 A5:.5 C6:1 F6:1 C6:1",
+  "G5:.5 B5:.5 D6:1 G6:1 D6:1",
+  "E6:.5 D6:.5 C6:.5 B5:.5 A5:1 G#5:1",
+  "A5:2 r:2",
+);
+export const RAINFOREST_CHORDS =
+  "Am:4 G:4 D:4 Em:4 Am:4 G:4 D:4 E:4 Am:4 G:4 D:4 Am:4 F:4 G:4 E:4 Am:4";
+
+/** "Rainforest Rush": flat out through the island's jungle (it replaced the water park's
+ * splash, Blake, Nov 1), A dorian, 172 BPM. The marimba leads, the flute answers from the
+ * canopy, a log-drum ostinato and hand drums driving under it, steel pan on the off-beats. */
+function rainforestRush(): Song {
+  const ch = chart(RAINFOREST_CHORDS);
+  const mel = seq(RAINFOREST_MELODY, 0, 0.84);
+  const b = mel.filter((n) => n.t >= 32);
+  const logs = arpeggio(ch, 0.5, [0, 2, 1, 2, 0, 2, 1, 3], 50, 0.35, 0.6);
+  const drive: [number, number, string][] = [
+    [0, 0.5, "R"],
+    [0.5, 0.25, "R"],
+    [0.75, 0.25, "8"],
+    [1, 0.5, "5"],
+    [1.5, 0.5, "R"],
+    [2, 0.5, "R"],
+    [2.5, 0.5, "8"],
+    [3, 0.5, "5"],
+    [3.5, 0.5, "A"],
+  ];
+  return {
+    id: "rainforest_rush",
+    title: "Rainforest Rush",
+    role: "Tropic Isles",
+    bpm: 172,
+    beats: 64,
+    loop: true,
+    stems: [],
+    parts: [
+      part("marimba", "base", 1, mel),
+      part("flute", "base", 0.5, shift(b, 0, 12)),
+      part("logdrum", "base", 0.8, logs),
+      part("steelpan", "base", 0.35, stabs(ch, [0.5, 1.5, 2.5, 3.5], 64, 0.15, 0.4)),
+      part("pad", "base", 0.28, pads(ch, 57, 4, 0.3)),
+      part("bass", "base", 0.95, bassLine(ch, drive, 33, 0.85)),
+      ...drumParts("base", 0.85, drums("K.....K.K.....k.", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.6, drums("....S.......S...", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.65, drums("D.d.D..dD.d.D.dd", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.45, drums("hhHhhhHhhhHhhhHh", ISLE_KIT, 0.25, 16)),
+      ...drumParts("base", 0.5, drums("b.bb..b.b.bb..bb", ISLE_KIT, 0.25, 8, 32)),
+      ...drumParts("base", 0.35, drums("c...............", ISLE_KIT, 0.25, 1, 32)),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------- "Dragon Race"
 
 export const BOSS_MELODY = bars(
@@ -3129,6 +3194,7 @@ export const RUIN_SONGS = [
   "shipwreck_bay",
   "volcano_isle",
   "splash_lagoon",
+  "rainforest_rush",
   "dragon",
   "dragon_canyon",
   "emberdeep",
@@ -3164,6 +3230,7 @@ export const SONGS: Record<string, Song> = {
   shipwreck_bay: shipwreckBay(),
   volcano_isle: volcanoIsle(),
   splash_lagoon: splashLagoon(),
+  rainforest_rush: rainforestRush(),
   boss: dragonRace(),
   dread: dragonsShadow(),
   emberdeep: emberdeep(),

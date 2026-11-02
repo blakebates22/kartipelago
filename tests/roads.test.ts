@@ -30,6 +30,7 @@ const COURSES = [
   "shipwreck_bay",
   "volcano_isle",
   "splash_lagoon",
+  "rainforest_rush",
   "dragon_isles",
   "dragon_canyon",
   "celestial_dragon_festival",

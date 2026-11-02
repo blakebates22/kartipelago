@@ -61,9 +61,9 @@ export const WORLDS: WorldEntry[] = [
     name: "Tropic Isles",
     tagline: "Sun, sea and shipwrecks",
     description:
-      "Sunny coves and lagoons: a lighthouse on the rocks, a pirate cove with its wreck, a dormant volcano and a seaside water park.",
+      "Sunny coves and a rainforest: a lighthouse on the rocks, a pirate cove with its wreck, a dormant volcano and the jungle's old temple.",
     color: "#22b4c8",
-    tracks: ["coral_cove", "shipwreck_bay", "volcano_isle", "splash_lagoon"],
+    tracks: ["coral_cove", "shipwreck_bay", "volcano_isle", "rainforest_rush"],
   },
   {
     id: "dragon",
@@ -125,6 +125,7 @@ export const WORLDS: WorldEntry[] = [
       "celestial_dragon_festival_ruin",
       "volcano_isle_ruin",
       "splash_lagoon_ruin",
+      "rainforest_rush_ruin",
       "boss_prehistoric",
       "boss_prehistoric_alt",
       "boss_snowy",
@@ -138,6 +139,8 @@ export const WORLDS: WorldEntry[] = [
       "coral_cove_v2",
       "volcano_isle_v2",
       "splash_lagoon_v2",
+      // (Splash Lagoon, retired from the Tropic Isles for Rainforest Rush: Blake, Nov 1.)
+      "splash_lagoon",
       "shipwreck_bay_v2",
       // The overworld's regions as races (the champions' challenges).
       "valley_region",

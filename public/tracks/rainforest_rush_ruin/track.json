@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 1,
+  "id": "rainforest_rush_ruin",
+  "name": "Rainforest Rush (Ruined)",
+  "geometry": {
+    "visual": "visual.glb",
+    "collision": "collision.glb",
+    "route": "route.json",
+    "look": "look.json"
+  },
+  "race": {
+    "laps": 3
+  },
+  "entities": [
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 151.34,
+      "y": 12.15,
+      "z": -90.49
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 168.84,
+      "y": 12.15,
+      "z": -101.72
+    },
+    {
+      "id": "torch_03",
+      "type": "torch",
+      "x": 122.37,
+      "y": 13.25,
+      "z": -123.36
+    },
+    {
+      "id": "torch_04",
+      "type": "torch",
+      "x": 135.28,
+      "y": 13.25,
+      "z": -139.66
+    },
+    {
+      "id": "torch_05",
+      "type": "torch",
+      "x": 84.02,
+      "y": 14.63,
+      "z": -140.33
+    },
+    {
+      "id": "torch_06",
+      "type": "torch",
+      "x": 87.95,
+      "y": 14.63,
+      "z": -160.75
+    },
+    {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": 196.0,
+      "y": 4.6,
+      "z": -108.0,
+      "top": 19.3,
+      "width": 16.0,
+      "heading": 0.0
+    },
+    {
+      "id": "torch_07",
+      "type": "torch",
+      "x": 54.74,
+      "y": 21.03,
+      "z": -144.36
+    },
+    {
+      "id": "torch_08",
+      "type": "torch",
+      "x": 54.82,
+      "y": 21.03,
+      "z": -163.56
+    },
+    {
+      "id": "torch_09",
+      "type": "torch",
+      "x": -51.12,
+      "y": 21.26,
+      "z": -142.01
+    },
+    {
+      "id": "torch_10",
+      "type": "torch",
+      "x": -51.43,
+      "y": 21.26,
+      "z": -161.2
+    },
+    {
+      "id": "torch_11",
+      "type": "torch",
+      "x": -14.0,
+      "y": 44.99,
+      "z": 203.0
+    },
+    {
+      "id": "torch_12",
+      "type": "torch",
+      "x": 2.0,
+      "y": 34.58,
+      "z": 203.0
+    },
+    {
+      "id": "torch_13",
+      "type": "torch",
+      "x": -57.19,
+      "y": 26.08,
+      "z": 163.03
+    },
+    {
+      "id": "torch_14",
+      "type": "torch",
+      "x": -67.48,
+      "y": 26.08,
+      "z": 181.57
+    },
+    {
+      "id": "torch_15",
+      "type": "torch",
+      "x": 9.91,
+      "y": 22.73,
+      "z": 169.45
+    },
+    {
+      "id": "torch_16",
+      "type": "torch",
+      "x": 47.49,
+      "y": 22.4,
+      "z": 187.37
+    },
+    {
+      "id": "torch_17",
+      "type": "torch",
+      "x": 118.44,
+      "y": 18.17,
+      "z": 159.69
+    },
+    {
+      "id": "torch_18",
+      "type": "torch",
+      "x": 128.04,
+      "y": 14.54,
+      "z": 120.46
+    },
+    {
+      "id": "torch_19",
+      "type": "torch",
+      "x": 157.1,
+      "y": 13.85,
+      "z": 97.47
+    },
+    {
+      "id": "torch_20",
+      "type": "torch",
+      "x": 161.63,
+      "y": 13.64,
+      "z": 57.73
+    },
+    {
+      "id": "torch_21",
+      "type": "torch",
+      "x": 195.37,
+      "y": 12.44,
+      "z": 33.21
+    },
+    {
+      "id": "torch_22",
+      "type": "torch",
+      "x": 192.94,
+      "y": 8.91,
+      "z": -42.57
+    },
+    {
+      "id": "torch_23",
+      "type": "torch",
+      "x": 162.23,
+      "y": 9.03,
+      "z": -70.17
+    },
+    {
+      "id": "torch_24",
+      "type": "torch",
+      "x": 161.54,
+      "y": 10.71,
+      "z": -111.95
+    },
+    {
+      "id": "torch_25",
+      "type": "torch",
+      "x": 122.25,
+      "y": 10.88,
+      "z": -123.45
+    },
+    {
+      "id": "torch_26",
+      "type": "torch",
+      "x": 99.72,
+      "y": 12.41,
+      "z": -158.06
+    },
+    {
+      "id": "torch_27",
+      "type": "torch",
+      "x": 61.04,
+      "y": 13.47,
+      "z": -143.43
+    },
+    {
+      "id": "torch_28",
+      "type": "torch",
+      "x": 25.64,
+      "y": 8.82,
+      "z": -164.61
+    },
+    {
+      "id": "torch_29",
+      "type": "torch",
+      "x": -9.97,
+      "y": -3.36,
+      "z": -143.2
+    },
+    {
+      "id": "torch_30",
+      "type": "torch",
+      "x": -46.58,
+      "y": 11.4,
+      "z": -162.07
+    },
+    {
+      "id": "torch_31",
+      "type": "torch",
+      "x": -120.2,
+      "y": 13.68,
+      "z": -144.18
+    },
+    {
+      "id": "torch_32",
+      "type": "torch",
+      "x": -140.0,
+      "y": 13.2,
+      "z": -107.18
+    },
+    {
+      "id": "torch_33",
+      "type": "torch",
+      "x": -179.95,
+      "y": 13.92,
+      "z": -95.74
+    },
+    {
+      "id": "torch_34",
+      "type": "torch",
+      "x": -171.61,
+      "y": 13.29,
+      "z": -56.62
+    },
+    {
+      "id": "torch_35",
+      "type": "torch",
+      "x": -177.26,
+      "y": 15.82,
+      "z": -16.54
+    },
+    {
+      "id": "torch_36",
+      "type": "torch",
+      "x": -134.75,
+      "y": 16.19,
+      "z": -19.9
+    },
+    {
+      "id": "torch_37",
+      "type": "torch",
+      "x": -102.26,
+      "y": 17.15,
+      "z": 3.86
+    },
+    {
+      "id": "torch_38",
+      "type": "torch",
+      "x": -64.33,
+      "y": 16.95,
+      "z": -12.7
+    },
+    {
+      "id": "torch_39",
+      "type": "torch",
+      "x": -31.62,
+      "y": 17.46,
+      "z": 12.95
+    },
+    {
+      "id": "torch_40",
+      "type": "torch",
+      "x": 8.45,
+      "y": 19.41,
+      "z": 4.63
+    },
+    {
+      "id": "torch_41",
+      "type": "torch",
+      "x": 21.4,
+      "y": 19.74,
+      "z": 43.81
+    },
+    {
+      "id": "torch_42",
+      "type": "torch",
+      "x": 41.51,
+      "y": 21.15,
+      "z": 77.14
+    },
+    {
+      "id": "torch_43",
+      "type": "torch",
+      "x": 2.17,
+      "y": 19.35,
+      "z": 79.17
+    },
+    {
+      "id": "torch_44",
+      "type": "torch",
+      "x": -32.03,
+      "y": 20.08,
+      "z": 102.12
+    },
+    {
+      "id": "torch_45",
+      "type": "torch",
+      "x": -72.43,
+      "y": 21.65,
+      "z": 95.83
+    },
+    {
+      "id": "fireflies_01",
+      "type": "fireflies",
+      "rate": 24,
+      "radius": 40
+    },
+    {
+      "id": "zip_01",
+      "type": "zipper",
+      "at": 24.2,
+      "across": 0.0
+    },
+    {
+      "id": "zip_02",
+      "type": "zipper",
+      "at": 237.4,
+      "across": -3.0
+    },
+    {
+      "id": "zip_03",
+      "type": "zipper",
+      "at": 309.1,
+      "across": 3.0
+    },
+    {
+      "id": "zip_04",
+      "type": "zipper",
+      "at": 557.7,
+      "across": 0.0
+    },
+    {
+      "id": "zip_05",
+      "type": "zipper",
+      "at": 938.5,
+      "across": 0.0
+    },
+    {
+      "id": "zip_06",
+      "type": "zipper",
+      "at": 1165.0,
+      "across": -3.0
+    },
+    {
+      "id": "ban_01",
+      "type": "bananas",
+      "at": 138.2,
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_02",
+      "type": "bananas",
+      "at": 355.9,
+      "across": 5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_03",
+      "type": "bananas",
+      "at": 663.4,
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "ban_04",
+      "type": "bananas",
+      "at": 978.1,
+      "across": -5.0,
+      "count": 2,
+      "gap": 2.4,
+      "spread": 2.2
+    },
+    {
+      "id": "ban_05",
+      "type": "bananas",
+      "at": 1209.7,
+      "across": 5.0,
+      "count": 3,
+      "gap": 2.4,
+      "spread": -2.2
+    },
+    {
+      "id": "bal_01",
+      "type": "balloon",
+      "at": 60.8,
+      "across": -4,
+      "color": "red"
+    },
+    {
+      "id": "bal_02",
+      "type": "balloon",
+      "at": 60.8,
+      "across": 4,
+      "color": "blue"
+    },
+    {
+      "id": "bal_03",
+      "type": "balloon",
+      "at": 277.0,
+      "across": 0,
+      "color": "green"
+    },
+    {
+      "id": "bal_04",
+      "type": "balloon",
+      "at": 477.2,
+      "across": 0,
+      "color": "yellow"
+    },
+    {
+      "id": "bal_05",
+      "type": "balloon",
+      "at": 856.0,
+      "across": 0,
+      "color": "rainbow"
+    },
+    {
+      "id": "bal_06",
+      "type": "balloon",
+      "at": 1099.4,
+      "across": 0,
+      "color": "red"
+    },
+    {
+      "id": "torch_46",
+      "type": "torch",
+      "x": 165.91,
+      "y": 24.42,
+      "z": 113.61
+    },
+    {
+      "id": "torch_47",
+      "type": "torch",
+      "x": -140.94,
+      "y": 38.93,
+      "z": -89.34
+    },
+    {
+      "id": "torch_48",
+      "type": "torch",
+      "x": -76.17,
+      "y": 37.52,
+      "z": 20.44
+    },
+    {
+      "id": "torch_49",
+      "type": "torch",
+      "x": -147.19,
+      "y": 15.43,
+      "z": -98.27
+    },
+    {
+      "id": "torch_50",
+      "type": "torch",
+      "x": -151.53,
+      "y": 26.5,
+      "z": -80.55
+    },
+    {
+      "id": "torch_51",
+      "type": "torch",
+      "x": 121.73,
+      "y": 18.07,
+      "z": 160.24
+    },
+    {
+      "id": "torch_52",
+      "type": "torch",
+      "x": -14.0,
+      "y": 44.69,
+      "z": 203.0
+    },
+    {
+      "id": "torch_53",
+      "type": "torch",
+      "x": 2.0,
+      "y": 34.28,
+      "z": 203.0
+    },
+    {
+      "id": "campfire_01",
+      "type": "campfire",
+      "x": 165.91,
+      "y": 23.82,
+      "z": 113.61
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -76.17,
+      "y": 36.92,
+      "z": 20.44
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -151.53,
+      "y": 25.9,
+      "z": -80.55
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -14.0,
+      "y": 44.09,
+      "z": 203.0
+    },
+    {
+      "id": "ashfall_01",
+      "type": "ashfall",
+      "rate": 12,
+      "radius": 40
+    }
+  ],
+  "generator": "tools/blender/prehistoric/rainforest_rush_ruin.py (re-running it rewrites entities)",
+  "builtFrom": {
+    "rainforest_layout.py": "7fd1751a1bee1ecde1e0f44c3d19018ecb75908d000627f0167c83da1c6dac71",
+    "rainforest_rush.py": "b690b8cc038015c21aa0656b2c56f3174125090fd72f3d884967dc204aa44bc2",
+    "rainforest_rush_ruins.py": "b5a1942cef4fdef13546b67a074d5948cfdde038693168a6648617d9ca0e74b5"
+  }
+}

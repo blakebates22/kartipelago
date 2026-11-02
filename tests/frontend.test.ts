@@ -258,6 +258,7 @@ describe("worlds", () => {
       "celestial_dragon_festival_ruin",
       "volcano_isle_ruin",
       "splash_lagoon_ruin",
+      "rainforest_rush_ruin",
       "boss_prehistoric",
       "boss_prehistoric_alt",
       "boss_snowy",
@@ -271,6 +272,7 @@ describe("worlds", () => {
       "coral_cove_v2",
       "volcano_isle_v2",
       "splash_lagoon_v2",
+      "splash_lagoon",
       "shipwreck_bay_v2",
       "valley_region",
       "snow_region",
@@ -281,7 +283,7 @@ describe("worlds", () => {
       "coral_cove",
       "shipwreck_bay",
       "volcano_isle",
-      "splash_lagoon",
+      "rainforest_rush",
     ]);
     expect(WORLDS.find((w) => w.id === "prehistoric")?.tracks).toEqual([
       "riverbend_palms",
