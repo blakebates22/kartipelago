@@ -511,7 +511,10 @@ export async function loadTrackPackage(
   read: PackageReader,
   opts: { visual?: boolean; mode?: LookMode } = {},
 ): Promise<TrackPackage> {
-  const meta = parseTrackMeta(JSON.parse(text(await read("track.json"))));
+  const rawMeta = JSON.parse(text(await read("track.json"))) as {
+    journey?: { from?: unknown; to?: unknown };
+  };
+  const meta = parseTrackMeta(rawMeta);
   // look.json is optional: tracks exported before it existed don't list it.
   const lookFile = meta.geometry.look ?? "look.json";
   const [routeBuf, colBuf, visBuf, lookBuf, cpBuf, editsBuf] = await Promise.all([
@@ -572,11 +575,19 @@ export async function loadTrackPackage(
       );
     }
   }
-  // Sanity check: the route should lie on the collision surface.
+  // Sanity check: the route should lie on the collision surface. (A journey's: only its
+  // road, from `from` to `to` m along; the rest of its loop goes round out of sight with no
+  // land under it, on purpose: the "1 track warnings" toast in every passage, Nov 1.)
   const b = collision.bounds;
-  const off = trackData.points.filter(
-    (p) => p.x < b.minX - 1 || p.x > b.maxX + 1 || p.z < b.minZ - 1 || p.z > b.maxZ + 1,
-  ).length;
+  const j = rawMeta.journey;
+  const from = typeof j?.from === "number" ? j.from : -Infinity;
+  const to = typeof j?.to === "number" ? j.to : Infinity;
+  let along = 0;
+  const off = trackData.points.filter((p, i, ps) => {
+    if (i > 0) along += Math.hypot(p.x - ps[i - 1]!.x, p.z - ps[i - 1]!.z);
+    if (along < from || along > to) return false;
+    return p.x < b.minX - 1 || p.x > b.maxX + 1 || p.z < b.minZ - 1 || p.z > b.maxZ + 1;
+  }).length;
   if (off > 0) warnings.push(`route: ${off} points lie outside the collision mesh`);
   return {
     meta,
