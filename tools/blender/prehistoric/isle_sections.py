@@ -251,8 +251,41 @@ def heart(c, ground, taken, ter, falls_mats):
     for v in range(2):
         pocket_scatter(c, props.big_leaf_plant(c, v), 30, ("heart",), ok, ground, taken, 310 + v, room=2.5, role="visual")
     pocket_scatter(c, props.fern(c), 60, ("heart",), ok, ground, taken, 312, room=2.0, role="visual")
+    # The old temple's ruins along the road through the basin: broken pillars, a fallen one;
+    # shafts of sun down through the canopy.
+    import impact_props as ip
+
+    rnd = random.Random(31)
+    np_ = 0
+    for i in (31, 32, 33):
+        for f in (0.25, 0.75):
+            q = c.at(_route_s(c, i, f))
+            for sd in (-1, 1):
+                p = None
+                for off in (4.5, 6.5, 8.5):
+                    pp = q.side(sd * (q.w / 2 + off))
+                    if clear_of(c, pp.x, pp.y, 2.0) and taken.clear(pp.x, pp.y, 1.4) and idr._dry(pp.x, pp.y, 1.5):
+                        p = pp
+                        break
+                if p is None:
+                    continue
+                if math.hypot(p.x - fx, p.y - fy) < M.POOL_R + 3.0:
+                    continue
+                h = 3.0 + 6.0 * rnd.random()
+                z = idr._lowest(ground, p.x, p.y, 1.2)
+                box(c, "Ruin Pillar %d" % np_, p.x, p.y, 0.9, 0.9, z - 1.0, z + h, ("jungle_temple", "wall"), rot=rnd.random())
+                box(c, "Ruin Pillar Cap %d" % np_, p.x, p.y, 1.15, 1.15, z + h, z + h + 0.5, ("ruin_stone", "wall"), rot=rnd.random(),
+                    role="visual")
+                taken.add(p.x, p.y, 2.0)
+                np_ += 1
+    for k, f in enumerate((0.2, 0.6)):
+        for i in (31, 33):
+            q = c.at(_route_s(c, i, f))
+            ln = 50.0
+            c.place(ip.sun_beam(c, length=ln, r=4.5, variant=k % 2), q.p.x - 0.34 * ln, q.p.y + 0.38 * ln, q.p.z + 0.86 * ln - 1.0,
+                    role="visual")
     c.entity("area_ambient", area="rainforest", effect="fireflies", rate=26, radius=40)
-    print("heart: falls top %.0f, %d giant trees" % (top, len(trees)))
+    print("heart: falls top %.0f, %d giant trees, %d ruin pillars" % (top, len(trees), np_))
 
 
 # ------------------------------------------------------------------ the Black Shore
@@ -347,6 +380,13 @@ def cloud_forest(c, ground, taken):
     for v in range(2):
         pocket_scatter(c, props.boulder(c, "jungle_mossstone", v), 12, looks, ok, ground, taken, 344 + v, room=4.0, road_margin=3.0,
                        seat=2.0)
+    import impact_props as ip
+
+    for k, (i, f) in enumerate(((14, 0.5), (15, 0.5), (16, 0.4), (9, 0.5), (39, 0.4))):
+        q = c.at(_route_s(c, i, f))
+        ln = 50.0
+        c.place(ip.sun_beam(c, length=ln, r=4.0, variant=k % 2), q.p.x - 0.34 * ln, q.p.y + 0.38 * ln, q.p.z + 0.86 * ln - 1.0,
+                role="visual")
     print("cloud forest: %d giant trees" % len(placed))
 
 
@@ -401,7 +441,15 @@ def lagoon(c, ground, taken):
         x, y = lx + (lr - 6.0) * math.cos(a), ly + (lr - 6.0) * math.sin(a)
         if clear_of(c, x, y, 4.0):
             c.place(bp.canoe(c, j % 2), x, y, M.LAGOON_Z + 0.1, rot=a, coll="Village", role="visual")
-    print("lagoon: %d mangroves" % n)
+    # The lagoon fishers' houses on their stilts out over the water, off its south shore.
+    ns = 0
+    for j, a in enumerate((-1.2, -1.75, -2.3)):
+        x, y = lx + (lr - 14.0) * math.cos(a), ly + (lr - 14.0) * math.sin(a)
+        if clear_of(c, x, y, 8.0) and M.natural(x, y) < M.LAGOON_Z - 0.4:
+            c.place(hp_.stilt_house(c, j), x, y, M.LAGOON_Z, rot=math.atan2(ly - y, lx - x) + math.pi / 2, coll="Village")
+            taken.add(x, y, 6.0)
+            ns += 1
+    print("lagoon: %d mangroves, %d stilt houses" % (n, ns))
 
 
 # ------------------------------------------------------------------ the Head Pass, the camps
@@ -471,10 +519,10 @@ def valley_hamlet(c, ground, taken, ter):
                 break
             q0 = c.at(_route_s(c, i, f))
             for sd in (-1, 1):
-                for off in (9.0, 11.0, 13.0):
+                for off in (8.0, 10.0, 12.0, 14.0, 16.0):
                     p = q0.side(sd * (q0.w / 2 + off))
-                    if (taken.clear(p.x, p.y, 7.0) and clear_of(c, p.x, p.y, 6.5) and idr._spread(ground, p.x, p.y, 3.5) < 2.5
-                            and M.wall_sd(p.x, p.y) < 4.0):
+                    if (taken.clear(p.x, p.y, 6.0) and clear_of(c, p.x, p.y, 5.5) and idr._spread(ground, p.x, p.y, 3.5) < 3.5
+                            and M.wall_sd(p.x, p.y) < 10.0):
                         break
                 else:
                     continue

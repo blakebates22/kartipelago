@@ -172,7 +172,31 @@ def falls_cave(c, ground, taken):
         g = c.game(fx, fy, wz)
         c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - wz, 1), width=16.0, heading=0.0)
     taken.add(fx, fy, 14.0)
-    print("falls cave: %.0f m, falls top %.0f" % (s1 - s0, top))
+    # Thin falls off the valley's west wall along the River Run.
+    nf = 0
+    for i in (7, 8, 9):
+        q = c.at(_s(c, i, 0.5))
+        for sd in (-1, 1):
+            p = None
+            d = q.w / 2 + 4.0
+            while d < 36.0:
+                pp = q.side(sd * d)
+                if natural(pp.x, pp.y) > q.p.z + 14.0:
+                    p = pp
+                    break
+                d += 2.0
+            if p is None or L.water_d(p.x, p.y)[0] < R.RIVER_HW + 6:
+                continue
+            ztop = natural(p.x, p.y) - 0.8
+            # (down the wall to the valley's floor, by the road: its foam at the floor, not up on a shelf)
+            foot = q.p.z - 0.3
+            if ztop - foot < 10.0:
+                continue
+            props.falls(c, "Side Falls %d" % nf, p.x, p.y, ztop, foot, 2.6, 4.6, facing=1, throw=2.0, bulge=0.6, veils=2, foam_r=3.0,
+                        angle=math.atan2(-sd * q.r.y, -sd * q.r.x) - math.pi / 2, mats=FALLS_MATS)
+            nf += 1
+            break
+    print("falls cave: %.0f m, falls top %.0f, %d side falls" % (s1 - s0, top, nf))
 
 
 # ------------------------------------------------------------------ the pieces
@@ -415,8 +439,36 @@ def jungle(c, ground, taken):
             c.entity("torch", x=gg[0], y=gg[1], z=gg[2])
             taken.add(p.x, p.y, 0.6)
             nt += 1
+    # Shafts of sun down through the canopy onto the road.
+    import impact_props as ip
+
+    nb = 0
+    for k in range(30, int(c.length), 64):
+        q = c.at(float(k))
+        if R.look_at(q.p.x, q.p.y) not in ("canopy", "avenue", "kapok", "hollow", "ruins", "river"):
+            continue
+        ln = 46.0
+        c.place(ip.sun_beam(c, length=ln, r=4.0 + (k // 64) % 2, variant=(k // 64) % 2), q.p.x - 0.34 * ln + q.r.x * 2.0,
+                q.p.y + 0.38 * ln + q.r.y * 2.0, q.p.z + 0.86 * ln - 1.0, role="visual")
+        nb += 1
+    # Vines hung down the walls either side of the road.
+    nv = 0
+    for k in range(12, int(c.length), 22):
+        q = c.at(float(k))
+        for sd in (-1, 1):
+            d = q.w / 2 + 3.0
+            while d < 34.0:
+                p = q.side(sd * d)
+                zt = g(p.x, p.y)
+                if zt > q.p.z + 9.0:
+                    b = q.side(sd * (d - 2.0))
+                    _tube_ob(c, "Wall Vine %d %d" % (k, sd), [(p.x, p.y, zt + 0.3), (b.x, b.y, zt - 3.5), (b.x, b.y, zt - 8.0 - 2.0 * (k % 3))],
+                             [0.22, 0.16, 0.08], ("vine_leaf", "wall"), n=5)
+                    nv += 1
+                    break
+                d += 2.0
     c.entity("fireflies", rate=24, radius=40)
-    print("jungle: %d trees, %d lianas, %d torches" % (len(trees), nl, nt))
+    print("jungle: %d trees, %d lianas, %d torches, %d sunbeams, %d wall vines" % (len(trees), nl, nt, nb, nv))
 
 
 if __name__ == "__main__":
