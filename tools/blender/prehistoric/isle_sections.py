@@ -380,6 +380,18 @@ def cloud_forest(c, ground, taken):
     for v in range(2):
         pocket_scatter(c, props.boulder(c, "jungle_mossstone", v), 12, looks, ok, ground, taken, 344 + v, room=4.0, road_margin=3.0,
                        seat=2.0)
+    # The mist the forest's named for (Blake, Nov 2): banks of it lying in the ravine,
+    # thin at the road, thicker up the walls, a layer over the treetops.
+    nm = 0
+    for p in M.POCKETS:
+        if p[0] != "cloud":
+            continue
+        for k, (cx, cy, r, _f) in enumerate(p[2]):
+            z0 = ground(cx, cy)
+            for j, (dz, rr) in enumerate(((1.4, r + 4.0), (7.0, r + 12.0), (15.0, r + 22.0))):
+                c.disc("Cloud Mist %d %d" % (k, j), cx + 3.0 * math.sin(k + j), cy + 3.0 * math.cos(k * 2 + j), rr, z0 + dz,
+                       c.lib("cloud_mist"), coll="Mist", role="visual", n=18, wobble=0.3, seed=k * 7 + j)
+                nm += 1
     import impact_props as ip
 
     for k, (i, f) in enumerate(((14, 0.5), (15, 0.5), (16, 0.4), (9, 0.5), (39, 0.4))):
@@ -387,7 +399,7 @@ def cloud_forest(c, ground, taken):
         ln = 50.0
         c.place(ip.sun_beam(c, length=ln, r=4.0, variant=k % 2), q.p.x - 0.34 * ln, q.p.y + 0.38 * ln, q.p.z + 0.86 * ln - 1.0,
                 role="visual")
-    print("cloud forest: %d giant trees" % len(placed))
+    print("cloud forest: %d giant trees, %d mist banks" % (len(placed), nm))
 
 
 def gorge(c, ground, taken, falls_mats):

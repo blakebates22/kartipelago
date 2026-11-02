@@ -3424,6 +3424,23 @@
       "tileMetres": 5
     },
     {
+      "id": "cloud_mist",
+      "name": "Cloud Forest Mist",
+      "theme": "jungle_cascade",
+      "surface": "water",
+      "image": "cloud_mist.png",
+      "wrap": "repeat",
+      "tileMetres": 30,
+      "fx": {
+        "scrollU": 0.006,
+        "scrollV": 0.003,
+        "wave": 0.05,
+        "wavePeriod": 11,
+        "opacity": 0.15,
+        "glow": 0.45
+      }
+    },
+    {
       "id": "salt_brine",
       "name": "Salt Brine",
       "theme": "canyon_dash",

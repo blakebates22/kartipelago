@@ -29,16 +29,16 @@
     {
       "id": "torch_03",
       "type": "torch",
-      "x": 75.54,
-      "y": 20.65,
-      "z": -94.81
+      "x": 76.12,
+      "y": 20.87,
+      "z": -92.24
     },
     {
       "id": "torch_04",
       "type": "torch",
-      "x": 96.22,
-      "y": 20.65,
-      "z": -99.46
+      "x": 96.95,
+      "y": 20.87,
+      "z": -96.2
     },
     {
       "id": "torch_05",
@@ -271,15 +271,15 @@
       "id": "torch_31",
       "type": "torch",
       "x": 64.37,
-      "y": 14.95,
+      "y": 14.93,
       "z": -124.68
     },
     {
       "id": "torch_32",
       "type": "torch",
       "x": 34.67,
-      "y": 11.78,
-      "z": -177.21
+      "y": 11.74,
+      "z": -177.2
     },
     {
       "id": "puzzle_gate_01",
@@ -339,7 +339,7 @@
       "gateway": "volcano",
       "x": 29.8,
       "z": -300.35,
-      "heading": -0.09987055546772318
+      "heading": -0.09987104852091302
     },
     {
       "id": "gateway_spot_04",
@@ -426,9 +426,9 @@
     {
       "id": "villager_home_08",
       "type": "villager_home",
-      "x": 59.71,
-      "z": -123.1,
-      "y": 12.31,
+      "x": 96.75,
+      "z": -110.13,
+      "y": 13.71,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -437,9 +437,9 @@
     {
       "id": "villager_home_09",
       "type": "villager_home",
-      "x": 24.95,
-      "z": -245.27,
-      "y": 5.55,
+      "x": 42.64,
+      "z": -211.44,
+      "y": 7.83,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -448,9 +448,9 @@
     {
       "id": "villager_home_10",
       "type": "villager_home",
-      "x": 135.14,
-      "z": -270.83,
-      "y": 3.06,
+      "x": 148.46,
+      "z": -263.07,
+      "y": 2.72,
       "r": 6.0,
       "n": 2,
       "folk": "beach",
@@ -461,8 +461,8 @@
   "builtFrom": {
     "beach_props.py": "6fd693e20ce7db4902494c39528b9df954b1931794417334a0346291f936f256",
     "isle_dress.py": "f6c712f8c628410796b454cb70fd3cd8d2adcff079c31692bde2668eabc0ea98",
-    "isle_layout.py": "36503a018ce5fcdf0d621f016144948653eea86a59334c086a769198f6d1a4a3",
+    "isle_layout.py": "e763136e4e164d1acd0d3318a93a93f65f17af1f0b3783461750ae87e6efa288",
     "isle_region.py": "f951654f8c9c0040f9108e719f9658e9b738364e9a8b831ac7f77f262975983d",
-    "isle_sections.py": "2e309dde1a306807f4bb8ac87be597b7833e6e5239ee8b6376fed451e3a994d9"
+    "isle_sections.py": "d80cc339e8524f96b0cced030e86955a50304bff1149ad93a288f3d3e88825ee"
   }
 }

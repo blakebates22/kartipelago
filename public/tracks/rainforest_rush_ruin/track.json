@@ -560,7 +560,7 @@
   "generator": "tools/blender/prehistoric/rainforest_rush_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
     "rainforest_layout.py": "7fd1751a1bee1ecde1e0f44c3d19018ecb75908d000627f0167c83da1c6dac71",
-    "rainforest_rush.py": "329c2bc55aafe49e4bc6d1aa53af4fdd0025b2fcbf2aad70be2ad9912242f950",
+    "rainforest_rush.py": "9e7eb70f57684c71b035a9c3d44ee1bb7831f1d7a4a616556fa7e3b5588d3d54",
     "rainforest_rush_ruins.py": "b5a1942cef4fdef13546b67a074d5948cfdde038693168a6648617d9ca0e74b5"
   }
 }

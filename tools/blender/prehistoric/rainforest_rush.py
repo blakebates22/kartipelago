@@ -35,13 +35,13 @@ ROAD = "isle_jungle_road"
 LOOK = {
     # look: (ground, cliff, road, shoulder)
     "temple": (("jungle_leafcover", "grass"), ("jungle_temple", "wall"), "rain_paving", ("jungle_leafcover", "grass")),
-    "canopy": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), ROAD, ("jungle_leafcover", "grass")),
-    "river": (("isle_jungle", "grass"), ("canyon_rock_moss", "wall"), ROAD, ("isle_jungle", "grass")),
-    "gorge": (("isle_jungle", "grass"), ("canyon_rock_moss", "wall"), ROAD, ("isle_jungle", "grass")),
+    "canopy": (("jungle_leafcover", "grass"), ("limestone_moss", "wall"), ROAD, ("jungle_leafcover", "grass")),
+    "river": (("isle_jungle", "grass"), ("canyon_rock_grey", "wall"), ROAD, ("isle_jungle", "grass")),
+    "gorge": (("isle_jungle", "grass"), ("canyon_rock_ochre", "wall"), ROAD, ("isle_jungle", "grass")),
     "hollow": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), ROAD, ("jungle_leafcover", "grass")),
-    "kapok": (("isle_jungle", "grass"), ("jungle_mossstone", "wall"), ROAD, ("isle_jungle", "grass")),
-    "avenue": (("jungle_leafcover", "grass"), ("jungle_mossstone", "wall"), ROAD, ("jungle_leafcover", "grass")),
-    "ruins": (("isle_jungle", "grass"), ("jungle_temple", "wall"), "rain_paving", ("isle_jungle", "grass")),
+    "kapok": (("isle_jungle", "grass"), ("valley_cliff", "wall"), ROAD, ("isle_jungle", "grass")),
+    "avenue": (("jungle_leafcover", "grass"), ("limestone", "wall"), ROAD, ("jungle_leafcover", "grass")),
+    "ruins": (("isle_jungle", "grass"), ("ruin_stone", "wall"), "rain_paving", ("isle_jungle", "grass")),
 }
 FALLS_MATS = ("falls_oasis", "falls_curtain_oasis", "falls_foam")
 FIRES = []
@@ -58,7 +58,8 @@ def natural(x, y):
 def classify(c, n, info):
     look = R.look_at(c.x, c.y)
     if n.z < 0.62:
-        return LOOK[look][1] if L.wall_sd(c.x, c.y) < 24.0 else ("jungle_mossstone", "wall")
+        # (each part of the lap its own rock: Blake, Nov 2)
+        return LOOK[look][1]
     if c.z < 1.0 and min(abs(c.x - p[0]) for p in R.GORGE_RIVER) < 30.0:
         return ("lagoon_shallow", "water")
     d, wz = L.water_d(c.x, c.y)
@@ -157,7 +158,7 @@ def falls_cave(c, ground, taken):
     the cliff beside its mouth into the river's head, moss and roots round the bore."""
     name, kind, a, b = R.TUNNELS[0]
     s0, s1 = pb.tunnel_span(c, L, a, b)
-    half = pb.bore(c, L, name, s0, s1, ("canyon_rock_moss", "wall"), ("isle_jungle", "grass"), height=11.0)
+    half = pb.bore(c, L, name, s0, s1, ("canyon_rock_grey", "wall"), ("isle_jungle", "grass"), height=11.0)
     for s in (s0 + 4.0, (s0 + s1) / 2, s1 - 4.0):
         q = c.at(s)
         for sd in (-1, 1):

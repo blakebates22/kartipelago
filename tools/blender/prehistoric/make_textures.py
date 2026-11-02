@@ -3463,6 +3463,16 @@ def giant_heartwood():
     return paint(f)
 
 
+def cloud_mist():
+    # The Cloud Forest's mist (Tropic Isles v5, Nov 2): soft white-green wisps, see-through.
+    a, b = noise(4, 2, 4961), noise(8, 4, 4962)
+
+    def f(x, y):
+        return pick(["#cfdcd2", "#dbe6dc", "#e6eee6", "#f2f6f2"], a(x, y) * 0.6 + b(x, y) * 0.5)
+
+    return paint(f)
+
+
 def slickrock():
     # The mesa tops: smooth pink-orange sandstone pavement, cracked into slabs, with
     # sand drifted in the cracks and a few dark potholes.
@@ -5006,6 +5016,7 @@ MATERIALS = [
     ("black_sand", "Black Sand", "volcano_isle", "sand", black_sand, 6, None),
     ("rain_paving", "Temple Paving", "jungle_cascade", "road", rain_paving, 6, None),
     ("giant_heartwood", "Giant Heartwood", "jungle_cascade", "road", giant_heartwood, 5, None),
+    ("cloud_mist", "Cloud Forest Mist", "jungle_cascade", "water", cloud_mist, 30, {"scrollU": 0.006, "scrollV": 0.003, "wave": 0.05, "wavePeriod": 11, "opacity": 0.15, "glow": 0.45}),
     ("salt_brine", "Salt Brine", "canyon_dash", "water", salt_brine, 6, {"scrollU": 0.004, "scrollV": 0.002, "wave": 0.02, "wavePeriod": 5, "opacity": 0.9}),
     ("strata_cream", "Caprock Sandstone", "canyon_dash", "wall", strata_cream, 14, None),
     ("strata_orange", "Orange Sandstone", "canyon_dash", "wall", strata_orange, 14, None),
