@@ -3268,6 +3268,25 @@
       "tileMetres": 8
     },
     {
+      "id": "salt_flat",
+      "name": "Salt Flat",
+      "theme": "canyon_dash",
+      "surface": "dirt",
+      "image": "salt_flat.png",
+      "wrap": "repeat",
+      "tileMetres": 6
+    },
+    {
+      "id": "salt_brine",
+      "name": "Salt Brine",
+      "theme": "canyon_dash",
+      "surface": "water",
+      "image": "salt_brine.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": { "scrollU": 0.004, "scrollV": 0.002, "wave": 0.02, "wavePeriod": 5, "opacity": 0.9 }
+    },
+    {
       "id": "strata_cream",
       "name": "Caprock Sandstone",
       "theme": "canyon_dash",

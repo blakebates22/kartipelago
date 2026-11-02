@@ -10,8 +10,8 @@
 #   pass   the Frozen Pass: the Snow Kingdom down to Desert World
 #   dust   the Dust Road: Desert World down to Tropic Isles
 #   cause  Tidewyrm's Causeway: Tropic Isles over the sea to the Dragon Kingdom
-#   hop    the Island Hop: Desert World over the sea to Tropic Isles (the package
-#          journey_dust: it took the Dust Road's place, Blake, Nov 1)
+#   hop    the Island Hop: Desert World down the Coast Road and over the sea to Tropic Isles (the
+#          package journey_dust: it took the Dust Road's place, Blake, Nov 1)
 #
 # The route is a loop (the kit's courses are) but the road runs only from the layout's
 # START point to its END point: the rest goes round out of sight over the mountains, with no
@@ -100,13 +100,15 @@ SPECS = {
         "name": "The Island Hop",
         "env": "coral_cove",
         "looks": {
-            "cliffs": (("pale_sand", "loose_sand"), ("strata_orange", "wall"), "dash_road", ("pale_sand", "loose_sand")),
-            "dock": (("cove_sand", "sand"), ("strata_orange", "wall"), "cove_road", ("cove_sand", "sand")),
-            "sandbar": (("cove_sand", "sand"), ("isle_rock", "wall"), "cove_road", ("cove_wet_sand", "sand")),
-            "mangrove": (("swamp_mud", "dirt"), ("isle_rock", "wall"), "jungle_path", ("swamp_mud", "dirt")),
+            # (v2, the Coast Road: Blake, Nov 1: the desert down to the coast, then two islands)
+            "dunes": (("gold_sand", "loose_sand"), ("strata_orange", "wall"), "dash_road", ("gold_sand", "loose_sand")),
+            "salt": (("salt_flat", "dirt"), ("strata_orange", "wall"), "sinter_road", ("salt_flat", "dirt")),
+            "saddle": (("dash_shoulder", "dirt"), ("strata_red", "wall"), "dash_road", ("dash_shoulder", "dirt")),
+            "cliff": (("cove_grass", "grass"), ("cove_rock", "wall"), "cove_road", ("pale_sand", "loose_sand")),
+            "stair": (("cove_grass", "grass"), ("cove_rock", "wall"), "cove_road", ("cove_sand", "sand")),
+            "cove": (("cove_sand", "sand"), ("cove_rock", "wall"), "cove_road", ("cove_sand", "sand")),
             "fishers": (("beach_sand", "sand"), ("isle_rock", "wall"), "beach_road", ("beach_sand", "sand")),
-            "rocks": (("cove_grass", "grass"), ("isle_rock", "wall"), "beach_road", ("cove_grass", "grass")),
-            "palm": (("beach_sand", "sand"), ("isle_rock", "wall"), "beach_road", ("beach_sand", "sand")),
+            "turtle": (("isle_jungle", "grass"), ("isle_rock", "wall"), "jungle_path", ("isle_jungle", "grass")),
         },
         "ends": {"start": ("strata_orange", "Desert World"), "end": ("isle_rock", "Tropic Isles")},
     },
@@ -150,7 +152,7 @@ def classify(c, n, info):
             return ("wet_sand", "deep_water")  # (off the causeway into the sea)
         if c.z < WATER_Z + 0.4:
             return ("cove_wet_sand", "water")
-        if JID == "hop" and c.z < WATER_Z + 1.0 and look != "cliffs":
+        if JID == "hop" and c.z < WATER_Z + 1.0:
             return ("cove_wet_sand", "sand")  # (the wet sand at the water's edge)
     if JID == "gorge" and look == "ember" and math.sin(c.x / 13.0) * math.cos(c.y / 11.0) > 0.55:
         return ("lava_crust", "dirt")
@@ -166,6 +168,19 @@ def classify(c, n, info):
             return ("valley_sand", "water")  # (the river's bed, wadeable)
         if look == "steppe" and n.z > 0.9 and math.sin(c.x / 19.0) * math.cos(c.y / 15.0 + 0.5) > 0.55:
             return ("snow_ground", "packed_snow")  # (the first frost lying in hollows)
+    if JID == "hop":
+        if look == "dunes":
+            a, b = c.x * 0.8 + c.y * 0.6, -c.x * 0.6 + c.y * 0.8
+            if math.sin(a / 21.0 + 1.3 * math.sin(b / 37.0)) > 0.72:
+                return ("dune_crest", "loose_sand")  # (the dunes' crests, wind-combed)
+        if look == "salt" and L.wall_sd(c.x, c.y) > -12.0:
+            return ("pale_sand", "loose_sand")  # (sand blown in round the pan's edge)
+        if look == "fishers" and c.z > 3.6:
+            return ("cove_grass", "grass")  # (the hill's grass)
+        if look == "turtle" and c.z < 3.2 + 0.6 * math.sin(c.x / 11.0):
+            return ("beach_sand", "sand")  # (the beach round the jungle)
+        if look in ("fishers", "turtle", "cove") and c.z < 1.4:
+            return ("cove_wet_sand", "sand")
     if JID == "pass":
         # (v2: the ranges beyond the basins snowy toward the Snow Kingdom behind, red rock
         # toward the desert ahead)
@@ -216,6 +231,9 @@ def main():
         kinds["causeway"] = {"mat": "beach_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("isle_rock", "road"),
                              "barrier": 0.7, "barrier_mat": ("isle_rock", "wall"), "deck": 3.0,
                              "deck_mat": ("isle_rock", "wall"), "ground": False}
+        # (v2: the road through the wreck's hold, on her planks)
+        kinds["wreck"] = {"mat": "wood_planks", "surface": "road", "shoulder": 0.5, "shoulder_mat": ("wood_planks", "road"),
+                          "barrier": 1.2, "barrier_mat": ("weathered_timber", "wall")}
     if JID == "cause":
         kinds["bridge"] = {"mat": "beach_road", "surface": "road", "shoulder": 0.6, "shoulder_mat": ("isle_rock", "road"),
                            "barrier": 0.7, "barrier_mat": ("isle_rock", "wall"), "deck": 2.4,
@@ -229,6 +247,10 @@ def main():
     # (The hop's long pier runs on past the loading zone, out of sight over the sea: the
     # way on's just the road going on, no gate, Blake, Nov 1: "No portals".)
     s_last = s_end + 24.0 if JID == "hop" else s_end
+    wreck = None
+    if JID == "hop" and hasattr(J, "WRECK"):
+        sw = c.nearest(*J.ROUTE[(J.WRECK[0] + J.WRECK[1]) // 2][:2])[0].s
+        wreck = (sw - 15.0, sw + 15.0)
 
     def label(q):
         if not s_start <= q.s <= s_last:
@@ -243,10 +265,12 @@ def main():
         d, wz = L.water_d(q.p.x, q.p.y)
         if d < L.river_hw + 4 and q.p.z > wz + 0.9:
             return "bridge"
+        if wreck and wreck[0] <= q.s <= wreck[1]:
+            return "wreck"
         if SEA and JID == "hop" and min(J.natural(q.p.x + q.r.x * f * 7.0, q.p.y + q.r.y * f * 7.0)
-                                        for f in (-1, 0, 1)) < q.p.z - 1.0:
+                                        for f in (-1, 0, 1)) < min(q.p.z - 1.0, WATER_Z + 0.3):
             return J.bridge_kind(q.p.x, q.p.y)  # (over the water: a dock, a causeway, a bridge, a pier)
-        if SEA and J.natural(q.p.x, q.p.y) < q.p.z - 1.2:
+        if SEA and JID != "hop" and J.natural(q.p.x, q.p.y) < q.p.z - 1.2:
             return "bridge"  # (the causeway over the sea)
         return L.look_at(q.p.x, q.p.y)
 
@@ -269,8 +293,7 @@ def main():
     if SEA:
         c.disc("Sea", 0.0, 0.0, 1600.0, WATER_Z, c.lib("sea_water", "water"), role="visual", n=64)
     thresholds(c, ground)
-    if JID != "hop":
-        ends(c, ground)
+    ends(c, ground)
     # Travellers on the road between the kingdoms: a camp in each part of it.
     if JID != "hop":  # (the hop's folk are its own: dress_hop)
         vh.homes(c, L, ground, "road", camp, per=1, avoid=[(e[0][0], e[0][1], 30.0) for e in J.ENDS.values()], n=(1, 2))
@@ -388,6 +411,8 @@ def ends(c, ground):
     """Each end: a wall of the next kingdom's rock beyond the road's end, the smugglers'
     tunnel's mouth in it (the overworld's), the loading zone in its dark."""
     for name, (zone, beyond) in J.ENDS.items():
+        if name not in getattr(J, "END_WALLS", J.ENDS):
+            continue  # (the hop's end: the pier going on, no wall)
         mat, _ = SP["ends"][name]
         q, _ = c.nearest(*zone)
         ux, uy = beyond[0] - zone[0], beyond[1] - zone[1]
@@ -1057,11 +1082,15 @@ def dress_cause(c, ground, taken, on_road):
 
 
 def dress_hop(c, ground, taken, on_road):
-    """The Island Hop (Blake, Nov 1): the smugglers' dock under the red headland, Sandbar
-    Key's driftwood and shells, the causeway's lamps over the coral, Mangrove Cay's
-    mangroves standing on their roots, Fishers' Isle's stilt houses round its lagoon and
-    its folk, the mended bridge's scaffold and fresh planks, Turtle Rocks' stacks and the
-    great turtle, Palm Cay's palms and huts, the long pier's lamps; the big island ahead."""
+    """The Island Hop v2, the Coast Road (Blake, Nov 1): the Last Dunes' great skeleton the
+    road runs through, skulls and tumbleweeds; the salt-rakers' village by its brine pans and
+    salt heaps; the Saddle's cairn; the clifftops' dry stone wall, sea stacks below, the
+    lighthouse at the Switchbacks' head; Shipwreck Cove's wreck the road runs through her
+    hold, the smugglers' boats and camp, palms; the Long Causeway's lamps over the coral;
+    Fishers' Isle's stilt village round its lagoon, the bridge they're mending; Turtle Isle's
+    jungle, its falls, the sea arch, the great turtle out in the sea; the long pier's lamps;
+    the big island ahead."""
+    import desert_dress as dd
     import hop_props as hp_
 
     W = J.WATER_Z
@@ -1071,11 +1100,14 @@ def dress_hop(c, ground, taken, on_road):
         (ax, ay, _), (bx, by, _) = J.ROUTE[k], J.ROUTE[k + 1]
         return ax + (bx - ax) * f, ay + (by - ay) * f
 
+    def q_at(k, f=0.5):
+        return c.at(c.nearest(*road_at(k, f))[0].s)
+
     def side(q, sd, off):
         return q.p.x + q.r.x * sd * (q.w / 2 + off), q.p.y + q.r.y * sd * (q.w / 2 + off)
 
-    def put(proto, x, y, z, rot=0.0, scale=1.0, role="both", room=2.0, coll=None):
-        if not taken.clear(x, y, room) or not paint.road_clear(c, x, y, room * 0.6):
+    def put(proto, x, y, z, rot=0.0, scale=1.0, role="both", room=2.0, coll=None, margin=None):
+        if not taken.clear(x, y, room) or not paint.road_clear(c, x, y, room * 0.6 if margin is None else margin):
             return False
         c.place(proto, x, y, z, rot=rot, scale=scale, role=role, **({"coll": coll} if coll else {}))
         taken.add(x, y, room)
@@ -1084,12 +1116,20 @@ def dress_hop(c, ground, taken, on_road):
     def seabed_ok(x, y):
         return J.natural(x, y) < W - 0.6
 
-    # ---- Lamps along every stretch over the water, either side by turns (the docks, the
-    # causeway, the bridges, the pier); lanterns lit.
+    def folk(x, y, r, n, kind):
+        g = c.game(x, y, ground(x, y))
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=r, n=n, folk=kind, heading=0.0)
+
+    def fire(x, y):
+        g = c.game(x, y, ground(x, y) + 0.2)
+        c.entity("campfire", x=g[0], y=g[1], z=g[2])
+
+    # ---- Lamps along every stretch over the water, either side by turns (the causeway, the
+    # rope bridge, the pier); lanterns lit.
     lamp = tp.lamp_post(c)
     k = 0
     for q in c.S[::16]:
-        if not on_road(q.s) or J.natural(q.p.x, q.p.y) > q.p.z - 1.0:
+        if not on_road(q.s) or J.natural(q.p.x, q.p.y) > min(q.p.z - 1.0, W + 0.3):
             continue
         sd = 1 if k % 2 else -1
         k += 1
@@ -1097,60 +1137,163 @@ def dress_hop(c, ground, taken, on_road):
         c.place(lamp, x, y, q.p.z, rot=math.atan2(q.t.y, q.t.x), role="visual")
         g = c.game(x, y, q.p.z + 3.6)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
-    # ---- The smugglers' dock: crates and barrels on it, rowboats and a sloop moored off it,
-    # the headland's lanterns.
-    for j in range(5):
-        q = c.at(c.nearest(*road_at(1, 0.2 + 0.25 * j))[0].s)
-        x, y = side(q, 1 if j % 2 else -1, 2.6)
-        if seabed_ok(x, y):
-            put(tp.rowboat(c), x, y, W + 0.1, rot=math.atan2(q.t.y, q.t.x) + 0.3 * j, role="visual", room=2.5)
-        else:
-            put(hp_.dock_crates(c, j % 2), x, y, ground(x, y), rot=j * 0.7, room=2.0)
-    for j, f in enumerate((0.3, 0.8)):
-        q = c.at(c.nearest(*road_at(2, f))[0].s)
-        x, y = side(q, -1 if j else 1, 10.0)
-        put(tp.sailboat(c, j), x, y, W - 0.2, rot=math.atan2(q.t.y, q.t.x) + 1.4, role="visual", room=6.0)
-    # ---- Sandbar Key: driftwood, shells, starfish, dune grass, a canoe pulled up.
-    _scatter_look(c, ground, taken, "sandbar", [
-        (hp_.driftwood(c, 0), 6, dict(room=4.0, road_margin=3.0, role="visual", seat=2.0)),
-        (hp_.driftwood(c, 1), 5, dict(room=4.0, road_margin=3.0, role="visual", seat=2.0)),
-        (bp.shell(c), 14, dict(room=1.5, road_margin=2.0, role="visual")),
-        (bp.starfish(c, 0), 10, dict(room=1.5, road_margin=2.0, role="visual")),
-        (tp.dune_grass(c), 20, dict(room=2.0, road_margin=3.0, role="visual")),
-        (bp.canoe(c, 0), 2, dict(room=4.0, road_margin=4.0, role="visual", seat=1.5)),
+
+    # ---- The Last Dunes: a great beast's bones the road runs through, its ribs arching over,
+    # its skull half sunk in the sand beside; cattle skulls, tumbleweeds, cacti.
+    s0 = c.nearest(*road_at(2, 0.55))[0].s
+    head = None
+    for j in range(6):
+        q = c.at(s0 + j * 9.0)
+        c.place(dcp.rib(c, span=24.0, height=14.0 - 1.5 * abs(j - 2.5) * 0.6, variant=j % 3), q.p.x, q.p.y, q.p.z - 1.2,
+                rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, role="visual")
+        for sd in (-1, 1):
+            fx, fy = q.p.x + q.r.x * sd * 12.0, q.p.y + q.r.y * sd * 12.0
+            c.place(paint.trunk_proto(c, 0.8, 5.0), fx, fy, ground(fx, fy) - 0.5, coll="Collision", role="collision")
+            taken.add(fx, fy, 2.0)
+        head = q
+    if head:
+        q = c.at(head.s + 16.0)
+        x, y = side(q, 1, 9.0)
+        c.place(swp.great_skull(c), x, y, ground(x, y) - 2.2, rot=math.atan2(q.t.y, q.t.x) + 0.5, scale=0.45, coll="Props",
+                role="visual")
+        taken.add(x, y, 9.0)
+    _scatter_look(c, ground, taken, "dunes", [
+        (gp.cattle_skull(c), 6, dict(room=3.0, road_margin=3.0, role="visual")),
+        (gp.tumbleweed(c, 0), 6, dict(room=3.0, road_margin=4.0, role="visual")),
+        (gp.tumbleweed(c, 1), 5, dict(room=3.0, road_margin=4.0, role="visual")),
+        (cp.barrel_cactus(c, 0), 6, dict(room=3.0, road_margin=4.0, seat=1.0)),
+        (cp.saguaro(c, 0), 4, dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))),
     ])
-    # ---- The causeway: coral in the shallows either side of it.
-    for j in range(16):
-        q = c.at(c.nearest(*road_at(6 + j // 6, ((j % 6) + 0.5) / 6.0))[0].s)
+    # (The smugglers by their tunnel's mouth, seeing you off.)
+    sx, sy = side(q_at(1, 0.4), 1, 6.0)
+    folk(sx, sy, 5.0, 2, "road")
+
+    # ---- The Salt Flats: the salt-rakers' village on the pan's edge, adobe houses facing
+    # the road; their brine pans out on the pan, salt heaped up drying, rakes; the folk.
+    vx, vy, vr = J.SALT_VILLAGE
+    cq = c.at(c.nearest(vx, vy)[0].s)
+    for j in range(4):
+        a = math.atan2(vy - cq.p.y, vx - cq.p.x) + (j - 1.5) * 0.55
+        x, y = vx + vr * 0.55 * math.cos(a), vy + vr * 0.55 * math.sin(a)
+        if not paint.road_clear(c, x, y, 7.0) or not taken.clear(x, y, 6.0):
+            continue
+        # (its door toward the road)
+        rot = math.atan2(cq.p.x - x, -(cq.p.y - y))
+        dd.adobe_house(c, "Salt House %d" % j, x, y, ground(x, y), rot, 6.0 + j % 2, 5.0, 3.4, j)
+        taken.add(x, y, 6.5)
+    folk(vx + (cq.p.x - vx) * 0.4, vy + (cq.p.y - vy) * 0.4, 10.0, 4, "desert")
+    fire(vx + (cq.p.x - vx) * 0.25, vy + (cq.p.y - vy) * 0.25)
+    # The pans: a grid of shallow brine beds walled with salt, in the S-bend's lap.
+    px0, py0 = -322.0, -116.0
+    for i in range(3):
+        for j in range(2):
+            x, y = px0 + (i - 1) * 9.0, py0 + (j - 0.5) * 7.0
+            if not paint.road_clear(c, x, y, 8.0):
+                continue
+            z = ground(x, y)
+            box(c, "Salt Pan Rim %d %d" % (i, j), x, y, 4.2, 3.0, z - 0.4, z + 0.3, ("salt_flat", "dirt"), role="visual")
+            box(c, "Salt Pan %d %d" % (i, j), x, y, 3.7, 2.5, z - 0.4, z + 0.2, ("salt_brine", "water"), role="visual")
+            taken.add(x, y, 5.0)
+    for j, (x, y) in enumerate(((-300.0, -112.0), (-305.0, -126.0), (-340.0, -100.0), (-298.0, -98.0), (-396.0, -150.0),
+                                (-380.0, -156.0))):
+        if paint.road_clear(c, x, y, 5.0) and taken.clear(x, y, 3.0):
+            cone(c, "Salt Heap %d" % j, x, y, 2.0 + 0.4 * (j % 3), ground(x, y) - 0.3, 2.4 + 0.5 * (j % 2), ("salt_flat", "wall"),
+                 segs=7)
+            taken.add(x, y, 3.0)
+    _scatter_look(c, ground, taken, "salt", [
+        (gp.cattle_skull(c), 3, dict(room=3.0, road_margin=4.0, role="visual")),
+        (gp.tumbleweed(c, 0), 4, dict(room=3.0, road_margin=4.0, role="visual")),
+    ])
+    # ---- The Saddle's top: a cairn of stones (the travellers', one more each).
+    q = q_at(14, 0.8)
+    x, y = side(q, -1, 4.0)
+    for j in range(4):
+        c.place(smp_.boulder(c, j % 2), x + 0.3 * j, y - 0.2 * j, ground(x, y) - 0.3 + 1.1 * j, rot=j * 1.3,
+                scale=1.2 - 0.25 * j, role="visual" if j else "both")
+    taken.add(x, y, 3.0)
+
+    # ---- The Cliff Road: a dry stone wall along the clifftop on the sea's side (low enough
+    # to see over), the headland's grass and shrubs; sea stacks off the cliffs below.
+    sa = c.nearest(*road_at(15, 0.6))[0].s
+    sb = c.nearest(*J.ROUTE[20][:2])[0].s
+    s = sa
+    while s < sb:
+        q = c.at(s)
+        sea = 1 if J.inland(*side(q, 1, 16.0)) < J.inland(*side(q, -1, 16.0)) else -1
+        x, y = side(q, sea, 2.6)
+        if J.inland(x, y) < 40.0:
+            z = ground(x, y)
+            box(c, "Cliff Wall %d" % int(s), x, y, 2.7, 0.35, z - 0.6, z + 0.9, ("cove_rock", "wall"),
+                rot=math.atan2(q.t.y, q.t.x))
+        s += 5.0
+    _scatter_look(c, ground, taken, "cliff", [
+        (smp_.shrub(c, 0, frosted=False), 14, dict(room=2.5, road_margin=3.0, role="visual", seat=1.0)),
+        (smp_.shrub(c, 1, frosted=False), 10, dict(room=2.5, road_margin=3.0, role="visual", seat=1.0)),
+        (tp.dune_grass(c), 22, dict(room=2.0, road_margin=2.5, role="visual")),
+    ])
+    _scatter_look(c, ground, taken, "stair", [
+        (smp_.shrub(c, 0, frosted=False), 10, dict(room=2.5, road_margin=2.5, role="visual", seat=1.0)),
+        (tp.dune_grass(c), 16, dict(room=2.0, road_margin=2.0, role="visual")),
+    ])
+    for j, (x, y, r, h) in enumerate(((-98.0, 40.0, 8.0, 26.0), (-92.0, 112.0, 6.0, 19.0), (-84.0, -40.0, 9.0, 30.0),
+                                      (-62.0, 196.0, 7.0, 22.0), (-70.0, -150.0, 7.0, 16.0), (-104.0, 82.0, 4.0, 12.0))):
+        if J.inland(x, y) < -r - 2.0:
+            c.assign(c.rock_mass("Sea Stack %d" % j, x, y, r, r * 0.8, h, z0=J.SEABED - 2.0, n=14, seed=j + 11),
+                     c.lib("cove_rock", "wall"))
+    # The lighthouse at the Switchbacks' head, its keeper's hut.
+    lx, ly = J.LIGHTHOUSE
+    c.place(tp.lighthouse(c, h=18.0), lx, ly, ground(lx, ly) - 0.5)
+    g = c.game(lx, ly, ground(lx, ly) + 19.5)
+    c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    taken.add(lx, ly, 5.0)
+    for dx, dy in ((8.0, -8.0), (-6.0, -10.0), (10.0, 4.0)):
+        if put(tp.beach_hut(c, 1), lx + dx, ly + dy, ground(lx + dx, ly + dy), rot=math.atan2(-dy, -dx), room=4.0, margin=4.0):
+            break
+
+    # ---- Shipwreck Cove: the wreck the road runs through (her hold its floor), a broken mast
+    # leant on her; the smugglers' boats pulled up, their crates; sailboats moored off the
+    # beach; palms, a hut, the fire.
+    sw = c.nearest(*J.ROUTE[(J.WRECK[0] + J.WRECK[1]) // 2][:2])[0].s
+    _wreck_hull(c, sw - 19.0, sw + 17.0)
+    for j in range(4):
+        q = c.at(sw - 34.0 + j * 7.0)
+        x, y = side(q, -1 if j % 2 else 1, 4.0)
+        if ground(x, y) > W + 0.4:
+            put(tp.rowboat(c), x, y, ground(x, y) + 0.1, rot=math.atan2(q.t.y, q.t.x) + 0.6 * j, role="visual", room=3.0)
+    for j in range(3):
+        q = c.at(sw - 40.0 - j * 8.0)
+        x, y = side(q, 1, 5.0 + 2.0 * j)
+        if ground(x, y) > W + 0.4:
+            put(hp_.dock_crates(c, j % 2), x, y, ground(x, y), rot=j * 0.8, room=2.5)
+    for j, (x, y) in enumerate(((-20.0, 360.0), (-6.0, 344.0), (-30.0, 380.0))):
+        if seabed_ok(x, y):
+            put(tp.sailboat(c, j % 2), x, y, W - 0.2, rot=1.2 + 0.7 * j, role="visual", room=6.0)
+    _scatter_look(c, ground, taken, "cove", [
+        (bp.coconut_palm(c, 0), 9, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
+        (bp.coconut_palm(c, 1), 7, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
+        (bp.shell(c), 10, dict(room=1.5, road_margin=2.0, role="visual")),
+        (bp.starfish(c, 0), 8, dict(room=1.5, road_margin=2.0, role="visual")),
+        (hp_.driftwood(c, 0), 4, dict(room=4.0, road_margin=3.0, role="visual", seat=2.0)),
+    ])
+    hx, hy = -130.0, 352.0
+    if put(tp.pirate_hut(c, 0), hx, hy, ground(hx, hy), rot=-0.6, room=5.0, margin=5.0):
+        fire(hx + 6.0, hy - 4.0)
+    folk(-118.0, 360.0, 8.0, 3, "road")
+
+    # ---- The Long Causeway: coral in the shallows either side.
+    for j in range(14):
+        q = q_at(33 + j // 7, ((j % 7) + 0.5) / 7.0)
         sd = 1 if j % 2 else -1
         x, y = side(q, sd, 4.0 + 3.0 * ((j * 7) % 3))
         if seabed_ok(x, y):
             put(tp.coral(c, j % 2), x, y, J.natural(x, y), rot=j * 1.1, role="visual", room=2.5)
-    # ---- Mangrove Cay: mangroves round its shore, in the shallows, and in on the land.
-    mangroves = [hp_.mangrove(c, v, height=6.5 + 1.5 * v) for v in range(3)]
-    rnd_ = __import__("random").Random(41)
-    n = 0
-    for _ in range(600):
-        if n >= 46:
-            break
-        cx, cy, r, _top = rnd_.choice(J.ISLANDS[3][2])
-        a = rnd_.uniform(0, math.tau)
-        d = r + rnd_.uniform(-12.0, 8.0)
-        x, y = cx + d * math.cos(a), cy + d * math.sin(a)
-        if not paint.road_clear(c, x, y, 5.0) or not taken.clear(x, y, 4.5):
-            continue
-        z = min(J.natural(x, y), 0.6)
-        c.place(mangroves[n % 3], x, y, max(W, z), rot=a * 2.0, scale=0.9 + 0.3 * rnd_.random(), role="visual")
-        c.place(paint.trunk_proto(c, 0.5, 5.0), x, y, max(W, z) - 0.5, coll="Collision", role="collision")
-        taken.add(x, y, 4.5)
-        n += 1
+
     # ---- Fishers' Isle: stilt houses round the lagoon, racks, pots, canoes, palms, folk.
     lx, ly, lr = J.LAGOON
     for j in range(6):
         a = j * math.tau / 6 + 0.4
         x, y = lx + (lr - 3.0) * math.cos(a), ly + (lr - 3.0) * math.sin(a)
         if paint.road_clear(c, x, y, 5.0) and taken.clear(x, y, 5.0):
-            # (its ladder, the front, toward the lagoon's middle)
             c.place(hp_.stilt_house(c, j % 4), x, y, W, rot=math.atan2(ly - y, lx - x) + math.pi / 2, coll="Village")
             taken.add(x, y, 5.0)
     g = c.game(lx, ly, W)
@@ -1163,56 +1306,56 @@ def dress_hop(c, ground, taken, on_road):
         (bp.coconut_palm(c, 1), 10, dict(room=5.0, road_margin=5.0, trunk=(0.5, 6.0))),
         (tp.beach_hut(c, 2), 3, dict(room=6.0, road_margin=6.0, seat=2.5)),
     ])
-    for x, y, nn in ((70.0, 64.0, 4), (118.0, 82.0, 3)):
-        g = c.game(x, y, ground(x, y))
-        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=12.0, n=nn, folk="beach", heading=0.0)
-        g = c.game(x + 4.0, y - 3.0, ground(x + 4.0, y - 3.0) + 0.2)
-        c.entity("campfire", x=g[0], y=g[1], z=g[2])
-    # ---- The mended bridge: its scaffold beside it, fresh planks piled at its ends.
-    q = c.at(c.nearest(*road_at(18, 0.5))[0].s)
+    for x, y, nn in ((74.0, 236.0, 4), (130.0, 232.0, 3)):
+        if ground(x, y) > W + 1.0:
+            folk(x, y, 10.0, nn, "beach")
+            fire(x + 4.0, y - 3.0)
+    # ---- The Rope Bridge: the fishers mending it, their scaffold beside it, planks piled.
+    q = q_at(39, 0.6)
     x, y = side(q, -1, 2.0)
     c.place(hp_.scaffold(c, 10.0), x, y, q.p.z - 2.4, rot=math.atan2(q.t.y, q.t.x), role="visual")
-    for f, sd in ((0.05, 1), (0.95, -1)):
-        q = c.at(c.nearest(*road_at(17 if f < 0.5 else 19, f))[0].s)
+    for k2, f, sd in ((38, 0.8, 1), (40, 0.6, -1)):
+        q = q_at(k2, f)
         x, y = side(q, sd, 3.0)
         if ground(x, y) > W + 0.3:
             put(tp.plank_pile(c), x, y, ground(x, y), rot=f * 3.0, role="visual", room=2.5)
-    # ---- Turtle Rocks: sea stacks round them, the great turtle out in the sea, coral.
-    for j, (x, y, r, h) in enumerate(((236.0, 168.0, 6.0, 18.0), (196.0, 214.0, 5.0, 14.0), (290.0, 206.0, 7.0, 20.0),
-                                      (252.0, 244.0, 5.0, 12.0), (226.0, 236.0, 4.0, 10.0))):
-        if paint.road_clear(c, x, y, r + 4.0) and taken.clear(x, y, r + 2.0):
-            c.assign(c.rock_mass("Sea Stack %d" % j, x, y, r, r * 0.8, h, z0=J.SEABED - 2.0, n=14, seed=j + 11),
-                     c.lib("isle_rock", "wall"))
-            taken.add(x, y, r + 3.0)
-    for x, y, rot in ((262.0, 172.0, -0.4), (200.0, 240.0, 2.2)):
-        if paint.road_clear(c, x, y, 16.0) and taken.clear(x, y, 12.0):
+
+    # ---- Turtle Isle: the sea arch over the road, the falls off the peak into the pool, the
+    # jungle; the great turtle out in the sea.
+    ax, ay = J.ARCH
+    q = c.at(c.nearest(ax, ay)[0].s)
+    a, b = dd.natural_arch(c, "Sea Arch", q.p.x, q.p.y, math.atan2(q.r.y, q.r.x), 30.0, 15.0,
+                           ["isle_rock", "isle_rock", "cove_rock", "isle_jungle"], ground, seed=5)
+    for lx2, ly2 in (a, b):
+        taken.add(lx2, ly2, 8.0)
+    fx, fy = J.FALLS
+    top = ground(fx, fy + 4.0)
+    ox, oy, orr = J.POOL
+    c.disc("Falls Pool", ox, oy, orr + 2.0, W + 2.4, c.lib("valley_water", "water"), role="visual", n=20, wobble=0.2, seed=3)
+    if top > W + 8.0:
+        props.falls(c, "Turtle Falls", fx, fy + 3.0, top - 0.3, W + 2.4, 6.0, 9.0, facing=-1, throw=3.5, bulge=1.2, veils=3)
+    taken.add(ox, oy, orr + 3.0)
+    _scatter_look(c, ground, taken, "turtle", [
+        (props.jungle_tree(c, 0), 14, dict(room=5.0, road_margin=5.0, trunk=(0.6, 6.0))),
+        (props.jungle_tree(c, 1), 10, dict(room=5.0, road_margin=5.0, trunk=(0.6, 6.0))),
+        (bp.coconut_palm(c, 0), 10, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
+        (bp.coconut_palm(c, 1), 8, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
+        (smp_.shrub(c, 0, frosted=False), 10, dict(room=2.0, road_margin=3.0, role="visual", seat=1.0)),
+        (bp.tiki_torch(c, 0), 4, dict(room=3.0, near_road=(1.5, 4.0))),
+    ])
+    for x, y, rot in ((214.0, 196.0, 0.6), (236.0, 300.0, 2.2), (190.0, 290.0, 1.4)):
+        if seabed_ok(x, y) and paint.road_clear(c, x, y, 16.0) and taken.clear(x, y, 12.0):
             c.place(hp_.turtle_rock(c), x, y, W, rot=rot, coll="Props")
             taken.add(x, y, 15.0)
             break
-    _scatter_look(c, ground, taken, "rocks", [
-        (smp_.shrub(c, 0, frosted=False), 8, dict(room=2.0, road_margin=3.0, role="visual")),
-        (tp.dune_grass(c), 10, dict(room=2.0, road_margin=3.0, role="visual")),
-    ])
-    # ---- Palm Cay: palms all over it, huts, tiki torches, sailboats off its pier, the sign.
-    _scatter_look(c, ground, taken, "palm", [
-        (bp.coconut_palm(c, 0), 22, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
-        (bp.coconut_palm(c, 1), 18, dict(room=4.5, road_margin=5.0, trunk=(0.5, 6.0))),
-        (tp.beach_hut(c, 0), 3, dict(room=6.0, road_margin=6.0, seat=2.5)),
-        (tp.beach_hut(c, 1), 2, dict(room=6.0, road_margin=6.0, seat=2.5)),
-        (tp.dune_grass(c), 16, dict(room=2.0, road_margin=3.0, role="visual")),
-        (bp.tiki_torch(c, 0), 6, dict(room=3.0, near_road=(1.5, 4.0))),
-    ])
+    if put(tp.beach_hut(c, 0), 334.0, 226.0, ground(334.0, 226.0), rot=1.6, room=5.0, margin=5.0):
+        folk(328.0, 232.0, 8.0, 2, "beach")
     for j, f in enumerate((0.3, 0.75)):
-        q = c.at(c.nearest(*road_at(26, f))[0].s)
+        q = q_at(45, f)
         x, y = side(q, 1 if j else -1, 12.0)
         put(tp.sailboat(c, j + 1), x, y, W - 0.2, rot=math.atan2(q.t.y, q.t.x) + 1.2, role="visual", room=6.0)
-    g = c.game(350.0, 282.0, ground(350.0, 282.0))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=2, folk="beach", heading=0.0)
-    # (The smugglers at the dock, seeing you off.)
-    g = c.game(-390.0, -330.0, ground(-390.0, -330.0))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=6.0, n=2, folk="road", heading=0.0)
-    # The far islands, out past the land's edge: the big island's jungle peak ahead, Volcano
-    # Isle smoking, the desert's red cliffs behind.
+    # The far islands, out past the land's edge: the big island's jungle ahead, Volcano Isle
+    # smoking.
     for j, (x, y, rx, ry, h, kind) in enumerate(J.HORIZON):
         mat = {"jungle": "isle_jungle", "volcano": "volcano_basalt", "desert": "strata_orange"}[kind]
         ob = c.rock_mass("Far Isle %d" % j, x, y, rx, ry, h, z0=W - 4.0, n=24, seed=j + 21, base=W,
@@ -1221,6 +1364,62 @@ def dress_hop(c, ground, taken, on_road):
         if kind == "volcano":
             g = c.game(x, y, h)
             c.entity("steam", x=g[0], y=g[1], z=g[2])
+
+
+def _wreck_hull(c, s0, s1, half=10.0, keel=-3.0, rail=6.0):
+    """Shipwreck Cove's wreck, broken-backed on the beach, the road through her hold: her
+    hull round the road (open at both breaches), ribs showing where her planks are gone, her
+    sides walls (after shipwreck_bay_v2's hull_shell)."""
+    from course_kit import Vector, bmesh
+
+    n = 12
+    bm = bmesh.new()
+    rings = []
+    for k in range(n + 1):
+        q = c.at(s0 + (s1 - s0) * k / n)
+        t = k / n
+        hw = half * (0.75 + 0.25 * math.sin(math.pi * t))
+        r = rail - 2.0 * abs(t - 0.45)  # (her back broken: her rail sagging toward the ends)
+        prof = [(-hw * 0.55, keel), (-hw, 1.0), (-hw * 1.02, r), (hw * 1.02, r - 1.2 * t), (hw, 1.0), (hw * 0.55, keel)]
+        rings.append([bm.verts.new(q.p + q.r * o + Vector((0, 0, dz))) for o, dz in prof])
+    for k, (a, b) in enumerate(zip(rings, rings[1:])):
+        for i in range(len(a) - 1):
+            if i == 2:
+                continue  # (her deck's gone: open to the sky)
+            if i == 3 and k in (5, 6):
+                continue  # (a hole stove in her starboard side)
+            bm.faces.new((a[i], b[i], b[i + 1], a[i + 1]))
+    ob = c.mesh_object("Wreck Hull", bm, "Props", "visual")
+    c.assign(ob, c.lib("wood_planks", "wall"))
+    # (Her ribs, standing proud along both sides.)
+    bm = bmesh.new()
+    for k in range(1, n, 2):
+        q = c.at(s0 + (s1 - s0) * k / n)
+        hw = half * (0.75 + 0.25 * math.sin(math.pi * k / n)) * 1.05
+        pts = [q.p + q.r * sd * hw * f + Vector((0, 0, z)) for sd, f, z in ((-1, 0.6, keel), (-1, 1.0, 1.0), (-1, 1.0, rail + 0.6))]
+        props.tube(bm, [tuple(p) for p in pts], [0.35, 0.35, 0.3], n=6)
+        pts = [q.p + q.r * sd * hw * f + Vector((0, 0, z)) for sd, f, z in ((1, 0.6, keel), (1, 1.0, 1.0), (1, 1.0, rail - 0.4))]
+        props.tube(bm, [tuple(p) for p in pts], [0.35, 0.35, 0.3], n=6)
+    # (Her mainmast snapped, leant out over the sand.)
+    q = c.at(s0 + (s1 - s0) * 0.6)
+    base = q.p + q.r * half * 0.9 + Vector((0, 0, 1.0))
+    tip = base + q.r * 9.0 + q.t * 3.0 + Vector((0, 0, 11.0))
+    props.tube(bm, [tuple(base), tuple(base.lerp(tip, 0.5)), tuple(tip)], [0.55, 0.45, 0.3], n=8)
+    ob = c.mesh_object("Wreck Ribs", bm, "Props", "visual")
+    c.assign(ob, c.lib("weathered_timber", "wall"))
+    # Her sides as walls (a kart can't drive through her planks).
+    bm = bmesh.new()
+    for sd in (-1, 1):
+        rs = []
+        for k in range(n + 1):
+            q = c.at(s0 + (s1 - s0) * k / n)
+            hw = half * (0.75 + 0.25 * math.sin(math.pi * k / n))
+            rs.append([bm.verts.new(q.p + q.r * sd * hw + Vector((0, 0, dz))) for dz in (keel, rail)])
+        for a, b in zip(rs, rs[1:]):
+            bm.faces.new((a[0], b[0], b[1], a[1]))
+    side_ob = c.mesh_object("Wreck Sides", bm, "Props", "both")
+    c.assign(side_ob, c.lib("wood_planks", "wall"))
+    return ob
 
 
 DRESS = {"gorge": dress_gorge, "pass": dress_pass, "dust": dress_dust, "cause": dress_cause, "hop": dress_hop}

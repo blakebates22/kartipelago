@@ -569,8 +569,8 @@ export const REGIONS: Region[] = [
     packageId: "journey_dust",
     music: "journey_dust",
     worldId: "beach",
-    journey: { from: "desert", to: "beach", road: [31, 1135] },
-    spawn: { x: -387, z: 312.3, heading: 1.9319 },
+    journey: { from: "desert", to: "beach", road: [35, 1864] },
+    spawn: { x: -398.2, z: 391.2, heading: 2.3153 },
     gateways: [],
     passages: [
       {
@@ -579,10 +579,10 @@ export const REGIONS: Region[] = [
         to: "desert_world",
         // (Back through the smugglers' tunnel: out of its cave, Blake, Nov 1.)
         toPassage: "cave",
-        x: -402,
-        z: 318,
+        x: -410,
+        z: 402,
         radius: 8,
-        heading: 1.9319,
+        heading: 2.3153,
       },
       {
         id: "end",
@@ -590,10 +590,10 @@ export const REGIONS: Region[] = [
         to: "tropic_isles",
         toPassage: "dust_road",
         look: "open",
-        x: 440,
-        z: -314,
+        x: 430,
+        z: -262,
         radius: 8,
-        heading: -1.2514,
+        heading: -1.4599,
       },
     ],
   },

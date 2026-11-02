@@ -3328,6 +3328,47 @@ def pale_sand():
     return paint(f)
 
 
+def salt_flat():
+    # The Salt Flats' pan (the Island Hop, Nov 1): white salt crust dried into polygons,
+    # their raised rims bright with a grey shadow under them, a faint pink in the hollows.
+    pal = ["#ddd6d2", "#e6e0dc", "#eeeae6", "#f6f3f0"]
+    a, b = noise(4, 2, 4811), noise(16, 8, 4812)
+    r = rng(4813)
+    cx, cy = 5, 3
+    pts = [((i + 0.2 + 0.6 * r()) * W / cx, (j + 0.2 + 0.6 * r()) * H / cy) for j in range(cy) for i in range(cx)]
+
+    def f(x, y):
+        ds = []
+        for px_, py_ in pts:
+            dx = min(abs(x - px_), W - abs(x - px_))
+            dy = min(abs(y - py_), H - abs(y - py_))
+            ds.append(math.hypot(dx, dy))
+        ds.sort()
+        edge = ds[1] - ds[0]
+        if edge < 0.9:
+            return "#ffffff"
+        if edge < 1.8:
+            return "#c4bab6"
+        if b(x, y) > 0.78:
+            return "#e8d6d2"  # (a pink bloom in a hollow)
+        return pick(pal, 0.15 + a(x, y) * 0.5 + b(x, y) * 0.35)
+
+    return paint(f)
+
+
+def salt_brine():
+    # The salt-rakers' pans: shallow brine, pink and milky, a crust of salt round its edge.
+    pal = ["#d89aa4", "#e2a8b0", "#eab6bc", "#f2c6ca"]
+    a, b = noise(4, 2, 4821), noise(16, 8, 4822)
+
+    def f(x, y):
+        if b(x, y) > 0.82:
+            return "#fbf4f2"
+        return pick(pal, 0.2 + a(x, y) * 0.5 + b(x, y) * 0.3)
+
+    return paint(f)
+
+
 def slickrock():
     # The mesa tops: smooth pink-orange sandstone pavement, cracked into slabs, with
     # sand drifted in the cracks and a few dark potholes.
@@ -4865,6 +4906,8 @@ MATERIALS = [
     ("slickrock", "Slickrock", "canyon_dash", "dirt", slickrock, 10, None),
     ("red_sand", "Red Sand (Deep)", "canyon_dash", "loose_sand", red_sand, 8, None),
     ("pale_sand", "Pale Sand", "canyon_dash", "loose_sand", pale_sand, 8, None),
+    ("salt_flat", "Salt Flat", "canyon_dash", "dirt", salt_flat, 6, None),
+    ("salt_brine", "Salt Brine", "canyon_dash", "water", salt_brine, 6, {"scrollU": 0.004, "scrollV": 0.002, "wave": 0.02, "wavePeriod": 5, "opacity": 0.9}),
     ("strata_cream", "Caprock Sandstone", "canyon_dash", "wall", strata_cream, 14, None),
     ("strata_orange", "Orange Sandstone", "canyon_dash", "wall", strata_orange, 14, None),
     ("strata_red", "Red Sandstone", "canyon_dash", "wall", strata_red, 14, None),
