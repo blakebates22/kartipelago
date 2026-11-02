@@ -72,12 +72,14 @@ SPECS = {
     "pass": {
         "name": "The Frozen Pass",
         "env": "summit_pass",
+        # (v2, the Great Descent: Blake, Nov 1)
         "looks": {
             "snow": (("summit_snow", "deep_snow"), ("summit_cliff", "wall"), "summit_road", ("summit_snow", "packed_snow")),
-            "glacier": (("rift_snow", "packed_snow"), ("glacier_wall", "wall"), "rift_road", ("rift_snow", "packed_snow")),
-            "melt": (("frost_rock", "dirt"), ("frost_cliff", "wall"), "snow_stone_road", ("frost_rock", "dirt")),
+            "cirque": (("rift_snow", "packed_snow"), ("glacier_wall", "wall"), "rift_road", ("rift_snow", "packed_snow")),
+            "steam": (("thaw_grass", "grass"), ("frost_cliff", "wall"), "snow_stone_road", ("sinter", "dirt")),
+            "stair": (("dash_shoulder", "dirt"), ("strata_red", "wall"), "dash_road", ("dash_shoulder", "dirt")),
+            "badlands": (("red_sand", "loose_sand"), ("strata_red", "wall"), "dash_road", ("dash_shoulder", "dirt")),
             "canyon": (("red_sand", "loose_sand"), ("strata_red", "wall"), "dash_road", ("dash_shoulder", "dirt")),
-            "sand": (("pale_sand", "loose_sand"), ("strata_orange", "wall"), "dash_road", ("dash_shoulder", "dirt")),
         },
         "ends": {"start": ("summit_cliff", "the Snow Kingdom"), "end": ("strata_orange", "Desert World")},
     },
@@ -164,8 +166,27 @@ def classify(c, n, info):
             return ("valley_sand", "water")  # (the river's bed, wadeable)
         if look == "steppe" and n.z > 0.9 and math.sin(c.x / 19.0) * math.cos(c.y / 15.0 + 0.5) > 0.55:
             return ("snow_ground", "packed_snow")  # (the first frost lying in hollows)
-    if JID == "pass" and look == "glacier" and math.sin(c.x / 17.0 + c.y / 23.0) > 0.4:
-        return ("glacier_wall", "packed_snow") if n.z < 0.8 else ground
+    if JID == "pass":
+        # (v2: the ranges beyond the basins snowy toward the Snow Kingdom behind, red rock
+        # toward the desert ahead)
+        if L.wall_sd(c.x, c.y) > 20.0:
+            a = (c.x - c.y) * 0.7071
+            snowline = 95.0 + 120.0 * smooth((a + 100.0) / 500.0)
+            if c.z > snowline + 6.0 * math.sin(c.x / 23.0) * math.cos(c.y / 19.0):
+                return ("snow_ground", "deep_snow") if n.z > 0.55 else ("frost_cliff", "wall")
+            if a > 120.0:
+                return ("strata_red", "wall") if n.z < 0.8 else ("red_sand", "loose_sand")
+        if look == "cirque" and math.sin(c.x / 17.0 + c.y / 23.0) > 0.4:
+            return ("glacier_wall", "packed_snow") if n.z < 0.8 else ground
+        if look == "steam":
+            sx, sy = J.STEAM
+            d = math.hypot(c.x - sx, c.y - sy)
+            if d < 46.0 and math.sin(c.x / 9.0) * math.cos(c.y / 7.0) > 0.25:
+                return ("sinter", "dirt")  # (the springs' travertine)
+            if math.sin(c.x / 19.0 + 0.7) * math.cos(c.y / 15.0) > 0.55:
+                return ("summit_snow", "packed_snow")  # (the last of the snow, melting)
+        if look == "badlands" and J.wash_d(c.x, c.y) < 9.0:
+            return ("pale_sand", "loose_sand")  # (the dry wash)
     if JID == "dust" and look == "dunes" and math.sin(c.x / 29.0 + 1.0) * math.cos(c.y / 23.0) > 0.35:
         return ("dune_crest", "loose_sand")
     return ground
@@ -772,48 +793,204 @@ def dress_gorge(c, ground, taken, on_road):
 
 
 def dress_pass(c, ground, taken, on_road):
+    """The Great Descent (jpass_layout v2): the Ledge's ice; the Frost Cirque's frozen tarn
+    and the ice-fishers' camp on it, frozen falls off its walls, seracs and ice columns;
+    the Steaming Valley's geysers, terraced pools, hot springs and steam, its pines and the
+    bathers' village; the Stair's lookout; the Painted Badlands' hoodoos, cacti and dry
+    wash, the caravanserai; the Red Cut's sunbeams; Desert World's mesas ahead."""
+    import iceage_props as ia
+    import hop_props as hp_
+
     tree = dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))
+
+    def level_spot(x0, y0, room, slope=1.6, rmax=24.0, margin=None):
+        for k in range(800):
+            a, d = k * 2.399, 0.55 * math.sqrt(k)
+            if d > rmax:
+                return None
+            x, y = x0 + d * math.cos(a), y0 + d * math.sin(a)
+            if not taken.clear(x, y, room) or not paint.road_clear(c, x, y, room if margin is None else margin):
+                continue
+            hs = [ground(x, y)] + [ground(x + room * math.cos(t), y + room * math.sin(t)) for t in [j * 0.785 for j in range(8)]]
+            if max(hs) - min(hs) <= slope:
+                return x, y, min(hs)
+        return None
+
+    def folk(x, y, n, kind):
+        g = c.game(x, y, ground(x, y))
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=10.0, n=n, folk=kind, heading=0.0)
+
+    # ---- The Ledge.
     _scatter_look(c, ground, taken, "snow", [
-        (snp.ice_spike(c, 0), 10, dict(room=5.0, road_margin=7.0)), (snp.ice_spike(c, 1), 8, dict(room=5.0, road_margin=7.0)),
-        (snp.snow_mound(c, 1), 10, dict(room=4.0, road_margin=5.0, role="visual")),
+        (snp.ice_spike(c, 0), 8, dict(room=5.0, road_margin=7.0, seat=1.5)),
+        (snp.snow_mound(c, 1), 8, dict(room=4.0, road_margin=5.0, role="visual")),
     ])
-    _scatter_look(c, ground, taken, "glacier", [
-        (ap.ice_column(c, 0, height=22.0, radius=4.0), 8, dict(room=8.0, road_margin=8.0)),
-        (ap.ice_spike(c, 1, height=10.0), 12, dict(room=5.0, road_margin=7.0)),
+    # ---- The Frost Cirque: the frozen tarn, the ice-fishers' camp on its shore and their
+    # holes in the ice, frozen falls off the walls, seracs and ice columns.
+    tx, ty, tr = J.TARN
+    c.disc("Frozen Tarn", tx, ty, tr + 4.0, 49.35, c.lib("lake_ice", "ice"), coll="Props", role="both", n=40, wobble=0.08, seed=4)
+    for k in range(5):
+        a = k * 1.3 + 0.4
+        hx, hy = tx + tr * 0.55 * math.cos(a), ty + tr * 0.55 * math.sin(a)
+        if paint.road_clear(c, hx, hy, 3.0):
+            c.disc("Fishing Hole %d" % k, hx, hy, 0.9, 49.4, c.lib("frost_pool", "water"), coll="Props", role="visual", n=10)
+    taken.add(tx, ty, tr + 2.0)
+    fx, fy, fr = J.VILLAGES["fishers"]
+    n = 0
+    for proto, dx, dy, rot in ((ia.hide_tent(c, 0), -5.0, -2.0, 0.6), (ia.hide_tent(c, 1), 5.0, -4.0, -0.5),
+                               (ia.hide_rack(c), 0.0, -9.0, 0.2), (hp_.drying_rack(c, 0), 2.0, 5.0, 1.2),
+                               (snp.sled(c, 0), -8.0, 5.0, 2.0)):
+        spot = level_spot(fx + dx, fy + dy, 2.6, 1.2, 8.0, 3.0)
+        if spot:
+            c.place(proto, spot[0], spot[1], spot[2] - 0.05, rot=rot, coll="Village")
+            taken.add(spot[0], spot[1], 3.0)
+            n += 1
+    g = c.game(fx, fy, ground(fx, fy) + 0.2)
+    c.entity("campfire", x=g[0], y=g[1], z=g[2])
+    folk(fx, fy, 3, "snow")
+    # Frozen falls down the cirque's walls: fluted columns of blue ice from the rim to the
+    # floor, where the wall faces the bowl.
+    ice = c.lib("glacier_ice")
+    falls = 0
+    import bmesh
+
+    for k in range(40):
+        if falls >= 4:
+            break
+        a = k * 0.61 + 0.3
+        cx, cy, cr, cz = J.POCKETS[1][2][0]
+        x, y = cx + (cr + 18.0) * math.cos(a), cy + (cr + 18.0) * math.sin(a)
+        if L.pocket_at(x, y) != "cirque" or not paint.road_clear(c, x, y, 14.0) or not taken.clear(x, y, 10.0):
+            continue
+        top = ground(x, y)
+        foot = ground(cx + (cr + 2.0) * math.cos(a), cy + (cr + 2.0) * math.sin(a))
+        if top - foot < 12.0:
+            continue
+        ux, uy = -math.cos(a), -math.sin(a)  # (into the bowl)
+        bm = bmesh.new()
+        for j in range(7):
+            u = (j - 3) / 3.0
+            sx, sy = x - uy * u * 5.0, y + ux * u * 5.0
+            w = 0.9 + 0.4 * math.cos(j * 1.7)
+            props.tube(bm, [(sx, sy, top + 1.0), (sx + ux * 2.0, sy + uy * 2.0, top - 2.0),
+                            (sx + ux * 6.0, sy + uy * 6.0, (top + foot) / 2),
+                            (sx + ux * 12.0, sy + uy * 12.0, foot + 1.0), (sx + ux * 15.0, sy + uy * 15.0, foot - 0.4)],
+                       [w * 0.8, w, w * 1.1, w * 1.3, w * 1.5], n=7)
+        c.assign(c.mesh_object("Frozen Falls %d" % falls, bm, "Rocks", "visual"), ice)
+        taken.add(x + ux * 10.0, y + uy * 10.0, 9.0)
+        falls += 1
+    _scatter_look(c, ground, taken, "cirque", [
+        (ap.ice_column(c, 0, height=22.0, radius=4.0), 6, dict(room=8.0, road_margin=8.0, seat=4.0, sink=0.8)),
+        (ap.ice_spike(c, 1, height=10.0), 14, dict(room=5.0, road_margin=7.0, seat=1.8, sink=0.5)),
+        (snp.snow_mound(c, 0), 10, dict(room=4.0, road_margin=5.0, role="visual")),
     ])
-    _scatter_look(c, ground, taken, "melt", [
-        (snp.snow_pine(c, 0), 10, tree), (snp.snow_pine(c, 2), 8, tree),
-        (smp_.boulder(c, 1), 12, dict(room=4.0, road_margin=6.0, scale=(1.0, 2.0))),
-        (smp_.broadleaf(c, 1), 6, tree),
+    # ---- The Steaming Valley: geysers in their cones, terraced pools, hot springs, steam
+    # vents; pines and basalt; the bathers' village by the springs.
+    sx, sy = J.STEAM
+    cones = [smp_.geyser_cone(c, v) for v in range(3)]
+    k = 0
+    for j in range(60):
+        if k >= 5:
+            break
+        a, d = j * 2.399, 10.0 + 6.0 * math.sqrt(j)
+        spot = level_spot(sx + d * math.cos(a), sy + d * math.sin(a), 6.5, 2.0, 6.0, 8.0)
+        if not spot or L.pocket_at(spot[0], spot[1]) != "steam":
+            continue
+        x, y, z = spot
+        v = k % 3
+        c.place(cones[v], x, y, z - 0.3, rot=j * 1.3, coll="Props")
+        taken.add(x, y, 7.0)
+        g = c.game(x, y, z - 0.3 + 2.4 + 0.6 * v)
+        c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.5, height=16.0 + 5.0 * v, period=7.0 + v + 0.7 * k, offset=1.9 * k,
+                 warn=1.4, blast=2.2, launch=0.0)
+        k += 1
+    pools = [smp_.terrace_pools(c, v) for v in range(2)]
+    for j in range(4):
+        spot = level_spot(sx + 40.0 * math.cos(j * 1.6 + 0.8), sy + 40.0 * math.sin(j * 1.6 + 0.8), 6.0, 3.0, 22.0, 6.0)
+        if spot:
+            c.place(pools[j % 2], spot[0], spot[1], spot[2] - 0.4, rot=j * 1.7, coll="Props", role="visual")
+            taken.add(spot[0], spot[1], 7.0)
+            g = c.game(spot[0], spot[1], spot[2] + 0.6)
+            c.entity("steam", x=g[0], y=g[1], z=g[2])
+    bx, by, br = J.VILLAGES["bathers"]
+    for j, (dx, dy) in enumerate(((0.0, 0.0), (16.0, 8.0))):
+        spot = level_spot(bx + dx, by + dy, 8.0, 2.4, 14.0, 7.0)
+        if spot:
+            x, y, z = spot
+            c.place(ia.hot_spring(c, 4.2), x, y, z + 0.1, rot=j * 0.9, coll="Props")
+            c.place(ia.spring_steam(c, 4.2), x, y, z + 0.1, rot=j * 0.9, coll="Props", role="visual")
+            taken.add(x, y, 8.0)
+            for m in range(3):
+                g = c.game(x + 2.5 * math.cos(m * 2.1), y + 2.5 * math.sin(m * 2.1), z + 0.4)
+                c.entity("steam", x=g[0], y=g[1], z=g[2])
+    for j in range(3):
+        spot = level_spot(bx - 18.0 + 12.0 * j, by - 16.0, 4.0, 1.4, 12.0, 5.0)
+        if spot:
+            x, y, z = spot
+            q, _ = c.nearest(x, y)
+            c.place(ia.bone_hut(c, j % 2), x, y, z - 0.05, rot=math.atan2(q.p.y - y, q.p.x - x) + math.pi / 2, coll="Village")
+            taken.add(x, y, 5.0)
+            g = c.game(x, y, z + 5.4)
+            c.entity("chimney", x=g[0], y=g[1], z=g[2])
+    folk(bx, by - 8.0, 4, "snow")
+    for j in range(10):
+        a = j * 2.399
+        x, y = sx + (20.0 + 7.0 * j) * math.cos(a), sy + (20.0 + 7.0 * j) * math.sin(a)
+        if L.pocket_at(x, y) == "steam" and paint.road_clear(c, x, y, 4.0) and taken.clear(x, y, 3.0):
+            g = c.game(x, y, ground(x, y) + 0.2)
+            c.entity("steam", x=g[0], y=g[1], z=g[2])
+            taken.add(x, y, 3.0)
+    _scatter_look(c, ground, taken, "steam", [
+        (smp_.pine(c, 0, 12.0, snowy=False), 14, tree), (smp_.pine(c, 1, 16.0, snowy=False), 10, tree),
+        (snp.snow_pine(c, 1), 8, tree),
+        (props.basalt_columns(c), 5, dict(room=6.0, road_margin=6.0, seat=2.5)),
+        (smp_.shrub(c, 0, frosted=False), 30, dict(room=2.0, road_margin=3.0, role="visual")),
     ])
-    _scatter_look(c, ground, taken, "canyon", [
-        (cp.boulder(c, 0), 6, dict(room=4.0, road_margin=6.0)),
-        (cp.sagebrush(c, 0), 16, dict(room=2.5, role="visual")),
+    # ---- The Stair: boulders down its cliff; the lookout at its top.
+    _scatter_look(c, ground, taken, "stair", [
+        (cp.boulder(c, 0), 6, dict(room=4.0, road_margin=4.0, seat=2.0)),
     ])
-    _scatter_look(c, ground, taken, "sand", [
-        (cp.saguaro(c, 0), 10, dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))),
+    # ---- The Painted Badlands: hoodoos, cacti, the dry wash, the caravanserai.
+    _scatter_look(c, ground, taken, "badlands", [
+        (cp.hoodoo(c, 0, height=18.0), 6, dict(room=10.0, road_margin=9.0, seat=3.0)),
+        (cp.hoodoo(c, 1, height=13.0), 6, dict(room=8.0, road_margin=8.0, seat=3.0)),
+        (cp.saguaro(c, 0), 12, dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))),
         (cp.saguaro(c, 1), 8, dict(room=5.0, road_margin=6.0, trunk=(0.6, 6.0))),
-        (cp.hoodoo(c, 1, height=16.0), 4, dict(room=10.0, road_margin=9.0)),
-        (cp.sagebrush(c, 1), 24, dict(room=2.5, role="visual")),
-        (gp.cattle_skull(c), 4, dict(room=3.0, role="visual")),
+        (cp.sagebrush(c, 1), 26, dict(room=2.5, role="visual")),
+        (gp.cattle_skull(c), 5, dict(room=3.0, role="visual")),
     ])
-    # The Melt: meltwater falls down its walls.
-    for k, q in enumerate(c.S[::70]):
-        if on_road(q.s) and L.look_at(q.p.x, q.p.y) == "melt" and k % 2 == 0:
-            for sd in (-1, 1):
-                x, y = q.p.x + q.r.x * sd * 24.0, q.p.y + q.r.y * sd * 24.0
-                if L.wall_sd(x, y) > -2:
-                    z = ground(x, y)
-                    props.falls(c, "Melt Falls %d %d" % (k, sd), x, y, z + 18.0, z - 0.5, 4.0, 7.0, throw=1.5, foam=True,
-                                angle=math.atan2(q.r.y * sd, q.r.x * sd) - math.pi / 2)
-                    break
-    # Sunbeams in the Red Cut.
+    vx, vy, vr = J.VILLAGES["caravanserai"]
+    g = c.game(vx, vy, ground(vx, vy))
+    c.disc("Caravanserai Pool", vx, vy, 5.0, ground(vx, vy) - 0.25, c.lib("lagoon_shallow", "water"), coll="Props", role="visual",
+           n=20, wobble=0.12, seed=9)
+    taken.add(vx, vy, 6.0)
+    for j, (proto, r, a, coll) in enumerate(((op.market_stall(c, 0), 13.0, 0.4, "Village"), (op.market_stall(c, 1), 13.0, 1.5, "Village"),
+                                             (ip.tent(c, 0), 15.0, 2.7, "Village"), (ip.tent(c, 1), 15.0, 3.9, "Village"),
+                                             (gp.wagon(c, covered=True), 14.0, 5.0, "Props"),
+                                             (op.palm(c, 0, height=11.0), 7.5, 0.9, "Props"), (op.palm(c, 1, height=13.0), 7.5, 3.4, "Props"),
+                                             (op.palm(c, 0, height=10.0), 7.5, 5.6, "Props"))):
+        spot = level_spot(vx + r * math.cos(a), vy + r * math.sin(a), 3.5, 1.4, 6.0, 4.0)
+        if spot:
+            x, y, z = spot
+            c.place(proto, x, y, z - 0.05, rot=math.atan2(vy - y, vx - x) + math.pi / 2, coll=coll)
+            taken.add(x, y, 3.8)
+    for j in range(4):
+        spot = level_spot(vx + 9.0 * math.cos(j * 1.6 + 0.2), vy + 9.0 * math.sin(j * 1.6 + 0.2), 1.0, 1.0, 5.0, 2.0)
+        if spot:
+            c.place(gp.barrel(c, j % 2), spot[0], spot[1], spot[2] - 0.05, rot=j, coll="Props")
+            taken.add(spot[0], spot[1], 1.2)
+    folk(vx + 8.0, vy, 4, "desert")
+    folk(vx - 8.0, vy, 2, "snow")
+    # ---- The Red Cut: sunbeams down the slot.
     for k, q in enumerate(c.S[::30]):
         if on_road(q.s) and L.look_at(q.p.x, q.p.y) == "canyon":
-            import impact_props as ip
-
             c.place(ip.sun_beam(c, length=50.0, r=5.0, variant=k % 2), q.p.x + q.r.x * 3.0, q.p.y + q.r.y * 3.0, q.p.z,
                     rot=k * 0.7, role="visual")
+    # ---- Desert World's mesas on the skyline ahead.
+    for j, (x, y, rx, ry, h) in enumerate(J.MESAS):
+        ob = c.rock_mass("Far Mesa %d" % j, x, y, rx, ry, h, z0=-10.0, n=18, seed=j + 31,
+                         bands=[(1.0, 0.0), (0.98, 0.3), (0.94, 0.62), (0.9, 0.9), (0.86, 1.0)])
+        c.assign(ob, c.lib("strata_orange", "wall"))
 
 
 def dress_dust(c, ground, taken, on_road):

@@ -534,8 +534,8 @@ export const REGIONS: Region[] = [
     packageId: "journey_pass",
     music: "journey_pass",
     worldId: "frostveil",
-    journey: { from: "snow", to: "desert", road: [58, 1367] },
-    spawn: { x: -361.0, z: -351.2, heading: 0.6986 },
+    journey: { from: "snow", to: "desert", road: [59, 1344] },
+    spawn: { x: -361.1, z: -348.7, heading: 0.5877 },
     gateways: [],
     passages: [
       {
@@ -547,7 +547,7 @@ export const REGIONS: Region[] = [
         x: -370,
         z: -362,
         radius: 8,
-        heading: 0.6986,
+        heading: 0.5877,
       },
       {
         id: "end",
@@ -557,7 +557,7 @@ export const REGIONS: Region[] = [
         x: 368,
         z: 368,
         radius: 8,
-        heading: -2.6203,
+        heading: -2.6324,
       },
     ],
   },
