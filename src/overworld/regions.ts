@@ -603,21 +603,22 @@ export const REGIONS: Region[] = [
     ],
   },
   {
-    // The last smugglers' tunnel, driven (v2, Blake, Oct 31: "tunnel through smugglers
-    // underground layer, to 'edge of the world' to sky bridge to dragon island"): in from the
-    // isles' sea door under the seabed, the Wreck Hall, down the Sump (v3: the smugglers'
-    // trade hub of scum and villainy, the road spiralling down its pit past Tortuga's shacks
-    // to the harbour and the loot market, the Broker's ship hanging over it), the Long Bore
-    // out through the cliff of the world's edge, then the Sky Bridge climbing over the void
-    // to the Dragon Kingdom's Sky Gate. (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
+    // The last smugglers' tunnel, driven (v4, Blake, Nov 2: "completely rework it. it should
+    // be crawling with black market activity"; a chain of districts, fast and wild, then
+    // sky-island hopping): in from the isles' sea door, the Smugglers' Docks (a jump over the
+    // canal), Smugglers' Alley and the Drop into the Night Bazaar (the Broker's ship over it),
+    // the corkscrew down the Fighting Pits' stands, the Lucky Bone (the gambling den), the
+    // Long Bore out through the cliff of the world's edge and a leap off it, then hopping
+    // the Sky Islands on chained bridges and jumps to the Dragon Kingdom's Sky Gate.
+    // (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
     id: "journey_cause",
     name: "The Edge of the World",
     packageId: "journey_cause",
     music: "journey_cause",
     worldId: "beach",
-    journey: { from: "beach", to: "dragon", road: [53, 1514] },
+    journey: { from: "beach", to: "dragon", road: [53, 1464] },
     // (Underground: the ground's looked for from just over the tunnel's floor, not the sky.)
-    spawn: { x: -51.5, z: 416.5, heading: 2.7925, y: -12 },
+    spawn: { x: -52.1, z: 415, heading: 2.7919, y: -12 },
     gateways: [],
     passages: [
       {
@@ -629,7 +630,7 @@ export const REGIONS: Region[] = [
         x: -60,
         z: 440,
         radius: 8,
-        heading: 2.8705,
+        heading: 2.9115,
         y: -12,
       },
       {
@@ -641,7 +642,7 @@ export const REGIONS: Region[] = [
         x: 0,
         z: -445,
         radius: 8,
-        heading: -0.0896,
+        heading: 0.4029,
       },
     ],
   },

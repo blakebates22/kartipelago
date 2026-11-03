@@ -211,11 +211,15 @@ export interface Villager extends Vec3 {
   fz: number;
   role: Role;
   variant: number;
+  /** Their clothes, if not the festival's: "sump" (the Edge of the World's black-market
+   * crowds: soot, leather, rust and bottle green, bandanas). */
+  palette?: "sump";
 }
 
 export function parseVillagers(e: Record<string, unknown>): Villager[] {
   const out: Villager[] = [];
   if (!Array.isArray(e.list)) return out;
+  const palette = e.palette === "sump" ? ("sump" as const) : undefined;
   for (const v of e.list) {
     if (!Array.isArray(v) || v.length < 7) continue;
     const role = str(v[5], "cheer") as Role;
@@ -230,6 +234,7 @@ export function parseVillagers(e: Record<string, unknown>): Villager[] {
       fz: fz / l,
       role: ROLES.includes(role) ? role : "cheer",
       variant: Math.max(0, Math.round(num(v[6], 0))),
+      ...(palette && { palette }),
     });
   }
   return out;

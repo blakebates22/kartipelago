@@ -443,6 +443,19 @@ const DUSTY = ["#8a6a4a", "#9a7a56", "#6e5a48", "#a88a64", "#7a6450"];
 const WINTER = ["#6a5a4e", "#7a6a5a", "#5a5048", "#8a5a48", "#4e5462", "#7a6e62"];
 /** The monks' robes: deep maroon, hooded. */
 const MONK = "#6a1e1c";
+/** The Edge of the World's black-market crowds: soot, leather, rust, bottle green, faded
+ * plum; their bandanas and caps black, blood red, mustard. */
+const SUMP = [
+  "#4a3a2e",
+  "#6a4a32",
+  "#3a4a3a",
+  "#7a3a2a",
+  "#4a3a52",
+  "#5a5a52",
+  "#8a6a3a",
+  "#2e2a2a",
+];
+const SUMP_CAPS = ["#1e1a1a", "#9a2a22", "#c8962a", "#2a3a4a"];
 const SKINS = ["#f2c8a0", "#e0aa7c", "#c88a5c", "#f6d6b4"];
 
 /**
@@ -485,27 +498,42 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
   const color = new THREE.Color();
   const hatOf: ("straw" | "cap" | "none")[] = [];
   people.forEach((p, i) => {
+    const sump = p.palette === "sump";
     const guard = p.role === "guard";
     const labour = p.role === "worker" || p.role === "hauler";
     const winter = p.role === "huddle" || p.role === "queue";
     const monk = p.role === "monk";
-    const robe = guard
-      ? "#8a1c1c"
-      : monk
-        ? MONK
-        : winter
-          ? WINTER[(p.variant + i) % WINTER.length]!
-          : labour
-            ? DUSTY[(p.variant + i) % DUSTY.length]!
-            : ROBES[(p.variant + i) % ROBES.length]!;
+    const robe = sump
+      ? guard
+        ? "#1e1a1a"
+        : SUMP[(p.variant * 3 + i) % SUMP.length]!
+      : guard
+        ? "#8a1c1c"
+        : monk
+          ? MONK
+          : winter
+            ? WINTER[(p.variant + i) % WINTER.length]!
+            : labour
+              ? DUSTY[(p.variant + i) % DUSTY.length]!
+              : ROBES[(p.variant + i) % ROBES.length]!;
     color.set(robe);
     skirts.setColorAt(i, color);
-    torsos.setColorAt(i, guard ? color.set("#b02a22") : color);
+    torsos.setColorAt(
+      i,
+      sump
+        ? color.set(SUMP[(p.variant * 5 + i + 3) % SUMP.length]!)
+        : guard
+          ? color.set("#b02a22")
+          : color,
+    );
     armsL.setColorAt(i, color);
     armsR.setColorAt(i, color);
     heads.setColorAt(i, color.set(SKINS[(p.variant * 3 + i) % SKINS.length]!));
-    const hat =
-      guard || monk || winter
+    const hat = sump
+      ? p.variant % 3 === 2
+        ? "none"
+        : "cap"
+      : guard || monk || winter
         ? "cap"
         : labour || p.role === "fisher" || p.role === "gardener" || p.variant % 4 === 1
           ? "straw"
@@ -516,15 +544,17 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
     caps.setColorAt(
       i,
       color.set(
-        guard
-          ? "#e8b830"
-          : monk
-            ? MONK
-            : winter
-              ? WINTER[(p.variant * 5 + i + 2) % WINTER.length]!
-              : p.variant % 2
-                ? "#222222"
-                : "#3a2a6a",
+        sump
+          ? SUMP_CAPS[(p.variant + i) % SUMP_CAPS.length]!
+          : guard
+            ? "#e8b830"
+            : monk
+              ? MONK
+              : winter
+                ? WINTER[(p.variant * 5 + i + 2) % WINTER.length]!
+                : p.variant % 2
+                  ? "#222222"
+                  : "#3a2a6a",
       ),
     );
     straws.setColorAt(i, color.set("#e8cf86"));

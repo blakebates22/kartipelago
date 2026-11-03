@@ -3,7 +3,8 @@
 // you when you stop by, and every region's build gives them homes.
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { createVillagers, parseHomes } from "../src/overworld/villagers";
+import { createVillagers, lineOf, parseHomes, TALK_LINES } from "../src/overworld/villagers";
+import { parseVillagers } from "../src/game/isles";
 import { REGIONS } from "../src/overworld/regions";
 import type { Solid } from "../src/world/solids";
 
@@ -50,6 +51,25 @@ describe("villagers", () => {
     for (let k = 0; k < 30; k++) v.step(1 / 60, k / 60, { x: q.x + 3, z: q.z, speed: 0 });
     expect(v.near()?.name.length).toBeGreaterThan(2);
     expect(v.near()?.line.length).toBeGreaterThan(5);
+  });
+
+  it("say their district's lines where a home has its own talk (the Edge of the World)", () => {
+    const [docks, plain] = parseHomes([
+      { ...home, folk: "sump", talk: "docks" },
+      { ...home, folk: "sump", talk: "nowhere" },
+    ]);
+    expect(docks!.talk).toBe("docks");
+    expect(plain!.talk).toBeUndefined();
+    for (let seed = 0; seed < 12; seed++) {
+      expect(TALK_LINES.docks).toContain(lineOf(docks!, seed));
+      expect(TALK_LINES.docks).not.toContain(lineOf(plain!, seed));
+    }
+  });
+
+  it("dress a black-market crowd in its own clothes", () => {
+    const list = [[0, 0, 0, 0, 1, "cheer", 2]];
+    expect(parseVillagers({ list, palette: "sump" })[0]!.palette).toBe("sump");
+    expect(parseVillagers({ list })[0]!.palette).toBeUndefined();
   });
 
   it("have homes in every kingdom's region and every journey (standard and ruined)", async () => {

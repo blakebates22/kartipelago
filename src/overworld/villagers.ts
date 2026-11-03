@@ -7,7 +7,8 @@
  *
  * The homes are the build's `villager_home` entities: { "type": "villager_home", "x",
  * "z", "y", "r", "n", "folk", "heading" } (game coordinates; `r` how far they roam, `n`
- * how many live there). The villagers are solid (circles, like the long-neck): a kart
+ * how many live there; `talk`, optional, which district's lines they say instead of their
+ * folk's: the Edge of the World's "docks", "bazaar", "pits" and "den"). The villagers are solid (circles, like the long-neck): a kart
  * bumps them, and they never trap one (they step away).
  */
 import type * as THREE from "three";
@@ -28,7 +29,12 @@ export interface Home {
   n: number;
   folk: Folk;
   heading: number;
+  /** A district's own lines (TALK), instead of the folk's. */
+  talk?: Talk;
 }
+
+export type Talk = "docks" | "bazaar" | "pits" | "den";
+const TALKS: Talk[] = ["docks", "bazaar", "pits", "den"];
 
 const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road", "sump", "pilgrim"];
 
@@ -54,6 +60,7 @@ export function parseHomes(entities: unknown[]): Home[] {
       n: Math.max(1, Math.min(6, Math.round(num(o.n, 2)))),
       folk,
       heading: num(o.heading, 0),
+      ...(TALKS.includes(o.talk as Talk) && { talk: o.talk as Talk }),
     });
   }
   return out;
@@ -159,6 +166,44 @@ const LINES: Record<Folk, string[]> = {
   ],
 };
 
+/** The Edge of the World's districts (Blake, Nov 2: "crawling with black market activity"),
+ * each with its own talk: the Smugglers' Docks, the Night Bazaar, the Fighting Pits and
+ * the Lucky Bone, the gambling den. */
+export const TALK_LINES: Record<Talk, string[]> = {
+  docks: [
+    "MIND THE CRATES. WHAT'S IN THEM? CRATE STUFF. MOVE ALONG.",
+    "THREE BOATS IN TONIGHT, ALL RIDING LOW. HEAVY FISH, I EXPECT.",
+    "THE CANAL'S DEEP AND COLD. JUMP IT FAST OR SWIM IT SLOW.",
+    "CUSTOMS? THAT'S HIM IN THE HAT. HE TAKES A SHELL A CRATE.",
+    "I UNLOAD WHAT COMES IN. I DON'T ASK WHERE IT CAME FROM.",
+    "THAT SHIP'S FROM THE SNOW KINGDOM. SMELL THE ICE ON HER.",
+  ],
+  bazaar: [
+    "GENUINE DRAGON SCALE! WELL. GENUINE SCALE. FROM SOMETHING.",
+    "FRESH FROM THE DESERT: NEON, GOLD, SAND IN EVERYTHING.",
+    "HAGGLE ALL YOU LIKE. I'VE GOT ALL NIGHT. IT'S ALWAYS NIGHT.",
+    "SKEWERS! GRUB SKEWERS! THREE FOR A SHELL, FOUR IF YOU DON'T LOOK.",
+    "THE BROKER'S SHIP HANGS RIGHT OVER THE MARKET. HE LIKES TO WATCH.",
+    "EVERY LANTERN IN THIS BAZAAR WAS LIT IN SOMEBODY ELSE'S KINGDOM.",
+    "I SELL MAPS OF THE SKY ISLANDS. MOSTLY ACCURATE. MOSTLY.",
+  ],
+  pits: [
+    "TWO SHELLS ON THE BIG CROC! NO, THE BIGGER ONE!",
+    "THE SPIRAL ROAD'S THE BEST SEAT IN THE HOUSE. IF YOU DON'T STOP.",
+    "THE PIT'S NEVER BEEN EMPTY. NOT ONE NIGHT IN A HUNDRED YEARS.",
+    "THE BOOKIE ALWAYS WINS. THAT'S WHY HE'S THE BOOKIE.",
+    "I CAME DOWN FOR ONE FIGHT. THAT WAS FOUR SEASONS AGO.",
+    "LISTEN TO THAT CROWD! THEY'RE CHEERING FOR YOU. OR AT YOU.",
+  ],
+  den: [
+    "THE BONES ARE LOADED. NOT THESE ONES. THOSE ONES.",
+    "WELCOME TO THE LUCKY BONE. LEAVE YOUR LUCK AT THE DOOR.",
+    "I WON A WHOLE SKY ISLAND ONCE. LOST IT THE SAME NIGHT.",
+    "HOUSE RULES: NO MAGIC, NO DRAGONS, NO CRYING.",
+    "THE WAY OUT'S UP THE LONG BORE. THE WAY BROKE'S RIGHT HERE.",
+  ],
+};
+
 /** A small, repeatable random sequence (so a home's villagers are the same each visit). */
 function rng(seed: number) {
   let s = seed >>> 0 || 1;
@@ -168,6 +213,12 @@ function rng(seed: number) {
     s ^= s << 5;
     return ((s >>> 0) % 100000) / 100000;
   };
+}
+
+/** What a villager of home `h` says. */
+export function lineOf(h: Pick<Home, "folk" | "talk">, seed: number): string {
+  const lines = h.talk ? TALK_LINES[h.talk] : LINES[h.folk];
+  return lines[seed % lines.length]!;
 }
 
 export function villagerName(folk: Folk, seed: number) {
@@ -299,7 +350,7 @@ export function createVillagers(opts: {
         wait: rand() * 3,
         walk: 0,
         name: villagerName(h.folk, seed),
-        line: LINES[h.folk][seed % LINES[h.folk].length]!,
+        line: lineOf(h, seed),
         radius: size.radius,
         flinch: 0,
         solid,
