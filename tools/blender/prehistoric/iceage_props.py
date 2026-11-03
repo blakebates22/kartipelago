@@ -91,29 +91,28 @@ def bone_hut(c, variant=0):
             face([in1[j], in1[j + 1], in0[j + 1], in0[j]], (-math.cos(a), 0, -math.sin(a)))  # (inside it)
         face(list(in0), (0, -1, 0))  # (the dark back of it)
         dark = _faces(bm, k2c)
-        # The flap: hung from the frame's top left, across to just past the middle, its
-        # foot tied back to the left post, so a wedge of the inside shows on the right.
+        # The flap: a hide hung right across the doorway, the whole of the frame's mouth
+        # covered (Blake, review-snow_region 15 notes 1, 3, "these doors need to be redone to
+        # cover the whole door frame": it was tied back, a wedge of the glow showing), a
+        # little in from the frame's face, sagging at its foot, its seam down the middle.
         k2d = len(bm.faces)
-        yf = y1 + 0.1
-        top = [(in1[j].co.x * 0.98, yf, in1[j].co.z - 0.02) for j in range(M // 2 - 1, M + 1)]
-        flap = [bm.verts.new(p) for p in top + [(-(W - 0.3), yf - 0.04, Z0 + 0.35), (-0.15, yf - 0.12, Z0 + 0.7),
-                                               (0.22, yf - 0.06, Z0 + 1.7)]]
+        yf = y1 + 0.12
+        arc = [(in1[j].co.x * 1.0, yf, in1[j].co.z + 0.02) for j in range(M + 1)]
+        # (the arc runs from the right foot over the top to the left foot, closed along the
+        # foot by its middle)
+        flap = [bm.verts.new(p) for p in arc] + [bm.verts.new((0.0, yf - 0.06, Z0 + 0.04))]
         face(flap, (0, -1, 0))
+        tube(bm, [(0.0, yf - 0.05, Z0 + 0.1), (0.0, yf - 0.05, Z0 + HH - 0.3)], [0.03, 0.03], n=4)  # (its seam)
         flaps = _faces(bm, k2d)
-        k2e = len(bm.faces)
-        glow = [bm.verts.new(p) for p in ((0.1, y0 + 0.16, Z0 + 0.3), (W - 0.45, y0 + 0.16, Z0 + 0.3),
-                                         (W - 0.5, y0 + 0.16, Z0 + 1.4), (0.3, y0 + 0.16, Z0 + 1.6))]
-        face(glow, (0, -1, 0))
-        glows = _faces(bm, k2e)
+        glows = []
         k2f = len(bm.faces)
-        # (A bone toggle on the tie, and the tusk arch round the porch's mouth.)
-        blob(bm, (-(W - 0.32), yf - 0.12, Z0 + 0.45), 0.12, sx=0.6, sz=1.6, subdiv=1)
+        # (The tusk arch round the porch's mouth.)
         for sd in (-1, 1):
             tube(bm, [(sd * 1.32, y1 - 0.08, -0.4), (sd * 1.38, y1 - 0.14, 1.1), (sd * 1.08, y1 - 0.16, 2.2),
                       (sd * 0.15, y1 - 0.1, 2.75)], [0.2, 0.18, 0.15, 0.1], n=8)
         ivory += _faces(bm, k2f)
         k2g = len(bm.faces)
-        cuboid(bm, (0, y1 - 0.45, -0.12), (1.9, 0.9, 0.3), rot=0.04)  # (the step)
+        cuboid(bm, (0, y1 - 0.45, -0.57), (1.9, 0.9, 1.2), rot=0.04)  # (the step: down into the ground, review-snow_region 15 note 2)
         stone += _faces(bm, k2g)
         k2h = len(bm.faces)
         _cap(bm, (0, (y0 + y1) / 2 - 0.15, Z0 + HH + 0.05), 0.9, h=0.22, sx=1.25, subdiv=2)
@@ -123,7 +122,7 @@ def bone_hut(c, variant=0):
         snow = _faces(bm, k4)
         return [(c.lib(STONE), stone), (c.lib("mammoth_fur"), hide + porch), (c.lib("bone_ivory"), ivory),
                 (c.lib("log_bark"), frame), (c.lib("ship_hull"), dark), (c.lib("painted_hide"), flaps),
-                (c.lib("fire_glow"), glows), (c.lib(SNOW), snow + porch_snow)]
+                (c.lib(SNOW), snow + porch_snow)]
 
     return _p(c, name, build)
 

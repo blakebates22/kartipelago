@@ -646,6 +646,10 @@ OUTPOST = (84.7, -401.9)  # note 1: "a little outpost here with some npcs they a
 # needed and make sure nothing is floating or buried in the snow": it had wandered 30 m off,
 # to (97, -416).)
 OUTPOST = (84.7, -389.9)
+# (review-snow_region 15 notes 9, 10: "shift this whole cmap over. the tent is half way off the
+# stone and the rocks are floating", "this needs to be higher up by the tents": it stood by the
+# road, whose verge the levelling can't cut; 14 m out east of it, the ground's near level.)
+OUTPOST = (94.4, -382.5)
 
 
 def _level_spot(c, ground, taken, x0, y0, room, slope, rmax=20.0, wall=None, margin=None):
@@ -733,7 +737,7 @@ def outpost(c, ground, taken, ter=None):
     # (The nearest spot with room off the road, levelled by filling up to its highest
     # ground, never cutting: the grade's never cut near a road, so a cut left the road's
     # side of the camp standing proud of it.)
-    spot = _level_spot(c, ground, taken, *OUTPOST, 7.5, 4.0, rmax=16.0, margin=5.0)
+    spot = _level_spot(c, ground, taken, *OUTPOST, 7.5, 3.0, rmax=6.0, margin=9.0)
     print("outpost at", spot and (round(spot[0]), round(spot[1])), "(pin %.0f, %.0f)" % OUTPOST)
     if not spot:
         return 0
@@ -750,7 +754,7 @@ def outpost(c, ground, taken, ter=None):
         return x + lx * cs - ly * sn, y + lx * sn + ly * cs
 
     for proto, lx, ly, turn, coll in ((ia.hide_tent(c, 0), -3.8, 2.4, 0.5, "Village"), (ia.hide_tent(c, 1), 3.6, 3.0, -0.6, "Village"),
-                                      (snp.sled(c, 1), 4.6, -2.6, 1.9, "Props"), (ia.camp_woodpile(c), -4.4, -1.8, 0.3, "Props"),
+                                      (snp.sled(c, 1), 5.6, 0.2, 1.9, "Props"), (ia.camp_woodpile(c), -4.4, -1.8, 0.3, "Props"),
                                       (ia.camp_pots(c, 1), -1.6, 4.4, 0.0, "Props"), (ia.hide_rack(c), 0.4, 5.6, 0.0, "Props")):
         px, py = at(lx, ly)
         c.place(proto, px, py, ground(px, py) - 0.05, rot=rot + turn, coll=coll)

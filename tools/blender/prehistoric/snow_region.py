@@ -196,7 +196,9 @@ def classify(c, n, info):
     if n.z < (0.8 if L.wall_info(c.x, c.y)["t"] > 0.05 else 0.62):
         return (pb.strata(L, c, n, STRATA), "wall")
     if SL.crevasse_cut(c.x, c.y) > 1.5:
-        return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "ice")  # (the crevasse)
+        # (Its floor puts you back on the road: review-snow_region 15 note 6, "lets make it so if
+        # I fall down here, I respawn back on the road".)
+        return ("glacier_ice", "wall") if n.z < 0.8 else ("cavern_ice", "abyss" if SL.crevasse_cut(c.x, c.y) > 3.0 else "ice")
     if not RUIN and look == "summit" and thaw_grass(c.x, c.y, n.z):
         return ("thaw_grass", "grass")  # (the deep thaw: grass through the snow)
     if not RUIN and look == "aurora" and n.z > 0.97 and math.sin(c.x / 21.0) * math.cos(c.y / 15.0 + 0.7) > 0.45:
@@ -214,7 +216,11 @@ def classify(c, n, info):
 # Boulders across the way in behind Frostveil's north-east tower, between it and the cliff
 # (Blake, review-snow_region 14 note 8, "we need to put some rocks here so you cant get stuck
 # behind the castle"): Blender (x, y, variant, scale).
-CASTLE_BACK = [(-180.0, 57.5, 1, 1.3), (-175.5, 58.0, 0, 1.45), (-171.2, 57.6, 1, 1.35)]
+CASTLE_BACK = [(-180.0, 57.5, 1, 1.3), (-175.5, 58.0, 0, 1.45), (-171.2, 57.6, 1, 1.35),
+               # (and the last gap, between them and the road by the tower: review-snow_region 15
+               # notes 7, 8, "these rocks dont cover the out of bounds", "this is where the rocks
+               # need to be")
+               (-167.6, 56.6, 0, 0.85), (-167.8, 59.4, 1, 0.75)]
 
 
 def castle_back(c, ground):
@@ -254,9 +260,15 @@ def ice_cave(c, ground):
         g = c.game(lx - sd * 0.85, ly, ground(lx, ly) + 3.45)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
     box(c, "Ice Cave Lintel", x, wy - 0.4, 0.35, 4.0, z + 5.8, z + 6.4, ("timber_beam", "wall"), rot=math.pi / 2, role="visual")
-    for k, (dx, dy, rot) in enumerate(((-7.5, -5.0, 0.3), (7.8, -5.6, -0.5))):
+    # (The smugglers' stock: crates and barrels, no sacks, review-snow_region 14 note 4, 15 note 4.)
+    import gulch_props as gp_
+
+    stock = [gp_.crate_stack(c, 0), gp_.barrel(c, 0), gp_.crate_stack(c, 1), gp_.barrel(c, 1), gp_.barrel(c, 0), gp_.crate_stack(c, 0)]
+    for k, (dx, dy, rot) in enumerate(((-7.6, -5.0, 0.3), (-9.2, -3.6, 1.1), (7.8, -5.4, -0.5), (9.4, -3.8, 0.4), (8.6, -7.2, 2.0),
+                                       (-8.4, -7.0, -0.8))):
         px, py = x + dx, wy + dy
-        c.place(snp_.sack_pile(c, k), px, py, ground(px, py) - 0.05, rot=rot, coll="Props")
+        z = min(ground(px + 0.8 * math.cos(a), py + 0.8 * math.sin(a)) for a in (0.0, 1.57, 3.14, 4.71))
+        c.place(stock[k], px, py, z - 0.05, rot=rot, coll="Props")
     px, py = x - 9.0, wy - 8.0
     c.place(snp_.sled(c, 0), px, py, ground(px, py) - 0.05, rot=0.8, coll="Props")
 
@@ -347,7 +359,6 @@ def main():
     puzzle_kit.pen(c, "return", "Ice Cave", *RETURN, RETURN_FACING, 11.0, 4.5, ("frost_stone", "wall"),
                    ground(*RETURN), height=6.0, walls=False)
     ice_cave(c, ground)
-    castle_back(c, ground)
     # (No Old Store any more: "we arent going to be using it", review-snow_region 8 notes 1, 13.)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
@@ -397,6 +408,9 @@ def main():
     vh.homes(c, L, ground, "snow", home, pockets=["descent", "summit", "climb"], avoid=[(SL.VILLAGE[0], SL.VILLAGE[1], SL.VILLAGE[2] + 24.0), (HUB[0], HUB[1], 30.0)],
              wall=-12.0, per=4, level=3.0, foot=6.5)
     dress(c, ground, spots)
+    # (After the summit's ground is all cut: the hunters' camp's levelling raised the land
+    # round the boulders and buried them, review-snow_region 15 notes 7, 8.)
+    castle_back(c, ground)
     vv.clear_paths(c, LANES)
     # The gorge's far end, back towards the valley: it bends out of sight.
     # (v4b: the way in comes out of a tunnel on the peak's summit now; its mouth is the
@@ -634,8 +648,11 @@ def landmarks(c, ground, spots):
     # (No sheet of ice behind it: review-snow_region 13 note 6, "remove this blue sheet".)
     for side in (-1, 1):
         x, y = gx + side * 12.0 * math.cos(f + math.pi / 2), gy + side * 12.0 * math.sin(f + math.pi / 2)
-        c.place(ap.spire_cluster(c, 0 if side < 0 else 1, height=34.0), x, y, ground(x, y) - 0.5, role="visual")
-        c.place(paint.trunk_proto(c, 5.0, 16.0), x, y, ground(x, y) - 0.5, coll="Collision", role="collision")
+        # (On the lowest ground under its whole ring of spires, not its middle's: review-snow_region
+        # 15 note 5, "some of these crystals are floating".)
+        zl = min([ground(x, y)] + [ground(x + r * math.cos(a), y + r * math.sin(a)) for r in (3.0, 6.0) for a in [j * 0.785 for j in range(8)]])
+        c.place(ap.spire_cluster(c, 0 if side < 0 else 1, height=34.0), x, y, zl - 0.8, role="visual")
+        c.place(paint.trunk_proto(c, 5.0, 16.0), x, y, zl - 0.8, coll="Collision", role="collision")
     g = c.game(gx, gy, z + 30.0)
     c.entity("sparkles", rate=12, radius=40)
     # v4 (Blake, Oct 30: "a few more crystals and glacier features visible for aurora,
@@ -792,8 +809,13 @@ def dress(c, ground, spots):
     paint.scatter(c, sp.shipwreck(c), 1, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -24, g, taken, 44, room=40.0,
                   road_margin=18.0)
     def lone_hut(x, y, z, s):
+        # (Set level like the summit's homes: on a slope its step and stones stood off the
+        # ground, review-snow_region 15 note 2, "this stone is floating".)
         rot = 2.3 * x + 1.1 * y
-        c.place(ia.bone_hut(c, 1), x, y, z - 0.2, rot=rot, scale=s, coll="Props")
+        hi = sd.level_site(c, x, y, rot, 7.5, 9.0, ground, TER)
+        if hi is None:
+            return
+        c.place(ia.bone_hut(c, 1), x, y, hi - 0.05, rot=rot, scale=s, coll="Props")
         YARDS.append((x, y, rot, int(abs(x))))
     paint.scatter(c, ia.bone_hut(c, 1), 2, rmax, lambda x, y: su(x, y) and L.wall_sd(x, y) < -8, g, taken, 45, room=10.0,
                   road_margin=8.0, instead=lone_hut, scale=(1.0, 1.0))
