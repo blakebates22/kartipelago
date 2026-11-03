@@ -155,7 +155,7 @@ ROUTE = [
     (-20.0, 334.0, -41.5, "isle3"),
     (-10.0, 348.0, -41.5, "isle3c"),
     (2.0, 362.0, -39.8, "bridge2a"),
-    (14.0, 378.0, -37.6, "bridge2b"),
+    (14.0, 378.0, -37.2, "bridge2b"),
     (16.0, 392.0, -37.0, "runup5"),
     (16.0, 404.0, -37.0, "lip5"),
     (16.0, 416.0, -38.5, "land5"),
@@ -187,8 +187,8 @@ ISLES = [
     ("Landing Rock", 18.0, 212.0, 21.0, -45.0),
     ("Dragon's Perch", -38.0, 280.0, 18.0, -40.0),
     ("Shrine Isle", -26.0, 326.0, 25.0, -41.5),
-    ("Gatekeeper's Rock", 16.0, 392.0, 12.0, -37.0),
-    ("Sky Gate Isle", 8.0, 434.0, 24.0, -38.5),
+    ("Gatekeeper's Rock", 20.0, 390.0, 15.0, -37.0),
+    ("Sky Gate Isle", 8.0, 434.0, 26.0, -38.5),
 ]
 
 # The underground's caverns, cut out of the seabed's rock: (name, x, y, rx, ry, floor,
@@ -288,18 +288,34 @@ for _k in range(DAT[START] - 8, DAT[END] + 10):
     _g = _gap_of(_k)
     for _gx in range(int(math.floor(min(_a[0], _b[0]) / 24)) - 1, int(math.floor(max(_a[0], _b[0]) / 24)) + 2):
         for _gy in range(int(math.floor(min(_a[1], _b[1]) / 24)) - 1, int(math.floor(max(_a[1], _b[1]) / 24)) + 2):
-            _GRID.setdefault((_gx, _gy), []).append((_a, _b, _g))
+            _GRID.setdefault((_gx, _gy), []).append((_a, _b, _g, _k))
 
 
 def road_floor(x, y):
     """How far (x, y) is from the road, the road's height there, and what's under it if
     that's a jump's gap (None: road)."""
     best = (1e9, 0.0, None)
-    for a, b, g in _GRID.get((int(math.floor(x / 24)), int(math.floor(y / 24))), ()):
+    _NEAR_K[0] = None
+    for a, b, g, k in _GRID.get((int(math.floor(x / 24)), int(math.floor(y / 24))), ()):
         d, t = _seg(x, y, a, b)
         if d < best[0]:
             best = (d, lerp(a[2], b[2], t), g)
+            _NEAR_K[0] = k
     return best
+
+
+_NEAR_K = [None]  # (the dense index of the segment road_floor found last)
+
+
+def flat_out(x, y):
+    """How far out from the road the ground lies level with it: across the bores' floors
+    (wider where they're widened for a way round), a little less in the open."""
+    k = _NEAR_K[0]
+    if k is not None:
+        for a, b, half in WIDE_BORES:
+            if DAT[AT[a]] - 4 <= k <= DAT[AT[b]] + 4:
+                return half - 1.0
+    return 10.0 if cavern_at(x, y)[0] is None else 8.0
 
 
 # ------------------------------------------------------------------ the land
@@ -395,8 +411,9 @@ def _land(x, y):
         bx, by, br = BASIN
         cy, hw, cx0, cx1 = CANAL
         d = min(math.hypot(x - bx, y - by) - br, abs(y - cy) - hw if cx0 - 2.0 < x < cx1 else 1e9)
-        if d < 3.0:
-            return lerp(DOCK_WATER - 5.0, DOCK_FLOOR, smooth((d + 1.0) / 4.0))
+        if d < 0.8:
+            # (the quay's edge straight down into the black water)
+            return lerp(DOCK_WATER - 5.0, DOCK_FLOOR, smooth((d + 0.2) / 1.0))
         return DOCK_FLOOR
     if name == "Night Bazaar":
         return BAZ_FLOOR + 0.5 * smooth((e - 0.8) / 0.2) + 0.15 * wob
@@ -419,10 +436,11 @@ def natural(x, y):
             return h
         if under == "crack":
             return z - 26.0
-    if d < 8.0:
+    w = flat_out(x, y)
+    if d < w:
         return z - 0.25
-    if d < 20.0:
-        return lerp(z - 0.25, h, smooth((d - 8.0) / 12.0))
+    if d < w + 12.0:
+        return lerp(z - 0.25, h, smooth((d - w) / 12.0))
     return h
 
 
@@ -460,9 +478,62 @@ def classify(c, n, info):
 def isle_top(k):
     """Island k's grass: just under the lowest of the road over it."""
     name, ix, iy, r, z = ISLES[k]
-    zs = [p[2] for j, p in enumerate(DENSE[DAT[START]:DAT[END]]) if math.hypot(p[0] - ix, p[1] - iy) < r + 3.0
+    zs = [p[2] for j, p in enumerate(DENSE[DAT[START]:DAT[END]]) if math.hypot(p[0] - ix, p[1] - iy) < r - 1.0
           and _gap_of(j + DAT[START]) is None]
     return min(zs + [z]) - 0.3
+
+
+# The ways round the jumps (Blake, Nov 3: "we cannot go back the otherway through the
+# passage if we wish to go from dragon back to tropics"): beside every jump a crossing a
+# kart can drive either way, the slow way round. (name, points (x, y, z), what it is;
+# RAILS: which points its rails run between, over the drop.)
+# Their ends on an island sit just over its grass; the Drop's ramp and the Edge's bridge
+# leave from the bores (widened there: WIDE_BORES).
+# (the bores widened round a ramp's or a bridge's end: from, to the route points, how far
+# either side)
+WIDE_BORES = [("runup2", "land2", 18.0), ("bore7", "lip3", 18.0)]
+
+
+def _on(k, x, y):
+    return (x, y, isle_top(k) + 0.15)
+
+
+def _edge(x, y):
+    """An end beside the road, level with it."""
+    return (x, y, road_floor(x, y)[1] + 0.03)
+
+
+def _at(x, y):
+    """An end on the ground, just over it."""
+    return (x, y, natural(x, y) + 0.15)
+
+
+BYPASSES = [
+    ("Canal Bridge", [_at(8.0, -318.0), (13.0, -310.0, DOCK_FLOOR + 0.3), (14.0, -300.0, DOCK_FLOOR + 0.5), (13.0, -290.0, DOCK_FLOOR + 0.3),
+                      _at(8.0, -282.0)],
+     "planks"),
+    ("Drop Ramp", [_at(64.5, -200.2), (65.6, -192.3, -28.2), (68.5, -181.0, -28.9), (71.0, -168.0, -30.6), (73.0, -154.0, -32.3),
+                   _at(76.0, -142.0)], "scaffold"),
+    ("Edge Bridge", [_edge(35.0, 164.0), (37.0, 175.0, -42.35), (37.3, 185.0, -43.0), (36.5, 194.0, -44.2), _on(0, 34.5, 202.0)],
+     "chains"),
+    ("Perch Bridge", [_on(1, -25.0, 282.0), (-22.0, 292.0, -40.8), (-19.0, 301.0, -41.2), _on(2, -16.0, 309.0)], "chains"),
+    ("Gate Bridge", [_on(3, 27.0, 397.0), (28.5, 404.0, -38.0), (28.0, 412.0, -38.4), _on(4, 27.0, 420.0)], "chains"),
+]
+
+
+# (SPANS: which points its bridge runs between (railed or not), on a deck over the drop;
+# the rest on the ground, the land meeting it)
+SPANS = {"Canal Bridge": (1, 3, False), "Drop Ramp": (1, 4, True), "Edge Bridge": (1, 4, True), "Perch Bridge": (0, 3, True),
+         "Gate Bridge": (0, 3, True)}
+
+
+def bypass_d(x, y):
+    """How far (x, y) is from the middle of the nearest way round."""
+    best = 1e9
+    for _, pts, _ in BYPASSES:
+        for a, b in zip(pts, pts[1:]):
+            best = min(best, _seg(x, y, a, b)[0])
+    return best
 
 
 def isle_at(x, y, margin=0.0):

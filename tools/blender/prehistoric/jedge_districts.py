@@ -37,6 +37,8 @@ def rnd(k):
 
 def person(c, x, y, z, role, fx, fy, v=None, sky=False):
     """One of the crowd (game/isles.ts' roles), standing at (x, y, z) facing (fx, fy)."""
+    if L.bypass_d(x, y) < 4.2:
+        return  # (not on a way round)
     dx, dy = fx - x, fy - y
     n = math.hypot(dx, dy) or 1.0
     to = SKY_CROWD if sky else CROWD
@@ -82,7 +84,7 @@ def lantern_line(c, name, p0, p1, sag=1.0):
 
 
 def ok(c, taken, x, y, r, margin=2.0):
-    return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r)
+    return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r) and L.bypass_d(x, y) > r + 4.5
 
 
 def dress(c, ground, s0, s1):
@@ -146,7 +148,7 @@ def docks(c, ground, taken):
                  role="visual")
     for sd in (-1, 1):
         for x in range(int(cx0) + 2, int(cx1) - 2, 4):
-            if abs(x - 0.0) < 12.0:
+            if abs(x - 0.0) < 12.0 or L.bypass_d(x, cy) < 6.0:
                 continue
             box(c, "Canal Edge %d %d" % (sd, x), x, cy + sd * (hw + 0.4), 2.0, 0.8, DOCK_WATER - 1.5, DOCK_FLOOR + 0.25,
                 ("wood_dock", "wall"))
@@ -212,7 +214,7 @@ def docks(c, ground, taken):
                 person(c, ox - ca * 1.0, oy - sa * 1.0, ground(ox, oy), "hauler", dx, dy)
                 person(c, dx - sa * sd * 1.0 + ca * 2.0, dy + ca * sd * 1.0 + sa * 2.0, z, "guard", ox, oy)
         taken.add(x, y, 7.0)
-    x, y = 24.0, cy + hw + 6.0
+    x, y = 34.0, cy + hw + 6.0
     if ok(c, taken, x, y, 4.0, 1.0):
         z = ground(x, y)
         box(c, "Customs House", x, y, 4.0, 3.0, z - 0.5, z + 5.0, ("cabin_wall", "wall"))
@@ -405,9 +407,11 @@ def bazaar(c, ground, taken):
         for sd in (-1, 1):
             x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.0), q.p.y + q.r.y * sd * (q.w / 2 + 2.0)
             z = ground(x, y)
-            box(c, "Lantern Pole %d %d" % (j, sd), x, y, 0.12, 0.12, z, z + 8.0, ("weathered_timber", "wall"))
             ends.append((x, y, z + 7.8))
-        lantern_line(c, "Lantern String %d" % j, ends[0], ends[1], sag=1.4)
+        if all(L.bypass_d(x, y) > 5.0 for x, y, _ in ends):
+            for sd, (x, y, z) in zip((-1, 1), ends):
+                box(c, "Lantern Pole %d %d" % (j, sd), x, y, 0.12, 0.12, z - 7.8, z + 0.2, ("weathered_timber", "wall"))
+            lantern_line(c, "Lantern String %d" % j, ends[0], ends[1], sag=1.4)
         s += 12.0
         j += 1
     # Behind the stalls: tents, rugs, crates, cookfires, the crowd milling.
@@ -451,7 +455,7 @@ def bazaar(c, ground, taken):
         a = j * 2.399
         r = 0.15 + 0.6 * ((j * 0.618) % 1.0)
         x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
-        if paint.road_clear(c, x, y, 10.0) and (best is None or paint.road_clear(c, x, y, 13.0)):
+        if paint.road_clear(c, x, y, 10.0) and L.bypass_d(x, y) > 14.0 and (best is None or paint.road_clear(c, x, y, 13.0)):
             best = (x, y)
             if paint.road_clear(c, x, y, 13.0):
                 break
@@ -762,7 +766,7 @@ def bores(c, ground, s0, s1):
     k = 0
     while s < s1 - 6.0:
         q = c.at(s)
-        if cavern_at(q.p.x, q.p.y)[0] is not None:
+        if cavern_at(q.p.x, q.p.y)[0] is not None or L.bypass_d(q.p.x, q.p.y) < 22.0:
             s += 9.0
             k += 1
             continue
@@ -834,7 +838,7 @@ def sky_life(c, ground):
         for j in range(6):
             a = j * math.tau / 6 + k
             bx, by = x + r * 0.72 * math.cos(a), y + r * 0.72 * math.sin(a)
-            if not paint.road_clear(c, bx, by, 2.5):
+            if not paint.road_clear(c, bx, by, 2.5) or L.bypass_d(bx, by) < 6.0:
                 continue
             if j % 2:
                 c.place(props.ruin_column(c, j % 3), bx, by, top, rot=a, role="both")
