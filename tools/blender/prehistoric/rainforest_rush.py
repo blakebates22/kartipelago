@@ -57,16 +57,24 @@ def natural(x, y):
 
 def classify(c, n, info):
     look = R.look_at(c.x, c.y)
+    # (v2: a rainforest, not a canyon: the slopes grown over, leaves and creepers, the rock
+    # (each part of the lap its own) only breaking through here and there, and down the
+    # river's and the gorge's water-cut walls: Blake, Nov 2)
+    leafy = math.sin(c.x / 13.0 + math.cos(c.y / 17.0) * 1.7) + 0.6 * math.sin((c.x + c.y) / 7.0)
     if n.z < 0.62:
-        # (each part of the lap its own rock: Blake, Nov 2)
-        return LOOK[look][1]
+        if look in ("river", "gorge") and leafy < 0.5 or leafy < -0.9:
+            return LOOK[look][1]
+        return ("vine_leaf", "wall") if leafy < 0.4 else ("canopy_dark", "wall")
     if c.z < 1.0 and min(abs(c.x - p[0]) for p in R.GORGE_RIVER) < 30.0:
         return ("lagoon_shallow", "water")
     d, wz = L.water_d(c.x, c.y)
     if d < R.RIVER_HW + 2 and c.z < wz + 0.3:
         return ("lagoon_shallow", "water")
     if n.z < 0.85:
-        return ("jungle_mossstone", "dirt")
+        return ("jungle_fern", "grass") if leafy > -0.4 else ("moss_rock", "dirt")
+    cx, cy, cr, cz = R.COURT
+    if math.hypot(c.x - cx, c.y - cy) < cr and c.z < cz + 1.0:
+        return ("rain_paving", "road")
     if L.wall_sd(c.x, c.y) < 2.0:
         return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
     return ("isle_jungle", "grass") if math.sin(c.x / 17.0) * math.cos(c.y / 21.0) < 0.4 else ("jungle_leafcover", "grass")
@@ -79,7 +87,7 @@ def _s(c, i, f=0.0):
 
 def main():
     c = kit.Course(TRACK_ID, "Rainforest Rush (Ruined)" if RUIN else "Rainforest Rush", "rainforest_ruins" if RUIN else "rainforest_rush")
-    c.route(R.route_points(), width=R.WIDTH, bank=6.0)
+    c.route(R.route_points(), width=R.WIDTH, bank=6.0, banks=R.BANKS)
     kinds = {}
     for look, (ground, cliff, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.6, "shoulder_mat": shoulder}
@@ -87,13 +95,29 @@ def main():
                        "barrier": 1.1, "barrier_mat": ("rope_rail", "wall"), "deck": 2.2, "deck_mat": ("weathered_timber", "wall"),
                        "ground": False}
     kinds["log"] = {"mat": "giant_heartwood", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("giant_bark", "road")}
+    # The jumps: the kicker a stone ramp, the landing the road of where it comes down.
+    kinds["kicker"] = {"mat": "rain_paving", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("ruin_stone", "road"), "deck": 3.0,
+                       "deck_mat": ("ruin_stone", "road"), "ground": False}
+    for look in ("canopy", "ruins"):
+        kinds[look + " landing"] = dict(kinds[look])
     c.kinds = kinds
+    jumps = []
+    for lip, land, kick, respawn in R.JUMPS:
+        s_lip, s_land = _s(c, lip), _s(c, land)
+        jumps.append((s_lip, s_land, kick, respawn, R.look_at(*R.ROUTE[land][:2])))
     b0 = _s(c, R.BRIDGE[0] - 1, 0.55)
     b1 = _s(c, R.BRIDGE[1], 0.45)
-    l0 = _s(c, R.LOG[0], 0.15)
-    l1 = _s(c, R.LOG[0], 0.85)
+    l0 = _s(c, R.LOG[0], 0.0)
+    l1 = _s(c, R.LOG[1], 0.4)
 
     def label(q):
+        for s_lip, s_land, _, _, look in jumps:
+            if s_lip < q.s < s_land:
+                return "gap"
+            if s_lip - 12.0 <= q.s <= s_lip:
+                return "kicker"
+            if s_land <= q.s < s_land + 14.0:
+                return look + " landing"
         if b0 <= q.s <= b1:
             return "bridge"
         if l0 <= q.s <= l1:
@@ -101,10 +125,19 @@ def main():
         return R.look_at(q.p.x, q.p.y)
 
     runs = list(kit.runs(c, label))
-    c.roads(kit.plan(c, pb.blend_runs(c, runs, LOOK), "temple", max_len=150.0))
+    specials = []
+    for s0, s1, k in pb.blend_runs(c, runs, LOOK):
+        if k == "gap":
+            specials.append((s0, s1, None))
+        elif k == "kicker":
+            kick = next(j[2] for j in jumps if j[0] - 13.0 <= s1 <= j[0] + 1.0)
+            specials.append((s0, s1, "kicker", {"lift": lambda u, n, kick=kick: kick * max(0.0, (u - (n - 8)) / 8) ** 2}))
+        else:
+            specials.append((s0, s1, k))
+    c.roads(kit.plan(c, specials, "temple", max_len=150.0))
 
     X0, X1, Y0, Y1 = -262, 262, -262, 262
-    ter = c.terrain("Rainforest", X0, X1, Y0, Y1, 2.5, natural, classify, near=9.0, fade=14.0, verge_fill=1.5)
+    ter = c.terrain("Rainforest", X0, X1, Y0, Y1, 2.5, natural, classify, near=9.0, fade=14.0, verge_fill=3.0)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib("jungle_leafcover", "grass"))
 
     def ground(x, y):
@@ -118,18 +151,25 @@ def main():
     hollow_log(c, ground, (l0, l1))
     kapok(c, ground, taken)
     pyramid(c, ground, taken)
+    court(c, ground, taken)
     temple(c, ground, taken)
     jungle(c, ground, taken)
 
     c.start_line()
     for i, f, across in R.ZIPPERS:
         c.zipper(_s(c, i, f), across)
-    for i, f, across in ((3, 0.5, 0.0), (9, 0.5, -3.0), (17, 0.5, 0.0), (25, 0.4, 3.0), (31, 0.5, 0.0)):
+    for i, f, across in ((8, 0.5, 0.0), (14, 0.5, -3.0), (26, 0.6, 0.0), (38, 0.5, 3.0), (51, 0.4, 0.0)):
         c.bananas(_s(c, i, f), across, count=5, gap=2.6)
-    for i, f, across, col in ((1, 0.5, -4, "red"), (1, 0.5, 4, "blue"), (7, 0.5, 0, "green"), (12, 0.5, 0, "yellow"),
-                              (22, 0.5, 0, "rainbow"), (28, 0.6, 0, "red")):
+    for i, f, across, col in ((1, 0.7, -4, "red"), (1, 0.7, 4, "blue"), (12, 0.5, 0, "green"), (30, 0.5, 0, "yellow"),
+                              (37, 0.5, 0, "rainbow"), (42, 0.5, 0, "red")):
         c.balloon(_s(c, i, f), across, col)
-    c.checkpoints(avoid=[(b0 + 2.0, b1 - 2.0)], height=10.0)
+    for s_lip, s_land, _, respawn, _ in jumps:
+        if respawn:
+            # (A missed Ruins Leap: put down past the sunken court.)
+            c.entity("respawn", **{"from": round(s_lip - 20.0, 1), "to": round(s_land + 4.0, 1), "at": round(s_land + 16.0, 1)})
+    # (none in the Avenue's slalom: a respawn there would face across the road)
+    slalom = (_s(c, R.AT["z_avenue"], 0.5), _s(c, R.AT["pyr0"]))
+    c.checkpoints(avoid=[(b0 + 2.0, b1 - 2.0), slalom] + [(j[0] - 14.0, j[1] + 8.0) for j in jumps], height=10.0)
     if RUIN:
         ruin_mode.DRESS(c, sys.modules[__name__], ground)
     c.finish()
@@ -175,7 +215,7 @@ def falls_cave(c, ground, taken):
     taken.add(fx, fy, 14.0)
     # Thin falls off the valley's west wall along the River Run.
     nf = 0
-    for i in (7, 8, 9):
+    for i in R.SIDE_FALLS:
         q = c.at(_s(c, i, 0.5))
         for sd in (-1, 1):
             p = None
@@ -353,12 +393,32 @@ def pyramid(c, ground, taken):
     x, y = R.PYRAMID
     z = ground(x, y)
     for k in range(4):
-        r = 11.0 - 2.6 * k
+        r = 9.4 - 2.2 * k
         box(c, "Pyramid Tier %d" % k, x, y, r, r, z - 2.0, z + 3.5 * (k + 1), ("jungle_temple", "wall"), rot=0.3)
         box(c, "Pyramid Frieze %d" % k, x, y, r + 0.05, r + 0.05, z + 3.5 * (k + 1) - 1.2, z + 3.5 * (k + 1) - 0.4,
             ("ruin_glyph", "wall"), rot=0.3, role="visual")
-    box(c, "Pyramid Top", x + 8.0, y - 6.0, 2.8, 2.8, z - 1.0, z + 3.0, ("jungle_temple", "wall"), rot=0.9)
-    taken.add(x, y, 14.0)
+    box(c, "Pyramid Top", x + 6.6, y - 5.0, 2.4, 2.8, z - 1.0, z + 3.0, ("jungle_temple", "wall"), rot=0.9)
+    taken.add(x, y, 12.0)
+
+
+def court(c, ground, taken):
+    """The sunken court the Ruins Leap flies over: its paved floor four metres down, broken
+    pillars round its rim, a stone head fallen in it."""
+    x, y, r, fz = R.COURT
+    for j in range(9):
+        a = j * math.tau / 9 + 0.4
+        px, py = x + math.cos(a) * (r + 1.5), y + math.sin(a) * (r + 1.5)
+        q = c.nearest(px, py)[0]
+        if (Vector((px, py, 0)) - Vector((q.p.x, q.p.y, 0))).length < q.w / 2 + 3.0:
+            continue  # (not in the road's way, either end of the leap)
+        z = ground(px, py)
+        h = (2.0, 5.5, 3.2, 6.4, 1.4, 4.8, 2.6, 5.8, 3.6)[j]
+        box(c, "Court Pillar %d" % j, px, py, 0.9, 0.9, z - 1.0, z + h, ("ruin_stone", "wall"), rot=a)
+        taken.add(px, py, 2.0)
+    box(c, "Court Head", x + 3.0, y - 2.0, 1.6, 1.4, fz - 0.6, fz + 2.6, ("jungle_temple", "wall"), rot=0.7)
+    for k in range(3):
+        box(c, "Court Step %d" % k, x - 2.0 + 2.2 * k, y + 3.0, 1.0, 3.0, fz - 0.6, fz + 0.3 + 0.4 * k, ("ruin_stone", "wall"), rot=0.2)
+    taken.add(x, y, r)
 
 
 def temple(c, ground, taken):
@@ -380,7 +440,7 @@ def temple(c, ground, taken):
         g = c.game(hx, hy, ground(hx, hy) + 1.9)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
     # The gate over the road into the paving.
-    q = c.at(_s(c, 33, 0.4))
+    q = c.at(_s(c, R.GATE, 0.4))
     rot = math.atan2(q.t.y, q.t.x)
     for sd in (-1, 1):
         p = q.side(sd * (q.w / 2 + 2.6))
@@ -404,6 +464,32 @@ def jungle(c, ground, taken):
         d, wz = L.water_d(x, y)
         return L.wall_sd(x, y) < 14.0 and d > R.RIVER_HW + 2 and min(abs(x - p[0]) for p in R.GORGE_RIVER) > 26.0
 
+    # (v2) The giants either side of the road, their limbs meeting over it: a tunnel of
+    # green (Cascade Caverns is an open canyon; this is under the canopy).
+    ng = 0
+    keep = [(R.KAPOK[0], R.KAPOK[1], 24.0), (R.PYRAMID[0], R.PYRAMID[1], 18.0), (R.FALLS[0], R.FALLS[1], 26.0)]
+    for k in range(20, int(c.length), 17):
+        q = c.at(float(k))
+        if R.look_at(q.p.x, q.p.y) not in ("canopy", "avenue", "kapok", "hollow", "ruins", "river"):
+            continue
+        sd = 1 if (k // 17) % 2 else -1
+        p = q.side(sd * (q.w / 2 + 7.5 + 1.5 * ((k // 34) % 2)))
+        if any(math.hypot(p.x - x, p.y - y) < r for x, y, r in keep) or not floor(p.x, p.y):
+            continue
+        if not paint.road_clear(c, p.x, p.y, 3.0) or not taken.clear(p.x, p.y, 5.0):
+            continue
+        zt = g(p.x, p.y)
+        if abs(zt - q.p.z) > 3.0:
+            continue
+        c.place(props.giant_tree(c, (k // 17) % 3), p.x, p.y, zt - 0.4, rot=k * 0.37, scale=0.9 + 0.1 * ((k // 51) % 3), role="visual")
+        c.place(paint.trunk_proto(c, 2.4, 8.0), p.x, p.y, zt - 0.5, coll="Collision", role="collision")
+        taken.add(p.x, p.y, 6.5)
+        ng += 1
+    # Flowers along the verges, and up the slopes.
+    paint.scatter(c, props.flowers(c), 220, 262.0, floor, g, taken, 51, room=1.6, near_road=(0.5, 9.0), road_margin=1.0, role="visual",
+                  seat=1.0)
+    paint.scatter(c, props.flowers(c), 160, 262.0, floor, g, taken, 52, room=2.0, road_margin=3.0, role="visual", seat=1.0)
+    print("jungle: %d giants over the road" % ng)
     trees = []
     for v in range(2):
         trees += paint.scatter(c, props.jungle_tree(c, v), 70, 262.0, floor, g, taken, 20 + v, room=6.0, scale=(1.6, 2.6),

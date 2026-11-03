@@ -23,9 +23,9 @@ import rainforest_rush as rr  # noqa: E402
 import props  # noqa: E402
 import ruin_kit as rk  # noqa: E402
 
-BURNS = [(-150.0, 90.0, 16.0), (120.0, -150.0, 14.0), (-60.0, 0.0, 14.0)]
+BURNS = [(-120.0, 72.0, 14.0), (96.0, -120.0, 12.0), (-48.0, 0.0, 12.0)]
 # (where the storm brought trees down: route point, along, which side the trunk lies from)
-DOWN = [(4, 0.5, 1), (19, 0.5, -1), (24, 0.5, 1)]
+DOWN = [(8, 0.5, 1), (26, 0.6, -1), (39, 0.5, 1)]
 
 
 def fallen_trees(c, m, ground, fires):
@@ -33,13 +33,14 @@ def fallen_trees(c, m, ground, fires):
     rubble they tore up round their roots: weave past them."""
     for k, (i, f, sd) in enumerate(DOWN):
         q = c.at(m._s(c, i, f))
-        # (the trunk from well off the road's edge to a third of the way across it)
+        # (the trunk from well off the road's edge a third of the way across it)
         a = q.side(sd * (q.w / 2 + 16.0))
-        b = q.side(sd * (q.w / 2 - 6.0))
+        b = q.side(sd * (q.w / 2 - 4.5))  # (v2: the road's 13 m now; the tree leaves 8 m clear)
         za, zb = ground(a.x, a.y) + 1.4, q.p.z + 1.2
         m._tube_ob(c, "Fallen Tree %d" % k, [(a.x, a.y, za), ((a.x + b.x) / 2, (a.y + b.y) / 2, (za + zb) / 2 + 0.3), (b.x, b.y, zb)],
                    [1.6, 1.4, 1.1], ("giant_bark", "wall"), role="both")
-        rk.rubble_heap(c, b.x - q.t.x * 3.0, b.y - q.t.y * 3.0, ground, n=5, spread=2.4, size=1.2, role="both", seed=40 + k)
+        r = q.side(sd * (q.w / 2 - 2.5))
+        rk.rubble_heap(c, r.x - q.t.x * 3.0, r.y - q.t.y * 3.0, ground, n=5, spread=2.0, size=1.1, role="both", seed=40 + k)
         fires.append((a.x, a.y, za + 0.8))
 
 

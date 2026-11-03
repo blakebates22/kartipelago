@@ -187,6 +187,16 @@ def main():
     paint.wayfolk(c, ground, "beach", [M.HUB[:2]], 10, apart=110.0, every=25)
 
     c.start_line()
+    keep = list(M.GATES.values()) + [M.LAIR, M.CAVE, M.SECRET, M.HUB[:2], M.HOP_PIER[0]]
+    spans = [pb.tunnel_span(c, M.L, *M.TUNNELS[0][2:])]
+    # (both roads past the crossing: the bridge over it, the gorge road under it)
+    for q in c.S:
+        if math.hypot(q.p.x - M.CROSS[0], q.p.y - M.CROSS[1]) < M.BRIDGE_HALF + 6.0:
+            if spans[-1][1] >= q.s - 3.0 and len(spans) > 1:
+                spans[-1] = (spans[-1][0], q.s)
+            else:
+                spans.append((q.s, q.s))
+    isec.zippers(c, (keep, spans))
     gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}})

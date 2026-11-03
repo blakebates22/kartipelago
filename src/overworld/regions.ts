@@ -371,13 +371,13 @@ export const REGIONS: Region[] = [
     secret: {
       obstacle: "rockfall",
       tool: "valley",
-      gate: { x: 81.69, z: -297.22, heading: -0.3055, width: 9 },
+      gate: { x: 81.7, z: -297.22, heading: -0.3051, width: 9 },
       spot: { x: 84.4, z: -305.8 },
     },
     // The smugglers' Sea Cave, Raptor's old haunt: its yard on the beach under Smugglers'
     // Point, on the west coast.
     cave: {
-      gate: { x: -271.71, z: 90.77, heading: 2.0854, width: 9 },
+      gate: { x: -272.01, z: 90.27, heading: 2.1386, width: 9 },
       spot: { x: -281.28, z: 96.19 },
     },
     music: "coral_cove",
@@ -389,28 +389,28 @@ export const REGIONS: Region[] = [
     spawn: { x: 252, z: -30, heading: -1.5708 },
     gateways: [
       // Coral Cove: on the cove's beach, a short path off the road, the reef off it.
-      { id: "coral", track: "coral_cove", x: 148.31, z: 187.2, radius: 6, heading: -2.8259 },
+      { id: "coral", track: "coral_cove", x: 148.61, z: 187.11, radius: 6, heading: -2.852 },
       // Shipwreck Bay: down its beach toward the galleon.
-      { id: "wreck", track: "shipwreck_bay", x: -264.4, z: -135.86, radius: 6, heading: 1.01 },
+      { id: "wreck", track: "shipwreck_bay", x: -264.5, z: -135.71, radius: 6, heading: 0.995 },
       // The Black Shore: under the obsidian arch, toward Volcano Isle smoking offshore.
-      { id: "volcano", track: "volcano_isle", x: 29.8, z: -300.35, radius: 6, heading: -0.0999 },
+      { id: "volcano", track: "volcano_isle", x: 30.97, z: -300.29, radius: 6, heading: -0.0029 },
       // The Jungle Heart: at the foot of the old temple's steps.
       {
         id: "rainforest",
         track: "rainforest_rush",
-        x: 54.34,
-        z: 22.94,
+        x: 54.21,
+        z: 22.96,
         radius: 6,
-        heading: -2.9699,
+        heading: -2.9592,
       },
       // Tidewyrm's lair: his sea cave in the Head's south cliff, off Coral Cove.
       {
         id: "lair",
         track: "boss_tropic",
-        x: 198.59,
-        z: 163.74,
+        x: 198.79,
+        z: 163.57,
         radius: 6,
-        heading: -2.4274,
+        heading: -2.4494,
         boss: true,
         label: "TIDEWYRM'S LAIR",
       },

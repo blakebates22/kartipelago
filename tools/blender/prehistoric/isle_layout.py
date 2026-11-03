@@ -135,11 +135,12 @@ POCKETS = [
     # (the far side of the gorge: the Cloud Forest's top, the bridge between)
     ("cloud", "cloud", [(-80.0, -56.0, 14.0, 25.0), (-108.0, -34.0, 15.0, 23.5), (-140.0, -4.0, 16.0, 20.0),
                         (-164.0, 38.0, 17.0, 15.5), (-184.0, 86.0, 18.0, 10.0), (-124.0, -19.0, 13.0, 14.0),
+                        (-131.0, -26.0, 15.0, 21.0), (-143.0, 22.0, 15.0, 17.0), (-183.0, 58.0, 15.0, 12.0),
                         (-153.0, 18.0, 13.0, 12.5), (-175.0, 62.0, 13.0, 11.0)]),
     # Shipwreck Bay.
     ("wreck", "wreck", [(-206.0, 132.0, 24.0, 4.0), (-238.0, 146.0, 28.0, 3.2), (-262.0, 106.0, 22.0, 3.2), (-232.0, 180.0, 28.0, 2.4), (-272.0, 150.0, 24.0, 2.6)]),
     # Smugglers' Point: down the west coast behind it.
-    ("point", "point", [(-270.0, 52.0, 20.0, 3.4), (-270.0, -4.0, 20.0, 3.6), (-260.0, -58.0, 24.0, 3.2), (-302.0, 62.0, 22.0, 2.6), (-292.0, -82.0, 22.0, 2.6)]),
+    ("point", "point", [(-257.0, 78.0, 16.0, 3.4), (-286.0, 24.0, 16.0, 3.5), (-250.0, -30.0, 16.0, 3.4), (-270.0, 52.0, 20.0, 3.4), (-270.0, -4.0, 20.0, 3.6), (-260.0, -58.0, 24.0, 3.2), (-302.0, 62.0, 22.0, 2.6), (-292.0, -82.0, 22.0, 2.6)]),
     # The Lagoon: its north shore.
     ("lagoon", "lagoon", [(-236.0, -94.0, 20.0, 2.6), (-198.0, -84.0, 18.0, 2.4), (-158.0, -82.0, 18.0, 2.4),
                           (-168.0, -150.0, 50.0, -1.6)]),
@@ -152,84 +153,106 @@ POCKETS = [
     # The North Valley: out of the Temple Gate, down to the coast.
     # (v5c: wide open, a valley of meadows and groves, not a ravine: Blake, Nov 2)
     ("north", "north", [(84.0, 108.0, 24.0, 17.0), (64.0, 150.0, 34.0, 12.5), (36.0, 196.0, 34.0, 8.0),
-                        (104.0, 152.0, 22.0, 13.0), (12.0, 166.0, 24.0, 10.5)]),
+                        (104.0, 152.0, 22.0, 13.0), (12.0, 166.0, 24.0, 10.5),
+                        (84.0, 132.0, 18.0, 14.5), (31.0, 165.5, 18.0, 10.0), (38.0, 230.0, 16.0, 6.0)]),
     # The Black Shore: the north coast, facing Volcano Isle.
     ("volcano", "volcano", [(10.0, 246.0, 22.0, 4.0), (0.0, 280.0, 26.0, 3.0), (52.0, 282.0, 26.0, 3.0),
                             (100.0, 268.0, 24.0, 3.2), (2.0, 306.0, 26.0, 2.4), (46.0, 312.0, 24.0, 2.4),
                             (96.0, 300.0, 22.0, 2.5)]),
     # Round the north-east coast home.
-    ("northeast", "northeast", [(148.0, 246.0, 22.0, 3.2), (182.0, 204.0, 22.0, 3.4), (200.0, 156.0, 22.0, 3.6), (162.0, 278.0, 22.0, 2.6), (214.0, 238.0, 22.0, 2.6)]),
+    ("northeast", "northeast", [(180.0, 176.0, 16.0, 3.5), (215.0, 128.0, 16.0, 3.4), (148.0, 246.0, 22.0, 3.2), (182.0, 204.0, 22.0, 3.4), (200.0, 156.0, 22.0, 3.6), (162.0, 278.0, 22.0, 2.6), (214.0, 238.0, 22.0, 2.6)]),
 ]
 
-# The route: the figure eight. (x, y, height or None: the land's.)
-ROUTE = [
-    (204.0, 40.0, None),  # 0: Raptor's Bay (the start line), south past the square
-    (210.0, -14.0, None),
-    (212.0, -64.0, None),  # 2: the Head Pass
-    (210.0, -102.0, None),
-    (196.0, -138.0, None),  # 4: Coral Cove
-    (162.0, -164.0, None),
-    (124.0, -176.0, None),
-    (94.0, -174.0, None),
-    (66.0, -160.0, 8.6),  # 8: the Ridge Road, up the ravine
-    (36.0, -138.0, 13.0),
-    (8.0, -116.0, 16.6),
-    (-20.0, -98.0, 17.0),
-    (-52.0, -76.0, 17.4),  # 12: the High Bridge, over the gorge
-    (-80.0, -56.0, 16.8),
-    (-108.0, -34.0, 15.0),  # 14: the Cloud Forest, down
-    (-140.0, -4.0, 12.6),
-    (-164.0, 38.0, None),
-    (-184.0, 86.0, None),
-    (-208.0, 128.0, None),  # 18: Shipwreck Bay
-    (-240.0, 140.0, None),
-    (-264.0, 104.0, None),
-    (-270.0, 52.0, None),  # 21: Smugglers' Point
-    (-270.0, -4.0, None),
-    (-260.0, -56.0, None),
-    (-236.0, -92.0, 3.4),  # 24: the Lagoon's north shore
-    (-198.0, -84.0, 3.2),
-    (-158.0, -82.0, 3.4),
-    (-122.0, -88.0, 4.4),  # 27: the Gorge Road, up the river
-    (-92.0, -74.0, 6.4),
-    (-64.0, -56.0, 8.6),  # 29: under the High Bridge
-    (-38.0, -34.0, 10.6),
-    (-14.0, -10.0, None),  # 31: the Jungle Heart: under the falls' arc
-    (10.0, -2.0, None),
-    (40.0, -10.0, None),
-    (64.0, -4.0, None),
-    (80.0, 26.0, 15.0),  # 35: the Temple Gate (bored through the ridge)
-    (88.0, 66.0, 16.5),
-    (84.0, 104.0, None),  # 37: the North Valley
-    (60.0, 150.0, None),
-    (34.0, 198.0, None),
-    (10.0, 246.0, None),  # 40: the Black Shore
-    (6.0, 280.0, None),
-    (52.0, 284.0, None),
-    (100.0, 270.0, None),
-    (148.0, 246.0, None),  # 44: the north-east coast
-    (182.0, 204.0, None),
-    (200.0, 156.0, None),
-    (210.0, 96.0, None),
+# The route: the figure eight. (x, y, height or None: the land's, a tag naming the point.)
+# (v6, Blake, Nov 2: "the driving of the figure 8 is horibly boring. lets make it mor hilly with
+# zippers scattered throughout and some more turns, but still the figure 8 structure": S-bends
+# through the Cloud Forest, down the Smugglers' coast, across the North Valley and round the
+# north-east coast (the "(v6)" points); hills along the way, HILLS below; zippers, ZIPPER_EVERY.)
+_ROUTE = [
+    (204.0, 40.0, None, "start"),  # Raptor's Bay (the start line), south past the square
+    (210.0, -14.0, None, None),
+    (212.0, -64.0, None, "head"),  # the Head Pass
+    (210.0, -102.0, None, None),
+    (196.0, -138.0, None, "coral"),  # Coral Cove
+    (162.0, -164.0, None, "coral_gate"),
+    (124.0, -176.0, None, None),
+    (94.0, -174.0, None, None),
+    (66.0, -160.0, 8.6, "ridge"),  # the Ridge Road, up the ravine
+    (36.0, -138.0, 13.0, None),
+    (8.0, -116.0, 16.6, None),
+    (-20.0, -98.0, 17.0, "br0"),
+    (-52.0, -76.0, 17.4, None),  # the High Bridge, over the gorge
+    (-80.0, -56.0, 16.8, "br1"),
+    (-108.0, -34.0, 15.0, "cloud"),  # the Cloud Forest, down
+    (-131.0, -26.0, 13.8, "cloud_s1"),  # (v6) an S-bend
+    (-140.0, -4.0, 12.6, None),
+    (-143.0, 22.0, None, "cloud_s2"),  # (v6) an S-bend
+    (-164.0, 38.0, None, "cloud2"),
+    (-183.0, 58.0, None, "cloud_s3"),  # (v6) an S-bend
+    (-184.0, 86.0, None, None),
+    (-208.0, 128.0, None, "wreck"),  # Shipwreck Bay
+    (-240.0, 140.0, None, "wreck_gate"),
+    (-264.0, 104.0, None, "point0"),
+    (-257.0, 78.0, None, "point_s1"),  # (v6) an S-bend
+    (-270.0, 52.0, None, "point"),  # Smugglers' Point
+    (-286.0, 24.0, None, "point_s2"),  # (v6) an S-bend
+    (-270.0, -4.0, None, "point2"),
+    (-250.0, -30.0, None, "point_s3"),  # (v6) an S-bend
+    (-260.0, -56.0, None, "cave"),
+    (-236.0, -92.0, 3.4, "lagoon"),  # the Lagoon's north shore
+    (-198.0, -84.0, 3.2, None),
+    (-158.0, -82.0, 3.4, None),
+    (-122.0, -88.0, 4.4, "gorge"),  # the Gorge Road, up the river
+    (-92.0, -74.0, 6.4, None),
+    (-64.0, -56.0, 8.6, None),  # under the High Bridge
+    (-38.0, -34.0, 10.6, None),
+    (-14.0, -10.0, None, "heart"),  # the Jungle Heart: under the falls' arc
+    (10.0, -2.0, None, None),
+    (40.0, -10.0, None, "rain_gate"),
+    (64.0, -4.0, None, None),
+    (80.0, 26.0, 15.0, "gate0"),  # the Temple Gate (bored through the ridge)
+    (88.0, 66.0, 16.5, "gate1"),
+    (84.0, 104.0, None, "north"),  # the North Valley
+    (84.0, 132.0, None, "north_s1"),  # (v6) an S-bend
+    (60.0, 150.0, None, "north2"),
+    (31.0, 165.5, None, "north_s2"),  # (v6) an S-bend
+    (34.0, 198.0, None, "north3"),
+    (38.0, 230.0, None, "north_s3"),  # (v6) an S-bend
+    (10.0, 246.0, None, "black"),  # the Black Shore
+    (6.0, 280.0, None, "volcano_gate"),
+    (52.0, 284.0, None, "secret"),
+    (100.0, 270.0, None, None),
+    (148.0, 246.0, None, "camp"),  # the north-east coast
+    (182.0, 204.0, None, "ne2"),
+    (180.0, 176.0, None, "ne_s1"),  # (v6) an S-bend
+    (200.0, 156.0, None, "ne3"),
+    (215.0, 128.0, None, "ne_s2"),  # (v6) an S-bend
+    (210.0, 96.0, None, None),
 ]
-TUNNELS = [("Temple Gate", "temple", 35, 36)]
-BRIDGE = (11, 13)  # the High Bridge's route points (its deck)
+ROUTE = [p[:3] for p in _ROUTE]
+AT = {p[3]: i for i, p in enumerate(_ROUTE) if p[3]}
+# The road the land is laid to (v6): the old smooth road through ROUTE (its heights the
+# land's round each point, or set by hand), DENSE_PER points to a span, with the hills added
+# on (the land has them too), so it rides over each crest.
+DENSE_PER = 4
+TUNNELS = [("Temple Gate", "temple", AT["gate0"], AT["gate1"])]
+BRIDGE = (AT["br0"], AT["br1"])  # the High Bridge's route points (its deck)
 CROSS = (-58.0, -66.0)  # where the figure eight crosses itself (the bridge over the gorge road)
-BRIDGE_HALF = 24.0  # (the bridge's half length, round CROSS)
+BRIDGE_HALF = 28.0  # (the bridge's half length, round CROSS)
 
 # The gateways' landmarks: (route point, along to the next, side +1 right/-1 left of the
 # way of travel, how far from the road's middle). Each gateway stands at the end of a short
 # path off the road (Blake, Nov 1: "never on the road intersecting, but off on the side of
 # the road with a short path, a few meters to get to it").
 GATE_AT = {
-    "coral": (5, 0.5, -1, 30.0),  # on the cove's beach, the reef off it
-    "wreck": (19, 0.4, 1, 30.0),  # down Shipwreck Bay's beach toward the galleon
-    "volcano": (41, 0.6, -1, 30.0),  # on the Black Shore, toward Volcano Isle
-    "rainforest": (33, 0.4, 1, 28.0),  # in the Jungle Heart, the temple's steps (south)
+    "coral": (AT["coral_gate"], 0.5, -1, 30.0),  # on the cove's beach, the reef off it
+    "wreck": (AT["wreck_gate"], 0.4, 1, 30.0),  # down Shipwreck Bay's beach toward the galleon
+    "volcano": (AT["volcano_gate"], 0.6, -1, 30.0),  # on the Black Shore, toward Volcano Isle
+    "rainforest": (AT["rain_gate"], 0.4, 1, 28.0),  # in the Jungle Heart, the temple's steps (south)
 }
-LAIR_AT = (4, 0.3, -1, 34.0)  # Tidewyrm's sea cave, in the Head's south cliff
-CAVE_AT = (23, 0.5, 1, 40.0)  # the smugglers' Sea Cave's yard, under the Point
-SECRET_AT = (42, 0.5, -1, 30.0)  # the hidden cove behind the Black Shore
+LAIR_AT = (AT["coral"], 0.3, -1, 34.0)  # Tidewyrm's sea cave, in the Head's south cliff
+CAVE_AT = (AT["cave"], 0.5, 1, 40.0)  # the smugglers' Sea Cave's yard, under the Point
+SECRET_AT = (AT["secret"], 0.5, -1, 30.0)  # the hidden cove behind the Black Shore
 
 
 def _gate_xy(spec):
@@ -240,6 +263,41 @@ def _gate_xy(spec):
     L_ = math.hypot(tx, ty)
     rx, ry = ty / L_, -tx / L_  # (right of the way of travel)
     return (x + rx * side * dist, y + ry * side * dist)
+
+
+# The hills (v6): knolls and dunes the road rides over, crest after crest. (route point,
+# along to the next, radius, height); none by the gateways, the bridge, the Temple Gate
+# or the square.
+HILLS_AT = [
+    ("head", -0.35, 22.0, 3.5), ("head", 0.55, 18.0, 2.9),  # over the Head Pass's saddle
+    ("coral_gate", 0.95, 14.0, 2.2),  # a dune on the cove's beach
+    ("cloud_s2", 0.15, 16.0, 2.6), ("cloud2", 0.55, 16.0, 2.6), ("cloud_s3", 0.7, 15.0, 2.4),  # the Cloud Forest's knolls
+    ("wreck", -0.35, 14.0, 2.2),  # a dune into Shipwreck Bay
+    ("point_s1", 0.1, 18.0, 2.9), ("point", 0.55, 18.0, 2.9), ("point2", 0.4, 18.0, 2.9),  # the Smugglers' coast road
+    ("north", 0.55, 20.0, 3.2), ("north2", 0.5, 20.0, 3.2), ("north3", 0.25, 20.0, 3.2),  # the North Valley's meadows
+    ("black", 0.25, 14.0, 2.2),  # a black dune
+    ("ne2", 0.4, 16.0, 2.6), ("ne3", 0.15, 16.0, 2.6), ("ne_s2", 0.6, 16.0, 2.6),  # the north-east coast's bluffs
+]
+
+
+def _hill_xy(tag, f):
+    i = AT[tag]
+    if f < 0:
+        i, f = i - 1, 1.0 + f
+    (ax, ay, _), (bx, by, _) = ROUTE[i], ROUTE[(i + 1) % len(ROUTE)]
+    return lerp(ax, bx, f), lerp(ay, by, f)
+
+
+HILLS = [_hill_xy(t, f) + (r, h) for t, f, r, h in HILLS_AT]
+
+
+def _hills(x, y):
+    h = 0.0
+    for hx, hy, r, hh in HILLS:
+        d = math.hypot(x - hx, y - hy)
+        if d < r:
+            h += hh * math.cos(math.pi * d / (2.0 * r)) ** 2
+    return h
 
 
 GATES = {k: _gate_xy(v) for k, v in GATE_AT.items()}
@@ -308,11 +366,17 @@ class _IsleLayout(Layout):
         df = math.hypot(x - fx, y - fy)
         if df < POOL_R + 10.0:
             h = lerp(h, min(h, RIVER[0][2] - 1.6), smooth((POOL_R + 10.0 - df) / 10.0))
+        # The hills (v6), inside the basins, up off the beaches.
+        if _HILLS_ON and h > WATER_Z + 0.5:
+            bump = _hills(x, y)
+            if bump > 0.0:
+                h += bump * smooth((-best - 2.0) / 10.0) * smooth((s - 8.0) / 12.0)
         # The gateways' ways in, level with the road.
         h = _NOTCHES.apply(h, x, y)
         return h
 
 
+_HILLS_ON = False
 L = _IsleLayout(POCKETS, TOP, ROUTE, TUNNELS, rivers=[RIVER], river_hw=RIVER_HW, roll=1.6, mountains=70.0,
                 flat=("lagoon",), tiers=True)
 _NOTCHES = Notches([], {})
@@ -326,6 +390,29 @@ def _init_notches():
 
 _init_notches()
 L._rp = None  # (the road's heights again, with the notches in)
+
+
+def _hill_on(x, y):
+    """How much of the hills the land (and so the road) has at (x, y)."""
+    bump = _hills(x, y)
+    if bump <= 0.0:
+        return 0.0
+    return bump * smooth((-L.wall_sd(x, y) - 2.0) / 10.0) * smooth((inland(x, y) - 8.0) / 12.0)
+
+
+def _dense():
+    rp = L.route_points()
+    out = []
+    for x, y, z in catmull(rp, DENSE_PER):
+        out.append((round(x, 2), round(y, 2), round(z + _hill_on(x, y), 2)))
+    return out
+
+
+DENSE = _dense()
+_HILLS_ON = True
+TUNNELS = [(n, k, a * DENSE_PER, b * DENSE_PER) for n, k, a, b in TUNNELS]
+L = _IsleLayout(POCKETS, TOP, DENSE, TUNNELS, rivers=[RIVER], river_hw=RIVER_HW, roll=1.6, mountains=70.0,
+                flat=("lagoon",), tiers=True)
 
 
 def natural(x, y):

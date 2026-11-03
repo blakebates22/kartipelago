@@ -473,8 +473,8 @@ def head_pass(c, ground, taken):
     grandfather's)."""
     import dcanyon_props as dcp
 
-    s0 = _route_s(c, 2, 0.1)
-    s1 = _route_s(c, 3, 0.2)
+    s0 = _route_s(c, M.AT["head"], 0.1)
+    s1 = _route_s(c, M.AT["head"] + 1, 0.2)
     n = 0
     s = s0
     while s < s1 and n < 6:
@@ -493,7 +493,7 @@ def head_pass(c, ground, taken):
 def fishing_camp(c, ground, taken, ter):
     """On the north-east coast: the fishers' camp on the beach, drying racks, nets of
     lobster pots, canoes drawn up, a beach hut graded level, its fire."""
-    q = c.at(_route_s(c, 44, 0.5))
+    q = c.at(_route_s(c, M.AT["camp"], 0.5))
     sea = 1 if M.inland(*q.side(30.0).xy) < M.inland(*q.side(-30.0).xy) else -1
     cx, cy = q.side(sea * (q.w / 2 + 18.0)).xy
     if not idr._dry(cx, cy, 6.0) or not taken.clear(cx, cy, 10.0):
@@ -553,3 +553,45 @@ def valley_hamlet(c, ground, taken, ter):
                 n += 1
                 break
     print("valley hamlet: %d huts" % n)
+
+
+# ------------------------------------------------------------------ the zippers
+
+
+ZIPPER_EVERY = 100.0
+
+
+def zippers(c, keep_out):
+    """Zippers all round the figure eight (Blake, Nov 2: "zippers scattered throughout"):
+    one every ZIPPER_EVERY m or so, each on the straightest bit near where it falls, none
+    within 26 m of the start, a gateway's path, the bridge or the Temple Gate (keep_out:
+    [(x, y)] and [(s0, s1)] spans of the road)."""
+    pts, spans = keep_out
+    bad = [c.nearest(x, y)[0].s for x, y in pts]
+
+    def ok(s):
+        s %= c.length
+        if s < 40.0 or s > c.length - 26.0:
+            return False
+        if any(min(abs(s - b), c.length - abs(s - b)) < 26.0 for b in bad):
+            return False
+        return not any(a - 20.0 <= s <= b + 20.0 for a, b in spans)
+
+    n = int(c.length // ZIPPER_EVERY)
+    put = 0
+    for k in range(n):
+        want = (k + 0.5) * c.length / n
+        best = None
+        for ds in range(-30, 31, 3):
+            s = want + ds
+            if not ok(s):
+                continue
+            q0, q1 = c.at(s - 14.0), c.at(s + 14.0)
+            turn = abs((math.atan2(q1.t.y, q1.t.x) - math.atan2(q0.t.y, q0.t.x) + math.pi) % math.tau - math.pi)
+            if best is None or turn < best[0]:
+                best = (turn, s)
+        if best is None:
+            continue
+        c.zipper(best[1] % c.length, 0.0)
+        put += 1
+    print("zippers: %d" % put)
