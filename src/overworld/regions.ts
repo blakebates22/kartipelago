@@ -309,17 +309,18 @@ export const REGIONS: Region[] = [
       gate: { x: 431.01, z: -200.42, heading: -1.6172, width: 9 },
       spot: { x: 440, z: -200 },
     },
-    // The smugglers' Drift Cave: a walled yard behind the trading post, round Stego's old well.
+    // The smugglers' Drift Cave: its mouth in Meteor Crater's inner wall, low on the spiral road,
+    // its yard a ledge (review-desert_region note 3: it was behind the trading post).
     cave: {
-      gate: { x: -353.64, z: 88.22, heading: 2.1239, width: 9 },
-      spot: { x: -363, z: 94 },
+      gate: { x: 66.96, z: 325.85, heading: 1.3614, width: 9 },
+      spot: { x: 62.56, z: 324.92 },
     },
     music: "canyon",
     worldId: "desert",
     kingdom: "desert",
-    // The main road's start line, by the trading post (the 1-on-1 is raced from it).
+    // The main road's start line, by the frontier town (the 1-on-1 is raced from it).
     challenge: { x: -320, z: 40, heading: -3.0853 },
-    // In the trading post's square, facing east to the road.
+    // In the frontier town, where the road from the Frozen Pass crosses Main Street, facing east.
     spawn: { x: -360, z: 40, heading: Math.PI / 2 },
     gateways: [
       // Down in the Grand Canyon, in its south wall off the terrace.

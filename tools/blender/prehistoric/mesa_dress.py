@@ -108,9 +108,10 @@ EAST = [
 SETBACK = 13.5  # Main Street's fronts from the road's middle (porches 3.2 m in front of them)
 
 
-def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0):
+def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0, line=None, gap=2.0):
     """gulch_town.along's row of frontier buildings, each on land graded level under it
-    (its footprint and its porch), its door sill at the ground."""
+    (its footprint and its porch), its door sill at the ground; along the lap, or along
+    `line` (a _Line: a side road's street)."""
     s, k, out = s0, 0, []
     while s < s1:
         w, d, opts = kinds[k % len(kinds)]
@@ -118,7 +119,7 @@ def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0):
         mid = s + (w + ex) / 2
         if mid + (w + ex) / 2 > s1:
             break
-        q = c.at(s + w / 2)
+        q = (line or c).at(s + w / 2)
         h = road_rot(q)
         rot = h + math.pi if side > 0 else h
         nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
@@ -154,7 +155,7 @@ def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0):
             else:
                 gt.building(m, sc, x, y, zf + 0.05, rot, w, d, seed=seed * 50 + k, **kw)
             out.append((x, y, rot, w, cx, cy, R))
-        s += w + ex + 2.0 + 2.0 * rnd(seed * 13 + k)
+        s += w + ex + gap + 2.0 * rnd(seed * 13 + k)
         k += 1
     return out
 
@@ -224,6 +225,152 @@ def boomtown(c, ground, taken, ter):
     print("boomtown: %d buildings, the street %.0f m" % (len(built), s1 - s0))
     q = c.at((s0 + s1) / 2)
     return q.p.x, q.p.y
+
+
+# ------------------------------------------------------------------ the frontier town
+
+
+class _Q:
+    def __init__(self, p, t, w):
+        self.p, self.t, self.w = p, t, w
+        self.r = Vector((t.y, -t.x, 0.0))
+
+    def side(self, o, up=0.0):
+        return self.p + self.r * o + Vector((0, 0, up))
+
+
+class _Line:
+    """A side road's street as the lap's samples are: at(s) along it, its point, its way
+    (t), its width."""
+
+    def __init__(self, pts, width):
+        self.pts = [Vector(p) for p in pts]
+        self.w = width
+        self.cum = [0.0]
+        for a, b in zip(self.pts, self.pts[1:]):
+            self.cum.append(self.cum[-1] + (Vector((b.x, b.y, 0)) - Vector((a.x, a.y, 0))).length)
+        self.length = self.cum[-1]
+
+    def at(self, s):
+        s = max(0.0, min(self.length, s))
+        for i in range(len(self.pts) - 1):
+            if self.cum[i + 1] >= s:
+                break
+        a, b = self.pts[i], self.pts[i + 1]
+        f = (s - self.cum[i]) / max(1e-6, self.cum[i + 1] - self.cum[i])
+        t = Vector((b.x - a.x, b.y - a.y, 0.0)).normalized()
+        return _Q(a.lerp(b, f), t, self.w)
+
+
+# The frontier town's blocks (Blake, review-desert_region note 2: "lets go for old west town,
+# with a salloon, a bank, barber, all the classic old west buildings. this needs to be a
+# hopping old western town when we enter this world"): Main Street runs north through the
+# bay under the rim, the road from the Frozen Pass crossing it in the middle of town. Each
+# block: (from, to along Main Street, its east row, its west row).
+TOWN_BLOCKS = [
+    (4.0, 50.0, [(9.0, 11.0, {"siding": "siding_grey", "sign": "barber", "lit": 0.6}),
+                 (8.0, 10.0, {"siding": "siding_red", "storeys": 2, "balcony": True, "lit": 0.6}),
+                 (9.0, 11.0, {"siding": "siding_brown", "sign": "undertaker", "lit": 0.4})],
+     [(11.0, 12.0, {"special": gt.sheriff, "extra": 9.0}),
+      (18.0, 15.0, {"siding": "siding_ochre", "storeys": 2, "sign": "general", "lit": 0.8})]),
+    (70.0, 120.0, [(10.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.6}),
+                   (12.0, 13.0, {"siding": "siding_brown", "sign": "assay", "lit": 0.5}),
+                   (8.0, 10.0, {"siding": "siding_ochre", "lit": 0.6})],
+     [(22.0, 18.0, {"special": gt.saloon}),
+      (20.0, 16.0, {"special": gt.hotel})]),
+]
+
+
+def frontier_town(c, ground, taken, ter, street):
+    """The frontier town where you come into the desert, down both sides of its Main Street
+    (`street`: its points, south to north): the general store, the hotel, the sheriff's and
+    the jail, the barber's, the saloon, the undertaker's, the bank, the assay office; the
+    timber arch over the street at each end, lantern posts down both kerbs, hitching rails,
+    troughs, barrels and crates on the boardwalks, wagons drawn up, the windmill and its tank
+    and the water tower behind, and the town's folk up and down the street. Returns the
+    buildings put up."""
+    sc = _scene(c, ter)
+    gs.protos(c)
+    line = _Line(street, 12.0)
+    s0, s1 = 0.0, line.length
+    m = gs.Mesh()
+    built = []
+    for k, (b0, b1, east, west) in enumerate(TOWN_BLOCKS):
+        built += _row(c, sc, m, b0, b1, 1, east, ground, ter, taken, seed=7 + k, line=line, gap=3.5)
+        built += _row(c, sc, m, b0, b1, -1, west, ground, ter, taken, seed=9 + k, line=line, gap=3.5)
+    for b in built:
+        taken.add(b[4], b[5], b[6])
+    m.build(c, "Frontier Town Buildings", "Village", role="both")
+    # The arches over the street at both ends of town.
+    timber_arch(c, ground, line.at(1.5), "Town Arch South", h=9.0)
+    timber_arch(c, ground, line.at(line.length - 1.5), "Town Arch North", h=9.0)
+    # Lantern posts down both kerbs, the boardwalks' things between them.
+    post = gp.lantern_post(c)
+    lx, _ly, lz = gp.LANTERN_POST_LIGHT
+    things = ["Hitching Rail", "Water Trough", "Barrel 0", "Bench", "Crate Stack 0", "Barrel 1", "Hitching Rail", "Crate Stack 1"]
+    s, k = s0 + 2.0, 0
+    while s < s1:
+        q = line.at(s)
+        h = road_rot(q)
+        for side in (-1, 1):
+            nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
+            x, y = q.p.x + nx * (q.w / 2 + 2.3), q.p.y + ny * (q.w / 2 + 2.3)
+            rot = math.atan2(-ny, -nx)
+            if _off_roads(c, x, y, 0.4) and taken.clear(x, y, 0.3):
+                z = _lowest(ground, x, y, 0.3) - 0.1
+                c.place(post, x, y, z, rot=rot, coll="Village", role="both")
+                if k % 2 == 0:
+                    g = c.game(x + lx * math.cos(rot), y + lx * math.sin(rot), z + lz)
+                    c.entity("lantern", x=g[0], y=g[1], z=g[2])
+            q2 = line.at(s + 7.0)
+            x, y = q2.p.x + nx * (q2.w / 2 + 2.6), q2.p.y + ny * (q2.w / 2 + 2.6)
+            name = things[(k * 2 + (side > 0)) % len(things)]
+            if _off_roads(c, x, y, 1.0) and taken.clear(x, y, 0.5):
+                along = name in ("Hitching Rail", "Water Trough", "Bench")
+                c.place(name, x, y, _lowest(ground, x, y, 0.9 if along else 0.5), rot=h if along else rnd(k) * 6.0,
+                        coll="Village", role="both")
+                taken.add(x, y, 0.8)
+        s += 14.0
+        k += 1
+    # Wagons drawn up by the boardwalks, a tumbleweed or two in the street's edges.
+    wag = [gp.wagon(c, True), gp.wagon(c, False)]
+    for k, (f, side) in enumerate(((0.3, 1), (0.62, -1), (0.85, 1))):
+        q = line.at(s0 + (s1 - s0) * f)
+        h = road_rot(q)
+        nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
+        x, y = q.p.x + nx * (q.w / 2 + 5.5), q.p.y + ny * (q.w / 2 + 5.5)
+        if _off_roads(c, x, y, 1.6) and taken.clear(x, y, 2.6):
+            c.place(wag[k % 2], x, y, _lowest(ground, x, y, 2.0), rot=h, coll="Village", role="both")
+            taken.add(x, y, 3.0)
+    # Behind the rows: the water tower north, the windmill and its tank and the livery's
+    # corral south.
+    mid = line.at((s0 + s1) / 2)
+    h = road_rot(mid)
+    for off in (30.0, 36.0, 42.0):
+        x, y = mid.p.x + math.sin(h) * -off, mid.p.y - math.cos(h) * -off
+        if taken.clear(x, y, 7.0) and _off_roads(c, x, y, 6.0) and _spread(ground, x, y, 6.0) < 2.5:
+            gt.water_tower(c, sc, x, y, _lowest(ground, x, y, 6.0))
+            taken.add(x, y, 8.0)
+            break
+    q = line.at(s0 + (s1 - s0) * 0.2)
+    h = road_rot(q)
+    for off in (30.0, 34.0, 38.0):
+        x, y = q.p.x - math.sin(h) * off, q.p.y + math.cos(h) * off
+        if taken.clear(x, y, 8.0) and _off_roads(c, x, y, 8.0) and _spread(ground, x, y, 6.0) < 2.5:
+            c.place(cp.windmill_tower(c), x, y, _lowest(ground, x, y, 2.5) - 0.2)
+            c.place(cp.water_tank(c), x + 7.0, y, ground(x + 7.0, y) - 0.2)
+            taken.add(x, y, 9.0)
+            break
+    for x, y, z in sc.lanterns[::2]:
+        g = c.game(x, y, z)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    # The folk, up and down the street: busy.
+    for f in (0.2, 0.45, 0.7, 0.92):
+        q = line.at(s0 + (s1 - s0) * f)
+        g = c.game(q.p.x, q.p.y, q.p.z)
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=11.0, n=4, folk="desert", heading=0.0)
+    print("frontier town: %d buildings, Main Street %.0f m" % (len(built), s1 - s0))
+    return len(built)
 
 
 BOOT_HILL = (196.0, -66.0, 15.0)  # Boot Hill: its middle and radius, out west of town over the railroad
@@ -680,10 +827,9 @@ BEDS = [(4.0, "strata_red"), (16.0, "strata_rust"), (22.0, "strata_orange"), (34
 
 
 def _bed(z, x=0.0):
-    for top, rock in BEDS:
-        if z < top + 1.5 * math.sin(x / 17.0):
-            return rock
-    return BEDS[-1][1]
+    """The cliff's rock: the level beds (make_textures.desert_strata, review-desert_region
+    note 1), one texture whose beds lie by height."""
+    return "desert_strata"
 
 
 def alcove_overhang(c, top=81.6):

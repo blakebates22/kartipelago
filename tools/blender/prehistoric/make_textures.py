@@ -3523,6 +3523,56 @@ strata_rust = strata(3650, "#9a3a24", "#be5434", "#64221a", lines=6)
 strata_purple = strata(3653, "#7a3a3a", "#9a5048", "#4a2230", lines=5)
 
 
+# The desert's cliffs, one texture for every wall (Blake, review-desert_region note 1: "redo
+# all of the walls so there layers make sense ... We have the colors down, but the
+# zigzagedness is weird"): the sandstone beds stacked level, one repeat 32 m tall (16 x 64,
+# the era's size, at 8 m a tile: walls are mapped with V as height, so a bed lies at the
+# same height on every mesa, butte and canyon wall, whatever the land's triangles do). From
+# the top: (m, base, light, dark, bedding lines).
+DESERT_BEDS = [
+    (3, "#e2b07a", "#f4d2a0", "#b47a4c", 1),  # caprock cream
+    (5, "#d4783e", "#eca262", "#9a4a24", 2),  # orange
+    (4, "#b84a2a", "#d86a3e", "#7e2c18", 1),  # red
+    (3, "#9a3a24", "#be5434", "#64221a", 1),  # red shale
+    (5, "#c25a30", "#de7c48", "#84341c", 2),  # red-orange
+    (3, "#d4783e", "#eca262", "#9a4a24", 1),  # orange
+    (3, "#e8c08a", "#f8dcae", "#b8845a", 1),  # pale cream
+    (2, "#9a3a24", "#be5434", "#64221a", 1),  # red shale
+    (4, "#b84a2a", "#d86a3e", "#7e2c18", 1),  # red
+]
+
+
+def desert_strata():
+    PX = 2  # (pixels a metre)
+    a, b = noise(2, 8, 3671, 16, 64), noise(8, 32, 3672, 16, 64)
+    c = noise(2, 8, 3673, 16, 64)
+    bands = []
+    y0 = 0
+    for m, base, light, dark, lines in DESERT_BEDS:
+        bands.append((y0, y0 + m * PX, base, light, dark, lines))
+        y0 += m * PX
+
+    def f(x, y):
+        for top, bot, base, light, dark, lines in bands:
+            if y < bot:
+                break
+        yy = y - top
+        hh = bot - top
+        wob = a(x, y) * 0.7
+        k = 0.86 + b(x, y) * 0.26
+        if yy + wob < 0.9 or yy + wob > hh - 0.3:
+            return _shade(dark, 0.92 + b(x, y) * 0.1)  # (the parting between beds)
+        if (yy + wob) % (hh / lines) < 1.0:
+            return _shade(dark, 1.05 + b(x, y) * 0.1)  # (bedding lines)
+        if (yy + wob) % (hh / lines) < 2.0:
+            return _shade(light, k)
+        if abs(math.sin((x * 0.35 + yy * 1.2) + c(x, y) * 3)) < 0.05:
+            k -= 0.08
+        return _shade(base, k + (c(x, y) - 0.5) * 0.35)
+
+    return paint(f, 16, sum(m for m, *_ in DESERT_BEDS) * PX)
+
+
 def talus():
     # Scree slopes under the cliffs: orange-brown rubble with dark gaps.
     pal = ["#8c4428", "#a2522e", "#b46036", "#c66e40", "#d68050"]
@@ -5024,6 +5074,7 @@ MATERIALS = [
     ("strata_rust", "Red Shale", "canyon_dash", "wall", strata_rust, 12, None),
     ("strata_purple", "Canyon Base Rock", "canyon_dash", "wall", strata_purple, 12, None),
     ("talus", "Talus", "canyon_dash", "wall", talus, 8, None),
+    ("desert_strata", "Desert Strata (level beds)", "canyon_dash", "wall", desert_strata, 8, None),
     ("canyon_river", "Turquoise River", "canyon_dash", "water", canyon_river, 12, {"scrollU": 0.0, "scrollV": 0.12, "wave": 0.03, "wavePeriod": 5, "glow": 0.15}),
     ("falls_dash", "Canyon Falls", "canyon_dash", "water", falls_dash, 7, {"scrollU": 0.0, "scrollV": 1.2, "wave": 0.03, "wavePeriod": 1.3, "opacity": 0.92, "glow": 0.25}),
     ("canyon_mist", "Falls Mist", "canyon_dash", "water", canyon_mist, 20, {"scrollU": 0.01, "scrollV": -0.03, "wave": 0.08, "wavePeriod": 5, "opacity": 0.4, "glow": 0.3}),

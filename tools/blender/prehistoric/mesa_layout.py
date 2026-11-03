@@ -87,6 +87,8 @@ ALCOVE = (-250.0, 166.0, 70.0, 26.0)
 ARENA = (100.0, -168.0, 34.0)  # (v4b: between the crater and Sky Mesa, the road by its east gate)
 # The Trading Post: its square.
 POST = (-360.0, -40.0, 22.0)
+MAIN_STREET = (-356.0, -100.0, 22.0)  # the frontier town's Main Street: its x, from y to y (review-desert_region note 2)
+TOWN_PAD = (-394.0, -331.0, -106.0, 28.0, 10.0)  # its ground graded level: x0, x1, y0, y1, the blend out of it
 # The Boomtown's street (x, y, length, heading).
 TOWN = (280.0, -125.0, 90.0, math.pi / 2)
 
@@ -263,7 +265,15 @@ GATES = {
     "lair": (146.0, -174.0),  # (out of the arena's east gate)
 }
 FROZEN_PASS = (-440.0, -40.0)  # the way in from the snow, west
-CAVE = (-363.0, -94.0)  # the smugglers' Drift Cave's yard, behind the post
+# The smugglers' Drift Cave (regions.ts cave): its mouth in Meteor Crater's inner wall, low on
+# its south-west side where the spiral road's deepest, its yard on a ledge cut level beside
+# the road (Blake, review-desert_region note 3, "we need to move smugglers tunnel. maybe my
+# impact crater would make more sense"; it was behind the trading post).
+CAVE_A, CAVE_R = math.radians(168.0), 48.5
+CAVE = (CRATER[0] + CAVE_R * math.cos(CAVE_A), CRATER[1] + CAVE_R * math.sin(CAVE_A))  # (its yard's middle, 2.5 m out from its mouth)
+CAVE_FACE = 51.0  # (how far out from the crater's middle the mouth's crag's face stands)
+LEDGE_AT = (CRATER[0] + 44.0 * math.cos(CAVE_A), CRATER[1] + 44.0 * math.sin(CAVE_A))
+CAVE_LEDGE = (7.2, 8.0, 7.0)  # (its height, the level ledge's radius, the blend out of it)
 SECRET = (440.0, 200.0)  # the sunken garden below Havasu (the Beach Tool's)
 DUST_ROAD = (-10.0, -440.0)  # the way out south to Tropic Isles
 
@@ -424,6 +434,21 @@ def _passes(h, x, y):
 
 
 def natural(x, y):
+    """The land, with the road's shelf (_natural), and the Drift Cave's ledge in the crater."""
+    h = _natural(x, y)
+    # (The frontier town's ground, level under the rim: a pad falling gently south.)
+    x0, x1, y0, y1, b = TOWN_PAD
+    e = math.hypot(max(0.0, x0 - x, x - x1), max(0.0, y0 - y, y - y1))
+    if e < b:
+        h = lerp(10.2 + 0.018 * (y - y0), h, smooth(e / b))
+    lz, lr, lb = CAVE_LEDGE
+    d = math.hypot(x - LEDGE_AT[0], y - LEDGE_AT[1])
+    if d < lr + lb:
+        h = lerp(lz, h, smooth((d - lr) / lb))
+    return h
+
+
+def _natural(x, y):
     """The land, with the road's shelf: cut level across it where it's on a ramp or a
     mesa (into the rock, built up where it crosses lower ground), eased on the floor;
     open under Sun Arch."""

@@ -46,9 +46,6 @@ LOOK = {
     "show": (("red_sand", "loose_sand"), "dash_road", ("dash_shoulder", "dirt")),
     "mesa": (("slickrock", "dirt"), "dash_road", ("dash_shoulder", "dirt")),
 }
-# The cliffs in beds of colour by height (Monument Valley's): (top of the bed, rock).
-BEDS = [(4.0, "strata_red"), (16.0, "strata_rust"), (22.0, "strata_orange"), (34.0, "strata_red"), (40.0, "strata_cream"),
-        (58.0, "strata_orange"), (64.0, "strata_rust"), (80.0, "strata_red"), (88.0, "strata_cream"), (999.0, "strata_orange")]
 
 
 def natural(x, y):
@@ -57,16 +54,18 @@ def natural(x, y):
 
 def classify(c, n, info):
     look = M.look_at(c.x, c.y)
+    # (Every cliff in the one texture of level beds, the canyon's too, its beds lying by
+    # height the same on every wall: Blake, review-desert_region note 1, "redo all of the
+    # walls so there layers make sense ... the zigzagedness is weird". They were a rock a
+    # face, by its height give or take a wobble, so each bed's edge stepped and waved
+    # across the land's triangles.)
+    up = c.z > M.FLOOR + 3.0 or (M.canyon_d(c.x, c.y) < M.CANYON_HW + 2 and c.z < M.TERRACE - 1.0)
     if n.z < 0.62:
-        if M.canyon_d(c.x, c.y) < M.CANYON_HW + 2 or math.hypot(c.x - M.FALLS[0], c.y - M.FALLS[1]) < M.FALLS[2] + 30:
-            z = c.z - M.CANYON_DEPTH
-            return (("strata_red", "strata_cream", "strata_rust", "strata_orange")[int(z / 7.0) % 4], "wall")
         if math.hypot(c.x - M.CRATER[0], c.y - M.CRATER[1]) < M.CRATER[2] * 1.3:
             return ("strata_purple", "wall")
-        for top, rock in BEDS:
-            if c.z < top + 1.5 * math.sin(c.x / 17.0):
-                return (rock, "wall")
+        return ("desert_strata", "wall")
     cx, cy, R, _rim, _cz = M.CRATER
+    in_crater = math.hypot(c.x - cx, c.y - cy) < M.CRATER[2] * 1.3
     if math.hypot(c.x - cx, c.y - cy) < R - 2.0:
         # (Down in the crater, Impact Depths' worlds: the crystal wall, the jungle ledge,
         # black volcanic rock round the core: v4b.)
@@ -79,7 +78,9 @@ def classify(c, n, info):
             return ("moss_rock", "dirt")
         return ("black_rock", "dirt")
     if n.z < 0.85:
-        return ("talus", "dirt")
+        # (Up a cliff, the half-steep faces between its steep ones are its beds too: as
+        # scree they stood out as grey teeth up the walls.)
+        return ("desert_strata", "dirt") if up and not in_crater else ("talus", "dirt")  # (still driven on as before)
     fx, fy, fr, fz = M.FALLS
     if math.hypot(c.x - fx, c.y - fy) < fr + 2 and c.z < fz + 3:
         return ("sinter", "dirt")  # (the travertine round Havasu's pools)
@@ -117,14 +118,17 @@ def main():
                      "post", max_len=160.0))
 
     trail = dict(width=10.0, shoulder=1.2, shoulder_mat=("dash_shoulder", "dirt"))
-    # The post's square, off the road; the Frozen Pass road west out of it.
+    # The frontier town (review-desert_region note 2): its Main Street north through the bay
+    # under the rim, and the road from the lap west across it, through town and on to the
+    # Frozen Pass (the trading post's square and its roads were in the buildings' way).
     px, py, pr = M.POST
     smp, _ = c.nearest(px + pr + 12.0, py)
-    c.side_road("Square Road", list(reversed(pb.line(natural, (smp.p.x, smp.p.y), (px + pr - 2.0, py), z0=smp.p.z, c=c))),
-                "dash_road", "road", **trail)
     fx, fy = M.FROZEN_PASS
-    way = [(x, py, natural(x, py) + 0.2) for x in range(int(px - pr + 2), int(fx - 6), -8)]
-    c.side_road("Frozen Pass Road", way, "dash_road", "road", **trail)
+    mouth = pb.line(natural, (smp.p.x, smp.p.y), (px + 10.0, py), z0=smp.p.z, c=c)
+    way = mouth + [(x, py, natural(x, py) + 0.2) for x in range(int(px + 2), int(fx - 6), -8)]
+    c.side_road("Pass Road", list(reversed(way)), "dash_road", "road", **trail)
+    STREET[:] = [(M.MAIN_STREET[0], y, natural(M.MAIN_STREET[0], y) + 0.2) for y in range(int(M.MAIN_STREET[1]), int(M.MAIN_STREET[2]) + 1, 6)]
+    c.side_road("Main Street", STREET, "dash_road", "road", **dict(trail, width=12.0))
     gates = dict(M.GATES)
     if not RUIN:
         gates.pop("lair")
@@ -146,7 +150,7 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    taken = paint.Taken([(px, py, pr + 10.0), (*M.ALCOVE[:2], 44.0), (*M.ARENA[:2], M.ARENA[2] + 16.0), (*M.CAVE, 16.0),
+    taken = paint.Taken([(*M.ALCOVE[:2], 44.0), (*M.ARENA[:2], M.ARENA[2] + 16.0), (*M.CAVE, 16.0),
                          (*M.SECRET, 14.0), (M.FALLS[0], M.FALLS[1], M.FALLS[2] + 14.0),
                          *((e[0], e[1], 14.0) for e, _ in spots.values()), *((x, y, 16.0) for x, y in M.GATES.values())])
     water(c)
@@ -169,8 +173,11 @@ def main():
     md.telegraph(c, ground, taken)
     # (Folk along the roads, far from the towns'.)
     paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (282.0, -120.0), (110.0, -335.0), (100.0, -168.0)], 4)
-    puzzle_kit.pen(c, "return", "Old Well", *M.CAVE, pb.to_road(c, *M.CAVE), 11.0, 4.5, ("adobe", "wall"), ground(*M.CAVE),
-                   height=6.0)
+    # The smugglers' Drift Cave, in Meteor Crater's inner wall (review-desert_region note 3): only
+    # its gate (the guards keep it), its yard the ledge, the mouth in its crag (drift_cave).
+    out = math.atan2(M.CRATER[1] - M.CAVE[1], M.CRATER[0] - M.CAVE[0])
+    puzzle_kit.pen(c, "return", "Drift Cave", *M.CAVE, out, 4.5, 4.5, ("adobe", "wall"), ground(*M.CAVE), height=6.0, walls=False)
+    drift_cave(c, ground)
     puzzle_kit.pen(c, "secret", "Sunken Garden", *M.SECRET, pb.to_road(c, *M.SECRET), 9.0, 4.5, ("oasis_stone", "wall"),
                    ground(*M.SECRET), height=6.0)
     pb.emit_spots(c, spots)
@@ -251,47 +258,47 @@ def _foot(ground, x, y, rot, w, d):
     return min(ground(x + lx * ca - ly * sa, y + lx * sa + ly * ca) for lx in (-w / 2, 0.0, w / 2) for ly in (-d / 2, 0.0, d / 2))
 
 
-def trading_post(c, ground, taken, ter):
-    """The roadside trading post where the Frozen Pass comes down: adobe houses round its
-    square, the diner, its neon sign on a tall post, a gas pump under a canopy, the
-    windmill and its tank, stalls of blankets and pots."""
-    px, py, pr = M.POST
-    z = ground(px, py)
-    c.disc("Post Square", px, py, pr, z + 0.03, c.lib("palace_paving", "road"), coll="Props", role="collision", n=36)
-    # (Oasis Haven's adobe homes round it, on graded land: mesa_dress.post_homes.)
-    md.post_homes(c, ground, taken, ter)
-    # The store (the trading post itself: mesa_dress.post_store, Dry Gulch's frontier kit), its
-    # neon sign up on a post.
-    dx_, dy_ = px + 4.0, py - pr - 12.0
-    md.post_store(c, ground, taken, ter)
-    dz = ground(dx_ + 12.0, dy_ + 6.0)
-    box(c, "Neon Post", dx_ + 12.0, dy_ + 6.0, 0.25, 0.25, dz - 0.5, dz + 11.0, ("rail_iron", "wall"))
-    box(c, "Neon Sign", dx_ + 12.0, dy_ + 6.0, 3.2, 0.3, dz + 8.0, dz + 11.5, ("lantern_amber", "wall"), role="visual")
-    box(c, "Neon Arrow", dx_ + 12.0, dy_ + 6.0, 1.6, 0.32, dz + 6.8, dz + 7.6, ("fire_glow", "wall"), role="visual")
-    taken.add(dx_, dy_, 12.0)
-    # The gas pump under its canopy.
-    gx_, gy_ = px + pr + 2.0, py - pr + 2.0
-    gz = ground(gx_, gy_)
-    for sx in (-1, 1):
-        box(c, "Canopy Post %d" % sx, gx_ + sx * 3.0, gy_, 0.2, 0.2, gz - 0.3, gz + 4.6, ("rail_iron", "wall"))
-    box(c, "Canopy", gx_, gy_, 4.2, 2.6, gz + 4.6, gz + 5.0, ("siding_red", "wall"), role="visual")
-    box(c, "Gas Pump", gx_, gy_, 0.45, 0.35, gz - 0.2, gz + 1.9, ("siding_red", "wall"))
-    box(c, "Gas Pump Globe", gx_, gy_, 0.3, 0.3, gz + 1.9, gz + 2.4, ("lantern_amber", "wall"), role="visual")
-    taken.add(gx_, gy_, 5.0)
-    wx, wy = px - 10.0, py + pr + 10.0
-    c.place(cp.windmill_tower(c), wx, wy, _foot(ground, wx, wy, 0.0, 5.0, 5.0) - 0.2)
-    c.place(cp.water_tank(c), wx + 7.0, wy + 2.0, ground(wx + 7.0, wy + 2.0) - 0.2)
-    taken.add(wx, wy, 8.0)
-    for k in range(3):
-        a = 3.4 + k * 0.5
-        x, y = px + (pr - 4.0) * math.cos(a), py + (pr - 4.0) * math.sin(a)
-        c.place(op.market_stall(c, k % 3), x, y, ground(x, y) - 0.05, rot=a + math.pi / 2)
-    for k in range(6):
-        a = k * math.tau / 6 + 0.3
-        g = c.game(px + (pr - 1.0) * math.cos(a), py + (pr - 1.0) * math.sin(a), z + 3.4)
+STREET = []  # (Main Street's points, from the lap west: filled in main())
+
+
+def drift_cave(c, ground):
+    """The Drift Cave's mouth: a crag of the crater's purple rock stood against its inner
+    wall, the mouth dark in its face, propped with old mine timbers, lanterns on posts
+    either side, the smugglers' barrels and crates on the ledge. (The game draws the
+    mouth's rocks round the cave's spot, 2 m in from it.)"""
+    cx, cy = M.CRATER[:2]
+    ux, uy = math.cos(M.CAVE_A), math.sin(M.CAVE_A)  # (out from the crater's middle)
+    tx, ty = -uy, ux
+    rot = math.atan2(uy, ux)
+    fx, fy = cx + ux * M.CAVE_FACE, cy + uy * M.CAVE_FACE
+    z = ground(fx - ux * 1.5, fy - uy * 1.5)
+    rk = c.rock_mass("Drift Cave Rock", fx + ux * 6.0, fy + uy * 6.0, 6.0, 10.0, z + 15.0, z0=z - 3.0, n=18, seed=21, angle=rot, base=z)
+    c.assign(rk, c.lib("strata_purple", "wall"))
+    box(c, "Drift Cave Mouth", fx + ux * 0.2, fy + uy * 0.2, 0.9, 2.6, z - 1.0, z + 5.6, ("dark_corridor", "wall"), rot=rot, role="visual")
+    for sd in (-1, 1):
+        px, py = fx - ux * 0.4 + tx * sd * 3.4, fy - uy * 0.4 + ty * sd * 3.4
+        box(c, "Drift Cave Post %d" % sd, px, py, 0.3, 0.3, ground(px, py) - 0.5, z + 5.8, ("weathered_timber", "wall"), rot=rot)
+        lx, ly = fx - ux * 2.6 + tx * sd * 6.0, fy - uy * 2.6 + ty * sd * 6.0
+        c.place(gp.lantern_post(c), lx, ly, ground(lx, ly) - 0.1, rot=math.atan2(-sd * ty, -sd * tx), coll="Props")
+        llx, _lly, llz = gp.LANTERN_POST_LIGHT
+        g = c.game(lx - tx * sd * llx, ly - ty * sd * llx, ground(lx, ly) + llz)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
-    g = c.game(px, py - 4.0, z)
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=pr - 2.0, n=5, folk="desert", heading=0.0)
+    bx, by = fx - ux * 0.4, fy - uy * 0.4
+    box(c, "Drift Cave Lintel", bx, by, 0.35, 4.0, z + 5.8, z + 6.4, ("weathered_timber", "wall"), rot=rot, role="visual")
+    for k, (o, a) in enumerate(((-7.8, 5.0), (7.6, 4.2), (-6.4, 7.0))):
+        x, y = fx - ux * a + tx * o, fy - uy * a + ty * o
+        c.place(("Barrel 0", "Crate Stack 1", "Barrel 1")[k], x, y, ground(x, y) - 0.05, rot=k * 1.3, coll="Props")
+
+
+def trading_post(c, ground, taken, ter):
+    """The frontier town where the Frozen Pass comes down (Blake, review-desert_region note
+    2: "redo this whole front village ... lets go for old west town ... this needs to be a
+    hopping old western town when we enter this world. we need to be brought back to the
+    old west"): Main Street lined with the saloon, the bank, the barber's, the general
+    store, the sheriff's and the hotel (mesa_dress.frontier_town, Dry Gulch's frontier
+    kit). (It was a trading post: adobe homes round a paved square, a diner's neon sign
+    and a gas pump.)"""
+    md.frontier_town(c, ground, taken, ter, STREET)
 
 
 def pueblo(c, ground, taken):

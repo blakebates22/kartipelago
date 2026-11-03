@@ -3505,6 +3505,15 @@
       "tileMetres": 8
     },
     {
+      "id": "desert_strata",
+      "name": "Desert Strata (level beds)",
+      "theme": "canyon_dash",
+      "surface": "wall",
+      "image": "desert_strata.png",
+      "wrap": "repeat",
+      "tileMetres": 8
+    },
+    {
       "id": "canyon_river",
       "name": "Turquoise River",
       "theme": "canyon_dash",
