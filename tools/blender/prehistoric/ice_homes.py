@@ -447,6 +447,14 @@ def lamp(P, bm, x, z, y=0.0):
     P.add(IRON, lambda: cuboid(bm, (x, y + 0.85, z - 0.45), (0.46, 0.46, 0.08)))
 
 
+def _lit(x, z, y=0.0):
+    """Where the light of a lamp(P, bm, x, z, y) burns: in its glass. (Every home's light in a
+    lamp of its own: Blake, review-snow_region 14 note 2, "there is a random light
+    flickering here. we can make it a lantern": the workshop's light hung in the air on the
+    other side of its door from its lamp, and most homes' had no lamp at all.)"""
+    return (x, y + 0.85, z - 0.75)
+
+
 # ------------------------------------------------------------------ the kinds
 
 
@@ -519,10 +527,12 @@ def cut_home(c, idx, rng, w, h, sign_kind, door_col, arch_shape, porch=False):
         if rng.random() < 0.65:
             info["chimney"] = stovepipe(P, bm, rng.uniform(-w / 3, w / 3), -2.6, h, rng)
         info["clutter"] = _clutter(P, bm, rng, w, h, door_col, wins, info)
+        if "lamp2" not in info["clutter"]:
+            lamp(P, bm, dw / 2 + 0.6, dh + 0.4, y=0.0)  # (its light's lamp: LIT)
         P.add(SNOW, lambda: cuboid(bm, (0, 1.0, -0.25), (3.0 + rng.uniform(0, 1.0), 1.2, 0.6)))
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=w, lantern=(w / 2 + 0.7, 0.9, 3.2))
+    info.update(w=w, lantern=_lit(info["door_w"] / 2 + 0.6, info["door_h"] + 0.4))
     return name, info
 
 
@@ -581,9 +591,10 @@ def stack_home(c, idx, rng, w, sign_kinds, door_cols):
         lamp(P, bm, -1.6, lift + 3.4, y=-2.7)
         info["chimney"] = stovepipe(P, bm, -w / 3, -5.0, lift + h1 + 0.5, rng)
         drying_line(P, bm, -w / 2 - 0.4, -w / 2 - 3.0, 1.0, rng)
+        lamp(P, bm, 1.8, 3.8, y=0.0)  # (the lower home's: LIT)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=w + 4.0, lantern=(-w / 2 - 0.6, 0.9, 3.0), lantern2=(w / 2 - 0.4, -0.6, lift + 2.6))
+    info.update(w=w + 4.0, lantern=_lit(-1.6, lift + 3.4, -2.7), lantern2=_lit(1.8, 3.8))
     return name, info
 
 
@@ -613,9 +624,10 @@ def dome_home(c, idx, rng, r, sign_kind, door_col):
         sign(P, bm, sign_kind, 0.0, -r, r * 0.92 + 0.6, s=1.0)
         if rng.random() < 0.6:
             woodpile(P, bm, r * 0.9, -r * 0.2)
+        lamp(P, bm, 1.25, 2.3, y=1.9)  # (on the tunnel's front: LIT)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=2 * r + 2.0, lantern=(1.8, 1.9, 2.2), free=True)
+    info.update(w=2 * r + 2.0, lantern=_lit(1.25, 2.3, 1.9), free=True)
     return name, info
 
 
@@ -661,7 +673,7 @@ def tower_home(c, idx, rng, sign_kind, door_col):
         info["chimney"] = stovepipe(P, bm, x - s * 0.25, y - s * 0.25, z + 0.9, rng)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=7.0, lantern=(2.2, 0.6, 3.0), free=True)
+    info.update(w=7.0, lantern=_lit(1.6, 5.2, -0.3), free=True)
     return name, info
 
 
@@ -715,7 +727,7 @@ def workshop(c, idx, rng, sign_kind, door_col):
         info["chimney"] = stovepipe(P, bm, w / 3, -2.5, h + 0.4, rng)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=w + 2.0, lantern=(-w / 2 + 1.5, 0.9, 4.2))
+    info.update(w=w + 2.0, lantern=_lit(w / 2 - 1.5, 4.6))
     return name, info
 
 
@@ -738,9 +750,10 @@ def tiny_hut(c, idx, rng, sign_kind, door_col):
         P.add(TIMBER, lambda: cuboid(bm, (2.1, -0.4, 1.0), (0.1, 1.4, 2.2), tilt=(0.0, -0.25)))
         P.add(TIMBER, lambda: cuboid(bm, (2.25, -0.4, 1.0), (0.1, 0.2, 2.2), tilt=(0.0, -0.25)))
         info["chimney"] = stovepipe(P, bm, -1.0, -2.2, 3.3, rng)
+        lamp(P, bm, -1.5, 2.6, y=0.0)  # (LIT)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=5.5, lantern=(-1.6, 0.6, 2.4), free=True)
+    info.update(w=5.5, lantern=_lit(-1.5, 2.6), free=True)
     return name, info
 
 
@@ -761,9 +774,11 @@ def block_home(c, idx, rng, sign_kind, door_col):
         cornice(P, bm, s, s - 0.6, rng, y=0.15)
         sign(P, bm, sign_kind, -1.8, 0.7, s + 0.6, s=1.15)
         info["clutter"] = _clutter(P, bm, rng, s, s - 0.6, door_col, [(2.4, 2.6, 0.75)], {"door_h": 4.0, "door_w": 2.8, "y0": 0.1})
+        if "lamp2" not in info["clutter"]:
+            lamp(P, bm, 2.0, 4.4, y=0.0)  # (LIT)
 
     name = _p(c, "Ice Home %d" % idx, build)
-    info.update(w=s + 2.0, lantern=(s / 2 + 0.6, 0.8, 3.2))
+    info.update(w=s + 2.0, lantern=_lit(2.0, 4.4))
     return name, info
 
 

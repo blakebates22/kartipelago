@@ -209,17 +209,41 @@ def crevasse_d(x, y):
     return best
 
 
+# (The crevasse ends sheer just past the ice bridge's south rail, CREVASSE_CAP along it: south
+# of the road there's nothing to fall into. Its south arm was a pit you couldn't drive out
+# of: Blake, review-snow_region 14 note 1, "I am stuck here. we need to make it so i cant
+# get stuck here".)
+CREVASSE_CAP = 25.0
+
+
+def _crevasse_along(x, y):
+    """(distance from the crevasse's line, how far along it from its north end)."""
+    best = (1e9, 0.0)
+    s = 0.0
+    for (ax, ay), (bx, by) in zip(CREVASSE, CREVASSE[1:]):
+        dx, dy = bx - ax, by - ay
+        ln = math.hypot(dx, dy)
+        t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / (ln * ln)))
+        d = math.hypot(x - ax - dx * t, y - ay - dy * t)
+        if d < best[0]:
+            best = (d, s + ln * t)
+        s += ln
+    return best
+
+
 def crevasse_cut(x, y):
     d = crevasse_d(x, y)
     if d > CREVASSE_HW + 1.0:
         return 0.0
-    (sx, sy), (ex, ey) = CREVASSE[0], CREVASSE[-1]
-    ends = min(math.hypot(x - sx, y - sy), math.hypot(x - ex, y - ey))
+    _, along = _crevasse_along(x, y)
+    if along > CREVASSE_CAP + 3.0:
+        return 0.0
     hw = CREVASSE_HW * (1.0 + 0.15 * math.sin(x * 0.27 + y * 0.11))
-    # (Its ends ramp up out of it gently, under 37°, so a kart that goes in can always drive
-    # out along its floor: Blake, review-snow_region 13 notes 9, 10, "I just got stuck down
-    # here with my car".)
-    return CREVASSE_DEPTH * (1.0 - smooth((d - 2.0) / (hw - 2.0))) * smooth(ends / 46.0)
+    # (Its north end ramps up out of it gently, under 37°, so a kart that goes in can always
+    # drive out along its floor: Blake, review-snow_region 13 notes 9, 10, "I just got stuck
+    # down here with my car".)
+    return (CREVASSE_DEPTH * (1.0 - smooth((d - 2.0) / (hw - 2.0))) * smooth(along / 46.0)
+            * (1.0 - smooth((along - CREVASSE_CAP) / 3.0)))
 
 
 def _floor(x, y):

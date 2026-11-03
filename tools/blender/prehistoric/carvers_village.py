@@ -214,20 +214,47 @@ def bench(c):
     return _p(c, "Ice Carver Bench", build)
 
 
+PILLAR_LAMP = 5.9  # (the height of the pillar's lantern's glass)
+
+
 def ice_pillar(c):
-    """An ice pillar: a column of cut blocks narrowing up, blue bands between them, a
-    lantern's iron arm at the top."""
+    """An ice lamp column, the carvers' showpiece on each hairpin (Blake, review-snow_region
+    14 note 9, "we need to redo these. they look bad": they were a stack of cubes with an
+    iron arm and no lamp): a stepped plinth of frost stone, a shaft of clear ice carved in
+    eight faces, tapering and turned a little as it rises, a band of blue ice round it, a
+    capital with icicles hanging from it, and on it a lantern of iron and amber glass under
+    a pointed cap, its light burning at PILLAR_LAMP."""
+    from props import loft, ring
 
     def build(P, bm):
-        P.add(SNOW, lambda: cuboid(bm, (0, 0, 0.0), (2.4, 2.4, 1.0)))
-        for k in range(4):
-            s = 1.5 - 0.15 * k
-            P.add(ICE, lambda k=k, s=s: cuboid(bm, (0, 0, 1.3 + k * 1.4), (s, s, 1.2)))
-            P.add(BLUE, lambda k=k, s=s: cuboid(bm, (0, 0, 2.0 + k * 1.4), (s + 0.1, s + 0.1, 0.2)))
-        P.add(BLUE, lambda: _crystal(bm, (0, 0, 6.6), (0, 0, 1), 1.6, 0.6))
-        P.add(IRON, lambda: cuboid(bm, (0, 0.8, 6.2), (0.12, 1.6, 0.12)))
+        # The plinth: two steps of stone, snow lying on the lower.
+        P.add("frost_stone", lambda: cuboid(bm, (0, 0, -0.2), (2.3, 2.3, 1.0)))
+        P.add("frost_stone", lambda: cuboid(bm, (0, 0, 0.55), (1.7, 1.7, 0.5)))
+        P.add(SNOW, lambda: loft(bm, [ring(bm, (0, 0), 1.28, 0.28, 8, phase=0.39), ring(bm, (0, 0), 0.95, 0.4, 8, phase=0.39)], cap_top=False))
+        # The shaft: eight faces, turned as it rises.
+        zs = [0.8, 1.6, 2.4, 3.2, 4.0, 4.6]
+        P.add(CLEAR, lambda: loft(bm, [ring(bm, (0, 0), 0.62 - 0.05 * k, z, 8, phase=0.39 + 0.12 * k) for k, z in enumerate(zs)],
+                                  cap_top=False, cap_bottom=True))
+        # A band of blue ice round it, and the capital.
+        P.add(BLUE, lambda: loft(bm, [ring(bm, (0, 0), 0.7, 1.9, 8, phase=0.6), ring(bm, (0, 0), 0.7, 2.15, 8, phase=0.6)],
+                                 cap_top=False))
+        P.add(ICE, lambda: loft(bm, [ring(bm, (0, 0), 0.4, 4.55, 8, phase=1.0), ring(bm, (0, 0), 0.95, 4.85, 8, phase=1.0),
+                                     ring(bm, (0, 0), 0.95, 5.05, 8, phase=1.0)], cap_top=True))
+        for k in range(8):  # (icicles off the capital's rim)
+            a = k * math.tau / 8 + 1.0
+            P.add(CLEAR, lambda a=a, k=k: _crystal(bm, (0.86 * math.cos(a), 0.86 * math.sin(a), 4.85), (0, 0, -1),
+                                                   0.5 + 0.3 * (k % 3), 0.09, n=4))
+        # The lantern: four iron posts round its glass, a pointed cap and a finial.
+        P.add("lantern_amber", lambda: cuboid(bm, (0, 0, PILLAR_LAMP), (0.5, 0.5, 0.75)))
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                P.add(IRON, lambda sx=sx, sy=sy: cuboid(bm, (sx * 0.3, sy * 0.3, PILLAR_LAMP), (0.07, 0.07, 0.95)))
+        P.add(IRON, lambda: cuboid(bm, (0, 0, PILLAR_LAMP - 0.5), (0.72, 0.72, 0.1)))
+        P.add(IRON, lambda: loft(bm, [ring(bm, (0, 0), 0.52, PILLAR_LAMP + 0.45, 4, phase=0.785),
+                                      ring(bm, (0, 0), 0.03, PILLAR_LAMP + 1.05, 4, phase=0.785)], cap_top=True, cap_bottom=True))
+        P.add(IRON, lambda: cuboid(bm, (0, 0, PILLAR_LAMP + 1.2), (0.05, 0.05, 0.35)))
 
-    return _p(c, "Ice Pillar", build)
+    return _p(c, "Ice Lamp Pillar", build)
 
 
 # ------------------------------------------------------------------ placing it
@@ -262,7 +289,7 @@ def build(c, ground, taken):
             continue
         c.place(ice_pillar(c), px, py, f[1] - 0.3, rot=math.atan2(oy, ox) + math.pi / 2, coll="Village")
         taken.add(px, py, 3.0)
-        g = c.game(px - ox / ol * 0.8, py - oy / ol * 0.8, f[1] + 5.6)
+        g = c.game(px, py, f[1] - 0.3 + PILLAR_LAMP)
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
         pil += 1
     print("ice carvers' village: %d homes, %d ice pillars" % (homes, pil))

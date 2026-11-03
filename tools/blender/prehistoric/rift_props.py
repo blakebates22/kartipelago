@@ -140,8 +140,20 @@ def crystal_hut(c, variant=0):
         k.add(CYAN, lambda bm: [shard(bm, (0, 0, 7.4), (0.05, 0.03, 1), 3.0, 0.5, tip=0.25),
                                 *[shard(bm, (0.3 * math.cos(a), 0.3 * math.sin(a), 7.5), _lean(a, 0, 0.45), 1.8, 0.28, tip=0.3)
                                   for a in (0.4, 2.5, 4.6)]])
-        # The door: a slab of clear ice stood open on the left.
-        k.add("lake_ice", lambda bm: cuboid(bm, (lx0 + 0.35, ly - 0.55, 1.7), (0.15, 1.2, 3.3), rot=0.25))
+        # The door: a planked one of wood, shut in the doorway, battens and iron straps on
+        # its face (Blake, review-snow_region 14 note 3: "the yellow door looks bad. lets
+        # rework the door. it can be wood": the open doorway showed the glow inside, a
+        # yellow wall, with a slab of ice stood by it).
+        import ice_homes as ih
+
+        class _P:
+            def add(self, m, f):
+                k.add(m, lambda bm, f=f: f())
+
+        dy = -R * math.cos(door[1]) - 0.05
+        dwid = 2.0 * (R * math.sin(door[1]) - 0.35)
+        ih.door(_P(), bm, dwid, 3.5, "door_wood", y=dy, x=0.0)
+        k.add("timber_beam", lambda bm: cuboid(bm, (0, dy, 3.62), (dwid + 0.4, 0.3, 0.26)))
         # Lamps: a glowing crystal on a post of stone either side of the step.
         for sd in (-1, 1):
             k.add("rift_stone", lambda bm, sd=sd: loft(bm, [ring(bm, (sd * 1.9, -R - 1.4), 0.22, -0.3, 6),

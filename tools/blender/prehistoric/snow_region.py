@@ -57,8 +57,14 @@ HUT_HALF = 10.0
 HUT_GAP = 4.5
 BELLS = [(-44.0, 136.0), (-14.0, 160.0), (-16.0, 134.0)]  # (none out on the ice now: nothing kept clear for them)
 LANTERNS = [1, 2, 3]
-# Brachio's hot spring (Act V's return task): a walled yard in the summit meadow, frozen shut.
-RETURN = (-118.0, 128.0)
+# The smugglers' Ice Cave (regions.ts cave): its mouth in the north wall of Aurora's bay, left
+# of the crystal spires, facing south down the bay, its yard's gate 11 m out from it (Blake,
+# review-snow_region 14 notes 5 and 7, "move the smugglers tunnel to aurora where I pinned",
+# "flush on the wall to the left of the crystal structure"; it was in the summit meadow, by
+# Brachio's old hot spring).
+RETURN = (194.0, 86.5)
+RETURN_FACING = -math.pi / 2  # (out of the wall, south)
+CAVE_WALL_Y = 89.0  # (the face of the rock it's cut into, against the bay's north wall)
 # A secret (regions.ts secret): an old store in Frostveil's bailey, buried under a drift
 # (the Desert Tool's).
 SECRET = (-140.0, -30.0)
@@ -205,6 +211,56 @@ def classify(c, n, info):
     return pb.transition(L.look_weights(c.x, c.y), lambda lk: LOOK[lk][0])
 
 
+# Boulders across the way in behind Frostveil's north-east tower, between it and the cliff
+# (Blake, review-snow_region 14 note 8, "we need to put some rocks here so you cant get stuck
+# behind the castle"): Blender (x, y, variant, scale).
+CASTLE_BACK = [(-180.0, 57.5, 1, 1.3), (-175.5, 58.0, 0, 1.45), (-171.2, 57.6, 1, 1.35)]
+
+
+def castle_back(c, ground):
+    n = 0
+    for k, (x, y, v, s) in enumerate(CASTLE_BACK):
+        if not paint.road_clear(c, x, y, 1.0):
+            print("  (castle back boulder %d: on the road)" % k)
+            continue
+        # (Standing up off the terrace they close, not seated on the low ground by the road:
+        # their tops a good 2.5 m over the terrace.)
+        z = max(ground(x + 2.4 * s * math.cos(t), y + 2.4 * s * math.sin(t)) for t in [j * 0.785 for j in range(8)])
+        c.place(sp.boulder(c, v), x, y, z - 0.6, rot=0.15 * k, scale=s, coll="Props")
+        n += 1
+    print("castle back: %d boulders" % n)
+
+
+def ice_cave(c, ground):
+    """The smugglers' Ice Cave's mouth in the face of Aurora's north wall: a dark way into
+    the rock framed in old timbers, lanterns on poles either side, their sledges and sacks
+    by it. (The game draws the mouth's rocks round the cave's spot, 2 m in from it.)"""
+    import ice_yard as iy
+
+    x, y = RETURN
+    wy = CAVE_WALL_Y
+    z = ground(x, wy - 1.0)
+    # (A crag of the wall's rock heaped against it, its face sheer to the bay's floor, the
+    # mouth cut in that: the north wall there only slopes up.)
+    rk = c.rock_mass("Ice Cave Rock", x, wy + 6.5, 9.0, 6.5, z + 17.0, z0=z - 3.0, n=18, seed=14, angle=0.0, base=z)
+    c.assign(rk, c.lib("frost_cliff", "wall"))
+    box(c, "Ice Cave Mouth", x, wy + 0.2, 2.6, 0.9, z - 1.0, z + 5.6, ("dark_corridor", "wall"), role="visual")
+    for sd in (-1, 1):
+        px = x + sd * 3.4
+        box(c, "Ice Cave Post %d" % sd, px, wy - 0.4, 0.3, 0.3, ground(px, wy - 0.4) - 0.5, z + 5.8, ("timber_beam", "wall"))
+        lx, ly = x + sd * 6.0, wy - 2.6
+        # (its lamp hung out toward the mouth)
+        c.place(iy.lantern_pole(c), lx, ly, ground(lx, ly) - 0.1, rot=sd * math.pi / 2, coll="Props")
+        g = c.game(lx - sd * 0.85, ly, ground(lx, ly) + 3.45)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    box(c, "Ice Cave Lintel", x, wy - 0.4, 0.35, 4.0, z + 5.8, z + 6.4, ("timber_beam", "wall"), rot=math.pi / 2, role="visual")
+    for k, (dx, dy, rot) in enumerate(((-7.5, -5.0, 0.3), (7.8, -5.6, -0.5))):
+        px, py = x + dx, wy + dy
+        c.place(snp_.sack_pile(c, k), px, py, ground(px, py) - 0.05, rot=rot, coll="Props")
+    px, py = x - 9.0, wy - 8.0
+    c.place(snp_.sled(c, 0), px, py, ground(px, py) - 0.05, rot=0.8, coll="Props")
+
+
 def main():
     c = kit.Course(TRACK_ID, "Snow Kingdom (ruined)" if RUIN else "Snow Kingdom", "summit_pass")
     c.route(L.route_points(), width=14.0, bank=5.0)
@@ -288,8 +344,10 @@ def main():
         ruined(c, ground)
     # (v4: its walls gone, Blake, review-snow_region 2 note 3, "we need to remove this"; the
     # smugglers' gate stays, for the story, till the Summit's rework gives it a home.)
-    puzzle_kit.pen(c, "return", "Hot Spring", *RETURN, pb.to_road(c, *RETURN), 11.0, 4.5, ("frost_stone", "wall"),
+    puzzle_kit.pen(c, "return", "Ice Cave", *RETURN, RETURN_FACING, 11.0, 4.5, ("frost_stone", "wall"),
                    ground(*RETURN), height=6.0, walls=False)
+    ice_cave(c, ground)
+    castle_back(c, ground)
     # (No Old Store any more: "we arent going to be using it", review-snow_region 8 notes 1, 13.)
     pb.emit_spots(c, spots)
     # The villagers' homes, in every part of the region (src/overworld/villagers.ts).
@@ -462,16 +520,20 @@ def thresholds(c, ground):
             continue
         elif kind == "ice":
             half = pb.bore(c, L, name, s0, s1, ("cavern_ice", "wall"), ("summit_snow", "deep_snow"), height=11.0)
-            crystals = [ap.fan(c, v, size=5.0, mat=m) for v, m in ((0, ap.CYAN), (1, ap.VIOLET), (2, ap.TEAL))]
+            # (Stood on the floor at the foot of its walls, not stuck up the walls: Blake,
+            # review-snow_region 14 note 4, "lets put all these crystals on the walls in this
+            # tunnel on the ground"; their glow down by them.)
+            crystals = [ap.fan(c, v, size=3.6, mat=m) for v, m in ((0, ap.CYAN), (1, ap.VIOLET), (2, ap.TEAL))]
             s = s0 + 5.0
             k = 0
             while s < s1 - 4.0:
                 q = c.at(s)
                 sd = 1 if k % 2 else -1
-                x, y = q.p.x + q.r.x * sd * (half - 0.3), q.p.y + q.r.y * sd * (half - 0.3)
-                c.place(crystals[k % 3], x, y, q.p.z + 1.0 + 3.0 * (k % 2), rot=math.atan2(q.r.y, q.r.x) * sd,
+                x, y = q.p.x + q.r.x * sd * (half - 0.9), q.p.y + q.r.y * sd * (half - 0.9)
+                z = min(ground(x + 0.8 * math.cos(a), y + 0.8 * math.sin(a)) for a in (0.0, 1.57, 3.14, 4.71))
+                c.place(crystals[k % 3], x, y, z - 0.3, rot=math.atan2(-q.r.y * sd, -q.r.x * sd) - math.pi / 2,
                         role="visual")
-                g = c.game(x, y, q.p.z + 5.0)
+                g = c.game(x - q.r.x * sd * 0.8, y - q.r.y * sd * 0.8, z + 1.6)
                 c.entity("lantern", x=g[0], y=g[1], z=g[2])
                 s += 9.0
                 k += 1

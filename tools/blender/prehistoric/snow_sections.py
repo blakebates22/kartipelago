@@ -642,6 +642,10 @@ def aurora(c, ground, taken):
 CRYSTAL_HUT = (165.4, 46.7)  # note 2: "a nice crystal hut with npcs ... like they built a home from the crystals"
 RIFT_FIRE = (95.5, 122.5)  # note 7: "a little fire here with some stump chairs around it"
 OUTPOST = (84.7, -401.9)  # note 1: "a little outpost here with some npcs they are about to pilgramige to dino valley"
+# (review-snow_region 14 note 10: "mover the little pilgram camp right here. flatten it if
+# needed and make sure nothing is floating or buried in the snow": it had wandered 30 m off,
+# to (97, -416).)
+OUTPOST = (84.7, -389.9)
 
 
 def _level_spot(c, ground, taken, x0, y0, room, slope, rmax=20.0, wall=None, margin=None):
@@ -698,15 +702,22 @@ def rift_folk(c, ground, taken, ter=None):
     spot = _level_spot(c, ground, taken, *RIFT_FIRE, 3.6, 1.0, wall=-3.0, margin=3.0)
     print("rift: the fire at", spot and (round(spot[0]), round(spot[1])))
     if spot:
-        x, y, z = spot
-        c.place(pr.campfire(c), x, y, z, coll="Fire", role="visual")
+        # (Levelled first, filled up to its highest ground, and the fire's stones and the
+        # stumps set on it: they stood sunk in the mirror ice, Blake, review-snow_region 14
+        # note 6, "the rocks around the fire and the stumps are below the ice".)
+        x, y, _ = spot
+        z = max([ground(x, y)] + [ground(x + r * math.cos(t), y + r * math.sin(t)) for r in (1.5, 3.0) for t in [i * 0.785 for i in range(8)]])
+        if ter is not None:
+            paint.grade(c, ter, x, y, 0.0, 7.0, 7.0, z)
+        z = ground(x, y)
+        c.place(pr.campfire(c), x, y, z + 0.02, coll="Fire", role="visual")
         g = c.game(x, y, z + 1.2)
         c.entity("torch", x=g[0], y=g[1], z=g[2])
         for j in range(4):
             a = j * math.tau / 4 + 0.4
             sx, sy = x + 2.5 * math.cos(a), y + 2.5 * math.sin(a)
-            sz = min(ground(sx + 0.5 * math.cos(t), sy + 0.5 * math.sin(t)) for t in [i * 1.047 for i in range(6)])
-            c.place(rp.stump_seat(c, j % 3), sx, sy, sz, rot=a, coll="Props")
+            sz = max(ground(sx + 0.5 * math.cos(t), sy + 0.5 * math.sin(t)) for t in [i * 1.047 for i in range(6)])
+            c.place(rp.stump_seat(c, j % 3), sx, sy, sz - 0.05, rot=a, coll="Props")
         taken.add(x, y, 3.8)
         g = c.game(x, y, z)
         c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=5.0, n=2, folk="snow", heading=0.0)
@@ -719,13 +730,19 @@ def outpost(c, ground, taken, ter=None):
     import props as pr
     import snow_props as snp
 
-    spot = _level_spot(c, ground, taken, *OUTPOST, 7.5, 2.5, rmax=30.0, margin=5.0)
-    print("outpost at", spot and (round(spot[0]), round(spot[1])))
+    # (The nearest spot with room off the road, levelled by filling up to its highest
+    # ground, never cutting: the grade's never cut near a road, so a cut left the road's
+    # side of the camp standing proud of it.)
+    spot = _level_spot(c, ground, taken, *OUTPOST, 7.5, 4.0, rmax=16.0, margin=5.0)
+    print("outpost at", spot and (round(spot[0]), round(spot[1])), "(pin %.0f, %.0f)" % OUTPOST)
     if not spot:
         return 0
-    x, y, z = spot
+    x, y, _ = spot
+    z = max([ground(x, y)] + [ground(x + r * math.cos(t), y + r * math.sin(t)) for r in (4.0, 8.0) for t in [j * 0.785 for j in range(8)]])
     if ter is not None:
         paint.grade(c, ter, x, y, 0.0, 17.0, 17.0, z)
+    print("  levelled to %.2f: %.2f..%.2f under it" % (z, min(ground(x + 7.0 * math.cos(t), y + 7.0 * math.sin(t)) for t in [j * 0.785 for j in range(8)]),
+                                                     max(ground(x + 7.0 * math.cos(t), y + 7.0 * math.sin(t)) for t in [j * 0.785 for j in range(8)])))
     rot = _face(c, x, y)
     cs, sn = math.cos(rot), math.sin(rot)
 

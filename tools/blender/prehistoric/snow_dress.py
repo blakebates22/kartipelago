@@ -858,7 +858,8 @@ def entry_pass(c, ground, way, taken=None):
     gz = ground(*best)
     kp.use_palette({"keep_ashlar": "citadel_stone", "keep_ashlar_dark": "citadel_dark", "keep_parapet": "citadel_stone",
                     "keep_gold": "temple_gold", "keep_banner": "banner_teal", "keep_pine": "pine_snow"})
-    arch = kp.gate_arch(c, span=22.0, clear=12.0, depth=6.0)
+    # (No gold panel on its face: Blake, review-snow_region 14 note 11, "remove this texture".)
+    arch = kp.gate_arch(c, span=22.0, clear=12.0, depth=6.0, gold=False)
     c.place(arch, best[0], best[1], gz - 0.3, rot=rot - math.pi / 2, coll="Props", role="visual")
     nx, ny = -math.sin(rot), math.cos(rot)
     for sd in (-1, 1):

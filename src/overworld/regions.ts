@@ -222,10 +222,11 @@ export const REGIONS: Region[] = [
     ruinPackageId: "snow_region_ruin",
     // (No secret any more: the Old Store in Frostveil's bailey is gone, Blake, review-snow_region 8:
     // "we arent going to be using it".)
-    // The smugglers' Ice Cave: a walled yard in the summit meadow, round Brachio's old hot spring.
+    // The smugglers' Ice Cave: its mouth in the north wall of Aurora's bay, left of the crystal
+    // spires (review-snow_region 14 notes 5, 7: it was in the summit meadow).
     cave: {
-      gate: { x: -125.94, z: -135.61, heading: -2.3349, width: 9 },
-      spot: { x: -118, z: -128 },
+      gate: { x: 194.0, z: -75.5, heading: 0.0, width: 9 },
+      spot: { x: 194.0, z: -86.5 },
     },
     music: "hearthglow",
     worldId: "frostveil",
