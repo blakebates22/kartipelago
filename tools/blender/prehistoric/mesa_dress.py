@@ -19,6 +19,7 @@
 # lowest ground; every prop on the lowest ground under it.
 # SPDX-License-Identifier: MIT
 
+import functools
 import math
 import random
 
@@ -35,6 +36,7 @@ import summit_props as smp_
 from canyon_props import _beam
 from course_kit import Vector, bmesh, rnd
 from props import _faces, blob, cuboid, tube
+from pocket_build import box
 
 TIMBER = ("weathered_timber", "wall")
 
@@ -89,7 +91,7 @@ def _scene(c, ter):
 # ------------------------------------------------------------------ the boomtown
 
 WEST = [
-    (20.0, 16.0, {"special": gt.hotel}),
+    (20.0, 16.0, {"special": functools.partial(gt.hotel, haunted=False, sign_top=True)}),
     (10.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.6}),
     (9.0, 11.0, {"siding": "siding_grey", "sign": "barber", "lit": 0.5}),
     (22.0, 18.0, {"special": gt.saloon}),
@@ -155,6 +157,7 @@ def _row(c, sc, m, s0, s1, side, kinds, ground, ter, taken, seed=0, line=None, g
             else:
                 gt.building(m, sc, x, y, zf + 0.05, rot, w, d, seed=seed * 50 + k, **kw)
             out.append((x, y, rot, w, cx, cy, R))
+            print("  built %s %.0fx%.0f at (%.0f, %.0f)" % (opts.get("sign") or getattr(opts.get("special"), "__name__", "plain"), w, d, cx, cy))
         s += w + ex + gap + 2.0 * rnd(seed * 13 + k)
         k += 1
     return out
@@ -268,16 +271,17 @@ class _Line:
 # bay under the rim, the road from the Frozen Pass crossing it in the middle of town. Each
 # block: (from, to along Main Street, its east row, its west row).
 TOWN_BLOCKS = [
-    (4.0, 50.0, [(9.0, 11.0, {"siding": "siding_grey", "sign": "barber", "lit": 0.6}),
+    (4.0, 62.0, [(9.0, 11.0, {"siding": "siding_grey", "sign": "barber", "lit": 0.6}),
                  (8.0, 10.0, {"siding": "siding_red", "storeys": 2, "balcony": True, "lit": 0.6}),
-                 (9.0, 11.0, {"siding": "siding_brown", "sign": "undertaker", "lit": 0.4})],
-     [(11.0, 12.0, {"special": gt.sheriff, "extra": 9.0}),
+                 (9.0, 11.0, {"siding": "siding_brown", "sign": "undertaker", "lit": 0.4}),
+                 (11.0, 12.0, {"siding": "siding_green", "storeys": 2, "balcony": True, "sign": "livery", "lit": 0.6})],
+     [(12.0, 12.0, {"special": lambda m, sc, x, y, z, rot: grand_jail(m, sc, x, y, z, rot), "extra": 15.0}),
       (18.0, 15.0, {"siding": "siding_ochre", "storeys": 2, "sign": "general", "lit": 0.8})]),
-    (70.0, 120.0, [(10.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.6}),
+    (68.0, 128.0, [(10.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.6}),
                    (12.0, 13.0, {"siding": "siding_brown", "sign": "assay", "lit": 0.5}),
                    (8.0, 10.0, {"siding": "siding_ochre", "lit": 0.6})],
      [(22.0, 18.0, {"special": gt.saloon}),
-      (20.0, 16.0, {"special": gt.hotel})]),
+      (20.0, 16.0, {"special": functools.partial(gt.hotel, haunted=False, sign_top=True)})]),
 ]
 
 
@@ -300,10 +304,11 @@ def frontier_town(c, ground, taken, ter, street):
         built += _row(c, sc, m, b0, b1, -1, west, ground, ter, taken, seed=9 + k, line=line, gap=3.5)
     for b in built:
         taken.add(b[4], b[5], b[6])
+    square = town_square(c, sc, m, ground, ter, taken)
     m.build(c, "Frontier Town Buildings", "Village", role="both")
-    # The arches over the street at both ends of town.
-    timber_arch(c, ground, line.at(1.5), "Town Arch South", h=9.0)
-    timber_arch(c, ground, line.at(line.length - 1.5), "Town Arch North", h=9.0)
+    rocking_chairs(c, ground, built[:6:2] + square[1:6:2])
+    town_props(c, ground, taken, line, built + square)
+    # (No arches over the street's ends: review-desert_region 2, notes 10 and 12.)
     # Lantern posts down both kerbs, the boardwalks' things between them.
     post = gp.lantern_post(c)
     lx, _ly, lz = gp.LANTERN_POST_LIGHT
@@ -373,43 +378,258 @@ def frontier_town(c, ground, taken, ter, street):
     return len(built)
 
 
-BOOT_HILL = (196.0, -66.0, 15.0)  # Boot Hill: its middle and radius, out west of town over the railroad
+def grand_jail(m, sc, x, y, z, rot):
+    """The sheriff's office and, beside it, the jailhouse made grand (review-desert_region 2,
+    note 9: "lets make this building bigger and more grand"): two storeys of dressed stone,
+    a corniced parapet, pilasters, tall barred windows on both floors, a stone stair to its
+    door under a pediment, the JAIL sign, a flag on its roof."""
+    f, top = gt.building(m, sc, x, y, z, rot, 12.0, 12.0, storeys=2, siding="siding_grey", sign="sheriff", balcony=True, lit=0.7,
+                         ghost=0.0, seed=3)
+    W, D, H = 13.0, 13.0, 8.6
+    j = gt.Frame(*f.P(12.0 / 2 + 1.0 + W / 2, 1.0), rot)
+    m.add(("masonry", "wall"), lambda bm: cuboid(bm, j.P(0, D / 2, H / 2 - 0.8), (W, D, H + 1.6), rot))
+    m.add(("sandstone_block", "wall"), lambda bm: cuboid(bm, j.P(0, -0.1, H + 0.5), (W + 0.8, 0.8, 0.6), rot))  # (the cornice)
+    m.add(("masonry", "wall"), lambda bm: cuboid(bm, j.P(0, 0.2, H + 1.4), (W, 0.5, 1.4), rot))  # (the parapet)
+    m.add(("tin_roof", "wall"), lambda bm: cuboid(bm, j.P(0, D / 2, H + 0.1), (W - 0.4, D - 0.4, 0.3), rot))
+    for u in (-W / 2 + 0.3, -W / 6, W / 6, W / 2 - 0.3):
+        m.add(("sandstone_block", "wall"), lambda bm, u=u: cuboid(bm, j.P(u, -0.25, H / 2), (0.7, 0.5, H), rot))  # (pilasters)
+    fn = j.N(0, -1)
+    for fl, zz in ((0, 1.4), (1, 5.3)):
+        for u in (-4.4, -1.6, 1.6, 4.4):
+            if fl == 0 and abs(u) < 2.0:
+                continue
+            cx, cy, _ = j.P(u, 0)
+            gt.face_quad(m, ("window_dark", "wall"), cx, cy, fn[0], fn[1], 0.7, z + zz, z + zz + 2.2, out=0.05)
+            for k in range(5):
+                bx, by, _ = j.P(u - 0.56 + k * 0.28, -0.15)
+                m.add(("iron", "wall"), lambda bm, bx=bx, by=by, zz=zz: cuboid(bm, (bx, by, z + zz + 1.1), (0.07, 0.07, 2.2)))
+    cx, cy, _ = j.P(0, 0)
+    gt.face_quad(m, ("door_wood", "wall"), cx, cy, fn[0], fn[1], 1.1, z + 0.6, z + 3.4, out=0.06)
+    for k in range(3):
+        m.add(("sandstone_block", "wall"), lambda bm, k=k: cuboid(bm, j.P(0, -0.9 - k * 0.6, 0.1 + 0.2 * (2 - k)), (3.6 + 0.8 * k, 0.6, 0.2 * (3 - k)), rot))
+    m.add(("sandstone_block", "wall"), lambda bm: cuboid(bm, j.P(0, -0.5, 4.0), (3.4, 1.0, 0.35), rot, tilt=(0.0, 0.0)))
+    for sx in (-1, 1):
+        m.add(("sandstone_block", "wall"), lambda bm, sx=sx: cuboid(bm, j.P(sx * 1.5, -0.7, 2.0), (0.4, 0.4, 3.8), rot))
+    gt.face_quad(m, ("sign_jail", "wall"), cx, cy, fn[0], fn[1], 2.0, z + H - 1.8, z + H - 0.2, out=0.06)
+    px, py, _ = j.P(W / 2 - 1.0, D - 1.0)
+    m.add(TIMBER, lambda bm: cuboid(bm, (px, py, z + H + 3.5), (0.15, 0.15, 7.0)))
+    m.add(("banner_red", "wall"), lambda bm: cuboid(bm, (px + 0.9 * math.cos(rot), py + 0.9 * math.sin(rot), z + H + 6.2), (1.8, 0.05, 1.1), rot))
+    sc.footprints.append((j.P(0, D / 2)[0], j.P(0, D / 2)[1], 9.5))
+    return f
+
+
+def town_square(c, sc, m, ground, ter, taken):
+    """The town square at Main Street's north end (review-desert_region 2, note 14: "a cul
+    de sac of buildings ... a lively town square"): the ring road round a plaza (the well,
+    the bandstand, the flagpole, benches and its lamps; mesa_region lays the ring), and the
+    buildings all round it facing in, each on land graded level under it, signs on every
+    one. Returns them as _row's."""
+    sx, sy, R, _pad = M.TOWN_SQUARE
+    kinds = [(12.0, 12.0, {"siding": "siding_green", "sign": "bank", "lit": 0.7}),
+             (10.0, 11.0, {"siding": "siding_brown", "sign": "barber", "lit": 0.6}),
+             (13.0, 12.0, {"siding": "siding_red", "storeys": 2, "balcony": True, "sign": "saloon", "lit": 0.85}),
+             (11.0, 11.0, {"siding": "siding_ochre", "sign": "assay", "lit": 0.6}),
+             (14.0, 12.0, {"siding": "siding_grey", "storeys": 2, "sign": "hotel", "lit": 0.6}),
+             (10.0, 11.0, {"siding": "siding_brown", "sign": "undertaker", "lit": 0.4}),
+             (12.0, 12.0, {"siding": "siding_green", "storeys": 2, "balcony": True, "sign": "general", "lit": 0.75}),
+             (11.0, 11.0, {"siding": "siding_red", "sign": "livery", "lit": 0.5})]
+    Rf = R + 5.0 + 1.2 + 3.6
+    out = []
+    a = math.radians(-58.0)
+    k = 0
+    while a < math.radians(238.0) and k < len(kinds):
+        w, d, opts = kinds[k]
+        da = (w + 1.6) / Rf
+        am = a + da / 2
+        x, y = sx + Rf * math.cos(am), sy + Rf * math.sin(am)
+        rot = am - math.pi / 2  # (its front, -v, toward the plaza)
+        f = gt.Frame(x, y, 0.0, rot)
+        cx, cy, _ = f.P(0, d / 2)
+        corners = [f.P(-w / 2, -3.4), f.P(w / 2, -3.4), f.P(-w / 2, d), f.P(w / 2, d)]
+        hs = [ground(px, py) for px, py, _ in corners] + [ground(cx, cy)]
+        if max(hs) - min(hs) < 5.0 and all(_off_roads(c, px, py, 1.0) for px, py, _ in corners):
+            zf = (ground(*corners[0][:2]) + ground(*corners[1][:2])) / 2
+            paint.grade(c, ter, cx, cy, rot, w + 1.0, d + 1.0, zf, front=3.8)
+            gt.building(m, sc, x, y, zf + 0.05, rot, w, d, seed=200 + k, ghost=0.0, **opts)
+            R_ = math.hypot(w, d + 3.4) / 2
+            out.append((x, y, rot, w, cx, cy, R_))
+            taken.add(cx, cy, R_)
+            print("  square: %s at (%.0f, %.0f)" % (opts.get("sign"), cx, cy))
+        a += da
+        k += 1
+    # The plaza: the well in its middle, the bandstand, the flagpole, benches round it.
+    z = ground(sx, sy)
+    m.add(("masonry", "wall"), lambda bm: tube(bm, [(sx, sy, z - 0.4), (sx, sy, z + 0.9)], 1.4, n=12))
+    m.add(TIMBER, lambda bm: cuboid(bm, (sx - 1.2, sy, z + 1.9), (0.15, 0.15, 2.0)))
+    m.add(TIMBER, lambda bm: cuboid(bm, (sx + 1.2, sy, z + 1.9), (0.15, 0.15, 2.0)))
+    m.add(("shingle_roof", "wall"), lambda bm: cuboid(bm, (sx, sy, z + 3.0), (3.2, 2.0, 0.15), 0.0, tilt=(0.0, 0.0)))
+    bx, by = sx + 4.2, sy - 1.0
+    m.add(("board_walk", "wall"), lambda bm: tube(bm, [(bx, by, z - 0.2), (bx, by, z + 0.6)], 2.4, n=8))
+    for k2 in range(8):
+        a2 = k2 * math.tau / 8
+        m.add(TIMBER, lambda bm, a2=a2: cuboid(bm, (bx + 2.2 * math.cos(a2), by + 2.2 * math.sin(a2), z + 2.0), (0.15, 0.15, 2.8)))
+    m.add(("awning_red", "wall"), lambda bm: blob(bm, (bx, by, z + 3.6), 2.7, sz=0.35, subdiv=1))
+    fx, fy = sx - 4.0, sy + 2.0
+    m.add(TIMBER, lambda bm: cuboid(bm, (fx, fy, z + 4.5), (0.16, 0.16, 9.0)))
+    m.add(("banner_red", "wall"), lambda bm: cuboid(bm, (fx + 1.0, fy, z + 8.2), (2.0, 0.05, 1.2)))
+    for k2 in range(4):
+        a2 = k2 * math.tau / 4 + 0.4
+        c.place("Bench", sx + 5.6 * math.cos(a2), sy + 5.6 * math.sin(a2), z, rot=a2 + math.pi / 2, coll="Village", role="both")
+    for k2 in range(6):
+        a2 = k2 * math.tau / 6
+        lx, ly = sx + (R + 6.4) * math.cos(a2 + 0.3), sy + (R + 6.4) * math.sin(a2 + 0.3)
+        if _off_roads(c, lx, ly, 0.4) and taken.clear(lx, ly, 0.3):
+            c.place(gp.lantern_post(c), lx, ly, _lowest(ground, lx, ly, 0.3) - 0.1, rot=a2, coll="Village", role="both")
+            g = c.game(lx, ly, ground(lx, ly) + 3.2)
+            c.entity("lantern", x=g[0], y=g[1], z=g[2])
+    taken.add(sx, sy, R - 5.0)
+    # The square busy: its folk.
+    for k2 in range(3):
+        a2 = k2 * math.tau / 3 + 0.9
+        g = c.game(sx + (R + 7.0) * math.cos(a2), sy + (R + 7.0) * math.sin(a2), z)
+        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=9.0, n=5, folk="desert", heading=0.0)
+    return out
+
+
+def square_ring_points():
+    """The ring road round the square's plaza (closed: from Main Street's end, round)."""
+    sx, sy, R, _pad = M.TOWN_SQUARE
+    pts = []
+    for k in range(25):
+        a = -math.pi / 2 + k * math.tau / 24
+        x, y = sx + R * math.cos(a), sy + R * math.sin(a)
+        pts.append((x, y, M.natural(x, y) + 0.2))
+    return pts
+
+
+def rocking_chairs(c, ground, homes):
+    """Dinos rocking on their porches (review-desert_region 2, note 5: "lets have a couple
+    of dinos on rocking chairs rocking back and forth"): a partygoer rocking, chair and all
+    (render/partyDino.ts), at one end of each porch, facing the street."""
+    for k, (x, y, rot, w, cx, cy, R) in enumerate(homes):
+        f = gt.Frame(x, y, 0.0, rot)
+        u = (w / 2 - 1.4) * (1 if k % 2 else -1)
+        px, py, _ = f.P(u, -1.5)
+        nx, ny = f.N(0, -1)
+        z = ground(px, py) + 0.5  # (the porch's boards)
+        g = c.game(px, py, z)
+        c.entity("partygoer", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(math.atan2(nx, -ny), 3),
+                 dance="rock", variant=k)
+
+
+def town_props(c, ground, taken, line, homes):
+    """The frontier town dressed more (review-desert_region 2, note 8: "lets get more props
+    ... Barrels crates, wagon carts, old west themed things"): in the gaps between the
+    buildings and along their sides, stacked crates and barrels, wagon wheels leant on the
+    walls, a broken wagon, troughs, an ore cart, cattle skulls on posts, benches; the
+    street's edges a tumbleweed or two."""
+    rng = random.Random(23)
+    protos = ["Barrel 0", "Barrel 1", "Crate Stack 0", "Crate Stack 1", "Water Trough", "Bench"]
+    extra = [gp.wagon_wheel(c), gp.ore_cart(c), gp.wagon(c, False, True), gp.cattle_skull(c), gp.crate_stack(c, 2), gp.barrel(c, 2)]
+    n = 0
+    for k, (x, y, rot, w, cx, cy, R) in enumerate(homes):
+        f = gt.Frame(x, y, 0.0, rot)
+        for side in (-1, 1):
+            for v in (1.5, 4.5, 7.5):
+                px, py, _ = f.P(side * (w / 2 + 1.3), v)
+                if not taken.clear(px, py, 0.6) and False:
+                    continue
+                if not _off_roads(c, px, py, 0.8):
+                    continue
+                r = rng.random()
+                if r < 0.55:
+                    name = protos[rng.randrange(len(protos) - 2)]
+                elif r < 0.8:
+                    name = extra[rng.randrange(len(extra))]
+                else:
+                    continue
+                c.place(name, px, py, _lowest(ground, px, py, 0.6), rot=rot + rng.uniform(-0.4, 0.4), coll="Village", role="both")
+                n += 1
+    for k in range(10):
+        s = line.length * (k + 0.5) / 10
+        q = line.at(s)
+        for side in (-1, 1):
+            h = road_rot(q)
+            nx, ny = (math.sin(h), -math.cos(h)) if side > 0 else (-math.sin(h), math.cos(h))
+            px, py = q.p.x + nx * (q.w / 2 + 1.6), q.p.y + ny * (q.w / 2 + 1.6)
+            if k % 3 == side % 3 and _off_roads(c, px, py, 0.6) and taken.clear(px, py, 0.6):
+                c.place(gp.tumbleweed(c, k % 2), px, py, ground(px, py), rot=k, coll="Village", role="visual")
+    print("frontier town props: %d" % n)
+
+
+BOOT_HILL = (194.0, -66.0, 19.0)  # Boot Hill: its middle and radius, out west of town over the railroad
 
 
 def boot_hill(c, sc, ground, ter, taken):
-    """Boot Hill, as Dry Gulch's: an iron fence round it, its gate toward town, rows of
-    headstones and wooden crosses, a crypt, two dead trees; on ground graded level."""
+    """Boot Hill, as Dry Gulch's own (review-desert_region 3, note 9: "the same fidelity as
+    is the graveyard in dry gulch"): an iron fence all round it on stone posts, its gate
+    toward town under a cattle skull, rows and rows of headstones and wooden crosses
+    (tilted, half sunk, each on its mound), three crypts, twisted dead trees, an open grave
+    with its shovel and the coffin waiting, lanterns at the gate; on ground graded level.
+    (Its lights warm: only Dry Gulch's are green.)"""
     gx, gy, R = BOOT_HILL
     z = sum(ground(gx + R * math.cos(t), gy + R * math.sin(t)) for t in [k * math.tau / 8 for k in range(8)]) / 8
-    paint.grade(c, ter, gx, gy, 0.0, 2 * R + 2.0, 2 * R + 2.0, z, front=0.0)
+    paint.grade(c, ter, gx, gy, 0.0, 2 * R + 3.0, 2 * R + 3.0, z, front=0.0)
     gate_a = math.atan2(-100.0 - gy, 282.0 - gx)  # (toward Main Street)
-    n = 14
+    n = 30
     for k in range(n):
         am = (k + 0.5) * math.tau / n
-        if abs(((am - gate_a + math.pi) % math.tau) - math.pi) < 0.2:
+        if abs(((am - gate_a + math.pi) % math.tau) - math.pi) < 0.1:
             continue
         x, y = gx + math.cos(am) * R, gy + math.sin(am) * R
         L = 2 * R * math.sin(math.pi / n)
-        c.place("Iron Fence 10", x, y, _lowest(ground, x, y, L / 2), rot=am + math.pi / 2, scale=(L / 10.0 * 1.04, 1.0, 1.0),
+        c.place("Iron Fence 10", x, y, _lowest(ground, x, y, L / 2), rot=am + math.pi / 2, scale=(L / 10.0 * 1.03, 1.0, 1.0),
                 coll="Village", role="both")
+        if k % 3 == 0:
+            a1 = k * math.tau / n
+            px, py = gx + math.cos(a1) * R, gy + math.sin(a1) * R
+            box(c, "Boot Hill Post %d" % k, px, py, 0.35, 0.35, z - 0.4, z + 1.9, ("masonry", "wall"))
+            box(c, "Boot Hill Post Cap %d" % k, px, py, 0.45, 0.45, z + 1.9, z + 2.1, ("masonry", "wall"), role="visual")
     x, y = gx + math.cos(gate_a) * R, gy + math.sin(gate_a) * R
     c.place("Cemetery Gate", x, y, _lowest(ground, x, y, 2.0), rot=gate_a + math.pi / 2, coll="Village", role="both")
+    c.place(gp.cattle_skull(c), x, y, z + 4.6, rot=gate_a, scale=1.4, coll="Village", role="visual")
+    for sd in (-1, 1):
+        a = gate_a + sd * 0.16
+        lx, ly = gx + math.cos(a) * (R + 1.2), gy + math.sin(a) * (R + 1.2)
+        c.place(gp.lantern_post(c), lx, ly, _lowest(ground, lx, ly, 0.3), rot=gate_a, coll="Village", role="both")
+        g = c.game(lx, ly, z + 3.2)
+        c.entity("lantern", x=g[0], y=g[1], z=g[2])
     rng = random.Random(4)
     ca, sa = math.cos(gate_a + math.pi / 2), math.sin(gate_a + math.pi / 2)
-    for row in range(4):
-        for j in range(5):
-            u, v = (j - 2) * 3.4, -R * 0.55 + row * 4.2
+    crypts = [(gx - math.cos(gate_a) * R * 0.62 + ca * dx, gy - math.sin(gate_a) * R * 0.62 + sa * dx) for dx in (-7.0, 0.0, 7.0)]
+    k = 0
+    for row in range(-4, 5):
+        for j in range(-5, 6):
+            k += 1
+            u, v = j * 3.0 + rng.uniform(-0.5, 0.5), row * 3.8 + rng.uniform(-0.4, 0.4)
             px, py = gx + u * ca - v * sa, gy + u * sa + v * ca
-            if math.hypot(px - gx, py - gy) > R - 2.0:
+            if math.hypot(px - gx, py - gy) > R - 2.5 or abs(u) < 2.2 or rng.random() < 0.15:
                 continue
-            name = ("Headstone %d" % rng.randrange(6)) if (row + j) % 3 else ("Grave Cross %d" % rng.randrange(3))
-            c.place(name, px, py, _lowest(ground, px, py, 0.5) - 0.15, rot=gate_a + math.pi / 2 + rng.uniform(-0.12, 0.12),
-                    coll="Village", role="both")
-    cx, cy = gx - math.cos(gate_a) * R * 0.6, gy - math.sin(gate_a) * R * 0.6
-    c.place("Crypt 0", cx, cy, _lowest(ground, cx, cy, 2.5), rot=gate_a + math.pi / 2, coll="Village", role="both")
-    for k, a in enumerate((gate_a + 2.2, gate_a - 2.4)):
-        tx, ty = gx + math.cos(a) * (R - 3.0), gy + math.sin(a) * (R - 3.0)
-        c.place("Dead Tree %d" % k, tx, ty, _lowest(ground, tx, ty, 0.6) - 0.2, rot=a, coll="Village", role="both")
+            if any(math.hypot(px - qx, py - qy) < 5.0 for qx, qy in crypts):
+                continue
+            zz = _lowest(ground, px, py, 0.5)
+            rot = gate_a + math.pi / 2 + rng.uniform(-0.2, 0.2)
+            name = ("Grave Cross %d" % rng.randrange(3)) if rng.random() < 0.35 else ("Headstone %d" % rng.randrange(6))
+            c.place(name, px, py, zz - 0.15 * rng.random(), rot=rot, scale=1.35 + 0.3 * rng.random(), coll="Village", role="both")
+            # (its mound, in front of it, toward the gate)
+            mx, my = px + math.cos(gate_a) * 1.2, py + math.sin(gate_a) * 1.2
+            bm = bmesh.new()
+            blob(bm, (mx, my, zz - 0.25), 0.75, sx=1.2, sy=1.2, sz=0.4, subdiv=1)
+            c.assign(c.mesh_object("Grave Mound %d" % k, bm, "Village", "visual"), c.lib("graveyard_earth", "dirt"))
+    for i, (cx, cy) in enumerate(crypts):
+        c.place("Crypt %d" % (i % 2), cx, cy, _lowest(ground, cx, cy, 2.5), rot=gate_a + math.pi / 2, scale=1.2, coll="Village",
+                role="both")
+    for k, a in enumerate((gate_a + 2.0, gate_a - 2.2, gate_a + 3.1, gate_a - 1.0)):
+        tx, ty = gx + math.cos(a) * (R - 3.5), gy + math.sin(a) * (R - 3.5)
+        c.place("Dead Tree %d" % (k % 4), tx, ty, _lowest(ground, tx, ty, 0.6) - 0.2, rot=a, scale=1.25, coll="Village", role="both")
+    # The open grave by the gate, its shovel stuck in the heap, the coffin beside it.
+    ox, oy = gx + math.cos(gate_a + 0.5) * R * 0.55, gy + math.sin(gate_a + 0.5) * R * 0.55
+    box(c, "Open Grave", ox, oy, 1.0, 1.9, z - 1.2, z + 0.02, ("dark_corridor", "wall"), rot=gate_a + math.pi / 2, role="visual")
+    bm = bmesh.new()
+    blob(bm, (ox + ca * 2.0, oy + sa * 2.0, z - 0.2), 1.1, sx=1.0, sy=1.6, sz=0.6, subdiv=1)
+    c.assign(c.mesh_object("Grave Heap", bm, "Village", "visual"), c.lib("graveyard_earth", "dirt"))
+    c.place(gp.pick_and_shovel(c), ox + ca * 2.0, oy + sa * 2.0, z + 0.2, rot=gate_a, coll="Village", role="visual")
+    c.place(gp.coffin(c), ox - ca * 2.2, oy - sa * 2.2, z, rot=gate_a + math.pi / 2, coll="Village", role="both")
     taken.add(gx, gy, R + 2.0)
 
 
@@ -838,7 +1058,7 @@ def alcove_overhang(c, top=81.6):
     front to the back), its faces in the cliff's own beds of colour; its sides and back
     run into the cliff. Solid."""
     ax, ay, w, dp = M.ALCOVE
-    fz = M.FLOOR + 6.0
+    fz = M.ALCOVE_Z
     NU, NV = 28, 12
     us = [-1.32 + 2.64 * i / NU for i in range(NU + 1)]
     vs = [-0.22 + 1.52 * j / NV for j in range(NV + 1)]
@@ -880,27 +1100,58 @@ def alcove_overhang(c, top=81.6):
         c.assign(ob, c.lib(key, "dirt" if key == "slickrock" else "wall"), idx)
 
 
+PUEBLO_T1 = (4.5, 179.0)  # the upper terrace: its height over the floor, its front (y)
+PUEBLO_RAMP = 30.0  # the ramp up to it: how long (along its front, rising west from the east end)
+
+
+def pueblo_ramp_points():
+    """The ramp up to the upper terrace, (x, y, z): from the floor at the alcove's east
+    side, west along the terrace's front, up to its top."""
+    ax, ay, w, dp = M.ALCOVE
+    fz = M.ALCOVE_Z
+    h, fy = PUEBLO_T1
+    y = fy - 3.2
+    x0 = ax + PUEBLO_RAMP
+    return [(x0 + 6.0, y - 1.0, fz + 0.12), (x0, y, fz + 0.15), (x0 - PUEBLO_RAMP * 0.5, y, fz + h * 0.5),
+            (ax + 2.0, y, fz + h + 0.12), (ax - 4.0, y + 0.6, fz + h + 0.12)]
+
+
 def pueblo_homes(c, ground, taken):
-    """The pueblo's homes in three tiers stepping back into the alcove, each Oasis Haven's
-    adobe home (vigas out through its walls, ristras, its turquoise door, a ladder up to
-    its roof on some), each tier's terrace the level floor it stands on. Returns how many."""
-    from pocket_build import box
+    """The pueblo, to drive about in (review-desert_region 3, notes 2 and 3: "I want to be
+    able to drive up in here and explore this area of huts"; the homes stacked on one
+    another had nothing under them): its floor in from the way up through the alcove's lip,
+    a row of homes along the back of it (west of the ramp), the upper terrace of solid
+    adobe behind them and a ramp up to it from the east, a lane along the terrace and its
+    own row of homes at the back, each Oasis Haven's adobe home on solid ground. Returns
+    how many."""
+    pass  # (box: imported at the top)
 
     ax, ay, w, dp = M.ALCOVE
-    fz = M.FLOOR + 6.0
+    fz = M.ALCOVE_Z
+    h, fy = PUEBLO_T1
     k = 0
-    for tier in range(3):
-        n = (6, 5, 3)[tier]
-        y = ay + 3.5 + tier * 6.5
-        z = fz + tier * 4.2
-        span = w * (0.78 - 0.14 * tier)
-        for j in range(n):
-            x = ax - span / 2 + (j + 0.5) * span / n
-            ww, dd_, h = 7.0 - 0.6 * (j % 2), 6.0, 4.4 + 0.8 * ((j + tier) % 2)
-            c.place(od.house(c, (k + tier) % 4, ww, dd_, h), x, y, z - 0.05, rot=0.0, coll="Village", role="visual")
-            c.place(od.collider(c, ww, dd_, h * 0.62), x, y, z - 0.6, rot=0.0, coll="Village", role="collision")
-            k += 1
-        box(c, "Pueblo Terrace %d" % tier, ax, y - 3.6, span / 2 + 2.0, 1.4, fz - 1.0 + tier * 4.2, z - 0.05, ("adobe", "wall"))
+    # The upper terrace: one solid block of adobe, its top a drivable floor, its front a
+    # wall with ladders up it, running back into the cliff.
+    box(c, "Pueblo Terrace", ax, fy + 9.0, 26.0, 9.0, fz - 2.0, fz + h, ("adobe", "dirt"))
+    box(c, "Pueblo Terrace Coping", ax, fy + 0.15, 26.2, 0.35, fz + h - 0.05, fz + h + 0.35, ("adobe_dark", "wall"), role="visual")
+    for x in (ax - 22.0, ax - 12.0):
+        box(c, "Pueblo Ladder %d" % int(x), x, fy - 0.3, 0.6, 0.06, fz, fz + h + 1.2, ("weathered_timber", "wall"), role="visual")
+    # The homes along the back of the floor, west of the ramp, facing out over the plaza.
+    for j in range(3):
+        x = ax - 30.0 + j * 7.8
+        ww, dd_, hh = 6.6 - 0.5 * (j % 2), 5.0, 4.2 + 0.7 * (j % 2)
+        c.place(od.house(c, k % 4, ww, dd_, hh), x, fy - 6.4 + dd_ / 2, fz - 0.05, rot=0.0, coll="Village", role="visual")
+        c.place(od.collider(c, ww, dd_, hh * 0.62), x, fy - 6.4 + dd_ / 2, fz - 0.6, rot=0.0, coll="Village", role="collision")
+        k += 1
+    # The ramp up, from the floor at the east side (a road: pueblo_ramp, mesa_region).
+    # The homes on the terrace, along its back with a lane in front of them.
+    for j in range(5):
+        x = ax - 18.0 + j * 9.0
+        ww, dd_, hh = 6.8 - 0.6 * (j % 2), 5.0, 4.4 + 0.8 * (j % 2)
+        yy = fy + 5.6 + dd_ / 2
+        c.place(od.house(c, (k + 1) % 4, ww, dd_, hh), x, yy, fz + h - 0.05, rot=0.0, coll="Village", role="visual")
+        c.place(od.collider(c, ww, dd_, hh * 0.62), x, yy, fz + h - 0.6, rot=0.0, coll="Village", role="collision")
+        k += 1
     taken.add(ax, ay + 10.0, 34.0)
     return k
 
@@ -975,7 +1226,8 @@ def parapet(c, ground, taken):
             if ok:
                 x, y = q.p.x + q.r.x * side * (q.w / 2 + 1.0), q.p.y + q.r.y * side * (q.w / 2 + 1.0)
                 drop = M.natural(x + q.r.x * side * 5.0, y + q.r.y * side * 5.0) < q.p.z - 3.0
-                ok = drop and _off_roads(c, x, y, 0.3) and not any(
+                # (not along the Gap Bridge: it has its own timber rails)
+                ok = drop and math.hypot(q.p.x - M.ARCH[0], q.p.y - M.ARCH[1]) > 32.0 and _off_roads(c, x, y, 0.3) and not any(
                     (e.p.x - x) ** 2 + (e.p.y - y) ** 2 < (e.w / 2 + 1.5) ** 2 for e in c.extra_ground)
             if ok:
                 run.append((x, y, max(min(ground(x, y), q.p.z) - 1.2, q.p.z - 12.0), q.p.z + 0.75, q.r.x, q.r.y))
@@ -1160,6 +1412,13 @@ def zippers(c, anchors):
                 turn = abs((math.atan2(q1.t.y, q1.t.x) - math.atan2(q0.t.y, q0.t.x) + math.pi) % math.tau - math.pi)
                 if best is None or turn < best:
                     best, bs = turn, s
+            q = c.at(bs)
+            # (Blake's nudges: review-desert_region 3, note 8, "move this zipper forward like
+            # 10 meters")
+            bs += sum(ds for (nx, ny), ds in ZIPPER_NUDGES if math.hypot(q.p.x - nx, q.p.y - ny) < 24.0)
             c.zipper(bs % c.length, 0.0)
             n += 1
     print("zippers: %d" % n)
+
+
+ZIPPER_NUDGES = [((299.3, 16.8), 10.0)]

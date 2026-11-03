@@ -83,11 +83,20 @@ FALLS = (410.0, 300.0, 26.0, -18.0)
 CRATER = (110.0, -335.0, 64.0, 8.0, 6.0)
 # The Pueblo's alcove in Pueblo Mesa's south face: x, y, width, depth (into the cliff).
 ALCOVE = (-250.0, 166.0, 70.0, 26.0)
+# Its floor (review-desert_region 3, note 2: "I want to be able to drive up in here and
+# explore this area of huts"): a little above the desert, a way in up through its lip in
+# the middle; and the upper terrace at its back, a ramp up to it (mesa_dress.pueblo_homes).
+ALCOVE_Z = 10.0 + 2.0
+ALCOVE_WAY = 0.36  # (the way in's half width, of the alcove's half width)
 # The Showground: the arena's middle and radius.
 ARENA = (100.0, -168.0, 34.0)  # (v4b: between the crater and Sky Mesa, the road by its east gate)
 # The Trading Post: its square.
 POST = (-360.0, -40.0, 22.0)
-MAIN_STREET = (-356.0, -100.0, 22.0)  # the frontier town's Main Street: its x, from y to y (review-desert_region note 2)
+MAIN_STREET = (-356.0, -100.0, 44.0)  # the frontier town's Main Street: its x, from y to y (review-desert_region note 2)
+# Its square at the north end (review-desert_region 2, note 14: "a cul de sac of buildings
+# ... a lively town square"): its middle, the ring road's radius round the plaza, the
+# ground graded level out to (radius).
+TOWN_SQUARE = (-356.0, 58.0, 13.0, 40.0)
 TOWN_PAD = (-394.0, -331.0, -106.0, 28.0, 10.0)  # its ground graded level: x0, x1, y0, y1, the blend out of it
 # The Boomtown's street (x, y, length, heading).
 TOWN = (280.0, -125.0, 90.0, math.pi / 2)
@@ -160,8 +169,36 @@ def _canyon(h, x, y):
     return min(h, z)
 
 
+# Havasu's creek (review-desert_region 3, note 7: "this waterfall needs a water source. it
+# is literally just coming out of nowhere"): from its spring out on the bench north of the
+# falls, winding down a shallow channel to the lip, where it pours over into the pool.
+FALLS_LIP = FALLS[1] + FALLS[2] - 4.5  # (the lip's line, y: the bench north of it level)
+CREEK = [(FALLS[0] + 2.0, FALLS_LIP - 1.0), (FALLS[0] + 3.0, FALLS_LIP + 14.0), (FALLS[0] - 4.0, FALLS_LIP + 32.0),
+         (FALLS[0] + 2.0, FALLS_LIP + 50.0), (FALLS[0] - 1.0, FALLS_LIP + 64.0)]
+CREEK_HW = 3.5
+CREEK_DEPTH = 1.5
+
+
+def creek_d(x, y):
+    return min(_seg(x, y, a, b)[0] for a, b in zip(CREEK, CREEK[1:]))
+
+
+def _creek(h, x, y):
+    d = creek_d(x, y)
+    sx, sy = CREEK[-1]
+    ds = math.hypot(x - sx, y - sy)
+    cut = CREEK_DEPTH * (1.0 - smooth((d - CREEK_HW) / 4.0))
+    cut = max(cut, (CREEK_DEPTH + 0.4) * (1.0 - smooth((ds - 7.0) / 4.0)))  # (its spring's pool)
+    return h - cut
+
+
 def _falls(h, x, y):
     fx, fy, fr, fz = FALLS
+    if FALLS_LIP < y < FALLS_LIP + 90.0 and abs(x - fx) < 40.0:
+        # (the bench over the falls, level to its lip: a cliff straight down to the pool,
+        # the canyon's head filled in under it)
+        w = smooth((40.0 - abs(x - fx)) / 12.0)
+        return _creek(lerp(h, max(h, FLOOR + 1.4), w), x, y)
     d = math.hypot(x - fx, y - fy)
     if d > fr + 30.0:
         return h
@@ -261,7 +298,7 @@ GATES = {
     "canyon": (54.0, 262.0),  # (in the canyon's south wall, off the terrace)
     "oasis": (372.0, 274.0),  # (on Havasu's rim over the falls' pool)
     "gulch": (250.0, -122.0),  # (off Main Street, west)
-    "impact": (99.6, -329.0),  # (down on the crater's floor, by the core)
+    "impact": (124.0, -340.0),  # (down on the crater's floor, by the core: its spot well off the spiral road, review-desert_region 3 note 10)
     "lair": (146.0, -174.0),  # (out of the arena's east gate)
 }
 FROZEN_PASS = (-440.0, -40.0)  # the way in from the snow, west
@@ -332,9 +369,14 @@ def _alcove(h, x, y):
     ax, ay, w, dp = ALCOVE
     dx, dy = (x - ax) / (w / 2), (y - ay) / dp
     e = math.hypot(dx, max(0.0, dy))
+    fz = ALCOVE_Z
+    if -1.9 < dy < -0.5 and abs(dx) < ALCOVE_WAY + 0.2:
+        # (the way in: cut down through the lip, easing from the desert up to the floor)
+        z = lerp(FLOOR + 1.2, fz, smooth((dy + 1.9) / 1.4))
+        k = smooth((abs(dx) - ALCOVE_WAY) / 0.2)
+        h = lerp(min(h, z), h, k) if dy < -0.6 else lerp(min(h, fz), h, k)
     if e > 1.25 or dy < -0.6:
         return h
-    fz = FLOOR + 6.0
     if e < 1.0:
         return min(h, fz) if h > fz else max(h, lerp(h, fz, smooth((dy + 0.6) / 0.6)))
     return lerp(fz, h, smooth((e - 1.0) / 0.25)) if h > fz else h
@@ -441,6 +483,10 @@ def natural(x, y):
     e = math.hypot(max(0.0, x0 - x, x - x1), max(0.0, y0 - y, y - y1))
     if e < b:
         h = lerp(10.2 + 0.018 * (y - y0), h, smooth(e / b))
+    sx, sy, _sr, spad = TOWN_SQUARE
+    e = math.hypot(x - sx, y - sy) - spad
+    if e < b:
+        h = lerp(10.2 + 0.018 * (min(y, sy) - y0), h, smooth(e / b))
     lz, lr, lb = CAVE_LEDGE
     d = math.hypot(x - LEDGE_AT[0], y - LEDGE_AT[1])
     if d < lr + lb:

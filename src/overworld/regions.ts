@@ -330,8 +330,8 @@ export const REGIONS: Region[] = [
       // Off the boomtown's Main Street, west.
       { id: "gulch", track: "dry_gulch", x: 262, z: 122.17, radius: 6, heading: 1.5565 },
       // Down on Meteor Crater's floor, by the core.
-      { id: "impact", track: "impact_depths", x: 89.44, z: 322.61, radius: 6, heading: -2.1324 },
-      // Scorchwind's lair: out of his rodeo arena's east gate.
+      { id: "impact", track: "impact_depths", x: 113.66, z: 333.92, radius: 6, heading: -2.1026 },
+      // Scorchwind's lair: east of where his rodeo stood (review-desert_region 3: the rodeo is gone).
       {
         id: "lair",
         track: "boss_desert",

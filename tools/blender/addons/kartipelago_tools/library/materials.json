@@ -3511,7 +3511,7 @@
       "surface": "wall",
       "image": "desert_strata.png",
       "wrap": "repeat",
-      "tileMetres": 8
+      "tileMetres": 12
     },
     {
       "id": "canyon_river",

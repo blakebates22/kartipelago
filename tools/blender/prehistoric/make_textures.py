@@ -5074,7 +5074,7 @@ MATERIALS = [
     ("strata_rust", "Red Shale", "canyon_dash", "wall", strata_rust, 12, None),
     ("strata_purple", "Canyon Base Rock", "canyon_dash", "wall", strata_purple, 12, None),
     ("talus", "Talus", "canyon_dash", "wall", talus, 8, None),
-    ("desert_strata", "Desert Strata (level beds)", "canyon_dash", "wall", desert_strata, 8, None),
+    ("desert_strata", "Desert Strata (level beds)", "canyon_dash", "wall", desert_strata, 12, None),
     ("canyon_river", "Turquoise River", "canyon_dash", "water", canyon_river, 12, {"scrollU": 0.0, "scrollV": 0.12, "wave": 0.03, "wavePeriod": 5, "glow": 0.15}),
     ("falls_dash", "Canyon Falls", "canyon_dash", "water", falls_dash, 7, {"scrollU": 0.0, "scrollV": 1.2, "wave": 0.03, "wavePeriod": 1.3, "opacity": 0.92, "glow": 0.25}),
     ("canyon_mist", "Falls Mist", "canyon_dash", "water", canyon_mist, 20, {"scrollU": 0.01, "scrollV": -0.03, "wave": 0.08, "wavePeriod": 5, "opacity": 0.4, "glow": 0.3}),

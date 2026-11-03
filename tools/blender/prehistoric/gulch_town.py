@@ -130,7 +130,8 @@ def gable_ends(m, mat, f, w, d, z_eave, rise):
 
 
 def building(m, sc, x, y, z0, rot, w, d, *, storeys=1, siding="siding_brown", sign=None, porch=True, balcony=False,
-             false_front=True, roof="shingle_roof", lit=0.5, ghost=0.08, seed=0, door=True, lanterns=True, stilts=0.0):
+             false_front=True, roof="shingle_roof", lit=0.5, ghost=0.08, seed=0, door=True, lanterns=True, stilts=0.0,
+             sign_top=False):
     """A frontier building facing the street (the front at the frame's origin): a stone
     footing, a clapboard body, a gable roof, a false front with its sign and a cornice,
     a boardwalk porch on posts (a balcony over it on a taller building), lit, boarded and
@@ -182,6 +183,9 @@ def building(m, sc, x, y, z0, rot, w, d, *, storeys=1, siding="siding_brown", si
         sw = min(w * 0.85, 2.0 * aspect) if aspect > 2 else min(w * 0.5, 3.0)
         sh = sw / aspect * (1.0 if aspect > 2 else 1.0)
         zc = (H + top) / 2 + 0.3 if false_front else H - 0.2
+        if sign_top and false_front:
+            zc = top - sh / 2 - 0.25  # (up at the top of its false front)
+        zc += z0  # (the building's own height: on a desert town's ground, not the sea's, the signs were down at the porch)
         cx, cy, _ = f.P(0, -0.2 if false_front else -3.3)
         face_quad(m, (mat, "wall"), cx, cy, fn[0], fn[1], sw / 2, zc - sh / 2, zc + sh / 2, out=0.06)
     # The porch: a boardwalk, posts, a sloping roof (or the balcony's floor over it).
@@ -203,11 +207,13 @@ def building(m, sc, x, y, z0, rot, w, d, *, storeys=1, siding="siding_brown", si
                 u = -w / 2 - 0.6 + k * 0.6
                 m.add(TIMBER, lambda bm, u=u: cuboid(bm, f.P(u, -pd + 0.2, fl + 0.6), (0.07, 0.07, 1.0), rot))
             # Its own little roof, over the balcony.
-            m.add((roof, "wall"), lambda bm: cuboid(bm, f.P(0, -pd / 2, fl + 3.3), (w + 1.4, pd + 0.6, 0.18), rot, tilt=(-0.14, 0.0)))
+            # (sloping down off the wall to the posts' tops: the posts hold it up. Review-desert
+            # 2, note 2: it sloped up, clear of them.)
+            m.add((roof, "wall"), lambda bm: cuboid(bm, f.P(0, -pd / 2, fl + 3.3), (w + 1.4, pd + 0.6, 0.18), rot, tilt=(0.14, 0.0)))
             for u in (posts[0], posts[-1]):
-                m.add(TIMBER, lambda bm, u=u: cuboid(bm, f.P(u, -pd + 0.2, fl + 1.6), (0.2, 0.2, 3.2), rot))
+                m.add(TIMBER, lambda bm, u=u: cuboid(bm, f.P(u, -pd + 0.2, fl + 1.55), (0.2, 0.2, 3.0), rot))
         else:
-            m.add((roof, "wall"), lambda bm: cuboid(bm, f.P(0, -pd / 2 - 0.2, roof_z + 0.25), (w + 1.4, pd + 0.8, 0.16), rot, tilt=(-0.16, 0.0)))
+            m.add((roof, "wall"), lambda bm: cuboid(bm, f.P(0, -pd / 2 - 0.2, roof_z + 0.25), (w + 1.4, pd + 0.8, 0.16), rot, tilt=(0.16, 0.0)))
         if lanterns:
             for u in (posts[0], posts[-1]):
                 hx, hy, _ = f.P(u * 0.92, -pd + 0.6)
@@ -241,9 +247,13 @@ def saloon(m, sc, x, y, z, rot):
     return f
 
 
-def hotel(m, sc, x, y, z, rot):
-    f, top = building(m, sc, x, y, z, rot, 20.0, 16.0, storeys=3, siding="siding_ochre", sign="hotel", balcony=True, lit=0.45, ghost=0.12,
-                      seed=2)
+def hotel(m, sc, x, y, z, rot, haunted=True, sign_top=False):
+    """The hotel (`haunted`: a ghost at a window upstairs, and green ones; not out in the
+    desert's towns, Blake: "only the green lights is for the dry gulch region")."""
+    f, top = building(m, sc, x, y, z, rot, 20.0, 16.0, storeys=3, siding="siding_ochre", sign="hotel", balcony=True, lit=0.45,
+                      ghost=0.12 if haunted else 0.0, seed=2, sign_top=sign_top)
+    if not haunted:
+        return f
     gx, gy, _ = f.P(20.0 / 2 - 20.0 / 6 * 1.5, -0.3)
     sc.ghosts.append({"look": "window", "x": gx, "y": gy, "z": z + 0.5 + 7.2 + 0.9, "heading": f.rot - math.pi / 2, "period": 14.0, "offset": 7.0})
     return f

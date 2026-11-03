@@ -8,13 +8,24 @@
  * Every dinosaur is four meshes (body, head, two arms) with vertex colours and one
  * shared material, so a crowd costs a few dozen draw calls. Dances, all on the beat of
  * the title music: bounce, sway, wave, hop, chill (at the bar), dj (at the decks) and
- * conga (walking in a line, hands on the one in front). Purely visual.
+ * conga (walking in a line, hands on the one in front); and rock (Blake, review-desert 2:
+ * "a couple of dinos on rocking chairs rocking back and forth": sat in a rocking chair on
+ * a porch, rocking slowly, chair and all, not on the beat). Purely visual.
  */
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
-export type Dance = "bounce" | "sway" | "wave" | "hop" | "chill" | "dj" | "conga";
-export const DANCES: readonly Dance[] = ["bounce", "sway", "wave", "hop", "chill", "dj", "conga"];
+export type Dance = "bounce" | "sway" | "wave" | "hop" | "chill" | "dj" | "conga" | "rock";
+export const DANCES: readonly Dance[] = [
+  "bounce",
+  "sway",
+  "wave",
+  "hop",
+  "chill",
+  "dj",
+  "conga",
+  "rock",
+];
 
 export interface PartyDinoView {
   readonly root: THREE.Group;
@@ -182,6 +193,52 @@ function geometryFor(variant: number) {
 
 let shared: THREE.MeshLambertMaterial | undefined;
 let users = 0;
+let chairGeo: THREE.BufferGeometry | undefined;
+
+/** A rocking chair (its runners' middle at the origin, facing +z): a slatted seat and
+ * back, armrests, legs on two curved runners. */
+export function rockingChairGeometry(): THREE.BufferGeometry {
+  if (chairGeo) return chairGeo;
+  const WOOD = "#7a4a2a";
+  const DARK = "#5a3420";
+  const box = (
+    w: number,
+    h: number,
+    d: number,
+    x: number,
+    y: number,
+    z: number,
+    rx = 0,
+    color = WOOD,
+  ) =>
+    part(
+      new THREE.BoxGeometry(w, h, d),
+      color,
+      new THREE.Matrix4().compose(
+        new THREE.Vector3(x, y, z),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, 0, 0)),
+        new THREE.Vector3(1, 1, 1),
+      ),
+    );
+  const parts: THREE.BufferGeometry[] = [];
+  // The runners: each a few short pieces along a shallow curve.
+  for (const sx of [-0.55, 0.55])
+    for (let k = -2; k <= 2; k++) {
+      const z = k * 0.34;
+      parts.push(box(0.09, 0.09, 0.36, sx, 0.05 + 0.06 * k * k, z, -0.18 * k, DARK));
+    }
+  for (const sx of [-0.5, 0.5]) {
+    for (const z of [-0.4, 0.4]) parts.push(box(0.08, 0.6, 0.08, sx, 0.38, z));
+    parts.push(box(0.08, 0.08, 0.95, sx, 1.0, 0.02)); // armrest
+    parts.push(box(0.07, 0.36, 0.07, sx, 0.82, 0.42));
+  }
+  parts.push(box(1.1, 0.1, 1.0, 0, 0.7, 0)); // seat
+  for (let k = 0; k < 5; k++) parts.push(box(0.14, 1.3, 0.06, -0.4 + k * 0.2, 1.35, -0.6, -0.2)); // back slats
+  parts.push(box(1.1, 0.12, 0.08, 0, 2.0, -0.73, -0.2, DARK)); // top rail
+  chairGeo = mergeGeometries(parts)!;
+  for (const g of parts) g.dispose();
+  return chairGeo;
+}
 
 export function createPartyDinoView(
   parent: THREE.Object3D,
@@ -195,6 +252,7 @@ export function createPartyDinoView(
   const root = new THREE.Group();
   root.name = "partygoer";
   root.scale.setScalar(scale);
+  root.rotation.order = "YXZ"; // (turned to face its way, then rocked)
   const hips = new THREE.Group(); // bob, lean and twist
   root.add(hips);
   const body = new THREE.Mesh(g.body, mat);
@@ -203,6 +261,8 @@ export function createPartyDinoView(
   neck.position.set(0, 1.55, 0.05);
   hips.add(neck);
   neck.add(new THREE.Mesh(g.head, mat));
+  // (The rocker's chair, made the first time it's asked for.)
+  let chair: THREE.Mesh | undefined;
   const arms = [-1, 1].map((s) => {
     const a = new THREE.Group();
     a.position.set(s * 0.48, 1.3, 0.15);
@@ -220,6 +280,7 @@ export function createPartyDinoView(
     update(x, y, z, heading, dance, t, phase) {
       root.position.set(x, y, z);
       root.rotation.y = heading;
+      root.rotation.x = 0;
       const b = (t * BEAT + phase) * Math.PI * 2; // one cycle per beat
       const s = Math.sin(b);
       const half = Math.sin(b / 2);
@@ -270,6 +331,23 @@ export function createPartyDinoView(
           l = [-1.1 + 0.25 * s, 0.2];
           r = [b % (Math.PI * 8) < Math.PI * 2 ? -3.0 : -1.1 - 0.25 * s, -0.2];
           break;
+        case "rock": {
+          // Sat back in the chair, rocking slowly, the chair and all (its own time, not
+          // the music's).
+          if (!chair) {
+            chair = new THREE.Mesh(rockingChairGeometry(), mat);
+            chair.castShadow = true;
+            root.add(chair);
+          }
+          const rk = Math.sin(t * 1.5 + phase * 7);
+          root.rotation.x = 0.16 * rk;
+          bob = -0.42;
+          lean = 0;
+          nod = -0.25 + 0.08 * rk;
+          l = [-0.7, 0.35];
+          r = [-0.7, -0.35];
+          break;
+        }
         case "conga":
           // Step on the beat, hands forward on the shoulders of the one in front, and a
           // kick out on every fourth.
@@ -293,6 +371,8 @@ export function createPartyDinoView(
       if (users === 0) {
         shared?.dispose();
         shared = undefined;
+        chairGeo?.dispose();
+        chairGeo = undefined;
         for (const c of cache.values()) for (const geo of Object.values(c)) geo.dispose();
         cache.clear();
       }

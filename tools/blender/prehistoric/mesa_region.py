@@ -15,12 +15,13 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import course_kit as kit  # noqa: E402  (first: it imports bpy)
-from course_kit import lerp, smooth  # noqa: E402
+from course_kit import bmesh, lerp, smooth  # noqa: E402
 import region_ruin as ruin  # noqa: E402
 import puzzle_kit  # noqa: E402
 import pocket_build as pb  # noqa: E402
 from pocket_build import box, cone  # noqa: E402
 import canyon_props as cp  # noqa: E402
+import hoodoo_family as hf  # noqa: E402
 import oasis_props as op  # noqa: E402
 import gulch_props as gp  # noqa: E402
 import impact_props as ip  # noqa: E402
@@ -28,7 +29,7 @@ import keep_props as kp  # noqa: E402
 import summit_props as smp_  # noqa: E402
 import props  # noqa: E402
 import region_paint as paint  # noqa: E402
-import desert_dress as dd  # noqa: E402
+import road_clip  # noqa: E402
 import mesa_dress as md  # noqa: E402
 import mesa_layout as M  # noqa: E402
 
@@ -103,9 +104,10 @@ def main():
     kinds = {}
     for look, (ground, road, shoulder) in LOOK.items():
         kinds[look] = {"mat": road, "shoulder": 1.5, "shoulder_mat": shoulder}
-    # Sun Arch's deck: the road over the arch, its stone the arch's own.
-    kinds["bridge"] = {"mat": "dash_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("slickrock", "road"),
-                       "barrier": 0.9, "barrier_mat": ("strata_cream", "wall"), "deck": 3.0, "deck_mat": ("strata_orange", "wall"),
+    # The Gap Bridge (was Sun Arch's back; review-desert_region 3, note 12: "lets make this a
+    # wood bridge with wooden support"): a timber trestle bridge, plank deck, timber rails.
+    kinds["bridge"] = {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("weathered_timber", "road"),
+                       "barrier": 1.1, "barrier_mat": ("timber_rail", "wall"), "deck": 1.2, "deck_mat": ("weathered_timber", "wall"),
                        "ground": False}
     c.kinds = kinds
 
@@ -129,6 +131,16 @@ def main():
     c.side_road("Pass Road", list(reversed(way)), "dash_road", "road", **trail)
     STREET[:] = [(M.MAIN_STREET[0], y, natural(M.MAIN_STREET[0], y) + 0.2) for y in range(int(M.MAIN_STREET[1]), int(M.MAIN_STREET[2]) + 1, 6)]
     c.side_road("Main Street", STREET, "dash_road", "road", **dict(trail, width=12.0))
+    # The ring road round the town square's plaza, at Main Street's north end.
+    c.side_road("Square Ring", md.square_ring_points(), "dash_road", "road", **dict(trail, width=10.0))
+    # The way up into the pueblo's alcove and the ramp up to its upper terrace
+    # (review-desert_region 3, note 2).
+    ax, ay, aw, adp = M.ALCOVE
+    smp, _ = c.nearest(ax, ay - 40.0)
+    c.side_road("Pueblo Way", pb.line(natural, (smp.p.x, smp.p.y), (ax, ay - 6.0), z0=smp.p.z, c=c), "dash_road", "road",
+                **dict(trail, width=9.0))
+    c.side_road("Pueblo Ramp", md.pueblo_ramp_points(), "adobe", "road", width=6.0, shoulder=0.4, shoulder_mat=("adobe_dark", "road"),
+                deck=1.2, deck_mat=("adobe", "wall"), ground=False)
     gates = dict(M.GATES)
     if not RUIN:
         gates.pop("lair")
@@ -167,10 +179,10 @@ def main():
     crater(c, ground, taken)
     md.crater_depths(c, ground, taken)
     md.crater_camp(c, ground, taken, ter)
-    showground(c, ground, taken)
+    # (No rodeo showground, review-desert_region 3 note 1: "lets remove this rodeo ... I will
+    # think of something else later"; its ground stays clear. No telegraph lines, note 4.)
     ledge(c, ground, taken)
     md.chevrons(c, ground, taken)
-    md.telegraph(c, ground, taken)
     # (Folk along the roads, far from the towns'.)
     paint.wayfolk(c, ground, "desert", [(-360.0, -44.0), (-250.0, 160.0), (282.0, -120.0), (110.0, -335.0), (100.0, -168.0)], 4)
     # The smugglers' Drift Cave, in Meteor Crater's inner wall (review-desert_region note 3): only
@@ -191,6 +203,9 @@ def main():
     c.start_line()
     gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
+    # (No shoulder strip across another road's paving: review-desert_region 2, notes 6, 7, 13.)
+    road_clip.clip_shoulders(c, [("Pass Road", 10.0), ("Main Street", 12.0), ("Pueblo Way", 9.0), ("Square Ring", 10.0)]
+                             + [(name.title() + " Road", 10.0) for name in spots])
     c.finish(extra={"race": {"laps": 1}})
     print("loop", round(c.length, 1), "gates", len(gts))
     s0 = c.at(0.0)
@@ -224,8 +239,26 @@ def water(c):
                wobble=0.15, seed=k)
         c.disc("Havasu Terrace Rim %d" % k, fx + dx, fy + dy, r + 0.9, z - 0.15, c.lib("sinter_rim", "wall"), role="visual",
                n=20, wobble=0.15, seed=k)
-    # The falls: off the side canyon's lip (north) into the pool.
-    top = M.FLOOR + 1.0
+    # Havasu's creek, from its spring out on the bench down its channel to the lip (review-
+    # desert_region 3, note 7: the falls had no water feeding them).
+    strip = []
+    for (ax_, ay_), (bx_, by_) in zip(M.CREEK, M.CREEK[1:]):
+        n = max(1, int(math.hypot(bx_ - ax_, by_ - ay_) / 3.0))
+        for k in range(n):
+            x, y = lerp(ax_, bx_, k / n), lerp(ay_, by_, k / n)
+            strip.append((x, y, 2 * M.CREEK_HW + 1.0, M.natural(x, y) + 0.9))
+    sx_, sy_ = M.CREEK[-1]
+    strip.append((sx_, sy_, 2 * M.CREEK_HW + 1.0, M.natural(sx_, sy_) + 0.9))
+    lip_z = strip[0][3]
+    # (level as it runs: never higher downstream than up)
+    for k in range(len(strip) - 2, -1, -1):
+        x, y, wd, z = strip[k]
+        strip[k] = (x, y, wd, min(z, strip[k + 1][3]))
+    lip_z = strip[0][3]
+    c.ribbon("Havasu Creek", list(reversed(strip)), 2 * M.CREEK_HW + 1.0, 0, c.lib("lagoon_shallow", "water"), role="visual", steps=2)
+    c.disc("Havasu Spring", sx_, sy_, 7.4, strip[-1][3], c.lib("lagoon_shallow", "water"), role="visual", n=20, wobble=0.15, seed=7)
+    # The falls: off the bench's lip (north) into the pool.
+    top = lip_z
     props.falls(c, "Havasu Falls", fx + 2.0, fy + fr - 4.0, top, fz + 0.6, 10.0, 16.0, facing=-1, throw=5.0, bulge=1.2, veils=3,
                 mats=("falls_oasis", "falls_curtain_oasis", "falls_foam"))
     g = c.game(fx + 2.0, fy + fr - 8.0, fz + 0.6)
@@ -233,19 +266,51 @@ def water(c):
 
 
 def sun_arch(c, ground):
-    """Sun Arch: a great natural arch over the gap between Sky Mesa and Dawn Mesa, the road
-    on its back (the road's deck is the bridge kind; this is the arch's body and its legs
-    down to the floor)."""
-    x0, y0, x1, y1 = M.ARCH_SPAN
-    rot = math.atan2(y1 - y0, x1 - x0)
-    q, _ = c.nearest(*M.ARCH)
-    # (Its legs down in the gap, on the floor; its crown just under the road's deck.)
-    span = math.hypot(x1 - x0, y1 - y0) * 0.72
-    ca, sa = math.cos(rot), math.sin(rot)
-    base = max(ground(M.ARCH[0] - ca * span / 2, M.ARCH[1] - sa * span / 2),
-               ground(M.ARCH[0] + ca * span / 2, M.ARCH[1] + sa * span / 2))
-    dd.natural_arch(c, "Sun Arch", M.ARCH[0], M.ARCH[1], rot, span, q.p.z - base - 3.2,
-                    ("strata_orange", "strata_cream", "strata_red"), ground, seed=5)
+    """The Gap Bridge's trestles (the gap between Sky Mesa and Dawn Mesa; the deck is the
+    bridge kind): a bent of timber posts every 5 m along it, the outer ones battered out,
+    from the deck's underside down to the gap's floor, their cross beams and the X braces
+    between the bents; one solid mesh."""
+    span = [q for q in c.S if M._land(q.p.x, q.p.y) < q.p.z - 4.0 and math.hypot(q.p.x - M.ARCH[0], q.p.y - M.ARCH[1]) < 24.0]
+    if not span:
+        return
+    span.sort(key=lambda q: q.s)
+    bm = bmesh.new()
+    bents = []
+    s = span[0].s + 2.0
+    while s < span[-1].s - 1.0:
+        q = c.at(s)
+        top = q.p.z - 1.3
+        feet = []
+        for off, batter in ((-q.w / 2 - 0.6, -1.0), (0.0, 0.0), (q.w / 2 + 0.6, 1.0)):
+            tx, ty = q.p.x + q.r.x * off, q.p.y + q.r.y * off
+            foot_z = ground(tx, ty)
+            lean = 0.12 * (top - foot_z) * batter
+            fx, fy = tx + q.r.x * lean, ty + q.r.y * lean
+            cp._beam(bm, (fx, fy, ground(fx, fy) - 0.5), (tx, ty, top), 0.45)
+            feet.append(((fx, fy, ground(fx, fy)), (tx, ty, top)))
+        # (cross beams across the bent every 4 m down)
+        z = top - 0.3
+        while z > max(ground(*feet[0][0][:2]), ground(*feet[2][0][:2])) + 1.0:
+            pts = []
+            for (fx, fy, fz_), (tx, ty, tz) in (feet[0], feet[2]):
+                t = (tz - z) / max(0.1, tz - fz_)
+                pts.append((lerp(tx, fx, t), lerp(ty, fy, t), z))
+            cp._beam(bm, pts[0], pts[1], 0.3)
+            z -= 4.0
+        bents.append((s, feet))
+        s += 5.0
+    # (X braces between the bents, under each side of the deck)
+    for (s0, f0), (s1, f1) in zip(bents, bents[1:]):
+        for side in (0, 2):
+            (ax_, ay_, az_), (atx, aty, atz) = f0[side]
+            (bx_, by_, bz_), (btx, bty, btz) = f1[side]
+            mid_a = (lerp(ax_, atx, 0.5), lerp(ay_, aty, 0.5), lerp(az_, atz, 0.5))
+            mid_b = (lerp(bx_, btx, 0.5), lerp(by_, bty, 0.5), lerp(bz_, btz, 0.5))
+            cp._beam(bm, (atx, aty, atz - 0.3), mid_b, 0.22)
+            cp._beam(bm, (btx, bty, btz - 0.3), mid_a, 0.22)
+        cp._beam(bm, (f0[1][1][0], f0[1][1][1], f0[1][1][2] - 0.2), (f1[1][1][0], f1[1][1][1], f1[1][1][2] - 0.2), 0.35)
+    ob = c.mesh_object("Gap Bridge Trestles", bm, "Props", "both")
+    c.assign(ob, c.lib("weathered_timber", "wall"))
 
 
 # ------------------------------------------------------------------ the worlds
@@ -307,7 +372,7 @@ def pueblo(c, ground, taken):
     roofs the terraces of the tier above, ladders between, round kivas in the plaza, ovens,
     ristras by the doors; its folk; the farms in the wash below."""
     ax, ay, w, dp = M.ALCOVE
-    fz = M.FLOOR + 6.0
+    fz = M.ALCOVE_Z
     # The overhang (one shell of the mesa's caprock over the alcove) and the homes in three
     # tiers under it, Oasis Haven's adobe (mesa_dress, the deep pass).
     md.alcove_overhang(c)
@@ -344,15 +409,28 @@ def canyon_rim(c, ground, taken):
     c.place(ip.survey_scope(c), gx + 4.0, gy + 6.0, ground(gx + 4.0, gy + 6.0))
     rng = random.Random(7)
     n = 0
-    for _ in range(400):
+    for _ in range(600):
         x, y = rng.uniform(-150, 260), rng.uniform(220, 300)
         d = M.canyon_d(x, y)
         if not M.CANYON_HW + 5 < d < M.CANYON_HW + 40 or not taken.clear(x, y, 5.0) or not paint.road_clear(c, x, y, 7.0):
             continue
-        c.place(cp.hoodoo(c, n % 2, height=8.0 + 7.0 * rng.random()), x, y, ground(x, y) - 0.4, rot=rng.uniform(0, 6.28))
-        taken.add(x, y, 5.0)
+        z = ground(x, y)
+        if z > M.FLOOR + 5.0:
+            continue  # (none up on the buttes' tops: review-desert_region 3, note 6)
+        # (a family of formations, not one column in sizes: note 5)
+        k = n % (len(hf.FAMILY) + 1)
+        h = rng.random()
+        if k == len(hf.FAMILY):
+            proto = cp.hoodoo(c, n % 2, height=8.0 + 7.0 * h)
+        else:
+            shape = hf.FAMILY[k]
+            size = {"mushroom": 5.0 + 4.0 * h, "balanced": 7.0 + 5.0 * h, "spires": 10.0 + 6.0 * h, "fin": 7.0 + 5.0 * h,
+                    "arch": 7.0 + 4.0 * h, "goblin": 3.5 + 3.0 * h, "totem": 9.0 + 6.0 * h}[shape.__name__]
+            proto = shape(c, n % 2, height=round(size))
+        c.place(proto, x, y, z - 0.4, rot=rng.uniform(0, 6.28))
+        taken.add(x, y, 6.0)
         n += 1
-        if n >= 26:
+        if n >= 34:
             break
 
 
@@ -370,6 +448,27 @@ def havasu(c, ground, taken):
         a = k * math.tau / 10 + 0.0
         x, y = fx + (fr - 7.0) * math.cos(a), fy + (fr - 7.0) * math.sin(a)
         c.place(ip.tree_fern(c, k % 2), x, y, ground(x, y) - 0.2, rot=a, role="visual")
+    # Along the creek: cottonwoods and willows on its banks, reeds at the water, the spring's
+    # ring of ferns.
+    for (ax_, ay_), (bx_, by_) in zip(M.CREEK, M.CREEK[1:]):
+        L = math.hypot(bx_ - ax_, by_ - ay_)
+        nx, ny = -(by_ - ay_) / L, (bx_ - ax_) / L
+        for k in range(int(L / 7.0)):
+            t = (k + 0.5) / int(L / 7.0)
+            for sd in (-1, 1):
+                if (k + (sd > 0)) % 2:
+                    continue
+                x, y = lerp(ax_, bx_, t) + nx * sd * (M.CREEK_HW + 4.5), lerp(ay_, by_, t) + ny * sd * (M.CREEK_HW + 4.5)
+                if taken.clear(x, y, 3.0) and paint.road_clear(c, x, y, 4.0):
+                    c.place(smp_.broadleaf(c, k % 2, frosted=False), x, y, ground(x, y) - 0.2, rot=k + sd, scale=0.8 + 0.2 * (k % 3))
+            x, y = lerp(ax_, bx_, t) + nx * (M.CREEK_HW + 0.8), lerp(ay_, by_, t) + ny * (M.CREEK_HW + 0.8)
+            c.place(props.cattails(c, k % 2), x, y, ground(x, y) - 0.1, rot=k, role="visual")
+    sx_, sy_ = M.CREEK[-1]
+    for k in range(8):
+        a = k * math.tau / 8
+        x, y = sx_ + 9.0 * math.cos(a), sy_ + 9.0 * math.sin(a)
+        c.place(ip.tree_fern(c, k % 2), x, y, ground(x, y) - 0.2, rot=a, role="visual")
+    taken.add(sx_, sy_, 12.0)
     # (No palms: Oasis Haven's cottonwoods, mesa_dress.havasu_village.)
 
 
@@ -389,21 +488,8 @@ def crater(c, ground, taken):
     gx, gy = M.GATES["impact"]
     ox, oy, _r = M.OBSERVATORY  # (on its pad, cut level into the rim)
     oz = ground(ox, oy)
-    c.place(paint.trunk_proto(c, 5.0, 9.0), ox, oy, oz - 1.0, coll="Collision", role="collision")
-    cone(c, "Observatory Tower", ox, oy, 5.4, oz - 1.0, 9.0 + 4.0, ("arcade_white", "wall"), segs=16, role="visual")
-    box(c, "Observatory Base", ox, oy, 5.0, 5.0, oz - 1.0, oz + 7.0, ("arcade_white", "wall"), role="visual")
-    import oasis_props as _op
-
-    def dome(bm):
-        _op.dome(bm, ox, oy, oz + 7.0, 5.2)
-
-    import bmesh
-
-    bm = bmesh.new()
-    dome(bm)
-    ob = c.mesh_object("Observatory Dome", bm, "Props", "visual")
-    c.assign(ob, c.lib("tin_roof", "wall"))
-    box(c, "Observatory Slit", ox, oy - 0.2, 0.7, 5.3, oz + 8.0, oz + 12.0, ("dark_corridor", "wall"), rot=1.9, role="visual")
+    # (No observatory any more: review-desert_region 3, note 11, "delete this building for
+    # now". Its pad stays clear.)
     taken.add(ox, oy, 9.0)
     # (The survey camp and the rim's warning signs: mesa_dress.crater_camp.)
     rng = random.Random(11)
