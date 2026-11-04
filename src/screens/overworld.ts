@@ -1105,6 +1105,7 @@ export function overworldLoading(
           rivals: false,
           racer: game.selection.racer,
           freeRoam: true,
+          fenced: true,
         })
         .then((s) => {
           if (!alive || token !== game.screens.token) return s.dispose();

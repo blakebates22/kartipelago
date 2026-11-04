@@ -144,6 +144,7 @@ import { createChaseCamera } from "../render/chaseCamera";
 import { basisOf, fingerprint, tiltOf, type GhostChoice, type GhostSample } from "./ghost";
 import { createGhostRunner, type GhostRunner } from "./ghostRunner";
 import { createGhostStore, type GhostStore } from "../app/ghostStore";
+import { createFence, stepBounds } from "../world/bounds";
 
 /** Saved Time Trial ghosts (one store for the whole game). */
 let ghostStore: GhostStore | undefined;
@@ -200,6 +201,8 @@ export interface SessionOptions {
    * to finish, no clock on screen, no rivals and no Time Trial (the race underneath only
    * keeps the respawns working). */
   freeRoam?: boolean;
+  /** The overworld's bounds (world/bounds.ts): the package's bounds.json fences you in. */
+  fenced?: boolean;
   /** A mini-game (src/game/minigames.ts): free roam with rivals, who drive by the game's
    * own minds (`drive`: what rival i does this step, undefined for the race AI; `fire`:
    * whether it uses its item now), and the game hears the item events. */
@@ -606,6 +609,9 @@ function buildSession(
   const loops = pkg ? createLoops(pkg.meta.entities ?? [], entrants.length) : undefined;
   /** Each kart's last spot on the road, grounded (respawn zones look it up too). */
   const lastRoad = entrants.map(() => ({ x: NaN, y: NaN, z: NaN }));
+  /** The overworld's bounds (world/bounds.ts): each kart's fence at the land's edge. */
+  const bounds = opts.fenced ? pkg?.bounds : undefined;
+  const fences = entrants.map(() => createFence());
   /** Where race logic sees each kart (on a loop: the straight from its entry to its exit). */
   /** The dev menu's infinite boost, as it was when this session began. */
   const devBoost = infiniteBoost();
@@ -1237,10 +1243,13 @@ function buildSession(
           teleported(race, i, e.state);
         }
       }
+      // Out of bounds (world/bounds.ts): the invisible wall at the land's edge; landed out
+      // of it and still out, put back on the road like a fall.
+      const fenced = bounds && !riding ? stepBounds(fences[i]!, e.state, bounds, dt) : undefined;
       const surfaceDef =
         pkg && e.state.grounded && !hazards?.handles(under) ? SURFACES[under ?? ""] : undefined;
       const fell =
-        pkg && !riding && (e.state.y < pkg.killY || surfaceDef?.respawn)
+        pkg && !riding && (e.state.y < pkg.killY || surfaceDef?.respawn || fenced === "respawn")
           ? (hazards?.respawnSpot(e.state.x, e.state.y, e.state.z, road) ?? lastGate)
           : undefined;
       // A rival lost off the road for a long while (src/ai/driver.ts): its checkpoint.
@@ -2055,6 +2064,7 @@ function buildSession(
       Object.assign(you.state, createKartState(x, z, heading, g.height));
       you.state.bananas = bananas;
       loops?.reset(0);
+      fences[0] = createFence(); // (a warp: wherever it puts you, the fence starts there)
       snapPrev(you);
       if (race) {
         teleported(race, 0, you.state);

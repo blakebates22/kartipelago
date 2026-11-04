@@ -28,6 +28,7 @@ import {
 } from "../render/trackMaterials";
 import { buildCollisionMesh, type CollisionMesh, type SurfaceTable } from "./collisionMesh";
 import type { TrackData } from "./track";
+import { parseBounds, type BoundsMask } from "./bounds";
 import type { CheckpointGate } from "../race/checkpoints";
 import type { SkyDomeSpec } from "../render/skyDome";
 
@@ -172,6 +173,8 @@ export interface TrackPackage {
   look: TrackLook;
   /** Falling below this height puts you back on the track. */
   killY: number;
+  /** The overworld's bounds (world/bounds.ts), when the package has a bounds.json. */
+  bounds?: BoundsMask;
   /** Non-fatal problems worth showing the track's author. */
   warnings: string[];
 }
@@ -517,13 +520,14 @@ export async function loadTrackPackage(
   const meta = parseTrackMeta(rawMeta);
   // look.json is optional: tracks exported before it existed don't list it.
   const lookFile = meta.geometry.look ?? "look.json";
-  const [routeBuf, colBuf, visBuf, lookBuf, cpBuf, editsBuf] = await Promise.all([
+  const [routeBuf, colBuf, visBuf, lookBuf, cpBuf, editsBuf, boundsBuf] = await Promise.all([
     read(meta.geometry.route),
     read(meta.geometry.collision),
     opts.visual === false ? Promise.resolve(undefined) : read(meta.geometry.visual),
     read(lookFile).catch(() => undefined),
     read("checkpoints.json").catch(() => undefined),
     read("edits.json").catch(() => undefined),
+    read("bounds.json").catch(() => undefined),
   ]);
   // Baked nudges from the review tool (trackEdits.ts): to the collision and the visual.
   const editWarnings: string[] = [];
@@ -599,8 +603,21 @@ export async function loadTrackPackage(
     materials,
     look,
     killY: b.minY - 15,
+    bounds: boundsOf(boundsBuf),
     warnings,
   };
+}
+
+/** bounds.json, if there is one (a dev server answers a missing file with its index page). */
+function boundsOf(buf: ArrayBuffer | undefined) {
+  if (!buf) return undefined;
+  const body = text(buf);
+  if (body.trimStart().startsWith("<")) return undefined;
+  try {
+    return parseBounds(JSON.parse(body));
+  } catch {
+    return undefined;
+  }
 }
 
 /** Free an object's GPU resources (geometries, materials, textures). */
