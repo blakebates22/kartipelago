@@ -351,10 +351,22 @@ def _wall_spot(e, a):
     return DOCKS[0] + DOCKS[2] * e * math.cos(a), DOCKS[1] + DOCKS[3] * e * math.sin(a)
 
 
+def _edge_point(x, y, pw, pd, rot, ux, uy):
+    """Where a ray from a platform's middle (x, y) along (ux, uy) leaves its edge (the
+    platform pw x pd, turned rot)."""
+    ca, sa = math.cos(rot), math.sin(rot)
+    lx, ly = ux * ca + uy * sa, -ux * sa + uy * ca
+    t = min((pw / 2) / abs(lx) if abs(lx) > 1e-6 else 1e9, (pd / 2) / abs(ly) if abs(ly) > 1e-6 else 1e9)
+    return x + ux * t, y + uy * t
+
+
 def stilts(c, ground, taken):
-    """Shacks on stilts round the cavern's walls: a lower tier on short stilts with a
-    boardwalk between them, an upper tier on tall stilts behind with rope bridges between,
-    pulleys out over the floor hauling cargo nets and crates up and down. Returns how many."""
+    """Shacks on stilts round the cavern's walls, their doors to the cavern's middle: a
+    lower tier on short stilts with boardwalks between them, an upper tier on tall stilts
+    behind with rope bridges between; every walkway runs from one platform's edge to the
+    next's, a post at each end its rails are tied to (review 1 note 5: "make sure all the
+    roped and bridges are rigoursly connected and not floating"). Pulleys out from the
+    upper tier hold cargo still on their ropes over the stacks below. Returns how many."""
     bx, by, br = BASIN
     cy, hw, cx0, cx1 = CANAL
     tiers = [(0.79, 2.2, 0.0), (0.9, 5.2, 0.045)]
@@ -371,80 +383,159 @@ def stilts(c, ground, taken):
                 continue
             if not paint.road_clear(c, x, y, reach + (3.0 if t == 0 else 1.0)) or not taken.clear(x, y, reach if t == 0 else 1.0):
                 continue
-            if built[t] and math.hypot(x - built[t][-1][0], y - built[t][-1][1]) < reach + built[t][-1][3] + 0.8:
+            if built[t] and math.hypot(x - built[t][-1]["x"], y - built[t][-1]["y"]) < reach + built[t][-1]["reach"] + 0.8:
                 continue
             z = ground(x, y)
             if abs(z - DOCK_FLOOR) > 1.0:
                 continue
-            rot = a + math.pi / 2  # (its door, -Y, to the cavern's middle)
+            rot = a - math.pi / 2  # (its door, its -Y, to the cavern's middle)
             c.place(hp.stilt_shack(c, k + t, ph, w, d, 2.6 + 0.4 * (k % 2)), x, y, z, rot=rot, coll="Village", role="visual")
             box(c, "Stilt Shack Solid %d %d" % (t, k), x, y, w / 2 + 0.8, d / 2 + 1.3, z - 0.5, z + ph + 2.8, ("wreck_planks", "wall"),
                 rot=rot, role="collision")
             fx, fy = x - math.cos(a) * (d / 2 + 1.3), y - math.sin(a) * (d / 2 + 1.3)
             D.light(c, "lantern", fx, fy, z + ph + 2.4)
-            built[t].append((x, y, z + ph, reach, a, fx, fy))
+            built[t].append({"x": x, "y": y, "z": z + ph + 0.15, "reach": reach, "a": a, "fx": fx, "fy": fy, "pw": w + 1.6,
+                             "pd": d + 2.6, "rot": rot, "ground": z})
             if t == 0:
                 taken.add(x, y, reach)
             n += 1
             if k % 3 == 0:
                 D.person(c, fx, fy, z + ph + 0.15, ("fisher", "huddle", "worker")[k % 3], bx, by)
-    # (the lower tier's boardwalk, the upper's rope bridges, between neighbours)
+    # (the walkways: platform edge to platform edge, a post at each end, the rails tied to them)
     for t, row in enumerate(built):
-        for (ax, ay, az, ar, aa, _, _), (bx2, by2, bz, b_r, ba, _, _) in zip(row, row[1:]):
-            gap = math.hypot(bx2 - ax, by2 - ay)
+        for A, B in zip(row, row[1:]):
+            gap = math.hypot(B["x"] - A["x"], B["y"] - A["y"])
             if gap > 16.0:
                 continue
-            ux, uy = (bx2 - ax) / gap, (by2 - ay) / gap
-            p0 = (ax + ux * (ar - 1.0), ay + uy * (ar - 1.0), az + 0.1)
-            p1 = (bx2 - ux * (b_r - 1.0), by2 - uy * (b_r - 1.0), bz + 0.1)
-            span = [(lerp(p0[0], p1[0], s / 8), lerp(p0[1], p1[1], s / 8),
-                     lerp(p0[2], p1[2], s / 8) - (0.0 if t == 0 else 0.9 * math.sin(math.pi * s / 8))) for s in range(9)]
+            ux, uy = (B["x"] - A["x"]) / gap, (B["y"] - A["y"]) / gap
+            ax, ay = _edge_point(A["x"], A["y"], A["pw"], A["pd"], A["rot"], ux, uy)
+            bx2, by2 = _edge_point(B["x"], B["y"], B["pw"], B["pd"], B["rot"], -ux, -uy)
+            ax, ay, bx2, by2 = ax - ux * 0.25, ay - uy * 0.25, bx2 + ux * 0.25, by2 + uy * 0.25
+            dip = 0.0 if t == 0 else 0.8
+            span = [(lerp(ax, bx2, s / 10), lerp(ay, by2, s / 10), lerp(A["z"], B["z"], s / 10) - dip * math.sin(math.pi * s / 10))
+                    for s in range(11)]
             planks = bmesh.new()
-            for s in range(8):
+            for s in range(10):
                 (x0, y0, z0), (x1, y1, z1) = span[s], span[s + 1]
-                props.cuboid(planks, ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), (math.hypot(x1 - x0, y1 - y0) * 0.86, 1.3, 0.1),
-                             rot=math.atan2(y1 - y0, x1 - x0))
-            _mesh(c, "Walkway %d %d" % (t, int(ax)), planks, "plank_deck")
+                props.cuboid(planks, ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2 - 0.05),
+                             (math.hypot(x1 - x0, y1 - y0) * 0.92, 1.3, 0.1), rot=math.atan2(y1 - y0, x1 - x0),
+                             tilt=(0.0, -math.atan2(z1 - z0, math.hypot(x1 - x0, y1 - y0))))
+            _mesh(c, "Walkway %d %d" % (t, int(A["x"])), planks, "plank_deck")
             for sd in (-1, 1):
-                rail = [(px - uy * sd * 0.7, py + ux * sd * 0.7, pz + 1.0) for px, py, pz in span]
-                D.tube(c, "Walkway Rail %d %d %d" % (t, int(ax), sd), rail, 0.04, "rope_rail" if t else "weathered_timber")
+                ox, oy = -uy * sd * 0.7, ux * sd * 0.7
+                ends = []
+                for (px, py, pz) in (span[0], span[-1]):
+                    D.tube(c, "Walkway Post %d %d %d %d" % (t, int(A["x"]), sd, int(px)), [(px + ox, py + oy, pz - 0.2), (px + ox, py + oy, pz + 1.1)],
+                           0.07, "weathered_timber", n=5)
+                    ends.append((px + ox, py + oy, pz + 1.05))
+                rail = [ends[0]] + [(px + ox, py + oy, pz + 1.0) for px, py, pz in span[1:-1]] + [ends[1]]
+                D.tube(c, "Walkway Rail %d %d %d" % (t, int(A["x"]), sd), rail, 0.035, "rope_rail" if t else "weathered_timber")
+                if t:
+                    for px, py, pz in span[2:-2:2]:
+                        D.tube(c, "Walkway Hanger %d %d %d %d" % (t, int(A["x"]), sd, int(px * 10)),
+                               [(px + ox, py + oy, pz + 1.0), (px + ox, py + oy, pz)], 0.02, "rope_rail", n=3)
             if t == 0:
-                for s in (2, 4, 6):
+                for s in (3, 7):
                     px, py, pz = span[s]
-                    D.tube(c, "Walkway Post %d %d" % (int(ax), s), [(px, py, DOCK_FLOOR - 0.3), (px, py, pz)], 0.13, "weathered_timber", n=5)
-    # (pulleys out over the floor from the upper tier: cargo nets and crates going up and down)
-    for j, (x, y, z, r, a, fx, fy) in enumerate(built[1]):
+                    D.tube(c, "Walkway Leg %d %d" % (int(A["x"]), s), [(px, py, DOCK_FLOOR - 0.3), (px, py, pz - 0.1)], 0.13, "weathered_timber", n=5)
+    # (pulleys from the upper tier: a beam out over the floor, the rope down, the load on its
+    # hook still, just over the stack it's going on)
+    for j, P in enumerate(built[1]):
         if j % 2:
             continue
-        ox, oy = fx - math.cos(a) * 0.6, fy - math.sin(a) * 0.6
-        D.tube(c, "Pulley Beam %d" % j, [(fx + math.cos(a) * 1.0, fy + math.sin(a) * 1.0, z + 3.2), (ox, oy, z + 3.2)], 0.12,
+        a = P["a"]
+        tipx, tipy = P["fx"] - math.cos(a) * 1.6, P["fy"] - math.sin(a) * 1.6
+        if not paint.road_clear(c, tipx, tipy, 3.0):
+            continue
+        top = P["z"] + 3.1
+        D.tube(c, "Pulley Beam %d" % j, [(P["fx"] + math.cos(a) * 1.0, P["fy"] + math.sin(a) * 1.0, top), (tipx, tipy, top)], 0.12,
                "weathered_timber", n=5)
-        g = _game(c, ox, oy, z + 3.1)
-        th = math.atan2(-math.sin(a), -math.cos(a))
-        c.entity("crane", x=g[0], y=g[1], z=g[2], heading=round(math.pi / 2 - th, 3), reach=1.2, drop=round(z + 3.1 - DOCK_FLOOR - 1.6, 1),
-                 swing=0.15, period=round(11.0 + 2.0 * (j % 3), 1), load="net" if j % 4 == 0 else "crate")
+        D.tube(c, "Pulley Strut %d" % j, [(P["fx"], P["fy"], P["z"] + 0.1), (tipx + math.cos(a) * 1.0, tipy + math.sin(a) * 1.0, top)], 0.08,
+               "weathered_timber", n=4)
+        cone(c, "Pulley Block %d" % j, tipx, tipy, 0.18, top - 0.3, 0.3, ("iron", "wall"), segs=6, role="visual")
+        g = ground(tipx, tipy)
+        c.place(gp.crate_stack(c, j % 3), tipx, tipy, g, rot=a, role="visual")
+        load_z = g + 2.6
+        D.tube(c, "Pulley Rope %d" % j, [(tipx, tipy, top - 0.3), (tipx, tipy, load_z + 0.55)], 0.035, "rope_rail", n=3)
+        if j % 4 == 0:
+            D.egg(c, "Pulley Net %d" % j, tipx, tipy, load_z - 0.4, 0.55, "isle_net")
+        else:
+            box(c, "Pulley Crate %d" % j, tipx, tipy, 0.45, 0.45, load_z - 0.4, load_z + 0.5, ("wood_dock", "wall"), rot=a, role="visual")
     return n
 
 
 def road_crane(c, ground, taken):
-    """A big crane on the canal's north bank, east of the road, its jib slewing out over
-    the road with a crate (high over the karts) and back."""
+    """A big harbour crane on the canal's north bank, east of the road, its jib out over
+    the road, a slung pallet of crates on its hook (high over the karts: its bottom 5 m
+    and more over the road)."""
     x, y = 13.0, -289.0
     z = ground(x, y)
-    top = z + 14.0
-    box(c, "Road Crane Tower", x, y, 1.3, 1.3, z - 0.5, top, ("weathered_timber", "wall"))
-    box(c, "Road Crane Cab", x, y, 2.4, 2.4, top - 3.5, top - 0.5, ("wreck_planks", "wall"), role="visual")
-    box(c, "Road Crane Counterweight", x + 3.5, y, 1.2, 1.0, top - 1.2, top + 0.2, ("bog_dark_stone", "wall"), role="visual")
-    for sd in (-1, 1):
-        D.tube(c, "Road Crane Brace %d" % sd, [(x + sd * 2.6, y - 2.6, z), (x, y, top - 3.5), (x + sd * 2.6, y + 2.6, z)], 0.14,
-               "weathered_timber", n=5)
-    g = _game(c, x, y, top + 0.4)
-    # (the jib pointing west over the road, slewing; the crate's bottom never under 5 m
-    # over the road: its rope pays out at most 5)
-    c.entity("crane", x=g[0], y=g[1], z=g[2], heading=round(math.pi / 2 - math.pi, 3), reach=17.0, drop=5.0, swing=0.25, period=14.0,
-             load="crate", slew=0.85, slewPeriod=22.0)
-    D.light(c, "lantern", x - 1.6, y, top - 2.0)
+    c.place(hp.harbour_crane(c, 1, height=7.0, reach=14.0, drop=3.5, load="pallet"), x, y, z - 0.3, rot=math.pi, role="visual")
+    box(c, "Road Crane Solid", x, y, 2.0, 2.0, z - 0.5, z + 10.0, ("weathered_timber", "wall"), role="collision")
+    D.light(c, "lantern", x + 1.8, y, z + 7.0 + 1.6)
     taken.add(x, y, 4.0)
+
+
+KING = (-28.0, -325.0)  # the King Croc's throne, on the quay between the road and the basin
+
+
+def king(c, ground, taken):
+    """The King Croc holding court (Blake, Nov 4: "a big king croc on a throne"; review 1:
+    "make it so we can actually see the croc"): on a stone dais on the quay right by the
+    road, facing it, standing before his throne: a heap of treasure chests under a great
+    carved back cut from a ship's stern, a ship's wheel behind it like a halo, gold spilled
+    everywhere; braziers either side, his black banners, a rug down the steps to the road,
+    his guards. He's three times the height of his people and watches you go by (the
+    croc_king entity: render/people/crocKing.ts)."""
+    x, y = KING
+    z = ground(x, y)
+    top = z + 1.4
+    # (the dais and its steps down toward the road, east)
+    box(c, "King Dais", x, y, 5.0, 4.5, z - 0.5, top, ("bog_stone", "wall"))
+    box(c, "King Dais Coping", x, y, 5.2, 4.7, top - 0.1, top + 0.05, ("keep_ashlar_dark", "wall"), role="visual")
+    for k in range(3):
+        box(c, "King Step %d" % k, x + 5.0 + 0.5 + k * 0.7, y, 0.35, 2.8, z - 0.5, top - 0.45 * (k + 1), ("bog_stone", "wall"))
+    D.cloth(c, "King Rug", [(x - 2.0, y - 1.2, top + 0.07), (x + 5.2, y - 1.2, top + 0.07), (x + 7.6, y - 1.2, z + 0.06),
+                            (x + 7.6, y + 1.2, z + 0.06), (x + 5.2, y + 1.2, top + 0.07), (x - 2.0, y + 1.2, top + 0.07)], "royal_carpet")
+    # (the throne: chests heaped, the carved stern-board back, the wheel)
+    for k, (dx, dy, dz, s_, r) in enumerate(((-2.6, 0.0, 0.0, 1.6, 0.0), (-2.6, -1.9, 0.0, 1.2, 0.3), (-2.6, 1.9, 0.0, 1.2, -0.3),
+                                              (-2.9, 0.0, 1.2, 1.3, 0.1), (-1.4, -2.6, 0.0, 1.0, 0.8), (-1.2, 2.7, 0.0, 1.0, -0.7))):
+        c.place(hp.treasure_chest(c, k, s_), x + dx, y + dy, top + dz, rot=math.pi / 2 + r, role="visual")
+    box(c, "Throne Back", x - 3.6, y, 0.35, 2.4, top, top + 7.5, ("ship_hull", "wall"), role="visual")
+    box(c, "Throne Back Trim", x - 3.4, y, 0.1, 2.5, top + 7.0, top + 7.6, ("gold_trim", "wall"), role="visual")
+    for sd in (-1, 1):
+        cone(c, "Throne Finial %d" % sd, x - 3.5, y + sd * 2.3, 0.35, top + 7.5, 1.1, ("gold_trim", "wall"), segs=6, role="visual")
+    wheel = bmesh.new()
+    cx_, cz_ = x - 3.25, top + 5.4
+    pts = [(cx_, y + 2.0 * math.cos(k * math.tau / 20), cz_ + 2.0 * math.sin(k * math.tau / 20)) for k in range(21)]
+    props.tube(wheel, pts, 0.14, n=6)
+    for k in range(8):
+        a = k * math.tau / 8
+        props.tube(wheel, [(cx_, y, cz_), (cx_, y + 2.5 * math.cos(a), cz_ + 2.5 * math.sin(a))], 0.09, n=5)
+    _mesh(c, "Throne Wheel", wheel, "weathered_timber")
+    for k in range(9):
+        a = k * 0.9
+        D.egg(c, "King Gold %d" % k, x - 1.5 + 1.2 * math.cos(a), y + 2.8 * math.sin(a), top, 0.35 + 0.1 * (k % 3), "gold_trim")
+    # (braziers either side of the dais front, banners behind)
+    for sd in (-1, 1):
+        bx_, by_ = x + 3.6, y + sd * 3.6
+        D.tube(c, "Brazier Stand %d" % sd, [(bx_, by_, top), (bx_, by_, top + 1.4)], 0.12, "keep_iron", n=6)
+        cone(c, "Brazier %d" % sd, bx_, by_, 0.75, top + 1.4, -0.6, ("keep_iron", "wall"), segs=8, role="visual")
+        D.light(c, "campfire", bx_, by_, top + 1.5)
+        px, py = x - 2.0, y + sd * 4.2
+        D.tube(c, "Banner Pole %d" % sd, [(px, py, top), (px, py, top + 8.5)], 0.1, "weathered_timber", n=5)
+        D.cloth(c, "King Banner %d" % sd, [(px, py, top + 8.3), (px + 0.1, py + sd * 2.2, top + 8.3), (px + 0.1, py + sd * 2.0, top + 4.6),
+                                           (px, py + sd * 1.1, top + 5.2), (px, py, top + 4.6)], "wreck_sail")
+        for k in range(3):
+            D.person(c, x + 2.5 - k * 1.8, y + sd * 3.9, top + 0.05, "guard", x + 12.0, y)
+    for k in range(4):
+        D.person(c, x + 8.5, y - 3.0 + k * 2.0, z + 0.05, ("cheer", "wave", "cheer", "huddle")[k], x, y)
+    # (the King himself: standing before his throne, facing the road)
+    g = _game(c, x - 0.8, y, top)
+    c.entity("croc_king", x=g[0], y=g[1], z=g[2], heading=round(math.pi / 2, 4))
+    g = _game(c, x + 2.0, y, top + 4.0)
+    c.entity("glow", x=g[0], y=g[1], z=g[2], color="#ffa050")
+    taken.add(x, y, 9.0)
 
 
 def harbour(c, ground, taken, dressing):
@@ -453,6 +544,7 @@ def harbour(c, ground, taken, dressing):
     D = dressing
     water(c)
     quays(c, ground, taken)
+    king(c, ground, taken)
     sea_leak(c, ground, taken)
     weir_and_gate(c, ground, taken)
     bridge(c, ground, taken)

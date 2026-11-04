@@ -78,7 +78,22 @@ def egg(c, name, x, y, z, r, mat):
 
 
 def lantern_line(c, name, p0, p1, sag=1.0):
-    bp.string_line(c, name, p0, p1, sag, kind="lanterns", coll="Props")
+    """A rope slung between two points with ship's lanterns hung off it (review 1 note 7:
+    the paper lanterns "dont match the smuggler vibe"): each on a short chain, tied on."""
+    import harbour_props as hp
+
+    n = 12
+    pts = [(lerp(p0[0], p1[0], k / n), lerp(p0[1], p1[1], k / n), lerp(p0[2], p1[2], k / n) - sag * 4 * (k / n) * (1 - k / n))
+           for k in range(n + 1)]
+    tube(c, name + " Rope", pts, 0.03, "rope_rail")
+    span = math.dist(p0, p1)
+    m = max(1, int(span / 2.8))
+    for k in range(m):
+        t = (k + 0.5) / m
+        x, y = lerp(p0[0], p1[0], t), lerp(p0[1], p1[1], t)
+        z = lerp(p0[2], p1[2], t) - sag * 4 * t * (1 - t)
+        tube(c, "%s Chain %d" % (name, k), [(x, y, z), (x, y, z - 0.35)], 0.012, "keep_iron", n=3)
+        c.place(hp.cage_lantern(c, k + len(name)), x, y, z - 0.35, role="visual")
 
 
 def ok(c, taken, x, y, r, margin=2.0):
@@ -133,23 +148,31 @@ def docks(c, ground, taken):
     # The harbour's water, its quays, the sea leak, the weir and the water gate, the stone
     # bridge, the ships and the boats (jedge_harbour: Blake, Nov 4).
     H.harbour(c, ground, taken, sys.modules[__name__])
-    # The cranes on the quay (between the road and the water), jibs over the basin.
-    for j, (x, y) in enumerate(((-18.0, -334.0), (-19.0, -314.0), (-22.0, -280.0))):
+    # The cranes on the quay (between the road and the water), jibs out over the basin,
+    # standing still (review 1 note 2): one lowering a net of crates onto a stack on the
+    # quay, one a pallet into a skiff tied up under it.
+    for j, (x, y, reach, drop, load) in enumerate(((-24.0, -339.0, 11.0, 8.6, "net"), (-22.0, -279.0, 12.0, 9.5, "pallet"))):
+        if not paint.road_clear(c, x, y, 3.5):
+            print("  (crane %d: too near the road)" % j)
+            continue
         z = ground(x, y)
-        a = math.atan2(by - y, bx - x) + (j - 1) * 0.25
-        reach = 11.0
-        box(c, "Crane Tower %d" % j, x, y, 1.2, 1.2, z, z + 15.0, ("weathered_timber", "wall"), rot=a)
-        tube(c, "Crane Jib %d" % j, [(x - 2.0 * math.cos(a), y - 2.0 * math.sin(a), z + 15.0),
-                                     (x + reach * math.cos(a), y + reach * math.sin(a), z + 15.0)], 0.3, "weathered_timber", n=5)
-        tube(c, "Crane Stay %d" % j, [(x, y, z + 18.0), (x + reach * math.cos(a), y + reach * math.sin(a), z + 15.2)], 0.05, "rope_rail")
-        box(c, "Crane Cab %d" % j, x, y, 2.2, 2.2, z + 11.0, z + 14.0, ("wreck_planks", "wall"), rot=a, role="visual")
-        g = c.game(x, y, z + 15.0)
-        c.entity("crane", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(math.pi / 2 - a, 3), reach=reach,
-                 drop=round(15.0 - (DOCK_WATER - z) - 1.0, 1), swing=0.6, period=round(9.0 + 2.5 * j, 1), load="net" if j % 2 else "crate")
-        taken.add(x, y, 2.5)
+        a = math.atan2(by - y, bx - x)
+        c.place(H.hp.harbour_crane(c, j, height=9.0, reach=reach, drop=drop, load=load), x, y, z - 0.3, rot=a, role="visual")
+        box(c, "Crane Solid %d" % j, x, y, 2.0, 2.0, z - 0.5, z + 10.0, ("weathered_timber", "wall"), rot=a, role="collision")
+        light(c, "lantern", x - 1.8 * math.cos(a), y - 1.8 * math.sin(a), z + 10.6)
+        tx = x + (1.5 + reach * math.cos(0.42)) * math.cos(a)
+        ty = y + (1.5 + reach * math.cos(0.42)) * math.sin(a)
+        if L.in_water(tx, ty):
+            c.place(H.hp.moored_skiff(c, 3 + j), tx, ty, DOCK_WATER, rot=a + 0.4, role="visual")
+        else:
+            c.place(gp.crate_stack(c, j), tx, ty, ground(tx, ty), rot=a, role="visual")
+            for k in range(2):
+                person(c, tx + 1.8 * math.cos(a + 1.6 + k * 3.1), ty + 1.8 * math.sin(a + 1.6 + k * 3.1), ground(tx, ty), "worker", tx, ty)
+        taken.add(x, y, 3.0)
+        taken.add(tx, ty, 2.0)
         for k in range(3):
             px, py = x + 2.8 * math.cos(a + 2.2 + k), y + 2.8 * math.sin(a + 2.2 + k)
-            person(c, px, py, ground(px, py), "worker", x + reach * math.cos(a), y + reach * math.sin(a))
+            person(c, px, py, ground(px, py), "worker", tx, ty)
     # Warehouses along the docks' east and north sides, the Customs House on the canal.
     sheds = [(26.0, -336.0, 0.3, "siding_brown"), (40.0, -318.0, 1.2, "siding_grey"), (-38.0, -264.0, 0.1, "siding_green"),
              (-60.0, -278.0, 1.5, "siding_red"), (-12.0, -258.0, 0.0, "siding_ochre"), (34.0, -282.0, 0.2, "siding_brown")]
@@ -157,13 +180,13 @@ def docks(c, ground, taken):
         if not ok(c, taken, x, y, 6.0, 1.0) or ellipse(x, y, *DOCKS) > 0.9:
             continue
         z = ground(x, y)
-        box(c, "Warehouse %d" % j, x, y, 6.5, 4.5, z - 0.5, z + 7.0, (mat, "wall"), rot=rot)
-        box(c, "Warehouse Roof %d" % j, x, y, 7.2, 5.2, z + 7.0, z + 7.6, ("tin_roof", "wall"), rot=rot, role="visual")
+        # (run down: review 1 note 8; harbour_props.warehouse)
+        c.place(H.hp.warehouse(c, j, 13.0, 9.0, 7.0), x, y, z - 0.05, rot=rot, coll="Village", role="visual")
+        box(c, "Warehouse %d" % j, x, y, 6.5, 4.5, z - 0.5, z + 7.0, (mat, "wall"), rot=rot, role="collision")
         ca, sa = math.cos(rot), math.sin(rot)
         for sd in (-1, 1):
-            # (its big doors open, a lamp over them, crates spilling out)
+            # (its big doors, a lamp over them, crates spilling out)
             dx, dy = x - sa * sd * 4.55, y + ca * sd * 4.55
-            box(c, "Warehouse Door %d %d" % (j, sd), dx, dy, 2.4, 0.1, z, z + 4.2, ("window_dark", "wall"), rot=rot, role="visual")
             light(c, "lantern", dx - sa * sd * 0.6, dy + ca * sd * 0.6, z + 5.0)
             ox, oy = dx - sa * sd * 3.0, dy + ca * sd * 3.0
             if paint.road_clear(c, ox, oy, 2.0):
@@ -174,9 +197,9 @@ def docks(c, ground, taken):
     x, y = 34.0, cy + hw + 6.0
     if ok(c, taken, x, y, 4.0, 1.0):
         z = ground(x, y)
-        box(c, "Customs House", x, y, 4.0, 3.0, z - 0.5, z + 5.0, ("cabin_wall", "wall"))
-        box(c, "Customs House Roof", x, y, 4.6, 3.6, z + 5.0, z + 5.5, ("shingle_roof", "wall"), role="visual")
-        box(c, "Customs Window", x, y - 3.05, 1.8, 0.1, z + 1.2, z + 2.6, ("window_warm", "wall"), role="visual")
+        c.place(H.hp.warehouse(c, 7, 8.0, 6.0, 5.0), x, y, z - 0.05, rot=0.0, coll="Village", role="visual")
+        box(c, "Customs House", x, y, 4.0, 3.0, z - 0.5, z + 5.0, ("cabin_wall", "wall"), role="collision")
+        box(c, "Customs Window", x - 2.4, y - 3.12, 0.8, 0.05, z + 1.4, z + 2.6, ("window_warm", "wall"), role="visual")
         c.place(tp.flag_pole(c, flag="wreck_flag", h=8.0), x + 3.4, y, z, role="visual")
         light(c, "lantern", x, y - 3.6, z + 3.2)
         taken.add(x, y, 5.0)
@@ -184,18 +207,18 @@ def docks(c, ground, taken):
             px, py = x - 1.0 + k * 1.3, y - 4.6 - 0.4 * (k % 2)
             person(c, px, py, ground(px, py), "queue", x, y)
         person(c, x, y - 3.4, z, "merchant", x, y - 8.0)
-    # The fish market on the quay's north side: stalls of the black water's catch.
+    # The fish market on the quay's north side: stalls of the black water's catch (review 1
+    # note 3: harbour_props.market_stall), a lantern hung at each.
     for j in range(5):
         x, y = -30.0 + j * 5.0, cy + hw + 8.0 + (j % 2)
         if not ok(c, taken, x, y, 2.0, 1.0):
             continue
         z = ground(x, y)
-        box(c, "Fish Stall %d" % j, x, y, 2.0, 0.9, z - 0.2, z + 1.0, ("wood_dock", "wall"))
-        cloth(c, "Fish Awning %d" % j, [(x - 2.2, y + 1.4, z + 3.0), (x + 2.2, y + 1.4, z + 3.0), (x + 2.2, y - 1.4, z + 2.4),
-                                        (x - 2.2, y - 1.4, z + 2.4)], ("awning_teal", "canvas_torn", "awning_sea")[j % 3])
-        for k in range(3):
-            egg(c, "Fish %d %d" % (j, k), x - 1.0 + k, y, z + 1.0, 0.25, ("cove_coral_pink", "isle_sea", "bog_moss_ground")[k])
-        person(c, x, y + 1.6, z, "merchant", x, y - 4.0)
+        c.place(H.hp.market_stall(c, j, ("fish", "crabs", "eels", "bottles", "fish")[j]), x, y, z - 0.03, rot=0.0, role="visual")
+        box(c, "Fish Stall %d" % j, x, y - 0.6, 1.7, 0.4, z - 0.2, z + 1.0, ("wood_dock", "wall"), role="collision")
+        c.place(H.hp.cage_lantern(c, j), x + 1.5, y - 0.85, z + 2.35, role="visual")
+        light(c, "lantern", x + 1.5, y - 0.85, z + 1.9)
+        person(c, x, y + 0.4, z, "merchant", x, y - 4.0)
         for k in range(2):
             person(c, x - 0.8 + 1.6 * k, y - 1.8, z, "huddle" if k else "queue", x, y)
         taken.add(x, y, 2.4)
@@ -843,4 +866,4 @@ def sky_life(c, ground):
         g = c.game(x, y, z)
         keys.append([round(s, 1), round(g[0], 1), round(g[1], 1), round(g[2], 1)])
     c.entity("isles_dragon", keys=keys, length=round(c.length, 1), size=1.2)
-    c.entity("villagers", list=SKY_CROWD)
+    c.entity("villagers", list=SKY_CROWD, palette="skycroc")

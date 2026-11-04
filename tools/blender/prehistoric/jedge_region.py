@@ -51,7 +51,7 @@ def main():
         # (the bores: old setts worn to mud)
         "under": {"mat": "ruin_road", "shoulder": 1.6, "shoulder_mat": ("bog_mud", "dirt")},
         # (the docks: plank quays)
-        "quay": {"mat": "plank_road", "surface": "road", "shoulder": 1.2, "shoulder_mat": ("keep_dock", "road")},
+        "quay": {"mat": "dock_cobble", "surface": "road", "shoulder": 1.2, "shoulder_mat": ("bog_dark_stone", "road")},
         # (the Night Bazaar: the market's old setts)
         "bazaar": {"mat": "imperial_setts", "surface": "road", "shoulder": 1.4, "shoulder_mat": ("ash_soil", "dirt")},
         # (the Fighting Pits: the arena's sand road, railed red and white down the wall)
@@ -92,6 +92,7 @@ def main():
 
     X0, X1, Y0, Y1 = -490, 490, -490, 490
     ter = c.terrain("The Edge of the World", X0, X1, Y0, Y1, 4.0, natural, classify, near=8.0, fade=16.0, fine=2)
+    sink_water(c, ter)
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 6.0, lambda x, y: natural(x, y) - 0.5, c.lib("cave_rock", "dirt"))
 
     def ground(x, y):
@@ -317,6 +318,38 @@ def the_edge(c):
         c.entity("lantern", x=g[0], y=g[1], z=g[2])
     box(c, "Mouth Lintel", q.p.x, q.p.y, 0.8, q.w / 2 + 11.0, q.p.z + 10.0, q.p.z + 11.0, ("weathered_timber", "wall"), rot=rot,
         role="visual")
+
+
+def sink_water(c, ter):
+    """The land kept under the docks' water (review 1 note 1, "the water looks weird here"):
+    near the canal's bridge the roads pulled the land up through the water. Every vertex in
+    the water (or on its very edge) goes back down to the land's own height, and a face left
+    under the water is the black water (put back if you fall in)."""
+    mw = ter.matrix_world
+    inv = mw.inverted()
+    n = 0
+    for v in ter.data.vertices:
+        p = mw @ v.co
+        if L.in_water(p.x, p.y) or L.in_water(p.x + 0.7, p.y) or L.in_water(p.x - 0.7, p.y) or L.in_water(p.x, p.y + 0.7) \
+                or L.in_water(p.x, p.y - 0.7):
+            z = natural(p.x, p.y)
+            if p.z > z + 0.05:
+                v.co = inv @ Vector((p.x, p.y, z))
+                n += 1
+    deep = c.lib("bog_mud", "deep_water")
+    mats = ter.data.materials
+    idx = next((i for i, m in enumerate(mats) if m == deep), None)
+    if idx is None:
+        mats.append(deep)
+        idx = len(mats) - 1
+    k = 0
+    for f in ter.data.polygons:
+        p = mw @ f.center
+        if L.in_water(p.x, p.y) and p.z < L.DOCK_WATER - 0.2 and f.material_index != idx:
+            f.material_index = idx
+            k += 1
+    ter.data.update()
+    print("water: %d land vertices sunk, %d faces made black water" % (n, k))
 
 
 def _float_isle(c, name, x, y, r, top, seed):

@@ -6,7 +6,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { airAt, parseAtmosphere } from "../src/game/depths";
-import { craneHeading, craneLoad, parseCrane } from "../src/game/isles";
+import { craneHeading, craneLoad, parseCrane, parseVillagers } from "../src/game/isles";
+import { crocKingCue } from "../src/render/people/crocKing";
+import { villagerLook } from "../src/render/people/folk";
 import { boatAt, parseBoat } from "../src/game/oasis";
 
 type Entity = { type: string } & Record<string, unknown>;
@@ -105,19 +107,44 @@ describe("the Edge of the World", () => {
       expect(bridge.length).toBeGreaterThan(0);
       expect(Math.min(...bridge.map((q) => q.y)) - p.y).toBeGreaterThan(2.8);
     }
-    // (the crane slewing out over the road with its crate, high over the karts)
-    const slewing = of("crane")
-      .map((e) => parseCrane(e))
-      .filter((c) => c.slew > 0);
-    expect(slewing).toHaveLength(1);
-    const c = slewing[0]!;
-    expect(c.load).toBe("crate");
-    expect(Math.abs(craneHeading(c, c.slewPeriod / 4) - craneHeading(c, 0))).toBeGreaterThan(0.5);
-    expect(craneLoad(c, c.period / 2).block.y).toBeGreaterThan(-18);
-    // (cargo nets and crates going up and down on the pulleys)
-    expect(of("crane").filter((e) => e.load === "net").length).toBeGreaterThanOrEqual(2);
+    // (no sail boats: only the rowing boats under the bridge; review 1 note 1)
+    for (const e of of("boat")) expect(e.rig).toBe("row");
+    // (the cranes stand still, built in full, their loads hung on: review 1 note 2; a
+    // slewing crane is still the game's to draw where a track wants one)
+    expect(of("crane")).toHaveLength(0);
+    const c = parseCrane({ heading: 1, slew: 0.8, slewPeriod: 20, load: "net" });
+    expect(c.load).toBe("net");
+    expect(Math.abs(craneHeading(c, 5) - craneHeading(c, 0))).toBeGreaterThan(0.5);
+    expect(craneLoad(c, 0).heading).toBeCloseTo(1, 5);
     // (the sea leak's light and the bridge's lanterns light the water)
     expect(of("glow").length).toBeGreaterThanOrEqual(8);
     expect(of("mist").length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("is peopled by crocs, not townsfolk, and has its King Croc (Blake, Nov 4)", () => {
+    // (every crowd in the Edge is a croc crowd: the black market's and the sky islands')
+    const crowds = of("villagers");
+    expect(crowds.length).toBe(2);
+    for (const e of crowds) expect(["sump", "skycroc"]).toContain(e.palette);
+    for (const v of crowds.flatMap((e) => parseVillagers(e)))
+      expect(["sump", "skycroc"]).toContain(v.palette);
+    // (and the talkers: folk "sump" are crocs)
+    for (const e of of("villager_home")) expect(e.folk).toBe("sump");
+    expect(villagerLook("sump", 7).species).toBe("croc");
+    expect(villagerLook("valley", 7).species).not.toBe("croc");
+    // (the King Croc on his throne by the road, facing it)
+    const kings = of("croc_king");
+    expect(kings).toHaveLength(1);
+    const k = kings[0]!;
+    const road = routes.routes.find((r) => r.id === "main")!.points;
+    const near = Math.min(
+      ...road.map((p) => Math.hypot(p.x - (k.x as number), p.z - (k.z as number))),
+    );
+    expect(near).toBeLessThan(30);
+    expect(near).toBeGreaterThan(12);
+    // (holding court: a gesture most of the time, roaring now and then)
+    const cues = Array.from({ length: 48 }, (_, i) => crocKingCue(i / 2));
+    expect(new Set(cues.map((q) => q.gesture)).size).toBeGreaterThanOrEqual(4);
+    expect(cues.some((q) => q.talk)).toBe(true);
   });
 });

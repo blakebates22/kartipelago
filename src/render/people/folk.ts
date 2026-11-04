@@ -10,6 +10,10 @@
  *   ankylo    low and wide on four legs, an armoured back of knobs, a club on its tail
  *   trike     on four legs: a frill, three horns, a beak
  *   sauro     a small long-neck on four legs
+ *   croc      the smugglers (folk "sump" are all crocs: Blake, Nov 4, "all crocs or other
+ *             smuggler looking npcs"): tall and heavy, hunched, a long flat snout lined
+ *             with teeth, knobbed brows, a ridge of scutes down the back, a long heavy
+ *             tail; an eyepatch on some
  *
  * The kingdom dresses them: the valley's leaf collars and shell beads, the snow's
  * striped scarves, bobble hats and earmuffs, the desert's straw hats and ponchos, the
@@ -36,7 +40,7 @@ import {
 import { flower, sleeve, woven } from "./parts";
 
 export type Species =
-  "ankylo" | "parasaur" | "trike" | "pachy" | "compy" | "iggy" | "ovi" | "sauro";
+  "ankylo" | "parasaur" | "trike" | "pachy" | "compy" | "iggy" | "ovi" | "sauro" | "croc";
 export const SPECIES: readonly Species[] = [
   "ankylo",
   "parasaur",
@@ -72,6 +76,7 @@ export const SIZE: Record<Species, { scale: number; speed: number; radius: numbe
   iggy: { scale: 1.18, speed: 1.15, radius: 0.8 },
   ovi: { scale: 1.0, speed: 1.6, radius: 0.6 },
   sauro: { scale: 1.1, speed: 0.85, radius: 1.3 },
+  croc: { scale: 1.22, speed: 1.0, radius: 0.85 },
 };
 
 /** Skin colours each kingdom's folk come in (picked by the seed). */
@@ -82,8 +87,8 @@ const SKINS: Record<Folk, string[]> = {
   beach: ["#3fb8a0", "#ff9a6a", "#6fc06a", "#e0b040", "#5aa0e0"],
   dragon: ["#7a6aa0", "#5f8a6a", "#9a5a5a", "#6a7a9a", "#a08a5a"],
   road: ["#8a9a6a", "#a08060", "#7a8aa0", "#b0906a", "#6a8a7a"],
-  // The Sump's tunnel folk: pale from the dark, mossy, sooty.
-  sump: ["#7a8a6a", "#8a7a68", "#6a7a78", "#9a8a5a", "#7a6a78"],
+  // The Sump's tunnel folk, the smuggler crocs: swamp greens, olive, mud brown.
+  sump: ["#5a7a3a", "#6a7a3e", "#4a6a42", "#7a7a4a", "#5e6a36"],
   pilgrim: ["#8aa6c9", "#b7b1d8", "#6f8f9e", "#c9c2b0", "#7d9b8a"],
 };
 /** Clothes colours (main, trim) per folk. */
@@ -130,9 +135,9 @@ const CLOTH: Record<Folk, [string, string][]> = {
 };
 const IRIS = ["#6a3a10", "#2a6a3a", "#2a4a8a", "#7a2a6a", "#8a6a10"];
 
-/** A villager's look, all picked by its seed. */
+/** A villager's look, all picked by its seed. (The Sump's folk are all crocs.) */
 export function villagerLook(folk: Folk, seed: number, kind?: Species) {
-  const species = kind ?? SPECIES[seed % SPECIES.length]!;
+  const species = kind ?? (folk === "sump" ? "croc" : SPECIES[seed % SPECIES.length]!);
   const skins = SKINS[folk];
   const cloths = CLOTH[folk];
   return {
@@ -396,6 +401,81 @@ const quadLegs =
   });
 
 const KINDS: Record<Species, Kind> = {
+  croc: {
+    stance: { hipY: 0.64, stride: 0.42, stoop: 0.22, handRest: [0.3, -0.02, 0.12] },
+    neckAt: [0, 0.5, 0.1],
+    headAt: [0, 0.08, 0.06],
+    headScale: 1.05,
+    arms: bipedArms([0.22, 0.4, 0.06], 0.21, 0.2, 0.075, 0.072),
+    legs: bipedLegs(0.16, 0.3, 0.27, 0.13, 0.31),
+    // (a long, low, flat snout)
+    skull: { R: 0.16, cy: 0.15, L: 0.52, w: 0.085, h: 0.042 },
+    body: bipedBody(1.16, 1.1, 1.05),
+    neck: [
+      { at: [0, -0.06, -0.01], r: 0.16 },
+      { at: [0, 0.04, 0.01], r: 0.145 },
+      { at: [0, 0.12, 0.04], r: 0.135 },
+    ],
+    tail: bipedTail(0.17, 0.46, 0.05),
+    collar: { on: "torso", at: [0, 0.52, 0.09], r: 0.15, tilt: 0.25 },
+    crown: [0, 0.31, -0.02],
+    belt: { y: 0.05, rx: 0.26, rz: 0.24, z: 0.02 },
+    back: [0, 0.3, -0.24],
+    eyes: 0.85,
+    tip: (p) => shade(p.skin, 0.82),
+    extras(_rig, p, head, body, seed) {
+      const { R, cy, L, w, h } = KINDS.croc.skull;
+      const my = cy - 0.25 * R - h * 0.55;
+      // Teeth along both jaws, pegs sticking out over the lips.
+      for (const sd of [1, -1])
+        for (let k = 0; k < 7; k++) {
+          const t = k / 6;
+          const z = 0.22 * R + (L - 0.22 * R) * t;
+          const x = sd * (0.86 * R + (w * 0.9 - 0.86 * R) * t);
+          head.add(cone(0.011, 0.04, 5), "#f4eedc", {
+            p: [x, my - 0.01 + (k % 2) * 0.004, z],
+            r: [Math.PI, 0, 0],
+          });
+        }
+      // The brows: knobbed ridges over the eyes, and the nostrils' bumps at the tip.
+      for (const sd of [1, -1]) {
+        head.add(ellipsoid(8, 6), shade(p.skin, 0.75), {
+          p: [sd * 0.5 * R, cy + 0.72 * R, 0.55 * R],
+          s: [0.06, 0.035, 0.07],
+        });
+        head.add(ellipsoid(6, 4), shade(p.skin, 0.75), {
+          p: [sd * w * 0.35, cy - 0.25 * R + h * 0.75, L - 0.02],
+          s: [0.022, 0.016, 0.024],
+        });
+      }
+      // The scutes: two rows of ridges down the back.
+      for (const sd of [1, -1])
+        for (let k = 0; k < 6; k++)
+          body.add(gem(1), shade(p.skin, 0.62), {
+            p: [sd * 0.06, 0.02 + k * 0.08, -0.215 * (1 - (0.15 * Math.abs(k - 2.5)) / 2.5)],
+            s: [0.03, 0.035, 0.028],
+          });
+      // An eyepatch on one in three.
+      if (seed % 3 === 0) {
+        head.add(new THREE.BoxGeometry(0.075, 0.07, 0.02), "#1a1614", {
+          p: [0.5 * R, cy + 0.26 * R, 0.66 * R + 0.035],
+          r: [0, 0.32, 0],
+        });
+        head.addColored(
+          tube(
+            [
+              [0.5 * R, cy + 0.3 * R, 0.68 * R],
+              [0.0, cy + 0.95 * R, 0.1 * R],
+              [-0.6 * R, cy + 0.55 * R, -0.3 * R],
+            ],
+            [0.008, 0.008, 0.008],
+            "#1a1614",
+            { sides: 4 },
+          ),
+        );
+      }
+    },
+  },
   parasaur: {
     stance: { hipY: 0.62, stride: 0.42, stoop: 0.12, handRest: [0.27, -0.02, 0.1] },
     neckAt: [0, 0.47, 0.07],

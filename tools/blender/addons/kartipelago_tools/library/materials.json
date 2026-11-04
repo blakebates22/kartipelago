@@ -4081,6 +4081,15 @@
       }
     },
     {
+      "id": "dock_cobble",
+      "name": "Grimy Dock Cobbles",
+      "theme": "hearthglow",
+      "surface": "road",
+      "image": "dock_cobble.png",
+      "wrap": "repeat",
+      "tileMetres": 3.5
+    },
+    {
       "id": "hearth_stone",
       "name": "Village Stone",
       "theme": "hearthglow",

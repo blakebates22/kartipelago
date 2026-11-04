@@ -2482,6 +2482,27 @@ def hearth_cobble():
     return paint(f)
 
 
+def dock_cobble():
+    # The Smugglers' Docks' setts (Blake, Nov 4: "a grimy cobblestone"): dark wet stone,
+    # black-green slime in the joints, oil stains, a glint of wet here and there.
+    pave = ["#3e3a36", "#4a4540", "#56504a", "#625b52"]
+    a, b = noise(4, 2, 2621), noise(12, 6, 2622)
+    glints = speckle(2623, 10)
+
+    def f(x, y):
+        if (x, y) in glints:
+            return "#8a9a96"
+        row = y // 6
+        bx = (x + (5 if row % 2 else 0)) % 10
+        if bx == 0 or y % 6 == 0:
+            return "#1e2a1e" if a(x, y) > 0.35 else "#141614"
+        if b(x, y) > 0.78:
+            return "#2a2622"  # (oil)
+        return pick(pave, 0.15 + a(x, y) * 0.55 + b(x, y) * 0.25)
+
+    return paint(f)
+
+
 def icy_cobble():
     # Cobbles glazed with ice: glossy blue, the setts showing through.
     pal = ["#7a96d0", "#8ea8dc", "#a4bae6", "#bcd0f0"]
@@ -5145,6 +5166,7 @@ MATERIALS = [
     ("abyss_fog", "Abyss Fog", "aurora_rift", "water", abyss_fog, 40, {"scrollU": -0.003, "scrollV": 0.004, "wave": 0.05, "wavePeriod": 12, "opacity": 0.26, "glow": 0.5}),
     ("hearth_cobble", "Village Cobbles", "hearthglow", "snow_stone", hearth_cobble, 3.5, None),
     ("icy_cobble", "Icy Cobbles", "hearthglow", "icy_stone", icy_cobble, 3.5, {"scrollU": 0, "scrollV": 0, "glow": 0.15}),
+    ("dock_cobble", "Grimy Dock Cobbles", "hearthglow", "road", dock_cobble, 3.5, None),
     ("hearth_stone", "Village Stone", "hearthglow", "wall", hearth_stone, 4, None),
     ("river_ice", "River Ice", "hearthglow", "ice", river_ice, 8, {"scrollU": 0, "scrollV": 0, "glow": 0.3}),
     ("river_ice_road", "River Ice Track", "hearthglow", "icy_stone", river_ice_road, 5, {"scrollU": 0, "scrollV": 0, "glow": 0.2}),

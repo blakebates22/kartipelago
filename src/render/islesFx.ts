@@ -464,6 +464,8 @@ const SKINS = ["#f2c8a0", "#e0aa7c", "#c88a5c", "#f6d6b4"];
  * gold helmets.
  */
 export function createCrowdView(parent: THREE.Object3D, people: Villager[]): CrowdView {
+  if (people.length && people.every((p) => p.palette === "sump" || p.palette === "skycroc"))
+    return createCrocCrowdView(parent, people);
   const n = people.length;
   const mats: THREE.Material[] = [];
   const geos: THREE.BufferGeometry[] = [];
@@ -628,6 +630,265 @@ export function createCrowdView(parent: THREE.Object3D, people: Villager[]): Cro
 }
 
 void ROLES;
+
+/** The croc folk's skins: swamp greens, olive, mud brown. */
+const CROC_SKINS = ["#5a7a3a", "#6a7a3e", "#4a6a42", "#7a7a4a", "#5e6a36", "#6a5e3a"];
+/** The sky islands' folk: the Dragon Kingdom's robes. */
+const SKY_ROBES = ["#5a3a8a", "#8a2a2a", "#2a5a8a", "#3a6a4a", "#8a6a2a"];
+
+/**
+ * The Edge of the World's crowd as crocs (Blake, Nov 4: "there should be no human looking
+ * npcs. all crocs or other smuggler looking npcs"): standing, hunched, a long flat snout
+ * with its teeth showing, eyes up on top of the head, a heavy tail down to the ground
+ * behind, short arms; trousers and a vest (or a robe, in the sky), a bandana, a cap or a
+ * tricorn, an eyepatch on some; the guards' spears, the fishers' rods. Instanced, posed
+ * by the same roles as the townsfolk.
+ */
+export function createCrocCrowdView(parent: THREE.Object3D, people: Villager[]): CrowdView {
+  const n = people.length;
+  const mats: THREE.Material[] = [];
+  const geos: THREE.BufferGeometry[] = [];
+  const root = new THREE.Group();
+  root.name = "villagers";
+  parent.add(root);
+  const inst = (g: THREE.BufferGeometry, count: number, color = "#ffffff", vc = false) => {
+    geos.push(g);
+    const m = new THREE.InstancedMesh(
+      g,
+      lam(mats, color, vc ? { vertexColors: true } : {}),
+      Math.max(1, count),
+    );
+    m.frustumCulled = false;
+    m.count = count;
+    root.add(m);
+    return m;
+  };
+  // (Built facing +Z, feet at 0; the torso's pieces in torso space, its origin at 0.7 m.)
+  const legsGeo = mergeGeometries(
+    [-1, 1].map((sd) =>
+      new THREE.CylinderGeometry(0.11, 0.13, 0.72, 6).translate(sd * 0.14, 0.36, 0),
+    ),
+  )!;
+  const footGeo = mergeGeometries(
+    [-1, 1].map((sd) => new THREE.BoxGeometry(0.16, 0.08, 0.32).translate(sd * 0.14, 0.04, 0.08)),
+  )!;
+  const bodyGeo = new THREE.CylinderGeometry(0.27, 0.32, 0.66, 8).translate(0, 0.3, 0);
+  const robeGeo = new THREE.CylinderGeometry(0.3, 0.46, 0.8, 8).translate(0, 0.32, 0);
+  const bellyGeo = new THREE.CylinderGeometry(0.22, 0.26, 0.5, 8, 1, false, -0.9, 1.8)
+    .scale(1.02, 1, 1.1)
+    .translate(0, 0.28, 0.02);
+  // The head: the skull and the long flat snout in one, the jaw's line darker.
+  const skull = new THREE.IcosahedronGeometry(0.2, 1).scale(1, 0.78, 1.05).translate(0, 0.0, 0);
+  const snout = new THREE.BoxGeometry(0.24, 0.12, 0.5).translate(0, -0.04, 0.36);
+  const pos = snout.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++)
+    if (pos.getZ(i) > 0.3) {
+      pos.setX(i, pos.getX(i) * 0.7);
+      pos.setY(i, pos.getY(i) * 0.85 - 0.005);
+    }
+  const headGeo = mergeGeometries([
+    tinted(skull, "#ffffff", place(0, 0.8, 0.02)),
+    tinted(snout, "#ffffff", place(0, 0.8, 0.0)),
+    tinted(new THREE.BoxGeometry(0.2, 0.02, 0.46), "#6a6a6a", place(0, 0.73, 0.34)),
+  ])!;
+  const teethGeo = mergeGeometries(
+    [-1, 1].flatMap((sd) =>
+      [0, 1, 2, 3, 4, 5].map((k) =>
+        new THREE.ConeGeometry(0.018, 0.05, 4)
+          .rotateX(Math.PI)
+          .translate(sd * (0.11 - k * 0.008), 0.72, 0.16 + k * 0.075),
+      ),
+    ),
+  )!;
+  const eyesGeo = mergeGeometries([
+    ...[-1, 1].map((sd) => new THREE.SphereGeometry(0.055, 6, 4).translate(sd * 0.09, 0.95, 0.12)),
+  ])!;
+  const pupilsGeo = mergeGeometries(
+    [-1, 1].map((sd) => new THREE.BoxGeometry(0.012, 0.06, 0.02).translate(sd * 0.09, 0.95, 0.172)),
+  )!;
+  const bandanaGeo = new THREE.CylinderGeometry(0.205, 0.21, 0.07, 10, 1, true).translate(
+    0,
+    0.9,
+    0,
+  );
+  const capGeo = new THREE.CylinderGeometry(0.17, 0.2, 0.12, 8).translate(0, 1.02, -0.02);
+  const tricornGeo = new THREE.ConeGeometry(0.34, 0.16, 3).translate(0, 1.06, -0.02);
+  const patchGeo = new THREE.BoxGeometry(0.07, 0.07, 0.03).translate(0.1, 0.95, 0.16);
+  const tailGeo = new THREE.ConeGeometry(0.2, 1.25, 7)
+    .rotateX(-Math.PI / 2 - 0.55)
+    .translate(0, 0.39, -0.63);
+  const armGeo = new THREE.BoxGeometry(0.13, 0.5, 0.14).translate(0, -0.24, 0);
+  const handGeo = new THREE.BoxGeometry(0.15, 0.1, 0.16).translate(0, -0.52, 0.02);
+  const poleGeo = new THREE.CylinderGeometry(0.035, 0.035, 2.8, 4).translate(0, 1.0, 0);
+  const tipGeo = new THREE.ConeGeometry(0.07, 0.3, 4).translate(0, 2.5, 0);
+  const guards = people.filter((p) => p.role === "guard").length;
+  const fishers = people.filter((p) => p.role === "fisher").length;
+  const legs = inst(legsGeo, n);
+  const feet = inst(footGeo, n);
+  const bodies = inst(bodyGeo, n);
+  const robes = inst(robeGeo, n);
+  const bellies = inst(bellyGeo, n, "#d8c89a");
+  const heads = inst(headGeo, n, "#ffffff", true);
+  const teeth = inst(teethGeo, n, "#f4eedc");
+  const eyes = inst(eyesGeo, n, "#e8c030");
+  const pupils = inst(pupilsGeo, n, "#1a1410");
+  const bandanas = inst(bandanaGeo, n);
+  const caps = inst(capGeo, n);
+  const tricorns = inst(tricornGeo, n, "#2a2420");
+  const patches = inst(patchGeo, n, "#1a1614");
+  const tails = inst(tailGeo, n);
+  const armsL = inst(armGeo, n);
+  const armsR = inst(armGeo, n);
+  const handsL = inst(handGeo, n);
+  const handsR = inst(handGeo, n);
+  const poles = inst(poleGeo, guards + fishers, "#6a4a2a");
+  const tips = inst(tipGeo, guards, "#9aa0a8");
+  const color = new THREE.Color();
+  const look: { robe: boolean; hat: "bandana" | "cap" | "tricorn" | "none"; patch: boolean }[] = [];
+  people.forEach((p, i) => {
+    const sky = p.palette === "skycroc";
+    const guard = p.role === "guard";
+    const monk = p.role === "monk";
+    const skin = CROC_SKINS[(p.variant * 5 + i * 3) % CROC_SKINS.length]!;
+    const vest = sky
+      ? monk
+        ? MONK
+        : SKY_ROBES[(p.variant + i) % SKY_ROBES.length]!
+      : guard
+        ? "#1e1a1a"
+        : SUMP[(p.variant * 3 + i) % SUMP.length]!;
+    const trousers = sky ? vest : SUMP[(p.variant * 5 + i + 3) % SUMP.length]!;
+    color.set(skin);
+    for (const m of [heads, tails, armsL, armsR, handsL, handsR, feet]) m.setColorAt(i, color);
+    color.set(vest);
+    bodies.setColorAt(i, color);
+    robes.setColorAt(i, color);
+    color.set(trousers);
+    legs.setColorAt(i, color);
+    const cap = SUMP_CAPS[(p.variant + i) % SUMP_CAPS.length]!;
+    bandanas.setColorAt(i, color.set(sky ? "#d8b040" : cap));
+    caps.setColorAt(i, color.set(sky ? vest : cap));
+    const hat = sky
+      ? monk
+        ? "none"
+        : "bandana"
+      : guard
+        ? "tricorn"
+        : (["bandana", "cap", "none", "bandana", "tricorn"] as const)[(p.variant + i) % 5]!;
+    look.push({ robe: sky, hat, patch: !sky && (p.variant * 7 + i) % 5 === 0 });
+  });
+  for (const m of [
+    heads,
+    tails,
+    armsL,
+    armsR,
+    handsL,
+    handsR,
+    feet,
+    bodies,
+    robes,
+    legs,
+    bandanas,
+    caps,
+  ])
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+
+  const base = new THREE.Matrix4();
+  const torso = new THREE.Matrix4();
+  const m = new THREE.Matrix4();
+  const r = new THREE.Matrix4();
+  const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+  const NEAR = 320;
+  let first = true;
+  return {
+    update(t, cam, bowOf) {
+      let pi = 0;
+      let ti = 0;
+      for (let i = 0; i < n; i++) {
+        const p = people[i]!;
+        const far = Math.hypot(p.x - cam.x, p.z - cam.z) > NEAR;
+        if (far && !first) {
+          if (p.role === "guard") ti++;
+          if (p.role === "guard" || p.role === "fisher") pi++;
+          continue;
+        }
+        const pose = villagerPose(p, i, t, far ? 0 : bowOf(i));
+        const yaw = Math.atan2(p.fx, p.fz) + pose.turn;
+        const L = look[i]!;
+        base
+          .makeRotationY(yaw)
+          .setPosition(p.x + p.fx * pose.step, p.y + pose.hop, p.z + p.fz * pose.step);
+        legs.setMatrixAt(i, L.robe ? hidden : base);
+        feet.setMatrixAt(i, base);
+        robes.setMatrixAt(i, L.robe ? base : hidden);
+        // (the tail sways a little)
+        m.copy(base).multiply(r.makeRotationY(0.12 * Math.sin(t * 1.3 + i)));
+        tails.setMatrixAt(i, m);
+        torso
+          .copy(base)
+          .multiply(m.makeTranslation(0, 0.72, 0))
+          .multiply(r.makeRotationX(0.18 + pose.lean));
+        bodies.setMatrixAt(i, L.robe ? hidden : torso);
+        bellies.setMatrixAt(i, L.robe ? hidden : torso);
+        for (const mm of [heads, teeth, eyes, pupils]) mm.setMatrixAt(i, torso);
+        bandanas.setMatrixAt(i, L.hat === "bandana" ? torso : hidden);
+        caps.setMatrixAt(i, L.hat === "cap" ? torso : hidden);
+        tricorns.setMatrixAt(i, L.hat === "tricorn" ? torso : hidden);
+        patches.setMatrixAt(i, L.patch ? torso : hidden);
+        for (const [arm, hand, sd, raise] of [
+          [armsL, handsL, 1, pose.armL],
+          [armsR, handsR, -1, pose.armR],
+        ] as const) {
+          m.copy(torso)
+            .multiply(r.makeTranslation(sd * 0.34, 0.52, 0.04))
+            .multiply(r.makeRotationZ(sd * (0.25 + 0.25 * raise)))
+            .multiply(r.makeRotationX(-raise * Math.PI * 0.92 - 0.3));
+          arm.setMatrixAt(i, m);
+          hand.setMatrixAt(i, m);
+        }
+        if (p.role === "guard") {
+          m.copy(base).multiply(r.makeTranslation(-0.5, 0.0, 0.22));
+          poles.setMatrixAt(pi++, m);
+          tips.setMatrixAt(ti++, m);
+        } else if (p.role === "fisher") {
+          m.copy(torso)
+            .multiply(r.makeTranslation(-0.36, 0.3, 0.3))
+            .multiply(r.makeRotationX(1.0 + 0.05 * Math.sin(t * 1.3 + i)));
+          poles.setMatrixAt(pi++, m);
+        }
+      }
+      first = false;
+      for (const mm of [
+        legs,
+        feet,
+        bodies,
+        robes,
+        bellies,
+        heads,
+        teeth,
+        eyes,
+        pupils,
+        bandanas,
+        caps,
+        tricorns,
+        patches,
+        tails,
+        armsL,
+        armsR,
+        handsL,
+        handsR,
+        poles,
+        tips,
+      ])
+        mm.instanceMatrix.needsUpdate = true;
+    },
+    dispose() {
+      root.removeFromParent();
+      for (const g of geos) g.dispose();
+      for (const mm of mats) mm.dispose();
+    },
+  };
+}
 
 // ---------------------------------------------------------------- the mill wheel
 

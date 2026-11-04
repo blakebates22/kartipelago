@@ -137,6 +137,8 @@ import {
   type WindmillView,
 } from "../render/desertFx";
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
+import { createCrocKingView, crocKingCue } from "../render/people/crocKing";
+import type { PersonView } from "../render/people/view";
 import {
   doorSwing,
   ghostAt,
@@ -566,6 +568,9 @@ export function createHazards(opts: {
   const flocks: BirdsView[] = [];
   let motes: ReturnType<typeof createParticles> | undefined;
   /** Partygoers: dancing on the spot, or round a conga circle (`ring`). */
+  // The King Croc on his throne over the Smugglers' Docks (the Edge of the World).
+  const crocKings: { x: number; y: number; z: number; heading: number; view?: PersonView }[] = [];
+  const kingLook = new THREE.Vector3();
   const party: {
     x: number;
     y: number;
@@ -910,6 +915,14 @@ export function createHazards(opts: {
             typeof e.color === "string" ? e.color : "#d82a3a",
           ),
         );
+    } else if (e.type === "croc_king") {
+      crocKings.push({
+        x: num(e.x, 0),
+        y: num(e.y, 0),
+        z: num(e.z, 0),
+        heading: num(e.heading, 0),
+        view: opts.headless ? undefined : createCrocKingView(group),
+      });
     } else if (e.type === "partygoer") {
       const dance = (DANCES as readonly string[]).includes(String(e.dance))
         ? (e.dance as Dance)
@@ -1616,6 +1629,12 @@ export function createHazards(opts: {
       festival?.render(t, dt, listener);
       for (const dn of dinos)
         dn.view?.update(dn.x, dn.y, dn.z, dn.heading, dn.d, dn.pace, dn.look, t);
+      for (const k of crocKings) {
+        // (holding court: watching you go by, pointing his staff, roaring)
+        const cue = crocKingCue(t);
+        kingLook.set(listener.x, listener.y, listener.z);
+        k.view?.update(k.x, k.y, k.z, k.heading, { ...cue, look: kingLook }, t);
+      }
       for (const p of party) {
         if (p.ring) {
           // Round the circle, counter-clockwise, facing the way they go.
@@ -2509,6 +2528,7 @@ export function createHazards(opts: {
       for (const d of dinos) d.view?.dispose();
       for (const f of flyers) f.view?.dispose();
       for (const p of party) p.view?.dispose();
+      for (const k of crocKings) k.view?.dispose();
       spray?.dispose();
       snow?.dispose();
       rocks?.dispose();

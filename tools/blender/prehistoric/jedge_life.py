@@ -87,14 +87,10 @@ def atmosphere(c, s0, s1, s_mouth):
 
 
 def canal(c):
-    """Boats sailing the canal east of the bridge, and the bridge's planks creaking."""
+    """The canal's bridge's planks creaking... (it's stone now: jedge_harbour) and mist
+    over the water. (No sail boat any more: review 1 note 1, "lets also remove the sail
+    boats, and just have the boats going under the bridge".)"""
     cy, hw, cx0, cx1 = CANAL
-    pts = [(27.0 + 17.0 * math.cos(a), cy + 1.4 * math.sin(a)) for a in [k * math.tau / 14 for k in range(14)]]
-    c.path_curve("Canal Boat Path", pts, z=DOCK_WATER, closed=True)
-    c.entity("boat", route="Canal Boat Path", speed=2.0, start=0.0, colors=["#4a3424", "#2a5a4a"], scale=0.9)
-    q, _ = c.nearest(-3.0, cy)
-    g = c.game(q.p.x, q.p.y, q.p.z)
-    c.entity("creak", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=26.0)
     g = c.game(-14.0, cy, DOCK_WATER + 0.5)
     c.entity("mist", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=22.0, rate=3.0, color="#a8b4b0")
 
