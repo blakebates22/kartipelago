@@ -9,18 +9,21 @@
 #
 #   the Sea Door Grotto   in from the isles, a short bore down to
 #   the Smugglers' Docks  a black-water harbour: the quay road past the cranes and the
-#                         moored ships, a jump over the canal, out past the warehouses;
-#   Smugglers' Alley      S-bends down a crooked bore to the Drop: off a ledge, over a
-#                         crack, down into
+#                         moored ships, over the canal's hump-backed bridge, out past the
+#                         warehouses;
+#   Smugglers' Alley      S-bends down a crooked bore, the Stair down the market's wall into
 #   the Night Bazaar      a slalom through the lantern-lit market lanes, the Broker's ship
 #                         hanging over it all, to the gate of
 #   the Fighting Pits     the arena: the road corkscrews down its wall through the stands,
 #                         the crowd on every side, the fight ring on its floor; out through
 #   the Lucky Bone        the gambling den, then the Long Bore climbing to the cliff of
-#   the Edge              the world's edge, and a leap off it to
-#   the Sky Islands       island hopping (Blake chose "Sky-island hopping"): floating rocks
-#                         joined by chained bridges and jumps, dragons flying, up to
+#   the Edge              the world's edge, and the Edge Bridge off it, out over nothing, to
+#   the Sky Islands       floating rocks joined by chained bridges, dragons flying, up to
 #   the Sky Gate          the Dragon Kingdom's gate: the loading zone.
+#
+# No jumps (Blake, Nov 3: "you cant actually traverse backwards. lets just remove the jumps
+# completely ... we need to make the immersiveness so great such that the boring driving is
+# justified"): one road, every metre of it drivable both ways.
 #
 # Blender coordinates (x east, y north, z up). The route is a loop (the kit's courses are),
 # the road only from START to END; the rest goes round out of sight, high over everything.
@@ -42,7 +45,7 @@ DOCK_Z = -24.0
 DOCK_FLOOR = DOCK_Z - 0.6
 DOCK_WATER = DOCK_Z - 2.0
 BASIN = (-46.0, -302.0, 22.0)  # the harbour's black water (west of the quay)
-CANAL = (-300.0, 3.5, -26.0, 50.0)  # y, half width, from x, to x (under the jump)
+CANAL = (-300.0, 3.5, -26.0, 50.0)  # y, half width, from x, to x (under the bridge)
 BAZAAR = (108.0, -140.0, 46.0, 66.0)
 BAZ_Z = -33.0
 BAZ_FLOOR = BAZ_Z - 0.6
@@ -103,19 +106,21 @@ ROUTE = [
     # The Smugglers' Docks: up the quay, over the canal, out past the warehouses.
     (-20.0, -352.0, DOCK_Z, "dock0"),
     (-5.0, -332.0, DOCK_Z, "quay"),
-    (-3.0, -318.0, DOCK_Z, "runup1"),
-    (-3.0, -305.5, DOCK_Z, "lip1"),
-    (-3.0, -294.5, DOCK_Z - 1.2, "land1"),
-    (-1.0, -281.0, DOCK_Z - 1.2, "dock1"),
-    (16.0, -262.0, DOCK_Z - 1.4, "dock2"),
+    (-3.0, -318.0, DOCK_Z + 0.2, "canal_in"),
+    # (the canal's hump-backed bridge: up and over, the boats under it)
+    (-3.0, -305.5, DOCK_Z + 0.8, "canal_a"),
+    (-3.0, -300.0, DOCK_Z + 1.1, "canal"),
+    (-3.0, -294.5, DOCK_Z + 0.8, "canal_b"),
+    (-1.0, -281.0, DOCK_Z - 0.1, "dock1"),
+    (16.0, -262.0, DOCK_Z - 0.9, "dock2"),
     (36.0, -252.0, DOCK_Z - 1.6, "dock3"),
-    # Smugglers' Alley: S-bends down to the Drop.
-    (58.0, -248.0, -26.0, "alley0"),
-    (70.0, -239.0, -26.5, "alley1"),
-    (75.2, -221.0, -27.4, "alley2"),
-    (76.2, -206.9, -28.0, "runup2"),
-    (78.0, -194.0, -28.0, "lip2"),
-    (79.3, -185.6, BAZ_Z, "land2"),
+    # Smugglers' Alley: S-bends down, and the Stair down the Night Bazaar's wall.
+    (58.0, -248.0, -26.5, "alley0"),
+    (70.0, -239.0, -27.6, "alley1"),
+    (75.2, -221.0, -29.0, "alley2"),
+    (76.2, -206.9, -30.3, "stair0"),
+    (78.0, -194.0, -31.6, "stair1"),
+    (79.3, -185.6, BAZ_Z + 0.6, "stair2"),
     # The Night Bazaar: a slalom through the lanes.
     (89.0, -172.0, BAZ_Z, "baz0"),
     (103.0, -154.0, BAZ_Z, "baz1"),
@@ -138,27 +143,27 @@ ROUTE = [
     (92.0, 112.0, -50.0, "bore4"),
     (66.0, 138.0, -47.0, "bore5"),
     (40.0, 150.0, -44.5, "bore6"),
-    (28.0, 160.0, -42.6, "bore7"),
-    (24.0, 171.0, -42.0, "runup3"),
-    (24.0, 184.0, -42.0, "lip3"),  # off the edge of the world
-    (24.0, 196.0, -45.0, "land3"),
+    (28.0, 160.0, -43.4, "bore7"),
+    (24.0, 171.0, -43.1, "mouth0"),
+    (24.0, 184.0, -43.4, "mouth"),  # out of the edge of the world: the Edge Bridge
+    (24.0, 196.0, -44.4, "edge_b"),
     # The Sky Islands.
     (22.0, 211.0, -45.0, "isle1"),
     (6.0, 226.0, -45.0, "isle1b"),
     (-10.0, 238.0, -43.4, "bridge1a"),
     (-28.0, 256.0, -40.4, "bridge1b"),
     (-36.0, 272.0, -40.0, "isle2"),
-    (-36.5, 285.0, -40.0, "runup4"),
-    (-35.0, 297.5, -40.0, "lip4"),
-    (-33.4, 310.0, -41.5, "land4"),
+    (-36.5, 285.0, -40.2, "perch_a"),
+    (-35.0, 297.5, -40.7, "perch_b"),
+    (-33.4, 310.0, -41.3, "shrine_a"),
     (-30.0, 322.0, -41.5, "land4b"),
     (-20.0, 334.0, -41.5, "isle3"),
     (-10.0, 348.0, -41.5, "isle3c"),
     (2.0, 362.0, -39.8, "bridge2a"),
-    (14.0, 378.0, -37.2, "bridge2b"),
-    (16.0, 392.0, -37.0, "runup5"),
-    (16.0, 404.0, -37.0, "lip5"),
-    (16.0, 416.0, -38.5, "land5"),
+    (14.0, 378.0, -37.6, "bridge2b"),
+    (16.0, 392.0, -37.2, "gk_a"),
+    (16.0, 404.0, -37.5, "gk_b"),
+    (16.0, 416.0, -38.2, "gate_a"),
     (8.0, 431.0, -38.5, "isle5"),
     (0.0, 445.0, -38.5, "end"),  # END, at the Sky Gate
     (0.0, 476.0, -38.5, "lead_out"),  # (no road)
@@ -171,16 +176,6 @@ ROUTE = [
 AT = {p[3]: i for i, p in enumerate(ROUTE)}
 START, END = AT["start"], AT["end"]
 ENDS = {"start": ((-60.0, -440.0), (-70.0, -490.0)), "end": ((0.0, 445.0), (0.0, 476.0))}
-
-# The jumps: (lip, landing, the kicker's lift (m), what's under it).
-JUMPS = [
-    ("lip1", "land1", 0.8, "canal"),  # over the docks' canal
-    ("lip2", "land2", 0.5, "crack"),  # the Drop, over a crack into the Night Bazaar
-    ("lip3", "land3", 0.8, "sky"),  # off the edge of the world
-    ("lip4", "land4", 1.0, "sky"),
-    ("lip5", "land5", 1.0, "sky"),
-]
-RUN_UP = 14.0
 
 # The sky islands: (name, x, y, radius, the road's height on it).
 ISLES = [
@@ -216,9 +211,7 @@ def _catmull_seg(p0, p1, p2, p3, t):
 
 def _dense():
     """The road every ~3 m (20 m on the way round out of sight) along the curve through
-    ROUTE, each jump cut in: a level run up to its lip (the kicker lifts its last metres),
-    the straight flight line over the gap (no road there), the land beyond. Returns the
-    points and the dense index of each ROUTE point."""
+    ROUTE. Returns the points and the dense index of each ROUTE point."""
     n = len(ROUTE)
     pts, at = [], []
     for i in range(n):
@@ -234,45 +227,10 @@ def _dense():
     cum = [0.0]
     for a, b in zip(pts, pts[1:] + pts[:1]):
         cum.append(cum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
-    for lip, land, _, _ in JUMPS:
-        i, j = at[AT[lip]], at[AT[land]]
-        zl, zd = ROUTE[AT[lip]][2], ROUTE[AT[land]][2]
-        for k in range(len(pts)):
-            d = cum[k]
-            if cum[i] - RUN_UP - 10.0 <= d < cum[i] - RUN_UP:
-                pts[k][2] = lerp(pts[k][2], zl, smooth((d - (cum[i] - RUN_UP - 10.0)) / 10.0))
-            elif cum[i] - RUN_UP <= d <= cum[i]:
-                pts[k][2] = zl
-            elif cum[i] < d <= cum[j]:
-                pts[k][2] = lerp(zl, zd, (d - cum[i]) / (cum[j] - cum[i]))
     return [(round(x, 2), round(y, 2), round(z, 2)) for x, y, z in pts], at, cum
 
 
 DENSE, DAT, CUM = _dense()
-GAPS = [(DAT[AT[lip]], DAT[AT[land]], under) for lip, land, _, under in JUMPS]
-
-
-# Each jump's gap as a box on the ground: from its lip's line to its landing's, so far
-# either side (what's under it: the canal's water, the crack, the sky).
-GAP_BOXES = [(ROUTE[AT[lip]][:2], ROUTE[AT[land]][:2], under) for lip, land, _, under in JUMPS]
-
-
-def gap_box(x, y, side=16.0):
-    """The jump whose gap (x, y) is over, if any (None)."""
-    for (ax, ay), (bx, by), under in GAP_BOXES:
-        dx, dy = bx - ax, by - ay
-        L = math.hypot(dx, dy)
-        t = ((x - ax) * dx + (y - ay) * dy) / (L * L)
-        if 0.0 < t < 1.0 and abs((x - ax) * dy - (y - ay) * dx) / L < side:
-            return under
-    return None
-
-
-def _gap_of(k):
-    for i, j, under in GAPS:
-        if i <= k < j:
-            return under
-    return None
 
 
 def _seg(px, py, a, b):
@@ -285,21 +243,19 @@ def _seg(px, py, a, b):
 _GRID = {}
 for _k in range(DAT[START] - 8, DAT[END] + 10):
     _a, _b = DENSE[_k], DENSE[_k + 1]
-    _g = _gap_of(_k)
     for _gx in range(int(math.floor(min(_a[0], _b[0]) / 24)) - 1, int(math.floor(max(_a[0], _b[0]) / 24)) + 2):
         for _gy in range(int(math.floor(min(_a[1], _b[1]) / 24)) - 1, int(math.floor(max(_a[1], _b[1]) / 24)) + 2):
-            _GRID.setdefault((_gx, _gy), []).append((_a, _b, _g, _k))
+            _GRID.setdefault((_gx, _gy), []).append((_a, _b, _k))
 
 
 def road_floor(x, y):
-    """How far (x, y) is from the road, the road's height there, and what's under it if
-    that's a jump's gap (None: road)."""
-    best = (1e9, 0.0, None)
+    """How far (x, y) is from the road, and the road's height there."""
+    best = (1e9, 0.0)
     _NEAR_K[0] = None
-    for a, b, g, k in _GRID.get((int(math.floor(x / 24)), int(math.floor(y / 24))), ()):
+    for a, b, k in _GRID.get((int(math.floor(x / 24)), int(math.floor(y / 24))), ()):
         d, t = _seg(x, y, a, b)
         if d < best[0]:
-            best = (d, lerp(a[2], b[2], t), g)
+            best = (d, lerp(a[2], b[2], t))
             _NEAR_K[0] = k
     return best
 
@@ -308,13 +264,8 @@ _NEAR_K = [None]  # (the dense index of the segment road_floor found last)
 
 
 def flat_out(x, y):
-    """How far out from the road the ground lies level with it: across the bores' floors
-    (wider where they're widened for a way round), a little less in the open."""
-    k = _NEAR_K[0]
-    if k is not None:
-        for a, b, half in WIDE_BORES:
-            if DAT[AT[a]] - 4 <= k <= DAT[AT[b]] + 4:
-                return half - 1.0
+    """How far out from the road the ground lies level with it: across the bores' floors,
+    a little less in the open."""
     return 10.0 if cavern_at(x, y)[0] is None else 8.0
 
 
@@ -390,6 +341,12 @@ def in_water(x, y):
     return abs(y - cy) < hw and cx0 - 2.0 < x < cx1 and ellipse(x, y, *DOCKS) < 0.98
 
 
+def over_canal(x, y, margin=2.5):
+    """Over the canal (or just short of its edges): where the road's on its bridge."""
+    cy, hw, cx0, cx1 = CANAL
+    return abs(y - cy) < hw + margin and cx0 < x < cx1
+
+
 def reef_z(x, y):
     """The slab's top: the sea floor, and the reef standing out of the sea by the rim."""
     sx, sy, sr = SHELF
@@ -426,16 +383,11 @@ def _land(x, y):
 
 def natural(x, y):
     h = _land(x, y)
-    d, z, gap = road_floor(x, y)
+    d, z = road_floor(x, y)
     if y > rim_y(x) - 1.0:
         return h  # (the sky: open under the road)
-    if gap is not None and d < 16.0:
-        # (a jump's gap: what's under it: the canal's water, the Drop's crack)
-        under = gap_box(x, y)
-        if under == "canal":
-            return h
-        if under == "crack":
-            return z - 26.0
+    if in_water(x, y):
+        return h  # (the canal, open under its bridge)
     w = flat_out(x, y)
     if d < w:
         return z - 0.25
@@ -448,9 +400,6 @@ def classify(c, n, info):
     """A terrain face's look and surface (c its middle, n its normal)."""
     if c.y > rim_y(c.x) - 1.0:
         return ("cloud_bank", "abyss")  # (off the edge of the world: put back)
-    d, z, gap = road_floor(c.x, c.y)
-    if gap_box(c.x, c.y, 17.0) == "crack" and c.z < z - 4.0:
-        return ("abyss_fog", "abyss")  # (down the Drop's crack: put back)
     if in_water(c.x, c.y) and c.z < DOCK_WATER - 0.2:
         return ("bog_mud", "deep_water")  # (into the docks' black water: put back)
     name, e = cavern_at(c.x, c.y)
@@ -478,62 +427,8 @@ def classify(c, n, info):
 def isle_top(k):
     """Island k's grass: just under the lowest of the road over it."""
     name, ix, iy, r, z = ISLES[k]
-    zs = [p[2] for j, p in enumerate(DENSE[DAT[START]:DAT[END]]) if math.hypot(p[0] - ix, p[1] - iy) < r - 1.0
-          and _gap_of(j + DAT[START]) is None]
-    return min(zs + [z]) - 0.3
-
-
-# The ways round the jumps (Blake, Nov 3: "we cannot go back the otherway through the
-# passage if we wish to go from dragon back to tropics"): beside every jump a crossing a
-# kart can drive either way, the slow way round. (name, points (x, y, z), what it is;
-# RAILS: which points its rails run between, over the drop.)
-# Their ends on an island sit just over its grass; the Drop's ramp and the Edge's bridge
-# leave from the bores (widened there: WIDE_BORES).
-# (the bores widened round a ramp's or a bridge's end: from, to the route points, how far
-# either side)
-WIDE_BORES = [("runup2", "land2", 18.0), ("bore7", "lip3", 18.0)]
-
-
-def _on(k, x, y):
-    return (x, y, isle_top(k) + 0.15)
-
-
-def _edge(x, y):
-    """An end beside the road, level with it."""
-    return (x, y, road_floor(x, y)[1] + 0.03)
-
-
-def _at(x, y):
-    """An end on the ground, just over it."""
-    return (x, y, natural(x, y) + 0.15)
-
-
-BYPASSES = [
-    ("Canal Bridge", [_at(8.0, -318.0), (13.0, -310.0, DOCK_FLOOR + 0.3), (14.0, -300.0, DOCK_FLOOR + 0.5), (13.0, -290.0, DOCK_FLOOR + 0.3),
-                      _at(8.0, -282.0)],
-     "planks"),
-    ("Drop Ramp", [_at(64.5, -200.2), (65.6, -192.3, -28.2), (68.5, -181.0, -28.9), (71.0, -168.0, -30.6), (73.0, -154.0, -32.3),
-                   _at(76.0, -142.0)], "scaffold"),
-    ("Edge Bridge", [_edge(35.0, 164.0), (37.0, 175.0, -42.35), (37.3, 185.0, -43.0), (36.5, 194.0, -44.2), _on(0, 34.5, 202.0)],
-     "chains"),
-    ("Perch Bridge", [_on(1, -25.0, 282.0), (-22.0, 292.0, -40.8), (-19.0, 301.0, -41.2), _on(2, -16.0, 309.0)], "chains"),
-    ("Gate Bridge", [_on(3, 27.0, 397.0), (28.5, 404.0, -38.0), (28.0, 412.0, -38.4), _on(4, 27.0, 420.0)], "chains"),
-]
-
-
-# (SPANS: which points its bridge runs between (railed or not), on a deck over the drop;
-# the rest on the ground, the land meeting it)
-SPANS = {"Canal Bridge": (1, 3, False), "Drop Ramp": (1, 4, True), "Edge Bridge": (1, 4, True), "Perch Bridge": (0, 3, True),
-         "Gate Bridge": (0, 3, True)}
-
-
-def bypass_d(x, y):
-    """How far (x, y) is from the middle of the nearest way round."""
-    best = 1e9
-    for _, pts, _ in BYPASSES:
-        for a, b in zip(pts, pts[1:]):
-            best = min(best, _seg(x, y, a, b)[0])
-    return best
+    zs = [p[2] for p in DENSE[DAT[START]:DAT[END]] if math.hypot(p[0] - ix, p[1] - iy) < r - 1.0]
+    return min(zs + [z]) - 0.9  # (under the banked road's low edge too)
 
 
 def isle_at(x, y, margin=0.0):
@@ -544,20 +439,15 @@ def isle_at(x, y, margin=0.0):
 
 
 if __name__ == "__main__":
-    # (A quick check of the road without Blender: its length, the grades, the jumps.)
+    # (A quick check of the road without Blender: its length and grades.)
     a, b = DAT[START], DAT[END]
     L = CUM[b] - CUM[a]
     worst = 0.0
     for k in range(a, b):
-        if _gap_of(k):
-            continue
         p, q = DENSE[k], DENSE[k + 1]
         h = math.hypot(q[0] - p[0], q[1] - p[1])
         if h > 0.5:
             worst = max(worst, abs(q[2] - p[2]) / h)
     print("road %.0f m, %d points, steepest %.0f%%" % (L, b - a, worst * 100))
-    for lip, land, kick, under in JUMPS:
-        i, j = DAT[AT[lip]], DAT[AT[land]]
-        print("jump %s: gap %.1f m, drop %.1f m, %s" % (lip, CUM[j] - CUM[i], DENSE[i][2] - DENSE[j][2], under))
-    for name in ("dock0", "land2", "pit_gate", "pit12", "den0", "lip3", "end"):
+    for name in ("dock0", "canal", "stair2", "pit_gate", "pit12", "den0", "mouth", "end"):
         print(name, round(CUM[DAT[AT[name]]] - CUM[a]))

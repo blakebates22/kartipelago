@@ -29,9 +29,10 @@ import props  # noqa: E402
 import region_paint as paint  # noqa: E402
 import jedge_layout as L  # noqa: E402
 from jedge_layout import (  # noqa: E402
-    AT, CAVERNS, CLOUD_Z, ENDS, END, BYPASSES, ISLES, JUMPS, MOUTH, WIDE_BORES, isle_top, PIT, PIT_FLOOR, PIT_R, ROUTE, SEABED, SHELF, SKYLIGHTS,
-    START, VOID_Z, WATER_Z, cavern_at, classify, isle_at, natural, reef_z, rim_y)
+    AT, CAVERNS, CLOUD_Z, ENDS, END, ISLES, MOUTH, isle_top, PIT, PIT_FLOOR, PIT_R, ROUTE, SEABED, SHELF, SKYLIGHTS,
+    START, VOID_Z, WATER_Z, cavern_at, classify, isle_at, natural, over_canal, reef_z, rim_y)
 import jedge_districts as D  # noqa: E402
+import jedge_life as LIFE  # noqa: E402
 
 TRACK_ID = "journey_cause" + os.environ.get("KP_REGION_SUFFIX", "")
 
@@ -61,61 +62,33 @@ def main():
         # (the sky: the chained bridges, and the islands' stone roads)
         "bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("plank_road", "road"), "barrier": 1.2,
                    "barrier_mat": ("rope_rail", "wall"), "deck": 1.4, "deck_mat": ("weathered_timber", "wall"), "ground": False},
-        # (low parapets along the islands' roads, but none where a way round leaves them)
+        # (the canal's hump-backed bridge: planks on a timber deck, rope rails, the water open
+        # under it)
+        "canal bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("weathered_timber", "road"),
+                         "barrier": 1.1, "barrier_mat": ("weathered_timber", "wall"), "deck": 1.2,
+                         "deck_mat": ("weathered_timber", "wall"), "ground": False},
+        # (low parapets along the islands' roads)
         "isle": {"mat": "keep_cobble", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("keep_kerb", "road"), "barrier": 0.8,
                  "barrier_mat": ("keep_parapet", "wall"), "deck": 1.6, "deck_mat": ("keep_rock", "wall"), "ground": False},
-        "isle open": {"mat": "keep_cobble", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("keep_kerb", "road"), "deck": 1.6,
-                      "deck_mat": ("keep_rock", "wall"), "ground": False},
-        # (the jumps: the smugglers' plank ramps underground, stone ones in the sky)
-        # (underground on the ground: the land beside it not dug away under a deck, so the way
-        # round past it is level)
-        "kicker": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("weathered_timber", "road")},
-        "sky kicker": {"mat": "keep_cobble", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("keep_kerb", "road"), "deck": 2.4,
-                       "deck_mat": ("keep_rock", "wall"), "ground": False},
     }
-    for k in ("under", "quay", "bazaar", "pit", "den", "isle", "isle open"):
-        # (no rails beside a landing: a kart coming down a little off line lands, not hits)
-        kinds[k + " landing"] = {key: v for key, v in kinds[k].items() if not key.startswith("barrier")}
     c.kinds = kinds
     s_start = _s(c, "start")
     s_end = _s(c, "end")
-    jumps = [(_s(c, lip), _s(c, land), kick, under) for lip, land, kick, under in JUMPS]
-
-    # (where the ways round leave the islands' roads)
-    isle_ends = [p[:2] for _, pts, _ in BYPASSES for p in (pts[0], pts[-1]) if isle_at(p[0], p[1]) is not None]
 
     def place_kind(x, y):
         if y > rim_y(x) - 2.0:
-            if isle_at(x, y, -1.0) is None:
-                return "bridge"
-            return "isle open" if any(math.hypot(x - ex, y - ey) < 22.0 for ex, ey in isle_ends) else "isle"
+            return "bridge" if isle_at(x, y, -1.0) is None else "isle"
+        if over_canal(x, y):
+            return "canal bridge"
         return {"Smugglers' Docks": "quay", "Night Bazaar": "bazaar", "Fighting Pits": "pit", "Lucky Bone": "den"}.get(
             cavern_at(x, y)[0], "under")
 
     def label(q):
         if not s_start <= q.s <= s_end:
             return None
-        for s_lip, s_land, _, under in jumps:
-            if s_lip < q.s < s_land:
-                return "gap"
-            if s_lip - 12.0 <= q.s <= s_lip:
-                return "sky kicker" if under == "sky" else "kicker"
-            if s_land <= q.s < s_land + 14.0:
-                return place_kind(q.p.x, q.p.y) + " landing"
         return place_kind(q.p.x, q.p.y)
 
-    specials = []
-    for s0, s1, k in kit.runs(c, label):
-        if k is None or k == "gap":
-            specials.append((s0, s1, None))
-        elif k.endswith("kicker"):
-            kick = next(j[2] for j in jumps if j[0] - 13.0 <= s1 <= j[0] + 1.0)
-            specials.append((s0, s1, k, {"lift": lambda u, n, kick=kick: kick * max(0.0, (u - (n - 8)) / 8) ** 2}))
-        else:
-            specials.append((s0, s1, k))
-    c.roads(kit.plan(c, specials, "under", max_len=150.0))
-
-    ways_round(c)
+    c.roads(kit.plan(c, list(kit.runs(c, label)), "under", max_len=150.0))
 
     X0, X1, Y0, Y1 = -490, 490, -490, 490
     ter = c.terrain("The Edge of the World", X0, X1, Y0, Y1, 4.0, natural, classify, near=8.0, fade=16.0, fine=2)
@@ -125,14 +98,15 @@ def main():
         z = c.ground_z(x, y, [ter])
         return natural(x, y) if z is None else z
 
-    s_mouth = _s(c, "lip3")
+    s_mouth = _s(c, "mouth")
     underground(c, s_start, s_mouth)
     sea_and_sky(c)
     skylights(c, ground)
     D.dress(c, ground, s_start, s_mouth)
     the_edge(c)
-    sky(c, ground)
+    spans = sky(c, ground)
     ends(c)
+    LIFE.all_life(c, ground, s_start, s_mouth, s_end, spans)
     far_kingdom(c)
     # The air: each district its own; the sky's bright, out at the edge.
     for x, y, look in ((-55.0, -430.0, "under"), (-40.0, -380.0, "under"), (-14.0, -300.0, "docks"), (60.0, -232.0, "under"),
@@ -146,10 +120,7 @@ def main():
                    ("den2", 0.6), ("bore4", 0.5), ("isle1", 0.3), ("land4b", 0.3), ("bridge2a", 0.1),
                    ("isle5", 0.2)):
         c.zipper(_s(c, tag, f), 0.0)
-    for s_lip, s_land, _, under in jumps:
-        # (A missed jump, into the canal, the crack or the sky: put down past it.)
-        c.entity("respawn", **{"from": round(s_lip - 20.0, 1), "to": round(s_land + 4.0, 1), "at": round(s_land + 16.0, 1)})
-    gts = c.checkpoints(avoid=[(j[0] - 14.0, j[1] + 8.0) for j in jumps], height=10.0)
+    gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}, "journey": {"from": round(s_start, 1), "to": round(s_end, 1)}})
     print("road %.0f m (s %.0f..%.0f), loop %.0f, gates %d" % (s_end - s_start, s_start, s_end, c.length, len(gts)))
@@ -258,9 +229,6 @@ def underground(c, s0, s1):
     bmesh.ops.recalc_face_normals(dm, faces=dm.faces)
     _subtract(slab, c.mesh_object("Fighting Pits Cutter", dm, "Rocks", "visual"))
     c.tunnel(slab, s0 - 30.0, s1 + 24.0, half=c.width / 2 + 4.0, height=11.0, pad=6.0)
-    # (wider round the ways round the Drop and the Edge's leap, where they leave the bores)
-    for a_, b_, half in WIDE_BORES:
-        c.tunnel(slab, _s(c, a_) - 4.0, _s(c, b_) + 8.0, half=half, height=11.0, pad=6.0, floor=-0.7)
     groups = {}
     for p in slab.data.polygons:
         z = p.center.z
@@ -355,61 +323,6 @@ def the_edge(c):
         role="visual")
 
 
-def ways_round(c):
-    """The ways round the jumps (Blake, Nov 3: the passage has to drive back the other way,
-    Dragon Kingdom to the isles): a plank bridge over the docks' canal, a timber ramp on
-    trestles from the alley down into the Night Bazaar beside the Drop, and chained plank
-    bridges beside the leap off the edge and between the islands. Narrow, railed, the
-    slow way: the jumps are the fast one."""
-    for name, pts, kind in BYPASSES:
-        # (railed only over the drop: no rails to catch a kart turning on or off it; the
-        # canal's a wide low footbridge)
-        i0, i1, railed = L.SPANS[name]
-        # (its ends on the ground, the land brought up to meet them; the bridge on a deck)
-        parts = [(pts[:i0 + 1], False), (pts[i0:i1 + 1], True), (pts[i1:], False)]
-        for j, (part, span) in enumerate(parts):
-            if len(part) < 2:
-                continue
-            c.side_road("%s %d" % (name, j), part, "plank_road", "road", width=8.0 if kind == "planks" else 6.0, shoulder=0.4,
-                        shoulder_mat=("weathered_timber", "road"), barrier=1.0 if span and railed else 0.0,
-                        barrier_mat=("rope_rail", "wall") if kind != "scaffold" else ("weathered_timber", "wall"),
-                        deck=1.0 if span else 0.0, deck_mat=("weathered_timber", "wall"), ground=not span)
-        dense = []
-        for a, b in zip(pts, pts[1:]):
-            n = max(1, int(math.hypot(b[0] - a[0], b[1] - a[1]) / 3.0))
-            dense += [(lerp(a[0], b[0], t / n), lerp(a[1], b[1], t / n), lerp(a[2], b[2], t / n)) for t in range(n)]
-        dense.append(pts[-1])
-        for k, (x, y, z) in enumerate(dense):
-            if k % 3 or k == 0 or k == len(dense) - 1:
-                continue
-            nx, ny = dense[k + 1][0] - dense[k - 1][0], dense[k + 1][1] - dense[k - 1][1]
-            L_ = math.hypot(nx, ny) or 1.0
-            rx, ry = ny / L_, -nx / L_
-            for sd in (-1, 1):
-                px, py = x + rx * sd * 3.6, y + ry * sd * 3.6
-                if kind == "scaffold":
-                    # (trestle legs down to the floor)
-                    box(c, "%s Leg %d %d" % (name, k, sd), px, py, 0.18, 0.18, natural(px, py) - 0.3, z - 1.0,
-                        ("weathered_timber", "wall"), role="visual")
-                elif kind == "chains":
-                    box(c, "%s Post %d %d" % (name, k, sd), px, py, 0.12, 0.12, z, z + 3.2, ("iron", "wall"), role="visual")
-        for e, (x, y, z) in enumerate((pts[0], pts[-1])):
-            g = c.game(x, y, z + 3.0)
-            c.entity("lantern", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2))
-        if kind == "chains":
-            for sd in (-1, 1):
-                chain = []
-                for k, (x, y, z) in enumerate(dense):
-                    j = min(max(k, 1), len(dense) - 2)
-                    nx, ny = dense[j + 1][0] - dense[j - 1][0], dense[j + 1][1] - dense[j - 1][1]
-                    L_ = math.hypot(nx, ny) or 1.0
-                    t = k / (len(dense) - 1)
-                    chain.append((x + ny / L_ * sd * 3.6, y - nx / L_ * sd * 3.6, z + 3.2 + 1.2 * (1.0 - (2 * t - 1) ** 2) - 1.2))
-                bm = bmesh.new()
-                props.tube(bm, chain, 0.1, n=4)
-                c.assign(c.mesh_object("%s Chain %d" % (name, sd), bm, "Props", "visual"), c.lib("iron", "wall"))
-
-
 def _float_isle(c, name, x, y, r, top, seed):
     """A floating island: a grassy top, its rock tapering away beneath to a crag."""
     depth = r * 1.5
@@ -458,19 +371,18 @@ def sky(c, ground):
     # The chained bridges: a tower each side at both ends, the chains between.
     spans = []
     s = None
-    gaps = [(c.nearest(*ROUTE[AT[lip]][:2])[0].s - 1.0, c.nearest(*ROUTE[AT[land]][:2])[0].s + 1.0) for lip, land, _, _ in JUMPS]
     s_end = c.nearest(*ROUTE[END][:2])[0].s
     for q in c.S:
         if q.s > s_end + 2.0:
             break
-        on = (q.p.y > rim_y(q.p.x) + 4.0 and isle_at(q.p.x, q.p.y, -1.0) is None
-              and not any(g0 < q.s < g1 for g0, g1 in gaps))
+        on = q.p.y > rim_y(q.p.x) + 1.0 and isle_at(q.p.x, q.p.y, -1.0) is None
         if on and s is None:
             s = q.s
         elif not on and s is not None:
-            if q.s - s > 20.0:
+            if q.s - s > 6.0:
                 spans.append((s, q.s))
             s = None
+    out = []
     for a_s, b_s in spans:
         ends = [c.at(a_s - 2.0), c.at(b_s + 2.0)]
         tops = []
@@ -478,17 +390,18 @@ def sky(c, ground):
             rot = math.atan2(q.t.y, q.t.x)
             pair = []
             for sd in (-1, 1):
-                px, py = q.p.x + q.r.x * sd * (q.w / 2 + 2.4), q.p.y + q.r.y * sd * (q.w / 2 + 2.4)
+                px, py = q.p.x + q.r.x * sd * (q.w / 2 + 3.4), q.p.y + q.r.y * sd * (q.w / 2 + 3.4)
                 _tower(c, "Bridge Tower %d %d %d" % (int(a_s), e, sd), px, py, q.p.z, rot, q.p.z - 8.0)
                 pair.append((px, py, q.p.z + 15.0))
             tops.append(pair)
+        out.append((a_s, b_s, (tops[0], tops[1])))
         for sd in (0, 1):
             pts = []
             for j in range(15):
                 t = j / 14
                 q = c.at(lerp(a_s - 2.0, b_s + 2.0, t))
                 sg = 1 if sd else -1
-                sag = 13.0 * (1.0 - (2 * t - 1) ** 2)
+                sag = min(13.0, 0.3 * (b_s - a_s + 4.0)) * (1.0 - (2 * t - 1) ** 2)
                 pts.append((q.p.x + q.r.x * sg * (q.w / 2 + 1.4), q.p.y + q.r.y * sg * (q.w / 2 + 1.4), lerp(tops[0][sd][2], tops[1][sd][2], t)
                             - sag))
             pts[0], pts[-1] = tops[0][sd], tops[1][sd]
@@ -502,6 +415,7 @@ def sky(c, ground):
                 props.tube(bm, [(x, y, z), (x, y, q.p.z + 1.2)], 0.07, n=4)
                 c.assign(c.mesh_object("Bridge Hanger %d %d %d" % (int(a_s), sd, j), bm, "Props", "visual"), c.lib("iron", "wall"))
     D.sky_life(c, ground)
+    return out
 
 
 def ends(c):

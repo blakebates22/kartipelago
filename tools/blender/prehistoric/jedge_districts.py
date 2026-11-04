@@ -37,8 +37,6 @@ def rnd(k):
 
 def person(c, x, y, z, role, fx, fy, v=None, sky=False):
     """One of the crowd (game/isles.ts' roles), standing at (x, y, z) facing (fx, fy)."""
-    if L.bypass_d(x, y) < 4.2:
-        return  # (not on a way round)
     dx, dy = fx - x, fy - y
     n = math.hypot(dx, dy) or 1.0
     to = SKY_CROWD if sky else CROWD
@@ -84,7 +82,7 @@ def lantern_line(c, name, p0, p1, sag=1.0):
 
 
 def ok(c, taken, x, y, r, margin=2.0):
-    return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r) and L.bypass_d(x, y) > r + 4.5
+    return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r)
 
 
 def dress(c, ground, s0, s1):
@@ -148,7 +146,7 @@ def docks(c, ground, taken):
                  role="visual")
     for sd in (-1, 1):
         for x in range(int(cx0) + 2, int(cx1) - 2, 4):
-            if abs(x - 0.0) < 12.0 or L.bypass_d(x, cy) < 6.0:
+            if abs(x - 0.0) < 12.0:
                 continue
             box(c, "Canal Edge %d %d" % (sd, x), x, cy + sd * (hw + 0.4), 2.0, 0.8, DOCK_WATER - 1.5, DOCK_FLOOR + 0.25,
                 ("wood_dock", "wall"))
@@ -293,7 +291,7 @@ def docks(c, ground, taken):
         k = 0
         while s < s_in[-1].s - 5.0:
             q = c.at(s)
-            if L.gap_box(q.p.x, q.p.y, 20.0) is None:
+            if not L.over_canal(q.p.x, q.p.y, 6.0):
                 if k % 2 == 0:
                     ends = []
                     for sd in (-1, 1):
@@ -408,7 +406,7 @@ def bazaar(c, ground, taken):
             x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.0), q.p.y + q.r.y * sd * (q.w / 2 + 2.0)
             z = ground(x, y)
             ends.append((x, y, z + 7.8))
-        if all(L.bypass_d(x, y) > 5.0 for x, y, _ in ends):
+        if True:
             for sd, (x, y, z) in zip((-1, 1), ends):
                 box(c, "Lantern Pole %d %d" % (j, sd), x, y, 0.12, 0.12, z - 7.8, z + 0.2, ("weathered_timber", "wall"))
             lantern_line(c, "Lantern String %d" % j, ends[0], ends[1], sag=1.4)
@@ -455,7 +453,7 @@ def bazaar(c, ground, taken):
         a = j * 2.399
         r = 0.15 + 0.6 * ((j * 0.618) % 1.0)
         x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
-        if paint.road_clear(c, x, y, 10.0) and L.bypass_d(x, y) > 14.0 and (best is None or paint.road_clear(c, x, y, 13.0)):
+        if paint.road_clear(c, x, y, 10.0)  and (best is None or paint.road_clear(c, x, y, 13.0)):
             best = (x, y)
             if paint.road_clear(c, x, y, 13.0):
                 break
@@ -761,12 +759,12 @@ def bores(c, ground, s0, s1):
     the Drop) doors and windows in its walls, laundry across overhead, folk in doorways."""
     sets = gp.timber_set(c, half=c.width / 2 + 3.4, height=10.4)
     a0 = c.nearest(*L.ROUTE[L.AT["dock3"]][:2])[0].s
-    a1 = c.nearest(*L.ROUTE[L.AT["lip2"]][:2])[0].s
+    a1 = c.nearest(*L.ROUTE[L.AT["stair1"]][:2])[0].s
     s = s0 + 6.0
     k = 0
     while s < s1 - 6.0:
         q = c.at(s)
-        if cavern_at(q.p.x, q.p.y)[0] is not None or L.bypass_d(q.p.x, q.p.y) < 22.0:
+        if cavern_at(q.p.x, q.p.y)[0] is not None:
             s += 9.0
             k += 1
             continue
@@ -816,14 +814,32 @@ def bores(c, ground, s0, s1):
                     person(c, jx + q.t.x * i * 1.2, jy + q.t.y * i * 1.2, q.p.z, "huddle", jx, jy)
         s += 9.0
         k += 1
-    # The Drop's crack: a warning sign and lamps at its lip.
-    q, _ = c.nearest(*L.ROUTE[L.AT["lip2"]][:2])
+    # The Stair's foot, where the alley comes down into the Night Bazaar: a great timber
+    # gate hung with banners and a lantern string, braziers either side, hawkers and
+    # touts calling you in.
+    q, _ = c.nearest(*L.ROUTE[L.AT["stair2"]][:2])
+    rot = math.atan2(q.t.y, q.t.x)
+    tops = []
     for sd in (-1, 1):
-        x, y = q.p.x + q.r.x * sd * (q.w / 2 + 1.4), q.p.y + q.r.y * sd * (q.w / 2 + 1.4)
-        light(c, "torch", x, y, q.p.z + 2.5)
-        box(c, "Drop Post %d" % sd, x, y, 0.2, 0.2, q.p.z - 0.5, q.p.z + 2.6, ("weathered_timber", "wall"), role="visual")
-    box(c, "Drop Sign", q.p.x + q.r.x * (q.w / 2 + 1.4), q.p.y + q.r.y * (q.w / 2 + 1.4), 0.9, 0.08, q.p.z + 1.4, q.p.z + 2.4,
-        ("sign_hazard_2", "wall"), rot=math.atan2(q.t.y, q.t.x) + math.pi / 2, role="visual")
+        x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.2), q.p.y + q.r.y * sd * (q.w / 2 + 2.2)
+        z = ground(x, y)
+        box(c, "Bazaar Gate Post %d" % sd, x, y, 0.55, 0.55, z - 0.5, q.p.z + 10.5, ("weathered_timber", "wall"), rot=rot)
+        light(c, "campfire", x + q.t.x * 2.5, y + q.t.y * 2.5, z + 0.1)
+        tops.append((x, y, q.p.z + 10.0))
+        for i in range(4):
+            px, py = x + q.t.x * (4.0 + 1.6 * i) + q.r.x * sd * 0.8, y + q.t.y * (4.0 + 1.6 * i) + q.r.y * sd * 0.8
+            person(c, px, py, ground(px, py), ("wave", "merchant", "cheer", "huddle")[(i + (sd > 0)) % 4], q.p.x, q.p.y)
+    box(c, "Bazaar Gate Beam", q.p.x, q.p.y, 0.5, q.w / 2 + 3.2, q.p.z + 9.6, q.p.z + 10.6, ("weathered_timber", "wall"),
+        rot=rot + math.pi / 2, role="visual")
+    for f in range(5):
+        t = (f + 0.5) / 5
+        x, y = lerp(tops[0][0], tops[1][0], t), lerp(tops[0][1], tops[1][1], t)
+        ux, uy = q.t.x * 0.05 + q.r.x * 0.7, q.t.y * 0.05 + q.r.y * 0.7
+        cloth(c, "Bazaar Gate Banner %d" % f, [(x - ux, y - uy, q.p.z + 9.6), (x + ux, y + uy, q.p.z + 9.6), (x + ux, y + uy, q.p.z + 6.8),
+                                                (x, y, q.p.z + 6.3), (x - ux, y - uy, q.p.z + 6.8)],
+              ("awning_red", "rug", "awning_teal", "rug", "awning_red")[f])
+    lantern_line(c, "Bazaar Gate Lanterns", (tops[0][0] - q.t.x * 3, tops[0][1] - q.t.y * 3, q.p.z + 8.4),
+                 (tops[1][0] - q.t.x * 3, tops[1][1] - q.t.y * 3, q.p.z + 8.4), sag=1.2)
 
 
 # ------------------------------------------------------------------ the sky
@@ -838,7 +854,7 @@ def sky_life(c, ground):
         for j in range(6):
             a = j * math.tau / 6 + k
             bx, by = x + r * 0.72 * math.cos(a), y + r * 0.72 * math.sin(a)
-            if not paint.road_clear(c, bx, by, 2.5) or L.bypass_d(bx, by) < 6.0:
+            if not paint.road_clear(c, bx, by, 2.5):
                 continue
             if j % 2:
                 c.place(props.ruin_column(c, j % 3), bx, by, top, rot=a, role="both")
@@ -867,7 +883,7 @@ def sky_life(c, ground):
     # The great dragon: far off over the Kingdom while you're underground; out at the edge it
     # swoops down to meet you and flies alongside the islands to the gate.
     s0 = c.nearest(*L.ROUTE[L.START][:2])[0].s
-    sm = c.nearest(*L.ROUTE[L.AT["lip3"]][:2])[0].s
+    sm = c.nearest(*L.ROUTE[L.AT["mouth"]][:2])[0].s
     se = c.nearest(*L.ROUTE[L.END][:2])[0].s
     keys = []
     for s, (x, y, z) in ((s0, (200.0, 800.0, 120.0)), (lerp(s0, sm, 0.5), (-160.0, 720.0, 140.0)), (sm - 40.0, (90.0, 300.0, 30.0)),

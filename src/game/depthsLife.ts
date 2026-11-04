@@ -382,7 +382,7 @@ export function createDepthsLife(opts: {
         if (target) {
           const a = smoothAir(target, dt);
           outdoors = Math.max(0, Math.min(1, (a.sun - 0.8) / 1.6));
-          if (!opts.headless) {
+          if (!opts.headless && atmosphere.light) {
             if (!scene) findScene();
             if (scene?.fog instanceof THREE.Fog) {
               scene.fog.color.setRGB(a.fog[0], a.fog[1], a.fog[2]);

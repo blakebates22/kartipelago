@@ -10,7 +10,9 @@
  *               and how far between them (t: 0 = all A .. 1 = all B). Wherever the
  *               camera is, the nearest keys say what the air is like: going down, the
  *               desert's haze gives way to the crater's dust, a crystal cavern's blue
- *               dark, a jungle's green gloom, the red of the lava.
+ *               dark, a jungle's green gloom, the red of the lava. With "light": false
+ *               only the sound is taken from it (a region whose air the overworld already
+ *               paints: the Edge of the World's districts, each with its own sound).
  *   triceratops { "type": "triceratops", "x", "y", "z", "heading", "scale": 1,
  *                 "roam": 6, "seed": 1 }
  *               A three-horned grazer, wandering slowly round its own patch, stopping
@@ -110,6 +112,8 @@ export interface AtmosphereKey {
 export interface AtmosphereConfig {
   zones: Record<string, Zone>;
   keys: AtmosphereKey[];
+  /** Whether it sets the fog and the lights too (false: its sound only). */
+  light: boolean;
 }
 
 /** "#rrggbb" to [r, g, b] (0..1). */
@@ -153,7 +157,7 @@ export function parseAtmosphere(e: Record<string, unknown>): AtmosphereConfig {
         t: Math.min(1, Math.max(0, num(k[5], 0))),
       });
     }
-  return { zones, keys };
+  return { zones, keys, light: e.light !== false };
 }
 
 export interface Air {
