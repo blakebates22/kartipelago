@@ -332,6 +332,7 @@ def main():
     X0, X1, Y0, Y1 = -310, 310, -442, 310
     ter = c.terrain("Snow Kingdom", X0, X1, Y0, Y1, 2.5, natural, classify, near=8.0, fade=16.0, verge_fill=1.5)
     sd.level_pads(ter)
+    mirror_floor(c, ter)
     global TER
     TER = ter
     c.underfloor_flat("Underfloor", X0, X1, Y0, Y1, 5.0, lambda x, y: natural(x, y) - 0.5, c.lib(*snow))
@@ -551,10 +552,11 @@ def thresholds(c, ground):
                 c.entity("lantern", x=g[0], y=g[1], z=g[2])
                 s += 9.0
                 k += 1
-            for s in (s0 - 2.0, s1 + 2.0):
-                q = c.at(s)
-                c.place(ap.icicle_fringe(c, 0, width=2 * half, length=4.0), q.p.x, q.p.y, q.p.z + 10.5,
-                        rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, role="visual")
+            # (Hung from the roof just inside both mouths, following its arch: review-snow_region
+            # 16 note 3, "these icicles in this tunnel are floating. pleace attach them to the
+            # roof. do it on both ends of the tunnel"; they hung in the open cut outside.)
+            for s in (s0 + 1.5, s1 - 1.5):
+                roof_icicles(c, s, half, 11.0)
         else:  # the Frozen Falls
             half = pb.bore(c, L, name, s0, s1, ("frost_cliff", "wall"), ("snow_ground", "deep_snow"), height=10.0)
             q = c.at(s0 - 4.0)  # (the lake side: the falls pour down either side of the mouth)
@@ -568,6 +570,66 @@ def thresholds(c, ground):
                 q = c.at(s0 + (s1 - s0) * (k + 0.5) / 3)
                 g = c.game(q.p.x + q.r.x * (half - 0.6), q.p.y + q.r.y * (half - 0.6), q.p.z + 4.5)
                 c.entity("lantern", x=g[0], y=g[1], z=g[2])
+
+
+def mirror_floor(c, ter):
+    """A floor of the walls' deep blue ice a little under the rift's mirror ice (review-snow_region
+    16 note 4, "lets put a floor under the ice here so it isnt just a white void underneath";
+    the mirror ice is see-through, and the snow underfloor showed white through it). Only
+    seen. Returns how many faces."""
+    tex = c.lib("mirror_ice", "ice")["kp_texture"]
+    me = ter.data
+    bm = kit.bmesh.new()
+    n = 0
+    for p in me.polygons:
+        m = me.materials[p.material_index] if p.material_index < len(me.materials) else None
+        if m is None or m.get("kp_texture") != tex:
+            continue
+        bm.faces.new([bm.verts.new(ter.matrix_world @ me.vertices[i].co - kit.Vector((0.0, 0.0, 0.4))) for i in p.vertices])
+        n += 1
+    if n:
+        bmesh_ob = c.mesh_object("Mirror Ice Floor", bm, "Props", "visual")
+        c.assign(bmesh_ob, c.lib("cavern_ice", "wall"))
+    else:
+        bm.free()
+    print("mirror ice floor: %d faces" % n)
+    return n
+
+
+def roof_icicles(c, s, half, height):
+    """Icicles hung along a bore's roof across the road at s: its arch (course_kit.tunnel's
+    profile: level over the middle, sloping down to the walls, banked with the road), each
+    short run's top sunk a little into the rock, shorter where the roof comes down."""
+    q = c.at(s)
+    tb = math.tan(math.radians(q.bank))
+    rot = math.atan2(q.t.y, q.t.x) - math.pi / 2
+
+    def roof(a):
+        aa = abs(a)
+        b = height if aa <= 0.62 * half else lerp(height, 0.62 * height, (aa - 0.62 * half) / (0.38 * half))
+        return b - a * tb
+
+    # (level over the middle: runs 1.8 m wide; down the slopes, runs 0.9 m wide, each
+    # hung from its higher end so none floats)
+    mid = 0.62 * half
+    m = max(2, int(2 * mid / 1.8))
+    runs = [(-mid + (i + 0.5) * 2 * mid / m, 2 * mid / m) for i in range(m)]
+    side = half * 0.95 - mid
+    k = max(1, int(side / 0.9))
+    for sgn in (-1, 1):
+        runs += [(sgn * (mid + (i + 0.5) * side / k), side / k) for i in range(k)]
+    protos = {}
+    n = 0
+    for a, w in runs:
+        flat = abs(a) < mid
+        key = (flat, round(w, 1))
+        if key not in protos:
+            protos[key] = ap.icicle_fringe(c, 0 if flat else 1, width=w, length=3.6 if flat else 2.0)
+        top = max(roof(a - w / 2), roof(a + w / 2))
+        x, y = q.p.x + q.r.x * a, q.p.y + q.r.y * a
+        c.place(protos[key], x, y, q.p.z + top + 0.2, rot=rot, role="visual")
+        n += 1
+    return n
 
 
 LANES = []

@@ -302,6 +302,34 @@
     {
       "id": "campfire_01",
       "type": "campfire",
+      "x": -280.0,
+      "y": 12.3,
+      "z": -160.0
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -220.0,
+      "y": 12.3,
+      "z": -160.0
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -258.0,
+      "y": 12.27,
+      "z": -169.4
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -241.5,
+      "y": 12.28,
+      "z": -169.6
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
       "x": -250.0,
       "y": 12.17,
       "z": -154.0
@@ -627,9 +655,9 @@
     {
       "id": "villager_home_12",
       "type": "villager_home",
-      "x": 133.6,
-      "z": -306.71,
-      "y": -5.73,
+      "x": 49.73,
+      "z": -258.61,
+      "y": -4.33,
       "r": 6.0,
       "n": 2,
       "folk": "desert",
@@ -697,9 +725,9 @@
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "canyon",
-      "x": 48.63,
-      "z": -272.73,
-      "heading": -2.6778646630447627
+      "x": 57.73,
+      "z": -253.52,
+      "heading": -2.6986807550302307
     },
     {
       "id": "gateway_spot_02",
@@ -850,8 +878,8 @@
   ],
   "generator": "tools/blender/prehistoric/desert_region_ruin.py (re-running it rewrites entities)",
   "builtFrom": {
-    "mesa_dress.py": "b2ef9f58284376951b50da97b9211f6d7cab6f842153076bda1228e865b7ca64",
-    "mesa_layout.py": "a9448a460b76657307e0de42c127e13fb767e9cd44f8517c794cda2ac8513115",
-    "mesa_region.py": "aa75a0cbca9a7ae71bb9ed47314814076ee977ca514b3110f891420708ff544a"
+    "mesa_dress.py": "3641d5e6200fe5c5a3634fcb874a93de700d532b98eefab11b3f1a75c1f36ba6",
+    "mesa_layout.py": "a6acef2d0a5f885859ee8c3b211f0182267810288e00774077854b77951a50ca",
+    "mesa_region.py": "c3a47b67ff8619c9d80f5367e2f9139454a88b9fc9e3733507812f955fd9dc91"
   }
 }

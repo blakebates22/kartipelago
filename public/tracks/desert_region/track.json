@@ -302,6 +302,34 @@
     {
       "id": "campfire_01",
       "type": "campfire",
+      "x": -280.0,
+      "y": 12.3,
+      "z": -160.0
+    },
+    {
+      "id": "campfire_02",
+      "type": "campfire",
+      "x": -220.0,
+      "y": 12.3,
+      "z": -160.0
+    },
+    {
+      "id": "campfire_03",
+      "type": "campfire",
+      "x": -258.0,
+      "y": 12.27,
+      "z": -169.4
+    },
+    {
+      "id": "campfire_04",
+      "type": "campfire",
+      "x": -241.5,
+      "y": 12.28,
+      "z": -169.6
+    },
+    {
+      "id": "campfire_05",
+      "type": "campfire",
       "x": -250.0,
       "y": 12.17,
       "z": -154.0
@@ -627,9 +655,9 @@
     {
       "id": "villager_home_12",
       "type": "villager_home",
-      "x": 133.6,
-      "z": -306.71,
-      "y": -5.73,
+      "x": 49.73,
+      "z": -258.61,
+      "y": -4.33,
       "r": 6.0,
       "n": 2,
       "folk": "desert",
@@ -697,9 +725,9 @@
       "id": "gateway_spot_01",
       "type": "gateway_spot",
       "gateway": "canyon",
-      "x": 48.63,
-      "z": -272.73,
-      "heading": -2.6778646630447627
+      "x": 57.73,
+      "z": -253.52,
+      "heading": -2.6986807550302307
     },
     {
       "id": "gateway_spot_02",

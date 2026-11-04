@@ -1101,49 +1101,34 @@ def alcove_overhang(c, top=81.6):
 
 
 PUEBLO_T1 = (4.5, 179.0)  # the upper terrace: its height over the floor, its front (y)
-PUEBLO_RAMP = 30.0  # the ramp up to it: how long (along its front, rising west from the east end)
-
-
-def pueblo_ramp_points():
-    """The ramp up to the upper terrace, (x, y, z): from the floor at the alcove's east
-    side, west along the terrace's front, up to its top."""
-    ax, ay, w, dp = M.ALCOVE
-    fz = M.ALCOVE_Z
-    h, fy = PUEBLO_T1
-    y = fy - 3.2
-    x0 = ax + PUEBLO_RAMP
-    return [(x0 + 6.0, y - 1.0, fz + 0.12), (x0, y, fz + 0.15), (x0 - PUEBLO_RAMP * 0.5, y, fz + h * 0.5),
-            (ax + 2.0, y, fz + h + 0.12), (ax - 4.0, y + 0.6, fz + h + 0.12)]
+# The front row along the terrace's wall (review-desert_region 4, note 3: "we need to line
+# this wall with more houses, keep the same style but lets have this front row have the
+# houses that slightly vary"): (x off the alcove's middle, width, depth, height, setback)
+PUEBLO_ROW = [(-23.2, 6.2, 5.0, 4.4, 0.0), (-16.4, 5.6, 4.6, 5.2, 0.4), (-9.9, 6.6, 5.4, 4.0, 0.1), (-3.0, 5.8, 4.8, 5.6, 0.5),
+              (3.8, 6.4, 5.2, 4.6, 0.0), (10.6, 5.4, 4.4, 4.2, 0.3), (17.1, 6.8, 5.6, 5.0, 0.1), (23.6, 5.6, 4.8, 4.4, 0.4)]
 
 
 def pueblo_homes(c, ground, taken):
-    """The pueblo, to drive about in (review-desert_region 3, notes 2 and 3: "I want to be
-    able to drive up in here and explore this area of huts"; the homes stacked on one
-    another had nothing under them): its floor in from the way up through the alcove's lip,
-    a row of homes along the back of it (west of the ramp), the upper terrace of solid
-    adobe behind them and a ramp up to it from the east, a lane along the terrace and its
-    own row of homes at the back, each Oasis Haven's adobe home on solid ground. Returns
+    """The pueblo, to drive about in (review-desert_region 3, notes 2 and 3; 4, notes 1-3):
+    its floor in from the way up through the alcove's lip, a row of homes lining the whole
+    front of the upper terrace (Oasis Haven's adobe, each a little different: wider or
+    narrower, a storey taller or lower, set a little back or forward, the variants by
+    turns), and the terrace of solid adobe behind, with
+    its own row of homes at the back. (No ramp up to the terrace any more: note 1.) Returns
     how many."""
-    pass  # (box: imported at the top)
-
     ax, ay, w, dp = M.ALCOVE
     fz = M.ALCOVE_Z
     h, fy = PUEBLO_T1
     k = 0
-    # The upper terrace: one solid block of adobe, its top a drivable floor, its front a
-    # wall with ladders up it, running back into the cliff.
+    # The upper terrace: one solid block of adobe, its front a wall running back into the cliff.
     box(c, "Pueblo Terrace", ax, fy + 9.0, 26.0, 9.0, fz - 2.0, fz + h, ("adobe", "dirt"))
     box(c, "Pueblo Terrace Coping", ax, fy + 0.15, 26.2, 0.35, fz + h - 0.05, fz + h + 0.35, ("adobe_dark", "wall"), role="visual")
-    for x in (ax - 22.0, ax - 12.0):
-        box(c, "Pueblo Ladder %d" % int(x), x, fy - 0.3, 0.6, 0.06, fz, fz + h + 1.2, ("weathered_timber", "wall"), role="visual")
-    # The homes along the back of the floor, west of the ramp, facing out over the plaza.
-    for j in range(3):
-        x = ax - 30.0 + j * 7.8
-        ww, dd_, hh = 6.6 - 0.5 * (j % 2), 5.0, 4.2 + 0.7 * (j % 2)
-        c.place(od.house(c, k % 4, ww, dd_, hh), x, fy - 6.4 + dd_ / 2, fz - 0.05, rot=0.0, coll="Village", role="visual")
-        c.place(od.collider(c, ww, dd_, hh * 0.62), x, fy - 6.4 + dd_ / 2, fz - 0.6, rot=0.0, coll="Village", role="collision")
+    # The front row, backs to the terrace's wall, doors out over the plaza.
+    for j, (dx, ww, dd_, hh, back) in enumerate(PUEBLO_ROW):
+        x, y = ax + dx, fy - 0.1 - back - dd_ / 2
+        c.place(od.house(c, (j + 1) % 4, ww, dd_, hh), x, y, fz - 0.05, rot=0.0, coll="Village", role="visual")
+        c.place(od.collider(c, ww, dd_, hh * 0.62), x, y, fz - 0.6, rot=0.0, coll="Village", role="collision")
         k += 1
-    # The ramp up, from the floor at the east side (a road: pueblo_ramp, mesa_region).
     # The homes on the terrace, along its back with a lane in front of them.
     for j in range(5):
         x = ax - 18.0 + j * 9.0
@@ -1154,6 +1139,40 @@ def pueblo_homes(c, ground, taken):
         k += 1
     taken.add(ax, ay + 10.0, 34.0)
     return k
+
+
+# The plaza's everyday things (review-desert_region 4, note 4: "we need more props here. a
+# few more fires, other things that would be present"): (prop, x, y off the alcove's middle,
+# turn). Clear of the way in (its end at y -6), the kivas (x +-16, y -10) and their ovens.
+PUEBLO_FIRES = [(-30.0, -6.0), (30.0, -6.0), (-8.0, 3.4), (8.5, 3.6)]
+PUEBLO_THINGS = [("ristra_rack", -20.5, 4.6, 0.0), ("ristra_rack", 18.0, 4.8, 0.0), ("ristra_rack", -22.0, -3.0, 0.3),
+                 ("ollas", -27.0, 5.0, 0.3), ("ollas", 2.0, 5.3, 1.2), ("ollas", 26.0, 5.0, 2.0), ("ollas", -13.0, 4.9, 0.7),
+                 ("ollas", 13.5, 4.4, 2.6), ("woodpile", -33.0, 6.5, 0.0), ("woodpile", 32.5, 5.5, 0.1), ("woodpile", -5.0, 5.6, 0.0),
+                 ("blanket_line", -28.0, -12.0, 0.4), ("blanket_line", 28.0, -12.0, -0.4), ("grinding", 4.6, 4.2, 0.2),
+                 ("grinding", -2.4, 4.0, -0.1), ("corn_heap", 22.0, 2.0, 0.5), ("corn_heap", -24.5, 1.0, 2.0),
+                 ("ramada", -30.0, -0.5, 0.0), ("ramada", 30.5, -0.8, 0.0)]
+
+
+def pueblo_plaza(c, ground):
+    """The fires (stone rings, their flames and smoke) and the plaza's things. Returns how
+    many."""
+    import pueblo_props as pp
+
+    ax, ay, w, dp = M.ALCOVE
+    n = 0
+    for k, (dx, dy) in enumerate(PUEBLO_FIRES):
+        x, y = ax + dx, ay + dy
+        z = ground(x, y)
+        c.place(pp.fire_ring(c, k), x, y, z - 0.05, rot=k * 1.3, role="visual")
+        g = c.game(x, y, z + 0.3)
+        c.entity("campfire", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2))
+        n += 1
+    for k, (kind, dx, dy, rot) in enumerate(PUEBLO_THINGS):
+        x, y = ax + dx, ay + dy
+        proto = od.ramada(c, k % 2) if kind == "ramada" else getattr(pp, kind)(c, k % 3)
+        c.place(proto, x, y, ground(x, y) - 0.05, rot=rot, role="both" if kind == "ramada" else "visual")
+        n += 1
+    return n
 
 
 def post_homes(c, ground, taken, ter):

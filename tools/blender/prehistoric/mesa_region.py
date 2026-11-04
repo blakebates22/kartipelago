@@ -133,18 +133,18 @@ def main():
     c.side_road("Main Street", STREET, "dash_road", "road", **dict(trail, width=12.0))
     # The ring road round the town square's plaza, at Main Street's north end.
     c.side_road("Square Ring", md.square_ring_points(), "dash_road", "road", **dict(trail, width=10.0))
-    # The way up into the pueblo's alcove and the ramp up to its upper terrace
-    # (review-desert_region 3, note 2).
+    # The way up into the pueblo's alcove (review-desert_region 3, note 2; the ramp up to its
+    # upper terrace is gone: review-desert_region 4, note 1).
     ax, ay, aw, adp = M.ALCOVE
     smp, _ = c.nearest(ax, ay - 40.0)
     c.side_road("Pueblo Way", pb.line(natural, (smp.p.x, smp.p.y), (ax, ay - 6.0), z0=smp.p.z, c=c), "dash_road", "road",
                 **dict(trail, width=9.0))
-    c.side_road("Pueblo Ramp", md.pueblo_ramp_points(), "adobe", "road", width=6.0, shoulder=0.4, shoulder_mat=("adobe_dark", "road"),
-                deck=1.2, deck_mat=("adobe", "wall"), ground=False)
     gates = dict(M.GATES)
     if not RUIN:
         gates.pop("lair")
-    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][1], trail)
+    spots = pb.spurs(c, natural, gates, lambda x, y: LOOK[M.look_at(x, y)][1], trail, short={"canyon": 6.0})
+    for name, ((ex, ey), hd) in spots.items():
+        print("gateway %s: x %.2f z %.2f heading %.4f" % (name, ex, -ey, hd))
     # (No Dust Road out through the south rim after Scorchwind's fall any more: the only way
     # out is the smugglers' tunnel from the Drift Cave, Blake, Nov 1.)
     if RUIN and False:
@@ -377,6 +377,7 @@ def pueblo(c, ground, taken):
     # tiers under it, Oasis Haven's adobe (mesa_dress, the deep pass).
     md.alcove_overhang(c)
     md.pueblo_homes(c, ground, taken)
+    print("pueblo plaza: %d fires and things" % md.pueblo_plaza(c, ground))
     # The plaza in front: two kivas (round, sunken rooms, their ladders poking out), beehive
     # ovens, pots.
     for j, sx in enumerate((-1, 1)):

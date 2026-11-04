@@ -445,7 +445,7 @@ def geysers(c, ground, taken, ter=None, avoid=()):
             if ter is not None and not up:
                 paint.grade(c, ter, x, y, 0.0, room * 2.0, room * 2.0, z)
             v = (n + got) % 3
-            c.place(sp.geyser_cone(c, v), x, y, z - 0.3, rot=1.7 * (n + got), scale=big, coll="Props")
+            c.place(sp.geyser_cone(c, v, white=True), x, y, z - 0.3, rot=1.7 * (n + got), scale=big, coll="Props")
             taken.add(x, y, room)
             g = c.game(x, y, z - 0.3 + (2.4 + 0.6 * v) * big)
             c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.5 * big, height=(16.0 + 4.0 * v) * big, period=8.0 + v + got,
@@ -502,7 +502,8 @@ def hot_spring(c, ground, taken, ter=None):
     # (Sunk to the lowest of its rim: the basin's outside runs 1.2 m down into the snow.)
     # (Its water is its own: a lopsided pool, review-snow_region 10 note 11.)
     c.place(ia.hot_spring(c, 4.2), x, y, z + 0.1, rot=0.4, coll="Props")
-    c.place(ia.spring_steam(c, 4.2), x, y, z + 0.1, rot=0.4, coll="Props", role="visual")
+    # (No cone of steam over it: review-snow_region 16 note 2, "this weird cone steam effect
+    # that looks weird. lets remove it"; the steam puffs rise off it.)
     taken.add(x, y, 8.0)
     for j in range(5):
         a = j * 1.26 + 0.3

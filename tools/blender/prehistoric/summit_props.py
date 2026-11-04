@@ -239,10 +239,12 @@ def floating_island(c, variant=0):
 # ------------------------------------------------------------------ the hot springs
 
 
-def geyser_cone(c, variant=0, flush=False):
+def geyser_cone(c, variant=0, flush=False, white=False):
     """A geyser's cone of travertine with orange mineral rims and a steaming pool in its
-    crater (about 9 m across). `flush` makes a low ring set into a road."""
-    name = "Geyser Cone %d %s" % (variant, "flush" if flush else "cone")
+    crater (about 9 m across). `flush` makes a low ring set into a road; `white` gives it
+    the pale travertine all over, no orange rims (the Snow Kingdom's, matching its hot
+    spring's rim: review-snow_region 16, note 1)."""
+    name = "Geyser Cone %d %s%s" % (variant, "flush" if flush else "cone", " white" if white else "")
 
     def build(bm):
         h = 0.15 if flush else 2.4 + 0.6 * variant
@@ -257,7 +259,7 @@ def geyser_cone(c, variant=0, flush=False):
         inner = _faces(bm, k0)
         k1 = len(bm.faces)
         bm.faces.new(rings[3])
-        return [(c.lib("sinter_rim"), rims), (c.lib("sinter"), inner), (c.lib("hot_pool"), _faces(bm, k1))]
+        return [(c.lib("sinter" if white else "sinter_rim"), rims), (c.lib("sinter"), inner), (c.lib("hot_pool"), _faces(bm, k1))]
 
     return _p(c, name, build)
 

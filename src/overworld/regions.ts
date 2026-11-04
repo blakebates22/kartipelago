@@ -323,8 +323,9 @@ export const REGIONS: Region[] = [
     // In the frontier town, where the road from the Frozen Pass crosses Main Street, facing east.
     spawn: { x: -360, z: 40, heading: Math.PI / 2 },
     gateways: [
-      // Down in the Grand Canyon, in its south wall off the terrace.
-      { id: "canyon", track: "canyon_dash", x: 48.63, z: -272.73, radius: 6, heading: -2.6779 },
+      // Down in the Grand Canyon, in a bay cut into its south wall, off the road
+      // (review-desert_region 4, note 5: it stood on the road).
+      { id: "canyon", track: "canyon_dash", x: 57.73, z: -253.52, radius: 6, heading: -2.6987 },
       // On Havasu's rim over the falls' pool, at the canyon's head.
       { id: "oasis", track: "oasis_haven", x: 370.66, z: -262.07, radius: 6, heading: -0.1116 },
       // Off the boomtown's Main Street, west.

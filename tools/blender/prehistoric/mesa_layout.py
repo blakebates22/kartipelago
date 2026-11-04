@@ -295,7 +295,7 @@ ARCH_SPAN = (-108.0, 20.0, -140.0, 8.0)  # its ends (x0, y0, x1, y1) where the m
 
 # The worlds' gates (x, y): beside the road, each at its rock.
 GATES = {
-    "canyon": (54.0, 262.0),  # (in the canyon's south wall, off the terrace)
+    "canyon": (60.3, 248.1),  # (in a bay cut into the canyon's south wall, off the road: GATE_BAY)
     "oasis": (372.0, 274.0),  # (on Havasu's rim over the falls' pool)
     "gulch": (250.0, -122.0),  # (off Main Street, west)
     "impact": (124.0, -340.0),  # (down on the crater's floor, by the core: its spot well off the spiral road, review-desert_region 3 note 10)
@@ -475,9 +475,19 @@ def _passes(h, x, y):
     return h
 
 
+# Canyon Dash's gateway stood on the road (review-desert_region 4, note 5: "we need to push
+# this out of the road"): the terrace is only some 12 m wide under the south wall there, so
+# a bay is cut back into the wall for it, level with the road. (x, y, radius, floor, edge)
+GATE_BAY = (58.6, 251.7, 12.0, -4.3, 6.0)
+
+
 def natural(x, y):
     """The land, with the road's shelf (_natural), and the Drift Cave's ledge in the crater."""
     h = _natural(x, y)
+    bx, by, br, bz, bb = GATE_BAY
+    e = math.hypot(x - bx, y - by) - br
+    if e < bb:
+        h = lerp(bz, h, smooth(e / bb)) if h > bz else h
     # (The frontier town's ground, level under the rim: a pad falling gently south.)
     x0, x1, y0, y1, b = TOWN_PAD
     e = math.hypot(max(0.0, x0 - x, x - x1), max(0.0, y0 - y, y - y1))
