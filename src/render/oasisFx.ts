@@ -69,11 +69,12 @@ export function createBoatView(parent: THREE.Object3D, c: BoatConfig): BoatView 
   const deck = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 3.6), deckMat);
   deck.position.set(0, 0.55, -0.2);
   body.add(deck);
-  // The mast and a lateen sail on a long slanted yard.
+  // The mast and a lateen sail on a long slanted yard; or (a rowing boat) the oars,
+  // crates of cargo lashed amidships and a lantern on a pole at the stern.
+  const row = c.rig === "row";
   const mastMat = new THREE.MeshLambertMaterial({ color: 0x5a3a20 });
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 5.2, 5), mastMat);
   mast.position.set(0, 3.1, 0.4);
-  body.add(mast);
   const tex = sailTexture(c.colors);
   const sailMat = new THREE.MeshLambertMaterial({ map: tex, side: THREE.DoubleSide });
   const sailGeo = new THREE.BufferGeometry();
@@ -85,7 +86,41 @@ export function createBoatView(parent: THREE.Object3D, c: BoatConfig): BoatView 
   sailGeo.computeVertexNormals();
   const sail = new THREE.Mesh(sailGeo, sailMat);
   sail.position.x = 0.15;
-  body.add(sail);
+  const oars: THREE.Object3D[] = [];
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffc46a });
+  if (!row) body.add(mast, sail);
+  else {
+    const oarGeo = new THREE.BoxGeometry(2.6, 0.06, 0.12).translate(1.3, 0, 0);
+    for (const side of [-1, 1])
+      for (const at of [0.9, -0.5]) {
+        const pivot = new THREE.Group();
+        pivot.position.set(side * 1.05, 0.95, at);
+        const oar = new THREE.Mesh(oarGeo, mastMat);
+        oar.rotation.y = side < 0 ? Math.PI : 0;
+        oar.rotation.z = side * -0.35;
+        pivot.add(oar);
+        pivot.userData.side = side;
+        body.add(pivot);
+        oars.push(pivot);
+      }
+    const crateGeo = new THREE.BoxGeometry(0.8, 0.6, 0.8);
+    for (const [x, z, y] of [
+      [0.25, 0.3, 0.9],
+      [-0.3, -0.4, 0.9],
+      [0.0, -0.05, 1.35],
+    ] as const) {
+      const crate = new THREE.Mesh(crateGeo, deckMat);
+      crate.position.set(x, y, z);
+      crate.rotation.y = x * 2;
+      body.add(crate);
+    }
+    // (all of it under 1.7 m: it rows under the harbour bridge's arch)
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.0, 4), mastMat);
+    pole.position.set(0, 1.1, -2.2);
+    const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 0.28), glowMat);
+    lamp.position.set(0, 1.6, -2.2);
+    body.add(pole, lamp);
+  }
   root.scale.setScalar(c.scale);
   parent.add(root);
   const pos = new THREE.Vector3();
@@ -97,8 +132,13 @@ export function createBoatView(parent: THREE.Object3D, c: BoatConfig): BoatView 
       root.position.set(s.x, s.y, s.z);
       root.rotation.set(0, s.heading, 0);
       body.rotation.set(s.pitch, 0, s.heel);
-      // The sail bellies a little in the gusts.
+      // The sail bellies a little in the gusts; the oars sweep, dip and lift.
       sail.rotation.y = 0.18 + 0.06 * Math.sin(t * 1.1 + c.start);
+      for (const o of oars) {
+        const k = t * 2.2 + c.start;
+        o.rotation.y = 0.5 * Math.sin(k) * o.userData.side;
+        o.rotation.z = 0.12 * Math.cos(k);
+      }
       pos.set(s.x, s.y, s.z);
       view.heading = s.heading;
     },
@@ -107,7 +147,7 @@ export function createBoatView(parent: THREE.Object3D, c: BoatConfig): BoatView 
       root.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
-      [hullMat, trimMat, deckMat, mastMat, sailMat].forEach((m) => m.dispose());
+      [hullMat, trimMat, deckMat, mastMat, sailMat, glowMat].forEach((m) => m.dispose());
       tex.dispose();
     },
   };

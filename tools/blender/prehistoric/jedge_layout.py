@@ -45,7 +45,15 @@ DOCK_Z = -24.0
 DOCK_FLOOR = DOCK_Z - 0.6
 DOCK_WATER = DOCK_Z - 2.0
 BASIN = (-46.0, -302.0, 22.0)  # the harbour's black water (west of the quay)
-CANAL = (-300.0, 3.5, -26.0, 50.0)  # y, half width, from x, to x (under the bridge)
+CANAL = (-300.0, 5.0, -26.0, 49.0)  # y, half width, from x, to x: the harbour's outflow, under the bridge
+# The harbour's water (Blake, Nov 4: "theres a harbor that makes no sense. the boats are
+# passing through bridges, the river is coming from no where"): the sea leaks in through a
+# crack in the roof over the basin's west side (SEA_LEAK: x, y, the crack's height), and
+# runs out east down the canal, under the road's stone bridge, over a weir (WEIR_X) into
+# the sump pool, and away through the iron water gate in the cavern's east wall.
+SEA_LEAK = (-60.0, -304.0, -11.0)
+WEIR_X = 41.0
+SUMP_DROP = 2.4  # (the sump pool under the weir: how far below the harbour's water)
 BAZAAR = (108.0, -140.0, 46.0, 66.0)
 BAZ_Z = -33.0
 BAZ_FLOOR = BAZ_Z - 0.6
@@ -106,11 +114,11 @@ ROUTE = [
     # The Smugglers' Docks: up the quay, over the canal, out past the warehouses.
     (-20.0, -352.0, DOCK_Z, "dock0"),
     (-5.0, -332.0, DOCK_Z, "quay"),
-    (-3.0, -318.0, DOCK_Z + 0.2, "canal_in"),
-    # (the canal's hump-backed bridge: up and over, the boats under it)
-    (-3.0, -305.5, DOCK_Z + 0.8, "canal_a"),
-    (-3.0, -300.0, DOCK_Z + 1.1, "canal"),
-    (-3.0, -294.5, DOCK_Z + 0.8, "canal_b"),
+    (-3.0, -318.0, DOCK_Z + 0.5, "canal_in"),
+    # (the canal's stone bridge: up and over an arch the boats row under)
+    (-3.0, -305.5, DOCK_Z + 1.3, "canal_a"),
+    (-3.0, -300.0, DOCK_Z + 1.7, "canal"),
+    (-3.0, -294.5, DOCK_Z + 1.3, "canal_b"),
     (-1.0, -281.0, DOCK_Z - 0.1, "dock1"),
     (16.0, -262.0, DOCK_Z - 0.9, "dock2"),
     (36.0, -252.0, DOCK_Z - 1.6, "dock3"),

@@ -1067,6 +1067,20 @@ def lantern_glow():
     return paint(f)
 
 
+def water_glint():
+    # Lantern light broken up on black water (the Edge of the World's harbour): short
+    # warm streaks across, brightest in the middle, the dark between them (seen through).
+    a = noise(6, 2, 1563)
+
+    def f(x, y):
+        streak = (y % 5 == 0 or y % 7 == 3) and a(x, y) > 0.35
+        if not streak:
+            return "#0a0806"
+        return pick(["#ff9a3a", "#ffc058", "#ffe09a"], a(x, y + 3))
+
+    return paint(f)
+
+
 def tiki_wood():
     # Carved tiki posts: warm wood, with bands of eyes, mouths and zigzags.
     pal = ["#6a3a1c", "#844a24", "#9a5a2e", "#b06c38"]
@@ -5260,6 +5274,8 @@ MATERIALS = [
     ("party_white", "Party White", "beach_party", "wall", party_white, 2, None),
     ("party_blue", "Party Blue", "beach_party", "wall", party_blue, 2, None),
     ("lantern_glow", "Paper Lantern", "beach_party", "wall", lantern_glow, 1, {"scrollU": 0, "scrollV": 0, "glow": 0.6}),
+    ("water_glint", "Lantern Glints on Water", "beach_party", "wall", water_glint, 3,
+     {"scrollU": 0.03, "scrollV": 0, "wave": 0.08, "wavePeriod": 2.2, "opacity": 0.5, "glow": 1.0}),
     ("tiki_wood", "Tiki Wood", "beach_party", "wall", tiki_wood, 2, None),
     ("dino_scales", "Dino Scales", "beach_party", "wall", dino_scales, 1, None),
     ("valley_road", "Valley Road", "river_valley", "road", valley_road, 4, None),

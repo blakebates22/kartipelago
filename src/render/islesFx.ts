@@ -694,17 +694,33 @@ export interface CraneView {
   dispose(): void;
 }
 
-/** A crane's rope and the sandstone block it raises and lowers, swaying a little. */
+/** A crane's rope and the load it raises and lowers, swaying a little: a sandstone block,
+ * a crate, or a bulging cargo net. A slewing crane draws its own jib, swinging round. */
 export function createCraneView(parent: THREE.Object3D, c: CraneConfig): CraneView {
   const mats: THREE.Material[] = [];
   const ropeGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 4).translate(0, -0.5, 0);
-  const blockGeo = new THREE.BoxGeometry(1.8, 1.4, 1.8);
+  const blockGeo =
+    c.load === "net"
+      ? new THREE.IcosahedronGeometry(1.0, 1).scale(1, 0.85, 1)
+      : c.load === "crate"
+        ? new THREE.BoxGeometry(1.6, 1.3, 1.6)
+        : new THREE.BoxGeometry(1.8, 1.4, 1.8);
+  const color = c.load === "net" ? "#6e5a3a" : c.load === "crate" ? "#9a6a3a" : "#e4ae82";
   const rope = new THREE.Mesh(ropeGeo, lam(mats, "#4a3420"));
-  const block = new THREE.Mesh(blockGeo, lam(mats, "#e4ae82"));
+  const block = new THREE.Mesh(blockGeo, lam(mats, color));
   parent.add(rope, block);
+  const jibGeo = new THREE.BoxGeometry(0.5, 0.5, 1).translate(0, 0, -0.5);
+  const jib = c.slew > 0 ? new THREE.Mesh(jibGeo, lam(mats, "#5a3e26")) : undefined;
+  if (jib) {
+    jib.position.set(c.x, c.y, c.z);
+    jib.scale.set(1, 1, c.reach + 2);
+    parent.add(jib);
+  }
   return {
     update(t) {
       const l = craneLoad(c, t);
+      // (The jib's tip at -Z, turned to the heading: game yaw, tip at x + sin, z - cos.)
+      if (jib) jib.rotation.y = -l.heading;
       rope.position.set(l.tip.x, l.tip.y, l.tip.z);
       rope.scale.set(1, l.rope, 1);
       // (Tilted toward the swaying block.)
@@ -719,8 +735,10 @@ export function createCraneView(parent: THREE.Object3D, c: CraneConfig): CraneVi
     dispose() {
       rope.removeFromParent();
       block.removeFromParent();
+      jib?.removeFromParent();
       ropeGeo.dispose();
       blockGeo.dispose();
+      jibGeo.dispose();
       for (const m of mats) m.dispose();
     },
   };

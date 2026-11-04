@@ -6,6 +6,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { airAt, parseAtmosphere } from "../src/game/depths";
+import { craneHeading, craneLoad, parseCrane } from "../src/game/isles";
+import { boatAt, parseBoat } from "../src/game/oasis";
 
 type Entity = { type: string } & Record<string, unknown>;
 type P = { x: number; y: number; z: number };
@@ -76,9 +78,46 @@ describe("the Edge of the World", () => {
     expect(of("motes").length).toBeGreaterThanOrEqual(12);
     expect(of("pterosaur").length).toBeGreaterThanOrEqual(3);
     expect(of("birds").length).toBeGreaterThanOrEqual(4);
-    expect(of("waterfall")).toHaveLength(1);
+    // (the sea pouring off the edge over the Long Bore's mouth, and the sea leak in the docks)
+    expect(of("waterfall")).toHaveLength(2);
     const flags = of("prayer_flags")[0]!.lines as unknown[];
     expect(flags.length).toBeGreaterThanOrEqual(20);
     expect(of("bells")[0]!.list as unknown[]).toHaveLength(4);
+  });
+
+  it("has a harbour that makes sense (Blake, Nov 4): its water in and out, boats under the bridge", () => {
+    expect(of("zipper")).toHaveLength(0);
+    // (rowing boats, no masts, on one round under the bridge's arch)
+    const round = routes.routes.find((r) => r.id === "Harbour Boat Round")!;
+    const rowers = of("boat").filter((e) => e.route === "Harbour Boat Round");
+    expect(rowers.length).toBe(4);
+    const b = parseBoat(rowers[0]!, routes.routes as never)!;
+    expect(b.rig).toBe("row");
+    expect(boatAt(b, 3).heel).toBeLessThan(0.06);
+    // (where the round passes under the road, Blender (-3, y): the bridge is over it, at
+    // least 2.8 m of road over the water: its arch 1.7 m up, over the boats)
+    const under = round.points.filter((p) => Math.abs(p.x + 3) < 1.5);
+    expect(under.length).toBeGreaterThan(0);
+    for (const p of under) {
+      const bridge = routes.routes
+        .find((r) => r.id === "main")!
+        .points.filter((q) => Math.hypot(q.x - p.x, q.z - p.z) < 6);
+      expect(bridge.length).toBeGreaterThan(0);
+      expect(Math.min(...bridge.map((q) => q.y)) - p.y).toBeGreaterThan(2.8);
+    }
+    // (the crane slewing out over the road with its crate, high over the karts)
+    const slewing = of("crane")
+      .map((e) => parseCrane(e))
+      .filter((c) => c.slew > 0);
+    expect(slewing).toHaveLength(1);
+    const c = slewing[0]!;
+    expect(c.load).toBe("crate");
+    expect(Math.abs(craneHeading(c, c.slewPeriod / 4) - craneHeading(c, 0))).toBeGreaterThan(0.5);
+    expect(craneLoad(c, c.period / 2).block.y).toBeGreaterThan(-18);
+    // (cargo nets and crates going up and down on the pulleys)
+    expect(of("crane").filter((e) => e.load === "net").length).toBeGreaterThanOrEqual(2);
+    // (the sea leak's light and the bridge's lanterns light the water)
+    expect(of("glow").length).toBeGreaterThanOrEqual(8);
+    expect(of("mist").length).toBeGreaterThanOrEqual(8);
   });
 });

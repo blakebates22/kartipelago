@@ -5519,6 +5519,39 @@
       }
     },
     {
+      "id": "harbour_flow",
+      "name": "Harbour Water, Flowing",
+      "theme": "beach_party",
+      "surface": "deep_water",
+      "image": "dark_pool.png",
+      "wrap": "repeat",
+      "tileMetres": 6,
+      "fx": {
+        "scrollU": 0,
+        "scrollV": 0.06,
+        "wave": 0.03,
+        "wavePeriod": 4,
+        "glow": 0.3
+      }
+    },
+    {
+      "id": "water_glint",
+      "name": "Lantern Glints on Water",
+      "theme": "beach_party",
+      "surface": "wall",
+      "image": "water_glint.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": {
+        "scrollU": 0.03,
+        "scrollV": 0,
+        "wave": 0.08,
+        "wavePeriod": 2.2,
+        "opacity": 0.5,
+        "glow": 1.0
+      }
+    },
+    {
       "id": "tiki_wood",
       "name": "Tiki Wood",
       "theme": "beach_party",

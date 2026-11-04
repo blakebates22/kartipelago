@@ -6,6 +6,9 @@
  *             "colors": ["#e02a2a", "#f6c03a"], "scale": 1 }
  *             A little sailing boat going round a path from route.json (drawn in
  *             Blender as a curve on the water), bobbing and heeling, a wake behind it.
+ *             With "rig": "row" it's a rowing boat instead: no mast (it fits under a
+ *             bridge), oars sweeping, crates of cargo, a lantern on a pole at the stern
+ *             (the Edge of the World's smugglers' boats).
  *   fountain  { "type": "fountain", "x", "y", "z", "height": 6, "jets": 6,
  *             "radius": 3.5 }: jets of spray: one straight up `height` metres, and a
  *             ring of `jets` arcing out to land `radius` metres away (the basin is
@@ -28,6 +31,8 @@ export interface BoatConfig {
   start: number;
   colors: string[];
   scale: number;
+  /** "sail": the mast and a lateen sail; "row": oars, cargo and a stern lantern. */
+  rig: "sail" | "row";
 }
 
 export function parseBoat(
@@ -52,6 +57,7 @@ export function parseBoat(
     start: num(e.start, 0),
     colors: colors.length ? colors : ["#e02a2a", "#f6f2e6"],
     scale: Math.max(0.3, num(e.scale, 1)),
+    rig: e.rig === "row" ? "row" : "sail",
   };
 }
 
@@ -75,7 +81,8 @@ export function boatAt(c: BoatConfig, t: number) {
     y: a.y + (b.y - a.y) * f + 0.12 * Math.sin(t * 1.6 + ph),
     z,
     heading,
-    heel: 0.12 + 0.05 * Math.sin(t * 0.9 + ph),
+    // (A sail heels it over; a rowing boat sits level, rocking.)
+    heel: (c.rig === "row" ? 0 : 0.12) + 0.05 * Math.sin(t * 0.9 + ph),
     pitch: 0.04 * Math.sin(t * 1.3 + ph * 2),
   };
 }

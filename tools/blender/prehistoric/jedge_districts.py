@@ -121,59 +121,18 @@ def grotto(c, ground, taken):
 
 
 def docks(c, ground, taken):
-    """The black-water harbour: the basin and the canal, the quay's cranes swinging loads
-    off the moored ships, boats coming and going, warehouses and the Customs House, crates
-    stacked everywhere, dockhands hauling, the fish market, steam off the water."""
+    """The black-water harbour (jedge_harbour: the water, its quays, the sea leak, the weir
+    and the water gate, the stone bridge, the ships, the rowing boats, the stilt shacks),
+    the quay's cranes hauling nets and crates off the moored ships, warehouses and the
+    Customs House, crates stacked everywhere, dockhands hauling, the fish market, mist."""
+    import sys
+    import jedge_harbour as H
+
     bx, by, br = BASIN
     cy, hw, cx0, cx1 = CANAL
-    taken.add(bx, by, br + 1.0)
-    # The water: the basin and the canal (deep: a fall in puts you back).
-    c.disc("Harbour", bx, by, br + 1.5, DOCK_WATER, c.lib("dark_pool", "water"), role="visual", n=36, wobble=0.06, seed=4)
-    bm = bmesh.new()
-    vs = [bm.verts.new(p) for p in ((cx0 - 2.0, cy - hw - 1.0, DOCK_WATER), (cx1, cy - hw - 1.0, DOCK_WATER),
-                                    (cx1, cy + hw + 1.0, DOCK_WATER), (cx0 - 2.0, cy + hw + 1.0, DOCK_WATER))]
-    bm.faces.new(vs)
-    c.assign(c.mesh_object("Canal", bm, "Water", "visual"), c.lib("dark_pool", "water"))
-    # The quay's edge: timber all round the basin, bollards, ladders.
-    for j in range(28):
-        a = j * math.tau / 28
-        x, y = bx + (br + 0.6) * math.cos(a), by + (br + 0.6) * math.sin(a)
-        if abs(y - cy) < hw + 1.0 and x > bx:
-            continue
-        box(c, "Quay Edge %d" % j, x, y, 2.6, 0.8, DOCK_WATER - 1.5, DOCK_FLOOR + 0.25, ("wood_dock", "wall"), rot=a + math.pi / 2)
-        if j % 3 == 0:
-            cone(c, "Bollard %d" % j, x + 1.2 * math.cos(a), y + 1.2 * math.sin(a), 0.35, DOCK_FLOOR, 0.9, ("iron", "wall"), segs=6,
-                 role="visual")
-    for sd in (-1, 1):
-        for x in range(int(cx0) + 2, int(cx1) - 2, 4):
-            if abs(x - 0.0) < 12.0:
-                continue
-            box(c, "Canal Edge %d %d" % (sd, x), x, cy + sd * (hw + 0.4), 2.0, 0.8, DOCK_WATER - 1.5, DOCK_FLOOR + 0.25,
-                ("wood_dock", "wall"))
-    # The ships moored round the basin, gangplanks to the quay, lanterns at their sterns.
-    for j, (a, rot) in enumerate(((2.3, 0.7), (3.4, 1.9), (4.4, 2.9), (1.5, -0.3))):
-        x, y = bx + (br - 7.0) * math.cos(a), by + (br - 7.0) * math.sin(a)
-        rot = a + math.pi / 2
-        box(c, "Smuggler Ship %d" % j, x, y, 10.0, 3.0, DOCK_WATER - 2.0, DOCK_WATER + 2.6, ("ship_hull", "wall"), rot=rot, role="visual")
-        box(c, "Smuggler Ship Deck %d" % j, x, y, 10.2, 3.2, DOCK_WATER + 2.6, DOCK_WATER + 2.9, ("plank_deck", "wall"), rot=rot,
-            role="visual")
-        c.place(tp.mast(c, h=14.0), x, y, DOCK_WATER + 2.8, rot=rot, role="visual")
-        ca, sa = math.cos(rot), math.sin(rot)
-        cloth(c, "Ship Sail %d" % j, [(x - 3.0 * sa, y + 3.0 * ca, DOCK_WATER + 15.0), (x + 3.0 * sa, y - 3.0 * ca, DOCK_WATER + 15.0),
-                                      (x + 3.4 * sa, y - 3.4 * ca, DOCK_WATER + 7.0), (x - 3.4 * sa, y + 3.4 * ca, DOCK_WATER + 7.0)],
-              ("canvas_torn", "sail_red", "wreck_sail", "sail_cloth")[j])
-        gx, gy = bx + (br + 1.5) * math.cos(a), by + (br + 1.5) * math.sin(a)
-        box(c, "Gangplank %d" % j, lerp(x, gx, 0.5), lerp(y, gy, 0.5), 0.6, 4.0, DOCK_WATER + 2.6, DOCK_FLOOR + 0.1, ("plank_deck", "wall"),
-            rot=a + math.pi / 2, role="visual")
-        light(c, "lantern", x + 9.0 * ca, y + 9.0 * sa, DOCK_WATER + 5.0)
-        for k in range(3):
-            px, py = lerp(x, gx, 0.2 + 0.3 * k), lerp(y, gy, 0.2 + 0.3 * k)
-            person(c, px, py, DOCK_WATER + 2.9 if k == 0 else DOCK_FLOOR + 0.1, "hauler", gx if k % 2 else x, gy if k % 2 else y)
-    # Boats on the black water, coming and going.
-    for k, (r, sp, start) in enumerate(((11.0, 2.2, 0.0), (15.5, 1.7, 40.0))):
-        pts = [(bx + r * math.cos(i * math.tau / 16), by + r * 0.8 * math.sin(i * math.tau / 16)) for i in range(16)]
-        c.path_curve("Boat Path %d" % (k + 1), pts, z=DOCK_WATER, closed=True)
-        c.entity("boat", route="Boat Path %d" % (k + 1), speed=sp, start=start, colors=["#3a2a22", "#8a2a22"], scale=1.2)
+    # The harbour's water, its quays, the sea leak, the weir and the water gate, the stone
+    # bridge, the ships and the boats (jedge_harbour: Blake, Nov 4).
+    H.harbour(c, ground, taken, sys.modules[__name__])
     # The cranes on the quay (between the road and the water), jibs over the basin.
     for j, (x, y) in enumerate(((-18.0, -334.0), (-19.0, -314.0), (-22.0, -280.0))):
         z = ground(x, y)
@@ -186,7 +145,7 @@ def docks(c, ground, taken):
         box(c, "Crane Cab %d" % j, x, y, 2.2, 2.2, z + 11.0, z + 14.0, ("wreck_planks", "wall"), rot=a, role="visual")
         g = c.game(x, y, z + 15.0)
         c.entity("crane", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(math.pi / 2 - a, 3), reach=reach,
-                 drop=round(15.0 - (DOCK_WATER - z) - 1.0, 1), swing=0.6, period=round(9.0 + 2.5 * j, 1))
+                 drop=round(15.0 - (DOCK_WATER - z) - 1.0, 1), swing=0.6, period=round(9.0 + 2.5 * j, 1), load="net" if j % 2 else "crate")
         taken.add(x, y, 2.5)
         for k in range(3):
             px, py = x + 2.8 * math.cos(a + 2.2 + k), y + 2.8 * math.sin(a + 2.2 + k)
@@ -259,16 +218,15 @@ def docks(c, ground, taken):
         x, y = bx + (br + 1.4) * math.cos(a), by + (br + 1.4) * math.sin(a)
         if paint.road_clear(c, x, y, 2.0) and taken.clear(x, y, 0.6):
             person(c, x, y, DOCK_FLOOR + 0.2, "fisher", bx, by)
-    for j in range(8):
-        a = j * math.tau / 8 + 0.3
-        light(c, "steam", bx + br * 0.6 * math.cos(a), by + br * 0.6 * math.sin(a), DOCK_WATER + 0.4)
-    # Lamps on posts along the quay, a fire for the dockhands.
-    for j in range(14):
-        a = j * math.tau / 14 + 0.1
-        x, y = DOCKS[0] + DOCKS[2] * 0.86 * math.cos(a), DOCKS[1] + DOCKS[3] * 0.86 * math.sin(a)
-        if ok(c, taken, x, y, 0.8, 2.0) and not L.in_water(x, y):
-            c.place(gp.lantern_post(c, green=j % 4 == 0), x, y, ground(x, y), rot=a, role="visual")
-            light(c, "lantern", x, y, ground(x, y) + 3.2)
+    # (a low mist over the black water, not puffs of steam)
+    for j in range(3):
+        a = j * math.tau / 3 + 0.3
+        g = c.game(bx + br * 0.5 * math.cos(a), by + br * 0.5 * math.sin(a), DOCK_WATER + 0.6)
+        c.entity("mist", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=12.0, rate=2.5, color="#8aa4a0")
+    # The shacks on stilts round the walls, their walkways and pulleys (they keep off the
+    # warehouses and the market, so after them).
+    print("stilt shacks: %d" % H.stilts(c, ground, taken))
+    # A fire for the dockhands.
     x, y = 12.0, -326.0
     if ok(c, taken, x, y, 2.0, 2.0):
         z = ground(x, y)
@@ -277,13 +235,6 @@ def docks(c, ground, taken):
             a = k * math.tau / 6
             person(c, x + 2.4 * math.cos(a), y + 2.4 * math.sin(a), z, "huddle", x, y)
         taken.add(x, y, 3.2)
-    # Hulls of old wrecks set into the cavern's walls (the docks' oldest warehouses).
-    for k, a in enumerate((0.9, 2.0, 4.1, 5.4)):
-        x, y = DOCKS[0] + DOCKS[2] * 0.95 * math.cos(a), DOCKS[1] + DOCKS[3] * 0.95 * math.sin(a)
-        if paint.road_clear(c, x, y, 7.0):
-            z = ground(x, y)
-            box(c, "Wall Hull %d" % k, x, y, 13.0, 3.6, z - 2.0, z + 8.0, ("wreck_hull", "wall"), rot=a + math.pi / 2)
-            light(c, "lantern", x - 4.5 * math.cos(a), y - 4.5 * math.sin(a), z + 6.0)
     # Along the quay road: lantern strings across it, cargo stacked by it, dockhands at it.
     s_in = sorted((q for q in c.S if ellipse(q.p.x, q.p.y, *DOCKS) < 0.9 and abs(q.p.z - DOCK_FLOOR) < 2.5), key=lambda q: q.s)
     if s_in:

@@ -486,6 +486,12 @@ export interface CraneConfig extends Vec3 {
   drop: number;
   swing: number;
   period: number;
+  /** What it hauls: a quarry's sandstone block, a smuggler's crate, a cargo net. */
+  load: "block" | "crate" | "net";
+  /** How far the jib slews either way, radians (0: it holds still; the jib is then the
+   * Blender model's, otherwise the crane draws its own), and how long a swing takes. */
+  slew: number;
+  slewPeriod: number;
 }
 
 export function parseCrane(e: Record<string, unknown>): CraneConfig {
@@ -498,15 +504,24 @@ export function parseCrane(e: Record<string, unknown>): CraneConfig {
     drop: Math.max(2.5, num(e.drop, 10)),
     swing: num(e.swing, 0.5),
     period: Math.max(2, num(e.period, 10)),
+    load: e.load === "crate" || e.load === "net" ? e.load : "block",
+    slew: Math.max(0, num(e.slew, 0)),
+    slewPeriod: Math.max(4, num(e.slewPeriod, 16)),
   };
+}
+
+/** Which way the jib points at time t (game yaw): its heading, slewing either way. */
+export function craneHeading(c: CraneConfig, t: number): number {
+  return c.heading + c.slew * Math.sin((t / c.slewPeriod) * Math.PI * 2);
 }
 
 /** The crane's load at time t: where the rope hangs from, and the block's centre. */
 export function craneLoad(c: CraneConfig, t: number) {
+  const h = craneHeading(c, t);
   const tip = {
-    x: c.x + Math.sin(c.heading) * c.reach,
+    x: c.x + Math.sin(h) * c.reach,
     y: c.y,
-    z: c.z - Math.cos(c.heading) * c.reach,
+    z: c.z - Math.cos(h) * c.reach,
   };
   const k = 0.5 - 0.5 * Math.cos((t / c.period) * Math.PI * 2);
   const rope = 2 + (c.drop - 2) * k;
@@ -514,10 +529,11 @@ export function craneLoad(c: CraneConfig, t: number) {
   return {
     tip,
     rope,
+    heading: h,
     block: {
-      x: tip.x + Math.cos(c.heading) * sway,
+      x: tip.x + Math.cos(h) * sway,
       y: tip.y - rope - 0.8,
-      z: tip.z + Math.sin(c.heading) * sway,
+      z: tip.z + Math.sin(h) * sway,
     },
   };
 }

@@ -25,59 +25,221 @@
       "talk": "docks"
     },
     {
+      "id": "waterfall_01",
+      "type": "waterfall",
+      "x": -60.0,
+      "y": -26.0,
+      "z": 303.0,
+      "top": 15.0,
+      "width": 5.0,
+      "heading": 0
+    },
+    {
+      "id": "mist_01",
+      "type": "mist",
+      "x": -60.0,
+      "y": -25.4,
+      "z": 303.0,
+      "radius": 9.0,
+      "rate": 7.0,
+      "color": "#c8dcd8"
+    },
+    {
+      "id": "mist_02",
+      "type": "mist",
+      "x": -60.0,
+      "y": -23.0,
+      "z": 303.0,
+      "radius": 14.0,
+      "rate": 3.0,
+      "color": "#c8dcd8"
+    },
+    {
+      "id": "motes_01",
+      "type": "motes",
+      "x": -60.0,
+      "y": -18.5,
+      "z": 303.0,
+      "radius": 6.0,
+      "rate": 10.0,
+      "color": "#bff4ea",
+      "rise": -0.15,
+      "size": 0.16,
+      "blink": false
+    },
+    {
+      "id": "glow_01",
+      "type": "glow",
+      "x": -60.0,
+      "y": -24.0,
+      "z": 303.0,
+      "color": "#5ad8c8"
+    },
+    {
+      "id": "mist_03",
+      "type": "mist",
+      "x": 42.5,
+      "y": -28.0,
+      "z": 300.0,
+      "radius": 6.0,
+      "rate": 4.0,
+      "color": "#c8dcd8"
+    },
+    {
+      "id": "torch_01",
+      "type": "torch",
+      "x": 48.8,
+      "y": -17.5,
+      "z": 306.6
+    },
+    {
+      "id": "torch_02",
+      "type": "torch",
+      "x": 48.8,
+      "y": -17.5,
+      "z": 293.4
+    },
+    {
       "id": "lantern_01",
       "type": "lantern",
-      "x": -62.71,
-      "y": -21.0,
-      "z": 296.81
+      "x": -12.8,
+      "y": -19.46,
+      "z": 307.6
     },
     {
       "id": "lantern_02",
       "type": "lantern",
-      "x": -58.2,
-      "y": -21.0,
-      "z": 314.53
+      "x": -12.8,
+      "y": -19.57,
+      "z": 292.4
     },
     {
       "id": "lantern_03",
       "type": "lantern",
-      "x": -42.05,
-      "y": -21.0,
-      "z": 319.04
+      "x": 6.8,
+      "y": -19.46,
+      "z": 307.6
     },
     {
       "id": "lantern_04",
       "type": "lantern",
-      "x": -53.92,
-      "y": -21.0,
-      "z": 286.4
+      "x": 6.8,
+      "y": -19.57,
+      "z": 292.4
+    },
+    {
+      "id": "glow_02",
+      "type": "glow",
+      "x": 6.4,
+      "y": -24.0,
+      "z": 300.0,
+      "color": "#ffb060"
+    },
+    {
+      "id": "glow_03",
+      "type": "glow",
+      "x": -12.4,
+      "y": -24.0,
+      "z": 300.0,
+      "color": "#ffb060"
+    },
+    {
+      "id": "lantern_05",
+      "type": "lantern",
+      "x": -40.18,
+      "y": -19.8,
+      "z": 282.96
+    },
+    {
+      "id": "lantern_06",
+      "type": "lantern",
+      "x": -56.14,
+      "y": -19.8,
+      "z": 285.36
+    },
+    {
+      "id": "lantern_07",
+      "type": "lantern",
+      "x": -59.58,
+      "y": -19.8,
+      "z": 317.18
     },
     {
       "id": "boat_01",
       "type": "boat",
-      "route": "Boat Path 1",
-      "speed": 2.2,
+      "route": "Harbour Boat Round",
+      "speed": 2.1,
       "start": 0.0,
+      "rig": "row",
       "colors": [
-        "#3a2a22",
-        "#8a2a22"
+        "#2a5a4a",
+        "#d8c8a0"
       ],
-      "scale": 1.2
+      "scale": 0.8
     },
     {
       "id": "boat_02",
       "type": "boat",
-      "route": "Boat Path 2",
-      "speed": 1.7,
-      "start": 40.0,
+      "route": "Harbour Boat Round",
+      "speed": 2.25,
+      "start": 52.0,
+      "rig": "row",
       "colors": [
-        "#3a2a22",
-        "#8a2a22"
+        "#7a2a22",
+        "#d8c8a0"
       ],
-      "scale": 1.2
+      "scale": 0.8
+    },
+    {
+      "id": "boat_03",
+      "type": "boat",
+      "route": "Harbour Boat Round",
+      "speed": 2.1,
+      "start": 104.0,
+      "rig": "row",
+      "colors": [
+        "#3a3a5a",
+        "#d8c8a0"
+      ],
+      "scale": 0.8
+    },
+    {
+      "id": "boat_04",
+      "type": "boat",
+      "route": "Harbour Boat Round",
+      "speed": 2.25,
+      "start": 156.0,
+      "rig": "row",
+      "colors": [
+        "#6a4a1a",
+        "#d8c8a0"
+      ],
+      "scale": 0.8
     },
     {
       "id": "crane_01",
+      "type": "crane",
+      "x": 13.0,
+      "y": -10.25,
+      "z": 289.0,
+      "heading": -1.571,
+      "reach": 17.0,
+      "drop": 5.0,
+      "swing": 0.25,
+      "period": 14.0,
+      "load": "crate",
+      "slew": 0.85,
+      "slewPeriod": 22.0
+    },
+    {
+      "id": "lantern_08",
+      "type": "lantern",
+      "x": 11.4,
+      "y": -12.65,
+      "z": 289.0
+    },
+    {
+      "id": "crane_02",
       "type": "crane",
       "x": -18.0,
       "y": -9.33,
@@ -86,234 +248,439 @@
       "reach": 11.0,
       "drop": 15.7,
       "swing": 0.6,
-      "period": 9.0
-    },
-    {
-      "id": "crane_02",
-      "type": "crane",
-      "x": -19.0,
-      "y": -9.24,
-      "z": 314.0,
-      "heading": -1.153,
-      "reach": 11.0,
-      "drop": 15.8,
-      "swing": 0.6,
-      "period": 11.5
+      "period": 9.0,
+      "load": "crate"
     },
     {
       "id": "crane_03",
       "type": "crane",
+      "x": -19.0,
+      "y": -9.04,
+      "z": 314.0,
+      "heading": -1.153,
+      "reach": 11.0,
+      "drop": 16.0,
+      "swing": 0.6,
+      "period": 11.5,
+      "load": "net"
+    },
+    {
+      "id": "crane_04",
+      "type": "crane",
       "x": -22.0,
-      "y": -9.38,
+      "y": -9.36,
       "z": 280.0,
       "heading": 3.72,
       "reach": 11.0,
       "drop": 15.6,
       "swing": 0.6,
-      "period": 14.0
+      "period": 14.0,
+      "load": "crate"
     },
     {
-      "id": "lantern_05",
+      "id": "lantern_09",
       "type": "lantern",
       "x": 44.8,
       "y": -19.6,
       "z": 319.87
     },
     {
-      "id": "lantern_06",
+      "id": "lantern_10",
       "type": "lantern",
       "x": 35.2,
       "y": -19.6,
       "z": 316.13
     },
     {
-      "id": "lantern_07",
+      "id": "lantern_11",
       "type": "lantern",
       "x": -37.49,
       "y": -19.6,
       "z": 269.12
     },
     {
-      "id": "lantern_08",
+      "id": "lantern_12",
       "type": "lantern",
       "x": -38.51,
       "y": -19.6,
       "z": 258.88
     },
     {
-      "id": "lantern_09",
+      "id": "lantern_13",
       "type": "lantern",
       "x": -12.0,
       "y": -19.58,
       "z": 263.15
     },
     {
-      "id": "lantern_10",
+      "id": "lantern_14",
       "type": "lantern",
       "x": -12.0,
       "y": -19.58,
       "z": 252.85
     },
     {
-      "id": "lantern_11",
+      "id": "lantern_15",
       "type": "lantern",
       "x": 35.02,
       "y": -19.6,
       "z": 287.05
     },
     {
-      "id": "lantern_12",
+      "id": "lantern_16",
       "type": "lantern",
       "x": 32.98,
       "y": -19.6,
       "z": 276.95
     },
     {
-      "id": "steam_01",
-      "type": "steam",
-      "x": -33.39,
-      "y": -25.6,
-      "z": 298.1
+      "id": "mist_04",
+      "type": "mist",
+      "x": -35.5,
+      "y": -25.4,
+      "z": 298.8,
+      "radius": 12.0,
+      "rate": 2.5,
+      "color": "#8aa4a0"
     },
     {
-      "id": "steam_02",
-      "type": "steam",
-      "x": -39.84,
-      "y": -25.6,
-      "z": 290.32
+      "id": "mist_05",
+      "type": "mist",
+      "x": -54.1,
+      "y": -25.4,
+      "z": 294.5,
+      "radius": 12.0,
+      "rate": 2.5,
+      "color": "#8aa4a0"
     },
     {
-      "id": "steam_03",
-      "type": "steam",
-      "x": -49.9,
-      "y": -25.6,
-      "z": 289.39
-    },
-    {
-      "id": "steam_04",
-      "type": "steam",
-      "x": -57.68,
-      "y": -25.6,
-      "z": 295.84
-    },
-    {
-      "id": "steam_05",
-      "type": "steam",
-      "x": -58.61,
-      "y": -25.6,
-      "z": 305.9
-    },
-    {
-      "id": "steam_06",
-      "type": "steam",
-      "x": -52.16,
-      "y": -25.6,
-      "z": 313.68
-    },
-    {
-      "id": "steam_07",
-      "type": "steam",
-      "x": -42.1,
-      "y": -25.6,
-      "z": 314.61
-    },
-    {
-      "id": "steam_08",
-      "type": "steam",
-      "x": -34.32,
-      "y": -25.6,
-      "z": 308.16
-    },
-    {
-      "id": "lantern_13",
-      "type": "lantern",
-      "x": 42.48,
-      "y": -23.58,
-      "z": 295.36
-    },
-    {
-      "id": "lantern_14",
-      "type": "lantern",
-      "x": -32.09,
-      "y": -21.4,
-      "z": 255.98
-    },
-    {
-      "id": "lantern_15",
-      "type": "lantern",
-      "x": -53.64,
-      "y": -21.4,
-      "z": 266.76
-    },
-    {
-      "id": "lantern_16",
-      "type": "lantern",
-      "x": -67.34,
-      "y": -21.4,
-      "z": 284.13
+      "id": "mist_06",
+      "type": "mist",
+      "x": -48.4,
+      "y": -25.4,
+      "z": 312.7,
+      "radius": 12.0,
+      "rate": 2.5,
+      "color": "#8aa4a0"
     },
     {
       "id": "lantern_17",
       "type": "lantern",
-      "x": -70.48,
-      "y": -21.4,
-      "z": 304.64
+      "x": 23.88,
+      "y": -20.79,
+      "z": 274.92
     },
     {
       "id": "lantern_18",
       "type": "lantern",
-      "x": -62.42,
-      "y": -21.4,
-      "z": 324.23
+      "x": -51.71,
+      "y": -20.0,
+      "z": 275.07
     },
     {
       "id": "lantern_19",
       "type": "lantern",
-      "x": -44.78,
-      "y": -21.4,
-      "z": 339.02
+      "x": -48.73,
+      "y": -20.0,
+      "z": 328.02
     },
     {
       "id": "lantern_20",
       "type": "lantern",
-      "x": 4.09,
-      "y": -20.63,
-      "z": 344.02
+      "x": -37.14,
+      "y": -19.99,
+      "z": 334.92
     },
     {
       "id": "lantern_21",
       "type": "lantern",
-      "x": 25.64,
-      "y": -21.4,
-      "z": 333.24
+      "x": 9.02,
+      "y": -19.37,
+      "z": 334.71
+    },
+    {
+      "id": "lantern_22",
+      "type": "lantern",
+      "x": 20.54,
+      "y": -20.0,
+      "z": 327.84
+    },
+    {
+      "id": "lantern_23",
+      "type": "lantern",
+      "x": 40.73,
+      "y": -17.0,
+      "z": 289.11
+    },
+    {
+      "id": "lantern_24",
+      "type": "lantern",
+      "x": 31.22,
+      "y": -17.67,
+      "z": 273.15
+    },
+    {
+      "id": "lantern_25",
+      "type": "lantern",
+      "x": -0.12,
+      "y": -16.95,
+      "z": 256.02
+    },
+    {
+      "id": "lantern_26",
+      "type": "lantern",
+      "x": -16.53,
+      "y": -17.0,
+      "z": 254.53
+    },
+    {
+      "id": "lantern_27",
+      "type": "lantern",
+      "x": -27.45,
+      "y": -17.0,
+      "z": 255.84
+    },
+    {
+      "id": "lantern_28",
+      "type": "lantern",
+      "x": -37.84,
+      "y": -17.0,
+      "z": 258.84
+    },
+    {
+      "id": "lantern_29",
+      "type": "lantern",
+      "x": -47.4,
+      "y": -17.0,
+      "z": 263.28
+    },
+    {
+      "id": "lantern_30",
+      "type": "lantern",
+      "x": -55.6,
+      "y": -17.0,
+      "z": 269.27
+    },
+    {
+      "id": "lantern_31",
+      "type": "lantern",
+      "x": -61.95,
+      "y": -17.0,
+      "z": 276.58
+    },
+    {
+      "id": "lantern_32",
+      "type": "lantern",
+      "x": -66.86,
+      "y": -17.0,
+      "z": 284.52
+    },
+    {
+      "id": "lantern_33",
+      "type": "lantern",
+      "x": -70.25,
+      "y": -17.0,
+      "z": 297.58
+    },
+    {
+      "id": "lantern_34",
+      "type": "lantern",
+      "x": -66.88,
+      "y": -17.0,
+      "z": 315.08
+    },
+    {
+      "id": "lantern_35",
+      "type": "lantern",
+      "x": -59.36,
+      "y": -17.0,
+      "z": 326.96
+    },
+    {
+      "id": "lantern_36",
+      "type": "lantern",
+      "x": -51.8,
+      "y": -17.0,
+      "z": 333.39
+    },
+    {
+      "id": "lantern_37",
+      "type": "lantern",
+      "x": -43.16,
+      "y": -17.0,
+      "z": 338.97
+    },
+    {
+      "id": "lantern_38",
+      "type": "lantern",
+      "x": -33.12,
+      "y": -16.59,
+      "z": 342.61
+    },
+    {
+      "id": "lantern_39",
+      "type": "lantern",
+      "x": 4.78,
+      "y": -16.49,
+      "z": 342.98
+    },
+    {
+      "id": "lantern_40",
+      "type": "lantern",
+      "x": 14.78,
+      "y": -16.96,
+      "z": 339.18
+    },
+    {
+      "id": "lantern_41",
+      "type": "lantern",
+      "x": 23.7,
+      "y": -17.0,
+      "z": 333.91
+    },
+    {
+      "id": "lantern_42",
+      "type": "lantern",
+      "x": 31.02,
+      "y": -17.0,
+      "z": 327.21
+    },
+    {
+      "id": "crane_05",
+      "type": "crane",
+      "x": 40.15,
+      "y": -16.3,
+      "z": 289.25,
+      "heading": 4.471,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 11.0,
+      "load": "net"
+    },
+    {
+      "id": "crane_06",
+      "type": "crane",
+      "x": -0.27,
+      "y": -16.25,
+      "z": 256.6,
+      "heading": 3.391,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 15.0,
+      "load": "crate"
+    },
+    {
+      "id": "crane_07",
+      "type": "crane",
+      "x": -27.31,
+      "y": -16.3,
+      "z": 256.42,
+      "heading": 2.9,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 13.0,
+      "load": "net"
+    },
+    {
+      "id": "crane_08",
+      "type": "crane",
+      "x": -47.04,
+      "y": -16.3,
+      "z": 263.77,
+      "heading": 2.508,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 11.0,
+      "load": "crate"
+    },
+    {
+      "id": "crane_09",
+      "type": "crane",
+      "x": -61.44,
+      "y": -16.3,
+      "z": 276.89,
+      "heading": 2.115,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 15.0,
+      "load": "net"
+    },
+    {
+      "id": "crane_10",
+      "type": "crane",
+      "x": -69.65,
+      "y": -16.3,
+      "z": 297.61,
+      "heading": 1.624,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 13.0,
+      "load": "crate"
+    },
+    {
+      "id": "crane_11",
+      "type": "crane",
+      "x": -58.88,
+      "y": -16.3,
+      "z": 326.6,
+      "heading": 0.937,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 11.0,
+      "load": "net"
+    },
+    {
+      "id": "crane_12",
+      "type": "crane",
+      "x": -42.85,
+      "y": -16.3,
+      "z": 338.46,
+      "heading": 0.544,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 15.0,
+      "load": "crate"
+    },
+    {
+      "id": "crane_13",
+      "type": "crane",
+      "x": 4.58,
+      "y": -15.79,
+      "z": 342.42,
+      "heading": -0.34,
+      "reach": 1.2,
+      "drop": 7.2,
+      "swing": 0.15,
+      "period": 13.0,
+      "load": "net"
+    },
+    {
+      "id": "crane_14",
+      "type": "crane",
+      "x": 23.3,
+      "y": -16.3,
+      "z": 333.46,
+      "heading": -0.732,
+      "reach": 1.2,
+      "drop": 6.7,
+      "swing": 0.15,
+      "period": 11.0,
+      "load": "crate"
     },
     {
       "id": "campfire_01",
       "type": "campfire",
       "x": 12.0,
-      "y": -23.63,
+      "y": -23.53,
       "z": 326.0
-    },
-    {
-      "id": "lantern_22",
-      "type": "lantern",
-      "x": -38.22,
-      "y": -18.6,
-      "z": 257.44
-    },
-    {
-      "id": "lantern_23",
-      "type": "lantern",
-      "x": -47.45,
-      "y": -18.6,
-      "z": 338.3
-    },
-    {
-      "id": "lantern_24",
-      "type": "lantern",
-      "x": 22.94,
-      "y": -18.6,
-      "z": 336.17
     },
     {
       "id": "villager_home_02",
@@ -352,49 +719,49 @@
       "talk": "docks"
     },
     {
-      "id": "lantern_25",
+      "id": "lantern_43",
       "type": "lantern",
       "x": 72.55,
       "y": -29.23,
       "z": 174.54
     },
     {
-      "id": "lantern_26",
+      "id": "lantern_44",
       "type": "lantern",
       "x": 91.42,
       "y": -30.38,
       "z": 188.04
     },
     {
-      "id": "lantern_27",
+      "id": "lantern_45",
       "type": "lantern",
       "x": 76.68,
       "y": -29.88,
       "z": 169.02
     },
     {
-      "id": "lantern_28",
+      "id": "lantern_46",
       "type": "lantern",
       "x": 95.08,
       "y": -30.36,
       "z": 183.15
     },
     {
-      "id": "lantern_29",
+      "id": "lantern_47",
       "type": "lantern",
       "x": 80.74,
       "y": -30.16,
       "z": 163.74
     },
     {
-      "id": "lantern_30",
+      "id": "lantern_48",
       "type": "lantern",
       "x": 98.93,
       "y": -30.4,
       "z": 178.13
     },
     {
-      "id": "lantern_31",
+      "id": "lantern_49",
       "type": "lantern",
       "x": 85.34,
       "y": -30.28,
@@ -408,56 +775,56 @@
       "z": 157.51
     },
     {
-      "id": "lantern_32",
+      "id": "lantern_50",
       "type": "lantern",
       "x": 102.74,
       "y": -30.23,
       "z": 173.65
     },
     {
-      "id": "lantern_33",
+      "id": "lantern_51",
       "type": "lantern",
       "x": 89.2,
       "y": -30.6,
       "z": 153.77
     },
     {
-      "id": "lantern_34",
+      "id": "lantern_52",
       "type": "lantern",
       "x": 107.29,
       "y": -29.9,
       "z": 168.28
     },
     {
-      "id": "lantern_35",
+      "id": "lantern_53",
       "type": "lantern",
       "x": 111.93,
       "y": -29.69,
       "z": 161.76
     },
     {
-      "id": "lantern_36",
+      "id": "lantern_54",
       "type": "lantern",
       "x": 94.28,
       "y": -30.85,
       "z": 145.34
     },
     {
-      "id": "lantern_37",
+      "id": "lantern_55",
       "type": "lantern",
       "x": 115.59,
       "y": -29.74,
       "z": 154.53
     },
     {
-      "id": "lantern_38",
+      "id": "lantern_56",
       "type": "lantern",
       "x": 96.22,
       "y": -30.78,
       "z": 140.19
     },
     {
-      "id": "lantern_39",
+      "id": "lantern_57",
       "type": "lantern",
       "x": 118.23,
       "y": -29.8,
@@ -471,56 +838,56 @@
       "z": 147.9
     },
     {
-      "id": "lantern_40",
+      "id": "lantern_58",
       "type": "lantern",
       "x": 97.69,
       "y": -30.88,
       "z": 134.96
     },
     {
-      "id": "lantern_41",
+      "id": "lantern_59",
       "type": "lantern",
       "x": 120.28,
       "y": -29.65,
       "z": 140.24
     },
     {
-      "id": "lantern_42",
+      "id": "lantern_60",
       "type": "lantern",
       "x": 121.63,
       "y": -29.59,
       "z": 132.32
     },
     {
-      "id": "lantern_43",
+      "id": "lantern_61",
       "type": "lantern",
       "x": 98.44,
       "y": -30.86,
       "z": 126.17
     },
     {
-      "id": "lantern_44",
+      "id": "lantern_62",
       "type": "lantern",
       "x": 121.45,
       "y": -29.67,
       "z": 123.25
     },
     {
-      "id": "lantern_45",
+      "id": "lantern_63",
       "type": "lantern",
       "x": 97.41,
       "y": -30.34,
       "z": 120.66
     },
     {
-      "id": "lantern_46",
+      "id": "lantern_64",
       "type": "lantern",
       "x": 120.14,
       "y": -30.15,
       "z": 115.98
     },
     {
-      "id": "lantern_47",
+      "id": "lantern_65",
       "type": "lantern",
       "x": 96.21,
       "y": -30.25,
@@ -534,56 +901,56 @@
       "z": 113.74
     },
     {
-      "id": "lantern_48",
+      "id": "lantern_66",
       "type": "lantern",
       "x": 119.17,
       "y": -30.31,
       "z": 110.26
     },
     {
-      "id": "lantern_49",
+      "id": "lantern_67",
       "type": "lantern",
       "x": 95.26,
       "y": -30.38,
       "z": 107.31
     },
     {
-      "id": "lantern_50",
+      "id": "lantern_68",
       "type": "lantern",
       "x": 118.17,
       "y": -30.21,
       "z": 103.66
     },
     {
-      "id": "lantern_51",
+      "id": "lantern_69",
       "type": "lantern",
       "x": 94.22,
       "y": -30.44,
       "z": 101.28
     },
     {
-      "id": "lantern_52",
+      "id": "lantern_70",
       "type": "lantern",
       "x": 117.0,
       "y": -30.18,
       "z": 96.88
     },
     {
-      "id": "lantern_53",
+      "id": "lantern_71",
       "type": "lantern",
       "x": 92.95,
       "y": -30.41,
       "z": 95.62
     },
     {
-      "id": "lantern_54",
+      "id": "lantern_72",
       "type": "lantern",
       "x": 115.42,
       "y": -30.21,
       "z": 89.86
     },
     {
-      "id": "lantern_55",
+      "id": "lantern_73",
       "type": "lantern",
       "x": 91.37,
       "y": -30.71,
@@ -597,7 +964,7 @@
       "z": 88.89
     },
     {
-      "id": "lantern_56",
+      "id": "lantern_74",
       "type": "lantern",
       "x": 114.13,
       "y": -30.1,
@@ -646,7 +1013,7 @@
       "z": 121.6
     },
     {
-      "id": "lantern_57",
+      "id": "lantern_75",
       "type": "lantern",
       "x": 151.91,
       "y": -30.9,
@@ -718,14 +1085,14 @@
       "talk": "bazaar"
     },
     {
-      "id": "lantern_58",
+      "id": "lantern_76",
       "type": "lantern",
       "x": 117.65,
       "y": -11.6,
       "z": 139.94
     },
     {
-      "id": "lantern_59",
+      "id": "lantern_77",
       "type": "lantern",
       "x": 119.32,
       "y": -11.6,
@@ -780,42 +1147,42 @@
       "z": 0.55
     },
     {
-      "id": "lantern_60",
+      "id": "lantern_78",
       "type": "lantern",
       "x": 61.32,
       "y": -58.6,
       "z": 4.56
     },
     {
-      "id": "lantern_61",
+      "id": "lantern_79",
       "type": "lantern",
       "x": 45.94,
       "y": -58.6,
       "z": -11.18
     },
     {
-      "id": "lantern_62",
+      "id": "lantern_80",
       "type": "lantern",
       "x": 24.63,
       "y": -58.6,
       "z": -5.74
     },
     {
-      "id": "lantern_63",
+      "id": "lantern_81",
       "type": "lantern",
       "x": 18.68,
       "y": -58.6,
       "z": 15.44
     },
     {
-      "id": "lantern_64",
+      "id": "lantern_82",
       "type": "lantern",
       "x": 34.06,
       "y": -58.6,
       "z": 31.18
     },
     {
-      "id": "lantern_65",
+      "id": "lantern_83",
       "type": "lantern",
       "x": 55.37,
       "y": -58.6,
@@ -858,280 +1225,280 @@
       "talk": "pits"
     },
     {
-      "id": "torch_01",
+      "id": "torch_03",
       "type": "torch",
       "x": 65.22,
       "y": -32.24,
       "z": 61.14
     },
     {
-      "id": "torch_02",
+      "id": "torch_04",
       "type": "torch",
       "x": 63.62,
       "y": -33.1,
       "z": 79.58
     },
     {
-      "id": "torch_03",
+      "id": "torch_05",
       "type": "torch",
       "x": 50.83,
       "y": -33.95,
       "z": 64.46
     },
     {
-      "id": "torch_04",
+      "id": "torch_06",
       "type": "torch",
       "x": 44.71,
       "y": -34.8,
       "z": 81.82
     },
     {
-      "id": "torch_05",
+      "id": "torch_07",
       "type": "torch",
       "x": 36.47,
       "y": -35.63,
       "z": 63.91
     },
     {
-      "id": "torch_06",
+      "id": "torch_08",
       "type": "torch",
       "x": 26.25,
       "y": -36.45,
       "z": 79.12
     },
     {
-      "id": "torch_07",
+      "id": "torch_09",
       "type": "torch",
       "x": 23.12,
       "y": -37.27,
       "z": 59.74
     },
     {
-      "id": "torch_08",
+      "id": "torch_10",
       "type": "torch",
       "x": 9.49,
       "y": -38.07,
       "z": 71.86
     },
     {
-      "id": "torch_09",
+      "id": "torch_11",
       "type": "torch",
       "x": 11.65,
       "y": -38.87,
       "z": 52.43
     },
     {
-      "id": "torch_10",
+      "id": "torch_12",
       "type": "torch",
       "x": -4.49,
       "y": -39.65,
       "z": 60.73
     },
     {
-      "id": "torch_11",
+      "id": "torch_13",
       "type": "torch",
       "x": 2.77,
       "y": -40.42,
       "z": 42.65
     },
     {
-      "id": "torch_12",
+      "id": "torch_14",
       "type": "torch",
       "x": -14.86,
       "y": -41.19,
       "z": 46.65
     },
     {
-      "id": "torch_13",
+      "id": "torch_15",
       "type": "torch",
       "x": -3.07,
       "y": -41.94,
       "z": 31.24
     },
     {
-      "id": "torch_14",
+      "id": "torch_16",
       "type": "torch",
       "x": -21.05,
       "y": -42.69,
       "z": 30.72
     },
     {
-      "id": "torch_15",
+      "id": "torch_17",
       "type": "torch",
       "x": -5.63,
       "y": -43.42,
       "z": 19.08
     },
     {
-      "id": "torch_16",
+      "id": "torch_18",
       "type": "torch",
       "x": -22.84,
       "y": -44.15,
       "z": 14.12
     },
     {
-      "id": "torch_17",
+      "id": "torch_19",
       "type": "torch",
       "x": -4.93,
       "y": -44.86,
       "z": 7.06
     },
     {
-      "id": "torch_18",
+      "id": "torch_20",
       "type": "torch",
       "x": -20.29,
       "y": -45.57,
       "z": -1.99
     },
     {
-      "id": "torch_19",
+      "id": "torch_21",
       "type": "torch",
       "x": -1.22,
       "y": -46.26,
       "z": -3.99
     },
     {
-      "id": "torch_20",
+      "id": "torch_22",
       "type": "torch",
       "x": -13.79,
       "y": -46.95,
       "z": -16.53
     },
     {
-      "id": "torch_21",
+      "id": "torch_23",
       "type": "torch",
       "x": 5.06,
       "y": -47.62,
       "z": -13.35
     },
     {
-      "id": "torch_22",
+      "id": "torch_24",
       "type": "torch",
       "x": -3.96,
       "y": -48.29,
       "z": -28.56
     },
     {
-      "id": "torch_23",
+      "id": "torch_25",
       "type": "torch",
       "x": 13.28,
       "y": -48.94,
       "z": -20.47
     },
     {
-      "id": "torch_24",
+      "id": "torch_26",
       "type": "torch",
       "x": 8.35,
       "y": -49.59,
       "z": -37.37
     },
     {
-      "id": "torch_25",
+      "id": "torch_27",
       "type": "torch",
       "x": 22.74,
       "y": -50.22,
       "z": -25.0
     },
     {
-      "id": "torch_26",
+      "id": "torch_28",
       "type": "torch",
       "x": 22.17,
       "y": -50.85,
       "z": -42.53
     },
     {
-      "id": "torch_27",
+      "id": "torch_29",
       "type": "torch",
       "x": 32.68,
       "y": -51.46,
       "z": -26.8
     },
     {
-      "id": "torch_28",
+      "id": "torch_30",
       "type": "torch",
       "x": 36.47,
       "y": -52.07,
       "z": -43.86
     },
     {
-      "id": "torch_29",
+      "id": "torch_31",
       "type": "torch",
       "x": 42.36,
       "y": -52.66,
       "z": -25.95
     },
     {
-      "id": "torch_30",
+      "id": "torch_32",
       "type": "torch",
       "x": 50.24,
       "y": -53.25,
       "z": -41.47
     },
     {
-      "id": "torch_31",
+      "id": "torch_33",
       "type": "torch",
       "x": 51.1,
       "y": -53.83,
       "z": -22.69
     },
     {
-      "id": "torch_32",
+      "id": "torch_34",
       "type": "torch",
       "x": 62.55,
       "y": -54.39,
       "z": -35.72
     },
     {
-      "id": "torch_33",
+      "id": "torch_35",
       "type": "torch",
       "x": 58.35,
       "y": -54.95,
       "z": -17.46
     },
     {
-      "id": "torch_34",
+      "id": "torch_36",
       "type": "torch",
       "x": 72.62,
       "y": -55.49,
       "z": -27.2
     },
     {
-      "id": "torch_35",
+      "id": "torch_37",
       "type": "torch",
       "x": 63.7,
       "y": -56.03,
       "z": -10.79
     },
     {
-      "id": "torch_36",
+      "id": "torch_38",
       "type": "torch",
       "x": 79.89,
       "y": -56.56,
       "z": -16.65
     },
     {
-      "id": "torch_37",
+      "id": "torch_39",
       "type": "torch",
       "x": 66.93,
       "y": -57.07,
       "z": -3.28
     },
     {
-      "id": "torch_38",
+      "id": "torch_40",
       "type": "torch",
       "x": 84.01,
       "y": -57.58,
       "z": -4.94
     },
     {
-      "id": "torch_39",
+      "id": "torch_41",
       "type": "torch",
       "x": 67.98,
       "y": -58.07,
       "z": 4.44
     },
     {
-      "id": "torch_40",
+      "id": "torch_42",
       "type": "torch",
       "x": 84.88,
       "y": -58.56,
@@ -1250,14 +1617,14 @@
       "z": 32.51
     },
     {
-      "id": "torch_41",
+      "id": "torch_43",
       "type": "torch",
       "x": 91.8,
       "y": -26.8,
       "z": 82.04
     },
     {
-      "id": "torch_42",
+      "id": "torch_44",
       "type": "torch",
       "x": 104.04,
       "y": -26.8,
@@ -1292,28 +1659,28 @@
       "z": 24.86
     },
     {
-      "id": "lantern_66",
+      "id": "lantern_84",
       "type": "lantern",
       "x": 133.59,
       "y": -54.39,
       "z": -41.69
     },
     {
-      "id": "lantern_67",
+      "id": "lantern_85",
       "type": "lantern",
       "x": 158.14,
       "y": -53.71,
       "z": -56.25
     },
     {
-      "id": "lantern_68",
+      "id": "lantern_86",
       "type": "lantern",
       "x": 133.54,
       "y": -54.58,
       "z": -36.0
     },
     {
-      "id": "lantern_69",
+      "id": "lantern_87",
       "type": "lantern",
       "x": 163.59,
       "y": -54.02,
@@ -1354,21 +1721,21 @@
       "talk": "den"
     },
     {
-      "id": "lantern_70",
+      "id": "lantern_88",
       "type": "lantern",
       "x": -34.21,
       "y": -17.38,
       "z": 395.19
     },
     {
-      "id": "lantern_71",
+      "id": "lantern_89",
       "type": "lantern",
       "x": -49.6,
       "y": -17.66,
       "z": 379.52
     },
     {
-      "id": "lantern_72",
+      "id": "lantern_90",
       "type": "lantern",
       "x": -27.73,
       "y": -17.96,
@@ -1382,326 +1749,326 @@
       "z": 370.87
     },
     {
-      "id": "lantern_73",
+      "id": "lantern_91",
       "type": "lantern",
       "x": -40.2,
       "y": -18.27,
       "z": 361.79
     },
     {
-      "id": "lantern_74",
+      "id": "lantern_92",
       "type": "lantern",
       "x": -18.74,
       "y": -18.6,
       "z": 366.56
     },
     {
-      "id": "lantern_75",
-      "type": "lantern",
-      "x": 31.26,
-      "y": -20.3,
-      "z": 264.5
-    },
-    {
-      "id": "lantern_76",
-      "type": "lantern",
-      "x": 32.51,
-      "y": -20.58,
-      "z": 242.61
-    },
-    {
-      "id": "lantern_77",
-      "type": "lantern",
-      "x": 45.56,
-      "y": -20.93,
-      "z": 260.23
-    },
-    {
-      "id": "lantern_78",
-      "type": "lantern",
-      "x": 51.66,
-      "y": -21.28,
-      "z": 239.32
-    },
-    {
-      "id": "lantern_79",
-      "type": "lantern",
-      "x": 66.19,
-      "y": -21.77,
-      "z": 255.33
-    },
-    {
-      "id": "lantern_80",
-      "type": "lantern",
-      "x": 60.91,
-      "y": -22.44,
-      "z": 234.58
-    },
-    {
-      "id": "lantern_81",
-      "type": "lantern",
-      "x": 82.17,
-      "y": -23.12,
-      "z": 235.74
-    },
-    {
-      "id": "lantern_82",
-      "type": "lantern",
-      "x": 64.81,
-      "y": -23.75,
-      "z": 222.17
-    },
-    {
-      "id": "lantern_83",
-      "type": "lantern",
-      "x": 85.85,
-      "y": -24.5,
-      "z": 215.58
-    },
-    {
-      "id": "lantern_84",
-      "type": "lantern",
-      "x": 66.32,
-      "y": -25.36,
-      "z": 205.22
-    },
-    {
-      "id": "lantern_85",
-      "type": "lantern",
-      "x": 87.38,
-      "y": -26.23,
-      "z": 198.9
-    },
-    {
-      "id": "lantern_86",
-      "type": "lantern",
-      "x": 90.61,
-      "y": -28.8,
-      "z": 81.7
-    },
-    {
-      "id": "lantern_87",
-      "type": "lantern",
-      "x": 119.02,
-      "y": -54.68,
-      "z": 38.28
-    },
-    {
-      "id": "lantern_88",
-      "type": "lantern",
-      "x": 131.61,
-      "y": -54.38,
-      "z": 55.02
-    },
-    {
-      "id": "lantern_89",
-      "type": "lantern",
-      "x": 128.64,
-      "y": -54.1,
-      "z": 33.45
-    },
-    {
-      "id": "lantern_90",
-      "type": "lantern",
-      "x": 149.4,
-      "y": -53.8,
-      "z": 40.03
-    },
-    {
-      "id": "lantern_91",
-      "type": "lantern",
-      "x": 136.3,
-      "y": -53.34,
-      "z": 22.46
-    },
-    {
-      "id": "campfire_27",
-      "type": "campfire",
-      "x": 153.92,
-      "y": -58.24,
-      "z": 30.57
-    },
-    {
-      "id": "lantern_92",
-      "type": "lantern",
-      "x": 158.19,
-      "y": -52.93,
-      "z": 21.74
-    },
-    {
       "id": "lantern_93",
       "type": "lantern",
-      "x": 141.91,
-      "y": -52.49,
-      "z": 7.03
+      "x": 31.19,
+      "y": -20.3,
+      "z": 264.53
     },
     {
       "id": "lantern_94",
       "type": "lantern",
-      "x": 163.28,
-      "y": -52.3,
-      "z": 2.38
+      "x": 32.43,
+      "y": -20.58,
+      "z": 242.64
     },
     {
       "id": "lantern_95",
       "type": "lantern",
-      "x": 144.12,
-      "y": -52.16,
-      "z": -8.28
+      "x": 45.49,
+      "y": -20.93,
+      "z": 260.24
     },
     {
       "id": "lantern_96",
       "type": "lantern",
-      "x": 140.92,
-      "y": -50.77,
-      "z": -72.1
+      "x": 51.6,
+      "y": -21.27,
+      "z": 239.33
     },
     {
       "id": "lantern_97",
       "type": "lantern",
-      "x": 120.1,
-      "y": -50.02,
-      "z": -65.08
+      "x": 66.1,
+      "y": -21.76,
+      "z": 255.37
     },
     {
       "id": "lantern_98",
       "type": "lantern",
-      "x": 128.52,
-      "y": -49.34,
-      "z": -85.27
+      "x": 60.89,
+      "y": -22.43,
+      "z": 234.61
     },
     {
       "id": "lantern_99",
       "type": "lantern",
-      "x": 107.67,
-      "y": -48.52,
-      "z": -78.63
+      "x": 82.15,
+      "y": -23.12,
+      "z": 235.83
     },
     {
       "id": "lantern_100",
       "type": "lantern",
-      "x": 117.05,
-      "y": -47.61,
-      "z": -98.45
-    },
-    {
-      "id": "campfire_28",
-      "type": "campfire",
-      "x": 102.21,
-      "y": -52.51,
-      "z": -85.95
+      "x": 64.79,
+      "y": -23.75,
+      "z": 222.25
     },
     {
       "id": "lantern_101",
       "type": "lantern",
-      "x": 95.98,
-      "y": -46.74,
-      "z": -92.35
+      "x": 85.85,
+      "y": -24.49,
+      "z": 215.68
     },
     {
       "id": "lantern_102",
       "type": "lantern",
-      "x": 105.26,
-      "y": -45.87,
-      "z": -112.22
+      "x": 66.31,
+      "y": -25.35,
+      "z": 205.31
     },
     {
       "id": "lantern_103",
       "type": "lantern",
-      "x": 84.41,
-      "y": -44.97,
-      "z": -105.48
+      "x": 87.37,
+      "y": -26.22,
+      "z": 198.98
     },
     {
       "id": "lantern_104",
       "type": "lantern",
-      "x": 93.08,
-      "y": -44.27,
-      "z": -125.64
+      "x": 90.64,
+      "y": -28.79,
+      "z": 81.72
     },
     {
       "id": "lantern_105",
       "type": "lantern",
-      "x": 72.38,
-      "y": -43.57,
-      "z": -118.58
-    },
-    {
-      "id": "campfire_29",
-      "type": "campfire",
-      "x": 86.41,
-      "y": -48.47,
-      "z": -131.97
+      "x": 119.0,
+      "y": -54.69,
+      "z": 38.28
     },
     {
       "id": "lantern_106",
       "type": "lantern",
-      "x": 80.14,
-      "y": -42.84,
-      "z": -139.13
+      "x": 131.52,
+      "y": -54.38,
+      "z": 55.06
     },
     {
       "id": "lantern_107",
       "type": "lantern",
-      "x": 60.56,
-      "y": -42.05,
-      "z": -129.59
+      "x": 128.59,
+      "y": -54.11,
+      "z": 33.49
     },
     {
       "id": "lantern_108",
       "type": "lantern",
-      "x": 63.04,
-      "y": -41.34,
-      "z": -151.27
+      "x": 149.35,
+      "y": -53.8,
+      "z": 40.11
     },
     {
       "id": "lantern_109",
       "type": "lantern",
-      "x": 46.97,
-      "y": -40.6,
-      "z": -136.25
+      "x": 136.27,
+      "y": -53.34,
+      "z": 22.52
+    },
+    {
+      "id": "campfire_27",
+      "type": "campfire",
+      "x": 153.89,
+      "y": -58.24,
+      "z": 30.64
     },
     {
       "id": "lantern_110",
       "type": "lantern",
-      "x": 46.39,
-      "y": -39.76,
-      "z": -157.94
-    },
-    {
-      "id": "campfire_30",
-      "type": "campfire",
-      "x": 38.12,
-      "y": -44.66,
-      "z": -140.39
+      "x": 158.16,
+      "y": -52.93,
+      "z": 21.82
     },
     {
       "id": "lantern_111",
       "type": "lantern",
-      "x": 28.47,
-      "y": -39.12,
-      "z": -145.6
+      "x": 141.89,
+      "y": -52.49,
+      "z": 7.09
     },
     {
       "id": "lantern_112",
       "type": "lantern",
-      "x": 36.23,
-      "y": -38.41,
-      "z": -165.69
+      "x": 163.27,
+      "y": -52.3,
+      "z": 2.46
     },
     {
       "id": "lantern_113",
       "type": "lantern",
-      "x": 14.79,
-      "y": -38.17,
-      "z": -165.75
+      "x": 144.12,
+      "y": -52.16,
+      "z": -8.21
     },
     {
       "id": "lantern_114",
       "type": "lantern",
+      "x": 140.98,
+      "y": -50.78,
+      "z": -72.04
+    },
+    {
+      "id": "lantern_115",
+      "type": "lantern",
+      "x": 120.15,
+      "y": -50.03,
+      "z": -65.02
+    },
+    {
+      "id": "lantern_116",
+      "type": "lantern",
+      "x": 128.57,
+      "y": -49.34,
+      "z": -85.22
+    },
+    {
+      "id": "lantern_117",
+      "type": "lantern",
+      "x": 107.72,
+      "y": -48.53,
+      "z": -78.57
+    },
+    {
+      "id": "lantern_118",
+      "type": "lantern",
+      "x": 117.1,
+      "y": -47.62,
+      "z": -98.39
+    },
+    {
+      "id": "campfire_28",
+      "type": "campfire",
+      "x": 102.25,
+      "y": -52.52,
+      "z": -85.9
+    },
+    {
+      "id": "lantern_119",
+      "type": "lantern",
+      "x": 96.03,
+      "y": -46.75,
+      "z": -92.3
+    },
+    {
+      "id": "lantern_120",
+      "type": "lantern",
+      "x": 105.31,
+      "y": -45.87,
+      "z": -112.16
+    },
+    {
+      "id": "lantern_121",
+      "type": "lantern",
+      "x": 84.46,
+      "y": -44.97,
+      "z": -105.43
+    },
+    {
+      "id": "lantern_122",
+      "type": "lantern",
+      "x": 93.13,
+      "y": -44.28,
+      "z": -125.58
+    },
+    {
+      "id": "lantern_123",
+      "type": "lantern",
+      "x": 72.43,
+      "y": -43.58,
+      "z": -118.52
+    },
+    {
+      "id": "campfire_29",
+      "type": "campfire",
+      "x": 86.46,
+      "y": -48.48,
+      "z": -131.92
+    },
+    {
+      "id": "lantern_124",
+      "type": "lantern",
+      "x": 80.2,
+      "y": -42.85,
+      "z": -139.07
+    },
+    {
+      "id": "lantern_125",
+      "type": "lantern",
+      "x": 60.61,
+      "y": -42.06,
+      "z": -129.56
+    },
+    {
+      "id": "lantern_126",
+      "type": "lantern",
+      "x": 63.13,
+      "y": -41.34,
+      "z": -151.23
+    },
+    {
+      "id": "lantern_127",
+      "type": "lantern",
+      "x": 47.04,
+      "y": -40.6,
+      "z": -136.22
+    },
+    {
+      "id": "lantern_128",
+      "type": "lantern",
+      "x": 46.44,
+      "y": -39.77,
+      "z": -157.92
+    },
+    {
+      "id": "campfire_30",
+      "type": "campfire",
+      "x": 38.21,
+      "y": -44.67,
+      "z": -140.35
+    },
+    {
+      "id": "lantern_129",
+      "type": "lantern",
+      "x": 28.54,
+      "y": -39.12,
+      "z": -145.54
+    },
+    {
+      "id": "lantern_130",
+      "type": "lantern",
+      "x": 36.25,
+      "y": -38.42,
+      "z": -165.66
+    },
+    {
+      "id": "lantern_131",
+      "type": "lantern",
+      "x": 14.81,
+      "y": -38.18,
+      "z": -165.65
+    },
+    {
+      "id": "lantern_132",
+      "type": "lantern",
       "x": 33.73,
       "y": -38.24,
-      "z": -176.63
+      "z": -176.56
     },
     {
       "id": "campfire_31",
@@ -1776,112 +2143,103 @@
           8
         ],
         [
-          -57.13,
-          -23.1,
-          289.55,
-          0.666,
-          0.746,
+          48.4,
+          -19.0,
+          303.6,
+          -0.919,
+          -0.394,
+          "guard",
+          5
+        ],
+        [
+          48.4,
+          -19.0,
+          296.4,
+          -0.919,
+          0.394,
+          "guard",
+          5
+        ],
+        [
+          -49.42,
+          -23.4,
+          283.13,
+          0.178,
+          0.984,
+          "hauler",
+          3
+        ],
+        [
+          -49.73,
+          -24.5,
+          281.39,
+          -0.178,
+          -0.984,
+          "hauler",
+          6
+        ],
+        [
+          -50.05,
+          -24.5,
+          279.65,
+          0.178,
+          0.984,
+          "hauler",
+          0
+        ],
+        [
+          -61.92,
+          -23.4,
+          291.31,
+          0.83,
+          0.558,
+          "hauler",
+          0
+        ],
+        [
+          -63.39,
+          -24.5,
+          290.32,
+          -0.83,
+          -0.558,
+          "hauler",
+          5
+        ],
+        [
+          -64.85,
+          -24.5,
+          289.33,
+          0.83,
+          0.558,
+          "hauler",
+          0
+        ],
+        [
+          -50.04,
+          -23.4,
+          320.74,
+          0.211,
+          -0.978,
+          "hauler",
+          1
+        ],
+        [
+          -50.42,
+          -24.5,
+          322.47,
+          -0.211,
+          0.978,
+          "hauler",
+          6
+        ],
+        [
+          -50.79,
+          -24.5,
+          324.2,
+          0.211,
+          -0.978,
           "hauler",
           2
-        ],
-        [
-          -58.83,
-          -24.5,
-          287.65,
-          -0.666,
-          -0.746,
-          "hauler",
-          3
-        ],
-        [
-          -60.52,
-          -24.5,
-          285.74,
-          0.666,
-          0.746,
-          "hauler",
-          3
-        ],
-        [
-          -62.15,
-          -23.1,
-          306.27,
-          0.967,
-          -0.256,
-          "hauler",
-          8
-        ],
-        [
-          -64.61,
-          -24.5,
-          306.92,
-          -0.967,
-          0.256,
-          "hauler",
-          7
-        ],
-        [
-          -67.08,
-          -24.5,
-          307.57,
-          0.967,
-          -0.256,
-          "hauler",
-          10
-        ],
-        [
-          -51.13,
-          -23.1,
-          317.89,
-          0.307,
-          -0.952,
-          "hauler",
-          3
-        ],
-        [
-          -51.92,
-          -24.5,
-          320.32,
-          -0.307,
-          0.952,
-          "hauler",
-          8
-        ],
-        [
-          -52.7,
-          -24.5,
-          322.74,
-          0.307,
-          -0.952,
-          "hauler",
-          5
-        ],
-        [
-          -44.82,
-          -23.1,
-          285.34,
-          -0.071,
-          0.997,
-          "hauler",
-          8
-        ],
-        [
-          -44.64,
-          -24.5,
-          282.8,
-          0.071,
-          -0.997,
-          "hauler",
-          8
-        ],
-        [
-          -44.46,
-          -24.5,
-          280.25,
-          -0.071,
-          0.997,
-          "hauler",
-          5
         ],
         [
           -19.27,
@@ -1890,7 +2248,7 @@
           -0.288,
           -0.958,
           "worker",
-          2
+          0
         ],
         [
           -16.59,
@@ -1899,7 +2257,7 @@
           -0.462,
           -0.887,
           "worker",
-          4
+          6
         ],
         [
           -15.2,
@@ -1908,38 +2266,38 @@
           -0.616,
           -0.788,
           "worker",
-          7
+          0
         ],
         [
           -18.41,
-          -24.33,
+          -24.12,
           316.74,
           -0.828,
           -0.561,
           "worker",
-          6
+          3
         ],
         [
           -16.38,
-          -24.13,
+          -23.87,
           314.99,
           -0.919,
           -0.395,
           "worker",
-          1
+          8
         ],
         [
           -16.75,
-          -24.03,
+          -23.75,
           312.33,
           -0.975,
           -0.222,
           "worker",
-          5
+          7
         ],
         [
           -19.2,
-          -24.05,
+          -24.0,
           279.86,
           -0.686,
           0.728,
@@ -1948,12 +2306,12 @@
         ],
         [
           -20.61,
-          -24.31,
+          -24.29,
           277.57,
           -0.537,
           0.844,
           "worker",
-          1
+          0
         ],
         [
           -23.29,
@@ -1962,7 +2320,7 @@
           -0.375,
           0.927,
           "worker",
-          6
+          9
         ],
         [
           46.67,
@@ -1971,7 +2329,7 @@
           -0.77,
           -0.638,
           "hauler",
-          7
+          3
         ],
         [
           45.9,
@@ -1989,7 +2347,7 @@
           0.999,
           0.049,
           "hauler",
-          4
+          5
         ],
         [
           35.55,
@@ -1998,7 +2356,7 @@
           -0.915,
           0.403,
           "guard",
-          0
+          5
         ],
         [
           -38.24,
@@ -2007,7 +2365,7 @@
           0.22,
           -0.976,
           "hauler",
-          5
+          7
         ],
         [
           -35.46,
@@ -2016,7 +2374,7 @@
           -0.633,
           0.774,
           "guard",
-          0
+          2
         ],
         [
           -39.75,
@@ -2025,7 +2383,7 @@
           0.409,
           0.912,
           "hauler",
-          9
+          6
         ],
         [
           -36.56,
@@ -2034,16 +2392,16 @@
           -0.774,
           -0.633,
           "guard",
-          10
+          0
         ],
         [
           -13.0,
-          -24.35,
+          -24.34,
           265.55,
           0.316,
           -0.949,
           "hauler",
-          4
+          6
         ],
         [
           -10.0,
@@ -2052,7 +2410,7 @@
           -0.707,
           0.707,
           "guard",
-          5
+          9
         ],
         [
           -13.0,
@@ -2061,7 +2419,7 @@
           0.316,
           0.949,
           "hauler",
-          4
+          1
         ],
         [
           -10.0,
@@ -2079,7 +2437,7 @@
           0.121,
           -0.993,
           "hauler",
-          2
+          7
         ],
         [
           37.06,
@@ -2088,7 +2446,7 @@
           -0.553,
           0.833,
           "guard",
-          1
+          5
         ],
         [
           31.52,
@@ -2097,7 +2455,7 @@
           0.498,
           0.867,
           "hauler",
-          3
+          5
         ],
         [
           34.86,
@@ -2106,21 +2464,21 @@
           -0.833,
           -0.553,
           "guard",
-          0
+          3
         ],
         [
           -25.0,
-          -24.5,
-          285.9,
+          -24.48,
+          284.4,
           0.0,
           1.0,
           "merchant",
-          10
+          0
         ],
         [
           -25.8,
-          -24.5,
-          289.3,
+          -24.48,
+          287.8,
           0.406,
           -0.914,
           "queue",
@@ -2128,75 +2486,66 @@
         ],
         [
           -24.2,
-          -24.5,
-          289.3,
+          -24.48,
+          287.8,
           -0.406,
           -0.914,
           "huddle",
-          0
+          2
         ],
         [
           -20.0,
-          -23.9,
-          286.9,
-          0.0,
-          1.0,
-          "merchant",
-          10
-        ],
-        [
-          -20.8,
-          -23.9,
-          290.3,
-          0.406,
-          -0.914,
-          "queue",
-          8
-        ],
-        [
-          -19.2,
-          -23.9,
-          290.3,
-          -0.406,
-          -0.914,
-          "huddle",
-          9
-        ],
-        [
-          -15.0,
-          -23.09,
-          285.9,
+          -23.79,
+          285.4,
           0.0,
           1.0,
           "merchant",
           3
         ],
         [
-          -15.8,
-          -23.09,
-          289.3,
+          -20.8,
+          -23.79,
+          288.8,
           0.406,
           -0.914,
           "queue",
-          0
+          1
         ],
         [
-          -14.2,
-          -23.09,
-          289.3,
+          -19.2,
+          -23.79,
+          288.8,
           -0.406,
           -0.914,
           "huddle",
+          5
+        ],
+        [
+          -15.0,
+          -22.93,
+          284.4,
+          0.0,
+          1.0,
+          "merchant",
           0
         ],
         [
-          -53.62,
-          -24.6,
-          276.98,
-          0.817,
-          0.576,
-          "hauler",
-          5
+          -15.8,
+          -22.93,
+          287.8,
+          0.406,
+          -0.914,
+          "queue",
+          9
+        ],
+        [
+          -14.2,
+          -22.93,
+          287.8,
+          -0.406,
+          -0.914,
+          "huddle",
+          9
         ],
         [
           -26.57,
@@ -2205,16 +2554,16 @@
           0.35,
           -0.937,
           "hauler",
-          3
+          2
         ],
         [
           -14.49,
-          -24.85,
+          -24.78,
           327.73,
           0.015,
           -1.0,
           "huddle",
-          4
+          3
         ],
         [
           -22.39,
@@ -2223,61 +2572,115 @@
           0.156,
           0.988,
           "hauler",
-          3
+          0
+        ],
+        [
+          31.22,
+          -19.92,
+          273.15,
+          -0.937,
+          0.35,
+          "fisher",
+          2
+        ],
+        [
+          -27.45,
+          -19.25,
+          255.84,
+          -0.373,
+          0.928,
+          "fisher",
+          10
+        ],
+        [
+          -55.6,
+          -19.25,
+          269.27,
+          0.281,
+          0.96,
+          "fisher",
+          10
+        ],
+        [
+          -43.16,
+          -19.25,
+          338.97,
+          -0.076,
+          -0.997,
+          "fisher",
+          4
+        ],
+        [
+          4.78,
+          -18.74,
+          342.98,
+          -0.778,
+          -0.628,
+          "fisher",
+          8
+        ],
+        [
+          31.02,
+          -19.25,
+          327.21,
+          -0.95,
+          -0.311,
+          "fisher",
+          1
         ],
         [
           14.4,
-          -23.83,
+          -23.73,
           326.0,
           -1.0,
           -0.0,
           "huddle",
-          9
+          0
         ],
         [
           13.2,
-          -23.83,
+          -23.73,
           323.92,
           -0.5,
           0.866,
           "huddle",
-          6
+          3
         ],
         [
           10.8,
-          -23.83,
+          -23.73,
           323.92,
           0.5,
           0.866,
           "huddle",
-          2
+          10
         ],
         [
           9.6,
-          -23.83,
+          -23.73,
           326.0,
           1.0,
           -0.0,
           "huddle",
-          7
+          1
         ],
         [
           10.8,
-          -23.83,
+          -23.73,
           328.08,
           0.5,
           -0.866,
           "huddle",
-          8
+          6
         ],
         [
           13.2,
-          -23.83,
+          -23.73,
           328.08,
           -0.5,
           -0.866,
           "huddle",
-          3
+          10
         ],
         [
           -21.55,
@@ -2286,7 +2689,7 @@
           -0.45,
           -0.893,
           "hauler",
-          10
+          9
         ],
         [
           -20.54,
@@ -2295,7 +2698,7 @@
           -0.964,
           -0.264,
           "worker",
-          4
+          8
         ],
         [
           -7.31,
@@ -2304,7 +2707,7 @@
           0.964,
           0.264,
           "hauler",
-          7
+          9
         ],
         [
           -6.3,
@@ -2313,115 +2716,97 @@
           0.45,
           0.893,
           "worker",
-          0
+          4
         ],
         [
           -12.25,
-          -24.36,
-          321.27,
+          -24.12,
+          321.28,
           -0.91,
-          -0.415,
+          -0.414,
           "huddle",
-          6
+          5
         ],
         [
           -12.24,
-          -24.36,
-          319.67,
+          -24.12,
+          319.68,
           -0.918,
-          0.398,
+          0.397,
           "hauler",
-          3
+          5
         ],
         [
-          6.13,
-          -24.8,
-          287.89,
-          0.989,
-          -0.148,
-          "huddle",
-          1
-        ],
-        [
-          6.56,
-          -24.8,
-          286.35,
-          0.774,
-          0.634,
-          "hauler",
-          1
-        ],
-        [
-          8.68,
-          -25.05,
-          283.01,
+          8.64,
+          -25.04,
+          283.07,
           0.975,
-          0.223,
+          0.222,
           "hauler",
           0
         ],
         [
-          9.64,
-          -25.05,
-          281.73,
-          0.488,
-          0.873,
-          "worker",
-          3
-        ],
-        [
-          0.26,
-          -24.35,
-          264.32,
-          -0.397,
-          -0.918,
+          9.6,
+          -25.04,
+          281.79,
+          0.489,
+          0.872,
           "worker",
           2
         ],
         [
-          1.35,
+          0.21,
           -24.35,
-          263.14,
-          -0.947,
-          -0.321,
-          "guard",
-          4
-        ],
-        [
-          13.79,
-          -25.12,
-          276.79,
-          0.947,
-          0.321,
+          264.38,
+          -0.398,
+          -0.918,
           "worker",
-          10
+          7
         ],
         [
-          14.87,
-          -25.12,
-          275.61,
-          0.397,
-          0.918,
-          "guard",
-          6
-        ],
-        [
-          7.33,
-          -24.49,
-          257.27,
-          -0.296,
-          -0.955,
+          1.29,
+          -24.35,
+          263.2,
+          -0.947,
+          -0.32,
           "guard",
           7
         ],
         [
-          8.53,
+          13.75,
+          -25.12,
+          276.84,
+          0.947,
+          0.32,
+          "worker",
+          10
+        ],
+        [
+          14.83,
+          -25.12,
+          275.66,
+          0.398,
+          0.918,
+          "guard",
+          2
+        ],
+        [
+          7.27,
           -24.49,
-          256.22,
-          -0.907,
-          -0.421,
+          257.32,
+          -0.297,
+          -0.955,
+          "guard",
+          6
+        ],
+        [
+          8.47,
+          -24.49,
+          256.27,
+          -0.908,
+          -0.42,
           "huddle",
-          0
+          8
         ],
         [
           71.49,
@@ -2430,7 +2815,7 @@
           0.813,
           0.582,
           "merchant",
-          8
+          4
         ],
         [
           73.13,
@@ -2439,7 +2824,7 @@
           -0.312,
           -0.95,
           "queue",
-          4
+          0
         ],
         [
           73.77,
@@ -2448,7 +2833,7 @@
           -0.813,
           -0.582,
           "huddle",
-          0
+          5
         ],
         [
           92.47,
@@ -2457,7 +2842,7 @@
           -0.813,
           -0.582,
           "merchant",
-          5
+          3
         ],
         [
           89.56,
@@ -2466,7 +2851,7 @@
           1.0,
           -0.011,
           "huddle",
-          2
+          3
         ],
         [
           90.2,
@@ -2475,7 +2860,7 @@
           0.813,
           0.582,
           "wave",
-          0
+          5
         ],
         [
           90.84,
@@ -2484,7 +2869,7 @@
           0.312,
           0.95,
           "queue",
-          3
+          9
         ],
         [
           75.65,
@@ -2493,7 +2878,7 @@
           0.793,
           0.609,
           "merchant",
-          9
+          7
         ],
         [
           77.2,
@@ -2511,7 +2896,7 @@
           -0.793,
           -0.609,
           "queue",
-          6
+          5
         ],
         [
           96.11,
@@ -2520,7 +2905,7 @@
           -0.793,
           -0.609,
           "merchant",
-          4
+          8
         ],
         [
           93.22,
@@ -2529,7 +2914,7 @@
           1.0,
           0.023,
           "queue",
-          0
+          7
         ],
         [
           93.89,
@@ -2538,7 +2923,7 @@
           0.793,
           0.609,
           "huddle",
-          0
+          8
         ],
         [
           94.56,
@@ -2547,7 +2932,7 @@
           0.279,
           0.96,
           "wave",
-          8
+          9
         ],
         [
           79.72,
@@ -2556,7 +2941,7 @@
           0.784,
           0.621,
           "merchant",
-          3
+          2
         ],
         [
           81.23,
@@ -2565,7 +2950,7 @@
           -0.265,
           -0.964,
           "huddle",
-          7
+          10
         ],
         [
           81.91,
@@ -2574,7 +2959,7 @@
           -0.784,
           -0.621,
           "wave",
-          2
+          1
         ],
         [
           99.95,
@@ -2583,7 +2968,7 @@
           -0.784,
           -0.621,
           "merchant",
-          10
+          1
         ],
         [
           97.07,
@@ -2592,7 +2977,7 @@
           0.999,
           0.037,
           "wave",
-          9
+          2
         ],
         [
           97.75,
@@ -2601,7 +2986,7 @@
           0.784,
           0.621,
           "queue",
-          7
+          10
         ],
         [
           98.44,
@@ -2610,7 +2995,7 @@
           0.265,
           0.964,
           "huddle",
-          5
+          4
         ],
         [
           84.36,
@@ -2619,7 +3004,7 @@
           0.75,
           0.661,
           "merchant",
-          3
+          6
         ],
         [
           85.73,
@@ -2628,7 +3013,7 @@
           -0.214,
           -0.977,
           "queue",
-          10
+          5
         ],
         [
           86.46,
@@ -2637,7 +3022,7 @@
           -0.75,
           -0.661,
           "huddle",
-          0
+          3
         ],
         [
           103.72,
@@ -2646,7 +3031,7 @@
           -0.75,
           -0.661,
           "merchant",
-          0
+          5
         ],
         [
           100.89,
@@ -2655,7 +3040,7 @@
           0.996,
           0.09,
           "huddle",
-          10
+          0
         ],
         [
           101.61,
@@ -2664,7 +3049,7 @@
           0.75,
           0.661,
           "wave",
-          0
+          4
         ],
         [
           102.34,
@@ -2673,7 +3058,7 @@
           0.214,
           0.977,
           "queue",
-          8
+          0
         ],
         [
           88.18,
@@ -2682,7 +3067,7 @@
           0.78,
           0.626,
           "merchant",
-          1
+          0
         ],
         [
           89.68,
@@ -2691,7 +3076,7 @@
           -0.259,
           -0.966,
           "wave",
-          4
+          8
         ],
         [
           90.37,
@@ -2700,7 +3085,7 @@
           -0.78,
           -0.626,
           "queue",
-          10
+          0
         ],
         [
           108.31,
@@ -2709,7 +3094,7 @@
           -0.78,
           -0.626,
           "merchant",
-          6
+          0
         ],
         [
           105.43,
@@ -2718,7 +3103,7 @@
           0.999,
           0.043,
           "queue",
-          2
+          9
         ],
         [
           106.12,
@@ -2727,7 +3112,7 @@
           0.78,
           0.626,
           "huddle",
-          10
+          4
         ],
         [
           106.81,
@@ -2736,7 +3121,7 @@
           0.259,
           0.966,
           "wave",
-          7
+          9
         ],
         [
           113.04,
@@ -2745,7 +3130,7 @@
           -0.855,
           -0.519,
           "merchant",
-          2
+          8
         ],
         [
           110.07,
@@ -2754,7 +3139,7 @@
           0.996,
           -0.086,
           "huddle",
-          4
+          0
         ],
         [
           110.65,
@@ -2763,7 +3148,7 @@
           0.855,
           0.519,
           "wave",
-          5
+          9
         ],
         [
           93.09,
@@ -2772,7 +3157,7 @@
           0.918,
           0.396,
           "merchant",
-          8
+          0
         ],
         [
           95.23,
@@ -2781,7 +3166,7 @@
           -0.506,
           -0.862,
           "wave",
-          2
+          9
         ],
         [
           95.66,
@@ -2790,7 +3175,7 @@
           -0.918,
           -0.396,
           "queue",
-          0
+          6
         ],
         [
           96.1,
@@ -2799,7 +3184,7 @@
           -0.975,
           0.224,
           "huddle",
-          10
+          2
         ],
         [
           116.78,
@@ -2808,7 +3193,7 @@
           -0.918,
           -0.396,
           "merchant",
-          1
+          9
         ],
         [
           113.77,
@@ -2817,7 +3202,7 @@
           0.975,
           -0.224,
           "queue",
-          3
+          5
         ],
         [
           114.21,
@@ -2835,7 +3220,7 @@
           0.949,
           0.316,
           "merchant",
-          2
+          8
         ],
         [
           97.3,
@@ -2844,7 +3229,7 @@
           -0.578,
           -0.816,
           "huddle",
-          6
+          8
         ],
         [
           97.64,
@@ -2853,7 +3238,7 @@
           -0.949,
           -0.316,
           "wave",
-          10
+          6
         ],
         [
           97.99,
@@ -2862,7 +3247,7 @@
           -0.952,
           0.306,
           "queue",
-          7
+          6
         ],
         [
           119.46,
@@ -2871,7 +3256,7 @@
           -0.949,
           -0.316,
           "merchant",
-          0
+          4
         ],
         [
           116.46,
@@ -2880,7 +3265,7 @@
           0.952,
           -0.306,
           "wave",
-          0
+          8
         ],
         [
           116.81,
@@ -2889,7 +3274,7 @@
           0.949,
           0.316,
           "queue",
-          4
+          5
         ],
         [
           96.42,
@@ -2916,7 +3301,7 @@
           -0.974,
           -0.228,
           "huddle",
-          2
+          8
         ],
         [
           99.4,
@@ -2925,7 +3310,7 @@
           -0.92,
           0.392,
           "wave",
-          7
+          2
         ],
         [
           121.54,
@@ -2934,7 +3319,7 @@
           -0.974,
           -0.228,
           "merchant",
-          5
+          10
         ],
         [
           118.57,
@@ -2943,7 +3328,7 @@
           0.92,
           -0.392,
           "huddle",
-          7
+          1
         ],
         [
           118.82,
@@ -2952,7 +3337,7 @@
           0.974,
           0.228,
           "wave",
-          0
+          9
         ],
         [
           122.92,
@@ -2961,7 +3346,7 @@
           -0.995,
           -0.096,
           "merchant",
-          3
+          9
         ],
         [
           120.03,
@@ -2970,7 +3355,7 @@
           0.86,
           -0.511,
           "wave",
-          0
+          3
         ],
         [
           120.14,
@@ -2979,7 +3364,7 @@
           0.995,
           0.096,
           "queue",
-          6
+          9
         ],
         [
           120.24,
@@ -2988,7 +3373,7 @@
           0.746,
           0.666,
           "huddle",
-          10
+          7
         ],
         [
           97.15,
@@ -2997,7 +3382,7 @@
           0.992,
           -0.126,
           "merchant",
-          10
+          3
         ],
         [
           100.07,
@@ -3006,7 +3391,7 @@
           -0.874,
           -0.485,
           "queue",
-          10
+          6
         ],
         [
           99.93,
@@ -3024,7 +3409,7 @@
           -0.992,
           0.126,
           "merchant",
-          4
+          10
         ],
         [
           120.11,
@@ -3033,7 +3418,7 @@
           0.726,
           -0.688,
           "huddle",
-          2
+          9
         ],
         [
           119.97,
@@ -3042,7 +3427,7 @@
           0.992,
           -0.126,
           "wave",
-          2
+          1
         ],
         [
           119.83,
@@ -3051,7 +3436,7 @@
           0.874,
           0.485,
           "queue",
-          3
+          7
         ],
         [
           96.14,
@@ -3060,7 +3445,7 @@
           0.979,
           -0.201,
           "merchant",
-          8
+          10
         ],
         [
           99.1,
@@ -3069,7 +3454,7 @@
           -0.909,
           -0.417,
           "wave",
-          4
+          2
         ],
         [
           98.88,
@@ -3078,7 +3463,7 @@
           -0.979,
           0.201,
           "queue",
-          2
+          0
         ],
         [
           121.41,
@@ -3096,7 +3481,7 @@
           0.671,
           -0.742,
           "queue",
-          2
+          9
         ],
         [
           118.67,
@@ -3105,7 +3490,7 @@
           0.979,
           -0.201,
           "huddle",
-          4
+          6
         ],
         [
           118.44,
@@ -3114,7 +3499,7 @@
           0.909,
           0.417,
           "wave",
-          1
+          9
         ],
         [
           94.92,
@@ -3123,7 +3508,7 @@
           0.99,
           -0.143,
           "merchant",
-          6
+          2
         ],
         [
           97.85,
@@ -3132,7 +3517,7 @@
           -0.883,
           -0.47,
           "huddle",
-          8
+          10
         ],
         [
           97.69,
@@ -3141,7 +3526,7 @@
           -0.99,
           0.143,
           "wave",
-          8
+          10
         ],
         [
           120.46,
@@ -3150,7 +3535,7 @@
           -0.99,
           0.143,
           "merchant",
-          3
+          10
         ],
         [
           117.84,
@@ -3159,7 +3544,7 @@
           0.714,
           -0.7,
           "wave",
-          8
+          7
         ],
         [
           117.69,
@@ -3168,7 +3553,7 @@
           0.99,
           -0.143,
           "queue",
-          2
+          9
         ],
         [
           117.53,
@@ -3177,7 +3562,7 @@
           0.883,
           0.47,
           "huddle",
-          0
+          1
         ],
         [
           93.98,
@@ -3186,7 +3571,7 @@
           0.988,
           -0.158,
           "merchant",
-          6
+          7
         ],
         [
           96.92,
@@ -3195,7 +3580,7 @@
           -0.89,
           -0.457,
           "queue",
-          7
+          2
         ],
         [
           96.74,
@@ -3204,7 +3589,7 @@
           -0.988,
           0.158,
           "huddle",
-          1
+          2
         ],
         [
           119.45,
@@ -3213,7 +3598,7 @@
           -0.988,
           0.158,
           "merchant",
-          1
+          3
         ],
         [
           116.86,
@@ -3222,7 +3607,7 @@
           0.703,
           -0.711,
           "huddle",
-          3
+          5
         ],
         [
           116.69,
@@ -3231,7 +3616,7 @@
           0.988,
           -0.158,
           "wave",
-          3
+          5
         ],
         [
           116.52,
@@ -3240,7 +3625,7 @@
           0.89,
           0.457,
           "queue",
-          9
+          7
         ],
         [
           92.95,
@@ -3249,7 +3634,7 @@
           0.982,
           -0.19,
           "merchant",
-          0
+          1
         ],
         [
           95.9,
@@ -3258,7 +3643,7 @@
           -0.904,
           -0.428,
           "wave",
-          6
+          5
         ],
         [
           95.69,
@@ -3267,7 +3652,7 @@
           -0.982,
           0.19,
           "queue",
-          3
+          8
         ],
         [
           118.28,
@@ -3276,7 +3661,7 @@
           -0.982,
           0.19,
           "merchant",
-          2
+          8
         ],
         [
           115.74,
@@ -3285,7 +3670,7 @@
           0.68,
           -0.734,
           "queue",
-          6
+          2
         ],
         [
           115.53,
@@ -3294,7 +3679,7 @@
           0.982,
           -0.19,
           "huddle",
-          1
+          10
         ],
         [
           115.32,
@@ -3330,7 +3715,7 @@
           -0.969,
           0.248,
           "wave",
-          10
+          2
         ],
         [
           116.68,
@@ -3339,7 +3724,7 @@
           -0.969,
           0.248,
           "merchant",
-          5
+          8
         ],
         [
           114.24,
@@ -3348,7 +3733,7 @@
           0.634,
           -0.773,
           "wave",
-          9
+          2
         ],
         [
           113.97,
@@ -3357,7 +3742,7 @@
           0.969,
           -0.248,
           "queue",
-          6
+          3
         ],
         [
           113.7,
@@ -3366,7 +3751,7 @@
           0.928,
           0.373,
           "huddle",
-          7
+          5
         ],
         [
           90.1,
@@ -3375,7 +3760,7 @@
           0.981,
           -0.194,
           "merchant",
-          3
+          5
         ],
         [
           93.06,
@@ -3384,7 +3769,7 @@
           -0.906,
           -0.423,
           "queue",
-          0
+          8
         ],
         [
           92.84,
@@ -3393,7 +3778,7 @@
           -0.981,
           0.194,
           "huddle",
-          5
+          8
         ],
         [
           115.41,
@@ -3402,7 +3787,7 @@
           -0.981,
           0.194,
           "merchant",
-          8
+          6
         ],
         [
           112.87,
@@ -3411,7 +3796,7 @@
           0.677,
           -0.736,
           "huddle",
-          2
+          7
         ],
         [
           112.66,
@@ -3420,7 +3805,7 @@
           0.981,
           -0.194,
           "wave",
-          10
+          2
         ],
         [
           112.45,
@@ -3429,7 +3814,7 @@
           0.906,
           0.423,
           "queue",
-          7
+          4
         ],
         [
           83.78,
@@ -3447,7 +3832,7 @@
           0.633,
           0.774,
           "merchant",
-          6
+          5
         ],
         [
           80.54,
@@ -3465,7 +3850,7 @@
           -0.057,
           -0.998,
           "queue",
-          6
+          5
         ],
         [
           84.72,
@@ -3474,7 +3859,7 @@
           -0.967,
           -0.254,
           "huddle",
-          3
+          1
         ],
         [
           125.33,
@@ -3483,7 +3868,7 @@
           -0.441,
           0.897,
           "hauler",
-          9
+          0
         ],
         [
           144.2,
@@ -3492,7 +3877,7 @@
           -0.856,
           0.516,
           "hauler",
-          10
+          7
         ],
         [
           79.84,
@@ -3501,7 +3886,7 @@
           0.904,
           0.427,
           "huddle",
-          1
+          2
         ],
         [
           80.31,
@@ -3510,7 +3895,7 @@
           0.427,
           -0.904,
           "wave",
-          2
+          10
         ],
         [
           81.65,
@@ -3519,7 +3904,7 @@
           -0.904,
           -0.427,
           "huddle",
-          2
+          7
         ],
         [
           81.17,
@@ -3528,7 +3913,7 @@
           -0.427,
           0.904,
           "cheer",
-          10
+          7
         ],
         [
           85.43,
@@ -3537,7 +3922,7 @@
           0.49,
           -0.872,
           "huddle",
-          5
+          7
         ],
         [
           86.8,
@@ -3546,7 +3931,7 @@
           -0.872,
           -0.49,
           "wave",
-          5
+          6
         ],
         [
           86.42,
@@ -3555,7 +3940,7 @@
           -0.49,
           0.872,
           "huddle",
-          0
+          4
         ],
         [
           85.05,
@@ -3564,7 +3949,7 @@
           0.872,
           0.49,
           "cheer",
-          5
+          0
         ],
         [
           130.35,
@@ -3573,7 +3958,7 @@
           0.958,
           -0.288,
           "huddle",
-          0
+          9
         ],
         [
           132.41,
@@ -3582,7 +3967,7 @@
           0.022,
           -1.0,
           "merchant",
-          3
+          6
         ],
         [
           134.53,
@@ -3591,7 +3976,7 @@
           -0.944,
           -0.33,
           "huddle",
-          2
+          0
         ],
         [
           133.79,
@@ -3600,7 +3985,7 @@
           -0.606,
           0.796,
           "queue",
-          1
+          8
         ],
         [
           131.2,
@@ -3609,7 +3994,7 @@
           0.57,
           0.822,
           "huddle",
-          0
+          3
         ],
         [
           80.32,
@@ -3618,7 +4003,7 @@
           0.99,
           -0.142,
           "merchant",
-          7
+          5
         ],
         [
           84.48,
@@ -3627,7 +4012,7 @@
           -0.99,
           0.142,
           "queue",
-          9
+          3
         ],
         [
           146.36,
@@ -3636,7 +4021,7 @@
           0.548,
           0.837,
           "huddle",
-          2
+          9
         ],
         [
           145.44,
@@ -3645,7 +4030,7 @@
           0.965,
           -0.262,
           "merchant",
-          5
+          7
         ],
         [
           147.46,
@@ -3654,7 +4039,7 @@
           0.049,
           -0.999,
           "huddle",
-          2
+          1
         ],
         [
           149.62,
@@ -3663,7 +4048,7 @@
           -0.935,
           -0.355,
           "queue",
-          1
+          8
         ],
         [
           148.94,
@@ -3672,7 +4057,7 @@
           -0.626,
           0.779,
           "huddle",
-          3
+          4
         ],
         [
           138.74,
@@ -3681,7 +4066,7 @@
           0.749,
           0.663,
           "huddle",
-          7
+          0
         ],
         [
           138.83,
@@ -3690,7 +4075,7 @@
           0.663,
           -0.749,
           "wave",
-          0
+          5
         ],
         [
           140.24,
@@ -3699,7 +4084,7 @@
           -0.749,
           -0.663,
           "huddle",
-          10
+          6
         ],
         [
           140.15,
@@ -3708,7 +4093,7 @@
           -0.663,
           0.749,
           "cheer",
-          3
+          10
         ],
         [
           147.01,
@@ -3717,7 +4102,7 @@
           -0.91,
           0.414,
           "merchant",
-          2
+          10
         ],
         [
           143.19,
@@ -3726,7 +4111,7 @@
           0.91,
           -0.414,
           "queue",
-          3
+          10
         ],
         [
           151.65,
@@ -3735,7 +4120,7 @@
           -0.826,
           0.563,
           "merchant",
-          8
+          4
         ],
         [
           140.5,
@@ -3744,7 +4129,7 @@
           -0.732,
           -0.682,
           "musician",
-          1
+          10
         ],
         [
           140.98,
@@ -3753,7 +4138,7 @@
           -0.969,
           -0.247,
           "musician",
-          4
+          2
         ],
         [
           140.98,
@@ -3762,7 +4147,7 @@
           -0.969,
           0.247,
           "musician",
-          3
+          0
         ],
         [
           140.5,
@@ -3771,7 +4156,7 @@
           -0.732,
           0.682,
           "musician",
-          3
+          1
         ],
         [
           148.04,
@@ -3780,7 +4165,7 @@
           -1.0,
           -0.0,
           "cheer",
-          7
+          3
         ],
         [
           145.4,
@@ -3789,7 +4174,7 @@
           -0.707,
           0.707,
           "dancer",
-          6
+          7
         ],
         [
           139.04,
@@ -3798,7 +4183,7 @@
           0.0,
           1.0,
           "cheer",
-          7
+          9
         ],
         [
           132.68,
@@ -3807,7 +4192,7 @@
           0.707,
           0.707,
           "dancer",
-          9
+          4
         ],
         [
           130.04,
@@ -3816,7 +4201,7 @@
           1.0,
           -0.0,
           "cheer",
-          2
+          0
         ],
         [
           132.68,
@@ -3825,7 +4210,7 @@
           0.707,
           -0.707,
           "dancer",
-          4
+          1
         ],
         [
           139.04,
@@ -3843,7 +4228,7 @@
           -0.707,
           -0.707,
           "dancer",
-          1
+          4
         ],
         [
           113.15,
@@ -3852,7 +4237,7 @@
           0.078,
           0.997,
           "guard",
-          8
+          9
         ],
         [
           114.51,
@@ -3861,7 +4246,7 @@
           0.034,
           0.999,
           "guard",
-          4
+          7
         ],
         [
           115.36,
@@ -3870,7 +4255,7 @@
           0.013,
           1.0,
           "guard",
-          9
+          6
         ],
         [
           40.0,
@@ -3879,7 +4264,7 @@
           0.0,
           1.0,
           "wave",
-          3
+          8
         ],
         [
           50.5,
@@ -3888,7 +4273,7 @@
           -1.0,
           -0.0,
           "cheer",
-          8
+          6
         ],
         [
           50.39,
@@ -3897,7 +4282,7 @@
           -0.99,
           0.142,
           "cheer",
-          1
+          0
         ],
         [
           52.37,
@@ -3906,7 +4291,7 @@
           -0.99,
           0.142,
           "cheer",
-          3
+          6
         ],
         [
           51.99,
@@ -3933,7 +4318,7 @@
           -0.841,
           0.541,
           "cheer",
-          0
+          8
         ],
         [
           50.52,
@@ -3942,7 +4327,7 @@
           -0.841,
           0.541,
           "cheer",
-          4
+          2
         ],
         [
           49.45,
@@ -3951,7 +4336,7 @@
           -0.756,
           0.655,
           "cheer",
-          0
+          6
         ],
         [
           46.88,
@@ -3960,7 +4345,7 @@
           -0.655,
           0.756,
           "cheer",
-          9
+          10
         ],
         [
           45.68,
@@ -3969,7 +4354,7 @@
           -0.541,
           0.841,
           "cheer",
-          7
+          8
         ],
         [
           46.76,
@@ -3978,7 +4363,7 @@
           -0.541,
           0.841,
           "cheer",
-          1
+          5
         ],
         [
           45.19,
@@ -3987,7 +4372,7 @@
           -0.415,
           0.91,
           "cheer",
-          6
+          2
         ],
         [
           42.96,
@@ -3996,7 +4381,7 @@
           -0.282,
           0.959,
           "cheer",
-          7
+          1
         ],
         [
           41.49,
@@ -4005,7 +4390,7 @@
           -0.142,
           0.99,
           "cheer",
-          6
+          2
         ],
         [
           41.78,
@@ -4014,7 +4399,7 @@
           -0.142,
           0.99,
           "cheer",
-          7
+          5
         ],
         [
           40.0,
@@ -4032,7 +4417,7 @@
           0.142,
           0.99,
           "cheer",
-          2
+          5
         ],
         [
           37.04,
@@ -4041,7 +4426,7 @@
           0.282,
           0.959,
           "cheer",
-          8
+          6
         ],
         [
           36.48,
@@ -4050,7 +4435,7 @@
           0.282,
           0.959,
           "cheer",
-          8
+          7
         ],
         [
           34.81,
@@ -4059,7 +4444,7 @@
           0.415,
           0.91,
           "cheer",
-          5
+          3
         ],
         [
           34.32,
@@ -4068,7 +4453,7 @@
           0.541,
           0.841,
           "cheer",
-          8
+          6
         ],
         [
           33.12,
@@ -4077,7 +4462,7 @@
           0.655,
           0.756,
           "cheer",
-          2
+          4
         ],
         [
           31.81,
@@ -4086,7 +4471,7 @@
           0.655,
           0.756,
           "cheer",
-          6
+          10
         ],
         [
           30.55,
@@ -4095,7 +4480,7 @@
           0.756,
           0.655,
           "cheer",
-          3
+          2
         ],
         [
           31.17,
@@ -4104,7 +4489,7 @@
           0.841,
           0.541,
           "cheer",
-          6
+          3
         ],
         [
           30.45,
@@ -4122,7 +4507,7 @@
           0.91,
           0.415,
           "cheer",
-          2
+          0
         ],
         [
           28.01,
@@ -4131,7 +4516,7 @@
           0.959,
           0.282,
           "cheer",
-          2
+          4
         ],
         [
           29.61,
@@ -4140,7 +4525,7 @@
           0.99,
           0.142,
           "cheer",
-          8
+          1
         ],
         [
           29.5,
@@ -4158,7 +4543,7 @@
           1.0,
           0.0,
           "cheer",
-          3
+          7
         ],
         [
           27.63,
@@ -4167,7 +4552,7 @@
           0.99,
           -0.142,
           "cheer",
-          1
+          9
         ],
         [
           29.93,
@@ -4176,7 +4561,7 @@
           0.959,
           -0.282,
           "cheer",
-          5
+          2
         ],
         [
           30.45,
@@ -4185,7 +4570,7 @@
           0.91,
           -0.415,
           "cheer",
-          5
+          0
         ],
         [
           28.63,
@@ -4194,7 +4579,7 @@
           0.91,
           -0.415,
           "cheer",
-          3
+          1
         ],
         [
           29.48,
@@ -4203,7 +4588,7 @@
           0.841,
           -0.541,
           "cheer",
-          5
+          9
         ],
         [
           32.06,
@@ -4221,7 +4606,7 @@
           0.655,
           -0.756,
           "cheer",
-          7
+          1
         ],
         [
           31.81,
@@ -4230,7 +4615,7 @@
           0.655,
           -0.756,
           "cheer",
-          5
+          10
         ],
         [
           33.24,
@@ -4239,7 +4624,7 @@
           0.541,
           -0.841,
           "cheer",
-          1
+          8
         ],
         [
           35.64,
@@ -4248,7 +4633,7 @@
           0.415,
           -0.91,
           "cheer",
-          4
+          2
         ],
         [
           37.04,
@@ -4257,7 +4642,7 @@
           0.282,
           -0.959,
           "cheer",
-          9
+          5
         ],
         [
           36.48,
@@ -4266,7 +4651,7 @@
           0.282,
           -0.959,
           "cheer",
-          9
+          3
         ],
         [
           38.22,
@@ -4275,7 +4660,7 @@
           0.142,
           -0.99,
           "cheer",
-          2
+          10
         ],
         [
           40.0,
@@ -4284,7 +4669,7 @@
           0.0,
           -1.0,
           "cheer",
-          0
+          2
         ],
         [
           41.49,
@@ -4293,7 +4678,7 @@
           -0.142,
           -0.99,
           "cheer",
-          10
+          0
         ],
         [
           41.78,
@@ -4302,7 +4687,7 @@
           -0.142,
           -0.99,
           "cheer",
-          8
+          6
         ],
         [
           43.52,
@@ -4311,7 +4696,7 @@
           -0.282,
           -0.959,
           "cheer",
-          8
+          7
         ],
         [
           44.36,
@@ -4329,7 +4714,7 @@
           -0.541,
           -0.841,
           "cheer",
-          1
+          3
         ],
         [
           46.76,
@@ -4347,7 +4732,7 @@
           -0.655,
           -0.756,
           "cheer",
-          7
+          6
         ],
         [
           47.94,
@@ -4356,7 +4741,7 @@
           -0.756,
           -0.655,
           "cheer",
-          2
+          8
         ],
         [
           48.83,
@@ -4365,7 +4750,7 @@
           -0.841,
           -0.541,
           "cheer",
-          4
+          5
         ],
         [
           50.52,
@@ -4374,7 +4759,7 @@
           -0.841,
           -0.541,
           "cheer",
-          10
+          9
         ],
         [
           51.37,
@@ -4383,7 +4768,7 @@
           -0.91,
           -0.415,
           "cheer",
-          8
+          1
         ],
         [
           50.07,
@@ -4401,7 +4786,7 @@
           -0.99,
           -0.142,
           "cheer",
-          7
+          8
         ],
         [
           52.37,
@@ -4410,7 +4795,7 @@
           -0.99,
           -0.142,
           "cheer",
-          10
+          0
         ],
         [
           62.28,
@@ -4419,7 +4804,7 @@
           -0.969,
           0.247,
           "merchant",
-          0
+          6
         ],
         [
           59.57,
@@ -4428,7 +4813,7 @@
           0.969,
           -0.247,
           "queue",
-          6
+          0
         ],
         [
           58.6,
@@ -4437,7 +4822,7 @@
           0.969,
           -0.247,
           "queue",
-          1
+          5
         ],
         [
           57.63,
@@ -4446,7 +4831,7 @@
           0.969,
           -0.247,
           "queue",
-          1
+          0
         ],
         [
           56.67,
@@ -4455,7 +4840,7 @@
           0.969,
           -0.247,
           "queue",
-          4
+          5
         ],
         [
           55.7,
@@ -4464,7 +4849,7 @@
           0.969,
           -0.247,
           "queue",
-          9
+          1
         ],
         [
           46.21,
@@ -4473,7 +4858,7 @@
           -0.27,
           0.963,
           "merchant",
-          5
+          0
         ],
         [
           45.46,
@@ -4482,7 +4867,7 @@
           0.27,
           -0.963,
           "queue",
-          9
+          6
         ],
         [
           45.19,
@@ -4491,7 +4876,7 @@
           0.27,
           -0.963,
           "queue",
-          2
+          4
         ],
         [
           44.92,
@@ -4500,7 +4885,7 @@
           0.27,
           -0.963,
           "queue",
-          9
+          7
         ],
         [
           44.65,
@@ -4509,7 +4894,7 @@
           0.27,
           -0.963,
           "queue",
-          6
+          5
         ],
         [
           44.38,
@@ -4518,7 +4903,7 @@
           0.27,
           -0.963,
           "queue",
-          7
+          4
         ],
         [
           23.93,
@@ -4536,7 +4921,7 @@
           -0.699,
           -0.715,
           "queue",
-          3
+          0
         ],
         [
           26.58,
@@ -4545,7 +4930,7 @@
           -0.699,
           -0.715,
           "queue",
-          1
+          4
         ],
         [
           27.28,
@@ -4554,7 +4939,7 @@
           -0.699,
           -0.715,
           "queue",
-          7
+          9
         ],
         [
           27.98,
@@ -4572,7 +4957,7 @@
           -0.699,
           -0.715,
           "queue",
-          2
+          4
         ],
         [
           17.72,
@@ -4581,7 +4966,7 @@
           0.969,
           -0.247,
           "merchant",
-          9
+          7
         ],
         [
           20.43,
@@ -4590,7 +4975,7 @@
           -0.969,
           0.247,
           "queue",
-          9
+          7
         ],
         [
           21.4,
@@ -4617,7 +5002,7 @@
           -0.969,
           0.247,
           "queue",
-          5
+          0
         ],
         [
           24.3,
@@ -4626,7 +5011,7 @@
           -0.969,
           0.247,
           "queue",
-          2
+          3
         ],
         [
           33.79,
@@ -4635,7 +5020,7 @@
           0.27,
           -0.963,
           "merchant",
-          1
+          10
         ],
         [
           34.54,
@@ -4644,7 +5029,7 @@
           -0.27,
           0.963,
           "queue",
-          2
+          1
         ],
         [
           34.81,
@@ -4653,7 +5038,7 @@
           -0.27,
           0.963,
           "queue",
-          0
+          10
         ],
         [
           35.08,
@@ -4662,7 +5047,7 @@
           -0.27,
           0.963,
           "queue",
-          6
+          2
         ],
         [
           35.35,
@@ -4671,7 +5056,7 @@
           -0.27,
           0.963,
           "queue",
-          5
+          8
         ],
         [
           35.62,
@@ -4680,7 +5065,7 @@
           -0.27,
           0.963,
           "queue",
-          7
+          8
         ],
         [
           56.07,
@@ -4689,7 +5074,7 @@
           -0.699,
           -0.715,
           "merchant",
-          9
+          2
         ],
         [
           54.11,
@@ -4698,7 +5083,7 @@
           0.699,
           0.715,
           "queue",
-          7
+          5
         ],
         [
           53.42,
@@ -4707,7 +5092,7 @@
           0.699,
           0.715,
           "queue",
-          8
+          7
         ],
         [
           52.72,
@@ -4716,7 +5101,7 @@
           0.699,
           0.715,
           "queue",
-          7
+          10
         ],
         [
           52.02,
@@ -4725,7 +5110,7 @@
           0.699,
           0.715,
           "queue",
-          2
+          3
         ],
         [
           51.32,
@@ -4734,7 +5119,7 @@
           0.699,
           0.715,
           "queue",
-          2
+          6
         ],
         [
           45.0,
@@ -4743,7 +5128,7 @@
           0.622,
           -0.783,
           "cheer",
-          5
+          4
         ],
         [
           46.42,
@@ -4752,7 +5137,7 @@
           0.267,
           -0.964,
           "huddle",
-          7
+          6
         ],
         [
           48.01,
@@ -4761,7 +5146,7 @@
           -0.129,
           -0.992,
           "cheer",
-          5
+          1
         ],
         [
           16.89,
@@ -4770,7 +5155,7 @@
           -0.99,
           -0.141,
           "cheer",
-          10
+          2
         ],
         [
           16.8,
@@ -4779,7 +5164,7 @@
           -0.967,
           0.256,
           "huddle",
-          5
+          2
         ],
         [
           16.09,
@@ -4788,7 +5173,7 @@
           -0.791,
           0.612,
           "cheer",
-          0
+          6
         ],
         [
           52.77,
@@ -4797,7 +5182,7 @@
           0.087,
           0.996,
           "cheer",
-          3
+          0
         ],
         [
           51.24,
@@ -4806,7 +5191,7 @@
           0.469,
           0.883,
           "huddle",
-          2
+          0
         ],
         [
           50.02,
@@ -4815,7 +5200,7 @@
           0.776,
           0.631,
           "cheer",
-          6
+          1
         ],
         [
           75.12,
@@ -4824,7 +5209,7 @@
           -0.46,
           -0.888,
           "cheer",
-          8
+          7
         ],
         [
           76.71,
@@ -4833,7 +5218,7 @@
           -0.481,
           -0.877,
           "cheer",
-          2
+          1
         ],
         [
           76.53,
@@ -4842,7 +5227,7 @@
           -0.461,
           -0.888,
           "cheer",
-          3
+          6
         ],
         [
           78.12,
@@ -4851,7 +5236,7 @@
           -0.481,
           -0.877,
           "cheer",
-          1
+          8
         ],
         [
           65.24,
@@ -4860,7 +5245,7 @@
           -0.456,
           -0.89,
           "cheer",
-          0
+          5
         ],
         [
           66.83,
@@ -4869,7 +5254,7 @@
           -0.485,
           -0.875,
           "cheer",
-          9
+          10
         ],
         [
           63.82,
@@ -4878,7 +5263,7 @@
           -0.455,
           -0.89,
           "cheer",
-          8
+          10
         ],
         [
           65.41,
@@ -4896,7 +5281,7 @@
           -0.454,
           -0.891,
           "cheer",
-          1
+          0
         ],
         [
           64.0,
@@ -4905,7 +5290,7 @@
           -0.487,
           -0.874,
           "cheer",
-          4
+          0
         ],
         [
           61.0,
@@ -4914,7 +5299,7 @@
           -0.453,
           -0.891,
           "cheer",
-          7
+          10
         ],
         [
           62.59,
@@ -4923,7 +5308,7 @@
           -0.488,
           -0.873,
           "cheer",
-          3
+          0
         ],
         [
           59.59,
@@ -4941,7 +5326,7 @@
           -0.489,
           -0.872,
           "cheer",
-          3
+          0
         ],
         [
           58.18,
@@ -4950,7 +5335,7 @@
           -0.451,
           -0.893,
           "cheer",
-          9
+          6
         ],
         [
           59.77,
@@ -4959,7 +5344,7 @@
           -0.49,
           -0.872,
           "cheer",
-          6
+          8
         ],
         [
           56.77,
@@ -4968,7 +5353,7 @@
           -0.449,
           -0.893,
           "cheer",
-          4
+          10
         ],
         [
           58.35,
@@ -4986,7 +5371,7 @@
           -0.4,
           -0.917,
           "wave",
-          0
+          4
         ],
         [
           71.98,
@@ -4995,7 +5380,7 @@
           -0.421,
           -0.907,
           "cheer",
-          3
+          6
         ],
         [
           71.57,
@@ -5004,7 +5389,7 @@
           -0.4,
           -0.917,
           "wave",
-          8
+          6
         ],
         [
           73.21,
@@ -5013,7 +5398,7 @@
           -0.421,
           -0.907,
           "cheer",
-          6
+          0
         ],
         [
           60.49,
@@ -5022,7 +5407,7 @@
           -0.395,
           -0.919,
           "wave",
-          9
+          4
         ],
         [
           62.13,
@@ -5031,7 +5416,7 @@
           -0.426,
           -0.905,
           "cheer",
-          6
+          1
         ],
         [
           59.26,
@@ -5040,7 +5425,7 @@
           -0.394,
           -0.919,
           "wave",
-          9
+          10
         ],
         [
           60.9,
@@ -5058,7 +5443,7 @@
           -0.392,
           -0.92,
           "wave",
-          0
+          6
         ],
         [
           59.67,
@@ -5067,7 +5452,7 @@
           -0.428,
           -0.904,
           "cheer",
-          5
+          1
         ],
         [
           56.8,
@@ -5076,7 +5461,7 @@
           -0.391,
           -0.92,
           "wave",
-          0
+          8
         ],
         [
           58.44,
@@ -5085,7 +5470,7 @@
           -0.429,
           -0.903,
           "cheer",
-          4
+          9
         ],
         [
           55.56,
@@ -5094,7 +5479,7 @@
           -0.39,
           -0.921,
           "wave",
-          5
+          7
         ],
         [
           57.21,
@@ -5103,7 +5488,7 @@
           -0.431,
           -0.902,
           "cheer",
-          2
+          9
         ],
         [
           54.33,
@@ -5112,7 +5497,7 @@
           -0.388,
           -0.922,
           "wave",
-          7
+          6
         ],
         [
           55.97,
@@ -5121,7 +5506,7 @@
           -0.433,
           -0.902,
           "cheer",
-          6
+          3
         ],
         [
           65.47,
@@ -5130,7 +5515,7 @@
           -0.337,
           -0.941,
           "cheer",
-          9
+          5
         ],
         [
           67.16,
@@ -5139,7 +5524,7 @@
           -0.359,
           -0.933,
           "cheer",
-          2
+          10
         ],
         [
           66.51,
@@ -5148,7 +5533,7 @@
           -0.338,
           -0.941,
           "cheer",
-          6
+          5
         ],
         [
           68.2,
@@ -5157,7 +5542,7 @@
           -0.359,
           -0.933,
           "cheer",
-          0
+          6
         ],
         [
           57.11,
@@ -5166,7 +5551,7 @@
           -0.332,
           -0.943,
           "cheer",
-          0
+          6
         ],
         [
           58.8,
@@ -5175,7 +5560,7 @@
           -0.365,
           -0.931,
           "cheer",
-          3
+          6
         ],
         [
           56.06,
@@ -5184,7 +5569,7 @@
           -0.331,
           -0.944,
           "cheer",
-          6
+          7
         ],
         [
           57.75,
@@ -5193,7 +5578,7 @@
           -0.366,
           -0.931,
           "cheer",
-          6
+          9
         ],
         [
           55.02,
@@ -5202,7 +5587,7 @@
           -0.33,
           -0.944,
           "cheer",
-          5
+          0
         ],
         [
           56.71,
@@ -5211,7 +5596,7 @@
           -0.367,
           -0.93,
           "cheer",
-          1
+          5
         ],
         [
           53.97,
@@ -5220,7 +5605,7 @@
           -0.328,
           -0.945,
           "cheer",
-          1
+          5
         ],
         [
           55.66,
@@ -5229,7 +5614,7 @@
           -0.368,
           -0.93,
           "cheer",
-          3
+          10
         ],
         [
           52.93,
@@ -5238,7 +5623,7 @@
           -0.327,
           -0.945,
           "cheer",
-          0
+          10
         ],
         [
           54.62,
@@ -5247,7 +5632,7 @@
           -0.37,
           -0.929,
           "cheer",
-          4
+          7
         ],
         [
           51.88,
@@ -5256,7 +5641,7 @@
           -0.325,
           -0.946,
           "cheer",
-          1
+          4
         ],
         [
           53.57,
@@ -5265,7 +5650,7 @@
           -0.371,
           -0.929,
           "cheer",
-          7
+          10
         ],
         [
           50.55,
@@ -5274,7 +5659,7 @@
           -0.142,
           -0.99,
           "wave",
-          8
+          4
         ],
         [
           52.33,
@@ -5283,7 +5668,7 @@
           -0.166,
           -0.986,
           "cheer",
-          7
+          10
         ],
         [
           51.01,
@@ -5292,7 +5677,7 @@
           -0.142,
           -0.99,
           "wave",
-          10
+          4
         ],
         [
           52.79,
@@ -5301,7 +5686,7 @@
           -0.165,
           -0.986,
           "cheer",
-          1
+          8
         ],
         [
           47.32,
@@ -5310,7 +5695,7 @@
           -0.137,
           -0.991,
           "wave",
-          0
+          5
         ],
         [
           49.1,
@@ -5319,7 +5704,7 @@
           -0.17,
           -0.985,
           "cheer",
-          1
+          3
         ],
         [
           46.86,
@@ -5328,7 +5713,7 @@
           -0.136,
           -0.991,
           "wave",
-          1
+          5
         ],
         [
           48.64,
@@ -5337,7 +5722,7 @@
           -0.171,
           -0.985,
           "cheer",
-          5
+          3
         ],
         [
           46.4,
@@ -5346,7 +5731,7 @@
           -0.135,
           -0.991,
           "wave",
-          7
+          10
         ],
         [
           48.18,
@@ -5355,7 +5740,7 @@
           -0.173,
           -0.985,
           "cheer",
-          7
+          3
         ],
         [
           45.94,
@@ -5364,7 +5749,7 @@
           -0.134,
           -0.991,
           "wave",
-          6
+          7
         ],
         [
           47.71,
@@ -5373,7 +5758,7 @@
           -0.174,
           -0.985,
           "cheer",
-          5
+          6
         ],
         [
           45.47,
@@ -5382,7 +5767,7 @@
           -0.132,
           -0.991,
           "wave",
-          7
+          1
         ],
         [
           47.25,
@@ -5391,7 +5776,7 @@
           -0.175,
           -0.985,
           "cheer",
-          10
+          5
         ],
         [
           45.01,
@@ -5400,7 +5785,7 @@
           -0.131,
           -0.991,
           "wave",
-          10
+          6
         ],
         [
           46.79,
@@ -5409,7 +5794,7 @@
           -0.177,
           -0.984,
           "cheer",
-          10
+          9
         ],
         [
           45.55,
@@ -5418,7 +5803,7 @@
           -0.075,
           -0.997,
           "cheer",
-          1
+          8
         ],
         [
           47.35,
@@ -5427,7 +5812,7 @@
           -0.099,
           -0.995,
           "cheer",
-          0
+          6
         ],
         [
           45.81,
@@ -5436,7 +5821,7 @@
           -0.076,
           -0.997,
           "cheer",
-          10
+          6
         ],
         [
           47.61,
@@ -5445,7 +5830,7 @@
           -0.099,
           -0.995,
           "cheer",
-          3
+          1
         ],
         [
           43.72,
@@ -5454,7 +5839,7 @@
           -0.07,
           -0.998,
           "cheer",
-          5
+          9
         ],
         [
           45.52,
@@ -5463,7 +5848,7 @@
           -0.104,
           -0.995,
           "cheer",
-          10
+          2
         ],
         [
           43.46,
@@ -5472,7 +5857,7 @@
           -0.069,
           -0.998,
           "cheer",
-          7
+          5
         ],
         [
           45.25,
@@ -5481,7 +5866,7 @@
           -0.105,
           -0.994,
           "cheer",
-          4
+          9
         ],
         [
           43.2,
@@ -5490,7 +5875,7 @@
           -0.068,
           -0.998,
           "cheer",
-          7
+          8
         ],
         [
           44.99,
@@ -5499,7 +5884,7 @@
           -0.106,
           -0.994,
           "cheer",
-          9
+          2
         ],
         [
           42.94,
@@ -5508,7 +5893,7 @@
           -0.067,
           -0.998,
           "cheer",
-          6
+          5
         ],
         [
           44.73,
@@ -5517,7 +5902,7 @@
           -0.108,
           -0.994,
           "cheer",
-          5
+          9
         ],
         [
           42.68,
@@ -5526,7 +5911,7 @@
           -0.065,
           -0.998,
           "cheer",
-          7
+          10
         ],
         [
           44.47,
@@ -5535,7 +5920,7 @@
           -0.109,
           -0.994,
           "cheer",
-          1
+          0
         ],
         [
           42.42,
@@ -5544,7 +5929,7 @@
           -0.064,
           -0.998,
           "cheer",
-          7
+          2
         ],
         [
           44.21,
@@ -5553,7 +5938,7 @@
           -0.111,
           -0.994,
           "cheer",
-          3
+          5
         ],
         [
           40.58,
@@ -5562,7 +5947,7 @@
           -0.008,
           -1.0,
           "cheer",
-          10
+          8
         ],
         [
           42.38,
@@ -5571,7 +5956,7 @@
           -0.032,
           -0.999,
           "wave",
-          6
+          5
         ],
         [
           40.64,
@@ -5580,7 +5965,7 @@
           -0.008,
           -1.0,
           "cheer",
-          8
+          9
         ],
         [
           42.44,
@@ -5589,7 +5974,7 @@
           -0.032,
           -0.999,
           "wave",
-          0
+          1
         ],
         [
           40.7,
@@ -5598,7 +5983,7 @@
           -0.009,
           -1.0,
           "cheer",
-          3
+          7
         ],
         [
           42.5,
@@ -5616,7 +6001,7 @@
           -0.003,
           -1.0,
           "cheer",
-          2
+          4
         ],
         [
           41.96,
@@ -5625,7 +6010,7 @@
           -0.037,
           -0.999,
           "wave",
-          2
+          7
         ],
         [
           40.1,
@@ -5634,7 +6019,7 @@
           -0.002,
           -1.0,
           "cheer",
-          5
+          2
         ],
         [
           41.9,
@@ -5643,7 +6028,7 @@
           -0.038,
           -0.999,
           "wave",
-          10
+          3
         ],
         [
           40.04,
@@ -5652,7 +6037,7 @@
           -0.001,
           -1.0,
           "cheer",
-          2
+          3
         ],
         [
           41.84,
@@ -5661,7 +6046,7 @@
           -0.039,
           -0.999,
           "wave",
-          6
+          3
         ],
         [
           39.98,
@@ -5670,7 +6055,7 @@
           0.0,
           -1.0,
           "cheer",
-          9
+          10
         ],
         [
           41.78,
@@ -5679,7 +6064,7 @@
           -0.041,
           -0.999,
           "wave",
-          2
+          6
         ],
         [
           39.92,
@@ -5688,7 +6073,7 @@
           0.002,
           -1.0,
           "cheer",
-          1
+          4
         ],
         [
           41.72,
@@ -5697,7 +6082,7 @@
           -0.042,
           -0.999,
           "wave",
-          1
+          7
         ],
         [
           39.86,
@@ -5706,7 +6091,7 @@
           0.004,
           -1.0,
           "cheer",
-          7
+          10
         ],
         [
           41.66,
@@ -5724,7 +6109,7 @@
           0.192,
           -0.981,
           "cheer",
-          6
+          1
         ],
         [
           27.82,
@@ -5733,7 +6118,7 @@
           0.168,
           -0.986,
           "cheer",
-          10
+          5
         ],
         [
           25.51,
@@ -5742,7 +6127,7 @@
           0.192,
           -0.981,
           "cheer",
-          5
+          3
         ],
         [
           27.28,
@@ -5751,7 +6136,7 @@
           0.169,
           -0.986,
           "cheer",
-          8
+          5
         ],
         [
           24.97,
@@ -5769,7 +6154,7 @@
           0.169,
           -0.986,
           "cheer",
-          1
+          4
         ],
         [
           29.84,
@@ -5778,7 +6163,7 @@
           0.197,
           -0.98,
           "cheer",
-          3
+          5
         ],
         [
           31.61,
@@ -5796,7 +6181,7 @@
           0.198,
           -0.98,
           "cheer",
-          8
+          2
         ],
         [
           32.15,
@@ -5805,7 +6190,7 @@
           0.162,
           -0.987,
           "cheer",
-          6
+          2
         ],
         [
           30.92,
@@ -5814,7 +6199,7 @@
           0.2,
           -0.98,
           "cheer",
-          7
+          3
         ],
         [
           32.69,
@@ -5823,7 +6208,7 @@
           0.161,
           -0.987,
           "cheer",
-          4
+          10
         ],
         [
           31.46,
@@ -5832,7 +6217,7 @@
           0.201,
           -0.98,
           "cheer",
-          7
+          2
         ],
         [
           33.23,
@@ -5841,7 +6226,7 @@
           0.159,
           -0.987,
           "cheer",
-          2
+          9
         ],
         [
           32.0,
@@ -5850,7 +6235,7 @@
           0.203,
           -0.979,
           "cheer",
-          2
+          4
         ],
         [
           33.77,
@@ -5859,7 +6244,7 @@
           0.158,
           -0.987,
           "cheer",
-          5
+          2
         ],
         [
           32.54,
@@ -5868,7 +6253,7 @@
           0.204,
           -0.979,
           "cheer",
-          8
+          1
         ],
         [
           34.31,
@@ -5886,7 +6271,7 @@
           0.258,
           -0.966,
           "cheer",
-          2
+          0
         ],
         [
           23.15,
@@ -5904,7 +6289,7 @@
           0.257,
           -0.966,
           "cheer",
-          6
+          7
         ],
         [
           22.42,
@@ -5913,7 +6298,7 @@
           0.234,
           -0.972,
           "wave",
-          6
+          8
         ],
         [
           19.93,
@@ -5922,7 +6307,7 @@
           0.257,
           -0.966,
           "cheer",
-          3
+          4
         ],
         [
           21.68,
@@ -5931,7 +6316,7 @@
           0.235,
           -0.972,
           "wave",
-          4
+          3
         ],
         [
           26.57,
@@ -5940,7 +6325,7 @@
           0.263,
           -0.965,
           "cheer",
-          4
+          2
         ],
         [
           28.32,
@@ -5949,7 +6334,7 @@
           0.229,
           -0.973,
           "wave",
-          0
+          2
         ],
         [
           27.31,
@@ -5958,7 +6343,7 @@
           0.264,
           -0.965,
           "cheer",
-          1
+          7
         ],
         [
           29.05,
@@ -5967,7 +6352,7 @@
           0.228,
           -0.974,
           "wave",
-          10
+          8
         ],
         [
           28.05,
@@ -5976,7 +6361,7 @@
           0.265,
           -0.964,
           "cheer",
-          0
+          10
         ],
         [
           29.79,
@@ -5985,7 +6370,7 @@
           0.226,
           -0.974,
           "wave",
-          7
+          1
         ],
         [
           28.78,
@@ -6003,7 +6388,7 @@
           0.225,
           -0.974,
           "wave",
-          4
+          9
         ],
         [
           29.52,
@@ -6012,7 +6397,7 @@
           0.268,
           -0.963,
           "cheer",
-          8
+          5
         ],
         [
           31.27,
@@ -6021,7 +6406,7 @@
           0.223,
           -0.975,
           "wave",
-          4
+          0
         ],
         [
           30.26,
@@ -6030,7 +6415,7 @@
           0.27,
           -0.963,
           "cheer",
-          2
+          7
         ],
         [
           32.0,
@@ -6039,7 +6424,7 @@
           0.222,
           -0.975,
           "wave",
-          0
+          9
         ],
         [
           16.9,
@@ -6048,7 +6433,7 @@
           0.322,
           -0.947,
           "cheer",
-          6
+          7
         ],
         [
           18.61,
@@ -6057,7 +6442,7 @@
           0.298,
           -0.954,
           "cheer",
-          6
+          1
         ],
         [
           15.97,
@@ -6066,7 +6451,7 @@
           0.322,
           -0.947,
           "cheer",
-          5
+          3
         ],
         [
           17.68,
@@ -6075,7 +6460,7 @@
           0.299,
           -0.954,
           "cheer",
-          7
+          1
         ],
         [
           15.04,
@@ -6093,7 +6478,7 @@
           0.299,
           -0.954,
           "cheer",
-          10
+          7
         ],
         [
           23.41,
@@ -6102,7 +6487,7 @@
           0.327,
           -0.945,
           "cheer",
-          7
+          4
         ],
         [
           25.13,
@@ -6111,7 +6496,7 @@
           0.293,
           -0.956,
           "cheer",
-          4
+          3
         ],
         [
           24.35,
@@ -6120,7 +6505,7 @@
           0.328,
           -0.945,
           "cheer",
-          6
+          7
         ],
         [
           26.06,
@@ -6138,7 +6523,7 @@
           0.329,
           -0.944,
           "cheer",
-          8
+          3
         ],
         [
           26.99,
@@ -6147,7 +6532,7 @@
           0.291,
           -0.957,
           "cheer",
-          9
+          0
         ],
         [
           26.21,
@@ -6156,7 +6541,7 @@
           0.331,
           -0.944,
           "cheer",
-          3
+          8
         ],
         [
           27.92,
@@ -6165,7 +6550,7 @@
           0.29,
           -0.957,
           "cheer",
-          9
+          6
         ],
         [
           27.14,
@@ -6174,7 +6559,7 @@
           0.332,
           -0.943,
           "cheer",
-          2
+          6
         ],
         [
           28.85,
@@ -6183,7 +6568,7 @@
           0.288,
           -0.958,
           "cheer",
-          7
+          3
         ],
         [
           4.36,
@@ -6192,7 +6577,7 @@
           0.505,
           -0.863,
           "cheer",
-          8
+          2
         ],
         [
           5.92,
@@ -6201,7 +6586,7 @@
           0.483,
           -0.876,
           "wave",
-          6
+          4
         ],
         [
           2.88,
@@ -6210,7 +6595,7 @@
           0.505,
           -0.863,
           "cheer",
-          6
+          8
         ],
         [
           4.44,
@@ -6219,7 +6604,7 @@
           0.483,
           -0.875,
           "wave",
-          0
+          5
         ],
         [
           1.39,
@@ -6228,7 +6613,7 @@
           0.504,
           -0.863,
           "cheer",
-          4
+          0
         ],
         [
           2.96,
@@ -6237,7 +6622,7 @@
           0.484,
           -0.875,
           "wave",
-          2
+          10
         ],
         [
           -0.09,
@@ -6246,7 +6631,7 @@
           0.504,
           -0.864,
           "cheer",
-          0
+          3
         ],
         [
           1.48,
@@ -6255,7 +6640,7 @@
           0.484,
           -0.875,
           "wave",
-          1
+          4
         ],
         [
           14.74,
@@ -6264,7 +6649,7 @@
           0.51,
           -0.86,
           "cheer",
-          5
+          10
         ],
         [
           16.3,
@@ -6273,7 +6658,7 @@
           0.478,
           -0.878,
           "wave",
-          10
+          9
         ],
         [
           16.22,
@@ -6291,7 +6676,7 @@
           0.477,
           -0.879,
           "wave",
-          5
+          8
         ],
         [
           17.7,
@@ -6300,7 +6685,7 @@
           0.512,
           -0.859,
           "cheer",
-          1
+          7
         ],
         [
           19.27,
@@ -6309,7 +6694,7 @@
           0.476,
           -0.879,
           "wave",
-          6
+          1
         ],
         [
           19.18,
@@ -6327,7 +6712,7 @@
           0.475,
           -0.88,
           "wave",
-          1
+          10
         ],
         [
           20.67,
@@ -6336,7 +6721,7 @@
           0.515,
           -0.857,
           "cheer",
-          4
+          10
         ],
         [
           22.23,
@@ -6345,7 +6730,7 @@
           0.473,
           -0.881,
           "wave",
-          4
+          10
         ],
         [
           0.57,
@@ -6354,7 +6739,7 @@
           0.562,
           -0.827,
           "cheer",
-          6
+          4
         ],
         [
           2.07,
@@ -6363,7 +6748,7 @@
           0.541,
           -0.841,
           "cheer",
-          1
+          10
         ],
         [
           -1.09,
@@ -6372,7 +6757,7 @@
           0.562,
           -0.827,
           "cheer",
-          5
+          0
         ],
         [
           0.42,
@@ -6381,7 +6766,7 @@
           0.541,
           -0.841,
           "cheer",
-          6
+          9
         ],
         [
           -2.74,
@@ -6390,7 +6775,7 @@
           0.561,
           -0.828,
           "cheer",
-          9
+          8
         ],
         [
           -1.24,
@@ -6399,7 +6784,7 @@
           0.541,
           -0.841,
           "cheer",
-          2
+          1
         ],
         [
           -4.39,
@@ -6408,7 +6793,7 @@
           0.561,
           -0.828,
           "cheer",
-          9
+          1
         ],
         [
           -2.89,
@@ -6417,7 +6802,7 @@
           0.542,
           -0.84,
           "cheer",
-          7
+          10
         ],
         [
           12.15,
@@ -6426,7 +6811,7 @@
           0.567,
           -0.824,
           "cheer",
-          5
+          0
         ],
         [
           13.65,
@@ -6435,7 +6820,7 @@
           0.536,
           -0.844,
           "cheer",
-          8
+          7
         ],
         [
           13.8,
@@ -6444,7 +6829,7 @@
           0.568,
           -0.823,
           "cheer",
-          4
+          10
         ],
         [
           15.3,
@@ -6462,7 +6847,7 @@
           0.569,
           -0.823,
           "cheer",
-          2
+          5
         ],
         [
           16.96,
@@ -6471,7 +6856,7 @@
           0.534,
           -0.846,
           "cheer",
-          1
+          9
         ],
         [
           17.11,
@@ -6489,7 +6874,7 @@
           0.533,
           -0.846,
           "cheer",
-          7
+          10
         ],
         [
           18.76,
@@ -6507,7 +6892,7 @@
           0.531,
           -0.847,
           "cheer",
-          5
+          3
         ],
         [
           -3.0,
@@ -6516,7 +6901,7 @@
           0.616,
           -0.788,
           "wave",
-          0
+          8
         ],
         [
           -1.57,
@@ -6525,7 +6910,7 @@
           0.596,
           -0.803,
           "cheer",
-          7
+          5
         ],
         [
           -4.82,
@@ -6534,7 +6919,7 @@
           0.616,
           -0.788,
           "wave",
-          3
+          1
         ],
         [
           -3.39,
@@ -6561,7 +6946,7 @@
           0.597,
           -0.803,
           "cheer",
-          6
+          10
         ],
         [
           -8.46,
@@ -6570,7 +6955,7 @@
           0.615,
           -0.788,
           "wave",
-          7
+          9
         ],
         [
           -7.03,
@@ -6579,7 +6964,7 @@
           0.597,
           -0.802,
           "cheer",
-          3
+          6
         ],
         [
           9.73,
@@ -6597,7 +6982,7 @@
           0.591,
           -0.806,
           "cheer",
-          6
+          4
         ],
         [
           11.54,
@@ -6606,7 +6991,7 @@
           0.622,
           -0.783,
           "wave",
-          0
+          1
         ],
         [
           12.98,
@@ -6615,7 +7000,7 @@
           0.59,
           -0.807,
           "cheer",
-          9
+          3
         ],
         [
           13.36,
@@ -6624,7 +7009,7 @@
           0.623,
           -0.782,
           "wave",
-          10
+          3
         ],
         [
           14.79,
@@ -6633,7 +7018,7 @@
           0.589,
           -0.808,
           "cheer",
-          9
+          8
         ],
         [
           15.18,
@@ -6642,7 +7027,7 @@
           0.624,
           -0.781,
           "wave",
-          9
+          3
         ],
         [
           16.61,
@@ -6651,7 +7036,7 @@
           0.588,
           -0.809,
           "cheer",
-          1
+          2
         ],
         [
           17.0,
@@ -6660,7 +7045,7 @@
           0.625,
           -0.78,
           "wave",
-          5
+          9
         ],
         [
           18.43,
@@ -6669,7 +7054,7 @@
           0.586,
           -0.81,
           "cheer",
-          2
+          10
         ],
         [
           -9.43,
@@ -6678,7 +7063,7 @@
           0.716,
           -0.698,
           "cheer",
-          7
+          8
         ],
         [
           -8.15,
@@ -6687,7 +7072,7 @@
           0.698,
           -0.716,
           "wave",
-          5
+          9
         ],
         [
           -11.55,
@@ -6696,7 +7081,7 @@
           0.716,
           -0.698,
           "cheer",
-          3
+          10
         ],
         [
           -10.28,
@@ -6705,7 +7090,7 @@
           0.698,
           -0.716,
           "wave",
-          7
+          4
         ],
         [
           -13.67,
@@ -6714,7 +7099,7 @@
           0.716,
           -0.699,
           "cheer",
-          1
+          7
         ],
         [
           -12.4,
@@ -6723,7 +7108,7 @@
           0.699,
           -0.716,
           "wave",
-          2
+          7
         ],
         [
           -15.79,
@@ -6732,7 +7117,7 @@
           0.715,
           -0.699,
           "cheer",
-          10
+          6
         ],
         [
           -14.52,
@@ -6741,7 +7126,7 @@
           0.699,
           -0.715,
           "wave",
-          2
+          7
         ],
         [
           5.42,
@@ -6750,7 +7135,7 @@
           0.72,
           -0.694,
           "cheer",
-          1
+          9
         ],
         [
           6.7,
@@ -6759,7 +7144,7 @@
           0.694,
           -0.72,
           "wave",
-          6
+          3
         ],
         [
           7.54,
@@ -6768,7 +7153,7 @@
           0.721,
           -0.693,
           "cheer",
-          3
+          1
         ],
         [
           8.82,
@@ -6777,7 +7162,7 @@
           0.693,
           -0.721,
           "wave",
-          3
+          5
         ],
         [
           9.67,
@@ -6786,7 +7171,7 @@
           0.722,
           -0.692,
           "cheer",
-          7
+          10
         ],
         [
           10.94,
@@ -6795,7 +7180,7 @@
           0.692,
           -0.722,
           "wave",
-          3
+          4
         ],
         [
           11.79,
@@ -6804,7 +7189,7 @@
           0.723,
           -0.691,
           "cheer",
-          5
+          4
         ],
         [
           13.06,
@@ -6813,7 +7198,7 @@
           0.691,
           -0.723,
           "wave",
-          5
+          2
         ],
         [
           -12.26,
@@ -6822,7 +7207,7 @@
           0.762,
           -0.648,
           "cheer",
-          2
+          3
         ],
         [
           -11.07,
@@ -6831,7 +7216,7 @@
           0.744,
           -0.668,
           "cheer",
-          2
+          6
         ],
         [
           -14.51,
@@ -6840,7 +7225,7 @@
           0.761,
           -0.649,
           "cheer",
-          10
+          2
         ],
         [
           -13.33,
@@ -6849,7 +7234,7 @@
           0.745,
           -0.667,
           "cheer",
-          4
+          2
         ],
         [
           -16.77,
@@ -6858,7 +7243,7 @@
           0.761,
           -0.649,
           "cheer",
-          5
+          7
         ],
         [
           -15.59,
@@ -6867,7 +7252,7 @@
           0.745,
           -0.667,
           "cheer",
-          6
+          9
         ],
         [
           -19.03,
@@ -6876,7 +7261,7 @@
           0.761,
           -0.649,
           "cheer",
-          6
+          0
         ],
         [
           -17.85,
@@ -6885,7 +7270,7 @@
           0.745,
           -0.667,
           "cheer",
-          6
+          7
         ],
         [
           3.56,
@@ -6894,7 +7279,7 @@
           0.765,
           -0.644,
           "cheer",
-          6
+          5
         ],
         [
           4.74,
@@ -6903,7 +7288,7 @@
           0.74,
           -0.672,
           "cheer",
-          10
+          6
         ],
         [
           5.81,
@@ -6921,7 +7306,7 @@
           0.74,
           -0.673,
           "cheer",
-          8
+          1
         ],
         [
           8.07,
@@ -6930,7 +7315,7 @@
           0.767,
           -0.642,
           "cheer",
-          9
+          3
         ],
         [
           9.26,
@@ -6948,7 +7333,7 @@
           0.768,
           -0.64,
           "cheer",
-          4
+          9
         ],
         [
           11.52,
@@ -6957,7 +7342,7 @@
           0.737,
           -0.675,
           "cheer",
-          1
+          0
         ],
         [
           -14.82,
@@ -6966,7 +7351,7 @@
           0.803,
           -0.596,
           "wave",
-          2
+          9
         ],
         [
           -13.72,
@@ -6975,7 +7360,7 @@
           0.787,
           -0.617,
           "cheer",
-          2
+          5
         ],
         [
           -17.2,
@@ -6984,7 +7369,7 @@
           0.803,
           -0.596,
           "wave",
-          0
+          5
         ],
         [
           -16.11,
@@ -6993,7 +7378,7 @@
           0.788,
           -0.616,
           "cheer",
-          7
+          4
         ],
         [
           -19.59,
@@ -7002,7 +7387,7 @@
           0.803,
           -0.596,
           "wave",
-          1
+          5
         ],
         [
           -18.5,
@@ -7011,7 +7396,7 @@
           0.788,
           -0.616,
           "cheer",
-          10
+          0
         ],
         [
           -21.97,
@@ -7020,7 +7405,7 @@
           0.802,
           -0.597,
           "wave",
-          7
+          1
         ],
         [
           -20.88,
@@ -7029,7 +7414,7 @@
           0.788,
           -0.615,
           "cheer",
-          5
+          3
         ],
         [
           1.89,
@@ -7038,7 +7423,7 @@
           0.807,
           -0.591,
           "wave",
-          5
+          2
         ],
         [
           2.98,
@@ -7047,7 +7432,7 @@
           0.784,
           -0.621,
           "cheer",
-          1
+          3
         ],
         [
           4.27,
@@ -7056,7 +7441,7 @@
           0.808,
           -0.59,
           "wave",
-          1
+          2
         ],
         [
           5.36,
@@ -7065,7 +7450,7 @@
           0.783,
           -0.622,
           "cheer",
-          10
+          1
         ],
         [
           6.66,
@@ -7074,7 +7459,7 @@
           0.808,
           -0.589,
           "wave",
-          6
+          4
         ],
         [
           7.75,
@@ -7083,7 +7468,7 @@
           0.782,
           -0.623,
           "cheer",
-          6
+          5
         ],
         [
           9.05,
@@ -7092,7 +7477,7 @@
           0.809,
           -0.587,
           "wave",
-          2
+          7
         ],
         [
           10.14,
@@ -7101,7 +7486,7 @@
           0.781,
           -0.625,
           "cheer",
-          2
+          5
         ],
         [
           -17.1,
@@ -7110,7 +7495,7 @@
           0.841,
           -0.54,
           "cheer",
-          6
+          4
         ],
         [
           -16.1,
@@ -7119,7 +7504,7 @@
           0.827,
           -0.562,
           "cheer",
-          1
+          7
         ],
         [
           -19.6,
@@ -7128,7 +7513,7 @@
           0.841,
           -0.541,
           "cheer",
-          10
+          3
         ],
         [
           -18.61,
@@ -7137,7 +7522,7 @@
           0.827,
           -0.562,
           "cheer",
-          2
+          1
         ],
         [
           -22.1,
@@ -7155,7 +7540,7 @@
           0.827,
           -0.562,
           "cheer",
-          9
+          6
         ],
         [
           -24.61,
@@ -7164,7 +7549,7 @@
           0.841,
           -0.542,
           "cheer",
-          0
+          8
         ],
         [
           -23.61,
@@ -7173,7 +7558,7 @@
           0.828,
           -0.561,
           "cheer",
-          7
+          1
         ],
         [
           -27.11,
@@ -7182,7 +7567,7 @@
           0.84,
           -0.542,
           "cheer",
-          1
+          2
         ],
         [
           -26.12,
@@ -7191,7 +7576,7 @@
           0.828,
           -0.561,
           "cheer",
-          4
+          6
         ],
         [
           0.42,
@@ -7200,7 +7585,7 @@
           0.845,
           -0.535,
           "cheer",
-          1
+          5
         ],
         [
           1.41,
@@ -7209,7 +7594,7 @@
           0.824,
           -0.567,
           "cheer",
-          8
+          5
         ],
         [
           2.92,
@@ -7218,7 +7603,7 @@
           0.845,
           -0.534,
           "cheer",
-          4
+          0
         ],
         [
           3.92,
@@ -7227,7 +7612,7 @@
           0.823,
           -0.568,
           "cheer",
-          6
+          1
         ],
         [
           5.43,
@@ -7236,7 +7621,7 @@
           0.846,
           -0.533,
           "cheer",
-          6
+          8
         ],
         [
           6.42,
@@ -7245,7 +7630,7 @@
           0.822,
           -0.57,
           "cheer",
-          8
+          1
         ],
         [
           7.93,
@@ -7263,7 +7648,7 @@
           0.821,
           -0.571,
           "cheer",
-          6
+          8
         ],
         [
           -20.8,
@@ -7272,7 +7657,7 @@
           0.906,
           -0.423,
           "cheer",
-          6
+          9
         ],
         [
           -20.02,
@@ -7281,7 +7666,7 @@
           0.895,
           -0.447,
           "cheer",
-          3
+          4
         ],
         [
           -23.5,
@@ -7290,7 +7675,7 @@
           0.906,
           -0.423,
           "cheer",
-          1
+          2
         ],
         [
           -22.72,
@@ -7299,7 +7684,7 @@
           0.895,
           -0.446,
           "cheer",
-          6
+          1
         ],
         [
           -26.2,
@@ -7308,7 +7693,7 @@
           0.906,
           -0.424,
           "cheer",
-          10
+          5
         ],
         [
           -25.42,
@@ -7317,7 +7702,7 @@
           0.895,
           -0.446,
           "cheer",
-          2
+          7
         ],
         [
           -28.9,
@@ -7326,7 +7711,7 @@
           0.906,
           -0.424,
           "cheer",
-          4
+          2
         ],
         [
           -28.12,
@@ -7335,7 +7720,7 @@
           0.895,
           -0.445,
           "cheer",
-          1
+          5
         ],
         [
           -31.6,
@@ -7344,7 +7729,7 @@
           0.905,
           -0.424,
           "cheer",
-          1
+          4
         ],
         [
           -30.82,
@@ -7371,7 +7756,7 @@
           0.892,
           -0.452,
           "cheer",
-          6
+          2
         ],
         [
           0.82,
@@ -7380,7 +7765,7 @@
           0.909,
           -0.416,
           "cheer",
-          6
+          10
         ],
         [
           1.6,
@@ -7389,7 +7774,7 @@
           0.891,
           -0.453,
           "cheer",
-          10
+          3
         ],
         [
           3.52,
@@ -7398,7 +7783,7 @@
           0.91,
           -0.414,
           "cheer",
-          3
+          2
         ],
         [
           4.3,
@@ -7407,7 +7792,7 @@
           0.891,
           -0.455,
           "cheer",
-          4
+          0
         ],
         [
           6.22,
@@ -7416,7 +7801,7 @@
           0.911,
           -0.413,
           "cheer",
-          6
+          1
         ],
         [
           7.0,
@@ -7434,7 +7819,7 @@
           0.933,
           -0.361,
           "wave",
-          5
+          7
         ],
         [
           -21.53,
@@ -7452,7 +7837,7 @@
           0.932,
           -0.361,
           "wave",
-          3
+          0
         ],
         [
           -24.32,
@@ -7461,7 +7846,7 @@
           0.923,
           -0.385,
           "cheer",
-          5
+          3
         ],
         [
           -27.77,
@@ -7470,7 +7855,7 @@
           0.932,
           -0.362,
           "wave",
-          4
+          10
         ],
         [
           -27.1,
@@ -7488,7 +7873,7 @@
           0.932,
           -0.362,
           "wave",
-          1
+          4
         ],
         [
           -29.88,
@@ -7497,7 +7882,7 @@
           0.923,
           -0.384,
           "cheer",
-          6
+          2
         ],
         [
           -33.34,
@@ -7506,7 +7891,7 @@
           0.932,
           -0.363,
           "wave",
-          2
+          4
         ],
         [
           -32.67,
@@ -7515,7 +7900,7 @@
           0.923,
           -0.384,
           "cheer",
-          8
+          1
         ],
         [
           -2.72,
@@ -7524,7 +7909,7 @@
           0.935,
           -0.355,
           "wave",
-          2
+          6
         ],
         [
           -2.05,
@@ -7533,7 +7918,7 @@
           0.92,
           -0.392,
           "cheer",
-          9
+          6
         ],
         [
           0.06,
@@ -7551,7 +7936,7 @@
           0.92,
           -0.393,
           "cheer",
-          8
+          9
         ],
         [
           2.84,
@@ -7560,7 +7945,7 @@
           0.936,
           -0.352,
           "wave",
-          3
+          7
         ],
         [
           3.51,
@@ -7569,7 +7954,7 @@
           0.919,
           -0.394,
           "cheer",
-          9
+          1
         ],
         [
           5.63,
@@ -7578,7 +7963,7 @@
           0.937,
           -0.351,
           "wave",
-          5
+          10
         ],
         [
           6.3,
@@ -7587,7 +7972,7 @@
           0.918,
           -0.396,
           "cheer",
-          10
+          1
         ],
         [
           -23.31,
@@ -7596,7 +7981,7 @@
           0.955,
           -0.297,
           "cheer",
-          9
+          3
         ],
         [
           -22.76,
@@ -7605,7 +7990,7 @@
           0.946,
           -0.323,
           "cheer",
-          5
+          8
         ],
         [
           -26.17,
@@ -7614,7 +7999,7 @@
           0.955,
           -0.298,
           "cheer",
-          1
+          4
         ],
         [
           -25.61,
@@ -7623,7 +8008,7 @@
           0.947,
           -0.323,
           "cheer",
-          3
+          7
         ],
         [
           -29.02,
@@ -7632,7 +8017,7 @@
           0.954,
           -0.298,
           "cheer",
-          3
+          1
         ],
         [
           -28.46,
@@ -7641,7 +8026,7 @@
           0.947,
           -0.322,
           "cheer",
-          1
+          6
         ],
         [
           -31.87,
@@ -7650,7 +8035,7 @@
           0.954,
           -0.299,
           "cheer",
-          4
+          0
         ],
         [
           -31.31,
@@ -7659,7 +8044,7 @@
           0.947,
           -0.322,
           "cheer",
-          5
+          1
         ],
         [
           -34.72,
@@ -7668,7 +8053,7 @@
           0.954,
           -0.299,
           "cheer",
-          2
+          6
         ],
         [
           -34.16,
@@ -7686,7 +8071,7 @@
           0.957,
           -0.291,
           "cheer",
-          1
+          2
         ],
         [
           -2.79,
@@ -7695,7 +8080,7 @@
           0.944,
           -0.329,
           "cheer",
-          2
+          3
         ],
         [
           -0.5,
@@ -7704,7 +8089,7 @@
           0.957,
           -0.29,
           "cheer",
-          8
+          7
         ],
         [
           0.06,
@@ -7713,7 +8098,7 @@
           0.944,
           -0.33,
           "cheer",
-          5
+          1
         ],
         [
           2.35,
@@ -7722,7 +8107,7 @@
           0.957,
           -0.288,
           "cheer",
-          1
+          10
         ],
         [
           2.91,
@@ -7731,7 +8116,7 @@
           0.943,
           -0.332,
           "cheer",
-          1
+          10
         ],
         [
           5.21,
@@ -7740,7 +8125,7 @@
           0.958,
           -0.287,
           "cheer",
-          1
+          5
         ],
         [
           5.76,
@@ -7749,7 +8134,7 @@
           0.943,
           -0.334,
           "cheer",
-          6
+          5
         ],
         [
           -24.12,
@@ -7758,7 +8143,7 @@
           0.973,
           -0.233,
           "cheer",
-          6
+          3
         ],
         [
           -23.68,
@@ -7767,7 +8152,7 @@
           0.966,
           -0.259,
           "wave",
-          2
+          5
         ],
         [
           -27.03,
@@ -7776,7 +8161,7 @@
           0.972,
           -0.233,
           "cheer",
-          0
+          3
         ],
         [
           -26.59,
@@ -7785,7 +8170,7 @@
           0.966,
           -0.258,
           "wave",
-          9
+          8
         ],
         [
           -29.94,
@@ -7794,7 +8179,7 @@
           0.972,
           -0.234,
           "cheer",
-          4
+          1
         ],
         [
           -29.49,
@@ -7803,7 +8188,7 @@
           0.966,
           -0.258,
           "wave",
-          7
+          2
         ],
         [
           -32.85,
@@ -7812,7 +8197,7 @@
           0.972,
           -0.234,
           "cheer",
-          1
+          0
         ],
         [
           -32.4,
@@ -7821,7 +8206,7 @@
           0.966,
           -0.257,
           "wave",
-          5
+          9
         ],
         [
           -35.75,
@@ -7830,7 +8215,7 @@
           0.972,
           -0.235,
           "cheer",
-          10
+          6
         ],
         [
           -35.31,
@@ -7839,7 +8224,7 @@
           0.966,
           -0.257,
           "wave",
-          0
+          7
         ],
         [
           -3.77,
@@ -7857,7 +8242,7 @@
           0.964,
           -0.265,
           "wave",
-          9
+          1
         ],
         [
           -0.86,
@@ -7866,7 +8251,7 @@
           0.974,
           -0.225,
           "cheer",
-          9
+          7
         ],
         [
           -0.42,
@@ -7875,7 +8260,7 @@
           0.964,
           -0.267,
           "wave",
-          1
+          2
         ],
         [
           2.05,
@@ -7884,7 +8269,7 @@
           0.975,
           -0.223,
           "cheer",
-          7
+          0
         ],
         [
           2.49,
@@ -7893,7 +8278,7 @@
           0.963,
           -0.268,
           "wave",
-          9
+          4
         ],
         [
           -24.83,
@@ -7911,7 +8296,7 @@
           0.992,
           -0.128,
           "cheer",
-          9
+          1
         ],
         [
           -27.81,
@@ -7920,7 +8305,7 @@
           0.995,
           -0.101,
           "wave",
-          7
+          9
         ],
         [
           -27.61,
@@ -7929,7 +8314,7 @@
           0.992,
           -0.127,
           "cheer",
-          2
+          8
         ],
         [
           -30.79,
@@ -7938,7 +8323,7 @@
           0.995,
           -0.101,
           "wave",
-          6
+          2
         ],
         [
           -30.59,
@@ -7947,7 +8332,7 @@
           0.992,
           -0.126,
           "cheer",
-          10
+          3
         ],
         [
           -33.77,
@@ -7956,7 +8341,7 @@
           0.995,
           -0.102,
           "wave",
-          5
+          4
         ],
         [
           -33.57,
@@ -7965,7 +8350,7 @@
           0.992,
           -0.126,
           "cheer",
-          5
+          9
         ],
         [
           -36.75,
@@ -7974,7 +8359,7 @@
           0.995,
           -0.102,
           "wave",
-          5
+          9
         ],
         [
           -36.55,
@@ -7983,7 +8368,7 @@
           0.992,
           -0.125,
           "cheer",
-          1
+          2
         ],
         [
           -3.97,
@@ -7992,7 +8377,7 @@
           0.996,
           -0.094,
           "wave",
-          8
+          0
         ],
         [
           -3.76,
@@ -8001,7 +8386,7 @@
           0.991,
           -0.134,
           "cheer",
-          6
+          7
         ],
         [
           -0.99,
@@ -8010,7 +8395,7 @@
           0.996,
           -0.092,
           "wave",
-          0
+          10
         ],
         [
           -0.78,
@@ -8028,7 +8413,7 @@
           0.996,
           -0.09,
           "wave",
-          0
+          7
         ],
         [
           2.2,
@@ -8046,7 +8431,7 @@
           0.999,
           -0.033,
           "cheer",
-          5
+          0
         ],
         [
           -24.66,
@@ -8055,7 +8440,7 @@
           0.998,
           -0.061,
           "cheer",
-          10
+          3
         ],
         [
           -27.74,
@@ -8064,7 +8449,7 @@
           0.999,
           -0.034,
           "cheer",
-          7
+          5
         ],
         [
           -27.65,
@@ -8073,7 +8458,7 @@
           0.998,
           -0.06,
           "cheer",
-          9
+          3
         ],
         [
           -30.73,
@@ -8082,7 +8467,7 @@
           0.999,
           -0.034,
           "cheer",
-          9
+          6
         ],
         [
           -30.65,
@@ -8091,7 +8476,7 @@
           0.998,
           -0.06,
           "cheer",
-          1
+          8
         ],
         [
           -33.73,
@@ -8100,7 +8485,7 @@
           0.999,
           -0.035,
           "cheer",
-          6
+          5
         ],
         [
           -33.65,
@@ -8109,7 +8494,7 @@
           0.998,
           -0.059,
           "cheer",
-          5
+          4
         ],
         [
           -36.73,
@@ -8118,7 +8503,7 @@
           0.999,
           -0.035,
           "cheer",
-          8
+          3
         ],
         [
           -36.64,
@@ -8127,7 +8512,7 @@
           0.998,
           -0.059,
           "cheer",
-          9
+          2
         ],
         [
           -39.72,
@@ -8136,7 +8521,7 @@
           0.999,
           -0.036,
           "cheer",
-          2
+          4
         ],
         [
           -39.64,
@@ -8154,7 +8539,7 @@
           1.0,
           -0.026,
           "cheer",
-          10
+          9
         ],
         [
           -3.68,
@@ -8172,7 +8557,7 @@
           1.0,
           -0.025,
           "cheer",
-          5
+          7
         ],
         [
           -0.68,
@@ -8181,7 +8566,7 @@
           0.998,
           -0.069,
           "cheer",
-          8
+          6
         ],
         [
           2.23,
@@ -8190,7 +8575,7 @@
           1.0,
           -0.023,
           "cheer",
-          10
+          5
         ],
         [
           2.31,
@@ -8199,7 +8584,7 @@
           0.997,
           -0.071,
           "cheer",
-          9
+          8
         ],
         [
           -24.35,
@@ -8217,7 +8602,7 @@
           1.0,
           0.006,
           "wave",
-          8
+          10
         ],
         [
           -27.35,
@@ -8226,7 +8611,7 @@
           0.999,
           0.033,
           "cheer",
-          5
+          7
         ],
         [
           -27.39,
@@ -8235,7 +8620,7 @@
           1.0,
           0.007,
           "wave",
-          5
+          2
         ],
         [
           -30.35,
@@ -8244,7 +8629,7 @@
           0.999,
           0.033,
           "cheer",
-          7
+          8
         ],
         [
           -30.39,
@@ -8253,7 +8638,7 @@
           1.0,
           0.007,
           "wave",
-          0
+          6
         ],
         [
           -33.35,
@@ -8262,7 +8647,7 @@
           0.999,
           0.032,
           "cheer",
-          1
+          4
         ],
         [
           -33.39,
@@ -8271,7 +8656,7 @@
           1.0,
           0.008,
           "wave",
-          1
+          5
         ],
         [
           -36.35,
@@ -8280,7 +8665,7 @@
           0.999,
           0.032,
           "cheer",
-          3
+          7
         ],
         [
           -36.39,
@@ -8289,7 +8674,7 @@
           1.0,
           0.008,
           "wave",
-          7
+          10
         ],
         [
           -39.35,
@@ -8298,7 +8683,7 @@
           1.0,
           0.031,
           "cheer",
-          7
+          1
         ],
         [
           -39.39,
@@ -8307,7 +8692,7 @@
           1.0,
           0.009,
           "wave",
-          10
+          0
         ],
         [
           -3.36,
@@ -8316,7 +8701,7 @@
           0.999,
           0.041,
           "cheer",
-          9
+          1
         ],
         [
           -3.39,
@@ -8325,7 +8710,7 @@
           1.0,
           -0.001,
           "wave",
-          2
+          10
         ],
         [
           -0.36,
@@ -8334,7 +8719,7 @@
           0.999,
           0.042,
           "cheer",
-          10
+          7
         ],
         [
           -0.39,
@@ -8343,7 +8728,7 @@
           1.0,
           -0.002,
           "wave",
-          0
+          2
         ],
         [
           2.64,
@@ -8352,7 +8737,7 @@
           0.999,
           0.044,
           "cheer",
-          1
+          5
         ],
         [
           2.6,
@@ -8361,7 +8746,7 @@
           1.0,
           -0.004,
           "wave",
-          4
+          8
         ],
         [
           -21.49,
@@ -8370,7 +8755,7 @@
           0.972,
           0.234,
           "cheer",
-          5
+          8
         ],
         [
           -21.88,
@@ -8379,7 +8764,7 @@
           0.979,
           0.206,
           "cheer",
-          7
+          4
         ],
         [
           -24.41,
@@ -8388,7 +8773,7 @@
           0.972,
           0.233,
           "cheer",
-          1
+          9
         ],
         [
           -24.81,
@@ -8397,7 +8782,7 @@
           0.978,
           0.206,
           "cheer",
-          2
+          6
         ],
         [
           -27.34,
@@ -8406,7 +8791,7 @@
           0.973,
           0.232,
           "cheer",
-          6
+          8
         ],
         [
           -27.74,
@@ -8415,7 +8800,7 @@
           0.978,
           0.207,
           "cheer",
-          9
+          0
         ],
         [
           -30.27,
@@ -8433,7 +8818,7 @@
           0.978,
           0.208,
           "cheer",
-          3
+          8
         ],
         [
           -33.19,
@@ -8442,7 +8827,7 @@
           0.973,
           0.231,
           "cheer",
-          7
+          6
         ],
         [
           -33.59,
@@ -8451,7 +8836,7 @@
           0.978,
           0.208,
           "cheer",
-          10
+          1
         ],
         [
           -36.12,
@@ -8460,7 +8845,7 @@
           0.973,
           0.231,
           "cheer",
-          4
+          2
         ],
         [
           -36.52,
@@ -8469,7 +8854,7 @@
           0.978,
           0.208,
           "cheer",
-          3
+          9
         ],
         [
           -1.0,
@@ -8478,7 +8863,7 @@
           0.971,
           0.24,
           "cheer",
-          5
+          0
         ],
         [
           -1.4,
@@ -8487,7 +8872,7 @@
           0.98,
           0.199,
           "cheer",
-          4
+          6
         ],
         [
           1.93,
@@ -8496,7 +8881,7 @@
           0.97,
           0.242,
           "cheer",
-          2
+          4
         ],
         [
           1.53,
@@ -8505,7 +8890,7 @@
           0.98,
           0.197,
           "cheer",
-          1
+          4
         ],
         [
           4.85,
@@ -8514,7 +8899,7 @@
           0.97,
           0.244,
           "cheer",
-          8
+          7
         ],
         [
           4.46,
@@ -8523,7 +8908,7 @@
           0.981,
           0.195,
           "cheer",
-          8
+          1
         ],
         [
           -19.99,
@@ -8532,7 +8917,7 @@
           0.954,
           0.298,
           "cheer",
-          0
+          9
         ],
         [
           -20.5,
@@ -8541,7 +8926,7 @@
           0.963,
           0.271,
           "wave",
-          2
+          10
         ],
         [
           -22.87,
@@ -8550,7 +8935,7 @@
           0.955,
           0.298,
           "cheer",
-          4
+          10
         ],
         [
           -23.38,
@@ -8559,7 +8944,7 @@
           0.962,
           0.272,
           "wave",
-          7
+          2
         ],
         [
           -25.74,
@@ -8568,7 +8953,7 @@
           0.955,
           0.297,
           "cheer",
-          3
+          9
         ],
         [
           -26.25,
@@ -8577,7 +8962,7 @@
           0.962,
           0.272,
           "wave",
-          4
+          6
         ],
         [
           -28.62,
@@ -8595,7 +8980,7 @@
           0.962,
           0.273,
           "wave",
-          8
+          1
         ],
         [
           -31.49,
@@ -8613,7 +8998,7 @@
           0.962,
           0.273,
           "wave",
-          1
+          0
         ],
         [
           131.89,
@@ -8622,7 +9007,7 @@
           0.942,
           0.336,
           "merchant",
-          10
+          2
         ],
         [
           132.98,
@@ -8631,7 +9016,7 @@
           0.336,
           -0.942,
           "huddle",
-          10
+          2
         ],
         [
           135.28,
@@ -8640,7 +9025,7 @@
           -0.942,
           -0.336,
           "huddle",
-          4
+          10
         ],
         [
           134.19,
@@ -8649,7 +9034,7 @@
           -0.336,
           0.942,
           "huddle",
-          5
+          2
         ],
         [
           158.6,
@@ -8658,7 +9043,7 @@
           -0.254,
           0.967,
           "merchant",
-          5
+          7
         ],
         [
           156.4,
@@ -8667,7 +9052,7 @@
           0.967,
           0.254,
           "huddle",
-          0
+          10
         ],
         [
           157.68,
@@ -8676,7 +9061,7 @@
           0.254,
           -0.967,
           "huddle",
-          8
+          2
         ],
         [
           159.88,
@@ -8685,7 +9070,7 @@
           -0.967,
           -0.254,
           "huddle",
-          1
+          10
         ],
         [
           136.01,
@@ -8694,7 +9079,7 @@
           0.841,
           -0.541,
           "huddle",
-          10
+          1
         ],
         [
           138.06,
@@ -8703,7 +9088,7 @@
           -0.048,
           -0.999,
           "huddle",
-          2
+          9
         ],
         [
           139.99,
@@ -8712,7 +9097,7 @@
           -0.889,
           -0.458,
           "cheer",
-          6
+          7
         ],
         [
           139.88,
@@ -8721,7 +9106,7 @@
           -0.841,
           0.541,
           "huddle",
-          9
+          8
         ],
         [
           137.84,
@@ -8730,7 +9115,7 @@
           0.048,
           0.999,
           "huddle",
-          9
+          5
         ],
         [
           135.9,
@@ -8739,7 +9124,7 @@
           0.889,
           0.458,
           "huddle",
-          6
+          5
         ],
         [
           172.56,
@@ -8748,7 +9133,7 @@
           -0.737,
           0.676,
           "guard",
-          8
+          5
         ],
         [
           131.74,
@@ -8757,7 +9142,7 @@
           1.0,
           0.0,
           "merchant",
-          7
+          10
         ],
         [
           133.54,
@@ -8775,7 +9160,7 @@
           -1.0,
           -0.0,
           "huddle",
-          1
+          8
         ],
         [
           133.54,
@@ -8784,7 +9169,7 @@
           -0.0,
           1.0,
           "huddle",
-          4
+          0
         ],
         [
           164.43,
@@ -8793,7 +9178,7 @@
           -0.467,
           0.884,
           "merchant",
-          2
+          1
         ],
         [
           162.0,
@@ -8802,7 +9187,7 @@
           0.884,
           0.467,
           "huddle",
-          5
+          7
         ],
         [
           162.75,
@@ -8811,7 +9196,7 @@
           0.467,
           -0.884,
           "huddle",
-          8
+          1
         ],
         [
           165.18,
@@ -8820,7 +9205,7 @@
           -0.884,
           -0.467,
           "huddle",
-          7
+          0
         ],
         [
           177.15,
@@ -8829,7 +9214,7 @@
           -0.871,
           0.491,
           "huddle",
-          3
+          1
         ],
         [
           175.17,
@@ -8838,7 +9223,7 @@
           -0.01,
           1.0,
           "huddle",
-          9
+          6
         ],
         [
           173.16,
@@ -8856,7 +9241,7 @@
           0.871,
           -0.491,
           "huddle",
-          2
+          10
         ],
         [
           175.12,
@@ -8865,7 +9250,7 @@
           0.01,
           -1.0,
           "huddle",
-          10
+          7
         ],
         [
           177.12,
@@ -8874,7 +9259,7 @@
           -0.861,
           -0.509,
           "huddle",
-          2
+          10
         ],
         [
           165.5,
@@ -8901,7 +9286,7 @@
           0.062,
           -0.998,
           "queue",
-          0
+          6
         ],
         [
           169.7,
@@ -8910,7 +9295,7 @@
           -0.351,
           -0.936,
           "cheer",
-          5
+          3
         ],
         [
           171.1,
@@ -8919,7 +9304,7 @@
           -0.631,
           -0.776,
           "queue",
-          2
+          4
         ],
         [
           145.08,
@@ -8928,7 +9313,7 @@
           0.978,
           -0.209,
           "guard",
-          3
+          10
         ],
         [
           163.06,
@@ -8937,7 +9322,7 @@
           -0.993,
           -0.119,
           "guard",
-          6
+          3
         ],
         [
           -45.53,
@@ -8946,7 +9331,7 @@
           0.458,
           -0.889,
           "huddle",
-          2
+          9
         ],
         [
           -44.43,
@@ -8955,239 +9340,239 @@
           -0.458,
           0.889,
           "huddle",
-          8
-        ],
-        [
-          44.85,
-          -25.93,
-          260.22,
-          -0.052,
-          -0.999,
-          "wave",
           10
         ],
         [
-          46.16,
+          44.78,
           -25.93,
-          259.45,
-          -0.196,
-          -0.981,
+          260.23,
+          -0.053,
+          -0.999,
+          "wave",
+          9
+        ],
+        [
+          46.1,
+          -25.93,
+          259.46,
+          -0.197,
+          -0.98,
+          "merchant",
+          3
+        ],
+        [
+          50.92,
+          -26.27,
+          239.54,
+          0.228,
+          0.974,
           "merchant",
           5
         ],
         [
-          50.99,
-          -26.28,
-          239.53,
-          0.229,
-          0.974,
-          "merchant",
+          52.4,
+          -26.27,
+          239.91,
+          0.084,
+          0.996,
+          "huddle",
           10
         ],
         [
-          52.47,
-          -26.28,
-          239.9,
-          0.085,
-          0.996,
+          65.43,
+          -26.76,
+          255.59,
+          -0.378,
+          -0.926,
           "huddle",
+          3
+        ],
+        [
+          66.42,
+          -26.76,
+          254.43,
+          -0.508,
+          -0.861,
+          "wave",
           9
         ],
         [
-          65.52,
-          -26.77,
-          255.55,
-          -0.38,
-          -0.925,
-          "huddle",
-          8
-        ],
-        [
-          66.5,
-          -26.77,
-          254.39,
-          -0.51,
-          -0.86,
+          60.53,
+          -27.43,
+          235.22,
+          0.82,
+          0.572,
           "wave",
-          1
-        ],
-        [
-          60.56,
-          -27.44,
-          235.19,
-          0.822,
-          0.569,
-          "wave",
-          7
-        ],
-        [
-          61.9,
-          -27.44,
-          234.48,
-          0.731,
-          0.682,
-          "merchant",
-          6
-        ],
-        [
-          81.87,
-          -28.12,
-          236.38,
-          -0.934,
-          -0.359,
-          "merchant",
           0
         ],
         [
-          81.71,
-          -28.12,
-          234.87,
-          -0.976,
-          -0.22,
-          "huddle",
+          61.88,
+          -27.43,
+          234.51,
+          0.728,
+          0.685,
+          "merchant",
           2
         ],
         [
-          64.77,
+          81.85,
+          -28.12,
+          236.47,
+          -0.933,
+          -0.36,
+          "merchant",
+          4
+        ],
+        [
+          81.68,
+          -28.12,
+          234.96,
+          -0.975,
+          -0.222,
+          "huddle",
+          6
+        ],
+        [
+          64.76,
           -28.75,
-          222.88,
+          222.95,
           0.993,
           0.121,
           "huddle",
-          2
+          10
         ],
         [
-          65.63,
+          65.61,
           -28.75,
-          221.62,
+          221.7,
           0.965,
           0.263,
           "wave",
-          2
-        ],
-        [
-          85.72,
-          -29.5,
-          216.28,
-          -0.994,
-          -0.108,
-          "wave",
-          8
-        ],
-        [
-          85.18,
-          -29.5,
-          214.86,
-          -0.999,
-          0.036,
-          "merchant",
           9
         ],
         [
-          66.34,
-          -30.36,
-          205.92,
-          0.999,
-          0.034,
-          "merchant",
-          3
-        ],
-        [
-          67.09,
-          -30.36,
-          204.6,
-          0.984,
-          0.178,
-          "huddle",
+          85.72,
+          -29.49,
+          216.37,
+          -0.994,
+          -0.11,
+          "wave",
           4
         ],
         [
-          87.17,
-          -31.23,
-          199.58,
+          85.17,
+          -29.49,
+          214.95,
+          -0.999,
+          0.035,
+          "merchant",
+          4
+        ],
+        [
+          66.34,
+          -30.35,
+          206.01,
+          0.999,
+          0.032,
+          "merchant",
+          5
+        ],
+        [
+          67.07,
+          -30.35,
+          204.69,
+          0.984,
+          0.176,
+          "huddle",
+          3
+        ],
+        [
+          87.16,
+          -31.22,
+          199.65,
           -0.975,
           -0.221,
           "huddle",
-          3
+          8
         ],
         [
-          86.79,
-          -31.23,
-          198.11,
+          86.78,
+          -31.22,
+          198.18,
           -0.997,
           -0.078,
           "wave",
-          2
+          0
         ],
         [
-          153.42,
+          153.39,
           -58.34,
-          31.66,
-          0.418,
-          -0.909,
+          31.73,
+          0.419,
+          -0.908,
+          "huddle",
+          0
+        ],
+        [
+          154.39,
+          -58.34,
+          29.55,
+          -0.419,
+          0.908,
           "huddle",
           4
         ],
         [
-          154.43,
-          -58.34,
-          29.48,
-          -0.418,
-          0.909,
-          "huddle",
-          7
-        ],
-        [
-          102.97,
-          -52.61,
-          -85.04,
+          103.02,
+          -52.62,
+          -84.98,
           -0.644,
           -0.765,
           "huddle",
-          2
+          1
         ],
         [
-          101.44,
-          -52.61,
-          -86.87,
+          101.48,
+          -52.62,
+          -86.81,
           0.644,
           0.765,
           "huddle",
-          7
+          5
         ],
         [
-          87.23,
-          -48.57,
-          -131.11,
-          -0.691,
+          87.29,
+          -48.58,
+          -131.05,
+          -0.69,
           -0.723,
           "huddle",
           9
         ],
         [
-          85.58,
-          -48.57,
-          -132.84,
-          0.691,
+          85.64,
+          -48.58,
+          -132.78,
+          0.69,
           0.723,
-          "huddle",
-          0
-        ],
-        [
-          39.2,
-          -44.76,
-          -139.88,
-          -0.905,
-          -0.426,
           "huddle",
           8
         ],
         [
-          37.04,
-          -44.76,
-          -140.9,
+          39.29,
+          -44.77,
+          -139.85,
+          -0.905,
+          -0.424,
+          "huddle",
+          8
+        ],
+        [
+          37.13,
+          -44.77,
+          -140.86,
           0.905,
-          0.426,
+          0.424,
           "huddle",
           9
         ],
@@ -9198,7 +9583,7 @@
           0.71,
           0.704,
           "wave",
-          9
+          8
         ],
         [
           72.28,
@@ -9207,7 +9592,7 @@
           0.613,
           0.79,
           "merchant",
-          3
+          2
         ],
         [
           72.9,
@@ -9216,7 +9601,7 @@
           0.52,
           0.854,
           "cheer",
-          3
+          9
         ],
         [
           73.52,
@@ -9225,7 +9610,7 @@
           0.434,
           0.901,
           "huddle",
-          4
+          9
         ],
         [
           90.06,
@@ -9234,7 +9619,7 @@
           -1.0,
           -0.022,
           "merchant",
-          9
+          0
         ],
         [
           90.69,
@@ -9243,7 +9628,7 @@
           -0.994,
           0.108,
           "cheer",
-          1
+          3
         ],
         [
           91.31,
@@ -9252,7 +9637,7 @@
           -0.976,
           0.22,
           "huddle",
-          9
+          0
         ],
         [
           91.94,
@@ -9261,7 +9646,7 @@
           -0.949,
           0.314,
           "wave",
-          3
+          2
         ],
         [
           17.03,
@@ -9270,7 +9655,7 @@
           0.002,
           -1.0,
           "wave",
-          10
+          0
         ],
         [
           15.52,
@@ -9288,7 +9673,7 @@
           0.044,
           -0.999,
           "huddle",
-          10
+          6
         ],
         [
           14.25,
@@ -9297,7 +9682,7 @@
           0.099,
           -0.995,
           "wave",
-          4
+          0
         ],
         [
           14.49,
@@ -9306,7 +9691,7 @@
           0.1,
           -0.995,
           "cheer",
-          10
+          4
         ],
         [
           35.16,
@@ -9315,7 +9700,7 @@
           -0.512,
           -0.859,
           "wave",
-          0
+          7
         ],
         [
           35.39,
@@ -9324,7 +9709,7 @@
           -0.551,
           -0.835,
           "cheer",
-          0
+          2
         ],
         [
           33.89,
@@ -9333,7 +9718,7 @@
           -0.548,
           -0.837,
           "huddle",
-          6
+          8
         ],
         [
           34.12,
@@ -9351,272 +9736,272 @@
           -0.594,
           -0.805,
           "cheer",
-          5
+          3
         ]
       ],
       "palette": "sump"
     },
     {
-      "id": "steam_09",
+      "id": "steam_01",
       "type": "steam",
       "x": -300.0,
       "y": -6.0,
       "z": -173.47
     },
     {
-      "id": "steam_10",
+      "id": "steam_02",
       "type": "steam",
       "x": -215.0,
       "y": -6.0,
       "z": -186.22
     },
     {
-      "id": "steam_11",
+      "id": "steam_03",
       "type": "steam",
       "x": -130.0,
       "y": -6.0,
       "z": -178.58
     },
     {
-      "id": "steam_12",
+      "id": "steam_04",
       "type": "steam",
       "x": -45.0,
       "y": -6.0,
       "z": -170.36
     },
     {
-      "id": "steam_13",
+      "id": "steam_05",
       "type": "steam",
       "x": 40.0,
       "y": -6.0,
       "z": -183.41
     },
     {
-      "id": "steam_14",
+      "id": "steam_06",
       "type": "steam",
       "x": 125.0,
       "y": -6.0,
       "z": -177.03
     },
     {
-      "id": "steam_15",
+      "id": "steam_07",
       "type": "steam",
       "x": 210.0,
       "y": -6.0,
       "z": -168.69
     },
     {
-      "id": "steam_16",
+      "id": "steam_08",
       "type": "steam",
       "x": 295.0,
       "y": -6.0,
       "z": -182.36
     },
     {
-      "id": "lantern_115",
+      "id": "lantern_133",
       "type": "lantern",
       "x": 6.77,
       "y": -36.28,
       "z": -178.46
     },
     {
-      "id": "lantern_116",
+      "id": "lantern_134",
       "type": "lantern",
       "x": 40.72,
       "y": -36.28,
       "z": -176.73
     },
     {
-      "id": "torch_43",
+      "id": "torch_45",
       "type": "torch",
       "x": 13.42,
       "y": -37.28,
       "z": -179.32
     },
     {
-      "id": "torch_44",
+      "id": "torch_46",
       "type": "torch",
       "x": 34.19,
       "y": -37.28,
       "z": -178.22
     },
     {
-      "id": "torch_45",
+      "id": "torch_47",
       "type": "torch",
       "x": 13.63,
       "y": -38.36,
       "z": -194.92
     },
     {
-      "id": "torch_46",
+      "id": "torch_48",
       "type": "torch",
       "x": 34.41,
       "y": -38.36,
       "z": -195.84
     },
     {
-      "id": "torch_47",
+      "id": "torch_49",
       "type": "torch",
       "x": -0.5,
       "y": -39.0,
       "z": -217.88
     },
     {
-      "id": "torch_48",
+      "id": "torch_50",
       "type": "torch",
       "x": 12.64,
       "y": -39.0,
       "z": -234.01
     },
     {
-      "id": "torch_49",
+      "id": "torch_51",
       "type": "torch",
       "x": -43.35,
       "y": -34.16,
       "z": -261.76
     },
     {
-      "id": "torch_50",
+      "id": "torch_52",
       "type": "torch",
       "x": -24.27,
       "y": -34.16,
       "z": -270.03
     },
     {
-      "id": "torch_51",
+      "id": "torch_53",
       "type": "torch",
       "x": -45.64,
       "y": -34.6,
       "z": -296.43
     },
     {
-      "id": "torch_52",
+      "id": "torch_54",
       "type": "torch",
       "x": -25.05,
       "y": -34.6,
       "z": -293.48
     },
     {
-      "id": "torch_53",
+      "id": "torch_55",
       "type": "torch",
       "x": -44.4,
       "y": -35.09,
       "z": -307.08
     },
     {
-      "id": "torch_54",
+      "id": "torch_56",
       "type": "torch",
       "x": -23.77,
       "y": -35.09,
       "z": -304.44
     },
     {
-      "id": "torch_55",
+      "id": "torch_57",
       "type": "torch",
       "x": -21.49,
       "y": -35.5,
       "z": -349.96
     },
     {
-      "id": "torch_56",
+      "id": "torch_58",
       "type": "torch",
       "x": -4.44,
       "y": -35.5,
       "z": -338.04
     },
     {
-      "id": "torch_57",
+      "id": "torch_59",
       "type": "torch",
       "x": 4.81,
       "y": -31.53,
       "z": -382.99
     },
     {
-      "id": "torch_58",
+      "id": "torch_60",
       "type": "torch",
       "x": 24.3,
       "y": -31.53,
       "z": -375.71
     },
     {
-      "id": "torch_59",
+      "id": "torch_61",
       "type": "torch",
       "x": 5.64,
       "y": -31.43,
       "z": -401.17
     },
     {
-      "id": "torch_60",
+      "id": "torch_62",
       "type": "torch",
       "x": 26.44,
       "y": -31.43,
       "z": -401.75
     },
     {
-      "id": "torch_61",
+      "id": "torch_63",
       "type": "torch",
       "x": 6.19,
       "y": -32.03,
       "z": -412.06
     },
     {
-      "id": "torch_62",
+      "id": "torch_64",
       "type": "torch",
       "x": 26.93,
       "y": -32.03,
       "z": -413.61
     },
     {
-      "id": "torch_63",
+      "id": "torch_65",
       "type": "torch",
       "x": 33.72,
       "y": -43.7,
       "z": -212.0
     },
     {
-      "id": "torch_64",
+      "id": "torch_66",
       "type": "torch",
       "x": 11.04,
       "y": -43.7,
       "z": -198.91
     },
     {
-      "id": "torch_65",
+      "id": "torch_67",
       "type": "torch",
       "x": -50.35,
       "y": -39.28,
       "z": -280.61
     },
     {
-      "id": "torch_66",
+      "id": "torch_68",
       "type": "torch",
       "x": -32.89,
       "y": -40.2,
       "z": -342.37
     },
     {
-      "id": "torch_67",
+      "id": "torch_69",
       "type": "torch",
       "x": -7.48,
       "y": -40.2,
       "z": -324.3
     },
     {
-      "id": "torch_68",
+      "id": "torch_70",
       "type": "torch",
       "x": 27.27,
       "y": -36.3,
       "z": -398.5
     },
     {
-      "id": "torch_69",
+      "id": "torch_71",
       "type": "torch",
       "x": -3.64,
       "y": -37.2,
       "z": -419.83
     },
     {
-      "id": "torch_70",
+      "id": "torch_72",
       "type": "torch",
       "x": 26.99,
       "y": -37.2,
@@ -9677,43 +10062,43 @@
           -800.0
         ],
         [
-          603.6,
+          603.7,
           -160.0,
           140.0,
           -720.0
         ],
         [
-          1114.6,
+          1114.7,
           90.0,
           30.0,
           -300.0
         ],
         [
-          1174.6,
+          1174.7,
           60.0,
           -22.0,
           -236.0
         ],
         [
-          1274.6,
+          1274.7,
           30.0,
           -14.0,
           -320.0
         ],
         [
-          1374.6,
+          1374.7,
           70.0,
           -10.0,
           -400.0
         ],
         [
-          1462.0,
+          1462.1,
           40.0,
           0.0,
           -470.0
         ],
         [
-          1582.0,
+          1582.1,
           0.0,
           60.0,
           -640.0
@@ -9792,14 +10177,14 @@
       ]
     },
     {
-      "id": "torch_71",
+      "id": "torch_73",
       "type": "torch",
       "x": -15.0,
       "y": -30.5,
       "z": -452.0
     },
     {
-      "id": "torch_72",
+      "id": "torch_74",
       "type": "torch",
       "x": 15.0,
       "y": -30.5,
@@ -9993,7 +10378,7 @@
         ],
         [
           -3.0,
-          -23.9,
+          -23.7,
           322.9,
           "docks",
           "docks",
@@ -10001,7 +10386,7 @@
         ],
         [
           -2.9,
-          -23.7,
+          -23.3,
           314.9,
           "docks",
           "docks",
@@ -10009,15 +10394,15 @@
         ],
         [
           -3.0,
-          -23.3,
-          306.9,
+          -22.8,
+          307.0,
           "docks",
           "docks",
           0.0
         ],
         [
           -3.1,
-          -22.9,
+          -22.4,
           299.0,
           "docks",
           "docks",
@@ -10025,7 +10410,7 @@
         ],
         [
           -3.0,
-          -23.5,
+          -23.1,
           291.0,
           "docks",
           "docks",
@@ -10033,14 +10418,14 @@
         ],
         [
           -2.0,
-          -24.0,
-          283.1,
+          -23.9,
+          283.2,
           "docks",
           "docks",
           0.0
         ],
         [
-          2.2,
+          2.1,
           -24.3,
           276.4,
           "docks",
@@ -10050,13 +10435,13 @@
         [
           7.3,
           -24.5,
-          270.2,
+          270.3,
           "docks",
           "bore",
           0.028
         ],
         [
-          13.0,
+          12.9,
           -24.8,
           264.6,
           "docks",
@@ -10064,7 +10449,7 @@
           0.138
         ],
         [
-          19.3,
+          19.2,
           -25.0,
           259.7,
           "docks",
@@ -10080,7 +10465,7 @@
           0.55
         ],
         [
-          33.7,
+          33.6,
           -25.5,
           252.8,
           "docks",
@@ -10088,15 +10473,15 @@
           0.741
         ],
         [
-          41.4,
+          41.3,
           -25.8,
-          250.7,
+          250.8,
           "docks",
           "bore",
           0.896
         ],
         [
-          49.3,
+          49.2,
           -26.1,
           249.7,
           "docks",
@@ -10120,9 +10505,9 @@
           0.0
         ],
         [
-          69.9,
+          69.8,
           -27.6,
-          239.2,
+          239.3,
           "bore",
           "bore",
           0.0
@@ -10138,7 +10523,7 @@
         [
           74.6,
           -28.8,
-          224.1,
+          224.2,
           "bore",
           "bore",
           0.0
@@ -10146,7 +10531,7 @@
         [
           75.8,
           -29.4,
-          216.2,
+          216.3,
           "bore",
           "market",
           0.003
@@ -10154,7 +10539,7 @@
         [
           76.1,
           -30.2,
-          208.2,
+          208.3,
           "bore",
           "market",
           0.074
@@ -10162,7 +10547,7 @@
         [
           77.0,
           -30.9,
-          200.3,
+          200.4,
           "bore",
           "market",
           0.216
@@ -10170,7 +10555,7 @@
         [
           78.0,
           -31.8,
-          192.4,
+          192.5,
           "bore",
           "market",
           0.401
@@ -10184,7 +10569,7 @@
           0.648
         ],
         [
-          84.3,
+          84.2,
           -32.8,
           178.2,
           "bore",
@@ -10194,21 +10579,21 @@
         [
           89.1,
           -33.0,
-          171.8,
+          171.9,
           "bore",
           "market",
           0.951
         ],
         [
-          94.3,
+          94.2,
           -33.0,
-          165.7,
+          165.8,
           "bore",
           "market",
           1.0
         ],
         [
-          99.4,
+          99.3,
           -33.0,
           159.6,
           "market",
@@ -10218,7 +10603,7 @@
         [
           103.6,
           -33.0,
-          152.8,
+          152.9,
           "market",
           "market",
           0.0
@@ -10226,15 +10611,15 @@
         [
           106.7,
           -33.0,
-          145.4,
+          145.5,
           "market",
           "market",
           0.0
         ],
         [
-          109.0,
+          108.9,
           -33.0,
-          137.7,
+          137.8,
           "market",
           "market",
           0.0
@@ -10242,7 +10627,7 @@
         [
           110.2,
           -33.0,
-          129.8,
+          129.9,
           "market",
           "market",
           0.0
@@ -10250,7 +10635,7 @@
         [
           109.5,
           -33.0,
-          121.9,
+          122.0,
           "market",
           "market",
           0.0
@@ -10258,7 +10643,7 @@
         [
           108.0,
           -33.0,
-          114.0,
+          114.1,
           "market",
           "market",
           0.0
@@ -10266,7 +10651,7 @@
         [
           106.8,
           -33.0,
-          106.1,
+          106.2,
           "market",
           "market",
           0.0
@@ -10274,7 +10659,7 @@
         [
           105.5,
           -33.0,
-          98.2,
+          98.3,
           "market",
           "bore",
           0.013
@@ -10290,13 +10675,13 @@
         [
           101.9,
           -33.4,
-          82.6,
+          82.7,
           "market",
           "bore",
           0.259
         ],
         [
-          98.5,
+          98.6,
           -33.7,
           75.5,
           "market",
@@ -10306,10 +10691,10 @@
         [
           92.0,
           -33.9,
-          71.0,
+          71.1,
           "bore",
           "pits",
-          0.599
+          0.55
         ],
         [
           84.4,
@@ -10317,7 +10702,7 @@
           68.6,
           "bore",
           "pits",
-          0.784
+          0.741
         ],
         [
           76.5,
@@ -10325,15 +10710,15 @@
           67.3,
           "bore",
           "pits",
-          0.926
+          0.896
         ],
         [
-          68.5,
+          68.6,
           -34.5,
           67.6,
           "bore",
           "pits",
-          0.997
+          0.987
         ],
         [
           60.9,
@@ -10344,15 +10729,15 @@
           0.0
         ],
         [
-          53.2,
+          53.3,
           -36.0,
-          72.1,
+          72.0,
           "pits",
           "pits",
           0.0
         ],
         [
-          45.4,
+          45.5,
           -36.9,
           73.3,
           "pits",
@@ -10368,7 +10753,7 @@
           0.0
         ],
         [
-          29.7,
+          29.8,
           -38.5,
           71.1,
           "pits",
@@ -10376,9 +10761,9 @@
           0.0
         ],
         [
-          22.1,
+          22.2,
           -39.3,
-          68.6,
+          68.7,
           "pits",
           "pits",
           0.0
@@ -10394,21 +10779,21 @@
         [
           8.4,
           -40.9,
-          60.7,
+          60.8,
           "pits",
           "pits",
           0.0
         ],
         [
           2.4,
-          -41.7,
+          -41.6,
           55.5,
           "pits",
           "pits",
           0.0
         ],
         [
-          -2.9,
+          -2.8,
           -42.5,
           49.5,
           "pits",
@@ -10416,9 +10801,9 @@
           0.0
         ],
         [
-          -7.2,
+          -7.1,
           -43.3,
-          42.8,
+          42.9,
           "pits",
           "pits",
           0.0
@@ -10426,7 +10811,7 @@
         [
           -10.5,
           -44.1,
-          35.6,
+          35.7,
           "pits",
           "pits",
           0.0
@@ -10434,7 +10819,7 @@
         [
           -12.9,
           -44.9,
-          28.0,
+          28.1,
           "pits",
           "pits",
           0.0
@@ -10442,15 +10827,15 @@
         [
           -14.1,
           -45.7,
-          20.1,
+          20.2,
           "pits",
           "pits",
           0.0
         ],
         [
-          -14.1,
+          -14.2,
           -46.5,
-          12.2,
+          12.3,
           "pits",
           "pits",
           0.0
@@ -10458,7 +10843,7 @@
         [
           -13.1,
           -47.3,
-          4.3,
+          4.4,
           "pits",
           "pits",
           0.0
@@ -10466,7 +10851,7 @@
         [
           -10.8,
           -48.1,
-          -3.3,
+          -3.2,
           "pits",
           "pits",
           0.0
@@ -10474,7 +10859,7 @@
         [
           -7.4,
           -48.9,
-          -10.5,
+          -10.4,
           "pits",
           "pits",
           0.0
@@ -10482,7 +10867,7 @@
         [
           -3.0,
           -49.7,
-          -17.1,
+          -17.0,
           "pits",
           "pits",
           0.0
@@ -10490,7 +10875,7 @@
         [
           2.5,
           -50.5,
-          -22.9,
+          -22.8,
           "pits",
           "pits",
           0.0
@@ -10512,7 +10897,7 @@
           0.0
         ],
         [
-          23.4,
+          23.3,
           -52.9,
           -34.0,
           "pits",
@@ -10520,7 +10905,7 @@
           0.0
         ],
         [
-          31.2,
+          31.1,
           -53.7,
           -35.2,
           "pits",
@@ -10528,7 +10913,7 @@
           0.0
         ],
         [
-          39.2,
+          39.1,
           -54.5,
           -35.1,
           "pits",
@@ -10536,7 +10921,7 @@
           0.0
         ],
         [
-          47.0,
+          46.9,
           -55.3,
           -33.5,
           "pits",
@@ -10544,7 +10929,7 @@
           0.0
         ],
         [
-          54.4,
+          54.3,
           -56.1,
           -30.6,
           "pits",
@@ -10578,7 +10963,7 @@
         [
           74.6,
           -59.3,
-          -7.1,
+          -7.2,
           "pits",
           "pits",
           0.0
@@ -10594,7 +10979,7 @@
         [
           76.0,
           -60.9,
-          8.7,
+          8.6,
           "pits",
           "pits",
           0.0
@@ -10602,7 +10987,7 @@
         [
           75.8,
           -61.0,
-          16.7,
+          16.6,
           "pits",
           "pits",
           0.0
@@ -10610,7 +10995,7 @@
         [
           76.4,
           -61.0,
-          24.6,
+          24.5,
           "pits",
           "pits",
           0.0
@@ -10624,15 +11009,15 @@
           0.0
         ],
         [
-          87.5,
+          87.4,
           -60.7,
-          35.8,
+          35.7,
           "pits",
           "bore",
           0.0
         ],
         [
-          94.4,
+          94.3,
           -60.5,
           39.8,
           "pits",
@@ -10642,13 +11027,13 @@
         [
           101.8,
           -60.2,
-          42.7,
+          42.6,
           "pits",
           "bore",
           0.175
         ],
         [
-          109.4,
+          109.3,
           -60.0,
           45.3,
           "pits",
@@ -10657,14 +11042,14 @@
         ],
         [
           116.8,
-          -59.7,
+          -59.8,
           48.1,
           "pits",
           "bore",
           0.599
         ],
         [
-          124.7,
+          124.6,
           -59.5,
           47.1,
           "pits",
@@ -10682,7 +11067,7 @@
         [
           137.9,
           -59.0,
-          38.4,
+          38.5,
           "pits",
           "bore",
           0.997
@@ -10698,7 +11083,7 @@
         [
           146.2,
           -58.2,
-          24.8,
+          24.9,
           "bore",
           "bore",
           0.0
@@ -10730,7 +11115,7 @@
         [
           154.0,
           -57.2,
-          -6.0,
+          -5.9,
           "bore",
           "den",
           0.352
@@ -10738,7 +11123,7 @@
         [
           154.1,
           -57.1,
-          -14.0,
+          -13.9,
           "bore",
           "den",
           0.599
@@ -10746,7 +11131,7 @@
         [
           153.8,
           -57.0,
-          -22.0,
+          -21.9,
           "bore",
           "den",
           0.784
@@ -10762,7 +11147,7 @@
         [
           150.8,
           -57.0,
-          -37.7,
+          -37.6,
           "den",
           "bore",
           0.013
@@ -10770,7 +11155,7 @@
         [
           147.8,
           -56.9,
-          -45.1,
+          -45.0,
           "den",
           "bore",
           0.104
@@ -10778,29 +11163,29 @@
         [
           143.8,
           -56.6,
-          -52.0,
+          -51.9,
           "den",
           "bore",
           0.259
         ],
         [
-          139.1,
+          139.2,
           -56.5,
-          -58.5,
+          -58.4,
           "den",
           "bore",
           0.45
         ],
         [
-          134.1,
+          134.2,
           -55.9,
-          -64.7,
+          -64.6,
           "den",
           "bore",
           0.695
         ],
         [
-          128.7,
+          128.8,
           -55.2,
           -70.5,
           "den",
@@ -10808,23 +11193,23 @@
           0.862
         ],
         [
-          123.2,
-          -54.5,
+          123.3,
+          -54.6,
           -76.3,
           "den",
           "bore",
           0.972
         ],
         [
-          117.8,
+          117.9,
           -54.0,
-          -82.2,
+          -82.1,
           "bore",
           "bore",
           0.0
         ],
         [
-          112.6,
+          112.7,
           -53.1,
           -88.2,
           "bore",
@@ -10834,7 +11219,7 @@
         [
           107.5,
           -52.3,
-          -94.3,
+          -94.2,
           "bore",
           "bore",
           0.0
@@ -10850,7 +11235,7 @@
         [
           97.1,
           -50.8,
-          -106.4,
+          -106.3,
           "bore",
           "bore",
           0.0
@@ -10858,7 +11243,7 @@
         [
           91.8,
           -50.0,
-          -112.3,
+          -112.2,
           "bore",
           "bore",
           0.0
@@ -10866,7 +11251,7 @@
         [
           86.4,
           -49.4,
-          -118.2,
+          -118.1,
           "bore",
           "bore",
           0.0
@@ -10880,9 +11265,9 @@
           0.0
         ],
         [
-          75.4,
+          75.5,
           -48.1,
-          -129.8,
+          -129.7,
           "bore",
           "bore",
           0.0
@@ -10890,7 +11275,7 @@
         [
           69.6,
           -47.4,
-          -135.2,
+          -135.1,
           "bore",
           "mouth",
           0.013
@@ -10898,13 +11283,13 @@
         [
           63.2,
           -46.7,
-          -139.9,
+          -139.8,
           "bore",
           "mouth",
           0.104
         ],
         [
-          56.0,
+          56.1,
           -46.1,
           -143.4,
           "bore",
@@ -10912,7 +11297,7 @@
           0.259
         ],
         [
-          48.6,
+          48.7,
           -45.4,
           -146.3,
           "bore",
@@ -10920,8 +11305,8 @@
           0.45
         ],
         [
-          41.2,
-          -44.6,
+          41.3,
+          -44.7,
           -149.3,
           "bore",
           "mouth",
@@ -10930,15 +11315,15 @@
         [
           34.5,
           -44.1,
-          -153.6,
+          -153.5,
           "bore",
           "mouth",
           0.862
         ],
         [
-          28.7,
+          28.8,
           -43.5,
-          -159.1,
+          -159.0,
           "bore",
           "mouth",
           0.972
@@ -10946,7 +11331,7 @@
         [
           25.0,
           -43.2,
-          -166.1,
+          -166.0,
           "mouth",
           "mouth",
           0.0
@@ -10970,7 +11355,7 @@
         [
           24.1,
           -43.9,
-          -189.9,
+          -189.8,
           "mouth",
           "mouth",
           0.0
@@ -10978,7 +11363,7 @@
         [
           23.9,
           -44.5,
-          -197.9,
+          -197.8,
           "mouth",
           "sky",
           0.003
@@ -10986,15 +11371,15 @@
         [
           23.8,
           -44.8,
-          -205.9,
+          -205.8,
           "mouth",
           "sky",
           0.074
         ],
         [
-          20.5,
+          20.6,
           -45.0,
-          -213.1,
+          -213.0,
           "mouth",
           "sky",
           0.216
@@ -11002,15 +11387,15 @@
         [
           14.9,
           -45.0,
-          -218.7,
+          -218.6,
           "mouth",
           "sky",
           0.401
         ],
         [
-          8.7,
+          8.8,
           -45.0,
-          -223.8,
+          -223.7,
           "mouth",
           "sky",
           0.648
@@ -11018,13 +11403,13 @@
         [
           2.5,
           -44.6,
-          -228.8,
+          -228.7,
           "mouth",
           "sky",
           0.825
         ],
         [
-          -4.1,
+          -4.0,
           -44.0,
           -233.3,
           "mouth",
@@ -11034,13 +11419,13 @@
         [
           -10.3,
           -43.4,
-          -238.3,
+          -238.2,
           "mouth",
           "sky",
           1.0
         ],
         [
-          -16.2,
+          -16.1,
           -42.4,
           -243.6,
           "sky",
@@ -11050,7 +11435,7 @@
         [
           -21.9,
           -41.5,
-          -249.2,
+          -249.1,
           "sky",
           "sky",
           0.0
@@ -11082,7 +11467,7 @@
         [
           -36.8,
           -40.1,
-          -276.7,
+          -276.6,
           "sky",
           "shrine",
           0.003
@@ -11090,7 +11475,7 @@
         [
           -36.5,
           -40.2,
-          -284.7,
+          -284.6,
           "sky",
           "shrine",
           0.074
@@ -11098,14 +11483,14 @@
         [
           -35.7,
           -40.5,
-          -292.6,
+          -292.5,
           "sky",
           "shrine",
           0.216
         ],
         [
           -34.7,
-          -40.9,
+          -40.8,
           -300.5,
           "sky",
           "shrine",
@@ -11114,15 +11499,15 @@
         [
           -33.7,
           -41.2,
-          -308.5,
+          -308.4,
           "sky",
           "shrine",
           0.648
         ],
         [
-          -32.1,
+          -32.2,
           -41.4,
-          -316.3,
+          -316.2,
           "sky",
           "shrine",
           0.825
@@ -11138,13 +11523,13 @@
         [
           -23.8,
           -41.5,
-          -329.7,
+          -329.6,
           "shrine",
           "sky",
           0.003
         ],
         [
-          -18.6,
+          -18.7,
           -41.5,
           -335.8,
           "shrine",
@@ -11154,13 +11539,13 @@
         [
           -14.1,
           -41.5,
-          -342.4,
+          -342.3,
           "shrine",
           "sky",
           0.216
         ],
         [
-          -9.3,
+          -9.4,
           -41.4,
           -348.8,
           "shrine",
@@ -11169,27 +11554,27 @@
         ],
         [
           -4.2,
-          -40.6,
-          -354.9,
+          -40.7,
+          -354.8,
           "shrine",
           "sky",
           0.648
         ],
         [
-          1.1,
+          1.0,
           -39.9,
-          -360.9,
+          -360.8,
+          "shrine",
           "sky",
-          "gate",
-          0.175
+          0.825
         ],
         [
-          6.2,
+          6.1,
           -39.1,
-          -367.0,
+          -366.9,
           "sky",
           "gate",
-          0.352
+          0.305
         ],
         [
           11.1,
@@ -11197,36 +11582,36 @@
           -373.2,
           "sky",
           "gate",
-          0.599
+          0.55
         ],
         [
           14.8,
           -37.5,
-          -380.2,
+          -380.1,
           "sky",
           "gate",
-          0.784
+          0.741
         ],
         [
           15.9,
           -37.3,
-          -388.1,
+          -388.0,
           "sky",
           "gate",
-          0.926
+          0.896
         ],
         [
           16.1,
           -37.3,
-          -396.1,
+          -396.0,
           "sky",
           "gate",
-          0.997
+          0.987
         ],
         [
           16.0,
           -37.5,
-          -404.1,
+          -404.0,
           "gate",
           "gate",
           0.0
@@ -11242,7 +11627,7 @@
         [
           14.5,
           -38.3,
-          -419.7,
+          -419.6,
           "gate",
           "gate",
           0.0
@@ -11264,9 +11649,9 @@
           0.0
         ],
         [
-          1.6,
+          1.7,
           -38.5,
-          -439.9,
+          -439.8,
           "gate",
           "gate",
           0.0
@@ -11298,7 +11683,7 @@
       ]
     },
     {
-      "id": "boat_03",
+      "id": "boat_05",
       "type": "boat",
       "route": "Canal Boat Path",
       "speed": 2.0,
@@ -11313,12 +11698,12 @@
       "id": "creak_01",
       "type": "creak",
       "x": -3.0,
-      "y": -22.9,
+      "y": -22.3,
       "z": 300.0,
       "radius": 26.0
     },
     {
-      "id": "mist_01",
+      "id": "mist_07",
       "type": "mist",
       "x": -14.0,
       "y": -25.5,
@@ -11328,7 +11713,7 @@
       "color": "#a8b4b0"
     },
     {
-      "id": "motes_01",
+      "id": "motes_02",
       "type": "motes",
       "x": -42.2,
       "y": -14.0,
@@ -11341,7 +11726,7 @@
       "blink": true
     },
     {
-      "id": "motes_02",
+      "id": "motes_03",
       "type": "motes",
       "x": -36.1,
       "y": -14.5,
@@ -11354,7 +11739,7 @@
       "blink": true
     },
     {
-      "id": "glow_01",
+      "id": "glow_04",
       "type": "glow",
       "x": -36.1,
       "y": -17.0,
@@ -11362,7 +11747,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_03",
+      "id": "motes_04",
       "type": "motes",
       "x": -27.8,
       "y": -15.0,
@@ -11375,7 +11760,7 @@
       "blink": true
     },
     {
-      "id": "motes_04",
+      "id": "motes_05",
       "type": "motes",
       "x": 36.0,
       "y": -17.1,
@@ -11388,7 +11773,7 @@
       "blink": true
     },
     {
-      "id": "glow_02",
+      "id": "glow_05",
       "type": "glow",
       "x": 36.0,
       "y": -19.6,
@@ -11396,7 +11781,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_05",
+      "id": "motes_06",
       "type": "motes",
       "x": 50.8,
       "y": -17.7,
@@ -11409,7 +11794,7 @@
       "blink": true
     },
     {
-      "id": "motes_06",
+      "id": "motes_07",
       "type": "motes",
       "x": 64.7,
       "y": -18.5,
@@ -11422,7 +11807,7 @@
       "blink": true
     },
     {
-      "id": "glow_03",
+      "id": "glow_06",
       "type": "glow",
       "x": 64.7,
       "y": -21.0,
@@ -11430,7 +11815,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_07",
+      "id": "motes_08",
       "type": "motes",
       "x": 72.8,
       "y": -19.7,
@@ -11443,7 +11828,7 @@
       "blink": true
     },
     {
-      "id": "motes_08",
+      "id": "motes_09",
       "type": "motes",
       "x": 75.7,
       "y": -20.8,
@@ -11456,7 +11841,7 @@
       "blink": true
     },
     {
-      "id": "glow_04",
+      "id": "glow_07",
       "type": "glow",
       "x": 75.7,
       "y": -23.3,
@@ -11464,7 +11849,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_09",
+      "id": "motes_10",
       "type": "motes",
       "x": 76.7,
       "y": -22.2,
@@ -11477,7 +11862,7 @@
       "blink": true
     },
     {
-      "id": "motes_10",
+      "id": "motes_11",
       "type": "motes",
       "x": 131.5,
       "y": -47.0,
@@ -11490,7 +11875,7 @@
       "blink": true
     },
     {
-      "id": "glow_05",
+      "id": "glow_08",
       "type": "glow",
       "x": 131.5,
       "y": -49.5,
@@ -11498,7 +11883,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_11",
+      "id": "motes_12",
       "type": "motes",
       "x": 121.2,
       "y": -45.8,
@@ -11511,7 +11896,7 @@
       "blink": true
     },
     {
-      "id": "motes_12",
+      "id": "motes_13",
       "type": "motes",
       "x": 111.4,
       "y": -44.4,
@@ -11524,7 +11909,7 @@
       "blink": true
     },
     {
-      "id": "glow_06",
+      "id": "glow_09",
       "type": "glow",
       "x": 111.4,
       "y": -46.9,
@@ -11532,7 +11917,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_13",
+      "id": "motes_14",
       "type": "motes",
       "x": 101.7,
       "y": -43.0,
@@ -11545,7 +11930,7 @@
       "blink": true
     },
     {
-      "id": "motes_14",
+      "id": "motes_15",
       "type": "motes",
       "x": 91.8,
       "y": -41.5,
@@ -11558,7 +11943,7 @@
       "blink": true
     },
     {
-      "id": "glow_07",
+      "id": "glow_10",
       "type": "glow",
       "x": 91.8,
       "y": -44.0,
@@ -11566,7 +11951,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_15",
+      "id": "motes_16",
       "type": "motes",
       "x": 81.7,
       "y": -40.3,
@@ -11579,7 +11964,7 @@
       "blink": true
     },
     {
-      "id": "motes_16",
+      "id": "motes_17",
       "type": "motes",
       "x": 71.2,
       "y": -39.1,
@@ -11592,7 +11977,7 @@
       "blink": true
     },
     {
-      "id": "glow_08",
+      "id": "glow_11",
       "type": "glow",
       "x": 71.2,
       "y": -41.6,
@@ -11600,7 +11985,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_17",
+      "id": "motes_18",
       "type": "motes",
       "x": 58.9,
       "y": -37.9,
@@ -11613,7 +11998,7 @@
       "blink": true
     },
     {
-      "id": "motes_18",
+      "id": "motes_19",
       "type": "motes",
       "x": 45.0,
       "y": -36.6,
@@ -11626,7 +12011,7 @@
       "blink": true
     },
     {
-      "id": "glow_09",
+      "id": "glow_12",
       "type": "glow",
       "x": 45.0,
       "y": -39.1,
@@ -11634,7 +12019,7 @@
       "color": "#3ac8b0"
     },
     {
-      "id": "motes_19",
+      "id": "motes_20",
       "type": "motes",
       "x": 32.2,
       "y": -35.4,
@@ -11647,7 +12032,7 @@
       "blink": true
     },
     {
-      "id": "waterfall_01",
+      "id": "waterfall_02",
       "type": "waterfall",
       "x": 24.0,
       "y": -73.4,
@@ -11657,7 +12042,7 @@
       "heading": 0
     },
     {
-      "id": "mist_02",
+      "id": "mist_08",
       "type": "mist",
       "x": 24.0,
       "y": -41.4,
@@ -11667,7 +12052,7 @@
       "color": "#f4f8ff"
     },
     {
-      "id": "mist_03",
+      "id": "mist_09",
       "type": "mist",
       "x": 24.0,
       "y": -55.4,
@@ -11677,14 +12062,14 @@
       "color": "#f4f8ff"
     },
     {
-      "id": "lantern_117",
+      "id": "lantern_135",
       "type": "lantern",
       "x": 14.81,
       "y": -38.73,
       "z": -163.23
     },
     {
-      "id": "lantern_118",
+      "id": "lantern_136",
       "type": "lantern",
       "x": 35.25,
       "y": -38.73,
@@ -12474,84 +12859,12 @@
           }
         }
       }
-    },
-    {
-      "id": "zip_01",
-      "type": "zipper",
-      "at": 106.9,
-      "across": 0.0
-    },
-    {
-      "id": "zip_02",
-      "type": "zipper",
-      "at": 157.9,
-      "across": 0.0
-    },
-    {
-      "id": "zip_03",
-      "type": "zipper",
-      "at": 306.9,
-      "across": 0.0
-    },
-    {
-      "id": "zip_04",
-      "type": "zipper",
-      "at": 475.0,
-      "across": 0.0
-    },
-    {
-      "id": "zip_05",
-      "type": "zipper",
-      "at": 647.5,
-      "across": 0.0
-    },
-    {
-      "id": "zip_06",
-      "type": "zipper",
-      "at": 860.0,
-      "across": 0.0
-    },
-    {
-      "id": "zip_07",
-      "type": "zipper",
-      "at": 996.4,
-      "across": 0.0
-    },
-    {
-      "id": "zip_08",
-      "type": "zipper",
-      "at": 1066.9,
-      "across": 0.0
-    },
-    {
-      "id": "zip_09",
-      "type": "zipper",
-      "at": 1188.8,
-      "across": 0.0
-    },
-    {
-      "id": "zip_10",
-      "type": "zipper",
-      "at": 1323.5,
-      "across": 0.0
-    },
-    {
-      "id": "zip_11",
-      "type": "zipper",
-      "at": 1372.2,
-      "across": 0.0
-    },
-    {
-      "id": "zip_12",
-      "type": "zipper",
-      "at": 1448.8,
-      "across": 0.0
     }
   ],
   "generator": "tools/blender/prehistoric/journey_cause.py (re-running it rewrites entities)",
   "journey": {
     "from": 52.6,
-    "to": 1462.0
+    "to": 1462.1
   },
   "builtFrom": {}
 }

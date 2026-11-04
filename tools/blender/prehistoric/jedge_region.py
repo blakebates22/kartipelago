@@ -62,11 +62,11 @@ def main():
         # (the sky: the chained bridges, and the islands' stone roads)
         "bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("plank_road", "road"), "barrier": 1.2,
                    "barrier_mat": ("rope_rail", "wall"), "deck": 1.4, "deck_mat": ("weathered_timber", "wall"), "ground": False},
-        # (the canal's hump-backed bridge: planks on a timber deck, rope rails, the water open
-        # under it)
-        "canal bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("weathered_timber", "road"),
-                         "barrier": 1.1, "barrier_mat": ("weathered_timber", "wall"), "deck": 1.2,
-                         "deck_mat": ("weathered_timber", "wall"), "ground": False},
+        # (the canal's stone bridge: setts on a stone deck, a parapet, the water open under
+        # its arch: jedge_harbour.bridge)
+        "canal bridge": {"mat": "bridge_stone", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("causeway_stone", "road"),
+                         "barrier": 1.0, "barrier_mat": ("bog_stone", "wall"), "deck": 1.2,
+                         "deck_mat": ("bog_stone", "wall"), "ground": False},
         # (low parapets along the islands' roads)
         "isle": {"mat": "keep_cobble", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("keep_kerb", "road"), "barrier": 0.8,
                  "barrier_mat": ("keep_parapet", "wall"), "deck": 1.6, "deck_mat": ("keep_rock", "wall"), "ground": False},
@@ -115,11 +115,7 @@ def main():
         g = c.game(x, y, 0.0)
         c.entity("air_spot", x=round(g[0], 1), z=round(g[2], 1), look=LOOKS[look])
 
-    # Zippers all the way (Blake: "Fast & wild").
-    for tag, f in (("bore1", 0.5), ("dock0", 0.3), ("alley0", 0.6), ("baz4", 0.2), ("pit5", 0.0), ("pit_out2", 0.3),
-                   ("den2", 0.6), ("bore4", 0.5), ("isle1", 0.3), ("land4b", 0.3), ("bridge2a", 0.1),
-                   ("isle5", 0.2)):
-        c.zipper(_s(c, tag, f), 0.0)
+    # (No zippers for now: Blake, Nov 4, "lets also remove the zippers for now".)
     gts = c.checkpoints(height=10.0)
     kit.paint.shade_roads(c.pieces, 0.3)
     c.finish(extra={"race": {"laps": 1}, "journey": {"from": round(s_start, 1), "to": round(s_end, 1)}})
