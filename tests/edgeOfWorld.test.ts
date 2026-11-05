@@ -174,8 +174,9 @@ describe("the Edge of the World", () => {
     // (each stretch's own talkers: the slum, the tavern, the Beast Market)
     const talks = of("villager_home").map((e) => e.talk);
     for (const t of ["rookery", "diner", "bazaar", "beasts"]) expect(talks).toContain(t);
-    // (and things alive in the Beast Market's cages)
-    expect(of("little_dragons").length).toBeGreaterThan(4);
-    expect(of("birds").length).toBeGreaterThan(5);
+    // (and the Beast Market's pens of hatchlings, every kind)
+    const pens = of("pen");
+    expect(pens.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(pens.map((e) => e.species))).toEqual(new Set(["raptor", "trike", "stego"]));
   });
 });

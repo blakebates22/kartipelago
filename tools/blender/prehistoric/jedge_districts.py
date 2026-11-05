@@ -47,12 +47,17 @@ def person(c, x, y, z, role, fx, fy, v=None, sky=False):
     CROWD_N[0] += 1
 
 
-def folk(c, x, y, z, pose, fx, fy, seed=None):
-    """One of the detailed folk (a croc of the black market), posed: "watch", "wave",
-    "cheer", "nod", "point", "think", "shrug", "dance", "kneel" or "work"; facing (fx, fy)."""
+def folk(c, x, y, z, pose, fx, fy, seed=None, at=None):
+    """One of the detailed folk (a croc of the black market), facing (fx, fy), posed: busy
+    at something ("eat", "cook", "chat", "lean", "beat", "hang", "dance"), looking at `at`
+    (x, y, z: their partner, their plate, the street) when not glancing at you; or "watch",
+    "wave", "cheer", "nod", "point", "think", "shrug", "kneel", "work" (game/folkPoses.ts)."""
     g = c.game(x, y, z)
     sd = seed if seed is not None else int(rnd(len(FOLK) * 3.1 + x + y) * 97)
-    FOLK.append([round(g[0], 2), round(g[1], 2), round(g[2], 2), round(math.atan2(fx - x, -(fy - y)), 3), pose, sd])
+    row = [round(g[0], 2), round(g[1], 2), round(g[2], 2), round(math.atan2(fx - x, -(fy - y)), 3), pose, sd]
+    if at is not None:
+        row += [round(v, 2) for v in c.game(*at)]
+    FOLK.append(row)
     CROWD_N[0] += 1
 
 

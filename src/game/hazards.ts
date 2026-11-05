@@ -139,9 +139,17 @@ import {
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createCrocKingView, crocKingCue } from "../render/people/crocKing";
 import type { PersonView } from "../render/people/view";
+import { createHatchlingView, type HatchlingView } from "../render/hatchling";
+import { babyAt, parsePen, penBabies, penRng, stepPen, type Baby, type PenConfig } from "./pens";
 import { createVillagerView } from "../render/villager";
 import type { Folk } from "../render/people/folk";
-import { FOLK_WATCH, folkPoseCue, parseFolkPoses, type PosedFolk } from "./folkPoses";
+import {
+  FOLK_WATCH,
+  folkPoseCue,
+  parseFolkPoses,
+  type FolkState,
+  type PosedFolk,
+} from "./folkPoses";
 import {
   doorSwing,
   ghostAt,
@@ -576,7 +584,10 @@ export function createHazards(opts: {
   const kingLook = new THREE.Vector3();
   // Folk posed about a place in full detail (game/folkPoses.ts): the Rookery's balconies,
   // doors and windows, the Rusty Anchor's cooks and diners.
-  const posed: (PosedFolk & { view?: PersonView })[] = [];
+  const posed: (PosedFolk & { view?: PersonView; st: FolkState })[] = [];
+  const folkAt = new THREE.Vector3();
+  // The Beast Market's pens of baby dinosaurs (game/pens.ts).
+  const pens: { cfg: PenConfig; babies: Baby[]; views: HatchlingView[]; rnd: () => number }[] = [];
   const party: {
     x: number;
     y: number;
@@ -926,8 +937,23 @@ export function createHazards(opts: {
       for (const p of parseFolkPoses(e))
         posed.push({
           ...p,
+          st: { seen: false, glance: 0 },
           view: opts.headless ? undefined : createVillagerView(group, folk, p.seed % 16),
         });
+    } else if (e.type === "pen") {
+      const cfg = parsePen(e);
+      const rnd = penRng(cfg.seed);
+      const babies = penBabies(cfg, rnd);
+      pens.push({
+        cfg,
+        babies,
+        rnd,
+        views: opts.headless
+          ? []
+          : babies.map((_, k) =>
+              createHatchlingView(group, cfg.kind, cfg.seed + k, 0.95 + 0.25 * rnd()),
+            ),
+      });
     } else if (e.type === "croc_king") {
       crocKings.push({
         x: num(e.x, 0),
@@ -1648,6 +1674,20 @@ export function createHazards(opts: {
         kingLook.set(listener.x, listener.y, listener.z);
         k.view?.update(k.x, k.y, k.z, k.heading, { ...cue, look: kingLook }, t);
       }
+      for (const pen of pens) {
+        if (Math.hypot(pen.cfg.x - listener.x, pen.cfg.z - listener.z) > 110) {
+          for (const v of pen.views) v.root.visible = false;
+          continue;
+        }
+        stepPen(pen.cfg, pen.babies, dt, pen.rnd);
+        pen.babies.forEach((b, k) => {
+          const v = pen.views[k];
+          if (!v) return;
+          v.root.visible = true;
+          const w = babyAt(pen.cfg, b);
+          v.update(w.x, pen.cfg.y, w.z, w.heading, b.act, b.pace, t);
+        });
+      }
       for (const p of posed) {
         if (!p.view) continue;
         const d = Math.hypot(p.x - listener.x, p.z - listener.z);
@@ -1655,7 +1695,14 @@ export function createHazards(opts: {
         p.view.root.visible = d < 90;
         if (d >= 90) continue;
         kingLook.set(listener.x, listener.y, listener.z);
-        p.view.update(p.x, p.y, p.z, p.heading, folkPoseCue(p, t, d < FOLK_WATCH, kingLook), t);
+        p.view.update(
+          p.x,
+          p.y,
+          p.z,
+          p.heading,
+          folkPoseCue(p, p.st, t, dt, d < FOLK_WATCH, kingLook, folkAt),
+          t,
+        );
       }
       for (const p of party) {
         if (p.ring) {
@@ -2552,6 +2599,7 @@ export function createHazards(opts: {
       for (const p of party) p.view?.dispose();
       for (const k of crocKings) k.view?.dispose();
       for (const p of posed) p.view?.dispose();
+      for (const pen of pens) for (const v of pen.views) v.dispose();
       spray?.dispose();
       snow?.dispose();
       rocks?.dispose();

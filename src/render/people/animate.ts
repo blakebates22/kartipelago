@@ -32,7 +32,13 @@ export type Gesture =
   | "holdOut"
   | "touchHorn"
   | "dance"
-  | "kneel";
+  | "kneel"
+  | "eat"
+  | "cook"
+  | "chat"
+  | "lean"
+  | "beat"
+  | "hang";
 
 export const GESTURES: readonly Gesture[] = [
   "wave",
@@ -51,6 +57,12 @@ export const GESTURES: readonly Gesture[] = [
   "touchHorn",
   "dance",
   "kneel",
+  "eat",
+  "cook",
+  "chat",
+  "lean",
+  "beat",
+  "hang",
 ];
 
 /** What a person is doing this frame. */
@@ -425,6 +437,142 @@ const POSES: Record<Gesture, (t: number, c: Ctx) => GPose> = {
       lids: 0.35,
       jaw: 0.02,
       look: 0.1,
+    };
+  },
+  // --- Things to be busy at (game/folkPoses.ts), each a loop for as long as it's held.
+  eat(t, c) {
+    // A bite: the right hand up from the plate to the mouth and down again, chewing.
+    const k = (t % 2.4) / 2.4;
+    const up = sm(k / 0.35) * (1 - sm((k - 0.55) / 0.3));
+    const m = c.mouth;
+    const r = c.shoulder[1];
+    const [l] = c.shoulder;
+    return {
+      hands: [
+        [l.x + 0.12, l.y - 0.3, l.z + 0.32],
+        [
+          r.x - 0.18 + (m.x - r.x + 0.18) * up,
+          r.y - 0.28 + (m.y - 0.04 - r.y + 0.28) * up,
+          r.z + 0.34 + (m.z + 0.06 - r.z - 0.34) * up,
+        ],
+      ],
+      handRot: [
+        [-0.6, 0, 0.6],
+        [-0.9 - 0.6 * up, 0, -0.9],
+      ],
+      head: [0.22 - 0.12 * up, 0, 0],
+      lean: 0.1,
+      jaw: up > 0.8 ? 0.4 : 0.05 + 0.12 * Math.max(0, Math.sin(t * 9)) * (1 - up),
+      lids: 0.2,
+      look: 0.15,
+    };
+  },
+  cook(t, c) {
+    // Over the fryer: one hand stirring round and round, the other on the pan's handle,
+    // looking down at it, a nod now and then.
+    const a = t * 3.2;
+    const [l, r] = c.shoulder;
+    return {
+      hands: [
+        [l.x + 0.1, l.y - 0.24, l.z + 0.36],
+        [
+          r.x - 0.2 + Math.cos(a) * 0.1,
+          r.y - 0.22 + Math.sin(a * 2) * 0.02,
+          r.z + 0.44 + Math.sin(a) * 0.1,
+        ],
+      ],
+      handRot: [
+        [-0.8, 0, 0.8],
+        [-1.1, 0, -0.8],
+      ],
+      hipsPitch: 0.12,
+      head: [0.42 + Math.sin(t * 0.7) * 0.06, Math.sin(t * 0.5) * 0.15, 0],
+      lean: 0.12,
+      lids: 0.3,
+      look: 0.1,
+    };
+  },
+  chat(t, c) {
+    // Talking with someone: hands going as they talk, a tilt of the head, a shrug here, a
+    // laugh there.
+    const [l, r] = c.shoulder;
+    const g1 = Math.sin(t * 2.3) * 0.5 + 0.5;
+    const g2 = Math.sin(t * 1.7 + 1.9) * 0.5 + 0.5;
+    const laugh = Math.max(0, Math.sin(t * 0.45)) > 0.97 ? 1 : 0;
+    return {
+      hands: [
+        [l.x + 0.16, l.y - 0.22 + g2 * 0.18, l.z + 0.26 + g2 * 0.1],
+        [r.x - 0.16, r.y - 0.24 + g1 * 0.24, r.z + 0.3 + g1 * 0.12],
+      ],
+      handRot: [
+        [-0.9, 0, 0.9 + g2 * 0.4],
+        [-0.9, 0, -0.9 - g1 * 0.4],
+      ],
+      head: [-0.04 - laugh * 0.2, Math.sin(t * 0.9) * 0.12, Math.sin(t * 1.3) * 0.08],
+      roll: Math.sin(t * 0.8) * 0.03,
+      brow: 0.2 + g1 * 0.4,
+      jaw: laugh ? 0.7 : 0.1,
+    };
+  },
+  lean(t, c) {
+    // Leaning on a rail (or a window box): both forearms on it, watching the street,
+    // shifting their weight.
+    const [l, r] = c.shoulder;
+    const sh = Math.sin(t * 0.6) * 0.04;
+    return {
+      hands: [
+        [l.x + 0.06, l.y - 0.22 + sh, l.z + 0.42],
+        [r.x - 0.06, r.y - 0.22 - sh, r.z + 0.42],
+      ],
+      handRot: [
+        [-1.4, 0, 1.0],
+        [-1.4, 0, -1.0],
+      ],
+      hipsPitch: 0.2,
+      lean: 0.12,
+      roll: sh,
+      head: [0.1 + Math.sin(t * 0.4) * 0.05, Math.sin(t * 0.35) * 0.3, 0],
+      lids: 0.15,
+      look: 0.8,
+    };
+  },
+  beat(t, c) {
+    // Beating a rug over the rail: the right arm up and down hard, the left steadying it.
+    const k = (t % 0.9) / 0.9;
+    const up = k < 0.6 ? sm(k / 0.6) : 1 - sm((k - 0.6) / 0.15);
+    const [l, r] = c.shoulder;
+    return {
+      hands: [
+        [l.x + 0.1, l.y - 0.1, l.z + 0.4],
+        [r.x - 0.05, r.y - 0.1 + up * 0.5, r.z + 0.3 + (1 - up) * 0.2],
+      ],
+      handRot: [
+        [-1.2, 0, 0.8],
+        [-1.5 + up * 0.6, 0, -0.6],
+      ],
+      lean: 0.1 - up * 0.08,
+      head: [0.08, 0, 0],
+      jaw: k > 0.6 && k < 0.75 ? 0.3 : 0.05,
+      brow: -0.3,
+      look: 0.4,
+    };
+  },
+  hang(t, c) {
+    // Pegging washing on a line overhead: reaching up, one hand and then the other.
+    const a = Math.sin(t * 1.4);
+    const [l, r] = c.shoulder;
+    return {
+      hands: [
+        [l.x + 0.1, l.y + 0.3 + Math.max(0, a) * 0.25, l.z + 0.22],
+        [r.x - 0.1, r.y + 0.3 + Math.max(0, -a) * 0.25, r.z + 0.22],
+      ],
+      handRot: [
+        [-1.6, 0, 0.5],
+        [-1.6, 0, -0.5],
+      ],
+      lean: -0.1,
+      head: [-0.35, 0, a * 0.05],
+      look: 0.2,
     };
   },
   kneel(t, c) {

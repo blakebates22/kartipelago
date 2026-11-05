@@ -167,7 +167,7 @@ def tenement(m, solid, x, y, z0, rot, w, d, floors, k, shop=True):
                     fx_, fy_, _ = P(lx - 0.4 + fl * 0.4, front - 0.75, 0)
                     m.add((("awning_red", "lush_grass", "awning_sun")[fl], "wall"),
                           lambda bm, fx_=fx_, fy_=fy_, zb=zb: props.blob(bm, (fx_, fy_, zb + 1.08), 0.16, subdiv=0))
-                folk.append(P(lx, front - 0.32, zb + 0.02))
+                folk.append(P(lx, front - 0.32, zb + 0.02) + ("window", math.cos(rot), math.sin(rot)))
         # (a balcony, every other floor up)
         if i >= 1 and (i + k) % 2 == 0:
             bx, by, _ = P(0.0, front - 0.7, 0)
@@ -179,7 +179,7 @@ def tenement(m, solid, x, y, z0, rot, w, d, floors, k, shop=True):
                 m.add(W, lambda bm, a=a, zb=zb: props.tube(bm, [a, (a[0], a[1], zb + 1.05)], 0.05, n=4))
             # (its washing, on a line under the eave above)
             washing_line(m, P(-w * 0.45, front - 1.2, zb + fh - 0.3), P(w * 0.45, front - 1.2, zb + fh - 0.4), 0.3, k * 5 + i)
-            folk.append((P(-w * 0.2 + 0.4 * (i % 2) * w * 0.3, front - 0.8, zb + 0.08)))
+            folk.append(P(-w * 0.2 + 0.4 * (i % 2) * w * 0.3, front - 0.8, zb + 0.08) + ("balcony", math.cos(rot), math.sin(rot)))
     # The street door, the shop's sign and awning.
     dx, dy, _ = P(-w * 0.25, -0.04, 0)
     nx, ny = math.sin(rot), -math.cos(rot)
@@ -263,15 +263,41 @@ def rookery(c, ground, taken):
             lights += lit
             taken.add(hx, hy, w * 0.5)
             tops.setdefault(side, []).append((s, f.P(0.0, v_front - side * 0.4), top, z0))
-            for (px, py, pz) in folk:
-                D.folk(c, px, py, pz, ("watch", "wave", "cheer", "watch", "point", "shrug")[(k + n_folk) % 6], f.x, f.y)
+            for (px, py, pz, kind, ax, ay) in folk:
+                # (the street below them, to watch; the street's middle, to face)
+                street = (f.x + (px - f.x) * 0.3, f.y + (py - f.y) * 0.3, f.z + 1.0)
+                if kind == "window":
+                    D.folk(c, px, py, pz, "lean", f.x, f.y, at=street)
+                    n_folk += 1
+                    continue
+                job = ("lean", "beat", "chat", "hang", "lean", "chat")[(k + n_folk) % 6]
+                if job == "chat":
+                    # (two of them on the balcony, talking)
+                    qx, qy = px + ax * 1.1, py + ay * 1.1
+                    D.folk(c, px, py, pz, "chat", qx, qy, at=(qx, qy, pz + 1.4))
+                    D.folk(c, qx, qy, pz, "chat", px, py, at=(px, py, pz + 1.4))
+                    n_folk += 2
+                    continue
+                if job == "beat":
+                    # (a rug over the rail, for them to beat)
+                    nx_, ny_ = (f.x - px), (f.y - py)
+                    nn = math.hypot(nx_, ny_) or 1.0
+                    rx_, ry_ = px + nx_ / nn * 0.55, py + ny_ / nn * 0.55
+                    cloth(m, ("rug", "royal_carpet", "keep_carpet", "tribal_paint")[k % 4],
+                          [(rx_ - ax * 0.7, ry_ - ay * 0.7, pz + 1.05), (rx_ + ax * 0.7, ry_ + ay * 0.7, pz + 1.05),
+                           (rx_ + ax * 0.7 + nx_ / nn * 0.05, ry_ + ay * 0.7 + ny_ / nn * 0.05, pz - 0.6),
+                           (rx_ - ax * 0.7 + nx_ / nn * 0.05, ry_ - ay * 0.7 + ny_ / nn * 0.05, pz - 0.6)])
+                D.folk(c, px, py, pz, job, f.x, f.y, at=street if job == "lean" else (px, py, pz + 2.6) if job == "hang" else (px, py, pz + 0.8))
                 n_folk += 1
             # (folk at the street door, by turns)
             if side < 0 or not canal:
                 if k % 2 == 0:
-                    px, py = f.P(-0.6, v_front - side * 0.9)
-                    D.folk(c, px, py, f.z - 0.3, ("watch", "think", "wave", "nod")[k % 4], f.x, f.y)
-                    n_folk += 1
+                    # (two neighbours at the street door, talking)
+                    px, py = f.P(-0.9, v_front - side * 1.0)
+                    qx, qy = f.P(0.5, v_front - side * 1.3)
+                    D.folk(c, px, py, f.z - 0.3, "chat", qx, qy, at=(qx, qy, f.z + 1.1))
+                    D.folk(c, qx, qy, f.z - 0.3, "chat", px, py, at=(px, py, f.z + 1.1))
+                    n_folk += 2
             k += 1
             s += w + 0.4
     # The water street: its water, its stone banks, the culvert it comes in by from the
@@ -390,7 +416,7 @@ def rookery(c, ground, taken):
             if i % 2 == 0:
                 bx, by = lerp(lx, rx_, 0.4), lerp(ly, ry_, 0.4)
                 fx_, fy_ = bx + (ry_ - ly), by - (rx_ - lx)
-                D.folk(c, bx, by, zl - 1.6 * 0.96 + 0.05, "wave", fx_, fy_)
+                D.folk(c, bx, by, zl - 1.6 * 0.96 + 0.05, "lean", fx_, fy_, at=(bx + (fx_ - bx) * 2.0, by + (fy_ - by) * 2.0, zl - 9.0))
                 n_folk += 1
         else:
             washing_line(m, (lx, ly, zl), (rx_, ry_, zl - 0.6), 1.6, i * 9)
@@ -419,6 +445,118 @@ def rookery(c, ground, taken):
 # ------------------------------------------------------------------ the Rusty Anchor
 
 
+def kitchen(c, m, solid, f, P, slab, z, half, VW, along):
+    """The Rusty Anchor's back, cut into the rock behind its counter (Blake, Nov 4: "lets
+    make the diner go further into the wall with more detail"): the kitchen (its stoves
+    and pots steaming, prep tables of fish, the smokehouse hung with fish over its fire,
+    crates and barrels, the cooks at work), the pass-through to the counter, and over it
+    the mezzanine: booths along the rock with their lanterns, tables at its rail looking
+    down on the road, the stairs up from the counter's end."""
+    KB = -(L.DINER_N - 0.6)  # (the kitchen's back wall)
+    KF = -(VW + 0.3)  # (the pass-through wall)
+    MZ = z + 4.2  # (the mezzanine's floor)
+    MF = -10.4  # (its front edge, its rail)
+    # The pass-through wall: low under the hatch, a header over it, solid by the stairs.
+    u0, u1 = -half + 2.5, half - 9.5
+    slab(solid, "wreck_planks", (u0 + u1) / 2, KF, u1 - u0, 0.4, z, z + 1.15)
+    slab(m, "plank_deck", (u0 + u1) / 2, KF + 0.2, u1 - u0, 0.7, z + 1.15, z + 1.25)
+    slab(m, "wreck_planks", (u0 + u1) / 2, KF, u1 - u0, 0.4, z + 3.1, MZ)
+    for uu, w_ in ((-half + 1.25, 2.5), ((u1 + half) / 2, half - u1)):
+        slab(solid, "wreck_planks", uu, KF, w_, 0.4, z, MZ)
+    u = u0 + 3.0
+    while u < u1 - 1.0:
+        slab(m, "weathered_timber", u, KF, 0.3, 0.45, z + 1.15, z + 3.1)
+        u += 4.0
+    # The kitchen's ends and back, against the rock.
+    for e in (-1, 1):
+        slab(solid, "wreck_planks", e * half, (KF + KB) / 2, 0.6, KF - KB, z, z + 9.5)
+    slab(solid, "wreck_planks", 0.0, KB - 0.3, 2 * half, 0.6, z, z + 9.5)
+    slab(m, "plank_deck", 0.0, (KF + KB) / 2, 2 * half - 0.6, KF - KB, z - 0.2, z + 0.32)
+    # (the stoves along the back, their pots steaming; the cooks at them)
+    for j, u in enumerate((-half + 4.0, -half + 9.5, -half + 15.0)):
+        sx, sy = P(u, KB + 1.0)
+        solid.add(("keep_iron", "wall"), lambda bm, sx=sx, sy=sy: cuboid(bm, (sx, sy, z + 0.5), (3.6, 1.4, 1.0), along))
+        for q in (-0.9, 0.9):
+            px_, py_ = P(u + q, KB + 1.0)
+            m.add(("fire_glow", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, z + 1.0), (px_, py_, z + 1.04)], 0.42, n=10))
+            m.add(("iron", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, z + 1.04), (px_, py_, z + 1.5)], 0.36, n=10))
+        g = c.game(sx, sy, z + 1.9)
+        c.entity("steam", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2))
+        hx, hy = P(u, KB + 0.2)
+        m.add(("iron", "wall"), lambda bm, hx=hx, hy=hy: props.tube(bm, [(hx, hy, z + 2.4), (hx, hy, MZ)], 0.25, n=6))
+        D.light(c, "glow", sx, sy, z + 1.6)
+        cx_, cy_ = P(u, KB + 2.3)
+        D.folk(c, cx_, cy_, z, "cook", sx, sy, seed=51 + j, at=(sx, sy, z + 1.2))
+    # (the prep tables down the middle, fish laid out on them)
+    for j, u in enumerate((-half + 6.5, -half + 13.0)):
+        tx, ty = P(u, (KF + KB) / 2 + 0.3)
+        solid.add(("door_wood", "wall"), lambda bm, tx=tx, ty=ty: cuboid(bm, (tx, ty, z + 0.45), (3.2, 1.2, 0.9), along))
+        for q in range(5):
+            fx_, fy_ = P(u - 1.2 + q * 0.6, (KF + KB) / 2 + 0.3)
+            m.add((hp.FISH[q % len(hp.FISH)], "wall"), lambda bm, fx_=fx_, fy_=fy_: props.blob(bm, (fx_, fy_, z + 0.98), 0.24, sx=1.0, sy=0.4, sz=0.25,
+                                                                                                subdiv=1))
+        D.folk(c, *P(u, (KF + KB) / 2 + 1.5), z, "cook", tx, ty, seed=61 + j, at=(tx, ty, z + 1.0))
+    # (the smokehouse at the far end: a timber frame, rows of fish hung over a smoky fire)
+    su = half - 4.5
+    for a_ in (-1.6, 1.6):
+        for b_ in (-1.6, 1.6):
+            px_, py_ = P(su + a_, (KF + KB) / 2 + b_)
+            m.add(("weathered_timber", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, z), (px_, py_, z + 3.2)], 0.12, n=5))
+    for r_ in range(3):
+        for q in range(6):
+            fx_, fy_ = P(su - 1.3 + q * 0.52, (KF + KB) / 2 - 1.2 + r_ * 1.2)
+            m.add(("rope_rail", "wall"), lambda bm, fx_=fx_, fy_=fy_: props.tube(bm, [(fx_, fy_, z + 3.0), (fx_, fy_, z + 2.55)], 0.012, n=3))
+            m.add((hp.FISH[(q + r_) % len(hp.FISH)], "wall"), lambda bm, fx_=fx_, fy_=fy_: props.blob(bm, (fx_, fy_, z + 2.3), 0.22, sx=0.35, sy=0.25,
+                                                                                                     sz=1.0, subdiv=1))
+    fx_, fy_ = P(su, (KF + KB) / 2)
+    D.light(c, "campfire", fx_, fy_, z + 0.2)
+    D.light(c, "chimney", fx_, fy_, z + 1.5)
+    for j in range(5):
+        c.place(gp.barrel(c, j % 2) if j % 2 else gp.crate_stack(c, j % 4), *P(-half + 1.6, KB + 1.2 + j * 1.4), z, rot=j, role="both")
+    for u in (-half + 3.0, 0.0, half - 3.0):
+        D.light(c, "lantern", *P(u, (KF + KB) / 2), MZ - 0.4)
+    # The mezzanine over the kitchen: its floor, its rail, the stairs up to it.
+    # (open over the stairs, at the counter's east end)
+    slab(solid, "plank_deck", (-half + 0.3 + half - 8.6) / 2, (MF + KB) / 2, 2 * half - 8.9, MF - KB, MZ - 0.25, MZ)
+    slab(solid, "plank_deck", (half - 8.6 + half - 0.3) / 2, (-12.6 + KB) / 2, 8.3, -12.6 - KB, MZ - 0.25, MZ)
+    a0, a1 = P(-half + 0.6, MF + 0.1), P(half - 0.6, MF + 0.1)
+    for zz in (MZ + 0.5, MZ + 1.0):
+        m.add(("weathered_timber", "wall"), lambda bm, zz=zz: props.tube(bm, [(a0[0], a0[1], zz), (a1[0], a1[1], zz)], 0.05, n=4))
+    u = -half + 0.6
+    while u <= half - 0.6:
+        px_, py_ = P(u, MF + 0.1)
+        m.add(("weathered_timber", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, MZ), (px_, py_, MZ + 1.05)], 0.05, n=4))
+        u += 1.4
+    for q in range(12):
+        uu = half - 8.4 + q * 0.47
+        slab(solid, "plank_deck", uu, -11.6, 0.5, 1.8, z, z + 0.35 * (q + 1))
+    # (booths along the rock at the back, each its lantern; diners at them)
+    for j, u in enumerate((-half + 3.5, -half + 9.5, -half + 15.5, -half + 21.5)):
+        if u > half - 3.0:
+            break
+        tx, ty = P(u, KB + 1.6)
+        solid.add(("door_wood", "wall"), lambda bm, tx=tx, ty=ty: cuboid(bm, (tx, ty, MZ + 0.4), (1.2, 1.6, 0.8), along))
+        for e in (-1, 1):
+            bx, by = P(u + e * 1.4, KB + 1.6)
+            solid.add(("royal_carpet", "wall"), lambda bm, bx=bx, by=by: cuboid(bm, (bx, by, MZ + 0.25), (0.7, 1.8, 0.5), along))
+            bx2, by2 = P(u + e * 1.8, KB + 1.6)
+            m.add(("wood_wall", "wall"), lambda bm, bx2=bx2, by2=by2: cuboid(bm, (bx2, by2, MZ + 0.75), (0.2, 1.8, 1.5), along))
+            D.folk(c, *P(u + e * 1.3, KB + 1.6), MZ, ("eat", "chat")[(j + (e > 0)) % 2], tx, ty, seed=71 + j * 2 + (e > 0),
+                   at=P(u + e * 0.3, KB + 1.6) + (MZ + 0.9,) if (j + (e > 0)) % 2 == 0 else P(u - e * 1.3, KB + 1.6) + (MZ + 1.4,))
+        c.place(hp.cage_lantern(c, j), tx, ty, MZ + 1.6, role="visual")
+        m.add(("keep_iron", "wall"), lambda bm, tx=tx, ty=ty: props.tube(bm, [(tx, ty, MZ + 1.6), (tx, ty, MZ + 4.0)], 0.015, n=3))
+        D.light(c, "lantern", tx, ty, MZ + 1.5)
+    # (tables at the rail, diners looking down on the road; one leaning on the rail)
+    for j, u in enumerate((-half + 5.0, -half + 12.0, -half + 19.0)):
+        tx, ty = P(u, MF - 1.4)
+        cone(c, "Mezzanine Table %d" % j, tx, ty, 0.7, MZ + 0.75, 0.1, ("door_wood", "wall"), segs=10, role="visual")
+        m.add(("door_wood", "wall"), lambda bm, tx=tx, ty=ty: props.tube(bm, [(tx, ty, MZ), (tx, ty, MZ + 0.75)], 0.1, n=6))
+        for e in (-1, 1):
+            D.folk(c, *P(u + e * 1.1, MF - 1.4), MZ, "eat" if e < 0 else "chat", tx, ty, seed=81 + j * 2 + (e > 0),
+                   at=(tx, ty, MZ + 0.85) if e < 0 else P(u - 1.1, MF - 1.4) + (MZ + 1.4,))
+    D.folk(c, *P(half - 11.0, MF - 0.5), MZ, "lean", *P(half - 11.0, 0.0), seed=91, at=P(half - 11.0, 0.0) + (z + 0.5,))
+
+
 def tavern(c, ground, taken):
     """The Rusty Anchor Fish Fry, the slum's diner: the road in at its front door and out
     the back."""
@@ -440,11 +578,13 @@ def tavern(c, ground, taken):
         x, y = P(u, v)
         tgt.add((mat, "wall"), lambda bm: cuboid(bm, (x, y, (z0 + z1) / 2), (su, sv, z1 - z0), along))
 
-    # The walls: the sides whole; the ends round their great doors.
+    # The walls: the right side whole; the ends round their great doors. (The left opens
+    # into the kitchen and the mezzanine over it, cut back into the rock: below.)
+    slab(solid, "wreck_planks", 0.0, VW + 0.3, 2 * half, 0.6, z, z + H)
     for sd in (-1, 1):
-        slab(solid, "wreck_planks", 0.0, sd * (VW + 0.3), 2 * half, 0.6, z, z + H)
         for e in (-1, 1):
             slab(solid, "wreck_planks", e * half, sd * (VD + VW + 0.6) / 2, 0.6, VW + 0.6 - VD, z, z + H)
+    kitchen(c, m, solid, f, P, slab, z, half, VW, along)
     for e in (-1, 1):
         slab(m, "wreck_planks", e * half, 0.0, 0.6, 2 * VD, z + 6.2, z + H)
         # (the gable over the door)
@@ -497,9 +637,9 @@ def tavern(c, ground, taken):
     # stacked on the shelves behind, the menu board, the giant fish mounted over it all;
     # the cooks behind the counter, the diners along it.
     VB = -(f.w / 2 + 2.3)
-    slab(solid, "barrel_wood", 0.0, VB - 0.4, 2 * half - 6.0, 0.8, z, z + 1.1)
-    slab(m, "plank_deck", 0.0, VB - 0.4, 2 * half - 5.6, 1.1, z + 1.1, z + 1.22)
-    for j, u in enumerate((-half * 0.5, -half * 0.15, half * 0.2)):
+    slab(solid, "barrel_wood", -3.0, VB - 0.4, 2 * half - 12.0, 0.8, z, z + 1.1)
+    slab(m, "plank_deck", -3.0, VB - 0.4, 2 * half - 11.6, 1.1, z + 1.1, z + 1.22)
+    for j, u in enumerate((-half * 0.6, -half * 0.25, half * 0.1)):
         fx_, fy_ = P(u, VB - 0.45)
         m.add(("keep_iron", "wall"), lambda bm, fx_=fx_, fy_=fy_: cuboid(bm, (fx_, fy_, z + 1.45), (1.4, 0.7, 0.5), along))
         m.add(("lantern_amber", "wall"), lambda bm, fx_=fx_, fy_=fy_: cuboid(bm, (fx_, fy_, z + 1.71), (1.25, 0.56, 0.04), along))
@@ -508,7 +648,7 @@ def tavern(c, ground, taken):
         D.light(c, "glow", fx_, fy_, z + 2.2)
     u = -half + 3.6
     b = 0
-    while u < half - 3.6:
+    while u < half - 9.5:
         if b % 3 == 1:
             # (a basket of fish and chips waiting on the counter)
             bx, by = P(u, VB - 0.3)
@@ -518,41 +658,28 @@ def tavern(c, ground, taken):
                 m.add(("ember_gold", "wall"), lambda bm, qx=qx, qy=qy: props.blob(bm, (qx, qy, z + 1.45), 0.1, sx=1.6, subdiv=0))
         u += 1.4
         b += 1
-    for lvl in (1.8, 2.6, 3.4):
-        slab(m, "plank_deck", 0.0, -(VW - 0.25), 2 * half - 6.0, 0.5, z + lvl, z + lvl + 0.08)
-        u = -half + 3.4
-        b = 0
-        while u < half - 3.4:
-            bx, by = P(u, -(VW - 0.25))
-            if b % 4 == 3:
-                # (a jar: pickles, sauce, the cook's secret)
-                mat = ("lantern_green", "lantern_red", "lantern_amber")[(b // 4) % 3]
-                m.add((mat, "wall"), lambda bm, bx=bx, by=by, lvl=lvl: props.tube(bm, [(bx, by, z + lvl + 0.08), (bx, by, z + lvl + 0.42)], 0.11, n=6))
-            else:
-                # (a stack of plates)
-                m.add(("party_white", "wall"), lambda bm, bx=bx, by=by, lvl=lvl: props.tube(bm, [(bx, by, z + lvl + 0.08), (bx, by, z + lvl + 0.22)], 0.16, n=8))
-            u += 0.45
-            b += 1
     mx, my = P(-half * 0.3, -(VW - 0.08))
-    sign(m, "sign_menu", mx, my, f.rx, f.ry, 2.6, z + 4.0, z + 4.9, out=0.06)
+    sign(m, "sign_menu", mx, my, f.rx, f.ry, 2.6, z + 3.3, z + 4.1, out=0.25)
     # (the giant fish over the counter, mounted on its board)
-    gx, gy = P(half * 0.35, -(VW - 0.3))
-    slab(m, "door_wood", half * 0.35, -(VW - 0.08), 4.6, 0.12, z + 3.9, z + 5.5)
-    m.add((hp.FISH[1], "wall"), lambda bm: props.blob(bm, (gx, gy, z + 4.7), 1.6, sx=1.0, sy=0.28, sz=0.4, subdiv=2))
+    # (the giant fish, mounted on its board on the mezzanine's front, over the counter)
+    gx, gy = P(half * 0.2, -10.2)
+    slab(m, "door_wood", half * 0.2, -10.05, 4.6, 0.12, z + 4.3, z + 5.9)
+    m.add((hp.FISH[1], "wall"), lambda bm: props.blob(bm, (gx, gy, z + 5.1), 1.6, sx=1.0, sy=0.28, sz=0.4, subdiv=2))
     tx_, ty_ = gx - f.tx * 1.9, gy - f.ty * 1.9
-    cloth(m, hp.FISH[1], [(tx_, ty_, z + 4.7), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 5.4), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 4.0)])
-    for e in (-1, 1):
-        c.place(gp.barrel(c, 0), *P(e * (half - 2.0), VB - 0.5), z, rot=e, role="both")
-    for j, u in enumerate((-half * 0.45, -half * 0.05, half * 0.3)):
-        cx_, cy_ = P(u, -(VW - 1.2))
-        D.folk(c, cx_, cy_, z, ("work", "nod", "work")[j], *P(u, 0.0), seed=11 + j)
+    cloth(m, hp.FISH[1], [(tx_, ty_, z + 5.1), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 5.8), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 4.4)])
+    c.place(gp.barrel(c, 0), *P(-(half - 2.0), VB - 0.5), z, rot=1, role="both")
+    for j, u in enumerate((-half * 0.6, -half * 0.25, half * 0.1)):
+        cx_, cy_ = P(u, VB - 1.3)
+        D.folk(c, cx_, cy_, z, "cook", *P(u, VB), seed=11 + j, at=P(u, VB - 0.45) + (z + 1.5,))
     u = -half + 4.0
     i = 0
-    while u < half - 4.0:
+    while u < half - 10.0:
         sx, sy = P(u, VB + 0.6)
         if rnd(i * 3.3) < 0.6:
-            # (a diner at the counter, eating)
-            D.folk(c, sx, sy, z, ("work", "nod", "watch", "work")[i % 4], *P(u, VB - 1.0))
+            # (a diner at the counter, eating; or two chatting)
+            pose = ("eat", "eat", "chat", "eat")[i % 4]
+            tgt = P(u + (1.7 if pose == "chat" else 0.0), VB - 0.3 if pose == "eat" else VB + 0.6) + (z + (1.2 if pose == "eat" else 1.5),)
+            D.folk(c, sx, sy, z, pose, *P(u, VB - 1.0), at=tgt)
         else:
             m.add(("door_wood", "wall"), lambda bm, sx=sx, sy=sy: props.tube(bm, [(sx, sy, z), (sx, sy, z + 0.75)], 0.22, n=8))
         u += 1.7
@@ -566,7 +693,8 @@ def tavern(c, ground, taken):
         m.add(("door_wood", "wall"), lambda bm, tx=tx, ty=ty: props.tube(bm, [(tx, ty, z), (tx, ty, z + 0.8)], 0.12, n=6))
         for i in range(3):
             a = i * math.tau / 3 + j + 0.5
-            D.folk(c, tx + 1.45 * math.cos(a), ty + 1.45 * math.sin(a), z, ("nod", "cheer", "work", "watch")[(i + j) % 4], tx, ty)
+            D.folk(c, tx + 1.45 * math.cos(a), ty + 1.45 * math.sin(a), z, ("eat", "chat", "eat", "eat")[(i + j) % 4], tx, ty,
+                   at=(tx + 0.5 * math.cos(a), ty + 0.5 * math.sin(a), z + 0.95))
             px_, py_ = tx + 0.5 * math.cos(a), ty + 0.5 * math.sin(a)
             m.add(("party_white", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, z + 0.92), (px_, py_, z + 0.95)], 0.22, n=10))
             m.add(("ember_gold", "wall"), lambda bm, px_=px_, py_=py_: props.blob(bm, (px_, py_, z + 1.0), 0.09, sx=1.8, subdiv=0))
@@ -578,7 +706,7 @@ def tavern(c, ground, taken):
     solid.add(("door_wood", "wall"), lambda bm: cuboid(bm, (px, py, z + 0.75), (2.6, 1.1, 1.5), along))
     k0, k1 = P(half - 5.5, VW - 1.62)
     m.add(("party_white", "wall"), lambda bm: cuboid(bm, (k0, k1, z + 1.05), (2.2, 0.3, 0.1), along))
-    D.folk(c, *P(half - 5.5, VW - 2.3), z, "work", px, py, seed=21)
+    D.folk(c, *P(half - 5.5, VW - 2.3), z, "cook", px, py, seed=21, at=(px, py, z + 1.1))
     # (the band: a little stage, a drummer and two singers dancing)
     bx, by = P(half - 10.0, VT + 1.6)
     solid.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (bx, by, z + 0.2), (4.6, 2.6, 0.4), along))
@@ -595,7 +723,7 @@ def tavern(c, ground, taken):
         for v in (VW + 1.0, VW + 2.2):
             a = P(u, v)
             m.add(W, lambda bm, a=a: props.tube(bm, [(a[0], a[1], ROOK_WATER - 1.0), (a[0], a[1], z + 0.2)], 0.12, n=5))
-    D.folk(c, *P(-4.0, VW + 2.1), z + 0.35, "work", *P(-4.0, VW + 6.0), seed=41)
+    D.folk(c, *P(-4.0, VW + 2.1), z + 0.35, "lean", *P(-4.0, VW + 6.0), seed=41, at=P(-4.0, VW + 5.0) + (ROOK_WATER,))
     # The hanging anchor by the front door, the barrels and crates outside.
     for e in (-1, 1):
         ax, ay = P(e * (half + 1.6), -(VD + 1.6))
@@ -734,40 +862,202 @@ def beast_clear(x, y, r):
     return best > 6.4 + r
 
 
-def spice_stall(m, solid, x, y, z, rot, k, over):
-    """A spice merchant's stall, its counter to the road: sacks of spices heaped in every
-    colour, strings of chillies, brass scales, a striped awning reaching out over the road's
-    edge (`over` metres)."""
+STALL_TRADES = ("spice", "grill", "lanterns", "fruit", "rugs", "sweets")
+FRUIT = ("awning_sun", "lantern_red", "lush_grass", "crystal_violet", "ember_gold", "awning_rose")
+
+
+def spice_stall(m, solid, x, y, z, rot, k, over, c=None):
+    """One of Spice Row's stalls, its front to the road (Blake, Nov 4: "the stalls are
+    boring"; he picked varied trades and varied shapes): a different trade every stall,
+    the spice merchant's bowls heaped with powder and chilli braids, a skewer grill on a
+    cart with its coals and smoke, a lantern seller's frame hung with dozens lit, a fruit
+    stall of tropical fruit in crates, a rug seller's tall rack, a sweets and tea stall
+    with its kettles steaming; booths, carts on wheels, tents and two-storey stalls, their
+    awnings striped and scalloped at different heights, reaching out over the road's edge
+    (`over` m). Returns where the merchant stands, and the customers."""
+    trade = STALL_TRADES[k % len(STALL_TRADES)]
+
     def P(lx, ly, zz=0.0):
         px, py = local(x, y, rot, lx, ly)
         return px, py, z + zz
 
-    cx, cy, _ = P(0, 0)
-    solid.add(("barrel_wood", "wall"), lambda bm: cuboid(bm, (cx, cy, z + 0.5), (4.2, 1.0, 1.0), rot))
-    tx, ty, _ = P(0, 0)
-    m.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (tx, ty, z + 1.05), (4.4, 1.2, 0.1), rot))
-    cols = ("awning_sun", "awning_red", "ember_gold", "lantern_amber", "em_canvas_green", "gulch_sand", "brick", "tribal_paint")
-    for i in range(5):
-        lx = -1.7 + i * 0.85
-        bx, by, _ = P(lx, 0.0)
-        mat = cols[(k * 3 + i) % len(cols)]
-        m.add(("canvas_sun", "wall"), lambda bm, bx=bx, by=by: props.tube(bm, [(bx, by, z + 1.1), (bx, by, z + 1.42)], 0.34, n=8))
-        m.add((mat, "wall"), lambda bm, bx=bx, by=by: props.blob(bm, (bx, by, z + 1.45), 0.3, sz=0.55, subdiv=1))
-    for sd in (-1, 1):
-        a = P(sd * 2.2, 1.0)
-        m.add(W, lambda bm, a=a: props.tube(bm, [(a[0], a[1], z), (a[0], a[1], z + 3.6)], 0.07, n=4))
-        b = P(sd * 2.2, -over)
-        m.add(W, lambda bm, b=b: props.tube(bm, [(b[0], b[1], z + 2.7), (b[0], b[1], z + 3.3)], 0.05, n=4))
-    awn = ("awning_red", "awning_sun", "awning_teal", "awning_rose", "awning_green", "sdp_awning")[k % 6]
-    p = [P(-2.4, 1.2, 3.7), P(2.4, 1.2, 3.7), P(2.4, -over, 3.15), P(-2.4, -over, 3.15)]
-    cloth(m, awn, p)
-    # (strings of chillies and garlic hung off the awning's edge)
-    for i in range(4):
-        hx, hy, _ = P(-1.8 + i * 1.2, -over + 0.2)
-        mat = ("lantern_red", "party_white")[i % 2]
-        for b in range(4):
-            m.add((mat, "wall"), lambda bm, hx=hx, hy=hy, b=b: props.blob(bm, (hx, hy, z + 3.0 - b * 0.22), 0.08, sz=1.4, subdiv=0))
-    return P(0.0, 1.2)[:2], P(0.0, -1.4)[:2]
+    def box_(tgt, mat, lx, ly, lz, sx, sy, sz, tilt=(0.0, 0.0)):
+        px, py, _ = P(lx, ly)
+        tgt.add((mat, "wall"), lambda bm: cuboid(bm, (px, py, z + lz), (sx, sy, sz), rot, tilt=tilt))
+
+    def post(lx, ly, z0, z1, r=0.07, mat="weathered_timber"):
+        a = P(lx, ly)
+        m.add((mat, "wall"), lambda bm: props.tube(bm, [(a[0], a[1], z + z0), (a[0], a[1], z + z1)], r, n=5))
+
+    awn = ("awning_red", "awning_sun", "awning_teal", "awning_rose", "awning_green", "sdp_awning")[(k * 5) % 6]
+    hi = 3.3 + 0.9 * rnd(k * 2.7)  # (the awning's back edge: every stall its own height)
+
+    def awning(w, back, front_y, h_back, h_front, scallop=True):
+        cloth(m, awn, [P(-w / 2, back, h_back), P(w / 2, back, h_back), P(w / 2, front_y, h_front), P(-w / 2, front_y, h_front)])
+        if scallop:
+            # (a scalloped valance along its front edge, in the stripe's other colour)
+            n = int(w / 0.5)
+            for q in range(n):
+                ax = -w / 2 + q * w / n
+                cloth(m, ("party_white", "awning_sun")[k % 2], [P(ax, front_y, h_front), P(ax + w / n, front_y, h_front),
+                                                               P(ax + w / (2 * n), front_y - 0.02, h_front - 0.32)])
+
+    shape = ("booth", "cart", "tower", "booth", "tower", "tent")[k % 6] if k % 4 != 3 else ("cart", "booth", "tent", "booth")[(k // 4) % 4]
+    # The structure.
+    if shape == "cart":
+        box_(solid, "barrel_wood", 0, 0.1, 0.75, 3.0, 1.4, 0.5)
+        for sd in (-1, 1):
+            for fy in (-0.4, 0.6):
+                wx, wy, _ = P(sd * 1.0, fy)
+                ring = [(wx + math.cos(rot) * 0.0, wy, z + 0.45)]
+                m.add(("door_wood", "wall"), lambda bm, wx=wx, wy=wy: props.tube(bm, [(wx - math.cos(rot) * 0.05 * sd, wy - math.sin(rot) * 0.05 * sd, z + 0.45),
+                                                                                 (wx + math.cos(rot) * 0.05 * sd, wy + math.sin(rot) * 0.05 * sd, z + 0.45)], 0.45, n=10))
+        post(-1.4, 0.7, 1.0, hi)
+        post(1.4, 0.7, 1.0, hi)
+        post(-1.4, -0.5, 1.0, hi - 0.4)
+        post(1.4, -0.5, 1.0, hi - 0.4)
+        awning(3.4, 0.9, -over * 0.7, hi, hi - 0.6)
+        top = 1.0
+    elif shape == "tent":
+        box_(solid, "barrel_wood", 0, 0, 0.5, 3.6, 1.0, 1.0)
+        a, b2 = P(0, 0.8), P(0, -over)
+        for sd in (-1, 1):
+            cloth(m, awn, [P(sd * 2.2, 1.6, 0.4), P(sd * 2.2, -over, hi - 1.0), (b2[0], b2[1], z + hi + 0.6), (a[0], a[1], z + hi + 0.9)])
+        cloth(m, awn, [P(-2.2, 1.6, 0.4), P(2.2, 1.6, 0.4), (a[0], a[1], z + hi + 0.9)])
+        post(0, 0.8, 0.0, hi + 0.9)
+        post(0, -over, 0.0, hi + 0.6)
+        top = 1.0
+    elif shape == "tower":
+        # (two storeys: a booth below, a deck above with its own goods, a ladder up)
+        box_(solid, "barrel_wood", 0, 0, 0.5, 4.0, 1.0, 1.0)
+        for lx in (-2.1, 2.1):
+            for ly in (-0.5, 1.6):
+                post(lx, ly, 0.0, 6.4, 0.09)
+        box_(m, "plank_deck", 0, 0.55, 3.2, 4.6, 2.6, 0.18)
+        a, b2 = P(-2.3, -0.75), P(2.3, -0.75)
+        for zz in (3.7, 4.2):
+            m.add(("weathered_timber", "wall"), lambda bm, zz=zz: props.tube(bm, [(a[0], a[1], z + zz), (b2[0], b2[1], z + zz)], 0.04, n=4))
+        awning(4.6, 1.8, -over * 0.6, 6.4, 5.6)
+        for q in range(8):
+            la, lb = P(2.4, 1.2 - q * 0.0), P(2.4, 1.2)
+        top = 1.0
+    else:
+        box_(solid, "barrel_wood", 0, 0, 0.5, 4.2, 1.0, 1.0)
+        post(-2.2, 1.0, 0.0, hi)
+        post(2.2, 1.0, 0.0, hi)
+        post(-2.2, -over, 2.6, hi - 0.6, 0.05)
+        post(2.2, -over, 2.6, hi - 0.6, 0.05)
+        awning(4.8, 1.2, -over, hi, hi - 0.6)
+        top = 1.0
+    box_(m, "plank_deck", 0, 0, top + 0.05, 4.2 if shape != "cart" else 3.0, 1.2, 0.1)
+    # The trade's goods.
+    if trade == "spice":
+        for q in range(6):
+            bx, by, _ = P(-1.6 + q * 0.64, -0.15)
+            mat = ("awning_sun", "awning_red", "ember_gold", "lantern_amber", "em_canvas_green", "brick")[(q + k) % 6]
+            m.add(("party_white", "wall"), lambda bm, bx=bx, by=by: props.tube(bm, [(bx, by, z + top + 0.1), (bx, by, z + top + 0.24)], 0.26, n=10))
+            cone_ = lambda bm, bx=bx, by=by: bmesh_cone(bm, bx, by, z + top + 0.22, 0.24, 0.26)
+            m.add((mat, "wall"), cone_)
+        for q in range(5):
+            bx, by, _ = P(-1.6 + q * 0.8, 0.4)
+            m.add(("canvas_sun", "wall"), lambda bm, bx=bx, by=by: props.blob(bm, (bx, by, z + top + 0.35), 0.32, sz=1.1, subdiv=1))
+        for q in range(4):
+            hx, hy, _ = P(-1.8 + q * 1.2, -over * 0.85 if shape != "tower" else -0.6)
+            hz = (hi - 0.7) if shape not in ("tower",) else 3.0
+            for b3 in range(6):
+                m.add((("lantern_red", "party_white")[q % 2], "wall"),
+                      lambda bm, hx=hx, hy=hy, b3=b3, hz=hz: props.blob(bm, (hx, hy, z + hz - b3 * 0.2), 0.07, sz=1.5, subdiv=0))
+    elif trade == "grill":
+        box_(m, "keep_iron", 0, -0.05, top + 0.25, 2.2, 0.8, 0.3)
+        box_(m, "fire_glow", 0, -0.05, top + 0.41, 2.0, 0.66, 0.04)
+        for q in range(7):
+            sx, sy, _ = P(-0.9 + q * 0.3, -0.05)
+            m.add(("weathered_timber", "wall"), lambda bm, sx=sx, sy=sy: props.tube(bm, [(sx - math.sin(rot) * 0.45, sy + math.cos(rot) * 0.45, z + top + 0.5),
+                                                                                     (sx + math.sin(rot) * 0.45, sy - math.cos(rot) * 0.45, z + top + 0.5)], 0.015, n=3))
+            for b3 in range(3):
+                bx, by = sx + math.sin(rot) * (b3 - 1) * 0.2, sy - math.cos(rot) * (b3 - 1) * 0.2
+                m.add((("ember_gold", "lantern_red", "lush_grass")[b3], "wall"),
+                      lambda bm, bx=bx, by=by: props.blob(bm, (bx, by, z + top + 0.5), 0.06, subdiv=0))
+        if c is not None:
+            gx, gy, _ = P(0, -0.05)
+            D.light(c, "chimney", gx, gy, z + top + 0.8)
+            D.light(c, "glow", gx, gy, z + top + 1.0)
+    elif trade == "lanterns":
+        # (a frame hung with lanterns, every one lit)
+        fz = 3.0 if shape != "tower" else 5.6
+        a, b2 = P(-2.0, -0.5), P(2.0, -0.5)
+        for zz in (fz - 1.0, fz):
+            m.add(("weathered_timber", "wall"), lambda bm, zz=zz: props.tube(bm, [(a[0], a[1], z + zz), (b2[0], b2[1], z + zz)], 0.04, n=4))
+        if c is not None:
+            for q in range(10):
+                lx, ly, _ = P(-1.8 + (q % 5) * 0.9, -0.5)
+                lz = fz - 0.3 - (q // 5) * 1.0
+                c.place(hp.cage_lantern(c, q + k), lx, ly, z + lz, role="visual")
+            gx, gy, _ = P(0, -0.8)
+            D.light(c, "glow", gx, gy, z + fz - 0.8)
+            D.light(c, "lantern", gx, gy, z + fz - 0.6)
+        for q in range(4):
+            bx, by, _ = P(-1.5 + q, 0.1)
+            m.add((("lantern_amber", "lantern_green", "lantern_red", "lantern_glass")[q], "wall"),
+                  lambda bm, bx=bx, by=by: props.tube(bm, [(bx, by, z + top + 0.1), (bx, by, z + top + 0.5)], 0.14, n=6))
+    elif trade == "fruit":
+        for q in range(4):
+            cx_, cy_, _ = P(-1.5 + q * 1.0, -0.1)
+            m.add(("barrel_wood", "wall"), lambda bm, cx_=cx_, cy_=cy_: cuboid(bm, (cx_, cy_, z + top + 0.2), (0.85, 0.7, 0.3), rot))
+            for b3 in range(5):
+                fx_, fy_ = cx_ + math.cos(rot) * (b3 % 3 - 1) * 0.22, cy_ + math.sin(rot) * (b3 % 3 - 1) * 0.22 + 0.12 * (b3 // 3)
+                m.add((FRUIT[(q + k) % len(FRUIT)], "wall"), lambda bm, fx_=fx_, fy_=fy_, b3=b3: props.blob(bm, (fx_, fy_, z + top + 0.42 + 0.1 * (b3 // 3)), 0.12,
+                                                                                                    subdiv=1))
+        # (bunches of bananas, a pineapple)
+        for q in range(3):
+            hx, hy, _ = P(-1.4 + q * 1.4, 0.6)
+            for b3 in range(5):
+                m.add(("awning_sun", "wall"), lambda bm, hx=hx, hy=hy, b3=b3: props.tube(bm, [(hx, hy, z + top + 1.6), (hx + 0.1 * (b3 - 2), hy - 0.1, z + top + 1.35),
+                                                                                         (hx + 0.16 * (b3 - 2), hy - 0.2, z + top + 1.25)], 0.04, n=4))
+        px_, py_, _ = P(1.6, 0.4)
+        m.add(("ember_gold", "wall"), lambda bm: props.blob(bm, (px_, py_, z + top + 0.3), 0.16, sz=1.5, subdiv=1))
+        m.add(("lush_grass", "wall"), lambda bm: bmesh_cone(bm, px_, py_, z + top + 0.5, 0.12, 0.35))
+    elif trade == "rugs":
+        # (a tall rack, rugs draped over it high, more rolled and stacked)
+        rz = 3.6 if shape != "tower" else 6.2
+        a, b2 = P(-2.0, 0.5), P(2.0, 0.5)
+        m.add(("weathered_timber", "wall"), lambda bm: props.tube(bm, [(a[0], a[1], z + rz), (b2[0], b2[1], z + rz)], 0.05, n=4))
+        for q in range(4):
+            lx = -1.6 + q * 1.05
+            cloth(m, ("rug", "royal_carpet", "keep_carpet", "tribal_paint")[(q + k) % 4],
+                  [P(lx - 0.45, 0.45, rz), P(lx + 0.45, 0.45, rz), P(lx + 0.45, 0.4, rz - 2.4), P(lx - 0.45, 0.4, rz - 2.4)])
+        for q in range(4):
+            rx_, ry_, _ = P(-1.5 + q, -0.1)
+            m.add((("rug", "royal_carpet", "keep_carpet", "tribal_paint")[q], "wall"),
+                  lambda bm, rx_=rx_, ry_=ry_: props.tube(bm, [(rx_ - math.sin(rot) * 0.4, ry_ + math.cos(rot) * 0.4, z + top + 0.2),
+                                                               (rx_ + math.sin(rot) * 0.4, ry_ - math.cos(rot) * 0.4, z + top + 0.2)], 0.14, n=8))
+    else:
+        # sweets and tea: jars of sweets, kettles steaming, cups stacked
+        for q in range(6):
+            bx, by, _ = P(-1.7 + q * 0.68, 0.15)
+            m.add((("lantern_red", "lantern_green", "awning_rose", "crystal_cyan", "awning_sun", "crystal_violet")[q], "wall"),
+                  lambda bm, bx=bx, by=by: props.tube(bm, [(bx, by, z + top + 0.1), (bx, by, z + top + 0.55)], 0.16, n=8))
+        for q in range(2):
+            kx, ky, _ = P(-0.8 + q * 1.6, -0.25)
+            m.add(("keep_iron", "wall"), lambda bm, kx=kx, ky=ky: props.blob(bm, (kx, ky, z + top + 0.25), 0.2, sz=0.9, subdiv=1))
+            m.add(("keep_iron", "wall"), lambda bm, kx=kx, ky=ky: props.tube(bm, [(kx, ky, z + top + 0.3), (kx - math.sin(rot) * 0.0 + math.cos(rot) * 0.3,
+                                                                                                      ky + math.sin(rot) * 0.3, z + top + 0.45)], 0.03, n=4))
+            if c is not None:
+                g = c.game(kx, ky, z + top + 0.5)
+                c.entity("steam", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2))
+        for q in range(5):
+            cx_, cy_, _ = P(1.0 + (q % 3) * 0.25, -0.3 + (q // 3) * 0.25)
+            m.add(("party_white", "wall"), lambda bm, cx_=cx_, cy_=cy_: props.tube(bm, [(cx_, cy_, z + top + 0.1), (cx_, cy_, z + top + 0.22)], 0.07, n=6))
+    return P(0.0, 1.3)[:2], P(0.0, -1.4)[:2]
+
+
+def bmesh_cone(bm, x, y, z, r, h, n=8):
+    """A little cone (a heap of powder, a pineapple's crown)."""
+    ring = [bm.verts.new((x + r * math.cos(a), y + r * math.sin(a), z)) for a in [i * math.tau / n for i in range(n)]]
+    tip = bm.verts.new((x, y, z + h))
+    for i in range(n):
+        bm.faces.new((ring[i], ring[(i + 1) % n], tip))
+    bm.faces.new(ring[::-1])
 
 
 def cage(m, solid, x, y, z, rot, w, d, h, k, hidden=None):
@@ -800,6 +1090,41 @@ def cage(m, solid, x, y, z, rot, w, d, h, k, hidden=None):
     (hidden or solid).add(("keep_iron", "wall"), lambda bm: cuboid(bm, (cx, cy, z + 0.4 + (h - 0.4) / 2), (w - 0.1, d - 0.1, h - 0.4), rot))
 
 
+def pen(c, m, solid, hidden, x, y, z, rot, w, d, kind, count, seed):
+    """A pen of hatchlings: a timber fence of posts and rails, hay down, a water trough and
+    feed sacks inside; the babies themselves are the game's (the pen entity)."""
+    def P(lx, ly):
+        return local(x, y, rot, lx, ly)
+
+    cx, cy = P(0, 0)
+    m.add(("gulch_sand", "wall"), lambda bm: cuboid(bm, (cx, cy, z + 0.03), (w, d, 0.06), rot))
+    corners = [(-w / 2, -d / 2), (w / 2, -d / 2), (w / 2, d / 2), (-w / 2, d / 2), (-w / 2, -d / 2)]
+    for (ax, ay), (bx, by) in zip(corners, corners[1:]):
+        n = max(1, int(math.hypot(bx - ax, by - ay) / 1.3))
+        for q in range(n):
+            px, py = P(ax + (bx - ax) * q / n, ay + (by - ay) * q / n)
+            m.add(W, lambda bm, px=px, py=py: props.tube(bm, [(px, py, z), (px, py, z + 1.05)], 0.07, n=5))
+        a, b = P(ax, ay), P(bx, by)
+        for zz in (0.45, 0.95):
+            m.add(W, lambda bm, a=a, b=b, zz=zz: props.tube(bm, [(a[0], a[1], z + zz), (b[0], b[1], z + zz)], 0.05, n=4))
+    # (unseen: the fence's solid, so a kart bumps it)
+    hidden.add(("weathered_timber", "wall"), lambda bm: cuboid(bm, (cx, cy, z + 0.55), (w + 0.1, d + 0.1, 1.1), rot))
+    tx, ty = P(w / 2 - 0.7, d / 2 - 0.4)
+    m.add(("barrel_wood", "wall"), lambda bm: cuboid(bm, (tx, ty, z + 0.2), (1.1, 0.45, 0.4), rot))
+    m.add(("lagoon_shallow", "wall"), lambda bm: cuboid(bm, (tx, ty, z + 0.38), (0.95, 0.32, 0.04), rot))
+    for q in range(2):
+        sx, sy = P(-w / 2 + 0.5 + q * 0.6, d / 2 - 0.4)
+        m.add(("sail_cloth", "wall"), lambda bm, sx=sx, sy=sy: props.blob(bm, (sx, sy, z + 0.3), 0.28, sz=1.2, subdiv=2))
+    for q in range(4):
+        hx, hy = P(-w / 2 + 0.6 + q * 1.1, -d / 2 + 0.6 + (q % 2) * 0.5)
+        m.add(("gulch_sand", "wall"), lambda bm, hx=hx, hy=hy: props.blob(bm, (hx, hy, z + 0.08), 0.35, sz=0.35, subdiv=0))
+    g = c.game(cx, cy, z + 0.06)
+    # (the pen's heading: its depth along the game's heading of local +Y)
+    gx, gy = P(0, 1)
+    c.entity("pen", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), w=round(w - 0.3, 2), d=round(d - 0.3, 2),
+             heading=round(math.atan2(gx - cx, -(gy - cy)), 3), species=kind, count=count, seed=seed)
+
+
 def lanes(c, ground, taken):
     """Spice Row (the road between the fork and the join) and the Beast Market (the side
     road), each crammed both sides; their gates and signs."""
@@ -818,7 +1143,7 @@ def lanes(c, ground, taken):
                 continue
             z = ground(x, y)
             rot = facing(-f.rx * sd, -f.ry * sd)
-            back, front = spice_stall(m, solid, x, y, z, rot, k, over=2.1)
+            back, front = spice_stall(m, solid, x, y, z, rot, k, over=2.1, c=c)
             taken.add(x, y, 2.6)
             D.person(c, back[0], back[1], z, "merchant", f.x, f.y)
             for j in range(2 + k % 2):
@@ -862,61 +1187,49 @@ def lanes(c, ground, taken):
         D.lantern_line(c, "Spice String %d" % j, a, b, sag=1.1)
         s += 11.0
         j += 1
-    # The Beast Market: cages and pens along both sides of its lane, the auctioneer's
-    # block at its bend, a gate with its sign at each end.
+    # The Beast Market (Blake, Nov 4: "the animals look bad"; he picked "baby dinos in
+    # pens"): timber pens along both sides of its lane, hay down, a trough and feed sacks,
+    # hatchling raptors, triceratops and stegosaurs waddling about in them (the pen
+    # entity: game/pens.ts), a keeper leaning on each fence; the auctioneer's block at the
+    # lane's bend, a hatchling in the little pen on it, the bidders round it; a gate with
+    # its sign at each end.
     frames = beast_frames(6.0)
     n_cage = 0
+    kinds = ("raptor", "trike", "stego")
     for i, (x0, y0, z0, tx, ty, rx, ry) in enumerate(frames[1:-1]):
         for sd in (-1, 1):
-            x, y = x0 + rx * sd * 9.0, y0 + ry * sd * 9.0
-            if not paint.road_clear(c, x, y, 3.0) or not beast_clear(x, y, 1.0) or not taken.clear(x, y, 2.4):
+            x, y = x0 + rx * sd * 9.6, y0 + ry * sd * 9.6
+            if not paint.road_clear(c, x, y, 3.4) or not beast_clear(x, y, 1.4) or not taken.clear(x, y, 3.0):
                 continue
             z = ground(x, y)
             rot = facing(-rx * sd, -ry * sd)
-            kind = (i * 2 + (sd > 0)) % 5
-            w, d, h = (3.4, 2.4, 2.6) if kind != 4 else (4.4, 3.0, 1.2)
-            cage(m, solid, x, y, z, rot, w, d, h, i, hidden)
-            g = c.game(x, y, z + 1.4)
-            if kind == 0:
-                c.entity("birds", color=("#e8483a", "#3ac0e8", "#f2c64a")[i % 3], x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=0.8,
-                         count=4, speed=0.9, seed=i + 40)
-            elif kind == 1:
-                c.entity("little_dragons", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=0.9, count=2, speed=0.6, seed=i + 7)
-            elif kind == 2:
-                c.place(sw.croc(c), x, y, z + 0.4, rot=rot + 1.2, scale=0.5, role="visual")
-            elif kind == 3:
-                for e in range(5):
-                    ex, ey = local(x, y, rot, -1.0 + e * 0.5, 0.2 * (e % 2))
-                    D.egg(c, "Beast Egg %d %d" % (i, e), ex, ey, z + 0.4, 0.28 + 0.06 * (e % 3), ("party_white", "lush_grass", "awning_sun")[e % 3])
-            else:
-                c.place(sw.croc(c), x, y, z + 0.4, rot=rot, scale=0.65, role="visual")
-            D.light(c, "lantern", x, y, z + h + 0.6)
-            mx, my = local(x, y, rot, 1.2, -d / 2 - 1.0)
-            D.person(c, mx, my, z, "merchant" if kind % 2 else "huddle", x0, y0)
-            taken.add(x, y, 2.8)
+            w, d = 5.2, 3.8
+            pen(c, m, solid, hidden, x, y, z, rot, w, d, kinds[(i + (sd > 0)) % 3], 3 if (i + sd) % 3 else 4, i * 2 + (sd > 0))
+            # (the keeper leaning on the fence, watching them; a sign of what's for sale)
+            kx, ky = local(x, y, rot, w / 2 + 0.55, -d / 2 + 0.6)
+            D.folk(c, kx, ky, z, "lean", x, y, seed=101 + i * 2 + (sd > 0), at=(x, y, z + 0.3))
+            sx_, sy_ = local(x, y, rot, -w / 2 + 0.9, -d / 2 - 0.15)
+            m.add(W, lambda bm, sx_=sx_, sy_=sy_: props.tube(bm, [(sx_, sy_, z), (sx_, sy_, z + 1.9)], 0.05, n=4))
+            D.light(c, "lantern", sx_, sy_, z + 2.1)
+            taken.add(x, y, 3.4)
             n_cage += 1
-    # (the auctioneer's block, at the lane's bend, the bidders round it, a dragonet's dome
-    # cage hung over it)
+    # (the auctioneer's block, at the lane's bend: a hatchling in the little pen on it, the
+    # auctioneer calling, the bidders round it)
     bx, by = BEAST_MARKET[3][0] + 9.0, BEAST_MARKET[3][1] + 6.0
     if beast_clear(bx, by, 3.0) and paint.road_clear(c, bx, by, 4.0):
         z = ground(bx, by)
-        solid.add(("door_wood", "wall"), lambda bm: cuboid(bm, (bx, by, z + 0.6), (3.0, 2.2, 1.2), 0.4))
-        D.person(c, bx, by, z + 1.2, "merchant", BEAST_MARKET[3][0], BEAST_MARKET[3][1])
+        brot = facing(BEAST_MARKET[3][0] - bx, BEAST_MARKET[3][1] - by)
+        solid.add(("door_wood", "wall"), lambda bm: cuboid(bm, (bx, by, z + 0.4), (4.0, 3.0, 0.8), brot))
+        pen(c, m, solid, hidden, *local(bx, by, brot, 0.6, 0.3), z + 0.8, brot, 2.2, 1.6, "trike", 1, 77)
+        ax, ay = local(bx, by, brot, -1.3, -0.6)
+        D.folk(c, ax, ay, z + 0.8, "point", BEAST_MARKET[3][0], BEAST_MARKET[3][1], seed=111)
         for i in range(9):
             a = math.atan2(BEAST_MARKET[3][1] - by, BEAST_MARKET[3][0] - bx) + (i - 4) * 0.28
-            px, py = bx + 4.6 * math.cos(a), by + 4.6 * math.sin(a)
+            px, py = bx + 4.8 * math.cos(a), by + 4.8 * math.sin(a)
             if beast_clear(px, py, 0.4):
                 D.person(c, px, py, ground(px, py), ("cheer", "queue", "wave")[i % 3], bx, by)
-        g = c.game(bx, by, z + 6.0)
-        c.entity("little_dragons", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=1.3, count=3, speed=0.5, seed=91)
-        ring = [(bx + 2.0 * math.cos(a), by + 2.0 * math.sin(a), z + 4.6) for a in [i * math.tau / 16 for i in range(17)]]
-        m.add(("keep_iron", "wall"), lambda bm: props.tube(bm, ring, 0.05, n=4))
-        for i in range(10):
-            a = i * math.tau / 10
-            m.add(("keep_iron", "wall"), lambda bm, a=a: props.tube(bm, [(bx + 2.0 * math.cos(a), by + 2.0 * math.sin(a), z + 4.6),
-                                                                         (bx + 1.0 * math.cos(a), by + 1.0 * math.sin(a), z + 7.3), (bx, by, z + 7.6)], 0.03, n=3))
-        m.add(("keep_iron", "wall"), lambda bm: props.tube(bm, [(bx, by, z + 7.6), (bx, by, BAZ_Z + 30.0)], 0.06, n=4))
         D.light(c, "glow", bx, by, z + 3.0)
+        D.light(c, "lantern", ax, ay, z + 3.2)
         taken.add(bx, by, 5.0)
     for (x0, y0, z0, tx, ty, rx, ry), dirn in ((frames[3], -1), (frames[-4], 1)):
         if not all(paint.road_clear(c, x0 + rx * sd * 6.6, y0 + ry * sd * 6.6, 1.2) for sd in (-1, 1)):
@@ -934,4 +1247,4 @@ def lanes(c, ground, taken):
     m.build(c, "Market Lanes", coll="Props", role="visual")
     solid.build(c, "Market Lane Stalls", coll="Props", role="both")
     hidden.build(c, "Beast Market Cage Sides", coll="Collision", role="collision")
-    print("lanes: %d spice stalls, %d cages" % (k, n_cage))
+    print("lanes: %d stalls, %d pens" % (k, n_cage))

@@ -332,9 +332,17 @@ def rook_at(x, y):
     d, lat, z, k, t = best
     if (k <= DAT[AT["rook0"]] and t == 0.0) or (k >= DAT[AT["portal"]] and t == 1.0) or k < DAT[AT["rook0"]]:
         return None
-    if not -ROOK_N < lat < ROOK_S:
+    if not -rook_n(k) < lat < ROOK_S:
         return None
     return lat, z, k
+
+
+DINER_N = 22.0  # (the Rusty Anchor's kitchen and its mezzanine, cut back into the rock)
+
+
+def rook_n(k):
+    """The Rookery's left wall's distance at dense index k: further back at the diner."""
+    return DINER_N if DAT[AT["tav0"]] - 2 <= k <= DAT[AT["tav1"]] + 2 else ROOK_N
 
 
 def rook_canal(x, y):

@@ -281,11 +281,15 @@ def _rookery_cutter(c):
     left wall ROOK_N out, its right ROOK_S (over the water street and its far bank), its
     roof ROOK_ROOF up, ragged."""
     a, b = L.DAT[AT["rook0"]], L.DAT[AT["portal"]] + 1
-    N, S, R = L.ROOK_N, L.ROOK_S, L.ROOK_ROOF
-    prof = [(-N, -8.0), (S, -8.0), (S, 8.0), (S - 4.0, 13.5), (S - 12.0, R), (-N + 7.0, R - 0.5), (-N + 1.5, 13.0), (-N, 7.0)]
+    S, R = L.ROOK_S, L.ROOK_ROOF
     bm = bmesh.new()
     rings = []
     for k in range(a, b + 1):
+        N = L.rook_n(k)
+        # (at the diner, its kitchen and mezzanine: the wall stands back, 9 m up, then the
+        # roof as the street's)
+        prof = [(-N, -8.0), (S, -8.0), (S, 8.0), (S - 4.0, 13.5), (S - 12.0, R), (-L.ROOK_N + 7.0, R - 0.5),
+                (-N + 1.5, 13.0 if N == L.ROOK_N else 11.0), (-N, 7.0 if N == L.ROOK_N else 9.5)]
         p0, p1 = L.DENSE[k - 1], L.DENSE[k + 1]
         tx, ty = p1[0] - p0[0], p1[1] - p0[1]
         n = math.hypot(tx, ty) or 1.0
