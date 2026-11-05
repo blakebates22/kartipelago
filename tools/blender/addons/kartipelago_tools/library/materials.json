@@ -12665,6 +12665,33 @@
       "tileMetres": 2
     },
     {
+      "id": "sign_drydock_1",
+      "name": "Sign: The Dry Dock (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drydock_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drydock_2",
+      "name": "Sign: The Dry Dock (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drydock_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_drydock_3",
+      "name": "Sign: The Dry Dock (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_drydock_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
       "id": "edge_flag_skull",
       "name": "Smuggler Flag (Skull)",
       "theme": "dry_gulch",

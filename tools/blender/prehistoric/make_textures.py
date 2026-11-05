@@ -4456,11 +4456,11 @@ def sign_grime(im, letters, wood, seed):
     if len(words) >= 6:
         k = words[1 + int(r() * (len(words) - 2))]
         fl = noise(3, 3, 9103 + seed, w, h)
-        peel = {p for p in letters[k] if fl(*p) > 0.66}
+        peel = {p for p in letters[k] if fl(*p) > 0.78}
     flake = noise(max(2, w // 6), 4, 9104 + seed, w, h)
     ink = set().union(*letters) if letters else set()
     for (x, y) in ink:
-        if (x, y) in peel or (flake(x, y) > 0.78 and 0 <= x < w and 0 <= y < h):
+        if (x, y) in peel or (flake(x, y) > 0.86 and 0 <= x < w and 0 <= y < h):
             if 0 <= x < w and 0 <= y < h:
                 c = bare[int((x * 7 + y * 3) % len(bare))]
                 px[x, y] = tuple(int(v * 0.9) for v in c)
@@ -5750,6 +5750,7 @@ EDGE_SIGNS = [
         ("sign_bait", "Bait", "BAIT", 64, 32, {"seed": 37, "wood": RED_SIGN}),
         ("sign_maps", "Maps", "MAPS", 64, 32, {"seed": 38}),
         ("sign_rope", "Rope", "ROPE", 64, 32, {"seed": 39, "wood": GREEN_SIGN}),
+        ("sign_drydock", "The Dry Dock", "THE DRY DOCK", 192, 32, {"seed": 42, "ink": "#f0d890"}),
     )
     for entry in sign_tiles(sid, name, text, w, h, dict(kw, grime=True))
 ]

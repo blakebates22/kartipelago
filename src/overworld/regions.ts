@@ -607,10 +607,10 @@ export const REGIONS: Region[] = [
     // The last smugglers' tunnel, driven (v4, Blake, Nov 2: "completely rework it. it should
     // be crawling with black market activity"; a chain of districts): in from the isles' sea
     // door, the Smugglers' Docks (over the canal's hump-backed bridge), Smugglers' Alley and
-    // the Stair down into the Night Bazaar (the Broker's ship over it), the corkscrew down
-    // the Fighting Pits' stands, the Lucky Bone (the gambling den), the Long Bore out through
-    // the sea falling off the world's edge onto the Edge Bridge, then the Sky Islands'
-    // chained bridges to the Dragon Kingdom's Sky Gate. No jumps (Nov 3: it drives both
+    // the Stair down into the Night Bazaar (its shantytown), the corkscrew down past the
+    // dry dock's grandstands (the old Fighting Pits), the Lucky Bone (the gambling den), the
+    // Long Bore out through the sea falling off the world's edge onto the Edge Bridge,
+    // then the Sky Islands' chained bridges to the Dragon Kingdom's Sky Gate. No jumps (Nov 3: it drives both
     // ways).
     // (tools/blender/prehistoric/jedge_region.py; the positions are the build's.)
     id: "journey_cause",

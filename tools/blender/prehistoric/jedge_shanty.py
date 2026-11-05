@@ -122,14 +122,24 @@ def net_line(c, m, p0, p1, sag, k):
                   lambda bm, x=x, y=y, z=z: props.blob(bm, (x, y, z), 0.13, subdiv=1))
 
 
-def hull(bm, cx, cy, z, rot, length, width, height, upturned=True, bow=1.0, stern=0.8, n=10, m=7):
+def hull_section(t, length, width, height, bow=1.0, stern=0.8):
+    """A hull's half-width and depth at t (-1 stern .. 1 bow) along it."""
+    end = bow if t > 0 else stern
+    half = width / 2 * math.sqrt(max(0.0, 1.0 - end * abs(t) ** 2.4))
+    hh = height * (0.9 + 0.1 * (1 - t * t)) * (0.35 + 0.65 * (half / (width / 2)) ** 0.5)
+    return half, hh
+
+
+def hull(bm, cx, cy, z, rot, length, width, height, upturned=True, bow=1.0, stern=0.8, n=10, m=7, t0=-1.0, t1=1.0, caps=True):
     """A boat's hull lofted from sections: `upturned` (keel up, for a roof) or upright
     (keel down, a beached bow). Along local X; `bow` and `stern` how pointed each end
-    (1 closes to a point, less leaves a transom). Both faces of every panel."""
+    (1 closes to a point, less leaves a transom). Both faces of every panel. Only from
+    t0 to t1 (-1 stern .. 1 bow) of it, if asked (a hull half planked); `caps` closes
+    its ends."""
     ca, sa = math.cos(rot), math.sin(rot)
     rings = []
     for i in range(n + 1):
-        t = -1.0 + 2.0 * i / n
+        t = t0 + (t1 - t0) * i / n
         end = bow if t > 0 else stern
         half = width / 2 * math.sqrt(max(0.0, 1.0 - end * abs(t) ** 2.4))
         hh = height * (0.9 + 0.1 * (1 - t * t)) * (0.35 + 0.65 * (half / (width / 2)) ** 0.5)
@@ -141,13 +151,20 @@ def hull(bm, cx, cy, z, rot, length, width, height, upturned=True, bow=1.0, ster
             lz = math.sin(a) * hh if upturned else -math.sin(a) * hh
             ring.append(bm.verts.new((cx + lx * ca - ly * sa, cy + lx * sa + ly * ca, z + lz)))
         rings.append(ring)
-    for i in range(n):
-        for j in range(m):
-            q = (rings[i][j], rings[i + 1][j], rings[i + 1][j + 1], rings[i][j + 1])
-            if len({v.index for v in q}) == 4:
-                bm.faces.new(q)
-                bm.faces.new(q[::-1])
-    for ring in (rings[0], rings[-1]):
+    # (its inside faces on their own copy of the verts: both faces of every panel)
+    back = [[bm.verts.new(v.co.copy()) for v in ring] for ring in rings]
+    for rs, flip in ((rings, False), (back, True)):
+        for i in range(n):
+            for j in range(m):
+                q = [rs[i][j], rs[i + 1][j], rs[i + 1][j + 1], rs[i][j + 1]]
+                # (where the ring closes to a point, a triangle)
+                keep = []
+                for v in q:
+                    if not any((v.co - w.co).length < 1e-4 for w in keep):
+                        keep.append(v)
+                if len(keep) >= 3:
+                    bm.faces.new(keep[::-1] if flip else keep)
+    for ring in (rings[0], rings[-1]) if caps else ():
         pts = [v.co.copy() for v in ring]
         if math.dist(pts[0], pts[-1]) > 0.2:
             vs = [bm.verts.new(p) for p in pts]

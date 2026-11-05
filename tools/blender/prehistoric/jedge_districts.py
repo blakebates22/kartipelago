@@ -464,101 +464,23 @@ def bazaar(c, ground, taken):
 
 
 def pits(c, ground, taken):
-    """The Fighting Pits: the arena, the road corkscrewing down its wall through the
-    stands (benches packed with the cheering crowd all the way down), the fight ring on
-    the sand floor (two brawlers in it, the crowd round the ropes), the bookies' booths
-    with their queues, braziers, banners from the roof, cages, a great skull over the
-    gate."""
+    """The Fighting Pits, the smugglers' dry dock now (Blake, Nov 5; jedge_drydock): the
+    road corkscrewing down its wall between the grandstands, the great galleon building
+    on its floor with its scaffolding and cranes, the lock gate leaking, the yard's trades;
+    braziers round its rim, smuggler flags down its walls, the gate in with its sign."""
+    import jedge_drydock as DD
+    import jedge_rookery as R
+    import jedge_shanty as S
+    from gulch_scenery import Mesh
+
     px, py = PIT
     f0, f1, f2 = PIT_R
-    taken.add(px, py, f0 - 1.0)
-    # The ring: a raised platform, corner posts, ropes; two brawlers; the referee.
-    z = PIT_FLOOR
-    box(c, "Fight Ring", px, py, 6.5, 6.5, z - 0.5, z + 1.2, ("gulch_sand", "road"))
-    box(c, "Fight Ring Skirt", px, py, 6.7, 6.7, z - 0.5, z + 1.0, ("banner_red", "wall"), role="visual")
-    corners = [(px + sx * 6.3, py + sy * 6.3) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
-    for k, (x, y) in enumerate(corners):
-        box(c, "Ring Post %d" % k, x, y, 0.2, 0.2, z + 1.2, z + 3.0, ("iron", "wall"), role="visual")
-    for h in (1.9, 2.6):
-        for k in range(4):
-            (ax, ay), (bx_, by_) = corners[k], corners[(k + 1) % 4]
-            tube(c, "Ring Rope %d %d" % (k, int(h * 10)), [(ax, ay, z + h), (bx_, by_, z + h)], 0.05, "banner_red", n=3)
-    for k, (dx, h) in enumerate(((-1.8, 0.4), (1.8, 0.4 + math.pi))):
-        g = c.game(px + dx, py, z + 1.2)
-        c.entity("partygoer", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(math.pi / 2 if dx < 0 else -math.pi / 2, 3),
-                 dance="hop", variant=3 + k * 2)
-    person(c, px, py + 3.5, z + 1.2, "wave", px, py)
-    for k in range(4):
-        bx_, by_ = corners[k][0] + (corners[k][0] - px) * 0.5, corners[k][1] + (corners[k][1] - py) * 0.5
-        c.place(sw.stone_brazier(c), bx_, by_, z, role="visual")
-        light(c, "campfire", bx_, by_, z + 2.0)
-    # Ringside: the crowd packed round the ropes.
-    for k in range(44):
-        a = k * math.tau / 44
-        for rr_ in (10.5, 12.5):
-            if (k + int(rr_)) % 3 == 0:
-                continue
-            x, y = px + rr_ * math.cos(a), py + rr_ * math.sin(a)
-            person(c, x, y, z, "cheer", px, py)
-    # The bookies' booths round the floor, queues at them, odds boards.
-    for k in range(6):
-        a = k * math.tau / 6 + 0.25
-        x, y = px + 22.0 * math.cos(a), py + 22.0 * math.sin(a)
-        if not paint.road_clear(c, x, y, 3.0):
-            continue
-        rot = a + math.pi / 2
-        stall(c, "Bookie %d" % k, x, y, z, rot, "gold", ("awning_red", "tent_cloth_red", "awning_sun")[k % 3])
-        box(c, "Odds Board %d" % k, x + 1.6 * math.cos(a), y + 1.6 * math.sin(a), 2.0, 0.12, z + 1.2, z + 4.4, ("window_lit", "wall"),
-            rot=rot, role="visual")
-        person(c, x + 1.0 * math.cos(a), y + 1.0 * math.sin(a), z, "merchant", px, py)
-        for i in range(5):
-            qx, qy = x - (1.8 + i * 1.0) * math.cos(a), y - (1.8 + i * 1.0) * math.sin(a)
-            person(c, qx, qy, z, "queue", x, y)
-    for k, a in enumerate((1.3, 3.4, 5.2)):
-        x, y = px + 28.0 * math.cos(a), py + 28.0 * math.sin(a)
-        if paint.road_clear(c, x, y, 5.0):
-            # (a cage: the next challenger, a croc, pacing)
-            for i in range(8):
-                b = i * math.tau / 8
-                box(c, "Cage Bar %d %d" % (k, i), x + 2.6 * math.cos(b), y + 2.6 * math.sin(b), 0.08, 0.08, z, z + 3.4, ("iron", "wall"),
-                    role="visual")
-            box(c, "Cage Top %d" % k, x, y, 2.8, 2.8, z + 3.4, z + 3.6, ("iron", "wall"), role="visual")
-            box(c, "Cage Floor %d" % k, x, y, 2.8, 2.8, z - 0.2, z + 0.2, ("rail_iron", "wall"))
-            c.place(sw.croc(c), x, y, z + 0.6, rot=a, scale=0.6, role="visual")
-            for i in range(3):
-                b = a + math.pi + (i - 1) * 0.4
-                person(c, x + 4.0 * math.cos(b), y + 4.0 * math.sin(b), z, "cheer" if i != 1 else "huddle", x, y)
-    for j, a in enumerate((0.8, 2.7, 4.6)):
-        x, y = px + 16.0 * math.cos(a), py + 16.0 * math.sin(a)
-        talkers(c, x, y, z, 5, "pits", r=6.0)
-    # The stands: benches down the slope on both sides of the spiral, packed.
-    n = 0
-    for k in range(78):
-        a = -60.0 - 300.0 * (k + 0.5) / 78
-        r_road, z_road = spiral_at(a)
-        ra = math.radians(a)
-        rows = []
-        r = r_road + 10.5
-        while r < f2 - 2.0:
-            rows.append(r)
-            r += 3.0
-        r = r_road - 10.5
-        while r > f0 + 2.0:
-            rows.append(r)
-            r -= 3.0
-        for r in rows:
-            x, y = px + r * math.cos(ra), py + r * math.sin(ra)
-            if not paint.road_clear(c, x, y, 2.0):
-                continue
-            zt = pit_ground(x, y)
-            box(c, "Bench %d %d" % (k, int(r)), x, y, 1.0, 2.0, zt - 1.6, zt + 0.35, (("ember_ashlar", "sandstone_block")[int(r) % 2], "wall"), rot=ra + math.pi / 2,
-                role="visual")
-            if (k + int(r)) % 3 == 0 or n > 420:
-                continue
-            for i in (-1, 1):
-                sx, sy = x + math.cos(ra + math.pi / 2) * i * 0.9, y + math.sin(ra + math.pi / 2) * i * 0.9
-                person(c, sx, sy, zt + 0.35, "cheer" if (k + i) % 4 else "wave", px, py)
-                n += 1
+    DD.dock(c, ground, taken)
+    DD.stands(c, taken)
+    for j, a in enumerate((0.9, 2.3, 4.4)):
+        x, y = px + 27.0 * math.cos(a), py + 27.0 * math.sin(a)
+        if paint.road_clear(c, x, y, 4.0) and not DD.on_ship(x, y, 2.0):
+            talkers(c, x, y, PIT_FLOOR, 5, "pits", r=4.0)
     # Torches along the spiral's rail, every few metres, both sides by turns.
     for k in range(40):
         a = -60.0 - 300.0 * (k + 0.5) / 40
@@ -566,7 +488,8 @@ def pits(c, ground, taken):
         ra = math.radians(a)
         r = r_road + (8.6 if k % 2 else -8.6)
         light(c, "torch", px + r * math.cos(ra), py + r * math.sin(ra), z_road + 2.2)
-    # Braziers on the stands, banners down the walls, the great skull over the gate.
+    # Braziers round the rim; smuggler flags down the walls.
+    flags = Mesh()
     for k in range(16):
         a = k * math.tau / 16 + 0.1
         x, y = px + (f2 - 4.0) * math.cos(a), py + (f2 - 4.0) * math.sin(a)
@@ -576,20 +499,17 @@ def pits(c, ground, taken):
             light(c, "campfire", x, y, zt + 2.0)
         z0 = -12.0
         x, y = px + (f2 - 1.5) * math.cos(a + 0.2), py + (f2 - 1.5) * math.sin(a + 0.2)
-        cloth(c, "Pit Banner %d" % k, [(x - 1.8 * math.sin(a), y + 1.8 * math.cos(a), z0), (x + 1.8 * math.sin(a), y - 1.8 * math.cos(a), z0),
-                                       (x + 1.4 * math.sin(a), y - 1.4 * math.cos(a), z0 - 12.0), (x - 1.4 * math.sin(a), y + 1.4 * math.cos(a), z0 - 12.0)],
-              ("banner_red", "ember_banner", "banner_red", "keep_banner_dark")[k % 4])
+        ax, ay = -math.sin(a), math.cos(a)
+        flags.add(("weathered_timber", "wall"), lambda bm, x=x, y=y, ax=ax, ay=ay: props.tube(bm, [(x - ax * 2.0, y - ay * 2.0, z0 + 0.1), (x + ax * 2.0, y + ay * 2.0, z0 + 0.1)], 0.09, n=4))
+        S.flag(flags, (x, y, z0), (ax, ay), 3.6, 7.2, S.FLAGS[k % 3], 80 + k, strips=5)
+    # The gate in: a timber gate over the road, THE DRY DOCK on it each way, torches.
     q, _ = c.nearest(*L.ROUTE[L.AT["pit_gate"]][:2])
-    rot = math.atan2(q.t.y, q.t.x)
-    c.place(sw.great_skull(c), q.p.x - q.t.x * 6.0, q.p.y - q.t.y * 6.0, q.p.z + 9.0, rot=rot, scale=0.42, role="visual")
+    f = R.Frame(q)
+    R._gate(flags, f, "sign_drydock", q.p.z, q.w / 2 + 2.5)
     for sd in (-1, 1):
-        gx, gy = q.p.x + q.r.x * sd * (q.w / 2 + 2.5), q.p.y + q.r.y * sd * (q.w / 2 + 2.5)
-        box(c, "Pit Gate Post %d" % sd, gx, gy, 1.0, 1.0, q.p.z - 1.0, q.p.z + 9.5, ("bone_ivory", "wall"), rot=rot)
-        light(c, "torch", gx - q.t.x * 1.2, gy - q.t.y * 1.2, q.p.z + 7.0)
-    # (Dust over the sand, the braziers' smoke.)
-    for k in range(4):
-        a = k * math.tau / 4 + 0.6
-        light(c, "chimney", px + 18.0 * math.cos(a), py + 18.0 * math.sin(a), PIT_FLOOR + 3.0)
+        gx, gy = f.P(-1.2, sd * (q.w / 2 + 2.5))
+        light(c, "torch", gx, gy, q.p.z + 7.0)
+    flags.build(c, "Dry Dock Flags And Gate", coll="Props", role="visual")
 
 
 # ------------------------------------------------------------------ the Lucky Bone

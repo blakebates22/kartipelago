@@ -185,6 +185,14 @@ describe("the Edge of the World", () => {
     for (const play of ["fiddle", "squeeze", "drum"])
       expect(folk.filter((p) => p === play)).toHaveLength(1);
     expect(folk.filter((p) => p === "tap").length).toBeGreaterThanOrEqual(2);
+    // (Nov 5, the dry dock where the Fighting Pits' boxing ring was: no boxers, the
+    // shipwrights at work on the galleon, hammering, sawing, stirring the tar)
+    const pit = (e: Entity) => Math.hypot((e.x as number) - 40, (e.z as number) - 10) < 34;
+    expect(of("partygoer").filter(pit)).toHaveLength(0);
+    const rows = of("folk_poses")[0]!.list as number[][];
+    const inPit = rows.filter((r) => Math.hypot(r[0]! - 40, r[2]! - 10) < 34);
+    expect(inPit.length).toBeGreaterThanOrEqual(15);
+    expect(inPit.filter((r) => (r[4] as unknown) === "beat").length).toBeGreaterThanOrEqual(4);
     const dancers = (of("villagers") as unknown as { list: unknown[][] }[])
       .flatMap((e) => e.list)
       .filter((r) => r[5] === "dancer");

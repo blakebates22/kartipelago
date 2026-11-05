@@ -529,8 +529,8 @@ def classify(c, n, info):
         return ("bog_mud", "deep_water")  # (into the docks' black water: put back)
     name, e = cavern_at(c.x, c.y)
     if n.z < 0.62:
-        # (the arena's walls dressed stone, like its stands)
-        return ("sandstone_block", "wall") if name == "Fighting Pits" else ("cave_rock", "wall")
+        # (the dry dock's walls dressed stone, sea-stained)
+        return ("dock_cobble", "wall") if name == "Fighting Pits" else ("cave_rock", "wall")
     muck = math.sin(c.x / 9.0 + c.y / 13.0) * math.cos(c.y / 7.0)
     if any(math.hypot(c.x - sx, c.y - sy) < sr + 6.0 for sx, sy, sr in SKYLIGHTS):
         return ("bog_mud", "dirt")  # (the floor under a skylight, sea-wet muck)
@@ -541,9 +541,10 @@ def classify(c, n, info):
     if name == "Night Bazaar":
         return ("village_cobble", "dirt") if muck > -0.2 else ("ash_soil", "dirt")
     if name == "Fighting Pits":
+        # (the dry dock: its floor wet stone and muck, its sides stepped stone and mud)
         if pit_r(c.x, c.y) < PIT_R[0] + 1.0:
-            return ("gulch_sand", "dirt")  # (the arena's sand)
-        return ("sandstone_block", "dirt") if muck > -0.4 else ("gulch_sand", "dirt")
+            return ("keep_dock", "dirt") if muck > -0.35 else ("ash_soil", "dirt")
+        return ("dock_cobble", "dirt") if muck > -0.4 else ("ash_soil", "dirt")
     if name == "Lucky Bone":
         return ("keep_carpet", "dirt") if e < 0.7 else ("palace_paving", "dirt")
     if muck > 0.25:

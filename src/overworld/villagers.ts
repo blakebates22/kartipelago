@@ -167,7 +167,7 @@ const LINES: Record<Folk, string[]> = {
 };
 
 /** The Edge of the World's districts (Blake, Nov 2: "crawling with black market activity"),
- * each with its own talk: the Smugglers' Docks, the Night Bazaar, the Fighting Pits and
+ * each with its own talk: the Smugglers' Docks, the Night Bazaar, the dry dock (the Pits) and
  * the Lucky Bone, the gambling den. */
 export const TALK_LINES: Record<Talk, string[]> = {
   docks: [
@@ -215,12 +215,12 @@ export const TALK_LINES: Record<Talk, string[]> = {
   ],
 
   pits: [
-    "TWO SHELLS ON THE BIG CROC! NO, THE BIGGER ONE!",
-    "THE SPIRAL ROAD'S THE BEST SEAT IN THE HOUSE. IF YOU DON'T STOP.",
-    "THE PIT'S NEVER BEEN EMPTY. NOT ONE NIGHT IN A HUNDRED YEARS.",
-    "THE BOOKIE ALWAYS WINS. THAT'S WHY HE'S THE BOOKIE.",
-    "I CAME DOWN FOR ONE FIGHT. THAT WAS FOUR SEASONS AGO.",
-    "LISTEN TO THAT CROWD! THEY'RE CHEERING FOR YOU. OR AT YOU.",
+    "SHE'S NEARLY DONE. ANOTHER THREE PLANKS AND A LOT OF TAR.",
+    "LAUNCH NIGHT! WHEN THE LOCK GATE OPENS, HOLD ON TO SOMETHING.",
+    "THAT GATE LEAKS A BIT. A LOT. WE CALL IT CHARACTER.",
+    "BEST SEAT FOR THE LAUNCH IS THE SPIRAL ROAD. IF YOU DON'T STOP.",
+    "WHO'S SHE FOR? NOBODY ASKS WHO SHE'S FOR. THAT'S THE RULE.",
+    "THE FIGUREHEAD'S A CROC. OF COURSE IT'S A CROC.",
   ],
   den: [
     "THE BONES ARE LOADED. NOT THESE ONES. THOSE ONES.",
