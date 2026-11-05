@@ -422,8 +422,14 @@ export function createShadowView(parent: THREE.Object3D, size: number, count = 1
 // ---------------------------------------------------------------- the villagers
 
 export interface CrowdView {
-  /** Pose everyone near the camera. `bowOf(i)` is villager i's awe of the dragon. */
-  update(t: number, cam: THREE.Vector3, bowOf: (i: number) => number): void;
+  /** Pose everyone near the camera. `bowOf(i)` is villager i's awe of the dragon; `skip(i)`
+   * hides one (drawn in detail instead: game/crowdDetail.ts). */
+  update(
+    t: number,
+    cam: THREE.Vector3,
+    bowOf: (i: number) => number,
+    skip?: (i: number) => boolean,
+  ): void;
   dispose(): void;
 }
 
@@ -800,8 +806,21 @@ export function createCrocCrowdView(parent: THREE.Object3D, people: Villager[]):
   const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
   const NEAR = 320;
   let first = true;
+  const each = [
+    legs,
+    feet,
+    bodies,
+    robes,
+    bellies,
+    heads,
+    teeth,
+    eyes,
+    pupils,
+    bandanas,
+    caps,
+  ].concat([tricorns, patches, tails, armsL, armsR, handsL, handsR]);
   return {
-    update(t, cam, bowOf) {
+    update(t, cam, bowOf, skip) {
       let pi = 0;
       let ti = 0;
       for (let i = 0; i < n; i++) {
@@ -810,6 +829,12 @@ export function createCrocCrowdView(parent: THREE.Object3D, people: Villager[]):
         if (far && !first) {
           if (p.role === "guard") ti++;
           if (p.role === "guard" || p.role === "fisher") pi++;
+          continue;
+        }
+        if (skip?.(i)) {
+          for (const mm of each) mm.setMatrixAt(i, hidden);
+          if (p.role === "guard") tips.setMatrixAt(ti++, hidden);
+          if (p.role === "guard" || p.role === "fisher") poles.setMatrixAt(pi++, hidden);
           continue;
         }
         const pose = villagerPose(p, i, t, far ? 0 : bowOf(i));

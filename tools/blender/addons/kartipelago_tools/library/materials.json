@@ -12665,6 +12665,85 @@
       "tileMetres": 2
     },
     {
+      "id": "edge_flag_skull",
+      "name": "Smuggler Flag (Skull)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_flag_skull.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.08 }
+    },
+    {
+      "id": "edge_flag_jaw",
+      "name": "Smuggler Flag (Jaws)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_flag_jaw.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.08 }
+    },
+    {
+      "id": "edge_flag_patch",
+      "name": "Smuggler Flag (Patchwork)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_flag_patch.png",
+      "wrap": "repeat",
+      "tileMetres": 3,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.08 }
+    },
+    {
+      "id": "edge_poster",
+      "name": "Wanted Poster",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_poster.png",
+      "wrap": "repeat",
+      "tileMetres": 1
+    },
+    {
+      "id": "edge_awning_rust",
+      "name": "Grimy Awning (Rust)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_awning_rust.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.04 }
+    },
+    {
+      "id": "edge_awning_slate",
+      "name": "Grimy Awning (Slate)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_awning_slate.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.04 }
+    },
+    {
+      "id": "edge_awning_ochre",
+      "name": "Grimy Awning (Ochre)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_awning_ochre.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.04 }
+    },
+    {
+      "id": "edge_canvas_grime",
+      "name": "Grimy Canvas",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "edge_canvas_grime.png",
+      "wrap": "repeat",
+      "tileMetres": 2,
+      "fx": { "scrollU": 0, "scrollV": 0, "sway": 0.04 }
+    },
+    {
       "id": "sign_soup_1",
       "name": "Sign: Soup (1/1)",
       "theme": "dry_gulch",

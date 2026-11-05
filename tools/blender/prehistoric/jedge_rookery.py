@@ -16,10 +16,10 @@
 #   the Gallery       out of the rock high on the Night Bazaar's wall, the whole market lit
 #                     up below: a scaffold ledge down the wall, the hairpin round the lookout
 #                     tower, back along under it to the floor;
-#   the lanes         Spice Row (the road: stalls on both sides under their awnings, sacks of
-#                     spice, coloured smoke, fire-breathers) and the Beast Market (the side
-#                     road: cages of dragonets and birds, pens of crocs, eggs, the
-#                     auctioneer), either side of the Broker's ship, to the Pits' gate.
+#   the lanes         Spice Row (the road: run-down stalls on both sides under their patched
+#                     awnings, sacks of spice, coloured smoke, fire-breathers, net lines
+#                     across) and the Beast Market (the side road: pens of hatchlings, the
+#                     auctioneer), through the shantytown (jedge_shanty), to the Pits' gate.
 #
 # jedge_districts.dress() calls rookery(), tavern(), gallery() and lanes() (bazaar()).
 
@@ -744,6 +744,8 @@ def gallery(c, ground, taken):
     """The scaffold under the Gallery's deck, its rail lamps and banners, the lookout tower
     in the hairpin with its beacon and crane, and the gate where the road comes out of the
     rock onto it, high over the market."""
+    import jedge_shanty as S
+
     m, solid = Mesh(), Mesh()
     s_a = c.nearest(*L.ROUTE[L.AT["portal"]][:2])[0].s
     s_b = c.nearest(*L.ROUTE[L.AT["baz0"]][:2])[0].s + 10.0
@@ -787,13 +789,10 @@ def gallery(c, ground, taken):
                     c.place(hp.cage_lantern(c, j + sd), lx, ly, q.p.z + 2.35, role="visual")
                 D.light(c, "lantern", *f.P(0.0, f.w / 2 + 1.2), q.p.z + 2.4)
             if j % 4 == 1 and up > 4.0:
+                # (smuggler flags hung off the rail, tattered: note 9)
                 for sd in (-1, 1):
                     bx, by = f.P(0.0, sd * (f.w / 2 + 1.35))
-                    cols = ("awning_red", "banner_teal", "awning_sun", "banner_red", "awning_green", "awning_rose")
-                    cloth(m, cols[(j + sd) % len(cols)], [(bx - f.tx * 0.9, by - f.ty * 0.9, q.p.z + 0.9), (bx + f.tx * 0.9, by + f.ty * 0.9, q.p.z + 0.9),
-                                                          (bx + f.tx * 0.8, by + f.ty * 0.8, q.p.z + 0.9 - min(5.5, up - 1.0)),
-                                                          (bx, by, q.p.z + 0.4 - min(5.5, up - 1.0)),
-                                                          (bx - f.tx * 0.8, by - f.ty * 0.8, q.p.z + 0.9 - min(5.5, up - 1.0))])
+                    S.flag(m, (bx, by, q.p.z + 0.9), (f.tx, f.ty), 1.9, min(4.2, up - 1.0), S.FLAGS[(j + (sd > 0)) % 3], j * 2 + (sd > 0), strips=3)
         s += 4.0
         j += 1
     # The gate where the road comes out of the rock onto the Gallery: the market's name
@@ -805,8 +804,7 @@ def gallery(c, ground, taken):
             D.person(c, *f.P(2.0, sd * (f.w / 2 + 0.9)), f.z, "guard", f.x, f.y)
             D.light(c, "torch", *f.P(-0.8, sd * (f.w / 2 + 1.8)), f.z + 4.0)
     # The lookout tower in the hairpin: four legs from the floor, a platform over the
-    # Gallery's deck, a beacon burning on it, a crane hoisting a net of crates up from the
-    # market, lookouts.
+    # Gallery's deck, its mast and crow's nest, its bell and beacon, lookouts.
     tx = sum(L.ROUTE[L.AT[t]][0] for t in ("pin0", "pin1", "pin2", "pin3")) / 4 + 6.0
     ty = sum(L.ROUTE[L.AT[t]][1] for t in ("pin0", "pin1", "pin2", "pin3")) / 4
     if paint.road_clear(c, tx, ty, 4.5):
@@ -821,15 +819,52 @@ def gallery(c, ground, taken):
                 m.add(T, lambda bm, a=a, b=b, h=h, sc=sc: props.tube(bm, [(tx + a[0] * sc, ty + a[1] * sc, gz + h), (tx + b[0] * sc, ty + b[1] * sc, gz + h)],
                                                                      0.1, n=4))
         m.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (tx, ty, top), (4.6, 4.6, 0.25)))
-        cone(c, "Lookout Beacon", tx, ty, 0.9, top + 0.1, 1.2, ("iron", "wall"), segs=8, role="visual")
-        D.light(c, "campfire", tx, ty, top + 1.3)
+        # (Blake, Nov 5, note 10: "lets just make this a lookout tower": cross-braced legs,
+        # a railed platform, a mast up from it to a crow's nest with its lookout and a flag
+        # over it, a bell, the beacon in its basket; a ladder up)
+        for a, b in (((-1, -1), (1, -1)), ((1, -1), (1, 1)), ((1, 1), (-1, 1)), ((-1, 1), (-1, -1))):
+            for h0, h1 in ((0.4, 6.0), (6.0, 0.4)):
+                if top - gz < 7.0:
+                    continue
+                m.add(T, lambda bm, a=a, b=b, h0=h0, h1=h1: props.tube(bm, [(tx + a[0] * 2.3, ty + a[1] * 2.3, gz + h0), (tx + b[0] * 2.2, ty + b[1] * 2.2, gz + h1)],
+                                                                    0.07, n=4))
+        for ix, iy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            m.add(T, lambda bm, ix=ix, iy=iy: props.tube(bm, [(tx + ix * 2.2, ty + iy * 2.2, top), (tx + ix * 2.2, ty + iy * 2.2, top + 1.1)], 0.07, n=4))
+        for a, b in (((-1, -1), (1, -1)), ((1, -1), (1, 1)), ((1, 1), (-1, 1)), ((-1, 1), (-1, -1))):
+            m.add(("rope_rail", "wall"), lambda bm, a=a, b=b: props.tube(bm, [(tx + a[0] * 2.2, ty + a[1] * 2.2, top + 1.0), (tx + b[0] * 2.2, ty + b[1] * 2.2, top + 0.9)],
+                                                                       0.035, n=3))
+        mast = top + 7.0
+        m.add(T, lambda bm: props.tube(bm, [(tx, ty, top), (tx + 0.1, ty, mast + 1.6)], [0.2, 0.13], n=8))
+        nest = mast - 0.6
+        m.add(("barrel_wood", "wall"), lambda bm: props.tube(bm, [(tx + 0.05, ty, nest - 0.2), (tx + 0.05, ty, nest + 0.8)], [0.75, 0.85], n=12))
+        m.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (tx + 0.05, ty, nest - 0.15), (1.5, 1.5, 0.1)))
+        S.flag(m, (tx + 0.1, ty + 0.9, mast + 1.5), (0.0, 1.0), 1.6, 2.4, "edge_flag_skull", 23, strips=4)
+        m.add(T, lambda bm: props.tube(bm, [(tx + 0.1, ty, mast + 1.5), (tx + 0.1, ty + 1.8, mast + 1.5)], 0.04, n=4))
+        # (the rope ladder up the mast)
+        for q in range(int((nest - top) / 0.45)):
+            zz = top + 0.4 + q * 0.45
+            m.add(("rope_rail", "wall"), lambda bm, zz=zz: props.tube(bm, [(tx - 0.35, ty - 0.25, zz), (tx - 0.35, ty + 0.25, zz)], 0.025, n=3))
+        for sd in (-1, 1):
+            m.add(("rope_rail", "wall"), lambda bm, sd=sd: props.tube(bm, [(tx - 0.4, ty + sd * 0.25, top + 0.1), (tx - 0.25, ty + sd * 0.25, nest - 0.2)], 0.025, n=3))
+        D.folk(c, tx + 0.1, ty, nest - 0.1, "point", tx - 30.0, ty + 10.0, seed=133, at=(tx - 30.0, ty + 10.0, nest - 6.0))
+        # (the bell on its gallows; the beacon in its iron basket in the corner)
+        bx_, by_ = tx + 1.5, ty - 1.5
+        m.add(T, lambda bm: props.tube(bm, [(bx_, by_, top), (bx_, by_, top + 2.4), (bx_ - 0.9, by_, top + 2.4)], 0.07, n=4))
+        m.add(("keep_iron", "wall"), lambda bm: bmesh_cone(bm, bx_ - 0.8, by_, top + 1.85, 0.28, 0.5))
+        cone(c, "Lookout Beacon", tx - 1.4, ty + 1.4, 0.7, top + 0.1, 1.0, ("iron", "wall"), segs=8, role="visual")
+        D.light(c, "campfire", tx - 1.4, ty + 1.4, top + 1.1)
         D.light(c, "glow", tx, ty, top + 2.5)
-        for i in range(2):
-            D.person(c, tx + 1.4 * (1 - 2 * i), ty + 1.2, top + 0.13, "guard", tx + 10.0, ty)
-        jx, jy = tx + 9.0, ty - 2.0
-        m.add(T, lambda bm: props.tube(bm, [(tx + 1.6, ty, top + 0.5), (jx, jy, top + 3.0)], 0.12, n=5))
-        m.add(("rope_rail", "wall"), lambda bm: props.tube(bm, [(jx, jy, top + 3.0), (jx, jy, gz + 4.0)], 0.03, n=3))
-        c.place(gp.crate_stack(c, 2), jx, jy, gz + 2.6, role="visual")
+        D.light(c, "lantern", tx + 0.1, ty, nest + 1.2)
+        D.person(c, tx + 1.2, ty + 1.3, top + 0.13, "guard", tx + 10.0, ty)
+        # (a ladder up from the floor, against a leg)
+        ladder_x = tx + 2.4
+        for sd in (-1, 1):
+            m.add(T, lambda bm, sd=sd: props.tube(bm, [(ladder_x + 0.3, ty + sd * 0.3, gz), (ladder_x, ty + sd * 0.3, top)], 0.04, n=4))
+        zz = gz + 0.4
+        while zz < top:
+            f_ = (zz - gz) / (top - gz)
+            m.add(T, lambda bm, zz=zz, f_=f_: props.tube(bm, [(ladder_x + 0.3 * (1 - f_), ty - 0.3, zz), (ladder_x + 0.3 * (1 - f_), ty + 0.3, zz)], 0.03, n=3))
+            zz += 0.45
         taken.add(tx, ty, 4.0)
     m.build(c, "Gallery Scaffold", coll="Props", role="visual")
     solid.build(c, "Gallery Legs", coll="Props", role="both")
@@ -885,22 +920,31 @@ def spice_stall(m, solid, x, y, z, rot, k, over, c=None):
         px, py, _ = P(lx, ly)
         tgt.add((mat, "wall"), lambda bm: cuboid(bm, (px, py, z + lz), (sx, sy, sz), rot, tilt=tilt))
 
+    # (run down, Blake, Nov 5, note 6: "all of these stalls need to look more run down":
+    # posts leaning, awnings of filthy patched canvas sagging and torn, boards nailed on)
+    lean = ((rnd(k * 9.1) - 0.5) * 0.3, (rnd(k * 9.7) - 0.5) * 0.2)
+
     def post(lx, ly, z0, z1, r=0.07, mat="weathered_timber"):
         a = P(lx, ly)
-        m.add((mat, "wall"), lambda bm: props.tube(bm, [(a[0], a[1], z + z0), (a[0], a[1], z + z1)], r, n=5))
+        b = P(lx + lean[0], ly + lean[1])
+        m.add((mat, "wall"), lambda bm: props.tube(bm, [(a[0], a[1], z + z0), (b[0], b[1], z + z1)], r, n=5))
 
-    awn = ("awning_red", "awning_sun", "awning_teal", "awning_rose", "awning_green", "sdp_awning")[(k * 5) % 6]
+    awn = ("edge_awning_rust", "edge_awning_slate", "edge_canvas_grime", "edge_awning_ochre", "wreck_sail", "canvas_torn")[(k * 5) % 6]
     hi = 3.3 + 0.9 * rnd(k * 2.7)  # (the awning's back edge: every stall its own height)
 
     def awning(w, back, front_y, h_back, h_front, scallop=True):
-        cloth(m, awn, [P(-w / 2, back, h_back), P(w / 2, back, h_back), P(w / 2, front_y, h_front), P(-w / 2, front_y, h_front)])
+        # (sagging in the middle; tatters hanging off the front, a corner torn down)
+        sag = 0.18 + 0.15 * rnd(k * 3.9)
+        torn = 0.35 * rnd(k * 4.3)
+        mid_b, mid_f = P(0, back, h_back - sag * 0.3), P(0, front_y + 0.05, h_front - sag)
+        cloth(m, awn, [P(-w / 2, back, h_back), mid_b, mid_f, P(-w / 2 + lean[0], front_y, h_front - torn)])
+        cloth(m, awn, [mid_b, P(w / 2, back, h_back), P(w / 2 + lean[0], front_y, h_front), mid_f])
         if scallop:
-            # (a scalloped valance along its front edge, in the stripe's other colour)
-            n = int(w / 0.5)
-            for q in range(n):
-                ax = -w / 2 + q * w / n
-                cloth(m, ("party_white", "awning_sun")[k % 2], [P(ax, front_y, h_front), P(ax + w / n, front_y, h_front),
-                                                               P(ax + w / (2 * n), front_y - 0.02, h_front - 0.32)])
+            for q in range(2 + k % 2):
+                ax = -w / 2 + (0.15 + 0.7 * rnd(k * 5.7 + q)) * w
+                aw_ = 0.25 + 0.2 * rnd(k + q * 3)
+                hz = h_front - sag * (1 - abs(ax) / (w / 2)) - (torn if ax < 0 else 0) * (abs(ax) / (w / 2))
+                cloth(m, awn, [P(ax, front_y, hz), P(ax + aw_, front_y, hz), P(ax + aw_ * 0.4, front_y - 0.03, hz - 0.35 - 0.4 * rnd(k * 2 + q))])
 
     shape = ("booth", "cart", "tower", "booth", "tower", "tent")[k % 6] if k % 4 != 3 else ("cart", "booth", "tent", "booth")[(k // 4) % 4]
     # The structure.
@@ -942,7 +986,7 @@ def spice_stall(m, solid, x, y, z, rot, k, over, c=None):
             la, lb = P(2.4, 1.2 - q * 0.0), P(2.4, 1.2)
         top = 1.0
     else:
-        box_(solid, "barrel_wood", 0, 0, 0.5, 4.2, 1.0, 1.0)
+        box_(solid, ("barrel_wood", "wreck_planks", "weathered_timber")[k % 3], 0, 0, 0.5, 4.2, 1.0, 1.0)
         post(-2.2, 1.0, 0.0, hi)
         post(2.2, 1.0, 0.0, hi)
         post(-2.2, -over, 2.6, hi - 0.6, 0.05)
@@ -950,6 +994,12 @@ def spice_stall(m, solid, x, y, z, rot, k, over, c=None):
         awning(4.8, 1.2, -over, hi, hi - 0.6)
         top = 1.0
     box_(m, "plank_deck", 0, 0, top + 0.05, 4.2 if shape != "cart" else 3.0, 1.2, 0.1)
+    # (boards nailed across the counter's front, a crate and a barrel shoved beside it)
+    for q in range(1 + k % 2):
+        box_(m, ("wreck_planks", "door_wood", "siding_grey", "wreck_hull")[(k + q) % 4], (rnd(k * 6.1 + q) - 0.5) * 2.6, -0.56, 0.3 + 0.35 * q,
+             1.2 + 0.4 * rnd(k + q), 0.05, 0.18, (0.0, (rnd(k * 2.2 + q) - 0.5) * 0.7))
+    bx_, by_, _ = P(2.6 if k % 2 else -2.6, 0.5)
+    m.add(("barrel_wood", "wall"), lambda bm: props.tube(bm, [(bx_, by_, z), (bx_, by_, z + 0.9)], [0.3, 0.34, 0.3], n=8))
     # The trade's goods.
     if trade == "spice":
         for q in range(6):
@@ -961,12 +1011,12 @@ def spice_stall(m, solid, x, y, z, rot, k, over, c=None):
         for q in range(5):
             bx, by, _ = P(-1.6 + q * 0.8, 0.4)
             m.add(("canvas_sun", "wall"), lambda bm, bx=bx, by=by: props.blob(bm, (bx, by, z + top + 0.35), 0.32, sz=1.1, subdiv=1))
-        for q in range(4):
-            hx, hy, _ = P(-1.8 + q * 1.2, -over * 0.85 if shape != "tower" else -0.6)
-            hz = (hi - 0.7) if shape not in ("tower",) else 3.0
-            for b3 in range(6):
-                m.add((("lantern_red", "party_white")[q % 2], "wall"),
-                      lambda bm, hx=hx, hy=hy, b3=b3, hz=hz: props.blob(bm, (hx, hy, z + hz - b3 * 0.2), 0.07, sz=1.5, subdiv=0))
+        # (two sacks of it hung up on ropes; note 6: no more hanging strings of beads)
+        for q in range(2):
+            hx, hy, _ = P(-1.4 + q * 2.8, 0.6)
+            hz = (hi - 0.5) if shape not in ("tower",) else 3.0
+            m.add(("rope_rail", "wall"), lambda bm, hx=hx, hy=hy, hz=hz: props.tube(bm, [(hx, hy, z + hz), (hx, hy, z + hz - 0.5)], 0.02, n=3))
+            m.add(("sail_cloth", "wall"), lambda bm, hx=hx, hy=hy, hz=hz: props.blob(bm, (hx, hy, z + hz - 0.85), 0.26, sz=1.4, subdiv=2))
     elif trade == "grill":
         box_(m, "keep_iron", 0, -0.05, top + 0.25, 2.2, 0.8, 0.3)
         box_(m, "fire_glow", 0, -0.05, top + 0.41, 2.0, 0.66, 0.04)
@@ -1128,6 +1178,8 @@ def pen(c, m, solid, hidden, x, y, z, rot, w, d, kind, count, seed):
 def lanes(c, ground, taken):
     """Spice Row (the road between the fork and the join) and the Beast Market (the side
     road), each crammed both sides; their gates and signs."""
+    import jedge_shanty as S
+
     m, solid, hidden = Mesh(), Mesh(), Mesh()
     s0 = c.nearest(*L.ROUTE[L.AT["fork"]][:2])[0].s - 6.0
     s1 = c.nearest(*L.ROUTE[L.AT["join"]][:2])[0].s
@@ -1184,7 +1236,7 @@ def lanes(c, ground, taken):
         b = f.P(0.0, f.w / 2 + 2.2) + (f.z + 6.2,)
         for p in (a, b):
             m.add(W, lambda bm, p=p: props.tube(bm, [(p[0], p[1], f.z - 0.3), (p[0], p[1], p[2] + 0.2)], 0.09, n=4))
-        D.lantern_line(c, "Spice String %d" % j, a, b, sag=1.1)
+        S.net_line(c, m, a, b, 1.1, 30 + j)
         s += 11.0
         j += 1
     # The Beast Market (Blake, Nov 4: "the animals look bad"; he picked "baby dinos in

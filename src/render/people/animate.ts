@@ -38,7 +38,11 @@ export type Gesture =
   | "chat"
   | "lean"
   | "beat"
-  | "hang";
+  | "hang"
+  | "fiddle"
+  | "squeeze"
+  | "drum"
+  | "tap";
 
 export const GESTURES: readonly Gesture[] = [
   "wave",
@@ -63,6 +67,10 @@ export const GESTURES: readonly Gesture[] = [
   "lean",
   "beat",
   "hang",
+  "fiddle",
+  "squeeze",
+  "drum",
+  "tap",
 ];
 
 /** What a person is doing this frame. */
@@ -573,6 +581,89 @@ const POSES: Record<Gesture, (t: number, c: Ctx) => GPose> = {
       lean: -0.1,
       head: [-0.35, 0, a * 0.05],
       look: 0.2,
+    };
+  },
+  fiddle(t, c) {
+    // Playing the fiddle (the shanty band, Blake, Nov 5): tucked under the chin on the
+    // left, the left hand up its neck, the right drawing the bow back and forth across it;
+    // the head tipped onto it, swaying with the tune (render/instruments.ts holds it).
+    const [l, r] = c.shoulder;
+    const k = (t * 0.9) % 1;
+    const bow = k < 0.5 ? sm(k / 0.5) : 1 - sm((k - 0.5) / 0.5);
+    const sway = Math.sin(t * 1.9);
+    return {
+      hands: [
+        [l.x - 0.06, l.y + 0.02, l.z + 0.42],
+        [r.x - 0.42 + bow * 0.36, r.y - 0.06 + bow * 0.04, r.z + 0.24],
+      ],
+      handRot: [
+        [-1.3, 0, 0.6],
+        [-1.0, 0, -1.2],
+      ],
+      roll: sway * 0.05,
+      head: [0.12, -0.15, -0.22 + sway * 0.04],
+      lids: 0.5,
+      look: 0.1,
+    };
+  },
+  squeeze(t, c) {
+    // Playing the squeezebox: both hands out in front at the chest, drawing it open and
+    // pushing it shut, a bounce in the knees, the head bobbing.
+    const [l, r] = c.shoulder;
+    const o = (Math.sin(t * 1.7) * 0.5 + 0.5) * 0.14;
+    const bob = Math.abs(Math.sin(t * 2.6));
+    return {
+      crouch: bob * 0.03,
+      hands: [
+        [l.x + 0.2 - o, l.y - 0.24, l.z + 0.34],
+        [r.x - 0.2 + o, r.y - 0.24, r.z + 0.34],
+      ],
+      handRot: [
+        [-1.0, 0, 1.4],
+        [-1.0, 0, -1.4],
+      ],
+      head: [0.05 + bob * 0.08, 0, Math.sin(t * 1.3) * 0.08],
+      roll: Math.sin(t * 1.3) * 0.03,
+      jaw: 0.15,
+      look: 0.3,
+    };
+  },
+  drum(t, c) {
+    // Beating a drum on a barrel: the hands coming down by turns, the head nodding on the
+    // beat.
+    const [l, r] = c.shoulder;
+    const beat = t * 2.4;
+    const hit = (ph: number) => {
+      const k = (beat + ph) % 1;
+      return k < 0.7 ? sm(k / 0.7) : 1 - sm((k - 0.7) / 0.15);
+    };
+    const a = hit(0);
+    const b = hit(0.5);
+    return {
+      lean: 0.12,
+      hands: [
+        [l.x + 0.12, l.y - 0.4 + a * 0.22, l.z + 0.42],
+        [r.x - 0.12, r.y - 0.4 + b * 0.22, r.z + 0.42],
+      ],
+      handRot: [
+        [-1.3 + a * 0.4, 0, 0.5],
+        [-1.3 + b * 0.4, 0, -0.5],
+      ],
+      head: [0.2 + Math.max(a, b) * 0.06, 0, 0],
+      jaw: 0.1,
+      look: 0.3,
+    };
+  },
+  tap(t, c) {
+    // Listening to the band: nodding along, a hand tapping the thigh on the beat.
+    const [, r] = c.shoulder;
+    const beat = Math.abs(Math.sin(t * Math.PI * 1.2));
+    return {
+      hands: [null, [r.x + 0.04, r.y - 0.52 + beat * 0.06, r.z + 0.12]],
+      head: [0.06 + beat * 0.12, Math.sin(t * 0.4) * 0.15, 0],
+      roll: Math.sin(t * Math.PI * 0.6) * 0.03,
+      jaw: 0.05,
+      look: 0.7,
     };
   },
   kneel(t, c) {

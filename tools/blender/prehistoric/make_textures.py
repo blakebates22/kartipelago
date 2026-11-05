@@ -4401,9 +4401,9 @@ FONT = {
 }
 
 
-def sign_board(text, w=128, h=32, wood=("#4a3220", "#5a3e28", "#6a4a30", "#7a5636"), ink="#f0e2c0", seed=0, scale=None):
+def sign_board(text, w=128, h=32, wood=("#4a3220", "#5a3e28", "#6a4a30", "#7a5636"), ink="#f0e2c0", seed=0, scale=None, grime=False):
     """A weathered plank sign with the text in pale paint: a dark border, nail heads,
-    the paint a little worn."""
+    the paint a little worn (`grime`: run down and filthy, the Edge of the World's)."""
     a, b = noise(2, 8, 5101 + seed, w, h), noise(8, 4, 5102 + seed, w, h)
     sc = scale or max(1, min((h - 8) // 7, (w - 8) // max(1, len(text) * 6 - 1)))
     tw = len(text) * 6 * sc - sc
@@ -4434,7 +4434,265 @@ def sign_board(text, w=128, h=32, wood=("#4a3220", "#5a3e28", "#6a4a30", "#7a563
         grain = 0.5 + 0.5 * math.sin(x * 0.35 + (y // 10) * 2.1 + a(x, y) * 5)
         return pick(list(wood), 0.15 + grain * 0.5 + b(x, y) * 0.3)
 
-    return paint(f, w, h)
+    im = paint(f, w, h)
+    if grime:
+        letters = [{(x0 + (k * 6 + gx) * sc + dx, y0 + gy * sc + dy) for gy, row in enumerate(FONT.get(ch, FONT[" "])) for gx, bit in enumerate(row)
+                    if bit == "1" for dx in range(sc) for dy in range(sc)} for k, ch in enumerate(text)]
+        im = sign_grime(im, letters, wood, seed)
+    return im
+
+
+def sign_grime(im, letters, wood, seed):
+    """Run a sign down (Blake, Nov 5: "all the signs should look rundown/grimy"): soot
+    thick along its top and edges, water stains, rust running down from its nails, a
+    crack across the boards, the paint flaking, one letter half peeled off."""
+    w, h = im.size
+    px = im.load()
+    r = rng(9100 + seed)
+    soot, stain = noise(3, 2, 9101 + seed, w, h), noise(max(2, w // 12), 3, 9102 + seed, w, h)
+    bare = [hexrgb(c) for c in wood]
+    peel = set()
+    words = [k for k, L in enumerate(letters) if L]
+    if len(words) >= 6:
+        k = words[1 + int(r() * (len(words) - 2))]
+        fl = noise(3, 3, 9103 + seed, w, h)
+        peel = {p for p in letters[k] if fl(*p) > 0.66}
+    flake = noise(max(2, w // 6), 4, 9104 + seed, w, h)
+    ink = set().union(*letters) if letters else set()
+    for (x, y) in ink:
+        if (x, y) in peel or (flake(x, y) > 0.78 and 0 <= x < w and 0 <= y < h):
+            if 0 <= x < w and 0 <= y < h:
+                c = bare[int((x * 7 + y * 3) % len(bare))]
+                px[x, y] = tuple(int(v * 0.9) for v in c)
+    # (rust run down from the nails, and drips from the top edge)
+    runs = [(4, 4), (w - 5, 4)] + [(int(2 + r() * (w - 4)), 2) for _ in range(max(2, w // 40))]
+    for (nx, ny) in runs:
+        ln = int(h * (0.3 + 0.5 * r()))
+        for y in range(ny + 1, min(h - 1, ny + 1 + ln)):
+            a = 0.55 * (1 - (y - ny) / ln)
+            for x in (nx, nx + (1 if r() < 0.3 else 0)):
+                if 0 <= x < w:
+                    c = px[x, y]
+                    px[x, y] = tuple(int(c[i] * (1 - a) + (122, 58, 26)[i] * a) for i in range(3))
+    # (a crack across the boards)
+    cx, cy = int(w * (0.2 + 0.6 * r())), 0
+    dx = 1 if r() < 0.5 else -1
+    while cy < h * (0.55 + 0.4 * r()):
+        if 0 <= cx < w:
+            px[cx, cy] = (20, 12, 8)
+        cy += 1
+        if r() < 0.45:
+            cx += dx
+    for y in range(h):
+        for x in range(w):
+            c = px[x, y]
+            edge = min(x, y, w - 1 - x, h - 1 - y)
+            d = 0.62 + 0.3 * soot(x, y) - (0.22 if y < h * 0.2 else 0) - (0.12 if edge < 3 else 0)
+            d -= 0.18 * max(0.0, stain(x, y) - 0.55) / 0.45
+            g = sum(c) / 3
+            px[x, y] = tuple(max(0, min(255, int((c[i] * 0.72 + g * 0.28) * d + 6))) for i in range(3))
+    return im
+
+
+# ------------------------------------------------------------------ the Edge's cloth
+# (Blake, Nov 5: "remove all of these chinese looking banners. we need smuggler looking
+# banners"; "all of these stalls need to look more run down")
+
+
+def _mix(c, d, a):
+    return tuple(int(c[i] * (1 - a) + d[i] * a) for i in range(3))
+
+
+def _cloth(im, seed, dirt=0.35, patches=2, hem=True):
+    """Weather a cloth: sun-faded, stained, a patch or two stitched on, the hem frayed."""
+    w, h = im.size
+    px = im.load()
+    r = rng(seed)
+    a, b = noise(4, 6, seed + 1, w, h), noise(9, 12, seed + 2, w, h)
+    for _ in range(patches):
+        pw, ph = int(8 + r() * 12), int(8 + r() * 14)
+        x0, y0 = int(r() * (w - pw)), int(r() * (h - ph - 6))
+        tone = hexrgb(("#8a7a5a", "#5a4a3a", "#6a6458", "#9a8a6a", "#4a4a44")[int(r() * 5)])
+        for y in range(y0, y0 + ph):
+            for x in range(x0, x0 + pw):
+                st = (x in (x0, x0 + pw - 1) or y in (y0, y0 + ph - 1)) and (x + y) % 3 == 0
+                px[x, y] = (40, 34, 26) if st else _mix(tone, px[x, y], 0.15)
+    for y in range(h):
+        for x in range(w):
+            c = px[x, y]
+            g = sum(c) / 3
+            c = _mix(c, (g, g, g), 0.25)
+            k = 1.0 - dirt * max(0.0, a(x, y) - 0.35) - 0.12 * b(x, y)
+            if hem and y > h - 6:
+                k -= 0.08 * (y - (h - 6))
+                if (x * 5 + y * 3) % 7 == 0:
+                    k -= 0.35
+            px[x, y] = tuple(max(0, min(255, int(c[i] * k))) for i in range(3))
+    return im
+
+
+def _fill(w, h, col):
+    return Image.new("RGB", (w, h), hexrgb(col))
+
+
+def edge_flag_skull():
+    # A smuggler's flag: faded black sailcloth, a croc's skull bone-white over two crossed bones.
+    w, h = 64, 128
+    im = _fill(w, h, "#262422")
+    px = im.load()
+    bone, shade = (222, 210, 180), (150, 138, 112)
+    cx, cy = 32, 50
+
+    def put(x, y, c):
+        if 0 <= x < w and 0 <= y < h:
+            px[int(x), int(y)] = c
+
+    for t in range(-26, 27):
+        for d in (-1, 0, 1):
+            put(cx + t, cy + 26 + t * 0.9 + d, bone)
+            put(cx + t, cy + 26 - t * 0.9 + d, bone)
+    for ex, ey in ((cx - 26, cy + 2), (cx + 26, cy + 50), (cx - 26, cy + 50), (cx + 26, cy + 2)):
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                if dx * dx + dy * dy < 10:
+                    put(ex + dx + (2 if dx > 0 else -2), ey + dy, bone)
+    # (the skull from above: broad at the back, the long snout, eye holes, nostrils, teeth)
+    for y in range(cy - 22, cy + 22):
+        k = (y - (cy - 22)) / 44
+        hw = 15 * (1 - k) + 5 * k if k > 0.35 else 15
+        for x in range(int(cx - hw), int(cx + hw) + 1):
+            put(x, y, bone if abs(x - cx) < hw - 1.5 else shade)
+    for sd in (-1, 1):
+        for dx in range(-4, 5):
+            for dy in range(-3, 4):
+                if dx * dx / 16 + dy * dy / 9 < 1:
+                    put(cx + sd * 7 + dx, cy - 12 + dy, (24, 20, 18))
+        put(cx + sd * 2, cy + 19, (24, 20, 18))
+        for k in range(8):
+            put(cx + sd * (6 - k * 0.25), cy - 2 + k * 2.6, (250, 246, 230))
+            put(cx + sd * (7 - k * 0.25), cy - 2 + k * 2.6, (24, 20, 18))
+    return _cloth(im.resize((32, 64), Image.NEAREST), 9201, dirt=0.4, patches=0)
+
+
+def edge_flag_jaw():
+    # Oxblood sailcloth, a broad black band, a croc's open jaws in black on it.
+    w, h = 64, 128
+    im = _fill(w, h, "#6a2420")
+    px = im.load()
+    for y in range(h):
+        for x in range(w):
+            if 18 <= y <= 22 or 98 <= y <= 101:
+                px[x, y] = (30, 24, 22)
+    cx, cy = 32, 60
+    for y in range(cy - 26, cy + 26):
+        for x in range(cx - 22, cx + 22):
+            dy = y - cy
+            top, bot = -4 - (x - cx + 22) * 0.55, 4 + (x - cx + 22) * 0.55
+            if (dy < top and dy > top - 10 + abs(x - cx) * 0.1) or (dy > bot and dy < bot + 10 - abs(x - cx) * 0.1):
+                px[x, y] = (26, 22, 20)
+            if (abs(dy - top) < 2 or abs(dy - bot) < 2) and x % 4 == 0 and x > cx - 18:
+                px[x, y] = (226, 214, 186)
+    for dx in range(-3, 4):
+        for dy in range(-2, 3):
+            px[cx - 12 + dx, cy - 18 + dy] = (226, 190, 70) if dx * dx + dy * dy < 6 else px[cx - 12 + dx, cy - 18 + dy]
+    return _cloth(im.resize((32, 64), Image.NEAREST), 9212, dirt=0.45, patches=0)
+
+
+def edge_flag_patch():
+    # Patchwork of faded sails, stitched up; a crude black anchor daubed on it.
+    w, h = 64, 128
+    im = Image.new("RGB", (w, h))
+    px = im.load()
+    tones = [hexrgb(c) for c in ("#9a8a62", "#5e6a72", "#7a5a3e", "#b0a07a", "#6a5040", "#4e5a4a")]
+    r = rng(9221)
+    cuts = [0, 22, 46, 70, 96, 128]
+    xs = [0, 30 + int(r() * 6), 64]
+    for j in range(len(cuts) - 1):
+        for i in range(len(xs) - 1):
+            t = tones[(i * 3 + j * 2) % len(tones)]
+            for y in range(cuts[j], cuts[j + 1]):
+                for x in range(xs[i], xs[i + 1]):
+                    seam = y in (cuts[j], cuts[j + 1] - 1) or x in (xs[i], xs[i + 1] - 1)
+                    px[x, y] = (46, 38, 28) if seam and (x + y) % 2 == 0 else t
+    cx = 32
+    for y in range(36, 92):
+        for x in range(cx - 2, cx + 2):
+            px[x, y] = (28, 24, 20)
+    for x in range(cx - 10, cx + 11):
+        for y in (44, 45):
+            px[x, y] = (28, 24, 20)
+    for y in range(32, 38):
+        for x in range(cx - 4, cx + 5):
+            if abs(x - cx) > 1 or y in (32, 37):
+                px[x, y] = (28, 24, 20)
+    for t in range(-16, 17):
+        y = 92 - int(math.sqrt(max(0, 256 - t * t)) * 0.7)
+        for d in range(3):
+            px[cx + t, y + d] = (28, 24, 20)
+    return _cloth(im.resize((32, 64), Image.NEAREST), 9222, dirt=0.4, patches=0)
+
+
+def edge_poster():
+    # A wanted poster: yellowed paper, WANTED across the top, a croc's mugshot sketched,
+    # lines of print, the reward; a corner torn, stained.
+    w, h = 48, 64
+    im = _fill(w, h, "#d8c89a")
+    px = im.load()
+    ink = (54, 40, 30)
+    word = "WANTED"
+    x0 = (w - (len(word) * 6 - 1)) // 2
+    for k, ch in enumerate(word):
+        for gy, row in enumerate(FONT[ch]):
+            for gx, bit in enumerate(row):
+                if bit == "1":
+                    px[x0 + k * 6 + gx, 4 + gy] = ink
+                    px[x0 + k * 6 + gx, 5 + gy] = ink
+    for y in range(15, 43):
+        for x in range(10, 38):
+            if x in (10, 37) or y in (15, 42):
+                px[x, y] = ink
+    cx, cy = 24, 29
+    for y in range(cy - 10, cy + 12):
+        for x in range(cx - 11, cx + 11):
+            dx, dy = x - cx, y - cy
+            e = dx * dx / 70 + dy * dy / 90
+            if (e < 1 and dy < 6) or (abs(dx) < 5 - dy * 0.05 and 0 <= dy < 11):
+                px[x, y] = (150, 140, 110)
+            if (abs(dx) == 5 and 0 <= dy < 11) or (0.75 < e < 1 and dy < 0):
+                px[x, y] = ink
+    for sd in (-1, 1):
+        px[cx + sd * 4, cy - 3] = ink
+        px[cx + sd * 4, cy - 4] = ink
+    for k, y in enumerate((46, 49, 52, 57, 60)):
+        n = (32, 26, 30, 18, 24)[k]
+        for x in range((w - n) // 2, (w + n) // 2):
+            if (x + k) % 5:
+                px[x, y] = ink if k < 3 else (120, 40, 30)
+    for y in range(h):
+        for x in range(w):
+            if x + (h - 1 - y) < 8:
+                px[x, y] = (36, 28, 22)
+    return _cloth(im, 9231, dirt=0.5, patches=0, hem=False)
+
+
+def edge_awning(base, stripe, seed):
+    def p():
+        w, h = 64, 64
+        im = _fill(w, h, base)
+        px = im.load()
+        for y in range(h):
+            for x in range(w):
+                if (x // 8) % 2:
+                    px[x, y] = hexrgb(stripe)
+        return _cloth(im, seed, dirt=0.55, patches=2, hem=False)
+
+    return p
+
+
+def edge_canvas_grime():
+    w, h = 64, 64
+    im = _fill(w, h, "#8a7454")
+    return _cloth(im, 9251, dirt=0.6, patches=3, hem=False)
 
 
 def gulch_road():
@@ -5493,9 +5751,21 @@ EDGE_SIGNS = [
         ("sign_maps", "Maps", "MAPS", 64, 32, {"seed": 38}),
         ("sign_rope", "Rope", "ROPE", 64, 32, {"seed": 39, "wood": GREEN_SIGN}),
     )
-    for entry in sign_tiles(sid, name, text, w, h, kw)
+    for entry in sign_tiles(sid, name, text, w, h, dict(kw, grime=True))
 ]
 MATERIALS += EDGE_SIGNS
+SWAY = lambda s: {"scrollU": 0, "scrollV": 0, "sway": s}  # noqa: E731
+EDGE_CLOTH = [
+    ("edge_flag_skull", "Smuggler Flag (Skull)", "dry_gulch", "wall", edge_flag_skull, 3, SWAY(0.08)),
+    ("edge_flag_jaw", "Smuggler Flag (Jaws)", "dry_gulch", "wall", edge_flag_jaw, 3, SWAY(0.08)),
+    ("edge_flag_patch", "Smuggler Flag (Patchwork)", "dry_gulch", "wall", edge_flag_patch, 3, SWAY(0.08)),
+    ("edge_poster", "Wanted Poster", "dry_gulch", "wall", edge_poster, 1, None),
+    ("edge_awning_rust", "Grimy Awning (Rust)", "dry_gulch", "wall", edge_awning("#8a5a3e", "#b8a47e", 9241), 2, SWAY(0.04)),
+    ("edge_awning_slate", "Grimy Awning (Slate)", "dry_gulch", "wall", edge_awning("#4e5a5a", "#9a9070", 9242), 2, SWAY(0.04)),
+    ("edge_awning_ochre", "Grimy Awning (Ochre)", "dry_gulch", "wall", edge_awning("#8e7a40", "#5e3e2e", 9243), 2, SWAY(0.04)),
+    ("edge_canvas_grime", "Grimy Canvas", "dry_gulch", "wall", edge_canvas_grime, 2, SWAY(0.04)),
+]
+MATERIALS += EDGE_CLOTH
 
 
 def thumb(im):

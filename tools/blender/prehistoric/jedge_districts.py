@@ -362,17 +362,40 @@ def stall(c, name, x, y, z, rot, kind, mat):
 def bazaar(c, ground, taken):
     """The Night Bazaar (Blake: the black market, crawling): stalls crammed along both sides
     of the road's slalom, a merchant behind every counter and customers haggling in front;
-    lantern strings across the road; tents, rugs and cookfires behind; the music square with
-    its band, dancers and a conga; the Broker's ship hanging over it all."""
+    net lines across the floor; cookfires behind; the shanty band's stage; smuggler flags
+    under the roof; the shantytown's shacks crammed in wherever there's room (jedge_shanty,
+    Blake, Nov 5: Port Borgo's feel)."""
     import jedge_rookery as R
 
+    import jedge_shanty as S
+    from gulch_scenery import Mesh
+
     bx, by, brx, bry = BAZAAR
+    nets = Mesh()
 
     def ok(c, taken, x, y, r, margin=2.0):
         # (clear of the road, the Beast Market's lane and the Gallery over the floor)
         return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r) and R.beast_clear(x, y, r + margin)
 
-    # Behind the stalls: tents, rugs, crates, cookfires, the crowd milling.
+    # The shanty band's stage (Blake, Nov 5, note 2: "this crowd of dancing people is weird.
+    # we need to redo this area"; he picked a low-key band): the bow of a wreck beached on
+    # the floor, the band on its deck, their crowd sat about before it, the bow to the road.
+    best = None
+    for j in range(40):
+        a = j * 2.399
+        r = 0.15 + 0.6 * ((j * 0.618) % 1.0)
+        x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
+        if paint.road_clear(c, x, y, 10.0) and R.beast_clear(x, y, 10.0) and (best is None or paint.road_clear(c, x, y, 13.0)):
+            best = (x, y)
+            if paint.road_clear(c, x, y, 13.0):
+                break
+    if best:
+        x, y = best
+        smp, _ = c.nearest(x, y)
+        dx, dy = smp.p.x - x, smp.p.y - y
+        n = math.hypot(dx, dy) or 1.0
+        S.stage(c, ground, taken, x, y, (dx / n, dy / n))
+    # Behind the stalls: crates, cookfires, the crowd milling.
     for j in range(160):
         a = j * 2.399 + 0.2
         r = 0.12 + 0.8 * ((j * 0.618) % 1.0)
@@ -381,24 +404,15 @@ def bazaar(c, ground, taken):
             continue
         z = ground(x, y)
         kind = j % 5
-        if kind == 0:
-            box(c, "Tent %d" % j, x, y, 2.4, 2.4, z, z + 2.4, (("tent_cloth_red", "tent_cloth", "canvas_sun")[j % 3], "wall"), rot=a)
-            cone(c, "Tent Roof %d" % j, x, y, 3.4, z + 2.4, 2.2, (("tent_cloth_red", "tent_cloth", "canvas_sun")[j % 3], "wall"), segs=4,
-                 role="visual")
-            light(c, "lantern", x + 2.8 * math.cos(a), y + 2.8 * math.sin(a), z + 2.4)
-            person(c, x + 3.0 * math.cos(a + 0.4), y + 3.0 * math.sin(a + 0.4), z, "merchant", x, y)
-        elif kind == 1:
+        if kind in (0, 2):
+            # (the tents and rug piles that stood here: the shanty's shacks now, S.shanty)
+            continue
+        if kind == 1:
             light(c, "campfire", x, y, z + 0.2)
             light(c, "chimney", x, y, z + 1.5)
             for i in range(5):
                 b = i * math.tau / 5 + j
                 person(c, x + 2.2 * math.cos(b), y + 2.2 * math.sin(b), z, ("huddle", "merchant", "huddle", "queue", "huddle")[i], x, y)
-        elif kind == 2:
-            for i in range(3):
-                box(c, "Rug Pile %d %d" % (j, i), x + 0.3 * i, y - 0.2 * i, 1.4, 0.9, z + 0.3 * i, z + 0.3 * i + 0.3,
-                    (("rug", "royal_carpet", "keep_carpet")[i], "wall"), rot=a + 0.3 * i, role="visual")
-            person(c, x + 2.0 * math.cos(a), y + 2.0 * math.sin(a), z, "merchant", x, y)
-            person(c, x - 2.2 * math.cos(a), y - 2.2 * math.sin(a), z, "queue", x, y)
         elif kind == 3:
             c.place(gp.crate_stack(c, j % 4), x, y, z, rot=a, role="both")
             person(c, x + 1.8 * math.cos(a), y + 1.8 * math.sin(a), z, "hauler", x, y)
@@ -425,87 +439,25 @@ def bazaar(c, ground, taken):
         for (px, py, pz) in ((x, y, z), best):
             box(c, "Market Pole %d %d" % (i, int(px)), px, py, 0.12, 0.12, pz, pz + 8.2, ("weathered_timber", "wall"))
             taken.add(px, py, 0.6)
-        lantern_line(c, "Market String %d" % i, (x, y, z + 8.0), (best[0], best[1], best[2] + 8.0), sag=1.6)
+        S.net_line(c, nets, (x, y, z + 8.0), (best[0], best[1], best[2] + 8.0), 1.6, i)
         light(c, "glow", (x + best[0]) / 2, (y + best[1]) / 2, (z + best[2]) / 2 + 5.0)
         n_str += 1
-    # The music square: the band, dancers, a conga round it.
-    best = None
-    for j in range(40):
-        a = j * 2.399
-        r = 0.15 + 0.6 * ((j * 0.618) % 1.0)
-        x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
-        if paint.road_clear(c, x, y, 10.0) and R.beast_clear(x, y, 10.0) and (best is None or paint.road_clear(c, x, y, 13.0)):
-            best = (x, y)
-            if paint.road_clear(c, x, y, 13.0):
-                break
-    if best:
-        x, y = best
-        z = ground(x, y)
-        g = c.game(x, y, z)
-        c.entity("conga", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), count=10, radius=6.5, speed=0.35)
-        for i in range(4):
-            b = i * 0.5 - 0.75
-            person(c, x + 2.0 * math.cos(b), y + 2.0 * math.sin(b), z, "musician", x, y)
-        c.place(bp.drum(c), x, y, z, role="visual")
-        for i in range(8):
-            b = i * math.tau / 8
-            person(c, x + 9.0 * math.cos(b), y + 9.0 * math.sin(b), z, "dancer" if i % 2 else "cheer", x, y)
-        light(c, "campfire", x + 3.0, y + 3.0, z + 0.2)
-        taken.add(x, y, 10.0)
-    # Banners from the roof, the soot of the cookfires.
+    # Smuggler flags hung from spars under the roof (note 9: "remove all of these chinese
+    # looking banners. we need smuggler looking banners"), tattered.
     for j in range(14):
         a = j * math.tau / 14
         x, y = bx + brx * 0.7 * math.cos(a), by + bry * 0.7 * math.sin(a)
         z0 = BAZ_Z + 20.0
-        cloth(c, "Bazaar Banner %d" % j, [(x - 1.2 * math.sin(a), y + 1.2 * math.cos(a), z0), (x + 1.2 * math.sin(a), y - 1.2 * math.cos(a), z0),
-                                          (x + 1.0 * math.sin(a), y - 1.0 * math.cos(a), z0 - 7.0), (x - 1.0 * math.sin(a), y + 1.0 * math.cos(a), z0 - 7.0)],
-              ("banner_red", "banner_teal", "em_banner", "meteor_banner")[j % 4])
+        ax, ay = -math.sin(a), math.cos(a)
+        nets.add(("weathered_timber", "wall"), lambda bm, x=x, y=y, ax=ax, ay=ay: props.tube(bm, [(x - ax * 1.6, y - ay * 1.6, z0 + 0.1), (x + ax * 1.6, y + ay * 1.6, z0 + 0.1)], 0.07, n=4))
+        for sd in (-1, 1):
+            nets.add(("rope_rail", "wall"), lambda bm, x=x, y=y, ax=ax, ay=ay, sd=sd: props.tube(bm, [(x + ax * sd * 1.5, y + ay * sd * 1.5, z0 + 0.1), (x + ax * sd * 0.4, y + ay * sd * 0.4, BAZ_Z + 30.0)], 0.03, n=3))
+        S.flag(nets, (x, y, z0), (ax, ay), 2.8, 5.6, S.FLAGS[j % 3], 60 + j, strips=5)
+    nets.build(c, "Bazaar Nets And Flags", coll="Props", role="visual")
+    S.shanty(c, ground, taken)
     for j, (x, y) in enumerate(((176.0, -180.0), (150.0, -190.0), (190.0, -150.0), (128.0, -150.0))):
         if paint.road_clear(c, x, y, 6.0) and R.beast_clear(x, y, 6.0):
             talkers(c, x, y, ground(x, y), 6, "bazaar", r=9.0)
-    broker(c)
-
-
-def broker(c):
-    """The Broker's palace: a gilded ship hanging over the Night Bazaar on four chains from
-    the roof, lit from within, its stern galleries gold, a gangway hanging down; the Broker
-    (a huge croc) sprawled on its deck, watching the market."""
-    sx, sy = 146.0, -108.0  # (between Spice Row and the Beast Market)
-    z = BAZ_Z + 17.0
-    rot = 0.9
-    ca, sa = math.cos(rot), math.sin(rot)
-
-    def at(lx, ly):
-        return sx + lx * ca - ly * sa, sy + lx * sa + ly * ca
-
-    box(c, "Broker Hull", sx, sy, 16.0, 5.0, z - 4.0, z + 2.0, ("wreck_hull", "wall"), rot=rot, role="visual")
-    box(c, "Broker Keel", sx, sy, 13.0, 2.0, z - 6.0, z - 4.0, ("wreck_hull", "wall"), rot=rot, role="visual")
-    box(c, "Broker Deck", sx, sy, 16.4, 5.4, z + 2.0, z + 2.4, ("plank_deck", "wall"), rot=rot, role="visual")
-    bx, by = at(-8.0, 0.0)
-    box(c, "Broker Cabin", bx, by, 6.0, 4.6, z + 2.4, z + 8.0, ("door_wood", "wall"), rot=rot, role="visual")
-    box(c, "Broker Cabin Roof", bx, by, 6.6, 5.2, z + 8.0, z + 8.8, ("gold_trim", "wall"), rot=rot, role="visual")
-    for w in (-3.0, -1.0, 1.0, 3.0):
-        for sd in (-1, 1):
-            wx, wy = at(-8.0 + w, sd * 4.65)
-            box(c, "Broker Window %d %d" % (int(w), sd), wx, wy, 0.6, 0.08, z + 4.0, z + 6.6, ("window_warm", "wall"), rot=rot, role="visual")
-    gx, gy = at(-16.2, 0.0)
-    box(c, "Broker Gallery", gx, gy, 0.4, 5.0, z - 1.0, z + 7.0, ("gold_trim", "wall"), rot=rot, role="visual")
-    for sd, (lx, ly) in ((-1, (-3.6, -2.3)), (1, (6.2, -2.3))):
-        mx, my = at(lx, ly)
-        box(c, "Broker Lantern %d" % sd, mx, my, 0.5, 0.5, z + 2.4, z + 4.0, ("lantern_amber", "wall"), role="visual")
-        light(c, "lantern", mx, my, z + 4.4)
-    for lx, ly in ((-14.0, -4.0), (-14.0, 4.0), (14.0, -4.0), (14.0, 4.0)):
-        px, py = at(lx, ly)
-        tx, ty = at(lx * 1.5, ly * 2.5)
-        tube(c, "Broker Chain %d %d" % (int(lx), int(ly)), [(px, py, z + 2.0), (tx, ty, BAZ_Z + 33.0)], 0.4, "iron", n=6)
-    bx, by = at(-1.5, 0.0)
-    c.place(sw.broker_croc(c), bx, by, z + 2.4, rot=rot, scale=1.5, role="visual", name="The Broker")
-    gx, gy = at(10.0, 5.0)
-    box(c, "Broker Gangway", gx, gy, 0.8, 0.3, z - 14.0, z + 2.0, ("weathered_timber", "wall"), rot=rot, role="visual")
-    # (his guards on deck)
-    for lx in (-4.0, 4.0, 9.0):
-        px, py = at(lx, 2.2)
-        person(c, px, py, z + 2.4, "guard", sx, sy - 40.0)
 
 
 # ------------------------------------------------------------------ the Fighting Pits

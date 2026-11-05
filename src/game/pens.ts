@@ -82,8 +82,8 @@ const SPEED = 0.7;
  * the others), then an idle for a while, then off somewhere else.
  */
 export function stepPen(c: PenConfig, babies: Baby[], dt: number, rnd: () => number) {
-  const mu = c.w / 2 - 0.4;
-  const mv = c.d / 2 - 0.4;
+  const mu = c.w / 2 - 0.5;
+  const mv = c.d / 2 - 0.5;
   for (const b of babies) {
     b.left -= dt;
     if (b.to) {
@@ -120,8 +120,8 @@ export function stepPen(c: PenConfig, babies: Baby[], dt: number, rnd: () => num
       const du = b.u - a.u;
       const dv = b.v - a.v;
       const d = Math.hypot(du, dv);
-      if (d > 0 && d < 0.55) {
-        const k = (0.55 - d) / 2 / d;
+      if (d > 0 && d < 0.7) {
+        const k = (0.7 - d) / 2 / d;
         a.u -= du * k;
         a.v -= dv * k;
         b.u += du * k;

@@ -141,6 +141,12 @@ import { createCrocKingView, crocKingCue } from "../render/people/crocKing";
 import type { PersonView } from "../render/people/view";
 import { createHatchlingView, type HatchlingView } from "../render/hatchling";
 import { babyAt, parsePen, penBabies, penRng, stepPen, type Baby, type PenConfig } from "./pens";
+import {
+  INSTRUMENTS,
+  createInstrumentView,
+  type Instrument,
+  type InstrumentView,
+} from "../render/instruments";
 import { createVillagerView } from "../render/villager";
 import type { Folk } from "../render/people/folk";
 import {
@@ -584,7 +590,7 @@ export function createHazards(opts: {
   const kingLook = new THREE.Vector3();
   // Folk posed about a place in full detail (game/folkPoses.ts): the Rookery's balconies,
   // doors and windows, the Rusty Anchor's cooks and diners.
-  const posed: (PosedFolk & { view?: PersonView; st: FolkState })[] = [];
+  const posed: (PosedFolk & { view?: PersonView; st: FolkState; held?: InstrumentView })[] = [];
   const folkAt = new THREE.Vector3();
   // The Beast Market's pens of baby dinosaurs (game/pens.ts).
   const pens: { cfg: PenConfig; babies: Baby[]; views: HatchlingView[]; rnd: () => number }[] = [];
@@ -934,12 +940,19 @@ export function createHazards(opts: {
         );
     } else if (e.type === "folk_poses") {
       const folk = (typeof e.folk === "string" ? e.folk : "sump") as Folk;
-      for (const p of parseFolkPoses(e))
+      for (const p of parseFolkPoses(e)) {
+        const view = opts.headless ? undefined : createVillagerView(group, folk, p.seed % 16);
         posed.push({
           ...p,
           st: { seen: false, glance: 0 },
-          view: opts.headless ? undefined : createVillagerView(group, folk, p.seed % 16),
+          view,
+          // (the shanty band's instruments in their hands)
+          held:
+            view && (INSTRUMENTS as readonly string[]).includes(p.pose)
+              ? createInstrumentView(group, view.rig, p.pose as Instrument)
+              : undefined,
         });
+      }
     } else if (e.type === "pen") {
       const cfg = parsePen(e);
       const rnd = penRng(cfg.seed);
@@ -951,7 +964,7 @@ export function createHazards(opts: {
         views: opts.headless
           ? []
           : babies.map((_, k) =>
-              createHatchlingView(group, cfg.kind, cfg.seed + k, 0.95 + 0.25 * rnd()),
+              createHatchlingView(group, cfg.kind, cfg.seed + k, 1.2 + 0.3 * rnd()),
             ),
       });
     } else if (e.type === "croc_king") {
@@ -1693,6 +1706,7 @@ export function createHazards(opts: {
         const d = Math.hypot(p.x - listener.x, p.z - listener.z);
         // (out of sight down the street: not drawn, not animated)
         p.view.root.visible = d < 90;
+        p.held?.visible(d < 90);
         if (d >= 90) continue;
         kingLook.set(listener.x, listener.y, listener.z);
         p.view.update(
@@ -1703,6 +1717,7 @@ export function createHazards(opts: {
           folkPoseCue(p, p.st, t, dt, d < FOLK_WATCH, kingLook, folkAt),
           t,
         );
+        p.held?.update();
       }
       for (const p of party) {
         if (p.ring) {
@@ -2598,7 +2613,10 @@ export function createHazards(opts: {
       for (const f of flyers) f.view?.dispose();
       for (const p of party) p.view?.dispose();
       for (const k of crocKings) k.view?.dispose();
-      for (const p of posed) p.view?.dispose();
+      for (const p of posed) {
+        p.view?.dispose();
+        p.held?.dispose();
+      }
       for (const pen of pens) for (const v of pen.views) v.dispose();
       spray?.dispose();
       snow?.dispose();

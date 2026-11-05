@@ -39,6 +39,11 @@ import {
   type WheelView,
 } from "../render/islesFx";
 
+import { CROWD_DETAIL_EVERY, CROWD_DETAIL_MAX, crowdFolk, nearestCrowd } from "./crowdDetail";
+import { FOLK_WATCH, folkPoseCue, type FolkState, type PosedFolk } from "./folkPoses";
+import { createVillagerView } from "../render/villager";
+import type { PersonView } from "../render/people/view";
+
 const isObj = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
@@ -120,6 +125,26 @@ export function createIslesLife(opts: {
   }
   const crowd: CrowdView | undefined =
     !opts.headless && villagers.length ? createCrowdView(group, villagers) : undefined;
+  // The Edge's crowd in detail near you (game/crowdDetail.ts): pooled views, by look.
+  const detailed = !!crowd && villagers.some((v) => v.palette === "sump");
+  const near = new Map<number, { folk: PosedFolk; st: FolkState; view: PersonView }>();
+  const pool: PersonView[] = [];
+  let made = 0;
+  let nextPick = 0;
+  const you = new THREE.Vector3();
+  const folkAt = new THREE.Vector3();
+  const take = (seed: number): PersonView | undefined => {
+    const k = pool.findIndex((v) => v.root.userData.seed === seed);
+    if (k >= 0) return pool.splice(k, 1)[0];
+    if (made < CROWD_DETAIL_MAX + 8) {
+      made++;
+      const v = createVillagerView(group, "sump", seed % 16);
+      v.root.userData.seed = seed % 16;
+      return v;
+    }
+    return pool.pop();
+  };
+  const skip = (i: number) => near.has(i);
 
   let hint = 0;
   let flying: IslesDragonConfig | undefined = dragonCfg;
@@ -183,10 +208,53 @@ export function createIslesLife(opts: {
           callIn = 16 + Math.random() * 10;
         }
       }
-      crowd?.update(t, new THREE.Vector3(listener.x, listener.y, listener.z), (i) => {
-        const v = villagers[i]!;
-        return v.role === "guard" ? 0 : aweAt(v.x, v.y, v.z);
-      });
+      if (detailed) {
+        nextPick -= dt;
+        if (nextPick <= 0) {
+          nextPick = CROWD_DETAIL_EVERY;
+          const want = new Set(
+            nearestCrowd(villagers, listener.x, listener.z).filter(
+              (i) => villagers[i]!.palette === "sump",
+            ),
+          );
+          for (const [i, d] of near)
+            if (!want.has(i)) {
+              d.view.root.visible = false;
+              pool.push(d.view);
+              near.delete(i);
+            }
+          for (const i of want)
+            if (!near.has(i)) {
+              const folk = crowdFolk(villagers[i]!, i);
+              const view = take(folk.seed % 16);
+              if (!view) continue;
+              view.root.visible = true;
+              near.set(i, { folk, st: { seen: false, glance: 0 }, view });
+            }
+        }
+        you.set(listener.x, listener.y, listener.z);
+        for (const d of near.values()) {
+          const f = d.folk;
+          const dist = Math.hypot(f.x - listener.x, f.z - listener.z);
+          d.view.update(
+            f.x,
+            f.y,
+            f.z,
+            f.heading,
+            folkPoseCue(f, d.st, t, dt, dist < FOLK_WATCH, you, folkAt),
+            t,
+          );
+        }
+      }
+      crowd?.update(
+        t,
+        new THREE.Vector3(listener.x, listener.y, listener.z),
+        (i) => {
+          const v = villagers[i]!;
+          return v.role === "guard" ? 0 : aweAt(v.x, v.y, v.z);
+        },
+        detailed ? skip : undefined,
+      );
       for (const w of wheels) w.update(t);
       for (const k of cranes) k.update(t);
       for (const l of littles)
@@ -199,6 +267,8 @@ export function createIslesLife(opts: {
       serpent?.dispose();
       shadow?.dispose();
       crowd?.dispose();
+      for (const d of near.values()) d.view.dispose();
+      for (const v of pool) v.dispose();
       for (const w of wheels) w.dispose();
       for (const k of cranes) k.dispose();
       for (const l of littles) for (const v of l.views) v.dispose();

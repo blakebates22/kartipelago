@@ -11,7 +11,9 @@
  *
  * pose: "watch" (looks at you), "wave", "cheer", "nod", "point", "think", "shrug",
  * "dance", "kneel" (sat, crouched, on a step or a stool), "work" (busy: a nod now and
- * then, looking down at what's in front of them).
+ * then, looking down at what's in front of them); busy all the time: "eat", "cook",
+ * "chat", "lean", "beat", "hang", and the shanty band's "fiddle", "squeeze", "drum" (their
+ * instruments in their hands: render/instruments.ts) and their crowd's "tap".
  */
 import type * as THREE from "three";
 import type { Gesture, PersonCue } from "../render/people/animate";
@@ -32,7 +34,11 @@ export type FolkPose =
   | "chat"
   | "lean"
   | "beat"
-  | "hang";
+  | "hang"
+  | "fiddle"
+  | "squeeze"
+  | "drum"
+  | "tap";
 export const FOLK_POSES: readonly FolkPose[] = [
   "watch",
   "wave",
@@ -50,9 +56,29 @@ export const FOLK_POSES: readonly FolkPose[] = [
   "lean",
   "beat",
   "hang",
+  "fiddle",
+  "squeeze",
+  "drum",
+  "tap",
 ];
 /** The poses that are something to be busy at, all the time (render/people/animate.ts). */
-const BUSY = new Set<FolkPose>(["eat", "cook", "chat", "lean", "beat", "hang", "dance", "kneel"]);
+const BUSY = new Set<FolkPose>([
+  "eat",
+  "cook",
+  "chat",
+  "lean",
+  "beat",
+  "hang",
+  "dance",
+  "kneel",
+  "fiddle",
+  "squeeze",
+  "drum",
+  "tap",
+]);
+/** The band (Blake, Nov 5: the shanty band, kept low-key): they play on, a glance and no
+ * wave. */
+export const PLAYING = new Set<FolkPose>(["fiddle", "squeeze", "drum"]);
 
 export interface PosedFolk {
   x: number;
@@ -125,7 +151,8 @@ export function folkPoseCue(
   const period = 7 + (p.seed % 5);
   const phase = (t + p.seed * 1.37) % period;
   let gesture: Gesture | null = null;
-  if (glancing && p.seed % 3 === 0 && p.pose !== "cook" && p.pose !== "eat") gesture = "wave";
+  if (glancing && p.seed % 3 === 0 && p.pose !== "cook" && p.pose !== "eat" && !PLAYING.has(p.pose))
+    gesture = "wave";
   else if (BUSY.has(p.pose)) gesture = p.pose as Gesture;
   else if (p.pose === "work") gesture = phase < 1.6 ? "nod" : null;
   else if (p.pose !== "watch" && phase < 2.6) gesture = p.pose as Gesture;

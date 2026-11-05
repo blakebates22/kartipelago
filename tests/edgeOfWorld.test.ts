@@ -178,5 +178,20 @@ describe("the Edge of the World", () => {
     const pens = of("pen");
     expect(pens.length).toBeGreaterThanOrEqual(6);
     expect(new Set(pens.map((e) => e.species))).toEqual(new Set(["raptor", "trike", "stego"]));
+    // (Nov 5, the shantytown: the dancers and their conga gone, the shanty band on its
+    // beached bow, one of each instrument, their crowd listening)
+    expect(of("conga")).toHaveLength(0);
+    const folk = (of("folk_poses")[0]!.list as unknown[][]).map((r) => r[4]);
+    for (const play of ["fiddle", "squeeze", "drum"])
+      expect(folk.filter((p) => p === play)).toHaveLength(1);
+    expect(folk.filter((p) => p === "tap").length).toBeGreaterThanOrEqual(2);
+    const dancers = (of("villagers") as unknown as { list: unknown[][] }[])
+      .flatMap((e) => e.list)
+      .filter((r) => r[5] === "dancer");
+    expect(
+      dancers.filter(
+        (r) => Math.hypot(((r[0] as number) - 140) / 64, ((r[2] as number) - 145) / 76) < 1,
+      ),
+    ).toHaveLength(0);
   });
 });
