@@ -100,6 +100,9 @@ const RISES: Record<string, number> = { valley_region: 15, desert_region: 25 };
 /** How far in from the world's edge the land stays out of bounds, per region (m): the
  * desert's square of canyon walls stands 30-40 m in from its edge. */
 const EDGES: Record<string, number> = { desert_region: 40 };
+/** How far down under the nearest road the land stays in bounds, where set (m): the Edge's
+ * caverns have a trench at their walls' feet to drop into and slide under the floor by. */
+const DEEP: Record<string, number> = {};
 const OUT = new URL("../../audit-out/bounds/", import.meta.url);
 
 function rng(seed: number) {
@@ -432,6 +435,21 @@ async function audit(track: string) {
         (p) => Math.abs(p.x - x) < r && Math.abs(p.z - z) < r && Math.hypot(p.x - x, p.z - z) < r,
       );
     const atWay = (x: number, z: number) => doors.some((w) => Math.hypot(w.x - x, w.z - z) < w.r);
+    const nearCache = new Map<string, number>();
+    const nearY = (x: number, z: number) => {
+      const key = `${Math.round(x / 6)},${Math.round(z / 6)}`;
+      let v = nearCache.get(key);
+      if (v === undefined) {
+        let best = Infinity;
+        v = 0;
+        for (const p of pts) {
+          const d = Math.hypot(p.x - x, p.z - z);
+          if (d < best) [best, v] = [d, p.y ?? 0];
+        }
+        nearCache.set(key, v);
+      }
+      return v;
+    };
     const good = new Set<string>();
     for (const [k, n] of nodes) {
       const x = n.ix * CELL;
@@ -452,6 +470,9 @@ async function audit(track: string) {
         continue;
       }
       const up = n.h - topNear(x, z);
+      // (down in a hole well under the road nearest: the trench at a cavern's foot, between
+      // its wall and the rock, in the Edge's underground)
+      if (DEEP[pk] !== undefined && nearY(x, z) - n.h > DEEP[pk]!) continue;
       // (in the layout's walls and up off the roads' level, where a notch's floor isn't)
       // (or down under it: the isles' sea floor out past the reef)
       if (sd && wallSd(x, z) > SD_OUT && (up > 4 || up < -5) && !atPassage(x, z)) continue;

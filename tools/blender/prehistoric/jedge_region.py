@@ -52,6 +52,14 @@ def main():
         "under": {"mat": "ruin_road", "shoulder": 1.6, "shoulder_mat": ("bog_mud", "dirt")},
         # (the docks: plank quays)
         "quay": {"mat": "dock_cobble", "surface": "road", "shoulder": 1.2, "shoulder_mat": ("bog_dark_stone", "road")},
+        # (the Rookery: the slum's cobbles, worn)
+        "rookery": {"mat": "dock_cobble", "surface": "road", "shoulder": 1.6, "shoulder_mat": ("bog_paving", "road")},
+        # (the Rusty Anchor: its floorboards)
+        "tavern": {"mat": "plank_road", "surface": "road", "shoulder": 1.6, "shoulder_mat": ("plank_deck", "road")},
+        # (the Gallery: a plank deck on the scaffold, railed both sides, the market's floor
+        # left under it)
+        "gallery": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("plank_deck", "road"), "barrier": 1.1,
+                    "barrier_mat": ("timber_rail", "wall"), "deck": 1.5, "deck_mat": ("scaffold_timber", "wall"), "ground": False},
         # (the Night Bazaar: the market's old setts)
         "bazaar": {"mat": "imperial_setts", "surface": "road", "shoulder": 1.4, "shoulder_mat": ("ash_soil", "dirt")},
         # (the Fighting Pits: the arena's sand road, railed red and white down the wall)
@@ -75,20 +83,35 @@ def main():
     s_start = _s(c, "start")
     s_end = _s(c, "end")
 
-    def place_kind(x, y):
+    s_tav = (_s(c, "tav0") - 3.0, _s(c, "tav1") + 3.0)
+    # (the Gallery's ledge: from the rock past the portal, all on its scaffold, the terrain
+    # never brought up to it in a bank down into the market)
+    s_gal = (_s(c, "gal0"), _s(c, "baz0"))
+
+    def place_kind(x, y, s=0.0):
         if y > rim_y(x) - 2.0:
             return "bridge" if isle_at(x, y, -1.0) is None else "isle"
         if over_canal(x, y):
             return "canal bridge"
-        return {"Smugglers' Docks": "quay", "Night Bazaar": "bazaar", "Fighting Pits": "pit", "Lucky Bone": "den"}.get(
+        if s_tav[0] <= s <= s_tav[1]:
+            return "tavern"
+        name = cavern_at(x, y)[0]
+        if (name == "Night Bazaar" or s_gal[0] <= s <= s_gal[1]) and L.gallery_up(x, y) > 1.5:
+            return "gallery"
+        return {"Rookery": "rookery", "Smugglers' Docks": "quay", "Night Bazaar": "bazaar", "Fighting Pits": "pit", "Lucky Bone": "den"}.get(
             cavern_at(x, y)[0], "under")
 
     def label(q):
         if not s_start <= q.s <= s_end:
             return None
-        return place_kind(q.p.x, q.p.y)
+        return place_kind(q.p.x, q.p.y, q.s)
 
     c.roads(kit.plan(c, list(kit.runs(c, label)), "under", max_len=150.0))
+
+    # The Night Bazaar's other lane: the Beast Market, off the road at the fork and back on
+    # at the join.
+    c.shortcut("Beast Market", [(x, y, z, 10.0) for x, y, z in L.BEAST_MARKET], "imperial_setts", "road", width=10.0, shoulder=1.2,
+               shoulder_mat=("ash_soil", "dirt"), flush=True)
 
     X0, X1, Y0, Y1 = -490, 490, -490, 490
     ter = c.terrain("The Edge of the World", X0, X1, Y0, Y1, 4.0, natural, classify, near=8.0, fade=16.0, fine=2)
@@ -110,8 +133,9 @@ def main():
     LIFE.all_life(c, ground, s_start, s_mouth, s_end, spans)
     far_kingdom(c)
     # The air: each district its own; the sky's bright, out at the edge.
-    for x, y, look in ((-55.0, -430.0, "under"), (-40.0, -380.0, "under"), (-14.0, -300.0, "docks"), (60.0, -232.0, "under"),
-                       (108.0, -140.0, "bazaar"), (40.0, -10.0, "pits"), (120.0, -40.0, "pits"), (152.0, 36.0, "den"),
+    for x, y, look in ((-55.0, -430.0, "under"), (-40.0, -380.0, "under"), (-14.0, -300.0, "docks"), (70.0, -268.0, "rookery"),
+                       (109.0, -264.0, "tavern"), (160.0, -262.0, "rookery"), (205.0, -230.0, "under"), (140.0, -190.0, "bazaar"),
+                       (140.0, -120.0, "bazaar"), (40.0, -10.0, "pits"), (120.0, -40.0, "pits"), (152.0, 36.0, "den"),
                        (92.0, 112.0, "under"), (20.0, 220.0, "edge"), (0.0, 380.0, "edge")):
         g = c.game(x, y, 0.0)
         c.entity("air_spot", x=round(g[0], 1), z=round(g[2], 1), look=LOOKS[look])
@@ -141,6 +165,14 @@ LOOKS = {
     "docks": {"sky": "#0c1614", "fog": {"enabled": True, "color": "#24403a", "near": 40, "far": 300},
               "sun": {"color": "#c8f4e4", "intensity": 0.9, "direction": [-0.2, 0.95, 0.15]},
               "ambient": {"sky": "#8ac0b0", "ground": "#2a3a32", "intensity": 1.05}},
+    # (the Rookery: lamplight on wet cobbles, the water street's cold green under it)
+    "rookery": {"sky": "#100c0c", "fog": {"enabled": True, "color": "#2e2a26", "near": 28, "far": 230},
+                "sun": {"color": "#ffd0a0", "intensity": 0.75, "direction": [-0.2, 0.95, 0.15]},
+                "ambient": {"sky": "#b0907a", "ground": "#22302a", "intensity": 0.95}},
+    # (the Rusty Anchor: warm, close, smoky)
+    "tavern": {"sky": "#1a0e06", "fog": {"enabled": True, "color": "#4a2c14", "near": 18, "far": 140},
+               "sun": {"color": "#ffc070", "intensity": 0.9, "direction": [-0.2, 0.95, 0.1]},
+               "ambient": {"sky": "#f0a860", "ground": "#40220e", "intensity": 1.1}},
     # (the Night Bazaar: red and amber lantern light, cookfire smoke)
     "bazaar": {"sky": "#1a0c08", "fog": {"enabled": True, "color": "#4a2416", "near": 30, "far": 260},
                "sun": {"color": "#ffb27a", "intensity": 0.8, "direction": [-0.2, 0.95, 0.1]},
@@ -225,6 +257,7 @@ def underground(c, s0, s1):
                 dm.faces.new((lo[k], lo[(k + 1) % 48], hi[(k + 1) % 48], hi[k]))
     bmesh.ops.recalc_face_normals(dm, faces=dm.faces)
     _subtract(slab, c.mesh_object("Fighting Pits Cutter", dm, "Rocks", "visual"))
+    _subtract(slab, _rookery_cutter(c))
     c.tunnel(slab, s0 - 30.0, s1 + 24.0, half=c.width / 2 + 4.0, height=11.0, pad=6.0)
     groups = {}
     for p in slab.data.polygons:
@@ -241,6 +274,37 @@ def underground(c, s0, s1):
     for k, faces in groups.items():
         c.assign(slab, c.lib(*k), faces)
     slab.data.shade_flat()
+
+
+def _rookery_cutter(c):
+    """The Rookery's canyon: cut along the road from the docks to the Gallery's portal, its
+    left wall ROOK_N out, its right ROOK_S (over the water street and its far bank), its
+    roof ROOK_ROOF up, ragged."""
+    a, b = L.DAT[AT["dock3"]] - 4, L.DAT[AT["portal"]] + 1
+    N, S, R = L.ROOK_N, L.ROOK_S, L.ROOK_ROOF
+    prof = [(-N, -8.0), (S, -8.0), (S, 8.0), (S - 4.0, 13.5), (S - 12.0, R), (-N + 7.0, R - 0.5), (-N + 1.5, 13.0), (-N, 7.0)]
+    bm = bmesh.new()
+    rings = []
+    for k in range(a, b + 1):
+        p0, p1 = L.DENSE[k - 1], L.DENSE[k + 1]
+        tx, ty = p1[0] - p0[0], p1[1] - p0[1]
+        n = math.hypot(tx, ty) or 1.0
+        rx, ry = ty / n, -tx / n
+        x, y, z = L.DENSE[k]
+        wob = 0.6 * math.sin(k * 1.7) + 0.4 * math.sin(k * 0.53)
+        ring = []
+        for j, (v, dz) in enumerate(prof):
+            v2 = v + (wob * (1 if v > 0 else -1) if dz > 0 else 0.0)
+            ring.append(bm.verts.new((x + rx * v2, y + ry * v2, z + dz + (0.8 * wob if dz >= R - 1.0 else 0.0))))
+        rings.append(ring)
+    m = len(prof)
+    for r0, r1 in zip(rings, rings[1:]):
+        for j in range(m):
+            bm.faces.new((r0[j], r0[(j + 1) % m], r1[(j + 1) % m], r1[j]))
+    bm.faces.new(rings[0][::-1])
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return c.mesh_object("Rookery Cutter", bm, "Rocks", "visual")
 
 
 def _subtract(target, cutter):

@@ -54,8 +54,8 @@ CANAL = (-300.0, 5.0, -26.0, 49.0)  # y, half width, from x, to x: the harbour's
 SEA_LEAK = (-60.0, -304.0, -11.0)
 WEIR_X = 41.0
 SUMP_DROP = 2.4  # (the sump pool under the weir: how far below the harbour's water)
-BAZAAR = (108.0, -140.0, 46.0, 66.0)
-BAZ_Z = -33.0
+BAZAAR = (140.0, -145.0, 64.0, 76.0)
+BAZ_Z = -34.0
 BAZ_FLOOR = BAZ_Z - 0.6
 PIT = (40.0, -10.0)
 PIT_R = (34.0, 66.0, 82.0)  # the floor's edge, the stands' top, the wall
@@ -65,6 +65,18 @@ DEN = (152.0, 36.0, 30.0, 26.0)
 DEN_Z = -57.0
 DEN_FLOOR = DEN_Z - 0.6
 MOUTH = (24.0, 182.0)  # where the Long Bore comes out of the world's edge
+# The Rookery (Nov 4): the canyon street from the docks to the Gallery, its walls ROOK_N to
+# the left of the road and ROOK_S to its right, ROOK_ROOF over it; the water street down
+# its right side (its middle ROOK_CANAL[0] right of the road, ROOK_CANAL[1] half wide), its
+# water level all the way (the street climbs: its banks stand higher and higher over it).
+ROOK_N, ROOK_S = 13.0, 26.0
+ROOK_ROOF = 16.0  # (the seabed's top is only some 20 m over the road)
+ROOK_CANAL = (17.0, 3.8)
+ROOK_WATER = -27.6
+# The Beast Market: the Night Bazaar's other lane, off the road at the fork, round the
+# Broker's ship's other side, back on at the join (a side road: jedge_region.py).
+BEAST_MARKET = [(171.0, -137.0, BAZ_Z), (160.0, -126.0, BAZ_Z), (142.0, -122.0, BAZ_Z), (124.0, -116.0, BAZ_Z),
+                (113.0, -101.0, BAZ_Z), (112.0, -86.0, BAZ_Z), (106.0, -76.0, BAZ_Z)]
 
 
 def rim_y(x):
@@ -122,19 +134,37 @@ ROUTE = [
     (-1.0, -281.0, DOCK_Z - 0.1, "dock1"),
     (16.0, -262.0, DOCK_Z - 0.9, "dock2"),
     (36.0, -252.0, DOCK_Z - 1.6, "dock3"),
-    # Smugglers' Alley: S-bends down, and the Stair down the Night Bazaar's wall.
-    (58.0, -248.0, -26.5, "alley0"),
-    (70.0, -239.0, -27.6, "alley1"),
-    (75.2, -221.0, -29.0, "alley2"),
-    (76.2, -206.9, -30.3, "stair0"),
-    (78.0, -194.0, -31.6, "stair1"),
-    (79.3, -185.6, BAZ_Z + 0.6, "stair2"),
-    # The Night Bazaar: a slalom through the lanes.
-    (89.0, -172.0, BAZ_Z, "baz0"),
-    (103.0, -154.0, BAZ_Z, "baz1"),
-    (110.0, -132.0, BAZ_Z, "baz2"),
-    (108.0, -114.0, BAZ_Z, "baz3"),
-    (104.0, -92.0, BAZ_Z, "baz4"),
+    # The Rookery (Nov 4: "lets do all of it"): a crooked canyon street east through the
+    # smugglers' slum, the shanties stacked up its walls, the water street beside it; in
+    # the front door of the Rusty Anchor and out the back; climbing to the Gallery.
+    (58.0, -261.0, -25.2, "rook0"),
+    (79.0, -265.0, -24.7, "rook1"),
+    (97.0, -264.0, -24.3, "tav0"),  # the Rusty Anchor's front door
+    (121.0, -264.0, -23.7, "tav1"),  # its back door
+    (141.0, -262.0, -23.2, "rook2"),
+    (160, -257, -22.6, "rook3"),
+    (183, -253, -22.1, "rook4"),
+    (201, -241, -21.8, "portal"),  # out on the Night Bazaar's wall: the whole market below
+    # The Gallery: a scaffold ledge down the market's south wall, the hairpin round the
+    # scaffold tower, back along under it.
+    (207, -222, -21.9, "gal0"),
+    (192, -206, -22.8, "gal1"),
+    (140.0, -211.5, -24.7, "gal2"),
+    (122.0, -208.0, -26.3, "gal3"),
+    (105.5, -200.0, -27.6, "pin0"),
+    (99.5, -186.5, -28.4, "pin1"),
+    (105.5, -173.5, -29.2, "pin2"),
+    (119.0, -168.0, -30.0, "pin3"),
+    (137.0, -169.0, -31.5, "gal4"),
+    (156.0, -164.0, -33.0, "gal5"),
+    (168.0, -150.0, -33.8, "baz0"),
+    # The Night Bazaar's lanes: Spice Row (this way) and the Beast Market (BEAST_MARKET, the
+    # other) round the Broker's ship, to the Fighting Pits' gate.
+    (172.0, -130.0, BAZ_Z, "fork"),
+    (167.0, -108.0, BAZ_Z, "spice1"),
+    (152.0, -91.0, BAZ_Z, "spice2"),
+    (130.0, -81.0, BAZ_Z, "spice3"),
+    (111.0, -77.0, BAZ_Z, "join"),
     (97.0, -74.0, PIT_RIM + 0.2, "pit_gate"),
 ] + _spiral() + [  # down the Fighting Pits' wall
     (77.0, -26.0, PIT_FLOOR + 0.5, "pit_floor"),
@@ -199,7 +229,7 @@ ISLES = [
 CAVERNS = [
     ("Sea Door Grotto", GROTTO[0], GROTTO[1], GROTTO[2], GROTTO[3], DEPTH - 0.6, 31.0),
     ("Smugglers' Docks", DOCKS[0], DOCKS[1], DOCKS[2], DOCKS[3], DOCK_FLOOR, 19.0),
-    ("Night Bazaar", BAZAAR[0], BAZAAR[1], BAZAAR[2], BAZAAR[3], BAZ_FLOOR, 27.0),
+    ("Night Bazaar", BAZAAR[0], BAZAAR[1], BAZAAR[2], BAZAAR[3], BAZ_FLOOR, 28.0),
     ("Lucky Bone", DEN[0], DEN[1], DEN[2], DEN[3], DEN_FLOOR, 17.0),
 ]
 # The holes in the seabed: the grotto's, open to the sea overhead (where you come in).
@@ -277,6 +307,50 @@ def flat_out(x, y):
     return 10.0 if cavern_at(x, y)[0] is None else 8.0
 
 
+_ROOK = {}
+for _k in range(DAT[AT["dock3"]] - 2, DAT[AT["portal"]] + 3):
+    _a, _b = DENSE[_k], DENSE[_k + 1]
+    for _gx in range(int(math.floor(min(_a[0], _b[0]) / 24)) - 2, int(math.floor(max(_a[0], _b[0]) / 24)) + 3):
+        for _gy in range(int(math.floor(min(_a[1], _b[1]) / 24)) - 2, int(math.floor(max(_a[1], _b[1]) / 24)) + 3):
+            _ROOK.setdefault((_gx, _gy), []).append((_a, _b, _k))
+
+
+def rook_at(x, y):
+    """In the Rookery? (its lateral offset from the road, + to the right; the road's height
+    there; the dense index), or None."""
+    best = None
+    for a, b, k in _ROOK.get((int(math.floor(x / 24)), int(math.floor(y / 24))), ()):
+        d, t = _seg(x, y, a, b)
+        if best is None or d < best[0]:
+            dx, dy = b[0] - a[0], b[1] - a[1]
+            n = math.hypot(dx, dy) or 1.0
+            lat = ((x - a[0]) * dy - (y - a[1]) * dx) / n  # (+: right of the way along)
+            best = (d, lat, lerp(a[2], b[2], t), k, t)
+    if best is None:
+        return None
+    d, lat, z, k, t = best
+    if (k <= DAT[AT["dock3"]] and t == 0.0) or (k >= DAT[AT["portal"]] and t == 1.0):
+        return None
+    if not -ROOK_N < lat < ROOK_S:
+        return None
+    return lat, z, k
+
+
+def rook_canal(x, y):
+    """In the Rookery's water street (between rook0 and rook3)? Its water's (lateral
+    distance from the middle, half width), else None."""
+    r = rook_at(x, y)
+    if r is None or not DAT[AT["rook0"]] <= r[2] < DAT[AT["rook3"]]:
+        return None
+    return abs(r[0] - ROOK_CANAL[0]), r[1]
+
+
+def gallery_up(x, y):
+    """How far the road near (x, y) is up over the Night Bazaar's floor (the Gallery)."""
+    d, z = road_floor(x, y)
+    return z - BAZ_FLOOR if d < 30.0 else 0.0
+
+
 # ------------------------------------------------------------------ the land
 
 
@@ -293,6 +367,9 @@ def cavern_at(x, y):
     r = pit_r(x, y)
     if r < PIT_R[2]:
         return "Fighting Pits", r / PIT_R[2]
+    rk = rook_at(x, y)
+    if rk is not None:
+        return "Rookery", (rk[0] / ROOK_S if rk[0] > 0 else -rk[0] / ROOK_N)
     for name, cx, cy, rx, ry, _f, _h in CAVERNS:
         e = ellipse(x, y, cx, cy, rx, ry)
         if e < 1.0:
@@ -346,7 +423,15 @@ def in_water(x, y):
     if math.hypot(x - bx, y - by) < br:
         return True
     cy, hw, cx0, cx1 = CANAL
-    return abs(y - cy) < hw and cx0 - 2.0 < x < cx1 and ellipse(x, y, *DOCKS) < 0.98
+    if abs(y - cy) < hw and cx0 - 2.0 < x < cx1 and ellipse(x, y, *DOCKS) < 0.98:
+        return True
+    rc = rook_canal(x, y)
+    return rc is not None and rc[0] < ROOK_CANAL[1]
+
+
+def water_z(x, y):
+    """The water's level where in_water: the docks', or the Rookery's water street's."""
+    return ROOK_WATER if rook_canal(x, y) is not None else DOCK_WATER
 
 
 def over_canal(x, y, margin=2.5):
@@ -380,12 +465,28 @@ def _land(x, y):
             # (the quay's edge straight down into the black water)
             return lerp(DOCK_WATER - 5.0, DOCK_FLOOR, smooth((d + 0.2) / 1.0))
         return DOCK_FLOOR
+    if name == "Rookery":
+        rk = rook_at(x, y)
+        rc = rook_canal(x, y)
+        if rc is not None and rc[0] < ROOK_CANAL[1] + 0.6:
+            # (the water street: its stone banks straight down into it)
+            return lerp(ROOK_WATER - 3.0, rk[1] - 0.3, smooth((rc[0] - ROOK_CANAL[1] + 0.2) / 0.8))
+        return rk[1] - 0.3
     if name == "Night Bazaar":
         return BAZ_FLOOR + 0.5 * smooth((e - 0.8) / 0.2) + 0.15 * wob
     if name == "Lucky Bone":
         return DEN_FLOOR + 0.8 * smooth((e - 0.75) / 0.25)
     if name == "Sea Door Grotto":
         return DEPTH - 0.6 + 1.4 * smooth((e - 0.55) / 0.45) + wob
+    # (just past a cavern's edge, under its wall (which wobbles out up to 7%): the land
+    # climbs steeply up into the rock, so there's no trench at the wall's foot to drop into
+    # and slide under the floor by; Nov 4's bounds audit)
+    if pit_r(x, y) < PIT_R[2] * 1.08:
+        return PIT_RIM - 0.5 + 30.0 * smooth((pit_r(x, y) / PIT_R[2] - 1.0) / 0.05)
+    for cname, cx, cy, rx, ry, floor, _h in CAVERNS:
+        e = ellipse(x, y, cx, cy, rx, ry)
+        if e < 1.16:
+            return floor + 1.0 + 30.0 * smooth((e - 1.0) / 0.12)
     return -100.0
 
 
@@ -397,6 +498,13 @@ def natural(x, y):
     if in_water(x, y):
         return h  # (the canal, open under its bridge)
     w = flat_out(x, y)
+    if cavern_at(x, y)[0] == "Night Bazaar" and z - BAZ_FLOOR > 1.2:
+        # (the Gallery: up on its scaffold, the market's floor under it, eased up to the
+        # road where it comes down to the floor)
+        up = z - BAZ_FLOOR
+        if d < w + 12.0:
+            return lerp(z - 0.25, h, smooth((up - 1.2) / 1.6)) if up < 2.8 else h
+        return h
     if d < w:
         return z - 0.25
     if d < w + 12.0:
@@ -408,7 +516,7 @@ def classify(c, n, info):
     """A terrain face's look and surface (c its middle, n its normal)."""
     if c.y > rim_y(c.x) - 1.0:
         return ("cloud_bank", "abyss")  # (off the edge of the world: put back)
-    if in_water(c.x, c.y) and c.z < DOCK_WATER - 0.2:
+    if in_water(c.x, c.y) and c.z < water_z(c.x, c.y) - 0.2:
         return ("bog_mud", "deep_water")  # (into the docks' black water: put back)
     name, e = cavern_at(c.x, c.y)
     if n.z < 0.62:
@@ -419,6 +527,8 @@ def classify(c, n, info):
         return ("bog_mud", "dirt")  # (the floor under a skylight, sea-wet muck)
     if name == "Smugglers' Docks":
         return ("keep_dock", "dirt") if muck > -0.3 else ("bog_paving", "dirt")
+    if name == "Rookery":
+        return ("bog_paving", "dirt") if muck > -0.1 else ("bog_mud", "dirt")
     if name == "Night Bazaar":
         return ("village_cobble", "dirt") if muck > -0.2 else ("ash_soil", "dirt")
     if name == "Fighting Pits":
@@ -457,5 +567,5 @@ if __name__ == "__main__":
         if h > 0.5:
             worst = max(worst, abs(q[2] - p[2]) / h)
     print("road %.0f m, %d points, steepest %.0f%%" % (L, b - a, worst * 100))
-    for name in ("dock0", "canal", "stair2", "pit_gate", "pit12", "den0", "mouth", "end"):
+    for name in ("dock0", "canal", "tav0", "portal", "baz0", "pit_gate", "pit12", "den0", "mouth", "end"):
         print(name, round(CUM[DAT[AT[name]]] - CUM[a]))

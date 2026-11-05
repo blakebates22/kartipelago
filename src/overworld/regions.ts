@@ -618,7 +618,7 @@ export const REGIONS: Region[] = [
     packageId: "journey_cause",
     music: "journey_cause",
     worldId: "beach",
-    journey: { from: "beach", to: "dragon", road: [53, 1462] },
+    journey: { from: "beach", to: "dragon", road: [53, 1778] },
     // (Underground: the ground's looked for from just over the tunnel's floor, not the sky.)
     spawn: { x: -52.1, z: 415, heading: 2.7919, y: -12 },
     gateways: [],

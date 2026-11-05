@@ -55,7 +55,7 @@ describe("the Edge of the World", () => {
     const a = parseAtmosphere(e!);
     expect(a.light).toBe(false);
     const sounds = new Set(Object.values(a.zones).map((z) => z.sound));
-    for (const s of ["drip", "harbour", "festival", "falls", "wind", "bells"])
+    for (const s of ["drip", "harbour", "tavern", "festival", "falls", "wind", "bells"])
       expect(sounds).toContain(s);
     expect(a.keys.length).toBeGreaterThan(150);
     // (at the docks, the harbour; out at the gate, its bells)
@@ -71,6 +71,9 @@ describe("the Edge of the World", () => {
     expect(at(dock.x, dock.y, dock.z)).toBe("harbour");
     const gate = near(4, -440);
     expect(at(gate.x, gate.y, gate.z)).toBe("bells");
+    // (in the Rusty Anchor, its piano and its regulars)
+    const anchor = near(109, 264);
+    expect(at(anchor.x, anchor.y, anchor.z)).toBe("tavern");
     // (a light-less atmosphere elsewhere still sets the light by default)
     expect(parseAtmosphere({ zones: {}, keys: [] }).light).toBe(true);
   });
@@ -146,5 +149,33 @@ describe("the Edge of the World", () => {
     const cues = Array.from({ length: 48 }, (_, i) => crocKingCue(i / 2));
     expect(new Set(cues.map((q) => q.gesture)).size).toBeGreaterThanOrEqual(4);
     expect(cues.some((q) => q.talk)).toBe(true);
+  });
+
+  it("has the Rookery, the Rusty Anchor, the Gallery and the market's two lanes (Blake, Nov 4)", () => {
+    const road = routes.routes.find((r) => r.id === "main")!.points;
+    const { from, to } = meta.journey;
+    let s = 0;
+    const drive = road.filter((p, i) => {
+      if (i) s += Math.hypot(p.x - road[i - 1]!.x, p.z - road[i - 1]!.z);
+      return s >= from && s <= to;
+    });
+    // (the water street's boats keep to the water, off the road, under its washing)
+    const round = routes.routes.find((r) => r.id === "Rookery Boat Round")!;
+    expect(
+      of("boat").filter((e) => e.route === "Rookery Boat Round").length,
+    ).toBeGreaterThanOrEqual(2);
+    for (const p of round.points.filter((_, i) => i % 5 === 0)) {
+      const d = Math.min(...drive.map((q) => Math.hypot(q.x - p.x, q.z - p.z)));
+      expect(d).toBeGreaterThan(12);
+    }
+    // (the Gallery: out high on the Night Bazaar's wall, 12 m and more over its floor)
+    const inBazaar = drive.filter((p) => Math.hypot((p.x - 140) / 64, (p.z - 145) / 76) < 0.97);
+    expect(Math.max(...inBazaar.map((p) => p.y)) - -34.6).toBeGreaterThan(11);
+    // (each stretch's own talkers: the slum, the tavern, the Beast Market)
+    const talks = of("villager_home").map((e) => e.talk);
+    for (const t of ["rookery", "tavern", "bazaar", "beasts"]) expect(talks).toContain(t);
+    // (and things alive in the Beast Market's cages)
+    expect(of("little_dragons").length).toBeGreaterThan(4);
+    expect(of("birds").length).toBeGreaterThan(5);
   });
 });

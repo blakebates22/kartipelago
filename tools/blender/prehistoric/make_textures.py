@@ -5476,6 +5476,26 @@ MATERIALS += ruin_textures.materials(sys.modules[__name__])
 THEMES += [ruin_textures.RIVERBEND, ruin_textures.CASCADE, ruin_textures.BONEBOG, ruin_textures.EMBER, ruin_textures.FROST, ruin_textures.SUMMIT, ruin_textures.HEARTH, ruin_textures.AURORA, ruin_textures.CANYON, ruin_textures.OASIS, ruin_textures.GULCH, ruin_textures.IMPACT, ruin_textures.COVE, ruin_textures.WRECK, ruin_textures.ISLE, ruin_textures.SPLASH, ruin_textures.RAINFOREST, ruin_textures.KEEP, ruin_textures.EMERALD, ruin_textures.HOLD, ruin_textures.MOON]
 
 
+# The Edge of the World's painted signs (Nov 4: the Rookery, the Rusty Anchor, the Night
+# Bazaar's Gallery and lanes), cut into 64 px tiles as the gulch's are.
+EDGE_SIGNS = [
+    entry
+    for sid, name, text, w, h, kw in (
+        ("sign_anchor", "Rusty Anchor", "RUSTY ANCHOR", 192, 32, {"seed": 31, "wood": RED_SIGN, "ink": "#f4d890"}),
+        ("sign_nightbazaar", "Night Bazaar", "NIGHT BAZAAR", 256, 48, {"seed": 32, "ink": "#ffcf6a"}),
+        ("sign_spicerow", "Spice Row", "SPICE ROW", 192, 32, {"seed": 33, "wood": RED_SIGN, "ink": "#ffd070"}),
+        ("sign_beastmarket", "Beast Market", "BEAST MARKET", 192, 32, {"seed": 34, "wood": GREEN_SIGN}),
+        ("sign_pawn", "Pawn", "PAWN", 64, 32, {"seed": 35}),
+        ("sign_grog", "Grog", "GROG", 64, 32, {"seed": 36, "wood": GREEN_SIGN}),
+        ("sign_bait", "Bait", "BAIT", 64, 32, {"seed": 37, "wood": RED_SIGN}),
+        ("sign_maps", "Maps", "MAPS", 64, 32, {"seed": 38}),
+        ("sign_rope", "Rope", "ROPE", 64, 32, {"seed": 39, "wood": GREEN_SIGN}),
+    )
+    for entry in sign_tiles(sid, name, text, w, h, kw)
+]
+MATERIALS += EDGE_SIGNS
+
+
 def thumb(im):
     t = Image.new("RGB", (W * 2, H * 4))
     for i in range(2):

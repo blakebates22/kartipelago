@@ -64,6 +64,8 @@ export type SoundKind =
   | "falls"
   | "garden"
   | "harbour"
+  /** A tavern: a muffled, rowdy crowd, a honky-tonk piano and mugs clinking. */
+  | "tavern"
   | "quarry"
   | "blizzard"
   | "bells"
@@ -82,6 +84,7 @@ export const SOUND_KINDS: SoundKind[] = [
   "falls",
   "garden",
   "harbour",
+  "tavern",
   "quarry",
   "blizzard",
   "bells",

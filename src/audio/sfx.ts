@@ -522,6 +522,7 @@ export function createSfx(engine: AudioEngine) {
         | "falls"
         | "garden"
         | "harbour"
+        | "tavern"
         | "quarry"
         | "blizzard"
         | "bells",
@@ -661,6 +662,17 @@ export function createSfx(engine: AudioEngine) {
           tones: [],
           toneGain: 0,
           smooth: 0.85,
+        },
+        // A tavern: the rowdy murmur of a packed room, muffled by its walls, swelling.
+        tavern: {
+          type: "bandpass",
+          f: 640,
+          q: 1.4,
+          lfo: 1.1,
+          depth: 260,
+          tones: [],
+          toneGain: 0,
+          smooth: 0.5,
         },
         // The quarry: a dusty wind with a low, laboured drone of work under it.
         quarry: {
@@ -808,6 +820,41 @@ export function createSfx(engine: AudioEngine) {
       const f = 1500 + Math.random() * 400;
       note(f, 0, 0.22, volume * 0.06, f * 0.72, "triangle");
       note(f * 1.05, 0.28, 0.2, volume * 0.05, f * 0.7, "triangle");
+    },
+    /** In the tavern: a run on the honky-tonk piano, mugs clinking, a roar of laughter. */
+    tavernBit(volume: number) {
+      const r = Math.random();
+      if (r < 0.5) {
+        // (a bar of ragtime: an oom-pah bass and a bright, slightly out-of-tune treble)
+        const bass = [98, 146.8, 110, 146.8];
+        const tune = [587.3, 659.3, 698.5, 784, 880, 784, 659.3, 587.3];
+        const start = Math.floor(Math.random() * 4);
+        for (let i = 0; i < 4; i++)
+          note(
+            bass[(i + start) % 4]!,
+            i * 0.26,
+            0.22,
+            volume * 0.07,
+            bass[(i + start) % 4]!,
+            "triangle",
+          );
+        for (let i = 0; i < 6; i++) {
+          const f = tune[(i + start * 2) % tune.length]!;
+          note(f, i * 0.17, 0.16, volume * 0.04, f * 1.004, "square");
+          note(f * 1.006, i * 0.17, 0.16, volume * 0.025, f, "triangle");
+        }
+      } else if (r < 0.8) {
+        // (mugs clinking)
+        for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
+          const f = 2200 + Math.random() * 900;
+          note(f, i * 0.07, 0.18, volume * 0.04, f * 0.98, "sine");
+        }
+      } else {
+        // (a roar of laughter)
+        noise(0, 1.2, volume * 0.12, 1200, 400);
+        for (let i = 0; i < 6; i++)
+          note(260 + Math.random() * 140, i * 0.14, 0.12, volume * 0.03, 220, "triangle");
+      }
     },
     /** Somewhere in the festival: a gong, a drum roll or a plucked phrase. */
     festivalBit(volume: number) {

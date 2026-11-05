@@ -5,7 +5,8 @@
 #
 #   the sound     every stretch its own (game/depths.ts' atmosphere, sound only: the
 #                 overworld paints the air): drips in the bores, the harbour's water and
-#                 gulls at the docks, the crowd's roar in the market, the pits and the den,
+#                 gulls at the docks and down the Rookery's water street, the Rusty
+#                 Anchor's piano and its regulars, the crowd's roar in the market, the pits and the den,
 #                 the sea pouring off the world at the mouth, wind out on the bridges, bells
 #                 at the shrine and the gate;
 #   the canal     boats sailing it, the bridge's planks creaking under you;
@@ -28,6 +29,8 @@ from jedge_layout import CANAL, CLOUD_Z, DOCK_WATER, ISLES, MOUTH, WATER_Z, cave
 ZONES = {
     "bore": "drip",
     "docks": "harbour",
+    "rookery": "harbour",
+    "tavern": "tavern",
     "market": "festival",
     "pits": "festival",
     "den": "festival",
@@ -38,14 +41,19 @@ ZONES = {
 }
 
 
+TAVERN = [0.0, 0.0]  # (the Rusty Anchor's stretch of road: all_life() sets it)
+
+
 def zone_at(x, y, s, s_mouth):
     if s_mouth - 50.0 < s < s_mouth + 40.0:
         return "mouth"
+    if TAVERN[0] <= s <= TAVERN[1]:
+        return "tavern"
     if y > rim_y(x) - 2.0:
         k = isle_at(x, y, 6.0)
         name = ISLES[k][0] if k is not None else ""
         return {"Shrine Isle": "shrine", "Sky Gate Isle": "gate", "Gatekeeper's Rock": "gate"}.get(name, "sky")
-    return {"Smugglers' Docks": "docks", "Night Bazaar": "market", "Fighting Pits": "pits", "Lucky Bone": "den"}.get(
+    return {"Smugglers' Docks": "docks", "Rookery": "rookery", "Night Bazaar": "market", "Fighting Pits": "pits", "Lucky Bone": "den"}.get(
         cavern_at(x, y)[0], "bore")
 
 
@@ -191,13 +199,14 @@ def sky(c, spans):
 
 
 def all_life(c, ground, s0, s_mouth, s1, spans):
+    TAVERN[:] = [c.nearest(*L.ROUTE[L.AT["tav0"]][:2])[0].s - 2.0, c.nearest(*L.ROUTE[L.AT["tav1"]][:2])[0].s + 2.0]
     n_keys = atmosphere(c, s0, s1, s_mouth)
     canal(c)
     s_den = c.nearest(*L.ROUTE[L.AT["den2"]][:2])[0].s
     s_dock = c.nearest(*L.ROUTE[L.AT["dock0"]][:2])[0].s
-    s_alley = c.nearest(*L.ROUTE[L.AT["dock3"]][:2])[0].s
-    s_stair = c.nearest(*L.ROUTE[L.AT["stair1"]][:2])[0].s
-    n_glow = glowworms(c, [(s0 + 10.0, s_dock - 10.0), (s_alley, s_stair), (s_den + 10.0, s_mouth - 30.0)])
+    s_pits = c.nearest(*L.ROUTE[L.AT["portal"]][:2])[0].s
+    s_gal = c.nearest(*L.ROUTE[L.AT["gal1"]][:2])[0].s
+    n_glow = glowworms(c, [(s0 + 10.0, s_dock - 10.0), (s_pits - 10.0, s_gal + 5.0), (s_den + 10.0, s_mouth - 30.0)])
     mouth(c, ground)
     n_flags = sky(c, spans)
     print("life: %d sound keys, %d glowworm patches, %d prayer flag lines" % (n_keys, n_glow, n_flags))

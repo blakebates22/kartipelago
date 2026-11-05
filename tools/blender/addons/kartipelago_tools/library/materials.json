@@ -12510,6 +12510,168 @@
         "wavePeriod": 5,
         "lagoon": 1.0
       }
+    },
+    {
+      "id": "sign_anchor_1",
+      "name": "Sign: Rusty Anchor (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_anchor_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_anchor_2",
+      "name": "Sign: Rusty Anchor (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_anchor_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_anchor_3",
+      "name": "Sign: Rusty Anchor (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_anchor_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_nightbazaar_1",
+      "name": "Sign: Night Bazaar (1/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_nightbazaar_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_nightbazaar_2",
+      "name": "Sign: Night Bazaar (2/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_nightbazaar_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_nightbazaar_3",
+      "name": "Sign: Night Bazaar (3/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_nightbazaar_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_nightbazaar_4",
+      "name": "Sign: Night Bazaar (4/4)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_nightbazaar_4.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_spicerow_1",
+      "name": "Sign: Spice Row (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_spicerow_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_spicerow_2",
+      "name": "Sign: Spice Row (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_spicerow_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_spicerow_3",
+      "name": "Sign: Spice Row (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_spicerow_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_beastmarket_1",
+      "name": "Sign: Beast Market (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_beastmarket_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_beastmarket_2",
+      "name": "Sign: Beast Market (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_beastmarket_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_beastmarket_3",
+      "name": "Sign: Beast Market (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_beastmarket_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_pawn_1",
+      "name": "Sign: Pawn (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_pawn_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_grog_1",
+      "name": "Sign: Grog (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_grog_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_bait_1",
+      "name": "Sign: Bait (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_bait_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_maps_1",
+      "name": "Sign: Maps (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_maps_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_rope_1",
+      "name": "Sign: Rope (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_rope_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
     }
   ]
 }

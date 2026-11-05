@@ -101,9 +101,16 @@ def ok(c, taken, x, y, r, margin=2.0):
 
 
 def dress(c, ground, s0, s1):
+    import jedge_rookery as R
+
+    R.D = __import__(__name__)
     taken = paint.Taken()
     grotto(c, ground, taken)
     docks(c, ground, taken)
+    R.tavern(c, ground, taken)
+    R.rookery(c, ground, taken)
+    R.gallery(c, ground, taken)
+    R.lanes(c, ground, taken)
     bazaar(c, ground, taken)
     pits(c, ground, taken)
     den(c, ground, taken)
@@ -341,55 +348,18 @@ def bazaar(c, ground, taken):
     of the road's slalom, a merchant behind every counter and customers haggling in front;
     lantern strings across the road; tents, rugs and cookfires behind; the music square with
     its band, dancers and a conga; the Broker's ship hanging over it all."""
+    import jedge_rookery as R
+
     bx, by, brx, bry = BAZAAR
-    s_in = [q for q in c.S if ellipse(q.p.x, q.p.y, bx, by, brx, bry) < 0.92 and abs(q.p.z - BAZ_Z) < 1.0]
-    s_in = sorted(s_in, key=lambda q: q.s)
-    mats = ("awning_red", "awning_teal", "canvas_torn", "awning_sun", "awning_rose", "tent_cloth_red", "awning_green", "rug")
-    k = 0
-    if s_in:
-        s = s_in[0].s + 4.0
-        while s < s_in[-1].s - 4.0:
-            q = c.at(s)
-            rot = math.atan2(q.t.y, q.t.x)
-            for sd in (-1, 1):
-                off = q.w / 2 + 4.6
-                x, y = q.p.x + q.r.x * sd * off, q.p.y + q.r.y * sd * off
-                if not ok(c, taken, x, y, 2.4, 1.6) or ellipse(x, y, bx, by, brx, bry) > 0.95:
-                    continue
-                z = ground(x, y)
-                # (the counter along the road, its front to the road)
-                stall(c, "Stall %d" % k, x, y, z, rot, LOOT[k % len(LOOT)], mats[k % len(mats)])
-                if LOOT[k % len(LOOT)] == "food":
-                    light(c, "chimney", x + q.r.x * sd * 1.2, y + q.r.y * sd * 1.2, z + 1.8)
-                taken.add(x, y, 2.6)
-                mx, my = x + q.r.x * sd * 1.3, y + q.r.y * sd * 1.3
-                person(c, mx, my, z, "merchant", q.p.x, q.p.y)
-                for j in range(2 + k % 2):
-                    px = x - q.r.x * sd * 1.5 + q.t.x * (j - 1) * 1.1
-                    py = y - q.r.y * sd * 1.5 + q.t.y * (j - 1) * 1.1
-                    person(c, px, py, ground(px, py), ("queue", "huddle", "wave")[(j + k) % 3], x, y)
-                k += 1
-            s += 6.5
-    # Lantern strings across the road on tall poles, every so often.
-    s = s_in[0].s + 6.0 if s_in else 0.0
-    j = 0
-    while s_in and s < s_in[-1].s - 6.0:
-        q = c.at(s)
-        ends = []
-        for sd in (-1, 1):
-            x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.0), q.p.y + q.r.y * sd * (q.w / 2 + 2.0)
-            z = ground(x, y)
-            ends.append((x, y, z + 7.8))
-        if True:
-            for sd, (x, y, z) in zip((-1, 1), ends):
-                box(c, "Lantern Pole %d %d" % (j, sd), x, y, 0.12, 0.12, z - 7.8, z + 0.2, ("weathered_timber", "wall"))
-            lantern_line(c, "Lantern String %d" % j, ends[0], ends[1], sag=1.4)
-        s += 12.0
-        j += 1
+
+    def ok(c, taken, x, y, r, margin=2.0):
+        # (clear of the road, the Beast Market's lane and the Gallery over the floor)
+        return paint.road_clear(c, x, y, r + margin) and taken.clear(x, y, r) and R.beast_clear(x, y, r + margin)
+
     # Behind the stalls: tents, rugs, crates, cookfires, the crowd milling.
-    for j in range(70):
+    for j in range(160):
         a = j * 2.399 + 0.2
-        r = 0.2 + 0.72 * ((j * 0.618) % 1.0)
+        r = 0.12 + 0.8 * ((j * 0.618) % 1.0)
         x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
         if not ok(c, taken, x, y, 2.6, 2.0):
             continue
@@ -421,13 +391,34 @@ def bazaar(c, ground, taken):
                 b = i * math.tau / 4 + j * 0.3
                 person(c, x + 1.0 * math.cos(b), y + 1.0 * math.sin(b), z, ("huddle", "wave", "huddle", "cheer")[i], x, y)
         taken.add(x, y, 3.0)
+    # Lantern strings slung across the market's floor between tall poles (the Gallery looks
+    # down on them).
+    poles = []
+    for j in range(60):
+        a = j * 2.399 + 1.1
+        r = 0.15 + 0.75 * ((j * 0.618 + 0.3) % 1.0)
+        x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
+        if y < -160.0 or not ok(c, taken, x, y, 0.4, 1.5):
+            continue
+        poles.append((x, y, ground(x, y)))
+    n_str = 0
+    for i, (x, y, z) in enumerate(poles):
+        best = min((p for p in poles[i + 1:] if 14.0 < math.dist(p[:2], (x, y)) < 30.0), key=lambda p: math.dist(p[:2], (x, y)), default=None)
+        if best is None or n_str >= 12:
+            continue
+        for (px, py, pz) in ((x, y, z), best):
+            box(c, "Market Pole %d %d" % (i, int(px)), px, py, 0.12, 0.12, pz, pz + 8.2, ("weathered_timber", "wall"))
+            taken.add(px, py, 0.6)
+        lantern_line(c, "Market String %d" % i, (x, y, z + 8.0), (best[0], best[1], best[2] + 8.0), sag=1.6)
+        light(c, "glow", (x + best[0]) / 2, (y + best[1]) / 2, (z + best[2]) / 2 + 5.0)
+        n_str += 1
     # The music square: the band, dancers, a conga round it.
     best = None
     for j in range(40):
         a = j * 2.399
         r = 0.15 + 0.6 * ((j * 0.618) % 1.0)
         x, y = bx + brx * r * math.cos(a), by + bry * r * math.sin(a)
-        if paint.road_clear(c, x, y, 10.0)  and (best is None or paint.road_clear(c, x, y, 13.0)):
+        if paint.road_clear(c, x, y, 10.0) and R.beast_clear(x, y, 10.0) and (best is None or paint.road_clear(c, x, y, 13.0)):
             best = (x, y)
             if paint.road_clear(c, x, y, 13.0):
                 break
@@ -453,8 +444,8 @@ def bazaar(c, ground, taken):
         cloth(c, "Bazaar Banner %d" % j, [(x - 1.2 * math.sin(a), y + 1.2 * math.cos(a), z0), (x + 1.2 * math.sin(a), y - 1.2 * math.cos(a), z0),
                                           (x + 1.0 * math.sin(a), y - 1.0 * math.cos(a), z0 - 7.0), (x - 1.0 * math.sin(a), y + 1.0 * math.cos(a), z0 - 7.0)],
               ("banner_red", "banner_teal", "em_banner", "meteor_banner")[j % 4])
-    for j, (x, y) in enumerate(((84.0, -150.0), (132.0, -130.0), (90.0, -110.0), (132.0, -170.0))):
-        if paint.road_clear(c, x, y, 6.0):
+    for j, (x, y) in enumerate(((176.0, -180.0), (150.0, -190.0), (190.0, -150.0), (128.0, -150.0))):
+        if paint.road_clear(c, x, y, 6.0) and R.beast_clear(x, y, 6.0):
             talkers(c, x, y, ground(x, y), 6, "bazaar", r=9.0)
     broker(c)
 
@@ -463,9 +454,9 @@ def broker(c):
     """The Broker's palace: a gilded ship hanging over the Night Bazaar on four chains from
     the roof, lit from within, its stern galleries gold, a gangway hanging down; the Broker
     (a huge croc) sprawled on its deck, watching the market."""
-    sx, sy = BAZAAR[0] + 8.0, BAZAAR[1] + 4.0
+    sx, sy = 146.0, -108.0  # (between Spice Row and the Beast Market)
     z = BAZ_Z + 17.0
-    rot = 1.4
+    rot = 0.9
     ca, sa = math.cos(rot), math.sin(rot)
 
     def at(lx, ly):
@@ -490,7 +481,7 @@ def broker(c):
     for lx, ly in ((-14.0, -4.0), (-14.0, 4.0), (14.0, -4.0), (14.0, 4.0)):
         px, py = at(lx, ly)
         tx, ty = at(lx * 1.5, ly * 2.5)
-        tube(c, "Broker Chain %d %d" % (int(lx), int(ly)), [(px, py, z + 2.0), (tx, ty, BAZ_Z + 27.5)], 0.4, "iron", n=6)
+        tube(c, "Broker Chain %d %d" % (int(lx), int(ly)), [(px, py, z + 2.0), (tx, ty, BAZ_Z + 33.0)], 0.4, "iron", n=6)
     bx, by = at(-1.5, 0.0)
     c.place(sw.broker_croc(c), bx, by, z + 2.4, rot=rot, scale=1.5, role="visual", name="The Broker")
     gx, gy = at(10.0, 5.0)
@@ -729,11 +720,9 @@ def den(c, ground, taken):
 
 def bores(c, ground, s0, s1):
     """The underworld lived in, between the districts: timber shoring, pipes, puddles of
-    oily water, lanterns both sides by turns; and in Smugglers' Alley (the S-bends down to
-    the Drop) doors and windows in its walls, laundry across overhead, folk in doorways."""
+    oily water, lanterns both sides by turns. (Smugglers' Alley is the Rookery now:
+    jedge_rookery.py.)"""
     sets = gp.timber_set(c, half=c.width / 2 + 3.4, height=10.4)
-    a0 = c.nearest(*L.ROUTE[L.AT["dock3"]][:2])[0].s
-    a1 = c.nearest(*L.ROUTE[L.AT["stair1"]][:2])[0].s
     s = s0 + 6.0
     k = 0
     while s < s1 - 6.0:
@@ -751,29 +740,7 @@ def bores(c, ground, s0, s1):
         ex, ey = q.p.x + q.r.x * sd * (c.width / 2 + 2.6), q.p.y + q.r.y * sd * (c.width / 2 + 2.6)
         tube(c, "Pipe %d" % k, [(ex - q.t.x * 4.5, ey - q.t.y * 4.5, q.p.z + 6.5), (ex + q.t.x * 4.5, ey + q.t.y * 4.5, q.p.z + 6.5)], 0.35,
              "iron", n=6)
-        if a0 <= s <= a1:
-            # (the alley: a door in the wall, lit windows, folk in the doorway, washing
-            # strung across overhead)
-            dx, dy = q.p.x + q.r.x * sd * (c.width / 2 + 3.9), q.p.y + q.r.y * sd * (c.width / 2 + 3.9)
-            box(c, "Alley Door %d" % k, dx, dy, 1.0, 0.2, q.p.z - 0.2, q.p.z + 2.6, ("door_wood", "wall"), rot=rot, role="visual")
-            for w in (-2.4, 2.4):
-                box(c, "Alley Window %d %d" % (k, int(w)), dx + q.t.x * w, dy + q.t.y * w, 0.6, 0.2, q.p.z + 1.4, q.p.z + 2.4,
-                    ("window_warm", "wall"), rot=rot, role="visual")
-            for i in range(2):
-                px, py = dx - q.r.x * sd * (1.0 + 0.6 * i) + q.t.x * (i - 0.5) * 1.4, dy - q.r.y * sd * (1.0 + 0.6 * i) + q.t.y * (i - 0.5) * 1.4
-                person(c, px, py, q.p.z, ("huddle", "wave", "merchant")[(k + i) % 3], q.p.x, q.p.y)
-            if k % 2:
-                p0 = (q.p.x - q.r.x * (c.width / 2 + 3.6), q.p.y - q.r.y * (c.width / 2 + 3.6), q.p.z + 8.2)
-                p1 = (q.p.x + q.r.x * (c.width / 2 + 3.6), q.p.y + q.r.y * (c.width / 2 + 3.6), q.p.z + 8.2)
-                tube(c, "Wash Line %d" % k, [p0, ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, q.p.z + 7.4), p1], 0.04, "rope_rail", n=3)
-                for f in range(5):
-                    t = (f + 0.5) / 5
-                    x, y = lerp(p0[0], p1[0], t), lerp(p0[1], p1[1], t)
-                    zz = q.p.z + 8.2 - 0.8 * (1.0 - (2 * t - 1) ** 2)
-                    ux, uy = q.r.x * 0.55, q.r.y * 0.55
-                    cloth(c, "Wash %d %d" % (k, f), [(x - ux, y - uy, zz), (x + ux, y + uy, zz), (x + ux, y + uy, zz - 1.3), (x - ux, y - uy, zz - 1.1)],
-                          ("rug", "canvas_torn", "awning_red", "sail_cloth", "awning_teal")[(k + f) % 5])
-        else:
+        if True:
             if k % 3 == 0:
                 c.disc("Puddle %d" % k, q.p.x - q.r.x * sd * 3.0, q.p.y - q.r.y * sd * 3.0, 2.2, q.p.z + 0.04, c.lib("bog_water", "water"),
                        role="visual", n=12, wobble=0.25, seed=k)
@@ -788,32 +755,6 @@ def bores(c, ground, s0, s1):
                     person(c, jx + q.t.x * i * 1.2, jy + q.t.y * i * 1.2, q.p.z, "huddle", jx, jy)
         s += 9.0
         k += 1
-    # The Stair's foot, where the alley comes down into the Night Bazaar: a great timber
-    # gate hung with banners and a lantern string, braziers either side, hawkers and
-    # touts calling you in.
-    q, _ = c.nearest(*L.ROUTE[L.AT["stair2"]][:2])
-    rot = math.atan2(q.t.y, q.t.x)
-    tops = []
-    for sd in (-1, 1):
-        x, y = q.p.x + q.r.x * sd * (q.w / 2 + 2.2), q.p.y + q.r.y * sd * (q.w / 2 + 2.2)
-        z = ground(x, y)
-        box(c, "Bazaar Gate Post %d" % sd, x, y, 0.55, 0.55, z - 0.5, q.p.z + 10.5, ("weathered_timber", "wall"), rot=rot)
-        light(c, "campfire", x + q.t.x * 2.5, y + q.t.y * 2.5, z + 0.1)
-        tops.append((x, y, q.p.z + 10.0))
-        for i in range(4):
-            px, py = x + q.t.x * (4.0 + 1.6 * i) + q.r.x * sd * 0.8, y + q.t.y * (4.0 + 1.6 * i) + q.r.y * sd * 0.8
-            person(c, px, py, ground(px, py), ("wave", "merchant", "cheer", "huddle")[(i + (sd > 0)) % 4], q.p.x, q.p.y)
-    box(c, "Bazaar Gate Beam", q.p.x, q.p.y, 0.5, q.w / 2 + 3.2, q.p.z + 9.6, q.p.z + 10.6, ("weathered_timber", "wall"),
-        rot=rot + math.pi / 2, role="visual")
-    for f in range(5):
-        t = (f + 0.5) / 5
-        x, y = lerp(tops[0][0], tops[1][0], t), lerp(tops[0][1], tops[1][1], t)
-        ux, uy = q.t.x * 0.05 + q.r.x * 0.7, q.t.y * 0.05 + q.r.y * 0.7
-        cloth(c, "Bazaar Gate Banner %d" % f, [(x - ux, y - uy, q.p.z + 9.6), (x + ux, y + uy, q.p.z + 9.6), (x + ux, y + uy, q.p.z + 6.8),
-                                                (x, y, q.p.z + 6.3), (x - ux, y - uy, q.p.z + 6.8)],
-              ("awning_red", "rug", "awning_teal", "rug", "awning_red")[f])
-    lantern_line(c, "Bazaar Gate Lanterns", (tops[0][0] - q.t.x * 3, tops[0][1] - q.t.y * 3, q.p.z + 8.4),
-                 (tops[1][0] - q.t.x * 3, tops[1][1] - q.t.y * 3, q.p.z + 8.4), sag=1.2)
 
 
 # ------------------------------------------------------------------ the sky
