@@ -133,7 +133,7 @@ def main():
     LIFE.all_life(c, ground, s_start, s_mouth, s_end, spans)
     far_kingdom(c)
     # The air: each district its own; the sky's bright, out at the edge.
-    for x, y, look in ((-55.0, -430.0, "under"), (-40.0, -380.0, "under"), (-14.0, -300.0, "docks"), (70.0, -268.0, "rookery"),
+    for x, y, look in ((-55.0, -430.0, "under"), (-40.0, -380.0, "under"), (-14.0, -300.0, "docks"), (60.0, -232.0, "under"), (84.0, -258.0, "rookery"),
                        (109.0, -264.0, "tavern"), (160.0, -262.0, "rookery"), (205.0, -230.0, "under"), (140.0, -190.0, "bazaar"),
                        (140.0, -120.0, "bazaar"), (40.0, -10.0, "pits"), (120.0, -40.0, "pits"), (152.0, 36.0, "den"),
                        (92.0, 112.0, "under"), (20.0, 220.0, "edge"), (0.0, 380.0, "edge")):
@@ -280,7 +280,7 @@ def _rookery_cutter(c):
     """The Rookery's canyon: cut along the road from the docks to the Gallery's portal, its
     left wall ROOK_N out, its right ROOK_S (over the water street and its far bank), its
     roof ROOK_ROOF up, ragged."""
-    a, b = L.DAT[AT["dock3"]] - 4, L.DAT[AT["portal"]] + 1
+    a, b = L.DAT[AT["rook0"]], L.DAT[AT["portal"]] + 1
     N, S, R = L.ROOK_N, L.ROOK_S, L.ROOK_ROOF
     prof = [(-N, -8.0), (S, -8.0), (S, 8.0), (S - 4.0, 13.5), (S - 12.0, R), (-N + 7.0, R - 0.5), (-N + 1.5, 13.0), (-N, 7.0)]
     bm = bmesh.new()

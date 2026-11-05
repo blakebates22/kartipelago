@@ -212,11 +212,11 @@ def rookery(c, ground, taken):
     """The Rookery: tenements up both walls, the water street, the towpath, washing and
     rope bridges overhead, crocs everywhere."""
     m, solid = Mesh(), Mesh()
-    s_a = c.nearest(*L.ROUTE[L.AT["dock3"]][:2])[0].s
+    s_a = c.nearest(*L.ROUTE[L.AT["rook0"]][:2])[0].s  # (past the harbour: it's left as it was)
     s_b = c.nearest(*L.ROUTE[L.AT["portal"]][:2])[0].s
     s_t0 = c.nearest(*L.ROUTE[L.AT["tav0"]][:2])[0].s - 4.0
     s_t1 = c.nearest(*L.ROUTE[L.AT["tav1"]][:2])[0].s + 4.0
-    s_c0 = c.nearest(*L.ROUTE[L.AT["rook0"]][:2])[0].s
+    s_c0 = c.nearest(*L.ROUTE[L.AT["rook1"]][:2])[0].s
     s_c1 = c.nearest(*L.ROUTE[L.AT["rook3"]][:2])[0].s
     lights = []
     tops = {}

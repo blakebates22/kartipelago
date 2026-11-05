@@ -137,13 +137,14 @@ ROUTE = [
     # The Rookery (Nov 4: "lets do all of it"): a crooked canyon street east through the
     # smugglers' slum, the shanties stacked up its walls, the water street beside it; in
     # the front door of the Rusty Anchor and out the back; climbing to the Gallery.
-    (58.0, -261.0, -25.2, "rook0"),
-    (79.0, -265.0, -24.7, "rook1"),
-    (97.0, -264.0, -24.3, "tav0"),  # the Rusty Anchor's front door
-    (121.0, -264.0, -23.7, "tav1"),  # its back door
-    (141.0, -262.0, -23.2, "rook2"),
-    (160, -257, -22.6, "rook3"),
-    (183, -253, -22.1, "rook4"),
+    # (rook0 where the old alley began, so the harbour's road out is just as it was)
+    (58.0, -248.0, -26.5, "rook0"),
+    (79.0, -256.0, -25.9, "rook1"),
+    (97.0, -261.0, -25.3, "tav0"),  # the Rusty Anchor's front door
+    (121.0, -262.0, -24.6, "tav1"),  # its back door
+    (141.0, -261.0, -23.9, "rook2"),
+    (160.0, -257.0, -23.0, "rook3"),
+    (183.0, -253.0, -22.3, "rook4"),
     (201, -241, -21.8, "portal"),  # out on the Night Bazaar's wall: the whole market below
     # The Gallery: a scaffold ledge down the market's south wall, the hairpin round the
     # scaffold tower, back along under it.
@@ -308,7 +309,7 @@ def flat_out(x, y):
 
 
 _ROOK = {}
-for _k in range(DAT[AT["dock3"]] - 2, DAT[AT["portal"]] + 3):
+for _k in range(DAT[AT["rook0"]] - 2, DAT[AT["portal"]] + 3):
     _a, _b = DENSE[_k], DENSE[_k + 1]
     for _gx in range(int(math.floor(min(_a[0], _b[0]) / 24)) - 2, int(math.floor(max(_a[0], _b[0]) / 24)) + 3):
         for _gy in range(int(math.floor(min(_a[1], _b[1]) / 24)) - 2, int(math.floor(max(_a[1], _b[1]) / 24)) + 3):
@@ -329,7 +330,7 @@ def rook_at(x, y):
     if best is None:
         return None
     d, lat, z, k, t = best
-    if (k <= DAT[AT["dock3"]] and t == 0.0) or (k >= DAT[AT["portal"]] and t == 1.0):
+    if (k <= DAT[AT["rook0"]] and t == 0.0) or (k >= DAT[AT["portal"]] and t == 1.0) or k < DAT[AT["rook0"]]:
         return None
     if not -ROOK_N < lat < ROOK_S:
         return None
@@ -340,7 +341,7 @@ def rook_canal(x, y):
     """In the Rookery's water street (between rook0 and rook3)? Its water's (lateral
     distance from the middle, half width), else None."""
     r = rook_at(x, y)
-    if r is None or not DAT[AT["rook0"]] <= r[2] < DAT[AT["rook3"]]:
+    if r is None or not DAT[AT["rook1"]] <= r[2] < DAT[AT["rook3"]]:
         return None
     return abs(r[0] - ROOK_CANAL[0]), r[1]
 
