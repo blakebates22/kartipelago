@@ -29,6 +29,7 @@ from jedge_layout import (BASIN, BAZAAR, BAZ_Z, CANAL, DEN, DEN_Z, DOCK_FLOOR, D
 CROWD = []  # the black market's people (one instanced crowd)
 SKY_CROWD = []  # the sky islands' (in the Dragon Kingdom's colours)
 CROWD_N = [0, 0]  # how many people, how many talkers
+FOLK = []  # the detailed folk, posed (game/folkPoses.ts: the Rookery's buildings, the diner)
 
 
 def rnd(k):
@@ -43,6 +44,15 @@ def person(c, x, y, z, role, fx, fy, v=None, sky=False):
     g = c.game(x, y, z)
     vv = v if v is not None else int(rnd(len(to) * 7.3 + x) * 11)
     to.append([round(g[0], 2), round(g[1], 2), round(g[2], 2), round(dx / n, 3), round(-dy / n, 3), role, vv])
+    CROWD_N[0] += 1
+
+
+def folk(c, x, y, z, pose, fx, fy, seed=None):
+    """One of the detailed folk (a croc of the black market), posed: "watch", "wave",
+    "cheer", "nod", "point", "think", "shrug", "dance", "kneel" or "work"; facing (fx, fy)."""
+    g = c.game(x, y, z)
+    sd = seed if seed is not None else int(rnd(len(FOLK) * 3.1 + x + y) * 97)
+    FOLK.append([round(g[0], 2), round(g[1], 2), round(g[2], 2), round(math.atan2(fx - x, -(fy - y)), 3), pose, sd])
     CROWD_N[0] += 1
 
 
@@ -116,6 +126,7 @@ def dress(c, ground, s0, s1):
     den(c, ground, taken)
     bores(c, ground, s0, s1)
     c.entity("villagers", list=CROWD, palette="sump")
+    c.entity("folk_poses", folk="sump", list=FOLK)
 
 
 # ------------------------------------------------------------------ the Sea Door Grotto

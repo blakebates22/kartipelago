@@ -71,7 +71,7 @@ describe("the Edge of the World", () => {
     expect(at(dock.x, dock.y, dock.z)).toBe("harbour");
     const gate = near(4, -440);
     expect(at(gate.x, gate.y, gate.z)).toBe("bells");
-    // (in the Rusty Anchor, its piano and its regulars)
+    // (in the Rusty Anchor Fish Fry, its piano and its diners)
     const anchor = near(109, 264);
     expect(at(anchor.x, anchor.y, anchor.z)).toBe("tavern");
     // (a light-less atmosphere elsewhere still sets the light by default)
@@ -173,7 +173,7 @@ describe("the Edge of the World", () => {
     expect(Math.max(...inBazaar.map((p) => p.y)) - -34.6).toBeGreaterThan(11);
     // (each stretch's own talkers: the slum, the tavern, the Beast Market)
     const talks = of("villager_home").map((e) => e.talk);
-    for (const t of ["rookery", "tavern", "bazaar", "beasts"]) expect(talks).toContain(t);
+    for (const t of ["rookery", "diner", "bazaar", "beasts"]) expect(talks).toContain(t);
     // (and things alive in the Beast Market's cages)
     expect(of("little_dragons").length).toBeGreaterThan(4);
     expect(of("birds").length).toBeGreaterThan(5);

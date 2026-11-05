@@ -139,6 +139,9 @@ import {
 import { createPartyDinoView, DANCES, type Dance, type PartyDinoView } from "../render/partyDino";
 import { createCrocKingView, crocKingCue } from "../render/people/crocKing";
 import type { PersonView } from "../render/people/view";
+import { createVillagerView } from "../render/villager";
+import type { Folk } from "../render/people/folk";
+import { FOLK_WATCH, folkPoseCue, parseFolkPoses, type PosedFolk } from "./folkPoses";
 import {
   doorSwing,
   ghostAt,
@@ -571,6 +574,9 @@ export function createHazards(opts: {
   // The King Croc on his throne over the Smugglers' Docks (the Edge of the World).
   const crocKings: { x: number; y: number; z: number; heading: number; view?: PersonView }[] = [];
   const kingLook = new THREE.Vector3();
+  // Folk posed about a place in full detail (game/folkPoses.ts): the Rookery's balconies,
+  // doors and windows, the Rusty Anchor's cooks and diners.
+  const posed: (PosedFolk & { view?: PersonView })[] = [];
   const party: {
     x: number;
     y: number;
@@ -915,6 +921,13 @@ export function createHazards(opts: {
             typeof e.color === "string" ? e.color : "#d82a3a",
           ),
         );
+    } else if (e.type === "folk_poses") {
+      const folk = (typeof e.folk === "string" ? e.folk : "sump") as Folk;
+      for (const p of parseFolkPoses(e))
+        posed.push({
+          ...p,
+          view: opts.headless ? undefined : createVillagerView(group, folk, p.seed % 16),
+        });
     } else if (e.type === "croc_king") {
       crocKings.push({
         x: num(e.x, 0),
@@ -1634,6 +1647,15 @@ export function createHazards(opts: {
         const cue = crocKingCue(t);
         kingLook.set(listener.x, listener.y, listener.z);
         k.view?.update(k.x, k.y, k.z, k.heading, { ...cue, look: kingLook }, t);
+      }
+      for (const p of posed) {
+        if (!p.view) continue;
+        const d = Math.hypot(p.x - listener.x, p.z - listener.z);
+        // (out of sight down the street: not drawn, not animated)
+        p.view.root.visible = d < 90;
+        if (d >= 90) continue;
+        kingLook.set(listener.x, listener.y, listener.z);
+        p.view.update(p.x, p.y, p.z, p.heading, folkPoseCue(p, t, d < FOLK_WATCH, kingLook), t);
       }
       for (const p of party) {
         if (p.ring) {
@@ -2529,6 +2551,7 @@ export function createHazards(opts: {
       for (const f of flyers) f.view?.dispose();
       for (const p of party) p.view?.dispose();
       for (const k of crocKings) k.view?.dispose();
+      for (const p of posed) p.view?.dispose();
       spray?.dispose();
       snow?.dispose();
       rocks?.dispose();

@@ -12638,15 +12638,6 @@
       "tileMetres": 2
     },
     {
-      "id": "sign_grog_1",
-      "name": "Sign: Grog (1/1)",
-      "theme": "dry_gulch",
-      "surface": "wall",
-      "image": "sign_grog_1.png",
-      "wrap": "repeat",
-      "tileMetres": 2
-    },
-    {
       "id": "sign_bait_1",
       "name": "Sign: Bait (1/1)",
       "theme": "dry_gulch",
@@ -12670,6 +12661,60 @@
       "theme": "dry_gulch",
       "surface": "wall",
       "image": "sign_rope_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_soup_1",
+      "name": "Sign: Soup (1/1)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_soup_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_fishfry_1",
+      "name": "Sign: Fish Fry (1/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_fishfry_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_fishfry_2",
+      "name": "Sign: Fish Fry (2/2)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_fishfry_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_menu_1",
+      "name": "Sign: Fish & Chips (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_menu_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_menu_2",
+      "name": "Sign: Fish & Chips (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_menu_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_menu_3",
+      "name": "Sign: Fish & Chips (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_menu_3.png",
       "wrap": "repeat",
       "tileMetres": 2
     }

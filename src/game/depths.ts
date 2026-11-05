@@ -64,7 +64,7 @@ export type SoundKind =
   | "falls"
   | "garden"
   | "harbour"
-  /** A tavern: a muffled, rowdy crowd, a honky-tonk piano and mugs clinking. */
+  /** A busy diner: a muffled crowd, a honky-tonk piano and plates clinking (the id is old). */
   | "tavern"
   | "quarry"
   | "blizzard"

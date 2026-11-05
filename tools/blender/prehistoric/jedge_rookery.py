@@ -8,10 +8,11 @@
 #                     and washing and rope bridges overhead, crocs at every door and on every
 #                     balcony; the water street down its right side, its towpath, rowing
 #                     boats, the culvert it comes in by and the grate it goes out by;
-#   the Rusty Anchor  the smugglers' tavern the road drives straight through: in the front
-#                     door, past the bar (the barkeep, the regulars on their stools, the
-#                     bottles, the anchor on the wall), the tables, the piano and its player,
-#                     a brawl in the corner, the chandeliers; out the back door;
+#   the Rusty Anchor  the slum's fish-fry diner the road drives straight through: in the
+#                     front door, past the kitchen's counter (the cooks, the fryers and their
+#                     steam, baskets of fish and chips, the menu board, the giant fish on the
+#                     wall), the diners at the counter and the tables, the piano and its
+#                     player, a little band, the chandeliers; out the back door;
 #   the Gallery       out of the rock high on the Night Bazaar's wall, the whole market lit
 #                     up below: a scaffold ledge down the wall, the hairpin round the lookout
 #                     tower, back along under it to the floor;
@@ -32,6 +33,7 @@ from props import cuboid
 import gulch_props as gp
 import harbour_props as hp
 import swamp_props as sw
+import beach_props as bp
 import region_paint as paint
 import jedge_layout as L
 from jedge_layout import BAZ_FLOOR, BAZ_Z, BAZAAR, BEAST_MARKET, ROOK_CANAL, ROOK_N, ROOK_S, ROOK_WATER, ellipse
@@ -40,8 +42,8 @@ D = None  # (jedge_districts: set by dress(), for person, light, talkers, lanter
 
 SIDINGS = ("siding_brown", "siding_grey", "siding_red", "siding_ochre", "siding_green", "wood_wall", "wreck_planks", "cabin_plaster")
 SIGN_TILES = {"sign_anchor": 3, "sign_nightbazaar": 4, "sign_spicerow": 3, "sign_beastmarket": 3, "sign_pawn": 1,
-              "sign_grog": 1, "sign_bait": 1, "sign_maps": 1, "sign_rope": 1}
-SHOP_SIGNS = ("sign_pawn", "sign_grog", "sign_bait", "sign_maps", "sign_rope")
+              "sign_soup": 1, "sign_bait": 1, "sign_maps": 1, "sign_rope": 1, "sign_fishfry": 2, "sign_menu": 3}
+SHOP_SIGNS = ("sign_pawn", "sign_soup", "sign_bait", "sign_maps", "sign_rope")
 W = ("weathered_timber", "wall")
 
 
@@ -157,6 +159,15 @@ def tenement(m, solid, x, y, z0, rot, w, d, floors, k, shop=True):
                                                                                             rot + sd * 1.1))
             if lit:
                 lights.append(P(lx, front - 1.2, zb + 1.7))
+            if lit and i >= 1 and rnd(k * 5.3 + i * 1.9 + j) < 0.45 and not ((i + k) % 2 == 0):
+                # (a window box, a croc leaning on it looking out at the street)
+                bx_, by_, _ = P(lx, front - 0.75, 0)
+                m.add(("plank_deck", "wall"), lambda bm, bx_=bx_, by_=by_, zb=zb: cuboid(bm, (bx_, by_, zb + 0.55), (1.3, 0.36, 0.9), rot))
+                for fl in range(3):
+                    fx_, fy_, _ = P(lx - 0.4 + fl * 0.4, front - 0.75, 0)
+                    m.add((("awning_red", "lush_grass", "awning_sun")[fl], "wall"),
+                          lambda bm, fx_=fx_, fy_=fy_, zb=zb: props.blob(bm, (fx_, fy_, zb + 1.08), 0.16, subdiv=0))
+                folk.append(P(lx, front - 0.32, zb + 0.02))
         # (a balcony, every other floor up)
         if i >= 1 and (i + k) % 2 == 0:
             bx, by, _ = P(0.0, front - 0.7, 0)
@@ -253,13 +264,13 @@ def rookery(c, ground, taken):
             taken.add(hx, hy, w * 0.5)
             tops.setdefault(side, []).append((s, f.P(0.0, v_front - side * 0.4), top, z0))
             for (px, py, pz) in folk:
-                D.person(c, px, py, pz, ("wave", "cheer", "huddle", "wave")[(k + n_folk) % 4], f.x, f.y)
+                D.folk(c, px, py, pz, ("watch", "wave", "cheer", "watch", "point", "shrug")[(k + n_folk) % 6], f.x, f.y)
                 n_folk += 1
             # (folk at the street door, by turns)
             if side < 0 or not canal:
                 if k % 2 == 0:
                     px, py = f.P(-0.6, v_front - side * 0.9)
-                    D.person(c, px, py, f.z, ("huddle", "merchant", "wave", "guard")[k % 4], f.x, f.y)
+                    D.folk(c, px, py, f.z - 0.3, ("watch", "think", "wave", "nod")[k % 4], f.x, f.y)
                     n_folk += 1
             k += 1
             s += w + 0.4
@@ -377,7 +388,9 @@ def rookery(c, ground, taken):
                 m.add(("plank_deck", "wall"), lambda bm, px=px, py=py, pz=pz: cuboid(bm, (px, py, pz), (0.35, 1.4, 0.08),
                                                                                       math.atan2(ry_ - ly, rx_ - lx)))
             if i % 2 == 0:
-                D.person(c, lerp(lx, rx_, 0.4), lerp(ly, ry_, 0.4), zl - 1.6 * 0.96 + 0.05, "wave", rx_, ry_)
+                bx, by = lerp(lx, rx_, 0.4), lerp(ly, ry_, 0.4)
+                fx_, fy_ = bx + (ry_ - ly), by - (rx_ - lx)
+                D.folk(c, bx, by, zl - 1.6 * 0.96 + 0.05, "wave", fx_, fy_)
                 n_folk += 1
         else:
             washing_line(m, (lx, ly, zl), (rx_, ry_, zl - 0.6), 1.6, i * 9)
@@ -407,7 +420,8 @@ def rookery(c, ground, taken):
 
 
 def tavern(c, ground, taken):
-    """The Rusty Anchor: the road in at its front door and out the back."""
+    """The Rusty Anchor Fish Fry, the slum's diner: the road in at its front door and out
+    the back."""
     m, solid = Mesh(), Mesh()
     s0 = c.nearest(*L.ROUTE[L.AT["tav0"]][:2])[0].s
     s1 = c.nearest(*L.ROUTE[L.AT["tav1"]][:2])[0].s
@@ -445,6 +459,11 @@ def tavern(c, ground, taken):
         sx, sy = P(e * (half + 0.32), 0.0)
         sign(m, "sign_anchor", sx, sy, f.tx * e, f.ty * e, 4.2, z + 6.4, z + 7.8, out=0.06)
         for sd in (-1, 1):
+            hx_, hy_ = P(e * (half + 0.7), sd * (VD + 1.9))
+            m.add(("keep_iron", "wall"), lambda bm, hx_=hx_, hy_=hy_: props.tube(bm, [(hx_ - f.tx * e * 0.4, hy_ - f.ty * e * 0.4, z + 5.4),
+                                                                                 (hx_ + f.tx * e * 0.5, hy_ + f.ty * e * 0.5, z + 5.4)], 0.05, n=4))
+            sign(m, "sign_fishfry", hx_ + f.tx * e * 0.3, hy_ + f.ty * e * 0.3, f.tx * e, f.ty * e, 1.4, z + 4.1, z + 5.2, out=0.0)
+        for sd in (-1, 1):
             D.light(c, "lantern", *P(e * (half + 1.0), sd * (VD + 1.4)), z + 4.6)
     # The roof: two slopes on the walls, the ridge along the road.
     for sd in (-1, 1):
@@ -472,55 +491,85 @@ def tavern(c, ground, taken):
             c.place(hp.cage_lantern(c, i + j), cx + 1.6 * math.cos(a), cy + 1.6 * math.sin(a), z + 5.75, role="visual")
         D.light(c, "lantern", cx, cy, z + 5.6)
         D.light(c, "glow", cx, cy, z + 4.0)
-    # The bar along the left wall: the counter, its top, the shelves of bottles behind, the
-    # barrels, the anchor over it all; the barkeep; the regulars on their stools.
+    # The kitchen along the left wall (Blake, Nov 4: "this is going to be for all ages ...
+    # perhaps a bar isnt the best option"; he picked the fish-fry diner): the long counter,
+    # the fryers bubbling on it and their steam, baskets of fish and chips waiting, plates
+    # stacked on the shelves behind, the menu board, the giant fish mounted over it all;
+    # the cooks behind the counter, the diners along it.
     VB = -(f.w / 2 + 2.3)
-    slab(solid, "barrel_wood", 0.0, VB - 0.4, 2 * half - 6.0, 0.8, z, z + 1.45)
-    slab(m, "door_wood", 0.0, VB - 0.4, 2 * half - 5.6, 1.1, z + 1.45, z + 1.6)
-    for lvl in (1.6, 2.4, 3.2):
+    slab(solid, "barrel_wood", 0.0, VB - 0.4, 2 * half - 6.0, 0.8, z, z + 1.1)
+    slab(m, "plank_deck", 0.0, VB - 0.4, 2 * half - 5.6, 1.1, z + 1.1, z + 1.22)
+    for j, u in enumerate((-half * 0.5, -half * 0.15, half * 0.2)):
+        fx_, fy_ = P(u, VB - 0.45)
+        m.add(("keep_iron", "wall"), lambda bm, fx_=fx_, fy_=fy_: cuboid(bm, (fx_, fy_, z + 1.45), (1.4, 0.7, 0.5), along))
+        m.add(("lantern_amber", "wall"), lambda bm, fx_=fx_, fy_=fy_: cuboid(bm, (fx_, fy_, z + 1.71), (1.25, 0.56, 0.04), along))
+        g = c.game(fx_, fy_, z + 2.0)
+        c.entity("steam", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2))
+        D.light(c, "glow", fx_, fy_, z + 2.2)
+    u = -half + 3.6
+    b = 0
+    while u < half - 3.6:
+        if b % 3 == 1:
+            # (a basket of fish and chips waiting on the counter)
+            bx, by = P(u, VB - 0.3)
+            m.add(("barrel_wood", "wall"), lambda bm, bx=bx, by=by: props.tube(bm, [(bx, by, z + 1.22), (bx, by, z + 1.4)], 0.2, n=8))
+            for q in range(3):
+                qx, qy = bx + 0.09 * math.cos(q * 2.1), by + 0.09 * math.sin(q * 2.1)
+                m.add(("ember_gold", "wall"), lambda bm, qx=qx, qy=qy: props.blob(bm, (qx, qy, z + 1.45), 0.1, sx=1.6, subdiv=0))
+        u += 1.4
+        b += 1
+    for lvl in (1.8, 2.6, 3.4):
         slab(m, "plank_deck", 0.0, -(VW - 0.25), 2 * half - 6.0, 0.5, z + lvl, z + lvl + 0.08)
         u = -half + 3.4
         b = 0
         while u < half - 3.4:
             bx, by = P(u, -(VW - 0.25))
-            mat = ("lantern_green", "lantern_red", "lantern_amber", "lantern_glass", "crystal_cyan")[(b + int(lvl * 3)) % 5]
-            hgt = 0.35 + 0.15 * rnd(b + lvl)
-            m.add((mat, "wall"), lambda bm, bx=bx, by=by, lvl=lvl, hgt=hgt: props.tube(bm, [(bx, by, z + lvl + 0.08), (bx, by, z + lvl + 0.08 + hgt)],
-                                                                                    0.08, n=5))
-            u += 0.42
+            if b % 4 == 3:
+                # (a jar: pickles, sauce, the cook's secret)
+                mat = ("lantern_green", "lantern_red", "lantern_amber")[(b // 4) % 3]
+                m.add((mat, "wall"), lambda bm, bx=bx, by=by, lvl=lvl: props.tube(bm, [(bx, by, z + lvl + 0.08), (bx, by, z + lvl + 0.42)], 0.11, n=6))
+            else:
+                # (a stack of plates)
+                m.add(("party_white", "wall"), lambda bm, bx=bx, by=by, lvl=lvl: props.tube(bm, [(bx, by, z + lvl + 0.08), (bx, by, z + lvl + 0.22)], 0.16, n=8))
+            u += 0.45
             b += 1
-    ax, ay = P(0.0, -(VW - 0.05))
-    m.add(("keep_iron", "wall"), lambda bm: props.tube(bm, [(ax, ay, z + 4.0), (ax, ay, z + 6.6)], 0.16, n=6))
-    a0, a1 = P(-1.6, -(VW - 0.05)), P(1.6, -(VW - 0.05))
-    m.add(("keep_iron", "wall"), lambda bm: props.tube(bm, [(a0[0], a0[1], z + 4.8), (ax, ay, z + 3.9), (a1[0], a1[1], z + 4.8)], 0.14, n=6))
-    m.add(("keep_iron", "wall"), lambda bm: props.tube(bm, [(a0[0], a0[1], z + 6.1), (a1[0], a1[1], z + 6.1)], 0.1, n=6))
+    mx, my = P(-half * 0.3, -(VW - 0.08))
+    sign(m, "sign_menu", mx, my, f.rx, f.ry, 2.6, z + 4.0, z + 4.9, out=0.06)
+    # (the giant fish over the counter, mounted on its board)
+    gx, gy = P(half * 0.35, -(VW - 0.3))
+    slab(m, "door_wood", half * 0.35, -(VW - 0.08), 4.6, 0.12, z + 3.9, z + 5.5)
+    m.add((hp.FISH[1], "wall"), lambda bm: props.blob(bm, (gx, gy, z + 4.7), 1.6, sx=1.0, sy=0.28, sz=0.4, subdiv=2))
+    tx_, ty_ = gx - f.tx * 1.9, gy - f.ty * 1.9
+    cloth(m, hp.FISH[1], [(tx_, ty_, z + 4.7), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 5.4), (tx_ - f.tx * 0.9, ty_ - f.ty * 0.9, z + 4.0)])
     for e in (-1, 1):
         c.place(gp.barrel(c, 0), *P(e * (half - 2.0), VB - 0.5), z, rot=e, role="both")
-        c.place(gp.barrel(c, 1), *P(e * (half - 2.0), VB - 0.5), z + 1.2, rot=e * 2, role="visual")
-    bx, by = P(-2.0, -(VW - 1.2))
-    D.person(c, bx, by, z, "merchant", f.x, f.y)
+    for j, u in enumerate((-half * 0.45, -half * 0.05, half * 0.3)):
+        cx_, cy_ = P(u, -(VW - 1.2))
+        D.folk(c, cx_, cy_, z, ("work", "nod", "work")[j], *P(u, 0.0), seed=11 + j)
     u = -half + 4.0
     i = 0
     while u < half - 4.0:
         sx, sy = P(u, VB + 0.6)
-        m.add(("door_wood", "wall"), lambda bm, sx=sx, sy=sy: props.tube(bm, [(sx, sy, z), (sx, sy, z + 0.75)], 0.22, n=8))
-        if rnd(i * 3.3) < 0.75:
-            D.person(c, sx, sy, z + 0.3, ("huddle", "cheer", "huddle", "queue")[i % 4], *P(u, VB - 1.0))
+        if rnd(i * 3.3) < 0.6:
+            # (a diner at the counter, eating)
+            D.folk(c, sx, sy, z, ("work", "nod", "watch", "work")[i % 4], *P(u, VB - 1.0))
+        else:
+            m.add(("door_wood", "wall"), lambda bm, sx=sx, sy=sy: props.tube(bm, [(sx, sy, z), (sx, sy, z + 0.75)], 0.22, n=8))
         u += 1.7
         i += 1
-    # The right side: tables and their crowds, the hearth, the piano and its player, and a
-    # brawl in the corner with a ring of crocs egging it on.
+    # The right side: tables of diners with their plates, the hearth, the piano and its
+    # player, and a little band on a stage in the corner.
     VT = f.w / 2 + 2.6
     for j, u in enumerate((-half + 4.0, -half + 9.5, 1.0)):
         tx, ty = P(u, VT + 0.6)
         cone(c, "Anchor Table %d" % j, tx, ty, 0.9, z + 0.8, 0.12, ("door_wood", "wall"), segs=10, role="visual")
         m.add(("door_wood", "wall"), lambda bm, tx=tx, ty=ty: props.tube(bm, [(tx, ty, z), (tx, ty, z + 0.8)], 0.12, n=6))
-        for i in range(4):
-            a = i * math.tau / 4 + j
-            D.person(c, tx + 1.5 * math.cos(a), ty + 1.5 * math.sin(a), z, ("cheer", "huddle", "huddle", "wave")[(i + j) % 4], tx, ty)
         for i in range(3):
-            mx, my = tx + 0.45 * math.cos(i * 2.1), ty + 0.45 * math.sin(i * 2.1)
-            m.add(("barrel_wood", "wall"), lambda bm, mx=mx, my=my: props.tube(bm, [(mx, my, z + 0.92), (mx, my, z + 1.2)], 0.1, n=6))
+            a = i * math.tau / 3 + j + 0.5
+            D.folk(c, tx + 1.45 * math.cos(a), ty + 1.45 * math.sin(a), z, ("nod", "cheer", "work", "watch")[(i + j) % 4], tx, ty)
+            px_, py_ = tx + 0.5 * math.cos(a), ty + 0.5 * math.sin(a)
+            m.add(("party_white", "wall"), lambda bm, px_=px_, py_=py_: props.tube(bm, [(px_, py_, z + 0.92), (px_, py_, z + 0.95)], 0.22, n=10))
+            m.add(("ember_gold", "wall"), lambda bm, px_=px_, py_=py_: props.blob(bm, (px_, py_, z + 1.0), 0.09, sx=1.8, subdiv=0))
     hx, hy = P(-half + 6.5, VW - 0.5)
     solid.add(("keep_ashlar_dark", "wall"), lambda bm: cuboid(bm, (hx, hy, z + 1.8), (3.2, 1.0, 3.6), along))
     m.add(("keep_ashlar_dark", "wall"), lambda bm: cuboid(bm, (hx, hy, z + 5.5), (1.4, 0.8, 4.0), along))
@@ -529,15 +578,16 @@ def tavern(c, ground, taken):
     solid.add(("door_wood", "wall"), lambda bm: cuboid(bm, (px, py, z + 0.75), (2.6, 1.1, 1.5), along))
     k0, k1 = P(half - 5.5, VW - 1.62)
     m.add(("party_white", "wall"), lambda bm: cuboid(bm, (k0, k1, z + 1.05), (2.2, 0.3, 0.1), along))
-    D.person(c, *P(half - 5.5, VW - 2.4), z, "musician", px, py)
-    bx, by = P(half - 10.0, VT + 1.0)
-    for i in range(7):
-        a = i * math.tau / 7
-        D.person(c, bx + 2.0 * math.cos(a), by + 2.0 * math.sin(a), z, "cheer", bx, by)
+    D.folk(c, *P(half - 5.5, VW - 2.3), z, "work", px, py, seed=21)
+    # (the band: a little stage, a drummer and two singers dancing)
+    bx, by = P(half - 10.0, VT + 1.6)
+    solid.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (bx, by, z + 0.2), (4.6, 2.6, 0.4), along))
+    c.place(bp.drum(c), bx + f.rx * 0.6, by + f.ry * 0.6, z + 0.4, role="visual")
+    D.folk(c, bx + f.rx * 0.9, by + f.ry * 0.9, z + 0.4, "nod", f.x, f.y, seed=31)
     for i in (-1, 1):
-        D.person(c, bx + 0.5 * i, by, z, "guard" if i > 0 else "huddle", bx - i, by)
-    m.add(("door_wood", "wall"), lambda bm: cuboid(bm, (bx + 1.0, by + 1.2, z + 0.3), (1.6, 0.9, 0.1), along, tilt=(0.5, 0.3)))
-    D.talkers(c, *P(-half + 9.5, VT + 2.0), z, 3, "tavern", r=2.5)
+        D.folk(c, bx + f.tx * i * 1.3 - f.rx * 0.3, by + f.ty * i * 1.3 - f.ry * 0.3, z + 0.4, "dance", f.x, f.y, seed=33 + i)
+    D.light(c, "glow", bx, by, z + 3.0)
+    D.talkers(c, *P(-half + 9.5, VT + 2.0), z, 3, "diner", r=2.5)
     # The back porch over the water street: a croc fishing off it.
     px, py = P(-2.0, VW + 1.6)
     m.add(("plank_deck", "wall"), lambda bm: cuboid(bm, (px, py, z + 0.25), (12.0, 1.8, 0.2), along))
@@ -545,7 +595,7 @@ def tavern(c, ground, taken):
         for v in (VW + 1.0, VW + 2.2):
             a = P(u, v)
             m.add(W, lambda bm, a=a: props.tube(bm, [(a[0], a[1], ROOK_WATER - 1.0), (a[0], a[1], z + 0.2)], 0.12, n=5))
-    D.person(c, *P(-4.0, VW + 2.1), z + 0.35, "fisher", *P(-4.0, VW + 6.0))
+    D.folk(c, *P(-4.0, VW + 2.1), z + 0.35, "work", *P(-4.0, VW + 6.0), seed=41)
     # The hanging anchor by the front door, the barrels and crates outside.
     for e in (-1, 1):
         ax, ay = P(e * (half + 1.6), -(VD + 1.6))

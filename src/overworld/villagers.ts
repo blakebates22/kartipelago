@@ -33,8 +33,8 @@ export interface Home {
   talk?: Talk;
 }
 
-export type Talk = "docks" | "rookery" | "tavern" | "bazaar" | "beasts" | "pits" | "den";
-const TALKS: Talk[] = ["docks", "rookery", "tavern", "bazaar", "beasts", "pits", "den"];
+export type Talk = "docks" | "rookery" | "diner" | "bazaar" | "beasts" | "pits" | "den";
+const TALKS: Talk[] = ["docks", "rookery", "diner", "bazaar", "beasts", "pits", "den"];
 
 const FOLKS: Folk[] = ["valley", "snow", "desert", "beach", "dragon", "road", "sump", "pilgrim"];
 
@@ -183,17 +183,18 @@ export const TALK_LINES: Record<Talk, string[]> = {
     "MIND THE WASHING. MIND THE WATER. MIND YOUR OWN BUSINESS.",
     "THAT BOAT'S NOT FISHING. NOBODY FISHES IN THE WATER STREET.",
     "MY GRAN BUILT THIS FLOOR. MY DAD BUILT THE ONE ON TOP. IT LEANS.",
-    "THE RUSTY ANCHOR'S DOWN THE STREET. YOU'LL DRIVE RIGHT THROUGH IT.",
+    "THE RUSTY ANCHOR FRIES THE BEST FISH DOWN HERE. YOU'LL DRIVE RIGHT THROUGH IT.",
     "UP THE STREET'S THE GALLERY. BEST VIEW OF THE BAZAAR THERE IS.",
   ],
-  tavern: [
-    "OI! WIPE YOUR WHEELS!",
-    "ANOTHER ROUND! AND ONE FOR THE KART!",
+  diner: [
+    "OI! WIPE YOUR WHEELS! THIS IS A RESPECTABLE CHIPPY.",
+    "FISH AND CHIPS TWICE! AND ONE FOR THE KART!",
     "THE PIANO'S ONLY GOT TWO TUNES. THAT'S ONE OF THEM.",
-    "LAST ONE TO DRIVE THROUGH HERE KNOCKED OVER MY DRINK.",
-    "NO BRAWLING IN THE ANCHOR! BRAWL OUTSIDE LIKE DECENT FOLK.",
-    "THE BARKEEP WAS A PIRATE. NOW HE WATERS THE GROG. SAME THING.",
+    "LAST ONE TO DRIVE THROUGH HERE TOOK MY CHIPS WITH HIM.",
+    "BEST BATTER UNDER THE SEA. WELL. ONLY BATTER UNDER THE SEA.",
+    "THE COOK WAS A PIRATE. NOW HE FRIES FISH. SAME SWORD.",
   ],
+
   bazaar: [
     "GENUINE DRAGON SCALE! WELL. GENUINE SCALE. FROM SOMETHING.",
     "FRESH FROM THE DESERT: NEON, GOLD, SAND IN EVERYTHING.",

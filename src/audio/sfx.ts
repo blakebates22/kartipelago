@@ -663,7 +663,7 @@ export function createSfx(engine: AudioEngine) {
           toneGain: 0,
           smooth: 0.85,
         },
-        // A tavern: the rowdy murmur of a packed room, muffled by its walls, swelling.
+        // A busy diner (the Rusty Anchor): the murmur of a packed room, muffled by its walls.
         tavern: {
           type: "bandpass",
           f: 640,
@@ -821,7 +821,7 @@ export function createSfx(engine: AudioEngine) {
       note(f, 0, 0.22, volume * 0.06, f * 0.72, "triangle");
       note(f * 1.05, 0.28, 0.2, volume * 0.05, f * 0.7, "triangle");
     },
-    /** In the tavern: a run on the honky-tonk piano, mugs clinking, a roar of laughter. */
+    /** In the diner: a run on the honky-tonk piano, cups and plates clinking, laughter. */
     tavernBit(volume: number) {
       const r = Math.random();
       if (r < 0.5) {
@@ -844,7 +844,7 @@ export function createSfx(engine: AudioEngine) {
           note(f * 1.006, i * 0.17, 0.16, volume * 0.025, f, "triangle");
         }
       } else if (r < 0.8) {
-        // (mugs clinking)
+        // (cups and plates clinking)
         for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
           const f = 2200 + Math.random() * 900;
           note(f, i * 0.07, 0.18, volume * 0.04, f * 0.98, "sine");
