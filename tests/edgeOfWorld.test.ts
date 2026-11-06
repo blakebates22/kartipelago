@@ -196,6 +196,11 @@ describe("the Edge of the World", () => {
     // (and no gambling: the Lucky Bone a treasure hoard, no wheel of fortune, no dancers;
     // its counters, weighers and polishers at work)
     expect(of("partygoer")).toHaveLength(0);
+    // (Nov 6, review journey_cause 2: the sky's flags the Kingdom's pennants, its dragons
+    // winged, the Kingdom's kind)
+    expect(of("prayer_flags")[0]!.style).toBe("pennants");
+    for (const e of [...of("little_dragons"), ...of("isles_dragon")])
+      expect(e.style).toBe("winged");
     expect(of("waterwheel")).toHaveLength(0);
     const inDen = rows.filter((r) => Math.hypot((r[0]! - 152) / 30, (r[2]! + 36) / 26) < 1);
     expect(inDen.length).toBeGreaterThanOrEqual(8);

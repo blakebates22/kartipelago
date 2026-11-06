@@ -44,6 +44,16 @@ import { FOLK_WATCH, folkPoseCue, type FolkState, type PosedFolk } from "./folkP
 import { createVillagerView } from "../render/villager";
 import type { PersonView } from "../render/people/view";
 
+import { createWyvernView, type WyvernColors } from "../render/wyvern";
+
+/** The little winged dragons' colours: red, green, bronze, blue. */
+const LITTLE_WINGED: WyvernColors[] = [
+  { body: "#a82a1e", belly: "#f0c060" },
+  { body: "#2a7a3a", belly: "#e8e0a0" },
+  { body: "#9a6a2a", belly: "#f4d890" },
+  { body: "#2a4a9a", belly: "#c8d8f0" },
+];
+
 const isObj = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
@@ -80,13 +90,18 @@ export function createIslesLife(opts: {
   const { group, ground } = opts;
   let dragonCfg: IslesDragonConfig | undefined;
   const villagers: Villager[] = [];
+  // (the Edge's dragons winged, the Dragon Kingdom's kind: Blake, Nov 6, review
+  // journey_cause 2 note 1: "the dragons are still the chinese dragons")
+  let winged = false;
   const wheels: WheelView[] = [];
   const cranes: CraneView[] = [];
   const littles: { cfg: LittleDragonsConfig; views: SerpentView[] }[] = [];
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
-    if (e.type === "isles_dragon") dragonCfg = parseIslesDragon(e);
-    else if (e.type === "villagers") villagers.push(...parseVillagers(e));
+    if (e.type === "isles_dragon") {
+      dragonCfg = parseIslesDragon(e);
+      winged = e.style === "winged";
+    } else if (e.type === "villagers") villagers.push(...parseVillagers(e));
     else if (e.type === "crane") {
       if (!opts.headless) cranes.push(createCraneView(group, parseCrane(e)));
     } else if (e.type === "waterwheel") {
@@ -98,13 +113,20 @@ export function createIslesLife(opts: {
         views: opts.headless
           ? []
           : Array.from({ length: cfg.count }, (_, k) =>
-              createSerpentView(group, 0.11 + 0.02 * (k % 2), {
-                simple: true,
-                colors:
-                  k % 2
-                    ? { body: "#e8483a", belly: "#f2c64a" }
-                    : { body: "#3a8ad8", belly: "#f4ecd8" },
-              }),
+              e.style === "winged"
+                ? createWyvernView(
+                    group,
+                    0.12 + 0.03 * (k % 2),
+                    LITTLE_WINGED[k % LITTLE_WINGED.length]!,
+                    true,
+                  )
+                : createSerpentView(group, 0.11 + 0.02 * (k % 2), {
+                    simple: true,
+                    colors:
+                      k % 2
+                        ? { body: "#e8483a", belly: "#f2c64a" }
+                        : { body: "#3a8ad8", belly: "#f4ecd8" },
+                  }),
             ),
       });
     }
@@ -119,7 +141,12 @@ export function createIslesLife(opts: {
     const p = dragonHead(dragonCfg, 0, 0);
     head.set(p.x, p.y, p.z);
     if (!opts.headless) {
-      serpent = createSerpentView(group, dragonCfg.size, { colors: dragonCfg.colors });
+      serpent = winged
+        ? createWyvernView(group, dragonCfg.size, {
+            body: dragonCfg.colors?.body ?? "#8a2418",
+            belly: dragonCfg.colors?.belly ?? "#e8b048",
+          })
+        : createSerpentView(group, dragonCfg.size, { colors: dragonCfg.colors });
       shadow = createShadowView(group, dragonCfg.size);
     }
   }

@@ -19,6 +19,7 @@ from pocket_build import box, cone
 import props
 import beach_props as bp
 import tropic_props as tp
+import keep_props as kp
 import gulch_props as gp
 import swamp_props as sw
 import region_paint as paint
@@ -591,10 +592,17 @@ def sky_life(c, ground):
             bx, by = x + r * 0.72 * math.cos(a), y + r * 0.72 * math.sin(a)
             if not paint.road_clear(c, bx, by, 2.5):
                 continue
-            if j % 2:
-                c.place(props.ruin_column(c, j % 3), bx, by, top, rot=a, role="both")
+            if j == 1 and paint.road_clear(c, bx, by, 4.5):
+                # (a dragon pillar: review journey_cause 2 note 3, "lets make this a spectavular
+                # dragon pillar")
+                import jedge_sky as SK
+
+                SK.dragon_pillar(c, bx, by, top, a + math.pi, k)
+            elif j % 2:
+                c.place(kp.banner_pole(c, h=9.0), bx, by, top, rot=a, role="visual")
             else:
-                c.place(tp.flag_pole(c, flag="temple_flag" if k % 2 else "keep_flag", h=7.0), bx, by, top, role="visual")
+                # (the Kingdom's banners: note 4, the flags had a paving stone's texture)
+                c.place(tp.flag_pole(c, flag="keep_flag_blue" if k % 2 else "keep_banner", h=7.0), bx, by, top, role="visual")
                 light(c, "torch", bx + 0.6, by, top + 2.2)
         if name == "Shrine Isle":
             sx, sy = x - 10.0, y + 2.0
@@ -614,7 +622,7 @@ def sky_life(c, ground):
                                            (60.0, 300.0, -30.0, 28.0, 3))):
         g = c.game(x, y, z)
         c.entity("little_dragons", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=rad, count=n, speed=0.25 + 0.05 * k,
-                 seed=k + 3)
+                 seed=k + 3, style="winged")
     # The great dragon: far off over the Kingdom while you're underground; out at the edge it
     # swoops down to meet you and flies alongside the islands to the gate.
     s0 = c.nearest(*L.ROUTE[L.START][:2])[0].s
@@ -626,5 +634,6 @@ def sky_life(c, ground):
                          (se, (40.0, 470.0, 0.0)), (se + 120.0, (0.0, 640.0, 60.0))):
         g = c.game(x, y, z)
         keys.append([round(s, 1), round(g[0], 1), round(g[1], 1), round(g[2], 1)])
-    c.entity("isles_dragon", keys=keys, length=round(c.length, 1), size=1.2)
+    c.entity("isles_dragon", keys=keys, length=round(c.length, 1), size=1.2, style="winged",
+             colors={"body": "#8a2418", "belly": "#e8b048"})
     c.entity("villagers", list=SKY_CROWD, palette="skycroc")

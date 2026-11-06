@@ -169,7 +169,7 @@ def sky(c, spans):
         g = c.game(q.p.x, q.p.y, q.p.z)
         c.entity("creak", x=round(g[0], 1), y=round(g[1], 1), z=round(g[2], 1), radius=max(14.0, (b_s - a_s) / 2 + 6.0))
     if lines:
-        c.entity("prayer_flags", lines=lines)
+        c.entity("prayer_flags", lines=lines, style="pennants")  # (the Kingdom's pennants: review journey_cause 2 note 1)
     # (gulls over the islands and off the edge)
     for k, (x, y, z, r, n) in enumerate(((40.0, 200.0, -28.0, 50.0, 7), (-40.0, 300.0, -24.0, 40.0, 6), (30.0, 420.0, -20.0, 46.0, 8),
                                          (-120.0, 200.0, -10.0, 70.0, 5), (150.0, 230.0, -30.0, 60.0, 6))):

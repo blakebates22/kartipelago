@@ -44,6 +44,10 @@ export function hasSnowLife(entities: unknown[]): boolean {
 }
 
 const FLAG_COLORS = ["#2f6ec0", "#f2f0e8", "#c8322a", "#3a9a4a", "#e8c030"];
+/** The Dragon Kingdom's pennants (the Edge's sky bridges, Blake, Nov 6, review
+ * journey_cause 2 note 1: "these flags are too chinese"): heraldic blue, gold, red, white,
+ * triangles. */
+const PENNANT_COLORS = ["#24449a", "#e8b828", "#a82420", "#f2ece0"];
 
 /** A tiling texture of driving snow: streaks slanting along +U. */
 function veilTexture() {
@@ -83,13 +87,16 @@ export function createSnowLife(opts: {
   const { group } = opts;
   let blizzard: BlizzardConfig | undefined;
   let flags: FlagLine[] = [];
+  let pennants = false;
   let bells: V3[] = [];
   let avalanches: Avalanche[] = [];
   for (const e of opts.entities) {
     if (!isObj(e)) continue;
     if (e.type === "blizzard") blizzard = parseBlizzard(e);
-    else if (e.type === "prayer_flags") flags = parseFlags(e);
-    else if (e.type === "bells") bells = parsePoints(e);
+    else if (e.type === "prayer_flags") {
+      flags = parseFlags(e);
+      pennants = e.style === "pennants";
+    } else if (e.type === "bells") bells = parsePoints(e);
     else if (e.type === "avalanches") avalanches = parseAvalanches(e);
   }
   const disposers: (() => void)[] = [];
@@ -174,11 +181,22 @@ export function createSnowLife(opts: {
       for (let i = 0; i < n; i++) {
         const p = linePoint(f, (i + 0.5) / n);
         const base = pos.length / 3;
-        // Top edge on the cord (two verts), bottom edge 0.9 m below (moved each frame).
-        const w = 0.4;
+        // Top edge on the cord (two verts), bottom edge 0.9 m below (moved each frame); a
+        // pennant's bottom edge one point, its tip.
+        const w = pennants ? 0.45 : 0.4;
+        const wb = pennants ? 0 : w;
+        const drop = pennants ? 1.3 : 0.9;
         pos.push(p.x - dx * w, p.y, p.z - dz * w, p.x + dx * w, p.y, p.z + dz * w);
-        pos.push(p.x + dx * w, p.y - 0.9, p.z + dz * w, p.x - dx * w, p.y - 0.9, p.z - dz * w);
-        c.set(FLAG_COLORS[(i + li) % FLAG_COLORS.length]!);
+        pos.push(
+          p.x + dx * wb,
+          p.y - drop,
+          p.z + dz * wb,
+          p.x - dx * wb,
+          p.y - drop,
+          p.z - dz * wb,
+        );
+        const pal = pennants ? PENNANT_COLORS : FLAG_COLORS;
+        c.set(pal[(i + li) % pal.length]!);
         for (let k = 0; k < 4; k++) col.push(c.r, c.g, c.b);
         idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
         flagTops.push({ x: p.x, y: p.y, z: p.z, dx, dz, ph: i * 0.7 + li * 1.3 });
@@ -310,10 +328,10 @@ export function createSnowLife(opts: {
           if (Math.abs(f.x - l.x) > 220 || Math.abs(f.z - l.z) > 220) return;
           const flap = Math.sin(t * 7 + f.ph) * 0.25 + Math.sin(t * 13 + f.ph * 2) * 0.1;
           const out = 0.45 * gs;
-          const w = 0.4;
+          const w = pennants ? 0 : 0.4;
           const bx = W.x * out + f.dz * flap * 0.3;
           const bz = W.z * out - f.dx * flap * 0.3;
-          const by = f.y - 0.9 + Math.abs(out) * 0.35 + flap * 0.15;
+          const by = f.y - (pennants ? 1.3 : 0.9) + Math.abs(out) * 0.35 + flap * 0.15;
           const o = i * 12 + 6;
           a[o] = f.x + f.dx * w + bx;
           a[o + 1] = by;

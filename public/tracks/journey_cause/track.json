@@ -10639,6 +10639,20 @@
       "z": -212.0
     },
     {
+      "id": "campfire_45",
+      "type": "campfire",
+      "x": 25.26,
+      "y": -30.8,
+      "z": -224.57
+    },
+    {
+      "id": "glow_84",
+      "type": "glow",
+      "x": 24.69,
+      "y": -29.0,
+      "z": -223.58
+    },
+    {
       "id": "torch_74",
       "type": "torch",
       "x": 11.04,
@@ -10658,6 +10672,20 @@
       "x": -32.89,
       "y": -40.2,
       "z": -342.37
+    },
+    {
+      "id": "campfire_46",
+      "type": "campfire",
+      "x": -43.32,
+      "y": -27.3,
+      "z": -327.64
+    },
+    {
+      "id": "glow_85",
+      "type": "glow",
+      "x": -42.18,
+      "y": -25.5,
+      "z": -327.53
     },
     {
       "id": "torch_77",
@@ -10696,7 +10724,8 @@
       "radius": 40.0,
       "count": 4,
       "speed": 0.25,
-      "seed": 3
+      "seed": 3,
+      "style": "winged"
     },
     {
       "id": "little_dragons_02",
@@ -10707,7 +10736,8 @@
       "radius": 34.0,
       "count": 5,
       "speed": 0.3,
-      "seed": 4
+      "seed": 4,
+      "style": "winged"
     },
     {
       "id": "little_dragons_03",
@@ -10718,7 +10748,8 @@
       "radius": 46.0,
       "count": 6,
       "speed": 0.35,
-      "seed": 5
+      "seed": 5,
+      "style": "winged"
     },
     {
       "id": "little_dragons_04",
@@ -10729,7 +10760,8 @@
       "radius": 28.0,
       "count": 3,
       "speed": 0.4,
-      "seed": 6
+      "seed": 6,
+      "style": "winged"
     },
     {
       "id": "isles_dragon_01",
@@ -10785,7 +10817,12 @@
         ]
       ],
       "length": 4135.3,
-      "size": 1.2
+      "size": 1.2,
+      "style": "winged",
+      "colors": {
+        "body": "#8a2418",
+        "belly": "#e8b048"
+      }
     },
     {
       "id": "villagers_02",
@@ -12718,7 +12755,7 @@
       "blink": true
     },
     {
-      "id": "glow_84",
+      "id": "glow_86",
       "type": "glow",
       "x": -36.1,
       "y": -17.0,
@@ -12752,7 +12789,7 @@
       "blink": true
     },
     {
-      "id": "glow_85",
+      "id": "glow_87",
       "type": "glow",
       "x": 207.1,
       "y": -15.9,
@@ -12786,7 +12823,7 @@
       "blink": true
     },
     {
-      "id": "glow_86",
+      "id": "glow_88",
       "type": "glow",
       "x": 131.5,
       "y": -49.5,
@@ -12820,7 +12857,7 @@
       "blink": true
     },
     {
-      "id": "glow_87",
+      "id": "glow_89",
       "type": "glow",
       "x": 111.4,
       "y": -46.9,
@@ -12854,7 +12891,7 @@
       "blink": true
     },
     {
-      "id": "glow_88",
+      "id": "glow_90",
       "type": "glow",
       "x": 91.8,
       "y": -44.0,
@@ -12888,7 +12925,7 @@
       "blink": true
     },
     {
-      "id": "glow_89",
+      "id": "glow_91",
       "type": "glow",
       "x": 71.2,
       "y": -41.6,
@@ -12922,7 +12959,7 @@
       "blink": true
     },
     {
-      "id": "glow_90",
+      "id": "glow_92",
       "type": "glow",
       "x": 45.0,
       "y": -39.1,
@@ -13300,7 +13337,8 @@
           -413.61,
           1.6
         ]
-      ]
+      ],
+      "style": "pennants"
     },
     {
       "id": "birds_01",

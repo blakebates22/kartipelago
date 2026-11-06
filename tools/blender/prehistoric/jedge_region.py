@@ -499,18 +499,25 @@ def sky(c, ground):
                 q = c.at(lerp(a_s - 2.0, b_s + 2.0, t))
                 sg = 1 if sd else -1
                 sag = min(13.0, 0.3 * (b_s - a_s + 4.0)) * (1.0 - (2 * t - 1) ** 2)
-                pts.append((q.p.x + q.r.x * sg * (q.w / 2 + 1.4), q.p.y + q.r.y * sg * (q.w / 2 + 1.4), lerp(tops[0][sd][2], tops[1][sd][2], t)
+                pts.append((q.p.x + q.r.x * sg * (q.w / 2 + 0.85), q.p.y + q.r.y * sg * (q.w / 2 + 0.85), lerp(tops[0][sd][2], tops[1][sd][2], t)
                             - sag))
             pts[0], pts[-1] = tops[0][sd], tops[1][sd]
             bm = bmesh.new()
             props.tube(bm, pts, 0.32, n=6)
             c.assign(c.mesh_object("Bridge Chain %d %d" % (int(a_s), sd), bm, "Props", "visual"), c.lib("iron", "wall"))
-            for j in range(2, 13, 2):
+            # (a hanger down from every link of the chain to the bridge's rail, made fast to it
+            # with an iron collar: Blake, Nov 6, review journey_cause 2 note 2: "all the ropes on
+            # the bridge need to be connected")
+            bm = bmesh.new()
+            for j in range(1, 14):
                 x, y, z = pts[j]
                 q = c.at(lerp(a_s - 2.0, b_s + 2.0, j / 14))
-                bm = bmesh.new()
-                props.tube(bm, [(x, y, z), (x, y, q.p.z + 1.2)], 0.07, n=4)
-                c.assign(c.mesh_object("Bridge Hanger %d %d %d" % (int(a_s), sd, j), bm, "Props", "visual"), c.lib("iron", "wall"))
+                foot = q.p.z + 1.15
+                if z - foot < 0.3:
+                    continue
+                props.tube(bm, [(x, y, z), (x, y, foot)], 0.07, n=4)
+                props.cuboid(bm, (x, y, foot + 0.05), (0.3, 0.3, 0.22), math.atan2(q.t.y, q.t.x))
+            c.assign(c.mesh_object("Bridge Hangers %d %d" % (int(a_s), sd), bm, "Props", "visual"), c.lib("iron", "wall"))
     D.sky_life(c, ground)
     return out
 
