@@ -168,7 +168,7 @@ const LINES: Record<Folk, string[]> = {
 
 /** The Edge of the World's districts (Blake, Nov 2: "crawling with black market activity"),
  * each with its own talk: the Smugglers' Docks, the Night Bazaar, the dry dock (the Pits) and
- * the Lucky Bone, the gambling den. */
+ * the Lucky Bone (the smugglers' treasure hoard now). */
 export const TALK_LINES: Record<Talk, string[]> = {
   docks: [
     "MIND THE CRATES. WHAT'S IN THEM? CRATE STUFF. MOVE ALONG.",
@@ -223,11 +223,11 @@ export const TALK_LINES: Record<Talk, string[]> = {
     "THE FIGUREHEAD'S A CROC. OF COURSE IT'S A CROC.",
   ],
   den: [
-    "THE BONES ARE LOADED. NOT THESE ONES. THOSE ONES.",
-    "WELCOME TO THE LUCKY BONE. LEAVE YOUR LUCK AT THE DOOR.",
-    "I WON A WHOLE SKY ISLAND ONCE. LOST IT THE SAME NIGHT.",
-    "HOUSE RULES: NO MAGIC, NO DRAGONS, NO CRYING.",
-    "THE WAY OUT'S UP THE LONG BORE. THE WAY BROKE'S RIGHT HERE.",
+    "DON'T TOUCH THE PILE. HE'S ASLEEP ON IT, BUT HE COUNTS IT IN HIS SLEEP.",
+    "NINE THOUSAND AND ONE... NINE THOUSAND AND... YOU MADE ME LOSE COUNT.",
+    "THAT PEARL CAME OUT OF A CLAM AS BIG AS A BOAT. THE CLAM WANTS IT BACK.",
+    "EVERY COIN HERE FELL OFF A SHIP. WE JUST CAUGHT IT.",
+    "THE WAY OUT'S UP THE LONG BORE. MIND THE GLARE WHEN YOU GET THERE.",
   ],
 };
 

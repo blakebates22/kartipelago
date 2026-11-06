@@ -465,7 +465,7 @@ def bazaar(c, ground, taken):
 
 def pits(c, ground, taken):
     """The Fighting Pits, the smugglers' dry dock now (Blake, Nov 5; jedge_drydock): the
-    road corkscrewing down its wall between the grandstands, the great galleon building
+    road corkscrewing down its wall past the breakers' wrecks, the great galleon building
     on its floor with its scaffolding and cranes, the lock gate leaking, the yard's trades;
     braziers round its rim, smuggler flags down its walls, the gate in with its sign."""
     import jedge_drydock as DD
@@ -476,7 +476,7 @@ def pits(c, ground, taken):
     px, py = PIT
     f0, f1, f2 = PIT_R
     DD.dock(c, ground, taken)
-    DD.stands(c, taken)
+    DD.breakers(c, taken)
     for j, a in enumerate((0.9, 2.3, 4.4)):
         x, y = px + 27.0 * math.cos(a), py + 27.0 * math.sin(a)
         if paint.road_clear(c, x, y, 4.0) and not DD.on_ship(x, y, 2.0):
@@ -516,91 +516,23 @@ def pits(c, ground, taken):
 
 
 def den(c, ground, taken):
-    """The Lucky Bone, the gambling den: card tables and dice tables crowded round, a
-    wheel of fortune, gold heaped up and chests of it, the bar, the stage with its DJ and
-    dancing dinos, lantern strings, the house's guards."""
+    """The Lucky Bone, the smugglers' treasure hoard now (Blake, Nov 5: "more kid
+    appropriate ... something pirate related. but not drugs, alcohol, gambling"; he picked
+    the treasure hoard cave; jedge_hoard): the heaps of gold, the counting tables, the
+    scales, the pearl, the gate; lanterns slung over it all, its talkers."""
+    import jedge_hoard as H
+
     dx, dy, rx, ry = DEN
     z = DEN_Z - 0.6
-    tables = []
-    for j in range(36):
-        a = j * 2.399 + 0.4
-        r = 0.25 + 0.65 * ((j * 0.618) % 1.0)
-        x, y = dx + rx * r * math.cos(a), dy + ry * r * math.sin(a)
-        if ok(c, taken, x, y, 2.4, 1.6):
-            tables.append((x, y, a, j))
-            taken.add(x, y, 3.0)
-    for k, (x, y, a, j) in enumerate(tables):
-        zz = ground(x, y)
-        kind = k % 4
-        if kind in (0, 1):
-            # (a card table, players round it, the dealer)
-            box(c, "Card Table %d" % k, x, y, 1.3, 0.8, zz, zz + 0.9, ("keep_carpet" if kind else "royal_carpet", "wall"), rot=a)
-            for i in range(4):
-                b = a + i * math.pi / 2
-                person(c, x + 1.8 * math.cos(b), y + 1.8 * math.sin(b), zz, "merchant" if i == 0 else "huddle", x, y)
-            light(c, "lantern", x, y, zz + 3.0)
-        elif kind == 2:
-            # (the dice: bones, crowded round, a winner cheering)
-            box(c, "Dice Pit %d" % k, x, y, 1.6, 1.6, zz, zz + 0.5, ("bog_boards", "wall"), rot=a)
-            for i in range(3):
-                box(c, "Die %d %d" % (k, i), x + 0.5 * (i - 1), y + 0.3 * (i % 2), 0.2, 0.2, zz + 0.5, zz + 0.9, ("bone_ivory", "wall"),
-                    rot=a + i, role="visual")
-            for i in range(6):
-                b = a + i * math.tau / 6
-                person(c, x + 2.3 * math.cos(b), y + 2.3 * math.sin(b), zz, "cheer" if i == 2 else "huddle", x, y)
-        else:
-            c.place(tp.gold_pile(c) if j % 2 else tp.chest(c), x, y, zz, rot=a, role="visual")
-            person(c, x + 2.0 * math.cos(a), y + 2.0 * math.sin(a), zz, "guard", x, y)
-    # The wheel of fortune, standing, by the road.
-    x, y = dx + rx * 0.55, dy - ry * 0.1
-    if ok(c, taken, x, y, 2.5, 1.0):
-        zz = ground(x, y)
-        box(c, "Fortune Wheel Stand", x, y, 0.3, 0.3, zz, zz + 3.0, ("gold_trim", "wall"))
-        g = c.game(x, y, zz + 4.2)
-        c.entity("waterwheel", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=0.0, radius=2.0, speed=1.4)
-        for i in range(5):
-            person(c, x - 3.0 + 1.4 * i, y - 3.2, zz, "cheer" if i % 2 else "queue", x, y)
-        taken.add(x, y, 3.5)
-    # The stage: the DJ and the dancing dinos.
-    x, y = dx - rx * 0.55, dy + ry * 0.25
-    if ok(c, taken, x, y, 5.0, 1.0):
-        zz = ground(x, y)
-        c.place(bp.stage(c), x, y, zz, rot=0.0, role="both")
-        g = c.game(x, y + 1.0, zz + 1.0)
-        c.entity("partygoer", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=0.0, dance="dj", variant=1)
-        for i, dance in enumerate(("bounce", "sway", "hop", "wave", "chill", "bounce")):
-            b = i * 0.5 - 1.25
-            g = c.game(x + 8.0 * math.sin(b), y - 7.0 - 1.5 * math.cos(b), zz)
-            c.entity("partygoer", x=round(g[0], 2), y=round(g[1], 2), z=round(g[2], 2), heading=round(math.pi, 3), dance=dance, variant=i + 2)
-        taken.add(x, y, 9.0)
-    # The bar along the wall, lantern strings over everything.
-    x, y = dx + rx * 0.2, dy + ry * 0.7
-    if ok(c, taken, x, y, 4.0, 1.0):
-        zz = ground(x, y)
-        box(c, "Bar", x, y, 5.0, 0.8, zz, zz + 1.1, ("door_wood", "wall"))
-        for i in range(8):
-            cone(c, "Bottle %d" % i, x - 4.0 + i * 1.1, y, 0.12, zz + 1.1, 0.5, (("lantern_green", "lantern_amber", "lantern_red")[i % 3], "wall"),
-                 segs=5, role="visual")
-        person(c, x, y + 1.4, zz, "merchant", x, y - 5.0)
-        for i in range(6):
-            person(c, x - 4.0 + 1.6 * i, y - 1.6, zz, "huddle", x, y)
+    H.hoard(c, ground, taken)
     for j in range(8):
         a = j * math.tau / 8
         p0 = (dx + rx * 0.85 * math.cos(a), dy + ry * 0.85 * math.sin(a), z + 9.0)
         p1 = (dx + rx * 0.85 * math.cos(a + 2.4), dy + ry * 0.85 * math.sin(a + 2.4), z + 9.0)
         lantern_line(c, "Den String %d" % j, p0, p1, sag=2.0)
     for x, y in ((dx - 12.0, dy - 10.0), (dx + 14.0, dy + 12.0)):
-        if paint.road_clear(c, x, y, 5.0):
+        if paint.road_clear(c, x, y, 5.0) and taken.clear(x, y, 3.0):
             talkers(c, x, y, ground(x, y), 5, "den", r=7.0)
-    # (the house's sign over the road: a gilded bone)
-    q, _ = c.nearest(*L.ROUTE[L.AT["den0"]][:2])
-    rot = math.atan2(q.t.y, q.t.x)
-    for sd in (-1, 1):
-        gx, gy = q.p.x + q.r.x * sd * (q.w / 2 + 2.0), q.p.y + q.r.y * sd * (q.w / 2 + 2.0)
-        box(c, "Den Gate Post %d" % sd, gx, gy, 0.6, 0.6, q.p.z - 0.5, q.p.z + 8.0, ("gold_trim", "wall"), rot=rot)
-        person(c, gx - q.t.x * 1.5, gy - q.t.y * 1.5, ground(gx, gy), "guard", q.p.x, q.p.y)
-    box(c, "Den Gate Sign", q.p.x, q.p.y, 0.6, q.w / 2 + 2.6, q.p.z + 8.0, q.p.z + 9.6, ("gold_trim", "wall"), rot=rot, role="visual")
-    c.place(sw.femur(c), q.p.x, q.p.y, q.p.z + 10.0, rot=rot + math.pi / 2, scale=1.2, role="visual")
 
 
 # ------------------------------------------------------------------ the alley and the bores

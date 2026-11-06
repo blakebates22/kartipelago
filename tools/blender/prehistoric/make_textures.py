@@ -5751,6 +5751,7 @@ EDGE_SIGNS = [
         ("sign_maps", "Maps", "MAPS", 64, 32, {"seed": 38}),
         ("sign_rope", "Rope", "ROPE", 64, 32, {"seed": 39, "wood": GREEN_SIGN}),
         ("sign_drydock", "The Dry Dock", "THE DRY DOCK", 192, 32, {"seed": 42, "ink": "#f0d890"}),
+        ("sign_hoard", "The Hoard", "THE HOARD", 192, 32, {"seed": 43, "wood": RED_SIGN, "ink": "#ffd860"}),
     )
     for entry in sign_tiles(sid, name, text, w, h, dict(kw, grime=True))
 ]

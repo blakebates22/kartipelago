@@ -43,7 +43,7 @@ D = None  # (jedge_districts: set by dress(), for person, light, talkers, lanter
 SIDINGS = ("siding_brown", "siding_grey", "siding_red", "siding_ochre", "siding_green", "wood_wall", "wreck_planks", "cabin_plaster")
 SIGN_TILES = {"sign_anchor": 3, "sign_nightbazaar": 4, "sign_spicerow": 3, "sign_beastmarket": 3, "sign_pawn": 1,
               "sign_soup": 1, "sign_bait": 1, "sign_maps": 1, "sign_rope": 1, "sign_fishfry": 2, "sign_menu": 3,
-              "sign_drydock": 3}
+              "sign_drydock": 3, "sign_hoard": 3}
 SHOP_SIGNS = ("sign_pawn", "sign_soup", "sign_bait", "sign_maps", "sign_rope")
 W = ("weathered_timber", "wall")
 

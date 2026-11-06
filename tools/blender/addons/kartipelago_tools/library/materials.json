@@ -12692,6 +12692,33 @@
       "tileMetres": 2
     },
     {
+      "id": "sign_hoard_1",
+      "name": "Sign: The Hoard (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hoard_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hoard_2",
+      "name": "Sign: The Hoard (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hoard_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_hoard_3",
+      "name": "Sign: The Hoard (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_hoard_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
       "id": "edge_flag_skull",
       "name": "Smuggler Flag (Skull)",
       "theme": "dry_gulch",

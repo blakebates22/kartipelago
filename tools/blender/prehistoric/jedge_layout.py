@@ -16,7 +16,7 @@
 #                         hanging over it all, to the gate of
 #   the Fighting Pits     the arena: the road corkscrews down its wall through the stands,
 #                         the crowd on every side, the fight ring on its floor; out through
-#   the Lucky Bone        the gambling den, then the Long Bore climbing to the cliff of
+#   the Lucky Bone        the treasure hoard (once the gambling den), then the Long Bore climbing to the cliff of
 #   the Edge              the world's edge, and the Edge Bridge off it, out over nothing, to
 #   the Sky Islands       floating rocks joined by chained bridges, dragons flying, up to
 #   the Sky Gate          the Dragon Kingdom's gate: the loading zone.
@@ -174,7 +174,7 @@ ROUTE = [
     (121.6, -48.0, PIT_FLOOR + 1.9, "pit_out2"),
     (140.0, -36.0, PIT_FLOOR + 2.6, "den_in0"),
     (152.0, -8.0, DEN_Z - 0.4, "den_in1"),
-    # The Lucky Bone (the gambling den), and the Long Bore climbing out.
+    # The Lucky Bone (the treasure hoard), and the Long Bore climbing out.
     (154.0, 18.0, DEN_Z, "den0"),
     (150.0, 40.0, DEN_Z, "den1"),
     (138.0, 60.0, DEN_Z + 0.6, "den2"),
@@ -546,7 +546,8 @@ def classify(c, n, info):
             return ("keep_dock", "dirt") if muck > -0.35 else ("ash_soil", "dirt")
         return ("dock_cobble", "dirt") if muck > -0.4 else ("ash_soil", "dirt")
     if name == "Lucky Bone":
-        return ("keep_carpet", "dirt") if e < 0.7 else ("palace_paving", "dirt")
+        # (the hoard's cave: coin spilled across its stone floor)
+        return ("wreck_gold", "dirt") if muck > 0.35 and e < 0.8 else ("dock_cobble", "dirt")
     if muck > 0.25:
         return ("bog_mud", "dirt")  # (trodden mud, oil, muck)
     return ("cave_rock", "dirt")

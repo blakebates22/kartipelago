@@ -62,11 +62,11 @@ def main():
                     "barrier_mat": ("timber_rail", "wall"), "deck": 1.5, "deck_mat": ("scaffold_timber", "wall"), "ground": False},
         # (the Night Bazaar: the market's old setts)
         "bazaar": {"mat": "imperial_setts", "surface": "road", "shoulder": 1.4, "shoulder_mat": ("ash_soil", "dirt")},
-        # (the Fighting Pits: the arena's sand road, railed red and white down the wall)
-        "pit": {"mat": "gulch_road", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("gulch_sand", "dirt"), "barrier": 1.1,
-                "barrier_mat": ("kerb_redwhite", "wall")},
-        # (the Lucky Bone: the house's carpet)
-        "den": {"mat": "palace_paving", "surface": "road", "shoulder": 1.4, "shoulder_mat": ("royal_carpet", "road")},
+        # (the Fighting Pits, the dry dock now: a cobbled ramp down its wall, timber-railed)
+        "pit": {"mat": "dock_cobble", "surface": "road", "shoulder": 1.0, "shoulder_mat": ("keep_dock", "dirt"), "barrier": 1.1,
+                "barrier_mat": ("timber_rail", "wall")},
+        # (the Lucky Bone, the hoard now: old setts, coin spilled along their edges)
+        "den": {"mat": "imperial_setts", "surface": "road", "shoulder": 1.4, "shoulder_mat": ("wreck_gold", "dirt")},
         # (the sky: the chained bridges, and the islands' stone roads)
         "bridge": {"mat": "plank_road", "surface": "road", "shoulder": 0.8, "shoulder_mat": ("plank_road", "road"), "barrier": 1.2,
                    "barrier_mat": ("rope_rail", "wall"), "deck": 1.4, "deck_mat": ("weathered_timber", "wall"), "ground": False},

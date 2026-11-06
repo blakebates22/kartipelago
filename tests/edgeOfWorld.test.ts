@@ -193,6 +193,12 @@ describe("the Edge of the World", () => {
     const inPit = rows.filter((r) => Math.hypot(r[0]! - 40, r[2]! - 10) < 34);
     expect(inPit.length).toBeGreaterThanOrEqual(15);
     expect(inPit.filter((r) => (r[4] as unknown) === "beat").length).toBeGreaterThanOrEqual(4);
+    // (and no gambling: the Lucky Bone a treasure hoard, no wheel of fortune, no dancers;
+    // its counters, weighers and polishers at work)
+    expect(of("partygoer")).toHaveLength(0);
+    expect(of("waterwheel")).toHaveLength(0);
+    const inDen = rows.filter((r) => Math.hypot((r[0]! - 152) / 30, (r[2]! + 36) / 26) < 1);
+    expect(inDen.length).toBeGreaterThanOrEqual(8);
     const dancers = (of("villagers") as unknown as { list: unknown[][] }[])
       .flatMap((e) => e.list)
       .filter((r) => r[5] === "dancer");

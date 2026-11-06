@@ -608,7 +608,7 @@ export const REGIONS: Region[] = [
     // be crawling with black market activity"; a chain of districts): in from the isles' sea
     // door, the Smugglers' Docks (over the canal's hump-backed bridge), Smugglers' Alley and
     // the Stair down into the Night Bazaar (its shantytown), the corkscrew down past the
-    // dry dock's grandstands (the old Fighting Pits), the Lucky Bone (the gambling den), the
+    // dry dock (the old Fighting Pits), the Lucky Bone (the treasure hoard now), the
     // Long Bore out through the sea falling off the world's edge onto the Edge Bridge,
     // then the Sky Islands' chained bridges to the Dragon Kingdom's Sky Gate. No jumps (Nov 3: it drives both
     // ways).

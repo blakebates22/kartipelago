@@ -16,16 +16,18 @@
 #   the yard         timber stacked, the steam box bending planks, the forge, the tar
 #                    pots, a sail spread out being stitched, the saw horse, the croc
 #                    figurehead being carved, puddles, barrels and rope;
-#   the stands       rickety grandstands of planks on posts down both sides of the spiral,
-#                    shaded with sails, lanterns and flags on them, packed for launch night.
+#   the breakers     on its slopes (where the stands were, Nov 5: "it is weird that we have
+#                    all of the crocs in the stand"), old wrecks broken up for the
+#                    galleon's timber, their crews, planks sledged away, a chute down.
 #
-# jedge_districts.pits() calls dock() and stands().
+# jedge_districts.pits() calls dock() and breakers().
 
 import math
 
 from gulch_scenery import Mesh
 import props
 from props import cuboid
+from mathutils import Matrix, Vector
 import gulch_props as gp
 import harbour_props as hp
 import swamp_props as sw
@@ -441,80 +443,165 @@ def dock(c, ground, taken):
     print("dry dock: %d at work on the scaffolding" % n)
 
 
-def stands(c, taken):
-    """Rickety grandstands of planks on posts down both sides of the spiral (in place of
-    the stone benches: "it currenlty looks really bad with the stands"), each row a run of
-    seat and footboard, posts down to the slope; sails over some, lanterns and flags on
-    them; packed for launch night, all watching the galleon."""
+def tilted(m, mat, make, pivot, rot, roll, pitch=0.0):
+    """Build `make` (about the origin, along X) and set it down at pivot: turned rot about
+    Z, rolled about its length, pitched along it."""
+    def mk(bm):
+        n0 = len(bm.verts)
+        make(bm)
+        bm.verts.ensure_lookup_table()
+        rm = Matrix.Rotation(rot, 3, "Z") @ Matrix.Rotation(roll, 3, "X") @ Matrix.Rotation(pitch, 3, "Y")
+        pv = Vector(pivot)
+        for v in bm.verts[n0:]:
+            v.co = pv + rm @ v.co
+
+    m.add(mat, mk)
+
+
+def _ribs(bm, L_, W, H, t0, t1, step, k, upturned=False, broken=0.3):
+    """Bare ribs across a hull from t0 to t1, some gone, some snapped short; its keel."""
+    t = t0
+    q = 0
+    while t <= t1 + 1e-6:
+        if R.rnd(k * 3.1 + q) > broken * 0.4:
+            half, hh = S.hull_section(t, L_, W, H, bow=1.0, stern=0.6)
+            j1 = 10 if R.rnd(k * 5.3 + q) > broken else 4 + int(R.rnd(k + q * 7) * 5)
+            pts = []
+            for j in range(j1 + 1):
+                a = math.pi * j / 10
+                pts.append((t * L_ / 2, math.cos(a) * half, (1 if upturned else -1) * math.sin(a) * hh))
+            props.tube(bm, pts, 0.16, n=4)
+        t += step
+        q += 1
+    props.tube(bm, [(-L_ / 2, 0.0, (1 if upturned else -1) * H), (L_ / 2 * 0.95, 0.0, (1 if upturned else -1) * H * 0.92)], 0.3, n=6)
+
+
+def wreck(c, m, hidden, x, y, z, rot, roll, kind, k):
+    """An old wreck lying on the slope, broken up for its timber: half a hull with a
+    ragged end and its ribs sticking out, a bare keel and ribs, or one upturned and half
+    buried; a fallen mast beside it."""
+    L_ = 22.0 + 6.0 * R.rnd(k * 1.7)
+    W = 6.0 + 1.5 * R.rnd(k * 2.3)
+    H = 4.2 + 1.0 * R.rnd(k * 3.1)
+    hull_mat = ("wreck_hull", "wall")
+    rib_mat = ("weathered_timber", "wall")
+    if kind == "half":
+        cut = -0.15 + 0.2 * R.rnd(k)
+        tilted(m, hull_mat, lambda bm: S.hull(bm, 0.0, 0.0, 0.0, 0.0, L_, W, H, upturned=False, bow=1.0, stern=0.6, n=10, m=8, t0=cut, t1=1.0, caps=False),
+               (x, y, z), rot, roll)
+        tilted(m, rib_mat, lambda bm: _ribs(bm, L_, W, H, -0.9, cut, 0.11, k, broken=0.55), (x, y, z), rot, roll)
+    elif kind == "bones":
+        tilted(m, rib_mat, lambda bm: _ribs(bm, L_, W, H, -0.92, 0.92, 0.1, k, broken=0.35), (x, y, z), rot, roll)
+        tilted(m, ("door_wood", "wall"), lambda bm: props.tube(bm, [(L_ / 2 * 0.95, 0.0, -H * 0.9), (L_ / 2 + 1.0, 0.0, 1.5)], 0.28, n=6), (x, y, z), rot, roll)
+    else:
+        gap0, gap1 = -0.2 + 0.2 * R.rnd(k), 0.15 + 0.2 * R.rnd(k * 2)
+        for a, b in ((-1.0, gap0), (gap1, 1.0)):
+            tilted(m, hull_mat, lambda bm, a=a, b=b: S.hull(bm, 0.0, 0.0, 0.0, 0.0, L_, W, H, upturned=True, bow=1.0, stern=0.6, n=8, m=8, t0=a, t1=b, caps=a < -0.99),
+                   (x, y, z), rot, roll)
+        tilted(m, rib_mat, lambda bm: _ribs(bm, L_, W, H, gap0, gap1, 0.1, k, upturned=True, broken=0.2), (x, y, z), rot, roll)
+    hidden.add(("cave_rock", "wall"), lambda bm: cuboid(bm, (x, y, z), (L_ * 0.9, W * 0.9, H * 1.6), rot))
+    return L_, W
+
+
+def breakers(c, taken):
+    """The breakers' yard on the dock's slopes, where the stands were (Blake, Nov 5: "it is
+    weird that we have all of the crocs in the stand. we dont even need stands any more";
+    he picked the wreck breakers' yard): old wrecks lying on the slopes and the rim being
+    broken up for the galleon's timber, their crews prying and hammering, planks stacked
+    and sledged away, a chute sliding timber down to the floor, salvage piled."""
     px, py = PIT
     f0, f1, f2 = PIT_R
-    m, solid = Mesh(), Mesh()
-    sx, sy, _ = SHIP
-    n = 0
-    K = 78
-    for k in range(K):
-        a0 = -60.0 - 300.0 * k / K
-        a1 = -60.0 - 300.0 * (k + 1) / K
-        r_road, z_road = spiral_at((a0 + a1) / 2)
-        rows = []
-        r = r_road + 10.5
-        while r < min(f2 - 2.0, f1 + 6.0):
-            rows.append(r)
-            r += 3.0
-        r = r_road - 10.5
-        while r > f0 + 2.0:
-            rows.append(r)
-            r -= 3.0
-        for ri, r in enumerate(rows):
-            ra0, ra1 = math.radians(a0), math.radians(a1)
-            p0 = (px + r * math.cos(ra0), py + r * math.sin(ra0))
-            p1 = (px + r * math.cos(ra1), py + r * math.sin(ra1))
-            mid = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
-            if not all(paint.road_clear(c, *p, 2.0) for p in (p0, p1, mid)):
+    m, solid, hidden = Mesh(), Mesh(), Mesh()
+    placed = []
+    kinds = ("half", "bones", "upturned")
+    chute = False
+    for ring_r in (44.0, 72.0, 56.0, 62.0, 50.0, 76.0):
+        in_ring = 0
+        for step in range(30):
+            a = math.radians(step * 12.0 + ring_r * 3.0)
+            x, y = px + ring_r * math.cos(a), py + ring_r * math.sin(a)
+            rot = a + math.pi / 2
+            tx, ty = math.cos(rot), math.sin(rot)
+            pts = [(x + tx * d - math.cos(a) * w, y + ty * d - math.sin(a) * w) for d in (-14.0, -7.0, 0.0, 7.0, 14.0) for w in (-4.5, 0.0, 4.5)]
+            if not all(paint.road_clear(c, *p, 3.5) for p in pts):
                 continue
-            g0, g1 = pit_ground(*p0), pit_ground(*p1)
-            zs = max(g0, g1) + 0.5
-            # (the seat, the footboard in front of it a step down toward the dock, posts)
-            inward = r < r_road
-            ox, oy = (px - mid[0]) / r, (py - mid[1]) / r
-            ang = math.atan2(p1[1] - p0[1], p1[0] - p0[0])
-            span = math.dist(p0, p1) + 0.1
-            tilt = (math.sin(k * 1.7 + r) * 0.04, 0.0)
-            m.add(("weathered_timber", "wall"), lambda bm, mid=mid, zs=zs, ang=ang, span=span, tilt=tilt: cuboid(bm, (mid[0], mid[1], zs), (span, 0.55, 0.1), ang, tilt=tilt))
-            m.add(("plank_deck", "wall"), lambda bm, mid=mid, zs=zs, ang=ang, span=span, ox=ox, oy=oy: cuboid(bm, (mid[0] + ox * 0.75, mid[1] + oy * 0.75, zs - 0.45), (span, 0.7, 0.08), ang))
+            if any(math.hypot(x - ox, y - oy) < 30.0 for ox, oy in placed):
+                continue
+            if math.hypot(x - (px - f0), y - py) < 22.0:
+                continue  # (clear of the lock gate)
+            if len(placed) >= 12:
+                break
+            k = len(placed)
+            kind = kinds[k % 3]
+            g = pit_ground(x, y)
+            on_rim = ring_r > f1 - 2.0
+            slope = 0.0 if on_rim else 0.42
+            roll = -(slope + 0.15 + 0.35 * R.rnd(k * 4.7)) if kind != "upturned" else -slope * 0.8 + 0.1 * R.rnd(k)
+            z = g + (2.8 if kind != "upturned" else -0.5)
+            L_, W = wreck(c, m, hidden, x, y, z, rot, roll, kind, k)
+            placed.append((x, y))
+            taken.add(x, y, L_ / 2)
+            # (its crew: two at the planks on its low side, a hauler with a sledge of them)
+            ix, iy = -math.cos(a), -math.sin(a)  # (inward, downhill)
+            for q, (along, pose) in enumerate(((-3.0, "beat"), (2.5, "work"), (6.0, "beat"))):
+                fx, fy = x + tx * along + ix * (W / 2 + 1.2), y + ty * along + iy * (W / 2 + 1.2)
+                D.folk(c, fx, fy, pit_ground(fx, fy), pose, x + tx * along, y + ty * along, seed=400 + k * 5 + q,
+                       at=(x + tx * along, y + ty * along, z))
+            sx, sy = x + tx * (L_ / 2 + 3.0) + ix * 2.0, y + ty * (L_ / 2 + 3.0) + iy * 2.0
+            sg = pit_ground(sx, sy)
+            for row in range(3):
+                solid.add(("wreck_planks", "wall"), lambda bm, sx=sx, sy=sy, sg=sg, row=row: cuboid(bm, (sx, sy, sg + 0.12 + row * 0.2), (4.2, 1.4 - row * 0.3, 0.18), rot + 0.1 * row))
+            D.person(c, sx + ix * 1.6, sy + iy * 1.6, pit_ground(sx + ix * 1.6, sy + iy * 1.6), "hauler", px, py)
+            # (a lantern on a post)
+            lx, ly = x - tx * (L_ / 2 + 1.5) + ix * 2.5, y - ty * (L_ / 2 + 1.5) + iy * 2.5
+            lg = pit_ground(lx, ly)
+            m.add(W_, lambda bm, lx=lx, ly=ly, lg=lg: props.tube(bm, [(lx, ly, lg), (lx, ly, lg + 2.8)], 0.07, n=4))
+            c.place(hp.cage_lantern(c, k), lx, ly, lg + 2.5, role="visual")
+            D.light(c, "lantern", lx, ly, lg + 2.4)
+            # (its fallen mast, or a pile of salvage: cannon, an anchor)
             if k % 2 == 0:
-                for p, g in ((p0, g0),):
-                    m.add(W_, lambda bm, p=p, g=g, zs=zs: props.tube(bm, [(p[0], p[1], g - 0.3), (p[0], p[1], zs)], 0.07, n=4))
-                    q = (p[0] + ox * 0.75, p[1] + oy * 0.75)
-                    gq = pit_ground(*q)
-                    m.add(W_, lambda bm, q=q, gq=gq, zs=zs: props.tube(bm, [(q[0], q[1], gq - 0.3), (q[0], q[1], zs - 0.45)], 0.06, n=4))
-            # (a back rail on the top row; sails over every few bays; lanterns; flags)
-            top = ri == 0 or (not inward and ri == len([x for x in rows if x > r_road]) - 1)
-            if not inward and r + 3.0 >= min(f2 - 2.0, f1 + 6.0):
-                b0, b1 = (p0[0] - ox * 0.4, p0[1] - oy * 0.4), (p1[0] - ox * 0.4, p1[1] - oy * 0.4)
-                m.add(W_, lambda bm, b0=b0, b1=b1, zs=zs: props.tube(bm, [(b0[0], b0[1], zs + 0.9), (b1[0], b1[1], zs + 0.9)], 0.05, n=3))
-                if k % 4 == 0:
-                    m.add(W_, lambda bm, b0=b0, zs=zs, g0=g0: props.tube(bm, [(b0[0], b0[1], g0), (b0[0], b0[1], zs + 0.9)], 0.07, n=4))
-                if k % 9 == 4:
-                    S.flag_pole(m, b0[0], b0[1], zs, 5.0, k, face=(ox, oy))
-                if k % 6 == 2:
-                    c.place(hp.cage_lantern(c, k), b0[0], b0[1], zs + 1.6, role="visual")
-                    D.light(c, "lantern", b0[0], b0[1], zs + 1.5)
-            if k % 7 == 3 and ri % 2 == 0:
-                # (a sail over the bay, on poles)
-                q0 = (p0[0] - ox * 1.2, p0[1] - oy * 1.2)
-                q1 = (p1[0] - ox * 1.2, p1[1] - oy * 1.2)
-                h0, h1 = zs + 2.6, zs + 1.9
-                for q in (q0, q1):
-                    m.add(W_, lambda bm, q=q, zs=zs, h0=h0: props.tube(bm, [(q[0], q[1], zs - 0.3), (q[0], q[1], h0)], 0.05, n=3))
-                R.cloth(m, S.AWNINGS[(k + ri) % len(S.AWNINGS)],
-                        [(q0[0], q0[1], h0), (q1[0], q1[1], h0), (p1[0] + ox * 1.4, p1[1] + oy * 1.4, h1), (p0[0] + ox * 1.4, p0[1] + oy * 1.4, h1)])
-            # (the crowd on it, watching the galleon)
-            if (k + int(r)) % 3 == 0 or n > 420:
-                continue
-            for t in (0.3, 0.75):
-                x, y = p0[0] + (p1[0] - p0[0]) * t + ox * 0.75, p0[1] + (p1[1] - p0[1]) * t + oy * 0.75
-                D.person(c, x, y, zs - 0.4, ("cheer", "wave", "huddle", "cheer")[(k + int(t * 4)) % 4], sx, sy)
-                n += 1
-    m.build(c, "Dry Dock Stands", coll="Props", role="visual")
-    print("stands: %d in the crowd" % n)
+                mx, my = x + ix * (W / 2 + 4.5), y + iy * (W / 2 + 4.5)
+                a0 = (mx - tx * 8.0, my - ty * 8.0)
+                a1 = (mx + tx * 7.0, my + ty * 7.0)
+                m.add(("door_wood", "wall"), lambda bm, a0=a0, a1=a1: props.tube(bm, [(a0[0], a0[1], pit_ground(*a0) + 0.35), (a1[0], a1[1], pit_ground(*a1) + 0.25)],
+                                                                         [0.38, 0.24], n=8))
+            else:
+                for q in range(3):
+                    cx_, cy_ = x - tx * 3.0 + ix * (W / 2 + 3.5) + tx * q * 1.0, y - ty * 3.0 + iy * (W / 2 + 3.5) + ty * q * 1.0
+                    cg = pit_ground(cx_, cy_)
+                    m.add(("keep_iron", "wall"), lambda bm, cx_=cx_, cy_=cy_, cg=cg, q=q: props.tube(bm, [(cx_ - ix * 1.1, cy_ - iy * 1.1, cg + 0.3 + 0.5 * (q == 1)),
+                                                                                             (cx_ + ix * 1.1, cy_ + iy * 1.1, cg + 0.35 + 0.5 * (q == 1))],
+                                                                                         [0.3, 0.22], n=8))
+                ax_, ay_ = x + tx * 4.0 + ix * (W / 2 + 4.0), y + ty * 4.0 + iy * (W / 2 + 4.0)
+                ag = pit_ground(ax_, ay_)
+                m.add(("keep_iron", "wall"), lambda bm, ax_=ax_, ay_=ay_, ag=ag: props.tube(bm, [(ax_ - tx * 1.6, ay_ - ty * 1.6, ag + 0.2), (ax_ + tx * 1.6, ay_ + ty * 1.6, ag + 0.2)], 0.14, n=6))
+                m.add(("keep_iron", "wall"), lambda bm, ax_=ax_, ay_=ay_, ag=ag: props.tube(bm, [(ax_ + tx * 1.6 - ix * 1.1, ay_ + ty * 1.6 - iy * 1.1, ag + 0.2),
+                                                                                       (ax_ + tx * 1.9, ay_ + ty * 1.9, ag + 0.2),
+                                                                                       (ax_ + tx * 1.6 + ix * 1.1, ay_ + ty * 1.6 + iy * 1.1, ag + 0.2)], 0.12, n=6))
+            # (a chute from the first wreck on the inner slope down to the dock's floor)
+            if not chute and not on_rim and ring_r < 52.0:
+                top = (x + ix * (W / 2 + 2.0), y + iy * (W / 2 + 2.0))
+                bot = (px + (f0 - 1.0) * math.cos(a), py + (f0 - 1.0) * math.sin(a))
+                if paint.road_clear(c, *((top[0] + bot[0]) / 2, (top[1] + bot[1]) / 2), 2.0):
+                    zt, zb = pit_ground(*top) + 1.2, PIT_FLOOR + 0.5
+                    for sd in (-1, 1):
+                        a_ = (top[0] + tx * sd * 0.7, top[1] + ty * sd * 0.7, zt + 0.4)
+                        b_ = (bot[0] + tx * sd * 0.7, bot[1] + ty * sd * 0.7, zb + 0.4)
+                        m.add(W_, lambda bm, a_=a_, b_=b_: props.tube(bm, [a_, b_], 0.08, n=4))
+                    q4 = [(top[0] - tx * 0.7, top[1] - ty * 0.7, zt), (top[0] + tx * 0.7, top[1] + ty * 0.7, zt),
+                          (bot[0] + tx * 0.7, bot[1] + ty * 0.7, zb), (bot[0] - tx * 0.7, bot[1] - ty * 0.7, zb)]
+                    S.two_sided(m, "wreck_planks", q4, [(0, 0), (1, 0), (1, 1), (0, 1)])
+                    for t_ in (0.3, 0.7):
+                        px_, py_ = top[0] + (bot[0] - top[0]) * t_, top[1] + (bot[1] - top[1]) * t_
+                        m.add(W_, lambda bm, px_=px_, py_=py_, t_=t_: props.tube(bm, [(px_, py_, pit_ground(px_, py_) - 0.3), (px_, py_, zt + (zb - zt) * t_)], 0.1, n=4))
+                    for row in range(2):
+                        solid.add(("wreck_planks", "wall"), lambda bm, row=row: cuboid(bm, (bot[0], bot[1], PIT_FLOOR + 0.12 + row * 0.2), (1.6, 4.0, 0.18), a + 0.1 * row))
+                    D.folk(c, bot[0] + tx * 1.6, bot[1] + ty * 1.6, PIT_FLOOR, "work", bot[0], bot[1], seed=460, at=(bot[0], bot[1], PIT_FLOOR + 0.5))
+                    chute = True
+            in_ring += 1
+            if in_ring >= 3:
+                break
+    m.build(c, "Breakers Yard", coll="Props", role="visual")
+    solid.build(c, "Breakers Yard Solids", coll="Props", role="both")
+    hidden.build(c, "Breakers Yard Wrecks", coll="Collision", role="collision")
+    print("breakers' yard: %d wrecks" % len(placed))
