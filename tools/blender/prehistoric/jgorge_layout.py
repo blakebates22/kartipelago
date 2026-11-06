@@ -117,7 +117,9 @@ RIVERS = [[(-120.0, 116.0, 4.6), (-150.0, 60.0, 3.4), (-186.0, -2.0, 2.4), (-196
 RIVER_HW = 8.0
 LAKES = []
 POOLS = []
-LAVA = [(-376.0, -322.0, 7.0), (-356.0, -246.0, 6.0)]
+# (no lava pools: Blake, Nov 6, review journey_gorge 1 notes 1 and 3: "we need to remove
+# these random lava pools floating")
+LAVA = []
 # The meadow's walls fall away gently (no cliffs: a valley, not a pit), steepening only
 # near the ridge-line; the other basins' edges are the kit's.
 SOFT = {"meadow": (26.0, 0.42), "steppe": (18.0, 0.5)}
@@ -131,6 +133,9 @@ WATER_Z = -99.0
 # Landmarks: the stone arch over the cleft's mouth, the falls, the look back.
 ARCH = (6.0, 30.0)
 FALLS = (-120.0, 116.0)
+# The falls' river above them: down a gorge from its spring in the mountain (x, y, water z):
+# the lip, a pool between two drops, up to the cave mouth.
+SPRING = [(-120.0, 132.0, 30.0), (-124.0, 152.0, 31.0), (-118.0, 168.0, 44.0), (-112.0, 190.0, 46.0)]
 LOOKBACK = (56.0, 150.0)
 # The villages: the traders' camp by the ford, the herders' on the steppe, the pilgrims'
 # hostel under the Snowgate.
@@ -198,11 +203,103 @@ def ridges(h, x, y):
     return h + w * r * 62.0 * peaks * north
 
 
+def _seg_d(x, y, a, b):
+    ax, ay, bx, by = a[0], a[1], b[0], b[1]
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / ((dx * dx + dy * dy) or 1.0)))
+    return math.hypot(x - ax - dx * t, y - ay - dy * t)
+
+
+def road_d(x, y):
+    """Distance (m) to the road's line (its control points, START to END)."""
+    pts = ROUTE[START:END + 1]
+    return min(_seg_d(x, y, a, b) for a, b in zip(pts, pts[1:]))
+
+
+def _settled(x, y):
+    """How far into a village's ground (0 out of it, 1 in it): kept level."""
+    best = 0.0
+    for vx, vy, vr in VILLAGES.values():
+        d = math.hypot(x - vx, y - vy)
+        best = max(best, smooth((vr + 14.0 - d) / 12.0))
+    return best
+
+
+def hills(h, x, y):
+    """Rolling hills and hollows over the basins' floors (Blake, Nov 6, note 11: "there is
+    so much of this one green grass texture ... we could include more small hills in this
+    basin"; he picked rolling small hills): two scales of swell, off the road, the river
+    and the villages, fading out up the walls."""
+    if L.look_at(x, y) not in ("meadow", "steppe"):
+        return h
+    sd = L.wall_sd(x, y)
+    inside = 1.0 - smooth((sd + 22.0) / 18.0)
+    if inside <= 0.0:
+        return h
+    rd = road_d(x, y)
+    away = smooth((rd - 16.0) / 22.0)
+    wd, _ = L.water_d(x, y)
+    away *= smooth((wd - L.river_hw - 6.0) / 14.0)
+    away *= 1.0 - _settled(x, y)
+    if away <= 0.0:
+        return h
+    a = math.sin(x / 31.0 + 0.7 * math.sin(y / 47.0)) * math.cos(y / 37.0 + 0.5 * math.cos(x / 53.0))
+    b = math.sin((x + y) / 17.0 + 1.3) * math.cos((x - y) / 21.0)
+    return h + inside * away * (3.6 * max(0.0, a) ** 1.3 + 1.2 * b + 0.8)
+
+
+def walls(h, x, y):
+    """The basins' walls ridged and stepped (Blake, Nov 6, note 7: "lets completely redo all
+    of these walls so they have ridges and are more complex"): spurs running down them
+    between gullies (ridged noise warped along the slope), and ledges where the rock steps
+    back; strongest mid-wall, nothing on the floors or the ranges' tops."""
+    sd = L.wall_sd(x, y)
+    if sd < -10.0 or sd > 50.0:
+        return h
+    if abs(x) > 440.0 or abs(y) > 440.0:
+        return h  # (the land's edge left as it was)
+    band = smooth((sd + 10.0) / 14.0) * (1.0 - smooth((sd - 30.0) / 20.0))
+    if band <= 0.0 or road_d(x, y) < 14.0:
+        return h
+    band *= smooth((road_d(x, y) - 14.0) / 12.0)
+    wx = x + 9.0 * math.sin(y / 23.0)
+    wy = y + 9.0 * math.cos(x / 29.0)
+    r1 = 1.0 - abs(math.sin(wx / 19.0 + 0.6 * math.sin(wy / 41.0)))
+    r2 = 1.0 - abs(math.sin(wy / 13.0 + 0.8 * math.cos(wx / 31.0)))
+    ridge = (r1 ** 2 * 0.65 + r2 ** 2 * 0.35) - 0.4
+    h += band * ridge * 9.0
+    # (ledges: the height drawn toward steps every 7 m)
+    step = 7.0
+    q = math.floor(h / step) * step
+    f = (h - q) / step
+    stepped = q + step * smooth(max(0.0, (f - 0.55) / 0.45))
+    return lerp(h, stepped, 0.45 * band)
+
+
+def spring(h, x, y):
+    """The falls' way out of the mountain (Blake, Nov 6, note 14: "we need to make this
+    waterfall way more grand actually coming out of the mountain, it is literally just
+    spawning from thin air"): a gorge cut into the range behind the falls, the river
+    coming down it from the cave it springs from."""
+    fx, fy = FALLS
+    for (ax, ay, az), (bx, by, bz) in zip(SPRING, SPRING[1:]):
+        d = _seg_d(x, y, (ax, ay), (bx, by))
+        if d < 22.0:
+            t = max(0.0, min(1.0, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)))
+            floor = lerp(az, bz, t) - 1.5
+            w = smooth((22.0 - d) / 14.0)
+            h = lerp(h, min(h, floor + 0.12 * d * d), w)
+    return h
+
+
 def natural(x, y):
     h = L.natural(x, y)
     h = _soft(h, x, y)
     h = ridges(h, x, y)
+    h = walls(h, x, y)
+    h = hills(h, x, y)
     h = _notch(h, x, y)
+    h = spring(h, x, y)
     for lx, ly, lr in LAVA:
         d = ((x - lx) ** 2 + (y - ly) ** 2) ** 0.5
         if d < lr + 6:

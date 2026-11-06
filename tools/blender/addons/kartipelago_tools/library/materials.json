@@ -11938,6 +11938,222 @@
       "tileMetres": 5.0
     },
     {
+      "id": "tx_basalt_road__valley_road_25",
+      "name": "Basalt Road to Valley Road (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__valley_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_basalt_road__valley_road_50",
+      "name": "Basalt Road to Valley Road (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__valley_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_basalt_road__valley_road_75",
+      "name": "Basalt Road to Valley Road (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_basalt_road__valley_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.0
+    },
+    {
+      "id": "tx_scorched_ground__valley_trail_25",
+      "name": "Scorched Ground to Valley Trail (25%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "tx_scorched_ground__valley_trail_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_scorched_ground__valley_trail_50",
+      "name": "Scorched Ground to Valley Trail (50%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "dirt",
+      "image": "tx_scorched_ground__valley_trail_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_scorched_ground__valley_trail_75",
+      "name": "Scorched Ground to Valley Trail (75%)",
+      "theme": "volcanic_apocalypse",
+      "surface": "road",
+      "image": "tx_scorched_ground__valley_trail_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_road__keep_path_25",
+      "name": "Valley Road to Cliff Path (25%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__keep_path_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_road__keep_path_50",
+      "name": "Valley Road to Cliff Path (50%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__keep_path_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_road__keep_path_75",
+      "name": "Valley Road to Cliff Path (75%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_road__keep_path_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_trail__lush_grass_25",
+      "name": "Valley Trail to Lush Grass (25%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_trail__lush_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_trail__lush_grass_50",
+      "name": "Valley Trail to Lush Grass (50%)",
+      "theme": "river_valley",
+      "surface": "road",
+      "image": "tx_valley_trail__lush_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_trail__lush_grass_75",
+      "name": "Valley Trail to Lush Grass (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_trail__lush_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_path__forest_road_25",
+      "name": "Cliff Path to Forest Track (25%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__forest_road_25.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_path__forest_road_50",
+      "name": "Cliff Path to Forest Track (50%)",
+      "theme": "dragonspire_keep",
+      "surface": "road",
+      "image": "tx_keep_path__forest_road_50.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_keep_path__forest_road_75",
+      "name": "Cliff Path to Forest Track (75%)",
+      "theme": "dragonspire_keep",
+      "surface": "dirt",
+      "image": "tx_keep_path__forest_road_75.png",
+      "wrap": "repeat",
+      "tileMetres": 5.0
+    },
+    {
+      "id": "tx_valley_grass__lush_grass_25",
+      "name": "Valley Grass to Lush Grass (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__lush_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__lush_grass_50",
+      "name": "Valley Grass to Lush Grass (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__lush_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__lush_grass_75",
+      "name": "Valley Grass to Lush Grass (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__lush_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__ancient_grass_25",
+      "name": "Valley Grass to Ancient Grass (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__ancient_grass_25.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__ancient_grass_50",
+      "name": "Valley Grass to Ancient Grass (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__ancient_grass_50.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__ancient_grass_75",
+      "name": "Valley Grass to Ancient Grass (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__ancient_grass_75.png",
+      "wrap": "repeat",
+      "tileMetres": 6.0
+    },
+    {
+      "id": "tx_valley_grass__flowerbed_25",
+      "name": "Valley Grass to Flower Bed (25%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__flowerbed_25.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_valley_grass__flowerbed_50",
+      "name": "Valley Grass to Flower Bed (50%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__flowerbed_50.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
+      "id": "tx_valley_grass__flowerbed_75",
+      "name": "Valley Grass to Flower Bed (75%)",
+      "theme": "river_valley",
+      "surface": "grass",
+      "image": "tx_valley_grass__flowerbed_75.png",
+      "wrap": "repeat",
+      "tileMetres": 4.5
+    },
+    {
       "id": "tx_keep_grass__moon_grass_25",
       "name": "Sunset Grass to Moonlit Grass (25%)",
       "theme": "dragonspire_keep",
@@ -12715,6 +12931,141 @@
       "theme": "dry_gulch",
       "surface": "wall",
       "image": "sign_hoard_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_snow_1",
+      "name": "Sign: To the Snow Kingdom (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_snow_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_snow_2",
+      "name": "Sign: To the Snow Kingdom (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_snow_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_snow_3",
+      "name": "Sign: To the Snow Kingdom (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_snow_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_valley_1",
+      "name": "Sign: To Dinosaur Valley (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_valley_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_valley_2",
+      "name": "Sign: To Dinosaur Valley (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_valley_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_valley_3",
+      "name": "Sign: To Dinosaur Valley (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_valley_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_desert_1",
+      "name": "Sign: To Desert World (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_desert_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_desert_2",
+      "name": "Sign: To Desert World (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_desert_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_desert_3",
+      "name": "Sign: To Desert World (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_desert_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_isles_1",
+      "name": "Sign: To Tropic Isles (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_isles_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_isles_2",
+      "name": "Sign: To Tropic Isles (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_isles_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_isles_3",
+      "name": "Sign: To Tropic Isles (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_isles_3.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_dragon_1",
+      "name": "Sign: To the Dragon Kingdom (1/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_dragon_1.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_dragon_2",
+      "name": "Sign: To the Dragon Kingdom (2/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_dragon_2.png",
+      "wrap": "repeat",
+      "tileMetres": 2
+    },
+    {
+      "id": "sign_to_dragon_3",
+      "name": "Sign: To the Dragon Kingdom (3/3)",
+      "theme": "dry_gulch",
+      "surface": "wall",
+      "image": "sign_to_dragon_3.png",
       "wrap": "repeat",
       "tileMetres": 2
     },

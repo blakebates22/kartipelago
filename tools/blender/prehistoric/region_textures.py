@@ -101,6 +101,18 @@ PAIRS = [
     ("black_sand", "beach_sand"),
     ("black_sand", "isle_jungle"),
     ("isle_jungle", "jungle_leafcover"),
+    # (The Burnt Gorge, Nov 6, review journey_gorge 1 note 6: "we need a gradient transistion
+    # between these 2 textures like we have done before": the roads from the burnt narrows
+    # to the meadow, to the limestone cleft, to the steppe, and their shoulders; note 11:
+    # the meadow's grass in several greens and flowers.)
+    ("basalt_road", "valley_road"),
+    ("scorched_ground", "valley_trail"),
+    ("valley_road", "keep_path"),
+    ("valley_trail", "lush_grass"),
+    ("keep_path", "forest_road"),
+    ("valley_grass", "lush_grass"),
+    ("valley_grass", "ancient_grass"),
+    ("valley_grass", "flowerbed"),
 ]
 
 

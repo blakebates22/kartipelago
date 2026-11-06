@@ -61,13 +61,17 @@ SPECS = {
             "ember": (("ash_soil", "dirt"), ("ember_rock", "wall"), "basalt_road", ("scorched_ground", "dirt")),
             # (v2, the pilgrimage: the green valley, the cleft, the steppe, the snow)
             "meadow": (("valley_grass", "grass"), ("canyon_rock_moss", "wall"), "valley_road", ("valley_trail", "dirt")),
-            "basalt": (("scorched_ground", "dirt"), ("obsidian_cliff", "wall"), "basalt_road", ("ash_soil", "dirt")),
+            # (the Cleft, Nov 6, note 13: "this whole region is like a lava volcano region ...
+            # but this doesnt make sense since we have left the volcano region"; Blake picked
+            # mossy limestone: pale rock, moss, a pilgrims' gravel path)
+            "basalt": (("limestone_moss", "dirt"), ("limestone", "wall"), "keep_path", ("lush_grass", "grass")),
             "steppe": (("thaw_grass", "grass"), ("summit_rock", "wall"), "forest_road", ("valley_trail", "dirt")),
             "snow": (("snow_ground", "deep_snow"), ("frost_cliff", "wall"), "packed_snow_road", ("snow_ground", "deep_snow")),
         },
         "bridge": ("plank_deck", ("weathered_timber", "wall"), ("fence_rail", "wall")),
         "water": ("valley_water", "water"),
-        "ends": {"start": ("valley_cliff", "Dinosaur Valley"), "end": ("frost_cliff", "the Snow Kingdom")},
+        # (the start's wall lava rock: note 2, "change this texture to more lava rock")
+        "ends": {"start": ("ember_rock", "Dinosaur Valley"), "end": ("frost_cliff", "the Snow Kingdom")},
     },
     "pass": {
         "name": "The Frozen Pass",
@@ -166,6 +170,10 @@ def classify(c, n, info):
         d, wz = L.water_d(c.x, c.y)
         if d < L.river_hw + 3 and c.z < wz + 0.4:
             return ("valley_sand", "water")  # (the river's bed, wadeable)
+        if look == "meadow" and n.z > 0.62:
+            # (note 11: the one green broken up, Blake picked mixed grass and flowers: lush
+            # and dark swards and flower meadows drifting across it, blended in)
+            return gorge_grass(c.x, c.y)
         if look == "steppe" and n.z > 0.9 and math.sin(c.x / 19.0) * math.cos(c.y / 15.0 + 0.5) > 0.55:
             return ("snow_ground", "packed_snow")  # (the first frost lying in hollows)
     if JID == "hop":
@@ -205,6 +213,31 @@ def classify(c, n, info):
     if JID == "dust" and look == "dunes" and math.sin(c.x / 29.0 + 1.0) * math.cos(c.y / 23.0) > 0.35:
         return ("dune_crest", "loose_sand")
     return ground
+
+
+def gorge_grass(x, y):
+    """The Long Meadow's sward: valley grass, with lusher, darker and flowering drifts."""
+    base = ("valley_grass", "grass")
+    a = math.sin(x / 37.0 + 0.8 * math.sin(y / 53.0)) * math.cos(y / 41.0 - 0.6 * math.cos(x / 61.0))
+    b = math.sin((x + y) / 29.0 + 2.0) * math.cos((x - y) / 23.0 + 0.4)
+    f = math.sin(x / 13.0 + y / 17.0) * math.cos(x / 19.0 - y / 11.0)
+    for v, other in ((a, "lush_grass"), (-a, "ancient_grass"), (b * 0.7 + f * 0.5, "flowerbed")):
+        if v > 0.35:
+            p = 25 if v < 0.45 else 50 if v < 0.55 else 75 if v < 0.68 else 100
+            return (other, "grass") if p == 100 else pb.blended(base, (other, "grass"), p)
+    return base
+
+
+def gentle(x, y, wet=3.0):
+    """Ground a tree can stand on (Nov 6, notes 7 and 16: "no tree should just be attached
+    to the side of a sheer wall"; "remove the trees from the water"): not too steep, and
+    clear of the river."""
+    e = 2.0
+    gx = (J.natural(x + e, y) - J.natural(x - e, y)) / (2 * e)
+    gy = (J.natural(x, y + e) - J.natural(x, y - e)) / (2 * e)
+    if math.hypot(gx, gy) > 0.55:
+        return False
+    return L.water_d(x, y)[0] > L.river_hw + wet
 
 
 def main():
@@ -275,7 +308,18 @@ def main():
         return L.look_at(q.p.x, q.p.y)
 
     specials = [(s0, s1, k) for s0, s1, k in kit.runs(c, label)]
-    c.roads(kit.plan(c, specials, next(iter(LOOK)), max_len=160.0))
+    runs = kit.plan(c, specials, next(iter(LOOK)), max_len=160.0)
+    if JID == "gorge":
+        # (note 6: the road's paving turning from one stretch's to the next's in steps)
+        runs = pb.blend_runs(c, runs, LOOK)
+    c.roads(runs)
+    if JID == "gorge":
+        # (note 15: "it needs to be a wodden board see through bridge like the sections in
+        # snowy pass": the bridge's road piece only what a kart hits; the planks, gaps and
+        # all, built in jgorge_dress.plank_bridge)
+        for p in c.pieces:
+            if p.name.split()[-1:] == ["bridge"] or " bridge" in p.name:
+                p["kp_role"] = "collision"
 
     X0, X1, Y0, Y1 = -490, 490, -490, 490
     ter = c.terrain(SP["name"], X0, X1, Y0, Y1, 5.0, natural, classify, near=8.0, fade=16.0)
@@ -339,18 +383,21 @@ def thresholds(c, ground):
             half = pb.bore(c, L, name, s0, s1, ("obsidian_cliff", "wall"), ("ash_soil", "dirt"), height=11.0)
             s = s0 + 3.0
             k = 0
+            import jgorge_dress as GD
+
+            cracks = GD.Mesh()
             while s < s1 - 2.0:
                 q = c.at(s)
+                # (notes 4 and 5: the seams were strips floating off the walls: glowing
+                # cracks now, running up the tube's walls, set into the rock)
                 for sd in (-1, 1):
-                    strip = [(q.p.x + q.r.x * sd * (half - 0.4) + q.t.x * u, q.p.y + q.r.y * sd * (half - 0.4) + q.t.y * u)
-                             for u in (-2.0, 2.0)]
-                    c.ribbon("%s Seam %d %d" % (name, k, sd), strip, 0.8, q.p.z + 0.2 + 0.4 * (k % 3),
-                             c.lib("volcano_lava", "lava"), role="visual")
+                    GD.lava_crack(cracks, q, sd, half, k)
                 if k % 2 == 0:
                     g = c.game(q.p.x + q.r.x * (half - 0.6), q.p.y + q.r.y * (half - 0.6), q.p.z + 4.0)
                     c.entity("torch", x=g[0], y=g[1], z=g[2])
                 s += 7.0
                 k += 1
+            cracks.build(c, "%s Cracks" % name, coll="Props", role="visual")
             for s in (s0 - 4.0, s1 + 4.0):
                 q = c.at(s)
                 g = c.game(q.p.x, q.p.y, q.p.z + 12.0)
@@ -444,6 +491,8 @@ def _scatter_look(c, ground, taken, look, items):
     def ok(x, y):
         if SEA and J.natural(x, y) < WATER_Z + 0.4:
             return False  # (nothing standing in the sea)
+        if JID == "gorge" and not gentle(x, y):
+            return False
         return L.wall_sd(x, y) < -8 and L.look_at(x, y) == look
 
     for k, (proto, n, kw) in enumerate(items):
@@ -451,10 +500,12 @@ def _scatter_look(c, ground, taken, look, items):
 
 
 def dress_gorge(c, ground, taken, on_road):
-    """The pilgrimage (jgorge_layout v2): the burnt narrows; the Long Meadow green and
-    alive, herds grazing, the falls, the traders' camp by the ford; the steppe's basalt,
-    hot springs, prayer flags and the herders' village, mammoths on its grass; the
-    Snowgate's pines and the pilgrims' hostel; the Snow Kingdom's peaks ahead."""
+    """The pilgrimage (jgorge_layout v2; the second pass, Nov 6: jgorge_dress): the burnt
+    narrows; the Long Meadow green and alive, herds grazing, the falls out of the mountain,
+    the waystations of the desert folk, the islanders and the Kingdom; the limestone cleft
+    under its rock arch; the steppe's granite and pines, prayer flags and the snow folk's
+    lodge, mammoths on its grass; the Snowgate's pines and the pilgrims' hostel; the Snow
+    Kingdom's peaks ahead."""
     import valley_village as vv
 
     vv.GROUND = ground
@@ -485,19 +536,16 @@ def dress_gorge(c, ground, taken, on_road):
     # Forested hills round it (v2b): pines and broadleaves up the ranges' lower slopes.
     def hills(x, y):
         b = L.wall_sd(x, y)
-        return 6.0 < b < 70.0 and L.look_at(x, y) == "meadow" and J.natural(x, y) < 120.0
+        return 6.0 < b < 70.0 and L.look_at(x, y) == "meadow" and J.natural(x, y) < 120.0 and gentle(x, y)
 
     for v, (proto, n) in enumerate(((smp_.pine(c, 0, 16.0, snowy=False), 70), (smp_.pine(c, 2, 20.0, snowy=False), 50),
                                     (smp_.broadleaf(c, 0, frosted=False), 40))):
         paint.scatter(c, proto, n, 480.0, hills, ground, taken, 300 + v, room=5.0, road_margin=10.0, role="visual",
                       scale=(0.9, 1.5))
-    # The falls off the steppe's edge into the meadow's north.
-    fx, fy = J.FALLS
-    top = J.natural(fx, fy + 16.0)
-    foot = L.rivers[0][0][2]
-    props.falls(c, "Meadow Falls", fx, fy + 10.0, top, foot, 14.0, 20.0, facing=-1, throw=7.0, bulge=1.6, veils=3)
-    g = c.game(fx, fy + 2.0, foot)
-    c.entity("waterfall", x=g[0], y=g[1], z=g[2], top=round(top - foot, 1), width=18.0, heading=0.0)
+    # The falls out of the mountain into the meadow's north (note 14: jgorge_dress.falls).
+    import jgorge_dress as GD
+
+    GD.falls(c, J, L, ground)
     # Herds of long-necks grazing, on two rounds.
     for k, (cx, cy, rx, ry, n) in enumerate(((-120.0, -100.0, 50.0, 30.0, 3), (-80.0, 60.0, 40.0, 26.0, 2))):
         pts = []
@@ -508,44 +556,12 @@ def dress_gorge(c, ground, taken, on_road):
         c.path_curve("Meadow Herd %d" % k, pts, closed=True)
         for j in range(n):
             c.entity("dinosaur", route="Meadow Herd %d" % k, speed=1.4, scale=(1.0, 0.6, 0.85)[j], start=j * 9.0)
-    # The traders' camp by the ford (v2b, Blake: "lets add more to the hostels and traders
-    # camps"): tents in a ring round the fire, market stalls along the road, covered
-    # wagons and their goods, a jetty on the river with canoes, fish drying on racks,
-    # lanterns on posts, their folk at the stalls.
+    # The traders' camp by the ford, the desert folk's caravanserai now (notes 8 to 10:
+    # Blake, "these need to be settlements for pilgramiges. traveling between worlds"; he
+    # picked waystations by world: jgorge_dress).
     tx, ty, tr = J.VILLAGES["traders"]
-
-    def put(proto, x, y, rot, r, coll="Village", role="both", sink=0.1):
-        if not paint.road_clear(c, x, y, r) or not taken.clear(x, y, r):
-            return False
-        d, _wz = L.water_d(x, y)
-        if d < L.river_hw + 1.0:
-            return False
-        c.place(proto, x, y, ground(x, y) - sink, rot=rot, coll=coll, role=role)
-        taken.add(x, y, r)
-        return True
-
-    for k in range(6):
-        a = k * math.tau / 6 + 0.2
-        put(ip.tent(c, k % 2), tx + tr * 0.75 * math.cos(a), ty + tr * 0.75 * math.sin(a), a + math.pi / 2, 4.0)
-    g = c.game(tx, ty, ground(tx, ty) + 0.2)
-    c.entity("campfire", x=g[0], y=g[1], z=g[2])
     q, _ = c.nearest(tx, ty)
-    side = 1.0 if (tx - q.p.x) * q.r.x + (ty - q.p.y) * q.r.y > 0 else -1.0
-    rot = math.atan2(q.t.y, q.t.x)
-    for k in range(4):  # (stalls along the road's camp side, facing it)
-        along = (k - 1.5) * 9.0
-        x = q.p.x + q.t.x * along + q.r.x * side * (q.w / 2 + 5.0)
-        y = q.p.y + q.t.y * along + q.r.y * side * (q.w / 2 + 5.0)
-        if put(op.market_stall(c, k % 3), x, y, rot + (math.pi if side > 0 else 0.0) - math.pi / 2, 3.2):
-            gx_, gy_, gz_ = c.game(x, y, ground(x, y) + 3.0)
-            c.entity("lantern", x=gx_, y=gy_, z=gz_)
-    for k, (dx, dy) in enumerate(((-14.0, 12.0), (12.0, 16.0), (-18.0, -8.0))):
-        put(gp.wagon(c, covered=True), tx + dx, ty + dy, 0.6 * k + 0.4, 4.5)
-        for j in range(2):
-            put(gp.barrel(c, j) if j else gp.crate_stack(c, k % 2), tx + dx + 3.5 + 1.4 * j, ty + dy - 2.5, 0.3 * j, 1.2)
-    put(op.crates(c, 0), tx - 4.0, ty - 13.0, 0.4, 2.0)
-    for k in range(3):
-        put(gp.lantern_post(c), tx + 16.0 * math.cos(k * 2.1 + 1.0), ty + 16.0 * math.sin(k * 2.1 + 1.0), 0.0, 1.0)
+    n_folk = GD.caravanserai(c, ground, taken, L, tx, ty, tr, math.atan2(q.p.y - ty, q.p.x - tx))
     # The jetty: planks out over the river's edge on posts, canoes moored at it.
     riv = L.rivers[0]
     best = min(((math.hypot(px - tx, py - ty), (px, py, pz)) for px, py, pz in riv), key=lambda t: t[0])[1]
@@ -562,63 +578,14 @@ def dress_gorge(c, ground, taken, on_road):
         px = tx + math.cos(ang) * (tr + 4.0 + 4.0 * k) - math.sin(ang) * 3.4
         py = ty + math.sin(ang) * (tr + 4.0 + 4.0 * k) + math.cos(ang) * 3.4
         c.place(op.moored_boat(c, k % 2), px, py, jz - 0.1, rot=ang + 0.1 * k, coll="Props", role="visual")
-    # Fish drying on racks: two rails on posts, the catch hung along them.
-    for k in range(2):
-        rx_, ry_ = tx - 10.0 + 4.0 * k, ty + 14.0 - 2.0 * k
-        if paint.road_clear(c, rx_, ry_, 2.5) and taken.clear(rx_, ry_, 2.5):
-            z = ground(rx_, ry_)
-            for sd in (-1, 1):
-                box(c, "Fish Rack Post %d %d" % (k, sd), rx_ + sd * 1.8, ry_, 0.12, 0.12, z - 0.3, z + 2.2, ("weathered_timber", "wall"),
-                    role="visual")
-            box(c, "Fish Rack Rail %d" % k, rx_, ry_, 2.0, 0.08, z + 2.05, z + 2.15, ("weathered_timber", "wall"), role="visual")
-            for j in range(6):
-                box(c, "Fish %d %d" % (k, j), rx_ - 1.5 + 0.6 * j, ry_, 0.12, 0.05, z + 1.4, z + 2.0, ("crystal_teal", "wall"), role="visual")
-            taken.add(rx_, ry_, 2.5)
-    g = c.game(tx + 4.0, ty - 4.0, ground(tx, ty))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=16.0, n=7, folk="road", heading=0.0)
-    # Two more little villages in the meadow (v2c, Blake): Fallsfoot, the fishers at the
-    # falls' foot (huts round a hearth, boats drawn up, fish drying); and the hamlet on the
-    # south side, farmers (huts, a fenced paddock, hay, a trough and a well).
-    def village(key, huts, folk_n):
-        vx_, vy_, vr_ = J.VILLAGES[key]
-        placed = 0
-        for k in range(huts):
-            a = k * math.tau / huts + 0.5
-            x, y = vx_ + vr_ * 0.7 * math.cos(a), vy_ + vr_ * 0.7 * math.sin(a)
-            if L.water_d(x, y)[0] < L.river_hw + 3.0 or not paint.road_clear(c, x, y, 6.0) or not taken.clear(x, y, 4.5):
-                continue
-            ring = [ground(x + 4.0 * math.cos(t), y + 4.0 * math.sin(t)) for t in (0.0, 1.57, 3.14, 4.71)]
-            vv.place_hut(c, k + 1, x, y, min(ring) - 0.05, a + math.pi, scale=0.9)
-            taken.add(x, y, 5.5)
-            placed += 1
-        g = c.game(vx_, vy_, ground(vx_, vy_) + 0.2)
-        c.entity("campfire", x=g[0], y=g[1], z=g[2])
-        c.place(vv.hearth(c), vx_, vy_, ground(vx_, vy_) - 0.05, coll="Props")
-        taken.add(vx_, vy_, 3.0)
-        g = c.game(vx_ + 3.0, vy_ - 3.0, ground(vx_, vy_))
-        c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=vr_, n=folk_n, folk="valley", heading=0.0)
-        return vx_, vy_, vr_
-
-    fx_, fy_, fr_ = village("fallsfoot", 5, 4)
-    for k in range(3):  # (their boats, drawn up toward the river)
-        a = math.atan2(J.FALLS[1] - fy_, J.FALLS[0] - fx_) + (k - 1) * 0.35
-        x, y = fx_ + (fr_ + 4.0) * math.cos(a), fy_ + (fr_ + 4.0) * math.sin(a)
-        if L.water_d(x, y)[0] > L.river_hw and taken.clear(x, y, 2.0):
-            c.place(kp.boat(c, k % 2), x, y, ground(x, y) - 0.15, rot=a, coll="Props", role="visual")
-            taken.add(x, y, 2.0)
-    for k in range(2):
-        rx_, ry_ = fx_ - fr_ + 2.0, fy_ - 4.0 + 6.0 * k
-        if taken.clear(rx_, ry_, 2.5):
-            z = ground(rx_, ry_)
-            for sd in (-1, 1):
-                box(c, "Falls Rack Post %d %d" % (k, sd), rx_, ry_ + sd * 1.8, 0.12, 0.12, z - 0.3, z + 2.2, ("weathered_timber", "wall"),
-                    role="visual")
-            box(c, "Falls Rack Rail %d" % k, rx_, ry_, 0.08, 2.0, z + 2.05, z + 2.15, ("weathered_timber", "wall"), role="visual")
-            for j in range(6):
-                box(c, "Falls Fish %d %d" % (k, j), rx_, ry_ - 1.5 + 0.6 * j, 0.05, 0.12, z + 1.4, z + 2.0, ("crystal_teal", "wall"),
-                    role="visual")
-            taken.add(rx_, ry_, 2.5)
-    hx_, hy_, hr_ = village("hamlet", 5, 4)
+    # Fallsfoot, the islanders' stilt stop at the falls' foot; the hamlet on the south side,
+    # the Dragon Kingdom's inn, its paddock beside it.
+    fx_, fy_, fr_ = J.VILLAGES["fallsfoot"]
+    riv0 = min(L.rivers[0], key=lambda p: math.hypot(p[0] - fx_, p[1] - fy_))
+    n_folk += GD.stilt_stop(c, ground, taken, L, fx_, fy_, fr_, math.atan2(riv0[1] - fy_, riv0[0] - fx_))
+    hx_, hy_, hr_ = J.VILLAGES["hamlet"]
+    q, _ = c.nearest(hx_, hy_)
+    n_folk += GD.kingdom_inn(c, ground, taken, L, hx_, hy_, hr_, math.atan2(q.p.y - hy_, q.p.x - hx_))
     # Their paddock: a timber fence round a square of trampled ground, a trough, hay.
     px_, py_ = hx_ + hr_ + 10.0, hy_ - 4.0
     pz = ground(px_, py_)
@@ -639,9 +606,6 @@ def dress_gorge(c, ground, taken, on_road):
         hz = ground(x, y)
         cone(c, "Haystack %d" % k, x, y, 1.6, hz - 0.2, 2.4, ("dry_grass", "wall"), segs=8)
     taken.add(px_, py_, 9.0)
-    wx_, wy_ = hx_ - hr_ * 0.2, hy_ + hr_ * 0.45
-    c.place(vv.well(c), wx_, wy_, ground(wx_, wy_) - 0.1, coll="Props")
-    taken.add(wx_, wy_, 2.5)
     pts = []
     for j in range(12):
         a = j * math.tau / 12
@@ -649,28 +613,20 @@ def dress_gorge(c, ground, taken, on_road):
         pts.append((x, y, ground(x, y)))
     c.path_curve("Paddock Round", pts, closed=True)
     c.entity("dinosaur", route="Paddock Round", speed=0.9, scale=0.35, start=0.0)
-    # The stone arch over the cleft's mouth.
+    # The natural rock arch over the cleft's mouth (note 12: jgorge_dress.rock_arch).
     ax, ay = J.ARCH
     q, _ = c.nearest(ax, ay)
-    c.place(kp.stone_arch(c, span=q.w + 16.0, h=24.0, depth=7.0), q.p.x, q.p.y, q.p.z - 1.0,
-            rot=math.atan2(q.t.y, q.t.x) - math.pi / 2, coll="Props")
+    GD.rock_arch(c, ground, q.p.x, q.p.y, math.atan2(q.t.y, q.t.x) + math.pi / 2, q.w + 16.0, 24.0)
     # ---- The High Steppe.
+    # (note 13: no basalt or geysers up here, Blake picked alpine: granite boulders, pines,
+    # shrubs)
     _scatter_look(c, ground, taken, "steppe", [
-        (props.basalt_columns(c), 14, dict(room=6.0, road_margin=6.0)),
+        (props.boulder(c, "summit_rock", 2), 16, dict(room=5.0, road_margin=6.0, scale=(1.0, 2.4))),
         (smp_.pine(c, 0, 13.0, snowy=False), 24, tree), (smp_.pine(c, 2, 16.0, snowy=True), 14, tree),
         (smp_.broadleaf(c, 1, frosted=True), 10, tree),
         (smp_.shrub(c, 1, frosted=False), 40, dict(room=2.0, road_margin=3.0, role="visual", scale=(0.7, 1.4))),
         (smp_.boulder(c, 1), 12, dict(room=4.0, road_margin=6.0)),
     ])
-    for k, (x, y) in enumerate(((150.0, 236.0), (214.0, 176.0), (100.0, 186.0), (230.0, 230.0))):
-        if not paint.road_clear(c, x, y, 9.0) or not taken.clear(x, y, 7.0):
-            continue
-        z = ground(x, y)
-        c.place(smp_.geyser_cone(c, 1 + k % 2), x, y, z - 0.3, rot=k, coll="Props")
-        g = c.game(x, y, z + 2.6)
-        c.entity("geyser", x=g[0], y=g[1], z=g[2], r=3.5, height=16.0 + 4 * (k % 2), period=8.0 + k, offset=1.7 * k,
-                 warn=1.4, blast=2.2, launch=0.0)
-        taken.add(x, y, 7.0)
     flags = smp_.Bunting()
     hx, hy, hr = J.VILLAGES["herders"]
     poles = []
@@ -682,17 +638,10 @@ def dress_gorge(c, ground, taken, on_road):
         poles.append((x, y, z + 7.6))
     for a, b in zip(poles, poles[1:] + poles[:1]):
         flags.line(a, b, sag=1.6)
-    # The herders' huts round their fire, their mammoths on the grass beyond.
-    for k in range(4):
-        a = k * math.tau / 4 + 0.9
-        x, y = hx + hr * 0.55 * math.cos(a), hy + hr * 0.55 * math.sin(a)
-        if paint.road_clear(c, x, y, 6.0):
-            vv.place_hut(c, k + 1, x, y, ground(x, y) - 0.05, a + math.pi, scale=0.9)
-            taken.add(x, y, 6.0)
-    g = c.game(hx, hy, ground(hx, hy) + 0.2)
-    c.entity("campfire", x=g[0], y=g[1], z=g[2])
-    g = c.game(hx + 5.0, hy - 5.0, ground(hx, hy))
-    c.entity("villager_home", x=round(g[0], 2), z=round(g[2], 2), y=round(g[1], 2), r=14.0, n=4, folk="valley", heading=0.0)
+    # The herders' village, the snow folk's lodge now (jgorge_dress), their mammoths on the
+    # grass beyond.
+    q, _ = c.nearest(hx, hy)
+    n_folk += GD.snow_lodge(c, ground, taken, L, hx, hy, hr * 0.8, math.atan2(q.p.y - hy, q.p.x - hx))
     pts = []
     for j in range(16):
         a = j * math.tau / 16
@@ -809,6 +758,10 @@ def dress_gorge(c, ground, taken, on_road):
                 g = c.game(px, py, pz + 2.6)
                 c.entity("torch", x=g[0], y=g[1], z=g[2])
     flags.build(c)
+    # The river's plank bridge (note 15) and its ducks (note 17).
+    n_br = GD.plank_bridge(c)
+    n_ducks = GD.ducks(c, L)
+    print("gorge: %d travellers at the waystations, %d plank bridge(s), %d ducks" % (n_folk, n_br, n_ducks))
     # ---- The Snow Kingdom's peaks, ahead the whole way (beyond the land's edge).
     for k, (x, y, r, h) in enumerate(((520.0, 560.0, 150.0, 330.0), (380.0, 620.0, 130.0, 280.0), (640.0, 420.0, 140.0, 300.0),
                                       (250.0, 640.0, 110.0, 230.0), (680.0, 620.0, 160.0, 360.0))):

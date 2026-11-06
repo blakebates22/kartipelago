@@ -5756,6 +5756,19 @@ EDGE_SIGNS = [
     for entry in sign_tiles(sid, name, text, w, h, dict(kw, grime=True))
 ]
 MATERIALS += EDGE_SIGNS
+# The Burnt Gorge's signposts at the pilgrims' waystations (Nov 6): the way to each kingdom.
+GORGE_SIGNS = [
+    entry
+    for sid, name, text, w, h, kw in (
+        ("sign_to_snow", "To the Snow Kingdom", "SNOW KINGDOM", 192, 32, {"seed": 51, "ink": "#e8f0ff"}),
+        ("sign_to_valley", "To Dinosaur Valley", "DINO VALLEY", 192, 32, {"seed": 52, "wood": GREEN_SIGN}),
+        ("sign_to_desert", "To Desert World", "DESERT WORLD", 192, 32, {"seed": 53, "wood": RED_SIGN, "ink": "#ffe0a0"}),
+        ("sign_to_isles", "To Tropic Isles", "TROPIC ISLES", 192, 32, {"seed": 54, "ink": "#a0f0e0"}),
+        ("sign_to_dragon", "To the Dragon Kingdom", "DRAGON KINGDOM", 192, 32, {"seed": 55, "wood": RED_SIGN}),
+    )
+    for entry in sign_tiles(sid, name, text, w, h, kw)
+]
+MATERIALS += GORGE_SIGNS
 SWAY = lambda s: {"scrollU": 0, "scrollV": 0, "sway": s}  # noqa: E731
 EDGE_CLOTH = [
     ("edge_flag_skull", "Smuggler Flag (Skull)", "dry_gulch", "wall", edge_flag_skull, 3, SWAY(0.08)),

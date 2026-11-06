@@ -147,6 +147,8 @@ import {
   type Instrument,
   type InstrumentView,
 } from "../render/instruments";
+import { duckAt, duckKind, parseDucks, type Ducks } from "./ducks";
+import { createDuckView, type DuckView } from "../render/duck";
 import { createVillagerView } from "../render/villager";
 import type { Folk } from "../render/people/folk";
 import {
@@ -591,6 +593,8 @@ export function createHazards(opts: {
   // Folk posed about a place in full detail (game/folkPoses.ts): the Rookery's balconies,
   // doors and windows, the Rusty Anchor's cooks and diners.
   const posed: (PosedFolk & { view?: PersonView; st: FolkState; held?: InstrumentView })[] = [];
+  // Ducks on the river (game/ducks.ts, render/duck.ts).
+  const duckFlocks: { d: Ducks; views: DuckView[] }[] = [];
   const folkAt = new THREE.Vector3();
   // The Beast Market's pens of baby dinosaurs (game/pens.ts).
   const pens: { cfg: PenConfig; babies: Baby[]; views: HatchlingView[]; rnd: () => number }[] = [];
@@ -953,6 +957,16 @@ export function createHazards(opts: {
               : undefined,
         });
       }
+    } else if (e.type === "ducks") {
+      const d = parseDucks(e);
+      duckFlocks.push({
+        d,
+        views: opts.headless
+          ? []
+          : Array.from({ length: d.count }, (_, k) =>
+              createDuckView(group, duckKind(k), d.seed + k),
+            ),
+      });
     } else if (e.type === "pen") {
       const cfg = parsePen(e);
       const rnd = penRng(cfg.seed);
@@ -1699,6 +1713,16 @@ export function createHazards(opts: {
           v.root.visible = true;
           const w = babyAt(pen.cfg, b);
           v.update(w.x, pen.cfg.y, w.z, w.heading, b.act, b.pace, t);
+        });
+      }
+      for (const f of duckFlocks) {
+        const p0 = f.d.points[0]!;
+        const far = Math.hypot(p0.x - listener.x, p0.z - listener.z) > 160;
+        f.views.forEach((v, k) => {
+          v.root.visible = !far;
+          if (far) return;
+          const w = duckAt(f.d, k, t);
+          v.update(w.x, w.y, w.z, w.heading, w.act, t);
         });
       }
       for (const p of posed) {
@@ -2618,6 +2642,7 @@ export function createHazards(opts: {
         p.held?.dispose();
       }
       for (const pen of pens) for (const v of pen.views) v.dispose();
+      for (const f of duckFlocks) for (const v of f.views) v.dispose();
       spray?.dispose();
       snow?.dispose();
       rocks?.dispose();
